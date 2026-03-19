@@ -23,13 +23,15 @@ Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncte
 
 ## Ce que contient ce dépôt
 
-| Dossier | Contenu | Pour qui |
+| Dossier/Fichier | Contenu | Pour qui |
 | :--- | :--- | :--- |
 | `proofs/lean/` | Théorèmes formels vérifiés par Lean 4 (8 invariants du noyau) | Chercheurs, auditeurs formels |
 | `proofs/tla/` | Spécifications TLA+ du protocole X-108 (1,2M états explorés) | Ingénieurs systèmes, auditeurs |
 | `proofs/verifiers/` | Scripts Python pour vérifier les décisions et les sceaux Merkle | Tout auditeur technique |
 | `examples/` | Exemples de scénarios d'entrée pour tester les vérificateurs | Développeurs, intégrateurs |
-| `docs/` | Guide d'audit technique complet | Tous |
+| `docs/AUDIT_GUIDE.md` | Guide d'audit technique complet | Tous |
+| `docs/GLOSSAIRE.md` | Définition des termes (Dual Obsidia, X-108, Chaîne Canonique...) | Nouveaux arrivants, décideurs |
+| `docs/LIMITS.md` | Limites structurelles et vecteurs d'attaque non couverts | RSSI, architectes sécurité |
 
 ---
 
@@ -87,7 +89,7 @@ Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez :
 
 - 🛡️ **Site Vitrine (Governance Core) :** [https://obsidia-governance-core-1030177622351.us-west1.run.app](https://obsidia-governance-core-1030177622351.us-west1.run.app)
 - 🧠 **Site Vitrine (Vision AGI) :** [https://obsidia-agi-10791614637.us-west1.run.app](https://obsidia-agi-10791614637.us-west1.run.app)
-- 📖 **Guide d'Audit Complet :** [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md)
+- 📖 **Documentation :** [`AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) | [`GLOSSAIRE.md`](docs/GLOSSAIRE.md) | [`LIMITS.md`](docs/LIMITS.md)
 
 ---
 
