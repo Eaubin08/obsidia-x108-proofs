@@ -2,9 +2,22 @@
 
 **Vérifiabilité publique du noyau de gouvernance déterministe Obsidia.**
 
-Ce dépôt contient **uniquement** ce qui permet de comprendre, auditer et vérifier le système Obsidia. Il ne contient pas le moteur de production (propriétaire).
+> *"Obsidia n'est pas une IA générative. C'est un moteur de certitude conçu pour les infrastructures critiques, où l'aléa est une faille de sécurité."*
 
-> *"Obsidia ne doit pas être une boîte noire, mais il ne doit pas non plus être un moteur offert en libre copie."*
+Ce dépôt contient **uniquement** les éléments permettant de comprendre, auditer et vérifier le système Obsidia. Il incarne notre doctrine de transparence : **Public = vérifiabilité. Privé = protection IP.**
+
+Il ne contient pas le moteur de production (propriétaire), mais fournit toutes les preuves mathématiques que ce moteur respecte strictement ses propres règles.
+
+---
+
+## Le Dual Obsidia : Cognition vs Gouvernance
+
+L'intelligence artificielle actuelle souffre d'un péché originel : l'imprévisibilité. Obsidia change de paradigme en séparant radicalement la cognition (l'IA) de la décision (le Juge).
+
+1. **L'Espace Latent (IA) :** Raisonne, propose, explore librement.
+2. **Le Noyau Déterministe (Obsidia Kernel) :** Juge, valide, scelle.
+
+Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncteur mathématique qui garantit qu'aucune action hors-périmètre ne sera jamais exécutée, peu importe l'erreur ou l'hallucination du système source.
 
 ---
 
@@ -22,6 +35,8 @@ Ce dépôt contient **uniquement** ce qui permet de comprendre, auditer et véri
 
 ## Vérification rapide (3 commandes)
 
+Ne nous croyez pas sur parole. Vérifiez par vous-même l'intégrité de nos décisions.
+
 ```bash
 # 1. Cloner ce dépôt
 git clone https://github.com/Eaubin08/obsidia-x108-proofs
@@ -30,7 +45,7 @@ cd obsidia-x108-proofs
 # 2. Vérifier l'intégrité du Merkle Tree (preuve cryptographique)
 python3 proofs/verifiers/verify_merkle.py
 
-# 3. Vérifier une décision d'exemple
+# 3. Vérifier une décision d'exemple (ex: Blocage d'une transaction suspecte)
 python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json
 ```
 
@@ -44,38 +59,15 @@ python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json
 
 ---
 
-## Le Standard X-108
+## Validation Formelle : Résultats Vérifiés (v1.3.0)
 
-Le protocole X-108 est l'interface de gouvernance ex-ante d'Obsidia. Chaque décision du système passe par ce protocole avant d'être exécutée.
+Obsidia n'est pas basé sur la confiance, mais sur la preuve. Chaque composant critique du moteur est formellement spécifié et vérifié.
 
-- **Spécification principale :** [`proofs/tla/X108.tla`](proofs/tla/X108.tla)
-- **Spécification distribuée :** [`proofs/tla/DistributedX108.tla`](proofs/tla/DistributedX108.tla)
-- **Vérification TLA+ :** 1,2 million d'états explorés, 0 violation d'invariant.
+- **Lean 4 (`0 sorry`) :** Preuve formelle de la non-contradiction des règles de gouvernance. (Point d'entrée : [`proofs/lean/Obsidia.lean`](proofs/lean/Obsidia.lean))
+- **TLA+ (`1,2M états, 0 violation`) :** Vérification par modèle de l'absence de deadlock dans le protocole de veto. (Point d'entrée : [`proofs/tla/X108.tla`](proofs/tla/X108.tla))
+- **Ancrage Cryptographique (`RFC 3161`) :** Signature immuable de chaque décision validée par le Juge.
 
----
-
-## Les Preuves Formelles (Lean 4)
-
-Le noyau déterministe est prouvé mathématiquement via Lean 4. Les 8 théorèmes fondamentaux sont vérifiables par n'importe quel installateur de Lean 4.
-
-- **Point d'entrée :** [`proofs/lean/Obsidia.lean`](proofs/lean/Obsidia.lean)
-- **Résultat :** `0 sorry` — Aucune preuve incomplète ou contournée.
-
-```bash
-# Pour vérifier les preuves Lean (nécessite Lean 4 installé)
-cd proofs/lean
-lake build
-```
-
----
-
-## Rapport de Certification (v1.3.0)
-
-Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient le rapport de certification complet de la version 1.3.0 :
-- `pytest` : 12/12 PASS
-- `Lean 4` : 0 sorry
-- `TLA+` : 1,2M états, 0 violation
-- `RFC 3161` : Horodatage notarial actif
+Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient le rapport de certification complet.
 
 ---
 
@@ -84,18 +76,18 @@ Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient
 Ce dépôt ne contient intentionnellement pas :
 - Le moteur de production Python (propriétaire).
 - Les connecteurs métier et adapters.
-- Les stratégies d'orchestration.
+- Les stratégies d'orchestration et les agents cognitifs.
 - Les clés et secrets de déploiement.
 
 Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez : **contact@obsidia.io**
 
 ---
 
-## Liens
+## Écosystème Obsidia
 
-- **Site Vitrine (Governance Core) :** https://obsidia-governance-core-1030177622351.us-west1.run.app
-- **Site Vitrine (Vision AGI) :** https://obsidia-agi-10791614637.us-west1.run.app
-- **Guide d'Audit Complet :** [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md)
+- 🛡️ **Site Vitrine (Governance Core) :** [https://obsidia-governance-core-1030177622351.us-west1.run.app](https://obsidia-governance-core-1030177622351.us-west1.run.app)
+- 🧠 **Site Vitrine (Vision AGI) :** [https://obsidia-agi-10791614637.us-west1.run.app](https://obsidia-agi-10791614637.us-west1.run.app)
+- 📖 **Guide d'Audit Complet :** [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md)
 
 ---
 
