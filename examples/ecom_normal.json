@@ -1,0 +1,18 @@
+{
+  "session_id": "S001",
+  "traffic_quality": 0.85,
+  "basket_intent_score": 0.9,
+  "stock_ok": true,
+  "margin_rate": 0.35,
+  "roas": 3.2,
+  "conversion_readiness": 0.88,
+  "fulfillment_risk": 0.1,
+  "customer_trust": 0.9,
+  "intent_conflict_score": 0.05,
+  "checkout_friction_score": 0.1,
+  "merchant_policy_score": 0.95,
+  "basket_value": 299.0,
+  "ad_spend": 50.0,
+  "order_value": 299.0,
+  "x108_compliance_rate": 0.98
+}
