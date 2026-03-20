@@ -32,6 +32,7 @@ Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncte
 | `docs/AUDIT_GUIDE.md` | Guide d'audit technique complet | Tous |
 | `docs/GLOSSAIRE.md` | Définition des termes (Dual Obsidia, X-108, Chaîne Canonique...) | Nouveaux arrivants, décideurs |
 | `docs/LIMITS.md` | Limites structurelles et vecteurs d'attaque non couverts | RSSI, architectes sécurité |
+| `docs/SIGMA.md` | Description du Sigma Engine (pont entre l'IA et le noyau) | Architectes, intégrateurs |
 
 ---
 
@@ -89,7 +90,7 @@ Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez :
 
 - 🛡️ **Site Vitrine (Governance Core) :** [https://obsidia-governance-core-1030177622351.us-west1.run.app](https://obsidia-governance-core-1030177622351.us-west1.run.app)
 - 🧠 **Site Vitrine (Vision AGI) :** [https://obsidia-agi-10791614637.us-west1.run.app](https://obsidia-agi-10791614637.us-west1.run.app)
-- 📖 **Documentation :** [`AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) | [`GLOSSAIRE.md`](docs/GLOSSAIRE.md) | [`LIMITS.md`](docs/LIMITS.md)
+- 📖 **Documentation :** [`AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) | [`GLOSSAIRE.md`](docs/GLOSSAIRE.md) | [`LIMITS.md`](docs/LIMITS.md) | [`SIGMA.md`](docs/SIGMA.md)
 
 ---
 
