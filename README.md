@@ -33,6 +33,7 @@ Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncte
 | `docs/GLOSSAIRE.md` | Définition des termes (Dual Obsidia, X-108, Chaîne Canonique...) | Nouveaux arrivants, décideurs |
 | `docs/LIMITS.md` | Limites structurelles et vecteurs d'attaque non couverts | RSSI, architectes sécurité |
 | `docs/SIGMA.md` | Description du Sigma Engine (pont entre l'IA et le noyau) | Architectes, intégrateurs |
+| `sigma/` | Code source complet du Sigma Engine (gardien causal de cohérence) | Développeurs, intégrateurs API |
 
 ---
 
