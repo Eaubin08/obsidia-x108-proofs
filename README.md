@@ -33,7 +33,7 @@ Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncte
 | `docs/GLOSSAIRE.md` | Définition des termes (Dual Obsidia, X-108, Chaîne Canonique...) | Nouveaux arrivants, décideurs |
 | `docs/LIMITS.md` | Limites structurelles et vecteurs d'attaque non couverts | RSSI, architectes sécurité |
 | `docs/SIGMA.md` | Description du Sigma Engine (pont entre l'IA et le noyau) | Architectes, intégrateurs |
-| `sigma/` | Code source complet du Sigma Engine (gardien causal de cohérence) | Développeurs, intégrateurs API |
+| `sigma/` | Documentation et tests du Sigma Engine (code de production propriétaire) | Développeurs, intégrateurs API |
 
 ---
 
@@ -49,16 +49,15 @@ cd obsidia-x108-proofs
 # 2. Vérifier l'intégrité du Merkle Tree (preuve cryptographique)
 python3 proofs/verifiers/verify_merkle.py
 
-# 3. Vérifier une décision d'exemple (ex: Blocage d'une transaction suspecte)
-python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json
+# 3. Vérifier tous les composants (tests complets)
+python3 proofs/verifiers/verify_all.py
 ```
 
 **Sortie attendue :**
 ```
-[INFO] Loading audit logs...
-[INFO] Reconstructing Merkle Root...
-[SUCCESS] Root matches 0x8f2e...
-[SUCCESS] Formal Proof Verified.
+[INFO] Merkle root declared: b9ac7a047f846764caebf32edb8ad491a697865530b1386e2080c3f517652bf8
+[INFO] Format VALID (SHA-256 hex)
+[SUCCESS] All verifications passed.
 ```
 
 ---
@@ -71,17 +70,19 @@ Obsidia n'est pas basé sur la confiance, mais sur la preuve. Chaque composant c
 - **TLA+ (`1,2M états, 0 violation`) :** Vérification par modèle de l'absence de deadlock dans le protocole de veto. (Point d'entrée : [`proofs/tla/X108.tla`](proofs/tla/X108.tla))
 - **Ancrage Cryptographique (`RFC 3161`) :** Signature immuable de chaque décision validée par le Juge.
 
-Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient le rapport de certification complet.
+Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient le rapport de certification complet (v1.4.0, PASS).
 
 ---
 
 ## Ce que ce dépôt ne contient PAS
 
 Ce dépôt ne contient intentionnellement pas :
-- Le moteur de production Python (propriétaire).
+- Le moteur de production Python complet (propriétaire).
 - Les connecteurs métier et adapters.
-- Les stratégies d'orchestration et les agents cognitifs.
+- Les stratégies d'orchestration avancées.
 - Les clés et secrets de déploiement.
+
+Pour un audit approfondi ou une démonstration contrôlée, consultez [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) et [`ASK_AN_AI.md`](ASK_AN_AI.md).
 
 Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez : **contact@obsidia.io**
 
