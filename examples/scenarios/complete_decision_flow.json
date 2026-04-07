@@ -1,0 +1,357 @@
+{
+  "scenario_id": "SCENARIO_20260403_BANKING_FRAUD_DETECTION",
+  "timestamp": "2026-04-03T14:32:15Z",
+  "domain": "banking",
+  "description": "Transaction suspecte détectée — Flux complet de décision Obsidia",
+  
+  "input_state": {
+    "transaction_id": "TXN_20260403_001",
+    "amount": 250000,
+    "currency": "EUR",
+    "source_account": "ACCT_12345",
+    "destination_country": "KY",
+    "transaction_type": "wire_transfer",
+    "customer_profile": {
+      "age_years": 45,
+      "account_age_days": 1200,
+      "previous_transactions_count": 156,
+      "average_transaction_amount": 5000,
+      "high_risk_jurisdiction_flag": true,
+      "kyc_status": "verified"
+    },
+    "market_conditions": {
+      "volatility_index": 0.65,
+      "liquidity_stress": 0.42,
+      "regulatory_alert_level": "elevated"
+    }
+  },
+
+  "agent_votes": {
+    "layer_observation": [
+      {
+        "agent_id": "MarketDataAgent",
+        "agent_name": "Market Data",
+        "verdict": "BLOCK",
+        "confidence": 0.92,
+        "reasoning": "Transaction amount 50x above average for this customer",
+        "severity": "HIGH",
+        "evidence": {
+          "customer_avg": 5000,
+          "this_transaction": 250000,
+          "ratio": 50,
+          "threshold": 10
+        }
+      },
+      {
+        "agent_id": "LiquidityAgent",
+        "agent_name": "Liquidity Monitor",
+        "verdict": "HOLD",
+        "confidence": 0.68,
+        "reasoning": "Destination country has elevated compliance risk",
+        "severity": "MED",
+        "evidence": {
+          "destination": "KY",
+          "risk_score": 0.78,
+          "threshold": 0.60
+        }
+      },
+      {
+        "agent_id": "VolatilityAgent",
+        "agent_name": "Volatility Monitor",
+        "verdict": "HOLD",
+        "confidence": 0.55,
+        "reasoning": "Market volatility elevated but not critical",
+        "severity": "LOW",
+        "evidence": {
+          "vix": 0.65,
+          "threshold": 0.70
+        }
+      },
+      {
+        "agent_id": "EventAgent",
+        "agent_name": "Event Detection",
+        "verdict": "BLOCK",
+        "confidence": 0.89,
+        "reasoning": "Regulatory alert level elevated — unusual pattern detected",
+        "severity": "HIGH",
+        "evidence": {
+          "alert_level": "elevated",
+          "pattern_match": "sudden_large_transfer_to_high_risk_jurisdiction"
+        }
+      }
+    ],
+    "layer_interpretation": [
+      {
+        "agent_id": "PatternAgent",
+        "agent_name": "Pattern Recognition",
+        "verdict": "BLOCK",
+        "confidence": 0.81,
+        "reasoning": "Pattern matches known fraud signature #42 (sudden large transfer to tax haven)",
+        "severity": "HIGH",
+        "evidence": {
+          "pattern_id": "FRAUD_42",
+          "similarity_score": 0.87,
+          "historical_fraud_rate": 0.94
+        }
+      },
+      {
+        "agent_id": "SentimentAgent",
+        "agent_name": "Sentiment Analysis",
+        "verdict": "HOLD",
+        "confidence": 0.62,
+        "reasoning": "No negative sentiment in transaction metadata, but context is suspicious",
+        "severity": "MED",
+        "evidence": {
+          "sentiment_score": -0.15,
+          "threshold": -0.30
+        }
+      },
+      {
+        "agent_id": "PredictionAgent",
+        "agent_name": "Predictive Model",
+        "verdict": "BLOCK",
+        "confidence": 0.85,
+        "reasoning": "ML model predicts 87% probability this is fraudulent",
+        "severity": "HIGH",
+        "evidence": {
+          "fraud_probability": 0.87,
+          "model_accuracy": 0.92,
+          "confidence_interval": [0.84, 0.90]
+        }
+      }
+    ],
+    "layer_proof": [
+      {
+        "agent_id": "ProofConsistencyAgent",
+        "agent_name": "Proof Consistency",
+        "verdict": "BLOCK",
+        "confidence": 0.79,
+        "reasoning": "All high-confidence agents agree on BLOCK — consensus strong",
+        "severity": "HIGH",
+        "evidence": {
+          "agents_voting_block": 4,
+          "agents_voting_hold": 2,
+          "agents_voting_allow": 0,
+          "consensus_strength": 0.67
+        }
+      },
+      {
+        "agent_id": "TraceIntegrityAgent",
+        "agent_name": "Trace Integrity",
+        "verdict": "BLOCK",
+        "confidence": 0.88,
+        "reasoning": "All audit logs consistent — no tampering detected",
+        "severity": "HIGH",
+        "evidence": {
+          "merkle_root_valid": true,
+          "timestamp_valid": true,
+          "signature_valid": true
+        }
+      }
+    ],
+    "layer_governance": [
+      {
+        "agent_id": "PolicyScopeAgent",
+        "agent_name": "Policy Scope",
+        "verdict": "BLOCK",
+        "confidence": 0.90,
+        "reasoning": "Transaction violates AML policy #3 (large transfer to high-risk jurisdiction)",
+        "severity": "HIGH",
+        "evidence": {
+          "policy_id": "AML_3",
+          "violation_type": "high_risk_jurisdiction_transfer",
+          "amount_threshold": 100000,
+          "transaction_amount": 250000
+        }
+      },
+      {
+        "agent_id": "HumanOverrideEligibilityAgent",
+        "agent_name": "Human Override Check",
+        "verdict": "HOLD",
+        "confidence": 0.75,
+        "reasoning": "Transaction eligible for human review — no automatic block",
+        "severity": "MED",
+        "evidence": {
+          "eligible_for_override": true,
+          "required_approvers": 2,
+          "escalation_level": "senior_compliance"
+        }
+      }
+    ]
+  },
+
+  "sigma_engine_processing": {
+    "version": "18.9.1",
+    "config": {
+      "tau_min": 0.05,
+      "tau_max": 5.0,
+      "accel_limit": 0.60,
+      "coherence_check": true
+    },
+    "input_metrics": {
+      "raw_confidence_mean": 0.78,
+      "raw_confidence_std": 0.12,
+      "agent_count": 11,
+      "layer_distribution": {
+        "observation": 4,
+        "interpretation": 3,
+        "proof": 2,
+        "governance": 2
+      }
+    },
+    "stabilization_applied": {
+      "vanishing_acceleration": {
+        "applied": true,
+        "max_delta_confidence": 0.08,
+        "limit_enforced": 0.60,
+        "agents_affected": 0
+      },
+      "velocity_band_control": {
+        "applied": true,
+        "tau_computed": 0.32,
+        "within_bounds": true,
+        "agents_adjusted": 2
+      },
+      "coherence_stationarity": {
+        "applied": true,
+        "state_hash_t": "a3f2e1d9c8b7a6f5",
+        "state_hash_t_minus_1": "b4g3f2e0d9c8b7a6",
+        "hash_changed": true,
+        "loop_detected": false
+      }
+    },
+    "output_metrics": {
+      "stabilized_confidence_mean": 0.79,
+      "stabilized_confidence_std": 0.10,
+      "confidence_variance_reduction": 0.17,
+      "agents_filtered": 0,
+      "contradictions_resolved": 1
+    },
+    "stabilized_votes": {
+      "BLOCK": 0.82,
+      "HOLD": 0.15,
+      "ALLOW": 0.03
+    }
+  },
+
+  "kernel_x108_decision": {
+    "decision_id": "DEC_20260403_001_BANKING",
+    "kernel_version": "1.4.0",
+    "market_verdict": "BLOCK",
+    "x108_gate": "DENY",
+    "reason_code": "CONSENSUS_STRONG_FRAUD_SIGNAL",
+    "severity": "HIGH",
+    "confidence": 0.82,
+    
+    "decision_logic": {
+      "rule_applied": "AML_POLICY_3",
+      "rule_description": "Large transfer to high-risk jurisdiction",
+      "consensus_threshold": 0.70,
+      "consensus_achieved": 0.82,
+      "override_eligible": true,
+      "override_required_approvers": 2
+    },
+
+    "agent_votes_summary": {
+      "total_agents": 11,
+      "voting_block": 7,
+      "voting_hold": 3,
+      "voting_allow": 1,
+      "consensus_percentage": 0.64,
+      "unanimous": false,
+      "dissent_agents": [
+        {
+          "agent_id": "VolatilityAgent",
+          "vote": "HOLD",
+          "confidence": 0.55,
+          "reason": "Market volatility not critical"
+        }
+      ]
+    },
+
+    "attestation": {
+      "timestamp": "2026-04-03T14:32:16Z",
+      "trace_id": "TRACE_20260403_001_BANKING",
+      "attestation_ref": "RFC3161:20260403143216Z",
+      "merkle_root": "8f2e7d1c9a3b5f6e4d2c1a0b9e8f7d6c",
+      "signature": "ECDSA_P256_SHA256_SIGNATURE_HERE",
+      "signer": "Obsidia_Kernel_v1.4.0",
+      "timestamp_authority": "TSA.obsidia.io"
+    },
+
+    "audit_trail": {
+      "created_at": "2026-04-03T14:32:16Z",
+      "processed_by": "GuardX108.decide()",
+      "processing_time_ms": 127,
+      "input_hash": "SHA256_INPUT_HASH",
+      "output_hash": "SHA256_OUTPUT_HASH",
+      "immutable": true
+    }
+  },
+
+  "execution_outcome": {
+    "action": "BLOCK_TRANSACTION",
+    "status": "EXECUTED",
+    "timestamp": "2026-04-03T14:32:17Z",
+    "notification_sent": true,
+    "customer_notification": {
+      "type": "TRANSACTION_BLOCKED",
+      "message": "Your transaction has been blocked for compliance review. Please contact your bank.",
+      "reference": "DEC_20260403_001_BANKING"
+    },
+    "compliance_notification": {
+      "type": "ALERT_FRAUD_DETECTED",
+      "severity": "HIGH",
+      "assigned_to": "compliance_team_banking",
+      "required_action": "HUMAN_REVIEW_REQUIRED",
+      "escalation_level": "SENIOR_COMPLIANCE"
+    }
+  },
+
+  "verification_checklist": {
+    "kernel_determinism": {
+      "status": "VERIFIED",
+      "check": "Same input always produces same decision",
+      "result": true
+    },
+    "agent_consensus": {
+      "status": "VERIFIED",
+      "check": "Consensus > 0.70 threshold",
+      "result": true,
+      "value": 0.82
+    },
+    "sigma_stability": {
+      "status": "VERIFIED",
+      "check": "No vanishing acceleration detected",
+      "result": true
+    },
+    "merkle_integrity": {
+      "status": "VERIFIED",
+      "check": "Merkle root matches audit logs",
+      "result": true
+    },
+    "rfc3161_timestamp": {
+      "status": "VERIFIED",
+      "check": "Timestamp authority signature valid",
+      "result": true
+    },
+    "audit_trail_complete": {
+      "status": "VERIFIED",
+      "check": "All steps logged and immutable",
+      "result": true
+    }
+  },
+
+  "metadata": {
+    "scenario_type": "banking_fraud_detection",
+    "difficulty": "high",
+    "expected_verdict": "BLOCK",
+    "educational_value": "Demonstrates consensus-driven decision making with Sigma stabilization",
+    "test_coverage": [
+      "test_agents_functional.py",
+      "test_invariants_against_engine.py",
+      "test_sigma_v18_9.py",
+      "test_consensus_split.py"
+    ]
+  }
+}
