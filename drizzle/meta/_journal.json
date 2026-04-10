@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772654145436,
+      "tag": "0000_cute_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772654364402,
+      "tag": "0001_productive_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772754121430,
+      "tag": "0002_real_la_nuit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1772776625027,
+      "tag": "0003_unusual_jean_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1772779217473,
+      "tag": "0004_volatile_blue_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1772780510188,
+      "tag": "0005_mature_chamber",
+      "breakpoints": true
+    }
+  ]
+}
