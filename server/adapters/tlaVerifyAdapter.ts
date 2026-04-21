@@ -1,6 +1,6 @@
 /**
  * TLA Verify Adapter
- * Branchement réel sur vérification TLA externe
+ * Branchement rÃ©el sur vÃ©rification TLA externe
  */
 
 import { spawnSync } from "child_process";
@@ -9,7 +9,7 @@ import path from "path";
 
 export interface TLAVerificationResult {
   decision_id: string;
-  target: "X108.tla" | "DistributedX108.tla";
+  target: "X108.tla" | "ObsidiaDistX108A12.tla";
   status: "verified" | "incomplete" | "failed";
   verified: boolean;
   trace_path: string | null;
@@ -26,11 +26,11 @@ export function callRealTLAVerify(
   decision_id: string,
   trace_path: string,
   vars_path: string,
-  target: "X108.tla" | "DistributedX108.tla" = "X108.tla"
+  target: "X108.tla" | "ObsidiaDistX108A12.tla" = "X108.tla"
 ): TLAVerificationResult {
   const config = getTLAConfig();
 
-  // Si TLA est désactivé, retourner incomplete honnêtement
+  // Si TLA est dÃ©sactivÃ©, retourner incomplete honnÃªtement
   if (!config.enabled) {
     return {
       decision_id,
@@ -48,14 +48,14 @@ export function callRealTLAVerify(
     };
   }
 
-  // Appeler le script Python réel
+  // Appeler le script Python rÃ©el
   try {
     const scriptPath = path.join(
       process.cwd(),
       "server/python_agents/verify_tla.py"
     );
 
-    const result = spawnSync("python3", [scriptPath, decision_id, trace_path, vars_path, target], {
+    const result = spawnSync("py", ["-3", scriptPath, decision_id, trace_path, vars_path, target], {
       timeout: config.timeout,
       encoding: "utf-8",
     });
@@ -70,7 +70,7 @@ export function callRealTLAVerify(
         vars_path,
         stdout_path: null,
         stderr_path: null,
-        command: `python3 ${scriptPath}`,
+        command: `py -3 ${scriptPath}`,
         stdout: "",
         stderr: result.error.message,
         reason: `Script execution failed: ${result.error.message}`,
@@ -91,7 +91,7 @@ export function callRealTLAVerify(
         vars_path,
         stdout_path: null,
         stderr_path: null,
-        command: `python3 ${scriptPath}`,
+        command: `py -3 ${scriptPath}`,
         stdout: result.stdout,
         stderr: result.stderr || "",
         reason: `Failed to parse script output: ${e}`,
@@ -114,3 +114,7 @@ export function callRealTLAVerify(
     };
   }
 }
+
+
+
+

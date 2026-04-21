@@ -6,7 +6,7 @@ TLA passe en verified pour de vrai
 Sortie :
 - TLC détecté et exécuté
 - X108.tla exécuté
-- DistributedX108.tla exécuté (si applicable)
+- ObsidiaDistX108A12.tla exécuté (si applicable)
 - rapport canonique
 - verify.json
 
@@ -156,7 +156,7 @@ def phase2_tlc_real(decision_id: str, trace_path: str, vars_path: str, output_di
     # 3. Chercher specs TLA+
     spec_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'formal', 'tla')
     x108_spec = os.path.join(spec_dir, 'X108.tla')
-    distributed_spec = os.path.join(spec_dir, 'DistributedX108.tla')
+    distributed_spec = os.path.join(spec_dir, 'ObsidiaDistX108A12.tla')
     
     results = []
     
@@ -169,9 +169,9 @@ def phase2_tlc_real(decision_id: str, trace_path: str, vars_path: str, output_di
     else:
         print(f"⚠️ X108.tla not found: {x108_spec}")
     
-    # 5. Exécuter TLC sur DistributedX108.tla (si applicable)
+    # 5. Exécuter TLC sur ObsidiaDistX108A12.tla (si applicable)
     if os.path.exists(distributed_spec):
-        print(f"Executing TLC on DistributedX108.tla...")
+        print(f"Executing TLC on ObsidiaDistX108A12.tla...")
         result = run_tlc_on_spec(distributed_spec, output_dir)
         results.append(result)
         print(f"  Result: {result['status']}")

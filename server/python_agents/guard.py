@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import uuid
@@ -15,6 +15,27 @@ class GuardConfig:
     max_contradictions_before_block: int = 2
 
 
+def _to_float(value, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _to_bool(value, default: bool = False) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return default
+
+
 class GuardX108:
     def __init__(self, config: GuardConfig | None = None) -> None:
         self.config = config or GuardConfig()
@@ -24,10 +45,34 @@ class GuardX108:
         unknown_count = len(aggregate.unknowns)
         risk_count = len(aggregate.risk_flags)
 
+        metrics = dict(aggregate.extra_metrics or {})
+
+        tau = max(
+            0.0,
+            _to_float(
+                metrics.get("min_required_elapsed_s", metrics.get("tau", 0.0)),
+                0.0,
+            ),
+        )
+        elapsed = max(
+            0.0,
+            _to_float(
+                metrics.get("elapsed_s", metrics.get("elapsed", tau if tau > 0 else 0.0)),
+                tau if tau > 0 else 0.0,
+            ),
+        )
+        irr = _to_bool(metrics.get("irr", metrics.get("irreversible", tau > 0)), tau > 0)
+
+        temporal_hold = irr and tau > 0 and elapsed < tau
+
         if contradiction_count >= self.config.max_contradictions_before_block or "FRAUD_PATTERN" in aggregate.risk_flags:
             gate = X108Gate.BLOCK
             reason = "CONTRADICTION_THRESHOLD_REACHED"
             severity = Severity.S4
+        elif temporal_hold:
+            gate = X108Gate.HOLD
+            reason = "X108_TEMPORAL_GATE_ACTIVE"
+            severity = Severity.S2
         elif unknown_count > self.config.max_unknowns_before_hold or aggregate.confidence < self.config.hold_confidence_floor:
             gate = X108Gate.HOLD
             reason = "UNKNOWNS_OR_CONFIDENCE_LOW"
@@ -47,7 +92,6 @@ class GuardX108:
         ticket_id = uuid.uuid4().hex[:16] if ticket_required else None
         attestation_ref = hashlib.sha256("|".join(aggregate.evidence_refs).encode("utf-8")).hexdigest()[:24] if aggregate.evidence_refs else None
 
-        # Build per-agent vote map for frontend display — keyed by agent_id
         agent_votes_map = {
             v.agent_id: {
                 "confidence": round(v.confidence, 4),
@@ -70,6 +114,11 @@ class GuardX108:
             unknowns=aggregate.unknowns,
             risk_flags=aggregate.risk_flags,
             x108_gate=gate.value,
+            x108={
+                "elapsed": elapsed,
+                "tau": tau,
+                "irr": irr,
+            },
             reason_code=reason,
             severity=severity.value,
             decision_id=decision_id,

@@ -83,7 +83,7 @@ end Obsidia
   }
 
   // ─── 2. TLA+ specifications ────────────────────────────────────────────────
-  const tlaFiles = ["X108.tla", "DistributedX108.tla"];
+  const tlaFiles = ["X108.tla", "ObsidiaDistX108A12.tla"];
   for (const f of tlaFiles) {
     const tlaPath = repoPath("tla", f);
     if (safeExists(tlaPath)) {

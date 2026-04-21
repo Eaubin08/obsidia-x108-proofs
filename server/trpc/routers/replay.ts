@@ -1,11 +1,15 @@
-/**
+﻿/**
  * Replay Router
- * Endpoint tRPC pour vérification replay avec les bons arguments
+ * Endpoint tRPC pour vÃ©rification replay avec les bons arguments
  */
 
 import { z } from "zod";
 import { publicProcedure, router } from "../index";
 import { spawnSync } from "child_process";
+
+const isWin = process.platform === "win32";
+const PYTHON_CMD = isWin ? "py" : "python3";
+const pyArgs = (args: string[]) => (isWin ? ["-3.11", ...args] : args);
 import path from "path";
 import fs from "fs";
 import { getAuditLog } from "../../audit/auditLog";
@@ -15,7 +19,7 @@ export const replayRouter = router({
     .input(z.object({ decision_id: z.string() }))
     .query(({ input }) => {
       try {
-        // Résoudre les chemins réels des artefacts
+        // RÃ©soudre les chemins rÃ©els des artefacts
         const auditLog = getAuditLog();
         const entry = auditLog.getByDecisionId(input.decision_id);
         
@@ -30,12 +34,19 @@ export const replayRouter = router({
           };
         }
         
-        // Chemins réels
-        const auditLogPath = path.join(process.cwd(), "traces/audit/audit.jsonl");
-        const envelopePath = path.join(process.cwd(), "traces/canonical", `${input.decision_id}.envelope.json`);
+        // Chemins rÃ©els
+        const auditLogPath = path.join(process.cwd(), "traces", "audit", "audit.jsonl");
+const canonicalDir = path.join(process.cwd(), "traces", "canonical");
+        let envelopePath = path.join(canonicalDir, `${input.decision_id}.envelope.json`);
+if (!fs.existsSync(envelopePath)) {
+  const altEnvelopePath = path.join(canonicalDir, `${input.decision_id}.json`);
+  if (fs.existsSync(altEnvelopePath)) {
+    envelopePath = altEnvelopePath;
+  }
+}
         const traceTlaPath = path.join(process.cwd(), "traces/tla", input.decision_id, "trace.json");
         
-        // Vérifier que les fichiers existent
+        // VÃ©rifier que les fichiers existent
         if (!fs.existsSync(auditLogPath)) {
           return {
             decision_id: input.decision_id,
@@ -58,19 +69,32 @@ export const replayRouter = router({
           };
         }
         
-        // trace.json est optionnel
+        // trace.json requis par verify_replay.py
+if (!fs.existsSync(traceTlaPath)) {
+  const envelopeJson = JSON.parse(fs.readFileSync(envelopePath, "utf-8"));
+  fs.mkdirSync(path.dirname(traceTlaPath), { recursive: true });
+  fs.writeFileSync(
+    traceTlaPath,
+    JSON.stringify({
+      decision_id: input.decision_id,
+      trace_id: envelopeJson.trace_id ?? null,
+      kernel_verdict: envelopeJson.kernel_verdict ?? envelopeJson.x108_gate ?? null,
+      consensus_verdict: envelopeJson.consensus_verdict ?? envelopeJson.x108_gate ?? null,
+      x108_gate: envelopeJson.x108_gate ?? null,
+      generated_by: "replay_router_fallback_aligned"
+    }, null, 2),
+    "utf-8"
+  );
+}
         const scriptPath = path.join(
           process.cwd(),
           "server/python_agents/verify_replay.py"
         );
         
         // Appeler le script avec les bons arguments
-        const args = [scriptPath, auditLogPath, envelopePath];
-        if (fs.existsSync(traceTlaPath)) {
-          args.push(traceTlaPath);
-        }
-        
-        const result = spawnSync("python3", args, {
+        const args = [scriptPath, auditLogPath, envelopePath, traceTlaPath];
+                
+        const result = spawnSync(PYTHON_CMD, pyArgs(args), {
           timeout: 30000,
           encoding: "utf-8",
         });
@@ -111,3 +135,7 @@ export const replayRouter = router({
       }
     }),
 });
+
+
+
+

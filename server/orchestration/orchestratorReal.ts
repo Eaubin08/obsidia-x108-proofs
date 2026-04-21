@@ -1,6 +1,10 @@
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 /*
- * Orchestrator Real — Patch cible
- * Flux réel minimal :
+ * Orchestrator Real â€” Patch cible
+ * Flux rÃ©el minimal :
  * pipeline -> audit -> sigma -> merkle -> rfc -> tla export -> output
  */
 
@@ -74,11 +78,11 @@ export function orchestrateReal(
   const warnings: string[] = [];
 
   try {
-    // 1) Pipeline réel
+    // 1) Pipeline rÃ©el
     const rawEnvelope = runCanonicalPipeline(domain, domainState);
     const pipelineAt = Date.now();
 
-    // 2) IDs : on garde ceux du pipeline s'ils existent, sinon on les complète
+    // 2) IDs : on garde ceux du pipeline s'ils existent, sinon on les complÃ¨te
     const ids = (!rawEnvelope.decision_id || !rawEnvelope.trace_id)
       ? generateDecisionIds(domain, domainState as unknown as Record<string, unknown>, false)
       : null;
@@ -122,7 +126,7 @@ export function orchestrateReal(
       warnings.push("python pipeline unavailable or degraded");
     }
 
-    // 3) Audit log réel
+    // 3) Audit log rÃ©el
     const auditLog = getAuditLog();
     const auditEntry = auditLog.append(
       envelope.decision_id,
@@ -143,13 +147,13 @@ export function orchestrateReal(
     const auditAt = Date.now();
     envelope.evidence_refs = [...envelope.evidence_refs, `audit:${auditEntry.hash}`];
 
-    // 4) Sigma réel avec enveloppe complète (pas heuristiques locales)
+    // 4) Sigma rÃ©el avec enveloppe complÃ¨te (pas heuristiques locales)
     const sigma = callRealSigma(envelope);
     const sigmaAt = Date.now();
     envelope.sigma = sigma;
     if (envelope.timestamps) envelope.timestamps.sigma_at = sigmaAt;
 
-    // 5) Merkle / verify_all réels
+    // 5) Merkle / verify_all rÃ©els
     const attestation = callRealMerkleVerify(envelope.decision_id);
     const verifyAll = callRealVerifyAll();
     const merkleAt = Date.now();
@@ -170,7 +174,7 @@ export function orchestrateReal(
       warnings.push("merkle root failed");
     }
 
-    // 6) RFC3161 honnête
+    // 6) RFC3161 honnÃªte
     let rfc3161: RFC3161Token | null = null;
     if (attestation.merkle_root && attestation.status === "verified") {
       rfc3161 = callRealRFC3161TSA(envelope.decision_id, attestation.merkle_root);
@@ -190,11 +194,24 @@ export function orchestrateReal(
     }
     const rfc3161At = Date.now();
 
-    // 7) Export TLA réel depuis l'enveloppe
+    // 7) Export TLA rÃ©el depuis l'enveloppe
+    
+    // Persistance de l'envelope canonique sur disque pour replay/provenance
+    const canonicalDir = path.join(process.cwd(), "traces", "canonical");
+    fs.mkdirSync(canonicalDir, { recursive: true });
+    const canonicalEnvelopePath = path.join(
+      canonicalDir,
+      `${envelope.decision_id}.envelope.json`
+    );
+    fs.writeFileSync(
+      canonicalEnvelopePath,
+      JSON.stringify(envelope, null, 2),
+      "utf-8"
+    );
     const tlaExport = exportTLAFromEnvelope(envelope);
     const tlaAt = Date.now();
 
-    // Ajouter TLA evidence_refs si export réussi
+    // Ajouter TLA evidence_refs si export rÃ©ussi
     if (tlaExport && typeof tlaExport === "object" && "status" in tlaExport && tlaExport.status === "exported") {
       if ("output_trace_path" in tlaExport && tlaExport.output_trace_path) {
         envelope.evidence_refs.push(`tla:${tlaExport.output_trace_path}`);
@@ -237,7 +254,7 @@ export function orchestrateReal(
 // ============================================================================
 
 function resolveExportTLAScript(): string | null {
-  // Détection dynamique principale
+  // DÃ©tection dynamique principale
   const candidates = [
     path.join(process.cwd(), "server", "python_agents", "export_tla.py"),
     path.join(__dirname, "..", "python_agents", "export_tla.py"),
@@ -311,11 +328,11 @@ function exportTLAFromEnvelope(envelope: CanonicalEnvelope): Record<string, unkn
       reason: "export_tla.py not found",
       input_path: inputPath,
       output_trace_path: outputTracePath,
-      tla_targets: ["X108.tla", "DistributedX108.tla"],
+      tla_targets: ["X108.tla", "ObsidiaDistX108A12.tla"],
     };
   }
 
-  const res = spawnSync("python3", [scriptPath, inputPath, outputTracePath], {
+  const res = spawnSync("py", ["-3", scriptPath, inputPath, outputTracePath], {
     encoding: "utf-8",
     maxBuffer: 10 * 1024 * 1024,
     timeout: 5000,
@@ -332,7 +349,7 @@ function exportTLAFromEnvelope(envelope: CanonicalEnvelope): Record<string, unkn
       vars_path: varsPath,
       stdout: res.stdout ?? "",
       stderr: res.stderr ?? "",
-      tla_targets: ["X108.tla", "DistributedX108.tla"],
+      tla_targets: ["X108.tla", "ObsidiaDistX108A12.tla"],
     };
   }
 
@@ -353,7 +370,7 @@ function exportTLAFromEnvelope(envelope: CanonicalEnvelope): Record<string, unkn
     vars_path: varsPath,
     trace,
     vars,
-    tla_targets: ["X108.tla", "DistributedX108.tla"],
+    tla_targets: ["X108.tla", "ObsidiaDistX108A12.tla"],
     stdout: res.stdout ?? "",
     stderr: res.stderr ?? "",
   };
@@ -389,7 +406,7 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     if (!output.audit_entry.prev_hash) errors.push("audit_entry.prev_hash is missing");
   }
 
-  // 3) Sigma non-décisionnel
+  // 3) Sigma non-dÃ©cisionnel
   if (!output.sigma) {
     errors.push("sigma is missing");
   } else {
@@ -398,7 +415,7 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     if ("x108_gate" in output.sigma) errors.push("sigma should not contain x108_gate");
   }
 
-  // 4) Attestation structurée
+  // 4) Attestation structurÃ©e
   if (!output.attestation) {
     errors.push("attestation is missing");
   } else {
@@ -408,14 +425,14 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     }
   }
 
-  // 5) RFC3161 status honnête
+  // 5) RFC3161 status honnÃªte
   if (output.rfc3161) {
     if (!["verified", "pending", "failed", "incomplete"].includes(output.rfc3161.status ?? "")) {
       errors.push(`rfc3161.status has invalid value: ${output.rfc3161.status}`);
     }
   }
 
-  // 6) TLA export structuré
+  // 6) TLA export structurÃ©
   if (output.tla_export) {
     if (typeof output.tla_export !== "object") {
       errors.push("tla_export is not an object");
@@ -426,7 +443,7 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     }
   }
 
-  // 7) Verify all structuré
+  // 7) Verify all structurÃ©
   if (!output.verify_all) {
     errors.push("verify_all is missing");
   } else {
@@ -435,7 +452,7 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     if (!Array.isArray(output.verify_all.errors)) errors.push("verify_all.errors is not an array");
   }
 
-  // 8) Timestamps cohérents
+  // 8) Timestamps cohÃ©rents
   if (output.timestamps) {
     const t = output.timestamps;
     if (t.started_at > t.pipeline_at) errors.push("timestamps: started_at > pipeline_at");
@@ -450,3 +467,10 @@ export function validateOrchestrationFlow(output: OrchestrationRealOutput): {
     errors,
   };
 }
+
+
+
+
+
+
+

@@ -1,20 +1,27 @@
+﻿import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 /**
  * OS4 Canonical Pipeline Bridge
- * Appelle les agents Python canoniques (Trading/Bank/Ecom + Guard X-108 + méta-agents)
+ * Appelle les agents Python canoniques (Trading/Bank/Ecom + Guard X-108 + mÃ©ta-agents)
  * via child_process.spawnSync sur run_pipeline.py
  *
- * Contrat de sortie : CanonicalDecisionEnvelope (aligné avec Python contracts.py)
+ * Contrat de sortie : CanonicalDecisionEnvelope (alignÃ© avec Python contracts.py)
  * Source : "canonical_framework" si Python OK, "canonical_fallback" si Python DOWN
  */
 import { spawnSync } from "child_process";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BRIDGE_SCRIPT = path.resolve(__dirname, "../python_agents/run_pipeline.py");
-const PYTHON_BIN = "python3.11";
+const isWin = process.platform === "win32";
+const PYTHON_CMD = isWin ? "py" : "python3.11";
+const pyArgs = (args: string[]) => (isWin ? ["-3.11", ...args] : args);
 
-// ─── Contrat canonique enrichi (aligné avec Python CanonicalDecisionEnvelope) ─
+// On sâ€™ancre sur le workspace courant, pas sur __dirname bundle/dist
+const PROJECT_ROOT = process.cwd();
+const BRIDGE_SCRIPT = path.resolve(PROJECT_ROOT, "server", "python_agents", "run_pipeline.py");
+
+// â”€â”€â”€ Contrat canonique enrichi (alignÃ© avec Python CanonicalDecisionEnvelope) â”€
 export interface CanonicalEnvelope {
   domain: "trading" | "bank" | "ecom";
   market_verdict: string;
@@ -34,21 +41,21 @@ export interface CanonicalEnvelope {
   evidence_refs: string[];
   metrics: Record<string, unknown>;
   raw_engine: Record<string, unknown>;
-  // Champs ajoutés côté TS pour traçabilité
   python_available: boolean;
   elapsed_ms: number;
-  // Per-agent vote map: { agent_id -> { confidence, layer, claim, proposed_verdict, risk_flags, severity } }
-  agent_votes?: Record<string, {
-    confidence: number;
-    layer: string;
-    claim: string;
-    proposed_verdict: string;
-    risk_flags: string[];
-    severity: string;
-    contradictions: string[];
-    unknowns: string[];
-  }>;
-  // Champs enrichis par orchestrateur (optionnels)
+  agent_votes?: Record<
+    string,
+    {
+      confidence: number;
+      layer: string;
+      claim: string;
+      proposed_verdict: string;
+      risk_flags: string[];
+      severity: string;
+      contradictions: string[];
+      unknowns: string[];
+    }
+  >;
   kernel_verdict?: "ALLOW" | "HOLD" | "BLOCK";
   consensus_verdict?: "ALLOW" | "HOLD" | "BLOCK";
   x108?: {
@@ -89,7 +96,7 @@ export interface CanonicalEnvelope {
   };
 }
 
-// ─── États par défaut pour chaque domaine ─────────────────────────────────────
+// â”€â”€â”€ Ã‰tats par dÃ©faut pour chaque domaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface TradingState {
   symbol: string;
   prices: number[];
@@ -149,12 +156,37 @@ export interface EcomState {
 }
 
 export type DomainState = TradingState | BankState | EcomState;
+function normalizeState(
+  domain: "trading" | "bank" | "ecom",
+  state: DomainState | Partial<DomainState> | undefined | null
+): DomainState {
+  if (domain === "trading") {
+    return {
+      ...defaultTradingState(),
+      ...((state ?? {}) as Partial<TradingState>),
+    };
+  }
 
-// ─── Fallback local si Python DOWN ────────────────────────────────────────────
+  if (domain === "bank") {
+    return {
+      ...defaultBankState(),
+      ...((state ?? {}) as Partial<BankState>),
+    };
+  }
+
+  return {
+    ...defaultEcomState(),
+    ...((state ?? {}) as Partial<EcomState>),
+  };
+}
+
+
+// â”€â”€â”€ Fallback local si Python DOWN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildFallbackEnvelope(
   domain: "trading" | "bank" | "ecom",
   elapsed_ms: number
 ): CanonicalEnvelope {
+  const now = Date.now();
   return {
     domain,
     market_verdict: "UNAVAILABLE",
@@ -165,8 +197,8 @@ function buildFallbackEnvelope(
     x108_gate: "HOLD",
     reason_code: "PYTHON_ENGINE_OFFLINE",
     severity: "S2",
-    decision_id: `${domain}-fallback-${Date.now()}`,
-    trace_id: `fallback-${Date.now()}`,
+    decision_id: `${domain}-fallback-${now}`,
+    trace_id: `fallback-${now}`,
     ticket_required: false,
     ticket_id: null,
     attestation_ref: null,
@@ -179,7 +211,7 @@ function buildFallbackEnvelope(
   };
 }
 
-// ─── Appel principal du pipeline canonique ────────────────────────────────────
+// â”€â”€â”€ Appel principal du pipeline canonique â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function runCanonicalPipeline(
   domain: "trading" | "bank" | "ecom",
   state: DomainState
@@ -187,13 +219,23 @@ export function runCanonicalPipeline(
   const t0 = Date.now();
 
   try {
+    const normalizedState = normalizeState(domain, state);
+    const stateJson = JSON.stringify(normalizedState);
+
+    if (typeof stateJson !== "string" || !stateJson.trim()) {
+      const elapsed_ms = Date.now() - t0;
+      console.warn(`[canonical] Invalid state before Python for ${domain}:`, state);
+      return buildFallbackEnvelope(domain, elapsed_ms);
+    }
+
     const result = spawnSync(
-      PYTHON_BIN,
-      [BRIDGE_SCRIPT, domain, JSON.stringify(state)],
+      PYTHON_CMD,
+      pyArgs([BRIDGE_SCRIPT, domain, stateJson]),
       {
         encoding: "utf8",
-        timeout: 10_000, // 10s max
-        cwd: path.resolve(__dirname, "../.."),
+        timeout: 10_000,
+        cwd: PROJECT_ROOT,
+        env: process.env,
       }
     );
 
@@ -202,20 +244,23 @@ export function runCanonicalPipeline(
     if (result.error || result.status !== 0) {
       console.warn(
         `[canonical] Python pipeline failed for ${domain}:`,
-        result.stderr || result.error?.message
+        result.stderr?.trim() || result.stdout?.trim() || result.error?.message || `exit=${result.status}`
       );
       return buildFallbackEnvelope(domain, elapsed_ms);
     }
 
     const stdout = result.stdout?.trim();
     if (!stdout) {
+      console.warn(`[canonical] Empty Python stdout for ${domain}`);
       return buildFallbackEnvelope(domain, elapsed_ms);
     }
 
-    const parsed = JSON.parse(stdout) as Omit<CanonicalEnvelope, "python_available" | "elapsed_ms">;
+    const parsed = JSON.parse(stdout) as Omit<CanonicalEnvelope, "python_available" | "elapsed_ms"> & {
+      error?: string;
+    };
 
-    if ("error" in parsed) {
-      console.warn(`[canonical] Python pipeline error for ${domain}:`, (parsed as { error: string }).error);
+    if (parsed.error) {
+      console.warn(`[canonical] Python pipeline error for ${domain}:`, parsed.error);
       return buildFallbackEnvelope(domain, elapsed_ms);
     }
 
@@ -231,7 +276,7 @@ export function runCanonicalPipeline(
   }
 }
 
-// ─── Générateur pseudo-aléatoire déterministe (LCG) ─────────────────────────
+// â”€â”€â”€ GÃ©nÃ©rateur pseudo-alÃ©atoire dÃ©terministe (LCG) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function makeLCG(seed: number) {
   let s = (seed ^ 0xdeadbeef) >>> 0;
   return () => {
@@ -240,27 +285,50 @@ function makeLCG(seed: number) {
   };
 }
 
-// ─── États dynamiques — chaque appel produit un état différent ───────────────
+// â”€â”€â”€ Ã‰tats dynamiques â€” chaque appel produit un Ã©tat diffÃ©rent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function defaultTradingState(seed?: number): TradingState {
   const rng = makeLCG(seed ?? Date.now());
   const n = 21;
-  // Régime aléatoire : bull / bear / range / volatile
   const regime = Math.floor(rng() * 4); // 0=range, 1=bull, 2=bear, 3=volatile
-  const base = 80 + rng() * 120;        // prix de base entre 80 et 200
-  const trend = regime === 1 ? 1.5 + rng() * 2 : regime === 2 ? -(1 + rng() * 2.5) : (rng() - 0.5) * 0.8;
+  const base = 80 + rng() * 120;
+  const trend =
+    regime === 1 ? 1.5 + rng() * 2 :
+    regime === 2 ? -(1 + rng() * 2.5) :
+    (rng() - 0.5) * 0.8;
   const vol = regime === 3 ? 4 + rng() * 6 : 0.5 + rng() * 2;
-  const sentiment = regime === 1 ? 0.4 + rng() * 0.5 : regime === 2 ? -0.5 + rng() * 0.3 : (rng() - 0.5) * 0.6;
-  const eventRisk = regime === 3 ? 0.5 + rng() * 0.4 : regime === 2 ? 0.3 + rng() * 0.3 : rng() * 0.3;
+  const sentiment =
+    regime === 1 ? 0.4 + rng() * 0.5 :
+    regime === 2 ? -0.5 + rng() * 0.3 :
+    (rng() - 0.5) * 0.6;
+  const eventRisk =
+    regime === 3 ? 0.5 + rng() * 0.4 :
+    regime === 2 ? 0.3 + rng() * 0.3 :
+    rng() * 0.3;
+
   return {
     symbol: "BTCUSDT",
-    prices: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend + (rng() - 0.5) * vol * 2)),
-    highs: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend + vol + rng() * vol)),
-    lows: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend - vol - rng() * vol)),
-    volumes: Array.from({ length: n }, (_, i) => 500 + rng() * 8000),
-    spreads_bps: Array.from({ length: n }, () => regime === 3 ? 10 + rng() * 20 : 2 + rng() * 6),
-    sentiment_scores: Array.from({ length: n }, () => Math.min(1, Math.max(-1, sentiment + (rng() - 0.5) * 0.3))),
-    event_risk_scores: Array.from({ length: n }, () => Math.min(1, Math.max(0, eventRisk + (rng() - 0.5) * 0.15))),
-    btc_reference_prices: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend)),
+    prices: Array.from({ length: n }, (_, i) =>
+      Math.max(1, base + i * trend + (rng() - 0.5) * vol * 2)
+    ),
+    highs: Array.from({ length: n }, (_, i) =>
+      Math.max(1, base + i * trend + vol + rng() * vol)
+    ),
+    lows: Array.from({ length: n }, (_, i) =>
+      Math.max(1, base + i * trend - vol - rng() * vol)
+    ),
+    volumes: Array.from({ length: n }, () => 500 + rng() * 8000),
+    spreads_bps: Array.from({ length: n }, () =>
+      regime === 3 ? 10 + rng() * 20 : 2 + rng() * 6
+    ),
+    sentiment_scores: Array.from({ length: n }, () =>
+      Math.min(1, Math.max(-1, sentiment + (rng() - 0.5) * 0.3))
+    ),
+    event_risk_scores: Array.from({ length: n }, () =>
+      Math.min(1, Math.max(0, eventRisk + (rng() - 0.5) * 0.15))
+    ),
+    btc_reference_prices: Array.from({ length: n }, (_, i) =>
+      Math.max(1, base + i * trend)
+    ),
     exposure: Math.min(0.95, Math.max(0.01, 0.1 + rng() * 0.7)),
     drawdown: Math.min(0.4, Math.max(0, rng() * (regime === 2 ? 0.35 : 0.1))),
     order_book_imbalance: Math.min(0.9, Math.max(0, (rng() - 0.5) * 1.2 + 0.15)),
@@ -271,12 +339,12 @@ export function defaultTradingState(seed?: number): TradingState {
 
 export function defaultBankState(seed?: number): BankState {
   const rng = makeLCG(seed ?? Date.now());
-  // Profil aléatoire : normal / suspect / fraude / gros virement
   const profile = Math.floor(rng() * 4); // 0=normal, 1=suspect, 2=fraude, 3=gros
   const isFraud = profile === 2;
   const isSuspect = profile === 1;
   const isLarge = profile === 3;
   const channels = ["mobile", "web", "branch", "api"] as const;
+
   return {
     transaction_type: isLarge ? "WIRE" : ["TRANSFER", "PAYMENT", "WITHDRAWAL"][Math.floor(rng() * 3)],
     amount: isLarge ? 5000 + rng() * 15000 : isFraud ? 800 + rng() * 3000 : 200 + rng() * 2000,
@@ -302,11 +370,11 @@ export function defaultBankState(seed?: number): BankState {
 
 export function defaultEcomState(seed?: number): EcomState {
   const rng = makeLCG(seed ?? Date.now());
-  // Profil aléatoire : conversion / abandon / fraude / promo
   const profile = Math.floor(rng() * 4); // 0=normal, 1=abandon, 2=fraude, 3=promo
   const isFraud = profile === 2;
   const isAbandonment = profile === 1;
   const isPromo = profile === 3;
+
   return {
     session_id: `sess-${Date.now()}-${Math.floor(rng() * 9999)}`,
     traffic_quality: isFraud ? rng() * 0.35 : 0.45 + rng() * 0.55,
@@ -327,7 +395,7 @@ export function defaultEcomState(seed?: number): EcomState {
   };
 }
 
-// ─── Scénarios prédéfinis par domaine ─────────────────────────────────────────
+// â”€â”€â”€ ScÃ©narios prÃ©dÃ©finis par domaine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type ScenarioId =
   | "flash_crash" | "bull_run" | "range_bound" | "high_volatility"
   | "large_transfer" | "fraud_attempt" | "normal_payment" | "limit_breach"
@@ -338,7 +406,6 @@ export function buildStateFromScenario(
   scenarioId: ScenarioId,
   seed: number
 ): DomainState {
-  // Déterministe via seed (simple LCG pour variation)
   const rng = (n: number) => ((seed * 1664525 + n * 1013904223) & 0xffffffff) / 0xffffffff;
 
   if (domain === "trading") {
@@ -349,11 +416,18 @@ export function buildStateFromScenario(
     const base = 100 + rng(1) * 50;
     const trend = isFlashCrash ? -3 : isBull ? 2 : 0.5;
     const noise = isHighVol ? 5 : 1;
+
     return {
       symbol: "BTCUSDT",
-      prices: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend + (rng(i) - 0.5) * noise * 2)),
-      highs: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend + noise + rng(i + 100) * noise)),
-      lows: Array.from({ length: n }, (_, i) => Math.max(1, base + i * trend - noise - rng(i + 200) * noise)),
+      prices: Array.from({ length: n }, (_, i) =>
+        Math.max(1, base + i * trend + (rng(i) - 0.5) * noise * 2)
+      ),
+      highs: Array.from({ length: n }, (_, i) =>
+        Math.max(1, base + i * trend + noise + rng(i + 100) * noise)
+      ),
+      lows: Array.from({ length: n }, (_, i) =>
+        Math.max(1, base + i * trend - noise - rng(i + 200) * noise)
+      ),
       volumes: Array.from({ length: n }, (_, i) => 1000 + rng(i + 300) * 5000),
       spreads_bps: Array(n).fill(isHighVol ? 15 : 4),
       sentiment_scores: Array(n).fill(isFlashCrash ? -0.5 : isBull ? 0.7 : 0.2),
@@ -371,6 +445,7 @@ export function buildStateFromScenario(
     const isFraud = scenarioId === "fraud_attempt";
     const isLarge = scenarioId === "large_transfer";
     const isLimit = scenarioId === "limit_breach";
+
     return {
       transaction_type: isLarge ? "WIRE" : "TRANSFER",
       amount: isLarge ? 8000 : isLimit ? 5500 : 1200,
@@ -381,7 +456,7 @@ export function buildStateFromScenario(
       available_cash: 8500,
       historical_avg_amount: 300,
       behavior_shift_score: isFraud ? 0.85 : 0.25,
-      fraud_score: isFraud ? 0.9 : 0.10,
+      fraud_score: isFraud ? 0.9 : 0.1,
       policy_limit: 5000,
       affordability_score: isLarge ? 0.4 : 0.9,
       urgency_score: isFraud ? 0.9 : 0.2,
@@ -394,10 +469,10 @@ export function buildStateFromScenario(
     } as BankState;
   }
 
-  // ecom
   const isHighRoas = scenarioId === "high_roas";
   const isLowMargin = scenarioId === "low_margin";
   const isFraudCheckout = scenarioId === "fraud_checkout";
+
   return {
     session_id: `sess-${seed}`,
     traffic_quality: isFraudCheckout ? 0.2 : 0.8,
