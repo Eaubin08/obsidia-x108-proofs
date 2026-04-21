@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # Service principal OBSIDIA
+  obsidia:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: obsidia-platform
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///app/data/obsidia.db}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
+      - VITE_APP_ID=${VITE_APP_ID:-obsidia-dev}
+      - OAUTH_SERVER_URL=${OAUTH_SERVER_URL:-https://api.manus.im}
+      - VITE_OAUTH_PORTAL_URL=${VITE_OAUTH_PORTAL_URL:-https://portal.manus.im}
+      - OWNER_OPEN_ID=${OWNER_OPEN_ID:-owner-dev}
+      - OWNER_NAME=${OWNER_NAME:-OBSIDIA Owner}
+      - BUILT_IN_FORGE_API_URL=${BUILT_IN_FORGE_API_URL:-https://api.manus.im}
+      - BUILT_IN_FORGE_API_KEY=${BUILT_IN_FORGE_API_KEY:-}
+      - VITE_FRONTEND_FORGE_API_KEY=${VITE_FRONTEND_FORGE_API_KEY:-}
+      - VITE_FRONTEND_FORGE_API_URL=${VITE_FRONTEND_FORGE_API_URL:-https://api.manus.im}
+      - RFC3161_TSA_URL=${RFC3161_TSA_URL:-http://timestamp.authority:3161}
+      - TLA_SPECS_PATH=/app/formal/tla
+      - TLC_PATH=/opt/tla/tlc.jar
+    volumes:
+      - ./traces:/app/traces
+      - ./data:/app/data
+      - ./formal:/app/formal
+    depends_on:
+      - tsa-authority
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - obsidia-net
+    restart: unless-stopped
+
+  # Service TSA (Time Stamp Authority) pour RFC3161
+  tsa-authority:
+    image: alpine:latest
+    container_name: obsidia-tsa
+    ports:
+      - "3161:3161"
+    volumes:
+      - ./tsa:/etc/tsa
+      - ./traces/rfc3161:/var/tsa/traces
+    environment:
+      - TSA_PORT=3161
+    command: |
+      sh -c '
+      apk add --no-cache openssl socat
+      
+      # Générer certificat auto-signé si absent
+      if [ ! -f /etc/tsa/tsa.crt ]; then
+        openssl req -new -x509 -keyout /etc/tsa/tsa.key -out /etc/tsa/tsa.crt \
+          -days 365 -nodes -subj "/CN=tsa-authority"
+      fi
+      
+      # Démarrer TSA simple (écoute sur port 3161)
+      socat TCP-LISTEN:3161,reuseaddr,fork EXEC:"/bin/sh -c \"cat | openssl ts -reply -queryfile /dev/stdin -inkey /etc/tsa/tsa.key -signer /etc/tsa/tsa.crt -out /dev/stdout\""
+      '
+    networks:
+      - obsidia-net
+    restart: unless-stopped
+
+  # Service optionnel : PostgreSQL pour persistance réelle
+  postgres:
+    image: postgres:16-alpine
+    container_name: obsidia-db
+    environment:
+      - POSTGRES_DB=obsidia
+      - POSTGRES_USER=obsidia
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-obsidia-dev-pass}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - obsidia-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U obsidia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+
+networks:
+  obsidia-net:
+    driver: bridge
