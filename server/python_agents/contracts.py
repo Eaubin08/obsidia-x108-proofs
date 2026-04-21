@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -84,6 +84,7 @@ class CanonicalDecisionEnvelope:
     unknowns: List[str]
     risk_flags: List[str]
     x108_gate: str
+    x108: dict | None
     reason_code: str
     severity: str
     decision_id: str
@@ -158,3 +159,5 @@ class EcomState:
     ad_spend: float
     order_value: float
     x108_compliance_rate: float
+
+

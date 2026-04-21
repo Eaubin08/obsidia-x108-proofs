@@ -1,10 +1,10 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
-import { appRouter } from "../routers";
+import { appRouter } from "../trpc/routers/_app";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { initDecisionStream } from "../decisionStream";
@@ -45,8 +45,8 @@ async function startServer() {
       createContext,
     })
   );
-  // Python Engine proxy — tente de joindre le serveur Obsidia-lab-trad (port 3001)
-  // En prod, retourne une réponse JSON claire si le serveur Python est indisponible
+  // Python Engine proxy â€” tente de joindre le serveur Obsidia-lab-trad (port 3001)
+  // En prod, retourne une rÃ©ponse JSON claire si le serveur Python est indisponible
   app.post("/api/python-engine/decision", async (req, res) => {
     try {
       const controller = new AbortController();
@@ -61,17 +61,17 @@ async function startServer() {
       const data = await upstream.json();
       res.json(data);
     } catch {
-      // Serveur Python indisponible — retourner une réponse JSON structurée
+      // Serveur Python indisponible â€” retourner une rÃ©ponse JSON structurÃ©e
       res.status(503).json({
         available: false,
         decision: "UNAVAILABLE",
-        reasons: ["Le serveur Obsidia-lab-trad (port 3001) n'est pas démarré dans cet environnement."],
+        reasons: ["Le serveur Obsidia-lab-trad (port 3001) n'est pas dÃ©marrÃ© dans cet environnement."],
         message: "Moteur Python OS0/OS1/OS2 non disponible en production. Utilisez le moteur TypeScript (OS4).",
       });
     }
   });
 
-  // Python Engine proxy — replay par traceId
+  // Python Engine proxy â€” replay par traceId
   app.get("/api/python-engine/replay/:traceId", async (req, res) => {
     const { traceId } = req.params;
     try {
@@ -103,7 +103,7 @@ async function startServer() {
     }
   });
 
-  // Python Engine proxy — audit chain (historique des décisions)
+  // Python Engine proxy â€” audit chain (historique des dÃ©cisions)
   app.get("/api/python-engine/audit/chain", async (req, res) => {
     const limit = parseInt(String(req.query.limit ?? "50"), 10);
     const domain = req.query.domain as string | undefined;
@@ -173,3 +173,4 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+

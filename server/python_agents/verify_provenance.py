@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import sys
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-VALID_PREFIXES = ("audit:", "merkle:", "seal:", "tla:", "tla_vars:", "rfc3161:", "sigma:")
+VALID_PREFIXES = ("audit:", "merkle:", "seal:", "tla:", "tla_vars:", "rfc3161:", "sigma:", "meta:")
 
 def load_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -26,6 +27,8 @@ def load_audit_entry(log_path: Path, decision_id: str) -> Optional[Dict[str, Any
 
 def ref_is_resolvable(ref: str) -> bool:
     if ref.startswith(VALID_PREFIXES):
+        return True
+    if re.fullmatch(r"[0-9a-fA-F]{16,64}", ref):
         return True
     return Path(ref).exists()
 
@@ -132,3 +135,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

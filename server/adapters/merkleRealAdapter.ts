@@ -1,5 +1,5 @@
-/**
- * Merkle Real Adapter — Branchement RÉEL sur verify_merkle.py
+﻿/**
+ * Merkle Real Adapter â€” Branchement RÃ‰EL sur verify_merkle.py
  * 
  * Appelle les VRAIS scripts Merkle/Seal
  * Pas de simulation, pas de Merkle tree local, pas de faux seal.
@@ -21,14 +21,14 @@ export interface MerkleRealAttestation {
 }
 
 /**
- * Appelle le VRAI verify_merkle.py pour attester une décision
- * Retour honnête : merkle_root/seal null si pas d'artefact réel
+ * Appelle le VRAI verify_merkle.py pour attester une dÃ©cision
+ * Retour honnÃªte : merkle_root/seal null si pas d'artefact rÃ©el
  */
 export function callRealMerkleVerify(decisionId: string): MerkleRealAttestation {
   const startedAt = Date.now();
   
   try {
-    // Détection dynamique du repo
+    // DÃ©tection dynamique du repo
     const repoRoot = findObsidiaRepoRoot();
     if (!repoRoot) {
       return {
@@ -47,14 +47,14 @@ export function callRealMerkleVerify(decisionId: string): MerkleRealAttestation 
     const proofsDir = path.join(repoRoot, "proofs");
     
     // Appeler le script Python
-    const result = spawnSync("python3", [verifyScript], {
+    const result = spawnSync("py", ["-3", verifyScript], {
       encoding: "utf-8",
       cwd: proofsDir,
       maxBuffer: 10 * 1024 * 1024,
       timeout: 5000,
     });
     
-    // Lire les artefacts réels produits
+    // Lire les artefacts rÃ©els produits
     const merkleRootFile = path.join(proofsDir, "merkle_root.json");
     
     let merkleRoot: string | null = null;
@@ -103,7 +103,7 @@ export function callRealMerkleVerify(decisionId: string): MerkleRealAttestation 
 }
 
 /**
- * Appelle verify_all.py pour vérifier l'intégrité complète
+ * Appelle verify_all.py pour vÃ©rifier l'intÃ©gritÃ© complÃ¨te
  */
 export function callRealVerifyAll(): {
   success: boolean;
@@ -123,7 +123,7 @@ export function callRealVerifyAll(): {
     const verifyAllScript = path.join(repoRoot, "proofs", "verify_all.py");
     const proofsDir = path.join(repoRoot, "proofs");
     
-    const result = spawnSync("python3", [verifyAllScript], {
+    const result = spawnSync("py", ["-3", verifyAllScript], {
       encoding: "utf-8",
       cwd: proofsDir,
       maxBuffer: 10 * 1024 * 1024,
@@ -145,11 +145,17 @@ export function callRealVerifyAll(): {
 }
 
 function findObsidiaRepoRoot(): string | null {
-  // Détection dynamique principale
+  // DÃ©tection dynamique principale
   const possiblePaths = [
-    "../../../obsidia-engine-proof-core",
-    "../../obsidia-engine-proof-core",
-  ];
+  process.cwd(),
+  ".",
+  "../",
+  "../../",
+  "../../../obsidia-engine-proof-core",
+  "../../obsidia-engine-proof-core",
+  "../obsidia-engine-proof-core",
+  "./obsidia-engine-proof-core",
+];
   
   for (const p of possiblePaths) {
     try {
@@ -204,3 +210,8 @@ export function validateMerkleAttestation(attestation: MerkleRealAttestation): {
     errors,
   };
 }
+
+
+
+
+

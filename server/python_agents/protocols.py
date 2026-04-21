@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading
 from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState
@@ -25,18 +25,19 @@ def _apply_meta_agents(aggregate):
 
 
 def run_trading_pipeline(state: TradingState) -> CanonicalDecisionEnvelope:
-    aggregate = aggregate_trading([a.evaluate(state) for a in build_trading_agents()])
+    aggregate = aggregate_trading([a.evaluate(state) for a in build_trading_agents()], state)
     aggregate = _apply_meta_agents(aggregate)
     return GuardX108().decide(aggregate)
 
 
 def run_bank_pipeline(state: BankState) -> CanonicalDecisionEnvelope:
-    aggregate = aggregate_bank([a.evaluate(state) for a in build_bank_agents()])
+    aggregate = aggregate_bank([a.evaluate(state) for a in build_bank_agents()], state)
     aggregate = _apply_meta_agents(aggregate)
     return GuardX108().decide(aggregate)
 
 
 def run_ecom_pipeline(state: EcomState) -> CanonicalDecisionEnvelope:
-    aggregate = aggregate_ecom([a.evaluate(state) for a in build_ecom_agents()])
+    aggregate = aggregate_ecom([a.evaluate(state) for a in build_ecom_agents()], state)
     aggregate = _apply_meta_agents(aggregate)
     return GuardX108().decide(aggregate)
+

@@ -85,7 +85,7 @@ export interface TLAModule {
 }
 
 export function getTLAModules(): TLAModule[] {
-  const tlaFiles = ["X108.tla", "DistributedX108.tla"];
+  const tlaFiles = ["X108.tla", "ObsidiaDistX108A12.tla"];
 
   return tlaFiles.map((file) => {
     const content = readFile(`tla/${file}`);
