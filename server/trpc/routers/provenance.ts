@@ -1,11 +1,15 @@
-/**
+﻿/**
  * Provenance Router
- * Endpoint tRPC pour vérification provenance avec les bons arguments
+ * Endpoint tRPC pour vÃ©rification provenance avec les bons arguments
  */
 
 import { z } from "zod";
 import { publicProcedure, router } from "../index";
 import { spawnSync } from "child_process";
+
+const isWin = process.platform === "win32";
+const PYTHON_CMD = isWin ? "py" : "python3";
+const pyArgs = (args: string[]) => (isWin ? ["-3.11", ...args] : args);
 import path from "path";
 import fs from "fs";
 import { getAuditLog } from "../../audit/auditLog";
@@ -15,7 +19,7 @@ export const provenanceRouter = router({
     .input(z.object({ decision_id: z.string() }))
     .query(({ input }) => {
       try {
-        // Résoudre les chemins réels des artefacts
+        // RÃ©soudre les chemins rÃ©els des artefacts
         const auditLog = getAuditLog();
         const entry = auditLog.getByDecisionId(input.decision_id);
         
@@ -30,11 +34,18 @@ export const provenanceRouter = router({
           };
         }
         
-        // Chemins réels
-        const auditLogPath = path.join(process.cwd(), "traces/audit/audit.jsonl");
-        const envelopePath = path.join(process.cwd(), "traces/canonical", `${input.decision_id}.envelope.json`);
+        // Chemins rÃ©els
+        const auditLogPath = path.join(process.cwd(), "traces", "audit", "audit.jsonl");
+const canonicalDir = path.join(process.cwd(), "traces", "canonical");
+        let envelopePath = path.join(canonicalDir, `${input.decision_id}.envelope.json`);
+if (!fs.existsSync(envelopePath)) {
+  const altEnvelopePath = path.join(canonicalDir, `${input.decision_id}.json`);
+  if (fs.existsSync(altEnvelopePath)) {
+    envelopePath = altEnvelopePath;
+  }
+}
         
-        // Vérifier que les fichiers existent
+        // VÃ©rifier que les fichiers existent
         if (!fs.existsSync(auditLogPath)) {
           return {
             decision_id: input.decision_id,
@@ -63,7 +74,7 @@ export const provenanceRouter = router({
         );
         
         // Appeler le script avec les bons arguments
-        const result = spawnSync("python3", [scriptPath, auditLogPath, envelopePath], {
+        const result = spawnSync(PYTHON_CMD, pyArgs([scriptPath, auditLogPath, envelopePath]), {
           timeout: 30000,
           encoding: "utf-8",
         });
@@ -104,3 +115,5 @@ export const provenanceRouter = router({
       }
     }),
 });
+
+

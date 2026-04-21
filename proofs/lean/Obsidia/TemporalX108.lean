@@ -1,0 +1,11 @@
+import Obsidia.TemporalRaw
+import Obsidia.TemporalBridge
+import Obsidia.TemporalKernel
+
+#print axioms Obsidia.TemporalBridge.canonicalize_preserves_nonneg
+#print axioms Obsidia.TemporalBridge.skew_negative_implies_hold
+#print axioms Obsidia.TemporalKernel.X108_no_act_before_tau
+#print axioms Obsidia.TemporalKernel.X108_after_tau_equals_base
+#print axioms Obsidia.TemporalKernel.X108_kernel_never_blocks
+#print axioms Obsidia.TemporalKernel.X108_reversible_equals_base
+#print axioms Obsidia.TemporalKernel.X108_irreversible_after_tau_equals_base

@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { systemRouter } from "./_core/systemRouter";
 import { COOKIE_NAME } from "@shared/const";
@@ -12,6 +12,8 @@ import { aiRouter } from "./routers/ai";
 import { orchestrationRouter } from "./trpc/routers/orchestration";
 import { auditRouter } from "./trpc/routers/audit";
 import { truthRouter } from "./trpc/routers/truth";
+import { replayRouter } from "./trpc/routers/replay";
+import { provenanceRouter } from "./trpc/routers/provenance";
 import { evaluateAction, getEngineInfo, getRepoScenarios, evaluateActionCanonical, replayTraceById, verifyDecisionTicket, getDailyAttestation, runBatchPython } from "./obsidiaAdapter";
 import { runAllTests } from "./testRunner";
 import { getFullProofStatus, getProofKitReport, getMerkleProof, getLeanTheorems, getTLAModules } from "./proofRunner";
@@ -19,7 +21,7 @@ import { runFlashCrash, runBankRun, runFraudAttack, runTrafficSpike, runBatch } 
 import { getOrCreateWallet, updateWallet, getUserPositions, upsertPosition, savePortfolioSnapshot, getPortfolioHistory } from "./portfolioDb";
 import { notifyOwner } from "./_core/notification";
 
-// ─── Alert threshold (configurable via env, default -5000 €) ─────────────────
+// â”€â”€â”€ Alert threshold (configurable via env, default -5000 â‚¬) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PNL_ALERT_THRESHOLD = Number(process.env.PNL_ALERT_THRESHOLD ?? -5000);
 
 async function maybeSendPnlAlert(opts: {
@@ -40,21 +42,21 @@ async function maybeSendPnlAlert(opts: {
     const savedStr = opts.capitalSaved.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     const thresholdStr = PNL_ALERT_THRESHOLD.toLocaleString("fr-FR");
     await notifyOwner({
-      title: `⚠️ OS4 — Alerte PnL ${domainLabel} : ${pnlStr} €`,
+      title: `âš ï¸ OS4 â€” Alerte PnL ${domainLabel} : ${pnlStr} â‚¬`,
       content: [
-        `🕐 ${ts}`,
-        `📊 Domaine : ${domainLabel}`,
-        opts.scenarioName ? `🔬 Scénario : ${opts.scenarioName}` : "",
-        `💰 Capital : ${capStr} €`,
-        `📉 PnL : ${pnlStr} € (seuil : ${thresholdStr} €)`,
-        `🛡 Guard Blocks : ${opts.guardBlocks}`,
-        `✅ Capital protégé : ${savedStr} €`,
-        opts.ticket ? `⚖️ Décision Guard X-108 : ${opts.ticket.decision}` : "",
-        opts.ticket?.reasons?.length ? `   Raisons : ${opts.ticket.reasons.join(" · ")}` : "",
+        `ðŸ• ${ts}`,
+        `ðŸ“Š Domaine : ${domainLabel}`,
+        opts.scenarioName ? `ðŸ”¬ ScÃ©nario : ${opts.scenarioName}` : "",
+        `ðŸ’° Capital : ${capStr} â‚¬`,
+        `ðŸ“‰ PnL : ${pnlStr} â‚¬ (seuil : ${thresholdStr} â‚¬)`,
+        `ðŸ›¡ Guard Blocks : ${opts.guardBlocks}`,
+        `âœ… Capital protÃ©gÃ© : ${savedStr} â‚¬`,
+        opts.ticket ? `âš–ï¸ DÃ©cision Guard X-108 : ${opts.ticket.decision}` : "",
+        opts.ticket?.reasons?.length ? `   Raisons : ${opts.ticket.reasons.join(" Â· ")}` : "",
       ].filter(Boolean).join("\n"),
     });
   } catch {
-    // fire-and-forget — never block the simulation response
+    // fire-and-forget â€” never block the simulation response
   }
 }
 import { getEventBuffer } from "./decisionStream";
@@ -64,7 +66,7 @@ import { predictionHistory, predictionSnapshots, portfolioSnapshots } from "../d
 import { gte } from "drizzle-orm";
 import { desc } from "drizzle-orm";
 
-// ─── Trading Router ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Trading Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const tradingRouter = router({
   simulate: publicProcedure
@@ -130,7 +132,7 @@ const tradingRouter = router({
         replayRef: ticket.replay_ref,
       });
 
-      // ── PnL alert (fire-and-forget) ──────────────────────────────────────────
+      // â”€â”€ PnL alert (fire-and-forget) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const tradingPnl = result.metrics.totalReturn * input.S0;
       const wasBlockedTrading = ticket.decision === "BLOCK";
       void maybeSendPnlAlert({
@@ -139,7 +141,7 @@ const tradingRouter = router({
         capital: input.S0 * (1 + result.metrics.totalReturn),
         guardBlocks: wasBlockedTrading ? 1 : 0,
         capitalSaved: wasBlockedTrading ? input.S0 : 0,
-        scenarioName: `Seed ${input.seed} — ${input.steps} steps`,
+        scenarioName: `Seed ${input.seed} â€” ${input.steps} steps`,
         ticket: { decision: ticket.decision, reasons: ticket.reasons },
       });
 
@@ -198,7 +200,7 @@ const tradingRouter = router({
     }),
 });
 
-// ─── Bank Router ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Bank Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const bankRouter = router({
   simulate: publicProcedure
@@ -221,11 +223,11 @@ const bankRouter = router({
     .mutation(async ({ input }) => {
       const result = runBankSimulation(input);
 
-      // Guard X-108 — seuils réalistes calibrés sur les métriques réelles :
-      // CIZ < 0.95 → capital a perdu > 5% (BLOCK)
-      // DTS > 0.90 → dépenses > 90% des revenus (BLOCK)
-      // fraudDetectionRate < 0.60 → moins de 60% des fraudes détectées (BLOCK)
-      // ir < -0.05 → rendement annualisé < -5% (BLOCK)
+      // Guard X-108 â€” seuils rÃ©alistes calibrÃ©s sur les mÃ©triques rÃ©elles :
+      // CIZ < 0.95 â†’ capital a perdu > 5% (BLOCK)
+      // DTS > 0.90 â†’ dÃ©penses > 90% des revenus (BLOCK)
+      // fraudDetectionRate < 0.60 â†’ moins de 60% des fraudes dÃ©tectÃ©es (BLOCK)
+      // ir < -0.05 â†’ rendement annualisÃ© < -5% (BLOCK)
       const ticket = runGuard({
         intent_id: `bank:${input.seed}:${Date.now()}`,
         domain: "bank",
@@ -237,9 +239,9 @@ const bankRouter = router({
         },
         thresholds: {
           min_ciz: 0.95,               // BLOCK si capital perd > 5%
-          max_dts: 0.90,               // BLOCK si dépenses > 90% des revenus
-          min_fraudDetectionRate: 0.60, // BLOCK si < 60% des fraudes détectées
-          min_ir: -0.05,               // BLOCK si rendement < -5% annualisé
+          max_dts: 0.90,               // BLOCK si dÃ©penses > 90% des revenus
+          min_fraudDetectionRate: 0.60, // BLOCK si < 60% des fraudes dÃ©tectÃ©es
+          min_ir: -0.05,               // BLOCK si rendement < -5% annualisÃ©
         },
         tau: 0,
         elapsed: 10,
@@ -267,7 +269,7 @@ const bankRouter = router({
         replayRef: ticket.replay_ref,
       });
 
-      // ── PnL alert (fire-and-forget) ──────────────────────────────────────────
+      // â”€â”€ PnL alert (fire-and-forget) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const bankPnl = result.metrics.finalBalance - input.initialBalance;
       const wasBlockedBank = ticket.decision === "BLOCK";
       void maybeSendPnlAlert({
@@ -276,7 +278,7 @@ const bankRouter = router({
         capital: result.metrics.finalBalance,
         guardBlocks: wasBlockedBank ? 1 : 0,
         capitalSaved: wasBlockedBank ? input.initialBalance : 0,
-        scenarioName: `Bank Seed ${input.seed} — ${input.steps} steps`,
+        scenarioName: `Bank Seed ${input.seed} â€” ${input.steps} steps`,
         ticket: { decision: ticket.decision, reasons: ticket.reasons },
       });
 
@@ -303,7 +305,7 @@ const bankRouter = router({
     }),
 });
 
-// ─── Ecom Router ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Ecom Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ecomRouter = router({
   simulate: publicProcedure
@@ -344,7 +346,7 @@ const ecomRouter = router({
         replay_ref: `${input.seed}:${input.steps}`,
       });
 
-      // ── Canonical Python envelope ─────────────────────────────────────────
+      // â”€â”€ Canonical Python envelope â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const lastStep = result.steps[result.steps.length - 1];
       const canonicalEnvelope = await evaluateActionCanonical({
         domain: "ecom",
@@ -396,7 +398,7 @@ const ecomRouter = router({
         replayRef: ticket.replay_ref,
       });
 
-      // ── PnL alert (fire-and-forget) ──────────────────────────────────────────
+      // â”€â”€ PnL alert (fire-and-forget) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const ecomPnl = result.metrics.totalMargin - input.adSpend;
       const wasBlockedEcom = ticket.decision === "BLOCK";
       void maybeSendPnlAlert({
@@ -405,7 +407,7 @@ const ecomRouter = router({
         capital: result.metrics.totalRevenue,
         guardBlocks: wasBlockedEcom ? 1 : result.metrics.agentBlockCount,
         capitalSaved: wasBlockedEcom ? result.metrics.totalRevenue : result.metrics.agentBlockCount * 1000,
-        scenarioName: `E-Com Seed ${input.seed} — ${input.steps} steps`,
+        scenarioName: `E-Com Seed ${input.seed} â€” ${input.steps} steps`,
         ticket: { decision: ticket.decision, reasons: ticket.reasons },
       });
 
@@ -437,7 +439,7 @@ const ecomRouter = router({
     }),
 });
 
-// ─── Proof Router ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Proof Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const proofRouter = router({
   auditLog: publicProcedure
@@ -463,7 +465,7 @@ const proofRouter = router({
       return db.getDecisionTicketById(input.id);
     }),
 
-  // Stats globales Guard X-108 (public) — utilisé par ControlTower, BankWorld, EcomWorld
+  // Stats globales Guard X-108 (public) â€” utilisÃ© par ControlTower, BankWorld, EcomWorld
   guardStats: publicProcedure.query(async () => {
     const tickets = await db.getDecisionTickets(undefined, 500);
     const totalDecisions = tickets.length;
@@ -595,11 +597,11 @@ const proofRouter = router({
   }),
 });
 
-// ─── Engine Router (branchée sur le repo réel) ───────────────────────────────
+// â”€â”€â”€ Engine Router (branchÃ©e sur le repo rÃ©el) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const engineRouter = router({
   // GET engine info (version, commit, hash, invariants, market features)
-  // Recalculated dynamically at each call — no caching
+  // Recalculated dynamically at each call â€” no caching
   info: publicProcedure.query(async () => {
     const info = getEngineInfo();
     return {
@@ -615,7 +617,7 @@ const engineRouter = router({
     };
   }),
 
-  // POST decision — évalue une action via le moteur réel du repo
+  // POST decision â€” Ã©value une action via le moteur rÃ©el du repo
   decision: publicProcedure
     .input(
       z.object({
@@ -653,7 +655,7 @@ const engineRouter = router({
       });
     }),
 
-  // POST simulate — exécute une simulation via le moteur réel
+  // POST simulate â€” exÃ©cute une simulation via le moteur rÃ©el
   simulate: publicProcedure
     .input(
       z.object({
@@ -689,7 +691,7 @@ const engineRouter = router({
       return { scenario, ticket };
     }),
 
-  // GET tests — exécute les scénarios de test du repo
+  // GET tests â€” exÃ©cute les scÃ©narios de test du repo
   tests: publicProcedure
     .input(
       z.object({
@@ -700,19 +702,19 @@ const engineRouter = router({
       return runAllTests(input.domain);
     }),
 
-  // GET proofs — retourne les preuves formelles réelles du repo
+  // GET proofs â€” retourne les preuves formelles rÃ©elles du repo
   proofs: publicProcedure.query(async () => {
     return getFullProofStatus();
   }),
 
-  // GET scenarios — retourne les scénarios du repo
+  // GET scenarios â€” retourne les scÃ©narios du repo
   scenarios: publicProcedure
     .input(z.object({ domain: z.enum(["trading", "bank", "ecom"]).optional() }))
     .query(async ({ input }) => {
       return getRepoScenarios(input.domain);
     }),
 
-  // POST runScenario — exécute un scénario complet
+  // POST runScenario â€” exÃ©cute un scÃ©nario complet
   runScenario: publicProcedure
     .input(z.object({
       scenarioId: z.enum(["flash_crash", "bank_run", "fraud_attack", "traffic_spike", "black_swan", "market_manipulation", "credit_bubble_burst", "fraud_wave", "bot_traffic_attack", "supply_chain_break", "ai_adversarial", "clock_drift"]),
@@ -726,7 +728,7 @@ const engineRouter = router({
       return runner(input.seed);
     }),
 
-  // POST decisionEnvelope — retourne un payload canonique CanonicalDecisionEnvelope
+  // POST decisionEnvelope â€” retourne un payload canonique CanonicalDecisionEnvelope
   decisionEnvelope: publicProcedure
     .input(
       z.object({
@@ -766,25 +768,25 @@ const engineRouter = router({
       });
     }),
 
-  // POST verifyTicket — vérifie un ticket de décision
+  // POST verifyTicket â€” vÃ©rifie un ticket de dÃ©cision
   verifyTicket: publicProcedure
     .input(z.object({ ticketId: z.string() }))
     .mutation(async ({ input }) => verifyDecisionTicket(input.ticketId)),
 
-  // POST replay — rejoue une trace par son ID
+  // POST replay â€” rejoue une trace par son ID
   replay: publicProcedure
     .input(z.object({ traceId: z.string() }))
     .mutation(async ({ input }) => replayTraceById(input.traceId)),
 
-  // GET attestation — retourne l'attestation journalière
+  // GET attestation â€” retourne l'attestation journaliÃ¨re
   attestation: publicProcedure
     .input(z.object({ day: z.string().optional() }))
     .query(async ({ input }) => getDailyAttestation(input.day)),
 
-  // POST batchRun — exécute 10 seeds avec décisions Python réelles
+  // POST batchRun â€” exÃ©cute 10 seeds avec dÃ©cisions Python rÃ©elles
   // Python est le juge (ALLOW/HOLD/BLOCK via /v1/decision)
-  // OS4 génère les événements (PRNG stochastique = simulation du monde)
-  // Fallback PRNG si Python DOWN — documenté dans chaque step via step.source
+  // OS4 gÃ©nÃ¨re les Ã©vÃ©nements (PRNG stochastique = simulation du monde)
+  // Fallback PRNG si Python DOWN â€” documentÃ© dans chaque step via step.source
   batchRun: publicProcedure
     .input(z.object({
       scenarioId: z.enum(["flash_crash", "bank_run", "fraud_attack", "traffic_spike", "black_swan", "market_manipulation", "credit_bubble_burst", "fraud_wave", "bot_traffic_attack", "supply_chain_break", "ai_adversarial", "clock_drift"]),
@@ -794,7 +796,7 @@ const engineRouter = router({
       return runBatchPython(input.scenarioId, input.seeds);
     }),
 
-  // GET pythonStatus — statut live du backend Python + métriques DB
+  // GET pythonStatus â€” statut live du backend Python + mÃ©triques DB
   pythonStatus: publicProcedure.query(async () => {
     const upstreamBase = process.env.OBSIDIA_PYTHON_URL ?? "http://localhost:3001";
     let pythonOnline = false;
@@ -825,8 +827,8 @@ const engineRouter = router({
     };
   }),
 
-  // POST savePythonTrace — persiste une trace Python en DB comme ticket de décision
-  // replayRef = "scenarioId:seed" si fournis — permet à MissionControlPanel de reconstruire le deep-link Simuler
+  // POST savePythonTrace â€” persiste une trace Python en DB comme ticket de dÃ©cision
+  // replayRef = "scenarioId:seed" si fournis â€” permet Ã  MissionControlPanel de reconstruire le deep-link Simuler
   savePythonTrace: publicProcedure
     .input(z.object({
       domain: z.enum(["trading", "bank", "ecom", "system"]),
@@ -839,7 +841,7 @@ const engineRouter = router({
       coherence: z.number().optional(),
       volatility: z.number().optional(),
       tau: z.number().optional(),
-      // Champs de replay — permettent de reconstruire le run depuis Simuler
+      // Champs de replay â€” permettent de reconstruire le run depuis Simuler
       scenarioId: z.string().optional(),
       seed: z.number().int().optional(),
     }))
@@ -870,7 +872,7 @@ const engineRouter = router({
       return { success: true, ticketId: ticket, replayRef };
     }),
 
-  // POST engine.canonicalRun — exécute le pipeline canonique Python (agents + Guard X-108 + méta-agents)
+  // POST engine.canonicalRun â€” exÃ©cute le pipeline canonique Python (agents + Guard X-108 + mÃ©ta-agents)
   // Retourne un CanonicalEnvelope complet avec confidence, contradictions, evidence_refs
   // Fallback automatique si Python DOWN (source: canonical_fallback)
   canonicalRun: publicProcedure
@@ -888,7 +890,7 @@ const engineRouter = router({
       } else if (scenarioId && seed != null) {
         state = buildStateFromScenario(domain, scenarioId as any, seed);
       } else {
-        // Utiliser le seed transmis ou en générer un aléatoire pour que chaque run soit unique
+        // Utiliser le seed transmis ou en gÃ©nÃ©rer un alÃ©atoire pour que chaque run soit unique
         const dynamicSeed = seed ?? Math.floor(Math.random() * 0x7fffffff);
         state = domain === "trading" ? defaultTradingState(dynamicSeed)
               : domain === "bank" ? defaultBankState(dynamicSeed)
@@ -920,7 +922,7 @@ const engineRouter = router({
       return envelope;
     }),
 
-  // GET engine.canonicalAgentRegistry — liste tous les agents disponibles par domaine
+  // GET engine.canonicalAgentRegistry â€” liste tous les agents disponibles par domaine
   canonicalAgentRegistry: publicProcedure.query(() => ({
     trading: [
       "MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent",
@@ -949,27 +951,27 @@ const engineRouter = router({
     ],
   })),
 
-  // GET engine.canonicalScenarios — liste les scénarios disponibles par domaine
+  // GET engine.canonicalScenarios â€” liste les scÃ©narios disponibles par domaine
   canonicalScenarios: publicProcedure
     .input(z.object({ domain: z.enum(["trading", "bank", "ecom"]).optional() }))
     .query(({ input }) => {
       const all = {
         trading: [
-          { id: "flash_crash", label: "Flash Crash", description: "Chute brutale des prix, exposition élevée, order book déséquilibré", severity: "S4" },
-          { id: "bull_run", label: "Bull Run", description: "Tendance haussière forte, sentiment positif", severity: "S1" },
-          { id: "range_bound", label: "Range Bound", description: "Marché latéral, faible volatilité", severity: "S0" },
-          { id: "high_volatility", label: "Haute Volatilité", description: "Spreads larges, slippage élevé, régime instable", severity: "S3" },
+          { id: "flash_crash", label: "Flash Crash", description: "Chute brutale des prix, exposition Ã©levÃ©e, order book dÃ©sÃ©quilibrÃ©", severity: "S4" },
+          { id: "bull_run", label: "Bull Run", description: "Tendance haussiÃ¨re forte, sentiment positif", severity: "S1" },
+          { id: "range_bound", label: "Range Bound", description: "MarchÃ© latÃ©ral, faible volatilitÃ©", severity: "S0" },
+          { id: "high_volatility", label: "Haute VolatilitÃ©", description: "Spreads larges, slippage Ã©levÃ©, rÃ©gime instable", severity: "S3" },
         ],
         bank: [
-          { id: "large_transfer", label: "Virement Important", description: "Montant élevé, ratio liquidité sous pression", severity: "S2" },
-          { id: "fraud_attempt", label: "Tentative de Fraude", description: "Score fraude critique, identité incohérente, urgence suspecte", severity: "S4" },
+          { id: "large_transfer", label: "Virement Important", description: "Montant Ã©levÃ©, ratio liquiditÃ© sous pression", severity: "S2" },
+          { id: "fraud_attempt", label: "Tentative de Fraude", description: "Score fraude critique, identitÃ© incohÃ©rente, urgence suspecte", severity: "S4" },
           { id: "normal_payment", label: "Paiement Normal", description: "Transaction standard, contrepartie connue", severity: "S0" },
-          { id: "limit_breach", label: "Dépassement de Limite", description: "Montant supérieur à la limite de politique", severity: "S3" },
+          { id: "limit_breach", label: "DÃ©passement de Limite", description: "Montant supÃ©rieur Ã  la limite de politique", severity: "S3" },
         ],
         ecom: [
-          { id: "high_roas", label: "ROAS Élevé", description: "Campagne performante, conversion optimale", severity: "S0" },
-          { id: "low_margin", label: "Marge Faible", description: "Marge sous le seuil de rentabilité", severity: "S2" },
-          { id: "cart_abandonment", label: "Abandon Panier", description: "Friction élevée au checkout, intention ambiguë", severity: "S1" },
+          { id: "high_roas", label: "ROAS Ã‰levÃ©", description: "Campagne performante, conversion optimale", severity: "S0" },
+          { id: "low_margin", label: "Marge Faible", description: "Marge sous le seuil de rentabilitÃ©", severity: "S2" },
+          { id: "cart_abandonment", label: "Abandon Panier", description: "Friction Ã©levÃ©e au checkout, intention ambiguÃ«", severity: "S1" },
           { id: "fraud_checkout", label: "Checkout Frauduleux", description: "Trust client nul, conflit d'intention critique", severity: "S4" },
         ],
       };
@@ -978,7 +980,7 @@ const engineRouter = router({
     }),
 });
 
-// ─── Mirror Router (Binance proxy) ─────────────────────────────────────────
+// â”€â”€â”€ Mirror Router (Binance proxy) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // CoinGecko remplace Binance (Binance inaccessible depuis le sandbox)
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
@@ -989,7 +991,7 @@ const COINGECKO_IDS: Record<string, string> = {
 };
 
 const mirrorRouter = router({
-  // GET prices — 8 marchés crypto depuis CoinGecko (fallback simulé si inaccessible)
+  // GET prices â€” 8 marchÃ©s crypto depuis CoinGecko (fallback simulÃ© si inaccessible)
   prices: publicProcedure
     .input(z.object({
       symbols: z.array(z.string()).optional().default(["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","XRPUSDT","ADAUSDT","DOTUSDT","AVAXUSDT"]),
@@ -1027,7 +1029,7 @@ const mirrorRouter = router({
         });
         return { success: true, data: results, timestamp: Date.now() };
       } catch (err) {
-        // Fallback réaliste avec variabilité temporelle (prix marché 2025-03)
+        // Fallback rÃ©aliste avec variabilitÃ© temporelle (prix marchÃ© 2025-03)
         const BASE_PRICES: Record<string, number> = {
           BTC: 83200, BTCUSDT: 83200,
           ETH: 1920,  ETHUSDT: 1920,
@@ -1042,7 +1044,7 @@ const mirrorRouter = router({
         const now = Date.now();
         const fallback = input.symbols.map((symbol, i) => {
           const base = BASE_PRICES[symbol] ?? BASE_PRICES[symbol.replace("USDT","")] ?? (100 * (i + 1));
-          // Micro-variation pseudo-aléatoire basée sur le temps (change toutes les 30s)
+          // Micro-variation pseudo-alÃ©atoire basÃ©e sur le temps (change toutes les 30s)
           const tick = Math.floor(now / 30000);
           const seed2 = (tick * 31 + i * 137) % 1000;
           const change = (seed2 - 500) * 0.00008;
@@ -1067,7 +1069,7 @@ const mirrorRouter = router({
       }
     }),
 
-  // POST guardSimulate — simule Guard X-108 sur un marché réel sans exécuter
+  // POST guardSimulate â€” simule Guard X-108 sur un marchÃ© rÃ©el sans exÃ©cuter
   guardSimulate: publicProcedure
     .input(z.object({
       symbol: z.string(),
@@ -1111,7 +1113,7 @@ const mirrorRouter = router({
 });
 
 
-// ─── Portfolio Router ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Portfolio Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const portfolioRouter = router({
   getWallet: protectedProcedure.query(async ({ ctx }) => {
@@ -1179,7 +1181,7 @@ const portfolioRouter = router({
       return getPortfolioHistory(ctx.user.id, input.limit);
     }),
 
-  // Returns simulation history for the last N days — used in the Correlation panel
+  // Returns simulation history for the last N days â€” used in the Correlation panel
   getCorrelationHistory: protectedProcedure
     .input(z.object({ days: z.number().int().min(1).max(30).default(7) }))
     .query(async ({ ctx, input }) => {
@@ -1238,7 +1240,7 @@ const portfolioRouter = router({
       };
     }),
 
-  // Returns simulation timestamps for the last N hours — used to annotate ProbabilityChart
+  // Returns simulation timestamps for the last N hours â€” used to annotate ProbabilityChart
   getSimulationTimestamps: protectedProcedure
     .input(z.object({ hours: z.number().int().min(1).max(72).default(24) }))
     .query(async ({ ctx, input }) => {
@@ -1273,7 +1275,7 @@ const portfolioRouter = router({
     }),
 });
 
-// ─── Stream Router (HTTP polling — WebSocket fallback for tunnel compatibility) ─
+// â”€â”€â”€ Stream Router (HTTP polling â€” WebSocket fallback for tunnel compatibility) â”€
 const streamRouter = router({
   getEvents: publicProcedure
     .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }))
@@ -1281,7 +1283,7 @@ const streamRouter = router({
       return getEventBuffer(input.limit);
     }),
 });
-// ─── Prediction Router ──────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Prediction Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BINANCE_BASE_PRED = "https://api.binance.com/api/v3";
 
@@ -1324,7 +1326,7 @@ async function computeLivePredictions() {
   };
 }
 
-// ─── Snapshot job: insert probability readings every hour ─────────────────────
+// â”€â”€â”€ Snapshot job: insert probability readings every hour â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let snapshotJobStarted = false;
 function startSnapshotJob() {
   if (snapshotJobStarted) return;
@@ -1411,7 +1413,7 @@ const predictionRouter = router({
     }),
 });
 
-// ─── Main Router ──────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const appRouter = router({
   system: systemRouter,
@@ -1436,7 +1438,11 @@ export const appRouter = router({
   orchestration: orchestrationRouter,
   audit: auditRouter,
   truth: truthRouter,
+  replay: replayRouter,
+  provenance: provenanceRouter,
 });
 
 export type AppRouter = typeof appRouter;
+
+
 

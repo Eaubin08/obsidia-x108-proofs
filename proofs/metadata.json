@@ -1,0 +1,5 @@
+{
+  "name": "Obsidia Governance OS",
+  "description": "A Governance OS for Autonomous Agents, implementing the ERC-8004 standard for financial market safety boundaries.",
+  "requestFramePermissions": []
+}

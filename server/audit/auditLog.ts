@@ -1,12 +1,12 @@
-/**
- * Audit Log — Append-only immuable
+﻿/**
+ * Audit Log â€” Append-only immuable
  * 
- * Enregistre chaque décision avec :
+ * Enregistre chaque dÃ©cision avec :
  * - decision_id, trace_id, ticket_id
  * - domain, verdict
  * - timestamps
  * - evidence refs
- * - hash / chaînage
+ * - hash / chaÃ®nage
  */
 
 import fs from "fs";
@@ -37,8 +37,8 @@ export class AuditLog {
   private entries: AuditLogEntry[] = [];
   private lastHash: string = "0";
   
-  constructor(logDir: string = "/tmp/obsidia-audit") {
-    this.logFile = path.join(logDir, "audit_log.jsonl");
+  constructor(logDir: string = path.join(process.cwd(), "traces", "audit")) {
+    this.logFile = path.join(logDir, "audit.jsonl");
     
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
@@ -182,3 +182,4 @@ export function getAuditLog(): AuditLog {
   }
   return globalAuditLog;
 }
+
