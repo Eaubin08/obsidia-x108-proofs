@@ -1,0 +1,55 @@
+import Obsidia.Basic
+
+namespace Obsidia
+
+def countDec (d : Decision3) (xs : List Decision3) : Nat :=
+  xs.foldl (fun acc x => if x = d then acc + 1 else acc) 0
+
+def aggregate4 (d1 d2 d3 d4 : Decision3) : Decision3 :=
+  if decide (3 <= countDec Decision3.ACT [d1, d2, d3, d4]) then
+    Decision3.ACT
+  else if decide (3 <= countDec Decision3.HOLD [d1, d2, d3, d4]) then
+    Decision3.HOLD
+  else if decide (3 <= countDec Decision3.BLOCK [d1, d2, d3, d4]) then
+    Decision3.BLOCK
+  else
+    Decision3.BLOCK
+
+theorem aggregate4_act
+  (d1 d2 d3 d4 : Decision3)
+  (h : 3 <= countDec Decision3.ACT [d1, d2, d3, d4]) :
+  aggregate4 d1 d2 d3 d4 = Decision3.ACT := by
+  unfold aggregate4
+  have htrue : decide (3 <= countDec Decision3.ACT [d1, d2, d3, d4]) = true := decide_eq_true h
+  rw [htrue]
+  rfl
+
+theorem aggregate4_fail_closed
+  (d1 d2 d3 d4 : Decision3)
+  (hACT : ¬ (3 <= countDec Decision3.ACT [d1, d2, d3, d4]))
+  (hHOLD : ¬ (3 <= countDec Decision3.HOLD [d1, d2, d3, d4]))
+  (hBLOCK : ¬ (3 <= countDec Decision3.BLOCK [d1, d2, d3, d4])) :
+  aggregate4 d1 d2 d3 d4 = Decision3.BLOCK := by
+  unfold aggregate4
+  have h1 : decide (3 <= countDec Decision3.ACT [d1, d2, d3, d4]) = false := decide_eq_false hACT
+  have h2 : decide (3 <= countDec Decision3.HOLD [d1, d2, d3, d4]) = false := decide_eq_false hHOLD
+  have h3 : decide (3 <= countDec Decision3.BLOCK [d1, d2, d3, d4]) = false := decide_eq_false hBLOCK
+  rw [h1, h2, h3]
+  rfl
+
+theorem aggregate4_unanimous
+  (d : Decision3) :
+  aggregate4 d d d d = d := by
+  cases d <;> simp [aggregate4, countDec]
+
+theorem no_two_distinct_supermajorities_4
+  (a b : Decision3) (d1 d2 d3 d4 : Decision3)
+  (hab : Not (a = b))
+  (ha : 3 <= countDec a [d1, d2, d3, d4])
+  (hb : 3 <= countDec b [d1, d2, d3, d4]) :
+  False := by
+  cases a <;> cases b <;> cases d1 <;> cases d2 <;> cases d3 <;> cases d4 <;>
+    simp [countDec] at hab ha hb ⊢
+    omega
+
+end Obsidia

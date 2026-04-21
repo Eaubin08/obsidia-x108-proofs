@@ -1,6 +1,6 @@
-/**
+﻿/**
  * RFC3161 Real Adapter
- * Branchement réel sur un serveur TSA
+ * Branchement rÃ©el sur un serveur TSA
  */
 
 import { spawnSync } from "child_process";
@@ -28,7 +28,7 @@ export function callRealRFC3161TSA(
 ): RFC3161Token {
   const config = getRFC3161Config();
 
-  // Si RFC3161 est désactivé, retourner incomplete honnêtement
+  // Si RFC3161 est dÃ©sactivÃ©, retourner incomplete honnÃªtement
   if (!config.enabled) {
     return {
       decision_id,
@@ -64,14 +64,14 @@ export function callRealRFC3161TSA(
     };
   }
 
-  // Appeler le script Python réel
+  // Appeler le script Python rÃ©el
   try {
     const scriptPath = path.join(
       process.cwd(),
       "server/python_agents/verify_rfc3161.py"
     );
 
-    const result = spawnSync("python3", [scriptPath, decision_id, merkle_root, config.tsa_url], {
+    const result = spawnSync("py", ["-3", scriptPath, decision_id, merkle_root, config.tsa_url], {
       timeout: config.timeout,
       encoding: "utf-8",
     });
@@ -86,7 +86,7 @@ export function callRealRFC3161TSA(
         timestamp: null,
         tsa_url: config.tsa_url,
         artifact_path: null,
-        command: `python3 ${scriptPath}`,
+        command: `py -3 ${scriptPath}`,
         stdout: "",
         stderr: result.error.message,
         reason: `Script execution failed: ${result.error.message}`,
@@ -107,7 +107,7 @@ export function callRealRFC3161TSA(
         timestamp: null,
         tsa_url: config.tsa_url,
         artifact_path: null,
-        command: `python3 ${scriptPath}`,
+        command: `py -3 ${scriptPath}`,
         stdout: result.stdout,
         stderr: result.stderr || "",
         reason: `Failed to parse script output: ${e}`,
@@ -130,3 +130,7 @@ export function callRealRFC3161TSA(
     };
   }
 }
+
+
+
+

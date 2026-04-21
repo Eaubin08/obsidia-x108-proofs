@@ -63,7 +63,7 @@ def build_trace(envelope: Dict[str, Any]) -> Dict[str, Any]:
             "artifact_path": rfc3161.get("artifact_path"),
         },
 
-        "tla_targets": ["X108.tla", "DistributedX108.tla"],
+        "tla_targets": ["X108.tla", "ObsidiaDistX108A12.tla"],
     }
 
 def build_vars(trace: Dict[str, Any]) -> Dict[str, Any]:
