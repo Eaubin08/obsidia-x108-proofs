@@ -8,5 +8,7 @@
   "reason_code": "CONSENSUS_CLEAR",
   "severity": "LOW",
   "attestation_ref": "RFC3161-BANK-001",
-  "source": "fixture"
+  "source": "fixture",
+  "ticket_required": true,
+  "ticket_id": "TICKET-BANK-001"
 }
