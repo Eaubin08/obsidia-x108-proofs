@@ -1,21 +1,21 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-OBSIDIA — verify_decision.py
-Vérifie l'intégrité d'un CanonicalDecisionEnvelope produit par le moteur.
+OBSIDIA â€” verify_decision.py
+VÃ©rifie l'intÃ©gritÃ© d'un CanonicalDecisionEnvelope produit par le moteur.
 
-Vérifications effectuées :
-  1. Présence des champs obligatoires (domain, x108_gate, decision_id, trace_id)
+VÃ©rifications effectuÃ©es :
+  1. PrÃ©sence des champs obligatoires (domain, x108_gate, decision_id, trace_id)
   2. x108_gate est dans {ALLOW, HOLD, BLOCK}
   3. decision_id et trace_id sont non-vides
-  4. attestation_ref est non-vide (preuve de traçabilité)
-  5. Si x108_gate == ALLOW → ticket_required == True et ticket_id non-vide
+  4. attestation_ref est non-vide (preuve de traÃ§abilitÃ©)
+  5. Si x108_gate == ALLOW â†’ ticket_required == True et ticket_id non-vide
 
 Usage:
   python3 proofs/verify_decision.py <path_to_envelope.json>
 
 Exit code:
-  0 → VALID
-  1 → INVALID
+  0 â†’ VALID
+  1 â†’ INVALID
 """
 import json
 import sys
@@ -44,7 +44,7 @@ def verify(file_path: str) -> None:
     if errors:
         print("INVALID")
         for e in errors:
-            print(f"  ✗ {e}")
+            print(f"  âœ— {e}")
         sys.exit(1)
 
     # 2. x108_gate valide
@@ -62,7 +62,7 @@ def verify(file_path: str) -> None:
     if not data.get("attestation_ref"):
         errors.append("attestation_ref is empty")
 
-    # 5. ALLOW → ticket obligatoire
+    # 5. ALLOW â†’ ticket obligatoire
     if gate == "ALLOW":
         if not data.get("ticket_required"):
             errors.append("x108_gate=ALLOW but ticket_required is False/missing")
@@ -72,7 +72,7 @@ def verify(file_path: str) -> None:
     if errors:
         print("INVALID")
         for e in errors:
-            print(f"  ✗ {e}")
+            print(f"  âœ— {e}")
         sys.exit(1)
 
     print("VALID")
@@ -90,3 +90,4 @@ if __name__ == "__main__":
         print("Usage: python3 verify_decision.py <path_to_envelope.json>")
         sys.exit(2)
     verify(sys.argv[1])
+
