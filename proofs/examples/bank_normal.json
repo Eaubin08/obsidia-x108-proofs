@@ -1,1 +1,12 @@
-﻿{"transaction_id":"bank_001","irr":false,"elapsed":5,"tau":3,"baseAct":true,"expected_decision":"ACT"}
+{
+  "domain": "banking",
+  "market_verdict": "ALLOW",
+  "confidence": 0.85,
+  "x108_gate": "ALLOW",
+  "reason_code": "NORMAL_TRANSACTION",
+  "severity": "LOW",
+  "decision_id": "DEC_BANK_NORMAL_001",
+  "trace_id": "TRACE_BANK_NORMAL_001",
+  "attestation_ref": "RFC3161:20260422060000Z",
+  "source": "Obsidia_Kernel_v1.4.0"
+}
