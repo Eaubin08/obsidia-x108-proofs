@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-04-22T19:22:02.923017",
+  "rfc3161_local": {
+    "openssl_available": true,
+    "openssl_version": "OpenSSL 4.0.0 14 Apr 2026 (Library: OpenSSL 4.0.0 14 Apr 2026)",
+    "ts_command": true
+  },
+  "rfc3161_network": {
+    "digicert": {
+      "name": "DigiCert",
+      "available": true,
+      "http_code_or_error": "404"
+    },
+    "sectigo": {
+      "name": "Sectigo",
+      "available": true,
+      "http_code_or_error": "404"
+    },
+    "globalsign": {
+      "name": "GlobalSign",
+      "available": false,
+      "http_code_or_error": "[WinError 10054] Une connexion existante a dû être fermée par l’hôte distant"
+    },
+    "freetsa": {
+      "name": "FreeTSA",
+      "available": true,
+      "http_code_or_error": "403"
+    },
+    "_count_available": 3
+  },
+  "tlc": {
+    "jar_found": true,
+    "jar_path": "C:\\Users\\User\\tla2tools.jar",
+    "available": true
+  },
+  "sigma": {
+    "sigma_dir_exists": true,
+    "run_pipeline.py": true,
+    "sigma_monitor.py": true,
+    "sigma_config.json": true,
+    "contracts.py": true,
+    "run_pipeline_exitcode": 0,
+    "run_pipeline_smoke": true,
+    "sigma_monitor_exitcode": 0,
+    "sigma_monitor_smoke": true
+  },
+  "summary": {
+    "rfc3161_local": "PASS",
+    "rfc3161_network": "3/4 TSA joignables",
+    "tlc_via_jar": "PASS",
+    "sigma_public": "PASS",
+    "scope": "P1 PUBLIC - pas de statut global production-ready"
+  }
+}
