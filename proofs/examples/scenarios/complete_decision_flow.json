@@ -1,12 +1,12 @@
 {
-  "domain": "banking",
-  "market_verdict": "BLOCK",
-  "confidence": 0.82,
-  "x108_gate": "DENY",
-  "reason_code": "CONSENSUS_STRONG_FRAUD_SIGNAL",
-  "severity": "HIGH",
-  "decision_id": "DEC_20260403_001_BANKING",
-  "trace_id": "TRACE_20260403_001_BANKING",
-  "attestation_ref": "RFC3161:20260403143216Z",
-  "source": "Obsidia_Kernel_v1.4.0"
+  "domain": "governance",
+  "decision_id": "DEC-FLOW-001",
+  "trace_id": "TRACE-FLOW-001",
+  "market_verdict": "HOLD",
+  "x108_gate": "HOLD",
+  "confidence": 0.78,
+  "reason_code": "REVIEW_PENDING",
+  "severity": "MED",
+  "attestation_ref": "RFC3161-FLOW-001",
+  "source": "fixture"
 }
