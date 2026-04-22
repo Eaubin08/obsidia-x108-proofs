@@ -1,6 +1,6 @@
 \
 ---- MODULE X108 ----
-EXTENDS Naturals, TLC
+EXTENDS Naturals, Integers, TLC
 
 (*
   Single-node X-108 gate model (abstract).
@@ -32,9 +32,9 @@ Init ==
     If irr and elapsed < tau -> HOLD
     else decision follows baseAct.
 *)
-GateDecision(tau, irr, elapsed, baseAct) ==
+GateDecision(t, i, e, b) ==
   IF irr /\ elapsed < tau THEN "HOLD"
-  ELSE IF baseAct THEN "ACT" ELSE "HOLD"
+  ELSE IF b THEN "ACT" ELSE "HOLD"
 
 Next ==
   /\ tau' \in 0..TauMax
