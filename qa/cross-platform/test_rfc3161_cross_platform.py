@@ -26,18 +26,37 @@ def _env():
     env["PYTHONWARNINGS"] = "ignore"
     return env
 
-def probe_url(url: str):
+def _request_probe(url: str, method: str, timeout: int = 10):
+    req = urllib.request.Request(
+        url,
+        method=method,
+        headers={
+            "User-Agent": "Obsidia-X108-QA/1.0",
+            "Accept": "*/*",
+            "Connection": "close",
+        },
+    )
     try:
-        req = urllib.request.Request(url, method="HEAD")
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             code = getattr(resp, "status", 200)
-            return True, str(code)
+            return True, str(code), method
     except urllib.error.HTTPError as e:
         code = getattr(e, "code", None)
         ok = code in (200, 400, 403, 404, 405, 415)
-        return ok, str(code)
+        return ok, str(code), method
     except Exception as e:
-        return False, str(e)
+        return False, str(e), method
+
+def probe_url(url: str):
+    ok, code, method = _request_probe(url, "HEAD", timeout=10)
+    if ok:
+        return True, code, method
+
+    ok2, code2, method2 = _request_probe(url, "GET", timeout=10)
+    if ok2:
+        return True, code2, method2
+
+    return False, f"HEAD={code} ; GET={code2}", "HEAD->GET"
 
 class P1CrossPlatformTester:
     def __init__(self):
@@ -91,15 +110,16 @@ class P1CrossPlatformTester:
         print("=== RFC3161 Reseau (TSA endpoints) ===")
         available = 0
         for tsa_id, info in TSA_ENDPOINTS.items():
-            ok, code = probe_url(info["url"])
+            ok, code, method = probe_url(info["url"])
             self.results["rfc3161_network"][tsa_id] = {
                 "name": info["name"],
                 "available": ok,
-                "http_code_or_error": code
+                "http_code_or_error": code,
+                "probe_method": method,
             }
             if ok:
                 available += 1
-            print(f"  {info['name']}: {'OK' if ok else 'UNREACHABLE'} ({code})")
+            print(f"  {info['name']}: {'OK' if ok else 'UNREACHABLE'} ({code}) via {method}")
         self.results["rfc3161_network"]["_count_available"] = available
 
     def test_tlc(self):
