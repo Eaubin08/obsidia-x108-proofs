@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-OBSIDIA PUBLIC PROOFKIT — verify_all.py
+OBSIDIA PUBLIC PROOFKIT â€” verify_all.py
 Runs:
 - V18.3.1 seal_verify.py + root_hash_verify.py
 - V18.7 checker (200k) and validates invariants
@@ -33,10 +33,10 @@ def run(cmd, cwd, timeout=600):
 
 
 def main():
-    ts = datetime.datetime.utcnow().isoformat() + "Z"
+    ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
     report = {"timestamp": ts, "checks": {}, "overall": "FAIL"}
 
-    # ── V18.3.1 — Root Seal ──────────────────────────────────────────────────
+    # â”€â”€ V18.3.1 â€” Root Seal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Real path in this repo: proofs/V18_3_1/
     v183 = os.path.join(ROOT, "V18_3_1")
     ok1, out1 = run([sys.executable, "seal_verify.py"], cwd=v183)
@@ -44,7 +44,7 @@ def main():
     report["checks"]["V18_3_1_seal_verify"] = {"pass": ok1, "stdout": out1[-2000:]}
     report["checks"]["V18_3_1_root_hash_verify"] = {"pass": ok2, "stdout": out2[-2000:]}
 
-    # ── V18.7 — Non-circumvention (200k fuzz) ────────────────────────────────
+    # â”€â”€ V18.7 â€” Non-circumvention (200k fuzz) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Real path in this repo: proofs/V18_7/
     v187 = os.path.join(ROOT, "V18_7")
     os.makedirs(os.path.join(v187, "results"), exist_ok=True)
@@ -65,7 +65,7 @@ def main():
         )
     report["checks"]["V18_7_invariants"] = {"pass": v187_ok}
 
-    # ── V18.8 — Convergence & Stability ──────────────────────────────────────
+    # â”€â”€ V18.8 â€” Convergence & Stability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Real path in this repo: proofs/V18_8/
     v188 = os.path.join(ROOT, "V18_8")
     os.makedirs(os.path.join(v188, "results"), exist_ok=True)
@@ -98,3 +98,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
