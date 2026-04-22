@@ -1,0 +1,45 @@
+{
+  "checks": [
+    {
+      "details": "all present",
+      "name": "Required artifacts present",
+      "ok": true
+    },
+    {
+      "details": "search in docs/openapi.yaml",
+      "name": "OpenAPI has BLOCK|HOLD|ACT",
+      "ok": true
+    },
+    {
+      "details": "search in docs/openapi.yaml",
+      "name": "OpenAPI has PROPOSE|ACTION",
+      "ok": true
+    },
+    {
+      "details": "search in docs/openapi.yaml",
+      "name": "OpenAPI has required_human_gate",
+      "ok": true
+    },
+    {
+      "details": "all present",
+      "name": "Gateway/security components present",
+      "ok": true
+    },
+    {
+      "details": "api_server/main.py",
+      "name": "HMAC middleware present",
+      "ok": true
+    },
+    {
+      "details": "api_server/main.py",
+      "name": "enforce_auth referenced",
+      "ok": true
+    },
+    {
+      "details": "DecisionRequest/DecisionResponse/AuditChainResponse",
+      "name": "OpenAPI core schemas present",
+      "ok": true
+    }
+  ],
+  "timestamp_utc": "2026-03-03T12:02:13Z"
+}

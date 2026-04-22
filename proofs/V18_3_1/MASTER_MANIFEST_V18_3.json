@@ -1,0 +1,22 @@
+{
+  "freeze": "OBSIDIA_V18_3_FINAL_SEALED",
+  "timestamp": "2026-03-03T14:17:34.102216Z",
+  "inputs": {
+    "fortress_zip": "OBSIDIA_V18_FORTRESS_FREEZE_COMPLETE.zip",
+    "engine_zip": "OBSIDIA_BUILDABLE_KERNEL_BETA_0_9_3_1_FLAT.zip"
+  },
+  "structure": {
+    "fortress_path": "fortress_v18/",
+    "engine_path": "engine_buildable_0_9_3_1/",
+    "no_zip_in_zip": true
+  },
+  "sha256": {
+    "README_V18_3_FINAL.txt": "b33596a0ace983034373a0741c7f9534187efe81724efcfc10f4ff947890722d",
+    "seal_verify.py": "6476d3dc83bbe1655bd5de858a5b748b66d5679e01ce3387701ad3045c42eda5",
+    "engine_buildable_0_9_3_1/entrypoint.py": "73be8f076f0ddf149f81a95147f67c27a73b3a03c6fa3d1ecaf52e3c00ea3eae",
+    "engine_buildable_0_9_3_1/api_server/main.py": "0104c745b28882cc45ab7a2d46c22210e5769bd413529426d36b8a158d27b6a1",
+    "fortress_v18/MASTER_MANIFEST_V18.json": "ec3efae589744ae5bada2a0ca8b8726e9a447d0d1e7d566bef2f962fe512c06f",
+    "fortress_v18/README_FREEZE_V18.txt": "74850bffbb54fb8c553d6763b347232c8d59675db98e6978d9e9aacd5e6ce53e",
+    "MASTER_MANIFEST_V18_3.json": null
+  }
+}

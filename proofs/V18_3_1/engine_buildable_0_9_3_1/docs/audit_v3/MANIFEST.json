@@ -1,0 +1,14 @@
+{
+  "created": "2026-03-03T14:02:10.184067Z",
+  "input_zip": "OBSIDIA_INTEGRAL_KERNEL_BETA_0_9_3.zip",
+  "overall_static_original": false,
+  "overall_static_patched": false,
+  "selected_files": {
+    "engine": null,
+    "os1": null,
+    "api_main": null
+  },
+  "sha256": {
+    "ENGINE_FORMAL_ALIGNMENT_REPORT_V3.md": "050a618134c8e5a58c23adf3b536cc1b785665fa68f1cd16d8a263da43444815"
+  }
+}

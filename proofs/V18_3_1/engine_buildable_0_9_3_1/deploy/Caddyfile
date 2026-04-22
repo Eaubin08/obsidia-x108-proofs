@@ -1,0 +1,39 @@
+{
+    email {$ACME_EMAIL}
+}
+
+(obsidia_common) {
+    encode zstd gzip
+    header {
+        # basic security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+    }
+
+    # Simple global rate limit (per client IP)
+    rate_limit {
+        zone obsidia_zone {
+            key {remote_ip}
+            events 60
+            window 1m
+        }
+    }
+}
+
+{$OBSIDIA_DOMAIN} {
+    import obsidia_common
+
+    # Basic auth (optional): set BASIC_AUTH_USER + BASIC_AUTH_HASH
+    @hasBasicAuth expression `{env.BASIC_AUTH_USER} != "" && {env.BASIC_AUTH_HASH} != ""`
+    basicauth @hasBasicAuth {
+        {$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+    }
+
+    # Optional IP allowlist:
+# Edit this matcher or put your CIDRs here if you want hard allowlisting.
+# Example:
+# @allowlist remote_ip 1.2.3.4 10.0.0.0/8 192.168.0.0/16
+# handle @allowlist { ... } ; respond 403 otherwise.
+reverse_proxy 127.0.0.1:8000
+}

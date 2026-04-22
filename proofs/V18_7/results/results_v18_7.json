@@ -1,0 +1,61 @@
+{
+  "demo": {
+    "best_candidate": {
+      "id": "intent_43",
+      "expected_return": 0.11603720886192015,
+      "risk": 0.5327061695295157,
+      "irreversible": true,
+      "nonce": "n43"
+    },
+    "case1": {
+      "t": 0.0,
+      "decision": "HOLD",
+      "reasons": [
+        "X108_TIME_LOCK"
+      ]
+    },
+    "case2": {
+      "t": 12.0,
+      "decision": "ALLOW",
+      "reasons": []
+    },
+    "case3": {
+      "t": 12.0,
+      "decision": "BLOCK",
+      "reasons": [
+        "NONCE_REPLAY_OR_MISSING"
+      ],
+      "note": "replay must be BLOCK"
+    }
+  },
+  "fuzz": {
+    "N": 200000,
+    "counts": {
+      "ALLOW": 66983,
+      "HOLD": 26634,
+      "BLOCK": 106383
+    },
+    "violations": {
+      "E1_block_cannot_become_allow": 0,
+      "E2_no_allow_before_tau": 0,
+      "E4_replay_not_block": 0
+    },
+    "params": {
+      "tau": 10.0,
+      "risk_max": 0.65
+    }
+  },
+  "witness": {
+    "meet_properties": {
+      "idempotent": true,
+      "commutative": true,
+      "associative_sample": true
+    }
+  },
+  "theorems_claimed": [
+    "E1",
+    "E2",
+    "E3",
+    "E4"
+  ]
+}

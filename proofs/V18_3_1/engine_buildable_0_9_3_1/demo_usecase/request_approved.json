@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "request_id": "trade-001",
+    "timestamp": "2026-03-03T12:00:00Z",
+    "domain": "trading",
+    "mode": "live"
+  },
+  "intent": {
+    "type": "ACTION",
+    "name": "place_order",
+    "payload": {
+      "symbol": "BTCUSDT",
+      "side": "BUY",
+      "qty": 0.1
+    }
+  },
+  "context": {},
+  "governance": {
+    "irreversible": true
+  },
+  "attachments": {
+    "signatures": {
+      "human_signature": "approved_by_admin"
+    }
+  }
+}

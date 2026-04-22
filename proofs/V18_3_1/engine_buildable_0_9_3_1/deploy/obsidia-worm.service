@@ -1,0 +1,16 @@
+# deploy/obsidia-worm.service (systemd)
+[Unit]
+Description=Obsidia WORM audit snapshot uploader
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/obsidia
+Environment="OBSIDIA_WORM_ENABLED=1"
+Environment="OBSIDIA_WORM_ENDPOINT=http://127.0.0.1:9000"
+Environment="OBSIDIA_WORM_ACCESS_KEY=minioadmin"
+Environment="OBSIDIA_WORM_SECRET_KEY=minioadmin"
+Environment="OBSIDIA_WORM_BUCKET=obsidia-audit"
+Environment="OBSIDIA_WORM_PREFIX=prod"
+Environment="OBSIDIA_STORE_DIR=/opt/obsidia/api_store"
+ExecStart=/usr/bin/env sh -c "python api_server/worm_uploader.py"

@@ -1,0 +1,67 @@
+{
+  "source": {
+    "pivot_primary": "OBSIDIA_AGENTS_ATLAS_FINAL (2).xlsx",
+    "domains_primary": "OBSIDIA_AGENTS_ATLAS_FINAL (2).xlsx",
+    "arch_cognitive_primary": "OBSIDIA_AGENTS_ATLAS_FINAL (2).xlsx",
+    "supporting_component_sheet": "Architecture et Spécifications du Système Cognitif Obsidia.xlsx"
+  },
+  "counts_from_xls": {
+    "pivot_agents": 23,
+    "domaines_vrais": 13,
+    "domaines_architecture_cognitive": 8
+  },
+  "pivot_agents": [
+    "Cortex Central",
+    "Architecte fractal",
+    "Gardiens (éthique/cohérence/mémoire)",
+    "Inspecteurs",
+    "Calibrateur Central / Cockpit humain",
+    "Ordonnanceur cognitif (Scheduler)",
+    "Moteur RC_ε",
+    "Archiviste fractal",
+    "Observateur",
+    "Général (Double Cerveau)",
+    "Calibrateur",
+    "Gardien de cohérence",
+    "Gardien mémoire",
+    "Gardien d’alignement",
+    "Agent Hypothèse",
+    "Agent Simulation",
+    "Agent Vérification",
+    "Agent Décisionnel",
+    "Agent Socratique",
+    "Traducteur Universel",
+    "Terraformeur",
+    "Intuition Synthétique",
+    "Rêve"
+  ],
+  "domaines_vrais": [
+    "Architecture cognitive",
+    "Mécaniques obsidiennes",
+    "Énergie cognitive",
+    "Systèmes agentiques",
+    "Mathématiques",
+    "Physique & sciences naturelles",
+    "Informatique & IA",
+    "Monde réel",
+    "Sciences humaines",
+    "Langage & symbolique",
+    "Création & imaginaire",
+    "Cosmos & méta-réalité",
+    "Transversal"
+  ],
+  "architecture_cognitive_items": [
+    "Cortex Central",
+    "Architecte fractal",
+    "Calibrateur Central",
+    "Gardien de cohérence",
+    "Archiviste fractal",
+    "Observateur",
+    "Général (Double Cerveau)",
+    "Terraformeur"
+  ],
+  "notes": [
+    "Le fichier 'Architecture et Spécifications du Système Cognitif Obsidia.xlsx' contient explicitement la ligne 'Agents Pivots (23-24 agents)'.",
+    "Aucun fichier fourni ne liste explicitement '4 cortex' comme ensemble fermé; dans OBSIDIA_AGENTS_ATLAS_FINAL (1) la feuille CORE contient de nombreux agents dont le nom commence par 'Cortex' (62 uniques dans les 2000 premières lignes)."
+  ]
+}
