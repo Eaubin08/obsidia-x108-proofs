@@ -1,4 +1,4 @@
-\
+﻿\
 ---- MODULE X108 ----
 EXTENDS Naturals, Integers, TLC
 
@@ -8,10 +8,10 @@ EXTENDS Naturals, Integers, TLC
   Variables:
     tau     : Nat       \* gate threshold (non-negative)
     irr     : BOOLEAN   \* irreversibility flag
-    elapsed : Int       \* time since proposal; may be negative (clock skew)
+    elapsed : -10..10       \* time since proposal; may be negative (clock skew)
     baseAct : BOOLEAN   \* base decision wants to ACT (e.g., theta <= S)
 
-    decision ∈ {"HOLD","ACT"}
+    decision âˆˆ {"HOLD","ACT"}
 *)
 
 CONSTANTS TauMax, ElapsedMin, ElapsedMax
@@ -25,7 +25,7 @@ Init ==
   /\ irr \in BOOLEAN
   /\ elapsed \in ElapsedMin..ElapsedMax
   /\ baseAct \in BOOLEAN
-  /\ decision \in {"HOLD","ACT"}
+    /\ decision = IF irr /\ elapsed < tau THEN "HOLD" ELSE IF baseAct THEN "ACT" ELSE "HOLD"
 
 (*
   Gate rule:
@@ -33,8 +33,8 @@ Init ==
     else decision follows baseAct.
 *)
 GateDecision(t, i, e, b) ==
-  IF irr /\ elapsed < tau THEN "HOLD"
-  ELSE IF b THEN "ACT" ELSE "HOLD"
+    IF i /\ e < t THEN "HOLD"
+    ELSE IF b THEN "ACT" ELSE "HOLD"
 
 Next ==
   /\ tau' \in 0..TauMax
@@ -51,3 +51,4 @@ SafetyX108 ==
 
 THEOREM Spec => SafetyX108
 ====
+
