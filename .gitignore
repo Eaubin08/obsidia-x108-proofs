@@ -1,2 +1,6 @@
 
 proofs/lean/.lake/
+
+__pycache__/
+*.pyc
+*.pyo
