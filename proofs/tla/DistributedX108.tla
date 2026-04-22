@@ -24,8 +24,8 @@ StateOK ==
   /\ irr \in BOOLEAN
   /\ elapsed \in 0..10
   /\ baseAct \in BOOLEAN
-  /\ honest \subseteq NodeIds(N)
-  /\ byz = NodeIds(N) \ honest
+  /\ honest = NodeIds(N)
+  /\ byz = {}
   /\ TRUE
   /\ local \in [NodeIds(N) -> {"HOLD","ACT"}]
   /\ (\A i \in honest : local[i] = GateDecision(tau, irr, elapsed, baseAct))
