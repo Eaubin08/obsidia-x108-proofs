@@ -1,107 +1,79 @@
-# Obsidia — X-108 Public Proofs
+# Obsidia X-108 Public Proofs
 
-**Vérifiabilité publique du noyau de gouvernance déterministe Obsidia.**
+Public proof and verification repository for the deterministic governance core of Obsidia.
 
-> *"Obsidia n'est pas une IA générative. C'est un moteur de certitude conçu pour les infrastructures critiques, où l'aléa est une faille de sécurité."*
+## What this repository is
+This repository contains the public verification perimeter of Obsidia X-108:
+- Lean 4 formal proofs
+- TLA+ / TLC model checking
+- Python verifiers
+- public Sigma minimal layer
+- RFC3161 / TLC / Sigma cross-platform QA
+- public runner: run_all_proofs.ps1
 
-Ce dépôt contient **uniquement** les éléments permettant de comprendre, auditer et vérifier le système Obsidia. Il incarne notre doctrine de transparence : **Public = vérifiabilité. Privé = protection IP.**
+This is a public verification repository, not the full proprietary production engine.
 
-Il ne contient pas le moteur de production (propriétaire), mais fournit toutes les preuves mathématiques que ce moteur respecte strictement ses propres règles.
+## What is verified
+- Lean 4 builds successfully
+- TLC runs complete on the public specs
+- verify_all.py passes
+- verify_decision.py passes on canonical scenarios
+- Sigma public smoke tests pass
+- RFC3161 anchor schema tests pass
+- cross-platform QA passes
+- run_all_proofs.ps1 completes end-to-end
 
----
+## Quick start
+Prerequisites:
+- Python 3.11+ recommended
+- Java 17+
+- Lean 4 + Lake
+- tla2tools.jar available in %USERPROFILE%
 
-## Le Dual Obsidia : Cognition vs Gouvernance
-
-L'intelligence artificielle actuelle souffre d'un péché originel : l'imprévisibilité. Obsidia change de paradigme en séparant radicalement la cognition (l'IA) de la décision (le Juge).
-
-1. **L'Espace Latent (IA) :** Raisonne, propose, explore librement.
-2. **Le Noyau Déterministe (Obsidia Kernel) :** Juge, valide, scelle.
-
-Ce dépôt prouve le comportement du **Noyau Déterministe**. C'est le disjoncteur mathématique qui garantit qu'aucune action hors-périmètre ne sera jamais exécutée, peu importe l'erreur ou l'hallucination du système source.
-
----
-
-## Ce que contient ce dépôt
-
-| Dossier/Fichier | Contenu | Pour qui |
-| :--- | :--- | :--- |
-| `proofs/lean/` | Théorèmes formels vérifiés par Lean 4 (8 invariants du noyau) | Chercheurs, auditeurs formels |
-| `proofs/tla/` | Spécifications TLA+ du protocole X-108 (1,2M états explorés) | Ingénieurs systèmes, auditeurs |
-| `proofs/verifiers/` | Scripts Python pour vérifier les décisions et les sceaux Merkle | Tout auditeur technique |
-| `examples/` | Exemples de scénarios d'entrée pour tester les vérificateurs | Développeurs, intégrateurs |
-| `docs/AUDIT_GUIDE.md` | Guide d'audit technique complet | Tous |
-| `docs/GLOSSAIRE.md` | Définition des termes (Dual Obsidia, X-108, Chaîne Canonique...) | Nouveaux arrivants, décideurs |
-| `docs/LIMITS.md` | Limites structurelles et vecteurs d'attaque non couverts | RSSI, architectes sécurité |
-| `docs/SIGMA.md` | Description du Sigma Engine (pont entre l'IA et le noyau) | Architectes, intégrateurs |
-| `sigma/` | Documentation et tests du Sigma Engine (code de production propriétaire) | Développeurs, intégrateurs API |
-
----
-
-## Vérification rapide (3 commandes)
-
-Ne nous croyez pas sur parole. Vérifiez par vous-même l'intégrité de nos décisions.
-
-```bash
-# 1. Cloner ce dépôt
-git clone https://github.com/Eaubin08/obsidia-x108-proofs
-cd obsidia-x108-proofs
-
-# 2. Vérifier l'intégrité du Merkle Tree (preuve cryptographique)
-python3 proofs/verifiers/verify_merkle.py
-
-# 3. Vérifier tous les composants (tests complets)
-python3 proofs/verifiers/verify_all.py
-```
-
-**Sortie attendue :**
-```
-[INFO] Merkle root declared: b9ac7a047f846764caebf32edb8ad491a697865530b1386e2080c3f517652bf8
-[INFO] Format VALID (SHA-256 hex)
-[SUCCESS] All verifications passed.
-```
-
----
-
-## Validation Formelle : Résultats Vérifiés (v1.3.0)
-
-Obsidia n'est pas basé sur la confiance, mais sur la preuve. Chaque composant critique du moteur est formellement spécifié et vérifié.
-
-- **Lean 4 (`0 sorry`) :** Preuve formelle de la non-contradiction des règles de gouvernance. (Point d'entrée : [`proofs/lean/Obsidia.lean`](proofs/lean/Obsidia.lean))
-- **TLA+ (`1,2M états, 0 violation`) :** Vérification par modèle de l'absence de deadlock dans le protocole de veto. (Point d'entrée : [`proofs/tla/X108.tla`](proofs/tla/X108.tla))
-- **Ancrage Cryptographique (`RFC 3161`) :** Signature immuable de chaque décision validée par le Juge.
-
-Le fichier [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) contient le rapport de certification complet (v1.4.0, PASS).
-
----
-
-## Ce que ce dépôt ne contient PAS
-
-Ce dépôt ne contient intentionnellement pas :
-- Le moteur de production Python complet (propriétaire).
-- Les connecteurs métier et adapters.
-- Les stratégies d'orchestration avancées.
-- Les clés et secrets de déploiement.
-
-Pour un audit approfondi ou une démonstration contrôlée, consultez [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) et [`ASK_AN_AI.md`](ASK_AN_AI.md).
-
-Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez : **contact@obsidia.io**
-
----
-
-## Écosystème Obsidia
-
-- 🛡️ **Site Vitrine (Governance Core) :** [https://obsidia-governance-core-1030177622351.us-west1.run.app](https://obsidia-governance-core-1030177622351.us-west1.run.app)
-- 🧠 **Site Vitrine (Vision AGI) :** [https://obsidia-agi-10791614637.us-west1.run.app](https://obsidia-agi-10791614637.us-west1.run.app)
-- 📖 **Documentation :** [`AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) | [`GLOSSAIRE.md`](docs/GLOSSAIRE.md) | [`LIMITS.md`](docs/LIMITS.md) | [`SIGMA.md`](docs/SIGMA.md)
-
----
-
-*© 2026 Obsidia Governance. Tous droits réservés sur le moteur de production. Les fichiers de ce dépôt sont publiés sous licence [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) — utilisation non commerciale, sans modification, avec attribution obligatoire.*
-
-
-## Quick Start � Lancer les preuves
-
-`powershell
+Run all public proofs:
 .\run_all_proofs.ps1
-`\n\nPre-requis: Java 17+, Python 3.10+, 	la2tools.jar dans ~\, Lean 4 + Lake
 
+Expected result:
+- TLC: no error found
+- Lean: build completed successfully
+- verify_all: PASS
+- verify_decision: VALID
+- Sigma tests: PASS
+- RFC3161 anchor tests: PASS
+- final runner line: === DONE ===
+
+## Repository map
+- proofs/lean/             Lean 4 formal proof perimeter
+- formal/tla/              TLA+ specifications and TLC logs
+- proofs/                  Python verifiers and proof report
+- sigma/                   public Sigma minimal layer and tests
+- qa/cross-platform/       RFC3161 / TLC / Sigma QA
+- run_all_proofs.ps1       public end-to-end runner
+
+See also:
+- P1_FREEZE_NOTE.md
+- PUBLIC_STATUS.md
+- REPO_MAP.md
+- KNOWN_LIMITS.md
+
+## Scope of P1
+P1 covers:
+- public proof perimeter
+- public verification perimeter
+- reproducible local execution
+- local/remote repository consistency
+- public QA and public runner
+
+P1 does not cover:
+- full production deployment
+- full business adapters
+- complete institutional operator surface
+- permanent availability of external TSA providers
+- full multi-domain operating system layer
+
+## Current status
+P1 is closed.
+
+Reference:
+- branch: main
+- canonical technical closure commit: bd87e15
