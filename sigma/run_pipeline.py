@@ -14,9 +14,9 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from agents.contracts import TradingState, BankState, EcomState
-from agents.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline
-from agents.obsidia_sigma_v130 import ObsidiaSigmaMonitor
+from sigma.contracts import TradingState, BankState, EcomState
+from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline
+from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor
 
 
 def apply_sigma(result_dict: dict, sigma: ObsidiaSigmaMonitor) -> dict:
