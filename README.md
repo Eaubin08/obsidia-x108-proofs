@@ -97,3 +97,11 @@ Pour un audit approfondi sous NDA ou une démonstration contrôlée, contactez :
 ---
 
 *© 2026 Obsidia Governance. Tous droits réservés sur le moteur de production. Les fichiers de ce dépôt sont publiés sous licence [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) — utilisation non commerciale, sans modification, avec attribution obligatoire.*
+
+
+## Quick Start � Lancer les preuves
+
+`powershell
+.\run_all_proofs.ps1
+`\n\nPre-requis: Java 17+, Python 3.10+, 	la2tools.jar dans ~\, Lean 4 + Lake
+
