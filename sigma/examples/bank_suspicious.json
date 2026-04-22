@@ -1,0 +1,1 @@
+﻿{"domain":"bank","case_id":"bank_suspicious","amount":25000,"country":"FR","risk_flags":["velocity_spike","kyc_gap"],"expected_decision":"HOLD"}
