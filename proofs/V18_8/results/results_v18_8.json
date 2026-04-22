@@ -1,0 +1,73 @@
+{
+  "params": {
+    "tau": 10.0,
+    "Rmax": 0.65,
+    "ERmin": -0.01
+  },
+  "G1_determinism": true,
+  "G2_no_allow_before_tau": true,
+  "G3_convergence_at_tau": true,
+  "G4_no_oscillation_without_boundary": true,
+  "examples": {
+    "G2_history": [
+      {
+        "t": 0.0,
+        "decision": "HOLD",
+        "reasons": [
+          "X108_TIME_LOCK"
+        ]
+      },
+      {
+        "t": 1.0,
+        "decision": "HOLD",
+        "reasons": [
+          "X108_TIME_LOCK"
+        ]
+      },
+      {
+        "t": 5.0,
+        "decision": "HOLD",
+        "reasons": [
+          "X108_TIME_LOCK"
+        ]
+      },
+      {
+        "t": 9.9,
+        "decision": "HOLD",
+        "reasons": [
+          "X108_TIME_LOCK"
+        ]
+      }
+    ],
+    "G3_history": [
+      {
+        "t": 0.0,
+        "decision": "HOLD"
+      },
+      {
+        "t": 1.0,
+        "decision": "HOLD"
+      },
+      {
+        "t": 5.0,
+        "decision": "HOLD"
+      },
+      {
+        "t": 9.9,
+        "decision": "HOLD"
+      },
+      {
+        "t": 10.0,
+        "decision": "ALLOW"
+      },
+      {
+        "t": 10.1,
+        "decision": "ALLOW"
+      },
+      {
+        "t": 60.0,
+        "decision": "ALLOW"
+      }
+    ]
+  }
+}

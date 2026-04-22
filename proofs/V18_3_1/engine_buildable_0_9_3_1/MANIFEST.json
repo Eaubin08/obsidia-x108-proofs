@@ -1,0 +1,22 @@
+{
+  "added": "deploy/ (Caddy, nginx, docker-compose, systemd) + docs/PUBLIC_DEPLOY.md + API key header support",
+  "added_architecture_diagram": "docs/architecture_institutional_v3_2.png",
+  "added_attestation": "Daily attestation (audit hashes) + attestation chain + optional Ed25519 signing + systemd timer/service",
+  "added_exec_pack": "presentation_pack/ (non-technical executive pack)",
+  "added_institutional": "HMAC request signing + anti-replay + append-only audit hash chain + /v1/audit/chain",
+  "added_max_auth": "JWT (HS256) + /auth/token + OBSIDIA_AUTH_MODE (none/apikey/jwt/both)",
+  "added_mtls": "Caddy mTLS require_and_verify + docker-compose.mtls.yml",
+  "added_openapi": "docs/openapi.yaml + docs/OPENAPI_NOTE.md",
+  "added_usecase": "docs/USECASE_E2E_TRADING.md + demo_usecase/",
+  "added_whitepaper": "docs/OBSIDIA_Whitepaper_Infrastructure_v3_3.pdf",
+  "added_worm": "MinIO compose + optional S3 uploader + systemd timer/service for daily snapshots",
+  "built_at": "2026-03-03T11:00:44.638572Z",
+  "components": {
+    "api_server": "api_server/main.py",
+    "cli": "cli/obsidia_cli.py",
+    "docs": "docs/INTERFACE_CONTRACT.md"
+  },
+  "crypto_available_in_build_env": true,
+  "timestamp_utc": "2026-03-03T11:57:43Z",
+  "version": "v3.5_exec_pack"
+}

@@ -1,0 +1,32 @@
+{
+    email {$ACME_EMAIL}
+}
+
+{$OBSIDIA_DOMAIN} {
+
+    encode zstd gzip
+
+    # Require client certificate (mTLS)
+    tls {
+        client_auth {
+            mode require_and_verify
+            trusted_ca_cert_file /etc/caddy/client_ca.crt
+        }
+    }
+
+    # Rate limit
+    rate_limit {
+        zone obsidia_zone {
+            key {remote_ip}
+            events 60
+            window 1m
+        }
+    }
+
+    # Optional IP allowlist:
+# Edit this matcher or put your CIDRs here if you want hard allowlisting.
+# Example:
+# @allowlist remote_ip 1.2.3.4 10.0.0.0/8 192.168.0.0/16
+# handle @allowlist { ... } ; respond 403 otherwise.
+reverse_proxy 127.0.0.1:8000
+}

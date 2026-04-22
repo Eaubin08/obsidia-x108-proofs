@@ -1,0 +1,35 @@
+services:
+  obsidia_api:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ../:/app
+      - ./store:/store
+    environment:
+      - OBSIDIA_AUTH_MODE=both
+      - OBSIDIA_JWT_SECRET=${OBSIDIA_JWT_SECRET}
+      - OBSIDIA_API_KEY=${OBSIDIA_API_KEY}
+    command: >
+      sh -c "pip install --no-cache-dir fastapi uvicorn &&
+             uvicorn api_server.main:app --host 0.0.0.0 --port 8000"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      - ACME_EMAIL=${ACME_EMAIL}
+      - OBSIDIA_DOMAIN=${OBSIDIA_DOMAIN}
+    volumes:
+      - ./Caddyfile.mtls:/etc/caddy/Caddyfile:ro
+      - ./client_ca.crt:/etc/caddy/client_ca.crt:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "443:443"
+    depends_on:
+      - obsidia_api
+
+volumes:
+  caddy_data:
+  caddy_config:
