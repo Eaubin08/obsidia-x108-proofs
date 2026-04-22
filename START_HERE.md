@@ -1,236 +1,57 @@
-# START_HERE.md — Où Commencer ?
+﻿# START HERE — Guide de Navigation du Repo X-108
 
-**Version :** 1.0.0 · **Destiné à :** Tous les profils
+## Qui es-tu ?
 
----
+### Auditeur technique
+1. Lire `proofs/lean/Obsidia/` — preuves Lean 4 formelles
+2. Lire `formal/tla/` — specs TLA+ et invariants
+3. Lire `docs/LIMITS.md` — limites structurelles
+4. Exécuter `python3 proofs/verifiers/verify_all.py`
 
-## Avant de Commencer
+### Chercheur en vérification formelle
+1. Lire `proofs/lean/Obsidia/CryptoAssumptions.lean`
+2. Lire `formal/tla/X108.tla`
+3. Lire `docs/KERNEL_OVERVIEW.md`
+4. Voir `proofs/lean/wip/` pour les travaux en cours
 
-Ce dépôt public expose le **noyau de gouvernance ex ante Obsidia** pour compréhension, audit et vérification.
+### Développeur intégrateur
+1. Lire `README.md`
+2. Lire `docs/KERNEL_OVERVIEW.md`
+3. Exécuter `python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json`
+4. Lire `docs/AUDIT_GUIDE.md`
 
-**Important :** Ce n'est pas le moteur de production complet. C'est un support public structuré.
-
-Voir [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md) pour comprendre ce que ce dépôt est et n'est pas.
-
----
-
-## Ordre de Lecture Recommandé
-
-### Étape 1 : Comprendre le Projet (5 min)
-
-Lisez **dans cet ordre** :
-
-1. **[`README.md`](README.md)** — Vue d'ensemble publique
-   - Qu'est-ce qu'Obsidia ?
-   - Qu'est-ce que ce dépôt contient ?
-   - Comment vérifier rapidement ?
-
-2. **[`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)** — État exact du projet
-   - Ce que c'est / Ce que ce n'est pas
-   - Ce qui est prouvé / démontré / en cours
-   - Sigma Engine : statut public
-
-3. **[`PROOF_INDEX.md`](PROOF_INDEX.md)** — Index centralisé
-   - Où trouver quoi ?
-   - Quel est le statut de chaque élément ?
-   - Navigation par profil
+### Décideur / Régulateur
+1. Lire `PUBLIC_STATUS.md` — état exact du projet
+2. Lire `USE_CASES.md` — 5 cas d'usage concrets
+3. Lire `PROOF_INDEX.md` — index des preuves disponibles
 
 ---
 
-### Étape 2 : Choisir Votre Profil
+## Commandes de vérification rapide
 
-Selon qui vous êtes, suivez le chemin recommandé :
-
-#### 👨‍💼 Vous êtes un **Décideur / Régulateur**
-
-Lisez :
-1. [`README.md`](README.md)
-2. [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)
-3. [`docs/KERNEL_OVERVIEW.md`](docs/KERNEL_OVERVIEW.md) — Qu'est-ce que le kernel ?
-4. [`USE_CASES.md`](USE_CASES.md) — Cas d'usage concrets
-5. [`docs/LIMITS.md`](docs/LIMITS.md) — Limites structurelles
-
-**Temps estimé :** 30 min
-
----
-
-#### 🔬 Vous êtes un **Chercheur / Auditeur Formel**
-
-Lisez :
-1. [`README.md`](README.md)
-2. [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)
-3. [`docs/KERNEL_OVERVIEW.md`](docs/KERNEL_OVERVIEW.md)
-4. [`proofs/lean/Obsidia.lean`](proofs/lean/Obsidia.lean) — Preuves Lean 4
-5. [`proofs/tla/X108.tla`](proofs/tla/X108.tla) — Spécification TLA+
-6. [`docs/LIMITS.md`](docs/LIMITS.md) — Vecteurs non couverts
-
-**Temps estimé :** 2-3 heures
-
----
-
-#### 🔧 Vous êtes un **Auditeur Technique**
-
-Lisez :
-1. [`README.md`](README.md)
-2. [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)
-3. [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) — Procédure d'audit
-4. Exécutez :
-   ```bash
-   python3 proofs/verifiers/verify_all.py
-   ```
-5. Consultez :
-   - [`tests/test_*.py`](tests/) — Tests unitaires
-   - [`tests/adversarial/`](tests/adversarial/) — Tests adversariaux
-   - [`proofs/PROOFKIT_REPORT.json`](proofs/PROOFKIT_REPORT.json) — Rapport de certification
-
-**Temps estimé :** 1-2 heures
-
----
-
-#### 👨‍💻 Vous êtes un **Développeur / Intégrateur**
-
-Lisez :
-1. [`README.md`](README.md)
-2. [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)
-3. [`docs/KERNEL_OVERVIEW.md`](docs/KERNEL_OVERVIEW.md)
-4. [`docs/SIGMA.md`](docs/SIGMA.md) — Sigma Engine
-5. Explorez :
-   - [`examples/`](examples/) — Exemples de scénarios
-   - [`proofs/verifiers/verify_decision.py`](proofs/verifiers/verify_decision.py)
-6. Exécutez :
-   ```bash
-   python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json
-   ```
-
-**Temps estimé :** 1 heure
-
----
-
-#### 🤖 Vous êtes une **IA Externe (ChatGPT, Claude, etc.)**
-
-Lisez :
-1. **[`ASK_AN_AI.md`](ASK_AN_AI.md)** — Guide spécifique pour IA
-2. [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md)
-3. [`PROOF_INDEX.md`](PROOF_INDEX.md)
-4. Les fichiers pertinents selon votre question
-
-**Important :** Respectez strictement les consignes dans [`ASK_AN_AI.md`](ASK_AN_AI.md).
-
----
-
-## Vérification Rapide (3 Commandes)
-
-Ne nous croyez pas sur parole. Vérifiez par vous-même :
-
+Vérifier une décision :
 ```bash
-# 1. Cloner ce dépôt
-git clone https://github.com/Eaubin08/obsidia-x108-proofs
-cd obsidia-x108-proofs
-
-# 2. Vérifier l'intégrité du Merkle Tree
-python3 proofs/verifiers/verify_merkle.py
-
-# 3. Vérifier une décision d'exemple
 python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json
 ```
 
-**Sortie attendue :**
-```
-[INFO] Loading audit logs...
-[INFO] Reconstructing Merkle Root...
-[SUCCESS] Root matches 0x8f2e...
-[SUCCESS] Formal Proof Verified.
+Vérifier toutes les preuves :
+```bash
+python3 proofs/verifiers/verify_all.py
 ```
 
----
-
-## Navigation Rapide par Sujet
-
-### "Je veux comprendre le noyau"
-→ [`docs/KERNEL_OVERVIEW.md`](docs/KERNEL_OVERVIEW.md)
-
-### "Je veux voir les preuves formelles"
-→ [`proofs/lean/Obsidia.lean`](proofs/lean/Obsidia.lean) + [`proofs/tla/X108.tla`](proofs/tla/X108.tla)
-
-### "Je veux auditer les décisions"
-→ [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md) + [`proofs/verifiers/`](proofs/verifiers/)
-
-### "Je veux voir des cas d'usage"
-→ [`USE_CASES.md`](USE_CASES.md)
-
-### "Je veux connaître les limites"
-→ [`docs/LIMITS.md`](docs/LIMITS.md)
-
-### "Je veux comprendre Sigma"
-→ [`docs/SIGMA.md`](docs/SIGMA.md)
-
-### "Je veux voir des exemples"
-→ [`examples/`](examples/)
-
-### "Je veux lire les tests"
-→ [`tests/`](tests/) + [`tests/adversarial/`](tests/adversarial/)
-
-### "Je suis une IA"
-→ [`ASK_AN_AI.md`](ASK_AN_AI.md)
+Build Lean :
+```bash
+cd proofs/lean && lake build
+```
 
 ---
 
-## Glossaire Rapide
-
-| Terme | Signification |
-|---|---|
-| **X-108** | Protocole de gouvernance déterministe |
-| **Kernel** | Noyau qui juge les actions avant exécution |
-| **Ex ante** | Avant exécution (pas après) |
-| **ACT/ALLOW** | Action autorisée |
-| **HOLD** | Action retenue (attendre clarification) |
-| **BLOCK** | Action bloquée |
-| **Sigma Engine** | Pont entre agents cognitifs et kernel |
-| **Merkle Root** | Racine de l'arbre qui scelle les décisions |
-| **Decision ID** | Identifiant unique d'une décision |
-| **Trace ID** | Référence traçable pour audit |
+## Ordre de lecture recommandé
+1. `PUBLIC_STATUS.md` — ce que c'est, ce que ce n'est pas
+2. `PROOF_INDEX.md` — index complet du repo
+3. `README.md` — vue d'ensemble publique
+4. `docs/KERNEL_OVERVIEW.md` — spécification du noyau X-108
+5. `docs/LIMITS.md` — limites structurelles à connaître
 
 ---
-
-## Questions Fréquentes
-
-### Q : "Combien de temps pour comprendre ?"
-**R :** 30 min pour un décideur, 1-2h pour un auditeur, 2-3h pour un chercheur.
-
-### Q : "Par où je commence ?"
-**R :** Lisez [`README.md`](README.md), puis [`PUBLIC_STATUS.md`](PUBLIC_STATUS.md), puis choisissez votre profil ci-dessus.
-
-### Q : "Où est le code source complet ?"
-**R :** Le moteur de production est propriétaire. Ce dépôt expose les preuves et démonstrations du noyau.
-
-### Q : "Comment vérifier les décisions ?"
-**R :** Exécutez `python3 proofs/verifiers/verify_decision.py examples/bank_suspicious.json`.
-
-### Q : "Sigma est-il public ?"
-**R :** Sigma est partiellement public — documenté et testé, code de production hors repo.
-
-### Q : "Les preuves Lean sont-elles fermées ?"
-**R :** Presque. 5 invariants fermés (0 sorry), 2 en cours. ETA : semaine 3.
-
----
-
-## Ressources Externes
-
-- **Lean 4 :** https://lean-lang.org/
-- **TLA+ :** https://lamport.azurewebsites.net/tla/tla.html
-- **RFC 3161 :** https://tools.ietf.org/html/rfc3161
-
----
-
-## Besoin d'Aide ?
-
-- **Questions techniques :** Consultez [`docs/AUDIT_GUIDE.md`](docs/AUDIT_GUIDE.md)
-- **Questions conceptuelles :** Consultez [`docs/GLOSSAIRE.md`](docs/GLOSSAIRE.md)
-- **Questions sur les limites :** Consultez [`docs/LIMITS.md`](docs/LIMITS.md)
-- **Contact :** contact@obsidia.io
-
----
-
-**Dernière mise à jour :** 2026-04-03
-
-**Bon audit !** 🔍
+Dernière mise à jour : 2026-04-22
