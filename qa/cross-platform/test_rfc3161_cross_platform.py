@@ -1,293 +1,195 @@
 #!/usr/bin/env python3
-"""
-RFC3161 Cross-Platform Validation
-Tests RFC3161 verification against multiple TSA implementations
-"""
+"""RFC3161 / TLC / Sigma cross-platform validation — P1 public"""
 
-import subprocess
 import json
+import os
+import subprocess
 import sys
+import urllib.request
+import urllib.error
 from datetime import datetime
 from pathlib import Path
 
-# TSA endpoints (public, free tier)
+ROOT = Path(__file__).resolve().parent.parent.parent
+
 TSA_ENDPOINTS = {
-    "digicert": {
-        "url": "http://timestamp.digicert.com",
-        "name": "DigiCert",
-        "available": False
-    },
-    "sectigo": {
-        "url": "http://timestamp.sectigo.com",
-        "name": "Sectigo",
-        "available": False
-    },
-    "globalsign": {
-        "url": "http://timestamp.globalsign.com/tsa",
-        "name": "GlobalSign",
-        "available": False
-    },
-    "apple": {
-        "url": "http://timestamp.apple.com/ts01",
-        "name": "Apple",
-        "available": False
-    },
-    "freetsa": {
-        "url": "http://freetsa.org/tsr",
-        "name": "FreeTSA",
-        "available": False
-    }
+    "digicert":   {"url": "http://timestamp.digicert.com",       "name": "DigiCert"},
+    "sectigo":    {"url": "http://timestamp.sectigo.com",        "name": "Sectigo"},
+    "globalsign": {"url": "http://timestamp.globalsign.com/tsa", "name": "GlobalSign"},
+    "freetsa":    {"url": "http://freetsa.org/tsr",              "name": "FreeTSA"},
 }
 
-class RFC3161CrossPlatformTester:
+def probe_url(url: str):
+    try:
+        req = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            code = getattr(resp, "status", 200)
+            return True, str(code)
+    except urllib.error.HTTPError as e:
+        code = getattr(e, "code", None)
+        ok = code in (200, 400, 403, 404, 405, 415)
+        return ok, str(code)
+    except Exception as e:
+        return False, str(e)
+
+class P1CrossPlatformTester:
     def __init__(self):
         self.results = {
             "timestamp": datetime.now().isoformat(),
-            "tsa_availability": {},
-            "compatibility_matrix": {},
+            "rfc3161_local": {},
+            "rfc3161_network": {},
+            "tlc": {},
+            "sigma": {},
             "summary": {}
         }
-    
-    def check_tsa_availability(self):
-        """Check which TSA endpoints are available"""
-        print("=== Checking TSA Availability ===\n")
-        
-        for tsa_id, tsa_info in TSA_ENDPOINTS.items():
-            print(f"Testing {tsa_info['name']} ({tsa_info['url']})...", end=" ")
-            
-            try:
-                # Try to connect to TSA
-                result = subprocess.run(
-                    ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", tsa_info['url']],
-                    timeout=5,
-                    capture_output=True
-                )
-                
-                if result.returncode == 0:
-                    http_code = result.stdout.decode().strip()
-                    available = http_code in ["200", "400", "415"]  # 400/415 means TSA is there but wrong request
-                    TSA_ENDPOINTS[tsa_id]["available"] = available
-                    self.results["tsa_availability"][tsa_id] = {
-                        "name": tsa_info['name'],
-                        "url": tsa_info['url'],
-                        "available": available,
-                        "http_code": http_code
-                    }
-                    print(f"✅ Available (HTTP {http_code})" if available else f"⚠️ Unreachable")
-                else:
-                    print(f"❌ Error")
-                    self.results["tsa_availability"][tsa_id] = {
-                        "name": tsa_info['name'],
-                        "url": tsa_info['url'],
-                        "available": False,
-                        "error": str(result.stderr)
-                    }
-            except Exception as e:
-                print(f"❌ Exception: {str(e)}")
-                self.results["tsa_availability"][tsa_id] = {
-                    "name": tsa_info['name'],
-                    "url": tsa_info['url'],
-                    "available": False,
-                    "error": str(e)
-                }
-    
-    def test_openssl_versions(self):
-        """Test openssl compatibility"""
-        print("\n=== Testing OpenSSL Versions ===\n")
-        
-        openssl_versions = {}
-        
-        # Check openssl version
+
+    def test_rfc3161_local(self):
+        print("=== RFC3161 Local (openssl) ===")
+        r = {}
         try:
-            result = subprocess.run(
-                ["openssl", "version"],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode == 0:
-                version = result.stdout.strip()
-                print(f"OpenSSL version: {version}")
-                openssl_versions["version"] = version
-                openssl_versions["available"] = True
-            else:
-                print("❌ OpenSSL not available")
-                openssl_versions["available"] = False
+            res = subprocess.run(["openssl", "version"], capture_output=True, text=True, timeout=5)
+            r["openssl_available"] = res.returncode == 0
+            r["openssl_version"] = res.stdout.strip() if res.returncode == 0 else (res.stderr or "").strip()
         except Exception as e:
-            print(f"❌ OpenSSL error: {str(e)}")
-            openssl_versions["available"] = False
-        
-        # Check ts command availability
+            r["openssl_available"] = False
+            r["openssl_version"] = str(e)
+
         try:
-            result = subprocess.run(
-                ["openssl", "ts", "-help"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            if result.returncode == 0 or "ts" in result.stderr:
-                print("✅ openssl ts command available")
-                openssl_versions["ts_command"] = True
-            else:
-                print("❌ openssl ts command not available")
-                openssl_versions["ts_command"] = False
-        except Exception as e:
-            print(f"❌ openssl ts error: {str(e)}")
-            openssl_versions["ts_command"] = False
-        
-        self.results["openssl_compatibility"] = openssl_versions
-    
-    def test_tlc_versions(self):
-        """Test TLC versions"""
-        print("\n=== Testing TLC Versions ===\n")
-        
-        tlc_versions = {}
-        
-        # Check tlc availability
-        try:
-            result = subprocess.run(
-                ["tlc", "-version"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            if result.returncode == 0:
-                version = result.stdout.strip() or result.stderr.strip()
-                print(f"TLC version: {version}")
-                tlc_versions["version"] = version
-                tlc_versions["available"] = True
-            else:
-                print("⚠️ TLC not available (install with: apt-get install tla-tools)")
-                tlc_versions["available"] = False
-        except Exception as e:
-            print(f"⚠️ TLC not found: {str(e)}")
-            tlc_versions["available"] = False
-        
-        self.results["tlc_compatibility"] = tlc_versions
-    
-    def test_sigma_implementations(self):
-        """Test Sigma implementations"""
-        print("\n=== Testing Sigma Implementations ===\n")
-        
-        sigma_tests = {}
-        
-        # Check obsidia_sigma_v130.py
-        try:
-            result = subprocess.run(
-                ["python3", "server/python_agents/obsidia_sigma_v130.py"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            if result.returncode == 0 or "Usage" in result.stderr:
-                print("✅ obsidia_sigma_v130.py available")
-                sigma_tests["obsidia_sigma_v130"] = True
-            else:
-                print("⚠️ obsidia_sigma_v130.py error")
-                sigma_tests["obsidia_sigma_v130"] = False
-        except Exception as e:
-            print(f"❌ obsidia_sigma_v130.py error: {str(e)}")
-            sigma_tests["obsidia_sigma_v130"] = False
-        
-        # Check sigma_monitor.py
-        try:
-            result = subprocess.run(
-                ["python3", "server/python_agents/sigma_monitor.py"],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            if result.returncode == 0 or "Usage" in result.stderr:
-                print("✅ sigma_monitor.py available")
-                sigma_tests["sigma_monitor"] = True
-            else:
-                print("⚠️ sigma_monitor.py error")
-                sigma_tests["sigma_monitor"] = False
-        except Exception as e:
-            print(f"❌ sigma_monitor.py error: {str(e)}")
-            sigma_tests["sigma_monitor"] = False
-        
-        self.results["sigma_compatibility"] = sigma_tests
-    
-    def generate_compatibility_matrix(self):
-        """Generate compatibility matrix"""
-        print("\n=== Compatibility Matrix ===\n")
-        
-        matrix = {
-            "rfc3161": {
-                "openssl_available": self.results["openssl_compatibility"].get("available", False),
-                "ts_command_available": self.results["openssl_compatibility"].get("ts_command", False),
-                "tsa_endpoints_available": sum(1 for v in self.results["tsa_availability"].values() if v.get("available")),
-                "total_tsa_endpoints": len(self.results["tsa_availability"])
-            },
-            "tla": {
-                "tlc_available": self.results["tlc_compatibility"].get("available", False),
-                "tlc_version": self.results["tlc_compatibility"].get("version", "unknown")
-            },
-            "sigma": {
-                "obsidia_sigma_v130_available": self.results["sigma_compatibility"].get("obsidia_sigma_v130", False),
-                "sigma_monitor_available": self.results["sigma_compatibility"].get("sigma_monitor", False)
+            res = subprocess.run(["openssl", "ts", "-help"], capture_output=True, text=True, timeout=5)
+            r["ts_command"] = (res.returncode == 0) or ("ts" in (res.stderr or ""))
+        except Exception:
+            r["ts_command"] = False
+
+        print(f"  openssl: {r.get('openssl_version', 'N/A')}")
+        print(f"  openssl ts: {r.get('ts_command', False)}")
+        self.results["rfc3161_local"] = r
+
+    def test_rfc3161_network(self):
+        print("=== RFC3161 Réseau (TSA endpoints) ===")
+        available = 0
+        for tsa_id, info in TSA_ENDPOINTS.items():
+            ok, code = probe_url(info["url"])
+            self.results["rfc3161_network"][tsa_id] = {
+                "name": info["name"],
+                "available": ok,
+                "http_code_or_error": code
             }
-        }
-        
-        self.results["compatibility_matrix"] = matrix
-        
-        print("RFC3161 Compatibility:")
-        print(f"  - OpenSSL available: {matrix['rfc3161']['openssl_available']}")
-        print(f"  - ts command available: {matrix['rfc3161']['ts_command_available']}")
-        print(f"  - TSA endpoints available: {matrix['rfc3161']['tsa_endpoints_available']}/{matrix['rfc3161']['total_tsa_endpoints']}")
-        
-        print("\nTLA Compatibility:")
-        print(f"  - TLC available: {matrix['tla']['tlc_available']}")
-        print(f"  - TLC version: {matrix['tla']['tlc_version']}")
-        
-        print("\nSigma Compatibility:")
-        print(f"  - obsidia_sigma_v130 available: {matrix['sigma']['obsidia_sigma_v130_available']}")
-        print(f"  - sigma_monitor available: {matrix['sigma']['sigma_monitor_available']}")
-    
+            if ok:
+                available += 1
+            print(f"  {info['name']}: {'OK' if ok else 'UNREACHABLE'} ({code})")
+        self.results["rfc3161_network"]["_count_available"] = available
+
+    def test_tlc(self):
+        print("=== TLC (via tla2tools.jar) ===")
+        jar_candidates = []
+        if "USERPROFILE" in os.environ:
+            jar_candidates.append(Path(os.environ["USERPROFILE"]) / "tla2tools.jar")
+        jar_candidates.extend([
+            Path.home() / "tla2tools.jar",
+            ROOT / "tla2tools.jar",
+        ])
+        env_jar = os.environ.get("TLC_JAR")
+        if env_jar:
+            jar_candidates.insert(0, Path(env_jar))
+
+        jar = next((p for p in jar_candidates if p.exists()), None)
+        r = {"jar_found": bool(jar), "jar_path": str(jar) if jar else None}
+
+        if not jar:
+            r["available"] = False
+            print("  tla2tools.jar non trouvé")
+        else:
+            try:
+                res = subprocess.run(["java", "-jar", str(jar), "-help"], capture_output=True, text=True, timeout=10)
+                r["available"] = (res.returncode == 0) or ("TLC" in ((res.stdout or "") + (res.stderr or "")))
+                print(f"  tla2tools.jar: {'OK' if r['available'] else 'ERROR'} ({jar})")
+            except Exception as e:
+                r["available"] = False
+                r["error"] = str(e)
+                print(f"  erreur java: {e}")
+
+        self.results["tlc"] = r
+
+    def test_sigma(self):
+        print("=== Sigma Public (sigma/) ===")
+        sigma_dir = ROOT / "sigma"
+        s = {"sigma_dir_exists": sigma_dir.exists()}
+
+        required = ["run_pipeline.py", "sigma_monitor.py", "sigma_config.json", "contracts.py"]
+        for fname in required:
+            s[fname] = (sigma_dir / fname).exists()
+            print(f"  {fname}: {'OK' if s[fname] else 'MISSING'}")
+
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(sigma_dir / "run_pipeline.py"), "bank", str(sigma_dir / "examples" / "bank_normal.json")],
+                capture_output=True,
+                text=True,
+                timeout=20
+            )
+            s["run_pipeline_exitcode"] = proc.returncode
+            s["run_pipeline_smoke"] = proc.returncode == 0
+            if proc.returncode != 0:
+                s["run_pipeline_error"] = proc.stderr.strip()
+            print(f"  run_pipeline smoke: {'OK' if s['run_pipeline_smoke'] else 'FAIL'}")
+        except Exception as e:
+            s["run_pipeline_smoke"] = False
+            s["run_pipeline_error"] = str(e)
+            print(f"  run_pipeline smoke: EXCEPTION {e}")
+
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(sigma_dir / "sigma_monitor.py"), "--json"],
+                capture_output=True,
+                text=True,
+                timeout=20
+            )
+            s["sigma_monitor_exitcode"] = proc.returncode
+            s["sigma_monitor_smoke"] = proc.returncode == 0
+            if proc.returncode != 0:
+                s["sigma_monitor_error"] = proc.stderr.strip()
+            print(f"  sigma_monitor smoke: {'OK' if s['sigma_monitor_smoke'] else 'FAIL'}")
+        except Exception as e:
+            s["sigma_monitor_smoke"] = False
+            s["sigma_monitor_error"] = str(e)
+            print(f"  sigma_monitor smoke: EXCEPTION {e}")
+
+        self.results["sigma"] = s
+
     def generate_summary(self):
-        """Generate summary"""
-        print("\n=== Summary ===\n")
-        
+        print("=== Résumé P1 ===")
+        local = self.results["rfc3161_local"]
+        network = self.results["rfc3161_network"]
+        tlc = self.results["tlc"]
+        sigma = self.results["sigma"]
+
         summary = {
-            "rfc3161_status": "ready" if self.results["openssl_compatibility"].get("available") else "incomplete",
-            "tla_status": "ready" if self.results["tlc_compatibility"].get("available") else "incomplete",
-            "sigma_status": "ready" if self.results["sigma_compatibility"].get("obsidia_sigma_v130") else "incomplete",
-            "overall_status": "production-ready" if all([
-                self.results["openssl_compatibility"].get("available"),
-                self.results["sigma_compatibility"].get("obsidia_sigma_v130")
-            ]) else "development"
+            "rfc3161_local": "PASS" if (local.get("openssl_available") and local.get("ts_command")) else "KNOWN_LIMIT",
+            "rfc3161_network": f"{network.get('_count_available', 0)}/{len(TSA_ENDPOINTS)} TSA joignables",
+            "tlc_via_jar": "PASS" if tlc.get("available") else "KNOWN_LIMIT (jar non installé ou non détecté)",
+            "sigma_public": "PASS" if (sigma.get("run_pipeline_smoke") and sigma.get("sigma_monitor_smoke")) else "INCOMPLETE",
+            "scope": "P1 PUBLIC - pas de statut global production-ready"
         }
-        
         self.results["summary"] = summary
-        
-        print(f"RFC3161 Status: {summary['rfc3161_status']}")
-        print(f"TLA Status: {summary['tla_status']}")
-        print(f"Sigma Status: {summary['sigma_status']}")
-        print(f"Overall Status: {summary['overall_status']}")
-    
+        for k, v in summary.items():
+            print(f"  {k}: {v}")
+
     def save_results(self):
-        """Save results to JSON"""
-        output_file = Path("server/python_agents/test_rfc3161_cross_platform_results.json")
-        with open(output_file, "w") as f:
-            json.dump(self.results, f, indent=2)
-        print(f"\n✅ Results saved to {output_file}")
-    
+        out = ROOT / "qa" / "cross-platform" / "rfc3161_cross_platform_results.json"
+        out.write_text(json.dumps(self.results, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"  Résultats: {out}")
+
     def run(self):
-        """Run all tests"""
-        print("RFC3161 Cross-Platform Validation\n")
+        print("RFC3161 / TLC / Sigma — Cross-Platform P1")
         print("=" * 50)
-        
-        self.check_tsa_availability()
-        self.test_openssl_versions()
-        self.test_tlc_versions()
-        self.test_sigma_implementations()
-        self.generate_compatibility_matrix()
+        self.test_rfc3161_local()
+        self.test_rfc3161_network()
+        self.test_tlc()
+        self.test_sigma()
         self.generate_summary()
         self.save_results()
-        
-        print("\n" + "=" * 50)
-        print("✅ Cross-platform validation complete")
+        print("=" * 50)
+        print("Validation complete")
 
 if __name__ == "__main__":
-    tester = RFC3161CrossPlatformTester()
-    tester.run()
+    P1CrossPlatformTester().run()
