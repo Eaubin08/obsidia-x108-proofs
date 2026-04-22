@@ -1,4 +1,4 @@
-﻿name: Verify proofs
+name: Verify proofs
 
 on:
   push:
