@@ -1,29 +1,64 @@
-﻿# Limites structurelles — obsidia-x108-proofs
+# Limits
 
-## 1. CryptoAssumptions — Hash abstrait synthétique
-Le type `Hash` dans `proofs/lean/Obsidia/CryptoAssumptions.lean` est une
-structure inductive synthétique, pas SHA-256 réel.
-Les propriétés démontrées sont valides dans le modèle abstrait uniquement.
-Pour une preuve crypto réelle, une bibliothèque comme `mathlib4` avec des
-hypothèses cryptographiques standards serait nécessaire.
+## Purpose
 
-**Impact :** Les invariants crypto sont formellement corrects sur leur modèle.
-Ils ne garantissent pas les propriétés de SHA-256 en production.
+This document states the structural limits of the public P1 perimeter.
 
-## 2. TLC — Résultats de model-checking non persistés
-Les logs TLC ne sont pas dans le repo par défaut.
-Ils sont générés automatiquement via CI (GitHub Actions) et archivés comme artifacts.
-Pour relancer manuellement : `tlc formal/tla/X108.tla -config formal/tla/X108.cfg`
-Les résultats vont dans `formal/tla/tlc_results/`.
+## External TSA dependencies
 
-## 3. Fichiers WIP Lean
-Les fichiers dans `proofs/lean/wip/` sont des brouillons d'expérimentation.
-Ils ne sont pas des preuves finales. Voir `proofs/lean/wip/README.md`.
+RFC3161 TSA providers are third-party services.
+Network reachability can vary by environment and over time.
 
-## 4. TemporalRaw.lean
-Si présent, `TemporalRaw.lean` est un fichier brut non vérifié.
-À déplacer dans `proofs/lean/wip/` si confirmé comme brouillon.
+A successful TSA reachability result means:
+- the public QA probe succeeded in the validated environment
 
-## 5. CI/CD
-GitHub Actions actif via `.github/workflows/verify.yml`.
-Relance automatiquement `lake build` (Lean) et TLC à chaque push sur main.
+It does not mean:
+- long-term control over the external service
+- guaranteed uptime of all third-party endpoints
+- sovereignty over those providers
+
+## RFC3161 local vs RFC3161 network
+
+Two different things are validated in P1:
+
+RFC3161 local:
+- local tooling such as `openssl`
+- local ability to inspect or exercise RFC3161-related tooling
+
+RFC3161 network:
+- public reachability checks against external TSA endpoints
+- current public QA probe logic includes `HEAD -> GET` fallback to reduce false negatives
+
+These two layers must not be confused.
+
+## TLC and Lean prerequisites
+
+P1 assumes the local environment can provide:
+- Java / `tla2tools.jar`
+- Lean 4 / Lake
+- Python 3.11+ recommended
+
+If one of these prerequisites is missing, the corresponding public run may fail locally without invalidating the frozen public state itself.
+
+## Formal model vs production reality
+
+Lean and TLA+ results in this public repository validate the public model perimeter.
+They do not automatically claim complete production equivalence for every proprietary integration layer.
+
+## Public perimeter vs production engine
+
+This repository is a public proof and verification perimeter.
+It is not the complete proprietary production engine.
+
+It does not claim:
+- complete production publication
+- complete business deployment
+- final operator cockpit publication
+
+## Generated artifacts
+
+Some logs and state artifacts can be regenerated locally by running the public scripts.
+These generated artifacts are not the canonical freeze reference by themselves.
+The canonical freeze reference remains:
+- public freeze commit `99e966a`
+- tag `p1-freeze-2026-04-22`

@@ -1,104 +1,71 @@
-# PROOF_SCOPE.md — Taxonomie Canonique du Périmètre de Preuve Public
+# Proof Scope
 
-**Version :** 1.0.0  
-**Dernière mise à jour :** 2026-04-20
+## Purpose
 
----
+This document defines how to read the public proof perimeter of `obsidia-x108-proofs` after the P1 freeze.
 
-## But du document
+## Core rule
 
-Ce fichier sert de **source de vérité unique** pour interpréter correctement les chiffres, claims et objets de preuve mentionnés dans le dépôt public `obsidia-x108-proofs`.
+Not all PASS results describe the same kind of object.
 
-Il répond à une ambiguïté simple :
+The public P1 perimeter contains several categories that must be read separately.
 
-- un **invariant** n'est pas un **théorème** ;
-- un **pack de vérification** n'est pas une **famille d'invariants** ;
-- un **nombre d'états TLA+ explorés** n'est pas un **nombre de preuves Lean** ;
-- le **repo public** n'est pas l'**écosystème complet Obsidia**.
+## Canonical categories
 
----
+### 1. Lean formal proofs
+These are machine-checked formal proofs inside the public Lean perimeter.
 
-## Règle de lecture obligatoire
+### 2. TLA+ / TLC model checking
+These are bounded model-checking runs over the public TLA+ specifications.
 
-Tout chiffre ou claim public doit être lu selon **sa catégorie**.
+### 3. Python executable verification
+These are public verification scripts such as:
+- `verify_all.py`
+- `verify_decision.py`
 
-Les catégories canoniques sont les suivantes :
+### 4. Public Sigma minimal layer
+These are public Sigma entry points, examples and smoke tests.
 
-1. **Invariants publics nommés**
-2. **Théorèmes Lean**
-3. **Packs / checkers exécutés publiquement**
-4. **États TLA+ explorés**
-5. **Artefacts cryptographiques et auditables**
-6. **Éléments documentés mais non intégralement publics**
+### 5. QA and network probing
+These are public QA checks such as:
+- RFC3161 anchor schema checks
+- cross-platform QA
+- TSA endpoint probing
 
-Ces catégories **ne sont pas directement comparables entre elles**.
+## What the public repo is
 
----
+This repository is:
+- a public proof layer
+- a public verification layer
+- a public execution layer for P1
 
-## Tableau canonique des claims publics
+## What the public repo is not
 
-| Claim / compteur | Ce que cela désigne réellement | Catégorie | Périmètre | Vérifiable publiquement dans ce repo ? | Artefact source |
-|---|---|---|---|---|---|
-| `D1 / E2 / G1 / G2 / G3` | Invariants explicitement nommés dans le statut public | Invariants publics nommés | Repo public | Oui | `PUBLIC_STATUS.md`, `docs/KERNEL_OVERVIEW.md` |
-| `8 invariants du noyau` | Formulation README plus large sur les invariants du noyau public | Invariants publics (formulation README) | Repo public / façade publique | Partiellement, taxonomie détaillée à aligner | `README.md` |
-| `33 théorèmes` | Volume de théorèmes Lean mentionné au niveau écosystème / intégration | Théorèmes Lean | Écosystème élargi, pas seulement le sous-périmètre vérifié par `verify_all.py` | Pas intégralement via un seul script public | `ECOSYSTEM.md` |
-| `1.2M états` | États explorés via model checking TLA+ | États TLA+ explorés | Repo public | Oui | `proofs/tla/X108.tla`, docs associés |
-| `V18.3.1 / V18.7 / V18.8` | Packs / checkers réellement exécutés par le pipeline public | Packs de vérification exécutés | Repo public exécutable | Oui | `proofs/verifiers/verify_all.py`, `proofs/PROOFKIT_REPORT.json` |
-| `PASS` dans `PROOFKIT_REPORT.json` | Résultat effectif du pipeline public lancé | Résultat de run | Repo public exécutable | Oui | `proofs/PROOFKIT_REPORT.json` |
-| `Sigma partiellement public` | Documentation + tests + configuration exposés, code de production complet non exposé | Élément documenté mais partiellement public | Repo public + écosystème | Partiellement | `PUBLIC_STATUS.md`, `docs/SIGMA.md` |
+This repository is not:
+- the complete proprietary production engine
+- the complete production Sigma layer
+- the final operator cockpit
+- a claim that every production adapter is published here
 
----
+## Interpretation hierarchy
 
-## Interprétation correcte des nombres
+When in doubt, read in this order:
+1. `P1_FREEZE_NOTE.md`
+2. `PUBLIC_STATUS.md`
+3. `README.md`
+4. this file
+5. the actual scripts and tests
 
-### 1. Les 5 invariants nommés
-Quand le repo parle de `D1 / E2 / G1 / G2 / G3`, il parle d'un **sous-ensemble explicitement nommé** dans le statut public.
+## Allowed public claim
 
-### 2. Les 8 invariants du README
-Quand le README mentionne `8 invariants du noyau`, il ne faut pas lire cela comme "8 checks exécutés par `verify_all.py`". C'est une **formulation de façade publique**, qui doit être interprétée à la lumière du présent fichier.
+The allowed public claim is:
 
-### 3. Les 33 théorèmes
-Quand `ECOSYSTEM.md` mentionne `33 théorèmes`, il parle d'un **périmètre plus large** que le seul pipeline de vérification publique `verify_all.py`.
+The public P1 proof / verification / execution perimeter of Obsidia X-108 is closed, reproducible, and publicly frozen.
 
-### 4. Les V18.x
-Quand `verify_all.py` exécute `V18_3_1`, `V18_7`, `V18_8`, il parle de **packs / familles de checks exécutés**, et non du total de toutes les preuves mathématiques existantes dans l'écosystème.
+## Not allowed public over-claim
 
-### 5. Les 1.2M états
-Ce compteur concerne **TLA+**. Il ne doit pas être confondu avec le nombre de théorèmes Lean ni avec le nombre d'invariants publics nommés.
-
----
-
-## Formulation publique recommandée
-
-Pour éviter les dérives documentaires, les autres fichiers du dépôt devraient employer les formulations suivantes :
-
-- **"Voir `docs/PROOF_SCOPE.md` pour l'interprétation exacte des compteurs et claims publics."**
-- **"Le périmètre public vérifiable par script est défini par `proofs/verifiers/verify_all.py` et résumé dans `proofs/PROOFKIT_REPORT.json`."**
-- **"Les mentions d'écosystème (ex. nombre total de théorèmes Lean) ne décrivent pas nécessairement le sous-périmètre public exécutable de ce dépôt seul."**
-
----
-
-## Hiérarchie de vérité
-
-En cas de doute, lire les couches dans cet ordre :
-
-1. `docs/PROOF_SCOPE.md` — taxonomie canonique
-2. `proofs/verifiers/verify_all.py` — périmètre exécutable réel
-3. `proofs/PROOFKIT_REPORT.json` — résultat de run effectif
-4. `PUBLIC_STATUS.md` — état public narré
-5. `README.md` — façade de présentation
-6. `ECOSYSTEM.md` — écosystème élargi
-
----
-
-## Déclaration finale
-
-**Ce dépôt public ne doit pas être lu comme si tous ses chiffres parlaient du même objet.**
-
-Il contient plusieurs niveaux de vérité :
-- façade publique,
-- statut public discipliné,
-- pipeline de vérification effectivement exécutable,
-- et documentation d'écosystème plus large.
-
-Le présent fichier sert à empêcher toute confusion entre ces niveaux.
+The following over-claims should be avoided:
+- "the full production engine is public"
+- "all production business adapters are public"
+- "external TSA availability is guaranteed"
+- "P1 equals final production deployment"
