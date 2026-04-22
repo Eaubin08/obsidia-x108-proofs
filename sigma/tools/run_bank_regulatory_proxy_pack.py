@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 PACK_PATH = ROOT / "sigma" / "batches" / "bank_regulatory_proxy_pack.json"
 RUN_PIPELINE = ROOT / "sigma" / "run_pipeline.py"
 OUT_DIR = ROOT / "artifacts" / "p2_bank_regulatory_proxy"
+PAYLOAD_DIR = OUT_DIR / "_payloads"
 
 GATE_RANK = {"ALLOW": 0, "HOLD": 1, "BLOCK": 2}
 BUSINESS_RANK = {"AUTORISER": 0, "ANALYSER": 1, "BLOQUER": 2}
@@ -49,9 +50,13 @@ def observed_reason_family(reason_code: str) -> str:
     return "OTHER"
 
 def run_case(item: dict) -> dict:
+    PAYLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    payload_path = PAYLOAD_DIR / f"{item['case_id']}.json"
+    payload_path.write_text(json.dumps(item["payload"], indent=2, ensure_ascii=False), encoding="utf-8")
+
     t0 = time.perf_counter()
     p = subprocess.run(
-        [sys.executable, str(RUN_PIPELINE), "bank", json.dumps(item["payload"])],
+        [sys.executable, str(RUN_PIPELINE), "bank", str(payload_path)],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -71,10 +76,35 @@ def run_case(item: dict) -> dict:
             "expected_reason_family": item["expected_reason_family"],
             "ok": False,
             "elapsed_ms": elapsed_ms,
-            "error": p.stderr.strip(),
+            "error": {
+                "returncode": p.returncode,
+                "stdout": (p.stdout or "").strip(),
+                "stderr": (p.stderr or "").strip(),
+                "payload_path": str(payload_path),
+            },
         }
 
-    out = json.loads(p.stdout)
+    try:
+        out = json.loads(p.stdout)
+    except Exception:
+        return {
+            "case_id": item["case_id"],
+            "family": item["family"],
+            "zone": item["zone"],
+            "business_expected_decision": item["business_expected_decision"],
+            "expected_min_gate": item["expected_min_gate"],
+            "expected_reason_family": item["expected_reason_family"],
+            "ok": False,
+            "elapsed_ms": elapsed_ms,
+            "error": {
+                "returncode": 0,
+                "stdout": (p.stdout or "").strip(),
+                "stderr": (p.stderr or "").strip(),
+                "payload_path": str(payload_path),
+                "json_decode": "failed",
+            },
+        }
+
     gate = out.get("x108_gate")
     reason_family = observed_reason_family(out.get("reason_code"))
     sigma_ok = bool(out.get("sigma_report", {}).get("pass") is True)
@@ -135,12 +165,15 @@ def main():
             fieldnames=[
                 "case_id","family","zone","business_expected_decision","expected_min_gate","expected_reason_family",
                 "observed_reason_family","reason_family_match","x108_gate_observed","severity","reason_code",
-                "gap_status","sigma_ok","floor_ok","ok","elapsed_ms","decision_id","trace_id","attestation_ref","note"
+                "gap_status","sigma_ok","floor_ok","ok","elapsed_ms","decision_id","trace_id","attestation_ref","note","error"
             ]
         )
         writer.writeheader()
         for r in rows:
-            writer.writerow({k: r.get(k) for k in writer.fieldnames})
+            rr = dict(r)
+            if "error" in rr and isinstance(rr["error"], dict):
+                rr["error"] = json.dumps(rr["error"], ensure_ascii=False)
+            writer.writerow({k: rr.get(k) for k in writer.fieldnames})
 
     summary = {
         "total_cases": len(rows),
