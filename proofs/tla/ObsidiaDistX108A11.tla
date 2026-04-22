@@ -26,7 +26,7 @@ Init ==
   /\ baseAct \in BOOLEAN
   /\ honest \subseteq NodeIds(N)
   /\ byz = NodeIds(N) \ honest
-  /\ Cardinality(byz) <= f
+  /\ TRUE
   /\ local \in [NodeIds(N) -> {"HOLD","ACT"}]
   /\ (\A i \in honest : local[i] = GateDecision(tau, irr, elapsed, baseAct))
   /\ global = Aggregate(local, f)

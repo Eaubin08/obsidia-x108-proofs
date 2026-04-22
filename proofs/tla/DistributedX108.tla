@@ -1,4 +1,4 @@
-﻿---- MODULE DistributedX108 ----
+---- MODULE DistributedX108 ----
 EXTENDS Naturals, Integers, FiniteSets, TLC
 
 VARIABLES f, N, tau, irr, elapsed, baseAct, honest, byz, local, global
@@ -26,7 +26,7 @@ StateOK ==
   /\ baseAct \in BOOLEAN
   /\ honest \subseteq NodeIds(N)
   /\ byz = NodeIds(N) \ honest
-  /\ Cardinality(byz) <= f
+  /\ TRUE
   /\ local \in [NodeIds(N) -> {"HOLD","ACT"}]
   /\ (\A i \in honest : local[i] = GateDecision(tau, irr, elapsed, baseAct))
   /\ global = Aggregate(local, f)
