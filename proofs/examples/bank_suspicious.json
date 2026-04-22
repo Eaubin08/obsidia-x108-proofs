@@ -1,12 +1,12 @@
 {
   "domain": "banking",
+  "decision_id": "DEC-BANK-002",
+  "trace_id": "TRACE-BANK-002",
   "market_verdict": "BLOCK",
-  "confidence": 0.82,
-  "x108_gate": "DENY",
-  "reason_code": "CONSENSUS_STRONG_FRAUD_SIGNAL",
+  "x108_gate": "BLOCK",
+  "confidence": 0.97,
+  "reason_code": "FRAUD_RISK_HIGH",
   "severity": "HIGH",
-  "decision_id": "DEC_20260403_001_BANKING",
-  "trace_id": "TRACE_20260403_001_BANKING",
-  "attestation_ref": "RFC3161:20260403143216Z",
-  "source": "Obsidia_Kernel_v1.4.0"
+  "attestation_ref": "RFC3161-BANK-002",
+  "source": "fixture"
 }
