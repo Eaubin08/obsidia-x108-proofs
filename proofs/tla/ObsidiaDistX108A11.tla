@@ -1,4 +1,4 @@
-﻿---- MODULE ObsidiaDistX108A11 ----
+---- MODULE ObsidiaDistX108A11 ----
 EXTENDS Naturals, Integers, FiniteSets, TLC
 
 VARIABLES f, N, tau, irr, elapsed, baseAct, honest, byz, local, global
@@ -33,6 +33,8 @@ Init ==
 
 Next ==
   UNCHANGED Vars
+
+Spec == Init /\ [][Next]_Vars
 
 SafetyDistributed ==
   (irr /\ elapsed < tau) => (global # "ACT")
