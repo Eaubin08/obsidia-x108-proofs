@@ -1,34 +1,56 @@
 # P1 Freeze Note
 
-Status: P1 CLOSED
+## Status
 
-Repository: obsidia-x108-proofs
-Branch: main
-Canonical technical closure: bd87e15
+P1 CLOSED
 
-This freeze locks the public P1 perimeter as a stable reference before opening P2.
+## Canonical references
 
-P1 covers:
+- Technical closure commit: `bd87e15`
+- Public freeze commit: `99e966a`
+- Official freeze tag: `p1-freeze-2026-04-22`
+
+## Why these references are separated
+
+`bd87e15`
+- closes the technical shadow zones of P1
+- includes the hardening of TSA endpoint probing
+
+`99e966a`
+- adds the public closure pack
+- freezes P1 as a readable public perimeter
+
+`p1-freeze-2026-04-22`
+- is the canonical public freeze tag for P1
+
+## Validated perimeter
+
+P1 publicly validates:
 - Lean 4 formal proof perimeter
-- TLA+ / TLC public model checking perimeter
-- Python verification scripts
+- TLA+ / TLC public model-checking perimeter
+- Python executable verification
 - Sigma public minimal layer
+- RFC3161 anchor schema checks
 - RFC3161 / TLC / Sigma cross-platform QA
 - public end-to-end runner
-- local / remote consistency checks
+- local / remote consistency at closure
 
-P1 does not cover:
-- proprietary production engine internals
+## Not claimed by P1
+
+P1 does not claim:
+- full proprietary production engine publication
 - complete business deployment
-- full banking / trading / e-commerce production adapters
-- institutional cockpit / operator layer
-- guaranteed availability of third-party TSA providers
+- final production operator surface
+- permanent control of third-party TSA availability
 
-Validation state:
-- local = remote
-- worktree clean at closure
-- all critical checks passed
-- runner completed with === DONE ===
+## Closure condition
 
-Next step:
+At public freeze:
+- local and remote references were aligned
+- the worktree was clean
+- all critical public checks passed
+- the public freeze was pushed and tagged
+
+## Next step
+
 P2 BANK

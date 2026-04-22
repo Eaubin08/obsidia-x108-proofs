@@ -1,36 +1,80 @@
-# Le Sigma Engine
+# Sigma Public P1
 
-## 1. Qu'est-ce que le Sigma Engine ?
+## Purpose
 
-Le **Sigma Engine** est le composant de validation et d'orchestration qui fait le pont entre le Noyau Déterministe (Obsidia Kernel) et le monde réel. 
+This document explains what Sigma means in the public P1 perimeter of `obsidia-x108-proofs`.
 
-Si le noyau X-108 est le "juge" qui évalue les règles mathématiques, le Sigma Engine est "l'huissier" qui s'assure que :
-1. Les données entrantes sont bien formées avant d'être jugées.
-2. La décision du juge est correctement ancrée cryptographiquement (Merkle Tree).
-3. L'exécution finale respecte strictement la décision rendue.
+## What Sigma public P1 is
 
-## 2. Rôle dans l'Architecture
+Sigma public P1 is the public minimal Sigma layer exposed in this repository.
 
-Dans l'architecture globale, le Sigma Engine se situe entre les agents périphériques et le noyau déterministe :
+It includes:
+- `sigma/run_pipeline.py`
+- `sigma/sigma_monitor.py`
+- `sigma/contracts.py`
+- `sigma/protocols.py`
+- `sigma/examples/`
+- `sigma/tests/`
 
-`Agents Cognitifs (Espace Latent) -> SIGMA ENGINE -> Noyau Déterministe (X-108)`
+This public layer is sufficient to:
+- run public Sigma smoke scenarios
+- inspect public Sigma inputs and outputs
+- verify that Sigma public entry points behave correctly inside the P1 perimeter
 
-Il a trois responsabilités principales :
+## What Sigma public P1 is not
 
-### A. Formatage Canonique
-Il reçoit les intentions brutes des agents IA (ex: "Je veux acheter pour 10 millions de BTC") et les convertit dans le format canonique exigé par le protocole X-108 (payload JSON strict avec métriques de volatilité, de friction et de régime de marché).
+Sigma public P1 is not:
+- the full proprietary production Sigma layer
+- the full production orchestration system
+- the final business operating layer
 
-### B. Validation des Invariants Locaux
-Avant même de solliciter le noyau, le Sigma Engine vérifie les invariants de base (ex: est-ce que le montant est positif ? est-ce que l'agent est autorisé à parler ?). S'il y a une erreur grossière, il rejette la requête immédiatement sans consommer de ressources de preuve.
+The public repository exposes a minimal, auditable, runnable Sigma perimeter.
+It does not claim to publish all production internals.
 
-### C. Ancrage et Traçabilité
-Une fois la décision rendue par le noyau (`ALLOW`, `HOLD`, `BLOCK`), le Sigma Engine génère l'identifiant unique de la décision (`decision_id`), la trace (`trace_id`), et met à jour l'arbre de Merkle pour garantir l'auditabilité parfaite de l'événement.
+## Public Sigma entry points
 
-## 3. Preuves de fonctionnement
+Primary public commands:
 
-Le bon fonctionnement du Sigma Engine est prouvé par la batterie de tests continus (v1.3.0) :
-- **Tests unitaires (pytest) :** 100% PASS (22/22)
-- **Tests d'intégration (vitest) :** 100% PASS (39/39)
-- **Batteries adversariales :** Plus de 1 million de cas testés sans faille.
+Run the public Sigma pipeline on a normal bank example:
+`python .\sigma\run_pipeline.py bank .\sigma\examples\bank_normal.json`
 
-*Note : Le code source du Sigma Engine fait partie du moteur de production propriétaire et n'est pas inclus dans ce dépôt public.*
+Run the public Sigma monitor:
+`python .\sigma\sigma_monitor.py --json`
+
+Run Sigma tests:
+`python -W ignore -m pytest .\sigma\tests -v`
+
+## What a successful Sigma public run means
+
+A successful Sigma public run means:
+- the public minimal Sigma layer is present
+- the public Sigma entry points execute correctly
+- the public examples and smoke tests pass
+- the public outputs remain readable and structured inside P1
+
+It does not mean:
+- the full production Sigma layer is published
+- all proprietary production adapters are exposed
+- P1 has become a complete business product
+
+## Public output reading
+
+Typical public output includes:
+- `market_verdict`
+- `x108_gate`
+- `reason_code`
+- `decision_id`
+- `trace_id`
+- `ticket_required`
+- `ticket_id`
+- `attestation_ref`
+- `sigma_report`
+
+Interpretation:
+- these outputs show that the public minimal Sigma layer is connected to the public P1 verification perimeter
+- they do not imply that the full proprietary production Sigma implementation is included
+
+## Position inside P1
+
+Sigma public P1 belongs to the public proof / verification / execution perimeter.
+It is one public layer of P1, not the whole private production architecture.
