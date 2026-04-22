@@ -1,5 +1,10 @@
-# run_all_proofs.ps1 — Lance les preuves publiques Obsidia X-108 (P1)
+# run_all_proofs.ps1 - Lance les preuves publiques Obsidia X-108 (P1)
 $env:PYTHONIOENCODING = "utf-8"
+$env:PYTHONUTF8 = "1"
+$env:PYTHONWARNINGS = "ignore"
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [Console]::OutputEncoding
+chcp 65001 | Out-Null
 $env:PATH += ";$env:USERPROFILE\bin;C:\Program Files\OpenSSL-Win64\bin"
 
 $ROOT = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -18,7 +23,7 @@ if (Test-Path $TLC) {
 }
 else {
     Write-Host "=== TLC ===" -ForegroundColor Yellow
-    Write-Host "tla2tools.jar non trouve dans $TLC"
+    Write-Host "tla2tools.jar not found in $TLC"
 }
 
 Write-Host "=== LEAN ===" -ForegroundColor Cyan
@@ -40,10 +45,10 @@ Write-Host "=== SIGMA PUBLIC ===" -ForegroundColor Cyan
 python sigma\run_pipeline.py bank sigma\examples\bank_normal.json 2>&1 | Tee-Object $LOGS\sigma_bank_normal.log
 python sigma\run_pipeline.py bank sigma\examples\bank_suspicious.json 2>&1 | Tee-Object $LOGS\sigma_bank_suspicious.log
 python sigma\sigma_monitor.py --json 2>&1 | Tee-Object $LOGS\sigma_monitor.log
-python -m pytest sigma\tests -v 2>&1 | Tee-Object $LOGS\sigma_tests.log
+python -W ignore -m pytest sigma\tests -v 2>&1 | Tee-Object $LOGS\sigma_tests.log
 
 Write-Host "=== QA RFC3161 / TLC / SIGMA ===" -ForegroundColor Cyan
 python qa\cross-platform\test_rfc3161_cross_platform.py 2>&1 | Tee-Object $LOGS\qa_rfc3161.log
-python -m pytest qa\cross-platform\test_rfc3161_anchor_schema.py -v 2>&1 | Tee-Object $LOGS\qa_rfc3161_anchor_schema.log
+python -W ignore -m pytest qa\cross-platform\test_rfc3161_anchor_schema.py -v 2>&1 | Tee-Object $LOGS\qa_rfc3161_anchor_schema.log
 
 Write-Host "=== DONE ===" -ForegroundColor Green

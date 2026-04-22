@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RFC3161 / TLC / Sigma cross-platform validation — P1 public"""
+"""RFC3161 / TLC / Sigma cross-platform validation - P1 public"""
 
 import json
 import os
@@ -18,6 +18,13 @@ TSA_ENDPOINTS = {
     "globalsign": {"url": "http://timestamp.globalsign.com/tsa", "name": "GlobalSign"},
     "freetsa":    {"url": "http://freetsa.org/tsr",              "name": "FreeTSA"},
 }
+
+def _env():
+    env = os.environ.copy()
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONWARNINGS"] = "ignore"
+    return env
 
 def probe_url(url: str):
     try:
@@ -47,7 +54,15 @@ class P1CrossPlatformTester:
         print("=== RFC3161 Local (openssl) ===")
         r = {}
         try:
-            res = subprocess.run(["openssl", "version"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run(
+                ["openssl", "version"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=5,
+                env=_env(),
+            )
             r["openssl_available"] = res.returncode == 0
             r["openssl_version"] = res.stdout.strip() if res.returncode == 0 else (res.stderr or "").strip()
         except Exception as e:
@@ -55,7 +70,15 @@ class P1CrossPlatformTester:
             r["openssl_version"] = str(e)
 
         try:
-            res = subprocess.run(["openssl", "ts", "-help"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run(
+                ["openssl", "ts", "-help"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=5,
+                env=_env(),
+            )
             r["ts_command"] = (res.returncode == 0) or ("ts" in (res.stderr or ""))
         except Exception:
             r["ts_command"] = False
@@ -65,7 +88,7 @@ class P1CrossPlatformTester:
         self.results["rfc3161_local"] = r
 
     def test_rfc3161_network(self):
-        print("=== RFC3161 Réseau (TSA endpoints) ===")
+        print("=== RFC3161 Reseau (TSA endpoints) ===")
         available = 0
         for tsa_id, info in TSA_ENDPOINTS.items():
             ok, code = probe_url(info["url"])
@@ -97,16 +120,24 @@ class P1CrossPlatformTester:
 
         if not jar:
             r["available"] = False
-            print("  tla2tools.jar non trouvé")
+            print("  tla2tools.jar not found")
         else:
             try:
-                res = subprocess.run(["java", "-jar", str(jar), "-help"], capture_output=True, text=True, timeout=10)
+                res = subprocess.run(
+                    ["java", "-jar", str(jar), "-help"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=10,
+                    env=_env(),
+                )
                 r["available"] = (res.returncode == 0) or ("TLC" in ((res.stdout or "") + (res.stderr or "")))
                 print(f"  tla2tools.jar: {'OK' if r['available'] else 'ERROR'} ({jar})")
             except Exception as e:
                 r["available"] = False
                 r["error"] = str(e)
-                print(f"  erreur java: {e}")
+                print(f"  java error: {e}")
 
         self.results["tlc"] = r
 
@@ -125,7 +156,10 @@ class P1CrossPlatformTester:
                 [sys.executable, str(sigma_dir / "run_pipeline.py"), "bank", str(sigma_dir / "examples" / "bank_normal.json")],
                 capture_output=True,
                 text=True,
-                timeout=20
+                encoding="utf-8",
+                errors="replace",
+                timeout=20,
+                env=_env(),
             )
             s["run_pipeline_exitcode"] = proc.returncode
             s["run_pipeline_smoke"] = proc.returncode == 0
@@ -142,7 +176,10 @@ class P1CrossPlatformTester:
                 [sys.executable, str(sigma_dir / "sigma_monitor.py"), "--json"],
                 capture_output=True,
                 text=True,
-                timeout=20
+                encoding="utf-8",
+                errors="replace",
+                timeout=20,
+                env=_env(),
             )
             s["sigma_monitor_exitcode"] = proc.returncode
             s["sigma_monitor_smoke"] = proc.returncode == 0
@@ -157,7 +194,7 @@ class P1CrossPlatformTester:
         self.results["sigma"] = s
 
     def generate_summary(self):
-        print("=== Résumé P1 ===")
+        print("=== Resume P1 ===")
         local = self.results["rfc3161_local"]
         network = self.results["rfc3161_network"]
         tlc = self.results["tlc"]
@@ -166,9 +203,9 @@ class P1CrossPlatformTester:
         summary = {
             "rfc3161_local": "PASS" if (local.get("openssl_available") and local.get("ts_command")) else "KNOWN_LIMIT",
             "rfc3161_network": f"{network.get('_count_available', 0)}/{len(TSA_ENDPOINTS)} TSA joignables",
-            "tlc_via_jar": "PASS" if tlc.get("available") else "KNOWN_LIMIT (jar non installé ou non détecté)",
+            "tlc_via_jar": "PASS" if tlc.get("available") else "KNOWN_LIMIT (jar not installed or not detected)",
             "sigma_public": "PASS" if (sigma.get("run_pipeline_smoke") and sigma.get("sigma_monitor_smoke")) else "INCOMPLETE",
-            "scope": "P1 PUBLIC - pas de statut global production-ready"
+            "scope": "P1 PUBLIC - no global production-ready claim"
         }
         self.results["summary"] = summary
         for k, v in summary.items():
@@ -176,11 +213,11 @@ class P1CrossPlatformTester:
 
     def save_results(self):
         out = ROOT / "qa" / "cross-platform" / "rfc3161_cross_platform_results.json"
-        out.write_text(json.dumps(self.results, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"  Résultats: {out}")
+        out.write_text(json.dumps(self.results, indent=2, ensure_ascii=True), encoding="utf-8")
+        print(f"  Results: {out}")
 
     def run(self):
-        print("RFC3161 / TLC / Sigma — Cross-Platform P1")
+        print("RFC3161 / TLC / Sigma - Cross-Platform P1")
         print("=" * 50)
         self.test_rfc3161_local()
         self.test_rfc3161_network()
