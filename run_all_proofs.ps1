@@ -1,4 +1,4 @@
-﻿# run_all_proofs.ps1 — Lance les preuves publiques Obsidia X-108 (P1)
+# run_all_proofs.ps1 — Lance les preuves publiques Obsidia X-108 (P1)
 $env:PYTHONIOENCODING = "utf-8"
 $env:PATH += ";$env:USERPROFILE\bin;C:\Program Files\OpenSSL-Win64\bin"
 
