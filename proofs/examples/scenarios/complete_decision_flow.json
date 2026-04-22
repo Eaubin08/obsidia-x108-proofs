@@ -8,5 +8,7 @@
   "reason_code": "REVIEW_PENDING",
   "severity": "MED",
   "attestation_ref": "RFC3161-FLOW-001",
-  "source": "fixture"
+  "source": "fixture",
+  "ticket_required": false,
+  "ticket_id": ""
 }
