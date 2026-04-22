@@ -1,16 +1,16 @@
 """
-Obsidia Sigma Monitor v1.4.1 Ã¢â‚¬â€ V18.9 Dynamic Stability Check
+Obsidia Sigma Monitor v1.4.1 - V18.9 Dynamic Stability Check
 ProofKit-compatible version with export_to_proofkit() and save_report().
 
-Architecture "Moteur Fixe + Config CalibrÃƒÂ©e" (v1.4.1) :
-  - Les seuils sont lus depuis sigma/sigma_config.json si prÃƒÂ©sent.
-  - Les valeurs par dÃƒÂ©faut v1.4.0 s'appliquent si le fichier est absent.
-  - Le moteur lui-mÃƒÂªme ne change jamais de structure (scellÃƒÂ©).
+Architecture "Moteur Fixe + Config Calibree" (v1.4.1):
+  - Les seuils sont lus depuis sigma/sigma_config.json si present.
+  - Les valeurs par defaut v1.4.0 s'appliquent si le fichier est absent.
+  - Le moteur lui-meme ne change jamais de structure (scelle).
 
-Surveille la trajectoire de dÃƒÂ©cision du moteur en temps rÃƒÂ©el :
-  - Vanishing Acceleration : zÃŒË† Ã¢â€°Ë† 0 (pas de flip brutal)
-  - Velocity Band Control : tau_min Ã¢â€°Â¤ ||Ã…Â¼|| Ã¢â€°Â¤ tau_max
-  - Coherence Stationarity : dÃŽÂ£c/dt = 0 (hash systÃƒÂ¨me stable)
+Surveille la trajectoire de decision du moteur en temps reel:
+  - Vanishing Acceleration : z_ddot ~= 0 (pas de flip brutal)
+  - Velocity Band Control : tau_min <= ||z_dot|| <= tau_max
+  - Coherence Stationarity : dSigma_c/dt = 0 (hash systeme stable)
 
 Usage :
     monitor = ObsidiaSigmaMonitor()
@@ -28,7 +28,7 @@ from typing import List, Dict, Any, Optional
 
 SEVERITY_MAP = {"S0": 0.0, "S1": 0.25, "S2": 0.5, "S3": 0.75, "S4": 1.0}
 
-# Valeurs par dÃƒÂ©faut v1.4.0 (utilisÃƒÂ©es si sigma_config.json absent)
+# Valeurs par defaut v1.4.0 (utilisees si sigma_config.json absent)
 _DEFAULT_TAU_MIN = 0.05
 _DEFAULT_TAU_MAX = 0.75
 _DEFAULT_ACCEL_LIMIT = 0.40
@@ -42,7 +42,7 @@ def _load_sigma_config(config_path: str = "sigma/sigma_config.json") -> Dict[str
     p = Path(config_path)
     if p.exists():
         try:
-            with open(p, "r") as f:
+            with open(p, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, IOError):
             pass
@@ -51,10 +51,10 @@ def _load_sigma_config(config_path: str = "sigma/sigma_config.json") -> Dict[str
 
 class ObsidiaSigmaMonitor:
     """
-    Moniteur de stabilitÃƒÂ© dynamique Sigma Ã¢â‚¬â€ V18.9.
+    Moniteur de stabilite dynamique Sigma - V18.9.
     Compatible ProofKit : export_to_proofkit() et save_report().
 
-    Les seuils sont chargÃƒÂ©s depuis sigma/sigma_config.json (si prÃƒÂ©sent),
+    Les seuils sont charges depuis sigma/sigma_config.json (si present),
     ce qui permet une calibration statistique sans modifier le code moteur.
     """
 
@@ -69,7 +69,7 @@ class ObsidiaSigmaMonitor:
         # Chargement de la config externe
         cfg = _load_sigma_config(config_path)
 
-        # PrioritÃƒÂ© : paramÃƒÂ¨tre explicite > config JSON > dÃƒÂ©faut v1.4.0
+        # Priorite : parametre explicite > config JSON > defaut v1.4.0
         self.tau_min = tau_min if tau_min is not None else cfg.get("tau_min", _DEFAULT_TAU_MIN)
         self.tau_max = tau_max if tau_max is not None else cfg.get("tau_max", _DEFAULT_TAU_MAX)
         self.accel_limit = accel_limit if accel_limit is not None else cfg.get("accel_limit", _DEFAULT_ACCEL_LIMIT)
@@ -77,7 +77,7 @@ class ObsidiaSigmaMonitor:
         self.config_source = config_path if Path(config_path).exists() else "defaults_v1.4.0"
 
         self.history: List[Dict[str, Any]] = []
-        self.steps: List[Dict[str, Any]] = []  # trace complÃƒÂ¨te de chaque step
+        self.steps: List[Dict[str, Any]] = []  # trace complete de chaque step
 
     # ------------------------------------------------------------------
     # Auto-calibration (ajustement dynamique des seuils sur l'historique)
@@ -85,9 +85,9 @@ class ObsidiaSigmaMonitor:
 
     def auto_calibrate(self) -> None:
         """
-        Ajuste tau_max basÃƒÂ© sur l'historique rÃƒÂ©cent (mÃƒÂ©thode 1.5x moyenne).
-        Ne modifie que l'instance en mÃƒÂ©moire, pas le fichier de config.
-        NÃƒÂ©cessite au moins 10 pas d'historique.
+        Ajuste tau_max base sur l'historique recent (methode 1.5x moyenne).
+        Ne modifie que l'instance en memoire, pas le fichier de config.
+        Necessite au moins 10 pas d'historique.
         """
         if len(self.history) < 10:
             return
@@ -108,7 +108,7 @@ class ObsidiaSigmaMonitor:
         return round(base + (risk_count * 0.05) + (contra_count * 0.1), 6)
 
     # ------------------------------------------------------------------
-    # Ãƒâ€°valuation d'un step
+    # Evaluation d'un step
     # ------------------------------------------------------------------
 
     def evaluate_step(
@@ -119,8 +119,8 @@ class ObsidiaSigmaMonitor:
         current_hash: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Ãƒâ€°value un step de dÃƒÂ©cision et met ÃƒÂ  jour l'historique.
-        Retourne le rapport de stabilitÃƒÂ© du step.
+        Evalue un step de decision et met a jour l'historique.
+        Retourne le rapport de stabilite du step.
         """
         z_t = self._to_vector(severity, len(risks), len(contras))
         t_t = time.time()
@@ -170,7 +170,7 @@ class ObsidiaSigmaMonitor:
         if step_report["violations"]:
             step_report["stability_status"] = "UNSTABLE"
 
-        # --- Mise ÃƒÂ  jour historique ---
+        # --- Mise a jour historique ---
         self.history.append({"val": z_t, "ts": t_t})
         if len(self.history) > 10:
             self.history.pop(0)
@@ -195,24 +195,21 @@ class ObsidiaSigmaMonitor:
                     "steps_evaluated": 0,
                     "violations_total": 0,
                     "violation_types": [],
-                    "stdout": "NO_DATA Ã¢â‚¬â€ no steps evaluated\n",
+                    "stdout": "NO_DATA - no steps evaluated\n",
                 }
             }
 
         total_violations = sum(len(s["violations"]) for s in self.steps)
-        all_violation_types = list(
-            {v for s in self.steps for v in s["violations"]}
-        )
+        all_violation_types = list({v for s in self.steps for v in s["violations"]})
         unstable_steps = [s for s in self.steps if s["stability_status"] == "UNSTABLE"]
         passed = len(unstable_steps) == 0
         status = "PASS" if passed else "FAIL"
 
-        # Calcul de la vitesse moyenne
         velocities = [s["velocity"] for s in self.steps if s["velocity"] > 0]
         mean_velocity = round(sum(velocities) / len(velocities), 6) if velocities else 0.0
 
         summary_lines = [
-            f"V18.9 Sigma Dynamic Stability Ã¢â‚¬â€ {status}",
+            f"V18.9 Sigma Dynamic Stability - {status}",
             f"Steps evaluated : {len(self.steps)}",
             f"Unstable steps  : {len(unstable_steps)}",
             f"Total violations: {total_violations}",
@@ -262,20 +259,20 @@ class ObsidiaSigmaMonitor:
     def save_report(self, report_path: str = "proofs/PROOFKIT_REPORT.json") -> None:
         """
         Fusionne le rapport V18.9 dans PROOFKIT_REPORT.json existant.
-        CrÃƒÂ©e le fichier s'il n'existe pas.
+        Cree le fichier s'il n'existe pas.
         """
         path = Path(report_path)
         sigma_entry = self.export_to_proofkit()
 
         if path.exists():
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 existing = json.load(f)
         else:
             existing = {}
 
         existing.update(sigma_entry)
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(existing, f, indent=2)
 
         print(f"[Sigma] Report saved to {report_path}")
