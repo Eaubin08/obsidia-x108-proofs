@@ -6,3 +6,32 @@ __pycache__/
 *.pyo
 
 artifacts/
+
+# --- local upstream workdirs ---
+.cache/upstream/
+
+# --- secrets / env ---
+.env
+.env.*
+!.env.example
+
+# --- runtime / logs ---
+*.log
+.runtime_logs/
+**/__pycache__/
+*.pyc
+
+# --- heavy local artifacts ---
+artifacts/**/raw/
+artifacts/**/tmp/
+artifacts/**/payloads/
+artifacts/**/exports/
+artifacts/**/db_dumps/
+
+# --- node / python local deps ---
+node_modules/
+.venv/
+venv/
+
+# --- local snapshot workdirs ---
+upstream_snapshots/
