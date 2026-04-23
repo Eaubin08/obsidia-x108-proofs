@@ -30,4 +30,8 @@ elseif ($Size -eq 10000) {
     if ($LASTEXITCODE -ne 0) { exit 1 }
 }
 
+Write-Host "`n=== P2 BANK / SCALE RESULTS DOC ===" -ForegroundColor Cyan
+python .\sigma\tools\generate_bank_scale_results_doc.py
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
 Write-Host "`n=== DONE / P2 BANK / SCALE PACK ===" -ForegroundColor Green
