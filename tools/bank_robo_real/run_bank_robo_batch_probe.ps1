@@ -8,7 +8,9 @@ param(
   [string]$ScenarioName = "",
   [switch]$KeepServer,
   [int]$RecentRetryCount = 5,
-  [int]$RecentRetryDelayMs = 350
+  [int]$RecentRetryDelayMs = 350,
+  [string]$BaseUrl = "",
+  [switch]$UseExistingServer
 )
 
 $ErrorActionPreference = "Stop"
@@ -131,6 +133,24 @@ function Find-EnvFile([string]$BankRoboSrc, [string]$Repo) {
   return $null
 }
 
+function Normalize-BaseUrl([string]$Url) {
+  if ([string]::IsNullOrWhiteSpace($Url)) { return $null }
+  return $Url.Trim().TrimEnd('/')
+}
+
+function Get-PortFromBaseUrl([string]$Url) {
+  try {
+    $uri = [Uri]$Url
+    if ($uri.IsDefaultPort) {
+      if ($uri.Scheme -eq "https") { return 443 }
+      return 80
+    }
+    return [int]$uri.Port
+  } catch {
+    return $null
+  }
+}
+
 function Start-BankRoboProcess([string]$BankRoboSrc, [hashtable]$envMap, [int]$PreferredPort, [string]$StdOutLog, [string]$StdErrLog) {
   $envLines = @(
     "`$env:NODE_ENV = 'development'",
@@ -195,6 +215,35 @@ function Wait-BankRoboReady([System.Diagnostics.Process]$proc, [string]$StdOutLo
   }
 }
 
+function Wait-ExistingServerReady([string]$BaseUrl, [int]$Attempts = 20, [int]$DelayMs = 1000) {
+  $probeUrl = $BaseUrl + "/api/trpc/banking.getRecentTransactions?input=" + [System.Uri]::EscapeDataString('{"json":{"limit":1}}')
+  $lastError = $null
+
+  for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+    try {
+      $resp = Invoke-RestMethod -Method GET -Uri $probeUrl -TimeoutSec 15
+      return [pscustomobject]@{
+        ok = $true
+        attempts = $attempt
+        probe_url = $probeUrl
+        payload = (Convert-ToPlain $resp)
+      }
+    } catch {
+      $lastError = $_.Exception.Message
+      if ($attempt -lt $Attempts) {
+        Start-Sleep -Milliseconds $DelayMs
+      }
+    }
+  }
+
+  return [pscustomobject]@{
+    ok = $false
+    attempts = $Attempts
+    probe_url = $probeUrl
+    error = $lastError
+  }
+}
+
 function Invoke-RecentWithRetry([string]$RecentUrl, [int]$MaxAttempts, [int]$DelayMs) {
   $lastErr = $null
   $lastRaw = $null
@@ -256,46 +305,82 @@ if ([string]::IsNullOrWhiteSpace($EnvFile)) {
 $envMap = @{}
 if ($EnvFile) { $envMap = Get-EnvMap $EnvFile }
 
+$UseExisting = $UseExistingServer -or -not [string]::IsNullOrWhiteSpace($BaseUrl)
+if ($UseExisting -and [string]::IsNullOrWhiteSpace($BaseUrl)) {
+  $BaseUrl = "http://localhost:$PreferredPort"
+}
+$BaseUrl = Normalize-BaseUrl $BaseUrl
+
 $Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $RunDir = Join-Path $Repo "artifacts\bank_robo_real\batch_probe\$Stamp"
-$StdOutLog = Join-Path $RunDir "server_stdout.log"
-$StdErrLog = Join-Path $RunDir "server_stderr.log"
+$StdOutLog = $null
+$StdErrLog = $null
 $RowsJsonl = Join-Path $RunDir "batch_probe_rows.jsonl"
 $SummaryJson = Join-Path $RunDir "batch_probe_summary.json"
 $MetaJson = Join-Path $RunDir "meta.json"
 
 New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 
-$stale = Get-NetTCPConnection -LocalPort $PreferredPort -State Listen -ErrorAction SilentlyContinue
-if ($stale) {
-  $procIds = $stale | Select-Object -ExpandProperty OwningProcess -Unique
-  foreach ($procId in $procIds) {
-    Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
+$proc = $null
+$actualPort = $null
+$mode = $(if ($UseExisting) { "existing_server" } else { "managed_server" })
+$existingReady = $null
+
+if ($UseExisting) {
+  $existingReady = Wait-ExistingServerReady -BaseUrl $BaseUrl -Attempts 20 -DelayMs 1000
+  if (-not $existingReady.ok) {
+    [ordered]@{
+      status = "existing_server_not_ready"
+      mode = $mode
+      base_url = $BaseUrl
+      preferred_port = $PreferredPort
+      env_file = $EnvFile
+      bank_robo_src = $BankRoboSrc
+      readiness_probe = $existingReady
+    } | ConvertTo-Json -Depth 20 | Set-Content -Encoding UTF8 $MetaJson
+
+    throw "existing server not ready at $BaseUrl"
   }
-  Start-Sleep -Seconds 2
+
+  $actualPort = Get-PortFromBaseUrl $BaseUrl
+} else {
+  $StdOutLog = Join-Path $RunDir "server_stdout.log"
+  $StdErrLog = Join-Path $RunDir "server_stderr.log"
+
+  $stale = Get-NetTCPConnection -LocalPort $PreferredPort -State Listen -ErrorAction SilentlyContinue
+  if ($stale) {
+    $procIds = $stale | Select-Object -ExpandProperty OwningProcess -Unique
+    foreach ($procId in $procIds) {
+      Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 2
+  }
+
+  $proc = Start-BankRoboProcess -BankRoboSrc $BankRoboSrc -envMap $envMap -PreferredPort $PreferredPort -StdOutLog $StdOutLog -StdErrLog $StdErrLog
+  $ready = Wait-BankRoboReady -proc $proc -StdOutLog $StdOutLog -StdErrLog $StdErrLog
+
+  if (-not $ready.ActualPort) {
+    [ordered]@{
+      status = "boot_failed"
+      mode = $mode
+      bank_robo_src = $BankRoboSrc
+      env_file = $EnvFile
+      preferred_port = $PreferredPort
+      stdout_log = $StdOutLog
+      stderr_log = $StdErrLog
+      stdout_length = $ready.StdOut.Length
+      stderr_length = $ready.StdErr.Length
+      process_id = $proc.Id
+      has_exited = $proc.HasExited
+    } | ConvertTo-Json -Depth 20 | Set-Content -Encoding UTF8 $MetaJson
+
+    throw "bank-robo did not become ready. Inspect: $StdOutLog / $StdErrLog"
+  }
+
+  $actualPort = $ready.ActualPort
+  $BaseUrl = "http://localhost:$actualPort"
 }
 
-$proc = Start-BankRoboProcess -BankRoboSrc $BankRoboSrc -envMap $envMap -PreferredPort $PreferredPort -StdOutLog $StdOutLog -StdErrLog $StdErrLog
-$ready = Wait-BankRoboReady -proc $proc -StdOutLog $StdOutLog -StdErrLog $StdErrLog
-
-if (-not $ready.ActualPort) {
-  [ordered]@{
-    status = "boot_failed"
-    bank_robo_src = $BankRoboSrc
-    env_file = $EnvFile
-    preferred_port = $PreferredPort
-    stdout_log = $StdOutLog
-    stderr_log = $StdErrLog
-    stdout_length = $ready.StdOut.Length
-    stderr_length = $ready.StdErr.Length
-    process_id = $proc.Id
-    has_exited = $proc.HasExited
-  } | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 $MetaJson
-
-  throw "bank-robo did not become ready. Inspect: $StdOutLog / $StdErrLog"
-}
-
-$BaseUrl = "http://localhost:$($ready.ActualPort)"
 $ProcessUrl = "$BaseUrl/api/trpc/banking.processTransaction"
 $RecentUrlBase = "$BaseUrl/api/trpc/banking.getRecentTransactions"
 
@@ -359,11 +444,14 @@ for ($i = 1; $i -le $Count; $i++) {
 
 $summary = [ordered]@{
   status = "ok"
+  mode = $mode
+  using_existing_server = $UseExisting
+  base_url = $BaseUrl
   bank_robo_src = $BankRoboSrc
   env_file = $EnvFile
   preferred_port = $PreferredPort
-  actual_port = $ready.ActualPort
-  process_id = $proc.Id
+  actual_port = $actualPort
+  process_id = $(if ($proc) { $proc.Id } else { $null })
   count = $Count
   recent_limit = $RecentLimit
   recent_retry_count = $RecentRetryCount
@@ -390,28 +478,34 @@ $summary | ConvertTo-Json -Depth 20 | Set-Content -Encoding UTF8 $SummaryJson
 
 [ordered]@{
   status = "ok"
+  mode = $mode
+  using_existing_server = $UseExisting
+  base_url = $BaseUrl
   bank_robo_src = $BankRoboSrc
   env_file = $EnvFile
   preferred_port = $PreferredPort
-  actual_port = $ready.ActualPort
-  process_id = $proc.Id
+  actual_port = $actualPort
+  process_id = $(if ($proc) { $proc.Id } else { $null })
   stdout_log = $StdOutLog
   stderr_log = $StdErrLog
+  readiness_probe = $existingReady
   rows_jsonl = $RowsJsonl
   summary_json = $SummaryJson
   created_at = (Get-Date).ToString("o")
-} | ConvertTo-Json -Depth 10 | Set-Content -Encoding UTF8 $MetaJson
+} | ConvertTo-Json -Depth 20 | Set-Content -Encoding UTF8 $MetaJson
 
-if (-not $KeepServer) {
+if (-not $UseExisting -and -not $KeepServer -and $proc) {
   Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host ""
 Write-Host "===== BANK-ROBO BATCH PROBE READY ====="
+Write-Host "Mode:        $mode"
+Write-Host "BaseUrl:     $BaseUrl"
 Write-Host "RunDir:      $RunDir"
 Write-Host "Rows:        $RowsJsonl"
 Write-Host "Summary:     $SummaryJson"
 Write-Host "Meta:        $MetaJson"
-Write-Host "Actual port: $($ready.ActualPort)"
+Write-Host "Actual port: $actualPort"
 Write-Host ""
 Get-Content $SummaryJson
