@@ -1,0 +1,6 @@
+Source repo:          C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\.cache\upstream\bank-robo-src
+Source commit:        83942b17090833109ab2befdb178f15f87fe5583
+Docs source root:     C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\docs\sources\bank-robo-real
+Runtime candidate:    C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\staging\runtime_candidates\bank_robo_real
+Copied count:         22
+Manifest:             C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\docs\sources\bank-robo-real\IMPORT_MANIFEST.json
