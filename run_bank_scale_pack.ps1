@@ -20,8 +20,13 @@ python .\sigma\tools\run_bank_scale_pack.py --size $Size --workers $Workers
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 if ($Size -eq 1000) {
-    Write-Host "`n=== P2 BANK / SCALE TESTS ===" -ForegroundColor Cyan
+    Write-Host "`n=== P2 BANK / SCALE TESTS (1K) ===" -ForegroundColor Cyan
     python -W ignore -m pytest .\sigma\tests\test_bank_scale_pack.py -v
+    if ($LASTEXITCODE -ne 0) { exit 1 }
+}
+elseif ($Size -eq 10000) {
+    Write-Host "`n=== P2 BANK / SCALE TESTS (10K) ===" -ForegroundColor Cyan
+    python -W ignore -m pytest .\sigma\tests\test_bank_scale_pack_10k.py -v
     if ($LASTEXITCODE -ne 0) { exit 1 }
 }
 
