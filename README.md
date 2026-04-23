@@ -29,6 +29,21 @@ Interpretation:
 - `99e966a` adds the public closure pack and freezes P1 as a readable public perimeter
 - `p1-freeze-2026-04-22` is the canonical public freeze tag
 
+## Audit target and branch readability
+
+For any external audit of the P1 public perimeter, the canonical target is:
+
+- tag: `p1-freeze-2026-04-22`
+- public freeze commit: `99e966a`
+
+`main` may contain post-freeze work after P1, including P2-bank and later public packs.
+This does not change the canonical P1 audit target.
+An auditor should read `main` as an active continuation branch, not as the definition of the frozen P1 perimeter.
+
+See also:
+- `P1_FREEZE_NOTE.md`
+- `docs/P1_FREEZE_AUDIT_READABILITY_NOTE.md`
+
 ## What is included
 
 Included in this public repository:
@@ -39,7 +54,7 @@ Included in this public repository:
 - public examples and public smoke tests
 - RFC3161 anchor schema checks
 - cross-platform QA for RFC3161 / TLC / Sigma
-- public runner: `run_all_proofs.ps1`
+- public runner: `.\\run_all_proofs.ps1`
 
 ## What is not included
 
@@ -83,7 +98,7 @@ Prerequisites:
 - `tla2tools.jar` available in `%USERPROFILE%`
 
 Run the public end-to-end verification:
-.\run_all_proofs.ps1
+`.\\run_all_proofs.ps1`
 
 ## Expected result
 
@@ -108,7 +123,7 @@ Auditor path:
 1. `PUBLIC_STATUS.md`
 2. `docs/PROOF_SCOPE.md`
 3. `docs/REPO_MAP.md`
-4. `.\run_all_proofs.ps1`
+4. `.\\run_all_proofs.ps1`
 
 Sigma-focused path:
 1. `docs/SIGMA.md`
@@ -126,6 +141,7 @@ RFC3161-focused path:
 Detailed guidance is available in:
 - `PUBLIC_STATUS.md`
 - `P1_FREEZE_NOTE.md`
+- `docs/P1_FREEZE_AUDIT_READABILITY_NOTE.md`
 - `docs/SIGMA.md`
 - `docs/LIMITS.md`
 - `docs/PROOF_SCOPE.md`
@@ -156,3 +172,8 @@ P1 is closed and publicly frozen.
 Public freeze reference:
 - commit: `99e966a`
 - tag: `p1-freeze-2026-04-22`
+
+Mainline note:
+- `main` can continue after the freeze
+- P2-bank and later public packs do not redefine P1
+- the frozen P1 perimeter remains the tag / commit above
