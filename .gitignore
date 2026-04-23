@@ -35,3 +35,8 @@ venv/
 
 # --- local snapshot workdirs ---
 upstream_snapshots/
+# --- local-only workdirs ---
+.local/
+staging/final_graft_plan/
+staging/transplant_mapped/
+staging/transplant_priority/
