@@ -68,6 +68,7 @@ def aggregate_ecom(votes: Iterable[AgentVote]) -> DomainAggregate:
     extra_metrics = {"pay_score": pay, "wait_score": wait, "refuse_score": refuse, "proof_ready": True, "deterministic": True}
     return DomainAggregate(Domain.ECOM, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
 
+
 def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregate:
     votes = list(votes)
     scores = defaultdict(float)
@@ -79,23 +80,52 @@ def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregat
     degraded = scores.get("DEGRADED_NAVIGATION", 0.0)
     abort = scores.get("ABORT_TRAJECTORY", 0.0)
 
-    market_verdict = (
-        "ABORT_TRAJECTORY" if abort > max(valid, recalc, degraded)
-        else "DEGRADED_NAVIGATION" if degraded > max(valid, recalc)
-        else "RECALC_TRAJECTORY" if recalc > valid
-        else "TRAJECTORY_VALID"
-    )
-
     confidence = max(valid, recalc, degraded, abort) / max(1.0, sum(scores.values()))
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+
+    truth_penalty = 0.0
+    if any(u in unknowns for u in ["GPS_MISSING", "INERTIAL_MISSING", "RADIO_MISSING"]):
+        truth_penalty += 0.35
+    if "TIME_SKEW_ACTIVE" in unknowns or "TEMPORAL_ALIGNMENT_UNCERTAIN" in unknowns:
+        truth_penalty += 0.22
+    if "BROWNOUT_ACTIVE" in unknowns or "POWER_STATE_UNCERTAIN" in unknowns:
+        truth_penalty += 0.28
+    if "SOURCE_CONFLICT" in contradictions:
+        truth_penalty += 0.45
+    if "ATTESTATION_NOT_READY" in unknowns:
+        truth_penalty += 0.10
+
+    sigma_score = confidence
+    truth_score = max(0.0, min(1.0, confidence - truth_penalty))
+    mismatch_gap = abs(sigma_score - truth_score)
+
+    if "SOURCE_CONFLICT" in contradictions or abort > max(valid, recalc, degraded):
+        market_verdict = "ABORT_TRAJECTORY"
+    elif "BROWNOUT" in risk_flags or "BROWNOUT_ACTIVE" in unknowns or "POWER_STATE_UNCERTAIN" in unknowns:
+        market_verdict = "DEGRADED_NAVIGATION"
+    elif (
+        "TIME_SKEW" in risk_flags
+        or "TIME_SKEW_ACTIVE" in unknowns
+        or "TEMPORAL_ALIGNMENT_UNCERTAIN" in unknowns
+        or any(u in unknowns for u in ["GPS_MISSING", "INERTIAL_MISSING", "RADIO_MISSING"])
+        or mismatch_gap >= 0.22
+    ):
+        market_verdict = "RECALC_TRAJECTORY"
+    else:
+        market_verdict = "TRAJECTORY_VALID"
+
     extra_metrics = {
         "trajectory_valid_score": valid,
         "recalc_score": recalc,
         "degraded_score": degraded,
         "abort_score": abort,
+        "truth_score": truth_score,
+        "sigma_score": sigma_score,
+        "mismatch_gap": mismatch_gap,
         "proof_ready": True,
         "deterministic": True,
     }
+
     return DomainAggregate(
         Domain.GPS_DEFENSE_AVIATION,
         market_verdict,
@@ -107,4 +137,3 @@ def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregat
         agent_votes=votes,
         extra_metrics=extra_metrics,
     )
-
