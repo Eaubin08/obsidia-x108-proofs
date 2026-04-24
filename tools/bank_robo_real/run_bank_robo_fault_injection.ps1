@@ -46,9 +46,9 @@ function Find-EnvFile([string]$BankRoboSrc, [string]$Repo) {
 function Invoke-UrlProbe([string]$url) {
   try {
     if ($url -match 'processTransaction$') {
-      $resp = Invoke-WebRequest -Method POST -Uri $url -ContentType "application/json" -Body '{"json":{}}' -TimeoutSec 10
+      $resp = Invoke-WebRequest -UseBasicParsing -Method POST -Uri $url -ContentType "application/json" -Body '{"json":{}}' -TimeoutSec 10
     } else {
-      $resp = Invoke-WebRequest -Method GET -Uri $url -TimeoutSec 10
+      $resp = Invoke-WebRequest -UseBasicParsing -Method GET -Uri $url -TimeoutSec 10
     }
     $body = [string]$resp.Content
     return [pscustomobject]@{
@@ -123,7 +123,7 @@ pnpm exec tsx server/_core/index.ts
   foreach ($p in $portsToProbe) {
     $probe += Invoke-UrlProbe "http://localhost:$p/"
     $probe += Invoke-UrlProbe "http://localhost:$p/api/trpc/banking.processTransaction"
-    $probe += Invoke-UrlProbe ("http://localhost:$p/api/trpc/banking.getRecentTransactions?input=" + [System.Uri]::EscapeDataString('{""json"":{""limit"":1}}'))
+    $probe += Invoke-UrlProbe ("http://localhost:$p/api/trpc/banking.getRecentTransactions?input=" + [System.Uri]::EscapeDataString('{"json":{"limit":1}}'))
   }
 
   $processProbe = $probe | Where-Object { $_.url -match 'processTransaction$' } | Select-Object -First 1
