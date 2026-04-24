@@ -63,15 +63,17 @@ class TimeSkewAgent(BaseAgent):
     def evaluate(self, state: GpsDefenseAviationState) -> AgentVote:
         skew = state.time_skew_score
         risk = ["TIME_SKEW"] if skew >= 0.5 else []
-        verdict = "RECALC_TRAJECTORY" if skew >= 0.5 else "TRAJECTORY_VALID"
+        severe_unknowns = ["TIME_SKEW_ACTIVE", "TEMPORAL_ALIGNMENT_UNCERTAIN"] if skew >= 0.8 else []
+        verdict = "ABORT_TRAJECTORY" if skew >= 0.9 else "RECALC_TRAJECTORY" if skew >= 0.5 else "TRAJECTORY_VALID"
         return AgentVote(
             self.agent_id,
             Domain.GPS_DEFENSE_AVIATION,
             Layer.PROOF,
             "time skew",
             max(0.0, 1.0 - skew),
-            Severity.S3 if skew >= 0.8 else Severity.S2 if skew >= 0.5 else Severity.S0,
+            Severity.S4 if skew >= 0.9 else Severity.S3 if skew >= 0.8 else Severity.S2 if skew >= 0.5 else Severity.S0,
             risk_flags=risk,
+            unknowns=severe_unknowns,
             proposed_verdict=verdict,
         )
 
@@ -80,15 +82,17 @@ class BrownoutAgent(BaseAgent):
     def evaluate(self, state: GpsDefenseAviationState) -> AgentVote:
         b = state.brownout_score
         risk = ["BROWNOUT"] if b >= 0.5 else []
-        verdict = "DEGRADED_NAVIGATION" if b >= 0.5 else "TRAJECTORY_VALID"
+        severe_unknowns = ["BROWNOUT_ACTIVE", "POWER_STATE_UNCERTAIN"] if b >= 0.8 else []
+        verdict = "ABORT_TRAJECTORY" if b >= 0.9 else "DEGRADED_NAVIGATION" if b >= 0.5 else "TRAJECTORY_VALID"
         return AgentVote(
             self.agent_id,
             Domain.GPS_DEFENSE_AVIATION,
             Layer.OBSERVATION,
             "brownout",
             max(0.0, 1.0 - b),
-            Severity.S3 if b >= 0.8 else Severity.S2 if b >= 0.5 else Severity.S0,
+            Severity.S4 if b >= 0.9 else Severity.S3 if b >= 0.8 else Severity.S2 if b >= 0.5 else Severity.S0,
             risk_flags=risk,
+            unknowns=severe_unknowns,
             proposed_verdict=verdict,
         )
 
