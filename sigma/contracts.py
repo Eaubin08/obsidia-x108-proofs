@@ -11,6 +11,7 @@ class Domain(str, Enum):
     BANK = "bank"
     ECOM = "ecom"
     META = "meta"
+    GPS_DEFENSE_AVIATION = "gps_defense_aviation"
 
 
 class Layer(str, Enum):
@@ -203,6 +204,25 @@ class BankState:
 
 
 @dataclass
+
+@dataclass
+class GpsDefenseAviationState:
+    mission_id: str
+    gps_available: bool
+    inertial_available: bool
+    radio_available: bool
+    elapsed_s: float = 0.0
+    min_required_elapsed_s: float = 108.0
+    position_confidence: float = 1.0
+    trajectory_drift_score: float = 0.0
+    source_conflict_score: float = 0.0
+    brownout_score: float = 0.0
+    time_skew_score: float = 0.0
+    environment_risk_score: float = 0.0
+    rollback_possible: bool = True
+    attestation_ready: bool = True
+
+
 class EcomState:
     session_id: str
     traffic_quality: float
