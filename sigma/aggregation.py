@@ -67,3 +67,44 @@ def aggregate_ecom(votes: Iterable[AgentVote]) -> DomainAggregate:
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
     extra_metrics = {"pay_score": pay, "wait_score": wait, "refuse_score": refuse, "proof_ready": True, "deterministic": True}
     return DomainAggregate(Domain.ECOM, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+
+def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregate:
+    votes = list(votes)
+    scores = defaultdict(float)
+    for v in votes:
+        scores[v.proposed_verdict] += v.confidence
+
+    valid = scores.get("TRAJECTORY_VALID", 0.0)
+    recalc = scores.get("RECALC_TRAJECTORY", 0.0)
+    degraded = scores.get("DEGRADED_NAVIGATION", 0.0)
+    abort = scores.get("ABORT_TRAJECTORY", 0.0)
+
+    market_verdict = (
+        "ABORT_TRAJECTORY" if abort > max(valid, recalc, degraded)
+        else "DEGRADED_NAVIGATION" if degraded > max(valid, recalc)
+        else "RECALC_TRAJECTORY" if recalc > valid
+        else "TRAJECTORY_VALID"
+    )
+
+    confidence = max(valid, recalc, degraded, abort) / max(1.0, sum(scores.values()))
+    contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+    extra_metrics = {
+        "trajectory_valid_score": valid,
+        "recalc_score": recalc,
+        "degraded_score": degraded,
+        "abort_score": abort,
+        "proof_ready": True,
+        "deterministic": True,
+    }
+    return DomainAggregate(
+        Domain.GPS_DEFENSE_AVIATION,
+        market_verdict,
+        confidence,
+        contradictions,
+        unknowns,
+        risk_flags,
+        evidence_refs,
+        agent_votes=votes,
+        extra_metrics=extra_metrics,
+    )
+
