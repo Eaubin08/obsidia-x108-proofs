@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from sigma.contracts import TradingState, BankState, EcomState
-from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline
+from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState
+from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline
 from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor
 
 
@@ -110,8 +110,11 @@ def main():
         elif domain == "ecom":
             state = EcomState(**state_data)
             result = run_ecom_pipeline(state)
+        elif domain == "gps_defense_aviation":
+            state = GpsDefenseAviationState(**state_data)
+            result = run_gps_defense_aviation_pipeline(state)
         else:
-            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom"}), file=sys.stderr)
+            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_defense_aviation"}), file=sys.stderr)
             sys.exit(1)
 
         result_dict = envelope_to_dict(result)
