@@ -55,6 +55,10 @@
               "target": "Package",
               "version": "[3.32.0, )"
             },
+            "SQLitePCLRaw.bundle_e_sqlite3": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            },
             "System.Configuration.ConfigurationManager": {
               "target": "Package",
               "version": "[10.0.7, )"
