@@ -1,0 +1,42 @@
+[
+  {
+    "id": "EC-001",
+    "name": "Standard Purchase",
+    "type": "PURCHASE",
+    "amount": 1200,
+    "coherence": 0.95,
+    "description": "A standard high-coherence purchase."
+  },
+  {
+    "id": "EC-002",
+    "name": "High Velocity Attack",
+    "type": "PURCHASE",
+    "amount": 500,
+    "coherence": 0.88,
+    "description": "Attempting multiple purchases in rapid succession (Temporal Lock check)."
+  },
+  {
+    "id": "EC-003",
+    "name": "Suspicious Agent Behavior",
+    "type": "BID",
+    "amount": 4500,
+    "coherence": 0.35,
+    "description": "Low coherence bid attempt (Safety Gate block)."
+  },
+  {
+    "id": "EC-004",
+    "name": "Large Marketplace Listing",
+    "type": "LIST",
+    "amount": 8000,
+    "coherence": 0.92,
+    "description": "High value listing with good coherence."
+  },
+  {
+    "id": "EC-005",
+    "name": "Reversible Micro-Transaction",
+    "type": "PURCHASE",
+    "amount": 50,
+    "coherence": 0.99,
+    "description": "Small reversible action that might bypass X-108 delay."
+  }
+]

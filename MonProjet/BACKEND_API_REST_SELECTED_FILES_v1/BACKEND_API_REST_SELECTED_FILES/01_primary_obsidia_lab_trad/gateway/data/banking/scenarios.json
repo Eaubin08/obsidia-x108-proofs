@@ -1,0 +1,232 @@
+[
+  {
+    "id": "TX-001",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 12500,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600000000,
+    "description": "Standard treasury rebalancing"
+  },
+  {
+    "id": "TX-002",
+    "sender": "Akaton Vault 01",
+    "recipient": "Unknown Wallet 0x742...",
+    "amount": 85000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600060000,
+    "description": "Large transfer to unverified recipient"
+  },
+  {
+    "id": "TX-003",
+    "sender": "Akaton Vault 02",
+    "recipient": "Liquidity Pool ETH/USDC",
+    "amount": 5000,
+    "currency": "USDC",
+    "type": "DEPOSIT",
+    "timestamp": 1715600120000,
+    "description": "Yield farming deposit"
+  },
+  {
+    "id": "TX-004",
+    "sender": "Akaton Vault 01",
+    "recipient": "Governance Multisig",
+    "amount": 1000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600180000,
+    "description": "Operational expenses"
+  },
+  {
+    "id": "TX-005",
+    "sender": "Akaton Vault 01",
+    "recipient": "Mixer Protocol",
+    "amount": 50000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600240000,
+    "description": "Suspicious privacy protocol interaction"
+  },
+  {
+    "id": "TX-006",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 2500,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600300000,
+    "description": "Small batch transfer"
+  },
+  {
+    "id": "TX-007",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 2500,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600310000,
+    "description": "Rapid succession transfer (Smurfing check)"
+  },
+  {
+    "id": "TX-008",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 2500,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600320000,
+    "description": "Rapid succession transfer (Smurfing check)"
+  },
+  {
+    "id": "TX-009",
+    "sender": "Akaton Vault 03",
+    "recipient": "Staking Contract",
+    "amount": 100000,
+    "currency": "USDC",
+    "type": "STAKE",
+    "timestamp": 1715600400000,
+    "description": "Long-term staking commitment"
+  },
+  {
+    "id": "TX-010",
+    "sender": "Akaton Vault 01",
+    "recipient": "Blacklisted Address 0xDEAD...",
+    "amount": 500,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600500000,
+    "description": "Interaction with known malicious entity"
+  },
+  {
+    "id": "TX-011",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Beta",
+    "amount": 15000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600600000,
+    "description": "Arbitrage capital move"
+  },
+  {
+    "id": "TX-012",
+    "sender": "Akaton Vault 02",
+    "recipient": "Lending Protocol",
+    "amount": 30000,
+    "currency": "USDC",
+    "type": "DEPOSIT",
+    "timestamp": 1715600700000,
+    "description": "Collateral deposit"
+  },
+  {
+    "id": "TX-013",
+    "sender": "Akaton Vault 01",
+    "recipient": "Unknown Wallet 0x123...",
+    "amount": 95000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600800000,
+    "description": "Critical threshold breach attempt"
+  },
+  {
+    "id": "TX-014",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 100,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715600900000,
+    "description": "Dust transaction test"
+  },
+  {
+    "id": "TX-015",
+    "sender": "Akaton Vault 04",
+    "recipient": "Akaton Vault 01",
+    "amount": 50000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601000000,
+    "description": "Internal vault consolidation"
+  },
+  {
+    "id": "TX-016",
+    "sender": "Akaton Vault 01",
+    "recipient": "NFT Marketplace",
+    "amount": 12000,
+    "currency": "USDC",
+    "type": "PURCHASE",
+    "timestamp": 1715601100000,
+    "description": "High-value asset acquisition"
+  },
+  {
+    "id": "TX-017",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 45000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601200000,
+    "description": "Regular liquidation"
+  },
+  {
+    "id": "TX-018",
+    "sender": "Akaton Vault 01",
+    "recipient": "Unknown Wallet 0xABC...",
+    "amount": 2000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601300000,
+    "description": "Small unverified transfer"
+  },
+  {
+    "id": "TX-019",
+    "sender": "Akaton Vault 01",
+    "recipient": "Governance Multisig",
+    "amount": 5000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601400000,
+    "description": "Council reward distribution"
+  },
+  {
+    "id": "TX-020",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Alpha",
+    "amount": 75000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601500000,
+    "description": "Large batch liquidation"
+  },
+  {
+    "id": "TX-021",
+    "sender": "Akaton Vault 01",
+    "recipient": "Unknown Wallet 0x999...",
+    "amount": 10000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601600000,
+    "description": "Suspicious round number transfer"
+  },
+  {
+    "id": "TX-022",
+    "sender": "Akaton Vault 01",
+    "recipient": "Exchange Beta",
+    "amount": 3333,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601700000,
+    "description": "Odd amount transfer"
+  },
+  {
+    "id": "TX-023",
+    "sender": "Akaton Vault 01",
+    "recipient": "Unknown Wallet 0x555...",
+    "amount": 49000,
+    "currency": "USDC",
+    "type": "TRANSFER",
+    "timestamp": 1715601800000,
+    "description": "Just below 50k threshold transfer"
+  }
+]

@@ -1,0 +1,15 @@
+// data/trading/BTC_1h.json
+[
+  {"timestamp": 1709337600, "open": 62000, "high": 63000, "low": 61500, "close": 62500, "volume": 1200},
+  {"timestamp": 1709341200, "open": 62500, "high": 64000, "low": 62000, "close": 63800, "volume": 1500},
+  {"timestamp": 1709344800, "open": 63800, "high": 64500, "low": 63500, "close": 64200, "volume": 1100},
+  {"timestamp": 1709348400, "open": 64200, "high": 64800, "low": 64100, "close": 64600, "volume": 1300},
+  {"timestamp": 1709352000, "open": 64600, "high": 65200, "low": 64500, "close": 65100, "volume": 1400},
+  {"timestamp": 1709355600, "open": 65100, "high": 65500, "low": 64800, "close": 65300, "volume": 1600},
+  {"timestamp": 1709359200, "open": 65300, "high": 66000, "low": 65200, "close": 65800, "volume": 1800},
+  {"timestamp": 1709362800, "open": 65800, "high": 66500, "low": 65700, "close": 66200, "volume": 1700},
+  {"timestamp": 1709366400, "open": 66200, "high": 67000, "low": 66100, "close": 66800, "volume": 1900},
+  {"timestamp": 1709370000, "open": 66800, "high": 67500, "low": 66700, "close": 67200, "volume": 2100},
+  {"timestamp": 1709373600, "open": 67200, "high": 68000, "low": 67100, "close": 67800, "volume": 2300},
+  {"timestamp": 1709377200, "open": 67800, "high": 68500, "low": 67700, "close": 68300, "volume": 2500}
+]
