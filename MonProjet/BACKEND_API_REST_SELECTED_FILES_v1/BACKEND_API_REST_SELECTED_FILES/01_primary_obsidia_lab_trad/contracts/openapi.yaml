@@ -1,0 +1,367 @@
+openapi: 3.0.3
+info:
+  title: Obsidia Decision Gateway API
+  version: "3.1"
+  description: >
+    Deterministic governance gateway. Single decision interface returning BLOCK/HOLD/ACT
+    with auditable trace references. This specification defines the public contract only.
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: api.example.com
+
+tags:
+  - name: decision
+  - name: replay
+  - name: audit
+  - name: auth
+
+paths:
+  /v1/decision:
+    post:
+      tags: [decision]
+      summary: Evaluate a request and return a deterministic decision
+      description: >
+        Accepts a DecisionRequest with intent type PROPOSE or ACTION.
+        Returns a DecisionResponse with decision BLOCK/HOLD/ACT and audit references.
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XApiKey'
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/XObsidiaTimestamp'
+        - $ref: '#/components/parameters/XObsidiaNonce'
+        - $ref: '#/components/parameters/XObsidiaSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+      responses:
+        "200":
+          description: Decision computed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized (auth/signing)
+        "500":
+          description: Internal error
+
+  /v1/replay/{trace_id}:
+    get:
+      tags: [replay]
+      summary: Retrieve stored replay/artifacts for a trace
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/trace_id'
+        - $ref: '#/components/parameters/XApiKey'
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/XObsidiaTimestamp'
+        - $ref: '#/components/parameters/XObsidiaNonce'
+        - $ref: '#/components/parameters/XObsidiaSignature'
+      responses:
+        "200":
+          description: Replay object (if available)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayResponse'
+        "404":
+          description: Not found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal error
+
+  /v1/audit/chain:
+    get:
+      tags: [audit]
+      summary: Return tail of the append-only audit hash chain
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XApiKey'
+        - $ref: '#/components/parameters/Authorization'
+        - $ref: '#/components/parameters/XObsidiaTimestamp'
+        - $ref: '#/components/parameters/XObsidiaNonce'
+        - $ref: '#/components/parameters/XObsidiaSignature'
+      responses:
+        "200":
+          description: Chain entries (tail)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditChainResponse'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal error
+
+  /auth/token:
+    post:
+      tags: [auth]
+      summary: Mint a JWT access token (password-style)
+      description: >
+        Enabled when OBSIDIA_AUTH_MODE is jwt or both and OBSIDIA_USER/OBSIDIA_PASSWORD are configured.
+      parameters:
+        - $ref: '#/components/parameters/XObsidiaTimestamp'
+        - $ref: '#/components/parameters/XObsidiaNonce'
+        - $ref: '#/components/parameters/XObsidiaSignature'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        "200":
+          description: Token minted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        "401":
+          description: Invalid credentials
+        "500":
+          description: Not configured
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    trace_id:
+      name: trace_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+    XApiKey:
+      name: X-API-Key
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Required when OBSIDIA_AUTH_MODE is apikey or both.
+
+    Authorization:
+      name: Authorization
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Bearer token. Required when OBSIDIA_AUTH_MODE is jwt or both.
+
+    XObsidiaTimestamp:
+      name: X-Obsidia-Timestamp
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Unix seconds. Required when OBSIDIA_HMAC_SECRET is set.
+
+    XObsidiaNonce:
+      name: X-Obsidia-Nonce
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Random unique nonce. Required when OBSIDIA_HMAC_SECRET is set.
+
+    XObsidiaSignature:
+      name: X-Obsidia-Signature
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Hex HMAC-SHA256 over "{ts}.{nonce}."+raw_body. Required when OBSIDIA_HMAC_SECRET is set.
+
+  schemas:
+    Decision:
+      type: string
+      enum: [BLOCK, HOLD, ACT]
+
+    IntentType:
+      type: string
+      enum: [PROPOSE, ACTION]
+
+    Meta:
+      type: object
+      required: [request_id, timestamp, domain, mode]
+      properties:
+        request_id: { type: string }
+        timestamp: { type: string, description: ISO-8601 timestamp }
+        domain:
+          type: string
+          enum: [generic, trading, bank, ecom, energy, agent]
+        mode:
+          type: string
+          enum: [proof, simu, live]
+        actor:
+          type: object
+          properties:
+            agent_id: { type: string, nullable: true }
+            human_id: { type: string, nullable: true }
+
+    Intent:
+      type: object
+      required: [type, name, payload]
+      properties:
+        type: { $ref: '#/components/schemas/IntentType' }
+        name: { type: string }
+        payload:
+          type: object
+          additionalProperties: true
+
+    Governance:
+      type: object
+      properties:
+        irreversible: { type: boolean, default: false }
+
+    Context:
+      type: object
+      properties:
+        state:
+          type: object
+          additionalProperties: true
+        constraints:
+          type: object
+          additionalProperties: true
+        resources:
+          type: object
+          additionalProperties: true
+        history_ref:
+          type: string
+          nullable: true
+
+    Attachments:
+      type: object
+      properties:
+        data_refs:
+          type: array
+          items: { type: string }
+        signatures:
+          type: object
+          additionalProperties: true
+
+    DecisionRequest:
+      type: object
+      required: [meta, intent, context, governance]
+      properties:
+        meta: { $ref: '#/components/schemas/Meta' }
+        intent: { $ref: '#/components/schemas/Intent' }
+        context: { $ref: '#/components/schemas/Context' }
+        governance: { $ref: '#/components/schemas/Governance' }
+        attachments: { $ref: '#/components/schemas/Attachments' }
+
+    Reason:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        evidence:
+          type: array
+          items: {}
+          description: Optional list of evidence items or references.
+
+    HumanGate:
+      type: object
+      properties:
+        required: { type: boolean, default: false }
+        type:
+          type: string
+          nullable: true
+          enum: [SIGNATURE, RESOLUTION, DUAL_CONTROL]
+        prompt: { type: string, nullable: true }
+        deadline: { type: string, nullable: true, description: ISO-8601 timestamp }
+
+    Audit:
+      type: object
+      required: [path]
+      properties:
+        path:
+          type: array
+          items:
+            type: string
+            enum: [OS0, OS1, OS2, OS3, ACP]
+        ssr_ref: { type: string, nullable: true }
+        metrics:
+          type: object
+          additionalProperties: true
+
+    Artifacts:
+      type: object
+      properties:
+        files:
+          type: array
+          items: { type: string }
+        replay_ref: { type: string, nullable: true }
+
+    DecisionResponse:
+      type: object
+      required: [meta, decision, reason, effects, audit, artifacts]
+      properties:
+        meta:
+          type: object
+          required: [trace_id, kernel_version, artifacts_hash]
+          properties:
+            trace_id: { type: string }
+            kernel_version: { type: string }
+            artifacts_hash: { type: string, description: sha256 }
+        decision: { $ref: '#/components/schemas/Decision' }
+        reason: { $ref: '#/components/schemas/Reason' }
+        effects:
+          type: object
+          required: [required_human_gate]
+          properties:
+            required_human_gate: { type: boolean, default: false }
+            gate_reason: { type: string, nullable: true }
+            next_action_window: { type: string, nullable: true, description: ISO-8601 timestamp or window descriptor }
+            human_gate: { $ref: '#/components/schemas/HumanGate' }
+        audit: { $ref: '#/components/schemas/Audit' }
+        artifacts: { $ref: '#/components/schemas/Artifacts' }
+
+    ReplayResponse:
+      type: object
+      description: Stored replay / artifacts blob (implementation-defined).
+      additionalProperties: true
+
+    AuditChainResponse:
+      type: object
+      required: [entries]
+      properties:
+        entries:
+          type: array
+          items:
+            type: string
+          description: "Tail entries formatted as: '<hash> <trace_id>'"
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, enum: [bearer] }

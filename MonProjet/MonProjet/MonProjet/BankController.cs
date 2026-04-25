@@ -1,0 +1,3 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Collections.Generic;using System.Threading.Tasks; [Route("api/[controller]")] [ApiController] public class BankController : ControllerBase {     private readonly BankDbContext _context;      public BankController(BankDbContext context)     {         _context = context;     }      [HttpGet]     public async Task<ActionResult<IEnumerable<BankModel>>> GetComptes()     {         return await _context.Comptes.ToListAsync();     }      [HttpPost]     public async Task<ActionResult<BankModel>> PostCompte(BankModel compte)     {         _context.Comptes.Add(compte);         await _context.SaveChangesAsync();         return CreatedAtAction(nameof(GetComptes), new { id = compte.Id }, compte);     } }

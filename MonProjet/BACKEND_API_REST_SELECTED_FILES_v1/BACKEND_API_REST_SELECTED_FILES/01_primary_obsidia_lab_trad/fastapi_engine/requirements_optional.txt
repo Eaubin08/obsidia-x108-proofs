@@ -1,0 +1,2 @@
+cryptography>=41.0.0  # optional, enables Ed25519 signing for attestations
+boto3>=1.28.0         # optional, enables WORM uploader script

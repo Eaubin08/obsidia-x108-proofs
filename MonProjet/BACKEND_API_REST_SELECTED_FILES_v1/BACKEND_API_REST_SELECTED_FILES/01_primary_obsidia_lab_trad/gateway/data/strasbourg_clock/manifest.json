@@ -1,0 +1,10 @@
+{
+  "tests": [
+    "test1_baseline",
+    "test2_noise",
+    "test3_structural_error",
+    "test4_hold"
+  ],
+  "dt": 0.01,
+  "steps": 2000
+}

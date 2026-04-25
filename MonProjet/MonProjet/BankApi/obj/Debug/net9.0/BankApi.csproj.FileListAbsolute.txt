@@ -1,0 +1,9 @@
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.csproj.AssemblyReference.cache
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.AssemblyInfoInputs.cache
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.AssemblyInfo.cs
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.csproj.CoreCompileInputs.cache
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\BankApi\obj\Debug\net9.0\BankApi.sourcelink.json
