@@ -1,15 +1,15 @@
-from __future__ import annotations
+﻿from .domains.bank_agents import build_bank_agents
+try:
+    from .domains.aviation_agents import build_aviation_agents
+except ImportError:
+    def build_aviation_agents(): return []
 
-from .domains.bank_agents import build_bank_agents
-from .domains.ecom_agents import build_ecom_agents
-from .domains.meta_agents import build_meta_agents
-from .domains.trading_agents import build_trading_agents
-
-
-def build_agent_registry() -> dict[str, list]:
+def build_agent_registry():
     return {
-        "trading": build_trading_agents(),
         "bank": build_bank_agents(),
-        "ecom": build_ecom_agents(),
-        "meta": build_meta_agents(),
+        "gps_defense_aviation": build_aviation_agents(), # On a changé "aviation" par le nom complet
+        "trading": [],
+        "ecom": []
     }
+
+REGISTRY = build_agent_registry()
