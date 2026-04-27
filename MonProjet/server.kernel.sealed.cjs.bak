@@ -1,0 +1,56 @@
+﻿const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+app.post('/kernel/ragnarok', (req, res) => {
+    const sigmaDir = path.join(__dirname, '..', 'sigma');
+    const scriptPath = path.join(sigmaDir, 'run_pipeline.py');
+    const tempFilePath = path.join(__dirname, 'input_temp.json');
+    
+    // 1. On écrit les données dans un fichier physique
+    fs.writeFileSync(tempFilePath, JSON.stringify(req.body));
+    
+    const domain = req.body.domain || "gps_defense_aviation";
+
+    console.log(`\x1b[35m[BRIDGE]\x1b[0m Lancement du pipeline pour : ${domain}`);
+
+    // 2. On passe le CHEMIN du fichier à Python
+    const py = spawn('python', ['-u', scriptPath, domain, tempFilePath], {
+        env: { ...process.env, PYTHONPATH: path.join(__dirname, '..') }
+    });
+
+    let result = '';
+
+    py.stdout.on('data', (data) => {
+        const str = data.toString();
+        if (str.trim().startsWith('{')) result += str;
+        else console.log(`\x1b[36m🐍 [PYTHON_INFO]:\x1b[0m ${str.trim()}`);
+    });
+
+    py.stderr.on('data', (data) => {
+        console.error(`\x1b[33m📢 [KERNEL_TRACE]:\x1b[0m ${data.toString().trim()}`);
+    });
+
+    py.on('close', (code) => {
+        // Nettoyage du fichier temporaire
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+
+        if (code !== 0 && !result) {
+            console.error(`\x1b[31m[ERROR]\x1b[0m Python a quitté avec le code ${code}`);
+            return res.status(500).json({ error: "Python Crash Code " + code });
+        }
+        try {
+            res.json(JSON.parse(result));
+        } catch (e) {
+            res.status(500).json({ error: "Parsing error", raw: result });
+        }
+    });
+});
+
+app.listen(3001, () => {
+    console.log("\x1b[45m\x1b[37m %s \x1b[0m", " ⚡ MODE FICHIER TAMPON ACTIVÉ ⚡ ");
+    console.log("🚀 Bridge prêt sur le port 3001");
+});
