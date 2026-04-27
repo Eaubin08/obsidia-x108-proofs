@@ -1,4 +1,4 @@
-﻿import json
+import json
 import subprocess
 import sys
 import os
@@ -56,13 +56,9 @@ def test_repeatability_same_normal_profile_keeps_same_sovereign_reading():
     severities = {d["severity"] for d in outputs}
     reasons = {d["reason_code"] for d in outputs}
 
-    # Current canonical Bank semantics across all tested tags:
-    # bank_normal is sovereignly stable as HOLD when confidence/proof maturity is insufficient.
-    # This test checks repeatability of the sovereign reading, not forced authorization.
-    assert len(gates) == 1
+    assert gates == {"ALLOW"}
     assert len(severities) == 1
     assert len(reasons) == 1
-    assert list(gates)[0] in ("ALLOW", "HOLD", "BLOCK")
 
     for d in outputs:
         assert_core(d)

@@ -1,4 +1,4 @@
-﻿import json
+import json
 import subprocess
 import sys
 import os
@@ -54,8 +54,7 @@ def test_canonical_baselines():
     suspicious = run_payload(load_fixture("bank_suspicious.json"))
     blocked = run_payload(load_fixture("bank_blocked.json"))
 
-    # Canonical matrix v1.0.8 → HEAD proves bank_normal is stable HOLD under current proof-maturity semantics.
-    assert normal["x108_gate"] in ("ALLOW", "HOLD"), normal
+    assert normal["x108_gate"] == "ALLOW", normal
     assert suspicious["x108_gate"] in ("HOLD", "BLOCK"), suspicious
     assert blocked["x108_gate"] == "BLOCK", blocked
     assert blocked["severity"] == "S4", blocked

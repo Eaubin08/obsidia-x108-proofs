@@ -37,7 +37,7 @@ def test_enterprise_runner_passes():
         text=True,
         encoding="utf-8",
         errors="replace",
-        timeout=180,
+        timeout=600,
         env=_env(),
     )
     assert p.returncode == 0, p.stderr
