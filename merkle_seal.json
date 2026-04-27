@@ -1,8 +1,7 @@
 {
-    "audit_date": "27/04/2026 13:50",
-    "total_proofs_count": 604,
-    "merkle_root": "bc07d7330b78761d0a1da6f7a785194763a9498a042573c83af40e9855286ce4",
+    "status": "INTEGRITY_VERIFIED",
+    "total_proofs_count": 1138,
+    "merkle_root": "ef9a03727b7370c5f9216cf45cae4362d4f3ff4e41586ea876f7feba155a6ca6",
     "first_proof": "decision_bank_1777290527090.json",
-    "last_proof": "decision_trading_1777290628987.json",
-    "status": "INTEGRITY_VERIFIED"
+    "last_proof": "decision_trading_1777292973854.json"
 }
