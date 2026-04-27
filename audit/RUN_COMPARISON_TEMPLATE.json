@@ -1,0 +1,42 @@
+{
+  "comparison_meta": {
+    "comparison_id": "cmp_YYYY_MM_DD_A_B",
+    "repo": "obsidia-x108-proofs",
+    "purpose": "compare_validation_kinetics_and_semantic_quality"
+  },
+  "runs": [
+    {
+      "run_id": "run_A",
+      "commit_sha": "SHA_A",
+      "label": "pre_semantic_refinement"
+    },
+    {
+      "run_id": "run_B",
+      "commit_sha": "SHA_B",
+      "label": "post_semantic_refinement"
+    }
+  ],
+  "execution_comparison": {
+    "duration_total_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "tlc_x108_mc_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "tlc_distributed_x108_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "lean_build_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "verify_all_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "verify_decision_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "sigma_public_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "sigma_tests_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 },
+    "qa_cross_platform_duration_s": { "run_a": 0.0, "run_b": 0.0, "delta_s": 0.0 }
+  },
+  "gps_comparison": {
+    "gps_nominal": {},
+    "gps_no_source": {},
+    "gps_source_conflict": {},
+    "gps_brownout": {},
+    "gps_time_skew": {}
+  },
+  "interpretation": {
+    "security_changed": false,
+    "semantic_quality_changed": false,
+    "main_observation": "TO_FILL"
+  }
+}

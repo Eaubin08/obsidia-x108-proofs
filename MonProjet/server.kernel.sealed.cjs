@@ -1,84 +1,72 @@
-﻿const express = require("express");
-const { Client } = require("pg");
-const { spawnSync } = require("child_process");
-const crypto = require("crypto");
-const path = require("path");
+﻿const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const express = require('express');
 const app = express();
-const port = 3001;
-
 app.use(express.json());
 
-const DATABASE_URL = process.env.DATABASE_URL;
-const KERNEL_ROOT = "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs";
-const RUN_PIPELINE = path.join(KERNEL_ROOT, "sigma", "run_pipeline.py");
+app.post('/kernel/ragnarok', (req, res) => {
+    const sigmaDir = path.join(__dirname, '..', 'sigma');
+    const scriptPath = path.join(sigmaDir, 'run_pipeline.py');
+    const tempFilePath = path.join(__dirname, 'input_temp.json');
+    
+    // --- CHIRURGIE DYNAMIQUE ---
+    // On extrait le domaine (par défaut aviation) et les données réelles (state)
+    const domain = req.body.domain || "gps_defense_aviation";
+    const dataToProcess = req.body.state || req.body; 
 
-const client = new Client({ 
-    connectionString: DATABASE_URL,
-    ssl: { rejectUnauthorized: false } 
+    // 1. On écrit les données dans un fichier physique pour éviter les bugs de quotes
+    try {
+        fs.writeFileSync(tempFilePath, JSON.stringify(dataToProcess, null, 2));
+    } catch (err) {
+        return res.status(500).json({ error: "Failed to write temp file", details: err.message });
+    }
+    
+    console.log(`\x1b[35m[BRIDGE]\x1b[0m 🚀 Routing -> Domain: ${domain}`);
+
+    // 2. On lance Python en pointant vers le fichier
+    const py = spawn('python', ['-u', scriptPath, domain, tempFilePath], {
+        env: { ...process.env, PYTHONPATH: path.join(__dirname, '..') }
+    });
+
+    let result = '';
+
+    py.stdout.on('data', (data) => {
+        const str = data.toString();
+        // On ne capture que le JSON final pour la réponse
+        if (str.trim().startsWith('{')) {
+            result += str;
+        } else {
+            console.log(`\x1b[36m🐍 [PYTHON_INFO]:\x1b[0m ${str.trim()}`);
+        }
+    });
+
+    py.stderr.on('data', (data) => {
+        // Les logs de contracts.py (obsidia_log) passent par ici
+        console.error(`\x1b[33m📢 [KERNEL_TRACE]:\x1b[0m ${data.toString().trim()}`);
+    });
+
+    py.on('close', (code) => {
+        // 3. Nettoyage immédiat
+        if (fs.existsSync(tempFilePath)) {
+            try { fs.unlinkSync(tempFilePath); } catch(e) {}
+        }
+
+        if (code !== 0 && !result) {
+            console.error(`\x1b[31m[ERROR]\x1b[0m Python a quitté avec le code ${code}`);
+            return res.status(500).json({ error: "Python Crash Code " + code });
+        }
+
+        try {
+            res.json(JSON.parse(result));
+        } catch (e) {
+            console.error("\x1b[31m[PARSE ERROR]\x1b[0m", result);
+            res.status(500).json({ error: "Parsing error", raw: result });
+        }
+    });
 });
 
-client.on('error', err => {
-    console.error('❌ [DATABASE ERROR]:', err.message);
-    process.exit(1);
+app.listen(3001, () => {
+    console.log("\x1b[45m\x1b[37m %s \x1b[0m", " ⚡ BRIDGE UNIVERSEL : MODE FICHIER TAMPON ⚡ ");
+    console.log("🚀 Prêt pour Ragnarok sur http://localhost:3001");
 });
-
-function sha256(value) {
-    return crypto.createHash("sha256").update(value, "utf8").digest("hex");
-}
-
-async function processSovereignRequest(domain, payload, res) {
-    try {
-        console.log(`\n🧠 [${domain.toUpperCase()}] Consultation du Kernel X-108...`);
-        const result = spawnSync("python", [RUN_PIPELINE, domain, JSON.stringify(payload)], {
-            cwd: KERNEL_ROOT,
-            encoding: "utf8",
-            env: { ...process.env, PYTHONPATH: KERNEL_ROOT }
-        });
-
-        if (result.stderr) console.error("🐍 [PYTHON LOG]:", result.stderr);
-        if (!result.stdout) throw new Error("Le Kernel n'a renvoyé aucune donnée.");
-
-        const kernel = JSON.parse(result.stdout);
-        const decision = kernel.x108_gate || "HOLD";
-        const pHash = sha256(JSON.stringify(payload));
-        const rHash = sha256(pHash + decision + (kernel.attestation_ref || ""));
-
-        await client.query(
-            `INSERT INTO obsidia_kernel_logs (domain, payload, payload_hash, kernel_result, decision, record_hash)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
-            [domain, JSON.stringify(payload), pHash, JSON.stringify(kernel), decision, rHash]
-        );
-
-        console.log(`⚖️  [VERDICT] ${decision} | Proof Sealed: ${rHash.substring(0,10)}...`);
-        res.json({ status: decision, record_hash: rHash, kernel });
-    } catch (err) {
-        res.status(500).json({ error: "Erreur de scellage", details: err.message });
-    }
-}
-
-async function init() {
-    try {
-        await client.connect();
-        console.log("✅ [SYSTEM] Liaison Neon Cloud active.");
-        
-        // --- ROUTES ---
-        app.post("/kernel/gps_defense_aviation", (req, res) => processSovereignRequest("gps_defense_aviation", req.body, res));
-        app.post("/kernel/bank", (req, res) => processSovereignRequest("bank", req.body, res));
-        
-        // La route manquante est de retour !
-        app.get("/allData", async (req, res) => {
-            try {
-                const r = await client.query("SELECT id, domain, decision, record_hash, created_at FROM obsidia_kernel_logs ORDER BY id DESC LIMIT 10");
-                res.json(r.rows);
-            } catch (err) {
-                res.status(500).json({ error: err.message });
-            }
-        });
-
-        app.listen(port, () => console.log(`🚀 [READY] OBSIDIA SEALED BRIDGE ONLINE : PORT ${port}`));
-    } catch (err) {
-        console.error("❌ [BOOT FAILED]:", err.message);
-    }
-}
-
-init();

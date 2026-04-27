@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-22T19:22:02.923017",
+  "timestamp": "2026-04-25T10:43:18.308683",
   "rfc3161_local": {
     "openssl_available": true,
     "openssl_version": "OpenSSL 4.0.0 14 Apr 2026 (Library: OpenSSL 4.0.0 14 Apr 2026)",
@@ -9,24 +9,28 @@
     "digicert": {
       "name": "DigiCert",
       "available": true,
-      "http_code_or_error": "404"
+      "http_code_or_error": "404",
+      "probe_method": "HEAD"
     },
     "sectigo": {
       "name": "Sectigo",
       "available": true,
-      "http_code_or_error": "404"
+      "http_code_or_error": "404",
+      "probe_method": "HEAD"
     },
     "globalsign": {
       "name": "GlobalSign",
-      "available": false,
-      "http_code_or_error": "[WinError 10054] Une connexion existante a dû être fermée par l’hôte distant"
+      "available": true,
+      "http_code_or_error": "200",
+      "probe_method": "GET"
     },
     "freetsa": {
       "name": "FreeTSA",
       "available": true,
-      "http_code_or_error": "403"
+      "http_code_or_error": "403",
+      "probe_method": "HEAD"
     },
-    "_count_available": 3
+    "_count_available": 4
   },
   "tlc": {
     "jar_found": true,
@@ -46,9 +50,9 @@
   },
   "summary": {
     "rfc3161_local": "PASS",
-    "rfc3161_network": "3/4 TSA joignables",
+    "rfc3161_network": "4/4 TSA joignables",
     "tlc_via_jar": "PASS",
     "sigma_public": "PASS",
-    "scope": "P1 PUBLIC - pas de statut global production-ready"
+    "scope": "P1 PUBLIC - no global production-ready claim"
   }
 }
