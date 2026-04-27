@@ -1,6 +1,8 @@
 import hashlib
 import os
 import json
+from pathlib import Path
+from datetime import datetime
 
 def get_file_hash(filepath):
     hasher = hashlib.sha256()
@@ -11,15 +13,17 @@ def get_file_hash(filepath):
 
 def build_merkle_root(hashes):
     if not hashes: return None
-    while len(hashes) > 1:
-        if len(hashes) % 2 != 0:
-            hashes.append(hashes[-1])
+    # Copie pour ne pas modifier la liste originale
+    current_level = list(hashes)
+    while len(current_level) > 1:
+        if len(current_level) % 2 != 0:
+            current_level.append(current_level[-1])
         new_level = []
-        for i in range(0, len(hashes), 2):
-            combined = hashes[i] + hashes[i+1]
+        for i in range(0, len(current_level), 2):
+            combined = current_level[i] + current_level[i+1]
             new_level.append(hashlib.sha256(combined.encode()).hexdigest())
-        hashes = new_level
-    return hashes[0]
+        current_level = new_level
+    return current_level[0]
 
 def run_audit():
     # Chemin vers les preuves
@@ -39,9 +43,13 @@ def run_audit():
     
     root_hash = build_merkle_root(file_hashes)
     
+    # Generation de la date actuelle (Format: 2026-04-27 15:30:00)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     # Generation du sceau final
     seal = {
         "status": "INTEGRITY_VERIFIED",
+        "audit_date": now_str,
         "total_proofs_count": len(files),
         "merkle_root": root_hash,
         "first_proof": os.path.basename(files[0]),
@@ -53,6 +61,7 @@ def run_audit():
     
     print("\n--- SEALING COMPLETE ---")
     print(f"ROOT HASH : {root_hash}")
+    print(f"AUDIT DATE: {now_str}")
     print("Report saved to: merkle_seal.json")
 
 if __name__ == "__main__":

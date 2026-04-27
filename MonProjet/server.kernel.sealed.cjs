@@ -1,4 +1,4 @@
-﻿const { spawn } = require('child_process');
+﻿const { spawn, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
@@ -11,11 +11,10 @@ app.post('/kernel/ragnarok', (req, res) => {
     const tempFilePath = path.join(__dirname, 'input_temp.json');
     
     // --- CHIRURGIE DYNAMIQUE ---
-    // On extrait le domaine (par défaut aviation) et les données réelles (state)
     const domain = req.body.domain || "gps_defense_aviation";
     const dataToProcess = req.body.state || req.body; 
 
-    // 1. On écrit les données dans un fichier physique pour éviter les bugs de quotes
+    // 1. Écriture du fichier temporaire
     try {
         fs.writeFileSync(tempFilePath, JSON.stringify(dataToProcess, null, 2));
     } catch (err) {
@@ -24,7 +23,7 @@ app.post('/kernel/ragnarok', (req, res) => {
     
     console.log(`\x1b[35m[BRIDGE]\x1b[0m 🚀 Routing -> Domain: ${domain}`);
 
-    // 2. On lance Python en pointant vers le fichier
+    // 2. Lancement du Kernel Python
     const py = spawn('python', ['-u', scriptPath, domain, tempFilePath], {
         env: { ...process.env, PYTHONPATH: path.join(__dirname, '..') }
     });
@@ -33,7 +32,6 @@ app.post('/kernel/ragnarok', (req, res) => {
 
     py.stdout.on('data', (data) => {
         const str = data.toString();
-        // On ne capture que le JSON final pour la réponse
         if (str.trim().startsWith('{')) {
             result += str;
         } else {
@@ -42,12 +40,11 @@ app.post('/kernel/ragnarok', (req, res) => {
     });
 
     py.stderr.on('data', (data) => {
-        // Les logs de contracts.py (obsidia_log) passent par ici
         console.error(`\x1b[33m📢 [KERNEL_TRACE]:\x1b[0m ${data.toString().trim()}`);
     });
 
     py.on('close', (code) => {
-        // 3. Nettoyage immédiat
+        // Nettoyage
         if (fs.existsSync(tempFilePath)) {
             try { fs.unlinkSync(tempFilePath); } catch(e) {}
         }
@@ -60,14 +57,13 @@ app.post('/kernel/ragnarok', (req, res) => {
         try {
             const parsedResult = JSON.parse(result);
             
-            // --- AJOUT SÉCURISÉ : PERSISTENCE ---
+            // --- PERSISTENCE DES PREUVES ---
             const allDataDir = path.join(__dirname, 'allData');
             if (!fs.existsSync(allDataDir)) fs.mkdirSync(allDataDir);
             
             const filename = `decision_${domain}_${Date.now()}.json`;
             fs.writeFileSync(path.join(allDataDir, filename), JSON.stringify(parsedResult, null, 2));
             console.log(`\x1b[32m💾 [SAVE]\x1b[0m ${filename}`);
-            // ------------------------------------
 
             res.json(parsedResult);
         } catch (e) {
@@ -76,6 +72,26 @@ app.post('/kernel/ragnarok', (req, res) => {
         }
     });
 });
+
+// --- SYSTÈME DE SCELLAGE AUTOMATIQUE (Toutes les 60s) ---
+// Note : On utilise ../ car audit_merkle.py est à la racine du projet
+setInterval(() => {
+    console.log("🔐 [AUTO-SEAL] Pulsation Merkle en cours...");
+    
+    exec('python ../audit_merkle.py', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ [AUTO-SEAL] Échec : ${error.message}`);
+            return;
+        }
+        // Capture du Root Hash dans la console Python
+        const rootHash = stdout.match(/ROOT HASH : (.*)/);
+        if (rootHash) {
+            console.log(`🛡️ [AUTO-SEAL] Système Scellé. Root: ${rootHash[1].substring(0, 12)}...`);
+        } else {
+            console.log("🔐 [AUTO-SEAL] Cycle complété (Pas de nouveau Root Hash détecté)");
+        }
+    });
+}, 60000);
 
 app.listen(3001, () => {
     console.log("\x1b[45m\x1b[37m %s \x1b[0m", " ⚡ BRIDGE UNIVERSEL : MODE FICHIER TAMPON ⚡ ");
