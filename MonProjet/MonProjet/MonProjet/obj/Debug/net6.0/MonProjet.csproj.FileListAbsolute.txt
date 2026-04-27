@@ -1,8 +1,0 @@
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\rpswa.dswa.cache.json
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.AssemblyInfoInputs.cache
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.AssemblyInfo.cs
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.csproj.CoreCompileInputs.cache
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.sourcelink.json
-C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\MonProjet\MonProjet\MonProjet\obj\Debug\net6.0\MonProjet.csproj.AssemblyReference.cache
