@@ -78,7 +78,7 @@ app.post('/kernel/ragnarok', (req, res) => {
 setInterval(() => {
     console.log("🔐 [AUTO-SEAL] Pulsation Merkle en cours...");
     
-    exec('python ../audit_merkle.py', (error, stdout, stderr) => {
+    exec('python C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit_merkle.py', (error, stdout, stderr) => {
         if (error) {
             console.error(`❌ [AUTO-SEAL] Échec : ${error.message}`);
             return;
