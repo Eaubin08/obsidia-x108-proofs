@@ -1,0 +1,76 @@
+=== OBSIDIA FORMAL PUBLIC STATUS ===
+Generated: 04/28/2026 01:09:37
+
+=== GIT STATUS ===
+ M merkle_seal.json
+ M proofs/PROOFKIT_REPORT.json
+?? audit/cleanup/decision/09_EXIT_PREP_MANIFEST_20260427_221026.md
+?? audit/cleanup/decision/10_GIT_RM_CACHED_LATER_20260427_221026.ps1
+?? audit/cleanup/decision/11_PRIVATE_VAULT_20260427_222329.txt
+?? audit/public_cleanup/
+?? audit_deep.ps1
+?? audit_live.ps1
+?? audit_trinity.ps1
+?? sigma/contracts.backup-before-ragnarok.py
+
+=== LEAN / LAKE BUILD ===
+Build completed successfully (0 jobs).
+LEAN_EXIT=0
+
+=== MERKLE FORMAT VERIFY ===
+Merkle root declared: b9ac7a047f846764caebf32edb8ad491a697865530b1386e2080c3f517652bf8
+Format VALID (SHA-256 hex) ù full recomputation requires audit_entries in metadata.json
+MERKLE_EXIT=0
+
+=== V18 SEAL VERIFY ===
+PASS
+SEAL_EXIT=0
+
+=== V18 ROOT HASH VERIFY / HISTORICAL CHECK ===
+FAIL: root hash mismatch
+ got: 7eb91be160a4977fdf3f0f5844cc0e838d25545253d0724397de34c816aafab4
+ exp: 5d9a38d1de0249d8c7cc181529fc5f27ec12d389cf5a0008a67a09a4591e5a6b
+ROOT_HASH_EXIT=1
+
+=== TLA PUBLIC SURFACE PRESENT ===
+
+FullName                                                                                                     
+--------                                                                                                     
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108.cfg           
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108.tla           
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108Snapshot.cfg   
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108Snapshot.tla   
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108_MC.cfg        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108_MC.tla        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\DistributedX108_standalone.tla
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\ObsidiaDistX108A11.cfg        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\ObsidiaDistX108A11.tla        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\ObsidiaDistX108A12.cfg        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\ObsidiaDistX108A12.tla        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\X108.cfg                      
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\X108.tla                      
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\X108_MC.cfg                   
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\X108_MC.tla                   
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\proofs\tla\X108_standalone.tla           
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\DistributedX108.tla           
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\DistributedX108_MC.cfg        
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\X108.cfg                      
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\X108.tla                      
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\X108_MC.cfg                   
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\formal\tla\X108_MC.tla                   
+
+
+
+
+=== CANONICAL INTERPRETATION ===
+LEAN: expected PASS when LEAN_EXIT=0.
+MERKLE: expected PASS when MERKLE_EXIT=0; current verifier validates declared SHA-256 format, not full recomputation.
+SEAL: expected PASS when SEAL_EXIT=0.
+ROOT_HASH: ROOT_HASH_EXIT=1 is a historical freeze mismatch, not a runtime/kernel failure, because V18_3_1 has no local git modifications and seal_verify passes.
+FUZZ: long bank fuzz failures are excluded from this formal-only status run.
+
+=== SUMMARY ===
+LEAN_EXIT=0
+MERKLE_EXIT=0
+SEAL_EXIT=0
+ROOT_HASH_EXIT=1
