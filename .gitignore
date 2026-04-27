@@ -42,3 +42,5 @@ staging/transplant_mapped/
 staging/transplant_priority/
 
 _external_sources/
+MonProjet/allData/*.json
+MonProjet/input_temp.json
