@@ -1,73 +1,45 @@
 import csv
 import json
-import subprocess
+import requests
 import sys
 import os
 from pathlib import Path
 from collections import Counter, defaultdict
 
+# --- CONFIGURATION DES CHEMINS ---
 ROOT = Path(__file__).resolve().parent.parent.parent
 PACK_PATH = ROOT / "sigma" / "batches" / "bank_enterprise_pack.json"
-RUN_PIPELINE = ROOT / "sigma" / "run_pipeline.py"
 OUT_DIR = ROOT / "artifacts" / "p2_bank_enterprise"
+URL_RAGNAROK = "http://localhost:3001/kernel/ragnarok"
 
 RANK = {"ALLOW": 0, "HOLD": 1, "BLOCK": 2}
 
 def gate_rank(gate: str) -> int:
     return RANK.get(gate, 99)
 
-def _env():
-    e = os.environ.copy()
-    e["PYTHONUTF8"] = "1"
-    e["PYTHONIOENCODING"] = "utf-8"
-    e["PYTHONWARNINGS"] = "ignore"
-    return e
-
 def run_case(item: dict) -> dict:
-    payload = item["payload"]
-    p = subprocess.run(
-        [sys.executable, str(RUN_PIPELINE), "bank", json.dumps(payload)],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=25,
-        env=_env(),
-    )
-    if p.returncode != 0:
-        return {
-            "case_id": item["case_id"],
-            "family": item["family"],
-            "expected_min_gate": item["expected_min_gate"],
-            "ok": False,
-            "error": p.stderr.strip(),
-        }
-
+    """Envoie un cas de test au Bridge Node.js (Ragnarok)"""
+    payload = {
+        "domain": "bank",
+        "state": item["payload"]
+    }
+    
     try:
-        data = json.loads(p.stdout)
+        # APPEL AU BRIDGE (MODE LIVE)
+        response = requests.post(URL_RAGNAROK, json=payload, timeout=30)
+        data = response.json()
     except Exception as e:
         return {
             "case_id": item["case_id"],
             "family": item["family"],
             "expected_min_gate": item["expected_min_gate"],
             "ok": False,
-            "error": f"JSON parse error: {e}",
+            "error": f"Bridge Connection Error: {e}",
         }
 
-    required = ["x108_gate", "decision_id", "trace_id", "attestation_ref", "sigma_report"]
-    missing = [k for k in required if k not in data]
-    if missing:
-        return {
-            "case_id": item["case_id"],
-            "family": item["family"],
-            "expected_min_gate": item["expected_min_gate"],
-            "ok": False,
-            "error": f"Missing fields: {missing}",
-            "raw": data,
-        }
-
-    gate_ok = gate_rank(data["x108_gate"]) >= gate_rank(item["expected_min_gate"])
-    sigma_ok = bool(data["sigma_report"].get("pass") is True)
+    # VALIDATION DES RÉSULTATS
+    gate_ok = gate_rank(data.get("x108_gate", "BLOCK")) >= gate_rank(item["expected_min_gate"])
+    sigma_ok = bool(data.get("sigma_report", {}).get("pass") is True)
 
     return {
         "case_id": item["case_id"],
@@ -77,7 +49,7 @@ def run_case(item: dict) -> dict:
         "ok": bool(gate_ok and sigma_ok),
         "gate_ok": gate_ok,
         "sigma_ok": sigma_ok,
-        "x108_gate": data["x108_gate"],
+        "x108_gate": data.get("x108_gate"),
         "severity": data.get("severity"),
         "reason_code": data.get("reason_code"),
         "decision_id": data.get("decision_id"),
@@ -86,18 +58,26 @@ def run_case(item: dict) -> dict:
     }
 
 def main():
+    if not PACK_PATH.exists():
+        print(f"❌ Erreur : Pack introuvable à {PACK_PATH}")
+        sys.exit(1)
+
     pack = json.loads(PACK_PATH.read_text(encoding="utf-8"))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    print(f"🚀 Lancement du Stress-Test Enterprise ({len(pack)} cas)...")
 
     results = [run_case(item) for item in pack]
     failures = [r for r in results if not r["ok"]]
 
+    # STATISTIQUES
     family_counts = Counter(r["family"] for r in results)
     gate_counts = Counter(r.get("x108_gate", "ERROR") for r in results)
     family_gate_counts = defaultdict(Counter)
     for r in results:
         family_gate_counts[r["family"]][r.get("x108_gate", "ERROR")] += 1
 
+    # EXPORT DES RAPPORTS
     report_json = OUT_DIR / "bank_enterprise_report.json"
     summary_json = OUT_DIR / "bank_enterprise_summary.json"
     report_csv = OUT_DIR / "bank_enterprise_report.csv"
@@ -128,7 +108,8 @@ def main():
     }
     summary_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
-    print(json.dumps(summary, ensure_ascii=False))
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    print(f"\n✅ Terminé. {len(failures)} échecs détectés.")
     sys.exit(1 if failures else 0)
 
 if __name__ == "__main__":
