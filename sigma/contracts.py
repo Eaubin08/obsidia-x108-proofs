@@ -1,5 +1,5 @@
 ﻿from dataclasses import dataclass, field, fields
-from typing import List
+from typing import List, Dict, Any, Optional
 from enum import IntEnum, Enum
 import sys
 
@@ -7,41 +7,23 @@ def obsidia_log(msg):
     print(f"🔍 [KERNEL_TRACE] {msg}", file=sys.stderr)
 
 class Layer(IntEnum):
-    OBSERVATION = 1
-    INTERPRETATION = 2
-    CONTRADICTION = 3
-    PERIPHERAL = 4
-    SIGMA = 5
-    KERNEL = 6
-    PROOF = 7
-    SCELLAGE = 8
+    OBSERVATION = 1; INTERPRETATION = 2; CONTRADICTION = 3; PERIPHERAL = 4
+    SIGMA = 5; KERNEL = 6; PROOF = 7; SCELLAGE = 8
 
 class Severity(IntEnum):
-    S0 = 0
-    S1 = 1
-    S2 = 2
-    S3 = 3
-    S4 = 4
+    S0 = 0; S1 = 1; S2 = 2; S3 = 3; S4 = 4
 
 class Domain(Enum):
-    BANK = "bank"
-    TRADING = "trading"
-    ECOM = "ecom"
-    GPS_DEFENSE_AVIATION = "gps_defense_aviation"
-    META = "meta"
+    BANK = "bank"; TRADING = "trading"; ECOM = "ecom"
+    GPS_DEFENSE_AVIATION = "gps_defense_aviation"; META = "meta"
 
 class SourceTag(Enum):
-    CANONICAL = "canonical"
-    CANONICAL_FRAMEWORK = "canonical_framework"
-    SIGMA = "sigma"
-    SIGMA_FRAMEWORK = "sigma_framework"
-    KERNEL = "kernel"
-    KERNEL_FRAMEWORK = "kernel_framework"
+    CANONICAL = "canonical"; CANONICAL_FRAMEWORK = "canonical_framework"
+    SIGMA = "sigma"; SIGMA_FRAMEWORK = "sigma_framework"
+    KERNEL = "kernel"; KERNEL_FRAMEWORK = "kernel_framework"
 
 class X108Gate(Enum):
-    ALLOW = "ALLOW"
-    HOLD = "HOLD"
-    BLOCK = "BLOCK"
+    ALLOW = "ALLOW"; HOLD = "HOLD"; BLOCK = "BLOCK"
 
 class SmartAttribute(list):
     def __init__(self, name, default_val=0.0):
@@ -61,16 +43,26 @@ class SmartAttribute(list):
         except Exception:
             return 0.0
 
+    # Opérations de comparaison
     def __ge__(self, other): return self._to_num() >= float(other)
     def __gt__(self, other): return self._to_num() > float(other)
     def __le__(self, other): return self._to_num() <= float(other)
     def __lt__(self, other): return self._to_num() < float(other)
+    
+    # Opérations arithmétiques
     def __add__(self, other): return self._to_num() + float(other)
     def __radd__(self, other): return float(other) + self._to_num()
     def __sub__(self, other): return self._to_num() - float(other)
     def __rsub__(self, other): return float(other) - self._to_num()
     def __mul__(self, other): return self._to_num() * float(other)
     def __rmul__(self, other): return float(other) * self._to_num()
+    def __truediv__(self, other): return self._to_num() / float(other)
+    def __rtruediv__(self, other): return float(other) / self._to_num()
+    def __floordiv__(self, other): return self._to_num() // float(other)
+    
+    # Formatage et conversion
+    def __format__(self, format_spec): return format(self._to_num(), format_spec)
+    def __float__(self): return self._to_num()
 
 class UniversalBase:
     def __init__(self, *args, **kwargs):
@@ -78,13 +70,8 @@ class UniversalBase:
             f_names = [f.name for f in fields(self)]
         except Exception:
             f_names = []
-
-        obsidia_log(f"Instantiating {self.__class__.__name__}...")
-
         for i, val in enumerate(args):
-            if i < len(f_names):
-                setattr(self, f_names[i], val)
-
+            if i < len(f_names): setattr(self, f_names[i], val)
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -111,13 +98,9 @@ class AgentVote(UniversalBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         if hasattr(self, "confidence"):
-            try:
-                self.confidence = float(self.confidence)
-            except Exception:
-                self.confidence = 0.0
-
+            try: self.confidence = float(self.confidence)
+            except: self.confidence = 0.0
         if not hasattr(self, "proposed_verdict") or not self.proposed_verdict:
             self.proposed_verdict = getattr(self, "vote", "HOLD")
 
@@ -135,53 +118,34 @@ class DomainAggregate(UniversalBase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         v = getattr(self, "agent_votes", [])
         if isinstance(v, list):
             self.agent_votes = [AgentVote(**item) if isinstance(item, dict) else item for item in v]
-
-        obsidia_log(f"Aggregating {len(getattr(self, 'agent_votes', []))} votes for {self.domain}")
+        obsidia_log(f"Aggregating {len(self.agent_votes)} votes for {self.domain}")
 
 @dataclass
 class CanonicalDecisionEnvelope(UniversalBase):
-    domain: str = "unknown"
-    market_verdict: str = "HOLD"
-    confidence: float = 0.0
+    domain: str = "unknown"; market_verdict: str = "HOLD"; confidence: float = 0.0
     contradictions: List[str] = field(default_factory=list)
     unknowns: List[str] = field(default_factory=list)
     risk_flags: List[str] = field(default_factory=list)
-    x108_gate: str = "HOLD"
-    reason_code: str = "RAGNAROK_DEBUG"
-    severity: str = "S0"
-    decision_id: str = "debug-decision"
-    trace_id: str = "debug-trace"
-    ticket_required: bool = False
-    ticket_id: str | None = None
-    attestation_ref: str | None = None
+    x108_gate: str = "HOLD"; reason_code: str = "RAGNAROK_DEBUG"
+    severity: str = "S0"; decision_id: str = "debug-decision"
+    trace_id: str = "debug-trace"; ticket_required: bool = False
+    ticket_id: Optional[str] = None; attestation_ref: Optional[str] = None
     source: str = "canonical_framework"
     evidence_refs: List[str] = field(default_factory=list)
     metrics: dict = field(default_factory=dict)
     raw_engine: dict = field(default_factory=dict)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 @dataclass
 class GpsDefenseAviationState(UniversalBase):
-    mission_id: str = "UNKNOWN"
-    gps_available: bool = True
-    inertial_available: bool = True
-    radio_available: bool = True
-    elapsed_s: float = 0.0
-    min_required_elapsed_s: float = 108.0
-    position_confidence: float = 1.0
-    trajectory_drift_score: float = 0.0
-    source_conflict_score: float = 0.0
-    brownout_score: float = 0.0
-    time_skew_score: float = 0.0
-    environment_risk_score: float = 0.0
-    rollback_possible: bool = True
-    attestation_ready: bool = True
+    mission_id: str = "UNKNOWN"; gps_available: bool = True; inertial_available: bool = True
+    radio_available: bool = True; elapsed_s: float = 0.0; min_required_elapsed_s: float = 108.0
+    position_confidence: float = 1.0; trajectory_drift_score: float = 0.0
+    source_conflict_score: float = 0.0; brownout_score: float = 0.0
+    time_skew_score: float = 0.0; environment_risk_score: float = 0.0
+    rollback_possible: bool = True; attestation_ready: bool = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -189,25 +153,15 @@ class GpsDefenseAviationState(UniversalBase):
 
 @dataclass
 class BankState(UniversalBase):
-    transaction_type: str = ""
-    amount: float = 0.0
-    channel: str = ""
-    counterparty_known: bool = False
-    counterparty_age_days: int = 0
-    account_balance: float = 0.0
-    available_cash: float = 0.0
-    historical_avg_amount: float = 0.0
-    behavior_shift_score: float = 0.0
-    fraud_score: float = 0.0
-    policy_limit: float = 0.0
-    affordability_score: float = 0.0
-    urgency_score: float = 0.0
-    identity_mismatch_score: float = 0.0
-    narrative_conflict_score: float = 0.0
-    device_trust_score: float = 0.0
-    recent_failed_attempts: int = 0
-    elapsed_s: float = 0.0
-    min_required_elapsed_s: float = 108.0
+    transaction_type: str = ""; amount: float = 0.0; channel: str = ""
+    counterparty_known: bool = False; counterparty_age_days: int = 0
+    account_balance: float = 0.0; available_cash: float = 0.0
+    historical_avg_amount: float = 0.0; behavior_shift_score: float = 0.0
+    fraud_score: float = 0.0; policy_limit: float = 0.0
+    affordability_score: float = 0.0; urgency_score: float = 0.0
+    identity_mismatch_score: float = 0.0; narrative_conflict_score: float = 0.0
+    device_trust_score: float = 0.0; recent_failed_attempts: int = 0
+    elapsed_s: float = 0.0; min_required_elapsed_s: float = 108.0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -225,12 +179,6 @@ class TradingState(UniversalBase):
     event_risk_scores: List[float] = field(default_factory=list)
     btc_reference_prices: List[float] = field(default_factory=list)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 @dataclass
 class EcomState(UniversalBase):
     session_id: str = "debug-session"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
