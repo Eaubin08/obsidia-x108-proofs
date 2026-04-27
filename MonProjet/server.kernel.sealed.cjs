@@ -58,7 +58,18 @@ app.post('/kernel/ragnarok', (req, res) => {
         }
 
         try {
-            res.json(JSON.parse(result));
+            const parsedResult = JSON.parse(result);
+            
+            // --- AJOUT SÉCURISÉ : PERSISTENCE ---
+            const allDataDir = path.join(__dirname, 'allData');
+            if (!fs.existsSync(allDataDir)) fs.mkdirSync(allDataDir);
+            
+            const filename = `decision_${domain}_${Date.now()}.json`;
+            fs.writeFileSync(path.join(allDataDir, filename), JSON.stringify(parsedResult, null, 2));
+            console.log(`\x1b[32m💾 [SAVE]\x1b[0m ${filename}`);
+            // ------------------------------------
+
+            res.json(parsedResult);
         } catch (e) {
             console.error("\x1b[31m[PARSE ERROR]\x1b[0m", result);
             res.status(500).json({ error: "Parsing error", raw: result });
