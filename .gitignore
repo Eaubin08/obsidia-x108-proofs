@@ -44,3 +44,51 @@ staging/transplant_priority/
 _external_sources/
 MonProjet/allData/*.json
 MonProjet/input_temp.json
+
+# === OBSIDIA PUBLIC HYGIENE ===
+
+# Private / staging / external source snapshots
+private/
+_imports_ready/
+MonProjet/
+_audit_tags/
+
+# Local audit backups / temporary repair files
+audit/backups/
+audit/cleanup/secret_fix_backup_*/
+*.bak
+*.backup
+*.before-*.py
+*_backup*
+_patch_*.py
+
+# Build artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.db
+*.sqlite
+*.sqlite3
+
+# Runtime/generated data
+allData/
+MonProjet/allData/
+decision_*.json
+*_results.tmp
+
+# Python / test cache
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Node / package artifacts
+node_modules/
+dist/
+build/
+
+# Env/secrets
+.env
+.env.*
+!.env.example
