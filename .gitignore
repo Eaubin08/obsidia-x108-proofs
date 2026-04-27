@@ -40,3 +40,5 @@ upstream_snapshots/
 staging/final_graft_plan/
 staging/transplant_mapped/
 staging/transplant_priority/
+
+_external_sources/
