@@ -33,7 +33,7 @@ def aggregate_trading(votes: Iterable[AgentVote]) -> DomainAggregate:
     sell = scores.get("SELL", 0.0)
     hold = scores.get("HOLD", 0.0)
     market_verdict = "EXECUTE_LONG" if buy > max(sell, hold) else "EXECUTE_SHORT" if sell > max(buy, hold) else "REVIEW"
-    confidence = max(buy, sell, hold) / max(1.0, sum(scores.values()))
+    confidence = round(min(0.98, max(buy, sell, hold) if sum(scores.values()) > 0 else 0.5), 2)
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
     extra_metrics = {"buy_score": buy, "sell_score": sell, "hold_score": hold, "proof_ready": True, "deterministic": True}
     return DomainAggregate(Domain.TRADING, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
@@ -48,7 +48,7 @@ def aggregate_bank(votes: Iterable[AgentVote]) -> DomainAggregate:
     analyze = scores.get("ANALYZE", 0.0)
     block = scores.get("BLOCK", 0.0)
     market_verdict = "BLOCK" if block > max(auth, analyze) else "AUTHORIZE" if auth > analyze else "ANALYZE"
-    confidence = max(auth, analyze, block) / max(1.0, sum(scores.values()))
+    confidence = round(min(0.98, max(auth, analyze, block) if sum(scores.values()) > 0 else 0.5), 2)
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
     extra_metrics = {"authorize_score": auth, "analyze_score": analyze, "block_score": block, "proof_ready": True, "deterministic": True}
     return DomainAggregate(Domain.BANK, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
@@ -63,7 +63,7 @@ def aggregate_ecom(votes: Iterable[AgentVote]) -> DomainAggregate:
     wait = scores.get("WAIT", 0.0)
     refuse = scores.get("REFUSE", 0.0)
     market_verdict = "REFUSE" if refuse > max(pay, wait) else "PAY" if pay > wait else "WAIT"
-    confidence = max(pay, wait, refuse) / max(1.0, sum(scores.values()))
+    confidence = round(min(0.98, max(pay, wait, refuse) if sum(scores.values()) > 0 else 0.5), 2)
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
     extra_metrics = {"pay_score": pay, "wait_score": wait, "refuse_score": refuse, "proof_ready": True, "deterministic": True}
     return DomainAggregate(Domain.ECOM, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
@@ -80,7 +80,7 @@ def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregat
     degraded = scores.get("DEGRADED_NAVIGATION", 0.0)
     abort = scores.get("ABORT_TRAJECTORY", 0.0)
 
-    confidence = max(valid, recalc, degraded, abort) / max(1.0, sum(scores.values()))
+    confidence = round(min(0.98, max(valid, recalc, degraded, abort) if sum(scores.values()) > 0 else 0.5), 2)
     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
 
     truth_penalty = 0.0

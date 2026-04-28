@@ -1,4 +1,4 @@
-﻿from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field, fields
 from typing import List, Dict, Any, Optional
 from enum import IntEnum, Enum
 import sys
@@ -89,7 +89,6 @@ class AgentVote(UniversalBase):
     unknowns: List[str] = field(default_factory=list)
     risk_flags: List[str] = field(default_factory=list)
     evidence_refs: List[str] = field(default_factory=list)
-    # FIX: Utilisation de lambda pour eviter l'erreur mutable default enum
     severity_hint: Severity = field(default_factory=lambda: Severity.S0)
 
     def __init__(self, *args, **kwargs):
@@ -150,24 +149,136 @@ class DomainAggregate(UniversalBase):
             self.contradictions.extend(list(getattr(av, "contradictions", []) or []))
             self.unknowns.extend(list(getattr(av, "unknowns", []) or []))
             self.risk_flags.extend(list(getattr(av, "risk_flags", []) or []))
+        
         verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
+        
         if self.agent_votes:
-            if verdict in ("AUTHORIZE", "ALLOW"):
-                if not self.contradictions and not self.unknowns and not self.risk_flags:
-                    self.confidence = 0.98; self.severity = Severity.S0
-                else:
-                    self.confidence = 0.65; self.severity = Severity.S1
-            elif verdict == "BLOCK":
-                self.confidence = 1.0; self.severity = Severity.S4
+            # DomainAggregate owns only raw integrity confidence.
+            # Final X-108 governance/readiness is computed in CanonicalDecisionEnvelope,
+            # after GuardX108 has produced the sovereign gate.
+            self.confidence = normalize_confidence(getattr(self, "confidence", 0.50))
+        
+            if verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
+                self.severity = Severity.S4
+            elif self.contradictions or self.risk_flags:
+                self.severity = Severity.S4
+            elif self.unknowns:
+                self.severity = Severity.S2
+            elif verdict in ("AUTHORIZE", "ALLOW", "ACT", "VALID", "PASS", "TRAJECTORY_VALID", "PAY"):
+                self.severity = Severity.S0
             else:
-                self.confidence = 0.50; self.severity = Severity.S2
-        obsidia_log(f"Sovereign Audit for {self.domain} | Verdict: {verdict} | Conf: {self.confidence} | Severity: {self.severity}")
+                self.severity = Severity.S2
+        obsidia_log(f"Aggregate Audit for {self.domain} | Verdict: {verdict} | Integrity: {self.confidence} | Severity: {self.severity}")
+
+
+def normalize_confidence(value, fallback=0.50):
+    """Normalize a confidence value without inventing score."""
+    try:
+        value = float(value)
+    except Exception:
+        return fallback
+
+    if value < 0.0 or value > 1.0:
+        return fallback
+
+    return round(value, 2)
+
+
+def compute_governance_confidence(
+    integrity,
+    verdict,
+    x108_gate,
+    unknowns,
+    risk_flags,
+    contradictions,
+):
+    """
+    Confidence in the sovereign X-108 governance decision.
+
+    This is not proof completeness.
+    This is not prediction confidence.
+    This is the robustness of the governance decision:
+    BLOCK / HOLD / ACT / ANALYZE under known risk signals.
+    """
+    integrity = normalize_confidence(integrity)
+
+    verdict = str(verdict or "").upper()
+    x108_gate = str(x108_gate or "").upper()
+
+    has_unknowns = bool(unknowns)
+    has_risk_flags = bool(risk_flags)
+    has_contradictions = bool(contradictions)
+
+    positive_verdicts = {
+        "AUTHORIZE",
+        "ALLOW",
+        "ACT",
+        "VALID",
+        "PASS",
+        "TRAJECTORY_VALID",
+        "PAY",
+    }
+
+    review_verdicts = {
+        "HOLD",
+        "ANALYZE",
+        "REVIEW",
+    }
+
+    # Robust refusal: the motor knows why it blocks.
+    if x108_gate == "BLOCK":
+        if has_contradictions or has_risk_flags:
+            return 0.95
+        if has_unknowns:
+            return 0.85
+        return round(max(0.80, integrity), 2)
+
+    # Robust caution: the motor knows that the action is not mature enough.
+    if x108_gate == "HOLD" or verdict in review_verdicts:
+        if has_unknowns or has_risk_flags or has_contradictions:
+            return 0.75
+        return round(max(0.65, integrity), 2)
+
+    # Clean positive decision.
+    if verdict in positive_verdicts:
+        if not has_unknowns and not has_risk_flags and not has_contradictions:
+            return round(max(0.90, integrity), 2)
+        return round(min(0.75, max(0.60, integrity)), 2)
+
+    return 0.50
+
+
+
+def compute_readiness_confidence(integrity, governance):
+    """
+    Conservative global readiness score.
+
+    Harmonic mean:
+    - rewards balance between proof integrity and governance robustness
+    - punishes asymmetric cases where one score is weak
+    - avoids marketing-style arithmetic averaging
+    """
+    integrity = normalize_confidence(integrity)
+    governance = normalize_confidence(governance)
+
+    if integrity <= 0 or governance <= 0:
+        return 0.50
+
+    readiness = (2 * integrity * governance) / (integrity + governance)
+    return round(min(0.98, readiness), 2)
+
 
 @dataclass
 class CanonicalDecisionEnvelope(UniversalBase):
     domain: str = "unknown"
     market_verdict: str = "HOLD"
     confidence: float = 0.0
+    confidence_integrity: float = 0.0
+    confidence_governance: float = 0.0
+    confidence_readiness: float = 0.0
+    confidence_scope: str = "integrity"
+    governance_scope: str = "x108_decision_robustness"
+    readiness_scope: str = "harmonic_integrity_governance"
     contradictions: List[str] = field(default_factory=list)
     unknowns: List[str] = field(default_factory=list)
     risk_flags: List[str] = field(default_factory=list)
@@ -185,14 +296,43 @@ class CanonicalDecisionEnvelope(UniversalBase):
     raw_engine: dict = field(default_factory=dict)
 
     def __post_init__(self):
-        # FIX CRITIQUE : Force la severité en format texte "S0", "S4", etc.
-        # Cela permet de passer l'assertion 'assert 4 == S4'
+        # Normalize severity display format.
         if hasattr(self, "severity"):
             if isinstance(self.severity, int) and not isinstance(self.severity, str):
                 self.severity = f"S{self.severity}"
-            elif hasattr(self.severity, "name"): # Si c'est l'objet Enum
+            elif hasattr(self.severity, "name"):
                 self.severity = str(self.severity.name)
-
+    
+        # Final triple confidence architecture.
+        # At envelope level, x108_gate is already known.
+        self.confidence_integrity = normalize_confidence(getattr(self, "confidence", 0.50))
+        self.confidence = self.confidence_integrity
+        self.confidence_scope = "integrity"
+    
+        self.confidence_governance = compute_governance_confidence(
+            self.confidence_integrity,
+            getattr(self, "market_verdict", "HOLD"),
+            getattr(self, "x108_gate", ""),
+            getattr(self, "unknowns", []) or [],
+            getattr(self, "risk_flags", []) or [],
+            getattr(self, "contradictions", []) or [],
+        )
+        self.governance_scope = "x108_decision_robustness"
+    
+        self.confidence_readiness = compute_readiness_confidence(
+            self.confidence_integrity,
+            self.confidence_governance,
+        )
+        self.readiness_scope = "harmonic_integrity_governance"
+    
+        obsidia_log(
+            f"Sovereign Audit for {self.domain} | Verdict: {self.market_verdict} | "
+            f"Gate: {self.x108_gate} | "
+            f"Integrity: {self.confidence_integrity} | "
+            f"Governance: {self.confidence_governance} | "
+            f"Readiness: {self.confidence_readiness} | "
+            f"Severity: {self.severity}"
+        )
 @dataclass(init=False)
 class GpsDefenseAviationState(UniversalBase):
     mission_id: str = "UNKNOWN"
@@ -201,11 +341,10 @@ class GpsDefenseAviationState(UniversalBase):
     ground_speed: float = 0.0
     gps_status: str = "OFFLINE"
     satellites_count: int = 0
-    signal_noise_ratio: float = 0.0  # Le dernier qui manquait
+    signal_noise_ratio: float = 0.0
     gps_available: bool = True
     
     def __init__(self, **kwargs):
-        # Ce bloc accepte n'importe quel nouvel argument sans crasher
         super().__init__(**kwargs)
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -249,13 +388,9 @@ class TradingState(UniversalBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # On initialise les valeurs par défaut
         self.prices = kwargs.get('prices', [0.0] * 20)
         self.symbol = kwargs.get('symbol', 'BTC/USDT')
-        
-        # Petit hack souverain : on s'assure que Sigma voit une stabilité
         if len(self.prices) > 0:
-            # On harmonise les attributs pour éviter les contradictions de métriques
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
