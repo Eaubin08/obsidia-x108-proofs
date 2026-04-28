@@ -1,0 +1,14 @@
+﻿{
+  "name": "obsidia-x108-proofs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Obsidia X-108 bridge server and proof pipeline",
+  "main": "server.kernel.sealed.cjs",
+  "scripts": {
+    "start": "node server.kernel.sealed.cjs",
+    "kernel": "node server.kernel.sealed.cjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
