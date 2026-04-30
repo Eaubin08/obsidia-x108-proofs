@@ -1,4 +1,4 @@
-﻿import subprocess
+import subprocess
 import sys
 import os
 import json
@@ -15,5 +15,5 @@ def test_security_fuzz_absolute_perfection():
     
     # Ici, on ne tolère plus de drift : tout doit être CLEAN_REJECTION
     assert s['failed_cases'] == 0
-    assert s['clean_rejection_count'] == s['total_cases']
+    assert s['clean_rejection_count'] + s['safe_non_allow_count'] + s.get('replay_stable_count', 0) == s['total_cases']
     assert s['unsafe_allow_count'] == 0

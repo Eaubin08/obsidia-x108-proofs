@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 OS4 Canonical Agent Pipeline CLI Bridge â€” P1 public
 Usage:
@@ -7,6 +7,7 @@ Usage:
 import sys
 import json
 import dataclasses
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -72,6 +73,100 @@ def load_state(arg: str) -> dict:
 
     raise ValueError("Input is neither a JSON object nor a readable JSON file")
 
+BANK_STRING_FIELDS = {
+    "transaction_type",
+    "channel",
+}
+
+BANK_BOOL_FIELDS = {
+    "counterparty_known",
+}
+
+BANK_INT_FIELDS = {
+    "counterparty_age_days",
+    "recent_failed_attempts",
+}
+
+BANK_NUMERIC_FIELDS = {
+    "amount",
+    "account_balance",
+    "available_cash",
+    "historical_avg_amount",
+    "behavior_shift_score",
+    "fraud_score",
+    "policy_limit",
+    "affordability_score",
+    "urgency_score",
+    "identity_mismatch_score",
+    "narrative_conflict_score",
+    "device_trust_score",
+    "elapsed_s",
+    "min_required_elapsed_s",
+}
+
+BANK_UNIT_SCORE_FIELDS = {
+    "behavior_shift_score",
+    "fraud_score",
+    "affordability_score",
+    "urgency_score",
+    "identity_mismatch_score",
+    "narrative_conflict_score",
+    "device_trust_score",
+}
+
+BANK_NON_NEGATIVE_FIELDS = {
+    "amount",
+    "account_balance",
+    "available_cash",
+    "historical_avg_amount",
+    "policy_limit",
+    "elapsed_s",
+    "min_required_elapsed_s",
+    "counterparty_age_days",
+    "recent_failed_attempts",
+}
+
+
+def _is_plain_number(value) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+    )
+
+
+def _require_number(state_data: dict, field: str) -> None:
+    value = state_data.get(field)
+
+    if not _is_plain_number(value):
+        raise ValueError(f"Invalid bank field type: {field} must be a finite number")
+
+    numeric = float(value)
+
+    if field in BANK_NON_NEGATIVE_FIELDS and numeric < 0:
+        raise ValueError(f"Invalid bank field range: {field} must be >= 0")
+
+    if field in BANK_UNIT_SCORE_FIELDS and not (0.0 <= numeric <= 1.0):
+        raise ValueError(f"Invalid bank field range: {field} must be between 0 and 1")
+
+
+def _require_int(state_data: dict, field: str) -> None:
+    value = state_data.get(field)
+
+    if isinstance(value, bool):
+        raise ValueError(f"Invalid bank field type: {field} must be an integer")
+
+    if isinstance(value, int):
+        integer = value
+    elif isinstance(value, float) and value.is_integer():
+        integer = int(value)
+    else:
+        raise ValueError(f"Invalid bank field type: {field} must be an integer")
+
+    if field in BANK_NON_NEGATIVE_FIELDS and integer < 0:
+        raise ValueError(f"Invalid bank field range: {field} must be >= 0")
+
+
 def validate_bank_payload(state_data: dict) -> None:
     if not isinstance(state_data, dict):
         raise ValueError("Bank payload must be a JSON object")
@@ -83,6 +178,25 @@ def validate_bank_payload(state_data: dict) -> None:
     unknown = sorted(set(state_data.keys()) - ALLOWED_BANK_FIELDS)
     if unknown:
         raise ValueError(f"Unknown bank fields: {', '.join(unknown)}")
+
+    for field in BANK_STRING_FIELDS:
+        value = state_data.get(field)
+        if not isinstance(value, str):
+            raise ValueError(f"Invalid bank field type: {field} must be a string")
+
+    for field in BANK_BOOL_FIELDS:
+        value = state_data.get(field)
+        if not isinstance(value, bool):
+            raise ValueError(f"Invalid bank field type: {field} must be a boolean")
+
+    for field in BANK_INT_FIELDS:
+        if field in state_data:
+            _require_int(state_data, field)
+
+    for field in BANK_NUMERIC_FIELDS:
+        if field in state_data:
+            _require_number(state_data, field)
+
 
 
 def apply_sigma(result_dict: dict, sigma: ObsidiaSigmaMonitor) -> dict:
