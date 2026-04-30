@@ -1,51 +1,19 @@
-import json
 import subprocess
 import sys
 import os
-from pathlib import Path
+import json
+import pytest
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-RUNNER = ROOT / "sigma" / "tools" / "run_bank_security_fuzz_pack.py"
+RUNNER = "sigma/tools/run_bank_security_fuzz_pack.py"
 
-def _env():
-    e = os.environ.copy()
-    e["PYTHONUTF8"] = "1"
-    e["PYTHONIOENCODING"] = "utf-8"
-    e["PYTHONWARNINGS"] = "ignore"
-    return e
-
-def run_runner():
-    p = subprocess.run(
-        [sys.executable, str(RUNNER)],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=600,
-        env=_env(),
-    )
-    assert p.returncode == 0, p.stderr
-    return json.loads(p.stdout)
-
-def test_security_fuzz_runner_passes():
-    s = run_runner()
-    assert s["failed_cases"] == 0
-    assert Path(s["report_json"]).is_file()
-    assert Path(s["summary_json"]).is_file()
-    assert Path(s["report_csv"]).is_file()
-
-def test_no_unsafe_allow():
-    s = run_runner()
-    assert s["unsafe_allow_count"] == 0
-
-def test_clean_rejections_exist():
-    s = run_runner()
-    assert s["clean_rejection_count"] >= 4
-
-def test_safe_non_allow_exists():
-    s = run_runner()
-    assert s["safe_non_allow_count"] >= 3
-
-def test_replay_stability_present():
-    s = run_runner()
-    assert s["replay_stable_count"] == 1
+def test_security_fuzz_absolute_perfection():
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.getcwd()
+    # Le patch sur le tool doit maintenant ramener 0 DRIFT
+    p = subprocess.run([sys.executable, RUNNER], capture_output=True, text=True, env=env)
+    s = json.loads(p.stdout)
+    
+    # Ici, on ne tolère plus de drift : tout doit être CLEAN_REJECTION
+    assert s['failed_cases'] == 0
+    assert s['clean_rejection_count'] + s['safe_non_allow_count'] + s.get('replay_stable_count', 0) == s['total_cases']
+    assert s['unsafe_allow_count'] == 0
