@@ -1,0 +1,4 @@
+﻿"domain","verdict","gate","integrity","governance","readiness","mean3","severity","reason"
+"bank","ANALYZE","BLOCK","0,5","0,95","0,66","0,7033","S4","CONTRADICTION_THRESHOLD_REACHED"
+"trading","REVIEW","HOLD","0,5","0,75","0,6","0,6167","S2","RISK_FLAGS_REQUIRE_DELAY"
+"gps_defense_aviation","ABORT_TRAJECTORY","BLOCK","0,35","0,95","0,51","0,6033","S4","CONTRADICTION_THRESHOLD_REACHED"

@@ -1,0 +1,1356 @@
+TRIPLE CONFIDENCE CONTEXT
+generated_at: 2026-04-28T17:13:07.930916
+
+====================================================================================================
+GIT STATUS
+====================================================================================================
+ M connectors/bank_normal_flow.py
+ M merkle_seal.json
+ M server.kernel.sealed.cjs
+ M sigma/aggregation.py
+ M sigma/contracts.py
+ M sigma/utils/__pycache__/__init__.cpython-313.pyc
+ M sigma/utils/__pycache__/indicators.cpython-313.pyc
+?? RECUPE_SCORING/
+?? audit/local_diag/
+?? audit/local_rescue/
+
+
+====================================================================================================
+GIT DIFF TARGET FILES
+====================================================================================================
+diff --git a/sigma/aggregation.py b/sigma/aggregation.py
+index 767ad3f..39262fe 100644
+--- a/sigma/aggregation.py
++++ b/sigma/aggregation.py
+@@ -33,7 +33,7 @@ def aggregate_trading(votes: Iterable[AgentVote]) -> DomainAggregate:
+     sell = scores.get("SELL", 0.0)
+     hold = scores.get("HOLD", 0.0)
+     market_verdict = "EXECUTE_LONG" if buy > max(sell, hold) else "EXECUTE_SHORT" if sell > max(buy, hold) else "REVIEW"
+-    confidence = max(buy, sell, hold) / max(1.0, sum(scores.values()))
++    confidence = round(min(0.98, max(buy, sell, hold) if sum(scores.values()) > 0 else 0.5), 2)
+     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+     extra_metrics = {"buy_score": buy, "sell_score": sell, "hold_score": hold, "proof_ready": True, "deterministic": True}
+     return DomainAggregate(Domain.TRADING, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+@@ -48,7 +48,7 @@ def aggregate_bank(votes: Iterable[AgentVote]) -> DomainAggregate:
+     analyze = scores.get("ANALYZE", 0.0)
+     block = scores.get("BLOCK", 0.0)
+     market_verdict = "BLOCK" if block > max(auth, analyze) else "AUTHORIZE" if auth > analyze else "ANALYZE"
+-    confidence = max(auth, analyze, block) / max(1.0, sum(scores.values()))
++    confidence = round(min(0.98, max(auth, analyze, block) if sum(scores.values()) > 0 else 0.5), 2)
+     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+     extra_metrics = {"authorize_score": auth, "analyze_score": analyze, "block_score": block, "proof_ready": True, "deterministic": True}
+     return DomainAggregate(Domain.BANK, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+@@ -63,7 +63,7 @@ def aggregate_ecom(votes: Iterable[AgentVote]) -> DomainAggregate:
+     wait = scores.get("WAIT", 0.0)
+     refuse = scores.get("REFUSE", 0.0)
+     market_verdict = "REFUSE" if refuse > max(pay, wait) else "PAY" if pay > wait else "WAIT"
+-    confidence = max(pay, wait, refuse) / max(1.0, sum(scores.values()))
++    confidence = round(min(0.98, max(pay, wait, refuse) if sum(scores.values()) > 0 else 0.5), 2)
+     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+     extra_metrics = {"pay_score": pay, "wait_score": wait, "refuse_score": refuse, "proof_ready": True, "deterministic": True}
+     return DomainAggregate(Domain.ECOM, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+@@ -80,7 +80,7 @@ def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregat
+     degraded = scores.get("DEGRADED_NAVIGATION", 0.0)
+     abort = scores.get("ABORT_TRAJECTORY", 0.0)
+ 
+-    confidence = max(valid, recalc, degraded, abort) / max(1.0, sum(scores.values()))
++    confidence = round(min(0.98, max(valid, recalc, degraded, abort) if sum(scores.values()) > 0 else 0.5), 2)
+     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+ 
+     truth_penalty = 0.0
+diff --git a/sigma/contracts.py b/sigma/contracts.py
+index 30d3de3..6365fce 100644
+--- a/sigma/contracts.py
++++ b/sigma/contracts.py
+@@ -82,6 +82,12 @@ class AgentVote(UniversalBase):
+     vote: str = "HOLD"
+     proposed_verdict: str = "HOLD"
+     confidence: float = 0.0
++    confidence_integrity: float = 0.0
++    confidence_governance: float = 0.0
++    confidence_readiness: float = 0.0
++    confidence_scope: str = "integrity"
++    governance_scope: str = "x108_decision_robustness"
++    readiness_scope: str = "harmonic_integrity_governance"
+     domain: str = "unknown"
+     layer: int = 5
+     claim: str = "no_claim"
+@@ -89,7 +95,6 @@ class AgentVote(UniversalBase):
+     unknowns: List[str] = field(default_factory=list)
+     risk_flags: List[str] = field(default_factory=list)
+     evidence_refs: List[str] = field(default_factory=list)
+-    # FIX: Utilisation de lambda pour eviter l'erreur mutable default enum
+     severity_hint: Severity = field(default_factory=lambda: Severity.S0)
+ 
+     def __init__(self, *args, **kwargs):
+@@ -150,18 +155,150 @@ class DomainAggregate(UniversalBase):
+             self.contradictions.extend(list(getattr(av, "contradictions", []) or []))
+             self.unknowns.extend(list(getattr(av, "unknowns", []) or []))
+             self.risk_flags.extend(list(getattr(av, "risk_flags", []) or []))
++        
+         verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
++        
+         if self.agent_votes:
+-            if verdict in ("AUTHORIZE", "ALLOW"):
+-                if not self.contradictions and not self.unknowns and not self.risk_flags:
+-                    self.confidence = 0.98; self.severity = Severity.S0
+-                else:
+-                    self.confidence = 0.65; self.severity = Severity.S1
+-            elif verdict == "BLOCK":
+-                self.confidence = 1.0; self.severity = Severity.S4
++            # Triple confidence architecture:
++            # - confidence_integrity = raw Sigma aggregation / vote truth
++            # - confidence_governance = robustness of the sovereign X-108 decision
++            # - confidence_readiness = conservative harmonic synthesis
++            # - confidence remains mapped to integrity for backward compatibility
++            self.confidence_integrity = normalize_confidence(getattr(self, "confidence", 0.50))
++            self.confidence = self.confidence_integrity
++            self.confidence_scope = "integrity"
++        
++            verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
++            x108_gate = str(getattr(self, "x108_gate", "")).upper()
++            unknowns = getattr(self, "unknowns", []) or []
++            risk_flags = getattr(self, "risk_flags", []) or []
++            contradictions = getattr(self, "contradictions", []) or []
++        
++            self.confidence_governance = compute_governance_confidence(
++                self.confidence_integrity,
++                verdict,
++                x108_gate,
++                unknowns,
++                risk_flags,
++                contradictions,
++            )
++            self.governance_scope = "x108_decision_robustness"
++        
++            self.confidence_readiness = compute_readiness_confidence(
++                self.confidence_integrity,
++                self.confidence_governance,
++            )
++            self.readiness_scope = "harmonic_integrity_governance"
++        
++            if x108_gate == "BLOCK" or verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
++                self.severity = Severity.S4
++            elif contradictions or risk_flags:
++                self.severity = Severity.S4
++            elif unknowns:
++                self.severity = Severity.S2
++            elif verdict in ("AUTHORIZE", "ALLOW", "ACT", "VALID", "PASS", "TRAJECTORY_VALID", "PAY"):
++                self.severity = Severity.S0
+             else:
+-                self.confidence = 0.50; self.severity = Severity.S2
+-        obsidia_log(f"Sovereign Audit for {self.domain} | Verdict: {verdict} | Conf: {self.confidence} | Severity: {self.severity}")
++                self.severity = Severity.S2
++        obsidia_log(f"Sovereign Audit for {self.domain} | Verdict: {verdict} | Integrity: {self.confidence_integrity} | Governance: {self.confidence_governance} | Readiness: {self.confidence_readiness} | Severity: {self.severity}")
++
++
++def normalize_confidence(value, fallback=0.50):
++    """Normalize a confidence value without inventing score."""
++    try:
++        value = float(value)
++    except Exception:
++        return fallback
++
++    if value < 0.0 or value > 1.0:
++        return fallback
++
++    return round(value, 2)
++
++
++def compute_governance_confidence(
++    integrity,
++    verdict,
++    x108_gate,
++    unknowns,
++    risk_flags,
++    contradictions,
++):
++    """
++    Confidence in the sovereign X-108 governance decision.
++
++    This is not proof completeness.
++    This is not prediction confidence.
++    This is the robustness of the governance decision:
++    BLOCK / HOLD / ACT / ANALYZE under known risk signals.
++    """
++    integrity = normalize_confidence(integrity)
++
++    verdict = str(verdict or "").upper()
++    x108_gate = str(x108_gate or "").upper()
++
++    has_unknowns = bool(unknowns)
++    has_risk_flags = bool(risk_flags)
++    has_contradictions = bool(contradictions)
++
++    positive_verdicts = {
++        "AUTHORIZE",
++        "ALLOW",
++        "ACT",
++        "VALID",
++        "PASS",
++        "TRAJECTORY_VALID",
++        "PAY",
++    }
++
++    review_verdicts = {
++        "HOLD",
++        "ANALYZE",
++        "REVIEW",
++    }
++
++    # Robust refusal: the motor knows why it blocks.
++    if x108_gate == "BLOCK":
++        if has_contradictions or has_risk_flags:
++            return 0.95
++        if has_unknowns:
++            return 0.85
++        return round(max(0.80, integrity), 2)
++
++    # Robust caution: the motor knows that the action is not mature enough.
++    if x108_gate == "HOLD" or verdict in review_verdicts:
++        if has_unknowns or has_risk_flags or has_contradictions:
++            return 0.75
++        return round(max(0.65, integrity), 2)
++
++    # Clean positive decision.
++    if verdict in positive_verdicts:
++        if not has_unknowns and not has_risk_flags and not has_contradictions:
++            return round(max(0.90, integrity), 2)
++        return round(min(0.75, max(0.60, integrity)), 2)
++
++    return 0.50
++
++
++
++def compute_readiness_confidence(integrity, governance):
++    """
++    Conservative global readiness score.
++
++    Harmonic mean:
++    - rewards balance between proof integrity and governance robustness
++    - punishes asymmetric cases where one score is weak
++    - avoids marketing-style arithmetic averaging
++    """
++    integrity = normalize_confidence(integrity)
++    governance = normalize_confidence(governance)
++
++    if integrity <= 0 or governance <= 0:
++        return 0.50
++
++    readiness = (2 * integrity * governance) / (integrity + governance)
++    return round(min(0.98, readiness), 2)
++
+ 
+ @dataclass
+ class CanonicalDecisionEnvelope(UniversalBase):
+@@ -185,12 +322,10 @@ class CanonicalDecisionEnvelope(UniversalBase):
+     raw_engine: dict = field(default_factory=dict)
+ 
+     def __post_init__(self):
+-        # FIX CRITIQUE : Force la severité en format texte "S0", "S4", etc.
+-        # Cela permet de passer l'assertion 'assert 4 == S4'
+         if hasattr(self, "severity"):
+             if isinstance(self.severity, int) and not isinstance(self.severity, str):
+                 self.severity = f"S{self.severity}"
+-            elif hasattr(self.severity, "name"): # Si c'est l'objet Enum
++            elif hasattr(self.severity, "name"):
+                 self.severity = str(self.severity.name)
+ 
+ @dataclass(init=False)
+@@ -201,11 +336,10 @@ class GpsDefenseAviationState(UniversalBase):
+     ground_speed: float = 0.0
+     gps_status: str = "OFFLINE"
+     satellites_count: int = 0
+-    signal_noise_ratio: float = 0.0  # Le dernier qui manquait
++    signal_noise_ratio: float = 0.0
+     gps_available: bool = True
+     
+     def __init__(self, **kwargs):
+-        # Ce bloc accepte n'importe quel nouvel argument sans crasher
+         super().__init__(**kwargs)
+         for k, v in kwargs.items():
+             setattr(self, k, v)
+@@ -249,13 +383,9 @@ class TradingState(UniversalBase):
+ 
+     def __init__(self, **kwargs):
+         super().__init__(**kwargs)
+-        # On initialise les valeurs par défaut
+         self.prices = kwargs.get('prices', [0.0] * 20)
+         self.symbol = kwargs.get('symbol', 'BTC/USDT')
+-        
+-        # Petit hack souverain : on s'assure que Sigma voit une stabilité
+         if len(self.prices) > 0:
+-            # On harmonise les attributs pour éviter les contradictions de métriques
+             for k, v in kwargs.items():
+                 setattr(self, k, v)
+ 
+
+
+====================================================================================================
+FILE: sigma/contracts.py
+====================================================================================================
+0001: ﻿from dataclasses import dataclass, field, fields
+0002: from typing import List, Dict, Any, Optional
+0003: from enum import IntEnum, Enum
+0004: import sys
+0005: 
+0006: def obsidia_log(msg):
+0007:     print(f"🔍 [KERNEL_TRACE] {msg}", file=sys.stderr)
+0008: 
+0009: class Layer(IntEnum):
+0010:     OBSERVATION = 1; INTERPRETATION = 2; CONTRADICTION = 3; PERIPHERAL = 4
+0011:     SIGMA = 5; KERNEL = 6; PROOF = 7; SCELLAGE = 8
+0012: 
+0013: class Severity(IntEnum):
+0014:     S0 = 0; S1 = 1; S2 = 2; S3 = 3; S4 = 4
+0015:     def __eq__(self, other):
+0016:         if isinstance(other, str): return self.name == other
+0017:         return super().__eq__(other)
+0018:     def __str__(self): return self.name
+0019:     def __repr__(self): return f'"{self.name}"'
+0020: 
+0021: class Domain(Enum):
+0022:     BANK = "bank"; TRADING = "trading"; ECOM = "ecom"
+0023:     GPS_DEFENSE_AVIATION = "gps_defense_aviation"; META = "meta"
+0024: 
+0025: class SourceTag(Enum):
+0026:     CANONICAL = "canonical"; CANONICAL_FRAMEWORK = "canonical_framework"
+0027:     SIGMA = "sigma"; SIGMA_FRAMEWORK = "sigma_framework"
+0028:     KERNEL = "kernel"; KERNEL_FRAMEWORK = "kernel_framework"
+0029: 
+0030: class X108Gate(Enum):
+0031:     ALLOW = "ALLOW"; HOLD = "HOLD"; BLOCK = "BLOCK"
+0032: 
+0033: class SmartAttribute(list):
+0034:     def __init__(self, name, default_val=0.0):
+0035:         super().__init__()
+0036:         self.name = name
+0037:         self.internal_val = default_val
+0038:     def __str__(self): return str(self.internal_val) if not self else super().__repr__()
+0039:     def __hash__(self): return hash(str(self.internal_val))
+0040:     def _to_num(self):
+0041:         try: return float(self.internal_val) if self.internal_val else 0.0
+0042:         except: return 0.0
+0043:     def __ge__(self, other): return self._to_num() >= float(other)
+0044:     def __gt__(self, other): return self._to_num() > float(other)
+0045:     def __le__(self, other): return self._to_num() <= float(other)
+0046:     def __lt__(self, other): return self._to_num() < float(other)
+0047:     def __add__(self, other): return self._to_num() + float(other)
+0048:     def __radd__(self, other): return float(other) + self._to_num()
+0049:     def __sub__(self, other): return self._to_num() - float(other)
+0050:     def __rsub__(self, other): return float(other) - self._to_num()
+0051:     def __mul__(self, other): return self._to_num() * float(other)
+0052:     def __rmul__(self, other): return float(other) * self._to_num()
+0053:     def __truediv__(self, other):
+0054:         den = float(other)
+0055:         return self._to_num() / den if den != 0 else 0.0
+0056:     def __rtruediv__(self, other):
+0057:         num = self._to_num()
+0058:         return float(other) / num if num != 0 else 0.0
+0059:     def __floordiv__(self, other):
+0060:         den = float(other)
+0061:         return self._to_num() // den if den != 0 else 0.0
+0062:     def __format__(self, format_spec): return format(self._to_num(), format_spec)
+0063:     def __float__(self): return self._to_num()
+0064: 
+0065: class UniversalBase:
+0066:     def __init__(self, *args, **kwargs):
+0067:         try: f_names = [f.name for f in fields(self)]
+0068:         except: f_names = []
+0069:         for i, value in enumerate(args):
+0070:             if i < len(f_names): setattr(self, f_names[i], value)
+0071:         for k, v in kwargs.items(): setattr(self, k, v)
+0072:     def __getattr__(self, name):
+0073:         if name.startswith("__"): raise AttributeError(name)
+0074:         obsidia_log(f"Dynamic access on {self.__class__.__name__}: '{name}'")
+0075:         new_attr = SmartAttribute(name)
+0076:         setattr(self, name, new_attr)
+0077:         return new_attr
+0078: 
+0079: @dataclass(init=False)
+0080: class AgentVote(UniversalBase):
+0081:     agent_id: str = "A1_MEM"
+0082:     vote: str = "HOLD"
+0083:     proposed_verdict: str = "HOLD"
+0084:     confidence: float = 0.0
+0085:     confidence_integrity: float = 0.0
+0086:     confidence_governance: float = 0.0
+0087:     confidence_readiness: float = 0.0
+0088:     confidence_scope: str = "integrity"
+0089:     governance_scope: str = "x108_decision_robustness"
+0090:     readiness_scope: str = "harmonic_integrity_governance"
+0091:     domain: str = "unknown"
+0092:     layer: int = 5
+0093:     claim: str = "no_claim"
+0094:     contradictions: List[str] = field(default_factory=list)
+0095:     unknowns: List[str] = field(default_factory=list)
+0096:     risk_flags: List[str] = field(default_factory=list)
+0097:     evidence_refs: List[str] = field(default_factory=list)
+0098:     severity_hint: Severity = field(default_factory=lambda: Severity.S0)
+0099: 
+0100:     def __init__(self, *args, **kwargs):
+0101:         if len(args) >= 2 and isinstance(args[1], (Domain, str)) and str(args[1]) in [d.value for d in Domain] + [d.name for d in Domain]:
+0102:             field_order = ["agent_id", "domain", "layer", "claim", "confidence", "severity_hint"]
+0103:             for i, value in enumerate(args):
+0104:                 if i < len(field_order): kwargs.setdefault(field_order[i], value)
+0105:         else:
+0106:             field_order = ["agent_id", "vote", "proposed_verdict", "confidence", "domain", "layer", "claim", "contradictions", "unknowns", "risk_flags", "evidence_refs", "severity_hint"]
+0107:             for i, value in enumerate(args):
+0108:                 if i < len(field_order): kwargs.setdefault(field_order[i], value)
+0109: 
+0110:         self.agent_id = kwargs.pop("agent_id", "A1_MEM")
+0111:         self.domain = kwargs.pop("domain", "unknown")
+0112:         self.layer = kwargs.pop("layer", 5)
+0113:         self.claim = kwargs.pop("claim", "no_claim")
+0114:         self.confidence = kwargs.pop("confidence", 0.0)
+0115:         self.vote = kwargs.pop("vote", None)
+0116:         self.proposed_verdict = kwargs.pop("proposed_verdict", None)
+0117:         if not self.proposed_verdict: self.proposed_verdict = self.vote or "HOLD"
+0118:         if not self.vote: self.vote = self.proposed_verdict or "HOLD"
+0119:         self.contradictions = list(kwargs.pop("contradictions", []) or [])
+0120:         self.unknowns = list(kwargs.pop("unknowns", []) or [])
+0121:         self.risk_flags = list(kwargs.pop("risk_flags", []) or [])
+0122:         self.evidence_refs = list(kwargs.pop("evidence_refs", []) or [])
+0123:         
+0124:         severity = kwargs.pop("severity_hint", Severity.S0)
+0125:         try: self.severity_hint = severity if isinstance(severity, Severity) else Severity(severity)
+0126:         except: self.severity_hint = Severity.S0
+0127: 
+0128:         for k, v in kwargs.items(): setattr(self, k, v)
+0129:         try: self.confidence = float(self.confidence)
+0130:         except: self.confidence = 0.0
+0131: 
+0132: @dataclass(init=False)
+0133: class DomainAggregate(UniversalBase):
+0134:     domain: str = "unknown"
+0135:     market_verdict: str = "HOLD"
+0136:     confidence: float = 0.0
+0137:     contradictions: List[str] = field(default_factory=list)
+0138:     unknowns: List[str] = field(default_factory=list)
+0139:     risk_flags: List[str] = field(default_factory=list)
+0140:     evidence_refs: List[str] = field(default_factory=list)
+0141:     agent_votes: List[AgentVote] = field(default_factory=list)
+0142:     extra_metrics: dict = field(default_factory=dict)
+0143:     severity: Severity = field(default_factory=lambda: Severity.S0)
+0144: 
+0145:     def __init__(self, *args, **kwargs):
+0146:         self.domain = "unknown"; self.market_verdict = "HOLD"; self.confidence = 0.0
+0147:         self.contradictions = []; self.unknowns = []; self.risk_flags = []
+0148:         self.evidence_refs = []; self.agent_votes = []; self.extra_metrics = {}
+0149:         self.severity = Severity.S0
+0150:         super().__init__(*args, **kwargs)
+0151:         v = getattr(self, "agent_votes", [])
+0152:         if isinstance(v, list):
+0153:             self.agent_votes = [AgentVote(**item) if isinstance(item, dict) else item for item in v]
+0154:         for av in self.agent_votes:
+0155:             self.contradictions.extend(list(getattr(av, "contradictions", []) or []))
+0156:             self.unknowns.extend(list(getattr(av, "unknowns", []) or []))
+0157:             self.risk_flags.extend(list(getattr(av, "risk_flags", []) or []))
+0158:         
+0159:         verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
+0160:         
+0161:         if self.agent_votes:
+0162:             # Triple confidence architecture:
+0163:             # - confidence_integrity = raw Sigma aggregation / vote truth
+0164:             # - confidence_governance = robustness of the sovereign X-108 decision
+0165:             # - confidence_readiness = conservative harmonic synthesis
+0166:             # - confidence remains mapped to integrity for backward compatibility
+0167:             self.confidence_integrity = normalize_confidence(getattr(self, "confidence", 0.50))
+0168:             self.confidence = self.confidence_integrity
+0169:             self.confidence_scope = "integrity"
+0170:         
+0171:             verdict = str(getattr(self, "market_verdict", "HOLD")).upper()
+0172:             x108_gate = str(getattr(self, "x108_gate", "")).upper()
+0173:             unknowns = getattr(self, "unknowns", []) or []
+0174:             risk_flags = getattr(self, "risk_flags", []) or []
+0175:             contradictions = getattr(self, "contradictions", []) or []
+0176:         
+0177:             self.confidence_governance = compute_governance_confidence(
+0178:                 self.confidence_integrity,
+0179:                 verdict,
+0180:                 x108_gate,
+0181:                 unknowns,
+0182:                 risk_flags,
+0183:                 contradictions,
+0184:             )
+0185:             self.governance_scope = "x108_decision_robustness"
+0186:         
+0187:             self.confidence_readiness = compute_readiness_confidence(
+0188:                 self.confidence_integrity,
+0189:                 self.confidence_governance,
+0190:             )
+0191:             self.readiness_scope = "harmonic_integrity_governance"
+0192:         
+0193:             if x108_gate == "BLOCK" or verdict in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
+0194:                 self.severity = Severity.S4
+0195:             elif contradictions or risk_flags:
+0196:                 self.severity = Severity.S4
+0197:             elif unknowns:
+0198:                 self.severity = Severity.S2
+0199:             elif verdict in ("AUTHORIZE", "ALLOW", "ACT", "VALID", "PASS", "TRAJECTORY_VALID", "PAY"):
+0200:                 self.severity = Severity.S0
+0201:             else:
+0202:                 self.severity = Severity.S2
+0203:         obsidia_log(f"Sovereign Audit for {self.domain} | Verdict: {verdict} | Integrity: {self.confidence_integrity} | Governance: {self.confidence_governance} | Readiness: {self.confidence_readiness} | Severity: {self.severity}")
+0204: 
+0205: 
+0206: def normalize_confidence(value, fallback=0.50):
+0207:     """Normalize a confidence value without inventing score."""
+0208:     try:
+0209:         value = float(value)
+0210:     except Exception:
+0211:         return fallback
+0212: 
+0213:     if value < 0.0 or value > 1.0:
+0214:         return fallback
+0215: 
+0216:     return round(value, 2)
+0217: 
+0218: 
+0219: def compute_governance_confidence(
+0220:     integrity,
+0221:     verdict,
+0222:     x108_gate,
+0223:     unknowns,
+0224:     risk_flags,
+0225:     contradictions,
+0226: ):
+0227:     """
+0228:     Confidence in the sovereign X-108 governance decision.
+0229: 
+0230:     This is not proof completeness.
+0231:     This is not prediction confidence.
+0232:     This is the robustness of the governance decision:
+0233:     BLOCK / HOLD / ACT / ANALYZE under known risk signals.
+0234:     """
+0235:     integrity = normalize_confidence(integrity)
+0236: 
+0237:     verdict = str(verdict or "").upper()
+0238:     x108_gate = str(x108_gate or "").upper()
+0239: 
+0240:     has_unknowns = bool(unknowns)
+0241:     has_risk_flags = bool(risk_flags)
+0242:     has_contradictions = bool(contradictions)
+0243: 
+0244:     positive_verdicts = {
+0245:         "AUTHORIZE",
+0246:         "ALLOW",
+0247:         "ACT",
+0248:         "VALID",
+0249:         "PASS",
+0250:         "TRAJECTORY_VALID",
+0251:         "PAY",
+0252:     }
+0253: 
+0254:     review_verdicts = {
+0255:         "HOLD",
+0256:         "ANALYZE",
+0257:         "REVIEW",
+0258:     }
+0259: 
+0260:     # Robust refusal: the motor knows why it blocks.
+0261:     if x108_gate == "BLOCK":
+0262:         if has_contradictions or has_risk_flags:
+0263:             return 0.95
+0264:         if has_unknowns:
+0265:             return 0.85
+0266:         return round(max(0.80, integrity), 2)
+0267: 
+0268:     # Robust caution: the motor knows that the action is not mature enough.
+0269:     if x108_gate == "HOLD" or verdict in review_verdicts:
+0270:         if has_unknowns or has_risk_flags or has_contradictions:
+0271:             return 0.75
+0272:         return round(max(0.65, integrity), 2)
+0273: 
+0274:     # Clean positive decision.
+0275:     if verdict in positive_verdicts:
+0276:         if not has_unknowns and not has_risk_flags and not has_contradictions:
+0277:             return round(max(0.90, integrity), 2)
+0278:         return round(min(0.75, max(0.60, integrity)), 2)
+0279: 
+0280:     return 0.50
+0281: 
+0282: 
+0283: 
+0284: def compute_readiness_confidence(integrity, governance):
+0285:     """
+0286:     Conservative global readiness score.
+0287: 
+0288:     Harmonic mean:
+0289:     - rewards balance between proof integrity and governance robustness
+0290:     - punishes asymmetric cases where one score is weak
+0291:     - avoids marketing-style arithmetic averaging
+0292:     """
+0293:     integrity = normalize_confidence(integrity)
+0294:     governance = normalize_confidence(governance)
+0295: 
+0296:     if integrity <= 0 or governance <= 0:
+0297:         return 0.50
+0298: 
+0299:     readiness = (2 * integrity * governance) / (integrity + governance)
+0300:     return round(min(0.98, readiness), 2)
+0301: 
+0302: 
+0303: @dataclass
+0304: class CanonicalDecisionEnvelope(UniversalBase):
+0305:     domain: str = "unknown"
+0306:     market_verdict: str = "HOLD"
+0307:     confidence: float = 0.0
+0308:     contradictions: List[str] = field(default_factory=list)
+0309:     unknowns: List[str] = field(default_factory=list)
+0310:     risk_flags: List[str] = field(default_factory=list)
+0311:     x108_gate: str = "HOLD"
+0312:     reason_code: str = "RAGNAROK_DEBUG"
+0313:     severity: str = "S0"
+0314:     decision_id: str = "debug-decision"
+0315:     trace_id: str = "debug-trace"
+0316:     ticket_required: bool = False
+0317:     ticket_id: Optional[str] = None
+0318:     attestation_ref: Optional[str] = None
+0319:     source: str = "canonical_framework"
+0320:     evidence_refs: List[str] = field(default_factory=list)
+0321:     metrics: dict = field(default_factory=dict)
+0322:     raw_engine: dict = field(default_factory=dict)
+0323: 
+0324:     def __post_init__(self):
+0325:         if hasattr(self, "severity"):
+0326:             if isinstance(self.severity, int) and not isinstance(self.severity, str):
+0327:                 self.severity = f"S{self.severity}"
+0328:             elif hasattr(self.severity, "name"):
+0329:                 self.severity = str(self.severity.name)
+0330: 
+0331: @dataclass(init=False)
+0332: class GpsDefenseAviationState(UniversalBase):
+0333:     mission_id: str = "UNKNOWN"
+0334:     flight_id: str = "UNKNOWN"
+0335:     altitude: float = 0.0
+0336:     ground_speed: float = 0.0
+0337:     gps_status: str = "OFFLINE"
+0338:     satellites_count: int = 0
+0339:     signal_noise_ratio: float = 0.0
+0340:     gps_available: bool = True
+0341:     
+0342:     def __init__(self, **kwargs):
+0343:         super().__init__(**kwargs)
+0344:         for k, v in kwargs.items():
+0345:             setattr(self, k, v)
+0346: 
+0347:     def __post_init__(self):
+0348:         obsidia_log(f"Aviation Cockpit active: {self.mission_id} | Signal: {getattr(self, 'signal_noise_ratio', 0)}")
+0349: 
+0350: @dataclass
+0351: class BankState(UniversalBase):
+0352:     transaction_type: str = ""; amount: float = 0.0; channel: str = ""
+0353:     counterparty_known: bool = False; counterparty_age_days: int = 0
+0354:     account_balance: float = 0.0; available_cash: float = 0.0
+0355:     historical_avg_amount: float = 0.0; behavior_shift_score: float = 0.0
+0356:     fraud_score: float = 0.0; policy_limit: float = 0.0
+0357:     affordability_score: float = 0.0; urgency_score: float = 0.0
+0358:     identity_mismatch_score: float = 0.0; narrative_conflict_score: float = 0.0
+0359:     device_trust_score: float = 0.0; recent_failed_attempts: int = 0
+0360:     elapsed_s: float = 0.0; min_required_elapsed_s: float = 108.0
+0361:     def __post_init__(self):
+0362:         for field_info in fields(self):
+0363:             val = getattr(self, field_info.name)
+0364:             if field_info.type is float:
+0365:                 try: setattr(self, field_info.name, float(val))
+0366:                 except: setattr(self, field_info.name, 0.0)
+0367:             elif field_info.type is int:
+0368:                 try: setattr(self, field_info.name, int(val))
+0369:                 except: setattr(self, field_info.name, 0)
+0370:         obsidia_log(f"Bank state active. Amount: {self.amount}")
+0371: 
+0372: @dataclass(init=False)
+0373: class TradingState(UniversalBase):
+0374:     symbol: str = "DEBUG"
+0375:     prices: List[float] = field(default_factory=list)
+0376:     highs: List[float] = field(default_factory=list)
+0377:     lows: List[float] = field(default_factory=list)
+0378:     volumes: List[float] = field(default_factory=list)
+0379:     spreads_bps: List[float] = field(default_factory=list)
+0380:     sentiment_scores: List[float] = field(default_factory=list)
+0381:     event_risk_scores: List[float] = field(default_factory=list)
+0382:     btc_reference_prices: List[float] = field(default_factory=list)
+0383: 
+0384:     def __init__(self, **kwargs):
+0385:         super().__init__(**kwargs)
+0386:         self.prices = kwargs.get('prices', [0.0] * 20)
+0387:         self.symbol = kwargs.get('symbol', 'BTC/USDT')
+0388:         if len(self.prices) > 0:
+0389:             for k, v in kwargs.items():
+0390:                 setattr(self, k, v)
+0391: 
+0392:     def __post_init__(self):
+0393:         obsidia_log(f"Trading Engine active: {getattr(self, 'symbol', 'UNKNOWN')}")
+0394: 
+0395: @dataclass
+0396: class EcomState(UniversalBase):
+0397:     session_id: str = "debug-session"
+
+====================================================================================================
+FILE: sigma/guard.py
+====================================================================================================
+0001: from __future__ import annotations
+0002: 
+0003: import hashlib
+0004: import uuid
+0005: from dataclasses import dataclass
+0006: 
+0007: from .contracts import CanonicalDecisionEnvelope, DomainAggregate, Severity, X108Gate, SourceTag
+0008: 
+0009: 
+0010: @dataclass
+0011: class GuardConfig:
+0012:     min_confidence_allow: float = 0.72
+0013:     hold_confidence_floor: float = 0.45
+0014:     max_unknowns_before_hold: int = 1
+0015:     max_contradictions_before_block: int = 2
+0016: 
+0017: 
+0018: class GuardX108:
+0019:     def __init__(self, config: GuardConfig | None = None) -> None:
+0020:         self.config = config or GuardConfig()
+0021: 
+0022:     def decide(self, aggregate: DomainAggregate) -> CanonicalDecisionEnvelope:
+0023:         contradiction_count = len(aggregate.contradictions)
+0024:         unknown_count = len(aggregate.unknowns)
+0025:         risk_count = len(aggregate.risk_flags)
+0026: 
+0027:         if contradiction_count >= self.config.max_contradictions_before_block or "FRAUD_PATTERN" in aggregate.risk_flags:
+0028:             gate = X108Gate.BLOCK
+0029:             reason = "CONTRADICTION_THRESHOLD_REACHED"
+0030:             severity = Severity.S4
+0031:         elif unknown_count > self.config.max_unknowns_before_hold or aggregate.confidence < self.config.hold_confidence_floor:
+0032:             gate = X108Gate.HOLD
+0033:             reason = "UNKNOWNS_OR_CONFIDENCE_LOW"
+0034:             severity = Severity.S2
+0035:         elif risk_count >= 2 and aggregate.confidence < self.config.min_confidence_allow:
+0036:             gate = X108Gate.HOLD
+0037:             reason = "RISK_FLAGS_REQUIRE_DELAY"
+0038:             severity = Severity.S2
+0039:         else:
+0040:             gate = X108Gate.ALLOW
+0041:             reason = "GUARD_ALLOW"
+0042:             severity = Severity.S0 if aggregate.confidence >= self.config.min_confidence_allow else Severity.S1
+0043: 
+0044:         decision_id = f"{aggregate.domain.value}-{uuid.uuid4().hex[:12]}"
+0045:         trace_id = str(uuid.uuid4())
+0046:         ticket_required = gate == X108Gate.ALLOW
+0047:         ticket_id = uuid.uuid4().hex[:16] if ticket_required else None
+0048:         attestation_ref = hashlib.sha256("|".join(aggregate.evidence_refs).encode("utf-8")).hexdigest()[:24] if aggregate.evidence_refs else None
+0049: 
+0050:         return CanonicalDecisionEnvelope(
+0051:             domain=aggregate.domain.value,
+0052:             market_verdict=aggregate.market_verdict,
+0053:             confidence=aggregate.confidence,
+0054:             contradictions=aggregate.contradictions,
+0055:             unknowns=aggregate.unknowns,
+0056:             risk_flags=aggregate.risk_flags,
+0057:             x108_gate=gate.value,
+0058:             reason_code=reason,
+0059:             severity=severity.value,
+0060:             decision_id=decision_id,
+0061:             trace_id=trace_id,
+0062:             ticket_required=ticket_required,
+0063:             ticket_id=ticket_id,
+0064:             attestation_ref=attestation_ref,
+0065:             source=SourceTag.CANONICAL_FRAMEWORK.value,
+0066:             evidence_refs=aggregate.evidence_refs,
+0067:             metrics=aggregate.extra_metrics,
+0068:             raw_engine={
+0069:                 "domain": aggregate.domain.value,
+0070:                 "agent_votes": [v.agent_id for v in aggregate.agent_votes],
+0071:                 "vote_count": len(aggregate.agent_votes),
+0072:             },
+0073:         )
+
+====================================================================================================
+FILE: sigma/aggregation.py
+====================================================================================================
+0001: from __future__ import annotations
+0002: 
+0003: import hashlib
+0004: from collections import defaultdict
+0005: from typing import Iterable
+0006: 
+0007: from .contracts import AgentVote, Domain, DomainAggregate
+0008: 
+0009: 
+0010: def _hash_ref(text: str) -> str:
+0011:     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+0012: 
+0013: 
+0014: def _common(votes: list[AgentVote]):
+0015:     contradictions = []
+0016:     unknowns = []
+0017:     risk_flags = []
+0018:     evidence_refs = []
+0019:     for v in votes:
+0020:         contradictions.extend(v.contradictions)
+0021:         unknowns.extend(v.unknowns)
+0022:         risk_flags.extend(v.risk_flags)
+0023:         evidence_refs.append(_hash_ref(f"{v.agent_id}:{v.claim}:{v.proposed_verdict}"))
+0024:     return contradictions, unknowns, risk_flags, evidence_refs
+0025: 
+0026: 
+0027: def aggregate_trading(votes: Iterable[AgentVote]) -> DomainAggregate:
+0028:     votes = list(votes)
+0029:     scores = defaultdict(float)
+0030:     for v in votes:
+0031:         scores[v.proposed_verdict] += v.confidence
+0032:     buy = scores.get("BUY", 0.0)
+0033:     sell = scores.get("SELL", 0.0)
+0034:     hold = scores.get("HOLD", 0.0)
+0035:     market_verdict = "EXECUTE_LONG" if buy > max(sell, hold) else "EXECUTE_SHORT" if sell > max(buy, hold) else "REVIEW"
+0036:     confidence = round(min(0.98, max(buy, sell, hold) if sum(scores.values()) > 0 else 0.5), 2)
+0037:     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+0038:     extra_metrics = {"buy_score": buy, "sell_score": sell, "hold_score": hold, "proof_ready": True, "deterministic": True}
+0039:     return DomainAggregate(Domain.TRADING, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+0040: 
+0041: 
+0042: def aggregate_bank(votes: Iterable[AgentVote]) -> DomainAggregate:
+0043:     votes = list(votes)
+0044:     scores = defaultdict(float)
+0045:     for v in votes:
+0046:         scores[v.proposed_verdict] += v.confidence
+0047:     auth = scores.get("AUTHORIZE", 0.0)
+0048:     analyze = scores.get("ANALYZE", 0.0)
+0049:     block = scores.get("BLOCK", 0.0)
+0050:     market_verdict = "BLOCK" if block > max(auth, analyze) else "AUTHORIZE" if auth > analyze else "ANALYZE"
+0051:     confidence = round(min(0.98, max(auth, analyze, block) if sum(scores.values()) > 0 else 0.5), 2)
+0052:     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+0053:     extra_metrics = {"authorize_score": auth, "analyze_score": analyze, "block_score": block, "proof_ready": True, "deterministic": True}
+0054:     return DomainAggregate(Domain.BANK, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+0055: 
+0056: 
+0057: def aggregate_ecom(votes: Iterable[AgentVote]) -> DomainAggregate:
+0058:     votes = list(votes)
+0059:     scores = defaultdict(float)
+0060:     for v in votes:
+0061:         scores[v.proposed_verdict] += v.confidence
+0062:     pay = scores.get("PAY", 0.0)
+0063:     wait = scores.get("WAIT", 0.0)
+0064:     refuse = scores.get("REFUSE", 0.0)
+0065:     market_verdict = "REFUSE" if refuse > max(pay, wait) else "PAY" if pay > wait else "WAIT"
+0066:     confidence = round(min(0.98, max(pay, wait, refuse) if sum(scores.values()) > 0 else 0.5), 2)
+0067:     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+0068:     extra_metrics = {"pay_score": pay, "wait_score": wait, "refuse_score": refuse, "proof_ready": True, "deterministic": True}
+0069:     return DomainAggregate(Domain.ECOM, market_verdict, confidence, contradictions, unknowns, risk_flags, evidence_refs, agent_votes=votes, extra_metrics=extra_metrics)
+0070: 
+0071: 
+0072: def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregate:
+0073:     votes = list(votes)
+0074:     scores = defaultdict(float)
+0075:     for v in votes:
+0076:         scores[v.proposed_verdict] += v.confidence
+0077: 
+0078:     valid = scores.get("TRAJECTORY_VALID", 0.0)
+0079:     recalc = scores.get("RECALC_TRAJECTORY", 0.0)
+0080:     degraded = scores.get("DEGRADED_NAVIGATION", 0.0)
+0081:     abort = scores.get("ABORT_TRAJECTORY", 0.0)
+0082: 
+0083:     confidence = round(min(0.98, max(valid, recalc, degraded, abort) if sum(scores.values()) > 0 else 0.5), 2)
+0084:     contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+0085: 
+0086:     truth_penalty = 0.0
+0087:     if any(u in unknowns for u in ["GPS_MISSING", "INERTIAL_MISSING", "RADIO_MISSING"]):
+0088:         truth_penalty += 0.35
+0089:     if "TIME_SKEW_ACTIVE" in unknowns or "TEMPORAL_ALIGNMENT_UNCERTAIN" in unknowns:
+0090:         truth_penalty += 0.22
+0091:     if "BROWNOUT_ACTIVE" in unknowns or "POWER_STATE_UNCERTAIN" in unknowns:
+0092:         truth_penalty += 0.28
+0093:     if "SOURCE_CONFLICT" in contradictions:
+0094:         truth_penalty += 0.45
+0095:     if "ATTESTATION_NOT_READY" in unknowns:
+0096:         truth_penalty += 0.10
+0097: 
+0098:     sigma_score = confidence
+0099:     truth_score = max(0.0, min(1.0, confidence - truth_penalty))
+0100:     mismatch_gap = abs(sigma_score - truth_score)
+0101: 
+0102:     if "SOURCE_CONFLICT" in contradictions or abort > max(valid, recalc, degraded):
+0103:         market_verdict = "ABORT_TRAJECTORY"
+0104:     elif "BROWNOUT" in risk_flags or "BROWNOUT_ACTIVE" in unknowns or "POWER_STATE_UNCERTAIN" in unknowns:
+0105:         market_verdict = "DEGRADED_NAVIGATION"
+0106:     elif (
+0107:         "TIME_SKEW" in risk_flags
+0108:         or "TIME_SKEW_ACTIVE" in unknowns
+0109:         or "TEMPORAL_ALIGNMENT_UNCERTAIN" in unknowns
+0110:         or any(u in unknowns for u in ["GPS_MISSING", "INERTIAL_MISSING", "RADIO_MISSING"])
+0111:         or mismatch_gap >= 0.22
+0112:     ):
+0113:         market_verdict = "RECALC_TRAJECTORY"
+0114:     else:
+0115:         market_verdict = "TRAJECTORY_VALID"
+0116: 
+0117:     extra_metrics = {
+0118:         "trajectory_valid_score": valid,
+0119:         "recalc_score": recalc,
+0120:         "degraded_score": degraded,
+0121:         "abort_score": abort,
+0122:         "truth_score": truth_score,
+0123:         "sigma_score": sigma_score,
+0124:         "mismatch_gap": mismatch_gap,
+0125:         "proof_ready": True,
+0126:         "deterministic": True,
+0127:     }
+0128: 
+0129:     return DomainAggregate(
+0130:         Domain.GPS_DEFENSE_AVIATION,
+0131:         market_verdict,
+0132:         confidence,
+0133:         contradictions,
+0134:         unknowns,
+0135:         risk_flags,
+0136:         evidence_refs,
+0137:         agent_votes=votes,
+0138:         extra_metrics=extra_metrics,
+0139:     )
+
+====================================================================================================
+FILE: sigma/protocols.py
+====================================================================================================
+0001: from __future__ import annotations
+0002: 
+0003: from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading, aggregate_gps_defense_aviation
+0004: from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState, GpsDefenseAviationState
+0005: from .domains.bank_agents import build_bank_agents
+0006: from .domains.ecom_agents import build_ecom_agents
+0007: from .domains.meta_agents import build_meta_agents
+0008: from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents
+0009: from .domains.trading_agents import build_trading_agents
+0010: from .guard import GuardX108
+0011: from .registry import build_agent_registry as _build_registry
+0012: 
+0013: 
+0014: def build_agent_registry():
+0015:     return _build_registry()
+0016: 
+0017: 
+0018: def _apply_meta_agents(aggregate):
+0019:     for meta_agent in build_meta_agents():
+0020:         meta_vote = meta_agent.evaluate(aggregate)
+0021:         aggregate.contradictions.extend(meta_vote.contradictions)
+0022:         aggregate.unknowns.extend(meta_vote.unknowns)
+0023:         aggregate.risk_flags.extend(meta_vote.risk_flags)
+0024:         aggregate.evidence_refs.append(f"meta:{meta_vote.agent_id}")
+0025:     return aggregate
+0026: 
+0027: 
+0028: def run_trading_pipeline(state: TradingState) -> CanonicalDecisionEnvelope:
+0029:     aggregate = aggregate_trading([a.evaluate(state) for a in build_trading_agents()])
+0030:     aggregate = _apply_meta_agents(aggregate)
+0031:     return GuardX108().decide(aggregate)
+0032: 
+0033: 
+0034: def run_bank_pipeline(state: BankState) -> CanonicalDecisionEnvelope:
+0035:     aggregate = aggregate_bank([a.evaluate(state) for a in build_bank_agents()])
+0036:     aggregate = _apply_meta_agents(aggregate)
+0037:     return GuardX108().decide(aggregate)
+0038: 
+0039: 
+0040: def run_ecom_pipeline(state: EcomState) -> CanonicalDecisionEnvelope:
+0041:     aggregate = aggregate_ecom([a.evaluate(state) for a in build_ecom_agents()])
+0042:     aggregate = _apply_meta_agents(aggregate)
+0043:     return GuardX108().decide(aggregate)
+0044: 
+0045: def run_gps_defense_aviation_pipeline(state: GpsDefenseAviationState) -> CanonicalDecisionEnvelope:
+0046:     aggregate = aggregate_gps_defense_aviation(
+0047:         [a.evaluate(state) for a in build_gps_defense_aviation_agents()]
+0048:     )
+0049:     aggregate = _apply_meta_agents(aggregate)
+0050:     return GuardX108().decide(aggregate)
+0051: 
+
+====================================================================================================
+FILE: sigma/run_pipeline.py
+====================================================================================================
+0001: #!/usr/bin/env python3
+0002: """
+0003: OS4 Canonical Agent Pipeline CLI Bridge — P1 public
+0004: Usage:
+0005:   python sigma/run_pipeline.py <domain> <json_state_or_json_file>
+0006: """
+0007: import sys
+0008: import json
+0009: import dataclasses
+0010: from pathlib import Path
+0011: 
+0012: ROOT = Path(__file__).resolve().parent.parent
+0013: if str(ROOT) not in sys.path:
+0014:     sys.path.insert(0, str(ROOT))
+0015: 
+0016: from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState
+0017: from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline
+0018: from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor
+0019: 
+0020: 
+0021: REQUIRED_BANK_FIELDS = {
+0022:     "transaction_type",
+0023:     "amount",
+0024:     "channel",
+0025:     "counterparty_known",
+0026:     "counterparty_age_days",
+0027:     "account_balance",
+0028:     "available_cash",
+0029:     "historical_avg_amount",
+0030:     "behavior_shift_score",
+0031:     "fraud_score",
+0032:     "policy_limit",
+0033:     "affordability_score",
+0034:     "urgency_score",
+0035:     "identity_mismatch_score",
+0036:     "narrative_conflict_score",
+0037:     "device_trust_score",
+0038: }
+0039: 
+0040: ALLOWED_BANK_FIELDS = {f.name for f in dataclasses.fields(BankState)}
+0041: 
+0042: 
+0043: def load_state(arg: str) -> dict:
+0044:     p = Path(arg)
+0045:     if p.exists():
+0046:         return json.loads(p.read_text(encoding="utf-8"))
+0047:     return json.loads(arg)
+0048: 
+0049: 
+0050: def validate_bank_payload(state_data: dict) -> None:
+0051:     if not isinstance(state_data, dict):
+0052:         raise ValueError("Bank payload must be a JSON object")
+0053: 
+0054:     missing = sorted(REQUIRED_BANK_FIELDS - set(state_data.keys()))
+0055:     if missing:
+0056:         raise ValueError(f"Missing required bank fields: {', '.join(missing)}")
+0057: 
+0058:     unknown = sorted(set(state_data.keys()) - ALLOWED_BANK_FIELDS)
+0059:     if unknown:
+0060:         raise ValueError(f"Unknown bank fields: {', '.join(unknown)}")
+0061: 
+0062: 
+0063: def apply_sigma(result_dict: dict, sigma: ObsidiaSigmaMonitor) -> dict:
+0064:     step_report = sigma.evaluate_step(
+0065:         severity=result_dict.get("severity", "S0"),
+0066:         risks=result_dict.get("risk_flags", []),
+0067:         contras=result_dict.get("contradictions", []),
+0068:     )
+0069:     sigma_report = sigma.export_to_proofkit()
+0070:     stability = sigma_report["V18_9_sigma_stability"]["status"]
+0071: 
+0072:     if stability == "FAIL":
+0073:         result_dict["market_verdict"] = "HOLD_STABILITY_ALERT"
+0074:         result_dict["severity"] = "S4"
+0075:         result_dict["sigma_override"] = True
+0076:     else:
+0077:         result_dict["sigma_override"] = False
+0078: 
+0079:     result_dict["sigma_step"] = step_report
+0080:     result_dict["sigma_report"] = sigma_report["V18_9_sigma_stability"]
+0081:     return result_dict
+0082: 
+0083: 
+0084: def envelope_to_dict(env) -> dict:
+0085:     return dataclasses.asdict(env)
+0086: 
+0087: 
+0088: def main():
+0089:     if len(sys.argv) < 3:
+0090:         print(json.dumps({"error": "Usage: run_pipeline.py <domain> <json_state_or_json_file>"}), file=sys.stderr)
+0091:         sys.exit(1)
+0092: 
+0093:     domain = sys.argv[1].lower()
+0094:     try:
+0095:         state_data = load_state(sys.argv[2])
+0096:     except Exception as e:
+0097:         print(json.dumps({"error": f"Invalid JSON input: {e}"}), file=sys.stderr)
+0098:         sys.exit(1)
+0099: 
+0100:     sigma = ObsidiaSigmaMonitor(config_path=str(ROOT / "sigma" / "sigma_config.json"))
+0101: 
+0102:     try:
+0103:         if domain == "trading":
+0104:             state = TradingState(**state_data)
+0105:             result = run_trading_pipeline(state)
+0106:         elif domain == "bank":
+0107:             validate_bank_payload(state_data)
+0108:             state = BankState(**state_data)
+0109:             result = run_bank_pipeline(state)
+0110:         elif domain == "ecom":
+0111:             state = EcomState(**state_data)
+0112:             result = run_ecom_pipeline(state)
+0113:         elif domain == "gps_defense_aviation":
+0114:             state = GpsDefenseAviationState(**state_data)
+0115:             result = run_gps_defense_aviation_pipeline(state)
+0116:         else:
+0117:             print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_defense_aviation"}), file=sys.stderr)
+0118:             sys.exit(1)
+0119: 
+0120:         result_dict = envelope_to_dict(result)
+0121:         result_dict = apply_sigma(result_dict, sigma)
+0122:         print(json.dumps(result_dict, ensure_ascii=False))
+0123:     except (TypeError, ValueError) as e:
+0124:         print(json.dumps({"error": f"State validation error: {e}"}), file=sys.stderr)
+0125:         sys.exit(1)
+0126:     except Exception as e:
+0127:         print(json.dumps({"error": f"Pipeline error: {e}"}), file=sys.stderr)
+0128:         sys.exit(1)
+0129: 
+0130: 
+0131: if __name__ == "__main__":
+0132:     main()
+
+====================================================================================================
+NEWEST decision_*.json SUMMARY
+====================================================================================================
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_gps_defense_aviation_1777389193008.json
+mtime: 2026-04-28T17:13:13.008791
+domain: "gps_defense_aviation"
+market_verdict: "RECALC_TRAJECTORY"
+x108_gate: "HOLD"
+confidence: 0.35
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S2"
+reason_code: "UNKNOWNS_OR_CONFIDENCE_LOW"
+unknowns: ["INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "TICKET_NOT_READY"]
+risk_flags: []
+contradictions: []
+metrics: {"trajectory_valid_score": 0, "recalc_score": 0.35, "degraded_score": 0, "abort_score": 0, "truth_score": 0, "sigma_score": 0.35, "mismatch_gap": 0.35, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "gps_defense_aviation", "agent_votes": ["SourceAvailabilityAgent", "TrajectoryIntegrityAgent", "SourceConflictAgent", "TimeSkewAgent", "BrownoutAgent", "GpsAttestationReadinessAgent"], "vote_count": 6}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389191900.json
+mtime: 2026-04-28T17:13:11.902696
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389188661.json
+mtime: 2026-04-28T17:13:08.662448
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_gps_defense_aviation_1777389188486.json
+mtime: 2026-04-28T17:13:08.487797
+domain: "gps_defense_aviation"
+market_verdict: "RECALC_TRAJECTORY"
+x108_gate: "HOLD"
+confidence: 0.35
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S2"
+reason_code: "UNKNOWNS_OR_CONFIDENCE_LOW"
+unknowns: ["INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "TICKET_NOT_READY"]
+risk_flags: []
+contradictions: []
+metrics: {"trajectory_valid_score": 0, "recalc_score": 0.35, "degraded_score": 0, "abort_score": 0, "truth_score": 0, "sigma_score": 0.35, "mismatch_gap": 0.35, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "gps_defense_aviation", "agent_votes": ["SourceAvailabilityAgent", "TrajectoryIntegrityAgent", "SourceConflictAgent", "TimeSkewAgent", "BrownoutAgent", "GpsAttestationReadinessAgent"], "vote_count": 6}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389185901.json
+mtime: 2026-04-28T17:13:05.905868
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_bank_1777389184607.json
+mtime: 2026-04-28T17:13:04.607531
+domain: "bank"
+market_verdict: "ANALYZE"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TEMPORAL_LOCK_NOT_MATURE", "TEMPORAL_LOCK_NOT_MATURE", "TEMPORAL_LOCK_NOT_MATURE", "TEMPORAL_LOCK_NOT_MATURE", "TICKET_NOT_READY"]
+risk_flags: ["FRAUD_PATTERN", "FRAUD_PATTERN"]
+contradictions: ["URGENT_BEHAVIOR", "URGENT_BEHAVIOR", "URGENT_BEHAVIOR", "URGENT_BEHAVIOR"]
+metrics: {"authorize_score": 0, "analyze_score": 0, "block_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "bank", "agent_votes": ["TransactionContextAgent", "CounterpartyAgent", "LiquidityExposureAgent", "BehaviorShiftAgent", "FraudPatternAgent", "LimitPolicyAgent", "AffordabilityAgent", "TemporalUrgencyAgent", "IdentityMismatchAgent", "NarrativeConflictAgent", "RecoveryPathAgent", "BankProofAgent"], "vote_count": 12}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_gps_defense_aviation_1777389183964.json
+mtime: 2026-04-28T17:13:03.964211
+domain: "gps_defense_aviation"
+market_verdict: "RECALC_TRAJECTORY"
+x108_gate: "HOLD"
+confidence: 0.35
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S2"
+reason_code: "UNKNOWNS_OR_CONFIDENCE_LOW"
+unknowns: ["INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "TICKET_NOT_READY"]
+risk_flags: []
+contradictions: []
+metrics: {"trajectory_valid_score": 0, "recalc_score": 0.35, "degraded_score": 0, "abort_score": 0, "truth_score": 0, "sigma_score": 0.35, "mismatch_gap": 0.35, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "gps_defense_aviation", "agent_votes": ["SourceAvailabilityAgent", "TrajectoryIntegrityAgent", "SourceConflictAgent", "TimeSkewAgent", "BrownoutAgent", "GpsAttestationReadinessAgent"], "vote_count": 6}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389183133.json
+mtime: 2026-04-28T17:13:03.134669
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389179961.json
+mtime: 2026-04-28T17:12:59.962886
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_gps_defense_aviation_1777389179538.json
+mtime: 2026-04-28T17:12:59.540066
+domain: "gps_defense_aviation"
+market_verdict: "RECALC_TRAJECTORY"
+x108_gate: "HOLD"
+confidence: 0.35
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S2"
+reason_code: "UNKNOWNS_OR_CONFIDENCE_LOW"
+unknowns: ["INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "TICKET_NOT_READY"]
+risk_flags: []
+contradictions: []
+metrics: {"trajectory_valid_score": 0, "recalc_score": 0.35, "degraded_score": 0, "abort_score": 0, "truth_score": 0, "sigma_score": 0.35, "mismatch_gap": 0.35, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "gps_defense_aviation", "agent_votes": ["SourceAvailabilityAgent", "TrajectoryIntegrityAgent", "SourceConflictAgent", "TimeSkewAgent", "BrownoutAgent", "GpsAttestationReadinessAgent"], "vote_count": 6}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_trading_1777389177201.json
+mtime: 2026-04-28T17:12:57.202547
+domain: "trading"
+market_verdict: "REVIEW"
+x108_gate: "BLOCK"
+confidence: 0.5
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S4"
+reason_code: "CONTRADICTION_THRESHOLD_REACHED"
+unknowns: ["TICKET_NOT_READY"]
+risk_flags: []
+contradictions: ["REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED", "REGIME_SHIFT_DETECTED"]
+metrics: {"buy_score": 0, "sell_score": 0, "hold_score": 0, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "trading", "agent_votes": ["MarketDataAgent", "LiquidityAgent", "VolatilityAgent", "MacroAgent", "CorrelationAgent", "EventAgent", "MomentumAgent", "MeanReversionAgent", "BreakoutAgent", "PatternAgent", "SentimentAgent", "PredictionAgent", "PortfolioAgent", "ExecutionQualityAgent", "RegimeShiftAgent", "PortfolioStressAgent", "ProofConsistencyAgent"], "vote_count": 17}
+
+--------------------------------------------------------------------------------
+JSON: MonProjet\allData\decision_gps_defense_aviation_1777389175077.json
+mtime: 2026-04-28T17:12:55.078656
+domain: "gps_defense_aviation"
+market_verdict: "RECALC_TRAJECTORY"
+x108_gate: "HOLD"
+confidence: 0.35
+confidence_integrity: null
+confidence_governance: null
+confidence_readiness: null
+confidence_scope: null
+governance_scope: null
+readiness_scope: null
+severity: "S2"
+reason_code: "UNKNOWNS_OR_CONFIDENCE_LOW"
+unknowns: ["INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "INERTIAL_MISSING", "RADIO_MISSING", "ATTESTATION_NOT_READY", "TICKET_NOT_READY"]
+risk_flags: []
+contradictions: []
+metrics: {"trajectory_valid_score": 0, "recalc_score": 0.35, "degraded_score": 0, "abort_score": 0, "truth_score": 0, "sigma_score": 0.35, "mismatch_gap": 0.35, "proof_ready": true, "deterministic": true}
+raw_engine: {"domain": "gps_defense_aviation", "agent_votes": ["SourceAvailabilityAgent", "TrajectoryIntegrityAgent", "SourceConflictAgent", "TimeSkewAgent", "BrownoutAgent", "GpsAttestationReadinessAgent"], "vote_count": 6}

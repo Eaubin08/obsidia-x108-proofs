@@ -1,0 +1,8 @@
+﻿
+
+Algorithm : SHA256
+Hash      : 3F5EFD090286212E5B837AFEA9FCDB35E0456DF431E90A52B3986938EADC8A49
+Path      : C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\sigma\aggregation.py
+
+
+

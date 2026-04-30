@@ -1,0 +1,145 @@
+﻿{
+    "domain":  "bank",
+    "market_verdict":  "ANALYZE",
+    "confidence":  0.5,
+    "confidence_integrity":  0.5,
+    "confidence_governance":  0.95,
+    "confidence_readiness":  0.66,
+    "confidence_scope":  "integrity",
+    "governance_scope":  "x108_decision_robustness",
+    "readiness_scope":  "harmonic_integrity_governance",
+    "contradictions":  [
+                           "URGENT_BEHAVIOR",
+                           "IDENTITY_CONTEXT_MISMATCH",
+                           "URGENT_BEHAVIOR",
+                           "IDENTITY_CONTEXT_MISMATCH",
+                           "URGENT_BEHAVIOR",
+                           "IDENTITY_CONTEXT_MISMATCH",
+                           "URGENT_BEHAVIOR",
+                           "IDENTITY_CONTEXT_MISMATCH"
+                       ],
+    "unknowns":  [
+                     "TEMPORAL_LOCK_NOT_MATURE",
+                     "RECENT_FAILED_ATTEMPTS",
+                     "TEMPORAL_LOCK_NOT_MATURE",
+                     "RECENT_FAILED_ATTEMPTS",
+                     "TEMPORAL_LOCK_NOT_MATURE",
+                     "RECENT_FAILED_ATTEMPTS",
+                     "TEMPORAL_LOCK_NOT_MATURE",
+                     "RECENT_FAILED_ATTEMPTS",
+                     "TICKET_NOT_READY"
+                 ],
+    "risk_flags":  [
+                       "FRAUD_PATTERN",
+                       "FRAUD_PATTERN"
+                   ],
+    "x108_gate":  "BLOCK",
+    "reason_code":  "CONTRADICTION_THRESHOLD_REACHED",
+    "severity":  "S4",
+    "decision_id":  "bank-7d2e124c56b5",
+    "trace_id":  "e21fc0da-4f30-4c77-871c-34fbfe8bb40d",
+    "ticket_required":  false,
+    "ticket_id":  null,
+    "attestation_ref":  "07fa66b12974d26f23c49c3d",
+    "source":  "canonical_framework",
+    "evidence_refs":  [
+                          "e47a240fff0baf69",
+                          "67ccfa7e13b28f33",
+                          "e07af98a0a87c218",
+                          "1b301c649153a7ee",
+                          "4fd9e32c9e33d92b",
+                          "730dce7d5101307d",
+                          "608f5b88ee8cafd9",
+                          "800a13efde5c2904",
+                          "5d506b1f101b616e",
+                          "78835d78532fe59d",
+                          "4e4fb3735e36ad11",
+                          "f503e8b5c49b828d",
+                          "meta:UnknownsAgent",
+                          "meta:ConflictResolutionAgent",
+                          "meta:PolicyScopeAgent",
+                          "meta:TicketReadinessAgent",
+                          "meta:TraceIntegrityAgent",
+                          "meta:AttestationReadinessAgent",
+                          "meta:HumanOverrideEligibilityAgent",
+                          "meta:SeverityClassifierAgent",
+                          "meta:ReplayConsistencyAgent",
+                          "meta:ProofConsistencyAgent"
+                      ],
+    "metrics":  {
+                    "authorize_score":  0,
+                    "analyze_score":  0,
+                    "block_score":  0,
+                    "proof_ready":  true,
+                    "deterministic":  true
+                },
+    "raw_engine":  {
+                       "domain":  "bank",
+                       "agent_votes":  [
+                                           "TransactionContextAgent",
+                                           "CounterpartyAgent",
+                                           "LiquidityExposureAgent",
+                                           "BehaviorShiftAgent",
+                                           "FraudPatternAgent",
+                                           "LimitPolicyAgent",
+                                           "AffordabilityAgent",
+                                           "TemporalUrgencyAgent",
+                                           "IdentityMismatchAgent",
+                                           "NarrativeConflictAgent",
+                                           "RecoveryPathAgent",
+                                           "BankProofAgent"
+                                       ],
+                       "vote_count":  12
+                   },
+    "sigma_override":  false,
+    "sigma_step":  {
+                       "step":  0,
+                       "severity":  "S4",
+                       "z":  1.9,
+                       "z_t":  1.9,
+                       "velocity":  0,
+                       "acceleration":  0,
+                       "stability_status":  "STABLE",
+                       "violations":  [
+
+                                      ],
+                       "coherence_ok":  true
+                   },
+    "sigma_report":  {
+                         "pass":  true,
+                         "status":  "PASS",
+                         "steps_evaluated":  1,
+                         "unstable_steps":  0,
+                         "violations_total":  0,
+                         "violation_types":  [
+
+                                             ],
+                         "metrics":  {
+                                         "mean_velocity":  0,
+                                         "total_steps":  1,
+                                         "tau_max_used":  5,
+                                         "accel_limit_used":  0.6
+                                     },
+                         "constraints":  {
+                                             "vanishing_acceleration":  "OK",
+                                             "velocity_band":  "OK",
+                                             "coherence_stationarity":  "OK"
+                                         },
+                         "steps_detail":  [
+                                              {
+                                                  "step":  0,
+                                                  "severity":  "S4",
+                                                  "z":  1.9,
+                                                  "z_t":  1.9,
+                                                  "velocity":  0,
+                                                  "acceleration":  0,
+                                                  "stability_status":  "STABLE",
+                                                  "violations":  [
+
+                                                                 ],
+                                                  "coherence_ok":  true
+                                              }
+                                          ],
+                         "stdout":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+                     }
+}

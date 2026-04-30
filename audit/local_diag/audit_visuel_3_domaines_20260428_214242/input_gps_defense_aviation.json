@@ -1,0 +1,1 @@
+﻿{"data":{"spoofing_risk_score":0.91,"gps_signal_quality":0.28,"source_conflict_score":0.86,"elapsed_s":1,"aircraft_id":"DEMO-X108-AV","altitude_delta_m":180,"phase":"navigation","time_skew_ms":4200,"min_required_elapsed_s":108,"route_deviation_score":0.74,"source_count":1,"sensor_consensus":0.34},"domain":"gps_defense_aviation"}

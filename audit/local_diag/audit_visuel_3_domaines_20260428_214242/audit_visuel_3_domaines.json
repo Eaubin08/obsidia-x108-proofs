@@ -1,0 +1,50 @@
+﻿[
+    {
+        "Domaine":  "bank",
+        "Sens":  "Transaction bancaire risquee : nouveau beneficiaire, fraude elevee, urgence elevee, delai X-108 non respecte.",
+        "Verdict":  "ANALYZE",
+        "Gate":  "BLOCK",
+        "Integrity":  0.5,
+        "Governance":  0.95,
+        "Readiness":  0.66,
+        "Moyenne":  0.7033,
+        "Severity":  "S4",
+        "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+        "Securite":  "SECURITE FORTE — action refusee avant execution. Le moteur detecte un risque, une contradiction ou une fiabilite insuffisante.",
+        "Input":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\input_bank.json",
+        "Response":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\response_bank.json",
+        "Hash":  "A765CA6E62305B82AF4D10BD86987CCBBE1E32ADCFB36D8D8FF86F35088EF687"
+    },
+    {
+        "Domaine":  "trading",
+        "Sens":  "Ordre trading risque : levier, exposition, drawdown, slippage et desequilibre carnet eleves.",
+        "Verdict":  "REVIEW",
+        "Gate":  "HOLD",
+        "Integrity":  0.5,
+        "Governance":  0.75,
+        "Readiness":  0.6,
+        "Moyenne":  0.6167,
+        "Severity":  "S2",
+        "Reason":  "RISK_FLAGS_REQUIRE_DELAY",
+        "Securite":  "SECURITE TEMPORELLE — action retenue. X-108 impose une attente / coherence avant action.",
+        "Input":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\input_trading.json",
+        "Response":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\response_trading.json",
+        "Hash":  "E0E549343221AF06C1B7F4F4E9E92733F740131786EF2BD9C06DA5D22227803D"
+    },
+    {
+        "Domaine":  "gps_defense_aviation",
+        "Sens":  "Navigation aviation/GPS degradee : signal faible, conflit source, spoofing, deviation, skew temporel.",
+        "Verdict":  "ABORT_TRAJECTORY",
+        "Gate":  "BLOCK",
+        "Integrity":  0.35,
+        "Governance":  0.95,
+        "Readiness":  0.51,
+        "Moyenne":  0.6033,
+        "Severity":  "S4",
+        "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+        "Securite":  "SECURITE FORTE — action refusee avant execution. Le moteur detecte un risque, une contradiction ou une fiabilite insuffisante.",
+        "Input":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\input_gps_defense_aviation.json",
+        "Response":  ".\\audit\\local_diag\\audit_visuel_3_domaines_20260428_214242\\response_gps_defense_aviation.json",
+        "Hash":  "3B540A57B37A91FB73F721CB6D57B501083C87B77579962FABDF8B5E748A69CE"
+    }
+]

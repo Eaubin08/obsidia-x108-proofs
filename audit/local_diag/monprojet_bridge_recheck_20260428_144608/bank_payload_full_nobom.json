@@ -1,0 +1,19 @@
+{
+    "transaction_type":  "TRANSFER",
+    "amount":  250,
+    "channel":  "mobile",
+    "counterparty_known":  true,
+    "counterparty_age_days":  365,
+    "account_balance":  5000,
+    "available_cash":  3000,
+    "historical_avg_amount":  180,
+    "fraud_score":  2,
+    "policy_limit":  1000,
+    "affordability_score":  85,
+    "urgency_score":  0.2,
+    "identity_mismatch_score":  0.01,
+    "narrative_conflict_score":  0,
+    "behavior_shift_score":  0.1,
+    "device_trust_score":  98,
+    "recent_failed_attempts":  0
+}

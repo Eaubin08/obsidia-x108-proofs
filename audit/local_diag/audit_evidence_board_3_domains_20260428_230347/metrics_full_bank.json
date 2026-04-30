@@ -1,0 +1,779 @@
+﻿[
+    {
+        "domain":  "bank",
+        "path":  "domain",
+        "category":  "domain",
+        "type":  "String",
+        "value":  "bank"
+    },
+    {
+        "domain":  "bank",
+        "path":  "market_verdict",
+        "category":  "market_verdict",
+        "type":  "String",
+        "value":  "ANALYZE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "confidence",
+        "category":  "confidence",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "domain":  "bank",
+        "path":  "confidence_integrity",
+        "category":  "confidence_integrity",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "domain":  "bank",
+        "path":  "confidence_governance",
+        "category":  "confidence_governance",
+        "type":  "Decimal",
+        "value":  "0.95"
+    },
+    {
+        "domain":  "bank",
+        "path":  "confidence_readiness",
+        "category":  "confidence_readiness",
+        "type":  "Decimal",
+        "value":  "0.66"
+    },
+    {
+        "domain":  "bank",
+        "path":  "confidence_scope",
+        "category":  "confidence_scope",
+        "type":  "String",
+        "value":  "integrity"
+    },
+    {
+        "domain":  "bank",
+        "path":  "governance_scope",
+        "category":  "governance_scope",
+        "type":  "String",
+        "value":  "x108_decision_robustness"
+    },
+    {
+        "domain":  "bank",
+        "path":  "readiness_scope",
+        "category":  "readiness_scope",
+        "type":  "String",
+        "value":  "harmonic_integrity_governance"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[0]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[1]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[2]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[3]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[4]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[5]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[6]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "domain":  "bank",
+        "path":  "contradictions[7]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[0]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[1]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[2]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[3]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[4]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[5]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[6]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[7]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "domain":  "bank",
+        "path":  "unknowns[8]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TICKET_NOT_READY"
+    },
+    {
+        "domain":  "bank",
+        "path":  "risk_flags[0]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "FRAUD_PATTERN"
+    },
+    {
+        "domain":  "bank",
+        "path":  "risk_flags[1]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "FRAUD_PATTERN"
+    },
+    {
+        "domain":  "bank",
+        "path":  "x108_gate",
+        "category":  "x108_gate",
+        "type":  "String",
+        "value":  "BLOCK"
+    },
+    {
+        "domain":  "bank",
+        "path":  "reason_code",
+        "category":  "reason_code",
+        "type":  "String",
+        "value":  "CONTRADICTION_THRESHOLD_REACHED"
+    },
+    {
+        "domain":  "bank",
+        "path":  "severity",
+        "category":  "severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "bank",
+        "path":  "decision_id",
+        "category":  "decision_id",
+        "type":  "String",
+        "value":  "bank-e6e4ef8282f1"
+    },
+    {
+        "domain":  "bank",
+        "path":  "trace_id",
+        "category":  "trace_id",
+        "type":  "String",
+        "value":  "614aee72-31c6-4045-844f-b4b6a9bc4198"
+    },
+    {
+        "domain":  "bank",
+        "path":  "ticket_required",
+        "category":  "ticket_required",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "bank",
+        "path":  "ticket_id",
+        "category":  "null",
+        "type":  "null",
+        "value":  ""
+    },
+    {
+        "domain":  "bank",
+        "path":  "attestation_ref",
+        "category":  "attestation_ref",
+        "type":  "String",
+        "value":  "07fa66b12974d26f23c49c3d"
+    },
+    {
+        "domain":  "bank",
+        "path":  "source",
+        "category":  "source",
+        "type":  "String",
+        "value":  "canonical_framework"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[0]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "e47a240fff0baf69"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[1]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "67ccfa7e13b28f33"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[2]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "e07af98a0a87c218"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[3]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "1b301c649153a7ee"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[4]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "4fd9e32c9e33d92b"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[5]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "730dce7d5101307d"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[6]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "608f5b88ee8cafd9"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[7]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "800a13efde5c2904"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[8]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "5d506b1f101b616e"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[9]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "78835d78532fe59d"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[10]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "4e4fb3735e36ad11"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[11]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "f503e8b5c49b828d"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[12]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:UnknownsAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[13]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ConflictResolutionAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[14]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:PolicyScopeAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[15]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TicketReadinessAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[16]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TraceIntegrityAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[17]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:AttestationReadinessAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[18]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:HumanOverrideEligibilityAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[19]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:SeverityClassifierAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[20]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ReplayConsistencyAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "evidence_refs[21]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ProofConsistencyAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "metrics.authorize_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "metrics.analyze_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "metrics.block_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "metrics.proof_ready",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "bank",
+        "path":  "metrics.deterministic",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.domain",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "bank"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[0]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "TransactionContextAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[1]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "CounterpartyAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[2]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "LiquidityExposureAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[3]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "BehaviorShiftAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[4]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "FraudPatternAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[5]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "LimitPolicyAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[6]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "AffordabilityAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[7]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "TemporalUrgencyAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[8]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "IdentityMismatchAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[9]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "NarrativeConflictAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[10]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "RecoveryPathAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.agent_votes[11]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "BankProofAgent"
+    },
+    {
+        "domain":  "bank",
+        "path":  "raw_engine.vote_count",
+        "category":  "raw_engine",
+        "type":  "Int32",
+        "value":  "12"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_override",
+        "category":  "sigma_override",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.step",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.severity",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.z",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.z_t",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.velocity",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.acceleration",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.stability_status",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_step.coherence_ok",
+        "category":  "sigma_step",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.pass",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "PASS"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_evaluated",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.unstable_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.violations_total",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.violation_types",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.metrics.mean_velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.metrics.total_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.metrics.tau_max_used",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "5"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.metrics.accel_limit_used",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.constraints.vanishing_acceleration",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.constraints.velocity_band",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.constraints.coherence_stationarity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].step",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].severity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].z",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].z_t",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].acceleration",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].stability_status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.steps_detail[0].coherence_ok",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "bank",
+        "path":  "sigma_report.stdout",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+    }
+]

@@ -1,0 +1,9 @@
+﻿{
+    "branch":  "temp-reims",
+    "commit":  "d3a2a99cf4d05084876537de883b0eb95961d23c",
+    "short_commit":  "d3a2a99",
+    "tags_on_head":  "node-bridge-terrain-server-fix-2026-04-28",
+    "status":  " M merkle_seal.json\n M sigma/utils/__pycache__/__init__.cpython-313.pyc\n M sigma/utils/__pycache__/indicators.cpython-313.pyc\n?? RUN_AUDIT_PREUVE_TRACABILITE_3_DOMAINES.ps1\n?? RUN_AUDIT_VISUEL_3_DOMAINES.ps1",
+    "audit_timestamp":  "20260428_215224",
+    "endpoint":  "http://localhost:3001/kernel/ragnarok"
+}

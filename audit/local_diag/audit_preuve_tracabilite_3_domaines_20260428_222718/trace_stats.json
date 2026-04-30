@@ -1,0 +1,14 @@
+﻿{
+    "domains_tested":  3,
+    "input_files_generated":  3,
+    "response_files_generated":  3,
+    "metrics_files_generated":  3,
+    "decisions_before":  8457,
+    "decisions_after":  8467,
+    "decisions_created_during_audit":  10,
+    "runtime_files_hashed":  14,
+    "merkle_seal_present":  true,
+    "merkle_seal_sha256":  "F5750BC62E0E84822B29E460A51FD2856FD9992790AC6B1185316227AA56A227",
+    "server_stdout_sha256":  null,
+    "server_stderr_sha256":  null
+}

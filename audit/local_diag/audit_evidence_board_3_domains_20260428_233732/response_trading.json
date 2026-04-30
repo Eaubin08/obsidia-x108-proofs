@@ -1,0 +1,142 @@
+﻿{
+    "domain":  "trading",
+    "market_verdict":  "REVIEW",
+    "confidence":  0.5,
+    "confidence_integrity":  0.5,
+    "confidence_governance":  0.75,
+    "confidence_readiness":  0.6,
+    "confidence_scope":  "integrity",
+    "governance_scope":  "x108_decision_robustness",
+    "readiness_scope":  "harmonic_integrity_governance",
+    "contradictions":  [
+
+                       ],
+    "unknowns":  [
+
+                 ],
+    "risk_flags":  [
+                       "POOR_EXECUTION",
+                       "PORTFOLIO_STRESS",
+                       "POOR_EXECUTION",
+                       "PORTFOLIO_STRESS"
+                   ],
+    "x108_gate":  "HOLD",
+    "reason_code":  "RISK_FLAGS_REQUIRE_DELAY",
+    "severity":  "S2",
+    "decision_id":  "trading-204afcd16ecf",
+    "trace_id":  "e221256f-e640-4631-a1ab-8ebd354b8f82",
+    "ticket_required":  false,
+    "ticket_id":  null,
+    "attestation_ref":  "8498a076da0d7d43100e6bea",
+    "source":  "canonical_framework",
+    "evidence_refs":  [
+                          "447ab2694752451f",
+                          "5ec935553d3129f2",
+                          "95c1c421cff63054",
+                          "10bf8377bfaee488",
+                          "65add1cd111e894a",
+                          "14882b93afb078c4",
+                          "c5bf4eca91759fdd",
+                          "d567b82ceb48914a",
+                          "f7c4f72af041c476",
+                          "511e8f94809ed17d",
+                          "ad28c72d071bc612",
+                          "48b4fb691be8820d",
+                          "c70875bd1c363cea",
+                          "1f80f5687e986e42",
+                          "c678c594c3430478",
+                          "dc689d962f969ad9",
+                          "07e0186a3e051476",
+                          "meta:UnknownsAgent",
+                          "meta:ConflictResolutionAgent",
+                          "meta:PolicyScopeAgent",
+                          "meta:TicketReadinessAgent",
+                          "meta:TraceIntegrityAgent",
+                          "meta:AttestationReadinessAgent",
+                          "meta:HumanOverrideEligibilityAgent",
+                          "meta:SeverityClassifierAgent",
+                          "meta:ReplayConsistencyAgent",
+                          "meta:ProofConsistencyAgent"
+                      ],
+    "metrics":  {
+                    "buy_score":  0,
+                    "sell_score":  0,
+                    "hold_score":  0,
+                    "proof_ready":  true,
+                    "deterministic":  true
+                },
+    "raw_engine":  {
+                       "domain":  "trading",
+                       "agent_votes":  [
+                                           "MarketDataAgent",
+                                           "LiquidityAgent",
+                                           "VolatilityAgent",
+                                           "MacroAgent",
+                                           "CorrelationAgent",
+                                           "EventAgent",
+                                           "MomentumAgent",
+                                           "MeanReversionAgent",
+                                           "BreakoutAgent",
+                                           "PatternAgent",
+                                           "SentimentAgent",
+                                           "PredictionAgent",
+                                           "PortfolioAgent",
+                                           "ExecutionQualityAgent",
+                                           "RegimeShiftAgent",
+                                           "PortfolioStressAgent",
+                                           "ProofConsistencyAgent"
+                                       ],
+                       "vote_count":  17
+                   },
+    "sigma_override":  false,
+    "sigma_step":  {
+                       "step":  0,
+                       "severity":  "S2",
+                       "z":  0.7,
+                       "z_t":  0.7,
+                       "velocity":  0,
+                       "acceleration":  0,
+                       "stability_status":  "STABLE",
+                       "violations":  [
+
+                                      ],
+                       "coherence_ok":  true
+                   },
+    "sigma_report":  {
+                         "pass":  true,
+                         "status":  "PASS",
+                         "steps_evaluated":  1,
+                         "unstable_steps":  0,
+                         "violations_total":  0,
+                         "violation_types":  [
+
+                                             ],
+                         "metrics":  {
+                                         "mean_velocity":  0,
+                                         "total_steps":  1,
+                                         "tau_max_used":  5,
+                                         "accel_limit_used":  0.6
+                                     },
+                         "constraints":  {
+                                             "vanishing_acceleration":  "OK",
+                                             "velocity_band":  "OK",
+                                             "coherence_stationarity":  "OK"
+                                         },
+                         "steps_detail":  [
+                                              {
+                                                  "step":  0,
+                                                  "severity":  "S2",
+                                                  "z":  0.7,
+                                                  "z_t":  0.7,
+                                                  "velocity":  0,
+                                                  "acceleration":  0,
+                                                  "stability_status":  "STABLE",
+                                                  "violations":  [
+
+                                                                 ],
+                                                  "coherence_ok":  true
+                                              }
+                                          ],
+                         "stdout":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+                     }
+}

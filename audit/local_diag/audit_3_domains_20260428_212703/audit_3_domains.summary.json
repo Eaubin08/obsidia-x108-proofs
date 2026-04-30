@@ -1,0 +1,35 @@
+﻿[
+    {
+        "domain":  "bank",
+        "verdict":  "ANALYZE",
+        "gate":  "BLOCK",
+        "integrity":  0.5,
+        "governance":  0.95,
+        "readiness":  0.66,
+        "mean3":  0.7033,
+        "severity":  "S4",
+        "reason":  "CONTRADICTION_THRESHOLD_REACHED"
+    },
+    {
+        "domain":  "trading",
+        "verdict":  "REVIEW",
+        "gate":  "HOLD",
+        "integrity":  0.5,
+        "governance":  0.75,
+        "readiness":  0.6,
+        "mean3":  0.6167,
+        "severity":  "S2",
+        "reason":  "RISK_FLAGS_REQUIRE_DELAY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "verdict":  "ABORT_TRAJECTORY",
+        "gate":  "BLOCK",
+        "integrity":  0.35,
+        "governance":  0.95,
+        "readiness":  0.51,
+        "mean3":  0.6033,
+        "severity":  "S4",
+        "reason":  "CONTRADICTION_THRESHOLD_REACHED"
+    }
+]

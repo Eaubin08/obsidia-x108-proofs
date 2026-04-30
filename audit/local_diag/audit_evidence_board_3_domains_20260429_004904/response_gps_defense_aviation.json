@@ -1,0 +1,136 @@
+﻿{
+    "domain":  "gps_defense_aviation",
+    "market_verdict":  "ABORT_TRAJECTORY",
+    "confidence":  0.35,
+    "confidence_integrity":  0.35,
+    "confidence_governance":  0.95,
+    "confidence_readiness":  0.51,
+    "confidence_scope":  "integrity",
+    "governance_scope":  "x108_decision_robustness",
+    "readiness_scope":  "harmonic_integrity_governance",
+    "contradictions":  [
+                           "SOURCE_CONFLICT",
+                           "SOURCE_CONFLICT",
+                           "SOURCE_CONFLICT",
+                           "SOURCE_CONFLICT"
+                       ],
+    "unknowns":  [
+                     "INERTIAL_MISSING",
+                     "RADIO_MISSING",
+                     "ATTESTATION_NOT_READY",
+                     "INERTIAL_MISSING",
+                     "RADIO_MISSING",
+                     "ATTESTATION_NOT_READY",
+                     "INERTIAL_MISSING",
+                     "RADIO_MISSING",
+                     "ATTESTATION_NOT_READY",
+                     "INERTIAL_MISSING",
+                     "RADIO_MISSING",
+                     "ATTESTATION_NOT_READY",
+                     "TICKET_NOT_READY"
+                 ],
+    "risk_flags":  [
+
+                   ],
+    "x108_gate":  "BLOCK",
+    "reason_code":  "CONTRADICTION_THRESHOLD_REACHED",
+    "severity":  "S4",
+    "decision_id":  "gps_defense_aviation-36420e8a10db",
+    "trace_id":  "ebff97a6-25da-4cb3-95ba-def6dc49e2e9",
+    "ticket_required":  false,
+    "ticket_id":  null,
+    "attestation_ref":  "19dcee53c80c0da88d349d53",
+    "source":  "canonical_framework",
+    "evidence_refs":  [
+                          "7d915b7839dbf211",
+                          "dc0a11715aac7cfb",
+                          "41796663223c12fc",
+                          "a4f978c39559e013",
+                          "9ff2b803d2b3673c",
+                          "9759a0c3387a3987",
+                          "meta:UnknownsAgent",
+                          "meta:ConflictResolutionAgent",
+                          "meta:PolicyScopeAgent",
+                          "meta:TicketReadinessAgent",
+                          "meta:TraceIntegrityAgent",
+                          "meta:AttestationReadinessAgent",
+                          "meta:HumanOverrideEligibilityAgent",
+                          "meta:SeverityClassifierAgent",
+                          "meta:ReplayConsistencyAgent",
+                          "meta:ProofConsistencyAgent"
+                      ],
+    "metrics":  {
+                    "trajectory_valid_score":  0,
+                    "recalc_score":  0.35,
+                    "degraded_score":  0,
+                    "abort_score":  0,
+                    "truth_score":  0,
+                    "sigma_score":  0.35,
+                    "mismatch_gap":  0.35,
+                    "proof_ready":  true,
+                    "deterministic":  true
+                },
+    "raw_engine":  {
+                       "domain":  "gps_defense_aviation",
+                       "agent_votes":  [
+                                           "SourceAvailabilityAgent",
+                                           "TrajectoryIntegrityAgent",
+                                           "SourceConflictAgent",
+                                           "TimeSkewAgent",
+                                           "BrownoutAgent",
+                                           "GpsAttestationReadinessAgent"
+                                       ],
+                       "vote_count":  6
+                   },
+    "sigma_override":  false,
+    "sigma_step":  {
+                       "step":  0,
+                       "severity":  "S4",
+                       "z":  1.4,
+                       "z_t":  1.4,
+                       "velocity":  0,
+                       "acceleration":  0,
+                       "stability_status":  "STABLE",
+                       "violations":  [
+
+                                      ],
+                       "coherence_ok":  true
+                   },
+    "sigma_report":  {
+                         "pass":  true,
+                         "status":  "PASS",
+                         "steps_evaluated":  1,
+                         "unstable_steps":  0,
+                         "violations_total":  0,
+                         "violation_types":  [
+
+                                             ],
+                         "metrics":  {
+                                         "mean_velocity":  0,
+                                         "total_steps":  1,
+                                         "tau_max_used":  5,
+                                         "accel_limit_used":  0.6
+                                     },
+                         "constraints":  {
+                                             "vanishing_acceleration":  "OK",
+                                             "velocity_band":  "OK",
+                                             "coherence_stationarity":  "OK"
+                                         },
+                         "steps_detail":  [
+                                              {
+                                                  "step":  0,
+                                                  "severity":  "S4",
+                                                  "z":  1.4,
+                                                  "z_t":  1.4,
+                                                  "velocity":  0,
+                                                  "acceleration":  0,
+                                                  "stability_status":  "STABLE",
+                                                  "violations":  [
+
+                                                                 ],
+                                                  "coherence_ok":  true
+                                              }
+                                          ],
+                         "stdout":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+                     }
+}

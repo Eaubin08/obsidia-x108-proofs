@@ -1,0 +1,21 @@
+﻿{
+    "domains_tested":  3,
+    "total_response_metrics":  321,
+    "total_decision_runtime_metrics":  2929,
+    "input_files_generated":  3,
+    "response_files_generated":  3,
+    "metrics_files_generated":  3,
+    "decisions_before":  7774,
+    "decisions_after":  7802,
+    "decisions_created_during_audit":  28,
+    "runtime_files_hashed":  13,
+    "merkle_seal_present":  true,
+    "merkle_before_sha256":  "E264FA8A8D42E5A6F8070BBF79120BCF61CC9236DCFA397BE0962C0420BA4542",
+    "merkle_after_sha256":  "E264FA8A8D42E5A6F8070BBF79120BCF61CC9236DCFA397BE0962C0420BA4542",
+    "server_stdout_sha256":  "F98708FD4217B3463F3CA7C74A857C10028614EB702B64A2A14EAA53AA33278D",
+    "server_stderr_sha256":  "FAC2CD72F1F74E85A80697AA83DFDF5D6954089435521583704DA5B95C6BAF84",
+    "git_branch":  "temp-reims",
+    "git_commit":  "fe801ddadf851b7e2ce5b2bb11612396999b5ef6",
+    "git_tags":  "audit-evidence-board-v2-20260428-233523",
+    "git_status":  " M merkle_seal.json; ?? RUN_AUDIT_TABLEAU_POST_EVIDENCE.ps1"
+}

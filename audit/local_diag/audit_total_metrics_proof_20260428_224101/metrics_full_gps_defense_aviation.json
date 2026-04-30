@@ -1,0 +1,512 @@
+﻿[
+    {
+        "path":  "domain",
+        "type":  "String",
+        "value":  "gps_defense_aviation"
+    },
+    {
+        "path":  "market_verdict",
+        "type":  "String",
+        "value":  "ABORT_TRAJECTORY"
+    },
+    {
+        "path":  "confidence",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "path":  "confidence_integrity",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "path":  "confidence_governance",
+        "type":  "Decimal",
+        "value":  "0.95"
+    },
+    {
+        "path":  "confidence_readiness",
+        "type":  "Decimal",
+        "value":  "0.51"
+    },
+    {
+        "path":  "confidence_scope",
+        "type":  "String",
+        "value":  "integrity"
+    },
+    {
+        "path":  "governance_scope",
+        "type":  "String",
+        "value":  "x108_decision_robustness"
+    },
+    {
+        "path":  "readiness_scope",
+        "type":  "String",
+        "value":  "harmonic_integrity_governance"
+    },
+    {
+        "path":  "contradictions[0]",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "path":  "contradictions[1]",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "path":  "contradictions[2]",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "path":  "contradictions[3]",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "path":  "unknowns[0]",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "path":  "unknowns[1]",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "path":  "unknowns[2]",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "path":  "unknowns[3]",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "path":  "unknowns[4]",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "path":  "unknowns[5]",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "path":  "unknowns[6]",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "path":  "unknowns[7]",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "path":  "unknowns[8]",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "path":  "unknowns[9]",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "path":  "unknowns[10]",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "path":  "unknowns[11]",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "path":  "unknowns[12]",
+        "type":  "String",
+        "value":  "TICKET_NOT_READY"
+    },
+    {
+        "path":  "risk_flags",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "x108_gate",
+        "type":  "String",
+        "value":  "BLOCK"
+    },
+    {
+        "path":  "reason_code",
+        "type":  "String",
+        "value":  "CONTRADICTION_THRESHOLD_REACHED"
+    },
+    {
+        "path":  "severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "decision_id",
+        "type":  "String",
+        "value":  "gps_defense_aviation-dd60e251e9b8"
+    },
+    {
+        "path":  "trace_id",
+        "type":  "String",
+        "value":  "503d39a7-dd26-4faf-b5e1-da6c9ab9d120"
+    },
+    {
+        "path":  "ticket_required",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "path":  "ticket_id",
+        "type":  "null",
+        "value":  ""
+    },
+    {
+        "path":  "attestation_ref",
+        "type":  "String",
+        "value":  "19dcee53c80c0da88d349d53"
+    },
+    {
+        "path":  "source",
+        "type":  "String",
+        "value":  "canonical_framework"
+    },
+    {
+        "path":  "evidence_refs[0]",
+        "type":  "String",
+        "value":  "7d915b7839dbf211"
+    },
+    {
+        "path":  "evidence_refs[1]",
+        "type":  "String",
+        "value":  "dc0a11715aac7cfb"
+    },
+    {
+        "path":  "evidence_refs[2]",
+        "type":  "String",
+        "value":  "41796663223c12fc"
+    },
+    {
+        "path":  "evidence_refs[3]",
+        "type":  "String",
+        "value":  "a4f978c39559e013"
+    },
+    {
+        "path":  "evidence_refs[4]",
+        "type":  "String",
+        "value":  "9ff2b803d2b3673c"
+    },
+    {
+        "path":  "evidence_refs[5]",
+        "type":  "String",
+        "value":  "9759a0c3387a3987"
+    },
+    {
+        "path":  "evidence_refs[6]",
+        "type":  "String",
+        "value":  "meta:UnknownsAgent"
+    },
+    {
+        "path":  "evidence_refs[7]",
+        "type":  "String",
+        "value":  "meta:ConflictResolutionAgent"
+    },
+    {
+        "path":  "evidence_refs[8]",
+        "type":  "String",
+        "value":  "meta:PolicyScopeAgent"
+    },
+    {
+        "path":  "evidence_refs[9]",
+        "type":  "String",
+        "value":  "meta:TicketReadinessAgent"
+    },
+    {
+        "path":  "evidence_refs[10]",
+        "type":  "String",
+        "value":  "meta:TraceIntegrityAgent"
+    },
+    {
+        "path":  "evidence_refs[11]",
+        "type":  "String",
+        "value":  "meta:AttestationReadinessAgent"
+    },
+    {
+        "path":  "evidence_refs[12]",
+        "type":  "String",
+        "value":  "meta:HumanOverrideEligibilityAgent"
+    },
+    {
+        "path":  "evidence_refs[13]",
+        "type":  "String",
+        "value":  "meta:SeverityClassifierAgent"
+    },
+    {
+        "path":  "evidence_refs[14]",
+        "type":  "String",
+        "value":  "meta:ReplayConsistencyAgent"
+    },
+    {
+        "path":  "evidence_refs[15]",
+        "type":  "String",
+        "value":  "meta:ProofConsistencyAgent"
+    },
+    {
+        "path":  "metrics.trajectory_valid_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.recalc_score",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "path":  "metrics.degraded_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.abort_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.truth_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.sigma_score",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "path":  "metrics.mismatch_gap",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "path":  "metrics.proof_ready",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "metrics.deterministic",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "raw_engine.domain",
+        "type":  "String",
+        "value":  "gps_defense_aviation"
+    },
+    {
+        "path":  "raw_engine.agent_votes[0]",
+        "type":  "String",
+        "value":  "SourceAvailabilityAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[1]",
+        "type":  "String",
+        "value":  "TrajectoryIntegrityAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[2]",
+        "type":  "String",
+        "value":  "SourceConflictAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[3]",
+        "type":  "String",
+        "value":  "TimeSkewAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[4]",
+        "type":  "String",
+        "value":  "BrownoutAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[5]",
+        "type":  "String",
+        "value":  "GpsAttestationReadinessAgent"
+    },
+    {
+        "path":  "raw_engine.vote_count",
+        "type":  "Int32",
+        "value":  "6"
+    },
+    {
+        "path":  "sigma_override",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "path":  "sigma_step.step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "sigma_step.z",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "path":  "sigma_step.z_t",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "path":  "sigma_step.velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.acceleration",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.stability_status",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "path":  "sigma_step.violations",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_step.coherence_ok",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.pass",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.status",
+        "type":  "String",
+        "value":  "PASS"
+    },
+    {
+        "path":  "sigma_report.steps_evaluated",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "path":  "sigma_report.unstable_steps",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.violations_total",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.violation_types",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_report.metrics.mean_velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.metrics.total_steps",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "path":  "sigma_report.metrics.tau_max_used",
+        "type":  "Int32",
+        "value":  "5"
+    },
+    {
+        "path":  "sigma_report.metrics.accel_limit_used",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "path":  "sigma_report.constraints.vanishing_acceleration",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.constraints.velocity_band",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.constraints.coherence_stationarity",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].z",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].z_t",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].acceleration",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].stability_status",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].violations",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].coherence_ok",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.stdout",
+        "type":  "String",
+        "value":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+    }
+]

@@ -1,0 +1,226 @@
+﻿[
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\audit_preuve_tracabilite_3_domaines.csv",
+        "Name":  "audit_preuve_tracabilite_3_domaines.csv",
+        "Length":  2659,
+        "Sha256":  "5C6CA61A0EEFC1DFAF8FA876E48CE8614E6B6674000CC46E8ECAEFA540F2D1E1",
+        "ShortSha":  "5C6CA61A0EEF"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\audit_preuve_tracabilite_3_domaines.json",
+        "Name":  "audit_preuve_tracabilite_3_domaines.json",
+        "Length":  3756,
+        "Sha256":  "449B9821B91B7497557E35590B4A6EFEFB400F1F1C4766CFC8915C982B2F99D0",
+        "ShortSha":  "449B9821B91B"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_bank_1777406033658.json",
+        "Name":  "decision_bank_1777406033658.json",
+        "Length":  3720,
+        "Sha256":  "E26509B41ECEC312DAF90C5374662296110218E78C5692AE590553048A3D8422",
+        "ShortSha":  "E26509B41ECE"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_bank_1777406033997.json",
+        "Name":  "decision_bank_1777406033997.json",
+        "Length":  3468,
+        "Sha256":  "A1098DBE41707049713A6CA436E7AB189DCB7E83471A74D150FD5931913F8F95",
+        "ShortSha":  "A1098DBE4170"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_gps_defense_aviation_1777406030615.json",
+        "Name":  "decision_gps_defense_aviation_1777406030615.json",
+        "Length":  3349,
+        "Sha256":  "E1B6E33283546E059265791962BFDD9BD73AD52C6E8B0CAC6F1570C676F0621B",
+        "ShortSha":  "E1B6E3328354"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_gps_defense_aviation_1777406034791.json",
+        "Name":  "decision_gps_defense_aviation_1777406034791.json",
+        "Length":  3448,
+        "Sha256":  "D878F592ED614FA88F2D7E312730F357D20768680726311F6403CE5AC017EB65",
+        "ShortSha":  "D878F592ED61"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_gps_defense_aviation_1777406035056.json",
+        "Name":  "decision_gps_defense_aviation_1777406035056.json",
+        "Length":  3349,
+        "Sha256":  "01B19DB793AABC90CB1CD6ABD44E7963D71E58A361A8E0CD87E153F7301A524C",
+        "ShortSha":  "01B19DB793AA"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_gps_defense_aviation_1777406039507.json",
+        "Name":  "decision_gps_defense_aviation_1777406039507.json",
+        "Length":  3349,
+        "Sha256":  "F75A7DD676524A47DFBACD6C0439B79538A56129EBBFFEA898590A570E11428F",
+        "ShortSha":  "F75A7DD67652"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_trading_1777406032390.json",
+        "Name":  "decision_trading_1777406032390.json",
+        "Length":  3520,
+        "Sha256":  "590C91846586B2FB8DE4D97C0DADA844ED57470B3110DCD3D2AA65CF3307AA86",
+        "ShortSha":  "590C91846586"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_trading_1777406034278.json",
+        "Name":  "decision_trading_1777406034278.json",
+        "Length":  3461,
+        "Sha256":  "947C0B4EA2B98F3F3AA3B09CA2090A6CA9EC508003AFB97C02835A38524B5392",
+        "ShortSha":  "947C0B4EA2B9"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_trading_1777406035176.json",
+        "Name":  "decision_trading_1777406035176.json",
+        "Length":  3520,
+        "Sha256":  "41DC8EB6FD2538366E81BE35CA59360385D601393C89CC998F7E1B34EEF00406",
+        "ShortSha":  "41DC8EB6FD25"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_trading_1777406038282.json",
+        "Name":  "decision_trading_1777406038282.json",
+        "Length":  3520,
+        "Sha256":  "865D835199FC9FA961E3E9CA84967F406A92E163D96F21A804209ED492187CB4",
+        "ShortSha":  "865D835199FC"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decision_files\\decision_trading_1777406041140.json",
+        "Name":  "decision_trading_1777406041140.json",
+        "Length":  3520,
+        "Sha256":  "9510514C9B2C9B576A0094145ACA5D768698623B778395EBD72E7F5ACBDE5164",
+        "ShortSha":  "9510514C9B2C"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decisions_after.csv",
+        "Name":  "decisions_after.csv",
+        "Length":  2267731,
+        "Sha256":  "DC9D30F759D39345661E973A14E8E4C4BFCDBD4F9804761F7F192CF3138403E2",
+        "ShortSha":  "DC9D30F759D3"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decisions_before.csv",
+        "Name":  "decisions_before.csv",
+        "Length":  2264790,
+        "Sha256":  "E2738E03A5B65AE450876D5381F8C5A80407385D89469766460364F047E55A93",
+        "ShortSha":  "E2738E03A5B6"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\decisions_created.csv",
+        "Name":  "decisions_created.csv",
+        "Length":  3000,
+        "Sha256":  "5590A11DC8B406A59741B93DBC6BCCDDC980FB4D5B5CA90E58523F28541D9A4F",
+        "ShortSha":  "5590A11DC8B4"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\git_context.json",
+        "Name":  "git_context.json",
+        "Length":  532,
+        "Sha256":  "4E8B824C0642B2492D42C46903F4DDEBE6335BD072CD794E9BCED1FA644E02E8",
+        "ShortSha":  "4E8B824C0642"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_bank.json",
+        "Name":  "input_bank.json",
+        "Length":  486,
+        "Sha256":  "988680FD35AD2C74544B0B2C9AB8CF9AD502A316A12EF253B3386462A64F1979",
+        "ShortSha":  "988680FD35AD"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_gps_defense_aviation.json",
+        "Name":  "input_gps_defense_aviation.json",
+        "Length":  335,
+        "Sha256":  "0E9835CD2BEBE1494297535BD822B69DA6A6D8567F01C103765741A7FDE7E8FE",
+        "ShortSha":  "0E9835CD2BEB"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_trading.json",
+        "Name":  "input_trading.json",
+        "Length":  263,
+        "Sha256":  "A09D6DEE2AD56DA8C61E9859206B3260FAC9C92DA0C4FB6F136D177099702049",
+        "ShortSha":  "A09D6DEE2AD5"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\merkle_seal_snapshot.txt",
+        "Name":  "merkle_seal_snapshot.txt",
+        "Length":  322,
+        "Sha256":  "A2BCB97A662FD244AB1D5E192ECBC099CF0B0147AE96A4678052FBF2501A70CF",
+        "ShortSha":  "A2BCB97A662F"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_bank.csv",
+        "Name":  "metrics_bank.csv",
+        "Length":  3552,
+        "Sha256":  "61DEFBAC0E23F24F02ADEB9D388B4C23289DF7D1A31E219FC432BB0642BD8970",
+        "ShortSha":  "61DEFBAC0E23"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_gps_defense_aviation.csv",
+        "Name":  "metrics_gps_defense_aviation.csv",
+        "Length":  3355,
+        "Sha256":  "7EB761F95A1943549094EF5FDDAB64B3D05E742A66EDB53E4CD76EB8969BDF3C",
+        "ShortSha":  "7EB761F95A19"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_trading.csv",
+        "Name":  "metrics_trading.csv",
+        "Length":  3300,
+        "Sha256":  "BB0CFC62DAD5EB06005F3B78FD702FEE4B6DE222988FDE924EA05930AD5396A7",
+        "ShortSha":  "BB0CFC62DAD5"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_bank.json",
+        "Name":  "response_bank.json",
+        "Length":  6966,
+        "Sha256":  "0D7A43B3506D9801D48F84F77BF5CD37196F5D6F1F10AA8C27037602156CF661",
+        "ShortSha":  "0D7A43B3506D"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_gps_defense_aviation.json",
+        "Name":  "response_gps_defense_aviation.json",
+        "Length":  6341,
+        "Sha256":  "71616C7F6563C9D6A14A4D8E9E89BC11340F620A0CF72308C8EA82F93B3A0577",
+        "ShortSha":  "71616C7F6563"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_trading.json",
+        "Name":  "response_trading.json",
+        "Length":  6708,
+        "Sha256":  "5E69556FD7740BCB1EBDF9908E0A40B2F48927729C3E1859FDDF62D3CC992778",
+        "ShortSha":  "5E69556FD774"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\runtime_file_hashes.csv",
+        "Name":  "runtime_file_hashes.csv",
+        "Length":  1651,
+        "Sha256":  "C49FF3A63B6E7A0453D0A675D83E5D3A2DFDE7B405A460143471964E0C1BC434",
+        "ShortSha":  "C49FF3A63B6E"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\runtime_file_hashes.json",
+        "Name":  "runtime_file_hashes.json",
+        "Length":  2988,
+        "Sha256":  "D2F378E08F5453DF8EBAB37FD447C3E0D87FBB15FE63EB62384DFA5837FBCC92",
+        "ShortSha":  "D2F378E08F54"
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\server.stderr.log",
+        "Name":  "server.stderr.log",
+        "Length":  44406,
+        "Sha256":  null,
+        "ShortSha":  null
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\server.stdout.log",
+        "Name":  "server.stdout.log",
+        "Length":  7671,
+        "Sha256":  null,
+        "ShortSha":  null
+    },
+    {
+        "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\trace_stats.json",
+        "Name":  "trace_stats.json",
+        "Length":  486,
+        "Sha256":  "7B9DE0CDB0FE13EA60FA5C25E060ACA129E738C7BE46CC601FAC492E85A15B4D",
+        "ShortSha":  "7B9DE0CDB0FE"
+    }
+]
