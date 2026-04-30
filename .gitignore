@@ -92,3 +92,13 @@ build/
 .env
 .env.*
 !.env.example
+audit/local_diag/
+audit/local_rescue/
+RECUPE_SCORING/
+
+# Python cache
+
+# Local audit outputs
+audit_terrain/
+
+# Runtime logs
