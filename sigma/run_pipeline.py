@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-OS4 Canonical Agent Pipeline CLI Bridge — P1 public
+OS4 Canonical Agent Pipeline CLI Bridge â€” P1 public
 Usage:
   python sigma/run_pipeline.py <domain> <json_state_or_json_file>
 """
@@ -41,11 +41,36 @@ ALLOWED_BANK_FIELDS = {f.name for f in dataclasses.fields(BankState)}
 
 
 def load_state(arg: str) -> dict:
-    p = Path(arg)
-    if p.exists():
-        return json.loads(p.read_text(encoding="utf-8"))
-    return json.loads(arg)
+    """
+    Accept both:
+      - direct JSON payload passed as argv[2]
+      - path to a JSON file
 
+    CI Sigma tests and fuzz runners pass full JSON as a command argument.
+    JSON must be parsed before trying Path(arg).exists(), otherwise Linux can
+    raise OSError [Errno 36] File name too long on large JSON strings.
+    """
+    raw = str(arg)
+
+    try:
+        parsed = json.loads(raw)
+        if not isinstance(parsed, dict):
+            raise ValueError("JSON state must be an object")
+        return parsed
+    except json.JSONDecodeError:
+        pass
+
+    try:
+        p = Path(raw)
+        if p.exists() and p.is_file():
+            parsed = json.loads(p.read_text(encoding="utf-8"))
+            if not isinstance(parsed, dict):
+                raise ValueError("JSON file must contain an object")
+            return parsed
+    except OSError:
+        pass
+
+    raise ValueError("Input is neither a JSON object nor a readable JSON file")
 
 def validate_bank_payload(state_data: dict) -> None:
     if not isinstance(state_data, dict):
