@@ -1,94 +1,220 @@
+# X-108 Enhanced .gitignore
+# This file prevents accidental commits of sensitive, temporary, or large files
 
-proofs/lean/.lake/
+# === RUNTIME DATA (Ephemeral) ===
+MonProjet/allData/
+*.log
+*.tmp
+*.cache
 
+# === DEPENDENCIES ===
+node_modules/
 __pycache__/
 *.pyc
 *.pyo
-
-artifacts/
-
-# --- local upstream workdirs ---
-.cache/upstream/
-
-# --- secrets / env ---
-.env
-.env.*
-!.env.example
-
-# --- runtime / logs ---
-*.log
-.runtime_logs/
-**/__pycache__/
-*.pyc
-
-# --- heavy local artifacts ---
-artifacts/**/raw/
-artifacts/**/tmp/
-artifacts/**/payloads/
-artifacts/**/exports/
-artifacts/**/db_dumps/
-
-# --- node / python local deps ---
-node_modules/
-.venv/
+*.egg-info/
+.Python
 venv/
+env/
+ENV/
 
-# --- local snapshot workdirs ---
-upstream_snapshots/
-# --- local-only workdirs ---
-.local/
-staging/final_graft_plan/
-staging/transplant_mapped/
-staging/transplant_priority/
+# === BUILD ARTIFACTS ===
+dist/
+build/
+*.o
+*.so
+*.dylib
+.lake/
+.lake/build/
 
-_external_sources/
-MonProjet/allData/*.json
-MonProjet/input_temp.json
+# === IDE & EDITOR ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-# === OBSIDIA PUBLIC HYGIENE ===
+# === ENVIRONMENT VARIABLES ===
+.env
+.env.local
+.env.*.local
 
-# Private / staging / external source snapshots
+# === SECRETS (NEVER COMMIT) ===
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+secrets/
 private/
-_imports_ready/
-MonProjet/
-_audit_tags/
+credentials/
 
-# Local audit backups / temporary repair files
-audit/backups/
-audit/cleanup/secret_fix_backup_*/
+# === TESTING ===
+coverage/
+.nyc_output/
+.pytest_cache/
+.vitest/
+test-results.json
+*.lcov
+
+# === TEMPORARY FILES ===
+*.tmp
 *.bak
-*.backup
-*.before-*.py
-*_backup*
-_patch_*.py
+*.swp
+temp/
+tmp/
 
-# Build artifacts
-bin/
-obj/
-*.dll
-*.exe
-*.pdb
+# === LARGE FILES (Use Git LFS instead) ===
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+
+# === DATABASE FILES ===
 *.db
 *.sqlite
 *.sqlite3
+*.mdb
 
-# Runtime/generated data
-allData/
-MonProjet/allData/
-decision_*.json
-*_results.tmp
+# === OS FILES ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
 
-# Python / test cache
-__pycache__/
-.pytest_cache/
-*.pyc
+# === LOCK FILES (Optional: Commit these for reproducibility) ===
+# Uncomment if you want to commit lock files
+# package-lock.json
+# poetry.lock
+# Pipfile.lock
 
-# Node / package artifacts
-node_modules/
+# === LOGS ===
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# === REPORTS ===
+reports/
+*.html
+coverage-report/
+
+# === VSCODE ===
+.vscode/settings.json
+.vscode/extensions.json
+.vscode/launch.json
+
+# === JETBRAINS ===
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# === SUBLIME ===
+*.sublime-project
+*.sublime-workspace
+
+# === EMACS ===
+*~
+\#*\#
+.\#*
+
+# === VIM ===
+.vim/
+*.swp
+*.swo
+*~
+.netrwhist
+
+# === MACOS ===
+.AppleDouble
+.LSOverride
+._*
+
+# === WINDOWS ===
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# === LINUX ===
+.directory
+.Trash-*
+
+# === PYTHON SPECIFIC ===
+*.egg
+*.egg-info/
 dist/
 build/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
-# Env/secrets
-.env
-.env.*
-!.env.example
+# === NODE SPECIFIC ===
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+.eslintcache
+
+# === LEAN 4 SPECIFIC ===
+.lake/
+.lake/build/
+lake-packages/
+
+# === TLA+ SPECIFIC ===
+*.out
+*.trc
+*.fp
+*.chkpt
+*.states
+
+# === GENERATED FILES (Do not commit) ===
+PROOFKIT_REPORT.json (local only)
+merkle_seal.json (local only)
+rfc3161_anchor.json (local only)
+
+# === DOCUMENTATION BUILD ===
+docs/_build/
+docs/.doctrees/
+site/
+
+# === PACKAGE MANAGERS ===
+.pnp
+.pnp.js
+yarn.lock (optional)
+package-lock.json (optional)
+
+# === MISC ===
+*.orig
+*.rej
+*.bkp
+*.swp
+*~
+.#*
+
+# === ALLOW THESE FILES (Explicitly tracked) ===
+!.gitkeep
+!.github/
+!.github/workflows/
+!proofs/
+!proofs/lean/
+!proofs/tla/
+!docs/
+!tests/
+!connectors/
