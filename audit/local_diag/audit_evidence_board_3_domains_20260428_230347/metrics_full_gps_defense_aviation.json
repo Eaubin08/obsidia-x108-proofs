@@ -1,0 +1,716 @@
+﻿[
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "domain",
+        "category":  "domain",
+        "type":  "String",
+        "value":  "gps_defense_aviation"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "market_verdict",
+        "category":  "market_verdict",
+        "type":  "String",
+        "value":  "ABORT_TRAJECTORY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "confidence",
+        "category":  "confidence",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "confidence_integrity",
+        "category":  "confidence_integrity",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "confidence_governance",
+        "category":  "confidence_governance",
+        "type":  "Decimal",
+        "value":  "0.95"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "confidence_readiness",
+        "category":  "confidence_readiness",
+        "type":  "Decimal",
+        "value":  "0.51"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "confidence_scope",
+        "category":  "confidence_scope",
+        "type":  "String",
+        "value":  "integrity"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "governance_scope",
+        "category":  "governance_scope",
+        "type":  "String",
+        "value":  "x108_decision_robustness"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "readiness_scope",
+        "category":  "readiness_scope",
+        "type":  "String",
+        "value":  "harmonic_integrity_governance"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "contradictions[0]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "contradictions[1]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "contradictions[2]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "contradictions[3]",
+        "category":  "contradictions",
+        "type":  "String",
+        "value":  "SOURCE_CONFLICT"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[0]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[1]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[2]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[3]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[4]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[5]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[6]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[7]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[8]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[9]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "INERTIAL_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[10]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "RADIO_MISSING"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[11]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "ATTESTATION_NOT_READY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "unknowns[12]",
+        "category":  "unknowns",
+        "type":  "String",
+        "value":  "TICKET_NOT_READY"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "risk_flags",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "x108_gate",
+        "category":  "x108_gate",
+        "type":  "String",
+        "value":  "BLOCK"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "reason_code",
+        "category":  "reason_code",
+        "type":  "String",
+        "value":  "CONTRADICTION_THRESHOLD_REACHED"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "severity",
+        "category":  "severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "decision_id",
+        "category":  "decision_id",
+        "type":  "String",
+        "value":  "gps_defense_aviation-f5550d42bed0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "trace_id",
+        "category":  "trace_id",
+        "type":  "String",
+        "value":  "e2032f86-e7b9-4d85-8b9f-7a919f837f38"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "ticket_required",
+        "category":  "ticket_required",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "ticket_id",
+        "category":  "null",
+        "type":  "null",
+        "value":  ""
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "attestation_ref",
+        "category":  "attestation_ref",
+        "type":  "String",
+        "value":  "19dcee53c80c0da88d349d53"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "source",
+        "category":  "source",
+        "type":  "String",
+        "value":  "canonical_framework"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[0]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "7d915b7839dbf211"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[1]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "dc0a11715aac7cfb"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[2]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "41796663223c12fc"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[3]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "a4f978c39559e013"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[4]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "9ff2b803d2b3673c"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[5]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "9759a0c3387a3987"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[6]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:UnknownsAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[7]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ConflictResolutionAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[8]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:PolicyScopeAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[9]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TicketReadinessAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[10]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TraceIntegrityAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[11]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:AttestationReadinessAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[12]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:HumanOverrideEligibilityAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[13]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:SeverityClassifierAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[14]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ReplayConsistencyAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "evidence_refs[15]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ProofConsistencyAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.trajectory_valid_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.recalc_score",
+        "category":  "metrics",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.degraded_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.abort_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.truth_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.sigma_score",
+        "category":  "metrics",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.mismatch_gap",
+        "category":  "metrics",
+        "type":  "Decimal",
+        "value":  "0.35"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.proof_ready",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "metrics.deterministic",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.domain",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "gps_defense_aviation"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[0]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "SourceAvailabilityAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[1]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "TrajectoryIntegrityAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[2]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "SourceConflictAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[3]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "TimeSkewAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[4]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "BrownoutAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.agent_votes[5]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "GpsAttestationReadinessAgent"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "raw_engine.vote_count",
+        "category":  "raw_engine",
+        "type":  "Int32",
+        "value":  "6"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_override",
+        "category":  "sigma_override",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.step",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.severity",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.z",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.z_t",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.velocity",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.acceleration",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.stability_status",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_step.coherence_ok",
+        "category":  "sigma_step",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.pass",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "PASS"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_evaluated",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.unstable_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.violations_total",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.violation_types",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.metrics.mean_velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.metrics.total_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.metrics.tau_max_used",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "5"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.metrics.accel_limit_used",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.constraints.vanishing_acceleration",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.constraints.velocity_band",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.constraints.coherence_stationarity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].step",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].severity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].z",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].z_t",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "1.4"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].acceleration",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].stability_status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.steps_detail[0].coherence_ok",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "path":  "sigma_report.stdout",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+    }
+]

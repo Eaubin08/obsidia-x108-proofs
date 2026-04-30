@@ -1,0 +1,758 @@
+﻿[
+    {
+        "domain":  "trading",
+        "path":  "domain",
+        "category":  "domain",
+        "type":  "String",
+        "value":  "trading"
+    },
+    {
+        "domain":  "trading",
+        "path":  "market_verdict",
+        "category":  "market_verdict",
+        "type":  "String",
+        "value":  "REVIEW"
+    },
+    {
+        "domain":  "trading",
+        "path":  "confidence",
+        "category":  "confidence",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "domain":  "trading",
+        "path":  "confidence_integrity",
+        "category":  "confidence_integrity",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "domain":  "trading",
+        "path":  "confidence_governance",
+        "category":  "confidence_governance",
+        "type":  "Decimal",
+        "value":  "0.75"
+    },
+    {
+        "domain":  "trading",
+        "path":  "confidence_readiness",
+        "category":  "confidence_readiness",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "domain":  "trading",
+        "path":  "confidence_scope",
+        "category":  "confidence_scope",
+        "type":  "String",
+        "value":  "integrity"
+    },
+    {
+        "domain":  "trading",
+        "path":  "governance_scope",
+        "category":  "governance_scope",
+        "type":  "String",
+        "value":  "x108_decision_robustness"
+    },
+    {
+        "domain":  "trading",
+        "path":  "readiness_scope",
+        "category":  "readiness_scope",
+        "type":  "String",
+        "value":  "harmonic_integrity_governance"
+    },
+    {
+        "domain":  "trading",
+        "path":  "contradictions",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "unknowns",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "risk_flags[0]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "POOR_EXECUTION"
+    },
+    {
+        "domain":  "trading",
+        "path":  "risk_flags[1]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "PORTFOLIO_STRESS"
+    },
+    {
+        "domain":  "trading",
+        "path":  "risk_flags[2]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "POOR_EXECUTION"
+    },
+    {
+        "domain":  "trading",
+        "path":  "risk_flags[3]",
+        "category":  "risk_flags",
+        "type":  "String",
+        "value":  "PORTFOLIO_STRESS"
+    },
+    {
+        "domain":  "trading",
+        "path":  "x108_gate",
+        "category":  "x108_gate",
+        "type":  "String",
+        "value":  "HOLD"
+    },
+    {
+        "domain":  "trading",
+        "path":  "reason_code",
+        "category":  "reason_code",
+        "type":  "String",
+        "value":  "RISK_FLAGS_REQUIRE_DELAY"
+    },
+    {
+        "domain":  "trading",
+        "path":  "severity",
+        "category":  "severity",
+        "type":  "String",
+        "value":  "S2"
+    },
+    {
+        "domain":  "trading",
+        "path":  "decision_id",
+        "category":  "decision_id",
+        "type":  "String",
+        "value":  "trading-7a48a639b0a3"
+    },
+    {
+        "domain":  "trading",
+        "path":  "trace_id",
+        "category":  "trace_id",
+        "type":  "String",
+        "value":  "72606d30-fe0a-4d77-9b69-386e99cc00af"
+    },
+    {
+        "domain":  "trading",
+        "path":  "ticket_required",
+        "category":  "ticket_required",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "trading",
+        "path":  "ticket_id",
+        "category":  "null",
+        "type":  "null",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "attestation_ref",
+        "category":  "attestation_ref",
+        "type":  "String",
+        "value":  "8498a076da0d7d43100e6bea"
+    },
+    {
+        "domain":  "trading",
+        "path":  "source",
+        "category":  "source",
+        "type":  "String",
+        "value":  "canonical_framework"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[0]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "447ab2694752451f"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[1]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "5ec935553d3129f2"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[2]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "95c1c421cff63054"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[3]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "10bf8377bfaee488"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[4]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "65add1cd111e894a"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[5]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "14882b93afb078c4"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[6]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "c5bf4eca91759fdd"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[7]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "d567b82ceb48914a"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[8]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "f7c4f72af041c476"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[9]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "511e8f94809ed17d"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[10]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "ad28c72d071bc612"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[11]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "48b4fb691be8820d"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[12]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "c70875bd1c363cea"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[13]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "1f80f5687e986e42"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[14]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "c678c594c3430478"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[15]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "dc689d962f969ad9"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[16]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "07e0186a3e051476"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[17]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:UnknownsAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[18]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ConflictResolutionAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[19]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:PolicyScopeAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[20]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TicketReadinessAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[21]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:TraceIntegrityAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[22]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:AttestationReadinessAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[23]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:HumanOverrideEligibilityAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[24]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:SeverityClassifierAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[25]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ReplayConsistencyAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "evidence_refs[26]",
+        "category":  "evidence_refs",
+        "type":  "String",
+        "value":  "meta:ProofConsistencyAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "metrics.buy_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "metrics.sell_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "metrics.hold_score",
+        "category":  "metrics",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "metrics.proof_ready",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "trading",
+        "path":  "metrics.deterministic",
+        "category":  "metrics",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.domain",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "trading"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[0]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "MarketDataAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[1]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "LiquidityAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[2]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "VolatilityAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[3]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "MacroAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[4]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "CorrelationAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[5]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "EventAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[6]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "MomentumAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[7]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "MeanReversionAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[8]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "BreakoutAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[9]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "PatternAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[10]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "SentimentAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[11]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "PredictionAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[12]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "PortfolioAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[13]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "ExecutionQualityAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[14]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "RegimeShiftAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[15]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "PortfolioStressAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.agent_votes[16]",
+        "category":  "raw_engine",
+        "type":  "String",
+        "value":  "ProofConsistencyAgent"
+    },
+    {
+        "domain":  "trading",
+        "path":  "raw_engine.vote_count",
+        "category":  "raw_engine",
+        "type":  "Int32",
+        "value":  "17"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_override",
+        "category":  "sigma_override",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.step",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.severity",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "S2"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.z",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "0.7"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.z_t",
+        "category":  "sigma_step",
+        "type":  "Decimal",
+        "value":  "0.7"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.velocity",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.acceleration",
+        "category":  "sigma_step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.stability_status",
+        "category":  "sigma_step",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_step.coherence_ok",
+        "category":  "sigma_step",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.pass",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "PASS"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_evaluated",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.unstable_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.violations_total",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.violation_types",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.metrics.mean_velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.metrics.total_steps",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.metrics.tau_max_used",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "5"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.metrics.accel_limit_used",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.constraints.vanishing_acceleration",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.constraints.velocity_band",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.constraints.coherence_stationarity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].step",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].severity",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "S2"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].z",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "0.7"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].z_t",
+        "category":  "sigma_report",
+        "type":  "Decimal",
+        "value":  "0.7"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].velocity",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].acceleration",
+        "category":  "sigma_report",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].stability_status",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].violations",
+        "category":  "array_empty",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.steps_detail[0].coherence_ok",
+        "category":  "sigma_report",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "domain":  "trading",
+        "path":  "sigma_report.stdout",
+        "category":  "sigma_report",
+        "type":  "String",
+        "value":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+    }
+]

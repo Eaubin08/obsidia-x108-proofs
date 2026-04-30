@@ -1,0 +1,790 @@
+﻿{
+    "audit_timestamp":  "20260428_233732",
+    "endpoint":  "http://localhost:3001/kernel/ragnarok",
+    "git":  {
+                "branch":  "temp-reims",
+                "status":  " M merkle_seal.json; ?? RUN_AUDIT_TABLEAU_POST_EVIDENCE.ps1",
+                "tags":  "audit-evidence-board-v2-20260428-233523",
+                "commit":  "fe801ddadf851b7e2ce5b2bb11612396999b5ef6"
+            },
+    "stats":  {
+                  "domains_tested":  3,
+                  "total_response_metrics":  321,
+                  "total_decision_runtime_metrics":  2929,
+                  "input_files_generated":  3,
+                  "response_files_generated":  3,
+                  "metrics_files_generated":  3,
+                  "decisions_before":  7774,
+                  "decisions_after":  7802,
+                  "decisions_created_during_audit":  28,
+                  "runtime_files_hashed":  13,
+                  "merkle_seal_present":  true,
+                  "merkle_before_sha256":  "E264FA8A8D42E5A6F8070BBF79120BCF61CC9236DCFA397BE0962C0420BA4542",
+                  "merkle_after_sha256":  "E264FA8A8D42E5A6F8070BBF79120BCF61CC9236DCFA397BE0962C0420BA4542",
+                  "server_stdout_sha256":  "F98708FD4217B3463F3CA7C74A857C10028614EB702B64A2A14EAA53AA33278D",
+                  "server_stderr_sha256":  "FAC2CD72F1F74E85A80697AA83DFDF5D6954089435521583704DA5B95C6BAF84",
+                  "git_branch":  "temp-reims",
+                  "git_commit":  "fe801ddadf851b7e2ce5b2bb11612396999b5ef6",
+                  "git_tags":  "audit-evidence-board-v2-20260428-233523",
+                  "git_status":  " M merkle_seal.json; ?? RUN_AUDIT_TABLEAU_POST_EVIDENCE.ps1"
+              },
+    "decisions":  [
+                      {
+                          "Domaine":  "bank",
+                          "Sens":  "Transaction bancaire mobile risquee : nouveau beneficiaire, fraude elevee, urgence elevee, delai X-108 non respecte.",
+                          "Verdict":  "ANALYZE",
+                          "Gate":  "BLOCK",
+                          "Integrity":  0.5,
+                          "Governance":  0.95,
+                          "Readiness":  0.66,
+                          "Moyenne":  0.7033,
+                          "Severity":  "S4",
+                          "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+                          "SecurityReading":  "REFUS AVANT EXECUTION : le moteur bloque l\u0027action avant qu\u0027elle ne puisse produire un effet.",
+                          "MetricCount":  111,
+                          "MetricCategories":  "evidence_refs=22; sigma_report=21; raw_engine=14; unknowns=9; contradictions=8; sigma_step=8; metrics=5; array_empty=3; risk_flags=2; ticket_required=1; trace_id=1; null=1; attestation_ref=1; sigma_override=1; domain=1; source=1; confidence_governance=1; confidence_readiness=1; confidence_scope=1; market_verdict=1; confidence=1; confidence_integrity=1; reason_code=1; severity=1; decision_id=1; governance_scope=1; readiness_scope=1; x108_gate=1",
+                          "InputFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\input_bank.json",
+                          "ResponseFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\response_bank.json",
+                          "MetricsCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_bank.csv",
+                          "MetricsJson":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_bank.json",
+                          "CategoriesCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_categories_bank.csv",
+                          "InputHash":  "988680FD35AD2C74544B0B2C9AB8CF9AD502A316A12EF253B3386462A64F1979",
+                          "ResponseHash":  "255A3225E2F69CEC2B2F46C1D7601D48AEB4B25F7FB1511401346313AD656F63",
+                          "MetricsHash":  "C791C23AF0EBF33DFE5DCF8C77019C1C2CC6D3B2CBA8148C3F0C8960756F0C5E",
+                          "CategoriesHash":  "7F3C0481BDE98CF0CDB04C27825A9C89AF0459BFEABB6A69A0270CF74B86D005"
+                      },
+                      {
+                          "Domaine":  "trading",
+                          "Sens":  "Ordre de trading risque : levier, exposition, drawdown, slippage et desequilibre carnet eleves.",
+                          "Verdict":  "REVIEW",
+                          "Gate":  "HOLD",
+                          "Integrity":  0.5,
+                          "Governance":  0.75,
+                          "Readiness":  0.6,
+                          "Moyenne":  0.6167,
+                          "Severity":  "S2",
+                          "Reason":  "RISK_FLAGS_REQUIRE_DELAY",
+                          "SecurityReading":  "TEMPORISATION X-108 : le moteur retient l\u0027action et impose une attente/coherence supplementaire.",
+                          "MetricCount":  108,
+                          "MetricCategories":  "evidence_refs=27; sigma_report=21; raw_engine=19; sigma_step=8; array_empty=5; metrics=5; risk_flags=4; trace_id=1; ticket_required=1; null=1; domain=1; sigma_override=1; attestation_ref=1; source=1; decision_id=1; confidence_governance=1; confidence_readiness=1; confidence_integrity=1; market_verdict=1; confidence=1; confidence_scope=1; reason_code=1; severity=1; x108_gate=1; governance_scope=1; readiness_scope=1",
+                          "InputFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\input_trading.json",
+                          "ResponseFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\response_trading.json",
+                          "MetricsCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_trading.csv",
+                          "MetricsJson":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_trading.json",
+                          "CategoriesCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_categories_trading.csv",
+                          "InputHash":  "A09D6DEE2AD56DA8C61E9859206B3260FAC9C92DA0C4FB6F136D177099702049",
+                          "ResponseHash":  "360032506A16FC482ADC095907F8B3412A6F8AD2A37237FE3E50D6129688D4FA",
+                          "MetricsHash":  "8627C56A29A087249D2C26A98CE3390F484C701B8DEA2C4987724185D51CAC90",
+                          "CategoriesHash":  "0DE9AC4F4E24981B958F86E02A3E8A7A10C9C69522F29FFD596F09D42135F810"
+                      },
+                      {
+                          "Domaine":  "gps_defense_aviation",
+                          "Sens":  "Navigation aviation/GPS degradee : faible qualite signal, conflit source, risque spoofing, deviation et skew temporel.",
+                          "Verdict":  "ABORT_TRAJECTORY",
+                          "Gate":  "BLOCK",
+                          "Integrity":  0.35,
+                          "Governance":  0.95,
+                          "Readiness":  0.51,
+                          "Moyenne":  0.6033,
+                          "Severity":  "S4",
+                          "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+                          "SecurityReading":  "REFUS AVANT EXECUTION : le moteur bloque l\u0027action avant qu\u0027elle ne puisse produire un effet.",
+                          "MetricCount":  102,
+                          "MetricCategories":  "sigma_report=21; evidence_refs=16; unknowns=13; metrics=9; sigma_step=8; raw_engine=8; contradictions=4; array_empty=4; ticket_required=1; trace_id=1; null=1; sigma_override=1; domain=1; attestation_ref=1; source=1; decision_id=1; confidence_governance=1; confidence_readiness=1; confidence_integrity=1; market_verdict=1; confidence=1; confidence_scope=1; reason_code=1; severity=1; x108_gate=1; governance_scope=1; readiness_scope=1",
+                          "InputFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\input_gps_defense_aviation.json",
+                          "ResponseFile":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\response_gps_defense_aviation.json",
+                          "MetricsCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_gps_defense_aviation.csv",
+                          "MetricsJson":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_full_gps_defense_aviation.json",
+                          "CategoriesCsv":  ".\\audit\\local_diag\\audit_evidence_board_3_domains_20260428_233732\\metrics_categories_gps_defense_aviation.csv",
+                          "InputHash":  "0E9835CD2BEBE1494297535BD822B69DA6A6D8567F01C103765741A7FDE7E8FE",
+                          "ResponseHash":  "4A18D4FB0371B4433494AAC16D4E6A23ABE63BB2861DE5B395D5055F6274201B",
+                          "MetricsHash":  "1F5A476120740ACE6F3B1926D9E830F7549CA5259BC7ED4EAA4385E5C9D06FA9",
+                          "CategoriesHash":  "92785B5DFA625C0A2CB3FD0FF8E1864D7EF06C761767A75F1EEA18F2CB0B9EBA"
+                      }
+                  ],
+    "trace_chains":  [
+                         {
+                             "domain":  "bank",
+                             "input_sha256":  "988680FD35AD2C74544B0B2C9AB8CF9AD502A316A12EF253B3386462A64F1979",
+                             "response_sha256":  "255A3225E2F69CEC2B2F46C1D7601D48AEB4B25F7FB1511401346313AD656F63",
+                             "metrics_sha256":  "C791C23AF0EBF33DFE5DCF8C77019C1C2CC6D3B2CBA8148C3F0C8960756F0C5E",
+                             "metric_count":  111,
+                             "decision_count":  5,
+                             "decision_files":  "decision_bank_1777412259624.json; decision_bank_1777412269980.json; decision_bank_1777412280268.json; decision_bank_1777412290724.json; decision_bank_1777412290904.json",
+                             "decision_hashes":  "7FE4F8770376BB4957DB3B65004905B40DF7227A2FE278ED47A7EE6C3455ABE3; 7595B7604D179DD0B1539FBF4DE63727E3D8522139A8336064E7829F812033CF; C75FE06A6489105436811CCAC201A2AC8CF4674C2AEB20E5DC22D9F7F474ED90; EDB6CBBDAB98FDE18B5A8D90E717797268103D792D4635FF414E383FA1BEB0E9; 335E092332982CD2894575250A4D0748A5D49AE3725D15AD57B79674C1840A28",
+                             "gate":  "BLOCK",
+                             "verdict":  "ANALYZE",
+                             "reason":  "CONTRADICTION_THRESHOLD_REACHED"
+                         },
+                         {
+                             "domain":  "trading",
+                             "input_sha256":  "A09D6DEE2AD56DA8C61E9859206B3260FAC9C92DA0C4FB6F136D177099702049",
+                             "response_sha256":  "360032506A16FC482ADC095907F8B3412A6F8AD2A37237FE3E50D6129688D4FA",
+                             "metrics_sha256":  "8627C56A29A087249D2C26A98CE3390F484C701B8DEA2C4987724185D51CAC90",
+                             "metric_count":  108,
+                             "decision_count":  14,
+                             "decision_files":  "decision_trading_1777412254119.json; decision_trading_1777412256937.json; decision_trading_1777412259565.json; decision_trading_1777412262211.json; decision_trading_1777412264956.json; decision_trading_1777412267529.json; decision_trading_1777412270219.json; decision_trading_1777412273011.json; decision_trading_1777412275623.json; decision_trading_1777412278819.json; decision_trading_1777412281586.json; decision_trading_1777412284291.json; decision_trading_1777412291542.json; decision_trading_1777412292248.json",
+                             "decision_hashes":  "8FC122E711B3E09FB5669D8B9C3A06C8D2FEE57A383A43E66077AF821E3B3EF4; EB18A51043A5A02E622A9408CECB7DA4768F3282F993401EE5ABE59F1F0D5E67; 084C8BB9BCCCEC7CB2562A25BE74BD26A111653870D6D8993D8643AAF606CFB6; 36E66B73E10AD5E96CC0D9FB7FECB7646D12F2660BF328193B9885A7B44A21DA; AAD68EEF8E7081C1B7972EE134E83CF921333C754731B510C3366ACBD91E1305; 2152DC1DC2FC19851D97D428454E0C5CD2253CD21CB91F1906774B5D9CB13070; CA3AE04D0CB8360794125DABB962BBF35F34FF8ABEE40EA7D2E62A001F43E4ED; EB6F5AF930BBC62169B52BD7013DFE943E29BC6F105DA0ECEB69D705543594E7; F6A6B7F7EFFA828EC5E9FFFD89FDA63FC66038738B1F505DE5DF8BD619E74AF4; 00BAA5A1902345549186C3F41D380B18BFF1450F344323F63CD3CA7586B26682; 60D5590AF416E449847B630084CC859E64B447EF63767F393BCBAE1C8AD19390; EC6B1DCFCDF725ECD20C47E5FCEA254E5FE7EE34DBF22B3979929B5A6D1A61EC; 22BB2A8D9649776CCFDB9FD78CBCE867F44ECE16AB941F2C27B25CB207AA5EBC; FD3DFD14A3ABED6D2BC552F8884FE99D41F276278D3EF446D2CC18E0174BBC86",
+                             "gate":  "HOLD",
+                             "verdict":  "REVIEW",
+                             "reason":  "RISK_FLAGS_REQUIRE_DELAY"
+                         },
+                         {
+                             "domain":  "gps_defense_aviation",
+                             "input_sha256":  "0E9835CD2BEBE1494297535BD822B69DA6A6D8567F01C103765741A7FDE7E8FE",
+                             "response_sha256":  "4A18D4FB0371B4433494AAC16D4E6A23ABE63BB2861DE5B395D5055F6274201B",
+                             "metrics_sha256":  "1F5A476120740ACE6F3B1926D9E830F7549CA5259BC7ED4EAA4385E5C9D06FA9",
+                             "metric_count":  102,
+                             "decision_count":  9,
+                             "decision_files":  "decision_gps_defense_aviation_1777412257489.json; decision_gps_defense_aviation_1777412261828.json; decision_gps_defense_aviation_1777412266181.json; decision_gps_defense_aviation_1777412270600.json; decision_gps_defense_aviation_1777412275006.json; decision_gps_defense_aviation_1777412279255.json; decision_gps_defense_aviation_1777412283512.json; decision_gps_defense_aviation_1777412288843.json; decision_gps_defense_aviation_1777412291900.json",
+                             "decision_hashes":  "2D1D218981A1A7738597210288546FE488000F139D9777AC3C3C4821A95C79E6; 66B2C46B07EC77A7A95D251A23FDDEA2559962FC42F4DC1528C134EC8A47A3C4; 4DE3CE3464AAE7BEF58A28E760CFBD2BBC2BD0510C0B42D73E89BE322EE867C6; EBF61A5CC42A3B50350D8B114162146762EBE83E1F356A1BB9E261ACF2056B4C; D7F33BB257EEC9F3C766549FB6D75682969E24245246ADC25C8155C67A16BF4F; 007BA38D23CFFD52AAAD87462BA273785DD1117435EF9852D3856DDF3BB8F4BF; 9BFBCF1C376F72569FDB683127EA8CDD6AB4A537ADFC9BAB15383DAC7FA3FAA2; 6B25E99BE368D5DEC0C1FA5A1A800CA3E6904D8925913F49FB8F5C552C311549; CF1CBC61A44D63B4B3A872949F47496A77D4B1733F025364B353DC6CB2CE36E9",
+                             "gate":  "BLOCK",
+                             "verdict":  "ABORT_TRAJECTORY",
+                             "reason":  "CONTRADICTION_THRESHOLD_REACHED"
+                         }
+                     ],
+    "created_decisions":  [
+                              {
+                                  "name":  "decision_bank_1777412259624.json",
+                                  "bytes":  3468,
+                                  "sha256":  "7FE4F8770376BB4957DB3B65004905B40DF7227A2FE278ED47A7EE6C3455ABE3",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777412259624.json"
+                              },
+                              {
+                                  "name":  "decision_bank_1777412269980.json",
+                                  "bytes":  3468,
+                                  "sha256":  "7595B7604D179DD0B1539FBF4DE63727E3D8522139A8336064E7829F812033CF",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777412269980.json"
+                              },
+                              {
+                                  "name":  "decision_bank_1777412280268.json",
+                                  "bytes":  3468,
+                                  "sha256":  "C75FE06A6489105436811CCAC201A2AC8CF4674C2AEB20E5DC22D9F7F474ED90",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777412280268.json"
+                              },
+                              {
+                                  "name":  "decision_bank_1777412290724.json",
+                                  "bytes":  3468,
+                                  "sha256":  "EDB6CBBDAB98FDE18B5A8D90E717797268103D792D4635FF414E383FA1BEB0E9",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777412290724.json"
+                              },
+                              {
+                                  "name":  "decision_bank_1777412290904.json",
+                                  "bytes":  3720,
+                                  "sha256":  "335E092332982CD2894575250A4D0748A5D49AE3725D15AD57B79674C1840A28",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777412290904.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412257489.json",
+                                  "bytes":  3349,
+                                  "sha256":  "2D1D218981A1A7738597210288546FE488000F139D9777AC3C3C4821A95C79E6",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412257489.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412261828.json",
+                                  "bytes":  3349,
+                                  "sha256":  "66B2C46B07EC77A7A95D251A23FDDEA2559962FC42F4DC1528C134EC8A47A3C4",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412261828.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412266181.json",
+                                  "bytes":  3349,
+                                  "sha256":  "4DE3CE3464AAE7BEF58A28E760CFBD2BBC2BD0510C0B42D73E89BE322EE867C6",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412266181.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412270600.json",
+                                  "bytes":  3349,
+                                  "sha256":  "EBF61A5CC42A3B50350D8B114162146762EBE83E1F356A1BB9E261ACF2056B4C",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412270600.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412275006.json",
+                                  "bytes":  3349,
+                                  "sha256":  "D7F33BB257EEC9F3C766549FB6D75682969E24245246ADC25C8155C67A16BF4F",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412275006.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412279255.json",
+                                  "bytes":  3349,
+                                  "sha256":  "007BA38D23CFFD52AAAD87462BA273785DD1117435EF9852D3856DDF3BB8F4BF",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412279255.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412283512.json",
+                                  "bytes":  3349,
+                                  "sha256":  "9BFBCF1C376F72569FDB683127EA8CDD6AB4A537ADFC9BAB15383DAC7FA3FAA2",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412283512.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412288843.json",
+                                  "bytes":  3349,
+                                  "sha256":  "6B25E99BE368D5DEC0C1FA5A1A800CA3E6904D8925913F49FB8F5C552C311549",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412288843.json"
+                              },
+                              {
+                                  "name":  "decision_gps_defense_aviation_1777412291900.json",
+                                  "bytes":  3448,
+                                  "sha256":  "CF1CBC61A44D63B4B3A872949F47496A77D4B1733F025364B353DC6CB2CE36E9",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777412291900.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412254119.json",
+                                  "bytes":  3520,
+                                  "sha256":  "8FC122E711B3E09FB5669D8B9C3A06C8D2FEE57A383A43E66077AF821E3B3EF4",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412254119.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412256937.json",
+                                  "bytes":  3520,
+                                  "sha256":  "EB18A51043A5A02E622A9408CECB7DA4768F3282F993401EE5ABE59F1F0D5E67",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412256937.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412259565.json",
+                                  "bytes":  3520,
+                                  "sha256":  "084C8BB9BCCCEC7CB2562A25BE74BD26A111653870D6D8993D8643AAF606CFB6",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412259565.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412262211.json",
+                                  "bytes":  3520,
+                                  "sha256":  "36E66B73E10AD5E96CC0D9FB7FECB7646D12F2660BF328193B9885A7B44A21DA",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412262211.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412264956.json",
+                                  "bytes":  3520,
+                                  "sha256":  "AAD68EEF8E7081C1B7972EE134E83CF921333C754731B510C3366ACBD91E1305",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412264956.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412267529.json",
+                                  "bytes":  3520,
+                                  "sha256":  "2152DC1DC2FC19851D97D428454E0C5CD2253CD21CB91F1906774B5D9CB13070",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412267529.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412270219.json",
+                                  "bytes":  3520,
+                                  "sha256":  "CA3AE04D0CB8360794125DABB962BBF35F34FF8ABEE40EA7D2E62A001F43E4ED",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412270219.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412273011.json",
+                                  "bytes":  3520,
+                                  "sha256":  "EB6F5AF930BBC62169B52BD7013DFE943E29BC6F105DA0ECEB69D705543594E7",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412273011.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412275623.json",
+                                  "bytes":  3520,
+                                  "sha256":  "F6A6B7F7EFFA828EC5E9FFFD89FDA63FC66038738B1F505DE5DF8BD619E74AF4",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412275623.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412278819.json",
+                                  "bytes":  3520,
+                                  "sha256":  "00BAA5A1902345549186C3F41D380B18BFF1450F344323F63CD3CA7586B26682",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412278819.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412281586.json",
+                                  "bytes":  3520,
+                                  "sha256":  "60D5590AF416E449847B630084CC859E64B447EF63767F393BCBAE1C8AD19390",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412281586.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412284291.json",
+                                  "bytes":  3520,
+                                  "sha256":  "EC6B1DCFCDF725ECD20C47E5FCEA254E5FE7EE34DBF22B3979929B5A6D1A61EC",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412284291.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412291542.json",
+                                  "bytes":  3461,
+                                  "sha256":  "22BB2A8D9649776CCFDB9FD78CBCE867F44ECE16AB941F2C27B25CB207AA5EBC",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412291542.json"
+                              },
+                              {
+                                  "name":  "decision_trading_1777412292248.json",
+                                  "bytes":  3520,
+                                  "sha256":  "FD3DFD14A3ABED6D2BC552F8884FE99D41F276278D3EF446D2CC18E0174BBC86",
+                                  "full_path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777412292248.json"
+                              }
+                          ],
+    "runtime_hashes":  [
+                           {
+                               "file":  ".\\package.json",
+                               "bytes":  429,
+                               "sha256":  "5D1BE1EEF297C6FD72842450585EEF969F08AEC6A7DA52C99D4A415D48E2E646"
+                           },
+                           {
+                               "file":  ".\\package-lock.json",
+                               "bytes":  29833,
+                               "sha256":  "B461284B681814D76BBFA38676AD75E866F4276F1B2D0E3EE50A4805631985F7"
+                           },
+                           {
+                               "file":  ".\\MonProjet\\server.kernel.sealed.cjs",
+                               "bytes":  3655,
+                               "sha256":  "DA2904C5D4604684B19CF557F602E7F65EC46E8B183C59F78CF9B3606F16FA78"
+                           },
+                           {
+                               "file":  ".\\sigma\\contracts.py",
+                               "bytes":  16302,
+                               "sha256":  "6FA4646032A2C2E82FC08C3563403A5FA86E41D2B312E170A960AF80FB995178"
+                           },
+                           {
+                               "file":  ".\\sigma\\aggregation.py",
+                               "bytes":  6001,
+                               "sha256":  "3F5EFD090286212E5B837AFEA9FCDB35E0456DF431E90A52B3986938EADC8A49"
+                           },
+                           {
+                               "file":  ".\\sigma\\guard.py",
+                               "bytes":  3030,
+                               "sha256":  "5B19A0CBBF78555EFF0F2CC96F8FD21867A2BFC2212A830E319678A7FFF08C18"
+                           },
+                           {
+                               "file":  ".\\sigma\\protocols.py",
+                               "bytes":  2194,
+                               "sha256":  "9FD36D072C4E3DEC3A500D52E67DDC5AF011D16DB92AFFE3871523CCD70204DF"
+                           },
+                           {
+                               "file":  ".\\sigma\\run_pipeline.py",
+                               "bytes":  4400,
+                               "sha256":  "3415EF9B448B83E73BFF4E298D7D9BD44C2B903A1C6A8B2F2A4013076E54C540"
+                           },
+                           {
+                               "file":  ".\\sigma\\registry.py",
+                               "bytes":  450,
+                               "sha256":  "AC46F0FDA906EEB289C8C1007FAA6B0C0DAD59DD071D465A2BFE3E73A431E510"
+                           },
+                           {
+                               "file":  ".\\sigma\\obsidia_sigma_v130.py",
+                               "bytes":  11294,
+                               "sha256":  "5D6E71983F3974DB4853ECE436126FF7B4511524EF69535D2B3668521AD0B314"
+                           },
+                           {
+                               "file":  ".\\audit_merkle.py",
+                               "bytes":  2147,
+                               "sha256":  "C84D014DEE0A8DF44035A17619EF35A122085D2C0796FFE8E70A89E5091CF481"
+                           },
+                           {
+                               "file":  ".\\merkle_seal.json",
+                               "bytes":  317,
+                               "sha256":  "E264FA8A8D42E5A6F8070BBF79120BCF61CC9236DCFA397BE0962C0420BA4542"
+                           },
+                           {
+                               "file":  ".\\RUN_AUDIT_EVIDENCE_BOARD_3_DOMAINES.ps1",
+                               "bytes":  27280,
+                               "sha256":  "FDB420E78231BCCA59798DD66C64D47630A7AFB54E77F1693330270F27167A4F"
+                           }
+                       ],
+    "metric_categories":  [
+                              {
+                                  "domain":  "trading",
+                                  "category":  "evidence_refs",
+                                  "metric_count":  27
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "evidence_refs",
+                                  "metric_count":  22
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "sigma_report",
+                                  "metric_count":  21
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "sigma_report",
+                                  "metric_count":  21
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "sigma_report",
+                                  "metric_count":  21
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "raw_engine",
+                                  "metric_count":  19
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "evidence_refs",
+                                  "metric_count":  16
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "raw_engine",
+                                  "metric_count":  14
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "unknowns",
+                                  "metric_count":  13
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "unknowns",
+                                  "metric_count":  9
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "metrics",
+                                  "metric_count":  9
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "sigma_step",
+                                  "metric_count":  8
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "sigma_step",
+                                  "metric_count":  8
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "contradictions",
+                                  "metric_count":  8
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "sigma_step",
+                                  "metric_count":  8
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "raw_engine",
+                                  "metric_count":  8
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "metrics",
+                                  "metric_count":  5
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "array_empty",
+                                  "metric_count":  5
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "metrics",
+                                  "metric_count":  5
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "contradictions",
+                                  "metric_count":  4
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "risk_flags",
+                                  "metric_count":  4
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "array_empty",
+                                  "metric_count":  4
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "array_empty",
+                                  "metric_count":  3
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "risk_flags",
+                                  "metric_count":  2
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "null",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "source",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "domain",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "confidence",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "market_verdict",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "sigma_override",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "sigma_override",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "domain",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "source",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "attestation_ref",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "decision_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "trace_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "ticket_required",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "x108_gate",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "reason_code",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "severity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "confidence_readiness",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "confidence_governance",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "confidence_integrity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "readiness_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "governance_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "gps_defense_aviation",
+                                  "category":  "confidence_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "attestation_ref",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "decision_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "trace_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "reason_code",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "severity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "attestation_ref",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "source",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "ticket_required",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "null",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "x108_gate",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "confidence_integrity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "confidence_governance",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "market_verdict",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "confidence",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "governance_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "readiness_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "confidence_readiness",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "confidence_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "reason_code",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "severity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "readiness_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "x108_gate",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "ticket_required",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "null",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "decision_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "trace_id",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "governance_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "market_verdict",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "confidence",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "bank",
+                                  "category":  "sigma_override",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "domain",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "confidence_readiness",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "confidence_scope",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "confidence_integrity",
+                                  "metric_count":  1
+                              },
+                              {
+                                  "domain":  "trading",
+                                  "category":  "confidence_governance",
+                                  "metric_count":  1
+                              }
+                          ]
+}

@@ -1,0 +1,53 @@
+﻿[
+    {
+        "domain":  "bank",
+        "business_meaning":  "Transaction bancaire mobile risquée : nouveau bénéficiaire, fraude élevée, urgence élevée, délai X-108 non respecté.",
+        "verdict":  "ANALYZE",
+        "gate":  "BLOCK",
+        "integrity":  0.5,
+        "governance":  0.95,
+        "readiness":  0.66,
+        "mean3":  0.7033,
+        "severity":  "S4",
+        "reason":  "CONTRADICTION_THRESHOLD_REACHED",
+        "security_reading":  "SECURITE FORTE : le moteur refuse l\u0027action. L\u0027action est jugée trop risquée, contradictoire ou insuffisamment fiable.",
+        "trace_reading":  "Trace disponible : réponse brute JSON sauvegardée dans .\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_bank.json ; hash SHA256=BC6E66B9191C4AF9F2A1536FE9C08292BBAD85EE0FECC250CEEC5374D5DF5304 ; logs serveur dans server.stdout.log / server.stderr.log ; décisions runtime possibles dans MonProjet/allData.",
+        "input_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\input_bank.json",
+        "response_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_bank.json",
+        "response_hash":  "BC6E66B9191C4AF9F2A1536FE9C08292BBAD85EE0FECC250CEEC5374D5DF5304"
+    },
+    {
+        "domain":  "trading",
+        "business_meaning":  "Ordre de trading risqué : levier, exposition, drawdown, slippage et déséquilibre carnet élevés.",
+        "verdict":  "REVIEW",
+        "gate":  "HOLD",
+        "integrity":  0.5,
+        "governance":  0.75,
+        "readiness":  0.6,
+        "mean3":  0.6167,
+        "severity":  "S2",
+        "reason":  "RISK_FLAGS_REQUIRE_DELAY",
+        "security_reading":  "SECURITE TEMPORELLE : le moteur temporise. L\u0027action n\u0027est pas autorisée immédiatement, X-108 impose une attente ou une cohérence supplémentaire.",
+        "trace_reading":  "Trace disponible : réponse brute JSON sauvegardée dans .\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_trading.json ; hash SHA256=D1895B44CC975569EEC53C99D885504B1B84C345A864C78E78C2D62C17894A6D ; logs serveur dans server.stdout.log / server.stderr.log ; décisions runtime possibles dans MonProjet/allData.",
+        "input_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\input_trading.json",
+        "response_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_trading.json",
+        "response_hash":  "D1895B44CC975569EEC53C99D885504B1B84C345A864C78E78C2D62C17894A6D"
+    },
+    {
+        "domain":  "gps_defense_aviation",
+        "business_meaning":  "Navigation aviation/GPS dégradée : faible qualité signal, conflit source, risque spoofing, déviation et skew temporel.",
+        "verdict":  "ABORT_TRAJECTORY",
+        "gate":  "BLOCK",
+        "integrity":  0.35,
+        "governance":  0.95,
+        "readiness":  0.51,
+        "mean3":  0.6033,
+        "severity":  "S4",
+        "reason":  "CONTRADICTION_THRESHOLD_REACHED",
+        "security_reading":  "SECURITE FORTE : le moteur refuse l\u0027action. L\u0027action est jugée trop risquée, contradictoire ou insuffisamment fiable.",
+        "trace_reading":  "Trace disponible : réponse brute JSON sauvegardée dans .\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_gps_defense_aviation.json ; hash SHA256=EB289E0EA5ECD34BB59F7232BD934C950FC84B3F794E74C0DF1353CC64A0D5F9 ; logs serveur dans server.stdout.log / server.stderr.log ; décisions runtime possibles dans MonProjet/allData.",
+        "input_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\input_gps_defense_aviation.json",
+        "response_file":  ".\\audit\\local_diag\\audit_securite_tracabilite_20260428_213124\\response_gps_defense_aviation.json",
+        "response_hash":  "EB289E0EA5ECD34BB59F7232BD934C950FC84B3F794E74C0DF1353CC64A0D5F9"
+    }
+]

@@ -1,0 +1,8 @@
+﻿
+
+Algorithm : SHA256
+Hash      : 5D6E71983F3974DB4853ECE436126FF7B4511524EF69535D2B3668521AD0B314
+Path      : C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\sigma\obsidia_sigma_v130.py
+
+
+

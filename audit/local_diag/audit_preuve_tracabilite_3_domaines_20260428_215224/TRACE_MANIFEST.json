@@ -1,0 +1,254 @@
+﻿{
+    "audit_id":  "audit_preuve_tracabilite_3_domaines_20260428_215224",
+    "audit_root_sha256":  "028fe5c349460aade882621272248873a029a4466e316aa7a43ccab1de3507e7",
+    "git":  {
+                "branch":  "temp-reims",
+                "commit":  "d3a2a99cf4d05084876537de883b0eb95961d23c",
+                "short_commit":  "d3a2a99",
+                "tags_on_head":  "node-bridge-terrain-server-fix-2026-04-28",
+                "status":  " M merkle_seal.json\n M sigma/utils/__pycache__/__init__.cpython-313.pyc\n M sigma/utils/__pycache__/indicators.cpython-313.pyc\n?? RUN_AUDIT_PREUVE_TRACABILITE_3_DOMAINES.ps1\n?? RUN_AUDIT_VISUEL_3_DOMAINES.ps1",
+                "audit_timestamp":  "20260428_215224",
+                "endpoint":  "http://localhost:3001/kernel/ragnarok"
+            },
+    "trace_stats":  {
+                        "domains_tested":  3,
+                        "input_files_generated":  3,
+                        "response_files_generated":  3,
+                        "metrics_files_generated":  3,
+                        "decisions_before":  8398,
+                        "decisions_after":  8409,
+                        "decisions_created_during_audit":  11,
+                        "runtime_files_hashed":  14,
+                        "merkle_seal_present":  true,
+                        "merkle_seal_sha256":  "02BF214E2C2B1203DF5A7B89BA3068F6C9B821CEA9ECA48EA14987D9558A5B77",
+                        "server_stdout_sha256":  null,
+                        "server_stderr_sha256":  null
+                    },
+    "domains":  [
+                    {
+                        "Domaine":  "bank",
+                        "Sens":  "Transaction bancaire risquee : nouveau beneficiaire, fraude elevee, urgence elevee, delai X-108 non respecte.",
+                        "Verdict":  "ANALYZE",
+                        "Gate":  "BLOCK",
+                        "Integrity":  0.5,
+                        "Governance":  0.95,
+                        "Readiness":  0.66,
+                        "Moyenne":  0.7033,
+                        "Severity":  "S4",
+                        "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+                        "Securite":  "SECURITE FORTE — action refusee avant execution. Le moteur detecte un risque, une contradiction ou une fiabilite insuffisante.",
+                        "MetricCount":  55,
+                        "Input":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_bank.json",
+                        "Response":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_bank.json",
+                        "MetricsFile":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_bank.csv",
+                        "InputHash":  "988680FD35AD2C74544B0B2C9AB8CF9AD502A316A12EF253B3386462A64F1979",
+                        "ResponseHash":  "0D7A43B3506D9801D48F84F77BF5CD37196F5D6F1F10AA8C27037602156CF661",
+                        "MetricsHash":  "61DEFBAC0E23F24F02ADEB9D388B4C23289DF7D1A31E219FC432BB0642BD8970"
+                    },
+                    {
+                        "Domaine":  "trading",
+                        "Sens":  "Ordre trading risque : levier, exposition, drawdown, slippage et desequilibre carnet eleves.",
+                        "Verdict":  "REVIEW",
+                        "Gate":  "HOLD",
+                        "Integrity":  0.5,
+                        "Governance":  0.75,
+                        "Readiness":  0.6,
+                        "Moyenne":  0.6167,
+                        "Severity":  "S2",
+                        "Reason":  "RISK_FLAGS_REQUIRE_DELAY",
+                        "Securite":  "SECURITE TEMPORELLE — action retenue. X-108 impose une attente / coherence avant action.",
+                        "MetricCount":  55,
+                        "Input":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_trading.json",
+                        "Response":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_trading.json",
+                        "MetricsFile":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_trading.csv",
+                        "InputHash":  "A09D6DEE2AD56DA8C61E9859206B3260FAC9C92DA0C4FB6F136D177099702049",
+                        "ResponseHash":  "5E69556FD7740BCB1EBDF9908E0A40B2F48927729C3E1859FDDF62D3CC992778",
+                        "MetricsHash":  "BB0CFC62DAD5EB06005F3B78FD702FEE4B6DE222988FDE924EA05930AD5396A7"
+                    },
+                    {
+                        "Domaine":  "gps_defense_aviation",
+                        "Sens":  "Navigation aviation/GPS degradee : signal faible, conflit source, spoofing, deviation, skew temporel.",
+                        "Verdict":  "ABORT_TRAJECTORY",
+                        "Gate":  "BLOCK",
+                        "Integrity":  0.35,
+                        "Governance":  0.95,
+                        "Readiness":  0.51,
+                        "Moyenne":  0.6033,
+                        "Severity":  "S4",
+                        "Reason":  "CONTRADICTION_THRESHOLD_REACHED",
+                        "Securite":  "SECURITE FORTE — action refusee avant execution. Le moteur detecte un risque, une contradiction ou une fiabilite insuffisante.",
+                        "MetricCount":  59,
+                        "Input":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\input_gps_defense_aviation.json",
+                        "Response":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\response_gps_defense_aviation.json",
+                        "MetricsFile":  ".\\audit\\local_diag\\audit_preuve_tracabilite_3_domaines_20260428_215224\\metrics_gps_defense_aviation.csv",
+                        "InputHash":  "0E9835CD2BEBE1494297535BD822B69DA6A6D8567F01C103765741A7FDE7E8FE",
+                        "ResponseHash":  "71616C7F6563C9D6A14A4D8E9E89BC11340F620A0CF72308C8EA82F93B3A0577",
+                        "MetricsHash":  "7EB761F95A1943549094EF5FDDAB64B3D05E742A66EDB53E4CD76EB8969BDF3C"
+                    }
+                ],
+    "runtime_hashes":  [
+                           {
+                               "file":  ".\\package.json",
+                               "exists":  true,
+                               "sha256":  "5D1BE1EEF297C6FD72842450585EEF969F08AEC6A7DA52C99D4A415D48E2E646",
+                               "short_sha":  "5D1BE1EEF297"
+                           },
+                           {
+                               "file":  ".\\package-lock.json",
+                               "exists":  true,
+                               "sha256":  "B461284B681814D76BBFA38676AD75E866F4276F1B2D0E3EE50A4805631985F7",
+                               "short_sha":  "B461284B6818"
+                           },
+                           {
+                               "file":  ".\\MonProjet\\server.kernel.sealed.cjs",
+                               "exists":  true,
+                               "sha256":  "DA2904C5D4604684B19CF557F602E7F65EC46E8B183C59F78CF9B3606F16FA78",
+                               "short_sha":  "DA2904C5D460"
+                           },
+                           {
+                               "file":  ".\\sigma\\contracts.py",
+                               "exists":  true,
+                               "sha256":  "6FA4646032A2C2E82FC08C3563403A5FA86E41D2B312E170A960AF80FB995178",
+                               "short_sha":  "6FA4646032A2"
+                           },
+                           {
+                               "file":  ".\\sigma\\aggregation.py",
+                               "exists":  true,
+                               "sha256":  "3F5EFD090286212E5B837AFEA9FCDB35E0456DF431E90A52B3986938EADC8A49",
+                               "short_sha":  "3F5EFD090286"
+                           },
+                           {
+                               "file":  ".\\sigma\\guard.py",
+                               "exists":  true,
+                               "sha256":  "5B19A0CBBF78555EFF0F2CC96F8FD21867A2BFC2212A830E319678A7FFF08C18",
+                               "short_sha":  "5B19A0CBBF78"
+                           },
+                           {
+                               "file":  ".\\sigma\\protocols.py",
+                               "exists":  true,
+                               "sha256":  "9FD36D072C4E3DEC3A500D52E67DDC5AF011D16DB92AFFE3871523CCD70204DF",
+                               "short_sha":  "9FD36D072C4E"
+                           },
+                           {
+                               "file":  ".\\sigma\\run_pipeline.py",
+                               "exists":  true,
+                               "sha256":  "3415EF9B448B83E73BFF4E298D7D9BD44C2B903A1C6A8B2F2A4013076E54C540",
+                               "short_sha":  "3415EF9B448B"
+                           },
+                           {
+                               "file":  ".\\sigma\\registry.py",
+                               "exists":  true,
+                               "sha256":  "AC46F0FDA906EEB289C8C1007FAA6B0C0DAD59DD071D465A2BFE3E73A431E510",
+                               "short_sha":  "AC46F0FDA906"
+                           },
+                           {
+                               "file":  ".\\sigma\\obsidia_sigma_v130.py",
+                               "exists":  true,
+                               "sha256":  "5D6E71983F3974DB4853ECE436126FF7B4511524EF69535D2B3668521AD0B314",
+                               "short_sha":  "5D6E71983F39"
+                           },
+                           {
+                               "file":  ".\\audit_merkle.py",
+                               "exists":  true,
+                               "sha256":  "C84D014DEE0A8DF44035A17619EF35A122085D2C0796FFE8E70A89E5091CF481",
+                               "short_sha":  "C84D014DEE0A"
+                           },
+                           {
+                               "file":  ".\\merkle_seal.json",
+                               "exists":  true,
+                               "sha256":  "02BF214E2C2B1203DF5A7B89BA3068F6C9B821CEA9ECA48EA14987D9558A5B77",
+                               "short_sha":  "02BF214E2C2B"
+                           },
+                           {
+                               "file":  ".\\proofs\\lean\\lakefile.lean",
+                               "exists":  true,
+                               "sha256":  "89821C9CB272362F3443560D95612A00F3FEE4E66EA41DB2D9354FE832BB35FC",
+                               "short_sha":  "89821C9CB272"
+                           },
+                           {
+                               "file":  ".\\proofs\\lean\\lean-toolchain",
+                               "exists":  true,
+                               "sha256":  "26DF5F74B79AF0CD9E298B6583993699A54938D047BA1919428DA80D3AE80C6E",
+                               "short_sha":  "26DF5F74B79A"
+                           }
+                       ],
+    "created_decisions":  [
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777406033658.json",
+                                  "Name":  "decision_bank_1777406033658.json",
+                                  "Length":  3720,
+                                  "LastWriteTimeUtc":  "\/Date(1777406033658)\/",
+                                  "Sha256":  "E26509B41ECEC312DAF90C5374662296110218E78C5692AE590553048A3D8422"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_bank_1777406033997.json",
+                                  "Name":  "decision_bank_1777406033997.json",
+                                  "Length":  3468,
+                                  "LastWriteTimeUtc":  "\/Date(1777406033998)\/",
+                                  "Sha256":  "A1098DBE41707049713A6CA436E7AB189DCB7E83471A74D150FD5931913F8F95"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777406030615.json",
+                                  "Name":  "decision_gps_defense_aviation_1777406030615.json",
+                                  "Length":  3349,
+                                  "LastWriteTimeUtc":  "\/Date(1777406030617)\/",
+                                  "Sha256":  "E1B6E33283546E059265791962BFDD9BD73AD52C6E8B0CAC6F1570C676F0621B"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777406034791.json",
+                                  "Name":  "decision_gps_defense_aviation_1777406034791.json",
+                                  "Length":  3448,
+                                  "LastWriteTimeUtc":  "\/Date(1777406034793)\/",
+                                  "Sha256":  "D878F592ED614FA88F2D7E312730F357D20768680726311F6403CE5AC017EB65"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777406035056.json",
+                                  "Name":  "decision_gps_defense_aviation_1777406035056.json",
+                                  "Length":  3349,
+                                  "LastWriteTimeUtc":  "\/Date(1777406035057)\/",
+                                  "Sha256":  "01B19DB793AABC90CB1CD6ABD44E7963D71E58A361A8E0CD87E153F7301A524C"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_gps_defense_aviation_1777406039507.json",
+                                  "Name":  "decision_gps_defense_aviation_1777406039507.json",
+                                  "Length":  3349,
+                                  "LastWriteTimeUtc":  "\/Date(1777406039509)\/",
+                                  "Sha256":  "F75A7DD676524A47DFBACD6C0439B79538A56129EBBFFEA898590A570E11428F"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777406032390.json",
+                                  "Name":  "decision_trading_1777406032390.json",
+                                  "Length":  3520,
+                                  "LastWriteTimeUtc":  "\/Date(1777406032391)\/",
+                                  "Sha256":  "590C91846586B2FB8DE4D97C0DADA844ED57470B3110DCD3D2AA65CF3307AA86"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777406034278.json",
+                                  "Name":  "decision_trading_1777406034278.json",
+                                  "Length":  3461,
+                                  "LastWriteTimeUtc":  "\/Date(1777406034281)\/",
+                                  "Sha256":  "947C0B4EA2B98F3F3AA3B09CA2090A6CA9EC508003AFB97C02835A38524B5392"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777406035176.json",
+                                  "Name":  "decision_trading_1777406035176.json",
+                                  "Length":  3520,
+                                  "LastWriteTimeUtc":  "\/Date(1777406035175)\/",
+                                  "Sha256":  "41DC8EB6FD2538366E81BE35CA59360385D601393C89CC998F7E1B34EEF00406"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777406038282.json",
+                                  "Name":  "decision_trading_1777406038282.json",
+                                  "Length":  3520,
+                                  "LastWriteTimeUtc":  "\/Date(1777406038282)\/",
+                                  "Sha256":  "865D835199FC9FA961E3E9CA84967F406A92E163D96F21A804209ED492187CB4"
+                              },
+                              {
+                                  "FullName":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\MonProjet\\allData\\decision_trading_1777406041140.json",
+                                  "Name":  "decision_trading_1777406041140.json",
+                                  "Length":  3520,
+                                  "LastWriteTimeUtc":  "\/Date(1777406041142)\/",
+                                  "Sha256":  "9510514C9B2C9B576A0094145ACA5D768698623B778395EBD72E7F5ACBDE5164"
+                              }
+                          ]
+}

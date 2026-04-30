@@ -1,0 +1,9 @@
+﻿System.Net.WebException: Impossible de se connecter au serveur distant ---> System.Net.Sockets.SocketException: Aucune connexion n’a pu être établie car l’ordinateur cible l’a expressément refusée 127.0.0.1:3001
+   à System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   à System.Net.ServicePoint.ConnectSocketInternal(Boolean connectFailure, Socket s4, Socket s6, Socket& socket, IPAddress& address, ConnectSocketState state, IAsyncResult asyncResult, Exception& exception)
+   --- Fin de la trace de la pile d'exception interne ---
+   à System.Net.HttpWebRequest.GetRequestStream(TransportContext& context)
+   à System.Net.HttpWebRequest.GetRequestStream()
+   à Microsoft.PowerShell.Commands.WebRequestPSCmdlet.SetRequestContent(WebRequest request, String content)
+   à Microsoft.PowerShell.Commands.WebRequestPSCmdlet.ProcessRecord()
+   à System.Management.Automation.CommandProcessor.ProcessRecord()

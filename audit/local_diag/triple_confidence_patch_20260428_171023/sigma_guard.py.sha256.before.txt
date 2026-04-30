@@ -1,0 +1,8 @@
+﻿
+
+Algorithm : SHA256
+Hash      : 5B19A0CBBF78555EFF0F2CC96F8FD21867A2BFC2212A830E319678A7FFF08C18
+Path      : C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\sigma\guard.py
+
+
+

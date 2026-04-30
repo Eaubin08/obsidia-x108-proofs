@@ -1,0 +1,9 @@
+﻿{
+    "branch":  "temp-reims",
+    "commit":  "977bb2fa5a2ccccd60e8e509f59695dc463ec995",
+    "short_commit":  "977bb2f",
+    "tags_on_head":  "NO_TAG_ON_HEAD",
+    "status":  "CLEAN",
+    "audit_timestamp":  "20260428_222718",
+    "endpoint":  "http://localhost:3001/kernel/ragnarok"
+}

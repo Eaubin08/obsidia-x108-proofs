@@ -1,0 +1,557 @@
+﻿[
+    {
+        "path":  "domain",
+        "type":  "String",
+        "value":  "bank"
+    },
+    {
+        "path":  "market_verdict",
+        "type":  "String",
+        "value":  "ANALYZE"
+    },
+    {
+        "path":  "confidence",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "path":  "confidence_integrity",
+        "type":  "Decimal",
+        "value":  "0.5"
+    },
+    {
+        "path":  "confidence_governance",
+        "type":  "Decimal",
+        "value":  "0.95"
+    },
+    {
+        "path":  "confidence_readiness",
+        "type":  "Decimal",
+        "value":  "0.66"
+    },
+    {
+        "path":  "confidence_scope",
+        "type":  "String",
+        "value":  "integrity"
+    },
+    {
+        "path":  "governance_scope",
+        "type":  "String",
+        "value":  "x108_decision_robustness"
+    },
+    {
+        "path":  "readiness_scope",
+        "type":  "String",
+        "value":  "harmonic_integrity_governance"
+    },
+    {
+        "path":  "contradictions[0]",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "path":  "contradictions[1]",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "path":  "contradictions[2]",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "path":  "contradictions[3]",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "path":  "contradictions[4]",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "path":  "contradictions[5]",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "path":  "contradictions[6]",
+        "type":  "String",
+        "value":  "URGENT_BEHAVIOR"
+    },
+    {
+        "path":  "contradictions[7]",
+        "type":  "String",
+        "value":  "IDENTITY_CONTEXT_MISMATCH"
+    },
+    {
+        "path":  "unknowns[0]",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "path":  "unknowns[1]",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "path":  "unknowns[2]",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "path":  "unknowns[3]",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "path":  "unknowns[4]",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "path":  "unknowns[5]",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "path":  "unknowns[6]",
+        "type":  "String",
+        "value":  "TEMPORAL_LOCK_NOT_MATURE"
+    },
+    {
+        "path":  "unknowns[7]",
+        "type":  "String",
+        "value":  "RECENT_FAILED_ATTEMPTS"
+    },
+    {
+        "path":  "unknowns[8]",
+        "type":  "String",
+        "value":  "TICKET_NOT_READY"
+    },
+    {
+        "path":  "risk_flags[0]",
+        "type":  "String",
+        "value":  "FRAUD_PATTERN"
+    },
+    {
+        "path":  "risk_flags[1]",
+        "type":  "String",
+        "value":  "FRAUD_PATTERN"
+    },
+    {
+        "path":  "x108_gate",
+        "type":  "String",
+        "value":  "BLOCK"
+    },
+    {
+        "path":  "reason_code",
+        "type":  "String",
+        "value":  "CONTRADICTION_THRESHOLD_REACHED"
+    },
+    {
+        "path":  "severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "decision_id",
+        "type":  "String",
+        "value":  "bank-05110188e7a2"
+    },
+    {
+        "path":  "trace_id",
+        "type":  "String",
+        "value":  "8dbb6398-f49e-4ef6-9265-4c284bc32f9e"
+    },
+    {
+        "path":  "ticket_required",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "path":  "ticket_id",
+        "type":  "null",
+        "value":  ""
+    },
+    {
+        "path":  "attestation_ref",
+        "type":  "String",
+        "value":  "07fa66b12974d26f23c49c3d"
+    },
+    {
+        "path":  "source",
+        "type":  "String",
+        "value":  "canonical_framework"
+    },
+    {
+        "path":  "evidence_refs[0]",
+        "type":  "String",
+        "value":  "e47a240fff0baf69"
+    },
+    {
+        "path":  "evidence_refs[1]",
+        "type":  "String",
+        "value":  "67ccfa7e13b28f33"
+    },
+    {
+        "path":  "evidence_refs[2]",
+        "type":  "String",
+        "value":  "e07af98a0a87c218"
+    },
+    {
+        "path":  "evidence_refs[3]",
+        "type":  "String",
+        "value":  "1b301c649153a7ee"
+    },
+    {
+        "path":  "evidence_refs[4]",
+        "type":  "String",
+        "value":  "4fd9e32c9e33d92b"
+    },
+    {
+        "path":  "evidence_refs[5]",
+        "type":  "String",
+        "value":  "730dce7d5101307d"
+    },
+    {
+        "path":  "evidence_refs[6]",
+        "type":  "String",
+        "value":  "608f5b88ee8cafd9"
+    },
+    {
+        "path":  "evidence_refs[7]",
+        "type":  "String",
+        "value":  "800a13efde5c2904"
+    },
+    {
+        "path":  "evidence_refs[8]",
+        "type":  "String",
+        "value":  "5d506b1f101b616e"
+    },
+    {
+        "path":  "evidence_refs[9]",
+        "type":  "String",
+        "value":  "78835d78532fe59d"
+    },
+    {
+        "path":  "evidence_refs[10]",
+        "type":  "String",
+        "value":  "4e4fb3735e36ad11"
+    },
+    {
+        "path":  "evidence_refs[11]",
+        "type":  "String",
+        "value":  "f503e8b5c49b828d"
+    },
+    {
+        "path":  "evidence_refs[12]",
+        "type":  "String",
+        "value":  "meta:UnknownsAgent"
+    },
+    {
+        "path":  "evidence_refs[13]",
+        "type":  "String",
+        "value":  "meta:ConflictResolutionAgent"
+    },
+    {
+        "path":  "evidence_refs[14]",
+        "type":  "String",
+        "value":  "meta:PolicyScopeAgent"
+    },
+    {
+        "path":  "evidence_refs[15]",
+        "type":  "String",
+        "value":  "meta:TicketReadinessAgent"
+    },
+    {
+        "path":  "evidence_refs[16]",
+        "type":  "String",
+        "value":  "meta:TraceIntegrityAgent"
+    },
+    {
+        "path":  "evidence_refs[17]",
+        "type":  "String",
+        "value":  "meta:AttestationReadinessAgent"
+    },
+    {
+        "path":  "evidence_refs[18]",
+        "type":  "String",
+        "value":  "meta:HumanOverrideEligibilityAgent"
+    },
+    {
+        "path":  "evidence_refs[19]",
+        "type":  "String",
+        "value":  "meta:SeverityClassifierAgent"
+    },
+    {
+        "path":  "evidence_refs[20]",
+        "type":  "String",
+        "value":  "meta:ReplayConsistencyAgent"
+    },
+    {
+        "path":  "evidence_refs[21]",
+        "type":  "String",
+        "value":  "meta:ProofConsistencyAgent"
+    },
+    {
+        "path":  "metrics.authorize_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.analyze_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.block_score",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "metrics.proof_ready",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "metrics.deterministic",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "raw_engine.domain",
+        "type":  "String",
+        "value":  "bank"
+    },
+    {
+        "path":  "raw_engine.agent_votes[0]",
+        "type":  "String",
+        "value":  "TransactionContextAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[1]",
+        "type":  "String",
+        "value":  "CounterpartyAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[2]",
+        "type":  "String",
+        "value":  "LiquidityExposureAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[3]",
+        "type":  "String",
+        "value":  "BehaviorShiftAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[4]",
+        "type":  "String",
+        "value":  "FraudPatternAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[5]",
+        "type":  "String",
+        "value":  "LimitPolicyAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[6]",
+        "type":  "String",
+        "value":  "AffordabilityAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[7]",
+        "type":  "String",
+        "value":  "TemporalUrgencyAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[8]",
+        "type":  "String",
+        "value":  "IdentityMismatchAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[9]",
+        "type":  "String",
+        "value":  "NarrativeConflictAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[10]",
+        "type":  "String",
+        "value":  "RecoveryPathAgent"
+    },
+    {
+        "path":  "raw_engine.agent_votes[11]",
+        "type":  "String",
+        "value":  "BankProofAgent"
+    },
+    {
+        "path":  "raw_engine.vote_count",
+        "type":  "Int32",
+        "value":  "12"
+    },
+    {
+        "path":  "sigma_override",
+        "type":  "Boolean",
+        "value":  "False"
+    },
+    {
+        "path":  "sigma_step.step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "sigma_step.z",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "path":  "sigma_step.z_t",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "path":  "sigma_step.velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.acceleration",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_step.stability_status",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "path":  "sigma_step.violations",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_step.coherence_ok",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.pass",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.status",
+        "type":  "String",
+        "value":  "PASS"
+    },
+    {
+        "path":  "sigma_report.steps_evaluated",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "path":  "sigma_report.unstable_steps",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.violations_total",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.violation_types",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_report.metrics.mean_velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.metrics.total_steps",
+        "type":  "Int32",
+        "value":  "1"
+    },
+    {
+        "path":  "sigma_report.metrics.tau_max_used",
+        "type":  "Int32",
+        "value":  "5"
+    },
+    {
+        "path":  "sigma_report.metrics.accel_limit_used",
+        "type":  "Decimal",
+        "value":  "0.6"
+    },
+    {
+        "path":  "sigma_report.constraints.vanishing_acceleration",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.constraints.velocity_band",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.constraints.coherence_stationarity",
+        "type":  "String",
+        "value":  "OK"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].step",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].severity",
+        "type":  "String",
+        "value":  "S4"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].z",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].z_t",
+        "type":  "Decimal",
+        "value":  "1.9"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].velocity",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].acceleration",
+        "type":  "Int32",
+        "value":  "0"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].stability_status",
+        "type":  "String",
+        "value":  "STABLE"
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].violations",
+        "type":  "array_empty",
+        "value":  ""
+    },
+    {
+        "path":  "sigma_report.steps_detail[0].coherence_ok",
+        "type":  "Boolean",
+        "value":  "True"
+    },
+    {
+        "path":  "sigma_report.stdout",
+        "type":  "String",
+        "value":  "V18.9 Sigma Dynamic Stability - PASS\nSteps evaluated : 1\nUnstable steps  : 0\nTotal violations: 0\nConfig source   : C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\sigma\\sigma_config.json\ntau_max         : 5.0\naccel_limit     : 0.6\nNo violations detected.\n"
+    }
+]

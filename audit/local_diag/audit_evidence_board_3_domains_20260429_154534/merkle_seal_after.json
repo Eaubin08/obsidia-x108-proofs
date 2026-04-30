@@ -1,0 +1,8 @@
+{
+    "status": "INTEGRITY_VERIFIED",
+    "audit_date": "2026-04-29 15:45:53",
+    "total_proofs_count": 8405,
+    "merkle_root": "3cc15685e7920af363ba6876c0a79ef1979ff0559e0492202a98ea1c697793a9",
+    "first_proof": "decision_bank_1777377982714.json",
+    "last_proof": "decision_trading_1777470348377.json"
+}

@@ -1,0 +1,21 @@
+﻿{
+    "domains_tested":  3,
+    "total_response_metrics":  321,
+    "total_decision_runtime_metrics":  321,
+    "input_files_generated":  3,
+    "response_files_generated":  3,
+    "metrics_files_generated":  3,
+    "decisions_before":  7234,
+    "decisions_after":  7237,
+    "decisions_created_during_audit":  3,
+    "runtime_files_hashed":  13,
+    "merkle_seal_present":  true,
+    "merkle_before_sha256":  "9D1D9AAEDCF8520A4171448F17B21782986060FAE680F714EBF8CAA03FCE8256",
+    "merkle_after_sha256":  "9D1D9AAEDCF8520A4171448F17B21782986060FAE680F714EBF8CAA03FCE8256",
+    "server_stdout_sha256":  "32B18FD654F2C6FD7C511617B79FEF86F5D70A498B506468B913E3C1A6B58F18",
+    "server_stderr_sha256":  "FE0A8BB0265FF1E4C0C52C679996E4D0BB399CB2991CDADE5B61BC05BA3D5CC7",
+    "git_branch":  "temp-reims",
+    "git_commit":  "977bb2fa5a2ccccd60e8e509f59695dc463ec995",
+    "git_tags":  "audit-traceability-3-domains-20260428-223139",
+    "git_status":  " M merkle_seal.json; ?? RUN_AUDIT_EVIDENCE_BOARD_3_DOMAINES.ps1; ?? RUN_AUDIT_TOTAL_METRICS_PROOF.ps1"
+}
