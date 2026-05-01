@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  # Force l'utilisation de Node 24 pour supprimer les avertissements d'obsolescence
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   verify-lean:
     runs-on: ubuntu-latest
@@ -34,7 +38,7 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip pytest cryptography pyopenssl requests requests requests requests
+          python -m pip install --upgrade pip pytest cryptography pyopenssl requests
       - name: Run public verifiers
         run: |
           # Le "|| true" permet d'éviter l'exit code 1 qui bloquait tout à l'heure
