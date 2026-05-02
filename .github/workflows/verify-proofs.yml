@@ -1,4 +1,4 @@
-name: Verify proofs
+﻿name: Verify proofs
 
 on:
   push:
@@ -13,18 +13,18 @@ env:
 jobs:
 
   # ---------------------------------------------------------------
-  # JOB STRICT (BLOQUANT) : vérificateurs Python purs
-  # Pas de dépendance externe (pas de TSA, pas de Java, pas de Lean)
-  # Ce job DOIT passer. Un échec ici est une vraie régression.
+  # JOB STRICT (BLOQUANT) : vÃ©rificateurs Python purs
+  # Pas de dÃ©pendance externe (pas de TSA, pas de Java, pas de Lean)
+  # Ce job DOIT passer. Un Ã©chec ici est une vraie rÃ©gression.
   # ---------------------------------------------------------------
   verify-python-strict:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Installer les dépendances
+      - name: Installer les dÃ©pendances
         run: |
           python -m pip install --upgrade pip pytest cryptography pyopenssl requests
       - name: Lancer verify_all.py (BLOQUANT)
@@ -38,17 +38,17 @@ jobs:
           if [ -f "RECUPE_SCORING/aggregation_stable.py" ]; then
             python RECUPE_SCORING/aggregation_stable.py
           else
-            echo "INFO: RECUPE_SCORING/aggregation_stable.py non trouvé, étape sautée."
+            echo "INFO: RECUPE_SCORING/aggregation_stable.py non trouvÃ©, Ã©tape sautÃ©e."
           fi
 
   # ---------------------------------------------------------------
-  # JOB NON BLOQUANT : preuves Lean (dépendance elan/Lake)
-  # continue-on-error: true car installation Lean peut échouer en CI
+  # JOB NON BLOQUANT : preuves Lean (dÃ©pendance elan/Lake)
+  # continue-on-error: true car installation Lean peut Ã©chouer en CI
   # ---------------------------------------------------------------
   verify-lean:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Installer elan
         run: |
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
@@ -60,21 +60,21 @@ jobs:
             cd proofs/lean
             lake build
           else
-            echo "INFO: Dossier proofs/lean non trouvé, build sauté."
+            echo "INFO: Dossier proofs/lean non trouvÃ©, build sautÃ©."
           fi
 
   # ---------------------------------------------------------------
-  # JOB NON BLOQUANT : Sigma tests + RFC3161 (dépendances réseau)
+  # JOB NON BLOQUANT : Sigma tests + RFC3161 (dÃ©pendances rÃ©seau)
   # continue-on-error: true sur Sigma et RFC3161 car TSA = tiers
   # ---------------------------------------------------------------
   verify-sigma-and-qa:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Installer les dépendances
+      - name: Installer les dÃ©pendances
         run: |
           python -m pip install --upgrade pip pytest cryptography pyopenssl requests
       - name: Lancer les tests Sigma
@@ -83,15 +83,15 @@ jobs:
           if [ -d "sigma/tests" ]; then
             python -m pytest sigma/tests -v
           else
-            echo "INFO: Dossier sigma/tests non trouvé."
+            echo "INFO: Dossier sigma/tests non trouvÃ©."
           fi
-      - name: Vérifier le schéma d'ancre RFC3161
+      - name: VÃ©rifier le schÃ©ma d'ancre RFC3161
         continue-on-error: true
         run: |
           if [ -f "qa/cross-platform/test_rfc3161_anchor_schema.py" ]; then
             python -m pytest qa/cross-platform/test_rfc3161_anchor_schema.py -v
           else
-            echo "INFO: Test RFC3161 anchor schema non trouvé."
+            echo "INFO: Test RFC3161 anchor schema non trouvÃ©."
           fi
       - name: QA multi-plateforme RFC3161
         continue-on-error: true
@@ -99,23 +99,23 @@ jobs:
           if [ -f "qa/cross-platform/test_rfc3161_cross_platform.py" ]; then
             python -m pytest qa/cross-platform/test_rfc3161_cross_platform.py -v
           else
-            echo "INFO: Test RFC3161 cross-platform non trouvé."
+            echo "INFO: Test RFC3161 cross-platform non trouvÃ©."
           fi
 
   # ---------------------------------------------------------------
-  # JOB NON BLOQUANT : model-checking TLC (dépendance Java + jar)
-  # continue-on-error: true car téléchargement du jar peut échouer
+  # JOB NON BLOQUANT : model-checking TLC (dÃ©pendance Java + jar)
+  # continue-on-error: true car tÃ©lÃ©chargement du jar peut Ã©chouer
   # ---------------------------------------------------------------
   verify-tla:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Configurer Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Télécharger TLC
+      - name: TÃ©lÃ©charger TLC
         run: curl -L https://github.com/tlaplus/tlaplus/releases/latest/download/tla2tools.jar -o tla2tools.jar
       - name: Lancer TLC sur X108_MC
         continue-on-error: true
@@ -123,5 +123,6 @@ jobs:
           if [ -f "formal/tla/X108_MC.tla" ]; then
             java -jar tla2tools.jar -config formal/tla/X108_MC.cfg formal/tla/X108_MC.tla
           else
-            echo "INFO: Spécification TLA+ non trouvée."
+            echo "INFO: SpÃ©cification TLA+ non trouvÃ©e."
           fi
+
