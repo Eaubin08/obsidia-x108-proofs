@@ -130,13 +130,28 @@ jobs:
 
           python -m pytest "$TARGET" -v
 
-      - name: Run RFC3161 cross-platform test only if present
+      - name: Run RFC3161 cross-platform test only if collectable
         run: |
           TARGET="qa/cross-platform/test_rfc3161_cross_platform.py"
 
           if [ ! -f "$TARGET" ]; then
             echo "INFO: RFC3161 cross-platform test not found, skipped."
             exit 0
+          fi
+
+          set +e
+          python -m pytest --collect-only -q "$TARGET"
+          collect_code=$?
+          set -e
+
+          if [ "$collect_code" -eq 5 ]; then
+            echo "INFO: RFC3161 cross-platform file exists but has no collectable pytest tests, skipped."
+            exit 0
+          fi
+
+          if [ "$collect_code" -ne 0 ]; then
+            echo "FAIL: pytest collection failed with code $collect_code"
+            exit "$collect_code"
           fi
 
           python -m pytest "$TARGET" -v
