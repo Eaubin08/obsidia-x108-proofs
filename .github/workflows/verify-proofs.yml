@@ -29,7 +29,17 @@ jobs:
           python -m pip install --upgrade pip pytest cryptography pyopenssl requests
       - name: Lancer verify_all.py (BLOQUANT)
         run: |
+          set +e
           python proofs/verify_all.py
+          code=$?
+          echo "VERIFY_ALL_EXIT=$code"
+          if [ -f "proofs/PROOFKIT_REPORT.json" ]; then
+            echo "===== PROOFKIT_REPORT.json ====="
+            cat proofs/PROOFKIT_REPORT.json
+          else
+            echo "PROOFKIT_REPORT.json absent"
+          fi
+          exit $code
       - name: Lancer verify_decision.py (BLOQUANT)
         run: |
           python proofs/verify_decision.py
