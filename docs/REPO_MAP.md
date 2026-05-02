@@ -1,61 +1,95 @@
-# Detailed Repository Map
+# Carte du dépôt (Repo Map)
 
-## Purpose
+## Objectif
 
-This file helps an external reader navigate the public P1 repository.
+Ce fichier aide un lecteur externe à naviguer dans le dépôt public P1.
 
-## Root facade
+## Facade racine
 
-- `README.md` - landing page for the public repository
-- `PUBLIC_STATUS.md` - public PASS / scope matrix
-- `P1_FREEZE_NOTE.md` - freeze reference for P1
+- `README.md` — page d'accueil du dépôt public
+- `PUBLIC_STATUS.md` — matrice publique PASS / périmètre
+- `P1_FREEZE_NOTE.md` — référence de gel P1
 
-## Public proof perimeter
+## Périmètre de preuves public
 
-- `proofs/lean/` - Lean 4 formal proof perimeter
-- `formal/tla/` - TLA+ specifications and TLC runs
-- `proofs/` - public executable verifiers and public proof report
+- `proofs/lean/` — périmètre de preuves formelles Lean 4
+- `formal/tla/` — spécifications TLA+ et runs TLC
+- `proofs/` — vérificateurs exécutables publics et rapport de preuves public
 
-## Public Sigma perimeter
+## Périmètre Sigma public
 
-- `sigma/run_pipeline.py` - public Sigma pipeline entry
-- `sigma/sigma_monitor.py` - public Sigma monitor entry
-- `sigma/examples/` - public example inputs
-- `sigma/tests/` - public Sigma smoke and structure tests
+- `sigma/run_pipeline.py` — entrée du pipeline Sigma public
+- `sigma/sigma_monitor.py` — entrée du moniteur Sigma public
+- `sigma/examples/` — exemples d'entrées publics
+- `sigma/tests/` — smoke tests et tests de structure Sigma publics
 
-## Public QA perimeter
+## Périmètre QA public
 
-- `qa/cross-platform/test_rfc3161_cross_platform.py` - public RFC3161 / TLC / Sigma QA
-- `qa/cross-platform/test_rfc3161_anchor_schema.py` - RFC3161 public anchor schema checks
+- `qa/cross-platform/test_rfc3161_cross_platform.py` — QA publique RFC3161 / TLC / Sigma multi-plateforme
+- `qa/cross-platform/test_rfc3161_anchor_schema.py` — vérifications publiques du schéma d'ancre RFC3161
 
-## Documentation perimeter
+## Périmètre outils d'audit (RECUPE_SCORING)
 
-- `docs/SIGMA.md` - Sigma public P1 vs production scope
-- `docs/LIMITS.md` - structural limits of P1
-- `docs/PROOF_SCOPE.md` - proof scope taxonomy
-- `docs/RFC3161.md` - RFC3161 interpretation guide
-- `docs/REPO_MAP.md` - this file
+> Ajouté dans le commit `feat: stabilize kernel at 8007 proofs and deploy audit tools`
 
-## Reading paths by profile
+- `RECUPE_SCORING/aggregation_stable.py` — calcul du score agrégé de stabilité kernel
+  - Agrège les résultats de toutes les catégories (Lean, TLC, Python, Sigma, QA)
+  - Produit le compteur de stabilité (baseline : 8007 au freeze P1)
+  - Commande de recalcul : `python RECUPE_SCORING/aggregation_stable.py`
+- `RECUPE_SCORING/contracts_stable.py` — contrats d'invariants du kernel
+  - Définit les invariants qui doivent tenir pour que le kernel soit déclaré stable
+  - Utilisé pour valider la cohérence des preuves lors des mises à jour
 
-Fast reader:
-1. `README.md`
-2. `PUBLIC_STATUS.md`
-3. `P1_FREEZE_NOTE.md`
+Voir aussi : `docs/AUDIT_TOOLS.md` pour le guide d'utilisation.
 
-Auditor:
+## Périmètre de documentation
+
+- `docs/SIGMA.md` — périmètre Sigma public P1 vs production
+- `docs/LIMITS.md` — limites structurelles de P1
+- `docs/PROOF_SCOPE.md` — taxonomie du scope de preuves
+- `docs/RFC3161.md` — guide d'interprétation RFC3161
+- `docs/REPO_MAP.md` — ce fichier
+- `docs/AUDIT_TOOLS.md` — guide d'utilisation des outils d'audit
+- `docs/CI_POLICY.md` — politique CI/CD et jobs bloquants vs non-bloquants
+- `docs/P2_ROADMAP.md` — trajectoire P2-bank et suite (stub)
+
+## Points d'entrée clés
+
+| Point d'entrée | Rôle |
+|---|---|
+| `README.md` | Landing page auditeur |
+| `PUBLIC_STATUS.md` | Matrice de statut P1 |
+| `run_all_proofs.ps1` | Runner e2e public |
+| `sigma/run_pipeline.py` | Entrée Sigma publique |
+| `proofs/verify_all.py` | Vérificateur Python principal |
+| `RECUPE_SCORING/aggregation_stable.py` | Score agrégé de stabilité |
+
+## Chemins de lecture recommandés
+
+**Lecteur rapide :**
+1. `PUBLIC_STATUS.md`
+2. `P1_FREEZE_NOTE.md`
+3. `README.md`
+
+**Chemin auditeur :**
 1. `PUBLIC_STATUS.md`
 2. `docs/PROOF_SCOPE.md`
-3. `docs/RFC3161.md`
-4. run `.\run_all_proofs.ps1`
+3. `docs/REPO_MAP.md` (ce fichier)
+4. `docs/AUDIT_TOOLS.md`
+5. `run_all_proofs.ps1`
 
-Sigma reader:
+**Chemin orienté Sigma :**
 1. `docs/SIGMA.md`
 2. `sigma/run_pipeline.py`
 3. `sigma/sigma_monitor.py`
 4. `sigma/tests/`
 
-Proof-oriented reader:
-1. `proofs/lean/`
-2. `formal/tla/`
-3. `proofs/verify_all.py`
+**Chemin orienté RFC3161 :**
+1. `docs/RFC3161.md`
+2. `qa/cross-platform/test_rfc3161_cross_platform.py`
+3. `qa/cross-platform/test_rfc3161_anchor_schema.py`
+
+**Chemin orienté outils d'audit :**
+1. `docs/AUDIT_TOOLS.md`
+2. `RECUPE_SCORING/aggregation_stable.py`
+3. `RECUPE_SCORING/contracts_stable.py`
