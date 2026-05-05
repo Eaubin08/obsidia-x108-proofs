@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-04-27T13:44:17.379306+00:00",
+  "timestamp": "2026-05-05T19:37:54.261614+00:00",
   "checks": {
     "V18_3_1_seal_verify": {
       "pass": true,
       "stdout": "PASS\n"
     },
     "V18_3_1_root_hash_verify": {
-      "pass": false,
-      "stdout": "FAIL: root hash mismatch\n got: 7eb91be160a4977fdf3f0f5844cc0e838d25545253d0724397de34c816aafab4\n exp: 5d9a38d1de0249d8c7cc181529fc5f27ec12d389cf5a0008a67a09a4591e5a6b\n"
+      "pass": true,
+      "stdout": "PASS\n"
     },
     "V18_7_checker_run": {
       "pass": true,
@@ -24,5 +24,5 @@
       "pass": true
     }
   },
-  "overall": "FAIL"
+  "overall": "PASS"
 }
