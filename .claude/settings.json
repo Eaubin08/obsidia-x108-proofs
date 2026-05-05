@@ -93,9 +93,5 @@
     "ANTHROPIC_MODEL": "claude-sonnet-4-6",
     "CLAUDE_CODE_MAX_TURNS": "100",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-  },
-
-  "hooks": {
-    "_disabled_by_default": "Hook SCRIPTS exist under .claude/hooks/ but are NOT wired here. To activate one, copy its block from .claude/hooks/EXAMPLES.md into settings.local.json. Never wire auto-format / auto-lint / auto-test on this repo — proof artifacts are sensitive to formatting changes."
   }
 }
