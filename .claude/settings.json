@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "_comment": "Minimal, conservative settings for obsidia-x108-proofs. No auto-format, no auto-lint, no auto-test, no auto-install, no aggressive hooks. Hook scripts exist under .claude/hooks/ but are NOT wired in this file by default. Wire them manually in settings.local.json after evaluation.",
+
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Task",
+
+      "Bash(git status)",
+      "Bash(git status --short)",
+      "Bash(git diff)",
+      "Bash(git diff --stat)",
+      "Bash(git diff --check)",
+      "Bash(git diff --name-only:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch)",
+      "Bash(git branch --show-current)",
+
+      "Bash(ls)",
+      "Bash(ls -la)",
+      "Bash(wc:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+
+      "Bash(npm install:*)",
+      "Bash(npm update:*)",
+      "Bash(npm audit fix:*)",
+      "Bash(pip install:*)",
+      "Bash(winget install:*)",
+      "Bash(autoskills:*)",
+
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(secrets/**)",
+      "Read(audit/local/**)",
+      "Read(**/*.pem)",
+      "Read(vendor/wheels/**)",
+
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Edit(server.kernel.sealed.cjs)",
+      "Edit(proofs/V18_*/**)",
+      "Edit(proofs/lean/**)",
+      "Edit(proofs/tla/**)",
+      "Edit(formal/tla/**)",
+      "Edit(proofs/merkle_root.json)",
+      "Edit(proofs/merkle_seal.json)",
+      "Edit(proofs/rfc3161_anchor.json)",
+      "Edit(merkle_root.json)",
+      "Edit(merkle_seal.json)",
+      "Edit(RECUPE_SCORING/aggregation_stable.py)",
+      "Edit(RECUPE_SCORING/contracts_stable.py)",
+      "Edit(P1_FREEZE_NOTE.md)",
+      "Edit(PUBLIC_STATUS.md)",
+
+      "Write(.env)",
+      "Write(.env.*)",
+      "Write(server.kernel.sealed.cjs)",
+      "Write(proofs/V18_*/**)",
+      "Write(proofs/lean/**)",
+      "Write(proofs/tla/**)",
+      "Write(formal/tla/**)",
+      "Write(proofs/merkle_root.json)",
+      "Write(proofs/merkle_seal.json)",
+      "Write(proofs/rfc3161_anchor.json)",
+      "Write(merkle_root.json)",
+      "Write(merkle_seal.json)",
+      "Write(RECUPE_SCORING/aggregation_stable.py)",
+      "Write(RECUPE_SCORING/contracts_stable.py)",
+      "Write(P1_FREEZE_NOTE.md)",
+      "Write(PUBLIC_STATUS.md)",
+      "Write(sigma/contracts.broken-ragnarok.py)",
+      "Write(secrets/**)",
+      "Write(audit/local/**)",
+      "Write(**/*.pem)"
+    ]
+  },
+
+  "env": {
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "CLAUDE_CODE_MAX_TURNS": "100",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+
+  "hooks": {
+    "_disabled_by_default": "Hook SCRIPTS exist under .claude/hooks/ but are NOT wired here. To activate one, copy its block from .claude/hooks/EXAMPLES.md into settings.local.json. Never wire auto-format / auto-lint / auto-test on this repo — proof artifacts are sensitive to formatting changes."
+  }
+}
