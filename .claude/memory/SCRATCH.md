@@ -7,23 +7,24 @@
 
 ## Currently building
 
-(empty — fill in with one paragraph max about what's actively under construction)
+Cleaned up `.claude/settings.json` (removed invalid hooks placeholder). Configuration layer is now closed. Next mission is read-only diagnosis of the V18_3_1 root hash mismatch via Layer KERNEL / PROOF_SENTINEL.
 
 ## Files touched this session
 
-- (path): (one-line change)
+- `.claude/settings.json`: removed invalid `hooks` block with `_disabled_by_default` key (4 lines deleted, JSON now valid)
 
 ## Decisions
 
-- (one line)
+- Remove the entire `hooks` block rather than patch the bad key; the `_comment` already documents intent
+- V18_3_1 root hash investigation routed to Layer: KERNEL, Mode: PROOF_SENTINEL — not yet started
 
 ## Open questions
 
-- (one line)
+- Which artifact is the V18_3_1 "root" file? Stale manifest vs. content corruption vs. encoding drift — cause not yet determined
 
 ## Next
 
-(one concrete next step)
+Run read-only PROOF_SENTINEL diagnosis on `proofs/PROOFKIT_REPORT.json` and the V18_3_1 root hash inputs — no repair until cause is confirmed
 
 ---
 

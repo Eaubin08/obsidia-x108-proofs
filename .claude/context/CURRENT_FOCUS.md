@@ -43,7 +43,13 @@ Determine which of these is the cause:
 
 ## What changed last session
 
-- (template — fill in at session end)
+- 2026-05-05 settings-cleanup: removed invalid Claude hooks placeholder from `.claude/settings.json` (4ea9de5). Configuration layer closed. V18_3_1 hash investigation queued.
+
+## 2026-05-05 settings-cleanup
+- branch: ci-strict-sigma-qa-no-false-error_20260502_235213
+- did: removed invalid `hooks._disabled_by_default` key from `.claude/settings.json`; committed as 4ea9de5
+- next: begin read-only PROOF_SENTINEL diagnosis of V18_3_1 root hash mismatch
+- blocked on: nothing
 
 ---
 
