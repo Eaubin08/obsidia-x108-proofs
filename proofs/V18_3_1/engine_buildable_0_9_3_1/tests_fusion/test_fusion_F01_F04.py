@@ -11,6 +11,7 @@ def test_F01_order_invariance_act_calls_os1():
     # OS2 ACT => OS1 executed => os1 payload present
     res = run_obsidia({
         "raw_input": "x=1\nprint(x)",
+        "agent_id": "Agent Simulation",
         "W_full": _W_one(3, 1.0),
         "core_nodes": [0,1,2],
         "theta_S": 0.25,
@@ -37,6 +38,7 @@ def test_F03_valid_non_action_hold_skips_os1():
     # OS2 HOLD => OS1 not executed
     res = run_obsidia({
         "raw_input": "x=1\nprint(x)",
+        "agent_id": "Agent Simulation",
         "W_full": _W_zero(3),
         "core_nodes": [0,1,2],
         "theta_S": 0.25,
@@ -53,6 +55,7 @@ def test_F04_authorized_action_act_audited():
     # Ensure OS1 returns a structured payload and decision is not REJECT
     res = run_obsidia({
         "raw_input": "x=2\nprint(x)",
+        "agent_id": "Agent Simulation",
         "W_full": _W_one(3, 1.0),
         "core_nodes": [0,1,2],
         "theta_S": 0.25,
