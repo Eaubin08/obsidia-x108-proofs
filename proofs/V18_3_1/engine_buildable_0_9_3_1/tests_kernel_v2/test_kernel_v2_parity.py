@@ -27,7 +27,7 @@ def test_parity_hold():
     kernel = ObsidiaKernel()
     rid = str(uuid.uuid4())
     req = Request(
-        meta=Meta(request_id=rid, timestamp="now", domain="generic", mode="proof"),
+        meta=Meta(request_id=rid, timestamp="now", domain="generic", mode="proof", agent_id="Agent Simulation"),
         intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_zero(3), "core_nodes":[0,1,2], "theta_S":0.25}),
         attachments={"code":"x=1\nprint(x)"},
         governance=Governance(irreversible=False, x108_elapsed_s=999, x108_min_wait_s=108),
@@ -42,7 +42,7 @@ def test_parity_act_runs_os1():
     kernel = ObsidiaKernel()
     rid = str(uuid.uuid4())
     req = Request(
-        meta=Meta(request_id=rid, timestamp="now", domain="generic", mode="proof"),
+        meta=Meta(request_id=rid, timestamp="now", domain="generic", mode="proof", agent_id="Agent Simulation"),
         intent=Intent(type=IntentType.ACTION, name="x", payload={"W_full": _W_one(3,1.0), "core_nodes":[0,1,2], "theta_S":0.25}),
         attachments={"code":"x=2\nprint(x)"},
         governance=Governance(irreversible=False, x108_elapsed_s=999, x108_min_wait_s=108),
