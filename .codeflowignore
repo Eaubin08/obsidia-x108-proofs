@@ -1,0 +1,19 @@
+# Codeflow hygiene exclusions
+_NONCANONICAL_HOLD*/**
+archive/**
+audit/local_diag/**
+audit/local_rescue/**
+audit/cleanup/**
+_audit_tags/**
+RECUPE_SCORING/**
+staging/runtime_candidates/**
+docs/sources/**
+Google.Protobuf*/**
+System.*/**
+.cache/**
+**/__pycache__/**
+*.pyc
+*.pyo
+*.xml
+*.csv
+package-lock.json
