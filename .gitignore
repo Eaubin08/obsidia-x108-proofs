@@ -102,3 +102,10 @@ RECUPE_SCORING/
 audit_terrain/
 
 # Runtime logs
+
+# Local-only non-canonical holds
+_NONCANONICAL_HOLD*/
+.cache/
+**/__pycache__/
+*.pyc
+*.pyo
