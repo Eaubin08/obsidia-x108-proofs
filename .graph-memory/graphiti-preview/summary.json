@@ -1,0 +1,8 @@
+{
+  "mode": "PREVIEW_ONLY_NO_GRAPHITI_CLIENT_NO_API_CALL",
+  "candidate_count": 30,
+  "episode_count": 30,
+  "total_bytes": 109495,
+  "source_report": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs-graph-memory\\.graph-memory\\reports\\dry_run_candidates.md",
+  "output_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\phase0_preview\\episodes_preview.jsonl"
+}
