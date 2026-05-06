@@ -8,8 +8,8 @@ Type=oneshot
 WorkingDirectory=/opt/obsidia
 Environment="OBSIDIA_WORM_ENABLED=1"
 Environment="OBSIDIA_WORM_ENDPOINT=http://127.0.0.1:9000"
-Environment="OBSIDIA_WORM_ACCESS_KEY=minioadmin"
-Environment="OBSIDIA_WORM_SECRET_KEY=minioadmin"
+Environment="OBSIDIA_WORM_ACCESS_KEY=<set-via-env>"
+Environment="OBSIDIA_WORM_SECRET_KEY=<set-via-env>"
 Environment="OBSIDIA_WORM_BUCKET=obsidia-audit"
 Environment="OBSIDIA_WORM_PREFIX=prod"
 Environment="OBSIDIA_STORE_DIR=/opt/obsidia/api_store"

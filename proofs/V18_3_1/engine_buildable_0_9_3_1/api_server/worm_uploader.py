@@ -12,8 +12,8 @@ Install: pip install boto3
 Env:
 - OBSIDIA_WORM_ENABLED=1
 - OBSIDIA_WORM_ENDPOINT=http://127.0.0.1:9000
-- OBSIDIA_WORM_ACCESS_KEY=minioadmin
-- OBSIDIA_WORM_SECRET_KEY=minioadmin
+- OBSIDIA_WORM_ACCESS_KEY=<set-via-env>
+- OBSIDIA_WORM_SECRET_KEY=<set-via-env>
 - OBSIDIA_WORM_BUCKET=obsidia-audit
 - OBSIDIA_WORM_PREFIX=prod
 """

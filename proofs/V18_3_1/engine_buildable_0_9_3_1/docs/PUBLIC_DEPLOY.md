@@ -1,4 +1,4 @@
-# Public deploy (secured) — Obsidia API Gateway v2.5
+# Public deploy (secured) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Obsidia API Gateway v2.5
 
 ## Recommended stack
 - Uvicorn on localhost:8000
@@ -14,7 +14,7 @@ uvicorn api_server.main:app --host 127.0.0.1 --port 8000
 
 ## 2) LAN
 ```bash
-export OBSIDIA_API_KEY="change-me"
+export OBSIDIA_API_KEY=""     # set via environment for protected deploys
 uvicorn api_server.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -127,8 +127,8 @@ Daily upload:
 ```bash
 export OBSIDIA_WORM_ENABLED=1
 export OBSIDIA_WORM_ENDPOINT=http://127.0.0.1:9000
-export MINIO_ROOT_USER=minioadmin
-export MINIO_ROOT_PASSWORD=minioadmin
+export MINIO_ROOT_USER="<set-via-env>"
+export MINIO_ROOT_PASSWORD="<set-via-env>"
 pip install boto3
 python api_server/worm_uploader.py
 ```
