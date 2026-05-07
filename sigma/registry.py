@@ -1,15 +1,14 @@
 ﻿from .domains.bank_agents import build_bank_agents
-try:
-    from .domains.aviation_agents import build_aviation_agents
-except ImportError:
-    def build_aviation_agents(): return []
+from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents
+
 
 def build_agent_registry():
     return {
         "bank": build_bank_agents(),
-        "gps_defense_aviation": build_aviation_agents(), # On a changé "aviation" par le nom complet
+        "gps_defense_aviation": build_gps_defense_aviation_agents(),
         "trading": [],
-        "ecom": []
+        "ecom": [],
     }
+
 
 REGISTRY = build_agent_registry()
