@@ -1,0 +1,3 @@
+﻿CURRENT_BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly
+STATUS=BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_READY
+DECISION_AUTHORITY=KX108_ONLY
