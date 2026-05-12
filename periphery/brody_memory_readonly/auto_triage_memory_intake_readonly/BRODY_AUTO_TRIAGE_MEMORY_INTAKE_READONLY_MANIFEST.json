@@ -1,0 +1,33 @@
+﻿{
+    "kernel_mutation":  false,
+    "source_applied":  "Obsidia_X108_Integral_System_V2.zip",
+    "version":  "V1",
+    "x108_merge":  false,
+    "emits_verdict":  false,
+    "memory_decision":  false,
+    "x108_runtime_binding":  false,
+    "memory_role":  "GUIDE_CONTEXT_NAVIGATION_ONLY",
+    "graphiti_index_write":  false,
+    "readonly":  true,
+    "ui":  false,
+    "emits_act":  false,
+    "allowed_to_decide":  false,
+    "adapted_rules":  {
+                          "TRANSITION":  "review_candidate_only",
+                          "BLOCK_IMMEDIATE":  "forbidden_replaced_by_REFLEX_ALERT_ONLY",
+                          "CRISTAL":  "memory_candidate_only_not_canon",
+                          "NEANT":  "reject_candidate_only_no_delete"
+                      },
+    "auto_triage":  true,
+    "memory_intake":  false,
+    "decision_authority":  "KX108_ONLY",
+    "status":  "BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_READY",
+    "next":  "VALIDATE_BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_V1",
+    "source_modules":  [
+                           "FrictionEngine.py",
+                           "loto_obsidien.py",
+                           "AutoSort.py",
+                           "SovereignSealer.py",
+                           "ReflexReducer.py"
+                       ]
+}
