@@ -1,0 +1,353 @@
+{
+  "status": "BRODY_TAXONOMY_34_TO_8_SOURCE_AUTHORITY_READY",
+  "source_doc": "LES 34 ARBRES _ Architecture et Structure Cognitive Globale.docx",
+  "source_truth": "34 arbres -> 8 catégories ontologiques",
+  "tree_count": 34,
+  "category_count": 8,
+  "future_grouping_9": "NOT_APPLIED_SOURCE_GAP",
+  "implemented_regroupments_v43_count": 7,
+  "implemented_regroupments_v43": [
+    "GROUPE_01__Memoire_Trace_Audit",
+    "GROUPE_02__Temps_X_108_Non_contournement",
+    "GROUPE_03__Semantique_OS4_Recit",
+    "GROUPE_04__Ethique_ADeLe_Securite",
+    "GROUPE_05__Agents_Infrastructure_Tools",
+    "GROUPE_06__Cosmologie_Economie_R_D",
+    "GROUPE_07__Ops_CI_CD_Validation_continue"
+  ],
+  "categories": [
+    {
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux",
+      "tree_ids": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs",
+      "tree_ids": [
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance",
+      "tree_ids": [
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "category_id": "IV",
+      "category_name": "Arbres Relationnels & Sociaux",
+      "tree_ids": [
+        "16",
+        "17",
+        "18",
+        "19"
+      ]
+    },
+    {
+      "category_id": "V",
+      "category_name": "Arbres d’Action & de Transformation",
+      "tree_ids": [
+        "20",
+        "21",
+        "22"
+      ]
+    },
+    {
+      "category_id": "VI",
+      "category_name": "Arbres Temporels & Mémoriels",
+      "tree_ids": [
+        "23",
+        "24",
+        "25"
+      ]
+    },
+    {
+      "category_id": "VII",
+      "category_name": "Arbres Méta-Structurels",
+      "tree_ids": [
+        "26",
+        "27",
+        "28",
+        "29"
+      ]
+    },
+    {
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI",
+      "tree_ids": [
+        "30",
+        "31",
+        "32",
+        "33",
+        "34"
+      ]
+    }
+  ],
+  "trees": [
+    {
+      "tree_id": "01",
+      "tree_name": "Arbre de l’Humain",
+      "tree_folder": "ARBRE_01__Arbre_de_l_Humain",
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux"
+    },
+    {
+      "tree_id": "02",
+      "tree_name": "Arbre de la Conscience",
+      "tree_folder": "ARBRE_02__Arbre_de_la_Conscience",
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux"
+    },
+    {
+      "tree_id": "03",
+      "tree_name": "Arbre de la Perception",
+      "tree_folder": "ARBRE_03__Arbre_de_la_Perception",
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux"
+    },
+    {
+      "tree_id": "04",
+      "tree_name": "Arbre du Sens",
+      "tree_folder": "ARBRE_04__Arbre_du_Sens",
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux"
+    },
+    {
+      "tree_id": "05",
+      "tree_name": "Arbre de l’Identité",
+      "tree_folder": "ARBRE_05__Arbre_de_l_Identite",
+      "category_id": "I",
+      "category_name": "Arbres Fondamentaux"
+    },
+    {
+      "tree_id": "06",
+      "tree_name": "Arbre de la Compréhension",
+      "tree_folder": "ARBRE_06__Arbre_de_la_Comprehension",
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs"
+    },
+    {
+      "tree_id": "07",
+      "tree_name": "Arbre de l’Organisation",
+      "tree_folder": "ARBRE_07__Arbre_de_l_Organisation",
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs"
+    },
+    {
+      "tree_id": "08",
+      "tree_name": "Arbre de la Pensée",
+      "tree_folder": "ARBRE_08__Arbre_de_la_Pensee",
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs"
+    },
+    {
+      "tree_id": "09",
+      "tree_name": "Arbre de l’Intelligence",
+      "tree_folder": "ARBRE_09__Arbre_de_l_Intelligence",
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs"
+    },
+    {
+      "tree_id": "10",
+      "tree_name": "Arbre du Langage",
+      "tree_folder": "ARBRE_10__Arbre_du_Langage",
+      "category_id": "II",
+      "category_name": "Arbres Cognitifs"
+    },
+    {
+      "tree_id": "11",
+      "tree_name": "Arbre de la Science",
+      "tree_folder": "ARBRE_11__Arbre_de_la_Science",
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance"
+    },
+    {
+      "tree_id": "12",
+      "tree_name": "Arbre de la Technique",
+      "tree_folder": "ARBRE_12__Arbre_de_la_Technique",
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance"
+    },
+    {
+      "tree_id": "13",
+      "tree_name": "Arbre de l’Art",
+      "tree_folder": "ARBRE_13__Arbre_de_l_Art",
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance"
+    },
+    {
+      "tree_id": "14",
+      "tree_name": "Arbre de la Philosophie",
+      "tree_folder": "ARBRE_14__Arbre_de_la_Philosophie",
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance"
+    },
+    {
+      "tree_id": "15",
+      "tree_name": "Arbre de la Spiritualité",
+      "tree_folder": "ARBRE_15__Arbre_de_la_Spiritualite",
+      "category_id": "III",
+      "category_name": "Arbres de Connaissance"
+    },
+    {
+      "tree_id": "16",
+      "tree_name": "Arbre de la Relation",
+      "tree_folder": "ARBRE_16__Arbre_de_la_Relation",
+      "category_id": "IV",
+      "category_name": "Arbres Relationnels & Sociaux"
+    },
+    {
+      "tree_id": "17",
+      "tree_name": "Arbre du Collectif",
+      "tree_folder": "ARBRE_17__Arbre_du_Collectif",
+      "category_id": "IV",
+      "category_name": "Arbres Relationnels & Sociaux"
+    },
+    {
+      "tree_id": "18",
+      "tree_name": "Arbre de la Transmission",
+      "tree_folder": "ARBRE_18__Arbre_de_la_Transmission",
+      "category_id": "IV",
+      "category_name": "Arbres Relationnels & Sociaux"
+    },
+    {
+      "tree_id": "19",
+      "tree_name": "Arbre de la Culture",
+      "tree_folder": "ARBRE_19__Arbre_de_la_Culture",
+      "category_id": "IV",
+      "category_name": "Arbres Relationnels & Sociaux"
+    },
+    {
+      "tree_id": "20",
+      "tree_name": "Arbre de l’Action",
+      "tree_folder": "ARBRE_20__Arbre_de_l_Action",
+      "category_id": "V",
+      "category_name": "Arbres d’Action & de Transformation"
+    },
+    {
+      "tree_id": "21",
+      "tree_name": "Arbre de la Création",
+      "tree_folder": "ARBRE_21__Arbre_de_la_Creation",
+      "category_id": "V",
+      "category_name": "Arbres d’Action & de Transformation"
+    },
+    {
+      "tree_id": "22",
+      "tree_name": "Arbre de la Transformation",
+      "tree_folder": "ARBRE_22__Arbre_de_la_Transformation",
+      "category_id": "V",
+      "category_name": "Arbres d’Action & de Transformation"
+    },
+    {
+      "tree_id": "23",
+      "tree_name": "Arbre du Temps",
+      "tree_folder": "ARBRE_23__Arbre_du_Temps",
+      "category_id": "VI",
+      "category_name": "Arbres Temporels & Mémoriels"
+    },
+    {
+      "tree_id": "24",
+      "tree_name": "Arbre de la Mémoire",
+      "tree_folder": "ARBRE_24__Arbre_de_la_Memoire",
+      "category_id": "VI",
+      "category_name": "Arbres Temporels & Mémoriels"
+    },
+    {
+      "tree_id": "25",
+      "tree_name": "Arbre de l’Histoire",
+      "tree_folder": "ARBRE_25__Arbre_de_l_Histoire",
+      "category_id": "VI",
+      "category_name": "Arbres Temporels & Mémoriels"
+    },
+    {
+      "tree_id": "26",
+      "tree_name": "Arbre de la Cohérence",
+      "tree_folder": "ARBRE_26__Arbre_de_la_Coherence",
+      "category_id": "VII",
+      "category_name": "Arbres Méta-Structurels"
+    },
+    {
+      "tree_id": "27",
+      "tree_name": "Arbre de la Vérité",
+      "tree_folder": "ARBRE_27__Arbre_de_la_Verite",
+      "category_id": "VII",
+      "category_name": "Arbres Méta-Structurels"
+    },
+    {
+      "tree_id": "28",
+      "tree_name": "Arbre de la Valeur",
+      "tree_folder": "ARBRE_28__Arbre_de_la_Valeur",
+      "category_id": "VII",
+      "category_name": "Arbres Méta-Structurels"
+    },
+    {
+      "tree_id": "29",
+      "tree_name": "Arbre de la Finalité",
+      "tree_folder": "ARBRE_29__Arbre_de_la_Finalite",
+      "category_id": "VII",
+      "category_name": "Arbres Méta-Structurels"
+    },
+    {
+      "tree_id": "30",
+      "tree_name": "Arbre Cognitif Global",
+      "tree_folder": "ARBRE_30__Arbre_Cognitif_Global",
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI"
+    },
+    {
+      "tree_id": "31",
+      "tree_name": "Arbre des Flux",
+      "tree_folder": "ARBRE_31__Arbre_des_Flux",
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI"
+    },
+    {
+      "tree_id": "32",
+      "tree_name": "Arbre des Connexions",
+      "tree_folder": "ARBRE_32__Arbre_des_Connexions",
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI"
+    },
+    {
+      "tree_id": "33",
+      "tree_name": "Arbre de l’Optimisation",
+      "tree_folder": "ARBRE_33__Arbre_de_l_Optimisation",
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI"
+    },
+    {
+      "tree_id": "34",
+      "tree_name": "Arbre de la Stabilité",
+      "tree_folder": "ARBRE_34__Arbre_de_la_Stabilite",
+      "category_id": "VIII",
+      "category_name": "Arbres liés à Obsidia / AGI"
+    }
+  ],
+  "readonly": true,
+  "memory_authority": false,
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "kernel_binding": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "scope": "BRODY_TAXONOMY_MAPPER_34_8_PERIPHERY_ONLY"
+}

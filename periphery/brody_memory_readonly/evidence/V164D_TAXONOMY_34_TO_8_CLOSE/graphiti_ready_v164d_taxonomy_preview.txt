@@ -1,0 +1,22 @@
+# BRODY GRAPHITI READY V164D — 34 arbres -> 8 catégories
+
+- status: BRODY_GRAPHITI_READY_V164D_TAXONOMY_34_TO_8_PASS
+- records_count: 2363
+- taxonomy_enriched_records_count: 216
+- taxonomy_hits_count: 310
+- category_count: 8
+- tree_count: 34
+- future_grouping_9: NOT_APPLIED_SOURCE_GAP
+- implemented_regroupments_v43_count: 7
+- memory_decision: false
+- decision_authority: KX108_ONLY
+
+## Category hit counts
+- I — Arbres Fondamentaux: 54
+- II — Arbres Cognitifs: 52
+- III — Arbres de Connaissance: 47
+- IV — Arbres Relationnels & Sociaux: 37
+- V — Arbres d’Action & de Transformation: 30
+- VI — Arbres Temporels & Mémoriels: 24
+- VII — Arbres Méta-Structurels: 32
+- VIII — Arbres liés à Obsidia / AGI: 34

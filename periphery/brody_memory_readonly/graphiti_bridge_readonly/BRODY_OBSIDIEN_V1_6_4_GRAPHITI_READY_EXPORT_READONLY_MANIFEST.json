@@ -1,0 +1,11 @@
+﻿{
+    "bridge_py":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\graphiti_bridge_readonly\\brody_graphiti_ready_export_readonly_v1_6_4.py",
+    "memory_decision":  false,
+    "decision_authority":  "KX108_ONLY",
+    "next":  "RUN_GRAPHITI_READY_EXPORT_FROM_TRANSPLANTED_WORLD_POINTER",
+    "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\graphiti_bridge_readonly\\run_brody_graphiti_ready_export_readonly_v1_6_4.ps1",
+    "x108_merge":  false,
+    "kernel_mutation":  false,
+    "status":  "BRODY_OBSIDIEN_V1_6_4_GRAPHITI_READY_EXPORT_READONLY_READY",
+    "readonly":  true
+}

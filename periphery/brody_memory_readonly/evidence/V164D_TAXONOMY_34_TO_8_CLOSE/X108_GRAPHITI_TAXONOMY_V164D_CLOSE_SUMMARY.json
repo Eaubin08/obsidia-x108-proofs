@@ -1,0 +1,38 @@
+﻿{
+    "status":  "X108_GRAPHITI_TAXONOMY_V164D_CLOSE_READY",
+    "date":  "20260512_223511",
+    "x108_head_before_commit":  "9abede93a420ccfdd50bfb8958102ede00df55d6",
+    "records_count":  2363,
+    "taxonomy_enriched_records_count":  216,
+    "taxonomy_hits_count":  310,
+    "tree_count":  34,
+    "category_count":  8,
+    "future_grouping_9":  "NOT_APPLIED_SOURCE_GAP",
+    "implemented_regroupments_v43_count":  7,
+    "category_hit_counts":  {
+                                "I":  54,
+                                "II":  52,
+                                "III":  47,
+                                "IV":  37,
+                                "V":  30,
+                                "VI":  24,
+                                "VII":  32,
+                                "VIII":  34
+                            },
+    "taxonomy_authority_sha256":  "3B6BB8FE402C42768ECAD0326A0A08E1E977867D27C95BC40C9EA82059493028",
+    "enriched_records_sha256":  "BECF15EF195D3A46D671AFDE6CDEACE0E9FA2A36E83E4CEA140316F4417F3436",
+    "readonly":  true,
+    "memory_decision":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_merge":  false,
+    "commit_scope":  [
+                         "periphery/brody_memory_readonly/graphiti_bridge_readonly",
+                         "periphery/brody_memory_readonly/taxonomy_mapper_34_8_readonly",
+                         "periphery/brody_memory_readonly/evidence/V164D_TAXONOMY_34_TO_8_CLOSE",
+                         "CURRENT_BRODY_OBSIDIEN_V1_6_4_GRAPHITI_READY_EXPORT_READONLY.txt",
+                         "CURRENT_BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY.txt"
+                     ],
+    "runtime_exports_policy":  "DO_NOT_COMMIT_BULK_GRAPHITI_READY_EXPORTS",
+    "next":  "BUILD_GRAPHITI_READONLY_INDEX_FROM_V164D_OR_KEEP_AS_LOCAL_READY_EXPORT"
+}

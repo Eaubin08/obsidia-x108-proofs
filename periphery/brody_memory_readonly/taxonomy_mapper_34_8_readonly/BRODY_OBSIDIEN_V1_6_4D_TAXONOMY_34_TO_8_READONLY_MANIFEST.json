@@ -1,0 +1,13 @@
+﻿{
+    "future_grouping_9":  "NOT_APPLIED_SOURCE_GAP",
+    "readonly":  true,
+    "mapper_py":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\taxonomy_mapper_34_8_readonly\\brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py",
+    "memory_decision":  false,
+    "decision_authority":  "KX108_ONLY",
+    "source_truth":  "34 arbres -\u003e 8 catégories ontologiques",
+    "next":  "RUN_V164D_TAXONOMY_MAPPER",
+    "x108_merge":  false,
+    "kernel_mutation":  false,
+    "status":  "BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY_READY",
+    "implemented_regroupments_v43_count":  7
+}
