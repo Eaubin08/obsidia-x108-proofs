@@ -5,6 +5,14 @@
 
 $ErrorActionPreference = "Stop"
 
-Set-Location "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repoRoot = (Resolve-Path (Join-Path $scriptDir "..\..\..")).Path
+$py = Join-Path $scriptDir "brody_world_source_intake_readonly_v1_6_2.py"
+$v161 = Join-Path $scriptDir "brody_world_source_intake_readonly_v1_6_1.py"
+$outRoot = Join-Path $repoRoot "_world_intake"
 
-python "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\zip1_sandbox_mutable\ZIP1_X108_MUTABLE_20260508_183610\periphery\brody_obsidien_v1_6_world_source_intake_readonly\brody_world_source_intake_readonly_v1_6_2.py" --source "$Source" --out-root "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_world_intake" --label "$Label" --v161-py "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\zip1_sandbox_mutable\ZIP1_X108_MUTABLE_20260508_183610\periphery\brody_obsidien_v1_6_world_source_intake_readonly\brody_world_source_intake_readonly_v1_6_1.py"
+& python $py --source "$Source" --out-root "$outRoot" --label "$Label" --v161-py "$v161"
+
+if ($LASTEXITCODE -ne 0) {
+  throw "BRODY_WORLD_SOURCE_INTAKE_V1_6_2_FAILED"
+}
