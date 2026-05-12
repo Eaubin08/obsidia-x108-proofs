@@ -1,0 +1,11 @@
+﻿CURRENT_BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\taxonomy_mapper_34_8_readonly
+MANIFEST=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\taxonomy_mapper_34_8_readonly\BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY_MANIFEST.json
+MAPPER_PY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\taxonomy_mapper_34_8_readonly\brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py
+STATUS=BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY_READY
+SOURCE_TRUTH=34_ARBRES_TO_8_CATEGORIES_ONTOLOGIQUES
+FUTURE_GROUPING_9=NOT_APPLIED_SOURCE_GAP
+MEMORY_DECISION=false
+DECISION_AUTHORITY=KX108_ONLY
+KERNEL_MUTATION=false
+X108_MERGE=false
+NEXT=RUN_V164D_TAXONOMY_MAPPER
