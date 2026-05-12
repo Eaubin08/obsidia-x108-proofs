@@ -1,0 +1,17 @@
+﻿CURRENT_BRODY_CONTENT_HYDRATION_READONLY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\content_hydration_readonly
+MANIFEST=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\content_hydration_readonly\BRODY_CONTENT_HYDRATION_READONLY_MANIFEST.json
+HYDRATION_PY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py
+RUN_PS1=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\content_hydration_readonly\run_brody_content_hydration_readonly_v1.ps1
+STATUS=BRODY_CONTENT_HYDRATION_READONLY_READY
+MEMORY_ROLE=GUIDE_CONTEXT_NAVIGATION_ONLY
+MEMORY_DECISION=false
+ALLOWED_TO_DECIDE=false
+EMITS_ACT=false
+DECISION_AUTHORITY=KX108_ONLY
+KERNEL_MUTATION=false
+X108_RUNTIME_BINDING=false
+X108_MERGE=false
+NEO4J_ROLE=LIVE_GRAPH_MEMORY_SURFACE_ONLY
+BRODY_ROLE=CONTEXT_CONSUMER
+UI=false
+NEXT=VALIDATE_BRODY_CONTENT_HYDRATION_READONLY
