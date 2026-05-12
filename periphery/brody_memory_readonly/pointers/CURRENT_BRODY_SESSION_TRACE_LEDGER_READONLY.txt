@@ -1,0 +1,8 @@
+CURRENT_BRODY_SESSION_TRACE_LEDGER_READONLY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_session_trace_ledgers\BRODY_SESSION_TRACE_20260512_213118
+RECORD_JSON=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_session_trace_ledgers\BRODY_SESSION_TRACE_20260512_213118\SESSION_TRACE_RECORD.json
+RECORD_MD=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_session_trace_ledgers\BRODY_SESSION_TRACE_20260512_213118\SESSION_TRACE_RECORD.md
+LEDGER_JSONL=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_session_trace_ledgers\BRODY_SESSION_TRACE_LEDGER_READONLY.jsonl
+STATUS=BRODY_SESSION_TRACE_LEDGER_READONLY_RECORD_PASS
+MEMORY_DECISION=false
+DECISION_AUTHORITY=KX108_ONLY
+NEXT=WORLD_CONNECTOR_BRIDGE_READONLY

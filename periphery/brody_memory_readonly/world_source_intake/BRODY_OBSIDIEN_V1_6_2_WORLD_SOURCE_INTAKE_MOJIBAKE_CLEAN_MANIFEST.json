@@ -1,0 +1,20 @@
+﻿{
+    "status":  "BRODY_OBSIDIEN_V1_6_2_WORLD_SOURCE_INTAKE_MOJIBAKE_CLEAN_READY",
+    "date":  "20260512_182903",
+    "v16_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_world_source_intake_readonly",
+    "v161_py":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_world_source_intake_readonly\\brody_world_source_intake_readonly_v1_6_1.py",
+    "v162_py":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_world_source_intake_readonly\\brody_world_source_intake_readonly_v1_6_2.py",
+    "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_world_source_intake_readonly\\run_brody_world_source_intake_readonly_v1_6_2.ps1",
+    "world_root":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\_world_intake",
+    "backend_modified":  false,
+    "connector_modified":  false,
+    "selector_modified":  false,
+    "kernel_binding":  false,
+    "x108_merge":  false,
+    "memory_decision":  false,
+    "memory_authority":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "decision_authority":  "KX108_ONLY",
+    "purpose":  "Clean extracted world-intake markdown text after V1.6.1 extraction, without changing backend/connector/selector/kernel."
+}
