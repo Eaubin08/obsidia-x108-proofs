@@ -1,0 +1,19 @@
+﻿{
+    "status":  "BRODY_OBSIDIEN_V1_6_3_SESSION_TRACE_LEDGER_READONLY_READY",
+    "date":  "20260512_212927",
+    "v163_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_3_session_trace_ledger_readonly",
+    "ledger_py":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_3_session_trace_ledger_readonly\\brody_session_trace_ledger_readonly_v1_6_3.py",
+    "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_3_session_trace_ledger_readonly\\run_brody_session_trace_ledger_readonly_v1_6_3.ps1",
+    "ledger_root":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\_session_trace_ledgers",
+    "backend_modified":  false,
+    "connector_modified":  false,
+    "selector_modified":  false,
+    "kernel_binding":  false,
+    "x108_merge":  false,
+    "memory_decision":  false,
+    "memory_authority":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "decision_authority":  "KX108_ONLY",
+    "purpose":  "Append-only readonly session/run trace ledger for memory continuity without decision authority."
+}
