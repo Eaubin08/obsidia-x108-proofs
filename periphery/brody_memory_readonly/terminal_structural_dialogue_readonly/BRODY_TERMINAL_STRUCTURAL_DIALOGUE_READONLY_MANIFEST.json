@@ -1,6 +1,19 @@
 ﻿{
-    "date":  "20260513_003740",
-    "status":  "BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_READY",
-    "decision_authority":  "KX108_ONLY",
-    "readonly":  true
+  "status": "BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_V1_1B_READY",
+  "date": "20260513_004428",
+  "patch": "COMMAND_ROUTER_FIX",
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "next": "VALIDATE_BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_V1_1B"
 }
