@@ -1,0 +1,17 @@
+﻿{
+    "status":  "BRODY_CONTEXT_PACKET_QUERY_READONLY_READY",
+    "created_at":  "2026-05-12T23:35:46.7214224+02:00",
+    "script":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\context_packet_query_readonly\\brody_context_packet_query_readonly_v1.py",
+    "runner":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\context_packet_query_readonly\\run_brody_context_packet_query_readonly_v1.ps1",
+    "readonly":  true,
+    "memory_role":  "GUIDE_CONTEXT_NAVIGATION_ONLY",
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "neo4j_role":  "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+    "brody_role":  "CONTEXT_CONSUMER"
+}

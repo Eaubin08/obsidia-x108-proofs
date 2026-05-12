@@ -1,0 +1,16 @@
+﻿CURRENT_BRODY_CONTEXT_PACKET_QUERY_READONLY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\context_packet_query_readonly
+MANIFEST=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\context_packet_query_readonly\BRODY_CONTEXT_PACKET_QUERY_READONLY_MANIFEST.json
+PACKET_PY=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py
+RUN_PS1=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\context_packet_query_readonly\run_brody_context_packet_query_readonly_v1.ps1
+STATUS=BRODY_CONTEXT_PACKET_QUERY_READONLY_READY
+MEMORY_ROLE=GUIDE_CONTEXT_NAVIGATION_ONLY
+MEMORY_DECISION=false
+ALLOWED_TO_DECIDE=false
+EMITS_ACT=false
+DECISION_AUTHORITY=KX108_ONLY
+KERNEL_MUTATION=false
+X108_RUNTIME_BINDING=false
+X108_MERGE=false
+NEO4J_ROLE=LIVE_GRAPH_MEMORY_SURFACE_ONLY
+BRODY_ROLE=CONTEXT_CONSUMER
+NEXT=VALIDATE_CONTEXT_PACKET_QUERIES
