@@ -1,0 +1,18 @@
+﻿{
+  "status": "BRODY_GRAPHITI_IMPORT_APPLY_GUARDED_MANUAL_ONLY_READY",
+  "scope": "PERIPHERY_ONLY",
+  "manual_apply_only": true,
+  "dry_run_default": true,
+  "confirm_token": "BRODY_MANUAL_GRAPHITI_WRITE_READONLY_MEMORY_ONLY",
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "decision_authority": "KX108_ONLY",
+  "kernel_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "ui": false,
+  "next": "VALIDATE_BRODY_GRAPHITI_IMPORT_APPLY_GUARDED_MANUAL_ONLY_V1_DRY_RUN"
+}
