@@ -45,3 +45,17 @@ Still readonly.
 Still no Graphiti write.
 Still no Neo4j write.
 Still no memory decision.
+
+## V1_2_SCALAR_SAFE_PARAM_FIX
+
+Fixes the Neo4j Python driver conflict:
+
+Session.run(cypher, query=query, limit=limit)
+
+`query` is reserved as the first Session.run parameter.
+The Cypher parameter is now `$q`, passed as `q=query`.
+
+Still readonly.
+Still no Graphiti write.
+Still no Neo4j write.
+Still no memory decision.
