@@ -1,0 +1,21 @@
+﻿{
+  "status": "BRODY_MEMORY_REPLAY_QUERY_REGRESSION_READONLY_READY",
+  "version": "V1",
+  "runner_py": "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\memory_replay_query_regression_readonly\brody_memory_replay_query_regression_readonly_v1.py",
+  "runner_ps1": "C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\periphery\brody_memory_readonly\memory_replay_query_regression_readonly\run_brody_memory_replay_query_regression_readonly_v1.ps1",
+  "role": "MEMORY_REPLAY_QUERY_REGRESSION_READONLY",
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "decision_authority": "KX108_ONLY",
+  "kernel_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "dry_run": true,
+  "ui": false,
+  "next": "VALIDATE_BRODY_MEMORY_REPLAY_AND_QUERY_REGRESSION_READONLY_V1"
+}
