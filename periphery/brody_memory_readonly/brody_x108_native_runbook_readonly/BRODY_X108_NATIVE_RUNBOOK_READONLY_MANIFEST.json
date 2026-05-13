@@ -2,11 +2,12 @@
     "name":  "BRODY_X108_NATIVE_RUNBOOK_READONLY",
     "version":  "v1",
     "status":  "BRODY_X108_NATIVE_RUNBOOK_READONLY_V1_PASS",
-    "created_at":  "2026-05-13T06:04:55.4822607Z",
+    "created_at":  "2026-05-13T06:07:07.1225943Z",
     "build_target":  "obsidia-x108-proofs",
     "candidate_build_target":  false,
     "x108_proof_native_build":  true,
-    "current_head":  "ee6113c",
+    "fix_forward_after_commit":  "e66a642",
+    "current_head_before_repair":  "e66a642",
     "proof_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly",
     "readme":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\README_RUNBOOK.md",
     "boundary":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\README_BOUNDARY.md",
@@ -39,8 +40,16 @@
                                  "status":  "BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_READY",
                                  "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\run_brody_native_terminal_detector_patch_readonly_v1.ps1",
                                  "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "name":  "memory_authority",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_MEMORY_LAYER_AUTHORITY_MODEL_READONLY.txt",
+                                 "status":  "MEMORY_LAYER_AUTHORITY_MODEL_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\run_memory_layer_authority_model_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json"
                              }
                          ],
+    "checked_pointer_count":  5,
     "no_history_smoothing":  true,
     "memory_decision":  false,
     "allowed_to_decide":  false,
@@ -53,5 +62,5 @@
     "graphiti_index_write":  false,
     "neo4j_write_executed":  false,
     "memory_intake":  false,
-    "next":  "COMMIT_BRODY_X108_NATIVE_RUNBOOK_READONLY_V1"
+    "next":  "VALIDATE_AND_COMMIT_RUNBOOK_REPAIR"
 }

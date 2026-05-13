@@ -4,7 +4,8 @@ STATUS=BRODY_X108_NATIVE_RUNBOOK_READONLY_V1_PASS
 
 BUILD_TARGET=obsidia-x108-proofs
 CANDIDATE_BUILD_TARGET=false
-CURRENT_HEAD=ee6113c
+FIX_FORWARD_AFTER_COMMIT=e66a642
+CURRENT_HEAD_BEFORE_REPAIR=e66a642
 
 ## Role
 
@@ -14,7 +15,7 @@ Official X108-side readonly runbook for Brody / LLM Obsidien.
 
 - Brody proof-side pointers exist.
 - Runtime freeze pointer is present with its real status.
-- Memory authority remains non-decision.
+- Memory authority pointer is present with its real status.
 - External access remains frozen.
 - Local command gate repair lineage is clean.
 - X108 remains final authority.
@@ -27,6 +28,8 @@ Official X108-side readonly runbook for Brody / LLM Obsidien.
 - 8d89ae9: strict smoke repair still needed alignment.
 - 458ae96: destructive smoke aligned.
 - ee6113c: clean close of local command gate lineage.
+- e66a642: runbook committed with wrong expected memory_authority status.
+- current repair: aligns runbook to actual pointer statuses.
 
 ## Authority
 
@@ -54,4 +57,5 @@ Official X108-side readonly runbook for Brody / LLM Obsidien.
 - runtime_freeze: BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY_READY
 - native_terminal_session: BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY_READY
 - detector_patch: BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_READY
+- memory_authority: MEMORY_LAYER_AUTHORITY_MODEL_READONLY_READY
 
