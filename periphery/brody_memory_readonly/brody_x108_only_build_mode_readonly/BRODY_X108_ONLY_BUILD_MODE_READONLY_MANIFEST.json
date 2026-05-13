@@ -1,0 +1,23 @@
+﻿{
+    "name":  "BRODY_X108_ONLY_BUILD_MODE_READONLY",
+    "version":  "v1",
+    "status":  "BRODY_X108_ONLY_BUILD_MODE_READONLY_V1_PASS",
+    "created_at":  "2026-05-13T05:48:33.8571863Z",
+    "build_target":  "obsidia-x108-proofs",
+    "candidate_build_target":  false,
+    "x108_proof_native_build":  true,
+    "proof_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly",
+    "runner":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\run_brody_x108_only_build_mode_readonly_v1.ps1",
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "next":  "BUILD_BRODY_LOCAL_COMMAND_GATE_READONLY_V1_INSIDE_X108_PROOF"
+}
