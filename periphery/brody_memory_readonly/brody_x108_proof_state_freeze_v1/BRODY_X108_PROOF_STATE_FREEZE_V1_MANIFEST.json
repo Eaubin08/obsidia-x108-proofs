@@ -1,0 +1,32 @@
+﻿{
+    "name":  "BRODY_X108_PROOF_STATE_FREEZE_V1",
+    "status":  "READY",
+    "created_at":  "2026-05-13T04:51:05.2817506Z",
+    "x108_head_before_freeze":  "579eb45",
+    "proof_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1",
+    "runner":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\run_brody_x108_proof_state_freeze_v1.ps1",
+    "required_pointers":  [
+                              "CURRENT_BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY.txt",
+                              "CURRENT_BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY.txt",
+                              "CURRENT_BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY.txt",
+                              "CURRENT_MEMORY_LAYER_AUTHORITY_MODEL_READONLY.txt"
+                          ],
+    "brody_runtime":  "obsidia-engine-candidate",
+    "brody_llm_obsidien":  true,
+    "terminal_native_run":  true,
+    "proof_state_freeze":  true,
+    "memory_role":  "GUIDE_CONTEXT_NAVIGATION_ONLY",
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "ui":  false,
+    "next":  "CONTINUE_BUILD_AFTER_BRODY_X108_PROOF_STATE_FREEZE"
+}
