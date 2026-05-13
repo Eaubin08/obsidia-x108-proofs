@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
@@ -68,19 +68,19 @@ class BrodyLocalCommandGateReadonlyV1:
         r"\bInvoke-RestMethod\b",
         r"\bcurl\b",
         r"\bwget\b",
-        r"\bgit\s+clone\b",
-        r"\bgit\s+fetch\b",
-        r"\bgit\s+pull\b",
+        r"\bgit\b.*\bclone\b",
+        r"\bgit\b.*\bfetch\b",
+        r"\bgit\b.*\bpull\b",
     ]
 
     git_mutation_patterns = [
-        r"\bgit\s+add\b",
-        r"\bgit\s+commit\b",
-        r"\bgit\s+push\b",
-        r"\bgit\s+reset\b",
-        r"\bgit\s+rebase\b",
-        r"\bgit\s+merge\b",
-        r"\bgit\s+tag\b",
+        r"\bgit\b.*\badd\b",
+        r"\bgit\b.*\bcommit\b",
+        r"\bgit\b.*\bpush\b",
+        r"\bgit\b.*\breset\b",
+        r"\bgit\b.*\brebase\b",
+        r"\bgit\b.*\bmerge\b",
+        r"\bgit\b.*\btag\b",
     ]
 
     fs_mutation_patterns = [
