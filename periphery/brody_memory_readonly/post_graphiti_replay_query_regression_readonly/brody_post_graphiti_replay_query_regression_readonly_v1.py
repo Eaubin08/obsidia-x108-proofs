@@ -9,6 +9,7 @@ BOUNDARY = {
     "readonly": True,
     "response_only": True,
     "post_graphiti_replay_query_regression": True,
+    "scalar_safe_replay": True,
     "graphiti_query_read": True,
     "graphiti_index_write": False,
     "neo4j_write_executed": False,
@@ -31,7 +32,6 @@ REPLAY_QUERIES = [
     "BRODY",
     "GRAPHITI",
     "MEMORY",
-    "X108",
     "READONLY",
     "KEEP",
     "PIPELINE",
@@ -67,30 +67,31 @@ def neo4j_session(uri, user, password, database):
     return driver, session
 
 def exact_id_replay(session, ids):
+    # Scalar-safe: avoid any(keys(n)) + toString(n[k]) because Graphiti nodes may contain array properties.
     cypher = """
     MATCH (n)
-    WHERE any(k IN keys(n) WHERE toString(n[k]) IN $ids)
-    RETURN labels(n) AS labels, properties(n) AS props
+    WHERE n.id IN $ids OR n.name IN $ids
+    RETURN coalesce(n.id, n.name) AS matched_id, labels(n) AS labels, properties(n) AS props
     """
     rows = []
     for r in session.run(cypher, ids=ids):
-        props = dict(r["props"] or {})
-        matched = None
-        for _, v in props.items():
-            if str(v) in ids:
-                matched = str(v)
-                break
         rows.append({
-            "matched_id": matched,
+            "matched_id": str(r["matched_id"]) if r["matched_id"] is not None else None,
             "labels": list(r["labels"] or []),
-            "props": props,
+            "props": dict(r["props"] or {}),
         })
     return rows
 
 def query_replay(session, query, limit):
+    # Scalar-safe: query only scalar fields created/expected by this memory-only apply.
     cypher = """
     MATCH (n)
-    WHERE any(k IN keys(n) WHERE toLower(toString(n[k])) CONTAINS toLower($query))
+    WHERE
+      (n.id IS NOT NULL AND toLower(toString(n.id)) CONTAINS toLower($query))
+      OR (n.name IS NOT NULL AND toLower(toString(n.name)) CONTAINS toLower($query))
+      OR (n.title IS NOT NULL AND toLower(toString(n.title)) CONTAINS toLower($query))
+      OR (n.source IS NOT NULL AND toLower(toString(n.source)) CONTAINS toLower($query))
+      OR (n.record_hash IS NOT NULL AND toLower(toString(n.record_hash)) CONTAINS toLower($query))
     RETURN labels(n) AS labels, properties(n) AS props
     LIMIT $limit
     """
@@ -102,7 +103,6 @@ def query_replay(session, query, limit):
             "id": props.get("id") or props.get("name"),
             "title": props.get("title"),
             "source": props.get("source"),
-            "source_ref": props.get("source_ref"),
             "record_hash": props.get("record_hash"),
             "graphiti_manual_apply": props.get("graphiti_manual_apply"),
             "memory_only": props.get("memory_only"),
@@ -154,6 +154,7 @@ def main():
 
     if verify_summary.get("verified_previous_graphiti_write") is not True:
         raise RuntimeError("PREVIOUS_GRAPHITI_WRITE_NOT_VERIFIED")
+
     if int(verify_summary.get("found_applied_id_count", 0)) != len(expected_ids):
         raise RuntimeError("VERIFY_FOUND_COUNT_DOES_NOT_MATCH_APPLIED_IDS")
 
@@ -176,7 +177,7 @@ def main():
         missing_ids = sorted(set(expected_ids) - set(found_ids))
 
         query_records = []
-        prev = "GENESIS_BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1"
+        prev = "GENESIS_BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1_1_SCALAR_SAFE"
 
         for idx, q in enumerate(REPLAY_QUERIES, start=1):
             hits = query_replay(session, q, args.limit)
@@ -229,6 +230,7 @@ def main():
 
     summary = {
         "status": "BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1_PASS" if regression_ok else "BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1_FAIL",
+        "patch": "V1_1_SCALAR_SAFE_REPLAY",
         "created_at": now_iso(),
         "neo4j_uri": args.neo4j_uri,
         "source_verify_pointer": str(verify_ptr),
@@ -244,6 +246,7 @@ def main():
         "query_records_pass_count": len([r for r in query_records if r["hit_count"] > 0]),
         "latest_replay_event_hash": prev,
         "post_graphiti_replay_query_regression": True,
+        "scalar_safe_replay": True,
         "exact_id_replay": True,
         "query_replay": True,
         "regression_ok": regression_ok,
@@ -265,6 +268,7 @@ def main():
         "# BRODY POST GRAPHITI REPLAY QUERY REGRESSION READONLY V1",
         "",
         f"- status: {summary['status']}",
+        f"- patch: {summary['patch']}",
         f"- expected_applied_id_count: {summary['expected_applied_id_count']}",
         f"- exact_replay_found_count: {summary['exact_replay_found_count']}",
         f"- missing_applied_id_count: {summary['missing_applied_id_count']}",

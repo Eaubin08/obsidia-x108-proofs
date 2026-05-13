@@ -28,3 +28,20 @@ Expected:
 ## Next
 
 BRODY_MEMORY_PIPELINE_FREEZE_V2
+
+## V1_1_SCALAR_SAFE_REPLAY
+
+Fixes the failed replay caused by `toString(n[k])` on array properties.
+
+The replay now queries only scalar fields expected from the memory-only apply layer:
+
+- id
+- name
+- title
+- source
+- record_hash
+
+Still readonly.
+Still no Graphiti write.
+Still no Neo4j write.
+Still no memory decision.
