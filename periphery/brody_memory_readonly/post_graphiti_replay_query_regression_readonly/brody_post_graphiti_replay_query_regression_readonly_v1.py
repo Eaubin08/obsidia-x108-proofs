@@ -87,16 +87,16 @@ def query_replay(session, query, limit):
     cypher = """
     MATCH (n)
     WHERE
-      (n.id IS NOT NULL AND toLower(toString(n.id)) CONTAINS toLower($query))
-      OR (n.name IS NOT NULL AND toLower(toString(n.name)) CONTAINS toLower($query))
-      OR (n.title IS NOT NULL AND toLower(toString(n.title)) CONTAINS toLower($query))
-      OR (n.source IS NOT NULL AND toLower(toString(n.source)) CONTAINS toLower($query))
-      OR (n.record_hash IS NOT NULL AND toLower(toString(n.record_hash)) CONTAINS toLower($query))
+      (n.id IS NOT NULL AND toLower(toString(n.id)) CONTAINS toLower($q))
+      OR (n.name IS NOT NULL AND toLower(toString(n.name)) CONTAINS toLower($q))
+      OR (n.title IS NOT NULL AND toLower(toString(n.title)) CONTAINS toLower($q))
+      OR (n.source IS NOT NULL AND toLower(toString(n.source)) CONTAINS toLower($q))
+      OR (n.record_hash IS NOT NULL AND toLower(toString(n.record_hash)) CONTAINS toLower($q))
     RETURN labels(n) AS labels, properties(n) AS props
     LIMIT $limit
     """
     rows = []
-    for r in session.run(cypher, query=query, limit=limit):
+    for r in session.run(cypher, q=query, limit=limit):
         props = dict(r["props"] or {})
         rows.append({
             "labels": list(r["labels"] or []),
@@ -230,7 +230,7 @@ def main():
 
     summary = {
         "status": "BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1_PASS" if regression_ok else "BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_V1_FAIL",
-        "patch": "V1_1_SCALAR_SAFE_REPLAY",
+        "patch": "V1_2_SCALAR_SAFE_PARAM_FIX",
         "created_at": now_iso(),
         "neo4j_uri": args.neo4j_uri,
         "source_verify_pointer": str(verify_ptr),
@@ -299,3 +299,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
