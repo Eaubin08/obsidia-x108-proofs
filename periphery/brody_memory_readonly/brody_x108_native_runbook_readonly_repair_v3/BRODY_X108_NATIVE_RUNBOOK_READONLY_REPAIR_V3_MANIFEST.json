@@ -1,0 +1,91 @@
+﻿{
+    "name":  "BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3",
+    "version":  "v1",
+    "status":  "BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3_PASS",
+    "created_at":  "2026-05-13T06:11:09.6365522Z",
+    "build_target":  "obsidia-x108-proofs",
+    "fix_forward_after_commit":  "5ee3784",
+    "repair_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v3",
+    "repair_runner":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v3\\run_brody_x108_native_runbook_readonly_repair_v3.ps1",
+    "runbook_runner":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\run_brody_x108_native_runbook_readonly_v1.ps1",
+    "real_pointer_status_alignment":  true,
+    "checked_pointer_count":  9,
+    "checked_pointers":  [
+                             {
+                                 "file":  "CURRENT_BRODY_X108_ONLY_BUILD_MODE_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_X108_ONLY_BUILD_MODE_READONLY.txt",
+                                 "status":  "BRODY_X108_ONLY_BUILD_MODE_READONLY_V1_PASS",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\run_brody_x108_only_build_mode_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\BRODY_X108_ONLY_BUILD_MODE_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY.txt",
+                                 "status":  "BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_runtime_freeze_v1_4_12a_readonly\\run_brody_runtime_freeze_v1_4_12a_readonly.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_runtime_freeze_v1_4_12a_readonly\\BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY.txt",
+                                 "status":  "BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_session_test_readonly\\run_brody_native_terminal_session_test_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_session_test_readonly\\BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY.txt",
+                                 "status":  "BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\run_brody_native_terminal_detector_patch_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_MEMORY_LAYER_AUTHORITY_MODEL_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_MEMORY_LAYER_AUTHORITY_MODEL_READONLY.txt",
+                                 "status":  "MEMORY_LAYER_AUTHORITY_MODEL_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\run_memory_layer_authority_model_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_X108_PROOF_STATE_FREEZE_V1.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_X108_PROOF_STATE_FREEZE_V1.txt",
+                                 "status":  "BRODY_X108_PROOF_STATE_FREEZE_V1_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\run_brody_x108_proof_state_freeze_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\BRODY_X108_PROOF_STATE_FREEZE_V1_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY.txt",
+                                 "status":  "BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY_V1_PASS",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\run_brody_api_bridge_external_access_freeze_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY.txt",
+                                 "status":  "BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY_READY",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\run_brody_api_bridge_live_drift_guard_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY_MANIFEST.json"
+                             },
+                             {
+                                 "file":  "CURRENT_BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY.txt",
+                                 "path":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY.txt",
+                                 "status":  "BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY_V1_PASS",
+                                 "run_ps1":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_local_command_gate_clean_close_readonly\\run_brody_local_command_gate_clean_close_readonly_v1.ps1",
+                                 "manifest":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_local_command_gate_clean_close_readonly\\BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY_MANIFEST.json"
+                             }
+                         ],
+    "no_history_smoothing":  true,
+    "decision_authority":  "KX108_ONLY",
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "next":  "COMMIT_BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3"
+}
