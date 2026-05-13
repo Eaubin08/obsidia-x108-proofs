@@ -59,3 +59,8 @@ Official X108-side readonly runbook for Brody / LLM Obsidien.
 - detector_patch: BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_READY
 - memory_authority: MEMORY_LAYER_AUTHORITY_MODEL_READONLY_READY
 
+
+- 3145fdb: runbook repair still expected proof_state_freeze PASS while real pointer was READY.
+
+- current repair V2: aligns proof_state_freeze expected status to BRODY_X108_PROOF_STATE_FREEZE_V1_READY.
+
