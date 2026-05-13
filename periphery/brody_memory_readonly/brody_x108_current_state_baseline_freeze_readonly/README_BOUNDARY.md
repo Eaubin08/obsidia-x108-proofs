@@ -1,0 +1,49 @@
+﻿# BRODY X108 CURRENT STATE BASELINE FREEZE READONLY V1
+
+## Purpose
+
+Freeze the current Brody/X108 proof-side state after clean runbook closure.
+
+## Current state
+
+- head: dab446b
+- verify_all.py: PASS
+- runbook clean close: PASS
+- build target: obsidia-x108-proofs
+- candidate build target: false
+
+## Meaning
+
+This is a baseline freeze.
+
+It does not smooth history.
+It does not rewrite previous READY/PASS statuses.
+It records real pointer states as they are.
+
+## Boundary
+
+- X108 remains final decision authority.
+- Brody does not decide.
+- Memory does not decide.
+- Graphiti does not decide.
+- No ACT emission.
+- No verdict emission.
+- No kernel mutation.
+- No runtime binding.
+- No X108 merge.
+- No Graphiti index write.
+- No memory intake.
+
+## Pointer inventory
+
+- CURRENT_BRODY_X108_ONLY_BUILD_MODE_READONLY.txt: BRODY_X108_ONLY_BUILD_MODE_READONLY_V1_PASS
+- CURRENT_BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY.txt: BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY_READY
+- CURRENT_MEMORY_LAYER_AUTHORITY_MODEL_READONLY.txt: MEMORY_LAYER_AUTHORITY_MODEL_READONLY_READY
+- CURRENT_BRODY_X108_PROOF_STATE_FREEZE_V1.txt: BRODY_X108_PROOF_STATE_FREEZE_V1_READY
+- CURRENT_BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY.txt: BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY_V1_PASS
+- CURRENT_BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY.txt: BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY_READY
+- CURRENT_BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY.txt: BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY_V1_PASS
+- CURRENT_BRODY_X108_NATIVE_RUNBOOK_READONLY.txt: BRODY_X108_NATIVE_RUNBOOK_READONLY_V1_PASS
+- CURRENT_BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3.txt: BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3_PASS
+- CURRENT_BRODY_X108_NATIVE_RUNBOOK_CLEAN_CLOSE_READONLY.txt: BRODY_X108_NATIVE_RUNBOOK_CLEAN_CLOSE_READONLY_V1_PASS
+
