@@ -1,0 +1,45 @@
+﻿{
+    "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+    "query":  "Freeze",
+    "limit":  5,
+    "entity_count":  4,
+    "relation_count":  3,
+    "entities":  [
+                     {
+                         "name":  "10-step default workflow",
+                         "summary":  "The 10-step default workflow includes a CLASSIFY step which uses agent-router-obsidia.\nThe 10-step default workflow includes an INSPECT step for read-only, targeted inspection using read-only-inspector.\nThe 10-step default workflow includes the command git status --short.\nThe 10-step default workflow includes the command git diff --stat.\nThe 10-step default workflow includes the command git diff --check.\nThe 10-step default workflow includes a step to update CURRENT_FOCUS.md if the task state changed.\nThe 10-step default workflow conditionally inserts a freeze-guardian check between steps 4 and 5 if editing a protected file is required.\nThe 10-step default workflow references PROTECTED_SCOPE.md for information on protected files."
+                     },
+                     {
+                         "name":  "CANON_GUARDIAN",
+                         "summary":  "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the \u0027Ã crÃ©er en premier / Top 5 founders\u0027 family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill \u0027freeze-guardian (reduced)\u0027.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as \u0027Ã crÃ©er en premier (top 5)\u0027.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for MÃ©moire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procÃ©durale."
+                     },
+                     {
+                         "name":  "Documentation / ThÃ©orie / Freeze",
+                         "summary":  "This is a known family of agents in the source document.\nObsidia has a known agent family called \u0027Documentation / ThÃ©orie / Freeze\u0027."
+                     },
+                     {
+                         "name":  "Freeze",
+                         "summary":  "CANON_GUARDIAN verifies name collisions for Freeze."
+                     }
+                 ],
+    "relations":  [
+                      {
+                          "source":  "PHASE0_LIMITED__agents__registry.md",
+                          "rel":  "MENTIONS",
+                          "target":  "freeze-guardian (reduced)",
+                          "fact":  null
+                      },
+                      {
+                          "source":  "PHASE0_LIMITED__agents__registry.md",
+                          "rel":  "MENTIONS",
+                          "target":  "Freeze",
+                          "fact":  null
+                      },
+                      {
+                          "source":  "CANON_GUARDIAN",
+                          "rel":  "RELATES_TO",
+                          "target":  "freeze-guardian (reduced)",
+                          "fact":  "CANON_GUARDIAN has the Claude Code skill \u0027freeze-guardian (reduced)\u0027."
+                      }
+                  ]
+}

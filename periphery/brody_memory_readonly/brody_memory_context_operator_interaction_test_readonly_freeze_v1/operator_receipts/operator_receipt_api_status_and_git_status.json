@@ -1,0 +1,39 @@
+﻿{
+    "schema":  "BRODY_OPERATOR_INTERACTION_RECEIPT_V1",
+    "human_executed":  true,
+    "commands":  [
+                     {
+                         "command":  "git -C \"C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\" status --short",
+                         "exit_code":  0,
+                         "stdout":  "",
+                         "stderr":  ""
+                     },
+                     {
+                         "command":  "Invoke-RestMethod \"http://127.0.0.1:8011/graph/v20/frozen/status\" -Method GET",
+                         "exit_code":  0,
+                         "stdout":  "{\r\n    \"source\":  \"OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN\",\r\n    \"ok\":  true,\r\n    \"mode\":  \"FROZEN_READONLY\",\r\n    \"freeze_dir\":  \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\graphiti-lab\\\\.graphiti_runs\\\\freeze_phase0_v20_20260506_140654\",\r\n    \"nodes\":  167,\r\n    \"rels\":  477,\r\n    \"indexed_episodes\":  20,\r\n    \"failed_episodes\":  0,\r\n    \"manifest_files\":  4,\r\n    \"live_neo4j_dependency\":  false,\r\n    \"x108_merge_status\":  \"NOT_MERGED\",\r\n    \"commit_status\":  \"LOCAL_ONLY\"\r\n}",
+                         "stderr":  ""
+                     }
+                 ],
+    "execution_claimed":  true,
+    "execution_verified":  false,
+    "brody_execute_allowed":  false,
+    "brody_authorize_allowed":  false,
+    "human_operator_required":  true,
+    "readonly_analysis_only":  true,
+    "command_executed_by_brody":  false,
+    "api_get_executed_by_operator":  true,
+    "graphiti_write":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "created_at":  "2026-05-13T08:09:22.0027195Z"
+}

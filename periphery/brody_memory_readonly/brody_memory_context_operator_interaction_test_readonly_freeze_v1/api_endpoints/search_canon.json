@@ -1,0 +1,43 @@
+﻿{
+    "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+    "query":  "CANON",
+    "limit":  5,
+    "entity_count":  5,
+    "relation_count":  2,
+    "entities":  [
+                     {
+                         "name":  "34 arbres",
+                         "summary":  "CANON_GUARDIAN verifies name collisions for 34 arbres."
+                     },
+                     {
+                         "name":  "ACP",
+                         "summary":  "CANON_GUARDIAN verifies name collisions for ACP."
+                     },
+                     {
+                         "name":  "AVDR",
+                         "summary":  "CANON_GUARDIAN verifies name collisions for AVDR."
+                     },
+                     {
+                         "name":  "Balance exponentielle",
+                         "summary":  "CANON_GUARDIAN verifies name collisions for Balance exponentielle."
+                     },
+                     {
+                         "name":  "CALIBRATION_PROCEDURALE",
+                         "summary":  "The graph-calibrator-obsidia Claude Code skill is a composite skill that involves the CALIBRATION_PROCEDURALE agent.\nCANON_GUARDIAN verifies name collisions for Calibration procÃ©durale."
+                     }
+                 ],
+    "relations":  [
+                      {
+                          "source":  "CANON_GUARDIAN",
+                          "rel":  "RELATES_TO",
+                          "target":  "Vertex AI",
+                          "fact":  "CANON_GUARDIAN is deployed on Vertex AI or locally."
+                      },
+                      {
+                          "source":  "CANON_GUARDIAN",
+                          "rel":  "RELATES_TO",
+                          "target":  "freeze-guardian (reduced)",
+                          "fact":  "CANON_GUARDIAN has the Claude Code skill \u0027freeze-guardian (reduced)\u0027."
+                      }
+                  ]
+}
