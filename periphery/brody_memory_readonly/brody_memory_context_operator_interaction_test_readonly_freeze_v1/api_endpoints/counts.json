@@ -1,0 +1,53 @@
+﻿{
+    "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+    "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+    "report_counts":  {
+                          "nodes":  167,
+                          "rels":  477,
+                          "labels":  [
+                                         {
+                                             "label":  "Entity",
+                                             "c":  147
+                                         },
+                                         {
+                                             "label":  "Episodic",
+                                             "c":  20
+                                         }
+                                     ]
+                      },
+    "snapshot_counts":  {
+                            "nodes":  167,
+                            "rels":  477
+                        },
+    "labels":  [
+                   {
+                       "label":  "Entity",
+                       "c":  147
+                   },
+                   {
+                       "label":  "Episodic",
+                       "c":  20
+                   }
+               ],
+    "rel_types":  [
+                      {
+                          "rel_type":  "MENTIONS",
+                          "c":  271
+                      },
+                      {
+                          "rel_type":  "RELATES_TO",
+                          "c":  206
+                      }
+                  ],
+    "report":  {
+                   "max_episodes":  20,
+                   "max_chars":  1200,
+                   "models":  {
+                                  "llm":  "gemini-2.5-flash",
+                                  "embedding":  "gemini-embedding-001",
+                                  "reranker":  "gemini-2.5-flash-lite"
+                              },
+                   "ok":  20,
+                   "fail":  0
+               }
+}

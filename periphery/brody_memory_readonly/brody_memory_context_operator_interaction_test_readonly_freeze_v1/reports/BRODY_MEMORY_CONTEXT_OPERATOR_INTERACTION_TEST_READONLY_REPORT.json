@@ -1,0 +1,158 @@
+﻿{
+    "status":  "BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_PASS",
+    "created_at":  "2026-05-13T08:09:22.3690408Z",
+    "head":  "27b1a23",
+    "audit_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913",
+    "api_base":  "http://127.0.0.1:8011",
+    "endpoint_count":  14,
+    "endpoints":  [
+                      {
+                          "name":  "status",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/status",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\status.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "counts",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/counts",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\counts.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "metrics",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/metrics",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\metrics.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "readiness",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/readiness",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\readiness.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "evidence",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/evidence",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\evidence.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "manifest",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/manifest",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\manifest.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_x108",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=X-108\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\context_x108.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_canon",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=CANON\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\context_canon.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_brody",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=Brody\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\context_brody.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_kernel",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=Kernel\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\context_kernel.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_brody",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=Brody\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\search_brody.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_x108",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=X-108\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\search_x108.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_canon",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=CANON\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\search_canon.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_freeze",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=Freeze\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\api_endpoints\\search_freeze.json",
+                          "pass":  true,
+                          "readonly_expected":  true
+                      }
+                  ],
+    "negative_mutation_count":  3,
+    "negative_mutations":  [
+                               {
+                                   "name":  "post_context",
+                                   "method":  "POST",
+                                   "url":  "http://127.0.0.1:8011/graph/v20/frozen/context",
+                                   "blocked_or_not_allowed":  true,
+                                   "status_code":  405,
+                                   "error":  "Le serveur distant a retourné une erreur : (405) Méthode non autorisée."
+                               },
+                               {
+                                   "name":  "post_search",
+                                   "method":  "POST",
+                                   "url":  "http://127.0.0.1:8011/graph/v20/frozen/search",
+                                   "blocked_or_not_allowed":  true,
+                                   "status_code":  405,
+                                   "error":  "Le serveur distant a retourné une erreur : (405) Méthode non autorisée."
+                               },
+                               {
+                                   "name":  "delete_status",
+                                   "method":  "DELETE",
+                                   "url":  "http://127.0.0.1:8011/graph/v20/frozen/status",
+                                   "blocked_or_not_allowed":  true,
+                                   "status_code":  405,
+                                   "error":  "Le serveur distant a retourné une erreur : (405) Méthode non autorisée."
+                               }
+                           ],
+    "gate_report":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\reports\\brody_command_gate_interaction_report.json",
+    "receipt_json":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_20260513_100913\\operator_receipts\\operator_receipt_api_status_and_git_status.json",
+    "verify_all":  "PASS",
+    "git_clean":  true,
+    "api_8011_live":  true,
+    "graphiti_write":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "brody_execute_allowed":  false,
+    "brody_authorize_allowed":  false,
+    "human_operator_required":  true,
+    "readonly_analysis_only":  true,
+    "committed":  false,
+    "frozen":  false
+}

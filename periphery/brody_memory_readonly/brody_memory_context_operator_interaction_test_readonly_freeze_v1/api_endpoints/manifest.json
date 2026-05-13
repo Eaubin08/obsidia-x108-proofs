@@ -1,0 +1,26 @@
+﻿{
+    "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+    "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+    "manifest":  [
+                     {
+                         "file":  "graphiti_index_phase0_limited_20.py",
+                         "sha256":  "9065786D1EE50BBAE9BB7A286799905C2E9DDF6426CB1AB44ECFB365B917D0D9",
+                         "bytes":  6486
+                     },
+                     {
+                         "file":  "graphiti_phase0_v20_db_snapshot.json",
+                         "sha256":  "538D8ACF6013DACF355C464989724B13B55A4A52BEF6FB321E012CBE1BED9053",
+                         "bytes":  26002
+                     },
+                     {
+                         "file":  "inspect_graphiti_phase0_v20.py",
+                         "sha256":  "5E7E2D60AF46FA73F613F89646460D64E826E2D1826D7963C592FB073B0E1370",
+                         "bytes":  1290
+                     },
+                     {
+                         "file":  "phase0_limited_index_report_20.json",
+                         "sha256":  "5A5432747FDE49C62C1E677E60C96D51CC422CAE161C7C5CABEE18A4F9E5F0E8",
+                         "bytes":  3477
+                     }
+                 ]
+}
