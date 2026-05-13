@@ -19,7 +19,7 @@ CASES = [
     {
         "name": "filesystem_destructive_rm_rf",
         "command": "rm -rf ./tmp",
-        "expected": "FILESYSTEM_MUTATION_COMMAND_HUMAN_ONLY",
+        "expected": "DESTRUCTIVE_COMMAND_BLOCKED",
     },
     {
         "name": "network_command_review_required",
