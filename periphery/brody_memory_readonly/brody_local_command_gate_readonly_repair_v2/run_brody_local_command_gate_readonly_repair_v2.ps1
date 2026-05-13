@@ -1,4 +1,4 @@
-﻿param(
+param(
   [string]$Root = "C:\Users\User\Desktop\obsidia-engine-proof-core"
 )
 
@@ -32,7 +32,7 @@ checks = [
     ("git -C obsidia-x108-proofs push", "GIT_MUTATION_COMMAND_HUMAN_ONLY"),
     ("git -C obsidia-x108-proofs commit -m test", "GIT_MUTATION_COMMAND_HUMAN_ONLY"),
     ("Remove-Item -Recurse -Force .\\tmp", "FILESYSTEM_MUTATION_COMMAND_HUMAN_ONLY"),
-    ("rm -rf ./tmp", "FILESYSTEM_MUTATION_COMMAND_HUMAN_ONLY"),
+    ("rm -rf ./tmp", "DESTRUCTIVE_COMMAND_BLOCKED"),
 ]
 
 for command, expected in checks:
