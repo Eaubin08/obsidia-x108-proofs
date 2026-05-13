@@ -1,0 +1,44 @@
+﻿{
+    "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+    "ok":  true,
+    "mode":  "FROZEN_READONLY_READINESS",
+    "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+    "kernel_decision":  "NONE",
+    "graphiti_decision":  "NONE",
+    "allowed_to_decide":  false,
+    "allowed_to_modify_kernel":  false,
+    "allowed_to_modify_x108":  false,
+    "ready_for_kernel_binding":  false,
+    "ready_for_x108_merge":  false,
+    "merge_gate":  "BLOCKED_FOR_NOW",
+    "reason":  "Graphiti V20 is validated as read-only context provider, but not yet connected to kernel corpus or X108 decision flow.",
+    "warnings":  [
+                     "X108_CORPUS_DIRECT_COVERAGE_LOW",
+                     "KERNEL_RELATION_COVERAGE_LOW",
+                     "NOT_KERNEL_BOUND",
+                     "READONLY_CONTEXT_ONLY",
+                     "NOT_MERGED_INTO_X108"
+                 ],
+    "coverage":  {
+                     "x108":  {
+                                  "entity_count":  1,
+                                  "relation_count":  0,
+                                  "richness_score":  0.0667
+                              },
+                     "kernel":  {
+                                    "entity_count":  5,
+                                    "relation_count":  0,
+                                    "richness_score":  0.3333
+                                },
+                     "proof":  {
+                                   "entity_count":  5,
+                                   "relation_count":  3,
+                                   "richness_score":  0.7333
+                               },
+                     "freeze":  {
+                                    "entity_count":  4,
+                                    "relation_count":  3,
+                                    "richness_score":  0.6667
+                                }
+                 }
+}

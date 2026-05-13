@@ -1,0 +1,101 @@
+﻿{
+    "status":  "BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_V2_READONLY_V1_PASS",
+    "source_head":  "2fa2f37",
+    "fixes_after_commit":  "2fa2f37",
+    "previous_issue":  "API_FIX_V1_COMMITTED_WITH_ENDPOINT_CAPTURE_ZERO",
+    "api_base":  "http://127.0.0.1:8011",
+    "endpoint_count":  10,
+    "endpoints":  [
+                      {
+                          "name":  "status",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/status",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\status.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "counts",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/counts",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\counts.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "metrics",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/metrics",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\metrics.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "readiness",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/readiness",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\readiness.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "evidence",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/evidence",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\evidence.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "manifest",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/manifest",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\manifest.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_x108",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=X-108\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_x108.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "context_canon",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=CANON\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_canon.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_brody",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=Brody\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_brody.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      },
+                      {
+                          "name":  "search_x108",
+                          "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=X-108\u0026limit=5",
+                          "output":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_x108.json",
+                          "api_get_pass":  true,
+                          "readonly_expected":  true
+                      }
+                  ],
+    "previous_api_fix_v1_pointer":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_READONLY.txt",
+    "previous_replay_pointer":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\CURRENT_BRODY_API_MEMORY_OPERATOR_REPLAY_READONLY.txt",
+    "api_get_executed_by_operator":  true,
+    "brody_api_call_executed":  false,
+    "brody_execute_allowed":  false,
+    "brody_authorize_allowed":  false,
+    "human_operator_required":  true,
+    "readonly_analysis_only":  true,
+    "graphiti_write":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false,
+    "no_history_smoothing":  true
+}
