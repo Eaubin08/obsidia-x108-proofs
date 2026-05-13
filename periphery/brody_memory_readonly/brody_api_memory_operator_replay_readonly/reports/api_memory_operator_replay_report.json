@@ -1,0 +1,29 @@
+﻿{
+    "status":  "BRODY_API_MEMORY_OPERATOR_REPLAY_READONLY_V1_PASS",
+    "source_head":  "ea03647",
+    "api_base":  "http://127.0.0.1:8011",
+    "api_records":  [
+
+                    ],
+    "receipt_json":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\operator_receipts\\operator_receipt_git_status_example.json",
+    "command_gate_report":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\command_gate_replay_report.json",
+    "brody_api_call_executed":  false,
+    "operator_api_get_executed":  true,
+    "brody_execute_allowed":  false,
+    "brody_authorize_allowed":  false,
+    "human_operator_required":  true,
+    "readonly_analysis_only":  true,
+    "memory_readonly_context_checked":  true,
+    "graphiti_write":  false,
+    "graphiti_index_write":  false,
+    "neo4j_write_executed":  false,
+    "memory_intake":  false,
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "decision_authority":  "KX108_ONLY",
+    "kernel_mutation":  false,
+    "x108_runtime_binding":  false,
+    "x108_merge":  false
+}
