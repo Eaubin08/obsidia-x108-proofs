@@ -1,0 +1,15 @@
+{
+  "component": "Scraping / external fetch runtime",
+  "evidence_path": "BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY + scraping_hits.json",
+  "last_status": "FROZEN_NOT_ENABLED",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": false,
+  "reason": "external_access_freeze V1 PASS. runtime_enabled=false, external_access_enabled=false. scraping_hits.json : scrape_executed=false sur tous modules. GET operator-approved validé dans step 6 uniquement.",
+  "next_action": "NONE — gel correct, step 6 suffit comme preuve"
+}

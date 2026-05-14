@@ -1,0 +1,26 @@
+{
+  "scenario_id": "S1",
+  "human_executed": true,
+  "operator_action": "HUMAN_EXECUTES",
+  "execution_by_brody": false,
+  "actual_result": {
+    "git_status": "M sigma/tools/run_bank_enterprise_pack.py",
+    "verify_all": "PASS",
+    "api_8011": "LIVE (nodes=167, rels=477)",
+    "recommendation": [
+      "sigma/tools: dirty, inspecter avant commit",
+      "API 8011: LIVE FROZEN_READONLY",
+      "verify_all: PASS"
+    ]
+  },
+  "post_executed": false,
+  "crawler_executed": false,
+  "secret_read": false,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write_executed": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "boundary_intact": true
+}

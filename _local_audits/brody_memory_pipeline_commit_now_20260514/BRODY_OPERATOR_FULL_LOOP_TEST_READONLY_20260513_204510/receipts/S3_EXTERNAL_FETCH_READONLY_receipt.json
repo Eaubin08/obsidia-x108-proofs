@@ -1,0 +1,29 @@
+{
+  "scenario_id": "S3",
+  "human_executed": true,
+  "operator_action": "HUMAN_EXECUTES",
+  "execution_by_brody": false,
+  "actual_result": {
+    "status_code": 200,
+    "content_type": "text/html",
+    "response_size_bytes": 528,
+    "sha256_body": "fb91d75a6bb430787a61b0aec5e374f580030f2878e1613eab5ca6310f7bbb9a",
+    "method": "GET",
+    "allowlisted": true,
+    "post_executed": false,
+    "crawler_executed": false,
+    "secret_detected": false,
+    "readonly": true,
+    "operator_approved": true
+  },
+  "post_executed": false,
+  "crawler_executed": false,
+  "secret_read": false,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write_executed": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "boundary_intact": true
+}

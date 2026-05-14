@@ -1,0 +1,59 @@
+{
+  "smoke": "LOW_MATERIAL_BEFORE_AFTER_SMOKE",
+  "timestamp": "20260513_231002",
+  "mode": "STATIC_SCHEMA_ANALYSIS",
+  "neo4j_live_query_executed": false,
+  "reason_no_live_query": "READONLY_DRY_RUN — NEO4J_PASSWORD not injected at audit time",
+
+  "schema_evidence": {
+    "source_file": "_local_audits/BRODY_API_MEMORY_CONTEXT_READONLY_20260513_194604/neo4j_samples/brody_memory_doc_inspection.json",
+    "all_field_keys_in_schema": [
+      "decision_authority", "id", "memory_decision", "path",
+      "readonly", "source", "tags", "text_preview", "title", "updated_at"
+    ],
+    "coalesce_fields_absent_from_schema": [
+      "text", "content", "body", "excerpt", "summary", "preview"
+    ],
+    "text_preview_in_schema": true,
+    "nodes_with_text_preview_non_empty": 3267
+  },
+
+  "before": {
+    "coalesce": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, \"\")",
+    "low_material": true,
+    "items_with_material": 0,
+    "reason": "All 6 coalesce fields absent from BrodyMemoryDoc schema — fallback always '' — body='' for all 3267 nodes",
+    "scoring_available_from": ["title", "tags"],
+    "body_scoring": false
+  },
+
+  "after": {
+    "coalesce": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, \"\")",
+    "low_material": false,
+    "items_with_material": "UP_TO_3267",
+    "reason": "p.text_preview now in coalesce chain — 3267 nodes have non-empty text_preview — body=text_preview value for matched nodes",
+    "scoring_available_from": ["title", "tags", "body"],
+    "body_scoring": true
+  },
+
+  "delta": {
+    "items_with_material_delta": "+3267 max",
+    "material_improved": true,
+    "body_scoring_restored": true,
+    "low_material_resolved": true
+  },
+
+  "guardrails": {
+    "memory_intake": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "decision_authority": "KX108_ONLY"
+  },
+
+  "patch_applied": true,
+  "file_patched": "obsidia-x108-proofs/periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+  "line_changed": 52,
+  "lines_changed": 1
+}

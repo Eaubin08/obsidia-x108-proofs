@@ -1,0 +1,19 @@
+{
+  "scenario_id": "S4",
+  "scenario_name": "MEMORY_CANDIDATE_READONLY",
+  "scenario_type": "MEMORY_TRIAGE_ONLY",
+  "request": "Cette information est-elle candidate mémoire ?",
+  "timestamp": "20260513_204510",
+  "gate_decision": "ALLOWED",
+  "gate_status": "HUMAN_ONLY",
+  "reflex_alerts": [],
+  "brody_execute_allowed": false,
+  "brody_authorize_allowed": false,
+  "human_operator_required": true,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY"
+}

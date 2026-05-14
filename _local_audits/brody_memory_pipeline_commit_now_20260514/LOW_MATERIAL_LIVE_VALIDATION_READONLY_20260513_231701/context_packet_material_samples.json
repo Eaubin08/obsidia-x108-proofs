@@ -1,0 +1,55 @@
+{
+  "report": "CONTEXT_PACKET_MATERIAL_SAMPLES",
+  "timestamp": "20260513_231701",
+  "mode": "READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "samples": [
+    {
+      "query": "Brody",
+      "rank_1_title": "BRODY_OBSIDIEN_V1_6_1_WORLD_SOURCE_INTAKE_EXTRACTORS_MANIFEST.json",
+      "rank_1_body_preview": "{ \"status\": \"BRODY_OBSIDIEN_V1_6_1_WORLD_SOURCE_INTAKE_EXTRACTORS_READY\", \"date\": \"20260512_182148\", \"intake_py\": \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-engine-candidate\\\\zip1_s",
+      "body_source": "text_preview",
+      "body_non_empty": true
+    },
+    {
+      "query": "Kernel",
+      "rank_1_title": "02_PEPITE_P034__Kernel_intersection_des_contraintes.md",
+      "rank_1_body_preview": "# P34 — Kernel = intersection des contraintes **Statut source :** FORMALISÉ — Objet mathématique défini dans v1cano.docx / formalisermath.docx **Statut normalisé :** FORMALISÉ **Bloc principal :** B",
+      "body_source": "text_preview",
+      "body_non_empty": true
+    },
+    {
+      "query": "X108",
+      "rank_1_title": "O3_EPREUVE_TEMPORELLE_X108.md",
+      "rank_1_body_preview": "# O3 — Épreuve Temporelle X-108 ## Statut `LAW_STATUS = CANONICAL_MINIMAL_V1` ## Périmètre Cette loi appartient au génome constitutionnel O1–O8 du pack Obsidia Mmonde / Reverse OS. ## Invariant ```tex",
+      "body_source": "text_preview",
+      "body_non_empty": true
+    },
+    {
+      "query": "memory",
+      "rank_1_title": "CURRENT_MEMORY_GRAPHITI_BRANCH_STATE_AUDIT.txt",
+      "rank_1_body_preview": "CURRENT_MEMORY_GRAPHITI_BRANCH_STATE_AUDIT=C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\_local_audits\\MEMORY_GRAPHITI_BRANCH_STATE_AUDIT_20260512_212350 SUMMARY=C:\\Users\\Us",
+      "body_source": "text_preview",
+      "body_non_empty": true
+    },
+    {
+      "query": "Graphiti",
+      "rank_1_title": "BRODY_OBSIDIEN_V1_6_4_GRAPHITI_READY_EXPORT_READONLY_MANIFEST.json",
+      "rank_1_body_preview": "{ \"bridge_py\": \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-x108-proofs\\\\periphery\\\\brody_memory_readonly\\\\graphiti_bridge_readonly\\\\brody_graphiti_ready_export_readonly_v1_6_4.py\", \"",
+      "body_source": "text_preview",
+      "body_non_empty": true
+    }
+  ],
+
+  "guardrails": {
+    "memory_intake": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "memory_decision": false
+  }
+}

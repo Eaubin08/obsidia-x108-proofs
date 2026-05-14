@@ -1,0 +1,17 @@
+component|last_status|validated|needs_test|needs_repair|next_commit_candidate|do_not_commit
+Brody LLM obsidien|ARCHITECTURAL_CORRECT|True|False|False|False|False
+API 8011 / ObsidiaShell|LIVE_FROZEN_READONLY|True|False|False|False|False
+Graphiti V20 frozen corpus|FROZEN_READONLY_PASS|True|False|False|False|False
+Neo4j BrodyMemoryDoc (bolt://7688)|LIVE_LOW_MATERIAL|False|True|False|False|False
+Context packet chain QUERY→CONSUMER→ENGINE|CHAIN_PASS|True|False|False|True|False
+API memory context readonly (step 4)|PASS|True|False|False|True|False
+User memory intake candidate (auto_triage, step 5 V2)|PARTIAL_PASS|False|True|False|True|False
+post_human_review_memory_triage_readonly|READY_PENDING_PRECURSOR|False|True|False|True|False
+graphiti_candidate_prep_from_post_human_triage_readonly|READY_PENDING_PRECURSOR|False|True|False|True|False
+External fetch readonly operator test (step 6)|PASS|True|False|False|True|False
+Operator full loop test (step 7)|PASS|True|False|False|True|False
+Memory write (graphiti/neo4j write path)|NOT_AUTHORIZED_BY_DESIGN|True|False|False|False|False
+Scraping / external fetch runtime|FROZEN_NOT_ENABLED|True|False|False|False|False
+X108 boundary / kernel decision authority|NOT_MERGED_PASS|True|False|False|False|False
+sigma/tools/run_bank_enterprise_pack.py (dirty state)|DIRTY_UNSTAGED_UNAUDITED|False|False|True|False|True
+Pointers Brody (~90 CURRENT_BRODY*.txt dans x108-proofs)|PRESENT_COHERENT|True|False|False|True|False

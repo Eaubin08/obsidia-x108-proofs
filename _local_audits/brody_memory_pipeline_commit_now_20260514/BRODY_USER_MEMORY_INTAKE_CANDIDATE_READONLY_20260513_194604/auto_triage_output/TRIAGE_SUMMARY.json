@@ -1,0 +1,36 @@
+{
+  "status": "BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_PASS",
+  "created_at": "2026-05-13T18:07:36.189087+00:00",
+  "source_session_ledger_jsonl": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604\\session_ledger_test.jsonl",
+  "records_count": 5,
+  "zone_counts": {
+    "CRISTAL": 2,
+    "TRANSITION": 2,
+    "NEANT": 1
+  },
+  "latest_event_hash": "8f391cd36a2c5ddc07aab6f1605b4d4967e8c893a3190d3e221f433f9e6ef5c5",
+  "outputs": {
+    "triage_records_jsonl": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604\\auto_triage_output\\TRIAGE_RECORDS.jsonl",
+    "triage_summary_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604\\auto_triage_output\\TRIAGE_SUMMARY.json",
+    "triage_report_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604\\auto_triage_output\\TRIAGE_REPORT.md"
+  },
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "AUTO_TRIAGE_MEMORY_INTAKE_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "auto_triage": true,
+  "ui": false
+}

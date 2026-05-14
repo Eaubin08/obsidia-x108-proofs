@@ -1,0 +1,19 @@
+{
+  "scenario_id": "S1",
+  "scenario_name": "READONLY_LOCAL_INSPECTION",
+  "scenario_type": "LOCAL_INSPECTION",
+  "request": "Vérifie l'état du repo et dis-moi quoi inspecter.",
+  "timestamp": "20260513_204510",
+  "gate_decision": "ALLOWED",
+  "gate_status": "HUMAN_ONLY",
+  "reflex_alerts": [],
+  "brody_execute_allowed": false,
+  "brody_authorize_allowed": false,
+  "human_operator_required": true,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY"
+}

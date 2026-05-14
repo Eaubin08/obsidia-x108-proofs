@@ -1,0 +1,58 @@
+{
+  "timestamp": "20260514_003129",
+  "decision_authority": "KX108_ONLY",
+  "gates": [
+    {
+      "gate_id": "GATE_001",
+      "gate_name": "HUMAN_OPERATOR_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "Operator signs WRITABLE_MEMORY_OPERATOR_APPROVAL_TEMPLATE with approved=true and valid signature",
+      "failure_action": "Block all write operations. Maintain READONLY mode."
+    },
+    {
+      "gate_id": "GATE_002",
+      "gate_name": "KX108_BOUNDARY_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "KX108 boundary check confirms no kernel_mutation, no x108_merge, no runtime_binding in scope. DECISION_AUTHORITY=KX108_ONLY confirmed.",
+      "failure_action": "Reject import. Escalate to KX108 review."
+    },
+    {
+      "gate_id": "GATE_003",
+      "gate_name": "GRAPHITI_IMPORT_SCOPE_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "Import scope locked to exactly 42 candidates. No scope expansion without new operator approval. 4 REVIEW candidates remain excluded unless explicitly uplifted.",
+      "failure_action": "Block import. Scope drift is a hard failure."
+    },
+    {
+      "gate_id": "GATE_004",
+      "gate_name": "NEO4J_WRITE_SCOPE_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "Neo4j write limited to Graphiti episode import only. No direct BrodyMemoryDoc mutation. No schema changes.",
+      "failure_action": "Block all Neo4j writes outside approved import scope."
+    },
+    {
+      "gate_id": "GATE_005",
+      "gate_name": "ROLLBACK_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "Rollback plan documented: batch_id assigned, pre-import Neo4j snapshot referenced, rollback procedure tested in dry-run.",
+      "failure_action": "Block import. Rollback plan is a hard prerequisite."
+    },
+    {
+      "gate_id": "GATE_006",
+      "gate_name": "POST_IMPORT_AUDIT_GATE",
+      "required": true,
+      "current_status": "BLOCKED",
+      "pass_condition": "Post-import audit path defined: audit dir, node count verification, content spot-check, BOUNDARY_FALSE invariant re-confirmed.",
+      "failure_action": "Block import. Audit path absence is a hard failure."
+    }
+  ],
+  "gates_total": 6,
+  "gates_passing": 0,
+  "gates_blocked": 6,
+  "import_gate_open": false
+}

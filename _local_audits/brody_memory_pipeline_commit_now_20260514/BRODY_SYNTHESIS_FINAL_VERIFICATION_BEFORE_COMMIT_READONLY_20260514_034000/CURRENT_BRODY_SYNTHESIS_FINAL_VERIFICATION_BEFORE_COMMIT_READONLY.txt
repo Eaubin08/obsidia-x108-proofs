@@ -1,0 +1,61 @@
+MISSION: BRODY_SYNTHESIS_FINAL_VERIFICATION_BEFORE_COMMIT_READONLY
+TIMESTAMP: 20260514_034000
+STATUS: COMPLETE_READONLY
+DECISION_AUTHORITY: KX108_ONLY
+
+=== CHECK RESULTS ===
+
+CHECK_A_FILES: PASS
+  synthesis_files_found=7
+  synthesis_files_non_empty=7
+
+CHECK_B_SOURCES: PASS
+  sources_required=6
+  sources_consumed=6
+  sources_consumed_pass=true
+
+CHECK_C_OBJECTIVES: PASS
+  LOW_MATERIAL_RESOLVED=true
+  MEMORY_PIPELINE_STABLE=true
+  EXTERNAL_FETCH_GET_ONLY_VALIDATED=true
+  OPERATOR_LOOP_VALIDATED=true
+  CURRICULUM_CORE_PASS=true
+  PROGRESS_METRICS_CREATED=true
+  six_objectives_pass=true
+
+CHECK_D_CURRICULUM_VERDICTS: PASS
+  FRANCAIS=EVAL_PASS
+  LOGIQUE=EVAL_PASS
+  MATHS_SIMPLES=EVAL_PASS
+  SCIENCE=EVAL_PASS
+  PHYSIQUE=EVAL_PASS
+  MONDE_LARGE=EVAL_PASS_PARTIAL
+  MONDE_LARGE_PARTIAL_REASON=BLOCKED_TREES_BY_DESIGN
+  curriculum_verdicts_pass=true
+
+CHECK_E_INVARIANTS: PASS
+  DECISION_AUTHORITY=KX108_ONLY
+  NODE_COUNT_UNCHANGED=true (3267)
+  POST_WRITE_AUDIT_PASS=true (12/12)
+  RUNTIME_BINDING_ALLOWED=false
+  X108_MERGE=false
+  MEMORY_INTAKE=false
+  boundary_pass=true
+
+CHECK_F_GIT: PASS
+  GROUP_A_STAGED_PRESERVED=true
+  STAGED_FILES_STILL=136
+  STAGING_MODIFIED_IN_MISSION=false
+  X108_PROOFS_DIRTY_LOW_MATERIAL_ONLY=true
+  x108_dirty_file=periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py
+  unstaged_mods=examples/bank_*.json + package.json + proofs/* (planned commits 3-6, not GROUP_A)
+
+=== GLOBAL VERDICT ===
+
+ALL_CHECKS_PASS=true
+READY_FOR_GROUP_A_COMMIT=true
+NEXT_ACTION=GROUP_A_COMMIT
+
+COMMIT_MESSAGE_PREPARED=true
+COMMIT_MESSAGE="audit: Brody readonly steps 1-8 + sigma cleanup 2026-05-13"
+COMMIT_SCOPE=136 staged files (_local_audits audit directories)

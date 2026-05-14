@@ -1,0 +1,90 @@
+{
+  "report": "BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY",
+  "timestamp": "20260513_232959",
+  "date": "2026-05-13",
+  "mode": "READONLY",
+  "decision_authority": "KX108_ONLY",
+  "gate_patch": "V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+
+  "precursor_context": {
+    "source_report": "_local_audits/LOW_MATERIAL_LIVE_VALIDATION_READONLY_20260513_231701/LOW_MATERIAL_LIVE_VALIDATION_READONLY_REPORT.json",
+    "low_material_resolved_confirmed": true,
+    "live_query_executed": true,
+    "total_items_with_body": 40,
+    "material_rate": "100%"
+  },
+
+  "candidates_summary": {
+    "candidates_found": 51,
+    "decisions_required": 51,
+    "groups": [
+      {"group": "A", "label": "Auto-triage test records", "source": "session_ledger_test.jsonl", "count": 5},
+      {"group": "B", "label": "Reflex test record", "source": "session_ledger_reflex_test.jsonl", "count": 1},
+      {"group": "C", "label": "Real-state classification components", "source": "decision_matrix.csv", "count": 16},
+      {"group": "D", "label": "Session audit steps (GROUP_A directories)", "source": "18 audit dirs", "count": 18},
+      {"group": "E", "label": "Current session new artifacts", "source": "TLA, LOW_MATERIAL, patches, schema", "count": 11}
+    ],
+    "total": 51,
+    "proposed_distribution": {
+      "CRISTAL": 35,
+      "TRANSITION": 8,
+      "NEANT": 5,
+      "REFLEX": 1,
+      "TRANSITION_uplifted_to_CRISTAL": 9
+    }
+  },
+
+  "template": {
+    "file": "_local_audits/BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY_20260513_232959/SESSION_CLOSE_DECISION_TEMPLATE.jsonl",
+    "entries": 51,
+    "format": "JSONL — one decision per line",
+    "human_decision_filled": false,
+    "template_created": true
+  },
+
+  "guide": {
+    "file": "_local_audits/BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY_20260513_232959/SESSION_CLOSE_DECISION_GUIDE.md",
+    "guide_created": true
+  },
+
+  "checks": {
+    "staged_files_still": 136,
+    "low_material_patch_present": true,
+    "neo4j_write": false,
+    "graphiti_write": false,
+    "memory_intake": false,
+    "decisions_applied": false,
+    "post_human_review_launched": false
+  },
+
+  "post_human_review_precursor": {
+    "precursor_file_required": "CURRENT_BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE.txt",
+    "hard_constraints": [
+      "source_summary.status == BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_PASS",
+      "gate_patch == V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+      "len(decisions) == 51 exactement"
+    ],
+    "status": "TEMPLATE_READY_PENDING_HUMAN_FILL"
+  },
+
+  "guardrails": {
+    "memory_write_allowed": false,
+    "graphiti_write_allowed": false,
+    "neo4j_write_allowed": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "committed": false,
+    "frozen": false,
+    "push": false
+  },
+
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY",
+    "next_real_world_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY"
+  },
+
+  "verdict": "BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY_DONE"
+}

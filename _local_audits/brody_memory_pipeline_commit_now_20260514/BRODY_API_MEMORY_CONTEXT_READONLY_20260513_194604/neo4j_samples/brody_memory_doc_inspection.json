@@ -1,0 +1,154 @@
+﻿{
+  "all_field_keys_sample": [
+    "decision_authority",
+    "id",
+    "memory_decision",
+    "path",
+    "readonly",
+    "source",
+    "tags",
+    "text_preview",
+    "title",
+    "updated_at"
+  ],
+  "sample_nodes": [
+    {
+      "all_keys": [
+        "decision_authority",
+        "id",
+        "memory_decision",
+        "path",
+        "readonly",
+        "source",
+        "tags",
+        "text_preview",
+        "title",
+        "updated_at"
+      ],
+      "title": "003BEA03EEDD_T04__Consensus_Distribue_Resonance_semantique.md",
+      "path": "",
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000000\", \"title\": \"003BEA03EEDD_T04__Consensus_Distribue_Resonance_semantique.md\", \"source_original_path\": \"_world_sources\\\\PROJECT_MEMORY_CLEAN_SOURCE_NO_INDEX_20260512_2",
+      "tags": [
+        "34_arbres",
+        "agents",
+        "audit",
+        "graphiti",
+        "hexaflux",
+        "kernel",
+        "memory",
+        "osmose",
+        "proof",
+        "readonly",
+        "regroupements_v43",
+        "source_doc",
+        "x108"
+      ],
+      "source": "unknown",
+      "memory_decision": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    {
+      "all_keys": [
+        "decision_authority",
+        "id",
+        "memory_decision",
+        "path",
+        "readonly",
+        "source",
+        "tags",
+        "text_preview",
+        "title",
+        "updated_at"
+      ],
+      "title": "005B0B25F756_README_KERNEL_V2.md",
+      "path": "",
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000001\", \"title\": \"005B0B25F756_README_KERNEL_V2.md\", \"source_original_path\": \"_world_sources\\\\PROJECT_MEMORY_CLEAN_SOURCE_NO_INDEX_20260512_211234\\\\005B0B25F756_README_KE",
+      "tags": [
+        "34_arbres",
+        "agents",
+        "audit",
+        "graphiti",
+        "hexaflux",
+        "kernel",
+        "memory",
+        "proof",
+        "readonly",
+        "regroupements_v43",
+        "source_doc",
+        "x108"
+      ],
+      "source": "unknown",
+      "memory_decision": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    {
+      "all_keys": [
+        "decision_authority",
+        "id",
+        "memory_decision",
+        "path",
+        "readonly",
+        "source",
+        "tags",
+        "text_preview",
+        "title",
+        "updated_at"
+      ],
+      "title": "005BF3C6C39F_CURRENT_OBSIDIA_LLMOBSIDIEN_MODEL_IO_GUARD_READONLY_V0.txt",
+      "path": "",
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000002\", \"title\": \"005BF3C6C39F_CURRENT_OBSIDIA_LLMOBSIDIEN_MODEL_IO_GUARD_READONLY_V0.txt\", \"source_original_path\": \"_world_sources\\\\PROJECT_MEMORY_CLEAN_SOURCE_NO_INDEX_",
+      "tags": [
+        "34_arbres",
+        "agents",
+        "audit",
+        "graphiti",
+        "hexaflux",
+        "kernel",
+        "memory",
+        "proof",
+        "readonly",
+        "regroupements_v43",
+        "source_doc",
+        "x108"
+      ],
+      "source": "unknown",
+      "memory_decision": false,
+      "decision_authority": "KX108_ONLY"
+    }
+  ],
+  "counts": {
+    "with_text_preview_non_empty": 3267
+  },
+  "kernel_tagged_sample": [
+    {
+      "title": "003BEA03EEDD_T04__Consensus_Distribue_Resonance_semantique.md",
+      "path": "",
+      "path_exists": false,
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000000\", \"title\": \"003BEA03EEDD_T04__Consensus_Distribue_Resonance_semantique.md\", \"source_original_path\": \"_world_source"
+    },
+    {
+      "title": "005B0B25F756_README_KERNEL_V2.md",
+      "path": "",
+      "path_exists": false,
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000001\", \"title\": \"005B0B25F756_README_KERNEL_V2.md\", \"source_original_path\": \"_world_sources\\\\PROJECT_MEMORY_CLEAN_SOURC"
+    },
+    {
+      "title": "005BF3C6C39F_CURRENT_OBSIDIA_LLMOBSIDIEN_MODEL_IO_GUARD_READONLY_V0.txt",
+      "path": "",
+      "path_exists": false,
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000002\", \"title\": \"005BF3C6C39F_CURRENT_OBSIDIA_LLMOBSIDIEN_MODEL_IO_GUARD_READONLY_V0.txt\", \"source_original_path\": \"_wo"
+    },
+    {
+      "title": "00E935816959_CURRENT_OBSIDIA_REVERSE_OS_INTERLANGUAGE_TRANSDUCTION_V1.txt",
+      "path": "",
+      "path_exists": false,
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000003\", \"title\": \"00E935816959_CURRENT_OBSIDIA_REVERSE_OS_INTERLANGUAGE_TRANSDUCTION_V1.txt\", \"source_original_path\": \"_"
+    },
+    {
+      "title": "012937F947F0_agent_boundary.md",
+      "path": "",
+      "path_exists": false,
+      "text_preview": "{\"id\": \"BRODY_GRAPHITI_READY_000004\", \"title\": \"012937F947F0_agent_boundary.md\", \"source_original_path\": \"_world_sources\\\\PROJECT_MEMORY_CLEAN_SOURCE_"
+    }
+  ]
+}

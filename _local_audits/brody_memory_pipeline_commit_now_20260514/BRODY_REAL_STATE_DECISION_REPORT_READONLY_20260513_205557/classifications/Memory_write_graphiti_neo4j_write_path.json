@@ -1,0 +1,15 @@
+{
+  "component": "Memory write (graphiti/neo4j write path)",
+  "evidence_path": "Tous rapports étapes 3-7 + brody_api_bridge_runtime_authorization_ledger",
+  "last_status": "NOT_AUTHORIZED_BY_DESIGN",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": false,
+  "reason": "graphiti_write=false, neo4j_write_executed=false, memory_intake=false sur tous les modules. runtime_authorized_any=false dans le ledger. Par conception : écriture réservée à KX108_ONLY sur instruction opérateur explicite.",
+  "next_action": "NONE — correct par conception"
+}

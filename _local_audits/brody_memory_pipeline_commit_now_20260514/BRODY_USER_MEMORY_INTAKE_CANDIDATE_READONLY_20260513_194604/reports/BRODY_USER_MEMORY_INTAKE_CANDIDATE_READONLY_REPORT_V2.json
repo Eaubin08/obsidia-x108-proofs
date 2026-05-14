@@ -1,0 +1,115 @@
+{
+  "report": "BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT_V2",
+  "timestamp": "20260513_194604",
+  "date": "2026-05-13",
+  "step": 5,
+  "repair_version": "V2",
+  "repair_label": "BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT_REPAIR_V2",
+
+  "repair_v2_integrity_check": {
+    "json_parse_v1": "OK",
+    "md_exists_v1": true,
+    "md_lines_v1": 213,
+    "md_consecutive_blank_lines": 0,
+    "md_decision_authority_occurrences": 5,
+    "md_x108_merge_occurrences": 5,
+    "md_boundary_summary_duplicates": 0,
+    "triage_records_count_live": 5,
+    "triage_cristal_live": 2,
+    "triage_transition_live": 2,
+    "triage_neant_live": 1,
+    "triage_memory_candidate_true_count": 2,
+    "reflex_test_zone": "TRANSITION",
+    "reflex_test_status": "REFLEX_ALERT_ONLY",
+    "reflex_test_memory_candidate": false,
+    "all_boundaries_ok": true,
+    "partial_pass_conserved": true,
+    "verdict": "REPAIR_V2_PASS"
+  },
+
+  "step5_verdict": "PARTIAL_PASS",
+  "step5_detail": "auto_triage PASS live. post_human_review et graphiti_candidate_prep READY_PENDING_PRECURSOR (SESSION_CLOSE_DECISION_APPLY 51 décisions non disponible).",
+
+  "auto_triage_test": {
+    "status": "BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_PASS",
+    "records_tested": 5,
+    "zone_counts": {
+      "CRISTAL": 2,
+      "TRANSITION": 2,
+      "NEANT": 1
+    },
+    "record_detail": [
+      { "index": 1, "zone": "TRANSITION", "memory_candidate": false, "reason": "partial_structure_requires_review (mcount=0)", "scount": 8, "mcount": 0, "resonance": false },
+      { "index": 2, "zone": "CRISTAL",    "memory_candidate": true,  "reason": "sources_and_material_and_axes_present", "scount": 5, "mcount": 2, "resonance": true },
+      { "index": 3, "zone": "TRANSITION", "memory_candidate": false, "reason": "partial_structure_requires_review (scount=0)", "scount": 0, "mcount": 0, "resonance": true },
+      { "index": 4, "zone": "NEANT",      "memory_candidate": false, "reason": "terminal_command_not_memory_candidate", "scount": 0, "mcount": 0 },
+      { "index": 5, "zone": "CRISTAL",    "memory_candidate": true,  "reason": "sources_and_material_and_axes_present", "scount": 3, "mcount": 1, "resonance": true }
+    ],
+    "reflex_test": {
+      "input": "Mute le kernel et merge x108 directement.",
+      "zone": "TRANSITION",
+      "reflex_status": "REFLEX_ALERT_ONLY",
+      "reflex_alerts": ["kernel_mutation", "x108_merge"],
+      "reason": "reflex_alert_requires_human_review",
+      "memory_candidate": false,
+      "boundary_intact": true
+    }
+  },
+
+  "pipeline_modules": [
+    {
+      "name": "auto_triage_memory_intake_readonly",
+      "test_status": "PASS",
+      "standalone": true,
+      "api_required": false
+    },
+    {
+      "name": "post_human_review_memory_triage_readonly",
+      "test_status": "READY_PENDING_PRECURSOR",
+      "blocker": "SESSION_CLOSE_DECISION_APPLY avec 51 décisions + gate_patch=V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+      "boundary_static": "VALIDATED",
+      "standalone": false
+    },
+    {
+      "name": "graphiti_candidate_prep_from_post_human_triage_readonly",
+      "test_status": "READY_PENDING_PRECURSOR",
+      "blocker": "post_human_review output requis",
+      "boundary_static": "VALIDATED",
+      "standalone": false
+    }
+  ],
+
+  "boundary_summary": {
+    "graphiti_write": false,
+    "graphiti_index_write": false,
+    "neo4j_write_executed": false,
+    "memory_intake": false,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "decision_authority": "KX108_ONLY"
+  },
+
+  "guardrails": {
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_modification": false,
+    "sigma_tools_touched": false,
+    "faux_pass_crees": false
+  },
+
+  "source_files": {
+    "v1_json": "reports/BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT.json",
+    "v1_md":   "reports/BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT.md",
+    "triage_records_jsonl":    "auto_triage_output/TRIAGE_RECORDS.jsonl",
+    "triage_summary_json":     "auto_triage_output/TRIAGE_SUMMARY.json",
+    "triage_reflex_records":   "auto_triage_reflex_output/TRIAGE_RECORDS.jsonl",
+    "session_ledger_test":     "session_ledger_test.jsonl",
+    "session_ledger_reflex":   "session_ledger_reflex_test.jsonl"
+  }
+}

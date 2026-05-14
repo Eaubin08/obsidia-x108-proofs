@@ -1,0 +1,15 @@
+{
+  "component": "graphiti_candidate_prep_from_post_human_triage_readonly",
+  "evidence_path": "CURRENT_BRODY_GRAPHITI_CANDIDATE_PREP_FROM_POST_HUMAN_TRIAGE_READONLY.txt (x108-proofs)",
+  "last_status": "READY_PENDING_PRECURSOR",
+  "validated": false,
+  "needs_build": false,
+  "needs_test": true,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": true,
+  "do_not_commit": false,
+  "reason": "Module codé, pointer présent. STATUS=READY. Précurseur requis : output post_human_review (BRODY_POST_HUMAN_MEMORY_CANDIDATES_READONLY.jsonl). DRY_RUN uniquement — graphiti_index_write=false.",
+  "next_action": "COMMIT_CANDIDATE (code + pointer) — test runtime bloqué sur précurseur post_human"
+}

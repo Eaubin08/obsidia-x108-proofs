@@ -1,0 +1,9 @@
+{
+  "case": "crawler_blocked",
+  "method": "CRAWL",
+  "url": "https://example.com/",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_CRAWLER_NOT_ALLOWED",
+  "boundary_intact": true
+}

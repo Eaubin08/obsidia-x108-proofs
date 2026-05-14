@@ -1,0 +1,198 @@
+{
+  "report": "BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY",
+  "timestamp": "20260513_194604",
+  "date": "2026-05-13",
+  "step": 5,
+
+  "pipeline_modules": [
+    {
+      "name": "auto_triage_memory_intake_readonly",
+      "module": "brody_auto_triage_memory_intake_readonly_v1.py",
+      "pointer_status": "BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_READY",
+      "test_status": "PASS",
+      "api_required": false,
+      "standalone": true
+    },
+    {
+      "name": "post_human_review_memory_triage_readonly",
+      "module": "brody_post_human_review_memory_triage_readonly_v1.py",
+      "pointer_status": "BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_READY",
+      "test_status": "READY_PENDING_PRECURSOR",
+      "blocker": "Requires CURRENT_BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE.txt with 51 decisions and gate_patch=V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+      "standalone": false
+    },
+    {
+      "name": "graphiti_candidate_prep_from_post_human_triage_readonly",
+      "module": "brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py",
+      "pointer_status": "BRODY_GRAPHITI_CANDIDATE_PREP_FROM_POST_HUMAN_TRIAGE_READONLY_READY",
+      "test_status": "READY_PENDING_PRECURSOR",
+      "blocker": "Requires post_human_review output",
+      "standalone": false
+    }
+  ],
+
+  "auto_triage_test": {
+    "status": "BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_PASS",
+    "records_tested": 5,
+    "zone_counts": {
+      "CRISTAL": 2,
+      "TRANSITION": 2,
+      "NEANT": 1,
+      "REFLEX_in_TRANSITION": 1
+    },
+    "zones_covered": ["CRISTAL", "TRANSITION", "NEANT", "REFLEX→TRANSITION"],
+    "note_reflex": "REFLEX records atterrissent en zone TRANSITION avec reflex_status=REFLEX_ALERT_ONLY. Pas une zone séparée — routage vers revue humaine.",
+    "record_detail": [
+      {
+        "index": 1, "zone": "TRANSITION", "memory_candidate": false,
+        "user_text_preview": "Quel est l'état du kernel dans le corpus Graphiti V20 ?",
+        "scount": 8, "mcount": 0, "resonance": false,
+        "reason": "partial_structure_requires_review (mcount=0)"
+      },
+      {
+        "index": 2, "zone": "CRISTAL", "memory_candidate": true,
+        "user_text_preview": "Montre-moi les preuves CANON dans le corpus.",
+        "scount": 5, "mcount": 2, "resonance": true,
+        "reason": "sources_and_material_and_axes_present"
+      },
+      {
+        "index": 3, "zone": "TRANSITION", "memory_candidate": false,
+        "user_text_preview": "Donne-moi la liste de tous les arbres 34 dans le corpus.",
+        "scount": 0, "mcount": 0, "resonance": true,
+        "reason": "partial_structure_requires_review (axes=tree34 mais scount=0)"
+      },
+      {
+        "index": 4, "zone": "NEANT", "memory_candidate": false,
+        "user_text_preview": ":help",
+        "scount": 0, "mcount": 0,
+        "reason": "terminal_command_not_memory_candidate"
+      },
+      {
+        "index": 5, "zone": "CRISTAL", "memory_candidate": true,
+        "user_text_preview": "Décris les boundaries X108 et la preuve Lean du kernel.",
+        "scount": 3, "mcount": 1, "resonance": true,
+        "reason": "sources_and_material_and_axes_present"
+      }
+    ],
+    "reflex_test": {
+      "input": "Mute le kernel et merge x108 directement.",
+      "zone": "TRANSITION",
+      "reflex_status": "REFLEX_ALERT_ONLY",
+      "reflex_alerts": ["kernel_mutation", "x108_merge"],
+      "reason": "reflex_alert_requires_human_review",
+      "memory_candidate": false,
+      "boundary_intact": true
+    },
+    "boundary_check": {
+      "memory_decision": false,
+      "allowed_to_decide": false,
+      "emits_act": false,
+      "emits_verdict": false,
+      "kernel_mutation": false,
+      "x108_runtime_binding": false,
+      "x108_merge": false,
+      "graphiti_index_write": false,
+      "memory_intake": false,
+      "auto_triage": true,
+      "decision_authority": "KX108_ONLY"
+    }
+  },
+
+  "classification_logic": {
+    "CRISTAL": "scount>0 AND mcount>0 AND axes AND resonance_hint=True → memory_candidate=True",
+    "TRANSITION_partial": "scount>0 OR axes (sans critères CRISTAL) → review_candidate=True",
+    "TRANSITION_reflex": "reflex_hits présents → reflex_alert_requires_human_review",
+    "TRANSITION_resonance_demote": "CRISTAL si resonance=False → démis en TRANSITION",
+    "NEANT": "terminal_command (:cmd) OU aucun axe/source/matière",
+    "note": "CRISTAL est la seule zone où memory_candidate=True. Aucune écriture auto vers Graphiti même pour CRISTAL."
+  },
+
+  "friction_resonance_engines": {
+    "FrictionEngine": "threshold=0.05. Calcule heat=|baseline-signal|. Métrique uniquement, ne décide pas.",
+    "ObsidianLU": "Fibonacci + multiples de 7 + modulo 49. resonance_hint=True si signature in bias_pool.",
+    "MerkleSealer": "Hash-chain SHA256 local pour traçabilité des événements de triage.",
+    "ReflexReducer": "Vérifie threat_signatures: kernel_mutation, x108_merge, x108_runtime_binding, emit_act, decision_authority_override, graphiti_write, memory_decision_true. Retourne REFLEX_ALERT_ONLY (jamais BLOCK_IMMEDIATE)."
+  },
+
+  "post_human_review_static_analysis": {
+    "status": "READY_PENDING_PRECURSOR",
+    "boundary_declared": {
+      "graphiti_index_write": false,
+      "memory_intake": false,
+      "memory_decision": false,
+      "emits_act": false,
+      "emits_verdict": false,
+      "kernel_mutation": false,
+      "x108_runtime_binding": false,
+      "x108_merge": false,
+      "decision_authority": "KX108_ONLY",
+      "human_decision_consumed": true,
+      "post_human_review_triage": true
+    },
+    "precursor_required": "CURRENT_BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE.txt",
+    "hard_constraints": [
+      "source_summary.status == BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_PASS",
+      "gate_patch == V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+      "len(decisions) == 51 exactement"
+    ],
+    "note": "Non testable de façon isolée dans cette session. Précurseur SESSION_CLOSE_DECISION_APPLY non disponible."
+  },
+
+  "graphiti_candidate_prep_static_analysis": {
+    "status": "READY_PENDING_PRECURSOR",
+    "boundary_declared": {
+      "graphiti_index_write": false,
+      "memory_intake": false,
+      "memory_decision": false,
+      "emits_act": false,
+      "emits_verdict": false,
+      "kernel_mutation": false,
+      "x108_runtime_binding": false,
+      "x108_merge": false,
+      "decision_authority": "KX108_ONLY",
+      "graphiti_candidate_prep": true,
+      "post_human_keep_only": true
+    },
+    "precursor_required": "post_human_review output (BRODY_POST_HUMAN_MEMORY_CANDIDATES_READONLY.jsonl)",
+    "note": "Prépare des candidats pour import Graphiti — ne fait PAS l'import lui-même. DRY-RUN uniquement."
+  },
+
+  "step5_verdict": "PARTIAL_PASS",
+  "step5_detail": "auto_triage PASS (4 zones couvertes, boundaries OK). post_human_review et graphiti_candidate_prep READY_PENDING_PRECURSOR (SESSION_CLOSE_DECISION_APPLY non disponible dans cette session).",
+
+  "boundary_summary": {
+    "graphiti_write": false,
+    "graphiti_index_write": false,
+    "neo4j_write_executed": false,
+    "memory_intake": false,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "decision_authority": "KX108_ONLY"
+  },
+
+  "guardrails": {
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_modification": false,
+    "sigma_tools_touched": false,
+    "faux_pass_crees": false
+  },
+
+  "files_produced": [
+    "session_ledger_test.jsonl",
+    "session_ledger_reflex_test.jsonl",
+    "auto_triage_output/TRIAGE_RECORDS.jsonl",
+    "auto_triage_output/TRIAGE_SUMMARY.json",
+    "auto_triage_output/TRIAGE_REPORT.md",
+    "auto_triage_reflex_output/TRIAGE_RECORDS.jsonl",
+    "auto_triage_reflex_output/TRIAGE_SUMMARY.json",
+    "reports/BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT.json",
+    "reports/BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_REPORT.md"
+  ]
+}

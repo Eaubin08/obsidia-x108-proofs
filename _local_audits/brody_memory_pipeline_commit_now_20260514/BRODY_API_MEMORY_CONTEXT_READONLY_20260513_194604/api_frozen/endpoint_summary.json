@@ -1,0 +1,62 @@
+﻿[
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/status",
+        "name":  "status",
+        "note":  "OK"
+    },
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=Kernel\u0026limit=5",
+        "name":  "context_kernel",
+        "note":  "OK"
+    },
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=CANON\u0026limit=5",
+        "name":  "context_canon",
+        "note":  "OK"
+    },
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=X-108\u0026limit=5",
+        "name":  "context_x108",
+        "note":  "OK"
+    },
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/context?q=Brody\u0026limit=5",
+        "name":  "context_brody",
+        "note":  "OK"
+    },
+    {
+        "ok":  true,
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/search?q=Kernel\u0026limit=5",
+        "name":  "search_kernel",
+        "note":  "OK"
+    },
+    {
+        "name":  "post_context",
+        "blocked_405":  true,
+        "ok":  true,
+        "status_code":  405,
+        "method":  "POST",
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/context"
+    },
+    {
+        "name":  "post_search",
+        "blocked_405":  true,
+        "ok":  true,
+        "status_code":  405,
+        "method":  "POST",
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/search"
+    },
+    {
+        "name":  "delete_status",
+        "blocked_405":  true,
+        "ok":  true,
+        "status_code":  405,
+        "method":  "DELETE",
+        "url":  "http://127.0.0.1:8011/graph/v20/frozen/status"
+    }
+]

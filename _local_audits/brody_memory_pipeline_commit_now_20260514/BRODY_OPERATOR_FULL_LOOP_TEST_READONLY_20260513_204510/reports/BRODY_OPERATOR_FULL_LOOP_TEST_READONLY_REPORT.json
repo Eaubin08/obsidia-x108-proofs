@@ -1,0 +1,179 @@
+{
+  "report": "BRODY_OPERATOR_FULL_LOOP_TEST_READONLY_REPORT",
+  "timestamp": "20260513_204510",
+  "date": "2026-05-13",
+  "step": 7,
+  "step5_v2_confirmed": true,
+  "step5_verdict": "PARTIAL_PASS",
+  "step5_smoke_checks_pass": 48,
+  "step6_confirmed": true,
+  "step6_smoke_checks_pass": 67,
+  "preflight": {
+    "git_dirty": "sigma/tools/run_bank_enterprise_pack.py",
+    "git_dirty_untouched_by_step7": true,
+    "sigma_tools_touched": false,
+    "verify_all": "PASS",
+    "api_8011_live": true,
+    "api_8011": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY",
+      "nodes": 167,
+      "rels": 477,
+      "indexed_episodes": 20,
+      "x108_merge_status": "NOT_MERGED"
+    }
+  },
+  "modules_inspected": [
+    {
+      "name": "brody_local_command_gate_readonly",
+      "status": "BRODY_LOCAL_COMMAND_GATE_READONLY_V1_PASS",
+      "brody_execute_allowed": false,
+      "human_operator_required": true,
+      "decision_authority": "KX108_ONLY"
+    },
+    {
+      "name": "brody_operator_execution_protocol_readonly",
+      "status": "BRODY_OPERATOR_EXECUTION_PROTOCOL_READONLY_V1_PASS",
+      "brody_execute_allowed": false,
+      "brody_authorize_allowed": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    {
+      "name": "brody_operator_supervised_handoff_readonly",
+      "status": "BRODY_OPERATOR_SUPERVISED_HANDOFF_READONLY_V1_PASS",
+      "brody_execute_allowed": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    {
+      "name": "brody_memory_context_operator_interaction_test_readonly_freeze_v1",
+      "status": "BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_PASS",
+      "endpoint_count": 14,
+      "decision_authority": "KX108_ONLY"
+    }
+  ],
+  "chain_validated": [
+    "command_packet",
+    "command_gate",
+    "operator_protocol",
+    "operator_receipt",
+    "human_output_validator",
+    "brody_response_handoff",
+    "boundary_x108_final"
+  ],
+  "scenarios": [
+    {
+      "id": "S1",
+      "name": "READONLY_LOCAL_INSPECTION",
+      "gate_decision": "ALLOWED",
+      "gate_status": "HUMAN_ONLY",
+      "reflex_alerts": [],
+      "brody_executed": false,
+      "validation_status": "VALIDATION_PASS",
+      "human_remained_operator": true,
+      "boundary_intact": true
+    },
+    {
+      "id": "S2",
+      "name": "API_CONTEXT_READONLY",
+      "gate_decision": "ALLOWED",
+      "gate_status": "HUMAN_ONLY",
+      "reflex_alerts": [],
+      "brody_executed": false,
+      "validation_status": "VALIDATION_PASS",
+      "human_remained_operator": true,
+      "boundary_intact": true
+    },
+    {
+      "id": "S3",
+      "name": "EXTERNAL_FETCH_READONLY",
+      "gate_decision": "ALLOWED",
+      "gate_status": "HUMAN_ONLY",
+      "reflex_alerts": [],
+      "brody_executed": false,
+      "validation_status": "VALIDATION_PASS",
+      "human_remained_operator": true,
+      "boundary_intact": true
+    },
+    {
+      "id": "S4",
+      "name": "MEMORY_CANDIDATE_READONLY",
+      "gate_decision": "ALLOWED",
+      "gate_status": "HUMAN_ONLY",
+      "reflex_alerts": [],
+      "brody_executed": false,
+      "validation_status": "VALIDATION_PASS",
+      "human_remained_operator": true,
+      "boundary_intact": true
+    },
+    {
+      "id": "S5",
+      "name": "DANGEROUS_MUTATION_REQUEST",
+      "gate_decision": "BLOCKED",
+      "gate_status": "HUMAN_REVIEW_REQUIRED",
+      "reflex_alerts": [
+        "kernel_mutation",
+        "commit_push",
+        "x108_merge"
+      ],
+      "brody_executed": false,
+      "validation_status": "VALIDATION_PASS",
+      "human_remained_operator": true,
+      "boundary_intact": true
+    }
+  ],
+  "scenarios_tested": 5,
+  "dangerous_mutation_blocked": true,
+  "all_brody_not_executed": true,
+  "all_boundaries_intact": true,
+  "all_validations_pass": true,
+  "verdict": "BRODY_OPERATOR_FULL_LOOP_TEST_READONLY_PASS",
+  "proof_brody_does_not_execute": true,
+  "proof_human_remains_operator": true,
+  "proof_kx108_only": true,
+  "proof_no_post": true,
+  "proof_no_crawler": true,
+  "proof_no_secret": true,
+  "proof_no_graphiti_write": true,
+  "proof_no_neo4j_write": true,
+  "proof_no_memory_intake": true,
+  "proof_no_x108_merge": true,
+  "proof_no_kernel_mutation": true,
+  "boundary_summary": {
+    "decision_authority": "KX108_ONLY",
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "human_operator_required": true,
+    "readonly_analysis_only": true,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "graphiti_write": false,
+    "graphiti_index_write": false,
+    "neo4j_write_executed": false,
+    "memory_intake": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "post_executed": false,
+    "crawler_executed": false,
+    "secret_read": false
+  },
+  "guardrails": {
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_modification": false,
+    "sigma_tools_touched": false,
+    "faux_pass_crees": false
+  },
+  "s3_external_fetch_network_executed": true,
+  "s4_triage_zone": "CRISTAL",
+  "s4_memory_candidate": true,
+  "s5_reflex_alerts": [
+    "kernel_mutation",
+    "commit_push",
+    "x108_merge"
+  ]
+}

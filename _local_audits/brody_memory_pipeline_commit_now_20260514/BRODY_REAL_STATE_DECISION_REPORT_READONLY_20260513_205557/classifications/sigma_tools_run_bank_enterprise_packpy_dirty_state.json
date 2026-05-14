@@ -1,0 +1,15 @@
+{
+  "component": "sigma/tools/run_bank_enterprise_pack.py (dirty state)",
+  "evidence_path": "git status → M sigma/tools/run_bank_enterprise_pack.py",
+  "last_status": "DIRTY_UNSTAGED_UNAUDITED",
+  "validated": false,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": true,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": true,
+  "reason": "Fichier dirty depuis avant le début de cette session. Non stagé. Non audité dans cette session. Contenu inconnu — modifications potentielles non inspectées. Bloque toute décision de commit globale.",
+  "next_action": "PRIORITY_1 — inspecter git diff sigma/tools/run_bank_enterprise_pack.py, décider revert ou commit isolé"
+}

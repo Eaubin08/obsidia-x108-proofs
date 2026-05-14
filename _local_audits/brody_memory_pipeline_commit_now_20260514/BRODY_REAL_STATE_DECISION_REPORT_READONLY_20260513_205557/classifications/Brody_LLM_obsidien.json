@@ -1,0 +1,15 @@
+{
+  "component": "Brody LLM obsidien",
+  "evidence_path": "architecture + step4 audit BRODY_API_MEMORY_CONTEXT_READONLY",
+  "last_status": "ARCHITECTURAL_CORRECT",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": false,
+  "reason": "Brody = LLM obsidien. entity_count=0 dans Graphiti V20 = correct architectural. N'exécute pas, n'autorise pas, ne décide pas.",
+  "next_action": "NONE — état correct, pas d'action requise"
+}

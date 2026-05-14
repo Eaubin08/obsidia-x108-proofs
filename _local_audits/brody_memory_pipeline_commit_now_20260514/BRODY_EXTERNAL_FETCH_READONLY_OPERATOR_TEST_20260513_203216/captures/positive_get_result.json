@@ -1,0 +1,19 @@
+{
+  "case": "positive_get_example_com",
+  "url": "https://example.com/",
+  "method": "GET",
+  "status_code": 200,
+  "content_type": "text/html",
+  "response_size_bytes": 528,
+  "sha256_body": "fb91d75a6bb430787a61b0aec5e374f580030f2878e1613eab5ca6310f7bbb9a",
+  "timestamp": "2026-05-13T18:32:16.290731Z",
+  "final_url": "https://example.com/",
+  "redirect_count": 0,
+  "no_secret_detected": true,
+  "no_write": true,
+  "operator_approved": true,
+  "network_executed": true,
+  "method_confirmed_get": true,
+  "preview_500chars": "<!doctype html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style></head><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more<",
+  "boundary_intact": true
+}

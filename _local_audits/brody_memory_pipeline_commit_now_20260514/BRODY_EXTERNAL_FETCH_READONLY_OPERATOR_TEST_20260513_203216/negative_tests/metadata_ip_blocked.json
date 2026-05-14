@@ -1,0 +1,9 @@
+{
+  "case": "metadata_ip_blocked",
+  "method": "GET",
+  "url": "http://169.254.169.254/latest/meta-data/",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_PRIVATE_OR_LOCAL",
+  "boundary_intact": true
+}

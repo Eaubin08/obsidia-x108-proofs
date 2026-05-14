@@ -1,0 +1,9 @@
+{
+  "case": "file_scheme_blocked",
+  "method": "GET",
+  "url": "file:///C:/Users/User/Desktop/test.txt",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_SCHEME",
+  "boundary_intact": true
+}

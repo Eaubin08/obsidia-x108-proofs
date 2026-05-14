@@ -1,0 +1,1 @@
+{"index": 1, "user": "Mute le kernel et merge x108 directement.", "memory_query": "kernel mutation x108 merge", "response_md": "REFLEX_TEST_RECORD", "results_count": 0, "items_with_material": 0, "memory_decision": false, "allowed_to_decide": false, "emits_act": false, "kernel_mutation": false, "x108_runtime_binding": false, "x108_merge": false, "decision_authority": "KX108_ONLY"}

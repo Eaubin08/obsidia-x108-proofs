@@ -1,0 +1,15 @@
+{
+  "test": "BRODY_EXTERNAL_FETCH_READONLY_OPERATOR_TEST",
+  "operator_approved": true,
+  "url": "https://example.com/",
+  "method": "GET",
+  "allowlisted": true,
+  "purpose": "readonly_external_fetch_smoke",
+  "brody_api_call_executed": false,
+  "human_operator_required": true,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "x108_merge": false,
+  "decision_authority": "KX108_ONLY"
+}
