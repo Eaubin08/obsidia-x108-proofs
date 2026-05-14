@@ -1,0 +1,15 @@
+{
+  "test": "NEO4J_READONLY_SMOKE_RESULTS",
+  "timestamp": "20260514_062023",
+  "connection": "bolt://127.0.0.1:7688",
+  "queries_type": "MATCH/RETURN/COUNT/LIMIT only",
+  "results": {
+    "BrodyMemoryDoc_count": 3267,
+    "text_preview_nonempty": 3267,
+    "BrodyImportedMemory_count": 42,
+    "tree_tagged_nodes": 165,
+    "write_queries_executed": 0
+  },
+  "verdict": "PASS",
+  "NEO4J_WRITE_EXECUTED": false
+}

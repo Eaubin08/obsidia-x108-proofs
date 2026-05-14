@@ -1,0 +1,25 @@
+{
+  "mission": "RUNTIME_FILES_FINAL_CHECK",
+  "timestamp": "20260514_062023",
+  "path": "periphery/brody_memory_readonly",
+  "exists": true,
+  "python_files_total": 46,
+  "python_files_tracked_git": 46,
+  "py_compile_passed": 46,
+  "py_compile_failed": 0,
+  "py_compile_pass_rate": "46/46",
+  "low_material_check": {
+    "file": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "line": 52,
+    "text_preview_in_coalesce": true,
+    "coalesce_snippet": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, \"\") AS body"
+  },
+  "external_deps": [
+    "neo4j driver only"
+  ],
+  "internal_imports_ok": true,
+  "RUNTIME_FILES_PASS": true,
+  "LOW_MATERIAL_PATCH_PRESENT": true,
+  "PY_COMPILE_PASS": true,
+  "PY_COMPILE_TOTAL": 46
+}

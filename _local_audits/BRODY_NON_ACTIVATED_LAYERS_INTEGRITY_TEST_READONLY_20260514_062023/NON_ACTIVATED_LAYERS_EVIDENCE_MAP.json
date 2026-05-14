@@ -1,0 +1,33 @@
+{
+  "mission": "NON_ACTIVATED_LAYERS_EVIDENCE_MAP",
+  "timestamp": "20260514_062023",
+  "runtime_binding_evidence": {
+    "files_with_traces": "15+ audit JSON files",
+    "key_flag": "runtime_binding_allowed=false",
+    "protocol_found": "READY_FOR_RUNTIME_BINDING=false present in context chain reports",
+    "activation_status": "NOT_ACTIVATED"
+  },
+  "graphiti_auto_write_evidence": {
+    "auto_write_enabled_false_sources": "multiple (CURRICULUM_POST_WRITE_SYNTHESIS, chain tests)",
+    "what_remains_gated": "memory_intake=false, auto_write=false",
+    "controlled_write_done": "42 nodes under operator gate \u2014 historical, not auto",
+    "activation_status": "NOT_ACTIVATED"
+  },
+  "autonomous_memory_evidence": {
+    "pipeline_stages_found": 10,
+    "human_review_gate": "PRESENT \u2014 BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_20260514_001225",
+    "import_gate": "PRESENT \u2014 BRODY_GRAPHITI_IMPORT_DRY_RUN_REVIEW_GATE_READONLY_20260514_002744",
+    "activation_status": "NOT_ACTIVATED"
+  },
+  "x108_merge_evidence": {
+    "x108_merge_status": "NOT_MERGED (from context JSONs)",
+    "commit_status": "LOCAL_ONLY",
+    "activation_status": "NOT_EXECUTED"
+  },
+  "real_action_without_gate_evidence": {
+    "operator_loop_test": "BRODY_OPERATOR_FULL_LOOP_TEST_READONLY_20260513_204510 \u2014 5/5 scenarios, dangerous_mutation BLOCKED",
+    "smoke_checks": "115/115 PASS",
+    "bypass_detected": false,
+    "activation_status": "NOT_ALLOWED"
+  }
+}

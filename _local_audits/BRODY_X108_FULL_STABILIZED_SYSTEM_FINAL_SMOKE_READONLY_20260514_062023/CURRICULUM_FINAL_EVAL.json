@@ -1,0 +1,21 @@
+{
+  "mission": "CURRICULUM_FINAL_EVAL",
+  "timestamp": "20260514_062023",
+  "source_pre_path_b": "_local_audits/brody_pipeline_hold_local_stabilized_20260514/BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRICULUM_EVAL_SUMMARY_MATRIX.json",
+  "source_post_write": "_local_audits/brody_pipeline_hold_local_stabilized_20260514/BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/CURRICULUM_POST_WRITE_SYNTHESIS.json",
+  "stage_verdicts": {
+    "FRANCAIS": "EVAL_PASS",
+    "LOGIQUE": "EVAL_PASS",
+    "MATHS_SIMPLES": "EVAL_PASS",
+    "SCIENCE": "EVAL_PASS",
+    "PHYSIQUE": "EVAL_PASS",
+    "MONDE_LARGE": "EVAL_PASS_PARTIAL"
+  },
+  "MONDE_LARGE_partial_reason": "9 trees blocked by design: T20,T21,T22,T24,T30,T31,T32,T33,T34",
+  "MONDE_LARGE_PARTIAL_BY_DESIGN": true,
+  "total_nodes_tagged": 165,
+  "total_tags_added": 330,
+  "path_a_nodes": 48,
+  "path_b_nodes": 117,
+  "CURRICULUM_CORE_PASS": true
+}
