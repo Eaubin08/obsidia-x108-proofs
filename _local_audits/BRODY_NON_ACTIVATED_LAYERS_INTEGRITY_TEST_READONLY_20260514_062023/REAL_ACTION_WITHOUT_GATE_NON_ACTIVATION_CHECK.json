@@ -1,0 +1,29 @@
+{
+  "test": "REAL_ACTION_WITHOUT_GATE_NON_ACTIVATION_CHECK",
+  "timestamp": "20260514_062023",
+  "evidence_found": [
+    {
+      "source": "BRODY_OPERATOR_FULL_LOOP_TEST_READONLY_20260513_204510",
+      "note": "5/5 scenarios validated, dangerous_mutation BLOCKED, brody_executed=false partout"
+    },
+    {
+      "source": "SMOKE_CHECKS_PASS=115/115",
+      "note": "All gate checks pass"
+    },
+    {
+      "source": "Multiple boundary JSONs",
+      "keys": [
+        "brody_execute_allowed=false",
+        "brody_authorize_allowed=false",
+        "operator_gate_required=true"
+      ]
+    }
+  ],
+  "real_action_without_gate_worked_on": true,
+  "real_action_without_gate_allowed": false,
+  "brody_execute_allowed": false,
+  "brody_authorize_allowed": false,
+  "operator_gate_required": true,
+  "bypass_detected": false,
+  "verdict": "PASS"
+}
