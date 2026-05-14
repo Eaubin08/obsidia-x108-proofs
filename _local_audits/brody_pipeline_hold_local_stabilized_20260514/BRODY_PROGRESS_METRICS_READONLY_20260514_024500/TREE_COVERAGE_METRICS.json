@@ -1,0 +1,63 @@
+{
+  "mission": "BRODY_PROGRESS_METRICS_READONLY",
+  "timestamp": "20260514_024500",
+  "readonly": true,
+
+  "corpus_baseline": {
+    "brody_memory_doc_total": 3267,
+    "nodes_with_34_arbres": 2739,
+    "nodes_without_34_arbres": 528,
+    "nodes_with_any_tree_tag": 48,
+    "nodes_without_any_tree_tag": 2691,
+    "tree_tag_coverage_pct": 1.75
+  },
+
+  "tree_status": {
+    "T01": {"name":"Arbre de l'Humain",        "family":"I_FONDAMENTAUX",           "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T02": {"name":"Arbre de la Conscience",    "family":"I_FONDAMENTAUX",           "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T03": {"name":"Arbre de la Perception",    "family":"I_FONDAMENTAUX",           "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T04": {"name":"Arbre du Sens",             "family":"I_FONDAMENTAUX",           "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T05": {"name":"Arbre de l'Identité",       "family":"I_FONDAMENTAUX",           "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T06": {"name":"Arbre de l'Intelligence",   "family":"II_COGNITIFS",             "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T07": {"name":"Arbre du Jugement",         "family":"II_COGNITIFS",             "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T08": {"name":"Arbre de la Décision",      "family":"II_COGNITIFS",             "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T09": {"name":"Arbre de l'Apprentissage",  "family":"II_COGNITIFS",             "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T10": {"name":"Arbre de l'Innovation",     "family":"II_COGNITIFS",             "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T11": {"name":"Arbre du Savoir",           "family":"III_CONNAISSANCE",         "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T12": {"name":"Arbre de la Complexité",    "family":"III_CONNAISSANCE",         "docs":4, "status":"TAGGED",                    "signal":"TITLE_REGEX"},
+    "T13": {"name":"DATA_MISSING",              "family":"IV_RELATIONNELS_SOCIAUX",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T14": {"name":"DATA_MISSING",              "family":"IV_RELATIONNELS_SOCIAUX",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T15": {"name":"DATA_MISSING",              "family":"IV_RELATIONNELS_SOCIAUX",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T16": {"name":"DATA_MISSING",              "family":"IV_RELATIONNELS_SOCIAUX",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T17": {"name":"DATA_MISSING",              "family":"IV_RELATIONNELS_SOCIAUX",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T18": {"name":"DATA_MISSING",              "family":"V_ACTION_TRANSFORMATION",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T19": {"name":"DATA_MISSING",              "family":"V_ACTION_TRANSFORMATION",  "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T20": {"name":"DATA_MISSING",              "family":"V_ACTION_TRANSFORMATION",  "docs":0, "status":"BLOCKED_ACTION_TRIGGER",    "signal":null},
+    "T21": {"name":"DATA_MISSING",              "family":"V_ACTION_TRANSFORMATION",  "docs":0, "status":"BLOCKED_ACTION_TRIGGER",    "signal":null},
+    "T22": {"name":"DATA_MISSING",              "family":"V_ACTION_TRANSFORMATION",  "docs":0, "status":"BLOCKED_ACTION_TRIGGER",    "signal":null},
+    "T23": {"name":"DATA_MISSING",              "family":"VI_TEMPORELS_MEMORIELS",   "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T24": {"name":"DATA_MISSING",              "family":"VI_TEMPORELS_MEMORIELS",   "docs":0, "status":"BLOCKED_DIRECT_MEMORY_WRITE","signal":null},
+    "T25": {"name":"DATA_MISSING",              "family":"VI_TEMPORELS_MEMORIELS",   "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T26": {"name":"DATA_MISSING",              "family":"VI_TEMPORELS_MEMORIELS",   "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T27": {"name":"DATA_MISSING",              "family":"VII_META_SYSTEMIQUES",     "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T28": {"name":"DATA_MISSING",              "family":"VII_META_SYSTEMIQUES",     "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T29": {"name":"DATA_MISSING",              "family":"VII_META_SYSTEMIQUES",     "docs":0, "status":"PENDING_ADDITIONAL_SIGNAL", "signal":null},
+    "T30": {"name":"DATA_MISSING",              "family":"VIII_OBSIDIA_AGI",         "docs":0, "status":"BLOCKED_AGI_LAYER",         "signal":null},
+    "T31": {"name":"DATA_MISSING",              "family":"VIII_OBSIDIA_AGI",         "docs":0, "status":"BLOCKED_AGI_LAYER",         "signal":null},
+    "T32": {"name":"DATA_MISSING",              "family":"VIII_OBSIDIA_AGI",         "docs":0, "status":"BLOCKED_AGI_LAYER",         "signal":null},
+    "T33": {"name":"DATA_MISSING",              "family":"VIII_OBSIDIA_AGI",         "docs":0, "status":"BLOCKED_AGI_LAYER",         "signal":null},
+    "T34": {"name":"DATA_MISSING",              "family":"VIII_OBSIDIA_AGI",         "docs":0, "status":"BLOCKED_AGI_LAYER",         "signal":null}
+  },
+
+  "summary": {
+    "tagged": 12,
+    "pending_additional_signal": 13,
+    "blocked_action_trigger": 3,
+    "blocked_direct_memory_write": 1,
+    "blocked_agi_layer": 5,
+    "total": 34
+  },
+
+  "next_tagging_blocker": "T13-T34 have 0 BrodyMemoryDoc with _Tnn__ pattern in title — need alternative signal (path, content, source)",
+  "next_action": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY"
+}

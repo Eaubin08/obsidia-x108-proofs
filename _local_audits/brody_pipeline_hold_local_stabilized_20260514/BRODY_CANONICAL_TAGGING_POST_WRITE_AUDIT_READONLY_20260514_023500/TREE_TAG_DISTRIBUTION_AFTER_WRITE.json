@@ -1,0 +1,38 @@
+{
+  "mission": "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY",
+  "timestamp": "20260514_023500",
+  "source_write": "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400",
+  "query": "MATCH (n:BrodyMemoryDoc) UNWIND n.tags AS tag WITH tag, n WHERE tag =~ 'T[0-9]+' RETURN tag, count(n) AS doc_count ORDER BY tag",
+  "distribution": {
+    "T01": 4,
+    "T02": 4,
+    "T03": 4,
+    "T04": 4,
+    "T05": 4,
+    "T06": 4,
+    "T07": 4,
+    "T08": 4,
+    "T09": 4,
+    "T10": 4,
+    "T11": 4,
+    "T12": 4
+  },
+  "expected": {
+    "T01": 4,
+    "T02": 4,
+    "T03": 4,
+    "T04": 4,
+    "T05": 4,
+    "T06": 4,
+    "T07": 4,
+    "T08": 4,
+    "T09": 4,
+    "T10": 4,
+    "T11": 4,
+    "T12": 4
+  },
+  "t13_t34_count": 0,
+  "t13_t34_status": "PENDING_ADDITIONAL_SIGNAL",
+  "total_tree_tagged_nodes": 48,
+  "distribution_pass": true
+}

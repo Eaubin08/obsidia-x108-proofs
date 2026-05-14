@@ -1,0 +1,949 @@
+﻿{
+    "dirs_migrated":  18,
+    "source":  "CORE_local_audits_HOLD_LOCAL",
+    "dest":  "x108-proofs/_local_audits/brody_pipeline_hold_local_stabilized_20260514",
+    "migration_timestamp":  "20260514_050000",
+    "files":  [
+                  {
+                      "size_bytes":  2801,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_CONTROLLED_WRITE_V1_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3183,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_CONTROLLED_WRITE_V1_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2998,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_POST_WRITE_VALIDATION.json"
+                  },
+                  {
+                      "size_bytes":  1215,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_ROLLBACK_READY.md"
+                  },
+                  {
+                      "size_bytes":  11452,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_TAGS_ADDED_SUMMARY.json"
+                  },
+                  {
+                      "size_bytes":  22665,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CANONICAL_TAGGING_WRITE_EXECUTION_LOG.jsonl"
+                  },
+                  {
+                      "size_bytes":  1454,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/CURRENT_BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1.txt"
+                  },
+                  {
+                      "size_bytes":  1923,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/_POINTER_BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1.md"
+                  },
+                  {
+                      "size_bytes":  1658,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_COUNTS.json"
+                  },
+                  {
+                      "size_bytes":  12912,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_DRY_RUN_PLAN.csv"
+                  },
+                  {
+                      "size_bytes":  66392,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_DRY_RUN_PLAN.jsonl"
+                  },
+                  {
+                      "size_bytes":  4998,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_DRY_RUN_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  5727,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_DRY_RUN_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  4451,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_EXCLUDED_REVIEW.jsonl"
+                  },
+                  {
+                      "size_bytes":  4231,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_RULE_VALIDATION.json"
+                  },
+                  {
+                      "size_bytes":  9959,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TREE_REGISTRY_RESOLVED.json"
+                  },
+                  {
+                      "size_bytes":  1994,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CURRENT_BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  2198,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/_POINTER_BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3474,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3308,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  3781,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/CANONICAL_TAGGING_GO_NO_GO_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  1356,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/CURRENT_BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  3969,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/NEXT_REAL_WRITE_PROMPT.md"
+                  },
+                  {
+                      "size_bytes":  4826,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/OPERATOR_DECISION_BRIEF.md"
+                  },
+                  {
+                      "size_bytes":  2325,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/OPERATOR_GATE_DECISION_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  2066,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730/_POINTER_BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  14028,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/APPROVED_NODES_TAG_INTEGRITY.jsonl"
+                  },
+                  {
+                      "size_bytes":  4922,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/CANONICAL_TAGGING_POST_WRITE_AUDIT_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3988,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/CANONICAL_TAGGING_POST_WRITE_AUDIT_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2039,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/CURRENT_BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  1121,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/FAMILY_TAG_QUERY_RESULTS_AFTER_WRITE.json"
+                  },
+                  {
+                      "size_bytes":  2359,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/NEXT_PROGRESS_METRICS_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  1313,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/ROLLBACK_READY_CHECK.md"
+                  },
+                  {
+                      "size_bytes":  839,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/TREE_TAG_DISTRIBUTION_AFTER_WRITE.json"
+                  },
+                  {
+                      "size_bytes":  1747,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500/_POINTER_BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  34872,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_APPROVED_WRITE_CANDIDATES.jsonl"
+                  },
+                  {
+                      "size_bytes":  0,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_BLOCKED_ITEMS.jsonl"
+                  },
+                  {
+                      "size_bytes":  2653,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_EXCLUDED_CONFIRMED.jsonl"
+                  },
+                  {
+                      "size_bytes":  1444,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_REVIEW_GATE_COUNTS.json"
+                  },
+                  {
+                      "size_bytes":  1946,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_REVIEW_GATE_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  2544,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_REVIEW_GATE_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4717,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CANONICAL_TAGGING_REVIEW_GATE_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1730,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/CURRENT_BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  2030,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148/_POINTER_BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  2142,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  5253,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  31918,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/CANONICAL_TAGGING_WRITE_CYPHER_PLAN.cypher"
+                  },
+                  {
+                      "size_bytes":  2771,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/CANONICAL_TAGGING_WRITE_PROTOCOL.json"
+                  },
+                  {
+                      "size_bytes":  1629,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/CURRENT_BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  3625,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/OPERATOR_APPROVAL_TEMPLATE.json"
+                  },
+                  {
+                      "size_bytes":  4813,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/POST_WRITE_VALIDATION_PLAN.json"
+                  },
+                  {
+                      "size_bytes":  14525,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/ROLLBACK_CANONICAL_TAGGING_PLAN.cypher"
+                  },
+                  {
+                      "size_bytes":  2971,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/WRITE_FORBIDDEN_ACTIONS.json"
+                  },
+                  {
+                      "size_bytes":  2689,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/WRITE_SCOPE_LOCK.json"
+                  },
+                  {
+                      "size_bytes":  2551,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/_POINTER_BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  5033,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/BLOCKERS_AND_GATES.json"
+                  },
+                  {
+                      "size_bytes":  5651,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  6887,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  7181,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/CANONICAL_MEMORY_TAGGING_UNIT_SPEC.json"
+                  },
+                  {
+                      "size_bytes":  8317,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/CANONICAL_SOURCE_DISCOVERY.json"
+                  },
+                  {
+                      "size_bytes":  6851,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/CANONICAL_SOURCE_DISCOVERY.md"
+                  },
+                  {
+                      "size_bytes":  1616,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/CURRENT_BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  5438,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/PROPOSED_TAGGING_RULES_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  1063,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/TAGGING_BRIDGE_PATH_MATRIX.csv"
+                  },
+                  {
+                      "size_bytes":  7423,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/TAGGING_BRIDGE_PATH_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  2171,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910/_POINTER_BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  2001,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRENT_BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  2410,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRICULUM_EVAL_NEXT_STEPS.md"
+                  },
+                  {
+                      "size_bytes":  2754,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRICULUM_EVAL_SUMMARY_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  5417,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRICULUM_GET_ONLY_EVAL_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4754,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/CURRICULUM_GET_ONLY_EVAL_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1548,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/NODE_STRUCTURE_OBSERVATION.json"
+                  },
+                  {
+                      "size_bytes":  2607,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/PATH_B_DRY_RUN_GATE_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  2946,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/STAGES_02_05_PARTIAL_EVAL_RESULTS.json"
+                  },
+                  {
+                      "size_bytes":  3574,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/STAGE_01_FRANCAIS_EVAL_RESULTS.json"
+                  },
+                  {
+                      "size_bytes":  1911,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000/_POINTER_BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3115,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/CURRENT_BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  6804,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/CURRICULUM_POST_WRITE_SYNTHESIS.json"
+                  },
+                  {
+                      "size_bytes":  5334,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/CURRICULUM_POST_WRITE_SYNTHESIS.md"
+                  },
+                  {
+                      "size_bytes":  4586,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/MEMORY_AND_TREE_STATE_AFTER_WRITE.json"
+                  },
+                  {
+                      "size_bytes":  4519,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/REMAINING_BLOCKERS_AND_SAFE_NEXT_STEPS.md"
+                  },
+                  {
+                      "size_bytes":  6033,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/SIX_INITIAL_OBJECTIVES_STATUS.md"
+                  },
+                  {
+                      "size_bytes":  1106,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500/_POINTER_BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3082,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/BRODY_CURRICULUM_TREE_BRIDGE_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4735,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/BRODY_CURRICULUM_TREE_BRIDGE_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2558,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CANONICAL_FAMILY_DRIFT_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  1629,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CURRENT_BRODY_CURRICULUM_TREE_BRIDGE_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  3534,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CURRICULUM_NEXT_TEST_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  11745,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CURRICULUM_STAGE_READINESS.json"
+                  },
+                  {
+                      "size_bytes":  2876,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CURRICULUM_TREE_BRIDGE_MATRIX.csv"
+                  },
+                  {
+                      "size_bytes":  6630,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/CURRICULUM_TREE_BRIDGE_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  5157,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/T13_T34_SIGNAL_DISCOVERY_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  4042,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/T13_T34_SIGNAL_DISCOVERY_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  2032,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500/_POINTER_BRODY_CURRICULUM_TREE_BRIDGE_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  2996,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3193,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1789,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/CURRENT_BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1.txt"
+                  },
+                  {
+                      "size_bytes":  755,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/POST_WRITE_VALIDATION.json"
+                  },
+                  {
+                      "size_bytes":  329,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/PRE_WRITE_SNAPSHOT.json"
+                  },
+                  {
+                      "size_bytes":  33227,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/REAL_IMPORT_INPUT_42.jsonl"
+                  },
+                  {
+                      "size_bytes":  18800,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/REAL_IMPORT_WRITTEN_42.jsonl"
+                  },
+                  {
+                      "size_bytes":  95,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/ROLLBACK_PLAN.cypher"
+                  },
+                  {
+                      "size_bytes":  1428,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/ROLLBACK_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  12786,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/_real_import_runner.py"
+                  },
+                  {
+                      "size_bytes":  3709,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3720,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2202,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/CURRENT_BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  1957,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/IMPORTED_NODES_SAMPLE.json"
+                  },
+                  {
+                      "size_bytes":  2013,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/IMPORT_INTEGRITY_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  1103,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/POST_WRITE_BATCH_QUERY_RESULTS.json"
+                  },
+                  {
+                      "size_bytes":  1156,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/READ_PATH_CONFIRMATION.json"
+                  },
+                  {
+                      "size_bytes":  1466,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/ROLLBACK_READY_CHECK.md"
+                  },
+                  {
+                      "size_bytes":  15234,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151/_post_write_validation_runner.py"
+                  },
+                  {
+                      "size_bytes":  5468,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4154,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2688,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/CURRENT_BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL.txt"
+                  },
+                  {
+                      "size_bytes":  110409,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_APPROVED_WRITE_CANDIDATES.jsonl"
+                  },
+                  {
+                      "size_bytes":  6255,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_CURRICULUM_EVAL_SUMMARY_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  14794,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_CURRICULUM_GET_ONLY_EVAL_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4343,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_CURRICULUM_GET_ONLY_EVAL_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  9170,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_CURRICULUM_STAGE_RESULTS.json"
+                  },
+                  {
+                      "size_bytes":  244,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_EXCLUDED_UNTOUCHED_CHECK.json"
+                  },
+                  {
+                      "size_bytes":  256,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_FAMILY_TAG_DISTRIBUTION_AFTER_WRITE.json"
+                  },
+                  {
+                      "size_bytes":  1101,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_OPERATOR_GATE_DECISION.json"
+                  },
+                  {
+                      "size_bytes":  2498,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_POST_WRITE_VALIDATION.json"
+                  },
+                  {
+                      "size_bytes":  2016,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_POST_WRITE_VALIDATION_PLAN.json"
+                  },
+                  {
+                      "size_bytes":  1917,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_REVIEW_GATE.json"
+                  },
+                  {
+                      "size_bytes":  1458,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_REVIEW_GATE_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  19691,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_ROLLBACK_PLAN.cypher"
+                  },
+                  {
+                      "size_bytes":  1137,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_ROLLBACK_READY_CHECK.md"
+                  },
+                  {
+                      "size_bytes":  444,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_TREE_TAG_DISTRIBUTION_AFTER_WRITE.json"
+                  },
+                  {
+                      "size_bytes":  27814,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_WRITE_CYPHER_PLAN.cypher"
+                  },
+                  {
+                      "size_bytes":  329,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_WRITE_EXECUTION_LOG.json"
+                  },
+                  {
+                      "size_bytes":  48624,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_WRITE_EXECUTION_LOG.jsonl"
+                  },
+                  {
+                      "size_bytes":  1470,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/PATH_B_WRITE_PROTOCOL.json"
+                  },
+                  {
+                      "size_bytes":  1464,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500/_POINTER_BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL.md"
+                  },
+                  {
+                      "size_bytes":  3282,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/BRODY_PATH_B_TAGGING_DRY_RUN_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  5414,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/BRODY_PATH_B_TAGGING_DRY_RUN_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  2141,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/CURRENT_BRODY_PATH_B_TAGGING_DRY_RUN_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  6151,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_CANONICAL_SIGNAL_DISCOVERY.json"
+                  },
+                  {
+                      "size_bytes":  3418,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_CURRICULUM_IMPACT_PREVIEW.json"
+                  },
+                  {
+                      "size_bytes":  170965,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_EXCLUDED_OR_BLOCKED_REVIEW.jsonl"
+                  },
+                  {
+                      "size_bytes":  3552,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_NEXT_REVIEW_GATE_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  24216,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_TAGGING_DRY_RUN_PLAN.csv"
+                  },
+                  {
+                      "size_bytes":  110409,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_TAGGING_DRY_RUN_PLAN.jsonl"
+                  },
+                  {
+                      "size_bytes":  91188,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_TAGGING_REVIEW_REQUIRED.jsonl"
+                  },
+                  {
+                      "size_bytes":  5957,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_TREE_COVERAGE_AFTER_DRY_RUN.json"
+                  },
+                  {
+                      "size_bytes":  2333,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/_POINTER_BRODY_PATH_B_TAGGING_DRY_RUN_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3921,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/BRODY_PROGRESS_METRICS_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4821,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/BRODY_PROGRESS_METRICS_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1765,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/CURRENT_BRODY_PROGRESS_METRICS_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  5267,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/CURRICULUM_READINESS_METRICS.json"
+                  },
+                  {
+                      "size_bytes":  2107,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/MEMORY_REUSE_METRICS.json"
+                  },
+                  {
+                      "size_bytes":  3422,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/NEXT_CURRICULUM_BRIDGE_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  2469,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/OPERATOR_LOOP_METRICS.json"
+                  },
+                  {
+                      "size_bytes":  3909,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/PROGRESS_METRICS_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  2491,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/REFUSAL_AND_BOUNDARY_METRICS.json"
+                  },
+                  {
+                      "size_bytes":  5940,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/TREE_COVERAGE_METRICS.json"
+                  },
+                  {
+                      "size_bytes":  1876,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_PROGRESS_METRICS_READONLY_20260514_024500/_POINTER_BRODY_PROGRESS_METRICS_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3380,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/BOUNDARY_STATUS_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  6114,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  5940,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1690,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/CURRENT_BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  7167,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/MEMORY_LAYER_CLASSIFICATION_READONLY.jsonl"
+                  },
+                  {
+                      "size_bytes":  6959,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/MEMORY_LINK_CANDIDATES_READONLY.jsonl"
+                  },
+                  {
+                      "size_bytes":  4782,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/NEXT_ACTIONS_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  4422,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/TREE_FAMILY_MAPPING_STATUS_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  6663,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/USER_BRODY_SESSION_CASE_SCHEMA_PROPOSAL.json"
+                  },
+                  {
+                      "size_bytes":  9667,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/WORLD_PROVIDER_MATRIX_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  1982,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424/_POINTER_BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  3653,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  4187,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  1346,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/CURRENT_BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY.txt"
+                  },
+                  {
+                      "size_bytes":  2537,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/GET_ONLY_BOUNDARY_VALIDATION.json"
+                  },
+                  {
+                      "size_bytes":  2787,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/GET_ONLY_EXECUTION_PLAN.jsonl"
+                  },
+                  {
+                      "size_bytes":  4183,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/GET_ONLY_EXECUTION_RESULTS.jsonl"
+                  },
+                  {
+                      "size_bytes":  3219,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/GET_ONLY_PROVIDER_EVIDENCE.md"
+                  },
+                  {
+                      "size_bytes":  6154,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/GET_ONLY_TREE_ELIGIBILITY.json"
+                  },
+                  {
+                      "size_bytes":  2632,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/NEXT_ACTIONS_READONLY.json"
+                  },
+                  {
+                      "size_bytes":  1763,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350/_POINTER_BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY.md"
+                  },
+                  {
+                      "size_bytes":  2373,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/TREE_SOURCE_DISCOVERY.md"
+                  },
+                  {
+                      "size_bytes":  3854,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_NEXT_TEST_PLAN.md"
+                  },
+                  {
+                      "size_bytes":  3656,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_PROVIDER_MATRIX.csv"
+                  },
+                  {
+                      "size_bytes":  19318,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_PROVIDER_MATRIX.json"
+                  },
+                  {
+                      "size_bytes":  2810,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_PROVIDER_MATRIX_REPORT.json"
+                  },
+                  {
+                      "size_bytes":  3932,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_PROVIDER_MATRIX_REPORT.md"
+                  },
+                  {
+                      "size_bytes":  4113,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/WORLD_TREE_RISK_TABLE.md"
+                  },
+                  {
+                      "size_bytes":  1286,
+                      "source":  "CORE_local_audits",
+                      "file":  "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141/_POINTER_BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY.md"
+                  }
+              ],
+    "files_migrated":  188
+}

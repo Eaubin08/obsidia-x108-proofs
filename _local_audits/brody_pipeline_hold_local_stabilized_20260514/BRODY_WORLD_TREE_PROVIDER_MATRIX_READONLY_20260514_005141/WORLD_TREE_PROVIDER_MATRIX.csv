@@ -1,0 +1,35 @@
+id,code,name,family,world_interface,memory_feed,action_trigger,direct_memory_write,blocked,kx108_gate_required,provider_role,safe_test_eligible
+1,T01,Arbre de l'Humain,I_FONDAMENTAUX,false,false,false,false,false,false,INTERNAL_ONLY,true
+2,T02,Arbre de la Conscience,I_FONDAMENTAUX,false,false,false,false,false,false,INTERNAL_ONLY,true
+3,T03,Arbre de la Perception,I_FONDAMENTAUX,false,false,false,false,false,false,INTERNAL_ONLY,true
+4,T04,Arbre du Sens,I_FONDAMENTAUX,false,false,false,false,false,false,INTERNAL_ONLY,true
+5,T05,Arbre de l'Identité,I_FONDAMENTAUX,false,false,false,false,false,false,INTERNAL_ONLY,true
+6,T06,Arbre de la Compréhension,II_COGNITIFS,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+7,T07,Arbre de l'Organisation,II_COGNITIFS,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+8,T08,Arbre de la Pensée,II_COGNITIFS,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+9,T09,Arbre de l'Intelligence,II_COGNITIFS,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+10,T10,Arbre du Langage,II_COGNITIFS,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+11,T11,Arbre de la Science,III_CONNAISSANCE,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+12,T12,Arbre de la Technique,III_CONNAISSANCE,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+13,T13,Arbre de l'Art,III_CONNAISSANCE,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+14,T14,Arbre de la Philosophie,III_CONNAISSANCE,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+15,T15,Arbre de la Spiritualité,III_CONNAISSANCE,false,true,false,false,false,false,MEMORY_CANDIDATE_FEED,true
+16,T16,Arbre de la Relation,IV_RELATIONNELS_SOCIAUX,true,true,false,false,false,true,WORLD_PASSIVE,true
+17,T17,Arbre du Collectif,IV_RELATIONNELS_SOCIAUX,true,true,false,false,false,true,WORLD_PASSIVE,true
+18,T18,Arbre de la Transmission,IV_RELATIONNELS_SOCIAUX,true,true,false,false,false,true,WORLD_PASSIVE,true
+19,T19,Arbre de la Culture,IV_RELATIONNELS_SOCIAUX,true,true,false,false,false,true,WORLD_PASSIVE,true
+20,T20,Arbre de l'Action,V_ACTION_TRANSFORMATION,true,false,true,false,true,true,WORLD_ACTIVE_BLOCKED,false
+21,T21,Arbre de la Création,V_ACTION_TRANSFORMATION,true,false,true,false,true,true,WORLD_ACTIVE_BLOCKED,false
+22,T22,Arbre de la Transformation,V_ACTION_TRANSFORMATION,true,false,true,false,true,true,WORLD_ACTIVE_BLOCKED,false
+23,T23,Arbre du Temps,VI_TEMPORELS_MEMORIELS,false,true,false,false,false,false,MEMORY_PROVIDER,true
+24,T24,Arbre de la Mémoire,VI_TEMPORELS_MEMORIELS,false,true,false,true,true,true,MEMORY_PROVIDER,false
+25,T25,Arbre de l'Histoire,VI_TEMPORELS_MEMORIELS,false,true,false,false,false,false,MEMORY_PROVIDER,true
+26,T26,Arbre de la Cohérence,VII_META_STRUCTURELS,false,false,false,false,false,false,META_INTERNAL,true
+27,T27,Arbre de la Vérité,VII_META_STRUCTURELS,false,false,false,false,false,false,META_INTERNAL,true
+28,T28,Arbre de la Valeur,VII_META_STRUCTURELS,false,false,false,false,false,false,META_INTERNAL,true
+29,T29,Arbre de la Finalité,VII_META_STRUCTURELS,false,false,false,false,false,false,META_INTERNAL,true
+30,T30,Arbre Cognitif Global,VIII_OBSIDIA_AGI,true,true,true,true,true,true,AGI_LAYER_BLOCKED,false
+31,T31,Arbre des Flux,VIII_OBSIDIA_AGI,true,true,true,true,true,true,AGI_LAYER_BLOCKED,false
+32,T32,Arbre des Connexions,VIII_OBSIDIA_AGI,true,true,true,true,true,true,AGI_LAYER_BLOCKED,false
+33,T33,Arbre de l'Optimisation,VIII_OBSIDIA_AGI,true,true,true,true,true,true,AGI_LAYER_BLOCKED,false
+34,T34,Arbre de la Stabilité,VIII_OBSIDIA_AGI,true,true,true,true,true,true,AGI_LAYER_BLOCKED,false

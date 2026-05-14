@@ -1,0 +1,58 @@
+{
+  "mission": "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY",
+  "timestamp": "20260514_011350",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+  "test_verdict": "PASS_WITH_FINDING",
+
+  "finding_family_tagging_absent": {
+    "description": "BrodyMemoryDoc uses '34_arbres' as corpus tag but lacks family-level tags (I_FONDAMENTAUX, T01..T15, etc.)",
+    "impact": "Cannot currently filter BrodyMemoryDoc by specific tree family in Neo4j",
+    "severity": "LOW — does not block current pipeline. Becomes relevant when memory layers are separated.",
+    "proposed_resolution": "Family tag enrichment: add family-level tags to BrodyMemoryDoc nodes. Requires gate.",
+    "gate_required": "KX108 operator approval for write to BrodyMemoryDoc tags"
+  },
+
+  "next_actions": [
+    {
+      "step": 1,
+      "action": "BRODY_RUNTIME_BINDING_RISK_REVIEW_READONLY",
+      "type": "READONLY_REVIEW",
+      "description": "Review risk of X108 runtime binding — what gate conditions apply, what changes if runtime is enabled.",
+      "prereqs": "This test PASS — DONE",
+      "blocked": false,
+      "priority": "HIGH"
+    },
+    {
+      "step": 2,
+      "action": "BRODY_FAMILY_TAG_ENRICHMENT_DESIGN_READONLY",
+      "type": "READONLY_DESIGN",
+      "description": "Design how to add family-level tags (I_FONDAMENTAUX..VIII_OBSIDIA_AGI) to BrodyMemoryDoc nodes. No execution.",
+      "prereqs": "None — design only",
+      "blocked": false,
+      "priority": "MEDIUM"
+    },
+    {
+      "step": 3,
+      "action": "KX108 gate — T16-T19 world-passive unlock (operator decision)",
+      "type": "OPERATOR_GATE",
+      "description": "Authorize explicit passive-world GET tests against T16-T19 family with real-world data (beyond allowlist example.com).",
+      "prereqs": "Step 1 PASS + operator decision",
+      "blocked": true,
+      "blocked_reason": "Requires KX108 explicit operator authorization"
+    },
+    {
+      "step": 4,
+      "action": "BRODY_FAMILY_TAG_ENRICHMENT_CONTROLLED_WRITE",
+      "type": "CONTROLLED_WRITE",
+      "description": "Add family-level tags to BrodyMemoryDoc nodes. Gated write — similar to BRODY_REAL_IMPORT_CONTROLLED_WRITE.",
+      "prereqs": "Step 2 design + KX108 gate approval + writable memory protocol",
+      "blocked": true,
+      "blocked_reason": "WRITABLE_MEMORY_PROTOCOL still PROTOCOL_CANDIDATE_ONLY, 6 gates BLOCKED"
+    }
+  ],
+
+  "immediate_next_brody_memory_action": "BRODY_RUNTIME_BINDING_RISK_REVIEW_READONLY",
+  "immediate_next_real_world_action": "BRODY_FAMILY_TAG_ENRICHMENT_DESIGN_READONLY",
+  "immediate_next_gate_action": "KX108 gate — T16-T19 world-passive unlock"
+}

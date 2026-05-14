@@ -1,0 +1,136 @@
+{
+  "mission": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY",
+  "timestamp": "20260514_030000",
+  "status": "COMPLETE_READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "baseline_node_count": 3267,
+    "post_eval_node_count": 3267,
+    "node_count_unchanged": true,
+    "no_write_executed": true,
+    "staged_files": 136,
+    "group_a_staged_preserved": true,
+    "all_preflight_pass": true
+  },
+
+  "eval_summary": {
+    "total_trees_tested": 8,
+    "total_trees_pass": 8,
+    "total_nodes_retrieved": 60,
+    "all_tested_trees_pass": true,
+    "francais_eval_verdict": "EVAL_PASS",
+    "all_stage_verdicts": {
+      "FRANCAIS":     "EVAL_PASS",
+      "LOGIQUE":      "EVAL_PASS",
+      "MATHS_SIMPLES":"EVAL_PASS",
+      "SCIENCE":      "EVAL_PASS",
+      "PHYSIQUE":     "EVAL_PASS",
+      "MONDE_LARGE":  "NO_TEST_POSSIBLE"
+    }
+  },
+
+  "stage_results": {
+    "FRANCAIS": {
+      "readiness_status": "READY",
+      "required_tree_count": 3,
+      "tested_tree_count": 3,
+      "pass_tree_count": 3,
+      "total_nodes_retrieved": 12,
+      "stage_verdict": "EVAL_PASS",
+      "path_b_pending": [],
+      "tree_evals": [
+        {"tree_id":"T04","tree_name":"Arbre du Sens",            "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T06","tree_name":"Arbre de la Comprehension","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T10","tree_name":"Arbre du Langage",         "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true}
+      ]
+    },
+    "LOGIQUE": {
+      "readiness_status": "PARTIAL_READY",
+      "required_tree_count": 5,
+      "tested_tree_count": 3,
+      "pass_tree_count": 3,
+      "total_nodes_retrieved": 12,
+      "stage_verdict": "EVAL_PASS",
+      "path_b_pending": ["T26","T27"],
+      "tree_evals": [
+        {"tree_id":"T06","tree_name":"Arbre de la Comprehension","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T07","tree_name":"Arbre de l'Organisation",  "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T08","tree_name":"Arbre de la Pensee",        "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true}
+      ]
+    },
+    "MATHS_SIMPLES": {
+      "readiness_status": "PARTIAL_READY",
+      "required_tree_count": 6,
+      "tested_tree_count": 5,
+      "pass_tree_count": 5,
+      "total_nodes_retrieved": 20,
+      "stage_verdict": "EVAL_PASS",
+      "path_b_pending": ["T26"],
+      "tree_evals": [
+        {"tree_id":"T07","tree_name":"Arbre de l'Organisation","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T08","tree_name":"Arbre de la Pensee",     "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T09","tree_name":"Arbre de l'Intelligence","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T11","tree_name":"Arbre de la Science",    "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T12","tree_name":"Arbre de la Technique",  "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true}
+      ]
+    },
+    "SCIENCE": {
+      "readiness_status": "PARTIAL_READY",
+      "required_tree_count": 5,
+      "tested_tree_count": 2,
+      "pass_tree_count": 2,
+      "total_nodes_retrieved": 8,
+      "stage_verdict": "EVAL_PASS",
+      "path_b_pending": ["T14","T26","T27"],
+      "tree_evals": [
+        {"tree_id":"T11","tree_name":"Arbre de la Science",  "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T12","tree_name":"Arbre de la Technique","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true}
+      ]
+    },
+    "PHYSIQUE": {
+      "readiness_status": "PARTIAL_READY",
+      "required_tree_count": 6,
+      "tested_tree_count": 2,
+      "pass_tree_count": 2,
+      "total_nodes_retrieved": 8,
+      "stage_verdict": "EVAL_PASS",
+      "path_b_pending": ["T23","T25","T26","T27"],
+      "tree_evals": [
+        {"tree_id":"T11","tree_name":"Arbre de la Science",  "node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true},
+        {"tree_id":"T12","tree_name":"Arbre de la Technique","node_count":4,"non_empty_preview":4,"readable_titles":4,"eval_pass":true}
+      ]
+    },
+    "MONDE_LARGE": {
+      "readiness_status": "PENDING_SIGNAL",
+      "required_tree_count": 13,
+      "tested_tree_count": 0,
+      "pass_tree_count": 0,
+      "total_nodes_retrieved": 0,
+      "stage_verdict": "NO_TEST_POSSIBLE",
+      "path_b_pending": ["T16","T17","T18","T19"],
+      "blocked": ["T20","T21","T22","T24","T30","T31","T32","T33","T34"],
+      "tree_evals": []
+    }
+  },
+
+  "verdicts": {
+    "new_write_executed": false,
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "x108_merge": false,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136
+  },
+
+  "navigation": {
+    "next_brody_memory_action": "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY",
+    "next_real_world_action": "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY",
+    "path_b_candidates": 117,
+    "path_b_safe_trees": 13,
+    "path_b_gate_required": true
+  }
+}

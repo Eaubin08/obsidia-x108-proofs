@@ -1,0 +1,85 @@
+{
+  "mission": "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY",
+  "timestamp": "20260514_011350",
+  "status": "PASS_WITH_FINDING",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "staged_files": 136,
+    "staged_preserved": true,
+    "inner_repo_patch_intact": true,
+    "inner_repo_dirty_file": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "tree_matrix_read": true,
+    "test_plan_read": true,
+    "allowlist_read": true,
+    "allowlist": ["https://example.com/", "https://example.com"],
+    "preflight_pass": true
+  },
+
+  "eligibility": {
+    "get_only_eligible_count": 24,
+    "get_only_blocked_count": 9,
+    "internal_only_count": 20,
+    "world_interface_passive_eligible": 4
+  },
+
+  "execution": {
+    "get_only_live_executed": true,
+    "get_requests_executed": 5,
+    "get_requests_pass": 4,
+    "get_requests_fail": 0,
+    "get_requests_warn": 1,
+    "neo4j_reads": 4,
+    "external_gets": 1,
+    "max_requests_limit": 5,
+    "max_timeout_s": 10,
+    "all_within_limits": true
+  },
+
+  "results_summary": [
+    {"test_id": "GET_TREE_001", "tree": "T26 Cohérence", "provider": "NEO4J_READ", "status": "PASS", "finding": "2739 BrodyMemoryDoc tagged '34_arbres'"},
+    {"test_id": "GET_TREE_002", "tree": "T06 Compréhension", "provider": "NEO4J_READ", "status": "PASS", "finding": "0 docs with family-level tags — FAMILY_LEVEL_TAGGING_ABSENT"},
+    {"test_id": "GET_TREE_003", "tree": "T01 Humain", "provider": "NEO4J_READ", "status": "WARN_EMPTY", "finding": "0 sample — confirms family-level tagging absent"},
+    {"test_id": "GET_TREE_004", "tree": "T25 Histoire", "provider": "NEO4J_READ", "status": "PASS", "finding": "2/2 registry docs present"},
+    {"test_id": "GET_TREE_005", "tree": "T16 Relation", "provider": "WEB_GET_ONLY", "status": "PASS", "finding": "status=200, sha256 stable vs previous session"}
+  ],
+
+  "key_finding": {
+    "name": "FAMILY_LEVEL_TAGGING_ABSENT",
+    "description": "BrodyMemoryDoc nodes use '34_arbres' as corpus-level tag (2739/3267 nodes) but lack individual family tags (I_FONDAMENTAUX, II_COGNITIFS, T01..T15, etc.)",
+    "severity": "LOW",
+    "action_required": "BRODY_FAMILY_TAG_ENRICHMENT_DESIGN_READONLY then controlled write gate"
+  },
+
+  "twelve_questions": {
+    "Q1_safe_get_trees": "24 trees eligible: T01-T19, T23, T25-T29 (SAFE and LOW risk, not blocked)",
+    "Q2_internal_only": "20 trees: T01-T15, T23, T25-T29 — no world_interface, NEO4J_READ only",
+    "Q3_blocked": "9 trees: T20-T22 (action_trigger), T24 (direct_memory_write), T30-T34 (AGI-layer)",
+    "Q4_get_real_executed": true,
+    "Q5_get_trees_and_providers": "T26→NEO4J_READ, T06→NEO4J_READ, T01→NEO4J_READ, T25→NEO4J_READ, T16→WEB_GET_ONLY(https://example.com/)",
+    "Q6_why_not_more_urls": "Only allowlist from previous test used — ['https://example.com/']. No new URLs invented.",
+    "Q7_graphiti_touched": false,
+    "Q8_neo4j_touched_read_only": true,
+    "Q9_memory_created": false,
+    "Q10_brody_triggered_action": false,
+    "Q11_x108_sole_decider": true,
+    "Q12_next_safe_action": "BRODY_RUNTIME_BINDING_RISK_REVIEW_READONLY"
+  },
+
+  "boundary_flags": {
+    "post_executed": false,
+    "crawler_executed": false,
+    "external_write_executed": false,
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake_executed": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "decision_authority": "KX108_ONLY",
+    "boundary_all_false": true
+  }
+}

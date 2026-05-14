@@ -1,0 +1,151 @@
+{
+  "mission": "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL",
+  "timestamp": "20260514_032500",
+  "status": "COMPLETE",
+  "decision_authority": "KX108_ONLY",
+
+  "phases": {
+    "PHASE_1_REVIEW_GATE": {
+      "result": "GATE_PASS",
+      "candidates_reviewed": 117,
+      "violations_found": 0,
+      "approved_for_write": 117,
+      "files": [
+        "PATH_B_REVIEW_GATE.json",
+        "PATH_B_APPROVED_WRITE_CANDIDATES.jsonl",
+        "PATH_B_REVIEW_GATE_REPORT.md"
+      ]
+    },
+    "PHASE_2_WRITE_PROTOCOL": {
+      "result": "PROTOCOL_WRITTEN",
+      "strategy": "APPEND_ONLY",
+      "cypher_statements": 117,
+      "rollback_statements": 117,
+      "files": [
+        "PATH_B_WRITE_PROTOCOL.json",
+        "PATH_B_WRITE_CYPHER_PLAN.cypher",
+        "PATH_B_ROLLBACK_PLAN.cypher",
+        "PATH_B_POST_WRITE_VALIDATION_PLAN.json"
+      ]
+    },
+    "PHASE_3_OPERATOR_GATE": {
+      "result": "APPROVED",
+      "decision_authority": "KX108_ONLY",
+      "operator_approval": true,
+      "kx108_gate_pass": true,
+      "real_write_allowed": true,
+      "approved_scope": "PATH_B_TIER_1_PATH_SLUG_ONLY",
+      "approved_nodes": 117,
+      "expected_tags_to_add": 234,
+      "files": ["PATH_B_OPERATOR_GATE_DECISION.json"]
+    },
+    "PHASE_4_CONTROLLED_WRITE": {
+      "result": "WRITE_PASS",
+      "nodes_modified": 117,
+      "tags_added": 234,
+      "write_errors": 0,
+      "skipped_already_tagged": 0,
+      "write_pass": true,
+      "graphiti_write": false,
+      "memory_intake": false,
+      "x108_merge": false,
+      "files": [
+        "PATH_B_WRITE_EXECUTION_LOG.json",
+        "PATH_B_WRITE_EXECUTION_LOG.jsonl"
+      ]
+    },
+    "PHASE_5_POST_WRITE_AUDIT": {
+      "result": "12/12 PASS",
+      "all_pass": true,
+      "pass_count": 12,
+      "fail_count": 0,
+      "node_count_after": 3267,
+      "rollback_executed": false,
+      "checks": {
+        "PWV_01": {"desc": "node_count=3267", "pass": true},
+        "PWV_02": {"desc": "117 nodes exist", "pass": true},
+        "PWV_03": {"desc": "tree_id in tags 117/117", "pass": true},
+        "PWV_04": {"desc": "family_id in tags 117/117", "pass": true},
+        "PWV_05": {"desc": "previous tags preserved", "pass": true},
+        "PWV_06": {"desc": "no duplicate tags", "pass": true},
+        "PWV_07": {"desc": "T13/T14/T15>=9", "actual": {"T13": 9, "T14": 9, "T15": 9}, "pass": true},
+        "PWV_08": {"desc": "T16/T17/T18/T19>=9", "actual": {"T16": 9, "T17": 9, "T18": 9, "T19": 9}, "pass": true},
+        "PWV_09": {"desc": "T23/T25/T26/T27/T28/T29>=9", "actual": {"T23": 9, "T25": 9, "T26": 9, "T27": 9, "T28": 9, "T29": 9}, "pass": true},
+        "PWV_10": {"desc": "blocked trees unmodified", "actual": {}, "pass": true},
+        "PWV_11": {"desc": "excluded nodes unmodified", "actual": [], "pass": true},
+        "PWV_12": {"desc": "text_preview accessible=3267", "actual": 3267, "pass": true}
+      },
+      "tree_distribution_after": {
+        "T01": 4, "T02": 4, "T03": 4, "T04": 4, "T05": 4,
+        "T06": 4, "T07": 4, "T08": 4, "T09": 4, "T10": 4,
+        "T11": 4, "T12": 4,
+        "T13": 9, "T14": 9, "T15": 9, "T16": 9, "T17": 9, "T18": 9, "T19": 9,
+        "T23": 9, "T25": 9, "T26": 9, "T27": 9, "T28": 9, "T29": 9,
+        "T20": 0, "T21": 0, "T22": 0, "T24": 0, "T30": 0, "T31": 0, "T32": 0, "T33": 0, "T34": 0
+      },
+      "family_distribution_after": {
+        "I_FONDAMENTAUX": 20,
+        "II_COGNITIFS": 20,
+        "III_CONNAISSANCE": 35,
+        "IV_RELATIONNELS_SOCIAUX": 36,
+        "V_ACTION_TRANSFORMATION": 0,
+        "VI_TEMPORELS_MEMORIELS": 18,
+        "VII_META_STRUCTURELS": 36,
+        "VIII_OBSIDIA_AGI": 0
+      },
+      "files": [
+        "PATH_B_POST_WRITE_VALIDATION.json",
+        "PATH_B_TREE_TAG_DISTRIBUTION_AFTER_WRITE.json",
+        "PATH_B_FAMILY_TAG_DISTRIBUTION_AFTER_WRITE.json",
+        "PATH_B_EXCLUDED_UNTOUCHED_CHECK.json",
+        "PATH_B_ROLLBACK_READY_CHECK.md"
+      ]
+    },
+    "PHASE_6_CURRICULUM_EVAL": {
+      "result": "COMPLETE",
+      "no_write_in_eval": true,
+      "node_count_post_eval": 3267,
+      "stage_verdicts": {
+        "FRANCAIS": "EVAL_PASS",
+        "LOGIQUE": "EVAL_PASS",
+        "MATHS_SIMPLES": "EVAL_PASS",
+        "SCIENCE": "EVAL_PASS",
+        "PHYSIQUE": "EVAL_PASS",
+        "MONDE_LARGE": "EVAL_PASS_PARTIAL"
+      },
+      "stages_eval_pass": 5,
+      "stages_eval_pass_partial": 1,
+      "stages_eval_fail": 0,
+      "monde_large_testable_trees": 4,
+      "monde_large_blocked_trees": 9,
+      "files": [
+        "PATH_B_CURRICULUM_GET_ONLY_EVAL_REPORT.json",
+        "PATH_B_CURRICULUM_STAGE_RESULTS.json",
+        "PATH_B_CURRICULUM_EVAL_SUMMARY_MATRIX.json",
+        "PATH_B_CURRICULUM_GET_ONLY_EVAL_REPORT.md"
+      ]
+    }
+  },
+
+  "global_invariants": {
+    "node_count_pre": 3267,
+    "node_count_post": 3267,
+    "node_count_unchanged": true,
+    "no_node_created": true,
+    "no_node_deleted": true,
+    "blocked_trees_tagged": false,
+    "excluded_nodes_modified": false,
+    "rollback_ready": true,
+    "rollback_executed": false,
+    "graphiti_write": false,
+    "memory_intake": false,
+    "x108_merge": false
+  },
+
+  "next_actions": {
+    "immediate": "BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY",
+    "pending_tier2_review": "78 TEXT_PREVIEW_GENUINE candidates — requires operator gate",
+    "pending_path_c": "T20-T22/T24/T30-T34 blocked — requires operator unlock",
+    "pending_group_a_commit": "136 files staged — awaiting explicit operator authorization"
+  }
+}

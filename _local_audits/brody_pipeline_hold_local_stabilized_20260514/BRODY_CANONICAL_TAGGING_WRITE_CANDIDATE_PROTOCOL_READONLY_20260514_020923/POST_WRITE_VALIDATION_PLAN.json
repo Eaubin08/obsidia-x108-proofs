@@ -1,0 +1,106 @@
+{
+  "plan_name": "POST_WRITE_VALIDATION_PLAN",
+  "timestamp": "20260514_020923",
+  "applies_after": "CANONICAL_TAGGING_WRITE_CYPHER_PLAN.cypher execution",
+  "mandatory": true,
+  "checks": [
+    {
+      "check_id": "PWV_01",
+      "description": "48 nodes updated — exactly 48 BrodyMemoryDoc have a Tnn tag",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE ANY(tag IN n.tags WHERE tag =~ 'T[0-9]+') RETURN count(n) AS total",
+      "expected": 48,
+      "pass_condition": "total == 48"
+    },
+    {
+      "check_id": "PWV_02",
+      "description": "Every approved node has its expected Tnn tag",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE n.id IN [<approved_ids>] AND NOT ANY(tag IN n.tags WHERE tag =~ 'T[0-9]+') RETURN count(n) AS missing",
+      "expected": 0,
+      "pass_condition": "missing == 0"
+    },
+    {
+      "check_id": "PWV_03",
+      "description": "Every approved node has its expected family_id tag",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE n.id IN [<approved_ids>] AND NOT ANY(tag IN n.tags WHERE tag IN ['I_FONDAMENTAUX','II_COGNITIFS','III_CONNAISSANCE']) RETURN count(n) AS missing_family",
+      "expected": 0,
+      "pass_condition": "missing_family == 0"
+    },
+    {
+      "check_id": "PWV_04",
+      "description": "All previous tags preserved — no approved node has fewer tags than before write",
+      "cypher": "Verify per-node: length(n.tags) >= length(pre_write_tags) for all 48 nodes",
+      "expected": "all 48 nodes: tag count non-decreasing",
+      "pass_condition": "no tag was removed"
+    },
+    {
+      "check_id": "PWV_05",
+      "description": "Excluded 9 nodes untouched — no Tnn/family tags on excluded nodes",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE n.id IN [<excluded_ids>] AND ANY(tag IN n.tags WHERE tag =~ 'T[0-9]+' OR tag IN ['I_FONDAMENTAUX','II_COGNITIFS','III_CONNAISSANCE']) RETURN count(n) AS contaminated",
+      "expected": 0,
+      "pass_condition": "contaminated == 0",
+      "excluded_node_ids": [
+        "GRAPHITI_V2_002298",
+        "GRAPHITI_V2_000648",
+        "GRAPHITI_V2_002522",
+        "GRAPHITI_V2_002404",
+        "GRAPHITI_V2_002405",
+        "GRAPHITI_V2_002081",
+        "GRAPHITI_V2_001363",
+        "GRAPHITI_V2_000105",
+        "GRAPHITI_V2_002406"
+      ]
+    },
+    {
+      "check_id": "PWV_06",
+      "description": "T13-T34 still PENDING — no doc with T13..T34 tag added",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE ANY(tag IN n.tags WHERE tag IN ['T13','T14','T15','T16','T17','T18','T19','T20','T21','T22','T23','T24','T25','T26','T27','T28','T29','T30','T31','T32','T33','T34']) RETURN count(n) AS t13_t34_count",
+      "expected": 0,
+      "pass_condition": "t13_t34_count == 0"
+    },
+    {
+      "check_id": "PWV_07",
+      "description": "No duplicate tags — each tag appears once per node",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE n.id IN [<approved_ids>] WITH n, [tag IN n.tags | tag] AS tags WHERE size(tags) <> size(apoc.coll.toSet(tags)) RETURN count(n) AS with_duplicates",
+      "expected": 0,
+      "pass_condition": "with_duplicates == 0",
+      "note": "Use apoc.coll.toSet if APOC available, else manual check"
+    },
+    {
+      "check_id": "PWV_08",
+      "description": "title/source/text_preview not modified — spot check 5 nodes",
+      "cypher": "MATCH (n:BrodyMemoryDoc) WHERE n.id IN ['GRAPHITI_V2_000000','GRAPHITI_V2_000797','GRAPHITI_V2_001543','GRAPHITI_V2_000989','GRAPHITI_V2_000274'] RETURN n.id, n.title, n.source, length(n.text_preview)",
+      "expected": "Same values as pre-write snapshot",
+      "pass_condition": "title/source/text_preview unchanged"
+    },
+    {
+      "check_id": "PWV_09",
+      "description": "No write outside approved nodes — total BrodyMemoryDoc count unchanged",
+      "cypher": "MATCH (n:BrodyMemoryDoc) RETURN count(n) AS total_nodes",
+      "expected": 3267,
+      "pass_condition": "total_nodes == 3267 (no new nodes created)"
+    },
+    {
+      "check_id": "PWV_10",
+      "description": "Tree distribution correct — 4 docs per T01-T10, 4 per T11-T12",
+      "cypher": "MATCH (n:BrodyMemoryDoc) UNWIND n.tags AS tag WHERE tag =~ 'T[0-9]+' RETURN tag, count(n) AS doc_count ORDER BY tag",
+      "expected": {
+        "T01": 4,
+        "T02": 4,
+        "T03": 4,
+        "T04": 4,
+        "T05": 4,
+        "T06": 4,
+        "T07": 4,
+        "T08": 4,
+        "T09": 4,
+        "T10": 4,
+        "T11": 4,
+        "T12": 4
+      },
+      "pass_condition": "all counts match expected distribution"
+    }
+  ],
+  "pass_threshold": "ALL 10 checks must pass before write is considered complete",
+  "on_failure": "Execute ROLLBACK_CANONICAL_TAGGING_PLAN.cypher immediately",
+  "decision_authority": "KX108_ONLY"
+}

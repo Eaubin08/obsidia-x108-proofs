@@ -1,0 +1,110 @@
+{
+  "report": "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY",
+  "timestamp": "20260514_004151",
+  "date": "2026-05-14",
+  "mode": "READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "precursor_validation": {
+    "source_write_report": "_local_audits/BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636/BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_REPORT.json",
+    "real_import_executed_confirmed": true,
+    "candidates_imported_confirmed": 42,
+    "batch_id_confirmed": "BRODY_REAL_IMPORT_20260514_003636",
+    "rollback_not_executed_confirmed": true
+  },
+
+  "check_1_batch_count": {
+    "imported_count": 42,
+    "expected_count": 42,
+    "pass": true
+  },
+
+  "check_2_required_properties": {
+    "pass": true,
+    "error_count": 0,
+    "body_non_empty_count": 42,
+    "properties_verified": [
+      "batch_id", "imported_at", "import_mode", "decision_authority",
+      "memory_decision", "graphiti_write", "neo4j_write", "title", "source"
+    ]
+  },
+
+  "check_3_exclusions": {
+    "review_imported": 0,
+    "reflex_imported": 0,
+    "neant_imported": 0,
+    "pass": true
+  },
+
+  "check_4_duplicates": {
+    "duplicate_by_source_title": 0,
+    "duplicate_by_id": 0,
+    "pass": true
+  },
+
+  "check_5_read_path": {
+    "read_path_pass": true,
+    "low_material": false,
+    "queries": {
+      "brody":    {"bmd_result_count": 2391, "batch_imported_hits": 18, "low_material": false, "pass": true},
+      "kernel":   {"bmd_result_count": 2623, "batch_imported_hits": 4,  "low_material": false, "pass": true},
+      "x108":     {"bmd_result_count": 2617, "batch_imported_hits": 5,  "low_material": false, "pass": true},
+      "memory":   {"bmd_result_count": 2460, "batch_imported_hits": 7,  "low_material": false, "pass": true},
+      "graphiti": {"bmd_result_count": 68,   "batch_imported_hits": 7,  "low_material": false, "pass": true}
+    }
+  },
+
+  "check_6_rollback_readiness": {
+    "rollback_plan_file_exists": true,
+    "rollback_scope_batch_only": true,
+    "rollback_executed": false,
+    "delete_executed": false,
+    "rollback_cypher": "MATCH (n:BrodyImportedMemory {batch_id: 'BRODY_REAL_IMPORT_20260514_003636'}) DETACH DELETE n"
+  },
+
+  "check_7_boundary": {
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "memory_intake": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "kernel_mutation": false,
+    "new_write_executed": false,
+    "pass": true
+  },
+
+  "integrity_pass": true,
+
+  "output_files": {
+    "pointer": "CURRENT_BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY.txt",
+    "batch_query_results": "POST_WRITE_BATCH_QUERY_RESULTS.json",
+    "imported_nodes_sample": "IMPORTED_NODES_SAMPLE.json",
+    "integrity_matrix": "IMPORT_INTEGRITY_MATRIX.json",
+    "read_path_confirmation": "READ_PATH_CONFIRMATION.json",
+    "rollback_ready_check": "ROLLBACK_READY_CHECK.md",
+    "runner": "_post_write_validation_runner.py",
+    "report_md": "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_REPORT.md",
+    "report_json": "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_REPORT.json"
+  },
+
+  "guardrails": {
+    "memory_intake": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_merge": false,
+    "runtime_binding": false
+  },
+
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY",
+    "next_real_world_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY"
+  },
+
+  "verdict": "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_DONE"
+}

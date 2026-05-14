@@ -1,0 +1,123 @@
+{
+  "mission": "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL",
+  "phase": "PHASE_6_CURRICULUM_GET_ONLY_EVAL",
+  "timestamp": "20260514_032500",
+  "no_write_in_eval": true,
+  "node_count_post_eval": 3267,
+  "summary_matrix": [
+    {
+      "stage": "FRANCAIS",
+      "required_trees": ["T04","T06","T10"],
+      "required_count": 3,
+      "tested_count": 3,
+      "blocked_count": 0,
+      "pass_count": 3,
+      "verdict": "EVAL_PASS",
+      "tree_detail": [
+        {"tree": "T04", "name": "Arbre du Sens",           "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T06", "name": "Arbre de la Comprehension","nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T10", "name": "Arbre du Langage",         "nodes": 4, "pass": true,  "blocked": false}
+      ]
+    },
+    {
+      "stage": "LOGIQUE",
+      "required_trees": ["T06","T07","T08","T26","T27"],
+      "required_count": 5,
+      "tested_count": 5,
+      "blocked_count": 0,
+      "pass_count": 5,
+      "verdict": "EVAL_PASS",
+      "tree_detail": [
+        {"tree": "T06", "name": "Arbre de la Comprehension","nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T07", "name": "Arbre de l'Organisation", "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T08", "name": "Arbre de la Pensee",      "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T26", "name": "Arbre de la Coherence",   "nodes": 9, "pass": true,  "blocked": false},
+        {"tree": "T27", "name": "Arbre de la Verite",      "nodes": 9, "pass": true,  "blocked": false}
+      ]
+    },
+    {
+      "stage": "MATHS_SIMPLES",
+      "required_trees": ["T07","T08","T09","T11","T12","T26"],
+      "required_count": 6,
+      "tested_count": 6,
+      "blocked_count": 0,
+      "pass_count": 6,
+      "verdict": "EVAL_PASS",
+      "tree_detail": [
+        {"tree": "T07", "name": "Arbre de l'Organisation", "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T08", "name": "Arbre de la Pensee",      "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T09", "name": "Arbre de l'Intelligence", "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T11", "name": "Arbre de la Science",     "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T12", "name": "Arbre de la Technique",   "nodes": 4, "pass": true,  "blocked": false},
+        {"tree": "T26", "name": "Arbre de la Coherence",   "nodes": 9, "pass": true,  "blocked": false}
+      ]
+    },
+    {
+      "stage": "SCIENCE",
+      "required_trees": ["T11","T12","T14","T26","T27"],
+      "required_count": 5,
+      "tested_count": 5,
+      "blocked_count": 0,
+      "pass_count": 5,
+      "verdict": "EVAL_PASS",
+      "tree_detail": [
+        {"tree": "T11", "name": "Arbre de la Science",     "nodes": 4,  "pass": true,  "blocked": false},
+        {"tree": "T12", "name": "Arbre de la Technique",   "nodes": 4,  "pass": true,  "blocked": false},
+        {"tree": "T14", "name": "Arbre de la Philosophie", "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T26", "name": "Arbre de la Coherence",   "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T27", "name": "Arbre de la Verite",      "nodes": 9,  "pass": true,  "blocked": false}
+      ]
+    },
+    {
+      "stage": "PHYSIQUE",
+      "required_trees": ["T11","T12","T23","T25","T26","T27"],
+      "required_count": 6,
+      "tested_count": 6,
+      "blocked_count": 0,
+      "pass_count": 6,
+      "verdict": "EVAL_PASS",
+      "tree_detail": [
+        {"tree": "T11", "name": "Arbre de la Science",   "nodes": 4,  "pass": true,  "blocked": false},
+        {"tree": "T12", "name": "Arbre de la Technique", "nodes": 4,  "pass": true,  "blocked": false},
+        {"tree": "T23", "name": "Arbre du Temps",         "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T25", "name": "Arbre de l'Histoire",   "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T26", "name": "Arbre de la Coherence", "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T27", "name": "Arbre de la Verite",    "nodes": 9,  "pass": true,  "blocked": false}
+      ]
+    },
+    {
+      "stage": "MONDE_LARGE",
+      "required_trees": ["T16","T17","T18","T19","T20","T21","T22","T24","T30","T31","T32","T33","T34"],
+      "required_count": 13,
+      "tested_count": 4,
+      "blocked_count": 9,
+      "pass_count": 4,
+      "verdict": "EVAL_PASS_PARTIAL",
+      "note": "9 blocked trees (T20-T22/T24/T30-T34) cannot be tested — operator decision required to unlock",
+      "tree_detail": [
+        {"tree": "T16", "name": "Arbre de la Relation",        "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T17", "name": "Arbre du Collectif",          "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T18", "name": "Arbre de la Transmission",    "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T19", "name": "Arbre de la Culture",         "nodes": 9,  "pass": true,  "blocked": false},
+        {"tree": "T20", "name": "Arbre de l'Action",           "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T21", "name": "Arbre de la Creation",        "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T22", "name": "Arbre de la Transformation",  "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T24", "name": "Arbre de la Memoire",         "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T30", "name": "Arbre Cognitif Global",       "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T31", "name": "Arbre des Flux",              "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T32", "name": "Arbre des Connexions",        "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T33", "name": "Arbre de l'Optimisation",     "nodes": 0,  "pass": false, "blocked": true},
+        {"tree": "T34", "name": "Arbre de la Stabilite",       "nodes": 0,  "pass": false, "blocked": true}
+      ]
+    }
+  ],
+  "global_summary": {
+    "stages_total": 6,
+    "stages_eval_pass": 5,
+    "stages_eval_pass_partial": 1,
+    "stages_eval_fail": 0,
+    "all_testable_trees_pass": true,
+    "blocked_trees_unchanged": true,
+    "node_count_unchanged": true
+  }
+}

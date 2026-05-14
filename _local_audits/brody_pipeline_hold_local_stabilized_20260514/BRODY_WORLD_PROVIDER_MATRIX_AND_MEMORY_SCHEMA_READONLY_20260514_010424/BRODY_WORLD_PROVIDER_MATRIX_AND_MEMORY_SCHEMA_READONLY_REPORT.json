@@ -1,0 +1,139 @@
+{
+  "mission": "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY",
+  "timestamp": "20260514_010424",
+  "status": "COMPLETE",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+
+  "part1_verification": {
+    "staged_files_root": 136,
+    "staged_preserved": true,
+    "inner_repo_dirty_files": 1,
+    "inner_repo_dirty": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "inner_repo_dirty_type": "LOW_MATERIAL_PATCH_ONLY",
+    "batch_id": "BRODY_REAL_IMPORT_20260514_003636",
+    "batch_nodes_in_neo4j": 42,
+    "brody_memory_doc_total": 3267,
+    "neo4j_labels_live": ["BrodyImportedMemory","BrodyMemoryDoc","BrodyMemoryTag","Community","Document","Entity","Episodic","Saga"],
+    "all_4_audit_dirs_present": true,
+    "verification_status": "PASS"
+  },
+
+  "part2_world_provider_matrix": {
+    "providers_defined": 13,
+    "active_readonly": ["LOCAL_FILES","LOCAL_AUDITS","GRAPHITI_READ","NEO4J_READ","API_GET_ONLY"],
+    "available_readonly": ["WEB_GET_ONLY"],
+    "write_executed_once_controlled": ["MEMORY_WRITE","GRAPHITI_WRITE","NEO4J_WRITE"],
+    "not_allowed": ["SCRAPING_CRAWLER","POST_MUTATION","KERNEL_BINDING","X108_RUNTIME_BINDING"],
+    "post_allowed": false,
+    "crawler_allowed": false,
+    "kernel_binding_allowed": false,
+    "x108_runtime_binding_allowed": false,
+    "matrix_file": "WORLD_PROVIDER_MATRIX_READONLY.json"
+  },
+
+  "part3_memory_layers": {
+    "layers_defined": 8,
+    "layers_in_neo4j_now": 2,
+    "layers_in_neo4j_labels": ["BrodyMemoryDoc (proxy SOURCE_MEMORY)", "BrodyImportedMemory (proxy BATCH_MEMORY)"],
+    "layers_implicit_only": ["USER_MEMORY","BRODY_AGENT_MEMORY","SESSION_MEMORY","CASE_MEMORY","BOUNDARY_MEMORY"],
+    "layers_partial": ["SOURCE_MEMORY","TREE_MEMORY"],
+    "tree_family_pending_mapping": true,
+    "tree_family_invented": false,
+    "classification_file": "MEMORY_LAYER_CLASSIFICATION_READONLY.jsonl"
+  },
+
+  "part4_schema_proposal": {
+    "proposed_node_labels": 8,
+    "proposed_relations": 8,
+    "executed": false,
+    "status": "PROPOSAL_ONLY",
+    "schema_file": "USER_BRODY_SESSION_CASE_SCHEMA_PROPOSAL.json"
+  },
+
+  "part5_memory_links": {
+    "link_candidates_total": 12,
+    "link_status_ready": 9,
+    "link_status_pending_operator_review": 2,
+    "link_status_blocked": 1,
+    "links_executed": false,
+    "links_file": "MEMORY_LINK_CANDIDATES_READONLY.jsonl"
+  },
+
+  "part6_questions": {
+    "Q01_graphiti_connected": true,
+    "Q01_evidence": "bolt://127.0.0.1:7688 live, Episodic/Entity/Community labels reachable, READ_PATH_CONFIRMATION.json pass",
+    "Q02_neo4j_connected": true,
+    "Q02_evidence": "3267 BrodyMemoryDoc + 42 BrodyImportedMemory + 6 other labels confirmed live",
+    "Q03_real_import_executed": true,
+    "Q03_evidence": "BATCH_ID=BRODY_REAL_IMPORT_20260514_003636, 42 nodes, integrity_pass=true, POST_WRITE_VALIDATION.json",
+    "Q04_memory_sorted_by_layer": false,
+    "Q04_evidence": "BrodyMemoryDoc mixes source/agent/session/case. No layer separation in Neo4j yet.",
+    "Q05_user_memory_separate_layer": false,
+    "Q05_evidence": "USER_MEMORY implicit only — in audit files and operator instructions, not in Neo4j",
+    "Q06_brody_agent_memory_separate_layer": false,
+    "Q06_evidence": "BRODY_AGENT_MEMORY partially represented in BrodyMemoryDoc but not separated as dedicated label",
+    "Q07_sessions_traceable": true,
+    "Q07_evidence": "Via audit dir timestamps (20260513_*, 20260514_*) and MEMORY_TRIAGE_SUMMARY.json. Not yet in Neo4j.",
+    "Q08_batches_traceable": true,
+    "Q08_evidence": "batch_id on all 42 BrodyImportedMemory nodes. ROLLBACK_PLAN.cypher scoped to batch_id.",
+    "Q09_trees_as_canonical_families": true,
+    "Q09_evidence": "34 trees / 8 families from arbres_34.registry.json. BrodyMemoryTag label exists for tree tags. Anti-invention rule respected.",
+    "Q10_missing_before_clean_schema": [
+      "BrodyUserMemory label (not in Neo4j)",
+      "BrodyAgentMemory label (not in Neo4j)",
+      "BrodySessionMemory label (not in Neo4j)",
+      "BrodyCaseMemory label (not in Neo4j)",
+      "BrodyBoundaryMemory label (not in Neo4j)",
+      "BrodyTreeMemory label (partial — BrodyMemoryTag exists but not structured)",
+      "Tree-to-memory-layer mapping for 3 pending families",
+      "WRITABLE_MEMORY_PROTOCOL activation (6 gates all BLOCKED)",
+      "Operator KX108 gate per new label"
+    ],
+    "Q11_already_validated": [
+      "Neo4j + Graphiti CONNECTED",
+      "LOW_MATERIAL resolved (body_non_empty=42/42)",
+      "Batch BRODY_REAL_IMPORT_20260514_003636 PRESENT + INTEGRITY_PASS",
+      "34-tree corpus MAPPED (8 families)",
+      "Batch traceability via batch_id",
+      "Rollback scope confirmed",
+      "BOUNDARY_ALL_FALSE=true",
+      "GROUP_A 136 files PRESERVED",
+      "API 8011 LIVE",
+      "WEB_GET_ONLY PASS (https://example.com/ allowlisted)"
+    ],
+    "Q12_must_stay_blocked": [
+      "POST / crawler / kernel binding / X108 runtime binding / X108 merge",
+      "New Neo4j/Graphiti writes without operator gate",
+      "T20-T22 (action_trigger) / T24 (direct_memory_write) / T30-T34 (AGI-layer)",
+      "git add / commit / push without explicit operator instruction"
+    ]
+  },
+
+  "output_files": [
+    "CURRENT_BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY.txt",
+    "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_REPORT.json",
+    "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_REPORT.md",
+    "WORLD_PROVIDER_MATRIX_READONLY.json",
+    "MEMORY_LAYER_CLASSIFICATION_READONLY.jsonl",
+    "MEMORY_LINK_CANDIDATES_READONLY.jsonl",
+    "USER_BRODY_SESSION_CASE_SCHEMA_PROPOSAL.json",
+    "TREE_FAMILY_MAPPING_STATUS_READONLY.json",
+    "BOUNDARY_STATUS_READONLY.json",
+    "NEXT_ACTIONS_READONLY.json"
+  ],
+
+  "boundary_flags": {
+    "readonly": true,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "graphiti_index_write": false,
+    "memory_intake": false,
+    "boundary_all_false": true
+  }
+}

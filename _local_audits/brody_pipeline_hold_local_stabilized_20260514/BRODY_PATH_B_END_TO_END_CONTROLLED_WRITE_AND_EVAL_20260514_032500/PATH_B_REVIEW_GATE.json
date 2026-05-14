@@ -1,0 +1,57 @@
+{
+  "phase": "REVIEW_GATE",
+  "mission": "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL",
+  "timestamp": "20260514_032500",
+  "source_plan": "_local_audits/BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500/PATH_B_TAGGING_DRY_RUN_PLAN.jsonl",
+  "decision_authority": "KX108_ONLY",
+
+  "gate_checks": {
+    "plan_total_lines":          117,
+    "all_path_slug":             true,
+    "all_heuristic_false":       true,
+    "all_llm_guess_false":       true,
+    "all_invention_false":       true,
+    "all_blocked_null":          true,
+    "all_neo4j_write_false":     true,
+    "all_graphiti_write_false":  true,
+    "all_memory_intake_false":   true,
+    "all_kx108_only":            true,
+    "all_tags_exactly_2":        true,
+    "violations_count":          0
+  },
+
+  "scope_confirmation": {
+    "APPROVED_FOR_WRITE":     117,
+    "TIER":                   "TIER_1_PATH_SLUG_ONLY",
+    "EXCLUDED_TP_GENUINE":    78,
+    "EXCLUDED_MULTI_TREE":    2,
+    "EXCLUDED_META":          19,
+    "BLOCKED_TREES":          136,
+    "TP_GENUINE_WRITTEN":     false,
+    "MULTI_TREE_WRITTEN":     false,
+    "META_WRITTEN":           false,
+    "BLOCKED_TREE_WRITTEN":   false
+  },
+
+  "preflight": {
+    "baseline_node_count":    3267,
+    "bim_count":              42,
+    "t01_t12_distribution":   {"T01":4,"T02":4,"T03":4,"T04":4,"T05":4,"T06":4,"T07":4,"T08":4,"T09":4,"T10":4,"T11":4,"T12":4},
+    "t13_t34_before_write":   {},
+    "families_before_write":  {"I_FONDAMENTAUX":20,"II_COGNITIFS":20,"III_CONNAISSANCE":8},
+    "staged_files":           136,
+    "all_preflight_pass":     true
+  },
+
+  "tree_distribution_in_plan": {
+    "T13":9,"T14":9,"T15":9,"T16":9,"T17":9,"T18":9,"T19":9,
+    "T23":9,"T25":9,"T26":9,"T27":9,"T28":9,"T29":9
+  },
+
+  "verdicts": {
+    "gate_pass":              true,
+    "approved_for_write":     true,
+    "real_write_allowed":     true,
+    "rollback_required":      true
+  }
+}

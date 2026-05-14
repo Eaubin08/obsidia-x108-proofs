@@ -1,0 +1,140 @@
+{
+  "mission": "BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY",
+  "timestamp": "20260514_023500",
+  "status": "COMPLETE_READONLY",
+  "source_write": "BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400",
+
+  "preflight": {
+    "staged_files": 136,
+    "staged_pass": true,
+    "x108_dirty": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "x108_dirty_classification": "LOW_MATERIAL_PATCH_ONLY",
+    "neo4j_accessible": true,
+    "brody_imported_memory_batch_intact": true,
+    "brody_real_import_20260514_003636_count": 42,
+    "controlled_write_report_all_pass": true,
+    "controlled_write_dir_files": 8,
+    "temp_scripts_deleted": true
+  },
+
+  "checks": {
+    "CHECK_01": {
+      "description": "48 approved nodes still exist in BrodyMemoryDoc",
+      "value": 48,
+      "expected": 48,
+      "status": "PASS"
+    },
+    "CHECK_02": {
+      "description": "Tree tag distribution T01-T12 x4 each",
+      "distribution": {"T01":4,"T02":4,"T03":4,"T04":4,"T05":4,"T06":4,"T07":4,"T08":4,"T09":4,"T10":4,"T11":4,"T12":4},
+      "expected": {"T01":4,"T02":4,"T03":4,"T04":4,"T05":4,"T06":4,"T07":4,"T08":4,"T09":4,"T10":4,"T11":4,"T12":4},
+      "status": "PASS"
+    },
+    "CHECK_03": {
+      "description": "Family tag distribution",
+      "distribution": {"I_FONDAMENTAUX":20,"II_COGNITIFS":20,"III_CONNAISSANCE":8},
+      "expected": {"I_FONDAMENTAUX":20,"II_COGNITIFS":20,"III_CONNAISSANCE":8},
+      "status": "PASS"
+    },
+    "CHECK_04": {
+      "description": "No T13-T34 on approved nodes; global count",
+      "approved_nodes_with_t13_t34": 0,
+      "global_nodes_with_t13_t34": 0,
+      "t13_t34_status": "PENDING_ADDITIONAL_SIGNAL",
+      "status": "PASS"
+    },
+    "CHECK_05": {
+      "description": "Nodes with T01-T12 match approved set exactly",
+      "nodes_with_tnn_total": 48,
+      "in_plan": 48,
+      "outside_plan_count": 0,
+      "outside_plan_warning": null,
+      "status": "PASS"
+    },
+    "CHECK_06": {
+      "description": "Family-level query now functional (FAMILY_LEVEL_TAGGING_ABSENT=false)",
+      "family_level_tagging_absent_before": true,
+      "family_level_tagging_absent_after": false,
+      "query_results": {"I_FONDAMENTAUX":20,"II_COGNITIFS":20,"III_CONNAISSANCE":8},
+      "status": "PASS"
+    },
+    "CHECK_07": {
+      "description": "LOW_MATERIAL resolved — text_preview non-empty",
+      "spot_results": [
+        {"label":"Brody","id":"GRAPHITI_V2_000000","text_preview_len":3027,"non_empty":true},
+        {"label":"Kernel","id":"GRAPHITI_V2_000000","text_preview_len":3027,"non_empty":true},
+        {"label":"X108","id":"GRAPHITI_V2_000000","text_preview_len":3027,"non_empty":true}
+      ],
+      "status": "PASS"
+    },
+    "CHECK_08": {
+      "description": "Boundary intact — no new writes in this mission",
+      "memory_decision": false,
+      "brody_execute_allowed": false,
+      "brody_authorize_allowed": false,
+      "x108_merge": false,
+      "runtime_binding_allowed": false,
+      "graphiti_write_executed": false,
+      "neo4j_write_executed": false,
+      "new_write_executed": false,
+      "status": "PASS"
+    },
+    "CHECK_09": {
+      "description": "Rollback plan available, not triggered",
+      "rollback_file_exists": true,
+      "rollback_file_lines": 272,
+      "rollback_set_statements": 48,
+      "rollback_executed": false,
+      "status": "PASS"
+    },
+    "CHECK_10": {
+      "description": "Evidence pack complete — 8/8 files, temp scripts deleted",
+      "controlled_write_files": 8,
+      "expected_files": 8,
+      "write_executor_deleted": true,
+      "post_write_validation_script_deleted": true,
+      "status": "PASS"
+    }
+  },
+
+  "summary": {
+    "checks_total": 10,
+    "checks_pass": 10,
+    "checks_fail": 0,
+    "all_pass": true,
+    "real_write_confirmed": true,
+    "nodes_modified_confirmed": 48,
+    "tags_added_confirmed": 96,
+    "tree_tag_distribution_pass": true,
+    "family_tag_distribution_pass": true,
+    "family_level_tagging_fixed_for_t01_t12": true,
+    "t13_t34_pending_additional_signal": true,
+    "low_material_resolved": true,
+    "rollback_ready": true,
+    "rollback_executed": false,
+    "new_write_executed": false,
+    "decision_authority": "KX108_ONLY"
+  },
+
+  "invariants": {
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "x108_merge": false,
+    "no_heuristic_tagging": true,
+    "no_llm_guessing": true,
+    "no_invention": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "no_commit": true,
+    "no_push": true
+  },
+
+  "navigation": {
+    "source_write_audit": "_local_audits/BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400/",
+    "next_memory": "BRODY_PROGRESS_METRICS_READONLY",
+    "next_real_world": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY"
+  }
+}

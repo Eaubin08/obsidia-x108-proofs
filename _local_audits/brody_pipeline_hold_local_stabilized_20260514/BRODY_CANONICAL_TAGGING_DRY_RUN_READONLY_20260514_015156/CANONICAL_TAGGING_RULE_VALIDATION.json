@@ -1,0 +1,104 @@
+{
+  "mission": "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY",
+  "timestamp": "20260514_015156",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+
+  "rules_checked": [
+    {
+      "rule_id": "RULE_01",
+      "rule": "tag_source MUST be arbres_34.canon.json — no other source",
+      "status": "PASS",
+      "evidence": "All 48 entries use CANON dict derived from arbres_34.registry.json + arbres_34.canon.json (cross-verified). No other source used."
+    },
+    {
+      "rule_id": "RULE_02",
+      "rule": "tree_id extraction MUST use regex _T(\\d+)__ on title only",
+      "status": "PASS",
+      "evidence": "re.search(r'_T(\\d+)__', title) applied to BrodyMemoryDoc.title field only. path and text_preview matches excluded from PLAN (moved to EXCLUDED_REVIEW)."
+    },
+    {
+      "rule_id": "RULE_03",
+      "rule": "family assignment MUST come from arbres_34.canon.json lookup by id",
+      "status": "PASS",
+      "evidence": "Family assigned via CANON[tnum]['family'] lookup only. 0 heuristic assignments."
+    },
+    {
+      "rule_id": "RULE_04",
+      "rule": "no_heuristic_tagging = true",
+      "status": "PASS",
+      "evidence": "All 48 entries have heuristic=false. Docs without explicit _Tnn__ in title are in EXCLUDED_REVIEW, not in PLAN."
+    },
+    {
+      "rule_id": "RULE_05",
+      "rule": "no_llm_guessing = true",
+      "status": "PASS",
+      "evidence": "All 48 entries have llm_guess=false. No LLM inference of tree family from text content."
+    },
+    {
+      "rule_id": "RULE_06",
+      "rule": "no_invention = true",
+      "status": "PASS",
+      "evidence": "All 48 entries have invention=false. All tree_ids in {T01..T12} validated against CANON. No invented tags."
+    },
+    {
+      "rule_id": "RULE_07",
+      "rule": "existing tags MUST be preserved — append only",
+      "status": "PASS",
+      "evidence": "All 48 entries have append_only=true. proposed_tags_to_keep = current_tags (no removal). proposed_tags_final = sorted(set(current_tags + proposed_add))."
+    },
+    {
+      "rule_id": "RULE_08",
+      "rule": "docs without _Tnn__ in title MUST be marked PENDING_ADDITIONAL_SIGNAL",
+      "status": "PASS",
+      "evidence": "9 excluded docs (8 meta + 1 ambiguous) have boundary_status=NOT_TAGGABLE_PENDING_SIGNAL. Text_preview-only candidate GRAPHITI_V2_000648 excluded. Path-only = 0 found."
+    },
+    {
+      "rule_id": "RULE_09",
+      "rule": "all writes require KX108 gate + writable memory protocol activation",
+      "status": "PASS",
+      "evidence": "All 48 entries have neo4j_write_planned=false, graphiti_write_planned=false, memory_intake=false. Gate not opened."
+    },
+    {
+      "rule_id": "RULE_10",
+      "rule": "boundary_all_false MUST remain true until gate is opened",
+      "status": "PASS",
+      "evidence": "boundary_all_false=true confirmed. No Neo4j write, no Graphiti write, no memory intake, no runtime binding."
+    }
+  ],
+
+  "family_name_correction": {
+    "status": "CORRECTION_APPLIED",
+    "detail": "Previous BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY spec contained incorrect family names. Corrected from live Neo4j arbres_34.registry.json + arbres_34.canon.json read.",
+    "corrections": {
+      "III": "III_CONNAISSANCE (was incorrectly III_SOCIAUX in bridge spec)",
+      "IV": "IV_RELATIONNELS_SOCIAUX (was incorrectly IV_OPERATIONNELS)",
+      "V": "V_ACTION_TRANSFORMATION (was incorrectly V_SYSTEMIQUES)",
+      "VI": "VI_TEMPORELS_MEMORIELS (was incorrectly VI_DYNAMIQUES)"
+    },
+    "note": "Families I_FONDAMENTAUX, II_COGNITIFS, VII_META_STRUCTURELS, VIII_OBSIDIA_AGI were correct."
+  },
+
+  "invariants_validated": {
+    "no_tag_invented": true,
+    "all_tree_ids_in_T01_T34": true,
+    "all_family_ids_in_8_canonical_families": true,
+    "confidence_source_based_all_0_99": true,
+    "tagging_basis_all_TITLE_REGEX_MATCH": true,
+    "append_only_all_true": true,
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136
+  },
+
+  "validation_summary": {
+    "rules_total": 10,
+    "rules_pass": 10,
+    "rules_fail": 0,
+    "rules_warn": 0,
+    "overall": "VALIDATION_PASS"
+  }
+}

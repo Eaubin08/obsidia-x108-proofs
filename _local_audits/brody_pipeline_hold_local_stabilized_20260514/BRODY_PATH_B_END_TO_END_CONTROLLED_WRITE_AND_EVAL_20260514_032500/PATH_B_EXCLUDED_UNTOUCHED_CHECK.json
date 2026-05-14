@@ -1,0 +1,13 @@
+{
+  "timestamp": "20260514_032500",
+  "pwv11": {
+    "desc": "excluded nodes unmodified",
+    "actual": [],
+    "pass": true
+  },
+  "excluded_ids": [
+    "GRAPHITI_V2_002404",
+    "GRAPHITI_V2_003250",
+    "GRAPHITI_V2_000694"
+  ]
+}

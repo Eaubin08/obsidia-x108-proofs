@@ -1,0 +1,10 @@
+{
+  "batch_id": "BRODY_REAL_IMPORT_20260514_003636",
+  "snapshot_at": "2026-05-13T22:37:54.598014+00:00",
+  "brody_memory_doc_total": 3267,
+  "brody_imported_memory_total_before": 0,
+  "batch_nodes_before": 0,
+  "brody_memory_doc_relations": 34213,
+  "potential_title_duplicates_before": 0,
+  "batch_pre_check": "PASS"
+}

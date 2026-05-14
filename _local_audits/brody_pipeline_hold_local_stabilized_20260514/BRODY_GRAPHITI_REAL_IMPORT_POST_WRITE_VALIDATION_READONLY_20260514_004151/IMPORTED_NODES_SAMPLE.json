@@ -1,0 +1,66 @@
+{
+  "batch_id": "BRODY_REAL_IMPORT_20260514_003636",
+  "sample_size": 5,
+  "nodes": [
+    {
+      "gid": "GRAPHITI_001",
+      "title": "Montre-moi les preuves CANON dans le corpus.",
+      "source": "auto_triage_output/TRIAGE_RECORDS.jsonl",
+      "label": "BrodySessionQuery",
+      "grp": "",
+      "da": "KX108_ONLY",
+      "md": false,
+      "gw": true,
+      "nw": true,
+      "bl": 123
+    },
+    {
+      "gid": "GRAPHITI_002",
+      "title": "Décris les boundaries X108 et la preuve Lean du kernel.",
+      "source": "auto_triage_output/TRIAGE_RECORDS.jsonl",
+      "label": "BrodySessionQuery",
+      "grp": "",
+      "da": "KX108_ONLY",
+      "md": false,
+      "gw": true,
+      "nw": true,
+      "bl": 143
+    },
+    {
+      "gid": "GRAPHITI_003",
+      "title": "Brody LLM obsidien — architecture et rôle",
+      "source": "BRODY_REAL_STATE_DECISION_REPORT_READONLY_20260513_205557/classifications/Brody_LLM_obsidien.json",
+      "label": "BrodyRealStateClassification",
+      "grp": "",
+      "da": "KX108_ONLY",
+      "md": false,
+      "gw": true,
+      "nw": true,
+      "bl": 134
+    },
+    {
+      "gid": "GRAPHITI_004",
+      "title": "API 8011 / ObsidiaShell — état frozen readonly",
+      "source": "BRODY_REAL_STATE_DECISION_REPORT_READONLY_20260513_205557/classifications/API_8011___ObsidiaShell.json",
+      "label": "BrodyRealStateClassification",
+      "grp": "",
+      "da": "KX108_ONLY",
+      "md": false,
+      "gw": true,
+      "nw": true,
+      "bl": 112
+    },
+    {
+      "gid": "GRAPHITI_005",
+      "title": "Graphiti V20 — corpus frozen readonly",
+      "source": "BRODY_REAL_STATE_DECISION_REPORT_READONLY_20260513_205557/classifications/Graphiti_V20_frozen_corpus.json",
+      "label": "BrodyRealStateClassification",
+      "grp": "",
+      "da": "KX108_ONLY",
+      "md": false,
+      "gw": true,
+      "nw": true,
+      "bl": 113
+    }
+  ]
+}
