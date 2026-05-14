@@ -1,0 +1,71 @@
+{
+  "mission": "X108_PROOFS_RELOCATION_AUDIT_AND_COMMIT_NOW",
+  "timestamp": "20260514",
+  "status": "COMPLETE",
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "core_last_commit": "e2b1965d",
+    "core_staged_before": 0,
+    "x108_dirty_before": 1,
+    "x108_dirty_file_before": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "preflight_pass": true
+  },
+
+  "relocation_audit": {
+    "total_items_scanned": 197,
+    "commit_now_count": 16,
+    "hold_local_count": 18,
+    "excluded_count": 163
+  },
+
+  "migration": {
+    "dirs_copied": 16,
+    "files_copied": 163,
+    "no_hold_local_contamination": true,
+    "no_exclude_contamination": true,
+    "no_core_modified": true
+  },
+
+  "low_material_patch": {
+    "diff_contains_text_preview": true,
+    "py_compile_pass": true,
+    "included_in_commit": true
+  },
+
+  "commit": {
+    "sha": "3d25e8f",
+    "message": "fix: resolve Brody LOW_MATERIAL and relocate stabilized memory audits",
+    "files_changed": 173,
+    "insertions": 14159,
+    "deletions": 1
+  },
+
+  "push": {
+    "executed": true,
+    "remote": "https://github.com/Eaubin08/obsidia-x108-proofs.git",
+    "branch": "main",
+    "push_range": "f7643fd..3d25e8f"
+  },
+
+  "post_push": {
+    "x108_commit_sha": "3d25e8f",
+    "x108_dirty_after": 0,
+    "x108_status": "clean",
+    "core_commit_sha": "e2b1965d",
+    "core_staged_after": 0,
+    "core_touched": false
+  },
+
+  "invariants": {
+    "core_git_add": false,
+    "core_commit": false,
+    "core_push": false,
+    "no_neo4j_write": true,
+    "no_graphiti_write": true,
+    "no_memory_write": true,
+    "no_x108_merge": true,
+    "no_runtime_binding": true,
+    "no_freeze": true
+  }
+}
