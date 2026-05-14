@@ -1,0 +1,15 @@
+{
+  "mission": "BRODY_RUNTIME_REAL_FILES_AUDIT_READONLY",
+  "timestamp": "20260514_040000",
+  "check": "LOW_MATERIAL_PATCH_VERIFICATION",
+  "target_file": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+  "file_exists": true,
+  "git_tracked": true,
+  "committed_sha": "3d25e8f",
+  "patch_present": true,
+  "coalesce_line_found": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, \"\") AS body",
+  "text_preview_in_coalesce": true,
+  "py_compile_pass": true,
+  "verdict": "PASS",
+  "detail": "LOW_MATERIAL patch is present, correctly positioned as last fallback in coalesce chain, py_compile PASS, committed in SHA=3d25e8f (x108-proofs main)."
+}

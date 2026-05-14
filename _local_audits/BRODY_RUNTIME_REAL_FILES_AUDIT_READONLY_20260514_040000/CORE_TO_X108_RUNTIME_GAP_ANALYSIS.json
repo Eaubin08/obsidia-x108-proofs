@@ -1,0 +1,89 @@
+{
+  "mission": "BRODY_RUNTIME_REAL_FILES_AUDIT_READONLY",
+  "timestamp": "20260514_040000",
+  "check": "CORE_TO_X108_RUNTIME_GAP_ANALYSIS",
+  "comparison": {
+    "core_candidate_periphery": "obsidia-engine-candidate/periphery/",
+    "x108_periphery": "obsidia-x108-proofs/periphery/brody_memory_readonly/"
+  },
+  "core_candidate_periphery_dirs": 6,
+  "core_candidate_periphery_py_files": 11,
+  "gap_classification": "INTENTIONAL_BOUNDARY",
+  "gaps": [
+    {
+      "file": "brody_api_bridge_authorized_runtime_precheck_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE — intentionally frozen, Python source in core candidate. x108-proofs holds boundary manifest only."
+    },
+    {
+      "file": "smoke_brody_api_bridge_authorized_runtime_precheck_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE smoke — same as above"
+    },
+    {
+      "file": "brody_api_bridge_disabled_runtime_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE DISABLED — runtime is disabled by design, boundary manifest in x108-proofs"
+    },
+    {
+      "file": "smoke_brody_api_bridge_disabled_runtime_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE DISABLED smoke — same as above"
+    },
+    {
+      "file": "smoke_brody_api_bridge_external_access_freeze_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE EXTERNAL FREEZE smoke — frozen, boundary manifest in x108-proofs"
+    },
+    {
+      "file": "brody_api_bridge_provider_policy_matrix_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE PROVIDER POLICY — boundary manifest in x108-proofs"
+    },
+    {
+      "file": "smoke_brody_api_bridge_provider_policy_matrix_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE PROVIDER POLICY smoke"
+    },
+    {
+      "file": "brody_api_bridge_provider_registry_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE PROVIDER REGISTRY — boundary manifest in x108-proofs"
+    },
+    {
+      "file": "smoke_brody_api_bridge_provider_registry_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE PROVIDER REGISTRY smoke"
+    },
+    {
+      "file": "brody_api_bridge_runtime_authorization_ledger_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE RUNTIME AUTHORIZATION LEDGER — boundary manifest in x108-proofs"
+    },
+    {
+      "file": "smoke_brody_api_bridge_runtime_authorization_ledger_readonly_v1.py",
+      "in_core": true,
+      "in_x108": false,
+      "reason": "API BRIDGE RUNTIME AUTHORIZATION LEDGER smoke"
+    }
+  ],
+  "verdict": "NO_ACTIVE_RUNTIME_GAP",
+  "detail": "All 11 missing Python files are brody_api_bridge modules. These are FROZEN/DISABLED — the external API bridge is not active. x108-proofs holds boundary manifests (MANIFEST.json + README_BOUNDARY.md + .ps1 runner) for these modules, which is the correct boundary representation. The memory pipeline runtime (context_packet_query, neo4j_guide_bridge, graphiti_bridge, session_trace, world_source_intake, etc.) is fully present in x108-proofs.",
+  "x108_untracked_audit_files": [
+    "_local_audits/CURRENT_X108_COMMIT_PUSH_AFTER_RELOCATION.txt",
+    "_local_audits/X108_COMMIT_PUSH_REPORT.json",
+    "_local_audits/X108_COMMIT_PUSH_REPORT.md",
+    "_local_audits/_POINTER_X108_COMMIT_PUSH_AFTER_RELOCATION.md"
+  ],
+  "x108_untracked_note": "4 untracked audit report files from Mission 11 — created after push, not yet committed. Not runtime files. Requires COMMIT_AUDIT_REPORTS decision."
+}
