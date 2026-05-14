@@ -1,0 +1,62 @@
+{
+  "mission": "BRODY_RUNTIME_REAL_FILES_AUDIT_READONLY",
+  "timestamp": "20260514_040000",
+  "verdict": "RUNTIME_CORPUS_VALID",
+  "questions": {
+    "A": {
+      "question": "Are all active Brody runtime .py files present in x108-proofs?",
+      "answer": "YES",
+      "detail": "46 Python files in periphery/brody_memory_readonly/. All active memory pipeline modules present."
+    },
+    "B": {
+      "question": "Are all .py files git-tracked in x108-proofs?",
+      "answer": "YES",
+      "detail": "46/46 tracked. git ls-files --others for .py = 0."
+    },
+    "C": {
+      "question": "Do all .py files pass py_compile?",
+      "answer": "YES",
+      "detail": "46/46 PASS. 0 FAIL."
+    },
+    "D": {
+      "question": "Is the LOW_MATERIAL patch present and verified in the canonical runtime file?",
+      "answer": "YES",
+      "detail": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, '') AS body — confirmed in context_packet_query_readonly_v1.py, committed SHA=3d25e8f."
+    },
+    "E": {
+      "question": "Are all internal cross-imports resolvable within x108-proofs periphery/?",
+      "answer": "YES",
+      "detail": "3 internal imports all resolve: brody_local_command_gate_readonly_v1, brody_human_command_packet_readonly_v1, brody_human_output_receipt_validator_readonly_v1."
+    },
+    "F": {
+      "question": "Are external dependencies declared and expected?",
+      "answer": "YES",
+      "detail": "Only external dep: neo4j Python driver (1 file). All others are stdlib."
+    },
+    "G": {
+      "question": "Is there an active runtime gap between core and x108-proofs?",
+      "answer": "NO_ACTIVE_GAP",
+      "detail": "11 Python files in core candidate periphery/ are brody_api_bridge modules — FROZEN/DISABLED by design. x108-proofs holds boundary manifests (MANIFEST.json + README_BOUNDARY.md + .ps1). Not an active runtime gap."
+    },
+    "H": {
+      "question": "Is x108-proofs the clean, authoritative runtime source-of-truth for Brody memory?",
+      "answer": "YES_WITH_NOTE",
+      "detail": "YES for all active modules. Note: 4 untracked audit report files in _local_audits/ (post-Mission-11 reports: X108_COMMIT_PUSH_REPORT.json/.md, CURRENT_X108_COMMIT_PUSH_AFTER_RELOCATION.txt, _POINTER_X108_COMMIT_PUSH_AFTER_RELOCATION.md). These are NOT runtime files — they require a follow-up commit.",
+      "pending_action": "COMMIT_AUDIT_REPORTS (4 untracked files in _local_audits/)"
+    }
+  },
+  "summary": {
+    "A_files_present": "PASS",
+    "B_git_tracked": "PASS",
+    "C_py_compile": "PASS",
+    "D_low_material_patch": "PASS",
+    "E_internal_imports": "PASS",
+    "F_external_deps": "PASS",
+    "G_no_active_gap": "PASS",
+    "H_source_of_truth": "PASS_WITH_NOTE"
+  },
+  "pass_count": 8,
+  "fail_count": 0,
+  "runtime_ready": true,
+  "next_action": "COMMIT_AUDIT_REPORTS — stage and commit the 4 untracked _local_audits/ files (post-Mission-11 + this mission output)"
+}
