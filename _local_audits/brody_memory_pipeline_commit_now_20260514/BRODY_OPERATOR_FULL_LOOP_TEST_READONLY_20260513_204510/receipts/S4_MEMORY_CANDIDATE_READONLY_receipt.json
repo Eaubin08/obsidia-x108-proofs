@@ -1,0 +1,35 @@
+{
+  "scenario_id": "S4",
+  "human_executed": true,
+  "operator_action": "HUMAN_EXECUTES",
+  "execution_by_brody": false,
+  "actual_result": {
+    "input": {
+      "index": 6,
+      "user": "Cette information est-elle candidate mémoire ?",
+      "memory_query": "candidate mémoire",
+      "query": "information mémoire candidate triage",
+      "scount": 3,
+      "mcount": 1,
+      "axes": true,
+      "resonance": true
+    },
+    "zone": "CRISTAL",
+    "memory_candidate": true,
+    "memory_intake": false,
+    "memory_decision": false,
+    "graphiti_write": false,
+    "auto_triage_only": true,
+    "decision_authority": "KX108_ONLY"
+  },
+  "post_executed": false,
+  "crawler_executed": false,
+  "secret_read": false,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write_executed": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "boundary_intact": true
+}

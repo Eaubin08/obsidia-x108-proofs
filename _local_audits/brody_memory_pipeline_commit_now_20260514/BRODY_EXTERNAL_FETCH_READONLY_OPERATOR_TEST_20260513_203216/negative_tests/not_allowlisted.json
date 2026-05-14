@@ -1,0 +1,9 @@
+{
+  "case": "not_allowlisted",
+  "method": "GET",
+  "url": "https://not-allowlisted.example/",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_NOT_ALLOWLISTED",
+  "boundary_intact": true
+}

@@ -1,0 +1,15 @@
+{
+  "component": "Pointers Brody (~90 CURRENT_BRODY*.txt dans x108-proofs)",
+  "evidence_path": "Glob CURRENT_BRODY*.txt dans obsidia-x108-proofs",
+  "last_status": "PRESENT_COHERENT",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": true,
+  "do_not_commit": false,
+  "reason": "~90 pointers présents. Modules clés : api_bridge_contract/dry_run/authorized_runtime_precheck/external_access_freeze/runtime_authorization_ledger tous PASS. post_human_review + graphiti_candidate_prep READY. Pointers cohérents avec architecture KX108_ONLY.",
+  "next_action": "COMMIT_CANDIDATE — après résolution sigma/tools dirty"
+}

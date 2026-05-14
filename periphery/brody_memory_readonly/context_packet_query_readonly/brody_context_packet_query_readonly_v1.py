@@ -49,7 +49,7 @@ def query_neo4j(query: str, limit: int):
       coalesce(p.path, "") AS path,
       coalesce(p.source, "unknown") AS source,
       coalesce(p.tags, []) AS tags,
-      coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, "") AS body
+      coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, "") AS body
     WITH d, title, path, source, tags, body,
       (
         CASE WHEN toLower(title) CONTAINS q_norm THEN 160 ELSE 0 END +

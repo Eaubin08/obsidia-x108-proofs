@@ -1,0 +1,41 @@
+{
+  "step1_returncode": 0,
+  "step1_status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+  "step1_results_count": 8,
+  "step1_decision_authority": "KX108_ONLY",
+  "step1_boundary_keys": {
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "kernel_binding": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "step2_returncode": 0,
+  "step2_status": "BRODY_CONTEXT_PACKET_CONSUMER_READONLY_PASS",
+  "step2_boundary_keys": {
+    "memory_decision": false,
+    "emits_act": false,
+    "kernel_binding": null,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "kernel_mutation": false,
+    "x108_mutation": null
+  },
+  "step3_returncode": 0,
+  "step3_status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS",
+  "step3_material_quality": "LOW_MATERIAL",
+  "step3_boundary_keys": {
+    "memory_decision": false,
+    "emits_act": false,
+    "kernel_binding": null,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "kernel_mutation": false,
+    "x108_mutation": null
+  },
+  "chain_verdict": "CHAIN_PASS",
+  "all_boundaries_false": true
+}

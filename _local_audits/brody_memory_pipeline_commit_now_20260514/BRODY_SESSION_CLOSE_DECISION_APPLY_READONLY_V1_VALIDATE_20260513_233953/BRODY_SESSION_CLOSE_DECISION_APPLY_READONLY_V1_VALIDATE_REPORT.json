@@ -1,0 +1,79 @@
+{
+  "report": "BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE",
+  "timestamp": "20260513_233953",
+  "date": "2026-05-13",
+  "mode": "READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "source_template": "_local_audits/BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY_20260513_232959/SESSION_CLOSE_DECISION_TEMPLATE.jsonl",
+  "applied_decisions": "_local_audits/BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE_20260513_233953/SESSION_CLOSE_DECISION_APPLIED.jsonl",
+
+  "validation_checks": {
+    "template_lines": 51,
+    "applied_lines": 51,
+    "required_fields_all_present": true,
+    "null_human_decision_count": 0,
+    "null_reason_count": 0,
+    "null_allowed_for_post_human_review_count": 0,
+    "memory_write_allowed_count": 0,
+    "graphiti_write_allowed_count": 0,
+    "neo4j_write_allowed_count": 0,
+    "reflex_allowed_count": 0,
+    "neant_allowed_count": 0,
+    "errors": [],
+    "all_checks_pass": true
+  },
+
+  "decision_distribution": {
+    "CRISTAL": 42,
+    "TRANSITION": 4,
+    "NEANT": 4,
+    "REFLEX": 1,
+    "allowed_for_post_human_review": 46,
+    "blocked_from_post_human_review": 5
+  },
+
+  "apply_rule": {
+    "default": "human_decision = proposed_class",
+    "reason_default": "accepted proposed_class after operator precursor review",
+    "allowed_rule": "true for CRISTAL and TRANSITION, false for NEANT and REFLEX",
+    "exceptions": [
+      "REFLEX: allowed_for_post_human_review=false always",
+      "NEANT: allowed_for_post_human_review=false always",
+      "memory_write_allowed: false always",
+      "graphiti_write_allowed: false always",
+      "neo4j_write_allowed: false always"
+    ]
+  },
+
+  "precursor_output": {
+    "source_summary_status": "BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_PASS",
+    "gate_patch": "V1_3_CANONICAL_POINTER_RECORDS_SUPPORT_FALLBACK",
+    "decisions_count": 51,
+    "memory_write_allowed": false,
+    "graphiti_write_allowed": false,
+    "neo4j_write_allowed": false,
+    "post_human_review_ready": true
+  },
+
+  "guardrails": {
+    "memory_write_allowed": false,
+    "graphiti_write_allowed": false,
+    "neo4j_write_allowed": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "committed": false,
+    "frozen": false,
+    "push": false
+  },
+
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY",
+    "next_real_world_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY"
+  },
+
+  "verdict": "BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE_DONE"
+}

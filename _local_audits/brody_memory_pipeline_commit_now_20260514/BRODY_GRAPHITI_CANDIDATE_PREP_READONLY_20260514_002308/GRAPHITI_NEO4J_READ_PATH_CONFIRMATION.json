@@ -1,0 +1,12 @@
+{
+  "graphiti_neo4j_read_path_confirmation": {
+    "graphiti_read_path_connected": true,
+    "neo4j_live_access_validated": true,
+    "neo4j_uri": "bolt://127.0.0.1:7688",
+    "brody_memory_doc_nodes_with_text_preview": 3267,
+    "low_material_resolved": true,
+    "live_validation_source": "_local_audits\\LOW_MATERIAL_LIVE_VALIDATION_READONLY_20260513_231701\\\\",
+    "write_path_enabled": false,
+    "import_path_enabled": false
+  }
+}

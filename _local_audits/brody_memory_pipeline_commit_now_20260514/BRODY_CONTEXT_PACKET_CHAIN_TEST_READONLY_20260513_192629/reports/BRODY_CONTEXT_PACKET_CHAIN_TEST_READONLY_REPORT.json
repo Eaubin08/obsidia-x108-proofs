@@ -1,0 +1,187 @@
+{
+  "report": "BRODY_CONTEXT_PACKET_CHAIN_TEST_READONLY",
+  "timestamp": "20260513_192629",
+  "date": "2026-05-13",
+  "session": "CONTEXT_RESTORED_FROM_PREVIOUS_SESSION",
+
+  "preflight": {
+    "api_8011_status": "LIVE",
+    "api_8011_pid": 3212,
+    "api_8011_module": "obsidia_core.agent_bridge:app",
+    "api_8011_port": 8011,
+    "verify_all_py": "PASS",
+    "x108_git_dirty": true,
+    "x108_dirty_file": "sigma/tools/run_bank_enterprise_pack.py",
+    "x108_dirty_action": "SIGNALED_NOT_TOUCHED"
+  },
+
+  "neo4j_discovery": {
+    "port": 7688,
+    "password_source": "DEFAULT_FROM_AGENT_BRIDGE_PY",
+    "password_used": "obsidia-graphiti-dev",
+    "node_type_queried": "BrodyMemoryDoc",
+    "note": "BrodyMemoryDoc nodes present in Neo4j at bolt://localhost:7688. Separate from Graphiti V20 frozen corpus (Entity/Episodic nodes). Corpus V20 frozen uses graphiti_v20_frozen_adapter.py — different data source."
+  },
+
+  "chain_result": {
+    "verdict": "CHAIN_PASS",
+    "query": "Kernel",
+    "limit": 8,
+
+    "step1_query": {
+      "module": "brody_context_packet_query_readonly_v1.py",
+      "status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+      "results_count": 8,
+      "decision_authority": "KX108_ONLY",
+      "source": "NEO4J_GRAPHITI_V2_READONLY",
+      "boundary_check": {
+        "memory_decision": false,
+        "allowed_to_decide": false,
+        "emits_act": false,
+        "kernel_binding": false,
+        "x108_runtime_binding": false,
+        "x108_merge": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      },
+      "boundary_violation": false,
+      "returncode": 0
+    },
+
+    "step2_consumer": {
+      "module": "brody_context_packet_consumer_readonly_v1.py",
+      "status": "BRODY_CONTEXT_PACKET_CONSUMER_READONLY_PASS",
+      "input": "FILE:api_captures/context_packet_query_kernel_output.json",
+      "boundary_check": {
+        "memory_decision": false,
+        "allowed_to_decide": false,
+        "emits_act": false,
+        "x108_runtime_binding": false,
+        "x108_merge": false,
+        "kernel_mutation": false,
+        "note": "kernel_binding and x108_mutation not output by consumer — absent keys are not violations"
+      },
+      "boundary_violation": false,
+      "returncode": 0
+    },
+
+    "step3_engine": {
+      "module": "brody_local_response_engine_readonly_v1.py",
+      "status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS",
+      "input": "FILE:api_captures/context_packet_query_kernel_output.json",
+      "material_quality": "LOW_MATERIAL",
+      "material_quality_reason": "BrodyMemoryDoc items returned by query module have excerpt='' (empty). Engine reads excerpt field — no local material available in this node type. Engine falls back to metadata-only response.",
+      "items_with_material": 0,
+      "results_count": 6,
+      "sources_cited": true,
+      "boundary_check": {
+        "memory_decision": false,
+        "allowed_to_decide": false,
+        "emits_act": false,
+        "x108_runtime_binding": false,
+        "x108_merge": false,
+        "kernel_mutation": false
+      },
+      "boundary_violation": false,
+      "returncode": 0
+    }
+  },
+
+  "api_endpoints_tested": {
+    "total_tested": 12,
+    "frozen_context_endpoints": [
+      {"endpoint": "/graph/v20/frozen/context?q=Kernel", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/context?q=CANON", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/context?q=X-108", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/context?q=Brody", "status": "OK_entity_count_0"},
+      {"endpoint": "/graph/v20/frozen/status", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/readiness", "status": "OK"}
+    ],
+    "other_endpoints": [
+      {"endpoint": "/graph/v20/frozen/counts", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/metrics", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/manifest", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/evidence", "status": "OK"},
+      {"endpoint": "/graph/v20/frozen/search?q=Kernel", "status": "OK"}
+    ],
+    "negative_mutation_tests": [
+      {"endpoint": "POST /graph/v20/frozen/context", "status": "405_BLOCKED"},
+      {"endpoint": "POST /graph/v20/frozen/search", "status": "405_BLOCKED"},
+      {"endpoint": "DELETE /graph/v20/frozen/status", "status": "405_BLOCKED"}
+    ]
+  },
+
+  "findings": [
+    {
+      "id": "F1",
+      "title": "CHAIN_PASS_CONFIRMED",
+      "description": "La chaîne complète QUERY→CONSUMER→ENGINE s'exécute avec PASS aux 3 étapes. Aucune violation de boundary.",
+      "severity": "INFO"
+    },
+    {
+      "id": "F2",
+      "title": "NEO4J_BRODY_DOC_NODES_PRESENT",
+      "description": "BrodyMemoryDoc nodes présents dans Neo4j bolt://localhost:7688 (8 résultats pour q=Kernel). Données distinctes du corpus Graphiti V20 frozen (Entity/Episodic nodes).",
+      "severity": "INFO"
+    },
+    {
+      "id": "F3",
+      "title": "LOW_MATERIAL_QUALITY",
+      "description": "material_quality=LOW_MATERIAL car les BrodyMemoryDoc retournés ont excerpt='' vide. L'engine produit une réponse metadata-only. Ce n'est pas une violation — c'est l'état réel des données.",
+      "severity": "INFO",
+      "recommendation": "Pour améliorer material_quality, les BrodyMemoryDoc doivent avoir leurs champs excerpt/body populés dans Neo4j."
+    },
+    {
+      "id": "F4",
+      "title": "UNICODE_ENCODING_ISSUE_RESOLVED",
+      "description": "Premier appel consumer échoue avec UnicodeEncodeError cp1252 (caractère emoji dans le JSON). Résolu par PYTHONUTF8=1 + encoding=utf-8 dans subprocess.",
+      "severity": "RESOLVED"
+    },
+    {
+      "id": "F5",
+      "title": "CONSUMER_EXPECTS_FILE_PATH",
+      "description": "consumer et engine attendent un chemin de fichier (pas JSON inline) pour --packet-json/--hydrated-packet-json. load_packet() fait Path(arg).read_text().",
+      "severity": "INFO"
+    },
+    {
+      "id": "F6",
+      "title": "ENGINE_EXPECTS_CONTEXT_PACKET_AT_ROOT",
+      "description": "L'engine cherche context_packet dans l'objet racine. Le consumer output ne porte pas context_packet — il faut passer le query output directement à l'engine.",
+      "severity": "INFO"
+    }
+  ],
+
+  "boundary_summary": {
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "decision_authority": "KX108_ONLY",
+    "graphiti_write": false,
+    "neo4j_write_executed": false
+  },
+
+  "guardrails": {
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_modification": false,
+    "sigma_tools_touched": false,
+    "faux_pass_crees": false
+  },
+
+  "files_produced": [
+    "api_captures/context_packet_query_kernel_output.json",
+    "chain_outputs/consumer_output.json",
+    "chain_outputs/consumer_response.md",
+    "chain_outputs/engine_output.json",
+    "chain_outputs/engine_response.md",
+    "reports/chain_result_summary.json",
+    "reports/BRODY_CONTEXT_PACKET_CHAIN_TEST_READONLY_REPORT.json",
+    "reports/BRODY_CONTEXT_PACKET_CHAIN_TEST_READONLY_REPORT.md",
+    "chain_orchestrator.py"
+  ]
+}

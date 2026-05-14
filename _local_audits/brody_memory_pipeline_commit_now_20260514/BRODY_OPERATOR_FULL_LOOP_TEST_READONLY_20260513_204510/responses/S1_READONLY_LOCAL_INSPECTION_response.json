@@ -1,0 +1,28 @@
+{
+  "scenario_id": "S1",
+  "brody_role": "structure_and_explain",
+  "brody_executed": false,
+  "structured_output": {
+    "inspection_areas": [
+      {
+        "area": "sigma/tools/run_bank_enterprise_pack.py",
+        "status": "DIRTY_UNSTAGED",
+        "action": "OPERATOR_INSPECT_BEFORE_COMMIT"
+      },
+      {
+        "area": "API_8011",
+        "status": "LIVE_FROZEN_READONLY",
+        "action": "READONLY_CONTEXT_QUERY_ONLY"
+      },
+      {
+        "area": "X108_PROOFS",
+        "status": "VERIFY_ALL_PASS",
+        "action": "NO_ACTION_REQUIRED"
+      }
+    ],
+    "next_operator_action": "HUMAN_REVIEWS_AND_DECIDES",
+    "kernel_decision": "NONE",
+    "graphiti_decision": "NONE"
+  },
+  "boundary_intact": true
+}

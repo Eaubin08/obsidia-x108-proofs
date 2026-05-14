@@ -1,0 +1,15 @@
+{
+  "component": "External fetch readonly operator test (step 6)",
+  "evidence_path": "BRODY_EXTERNAL_FETCH_READONLY_OPERATOR_TEST_20260513_203216",
+  "last_status": "PASS",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": true,
+  "do_not_commit": false,
+  "reason": "PASS. Smoke 67/67. GET https://example.com/ exécuté. 7/7 negative tests bloqués. POST=false, crawler=false, secret=false. Allowlist stricte validée. Tous boundaries false.",
+  "next_action": "COMMIT_CANDIDATE — artefacts locaux propres"
+}

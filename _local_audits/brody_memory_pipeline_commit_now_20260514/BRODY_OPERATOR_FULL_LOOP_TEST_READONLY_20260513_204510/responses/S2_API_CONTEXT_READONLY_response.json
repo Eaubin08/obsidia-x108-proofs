@@ -1,0 +1,28 @@
+{
+  "scenario_id": "S2",
+  "brody_role": "structure_and_explain",
+  "brody_executed": false,
+  "structured_output": {
+    "api_context": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "nodes": 167,
+      "rels": 477,
+      "indexed_episodes": 20,
+      "failed_episodes": 0,
+      "manifest_files": 4,
+      "live_neo4j_dependency": false,
+      "x108_merge_status": "NOT_MERGED",
+      "commit_status": "LOCAL_ONLY"
+    },
+    "method_used": "GET",
+    "readonly": true,
+    "kernel_decision": "NONE",
+    "graphiti_decision": "NONE",
+    "next_operator_action": "HUMAN_INTERPRETS_RESULT",
+    "note": "Brody présente. L'opérateur humain a exécuté le GET."
+  },
+  "boundary_intact": true
+}

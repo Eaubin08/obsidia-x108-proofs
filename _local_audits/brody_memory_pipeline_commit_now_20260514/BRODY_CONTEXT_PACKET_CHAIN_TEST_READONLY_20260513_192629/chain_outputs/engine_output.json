@@ -1,0 +1,161 @@
+{
+  "status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS",
+  "created_at": "2026-05-13T17:37:37.204247+00:00",
+  "query": "Kernel",
+  "input_status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+  "packet_status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+  "results_count": 6,
+  "items_with_material": 0,
+  "material_quality": "LOW_MATERIAL",
+  "sources_cited": true,
+  "response_md": "# BRODY LOCAL RESPONSE ENGINE — READONLY\n\n- query: Kernel\n- role: LOCAL_RESPONSE_ENGINE\n- memory_role: GUIDE_CONTEXT_NAVIGATION_ONLY\n- decision_authority: KX108_ONLY\n- emits_act: false\n- kernel_mutation: false\n- x108_runtime_binding: false\n- material_quality: LOW_MATERIAL\n\n## Réponse locale structurée\n\nBrody transforme le packet hydraté en réponse locale structurée. Cette sortie reste documentaire : elle oriente, cite les sources disponibles, ne décide pas, ne déclenche rien, et ne modifie pas X108.\n\n## Lecture active\n\nAucun extrait local hydraté exploitable dans ce packet. Réponse limitée aux métadonnées et aux références.\n\n## Carte tags\n\n- kernel: 6\n- proof: 6\n- source_doc: 6\n- audit: 5\n- agents: 4\n- regroupements_v43: 3\n- canon: 2\n- memory: 2\n- readonly: 2\n- x108: 2\n- 34_arbres: 1\n- atlas_cartographe: 1\n- hexaflux: 1\n- nuage_points: 1\n- osmose: 1\n- premerge: 1\n\n## Sources\n\n- 02_PEPITE_P034__Kernel_intersection_des_contraintes.md :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P034__Kernel_intersection_des_contraintes.md\n- 02_PEPITE_P113__Kernel_intersection_des_couches.md :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P113__Kernel_intersection_des_couches.md\n- 02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\02_PEPITES\\02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md\n- KERNEL_TOUCH_POLICY.md :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\premerge_candidates\\OBSIDIA_ENGINE_PREMERGE_CANDIDATE_DOSSIER_V1_20260508_182759\\decision\\KERNEL_TOUCH_POLICY.md\n- bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\01_SOURCES\\documents_originaux\\bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx\n- kernel_boundary_tests.py :: C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\15_GUARDS_NON_DECISION\\kernel_boundary_tests.py\n\n## Boundary\n\nMemory is guide/context/navigation only. Brody consumes hydrated context. KX108 remains sole decision authority.",
+  "selected_items": [
+    {
+      "rank": 1,
+      "id": "GRAPHITI_V2_003138",
+      "title": "02_PEPITE_P034__Kernel_intersection_des_contraintes.md",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P034__Kernel_intersection_des_contraintes.md",
+      "tags": [
+        "audit",
+        "kernel",
+        "proof",
+        "regroupements_v43",
+        "source_doc"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P034__Kernel_intersection_des_contraintes.md",
+      "material": "",
+      "has_material": false
+    },
+    {
+      "rank": 2,
+      "id": "GRAPHITI_V2_003159",
+      "title": "02_PEPITE_P113__Kernel_intersection_des_couches.md",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P113__Kernel_intersection_des_couches.md",
+      "tags": [
+        "audit",
+        "kernel",
+        "proof",
+        "regroupements_v43",
+        "source_doc"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\02_PEPITES\\02_PEPITE_P113__Kernel_intersection_des_couches.md",
+      "material": "",
+      "has_material": false
+    },
+    {
+      "rank": 3,
+      "id": "GRAPHITI_V2_003017",
+      "title": "02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\02_PEPITES\\02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md",
+      "tags": [
+        "agents",
+        "audit",
+        "kernel",
+        "proof",
+        "regroupements_v43",
+        "source_doc"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\02_PEPITES\\02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md",
+      "material": "",
+      "has_material": false
+    },
+    {
+      "rank": 4,
+      "id": "GRAPHITI_V2_003215",
+      "title": "KERNEL_TOUCH_POLICY.md",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\premerge_candidates\\OBSIDIA_ENGINE_PREMERGE_CANDIDATE_DOSSIER_V1_20260508_182759\\decision\\KERNEL_TOUCH_POLICY.md",
+      "tags": [
+        "agents",
+        "audit",
+        "canon",
+        "hexaflux",
+        "kernel",
+        "memory",
+        "premerge",
+        "proof",
+        "readonly",
+        "source_doc",
+        "x108"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\premerge_candidates\\OBSIDIA_ENGINE_PREMERGE_CANDIDATE_DOSSIER_V1_20260508_182759\\decision\\KERNEL_TOUCH_POLICY.md",
+      "material": "",
+      "has_material": false
+    },
+    {
+      "rank": 5,
+      "id": "GRAPHITI_V2_002896",
+      "title": "bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\01_SOURCES\\documents_originaux\\bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx",
+      "tags": [
+        "34_arbres",
+        "agents",
+        "atlas_cartographe",
+        "audit",
+        "canon",
+        "kernel",
+        "memory",
+        "nuage_points",
+        "osmose",
+        "proof",
+        "source_doc",
+        "x108"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\01_SOURCES\\documents_originaux\\bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx",
+      "material": "",
+      "has_material": false
+    },
+    {
+      "rank": 6,
+      "id": "GRAPHITI_V2_002483",
+      "title": "kernel_boundary_tests.py",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\15_GUARDS_NON_DECISION\\kernel_boundary_tests.py",
+      "tags": [
+        "agents",
+        "kernel",
+        "proof",
+        "readonly",
+        "source_doc"
+      ],
+      "score": 770,
+      "source_ref": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\15_GUARDS_NON_DECISION\\kernel_boundary_tests.py",
+      "material": "",
+      "has_material": false
+    }
+  ],
+  "tag_counts": {
+    "kernel": 6,
+    "proof": 6,
+    "source_doc": 6,
+    "audit": 5,
+    "agents": 4,
+    "regroupements_v43": 3,
+    "canon": 2,
+    "memory": 2,
+    "readonly": 2,
+    "x108": 2,
+    "34_arbres": 1,
+    "atlas_cartographe": 1,
+    "hexaflux": 1,
+    "nuage_points": 1,
+    "osmose": 1,
+    "premerge": 1
+  },
+  "readonly": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "kernel_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "LOCAL_RESPONSE_ENGINE",
+  "ui": false,
+  "scope": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_ONLY"
+}

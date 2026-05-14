@@ -1,0 +1,86 @@
+{
+  "mission": "BRODY_SYNTHESIS_FINAL_VERIFICATION_BEFORE_COMMIT_READONLY",
+  "timestamp": "20260514_034000",
+  "check": "C_SIX_OBJECTIVES",
+
+  "objectives_verified": {
+    "OBJ_1_LOW_MATERIAL": {
+      "expected_status": "RESOLVED",
+      "found_status": "RESOLVED",
+      "low_material_resolved": true,
+      "pass": true,
+      "evidence_present": ["PWV_12 PASS", "CHECK_07 PASS", "A_corpus_memory.low_material_resolved=true"]
+    },
+    "OBJ_2_MEMORY_CANDIDATE": {
+      "expected_status": "PIPELINE_STABLE",
+      "found_status": "PIPELINE_STABLE",
+      "memory_pipeline_stable": true,
+      "pass": true,
+      "evidence_present": ["C_memory_candidate.memory_pipeline_stable=true", "graphiti_imported_batch=42"]
+    },
+    "OBJ_3_EXTERNAL_FETCH": {
+      "expected_status": "VALIDATED",
+      "found_status": "VALIDATED",
+      "external_fetch_get_only_validated": true,
+      "pass": true,
+      "evidence_present": ["GET_TREE_005 PASS", "D_external_fetch.negative_tests_all_blocked=true"]
+    },
+    "OBJ_4_OPERATOR_LOOP": {
+      "expected_status": "VALIDATED",
+      "found_status": "VALIDATED",
+      "operator_loop_validated": true,
+      "pass": true,
+      "evidence_present": ["E_operator_loop.scenarios_passed=5", "SMOKE_CHECKS_PASS=115/115"]
+    },
+    "OBJ_5_CURRICULUM": {
+      "expected_status": "CORE_COMPLETE",
+      "found_status": "CORE_COMPLETE",
+      "curriculum_core_pass": true,
+      "pass": true,
+      "evidence_present": ["5/6 EVAL_PASS", "12/12 PWV PASS", "total_nodes_tagged=165", "total_tags=330"]
+    },
+    "OBJ_6_METRICS": {
+      "expected_status": "COMPLETE",
+      "found_status": "COMPLETE",
+      "progress_metrics_created": true,
+      "pass": true,
+      "evidence_present": ["7 metric families A-G defined", "BRODY_PROGRESS_METRICS_REPORT.json verdicts all-pass"]
+    }
+  },
+
+  "derived_flags": {
+    "LOW_MATERIAL_RESOLVED": true,
+    "MEMORY_PIPELINE_STABLE": true,
+    "EXTERNAL_FETCH_GET_ONLY_VALIDATED": true,
+    "OPERATOR_LOOP_VALIDATED": true,
+    "CURRICULUM_CORE_PASS": true,
+    "PROGRESS_METRICS_CREATED": true
+  },
+
+  "curriculum_verdicts": {
+    "FRANCAIS":     {"expected": "EVAL_PASS",         "found": "EVAL_PASS",         "pass": true},
+    "LOGIQUE":      {"expected": "EVAL_PASS",         "found": "EVAL_PASS",         "pass": true},
+    "MATHS_SIMPLES":{"expected": "EVAL_PASS",         "found": "EVAL_PASS",         "pass": true},
+    "SCIENCE":      {"expected": "EVAL_PASS",         "found": "EVAL_PASS",         "pass": true},
+    "PHYSIQUE":     {"expected": "EVAL_PASS",         "found": "EVAL_PASS",         "pass": true},
+    "MONDE_LARGE":  {"expected": "EVAL_PASS_PARTIAL", "found": "EVAL_PASS_PARTIAL", "pass": true,
+                     "partial_reason_expected": "BLOCKED_TREES_BY_DESIGN",
+                     "partial_reason_found": "BLOCKED_TREES_BY_DESIGN",
+                     "partial_reason_pass": true}
+  },
+
+  "invariants_verified": {
+    "DECISION_AUTHORITY":      {"expected": "KX108_ONLY", "found": "KX108_ONLY", "pass": true},
+    "NODE_COUNT_UNCHANGED":    {"expected": true, "found": true, "pass": true},
+    "NODE_COUNT":              {"expected": 3267, "found": 3267, "pass": true},
+    "POST_WRITE_AUDIT_PASS":   {"expected": true, "found": true, "note": "12/12 PWV PASS confirmed in source", "pass": true},
+    "RUNTIME_BINDING_ALLOWED": {"expected": false, "found": false, "pass": true},
+    "X108_MERGE":              {"expected": false, "found": false, "pass": true},
+    "MEMORY_INTAKE":           {"expected": false, "found": false, "pass": true}
+  },
+
+  "all_objectives_pass": true,
+  "all_verdicts_pass": true,
+  "all_invariants_pass": true,
+  "six_objectives_pass": true
+}

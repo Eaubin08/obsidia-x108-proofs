@@ -1,0 +1,9 @@
+{
+  "case": "localhost_blocked",
+  "method": "GET",
+  "url": "http://127.0.0.1:7687/",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_PRIVATE_OR_LOCAL",
+  "boundary_intact": true
+}

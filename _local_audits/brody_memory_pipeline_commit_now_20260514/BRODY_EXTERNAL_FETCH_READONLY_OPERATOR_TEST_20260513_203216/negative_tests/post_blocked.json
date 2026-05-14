@@ -1,0 +1,9 @@
+{
+  "case": "post_blocked",
+  "method": "POST",
+  "url": "https://example.com/",
+  "blocked": true,
+  "network_executed": false,
+  "reason": "BLOCKED_BEFORE_NETWORK",
+  "boundary_intact": true
+}

@@ -1,0 +1,15 @@
+{
+  "component": "User memory intake candidate (auto_triage, step 5 V2)",
+  "evidence_path": "BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604 V2",
+  "last_status": "PARTIAL_PASS",
+  "validated": false,
+  "needs_build": false,
+  "needs_test": true,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": true,
+  "do_not_commit": false,
+  "reason": "auto_triage PASS live (CRISTAL=2/TRANSITION=2/NEANT=1/REFLEX→TRANSITION). Smoke 48/48 PASS. PARTIAL_PASS car post_human_review et graphiti_candidate_prep nécessitent précurseur SESSION_CLOSE_DECISION_APPLY 51 décisions. Artefacts V2 propres.",
+  "next_action": "COMMIT_CANDIDATE pour artefacts V2 — post_human_review non testable sans précurseur"
+}

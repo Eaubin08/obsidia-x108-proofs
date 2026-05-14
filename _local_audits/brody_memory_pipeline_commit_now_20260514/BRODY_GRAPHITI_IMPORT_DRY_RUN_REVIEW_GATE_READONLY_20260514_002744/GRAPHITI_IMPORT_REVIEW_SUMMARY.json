@@ -1,0 +1,59 @@
+{
+  "status": "BRODY_GRAPHITI_IMPORT_DRY_RUN_REVIEW_GATE_READONLY_PASS",
+  "timestamp": "20260514_002744",
+  "date": "2026-05-14",
+  "mode": "READONLY",
+  "decision_authority": "KX108_ONLY",
+  "source_dry_run_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_GRAPHITI_CANDIDATE_PREP_READONLY_20260514_002308\\GRAPHITI_CANDIDATES_DRY_RUN.jsonl",
+  "source_excluded_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_local_audits\\BRODY_GRAPHITI_CANDIDATE_PREP_READONLY_20260514_002308\\GRAPHITI_CANDIDATES_REVIEW_EXCLUDED.jsonl",
+  "dry_run_import_plan_count": 42,
+  "review_excluded_count": 4,
+  "validation": {
+    "dry_run_count": 42,
+    "excluded_count": 4,
+    "dry_run_count_expected": 42,
+    "dry_run_count_valid": true,
+    "excluded_count_expected": 4,
+    "excluded_count_valid": true,
+    "field_errors": [],
+    "all_checks_pass": true
+  },
+  "label_distribution": {
+    "BrodySessionQuery": 2,
+    "BrodyRealStateClassification": 12,
+    "BrodyAuditStep": 17,
+    "BrodySessionArtifact": 11
+  },
+  "group_distribution": {
+    "A": 2,
+    "C": 12,
+    "D": 17,
+    "E": 11
+  },
+  "avg_excerpt_length": 145,
+  "graphiti_import_ready_for_operator_review": true,
+  "graphiti_import_ready_for_real_import": false,
+  "writable_memory_protocol_required": true,
+  "operator_approval_required": true,
+  "graphiti_import_executed": false,
+  "neo4j_write": false,
+  "graphiti_write": false,
+  "memory_intake": false,
+  "brody_execute_allowed": false,
+  "brody_authorize_allowed": false,
+  "guardrails": {
+    "memory_write_allowed": false,
+    "graphiti_write_allowed": false,
+    "neo4j_write_allowed": false,
+    "no_git_add": true,
+    "no_commit": true,
+    "no_freeze": true,
+    "no_push": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136
+  },
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_WRITABLE_MEMORY_PROTOCOL_CANDIDATE_READONLY",
+    "next_real_world_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY"
+  }
+}

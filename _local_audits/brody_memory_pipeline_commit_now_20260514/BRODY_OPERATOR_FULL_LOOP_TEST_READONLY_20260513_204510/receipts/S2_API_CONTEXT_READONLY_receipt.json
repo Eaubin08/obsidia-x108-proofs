@@ -1,0 +1,36 @@
+{
+  "scenario_id": "S2",
+  "human_executed": true,
+  "operator_action": "HUMAN_EXECUTES",
+  "execution_by_brody": false,
+  "actual_result": {
+    "status_code": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "nodes": 167,
+      "rels": 477,
+      "indexed_episodes": 20,
+      "failed_episodes": 0,
+      "manifest_files": 4,
+      "live_neo4j_dependency": false,
+      "x108_merge_status": "NOT_MERGED",
+      "commit_status": "LOCAL_ONLY"
+    },
+    "method": "GET",
+    "readonly": true,
+    "api_executed_by": "HUMAN_OPERATOR"
+  },
+  "post_executed": false,
+  "crawler_executed": false,
+  "secret_read": false,
+  "memory_intake": false,
+  "graphiti_write": false,
+  "neo4j_write_executed": false,
+  "x108_merge": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "boundary_intact": true
+}

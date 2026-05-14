@@ -1,0 +1,15 @@
+{
+  "component": "Graphiti V20 frozen corpus",
+  "evidence_path": "API 8011 /graph/v20/frozen/status + BRODY_REAL_STATE_AUDIT_READONLY_20260513_103158",
+  "last_status": "FROZEN_READONLY_PASS",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": false,
+  "reason": "Corpus V20 frozen physiquement présent. live_neo4j_dependency=false. x108_merge_status=NOT_MERGED. commit_status=LOCAL_ONLY. Aucune mutation détectée.",
+  "next_action": "NONE — frozen stable"
+}

@@ -1,0 +1,15 @@
+{
+  "component": "API 8011 / ObsidiaShell",
+  "evidence_path": "preflight step8 + BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_FREEZE_V1",
+  "last_status": "LIVE_FROZEN_READONLY",
+  "validated": true,
+  "needs_build": false,
+  "needs_test": false,
+  "needs_repair": false,
+  "duplicate": false,
+  "drop": false,
+  "next_commit_candidate": false,
+  "do_not_commit": false,
+  "reason": "API 8011 LIVE. mode=FROZEN_READONLY. nodes=167, rels=477, episodes=20. x108_merge_status=NOT_MERGED. live_neo4j_dependency=false. 14 endpoints validés.",
+  "next_action": "NONE — runtime validé en lecture seule"
+}

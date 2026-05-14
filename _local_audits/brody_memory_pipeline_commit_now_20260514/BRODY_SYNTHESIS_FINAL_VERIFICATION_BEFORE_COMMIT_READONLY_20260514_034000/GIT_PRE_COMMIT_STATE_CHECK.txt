@@ -1,0 +1,56 @@
+GIT PRE-COMMIT STATE CHECK
+MISSION: BRODY_SYNTHESIS_FINAL_VERIFICATION_BEFORE_COMMIT_READONLY
+TIMESTAMP: 20260514_034000
+
+=== ROOT REPO — obsidia-engine-proof-core ===
+
+STAGED_FILES=136
+GROUP_A_STAGED_PRESERVED=true
+STAGING_MODIFIED_IN_MISSION=false
+
+Staged files: all "A" (Added) entries — _local_audits/* audit directories
+Staged count confirmed via: git diff --cached --name-only | wc -l = 136
+
+UNSTAGED_MODIFICATIONS (separate commit batches, not GROUP_A):
+  M examples/bank_normal.json       (commit batch 3)
+  M examples/bank_suspicious.json   (commit batch 3)
+  M package.json                    (commit batch 5)
+  M proofs/PROOFKIT_REPORT.json     (commit batch 4)
+  M proofs/V18_7/results/results_v18_7.json  (commit batch 4)
+  M proofs/V18_8/results/results_v18_8.json  (commit batch 4)
+  M proofs/tla/DistributedX108.tla  (commit batch 6)
+  M proofs/tla/DistributedX108_MC.cfg (commit batch 6)
+  M proofs/tla/X108.cfg             (commit batch 6)
+  M proofs/tla/X108.tla             (commit batch 6)
+  M proofs/tla/X108_MC.cfg          (commit batch 6)
+
+NOTE: These unstaged modifications are planned commits 3-6 (separate from GROUP_A).
+      They do NOT affect GROUP_A commit integrity.
+
+DELETED (untracked __pycache__ .pyc): multiple " D" entries (normal — not tracked)
+
+=== INNER REPO — obsidia-x108-proofs ===
+
+REPO_PATH=obsidia-engine-proof-core/obsidia-x108-proofs
+DIRTY_FILES_COUNT=1
+DIRTY_FILE=periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py
+DIRTY_CLASSIFICATION=LOW_MATERIAL_PATCH_ONLY
+X108_PROOFS_DIRTY_LOW_MATERIAL_ONLY=true
+
+Confirmed via: git -C obsidia-x108-proofs status --short
+Output: M periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py
+(exactly 1 line — no other modifications)
+
+=== VERDICT ===
+
+STAGED_FILES_STILL=136
+GROUP_A_STAGED_PRESERVED=true
+X108_PROOFS_DIRTY_LOW_MATERIAL_ONLY=true
+STAGING_INTACT=true
+READY_FOR_GROUP_A_COMMIT=true
+
+=== COMMIT MESSAGE PRÉPARÉ ===
+
+"audit: Brody readonly steps 1-8 + sigma cleanup 2026-05-13"
+
+Ne pas committer sans autorisation opérateur explicite.

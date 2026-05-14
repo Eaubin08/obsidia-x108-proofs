@@ -1,0 +1,188 @@
+{
+  "report": "BRODY_API_MEMORY_CONTEXT_READONLY",
+  "timestamp": "20260513_194604",
+  "date": "2026-05-13",
+  "step": 4,
+
+  "context_validated": {
+    "chain_pass": true,
+    "api_8011_live": true,
+    "chain_verdict": "CHAIN_PASS",
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_decision": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "graphiti_write": false,
+    "neo4j_write": false
+  },
+
+  "A_memory_sources": {
+    "sources": [
+      {
+        "name": "Graphiti V20 frozen",
+        "endpoint": "API 8011 /graph/v20/frozen/*",
+        "adapter": "obsidiashell-main/graphiti_v20_frozen_adapter.py",
+        "node_count": 167,
+        "rel_count": 477,
+        "mode": "FROZEN_READONLY",
+        "live_neo4j_dependency": false,
+        "entity_structure": "entities[{name, summary}]",
+        "note": "Structure différente des BrodyMemoryDoc. Contient des résumés factuel de haut niveau."
+      },
+      {
+        "name": "Neo4j live BrodyMemoryDoc",
+        "endpoint": "bolt://localhost:7688",
+        "node_label": "BrodyMemoryDoc",
+        "total_nodes": 3267,
+        "field_keys": ["decision_authority", "id", "memory_decision", "path", "readonly", "source", "tags", "text_preview", "title", "updated_at"],
+        "nodes_with_text_preview": 3267,
+        "nodes_with_path_non_empty": 904,
+        "note": "Source utilisée par la chaîne QUERY→CONSUMER→ENGINE."
+      },
+      {
+        "name": "Fichiers locaux",
+        "access": "via champ path des BrodyMemoryDoc ou source_ref",
+        "path_empty_ratio": "2363/3267 ont path=''",
+        "path_exists_ratio": "À vérifier — échantillon kernel-tagged : 0/5 paths existent sur disque",
+        "note": "Consumer tente de lire les fichiers locaux via path. Non disponibles pour la plupart des nodes."
+      },
+      {
+        "name": "Context packets capturés",
+        "location": "_local_audits/BRODY_CONTEXT_PACKET_CHAIN_TEST_READONLY_20260513_192629/api_captures/",
+        "note": "Snapshot du dernier run live. Réutilisables pour analyse statique."
+      }
+    ]
+  },
+
+  "B_source_used_by_brody": {
+    "source_used": "Neo4j live BrodyMemoryDoc",
+    "chain_module": "brody_context_packet_query_readonly_v1.py",
+    "cypher_node_label": "BrodyMemoryDoc",
+    "neo4j_uri": "bolt://localhost:7688",
+    "frozen_api_used_in_chain": false,
+    "frozen_api_used_for": "Endpoint availability test only (GET readonly)",
+    "local_files_used_in_chain": false,
+    "local_files_attempted_by": "brody_context_packet_consumer_readonly_v1.py (reads path field)",
+    "local_files_result": "path='' pour la plupart des nodes kernel-tagged — aucun fichier lu",
+    "conclusion": "Brody utilise exclusivement Neo4j BrodyMemoryDoc comme source primaire dans la chaîne. Graphiti V20 frozen = surface API distincte non alimentant la chaîne directement."
+  },
+
+  "C_low_material_root_cause": {
+    "material_quality": "LOW_MATERIAL",
+    "items_with_material": 0,
+    "root_cause": "FIELD_MAPPING_MISMATCH",
+    "detail": [
+      {
+        "issue": "text_preview non dans coalesce",
+        "cypher_coalesce": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, '')",
+        "actual_field_in_neo4j": "text_preview",
+        "result": "body='' pour tous les 3267 nodes → excerpt='' dans query output → LOW_MATERIAL dans engine"
+      },
+      {
+        "issue": "path vide sur nodes kernel-tagged",
+        "detail": "5/5 nodes kernel-tagged ont path='' → consumer ne peut pas lire fichier local → excerpt reste ''",
+        "nodes_with_path": 904,
+        "nodes_without_path": 2363
+      },
+      {
+        "issue": "text_preview contient JSON sérialisé",
+        "detail": "text_preview = JSON string avec id, title, source_original_path (chemin _world_sources/ relatif). Non un texte lisible directement.",
+        "example_prefix": "{\"id\": \"BRODY_GRAPHITI_READY_000000\", \"title\": \"...\", \"source_original_path\": \"_world_sources\\\\...\"}"
+      }
+    ],
+    "not_a_violation": true,
+    "note": "LOW_MATERIAL n'est pas une violation de boundary. C'est un état de données. Pour corriger : ajouter p.text_preview dans le coalesce du Cypher (modification X108 — non autorisée sans instruction explicite).",
+    "fix_requires": "Modification de brody_context_packet_query_readonly_v1.py ligne 52 — nécessite instruction explicite opérateur"
+  },
+
+  "D_brody_entity_count_zero": {
+    "query": "Brody",
+    "entity_count_frozen_v20": 0,
+    "is_error": false,
+    "explanation": "Brody = le LLM obsidien lui-même. Brody n'est pas une entité dans le corpus Graphiti V20. Le corpus V20 contient des agents (CANON_GUARDIAN, GRAPH_BUILDER, etc.), des concepts (Kernel, Lean, etc.) mais pas 'Brody' comme nœud. C'est architecturalement correct.",
+    "confirmed": true
+  },
+
+  "E_api_endpoint_coherence": {
+    "frozen_get_endpoints": [
+      {"name": "status", "ok": true, "live_neo4j_dependency": false, "nodes": 167, "rels": 477},
+      {"name": "context?q=Kernel", "ok": true, "entity_count": 5, "kernel_decision": "NONE", "graphiti_decision": "NONE"},
+      {"name": "context?q=CANON", "ok": true, "entity_count": 5, "relation_count": 2, "kernel_decision": "NONE", "graphiti_decision": "NONE"},
+      {"name": "context?q=X-108", "ok": true, "entity_count": 1, "kernel_decision": "NONE", "graphiti_decision": "NONE"},
+      {"name": "context?q=Brody", "ok": true, "entity_count": 0, "kernel_decision": "NONE", "graphiti_decision": "NONE"},
+      {"name": "search?q=Kernel", "ok": true, "entity_count": 5}
+    ],
+    "negative_mutations": [
+      {"method": "POST", "endpoint": "/context", "status": 405, "blocked": true},
+      {"method": "POST", "endpoint": "/search", "status": 405, "blocked": true},
+      {"method": "DELETE", "endpoint": "/status", "status": 405, "blocked": true}
+    ],
+    "all_get_ok": true,
+    "all_mutations_blocked": true,
+    "all_kernel_decision_none": true,
+    "all_graphiti_decision_none": true,
+    "live_neo4j_dependency_frozen": false
+  },
+
+  "F_endpoint_count_inconsistency": {
+    "previous_report": "BRODY_CONTEXT_PACKET_CHAIN_TEST_READONLY_20260513_192629",
+    "inconsistency": "Le rapport précédent indique '12 endpoints testés' dans son header mais liste 11 GET + 3 mutations = 14 entrées dans la table.",
+    "analysis": "Le chiffre 12 était le nombre de calls GET effectifs (6 frozen context + 5 autres + 1 status = 12 GET, puis 3 mutations séparément). La table comptait les 14 au total. Ambiguïté de présentation.",
+    "action": "Rapport précédent non modifié. Correction documentée ici uniquement.",
+    "correct_count_this_session": "9 checks au total : 6 GET frozen + 3 mutations négatives = 9 calls. Tous cohérents."
+  },
+
+  "G_boundary_final": {
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "human_operator_required": true,
+    "readonly_analysis_only": true,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "graphiti_write": false,
+    "graphiti_index_write": false,
+    "neo4j_write_executed": false,
+    "memory_intake": false,
+    "kernel_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "decision_authority": "KX108_ONLY",
+    "x108_dirty_file_touched": false,
+    "x108_dirty_file": "sigma/tools/run_bank_enterprise_pack.py"
+  },
+
+  "summary": {
+    "memory_context_audit_status": "PASS",
+    "source_used_by_brody": "Neo4j live BrodyMemoryDoc (bolt://7688) — 3267 nodes",
+    "material_quality_cause": "text_preview field non inclus dans le coalesce Cypher du query module. path='' pour la plupart des nodes. Aucun fichier local lisible.",
+    "api_frozen_status": "Distinct du path Neo4j. 6 GET OK, 3 mutations bloquées 405. kernel_decision=NONE. live_neo4j_dependency=false.",
+    "entity_count_brody_zero": "Architecturalement correct — Brody=LLM obsidien n'est pas un nœud Graphiti.",
+    "next_build_target": "BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY (étape 5)"
+  },
+
+  "guardrails": {
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_modification": false,
+    "sigma_tools_touched": false,
+    "faux_pass_crees": false
+  },
+
+  "files_produced": [
+    "api_frozen/status.json",
+    "api_frozen/context_kernel.json",
+    "api_frozen/context_canon.json",
+    "api_frozen/context_x108.json",
+    "api_frozen/context_brody.json",
+    "api_frozen/search_kernel.json",
+    "api_frozen/endpoint_summary.json",
+    "neo4j_samples/brody_memory_doc_inspection.json",
+    "reports/BRODY_API_MEMORY_CONTEXT_READONLY_REPORT.json",
+    "reports/BRODY_API_MEMORY_CONTEXT_READONLY_REPORT.md"
+  ]
+}

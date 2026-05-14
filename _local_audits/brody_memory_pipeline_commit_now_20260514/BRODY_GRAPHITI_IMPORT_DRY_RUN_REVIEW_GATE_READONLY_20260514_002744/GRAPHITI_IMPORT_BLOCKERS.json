@@ -1,0 +1,16 @@
+{
+  "blockers": {
+    "writable_memory_protocol_missing": true,
+    "operator_import_approval_missing": true,
+    "import_execution_disabled": true,
+    "neo4j_write_disabled": true,
+    "graphiti_write_disabled": true,
+    "runtime_binding_ready": false,
+    "x108_merge_ready": false
+  },
+  "blocker_count": 7,
+  "all_blockers_active": true,
+  "import_gate_open": false,
+  "note": "All blockers must be cleared by BRODY_WRITABLE_MEMORY_PROTOCOL_CANDIDATE_READONLY before real import can be authorized",
+  "decision_authority": "KX108_ONLY"
+}
