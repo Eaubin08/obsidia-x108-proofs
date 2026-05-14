@@ -1,0 +1,105 @@
+{
+  "mission": "BRODY_PROGRESS_METRICS_READONLY",
+  "timestamp": "20260514_024500",
+  "readonly": true,
+  "note": "Curriculum-to-tree mapping is implicit from family names. Formal curriculum map = DATA_MISSING in source files. Readiness derived from available tagged families.",
+
+  "available_families": ["I_FONDAMENTAUX","II_COGNITIFS","III_CONNAISSANCE"],
+  "pending_families": ["IV_RELATIONNELS_SOCIAUX","V_ACTION_TRANSFORMATION","VI_TEMPORELS_MEMORIELS","VII_META_SYSTEMIQUES"],
+  "blocked_families": ["VIII_OBSIDIA_AGI"],
+
+  "curriculum_levels": {
+
+    "FRANCAIS": {
+      "readiness_status": "PARTIAL_READY",
+      "rationale": "Language, sense-making, human interaction map to I_FONDAMENTAUX (T01-T05) and III_CONNAISSANCE (T11-T12). All available.",
+      "required_tree_families": ["I_FONDAMENTAUX","III_CONNAISSANCE"],
+      "available_tree_tags": ["T01","T02","T03","T04","T05","T11","T12"],
+      "missing_tree_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": ["BrodyUserMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "LOW",
+      "next_safe_test": "BRODY_CURRICULUM_FRANCAIS_READONLY_GET"
+    },
+
+    "LOGIQUE": {
+      "readiness_status": "PARTIAL_READY",
+      "rationale": "Logical reasoning, judgment, decision-making map to II_COGNITIFS (T06-T10). All tagged and available.",
+      "required_tree_families": ["II_COGNITIFS"],
+      "available_tree_tags": ["T06","T07","T08","T09","T10"],
+      "missing_tree_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": ["BrodyAgentMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "LOW",
+      "next_safe_test": "BRODY_CURRICULUM_LOGIQUE_READONLY_GET"
+    },
+
+    "MATHS_SIMPLES": {
+      "readiness_status": "PARTIAL_READY",
+      "rationale": "Simple math/structure reasoning maps to II_COGNITIFS (T06-T10). Available. Formal mapping = IMPLICIT.",
+      "required_tree_families": ["II_COGNITIFS"],
+      "available_tree_tags": ["T06","T07","T08","T09","T10"],
+      "missing_tree_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": ["BrodyAgentMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "LOW",
+      "next_safe_test": "BRODY_CURRICULUM_MATHS_READONLY_GET"
+    },
+
+    "SCIENCE": {
+      "readiness_status": "PARTIAL_READY",
+      "rationale": "General science maps to III_CONNAISSANCE (T11-T12) + potentially IV-V (PENDING). Core families available but coverage limited to 2 trees.",
+      "required_tree_families": ["III_CONNAISSANCE","IV_RELATIONNELS_SOCIAUX"],
+      "available_tree_tags": ["T11","T12"],
+      "missing_tree_tags": ["T13","T14","T15","T16","T17"],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": ["BrodyCaseMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "MEDIUM",
+      "next_safe_test": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY (identify T13-T17 signal first)"
+    },
+
+    "PHYSIQUE": {
+      "readiness_status": "PENDING_ADDITIONAL_SIGNAL",
+      "rationale": "Physics likely requires IV_RELATIONNELS_SOCIAUX or V_ACTION_TRANSFORMATION trees (T13-T22). No docs tagged T13-T22 yet. 0 available via title regex.",
+      "required_tree_families": ["IV_RELATIONNELS_SOCIAUX","V_ACTION_TRANSFORMATION"],
+      "available_tree_tags": [],
+      "missing_tree_tags": ["T13","T14","T15","T16","T17","T18","T19"],
+      "blocked_tree_tags": ["T20","T21","T22"],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": ["BrodyCaseMemory","BrodyBoundaryMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "HIGH",
+      "next_safe_test": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY (find T13-T19 alternative signal)"
+    },
+
+    "MONDE_LARGE": {
+      "readiness_status": "PENDING_ADDITIONAL_SIGNAL",
+      "rationale": "World-scale knowledge requires VI-VII families (T23-T29) — 0 docs tagged. T30-T34 (VIII) blocked (AGI-layer). No signal available yet.",
+      "required_tree_families": ["VI_TEMPORELS_MEMORIELS","VII_META_SYSTEMIQUES"],
+      "available_tree_tags": [],
+      "missing_tree_tags": ["T23","T25","T26","T27","T28","T29"],
+      "blocked_tree_tags": ["T24","T30","T31","T32","T33","T34"],
+      "required_memory_layers": ["BrodyMemoryDoc","BrodySessionMemory"],
+      "missing_memory_layers": ["BrodySessionMemory","BrodyBoundaryMemory"],
+      "curriculum_tree_mapping_source": "IMPLICIT_FROM_FAMILY_NAMES",
+      "risk_level": "HIGH",
+      "next_safe_test": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY (find T23-T29 alternative signal)"
+    }
+  },
+
+  "readiness_summary": {
+    "FRANCAIS":     "PARTIAL_READY",
+    "LOGIQUE":      "PARTIAL_READY",
+    "MATHS_SIMPLES":"PARTIAL_READY",
+    "SCIENCE":      "PARTIAL_READY",
+    "PHYSIQUE":     "PENDING_ADDITIONAL_SIGNAL",
+    "MONDE_LARGE":  "PENDING_ADDITIONAL_SIGNAL"
+  },
+
+  "blocker": "T13-T34 have 0 docs with title regex signal. All curriculum levels requiring T13+ are PENDING.",
+  "unblock_via": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY — find alternative signal for T13-T29"
+}

@@ -1,0 +1,122 @@
+{
+  "mission": "BRODY_PROGRESS_METRICS_READONLY",
+  "timestamp": "20260514_024500",
+  "status": "COMPLETE_READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "staged_files": 136,
+    "staged_pass": true,
+    "x108_dirty": "LOW_MATERIAL_PATCH_ONLY",
+    "x108_dirty_file": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+    "neo4j_accessible": true,
+    "brody_memory_doc_total": 3267,
+    "brody_imported_memory_count": 42,
+    "tree_tagged_nodes": 48,
+    "text_preview_all": 3267,
+    "rollback_ready": true,
+    "all_preflight_pass": true
+  },
+
+  "metrics": {
+    "A_corpus_memory": {
+      "brody_memory_doc_total": 3267,
+      "brody_imported_memory_total": 42,
+      "nodes_with_text_preview": 3267,
+      "low_material_resolved": true,
+      "body_non_empty_rate": 1.0
+    },
+    "B_tagging_trees": {
+      "tree_count_total": 34,
+      "tree_tagged_precise_count": 12,
+      "tree_pending_count": 13,
+      "tree_blocked_count": 9,
+      "family_count_total": 8,
+      "family_active_count": 3,
+      "tagged_nodes_count": 48,
+      "tags_added_count": 96,
+      "T01_T12_coverage_pass": true,
+      "T13_T34_pending_additional_signal": true,
+      "tree_tagging_coverage_pct": 1.75
+    },
+    "C_memory_candidate": {
+      "decisions_consumed": 51,
+      "memory_candidates": 42,
+      "review_candidates": 4,
+      "rejected": 4,
+      "reflex_boundary_review": 1,
+      "graphiti_imported_batch": 42,
+      "user_memory_schema_active": false,
+      "auto_write_enabled": false,
+      "memory_pipeline_stable": true
+    },
+    "D_external_fetch": {
+      "external_fetch_get_only_validated": true,
+      "allowlist_active": true,
+      "post_blocked": true,
+      "crawler_blocked": true,
+      "secret_pattern_blocked": true,
+      "localhost_blocked": true,
+      "negative_tests_all_blocked": true,
+      "receipt_created": true
+    },
+    "E_operator_loop": {
+      "scenarios_tested": 5,
+      "scenarios_passed": 5,
+      "dangerous_mutation_blocked": true,
+      "receipt_validation_pass": true,
+      "operator_gate_required": true,
+      "all_brody_not_executed": true,
+      "all_boundaries_intact": true
+    },
+    "F_refusal_boundary": {
+      "brody_execute_allowed": false,
+      "brody_authorize_allowed": false,
+      "x108_merge": false,
+      "runtime_binding_allowed": false,
+      "memory_decision": false,
+      "decision_authority": "KX108_ONLY",
+      "correct_refusal_rate": "5/5",
+      "boundary_all_false": true
+    },
+    "G_curriculum_readiness": {
+      "FRANCAIS":     {"status":"PARTIAL_READY",            "risk":"LOW"},
+      "LOGIQUE":      {"status":"PARTIAL_READY",            "risk":"LOW"},
+      "MATHS_SIMPLES":{"status":"PARTIAL_READY",            "risk":"LOW"},
+      "SCIENCE":      {"status":"PARTIAL_READY",            "risk":"MEDIUM"},
+      "PHYSIQUE":     {"status":"PENDING_ADDITIONAL_SIGNAL","risk":"HIGH"},
+      "MONDE_LARGE":  {"status":"PENDING_ADDITIONAL_SIGNAL","risk":"HIGH"}
+    }
+  },
+
+  "verdicts": {
+    "low_material_resolved": true,
+    "tree_tagging_t01_t12_confirmed": true,
+    "t13_t34_pending_additional_signal": true,
+    "memory_pipeline_stable": true,
+    "external_fetch_get_only_validated": true,
+    "operator_loop_validated": true,
+    "boundary_all_false": true,
+    "curriculum_readiness_created": true,
+    "new_write_executed": false,
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "x108_merge": false
+  },
+
+  "invariants": {
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "no_commit": true,
+    "no_freeze": true,
+    "no_push": true
+  },
+
+  "navigation": {
+    "next_brody_memory_action": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY",
+    "next_real_world_action": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY"
+  }
+}

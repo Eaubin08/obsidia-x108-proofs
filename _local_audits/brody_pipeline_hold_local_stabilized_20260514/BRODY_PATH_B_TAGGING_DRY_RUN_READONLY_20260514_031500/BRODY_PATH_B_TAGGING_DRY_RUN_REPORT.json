@@ -1,0 +1,94 @@
+{
+  "mission": "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY",
+  "timestamp": "20260514_031500",
+  "status": "COMPLETE_READONLY",
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "baseline_node_count": 3267,
+    "post_scan_node_count": 3267,
+    "node_count_unchanged": true,
+    "bim_count": 42,
+    "t01_t12_present": true,
+    "t01_t12_distribution": {"T01":4,"T02":4,"T03":4,"T04":4,"T05":4,"T06":4,"T07":4,"T08":4,"T09":4,"T10":4,"T11":4,"T12":4},
+    "t13_t34_currently_tagged": 0,
+    "t13_t34_currently_tagged_dist": {},
+    "write_guard_pass": true,
+    "no_write_executed": true,
+    "staged_files": 136,
+    "group_a_staged_preserved": true,
+    "all_preflight_pass": true
+  },
+
+  "signal_discovery": {
+    "path_b_signal_found": true,
+    "t13_t34_tree_count_with_signal": 22,
+    "signal_types_found": ["PATH_SLUG","TEXT_PREVIEW_SLUG"],
+    "signal_types_not_found": ["SOURCE_SLUG"],
+    "prior_assumption_117": "VALIDATED_FOR_PATH_SLUG_ONLY",
+    "path_slug_per_tree": 9,
+    "path_slug_total_safe": 117,
+    "tp_genuine_total_safe": 78,
+    "tp_multi_tree_safe": 2,
+    "meta_excluded_safe": 19,
+    "raw_safe_total": 216
+  },
+
+  "meta_contamination": {
+    "detected": true,
+    "meta_doc_count": 2,
+    "meta_appearances_total": 27,
+    "disposition": "EXCLUDED_FROM_PLAN"
+  },
+
+  "multi_tree_signal": {
+    "detected": true,
+    "node_id": "GRAPHITI_V2_000694",
+    "title": "48AAB2F1C286_demo_output_context_packet.json",
+    "trees": ["T18","T26"],
+    "disposition": "REVIEW_REQUIRED_MULTI_TREE"
+  },
+
+  "plan_summary": {
+    "CANDIDATE_PATH_SLUG": 117,
+    "CANDIDATE_TP_GENUINE": 78,
+    "REVIEW_REQUIRED_MULTI_TREE": 2,
+    "EXCLUDED_META_DOCUMENT": 19,
+    "EXCLUDED_ALREADY_TAGGED": 8,
+    "BLOCKED_TREE": 136,
+    "total_scan_hits": 360,
+    "recommended_write_candidates": 117,
+    "operator_review_candidates": 80
+  },
+
+  "curriculum_impact_preview": {
+    "FRANCAIS":      {"before": "EVAL_PASS 3/3", "after": "EVAL_PASS 3/3 (no change)"},
+    "LOGIQUE":       {"before": "PARTIAL 3/5",   "after": "PROJECTION_FULL_EVAL_POSSIBLE 5/5 (gate required)"},
+    "MATHS_SIMPLES": {"before": "PARTIAL 5/6",   "after": "PROJECTION_FULL_EVAL_POSSIBLE 6/6 (gate required)"},
+    "SCIENCE":       {"before": "PARTIAL 2/5",   "after": "PROJECTION_FULL_EVAL_POSSIBLE 5/5 (gate required)"},
+    "PHYSIQUE":      {"before": "PARTIAL 2/6",   "after": "PROJECTION_FULL_EVAL_POSSIBLE 6/6 (gate required)"},
+    "MONDE_LARGE":   {"before": "NO_TEST 0/13",  "after": "PROJECTION_PARTIAL_EVAL 4/13 (9 blocked remain)"}
+  },
+
+  "verdicts": {
+    "heuristic_tagging": false,
+    "llm_guessing": false,
+    "invention": false,
+    "new_write_executed": false,
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "x108_merge": false,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136
+  },
+
+  "navigation": {
+    "next_brody_memory_action": "BRODY_PATH_B_TAGGING_REVIEW_GATE_READONLY",
+    "next_real_world_action": "BRODY_PATH_B_TAGGING_REVIEW_GATE_READONLY",
+    "gate_phrase_required": "J'autorise l'ecriture canonique PATH_B des 117 nodes",
+    "after_gate": "BRODY_PATH_B_TAGGING_CONTROLLED_WRITE_V1 (117 PATH_SLUG nodes)"
+  }
+}

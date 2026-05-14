@@ -1,0 +1,150 @@
+{
+  "report_name": "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_REPORT",
+  "mission": "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY",
+  "timestamp": "20260514_012910",
+  "readonly": true,
+  "status": "COMPLETE",
+  "decision_authority": "KX108_ONLY",
+  "anti_invention_rule": "RESPECTED",
+
+  "problem_statement": {
+    "finding": "FAMILY_LEVEL_TAGGING_ABSENT",
+    "detail": "BrodyMemoryDoc utilise le tag '34_arbres' (2739/3267 nodes) mais ZÉRO node avec tags famille (I_FONDAMENTAUX, T01, etc.)",
+    "severity": "LOW",
+    "source": "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350",
+    "impact": "Impossible de filtrer BrodyMemoryDoc par famille/arbre dans Neo4j — séparation couches mémoire bloquée"
+  },
+
+  "corpus_stats": {
+    "total_brody_memory_doc": 3267,
+    "docs_with_34_arbres_tag": 2739,
+    "docs_with_tnn_in_title": 48,
+    "docs_directly_taggable": 48,
+    "docs_pending_additional_signal": 2691,
+    "docs_outside_34_arbres": 528,
+    "coverage_path_a": 0.018,
+    "coverage_path_a_pct": "1.8%"
+  },
+
+  "sources": {
+    "canonical_tree_source_found": true,
+    "primary_source": "arbres_34.canon.json",
+    "primary_source_path": "obsidia-engine-candidate/candidate_packs/.../04_ARBRES_34_TENSOR_MATRIX/arbres_34.canon.json",
+    "kernel_metric_source_found": true,
+    "kernel_metric_source": "OBSIDIA_KERNEL_LANGUAGE_IR_ALPHABET_BINDING_V1",
+    "kernel_metric_usable_for_tagging": false,
+    "alphabet_source_found": true,
+    "alphabet_source": "reverse_os_interlanguage_canon_v1.json",
+    "alphabet_usable_for_tagging": false,
+    "os_trad_reverse_language_source_found": false,
+    "os_trad_source": "test_T01_T02_os_trad_module.py (OS Trad = operation protocol, not tree taxonomy)",
+    "reverse_os_registry_empty": true
+  },
+
+  "tagging_paths": {
+    "total_paths": 5,
+    "recommended_path": "PATH_A",
+    "recommended_path_name": "registry_34_tree_direct",
+    "recommended_confidence": 0.99,
+    "paths_ready": 1,
+    "paths_blocked": 3,
+    "paths_pending_operator": 1
+  },
+
+  "path_a_detail": {
+    "method": "arbres_34.canon.json + regex _T(\\d+)__ sur BrodyMemoryDoc.title",
+    "docs_matched": 48,
+    "tagging_basis": "TITLE_REGEX_MATCH",
+    "confidence": 0.99,
+    "tags_to_append": ["T{nn}", "canonical_family_id"],
+    "existing_tags_preserved": true,
+    "heuristic": false,
+    "llm_guess": false,
+    "invention": false,
+    "gate_required": true,
+    "gate_status": "BLOCKED — KX108 gate not yet opened",
+    "dry_run_required": true,
+    "dry_run_mission": "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY"
+  },
+
+  "example_tagging_units": [
+    {
+      "title": "003BEA03EEDD_T04__Consensus_Distribue_Resonance_semantique.md",
+      "regex_match": "T04",
+      "canonical_tree_id": "T04",
+      "canonical_tree_name": "Arbre du Sens",
+      "canonical_family_id": "I_FONDAMENTAUX",
+      "tags_to_append": ["T04", "I_FONDAMENTAUX"],
+      "confidence": 0.99
+    },
+    {
+      "title": "56C8CDE2F94D_T01__Reduction_Incertitude_Audit_coherence.md",
+      "regex_match": "T01",
+      "canonical_tree_id": "T01",
+      "canonical_tree_name": "Arbre de l'Humain",
+      "canonical_family_id": "I_FONDAMENTAUX",
+      "tags_to_append": ["T01", "I_FONDAMENTAUX"],
+      "confidence": 0.99
+    },
+    {
+      "title": "2C6000D53716_T02__Gardien_de_fond__Conscience_Distribuee_Validation_reciprocite.md",
+      "regex_match": "T02",
+      "canonical_tree_id": "T02",
+      "canonical_tree_name": "Arbre de la Conscience",
+      "canonical_family_id": "I_FONDAMENTAUX",
+      "tags_to_append": ["T02", "I_FONDAMENTAUX"],
+      "confidence": 0.99
+    }
+  ],
+
+  "canonical_families": {
+    "I_FONDAMENTAUX": {"trees": ["T01","T02","T03","T04","T05"], "count": 5},
+    "II_COGNITIFS": {"trees": ["T06","T07","T08","T09","T10"], "count": 5},
+    "III_SOCIAUX": {"trees": ["T11","T12","T13","T14","T15"], "count": 5},
+    "IV_OPERATIONNELS": {"trees": ["T16","T17","T18","T19"], "count": 4},
+    "V_SYSTEMIQUES": {"trees": ["T20","T21","T22","T23","T24"], "count": 5},
+    "VI_DYNAMIQUES": {"trees": ["T25","T26","T27"], "count": 3},
+    "VII_META_STRUCTURELS": {"trees": ["T28","T29"], "count": 2},
+    "VIII_OBSIDIA_AGI": {"trees": ["T30","T31","T32","T33","T34"], "count": 5}
+  },
+
+  "invariants_verified": {
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "no_heuristic_tagging": true,
+    "no_llm_guessing": true,
+    "no_invention": true,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "post_executed": false,
+    "crawler_executed": false
+  },
+
+  "output_files": {
+    "total_files": 11,
+    "files": [
+      "CANONICAL_SOURCE_DISCOVERY.json",
+      "CANONICAL_SOURCE_DISCOVERY.md",
+      "CANONICAL_MEMORY_TAGGING_UNIT_SPEC.json",
+      "TAGGING_BRIDGE_PATH_MATRIX.json",
+      "TAGGING_BRIDGE_PATH_MATRIX.csv",
+      "PROPOSED_TAGGING_RULES_READONLY.md",
+      "BLOCKERS_AND_GATES.json",
+      "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_REPORT.json",
+      "BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_REPORT.md",
+      "CURRENT_BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY.txt",
+      "_POINTER_BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY.md"
+    ]
+  },
+
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY",
+    "next_real_world_action": "BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY",
+    "next_gate_action": "KX108 gate — review TAGGING_DRY_RUN_PLAN.jsonl (48 entrées)",
+    "next_optional": "BRODY_RUNTIME_BINDING_RISK_REVIEW_READONLY",
+    "pending_commit": "GROUP_A (136 files staged)"
+  }
+}

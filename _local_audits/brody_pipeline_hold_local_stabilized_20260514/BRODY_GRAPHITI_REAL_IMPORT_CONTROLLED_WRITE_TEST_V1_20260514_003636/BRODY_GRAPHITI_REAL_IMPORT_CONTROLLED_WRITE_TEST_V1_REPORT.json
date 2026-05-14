@@ -1,0 +1,97 @@
+{
+  "report": "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1",
+  "timestamp": "20260514_003636",
+  "date": "2026-05-14",
+  "decision_authority": "KX108_ONLY",
+
+  "preflight": {
+    "staged_files_verified": 136,
+    "plan_lines_verified": 42,
+    "x108_patch_verified": true,
+    "all_42_records_validated": true,
+    "preflight_pass": true
+  },
+
+  "pre_write_snapshot": {
+    "batch_id": "BRODY_REAL_IMPORT_20260514_003636",
+    "brody_memory_doc_total": 3267,
+    "brody_imported_memory_total_before": 0,
+    "batch_nodes_before": 0,
+    "potential_title_duplicates_before": 0,
+    "batch_pre_check": "PASS"
+  },
+
+  "write_result": {
+    "batch_id": "BRODY_REAL_IMPORT_20260514_003636",
+    "neo4j_uri": "bolt://127.0.0.1:7688",
+    "label": "BrodyImportedMemory",
+    "import_mode": "CONTROLLED_WRITE_TEST",
+    "expected_count": 42,
+    "candidates_imported": 42,
+    "write_errors": 0,
+    "review_imported": 0,
+    "reflex_imported": 0,
+    "neant_imported": 0
+  },
+
+  "post_write_validation": {
+    "imported_count": 42,
+    "count_match": true,
+    "body_non_empty_count": 42,
+    "decision_authority_all_kx108": true,
+    "memory_decision_true_count": 0,
+    "duplicate_count": 0,
+    "post_import_read_validation": "PASS",
+    "low_material_patch_still_active": true,
+    "read_path_queries": {
+      "brody_text_preview_non_empty": "PASS",
+      "kernel_hits": "PASS",
+      "x108_hits": "PASS",
+      "memory_hits": "PASS",
+      "graphiti_hits": "PASS"
+    }
+  },
+
+  "rollback": {
+    "rollback_plan_present": true,
+    "rollback_executed": false,
+    "rollback_cypher_file": "ROLLBACK_PLAN.cypher",
+    "rollback_cypher": "MATCH (n:BrodyImportedMemory {batch_id: 'BRODY_REAL_IMPORT_20260514_003636'}) DETACH DELETE n"
+  },
+
+  "output_files": {
+    "pointer": "CURRENT_BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1.txt",
+    "input_plan": "REAL_IMPORT_INPUT_42.jsonl",
+    "written_records": "REAL_IMPORT_WRITTEN_42.jsonl",
+    "pre_snapshot": "PRE_WRITE_SNAPSHOT.json",
+    "post_validation": "POST_WRITE_VALIDATION.json",
+    "rollback_cypher": "ROLLBACK_PLAN.cypher",
+    "rollback_md": "ROLLBACK_PLAN.md",
+    "runner": "_real_import_runner.py",
+    "report_md": "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_REPORT.md",
+    "report_json": "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_REPORT.json"
+  },
+
+  "guardrails": {
+    "memory_intake": false,
+    "brody_execute_allowed": false,
+    "brody_authorize_allowed": false,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "no_git_add": true,
+    "committed": false,
+    "frozen": false,
+    "push": false,
+    "x108_merge": false,
+    "runtime_binding": false,
+    "crawler": false,
+    "post_external": false
+  },
+
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY",
+    "next_real_world_action": "BRODY_WORLD_PROVIDER_MATRIX_READONLY"
+  },
+
+  "verdict": "BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_DONE"
+}

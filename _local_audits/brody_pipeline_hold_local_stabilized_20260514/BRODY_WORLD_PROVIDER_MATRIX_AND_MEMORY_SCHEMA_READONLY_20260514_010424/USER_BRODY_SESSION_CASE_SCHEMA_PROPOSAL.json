@@ -1,0 +1,140 @@
+{
+  "mission": "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY",
+  "timestamp": "20260514_010424",
+  "status": "PROPOSAL_ONLY",
+  "readonly": true,
+  "executed": false,
+  "decision_authority": "KX108_ONLY",
+  "note": "Aucun MERGE, SET, CREATE, DELETE exécuté. Schéma proposé uniquement. Activation requiert gate opérateur KX108.",
+
+  "proposed_nodes": [
+    {
+      "label": "BrodyUserMemory",
+      "description": "Mémoire opérateur — préférences, décisions, contraintes, style, historique d'autorisation",
+      "current_in_neo4j": false,
+      "key_properties": ["user_id", "decision_type", "decision_value", "session_id", "timestamp", "source_evidence"],
+      "example_instances": [
+        "anti_invention_rule=true",
+        "kx108_only=true",
+        "controlled_write_approved=BRODY_REAL_IMPORT_20260514_003636",
+        "readonly_invariant=true"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodyAgentMemory",
+      "description": "Mémoire de Brody lui-même — rôle, permissions, limites, état boundary",
+      "current_in_neo4j": false,
+      "key_properties": ["agent_id", "property_name", "property_value", "boundary_flag", "updated_at", "source_evidence"],
+      "example_instances": [
+        "brody_execute_allowed=false",
+        "brody_authorize_allowed=false",
+        "low_material_patch_active=true",
+        "x108_runtime_binding=false"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodySessionMemory",
+      "description": "Mémoire d'une session — timestamp, état début/fin, décisions produites",
+      "current_in_neo4j": false,
+      "key_properties": ["session_id", "session_date", "start_state", "end_state", "decisions_produced", "missions_completed"],
+      "example_instances": [
+        "session_2026_05_13 — plan 8-step PASS",
+        "session_2026_05_14 — pipeline GRAPHITI_CANDIDATE_PREP → POST_WRITE_VALIDATION PASS"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodyBatchMemory",
+      "description": "Mémoire d'un batch d'import — BATCH_ID, candidats, résultats, rollback scope",
+      "current_in_neo4j": true,
+      "current_label_proxy": "BrodyImportedMemory",
+      "key_properties": ["batch_id", "imported_at", "import_mode", "imported_count", "exclusion_count", "rollback_cypher"],
+      "example_instances": [
+        "BATCH_ID=BRODY_REAL_IMPORT_20260514_003636 — 42 nodes, integrity_pass=true"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodyCaseMemory",
+      "description": "Mémoire d'un cas — patch, preuve, validation, événement technique circoncrit",
+      "current_in_neo4j": false,
+      "key_properties": ["case_id", "case_type", "case_description", "session_id", "batch_id", "evidence_path", "status"],
+      "example_instances": [
+        "case: LOW_MATERIAL_patch",
+        "case: TLA_repair_X108_TLC_PASS",
+        "case: BRODY_REAL_IMPORT_42"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodySourceMemory",
+      "description": "Mémoire source — fichier, audit, JSON, MD, rapport local",
+      "current_in_neo4j": true,
+      "current_label_proxy": "BrodyMemoryDoc",
+      "key_properties": ["source_id", "title", "source_path", "text_preview", "tags", "updated_at"],
+      "example_instances": [
+        "BrodyMemoryDoc — 3267 nodes, text_preview non-empty",
+        "arbres_34.canon.json / arbres_34.registry.json"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    },
+    {
+      "label": "BrodyTreeMemory",
+      "description": "Mémoire arbre canonique — appartenance aux 34 arbres, 8 familles",
+      "current_in_neo4j": false,
+      "current_label_proxy": "BrodyMemoryTag (partiel)",
+      "key_properties": ["tree_code", "tree_name", "family_code", "family_name", "risk_level", "world_interface", "blocked"],
+      "example_instances": [
+        "T01 Humain — I_FONDAMENTAUX — SAFE",
+        "T24 Mémoire — VI_TEMPORELS_MEMORIELS — HIGH/BLOCKED",
+        "T30 Cognitif Global — VIII_OBSIDIA_AGI — CRITICAL/BLOCKED"
+      ],
+      "tree_family": "ALL_34 (I_FONDAMENTAUX→VIII_OBSIDIA_AGI)",
+      "tree_family_status": "TREE_FAMILY_MAPPED"
+    },
+    {
+      "label": "BrodyBoundaryMemory",
+      "description": "Mémoire gouvernance — droits, write path, kernel, Graphiti, Neo4j, X108 flags",
+      "current_in_neo4j": false,
+      "key_properties": ["boundary_id", "flag_name", "flag_value", "gate_status", "requires_kx108", "updated_at", "source_evidence"],
+      "example_instances": [
+        "memory_write_allowed=false",
+        "graphiti_write_active=false",
+        "x108_runtime_binding=false",
+        "post_allowed=false",
+        "crawler_allowed=false"
+      ],
+      "tree_family": null,
+      "tree_family_status": "TREE_FAMILY_PENDING_MAPPING"
+    }
+  ],
+
+  "proposed_relations": [
+    {"from": "BrodyUserMemory",    "to": "BrodyCaseMemory",    "type": "RELATED_TO_CASE",   "note": "Décisions opérateur liées aux cas produits"},
+    {"from": "BrodyAgentMemory",   "to": "BrodyCaseMemory",    "type": "RELATED_TO_CASE",   "note": "État Brody lié aux cas techniques"},
+    {"from": "BrodySessionMemory", "to": "BrodyCaseMemory",    "type": "PRODUCED_CASE",     "note": "La session produit des cas"},
+    {"from": "BrodyBatchMemory",   "to": "BrodyCaseMemory",    "type": "IMPORTED_CASE",     "note": "Le batch importe les cas candidats"},
+    {"from": "BrodyCaseMemory",    "to": "BrodySourceMemory",  "type": "DERIVED_FROM",      "note": "Le cas est dérivé d'un document source"},
+    {"from": "BrodyCaseMemory",    "to": "BrodyTreeMemory",    "type": "BELONGS_TO_TREE",   "note": "Le cas appartient à un arbre canonique"},
+    {"from": "BrodyCaseMemory",    "to": "BrodyBoundaryMemory","type": "GUARDED_BY",        "note": "Le cas est gardé par une boundary"},
+    {"from": "BrodyCaseMemory",    "to": "BrodyCaseMemory",    "type": "RELATED_TO",        "note": "Relations inter-cas (patch → validation, etc.)"}
+  ],
+
+  "activation_conditions": {
+    "status": "NOT_ACTIVATED",
+    "requires": [
+      "Operator KX108 explicit approval",
+      "WRITABLE_MEMORY_PROTOCOL fully activated (currently: PROTOCOL_CANDIDATE_ONLY)",
+      "Each proposed label creation authorized separately",
+      "No automatic population — manual or gated batch only"
+    ]
+  }
+}

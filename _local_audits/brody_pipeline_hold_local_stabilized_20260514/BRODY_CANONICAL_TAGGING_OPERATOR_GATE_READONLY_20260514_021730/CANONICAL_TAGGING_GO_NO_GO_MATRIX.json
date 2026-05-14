@@ -1,0 +1,121 @@
+{
+  "matrix_name": "CANONICAL_TAGGING_GO_NO_GO_MATRIX",
+  "mission": "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY",
+  "timestamp": "20260514_021730",
+  "decision_authority": "KX108_ONLY",
+
+  "go_conditions": [
+    {
+      "condition_id": "GO_01",
+      "condition": "protocol_complete",
+      "value": true,
+      "status": "GO",
+      "evidence": "11/11 protocol files present in BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923/"
+    },
+    {
+      "condition_id": "GO_02",
+      "condition": "approved_candidates",
+      "value": 48,
+      "status": "GO",
+      "evidence": "48/48 entries APPROVED_FOR_WRITE_CANDIDATE in BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY"
+    },
+    {
+      "condition_id": "GO_03",
+      "condition": "blocked_candidates",
+      "value": 0,
+      "status": "GO",
+      "evidence": "CANONICAL_TAGGING_BLOCKED_ITEMS.jsonl = 0 lines"
+    },
+    {
+      "condition_id": "GO_04",
+      "condition": "exclusions_confirmed",
+      "value": 9,
+      "status": "GO",
+      "evidence": "9/9 exclusions confirmed NOT_TAGGABLE_PENDING_SIGNAL"
+    },
+    {
+      "condition_id": "GO_05",
+      "condition": "rollback_ready",
+      "value": true,
+      "status": "GO",
+      "evidence": "ROLLBACK_CANONICAL_TAGGING_PLAN.cypher present (271 lines, 48 queries)"
+    },
+    {
+      "condition_id": "GO_06",
+      "condition": "post_write_validation_ready",
+      "value": true,
+      "status": "GO",
+      "evidence": "POST_WRITE_VALIDATION_PLAN.json present (10 mandatory checks)"
+    },
+    {
+      "condition_id": "GO_07",
+      "condition": "no_heuristic",
+      "value": true,
+      "status": "GO",
+      "evidence": "All 48 entries heuristic=false, tagging_basis=TITLE_REGEX_MATCH"
+    },
+    {
+      "condition_id": "GO_08",
+      "condition": "no_llm_guessing",
+      "value": true,
+      "status": "GO",
+      "evidence": "All 48 entries llm_guess=false"
+    },
+    {
+      "condition_id": "GO_09",
+      "condition": "no_invention",
+      "value": true,
+      "status": "GO",
+      "evidence": "All 48 entries invention=false, all tree_ids in T01..T12, all families canonical"
+    },
+    {
+      "condition_id": "GO_10",
+      "condition": "cypher_plan_verified",
+      "value": true,
+      "status": "GO",
+      "evidence": "689-line Cypher plan with 48 APPEND_ONLY queries + preflight checks + post-write spot checks"
+    },
+    {
+      "condition_id": "GO_11",
+      "condition": "scope_lock_defined",
+      "value": true,
+      "status": "GO",
+      "evidence": "WRITE_SCOPE_LOCK.json: 48 approved node_ids, 9 excluded node_ids, T01-T12 only"
+    },
+    {
+      "condition_id": "GO_12",
+      "condition": "forbidden_actions_documented",
+      "value": true,
+      "status": "GO",
+      "evidence": "WRITE_FORBIDDEN_ACTIONS.json: 22 actions interdites avec justifications"
+    }
+  ],
+
+  "no_go_conditions": [
+    {
+      "condition_id": "NOGO_01",
+      "condition": "operator_approval",
+      "value": false,
+      "status": "NO_GO",
+      "blocking": true,
+      "resolution": "Operator explicitly states: \"J'autorise l'écriture canonique des 96 tags sur les 48 nodes validés.\""
+    },
+    {
+      "condition_id": "NOGO_02",
+      "condition": "kx108_gate_pass",
+      "value": false,
+      "status": "NO_GO",
+      "blocking": true,
+      "resolution": "KX108 explicitly opens write gate (kx108_gate_pass=true)"
+    }
+  ],
+
+  "go_count": 12,
+  "no_go_count": 2,
+  "go_conditions_met": 12,
+  "no_go_conditions_blocking": 2,
+
+  "real_write_allowed": false,
+  "final_verdict": "NO_GO_PENDING_OPERATOR_AND_KX108_GATE",
+  "final_verdict_reason": "All 12 technical GO conditions met. 2 authorization conditions remain: operator_approval=false, kx108_gate_pass=false. Both required before real_write_allowed can be true."
+}

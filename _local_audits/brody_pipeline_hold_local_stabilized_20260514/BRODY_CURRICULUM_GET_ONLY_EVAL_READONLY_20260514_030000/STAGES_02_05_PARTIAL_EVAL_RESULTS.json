@@ -1,0 +1,65 @@
+{
+  "mission": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY",
+  "timestamp": "20260514_030000",
+  "note": "Partial eval — only tagged trees tested. PATH_B trees excluded (pending write gate).",
+
+  "STAGE_02_LOGIQUE": {
+    "readiness_status": "PARTIAL_READY",
+    "stage_verdict": "EVAL_PASS",
+    "required_tree_count": 5,
+    "tested_tree_count": 3,
+    "pass_tree_count": 3,
+    "total_nodes_retrieved": 12,
+    "path_b_pending": ["T26","T27"],
+    "tree_evals": [
+      {"tree_id":"T06","tree_name":"Arbre de la Comprehension","node_count":4,"eval_pass":true},
+      {"tree_id":"T07","tree_name":"Arbre de l'Organisation",  "node_count":4,"eval_pass":true,"sample_title":"1E1C60E219B4_05_GARDIEN_T07__Gardien_de_fond__Resilience_Test_memoire_fractale.md"},
+      {"tree_id":"T08","tree_name":"Arbre de la Pensee",        "node_count":4,"eval_pass":true,"sample_title":"B6CA17AED567_05_GARDIEN_T08__Gardien_de_fond__Auto_Organisation_Apprentissage_inverse.md"}
+    ]
+  },
+
+  "STAGE_03_MATHS_SIMPLES": {
+    "readiness_status": "PARTIAL_READY",
+    "stage_verdict": "EVAL_PASS",
+    "required_tree_count": 6,
+    "tested_tree_count": 5,
+    "pass_tree_count": 5,
+    "total_nodes_retrieved": 20,
+    "path_b_pending": ["T26"],
+    "tree_evals": [
+      {"tree_id":"T07","tree_name":"Arbre de l'Organisation","node_count":4,"eval_pass":true},
+      {"tree_id":"T08","tree_name":"Arbre de la Pensee",     "node_count":4,"eval_pass":true},
+      {"tree_id":"T09","tree_name":"Arbre de l'Intelligence","node_count":4,"eval_pass":true,"sample_title":"68AF25C8E587_05_GARDIEN_T09__Gardien_de_fond__Creativite_Mode_reflexe.md"},
+      {"tree_id":"T11","tree_name":"Arbre de la Science",    "node_count":4,"eval_pass":true,"sample_title":"20536123F25C_T11__Generation_Aleatoire_Frugalite_bio_inspiree.md"},
+      {"tree_id":"T12","tree_name":"Arbre de la Technique",  "node_count":4,"eval_pass":true,"sample_title":"69C9AADE62AC_T12__Complexite_Irreductible_Transparence_friction.md"}
+    ]
+  },
+
+  "STAGE_04_SCIENCE": {
+    "readiness_status": "PARTIAL_READY",
+    "stage_verdict": "EVAL_PASS",
+    "required_tree_count": 5,
+    "tested_tree_count": 2,
+    "pass_tree_count": 2,
+    "total_nodes_retrieved": 8,
+    "path_b_pending": ["T14","T26","T27"],
+    "tree_evals": [
+      {"tree_id":"T11","tree_name":"Arbre de la Science",  "node_count":4,"eval_pass":true},
+      {"tree_id":"T12","tree_name":"Arbre de la Technique","node_count":4,"eval_pass":true}
+    ]
+  },
+
+  "STAGE_05_PHYSIQUE": {
+    "readiness_status": "PARTIAL_READY",
+    "stage_verdict": "EVAL_PASS",
+    "required_tree_count": 6,
+    "tested_tree_count": 2,
+    "pass_tree_count": 2,
+    "total_nodes_retrieved": 8,
+    "path_b_pending": ["T23","T25","T26","T27"],
+    "tree_evals": [
+      {"tree_id":"T11","tree_name":"Arbre de la Science",  "node_count":4,"eval_pass":true},
+      {"tree_id":"T12","tree_name":"Arbre de la Technique","node_count":4,"eval_pass":true}
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "mission": "BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY",
+  "timestamp": "20260514_010424",
+  "readonly": true,
+  "anti_invention_rule": "RESPECTED",
+  "tree_source": "arbres_34.registry.json (BrodyMemoryDoc corpus)",
+  "tree_source_found": true,
+  "tree_source_invented": false,
+  "tree_count": 34,
+  "family_count": 8,
+
+  "families": [
+    {
+      "code": "I_FONDAMENTAUX",
+      "trees": ["T01","T02","T03","T04","T05"],
+      "memory_layers_mapped": [],
+      "memory_layer_mapping_status": "TREE_FAMILY_PENDING_MAPPING",
+      "note": "Famille présente dans corpus. Aucune couche mémoire explicitement mappée encore."
+    },
+    {
+      "code": "II_COGNITIFS",
+      "trees": ["T06","T07","T08","T09","T10"],
+      "memory_layers_mapped": ["SOURCE_MEMORY (partiel via BrodyMemoryDoc tags)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_PARTIALLY_MAPPED",
+      "note": "BrodyMemoryDoc peut être tagué II_COGNITIFS. memory_feed=true pour cette famille."
+    },
+    {
+      "code": "III_CONNAISSANCE",
+      "trees": ["T11","T12","T13","T14","T15"],
+      "memory_layers_mapped": ["SOURCE_MEMORY (partiel via BrodyMemoryDoc tags)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_PARTIALLY_MAPPED",
+      "note": "Idem II_COGNITIFS. BrodyMemoryDoc nodes potentiellement taggés III_CONNAISSANCE."
+    },
+    {
+      "code": "IV_RELATIONNELS_SOCIAUX",
+      "trees": ["T16","T17","T18","T19"],
+      "memory_layers_mapped": [],
+      "memory_layer_mapping_status": "TREE_FAMILY_PENDING_MAPPING",
+      "note": "Famille world_interface=true (passive). Aucune couche mémoire mappée. KX108 gate requis avant activation."
+    },
+    {
+      "code": "V_ACTION_TRANSFORMATION",
+      "trees": ["T20","T21","T22"],
+      "memory_layers_mapped": ["BOUNDARY_MEMORY (bloqué)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_BLOCKED",
+      "note": "action_trigger=true — appartient à BOUNDARY_MEMORY par blocage. Pas de mapping actif."
+    },
+    {
+      "code": "VI_TEMPORELS_MEMORIELS",
+      "trees": ["T23","T24","T25"],
+      "memory_layers_mapped": ["BATCH_MEMORY (T24 lien direct mémoire)", "CASE_MEMORY (T25 histoire)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_PARTIALLY_MAPPED",
+      "note": "T24 (Mémoire) est directement lié à BATCH_MEMORY et SESSION_MEMORY. T24 bloqué (direct_memory_write). T25 (Histoire) → CASE_MEMORY naturel."
+    },
+    {
+      "code": "VII_META_STRUCTURELS",
+      "trees": ["T26","T27","T28","T29"],
+      "memory_layers_mapped": ["BOUNDARY_MEMORY (T26 Cohérence, T27 Vérité)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_PARTIALLY_MAPPED",
+      "note": "T26 Cohérence et T27 Vérité sont naturellement liés à BOUNDARY_MEMORY (gouvernance). T28 Valeur → USER_MEMORY. T29 Finalité → CASE_MEMORY."
+    },
+    {
+      "code": "VIII_OBSIDIA_AGI",
+      "trees": ["T30","T31","T32","T33","T34"],
+      "memory_layers_mapped": ["BOUNDARY_MEMORY (bloqué — AGI-layer)"],
+      "memory_layer_mapping_status": "TREE_FAMILY_BLOCKED",
+      "note": "Toute la famille AGI-layer est bloquée. runtime_binding=false, x108_merge=false. Appartient à BOUNDARY_MEMORY par blocage jusqu'à gate opérateur."
+    }
+  ],
+
+  "memory_layer_tree_matrix": {
+    "USER_MEMORY":         {"tree_families": [],                         "status": "TREE_FAMILY_PENDING_MAPPING"},
+    "BRODY_AGENT_MEMORY":  {"tree_families": [],                         "status": "TREE_FAMILY_PENDING_MAPPING"},
+    "SESSION_MEMORY":      {"tree_families": [],                         "status": "TREE_FAMILY_PENDING_MAPPING"},
+    "BATCH_MEMORY":        {"tree_families": ["VI_TEMPORELS_MEMORIELS"], "status": "TREE_FAMILY_PARTIALLY_MAPPED"},
+    "CASE_MEMORY":         {"tree_families": ["VI_TEMPORELS_MEMORIELS","VII_META_STRUCTURELS"], "status": "TREE_FAMILY_PARTIALLY_MAPPED"},
+    "SOURCE_MEMORY":       {"tree_families": ["II_COGNITIFS","III_CONNAISSANCE"], "status": "TREE_FAMILY_PARTIALLY_MAPPED"},
+    "TREE_MEMORY":         {"tree_families": ["ALL_34"],                 "status": "TREE_FAMILY_MAPPED"},
+    "BOUNDARY_MEMORY":     {"tree_families": ["V_ACTION_TRANSFORMATION","VII_META_STRUCTURELS","VIII_OBSIDIA_AGI"], "status": "TREE_FAMILY_PARTIALLY_MAPPED"}
+  },
+
+  "tree_family_pending_mapping_count": 3,
+  "tree_family_partially_mapped_count": 4,
+  "tree_family_mapped_count": 1,
+  "tree_family_blocked_count": 2,
+  "tree_family_invented": false
+}

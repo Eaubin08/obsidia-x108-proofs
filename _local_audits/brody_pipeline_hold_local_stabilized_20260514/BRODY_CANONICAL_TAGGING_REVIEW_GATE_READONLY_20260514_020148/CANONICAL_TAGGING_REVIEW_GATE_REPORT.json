@@ -1,0 +1,75 @@
+{
+  "report_name": "CANONICAL_TAGGING_REVIEW_GATE_REPORT",
+  "mission": "BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY",
+  "timestamp": "20260514_020148",
+  "readonly": true,
+  "status": "COMPLETE",
+  "decision_authority": "KX108_ONLY",
+  "preflight": {
+    "root_staged_count": 136,
+    "root_staged_preserved": true,
+    "x108_proofs_dirty": "LOW_MATERIAL_PATCH_ONLY",
+    "x108_proofs_unexpected_changes": false
+  },
+  "validation_result": {
+    "total_entries": 48,
+    "approved": 48,
+    "blocked": 0,
+    "needs_review": 0,
+    "pass_rate": "48/48",
+    "all_pass": true
+  },
+  "exclusion_result": {
+    "total_excluded": 9,
+    "all_confirmed": true,
+    "passes_to_write_candidate": 0,
+    "meta_document": 8,
+    "text_preview_reference_only": 1
+  },
+  "gate_decision": {
+    "gate_status": "APPROVED_FOR_WRITE_CANDIDATE",
+    "write_candidate_ready": true,
+    "real_write_allowed": false,
+    "note": "write_candidate_ready=true means the plan is clean and ready for operator to open KX108 gate. real_write_allowed remains false until gate is explicitly opened."
+  },
+  "coverage": {
+    "t01_t12_coverage": true,
+    "t13_t34_pending": true,
+    "families_covered": [
+      "III_CONNAISSANCE",
+      "II_COGNITIFS",
+      "I_FONDAMENTAUX"
+    ],
+    "families_not_covered": [
+      "IV_RELATIONNELS_SOCIAUX",
+      "VIII_OBSIDIA_AGI",
+      "VII_META_STRUCTURELS",
+      "VI_TEMPORELS_MEMORIELS",
+      "V_ACTION_TRANSFORMATION"
+    ],
+    "trees_not_covered_count": 22,
+    "pending_additional_signal_docs": 2691
+  },
+  "invariants": {
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "no_heuristic_tagging": true,
+    "no_llm_guessing": true,
+    "no_invention": true,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "git_add_executed": false,
+    "commit_executed": false,
+    "freeze_executed": false,
+    "push_executed": false
+  },
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY",
+    "next_real_world_action": "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY",
+    "next_gate_action": "KX108 explicitly open write gate to execute 48 tag writes (96 tags)",
+    "note": "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY will package the approved candidates for operator gate review and define the write protocol."
+  }
+}

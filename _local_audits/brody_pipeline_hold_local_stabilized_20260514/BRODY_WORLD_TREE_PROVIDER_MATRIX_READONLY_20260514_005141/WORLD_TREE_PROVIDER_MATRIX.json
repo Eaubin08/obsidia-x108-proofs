@@ -1,0 +1,222 @@
+{
+  "mission": "BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY",
+  "timestamp": "20260514_005141",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+  "tree_source": "arbres_34.registry.json (BrodyMemoryDoc corpus)",
+  "tree_source_found": true,
+  "tree_source_invented": false,
+  "tree_count": 34,
+  "family_count": 8,
+  "world_matrix_status": "ACTIVE",
+  "anti_invention_rule_respected": true,
+
+  "families": [
+    {
+      "code": "I_FONDAMENTAUX",
+      "label": "Fondamentaux",
+      "tree_range": "T01-T05",
+      "tree_count": 5,
+      "world_interface": false,
+      "memory_feed": false,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "INTERNAL_FOUNDATION"
+    },
+    {
+      "code": "II_COGNITIFS",
+      "label": "Cognitifs",
+      "tree_range": "T06-T10",
+      "tree_count": 5,
+      "world_interface": false,
+      "memory_feed": true,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "INTERNAL_COGNITIVE"
+    },
+    {
+      "code": "III_CONNAISSANCE",
+      "label": "Connaissance",
+      "tree_range": "T11-T15",
+      "tree_count": 5,
+      "world_interface": false,
+      "memory_feed": true,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "INTERNAL_KNOWLEDGE"
+    },
+    {
+      "code": "IV_RELATIONNELS_SOCIAUX",
+      "label": "Relationnels Sociaux",
+      "tree_range": "T16-T19",
+      "tree_count": 4,
+      "world_interface": true,
+      "memory_feed": true,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "WORLD_INTERFACE_PASSIVE"
+    },
+    {
+      "code": "V_ACTION_TRANSFORMATION",
+      "label": "Action & Transformation",
+      "tree_range": "T20-T22",
+      "tree_count": 3,
+      "world_interface": true,
+      "memory_feed": false,
+      "action_trigger": true,
+      "blocked": true,
+      "blocked_reason": "action_trigger=true requires KX108_ONLY gate before activation",
+      "classification": "WORLD_INTERFACE_ACTIVE_BLOCKED"
+    },
+    {
+      "code": "VI_TEMPORELS_MEMORIELS",
+      "label": "Temporels & Mémoriels",
+      "tree_range": "T23-T25",
+      "tree_count": 3,
+      "world_interface": false,
+      "memory_feed": true,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "MEMORY_PROVIDER"
+    },
+    {
+      "code": "VII_META_STRUCTURELS",
+      "label": "Méta-Structurels",
+      "tree_range": "T26-T29",
+      "tree_count": 4,
+      "world_interface": false,
+      "memory_feed": false,
+      "action_trigger": false,
+      "blocked": false,
+      "classification": "INTERNAL_META"
+    },
+    {
+      "code": "VIII_OBSIDIA_AGI",
+      "label": "Obsidia AGI",
+      "tree_range": "T30-T34",
+      "tree_count": 5,
+      "world_interface": true,
+      "memory_feed": true,
+      "action_trigger": true,
+      "blocked": true,
+      "blocked_reason": "AGI-layer trees — full KX108_ONLY gate required, runtime_binding=false, x108_merge=false",
+      "classification": "AGI_LAYER_BLOCKED"
+    }
+  ],
+
+  "trees": [
+    {"id": 1,  "code": "T01", "name": "Arbre de l'Humain",         "family": "I_FONDAMENTAUX",          "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "INTERNAL_ONLY",  "safe_test_eligible": true},
+    {"id": 2,  "code": "T02", "name": "Arbre de la Conscience",     "family": "I_FONDAMENTAUX",          "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "INTERNAL_ONLY",  "safe_test_eligible": true},
+    {"id": 3,  "code": "T03", "name": "Arbre de la Perception",     "family": "I_FONDAMENTAUX",          "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "INTERNAL_ONLY",  "safe_test_eligible": true},
+    {"id": 4,  "code": "T04", "name": "Arbre du Sens",              "family": "I_FONDAMENTAUX",          "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "INTERNAL_ONLY",  "safe_test_eligible": true},
+    {"id": 5,  "code": "T05", "name": "Arbre de l'Identité",        "family": "I_FONDAMENTAUX",          "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "INTERNAL_ONLY",  "safe_test_eligible": true},
+    {"id": 6,  "code": "T06", "name": "Arbre de la Compréhension",  "family": "II_COGNITIFS",            "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 7,  "code": "T07", "name": "Arbre de l'Organisation",    "family": "II_COGNITIFS",            "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 8,  "code": "T08", "name": "Arbre de la Pensée",         "family": "II_COGNITIFS",            "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 9,  "code": "T09", "name": "Arbre de l'Intelligence",    "family": "II_COGNITIFS",            "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 10, "code": "T10", "name": "Arbre du Langage",           "family": "II_COGNITIFS",            "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 11, "code": "T11", "name": "Arbre de la Science",        "family": "III_CONNAISSANCE",        "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 12, "code": "T12", "name": "Arbre de la Technique",      "family": "III_CONNAISSANCE",        "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 13, "code": "T13", "name": "Arbre de l'Art",             "family": "III_CONNAISSANCE",        "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 14, "code": "T14", "name": "Arbre de la Philosophie",    "family": "III_CONNAISSANCE",        "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 15, "code": "T15", "name": "Arbre de la Spiritualité",   "family": "III_CONNAISSANCE",        "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_CANDIDATE_FEED", "safe_test_eligible": true},
+    {"id": 16, "code": "T16", "name": "Arbre de la Relation",       "family": "IV_RELATIONNELS_SOCIAUX", "world_interface": true,  "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": true,  "provider_role": "WORLD_PASSIVE",         "safe_test_eligible": true},
+    {"id": 17, "code": "T17", "name": "Arbre du Collectif",         "family": "IV_RELATIONNELS_SOCIAUX", "world_interface": true,  "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": true,  "provider_role": "WORLD_PASSIVE",         "safe_test_eligible": true},
+    {"id": 18, "code": "T18", "name": "Arbre de la Transmission",   "family": "IV_RELATIONNELS_SOCIAUX", "world_interface": true,  "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": true,  "provider_role": "WORLD_PASSIVE",         "safe_test_eligible": true},
+    {"id": 19, "code": "T19", "name": "Arbre de la Culture",        "family": "IV_RELATIONNELS_SOCIAUX", "world_interface": true,  "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": true,  "provider_role": "WORLD_PASSIVE",         "safe_test_eligible": true},
+    {"id": 20, "code": "T20", "name": "Arbre de l'Action",          "family": "V_ACTION_TRANSFORMATION", "world_interface": true,  "memory_feed": false, "action_trigger": true,  "direct_memory_write": false, "blocked": true,  "kx108_gate_required": true,  "provider_role": "WORLD_ACTIVE_BLOCKED",  "safe_test_eligible": false, "blocked_reason": "action_trigger=true — KX108 gate required before any activation"},
+    {"id": 21, "code": "T21", "name": "Arbre de la Création",       "family": "V_ACTION_TRANSFORMATION", "world_interface": true,  "memory_feed": false, "action_trigger": true,  "direct_memory_write": false, "blocked": true,  "kx108_gate_required": true,  "provider_role": "WORLD_ACTIVE_BLOCKED",  "safe_test_eligible": false, "blocked_reason": "action_trigger=true — KX108 gate required before any activation"},
+    {"id": 22, "code": "T22", "name": "Arbre de la Transformation", "family": "V_ACTION_TRANSFORMATION", "world_interface": true,  "memory_feed": false, "action_trigger": true,  "direct_memory_write": false, "blocked": true,  "kx108_gate_required": true,  "provider_role": "WORLD_ACTIVE_BLOCKED",  "safe_test_eligible": false, "blocked_reason": "action_trigger=true — KX108 gate required before any activation"},
+    {"id": 23, "code": "T23", "name": "Arbre du Temps",             "family": "VI_TEMPORELS_MEMORIELS",  "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_PROVIDER",       "safe_test_eligible": true},
+    {"id": 24, "code": "T24", "name": "Arbre de la Mémoire",        "family": "VI_TEMPORELS_MEMORIELS",  "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "MEMORY_PROVIDER",       "safe_test_eligible": false, "blocked_reason": "direct_memory_write=true — writable memory protocol gate required"},
+    {"id": 25, "code": "T25", "name": "Arbre de l'Histoire",        "family": "VI_TEMPORELS_MEMORIELS",  "world_interface": false, "memory_feed": true,  "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "MEMORY_PROVIDER",       "safe_test_eligible": true},
+    {"id": 26, "code": "T26", "name": "Arbre de la Cohérence",      "family": "VII_META_STRUCTURELS",    "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "META_INTERNAL",         "safe_test_eligible": true},
+    {"id": 27, "code": "T27", "name": "Arbre de la Vérité",         "family": "VII_META_STRUCTURELS",    "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "META_INTERNAL",         "safe_test_eligible": true},
+    {"id": 28, "code": "T28", "name": "Arbre de la Valeur",         "family": "VII_META_STRUCTURELS",    "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "META_INTERNAL",         "safe_test_eligible": true},
+    {"id": 29, "code": "T29", "name": "Arbre de la Finalité",       "family": "VII_META_STRUCTURELS",    "world_interface": false, "memory_feed": false, "action_trigger": false, "direct_memory_write": false, "blocked": false, "kx108_gate_required": false, "provider_role": "META_INTERNAL",         "safe_test_eligible": true},
+    {"id": 30, "code": "T30", "name": "Arbre Cognitif Global",      "family": "VIII_OBSIDIA_AGI",        "world_interface": true,  "memory_feed": true,  "action_trigger": true,  "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "AGI_LAYER_BLOCKED",     "safe_test_eligible": false, "blocked_reason": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"},
+    {"id": 31, "code": "T31", "name": "Arbre des Flux",             "family": "VIII_OBSIDIA_AGI",        "world_interface": true,  "memory_feed": true,  "action_trigger": true,  "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "AGI_LAYER_BLOCKED",     "safe_test_eligible": false, "blocked_reason": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"},
+    {"id": 32, "code": "T32", "name": "Arbre des Connexions",       "family": "VIII_OBSIDIA_AGI",        "world_interface": true,  "memory_feed": true,  "action_trigger": true,  "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "AGI_LAYER_BLOCKED",     "safe_test_eligible": false, "blocked_reason": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"},
+    {"id": 33, "code": "T33", "name": "Arbre de l'Optimisation",    "family": "VIII_OBSIDIA_AGI",        "world_interface": true,  "memory_feed": true,  "action_trigger": true,  "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "AGI_LAYER_BLOCKED",     "safe_test_eligible": false, "blocked_reason": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"},
+    {"id": 34, "code": "T34", "name": "Arbre de la Stabilité",      "family": "VIII_OBSIDIA_AGI",        "world_interface": true,  "memory_feed": true,  "action_trigger": true,  "direct_memory_write": true,  "blocked": true,  "kx108_gate_required": true,  "provider_role": "AGI_LAYER_BLOCKED",     "safe_test_eligible": false, "blocked_reason": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"}
+  ],
+
+  "summary": {
+    "total_trees": 34,
+    "world_interface_trees": 14,
+    "internal_only_trees": 20,
+    "memory_feed_trees": 16,
+    "action_trigger_trees": 8,
+    "direct_memory_write_trees": 6,
+    "blocked_trees": 9,
+    "safe_test_eligible_trees": 25,
+    "kx108_gate_required_trees": 13
+  },
+
+  "eight_questions": {
+    "Q1_world_interface": {
+      "question": "Which trees interface with the world?",
+      "answer": "14 trees: T16-T19 (IV_RELATIONNELS_SOCIAUX, passive), T20-T22 (V_ACTION_TRANSFORMATION, active/blocked), T30-T34 (VIII_OBSIDIA_AGI, AGI-layer/blocked)",
+      "world_interface_codes": ["T16","T17","T18","T19","T20","T21","T22","T30","T31","T32","T33","T34"]
+    },
+    "Q2_internal_only": {
+      "question": "Which trees are internal-only?",
+      "answer": "20 trees: T01-T15 (Fondamentaux, Cognitifs, Connaissance) + T23-T29 (Temporels, Méta-Structurels)",
+      "internal_only_codes": ["T01","T02","T03","T04","T05","T06","T07","T08","T09","T10","T11","T12","T13","T14","T15","T23","T24","T25","T26","T27","T28","T29"],
+      "note": "T24 (Mémoire) is internal but blocked due to direct_memory_write=true"
+    },
+    "Q3_memory_candidate_feed": {
+      "question": "Which trees feed memory candidates?",
+      "answer": "16 trees: T06-T19 (II_COGNITIFS + III_CONNAISSANCE + IV_RELATIONNELS_SOCIAUX) + T23-T25 (VI_TEMPORELS_MEMORIELS) + T30-T34 (VIII_OBSIDIA_AGI, blocked)",
+      "memory_feed_codes": ["T06","T07","T08","T09","T10","T11","T12","T13","T14","T15","T16","T17","T18","T19","T23","T24","T25","T30","T31","T32","T33","T34"]
+    },
+    "Q4_blocked_trees": {
+      "question": "Which trees are blocked?",
+      "answer": "9 trees blocked: T20, T21, T22 (action_trigger), T24 (direct_memory_write), T30-T34 (AGI-layer)",
+      "blocked_codes": ["T20","T21","T22","T24","T30","T31","T32","T33","T34"],
+      "blocked_reasons": {
+        "T20-T22": "action_trigger=true — KX108 gate required before any activation",
+        "T24": "direct_memory_write=true — writable memory protocol gate required",
+        "T30-T34": "AGI-layer — runtime_binding=false, x108_merge=false, full KX108 gate required"
+      }
+    },
+    "Q5_kx108_gate_requirements": {
+      "question": "What are the KX108 gate requirements?",
+      "answer": "13 trees require KX108 gate: T16-T22 (world-touching) + T24 (memory write) + T30-T34 (AGI). Gate conditions: decision_authority=KX108_ONLY, operator approval, WRITABLE_MEMORY_PROTOCOL activated, runtime_binding=false until gate clears",
+      "kx108_gate_required_codes": ["T16","T17","T18","T19","T20","T21","T22","T24","T30","T31","T32","T33","T34"]
+    },
+    "Q6_direct_memory_write": {
+      "question": "Which trees involve direct memory write?",
+      "answer": "6 trees: T24 (Mémoire, blocked), T30-T34 (AGI-layer, all blocked). None currently active. All require writable memory protocol activation + KX108 gate.",
+      "direct_memory_write_codes": ["T24","T30","T31","T32","T33","T34"],
+      "current_status": "ALL_BLOCKED"
+    },
+    "Q7_action_triggering": {
+      "question": "Which trees can trigger actions?",
+      "answer": "8 trees: T20-T22 (V_ACTION_TRANSFORMATION) + T30-T34 (VIII_OBSIDIA_AGI). All blocked. Action triggering requires KX108 gate + runtime_binding=true (currently false).",
+      "action_trigger_codes": ["T20","T21","T22","T30","T31","T32","T33","T34"],
+      "runtime_binding_status": "false",
+      "current_status": "ALL_BLOCKED"
+    },
+    "Q8_next_safe_test": {
+      "question": "What is the next safe test?",
+      "answer": "BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY — readonly GET of docs tagged with T01-T15 trees (pure internal, no world interface, no action trigger, no memory write). Entry point: BrodyMemoryDoc nodes tagged '34_arbres' with tree codes T01-T15. Query only, no mutation.",
+      "safe_entry_trees": ["T01","T02","T03","T04","T05","T06","T07","T08","T09","T10","T11","T12","T13","T14","T15"],
+      "test_mode": "READONLY_GET_ONLY",
+      "boundary_all_false": true
+    }
+  },
+
+  "boundary_flags": {
+    "readonly": true,
+    "memory_decision": false,
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "x108_runtime_binding": false,
+    "x108_merge": false,
+    "graphiti_index_write": false,
+    "memory_intake": false
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "phase": "POST_WRITE_VALIDATION_PLAN",
+  "timestamp": "20260514_032500",
+  "check_count": 12,
+  "checks": [
+    {"id":"PWV_01","desc":"Node count unchanged = 3267","expected":3267,"cypher":"MATCH (n:BrodyMemoryDoc) RETURN count(n)"},
+    {"id":"PWV_02","desc":"117 approved nodes still exist","expected":117,"cypher":"MATCH (n:BrodyMemoryDoc) WHERE n.id IN $approved_ids RETURN count(n)"},
+    {"id":"PWV_03","desc":"All approved nodes contain expected tree_id","expected":117,"cypher":"Per-node check: tree_id IN n.tags"},
+    {"id":"PWV_04","desc":"All approved nodes contain expected family_id","expected":117,"cypher":"Per-node check: family_id IN n.tags"},
+    {"id":"PWV_05","desc":"All approved nodes preserve previous tags (no tag loss)","expected":"all_previous_tags_present","cypher":"Per-node: previous_tags subset of n.tags"},
+    {"id":"PWV_06","desc":"No duplicate tags in approved nodes","expected":0,"cypher":"Per-node: len(n.tags) == len(set(n.tags))"},
+    {"id":"PWV_07","desc":"T13/T14/T15 distribution >= 9 each","expected":"T13>=9,T14>=9,T15>=9"},
+    {"id":"PWV_08","desc":"T16/T17/T18/T19 distribution >= 9 each","expected":"T16>=9,T17>=9,T18>=9,T19>=9"},
+    {"id":"PWV_09","desc":"T23/T25/T26/T27/T28/T29 distribution >= 9 each","expected":"T23>=9,T25>=9,T26>=9,T27>=9,T28>=9,T29>=9"},
+    {"id":"PWV_10","desc":"Blocked trees unmodified: T20-T22/T24/T30-T34","expected":0,"note":"0 nodes with blocked tree tags added"},
+    {"id":"PWV_11","desc":"Excluded TP/META/MULTI nodes not modified by this write","expected":0,"note":"Check GRAPHITI_V2_002404, _003250, _000694"},
+    {"id":"PWV_12","desc":"LOW_MATERIAL resolved — text_preview accessible","expected":3267,"cypher":"MATCH (n:BrodyMemoryDoc) WHERE size(n.text_preview) > 0 RETURN count(n)"}
+  ],
+  "stop_on_critical_fail": true,
+  "critical_checks": ["PWV_01","PWV_02","PWV_03","PWV_04","PWV_10"],
+  "auto_rollback": false,
+  "rollback_instruction": "If critical check fails: rollback requires explicit operator instruction"
+}

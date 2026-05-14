@@ -1,0 +1,85 @@
+﻿{
+    "timestamp":  "20260514_050000",
+    "block_classification":  {
+                                 "block3_EXTERNAL_FETCH":  {
+                                                               "items":  [
+                                                                             "brody_memory_pipeline_commit_now_20260514/BRODY_EXTERNAL_FETCH_READONLY_OPERATOR_TEST_20260513_203216"
+                                                                         ],
+                                                               "status":  "ALREADY_IN_X108"
+                                                           },
+                                 "block5_GRAPHITI_NEO4J":  {
+                                                               "status":  "MIGRATED_NOW",
+                                                               "newly_migrated":  [
+                                                                                      "brody_pipeline_hold_local_stabilized_20260514/BRODY_GRAPHITI_REAL_IMPORT_CONTROLLED_WRITE_TEST_V1_20260514_003636",
+                                                                                      "brody_pipeline_hold_local_stabilized_20260514/BRODY_GRAPHITI_REAL_IMPORT_POST_WRITE_VALIDATION_READONLY_20260514_004151"
+                                                                                  ],
+                                                               "already_in_x108":  [
+                                                                                       "brody_memory_pipeline_commit_now_20260514/BRODY_GRAPHITI_CANDIDATE_PREP_READONLY_20260514_002308",
+                                                                                       "brody_memory_pipeline_commit_now_20260514/BRODY_GRAPHITI_IMPORT_DRY_RUN_REVIEW_GATE_READONLY_20260514_002744",
+                                                                                       "brody_memory_pipeline_commit_now_20260514/BRODY_WRITABLE_MEMORY_PROTOCOL_CANDIDATE_READONLY_20260514_003129"
+                                                                                   ]
+                                                           },
+                                 "block1_LOW_MATERIAL":  {
+                                                             "items":  [
+                                                                           "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+                                                                           "brody_memory_pipeline_commit_now_20260514/LOW_MATERIAL_LIVE_VALIDATION_READONLY_20260513_231701",
+                                                                           "brody_memory_pipeline_commit_now_20260514/LOW_MATERIAL_PATCH_CANDIDATE_READONLY_20260513_231002"
+                                                                       ],
+                                                             "status":  "ALREADY_IN_X108"
+                                                         },
+                                 "block6_TREES_TAGGING":  {
+                                                              "status":  "MIGRATED_NOW",
+                                                              "newly_migrated":  [
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_WORLD_TREE_PROVIDER_MATRIX_READONLY_20260514_005141",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_WORLD_PROVIDER_MATRIX_AND_MEMORY_SCHEMA_READONLY_20260514_010424",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_WORLD_TREE_GET_ONLY_TEST_READONLY_20260514_011350",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TREE_TAGGING_BRIDGE_READONLY_20260514_012910",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_REVIEW_GATE_READONLY_20260514_020148",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY_20260514_020923",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY_20260514_021730",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_CONTROLLED_WRITE_V1_20260514_022400",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_CANONICAL_TAGGING_POST_WRITE_AUDIT_READONLY_20260514_023500",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_PATH_B_TAGGING_DRY_RUN_READONLY_20260514_031500",
+                                                                                     "brody_pipeline_hold_local_stabilized_20260514/BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL_20260514_032500"
+                                                                                 ]
+                                                          },
+                                 "block2_USER_MEMORY":  {
+                                                            "items":  [
+                                                                          "brody_memory_pipeline_commit_now_20260514/BRODY_USER_MEMORY_INTAKE_CANDIDATE_READONLY_20260513_194604",
+                                                                          "brody_memory_pipeline_commit_now_20260514/BRODY_SESSION_CLOSE_DECISION_APPLY_PRECURSOR_READONLY_20260513_232959",
+                                                                          "brody_memory_pipeline_commit_now_20260514/BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_V1_VALIDATE_20260513_233953",
+                                                                          "brody_memory_pipeline_commit_now_20260514/BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_20260514_001225"
+                                                                      ],
+                                                            "status":  "ALREADY_IN_X108"
+                                                        },
+                                 "block8_FINAL_SMOKE":  {
+                                                            "status":  "CREATED_NOW",
+                                                            "dir":  "X108_BRODY_FINAL_SMOKE_BEFORE_DAY_CLOSE_READONLY_20260514_045000",
+                                                            "files":  4
+                                                        },
+                                 "block7_CURRICULUM":  {
+                                                           "status":  "MIGRATED_NOW",
+                                                           "newly_migrated":  [
+                                                                                  "brody_pipeline_hold_local_stabilized_20260514/BRODY_PROGRESS_METRICS_READONLY_20260514_024500",
+                                                                                  "brody_pipeline_hold_local_stabilized_20260514/BRODY_CURRICULUM_TREE_BRIDGE_READONLY_20260514_025500",
+                                                                                  "brody_pipeline_hold_local_stabilized_20260514/BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY_20260514_030000",
+                                                                                  "brody_pipeline_hold_local_stabilized_20260514/BRODY_CURRICULUM_POST_WRITE_SYNTHESIS_READONLY_20260514_033500"
+                                                                              ]
+                                                       },
+                                 "block4_OPERATOR_LOOP":  {
+                                                              "items":  [
+                                                                            "brody_memory_pipeline_commit_now_20260514/BRODY_OPERATOR_FULL_LOOP_TEST_READONLY_20260513_204510"
+                                                                        ],
+                                                              "status":  "ALREADY_IN_X108"
+                                                          }
+                             },
+    "scan":  {
+                 "core_local_audits_total_dirs":  182,
+                 "already_in_x108_count":  16,
+                 "x108_local_audits_committed_dirs":  3,
+                 "missing_to_copy_count":  18,
+                 "block8_smoke_created":  4
+             },
+    "mission":  "X108_STABILIZED_BRODY_PIPELINE_FINAL_RELOCATION_READONLY"
+}

@@ -1,0 +1,31 @@
+{
+  "phase": "OPERATOR_GATE",
+  "mission": "BRODY_PATH_B_END_TO_END_CONTROLLED_WRITE_AND_EVAL",
+  "timestamp": "20260514_032500",
+  "decision_authority": "KX108_ONLY",
+
+  "operator_statement": "J'autorise l'ecriture canonique PATH_B Tier 1 des 117 nodes valides, uniquement les candidats PATH_SLUG, avec rollback pret, post-write audit obligatoire, et aucun autre write.",
+  "operator_approval": true,
+  "kx108_gate_pass": true,
+
+  "real_write_allowed": true,
+  "approved_scope": "PATH_B_TIER_1_PATH_SLUG_ONLY",
+  "approved_nodes": 117,
+  "expected_tags_to_add": 234,
+
+  "conditions": {
+    "rollback_ready_required": true,
+    "post_write_audit_mandatory": true,
+    "no_other_write": true,
+    "tp_genuine_written": false,
+    "multi_tree_written": false,
+    "meta_written": false,
+    "blocked_tree_written": false
+  },
+
+  "fail_conditions": {
+    "if_critical_pwv_fails": "STOP — produce FAIL report — no auto-rollback — await operator instruction",
+    "if_any_blocked_tree_tagged": "CRITICAL FAIL — immediate stop",
+    "if_node_count_changes": "CRITICAL FAIL — immediate stop"
+  }
+}

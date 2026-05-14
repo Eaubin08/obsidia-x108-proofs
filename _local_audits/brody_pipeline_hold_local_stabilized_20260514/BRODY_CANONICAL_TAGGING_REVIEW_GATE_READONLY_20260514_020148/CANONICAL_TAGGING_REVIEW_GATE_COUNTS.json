@@ -1,0 +1,64 @@
+{
+  "timestamp": "20260514_020148",
+  "source_plan": "_local_audits/BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TAGGING_DRY_RUN_PLAN.jsonl",
+  "plan_entries_loaded": 48,
+  "approved_for_write_candidate": 48,
+  "blocked_count": 0,
+  "needs_operator_review_count": 0,
+  "excluded_total": 9,
+  "excluded_meta_document": 8,
+  "excluded_text_preview_reference_only": 1,
+  "excluded_all_confirmed": true,
+  "trees_covered": [
+    "T01",
+    "T02",
+    "T03",
+    "T04",
+    "T05",
+    "T06",
+    "T07",
+    "T08",
+    "T09",
+    "T10",
+    "T11",
+    "T12"
+  ],
+  "trees_covered_count": 12,
+  "trees_not_covered_count": 22,
+  "families_covered": [
+    "III_CONNAISSANCE",
+    "II_COGNITIFS",
+    "I_FONDAMENTAUX"
+  ],
+  "families_not_covered": [
+    "IV_RELATIONNELS_SOCIAUX",
+    "VIII_OBSIDIA_AGI",
+    "VII_META_STRUCTURELS",
+    "VI_TEMPORELS_MEMORIELS",
+    "V_ACTION_TRANSFORMATION"
+  ],
+  "docs_by_tree": {
+    "T04": 4,
+    "T01": 4,
+    "T02": 4,
+    "T03": 4,
+    "T05": 4,
+    "T06": 4,
+    "T07": 4,
+    "T08": 4,
+    "T09": 4,
+    "T10": 4,
+    "T11": 4,
+    "T12": 4
+  },
+  "docs_by_family": {
+    "I_FONDAMENTAUX": 20,
+    "II_COGNITIFS": 20,
+    "III_CONNAISSANCE": 8
+  },
+  "total_tags_to_write_if_gate_open": 96,
+  "write_candidate_ready": true,
+  "real_write_allowed": false,
+  "neo4j_write_executed": false,
+  "graphiti_write_executed": false
+}

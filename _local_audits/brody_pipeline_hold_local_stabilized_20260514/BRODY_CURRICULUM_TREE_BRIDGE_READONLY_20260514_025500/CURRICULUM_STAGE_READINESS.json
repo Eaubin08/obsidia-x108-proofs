@@ -1,0 +1,184 @@
+{
+  "mission": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY",
+  "timestamp": "20260514_025500",
+  "canonical_source": "CANONICAL_TREE_REGISTRY_RESOLVED.json",
+  "mapping_basis": "PROPOSED_BY_OPERATOR_FRAME",
+  "note": "Curriculum-to-tree mapping is operator-proposed. Not formally defined in canonical source. Each stage includes mapping_confidence.",
+
+  "stages": {
+
+    "STAGE_01_FRANCAIS": {
+      "objective": "Compréhension langage naturel, titres, textes courts, consignes simples",
+      "required_trees": [
+        {"tree_id":"T04","name":"Arbre du Sens",            "family":"I_FONDAMENTAUX",  "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T06","name":"Arbre de la Comprehension","family":"II_COGNITIFS",    "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T10","name":"Arbre du Langage",         "family":"II_COGNITIFS",    "tagged":true,  "signal":"PATH_A_TITLE_REGEX"}
+      ],
+      "required_tree_count": 3,
+      "available_tree_count": 3,
+      "missing_tree_count": 0,
+      "available_tags": ["T04","T06","T10"],
+      "missing_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": [],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "LOW",
+      "readiness_status": "READY",
+      "blocker": null,
+      "next_safe_test": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY stage=FRANCAIS"
+    },
+
+    "STAGE_02_LOGIQUE": {
+      "objective": "Cohérence, refus, règles, relations simples",
+      "required_trees": [
+        {"tree_id":"T06","name":"Arbre de la Comprehension","family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T07","name":"Arbre de l'Organisation",  "family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T08","name":"Arbre de la Pensee",       "family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T26","name":"Arbre de la Coherence",    "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9},
+        {"tree_id":"T27","name":"Arbre de la Verite",       "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9}
+      ],
+      "required_tree_count": 5,
+      "available_tree_count": 3,
+      "path_b_found_count": 2,
+      "missing_tree_count": 0,
+      "available_tags": ["T06","T07","T08"],
+      "path_b_pending_tags": ["T26","T27"],
+      "missing_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": [],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "LOW",
+      "readiness_status": "PARTIAL_READY",
+      "partial_reason": "T26/T27 have PATH_B signal but not yet tagged — need PATH_B write gate",
+      "next_safe_test": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY stage=LOGIQUE (with T06/T07/T08 only)"
+    },
+
+    "STAGE_03_MATHS_SIMPLES": {
+      "objective": "Structure, opérations simples, invariants faibles",
+      "required_trees": [
+        {"tree_id":"T07","name":"Arbre de l'Organisation","family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T08","name":"Arbre de la Pensee",     "family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T09","name":"Arbre de l'Intelligence","family":"II_COGNITIFS",       "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T11","name":"Arbre de la Science",    "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T12","name":"Arbre de la Technique",  "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T26","name":"Arbre de la Coherence",  "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9}
+      ],
+      "required_tree_count": 6,
+      "available_tree_count": 5,
+      "path_b_found_count": 1,
+      "missing_tree_count": 0,
+      "available_tags": ["T07","T08","T09","T11","T12"],
+      "path_b_pending_tags": ["T26"],
+      "missing_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": [],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "LOW",
+      "readiness_status": "PARTIAL_READY",
+      "partial_reason": "T26 has PATH_B signal but not yet tagged",
+      "next_safe_test": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY stage=MATHS_SIMPLES (with T07-T12 only)"
+    },
+
+    "STAGE_04_SCIENCE": {
+      "objective": "Concepts scientifiques, méthodes, hypothèses, validation",
+      "required_trees": [
+        {"tree_id":"T11","name":"Arbre de la Science",    "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T12","name":"Arbre de la Technique",  "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T14","name":"Arbre de la Philosophie","family":"III_CONNAISSANCE",   "tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9},
+        {"tree_id":"T26","name":"Arbre de la Coherence",  "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9},
+        {"tree_id":"T27","name":"Arbre de la Verite",     "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9}
+      ],
+      "required_tree_count": 5,
+      "available_tree_count": 2,
+      "path_b_found_count": 3,
+      "missing_tree_count": 0,
+      "available_tags": ["T11","T12"],
+      "path_b_pending_tags": ["T14","T26","T27"],
+      "missing_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": [],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "MEDIUM",
+      "readiness_status": "PARTIAL_READY",
+      "partial_reason": "T14/T26/T27 have PATH_B signal but not yet tagged",
+      "next_safe_test": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY stage=SCIENCE (with T11/T12 only)"
+    },
+
+    "STAGE_05_PHYSIQUE": {
+      "objective": "Causalité, systèmes, espace/temps, énergie, modèle du monde",
+      "required_trees": [
+        {"tree_id":"T11","name":"Arbre de la Science",   "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T12","name":"Arbre de la Technique", "family":"III_CONNAISSANCE",   "tagged":true,  "signal":"PATH_A_TITLE_REGEX"},
+        {"tree_id":"T23","name":"Arbre du Temps",        "family":"VI_TEMPORELS_MEMORIELS","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T25","name":"Arbre de l'Histoire",   "family":"VI_TEMPORELS_MEMORIELS","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T26","name":"Arbre de la Coherence", "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9},
+        {"tree_id":"T27","name":"Arbre de la Verite",    "family":"VII_META_STRUCTURELS","tagged":false, "signal":"PATH_B_PATH_SLUG", "path_b_candidates":9}
+      ],
+      "required_tree_count": 6,
+      "available_tree_count": 2,
+      "path_b_found_count": 4,
+      "missing_tree_count": 0,
+      "available_tags": ["T11","T12"],
+      "path_b_pending_tags": ["T23","T25","T26","T27"],
+      "missing_tags": [],
+      "required_memory_layers": ["BrodyMemoryDoc"],
+      "missing_memory_layers": [],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "MEDIUM",
+      "readiness_status": "PARTIAL_READY",
+      "partial_reason": "T23/T25/T26/T27 have PATH_B signal but not yet tagged",
+      "next_safe_test": "BRODY_CURRICULUM_GET_ONLY_EVAL_READONLY stage=PHYSIQUE (with T11/T12 only)"
+    },
+
+    "STAGE_06_MONDE_LARGE": {
+      "objective": "Monde réel, société, action, transformation, mémoire, agents",
+      "required_trees": [
+        {"tree_id":"T16","name":"Arbre de la Relation",     "family":"IV_RELATIONNELS_SOCIAUX","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T17","name":"Arbre du Collectif",       "family":"IV_RELATIONNELS_SOCIAUX","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T18","name":"Arbre de la Transmission", "family":"IV_RELATIONNELS_SOCIAUX","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T19","name":"Arbre de la Culture",      "family":"IV_RELATIONNELS_SOCIAUX","tagged":false,"signal":"PATH_B_PATH_SLUG","path_b_candidates":9},
+        {"tree_id":"T20","name":"Arbre de l'Action",        "family":"V_ACTION_TRANSFORMATION","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_ACTION_TRIGGER"},
+        {"tree_id":"T21","name":"Arbre de la Creation",     "family":"V_ACTION_TRANSFORMATION","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_ACTION_TRIGGER"},
+        {"tree_id":"T22","name":"Arbre de la Transformation","family":"V_ACTION_TRANSFORMATION","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_ACTION_TRIGGER"},
+        {"tree_id":"T24","name":"Arbre de la Memoire",      "family":"VI_TEMPORELS_MEMORIELS","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_DIRECT_MEMORY_WRITE"},
+        {"tree_id":"T30","name":"Arbre Cognitif Global",    "family":"VIII_OBSIDIA_AGI","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_AGI_LAYER"},
+        {"tree_id":"T31","name":"Arbre des Flux",           "family":"VIII_OBSIDIA_AGI","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_AGI_LAYER"},
+        {"tree_id":"T32","name":"Arbre des Connexions",     "family":"VIII_OBSIDIA_AGI","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_AGI_LAYER"},
+        {"tree_id":"T33","name":"Arbre de l'Optimisation",  "family":"VIII_OBSIDIA_AGI","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_AGI_LAYER"},
+        {"tree_id":"T34","name":"Arbre de la Stabilite",    "family":"VIII_OBSIDIA_AGI","tagged":false,"signal":"PATH_B_PATH_SLUG","blocked":"BLOCKED_AGI_LAYER"}
+      ],
+      "required_tree_count": 13,
+      "available_tree_count": 0,
+      "path_b_found_count": 4,
+      "missing_tree_count": 0,
+      "blocked_count": 9,
+      "available_tags": [],
+      "path_b_pending_tags": ["T16","T17","T18","T19"],
+      "blocked_tags": ["T20","T21","T22","T24","T30","T31","T32","T33","T34"],
+      "required_memory_layers": ["BrodyMemoryDoc","BrodySessionMemory"],
+      "missing_memory_layers": ["BrodySessionMemory"],
+      "mapping_confidence": "PROPOSED_BY_OPERATOR_FRAME",
+      "risk_level": "HIGH",
+      "readiness_status": "PENDING_SIGNAL",
+      "partial_reason": "0 trees tagged. T16-T19 have PATH_B but 9/13 required trees are blocked.",
+      "next_safe_test": "PENDING — PATH_B write gate for T16-T19 required first"
+    }
+  },
+
+  "readiness_summary": {
+    "FRANCAIS":      {"status":"READY",          "tagged":3, "path_b":0, "blocked":0, "total_required":3},
+    "LOGIQUE":       {"status":"PARTIAL_READY",   "tagged":3, "path_b":2, "blocked":0, "total_required":5},
+    "MATHS_SIMPLES": {"status":"PARTIAL_READY",   "tagged":5, "path_b":1, "blocked":0, "total_required":6},
+    "SCIENCE":       {"status":"PARTIAL_READY",   "tagged":2, "path_b":3, "blocked":0, "total_required":5},
+    "PHYSIQUE":      {"status":"PARTIAL_READY",   "tagged":2, "path_b":4, "blocked":0, "total_required":6},
+    "MONDE_LARGE":   {"status":"PENDING_SIGNAL",  "tagged":0, "path_b":4, "blocked":9, "total_required":13}
+  },
+
+  "counts": {
+    "curriculum_stage_count": 6,
+    "ready_count": 1,
+    "partial_ready_count": 4,
+    "pending_signal_count": 1,
+    "blocked_count": 0
+  }
+}

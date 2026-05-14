@@ -1,0 +1,49 @@
+{
+  "report_name": "CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_REPORT",
+  "mission": "BRODY_CANONICAL_TAGGING_WRITE_CANDIDATE_PROTOCOL_READONLY",
+  "timestamp": "20260514_020923",
+  "readonly": true,
+  "status": "COMPLETE",
+  "decision_authority": "KX108_ONLY",
+  "preflight": {
+    "root_staged_count": 136,
+    "root_staged_preserved": true,
+    "x108_proofs_dirty": "LOW_MATERIAL_PATCH_ONLY",
+    "approved_candidates_verified": 48,
+    "blocked_verified": 0,
+    "excluded_verified": 9
+  },
+  "protocol_files_created": {
+    "CANONICAL_TAGGING_WRITE_PROTOCOL.json": "Write protocol — conditions, rules, strategy",
+    "CANONICAL_TAGGING_WRITE_CYPHER_PLAN.cypher": "48 Cypher queries — PLAN ONLY, not executed",
+    "ROLLBACK_CANONICAL_TAGGING_PLAN.cypher": "48 rollback queries — PLAN ONLY, not executed",
+    "POST_WRITE_VALIDATION_PLAN.json": "10 mandatory post-write checks",
+    "OPERATOR_APPROVAL_TEMPLATE.json": "Gate template — unsigned, real_write_allowed=false",
+    "WRITE_SCOPE_LOCK.json": "Scope lock — 48 approved node_ids, forbidden actions",
+    "WRITE_FORBIDDEN_ACTIONS.json": "22 forbidden actions with reasons"
+  },
+  "invariants": {
+    "neo4j_write_executed": false,
+    "graphiti_write_executed": false,
+    "memory_intake": false,
+    "runtime_binding_allowed": false,
+    "no_heuristic_tagging": true,
+    "no_llm_guessing": true,
+    "no_invention": true,
+    "real_write_allowed": false,
+    "boundary_all_false": true,
+    "group_a_staged_preserved": true,
+    "staged_files_still": 136,
+    "git_add_executed": false,
+    "commit_executed": false,
+    "freeze_executed": false,
+    "push_executed": false,
+    "x108_merge": false
+  },
+  "next_actions": {
+    "next_brody_memory_action": "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY",
+    "next_real_world_action": "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY",
+    "next_gate_action": "KX108 sign OPERATOR_APPROVAL_TEMPLATE.json + execute CANONICAL_TAGGING_WRITE_CYPHER_PLAN.cypher",
+    "note": "BRODY_CANONICAL_TAGGING_OPERATOR_GATE_READONLY packages the final gate decision for operator."
+  }
+}

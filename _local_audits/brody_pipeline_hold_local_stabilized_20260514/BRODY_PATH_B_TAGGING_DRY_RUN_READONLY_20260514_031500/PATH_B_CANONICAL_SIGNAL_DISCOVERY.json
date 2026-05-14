@@ -1,0 +1,100 @@
+{
+  "mission": "BRODY_PATH_B_TAGGING_DRY_RUN_READONLY",
+  "timestamp": "20260514_031500",
+  "prior_assumption_117": "VALIDATED_FOR_PATH_SLUG_ONLY",
+  "actual_raw_safe_total": 216,
+
+  "signal_types_found": ["PATH_SLUG", "TEXT_PREVIEW_SLUG"],
+  "signal_types_not_found": ["SOURCE_SLUG"],
+
+  "meta_contamination": {
+    "detected": true,
+    "meta_documents": [
+      {
+        "node_id": "GRAPHITI_V2_002404",
+        "title": "arbres_34.canon.json",
+        "appears_in_trees": ["T13","T14","T15","T16","T17","T18"],
+        "reason_excluded": "Registry document references all 34 tree folders — not a tree-specific source"
+      },
+      {
+        "node_id": "GRAPHITI_V2_003250",
+        "title": "brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py",
+        "appears_in_trees": ["T13","T14","T15","T16","T17","T18","T19","T20","T21","T22","T23","T24","T25","T26","T27","T28","T29","T30","T31","T32","T33"],
+        "reason_excluded": "Taxonomy mapper script references all 34 tree folders — not a tree-specific source"
+      }
+    ],
+    "meta_appearances_safe_trees": 19,
+    "meta_appearances_blocked_trees": 8,
+    "meta_appearances_total": 27
+  },
+
+  "multi_tree_signal": {
+    "detected": true,
+    "documents": [
+      {
+        "node_id": "GRAPHITI_V2_000694",
+        "title": "48AAB2F1C286_demo_output_context_packet.json",
+        "appears_in_trees": ["T18","T26"],
+        "reason": "Demo context packet references both T18 and T26 folder slugs in text_preview",
+        "disposition": "REVIEW_REQUIRED_MULTI_TREE"
+      }
+    ]
+  },
+
+  "per_tree_signal_breakdown": {
+    "T13": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 0, "total": 17, "safe": true},
+    "T14": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 0, "total": 17, "safe": true},
+    "T15": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 0, "total": 17, "safe": true},
+    "T16": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 0, "total": 17, "safe": true},
+    "T17": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 0, "total": 17, "safe": true},
+    "T18": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 2, "tp_multi": 1, "total": 18, "safe": true,
+            "note": "GRAPHITI_V2_000694 (demo_output_context_packet) also hits ARBRE_26 — multi-tree"},
+    "T19": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T20": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_ACTION_TRIGGER"},
+    "T21": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_ACTION_TRIGGER"},
+    "T22": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_ACTION_TRIGGER"},
+    "T23": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T24": {"path_slug": 9, "source_slug": 0, "tp_genuine": 7, "tp_meta": 1, "tp_multi": 0, "total": 17, "safe": false, "blocked": "BLOCKED_DIRECT_MEMORY_WRITE"},
+    "T25": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T26": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 1, "total": 17, "safe": true,
+            "note": "GRAPHITI_V2_000694 (demo_output_context_packet) also hits ARBRE_18 — multi-tree"},
+    "T27": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T28": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T29": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": true},
+    "T30": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_AGI_LAYER"},
+    "T31": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_AGI_LAYER"},
+    "T32": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_AGI_LAYER"},
+    "T33": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 1, "tp_multi": 0, "total": 16, "safe": false, "blocked": "BLOCKED_AGI_LAYER"},
+    "T34": {"path_slug": 9, "source_slug": 0, "tp_genuine": 6, "tp_meta": 0, "tp_multi": 0, "total": 15, "safe": false, "blocked": "BLOCKED_AGI_LAYER"}
+  },
+
+  "path_slug_nodes_per_tree": {
+    "T13": ["GRAPHITI_V2_002694","GRAPHITI_V2_002695","GRAPHITI_V2_002696","GRAPHITI_V2_002697","GRAPHITI_V2_002698","GRAPHITI_V2_002699","GRAPHITI_V2_002700","GRAPHITI_V2_002701","GRAPHITI_V2_002702"],
+    "T14": "GRAPHITI_V2_002703..002711",
+    "T15": "GRAPHITI_V2_002712..002720",
+    "T16": "GRAPHITI_V2_002739..002747",
+    "T17": "GRAPHITI_V2_002748..002756",
+    "T18": "GRAPHITI_V2_002757..002765",
+    "T19": "GRAPHITI_V2_002766..002774",
+    "T23": "GRAPHITI_V2_002793..002801",
+    "T25": "GRAPHITI_V2_002802..002810",
+    "T26": ["GRAPHITI_V2_002811","GRAPHITI_V2_002812","GRAPHITI_V2_002813","GRAPHITI_V2_002814","GRAPHITI_V2_002815","GRAPHITI_V2_002816","GRAPHITI_V2_002817","GRAPHITI_V2_002818","GRAPHITI_V2_002819"],
+    "T27": "GRAPHITI_V2_002820..002828",
+    "T28": "GRAPHITI_V2_002829..002837",
+    "T29": "GRAPHITI_V2_002838..002846"
+  },
+
+  "tp_genuine_node_type": "GRAPHITI_SERIALIZED — hash-prefixed titles (e.g., A6CB8AB83AC3_activation_rules.md), path=empty, text_preview contains JSON blob with folder slug in source_original_path",
+
+  "totals": {
+    "path_slug_safe": 117,
+    "tp_genuine_safe": 78,
+    "tp_multi_tree_safe": 2,
+    "meta_excluded_safe": 19,
+    "raw_safe_total": 216,
+    "recommended_candidates": 197,
+    "direct_high_conf_candidates": 117,
+    "blocked_tree_nodes": 136,
+    "meta_excluded_blocked": 8
+  }
+}

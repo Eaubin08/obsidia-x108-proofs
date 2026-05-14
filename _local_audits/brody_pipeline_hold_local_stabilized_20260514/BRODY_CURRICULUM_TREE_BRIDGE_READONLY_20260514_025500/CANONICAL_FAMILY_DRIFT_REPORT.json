@@ -1,0 +1,50 @@
+{
+  "mission": "BRODY_CURRICULUM_TREE_BRIDGE_READONLY",
+  "timestamp": "20260514_025500",
+  "drift_detected": true,
+  "drift_count": 2,
+
+  "drift_01": {
+    "type": "FAMILY_NAME_DRIFT",
+    "drift_value": "VII_META_SYSTEMIQUES",
+    "correct_value": "VII_META_STRUCTURELS",
+    "canonical_source": "_local_audits/BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TREE_REGISTRY_RESOLVED.json",
+    "affected_files": [
+      "_local_audits/BRODY_PROGRESS_METRICS_READONLY_20260514_024500/TREE_COVERAGE_METRICS.json",
+      "_local_audits/BRODY_PROGRESS_METRICS_READONLY_20260514_024500/PROGRESS_METRICS_MATRIX.json"
+    ],
+    "trees_affected": ["T26","T27","T28","T29"],
+    "drift_used_in_this_mission": false,
+    "correction_applied": true,
+    "note": "CANONICAL_TREE_REGISTRY_RESOLVED.json (sourced from Neo4j live arbres_34.registry.json text_preview) uses VII_META_STRUCTURELS. Prior session propagated the erroneous VII_META_SYSTEMIQUES from an older bridge spec draft."
+  },
+
+  "drift_02": {
+    "type": "TREE_NAME_DRIFT",
+    "drift_scope": "T06-T12 canonical names",
+    "affected_file": "_local_audits/BRODY_PROGRESS_METRICS_READONLY_20260514_024500/TREE_COVERAGE_METRICS.json",
+    "drift_values": {
+      "T06": "Arbre de l'Intelligence (WRONG) → Arbre de la Comprehension (CORRECT)",
+      "T07": "Arbre du Jugement (WRONG) → Arbre de l'Organisation (CORRECT)",
+      "T08": "Arbre de la Décision (WRONG) → Arbre de la Pensee (CORRECT)",
+      "T09": "Arbre de l'Apprentissage (WRONG) → Arbre de l'Intelligence (CORRECT)",
+      "T10": "Arbre de l'Innovation (WRONG) → Arbre du Langage (CORRECT)",
+      "T11": "Arbre du Savoir (WRONG) → Arbre de la Science (CORRECT)",
+      "T12": "Arbre de la Complexité (WRONG) → Arbre de la Technique (CORRECT)"
+    },
+    "canonical_source": "_local_audits/BRODY_CANONICAL_TAGGING_DRY_RUN_READONLY_20260514_015156/CANONICAL_TREE_REGISTRY_RESOLVED.json",
+    "drift_used_in_this_mission": false,
+    "correction_applied": true,
+    "note": "PROGRESS_METRICS session used invented/hallucinated tree names instead of reading from canonical registry. This bridge mission uses only canonical names."
+  },
+
+  "verdict": {
+    "canonical_family_drift_detected": true,
+    "canonical_family_drift_value": "VII_META_SYSTEMIQUES",
+    "canonical_family_correct_value": "VII_META_STRUCTURELS",
+    "canonical_family_drift_used": false,
+    "canonical_tree_name_drift_detected": true,
+    "canonical_tree_name_drift_used": false,
+    "all_drift_corrected_in_this_mission": true
+  }
+}
