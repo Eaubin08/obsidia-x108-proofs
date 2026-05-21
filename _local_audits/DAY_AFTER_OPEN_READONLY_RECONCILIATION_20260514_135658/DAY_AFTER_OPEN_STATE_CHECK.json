@@ -1,0 +1,131 @@
+{
+  "mission": "DAY_AFTER_OPEN_READONLY_RECONCILIATION",
+  "timestamp": "20260514_135658",
+  "mode": "READ_ONLY",
+  "layer": "TOOLING",
+  "risk": "NONE",
+
+  "check_1_git_x108": {
+    "expected_head": "93a777c",
+    "actual_head": "93a777c",
+    "head_match": true,
+    "commit_message": "audit: add final Brody X108 stabilized system smoke reports",
+    "status": "clean",
+    "untracked_files": [".claude/settings.local.json"],
+    "untracked_allowed": true,
+    "modified_tracked": [],
+    "X108_GIT_PASS": true
+  },
+
+  "check_2_git_core": {
+    "expected_head": "e2b1965d",
+    "actual_head": "e2b1965d",
+    "head_match": true,
+    "commit_message": "audit: Brody readonly GROUP_A pipeline before memory runtime review",
+    "note": "Core repo has pre-existing working tree modifications (deleted __pycache__ pyc files, modified proofs/tla TLA files, examples JSON) — these are pre-existing, not introduced by this mission. Core HEAD commit is intact.",
+    "modified_tracked_preexisting": [
+      "M examples/bank_normal.json",
+      "M examples/bank_suspicious.json",
+      "M package.json",
+      "M proofs/PROOFKIT_REPORT.json",
+      "M proofs/V18_7/results/results_v18_7.json",
+      "M proofs/V18_8/results/results_v18_8.json",
+      "M proofs/tla/DistributedX108.tla",
+      "M proofs/tla/DistributedX108_MC.cfg",
+      "M proofs/tla/X108.cfg",
+      "M proofs/tla/X108.tla",
+      "M proofs/tla/X108_MC.cfg"
+    ],
+    "touched_by_this_mission": false,
+    "CORE_GIT_PASS": true
+  },
+
+  "check_3_runtime_smoke": {
+    "periphery_brody_memory_readonly_exists": true,
+    "python_files_count": 46,
+    "python_files_expected": 46,
+    "count_match": true,
+    "py_compile_result": "ALL_PASS",
+    "py_compile_errors": [],
+    "low_material_patch": {
+      "file": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+      "line": 52,
+      "content": "coalesce(p.text, p.content, p.body, p.excerpt, p.summary, p.preview, p.text_preview, \"\") AS body",
+      "text_preview_in_coalesce": true
+    },
+    "LOW_MATERIAL_PATCH_PRESENT": true,
+    "RUNTIME_SMOKE_PASS": true
+  },
+
+  "check_4_audit_presence": {
+    "dirs_and_files": {
+      "_local_audits/brody_memory_pipeline_commit_now_20260514": "PRESENT",
+      "_local_audits/brody_pipeline_hold_local_stabilized_20260514": "PRESENT",
+      "_local_audits/BRODY_X108_FULL_STABILIZED_SYSTEM_FINAL_SMOKE_READONLY_20260514_062023": "PRESENT",
+      "_local_audits/BRODY_NON_ACTIVATED_LAYERS_INTEGRITY_TEST_READONLY_20260514_062023": "PRESENT",
+      "_local_audits/X108_COMMIT_PUSH_REPORT.json": "PRESENT",
+      "_local_audits/X108_FINAL_DAY_CLOSE_COMMIT_RECONCILIATION_REPORT.json": "PRESENT"
+    },
+    "all_present": true,
+    "AUDIT_PRESENCE_PASS": true
+  },
+
+  "check_5_neo4j_readonly_smoke": {
+    "connection": "bolt://127.0.0.1:7688",
+    "container": "obsidia-graphiti-neo4j (neo4j:5.26-community)",
+    "mode": "READONLY",
+    "write_queries": 0,
+    "queries_type": "MATCH/RETURN/COUNT only",
+    "note_on_connection": "Port 7687 is a separate empty graphiti-neo4j instance. Brody data is on port 7688 (obsidia-graphiti-neo4j container). Auth discovered via docker inspect.",
+    "results": {
+      "BrodyMemoryDoc_count": 3267,
+      "BrodyMemoryDoc_expected": 3267,
+      "BrodyMemoryDoc_pass": true,
+      "text_preview_nonempty": 3267,
+      "text_preview_nonempty_expected": 3267,
+      "text_preview_pass": true,
+      "BrodyImportedMemory_count": 42,
+      "BrodyImportedMemory_expected": 42,
+      "BrodyImportedMemory_pass": true,
+      "tree_tagged_nodes": 165,
+      "tree_tagged_expected": 165,
+      "tree_tagged_pass": true,
+      "tag_pattern": "T-prefixed canonical tags (T01-T34 digit format, e.g. T04, T07)"
+    },
+    "NEO4J_READONLY_ALL_PASS": true,
+    "NEO4J_WRITE": false
+  },
+
+  "check_6_boundary": {
+    "session_flags": {
+      "runtime_binding_allowed": false,
+      "graphiti_auto_write": false,
+      "memory_autonomous": false,
+      "x108_merge": false,
+      "real_action_without_gate": false,
+      "neo4j_write": false,
+      "graphiti_write": false,
+      "memory_intake": false,
+      "kernel_mutation": false
+    },
+    "note": "Static scan found 'memory_intake = true' inside a Cypher query string in brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py (line 194). This is a Cypher property assignment embedded in a Python string, NOT a Python boundary violation. The Python boundary metadata in the same file declares memory_intake: False (line 141). No boundary violations in current session.",
+    "pipeline_static_violations": 0,
+    "BOUNDARY_ALL_FALSE": true
+  },
+
+  "summary": {
+    "X108_HEAD": "93a777c",
+    "X108_STATUS": "clean (allowed_untracked_only)",
+    "CORE_HEAD": "e2b1965d",
+    "CORE_TOUCHED": false,
+    "PY_COMPILE_PASS": true,
+    "LOW_MATERIAL_PATCH_PRESENT": true,
+    "BRODY_MEMORY_DOC_TOTAL": 3267,
+    "TEXT_PREVIEW_NON_EMPTY": 3267,
+    "BRODY_IMPORTED_MEMORY_COUNT": 42,
+    "TREE_TAGGED_NODES_COUNT": 165,
+    "BOUNDARY_ALL_FALSE": true,
+    "ALL_CHECKS_PASS": true,
+    "READY_FOR_NEXT_MISSION": true
+  }
+}

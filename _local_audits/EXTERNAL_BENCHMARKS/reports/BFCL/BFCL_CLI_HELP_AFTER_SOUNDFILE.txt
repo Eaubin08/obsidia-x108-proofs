@@ -1,0 +1,24 @@
+=== BFCL CLI HELP AFTER SOUNDFILE PATCH ===
+                                                                                
+ Usage: bfcl [OPTIONS] COMMAND [ARGS]...                                        
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --install-completion            Install completion for the current shell.    │
+│ --show-completion               Show completion for the current shell, to    │
+│                                 copy it or customize the installation.       │
+│ --help                -h        Show this message and exit.                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ models           List available models.                                      │
+│ test-categories  List available test categories.                             │
+│ generate         Generate the LLM response for one or more models on a       │
+│                  test-category (same as openfunctions_evaluation.py).        │
+│ results          List the results available for evaluation.                  │
+│ evaluate         Evaluate results from run of one or more models on a        │
+│                  test-category (same as eval_runner.py).                     │
+│ scores           Display the leaderboard.                                    │
+│ version          Show the bfcl version. PyPI versions are in development,    │
+│                  please rely on the commit hash for reproducibility.         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+BFCL_CLI_HELP_EXIT_CODE=0

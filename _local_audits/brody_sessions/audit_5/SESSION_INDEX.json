@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_5",
+  "created_at": "2026-05-20T21:04:25.713427+00:00",
+  "record_count": 2,
+  "latest_event_hash": "e14cd9e289f9da9e31bf39538223e38a1cfccf60cc8486faa9d92a1b6ac9fcb6",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "2ccf3198c18dcc7cdac7454fffe50e51ce7e7792e6333298cbcf939a9b5a538b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_5\\records\\0001_2ccf3198c18d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_5\\records\\0001_2ccf3198c18d.md",
+      "user_input_sha256": "25c1933888fc8ed19b4a61bd6bca0e47ccc5db0d235604a7f109a6de8dd05faa",
+      "response_md_sha256": "677f0e4a0f1f35ddc878f15f226d53696d272b223d8b149d281ce494f6e5a65a",
+      "memory_query": "montre-moi ce que tu peux retenir sans écrire réellement",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "e14cd9e289f9da9e31bf39538223e38a1cfccf60cc8486faa9d92a1b6ac9fcb6",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_5\\records\\0002_e14cd9e289f9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_5\\records\\0002_e14cd9e289f9.md",
+      "user_input_sha256": "aa802186dfb143e5fac6b0149df306c8cb3a5cd57a8b47646aab1e1586bb4576",
+      "response_md_sha256": "55771f394efddc0fb2de40e232b4f4fb71cd309b703355cca2c2ac901162cb03",
+      "memory_query": "qu'est-ce que tu sais du projet Obsidia et de ton role Brody ?",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T21:39:37.718758+00:00"
+}

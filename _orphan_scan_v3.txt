@@ -1,0 +1,200 @@
+====================================================================
+ORPHAN SCAN v3 -- POST VAGUES 1+2+3+4+5
+Total .py (hors __init__) : 190
+Connectes                 : 39
+ORPHELINS RESTANTS        : 151
+====================================================================
+
+-- CONNECTES --
+  [OK] periphery/blockchain/oracle_freshness_gate.py
+  [OK] periphery/blockchain/signature_boundary.py
+  [OK] periphery/blockchain/token_policy.py
+  [OK] periphery/blockchain/wallet_security_gate.py
+  [OK] periphery/brody/brody_response_contract.py
+  [OK] periphery/brody/brody_response_sanitizer.py
+  [OK] periphery/brody/brody_runtime_readonly.py
+  [OK] periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py
+  [OK] periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py
+  [OK] periphery/brody_memory_readonly/local_response_engine_readonly/brody_local_response_engine_readonly_v1.py
+  [OK] periphery/brody_memory_readonly/terminal_structural_dialogue_readonly/brody_terminal_structural_dialogue_readonly_v1.py
+  [OK] periphery/cognitive_trees/dominant_trees.py
+  [OK] periphery/cognitive_trees/shazam_cognitif.py
+  [OK] periphery/cognitive_trees/tree_activation_vector.py
+  [OK] periphery/common.py
+  [OK] periphery/consciousness_regimes/regime_classifier.py
+  [OK] periphery/context/context_packet_builder_v2.py
+  [OK] periphery/gencoin.py
+  [OK] periphery/gencoin_debt_model.py
+  [OK] periphery/gencoin_distribution.py
+  [OK] periphery/gencoin_ledger.py
+  [OK] periphery/gencoin_sandbox/regime_metrics.py
+  [OK] periphery/gencoin_sandbox/regime_truth_gate.py
+  [OK] periphery/gencoin_sandbox/sandbox_engine.py
+  [OK] periphery/graphiti/graphiti_readonly_bridge.py
+  [OK] periphery/language/language_router.py
+  [OK] periphery/math_core/governed_state.py
+  [OK] periphery/math_core/lyapunov.py
+  [OK] periphery/math_core/multi_agent_consensus.py
+  [OK] periphery/math_core/proof_of_governance.py
+  [OK] periphery/math_core/trust_path.py
+  [OK] periphery/memory/memory_candidate.py
+  [OK] periphery/memory/memory_candidate_ledger.py
+  [OK] periphery/memory/memory_promotion_policy.py
+  [OK] periphery/memory/memory_source_types.py
+  [OK] periphery/reverse_os/action_projection_readonly.py
+  [OK] periphery/timeverse.py
+  [OK] periphery/world_action_controlled_runtime_stub.py
+  [OK] periphery/x108_ingress/x108_context_boundary.py
+
+-- ORPHELINS --
+  periphery/action_lifecycle.py -> [C]ActionPhase, [C]ActionLifecycleTrace, [f]current, [f]advance
+  periphery/action_sequence_governor.py -> [C]ActionStep, [C]ActionSequence, [f]govern_action_sequence
+  periphery/adapters/bank_adapter.py -> [f]build_bank_action, [f]build_bank_state
+  periphery/adapters/gps_adapter.py -> [f]build_gps_action, [f]build_gps_state
+  periphery/adapters/trading_adapter.py -> [f]build_trading_action, [f]build_trading_state
+  periphery/agent_contracts.py -> [C]AgentLayer, [C]NonSovereignAgentSpec, [C]AgentResult, [f]run_agent_safely
+  periphery/agent_registry.py -> [f]list_agents, [f]run_registered_agent
+  periphery/agents/action_sequence_agent.py -> [f]run
+  periphery/agents/brody_memory_agent.py -> [f]run
+  periphery/agents/data_purity_agent.py -> [f]run
+  periphery/agents/eml_symbolic_agent.py -> [f]run
+  periphery/agents/energy_thermo_agent.py -> [f]run
+  periphery/agents/feedback_memory_agent.py -> [f]run
+  periphery/agents/gencoin_value_agent.py -> [f]compute, [f]run
+  periphery/agents/ocs_generation_agent.py -> [f]run
+  periphery/agents/operational_constance_agent.py -> [f]run
+  periphery/agents/os3_proof_agent.py -> [f]build, [f]run
+  periphery/agents/permission_economic_agent.py -> [f]run
+  periphery/agents/provenance_agent.py -> [f]run
+  periphery/agents/timeverse_agent.py -> [f]run
+  periphery/agents/world_action_agent.py -> [f]run
+  periphery/bdf/double_brain_router.py -> [C]DoubleBrainRoute, [f]route_double_brain, [f]to_dict
+  periphery/bdf/llm_diffusion_mix.py -> [C]DiffusionMixResult, [f]compute_diffusion_mix, [f]to_dict
+  periphery/benchmarks/benchmark_case_schema.py -> [C]BenchmarkCase, [f]get_benchmark_cases, [f]to_dict
+  periphery/bias/bias_gate.py -> [C]BiasGateResult, [f]apply_bias_gate, [f]to_dict
+  periphery/bias/bias_trace.py -> [C]BiasTrace, [f]trace_bias, [f]to_dict
+  periphery/blockchain/blockchain_action_classifier.py -> [C]BlockchainActionClass, [C]BlockchainActionDecision, [f]classify_blockchain_action, [f]to_dict
+  periphery/blockchain/bridge_risk_gate.py -> [C]BridgeRiskDecision, [f]evaluate_bridge_risk, [f]to_dict
+  periphery/blockchain/chain_context.py -> [C]ChainContext, [f]build_chain_context, [f]to_dict
+  periphery/blockchain/defi_risk_gate.py -> [C]DeFiRiskDecision, [f]evaluate_defi_risk, [f]to_dict
+  periphery/blockchain/onchain_audit_packet.py -> [C]OnChainAuditPacket, [f]build_onchain_audit_packet, [f]to_dict
+  periphery/blockchain/smart_contract_risk_gate.py -> [C]SmartContractRiskDecision, [f]evaluate_smart_contract_risk, [f]to_dict
+  periphery/blockchain/transaction_simulator.py -> [C]TransactionSimulationResult, [f]simulate_transaction, [f]to_dict
+  periphery/brody/brody_context_query.py -> [C]BrodyContextQuery, [f]build_context_query, [f]to_dict
+  periphery/brody/brody_language_router.py -> [C]BrodyLanguageRoute, [f]route_brody_language, [f]to_dict
+  periphery/brody_memory_readonly/auto_triage_memory_intake_readonly/brody_auto_triage_memory_intake_readonly_v1.py
+  periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/brody_agent_readonly_session_test_packet_v1.py
+  periphery/brody_memory_readonly/brody_api_memory_operator_replay_readonly/smoke_brody_api_memory_operator_replay_readonly_v1.py
+  periphery/brody_memory_readonly/brody_human_command_packet_readonly/brody_human_command_packet_readonly_v1.py
+  periphery/brody_memory_readonly/brody_human_command_packet_readonly/smoke_brody_human_command_packet_readonly_v1.py
+  periphery/brody_memory_readonly/brody_human_output_receipt_validator_readonly/brody_human_output_receipt_validator_readonly_v1.py
+  periphery/brody_memory_readonly/brody_human_output_receipt_validator_readonly/smoke_brody_human_output_receipt_validator_readonly_v1.py
+  periphery/brody_memory_readonly/brody_local_command_gate_readonly/brody_local_command_gate_readonly_v1.py -> [C]BrodyLocalCommandGateRequest, [C]BrodyLocalCommandGateResponse, [C]BrodyLocalCommandGateReadonlyV1, [f]evaluate_command
+  periphery/brody_memory_readonly/brody_local_command_gate_readonly/smoke_brody_local_command_gate_readonly_v1.py
+  periphery/brody_memory_readonly/brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py
+  periphery/brody_memory_readonly/candidate_export_for_graphiti_readonly/brody_candidate_export_for_graphiti_readonly_v1.py
+  periphery/brody_memory_readonly/context_packet_consumer_readonly/brody_context_packet_consumer_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_bridge_readonly/brody_graphiti_ready_export_readonly_v1_6_4.py -> [f]sha256_text, [f]read_text_safe, [f]parse_pointer, [f]tags_for
+  periphery/brody_memory_readonly/graphiti_candidate_import_dry_run_readonly/brody_graphiti_candidate_import_dry_run_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_candidate_prep_from_post_human_triage_readonly/brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_candidate_review_gate_readonly/brody_graphiti_candidate_review_gate_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only/brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py
+  periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/brody_graphiti_import_apply_guarded_manual_only_v1.py
+  periphery/brody_memory_readonly/graphiti_import_dry_run_from_post_human_prep_readonly/brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_review_decision_apply_readonly/brody_graphiti_review_decision_apply_readonly_v1.py
+  periphery/brody_memory_readonly/graphiti_review_gate_from_post_human_dry_run_readonly/brody_graphiti_review_gate_from_post_human_dry_run_readonly_v1.py
+  periphery/brody_memory_readonly/memory_pipeline_freeze_report_readonly/brody_memory_pipeline_freeze_report_readonly_v1.py
+  periphery/brody_memory_readonly/memory_pipeline_freeze_v2_readonly/brody_memory_pipeline_freeze_v2_readonly.py
+  periphery/brody_memory_readonly/memory_pipeline_v2_close_report_readonly/brody_memory_pipeline_v2_close_report_readonly.py
+  periphery/brody_memory_readonly/memory_readonly_micro_smoke/brody_memory_readonly_micro_smoke_v1.py
+  periphery/brody_memory_readonly/memory_replay_query_regression_readonly/brody_memory_replay_query_regression_readonly_v1.py
+  periphery/brody_memory_readonly/memory_scheduler_readonly/brody_memory_scheduler_readonly_v1.py
+  periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py
+  periphery/brody_memory_readonly/post_graphiti_apply_verify_readonly/brody_post_graphiti_apply_verify_readonly_v1.py
+  periphery/brody_memory_readonly/post_graphiti_replay_query_regression_readonly/brody_post_graphiti_replay_query_regression_readonly_v1.py
+  periphery/brody_memory_readonly/post_human_review_memory_triage_readonly/brody_post_human_review_memory_triage_readonly_v1.py
+  periphery/brody_memory_readonly/project_intake_capture_buffer_readonly/brody_project_intake_capture_buffer_readonly_v1.py
+  periphery/brody_memory_readonly/readonly_session_test/brody_readonly_session_test_v1.py
+  periphery/brody_memory_readonly/session_close_decision_apply_readonly/brody_session_close_decision_apply_readonly_v1.py
+  periphery/brody_memory_readonly/session_close_human_validation_gate_readonly/brody_session_close_human_validation_gate_readonly_v1.py
+  periphery/brody_memory_readonly/session_memory_ledger_readonly/brody_session_memory_ledger_readonly_v2.py
+  periphery/brody_memory_readonly/session_presave_buffer_readonly/brody_session_presave_buffer_readonly_v1.py
+  periphery/brody_memory_readonly/session_reopen_loop_readonly/brody_session_reopen_loop_readonly_v1.py
+  periphery/brody_memory_readonly/session_trace_ledger/brody_session_trace_ledger_readonly_v1_6_3.py
+  periphery/brody_memory_readonly/taxonomy_mapper_34_8_readonly/brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py
+  periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6.py
+  periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6_1.py
+  periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6_2.py
+  periphery/cognitive_trees/memory_world_mapper.py -> [C]MemoryWorldContext, [f]map_memory_world, [f]to_dict
+  periphery/cognitive_trees/tree_registry.py
+  periphery/consciousness_regimes/collective_sandbox_summary.py -> [C]CollectiveSandboxSummary, [f]build_collective_summary, [f]to_dict
+  periphery/consciousness_regimes/passfail_metrics.py -> [C]PassFailMetrics, [f]evaluate_passfail, [f]to_dict
+  periphery/constants.py
+  periphery/context/context_packet_builder.py -> [C]ContextPacket, [f]build_context_packet, [f]assert_cannot_decide, [f]to_dict
+  periphery/context/context_packet_exporter.py -> [C]ExportedContextPacket, [f]export_context_packet, [f]to_dict
+  periphery/context/context_packet_sanitizer.py -> [C]SanitizedContextPacket, [f]sanitize_context_packet, [f]to_dict
+  periphery/context/context_packet_validator.py -> [C]ContextPacketValidationResult, [f]validate_context_packet, [f]to_dict
+  periphery/control_plane.py -> [f]run_control_plane
+  periphery/data_gate.py -> [f]run_data_gate
+  periphery/education/education_score.py -> [C]EducationScore, [f]compute_education_score, [f]to_dict
+  periphery/eml_compression.py -> [f]eml, [f]run_eml_compression
+  periphery/energy_thermo.py -> [f]run_energy_thermo
+  periphery/failure_mapping.py -> [f]classify_failure
+  periphery/feedback_memory_bridge_brody_readonly.py -> [C]MemoryCandidatePacket, [f]build_memory_candidate, [f]assert_no_write, [f]to_dict
+  periphery/feedback_memory_candidate.py -> [C]FeedbackMemoryCandidate, [f]build_feedback_memory_candidate
+  periphery/gencoin_sandbox/avdr_phase_mapper.py -> [C]AVDRPhase, [f]map_avdr_phase, [f]to_dict
+  periphery/gencoin_sandbox/balance_operator.py -> [C]BalanceResult, [f]compute_balance, [f]to_dict
+  periphery/gencoin_sandbox/regime_state.py -> [f]classify_regime, [f]is_false_on, [f]is_assisted_on, [f]is_admissible
+  periphery/github/github_workflow_guard.py -> [C]WorkflowGuardDecision, [f]guard_workflow_action, [f]to_dict
+  periphery/graphiti/graphiti_context_adapter.py -> [C]GraphitiContextPacket, [f]adapt_graphiti_context, [f]to_dict
+  periphery/graphiti/graphiti_freeze_snapshot_reader.py -> [C]GraphitiFreezeSnapshot, [f]read_freeze_snapshot, [f]to_dict
+  periphery/hackathon_failures.py -> [C]FailureCode
+  periphery/hexaflux/ltcu_plus.py -> [C]LTCUPlusSignal, [f]compute_ltcu_plus, [f]to_dict
+  periphery/hexaflux/transition_mapper.py -> [C]HexaFluxTransition, [f]map_hexaflux_transition, [f]to_dict
+  periphery/ingestion/document_ingestion_pipeline.py -> [C]IngestedDocument, [f]ingest_document, [f]to_dict
+  periphery/ingestion/hash_ingestion.py -> [f]hash_content, [f]verify_hash
+  periphery/ingestion/source_classifier.py
+  periphery/interface/interface_event_log.py -> [C]InterfaceEvent, [f]log_interface_event, [f]to_dict
+  periphery/interface/interface_state_packet.py -> [C]InterfaceStatePacket, [f]build_interface_state_packet, [f]to_dict
+  periphery/interface/interface_view_contracts.py -> [C]InterfaceViewContract, [f]validate, [f]to_dict
+  periphery/interface/workbench_api_contract.py -> [C]WorkbenchAPIResult, [f]evaluate_workbench_method, [f]to_dict
+  periphery/math_core/governance_partition.py -> [f]partition_to_gate, [f]is_admissible
+  periphery/mcp/mcp_permission_matrix.py -> [C]MCPToolAccess, [f]evaluate_tool_access, [f]to_dict
+  periphery/memory/memory_source_registry.py -> [C]MemorySourceEntry, [f]register_source, [f]get_source, [f]list_sources
+  periphery/memory_governor.py -> [f]clip, [f]run_memory_governor
+  periphery/merge.py -> [f]merge_packets
+  periphery/number_encoding/binary_ternary_mapper.py -> [C]BinaryTernaryMapping, [f]map_binary_ternary, [f]to_dict
+  periphery/number_encoding/compression_score.py -> [C]CompressionScore, [f]compute_compression_score, [f]to_dict
+  periphery/number_encoding/crypto_boundary.py -> [C]CryptoBoundaryResult, [f]evaluate_crypto_boundary, [f]to_dict
+  periphery/number_encoding/diffusion_cost_model.py -> [C]DiffusionCostEstimate, [f]estimate_diffusion_cost, [f]to_dict
+  periphery/number_encoding/entropy_estimator.py -> [C]EntropyEstimate, [f]estimate_entropy, [f]to_dict
+  periphery/number_encoding/radix_systems.py -> [C]RadixRepresentation, [f]represent_in_radices, [f]to_dict
+  periphery/number_encoding/symbolic_number_encoder.py -> [C]SymbolicNumberPacket, [f]encode_symbolic_number, [f]to_dict
+  periphery/ocs_generation.py -> [f]run_ocs_generation
+  periphery/operational_constance.py -> [f]run_operational_constance
+  periphery/os3_replay_manifest.py -> [C]OS3ReplayManifest, [f]build_replay_manifest, [f]to_dict
+  periphery/os3_replay_runner.py -> [f]run_replay, [f]replay_compare
+  periphery/os3_ticket.py -> [C]OS3ProofTicket, [f]sha256_obj, [f]build_os3_ticket, [f]ticket_is_valid
+  periphery/permission_economic.py -> [f]run_permission_economic
+  periphery/physics_boundary/dimensional_hygiene.py -> [C]DimensionalHygieneResult, [f]check_dimensional_hygiene, [f]to_dict
+  periphery/physics_boundary/frequency_tag_mapper.py -> [C]FrequencyTagResult, [f]map_frequency_tag, [f]to_dict
+  periphery/physics_boundary/symbolic_physics_claim_gate.py -> [C]PhysicsClaimDecision, [f]evaluate_physics_claim, [f]to_dict
+  periphery/physics_boundary/unit_consistency_checker.py -> [C]UnitConsistencyResult, [f]check_unit_consistency, [f]to_dict
+  periphery/provenance_gate.py -> [f]run_provenance_gate
+  periphery/reverse_os/audience_projection.py -> [C]AudienceProjection, [f]project_audience, [f]to_dict
+  periphery/reverse_os/format_projection.py -> [C]FormatProjection, [f]project_format, [f]to_dict
+  periphery/sigma_bridge.py -> [f]run_bank_with_periphery, [f]run_trading_with_periphery, [f]run_gps_with_periphery
+  periphery/validators.py -> [f]validate_action_candidate, [f]validate_packet
+  periphery/world_action_gateway.py -> [C]WorldActionReadiness, [f]evaluate_world_action_readiness
+  periphery/world_calls/action_risk_classifier.py -> [C]ActionRiskClass, [f]classify_action_risk, [f]requires_x108_gate, [f]requires_human_approval
+  periphery/world_calls/autonomy_level_matrix.py -> [C]AutonomyLevel, [f]compute_autonomy_level
+  periphery/world_calls/egress_policy.py -> [f]evaluate_egress_policy
+  periphery/world_calls/obsidia_gateway.py -> [C]GatewayDecision, [C]ObsidiaGateway, [f]to_dict, [f]check
+  periphery/world_calls/route_policy_x25.py -> [C]X25RouteDecision, [f]route_x25
+  periphery/world_calls/secret_boundary.py -> [f]redact_secrets, [f]assert_no_secret_in_agent_payload
+  periphery/world_calls/sovereign_ticket.py -> [C]SovereignTicket, [f]issue_sovereign_ticket, [f]require_ticket_or_block, [f]is_expired
+  periphery/world_calls/ticket_store.py -> [f]store_ticket, [f]load_tickets
+  periphery/world_calls/world_action_bus.py -> [C]WorldActionEvent, [f]publish_event, [f]to_dict
+  periphery/world_calls/world_call_classifier.py -> [C]WorldCallClass, [f]classify_world_call, [f]is_blocked
+  periphery/world_calls/world_executor_dryrun.py -> [C]DryRunResult, [f]execute_dry_run, [f]assert_not_executed
+  periphery/x108_ingress/readonly_context_ingress.py -> [C]X108ContextIngress, [f]ingest_readonly_context, [f]assert_readonly, [f]to_dict

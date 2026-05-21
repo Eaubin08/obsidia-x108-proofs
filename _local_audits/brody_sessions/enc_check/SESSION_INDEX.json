@@ -1,0 +1,69 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "enc_check",
+  "created_at": "2026-05-20T18:44:38.512110+00:00",
+  "record_count": 4,
+  "latest_event_hash": "153925b049c14a2b812f7b9dcd7db9a996cc34664d1201b18306c0536cc9e423",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "e9d9c998aedc9d98e83a2a6c8817318fd1a5074b468d2225997a058aaebc00cf",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0001_e9d9c998aedc.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0001_e9d9c998aedc.md",
+      "user_input_sha256": "44a310fe1088f04a94fee4e8a6baa50c5897943fb877095d2d409124eb8bda04",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "7941a336bfd18b56a971ab7def0e7f9a57b0f277785950851c8c2e53b3e6825b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0002_7941a336bfd1.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0002_7941a336bfd1.md",
+      "user_input_sha256": "999279a68bc27ee551bb3e04564632682bbf436b275eae2e38afcfc61bb567ac",
+      "response_md_sha256": "73a50cb8c2412dac506157a6af0ac646da21d2bc9150712c998b92e084f6492f",
+      "memory_query": "explique la mémoire X108",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "3bb884919c6eea3fe04dfa1d78c4ed02c1a3585a3fcacf92a5c8062e65d8e01f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0003_3bb884919c6e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0003_3bb884919c6e.md",
+      "user_input_sha256": "44a310fe1088f04a94fee4e8a6baa50c5897943fb877095d2d409124eb8bda04",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "153925b049c14a2b812f7b9dcd7db9a996cc34664d1201b18306c0536cc9e423",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0004_153925b049c1.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\enc_check\\records\\0004_153925b049c1.md",
+      "user_input_sha256": "999279a68bc27ee551bb3e04564632682bbf436b275eae2e38afcfc61bb567ac",
+      "response_md_sha256": "73a50cb8c2412dac506157a6af0ac646da21d2bc9150712c998b92e084f6492f",
+      "memory_query": "explique la mémoire X108",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T18:45:45.801179+00:00"
+}

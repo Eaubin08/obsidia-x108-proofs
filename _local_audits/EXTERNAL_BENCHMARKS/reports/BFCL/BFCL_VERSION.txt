@@ -1,0 +1,64 @@
+=== BFCL VERSION ===
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /usr/lib/python3.12/importlib/metadata/__init__.py:397 in from_name          │
+│                                                                              │
+│   394 │   │   if not name:                                                   │
+│   395 │   │   │   raise ValueError("A distribution name is required.")       │
+│   396 │   │   try:                                                           │
+│ ❱ 397 │   │   │   return next(cls.discover(name=name))                       │
+│   398 │   │   except StopIteration:                                          │
+│   399 │   │   │   raise PackageNotFoundError(name)                           │
+│   400                                                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+StopIteration
+
+During handling of the above exception, another exception occurred:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/03_bfcl/.venv/lib/python3.12/site-packages/bfcl_eval/__main │
+│ __.py:65 in version                                                          │
+│                                                                              │
+│    62 │   """                                                                │
+│    63 │   Show the bfcl version. PyPI versions are in development, please    │
+│       rely on the commit hash for reproducibility.                           │
+│    64 │   """                                                                │
+│ ❱  65 │   print(f"bfcl version: {_version('bfcl')} \nNote: pypi versions are │
+│       in development, please rely on the commit hash for reproducibility.")  │
+│    66                                                                        │
+│    67 @cli.command()                                                         │
+│    68 def test_categories():                                                 │
+│                                                                              │
+│ /usr/lib/python3.12/importlib/metadata/__init__.py:889 in version            │
+│                                                                              │
+│   886 │   :return: The version string for the package as defined in the      │
+│       package's                                                              │
+│   887 │   │   "Version" metadata key.                                        │
+│   888 │   """                                                                │
+│ ❱ 889 │   return distribution(distribution_name).version                     │
+│   890                                                                        │
+│   891                                                                        │
+│   892 _unique = functools.partial(                                           │
+│                                                                              │
+│ /usr/lib/python3.12/importlib/metadata/__init__.py:862 in distribution       │
+│                                                                              │
+│   859 │   :param distribution_name: The name of the distribution package as  │
+│       a string.                                                              │
+│   860 │   :return: A ``Distribution`` instance (or subclass thereof).        │
+│   861 │   """                                                                │
+│ ❱ 862 │   return Distribution.from_name(distribution_name)                   │
+│   863                                                                        │
+│   864                                                                        │
+│   865 def distributions(**kwargs):                                           │
+│                                                                              │
+│ /usr/lib/python3.12/importlib/metadata/__init__.py:399 in from_name          │
+│                                                                              │
+│   396 │   │   try:                                                           │
+│   397 │   │   │   return next(cls.discover(name=name))                       │
+│   398 │   │   except StopIteration:                                          │
+│ ❱ 399 │   │   │   raise PackageNotFoundError(name)                           │
+│   400 │                                                                      │
+│   401 │   @classmethod                                                       │
+│   402 │   def discover(cls, **kwargs):                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+PackageNotFoundError: No package metadata was found for bfcl

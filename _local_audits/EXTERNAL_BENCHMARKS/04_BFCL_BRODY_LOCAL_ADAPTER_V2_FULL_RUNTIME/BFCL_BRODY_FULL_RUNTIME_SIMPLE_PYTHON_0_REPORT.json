@@ -1,0 +1,63 @@
+{
+  "freeze_id": "BFCL_BRODY_LOCAL_ADAPTER_V2_FULL_RUNTIME_V1",
+  "report_date": "2026-05-20T19:31:39.438260+00:00",
+  "bfcl_case": "simple_python_0",
+  "bfcl_question": "Find the area of a triangle with a base of 10 units and height of 5 units.",
+  "expected": {
+    "function_name": "calculate_triangle_area",
+    "arguments": {
+      "base": 10,
+      "height": 5,
+      "unit": "units"
+    }
+  },
+  "status": "BFCL_BRODY_LOCAL_ADAPTER_V2_FULL_RUNTIME_BLOCKED_WITH_REASON",
+  "brody_call_status": "BRODY_FULL_RUNTIME_CALL_ON_BFCL_SIMPLE_PYTHON_0_PASS",
+  "normalization_status": "BFCL_BRODY_FULL_RUNTIME_NORMALIZATION_V2_NO_CANDIDATE",
+  "candidate": null,
+  "match": {
+    "match_function": false,
+    "match_base": false,
+    "match_height": false,
+    "match_unit": false,
+    "all_match": false
+  },
+  "three_foundations": {
+    "brody_full_context_present": true,
+    "true_voice_snapshot_present": true,
+    "project_memory_snapshot_present": true,
+    "session_memory_snapshot_present": true,
+    "true_response_structure_snapshot_present": true
+  },
+  "boundary": {
+    "brody_call_path": "/api/brody/chat TestClient",
+    "offline_path": false,
+    "neo4j_password_not_set_bypass": false,
+    "no_external_llm": true,
+    "brody_decision": false,
+    "brody_tool_authority": false,
+    "decision_authority": "KX108_ONLY",
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false
+  },
+  "graphiti": {
+    "graphiti_status": "GRAPHITI_LIVE_BLOCKED",
+    "graphiti_blocker": "NEO4J_PASSWORD not set",
+    "graphiti_live_full_ready": false,
+    "neo4j_memory_ready": false
+  },
+  "honest_classification": {
+    "GRAPHITI_LIVE_FULL_READY": false,
+    "NEO4J_MEMORY_READY": false,
+    "MMONDE_34TREES_READY": false,
+    "PROJECT_MEMORY_FULL_GRAPH_READY": false
+  },
+  "sigma_status": "RUNNING_EXTERNAL_LOCAL_LONGRUN",
+  "kernel_untouched_pass": true,
+  "blocked_reason": "Brody true voice adapter generates conversational template responses. None of the allowed output fields (final_answer, response_md, true_voice_snapshot.final_answer, response) contained a structured CANDIDATE_TOOL_CALL JSON block or function-arg text pattern. A dedicated BFCL tool-calling layer is needed in the Brody runtime.",
+  "next_step": "Add a dedicated BFCL tool-calling layer to Brody's true voice adapter that parses CANDIDATE_TOOL_CALL requests and echoes them in final_answer."
+}

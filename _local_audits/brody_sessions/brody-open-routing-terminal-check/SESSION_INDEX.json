@@ -1,0 +1,79 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "brody-open-routing-terminal-check",
+  "created_at": "2026-05-21T00:37:04.736007+00:00",
+  "record_count": 5,
+  "latest_event_hash": "4bc6e529e87b385b72477fb3e64f2da30dc91254ea41296ec8a7120cff0fee6f",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "983eaaf68a2ebd9950df6baad14cb65dfaa9bf8161106ca4434c68fda08f667e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0001_983eaaf68a2e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0001_983eaaf68a2e.md",
+      "user_input_sha256": "c59464e52c9100b660c5546586bbef92740cea51e909f42d24f034f87f17f221",
+      "response_md_sha256": "265a343a43575a70c0c9c0bee0e354d4db94410a1b8e251674c715c4c5ba7fc3",
+      "memory_query": "que peux-tu faire avec les arbres sans décider ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "d02e33c89e36332a4ceb49978eb3031680e7dacbfa096c1afd2cf9b1dcfffea3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0002_d02e33c89e36.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0002_d02e33c89e36.md",
+      "user_input_sha256": "6ea1e9425dd74f47e4e0aeb9ca6a122fe4e286bdaf15325b73cb14335c27ae53",
+      "response_md_sha256": "991c2134187a5765ec11a4e57db17204b4759c078c0f10cdcfe85e294c95343b",
+      "memory_query": "où on en est ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "5baf118534c495067f62b2f4c45d92e7cd21d741048de29e114837c1bb3fbc0b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0003_5baf118534c4.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0003_5baf118534c4.md",
+      "user_input_sha256": "b136d52bb2dbb5e9c605f3d211a9ed110d47da13d7c33b76aa8459fe181a3068",
+      "response_md_sha256": "477e214f885710523f813176533786bba542ca5c5c9e612d47593f41ceff1507",
+      "memory_query": "qu’est-ce qu’on prépare ensuite ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "2662c1c5bdf167c7e2e29dc3f4e59cc18829c8aa79dd97810db7ddca286abdd1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0004_2662c1c5bdf1.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0004_2662c1c5bdf1.md",
+      "user_input_sha256": "f17ac1c30f12c952341422cb60a04ecfbc7bd33a07e238469d997aa41ee34dcf",
+      "response_md_sha256": "06f4124ee0c5f3edd2d9a38c8a5f1b95c31c89e741bfc517f72953b43978a734",
+      "memory_query": "explique passé présent futur dans Obsidia",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "4bc6e529e87b385b72477fb3e64f2da30dc91254ea41296ec8a7120cff0fee6f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0005_4bc6e529e87b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-open-routing-terminal-check\\records\\0005_4bc6e529e87b.md",
+      "user_input_sha256": "a6f44f87e0c6656dd6877ab58e410a9819485e777e67fb32c6483683391a9731",
+      "response_md_sha256": "04b3867aa81ef7e028020c286d5c37d21f67e3e30ac25ce542d5d754c5e03f5c",
+      "memory_query": "utilise tes couches cognitives pour me répondre",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T00:41:40.515222+00:00"
+}

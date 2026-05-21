@@ -1,0 +1,39 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_followup_request",
+  "created_at": "2026-05-20T20:58:53.094601+00:00",
+  "record_count": 1,
+  "latest_event_hash": "8b807adc97c3112b8ecf48f61d14e6416892053945af83edfdee1595508433b3",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "8b807adc97c3112b8ecf48f61d14e6416892053945af83edfdee1595508433b3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_followup_request\\records\\0001_8b807adc97c3.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_followup_request\\records\\0001_8b807adc97c3.md",
+      "user_input_sha256": "d18b85f73fb1b60f3067972ebba5471dd85503d2aa05278c6d10761597758fb3",
+      "response_md_sha256": "6fe3ae6d59c6ab6bcee1ebd9ed603d0fe0024aec4417f1aaea5fb33b9b52704d",
+      "memory_query": "reprends le point précédent avec plus de structure",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T20:58:53.099797+00:00"
+}

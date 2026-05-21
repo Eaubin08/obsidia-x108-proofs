@@ -1,0 +1,79 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "brody-anti-generic-fallback-live-check",
+  "created_at": "2026-05-21T00:19:58.087153+00:00",
+  "record_count": 5,
+  "latest_event_hash": "7bb8a633f1059cfdf589ceb1ecd301eb82a75b81ce3fcd90203eba14954f3957",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "6db1196cffed6c4d43a25bcbca6f016cdf48b588a914c8efb49d19e625b7b572",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0001_6db1196cffed.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0001_6db1196cffed.md",
+      "user_input_sha256": "c59464e52c9100b660c5546586bbef92740cea51e909f42d24f034f87f17f221",
+      "response_md_sha256": "265a343a43575a70c0c9c0bee0e354d4db94410a1b8e251674c715c4c5ba7fc3",
+      "memory_query": "que peux-tu faire avec les arbres sans décider ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "356fd68ff43de5f2bffad9775aac30380860c029d7d5669f4c8e9532fa32be84",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0002_356fd68ff43d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0002_356fd68ff43d.md",
+      "user_input_sha256": "6ea1e9425dd74f47e4e0aeb9ca6a122fe4e286bdaf15325b73cb14335c27ae53",
+      "response_md_sha256": "991c2134187a5765ec11a4e57db17204b4759c078c0f10cdcfe85e294c95343b",
+      "memory_query": "où on en est ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "9f71f57f9f896a045998c12f23b1521b177716100ebbcbc4490f2c2890ae1fb3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0003_9f71f57f9f89.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0003_9f71f57f9f89.md",
+      "user_input_sha256": "b136d52bb2dbb5e9c605f3d211a9ed110d47da13d7c33b76aa8459fe181a3068",
+      "response_md_sha256": "477e214f885710523f813176533786bba542ca5c5c9e612d47593f41ceff1507",
+      "memory_query": "qu’est-ce qu’on prépare ensuite ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "ff9b3f5dbd47c3b697c3f285e0325f65694907120bb7b68ea75841bf1d1c6837",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0004_ff9b3f5dbd47.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0004_ff9b3f5dbd47.md",
+      "user_input_sha256": "f17ac1c30f12c952341422cb60a04ecfbc7bd33a07e238469d997aa41ee34dcf",
+      "response_md_sha256": "06f4124ee0c5f3edd2d9a38c8a5f1b95c31c89e741bfc517f72953b43978a734",
+      "memory_query": "explique passé présent futur dans Obsidia",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "7bb8a633f1059cfdf589ceb1ecd301eb82a75b81ce3fcd90203eba14954f3957",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0005_7bb8a633f105.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-anti-generic-fallback-live-check\\records\\0005_7bb8a633f105.md",
+      "user_input_sha256": "a6f44f87e0c6656dd6877ab58e410a9819485e777e67fb32c6483683391a9731",
+      "response_md_sha256": "04b3867aa81ef7e028020c286d5c37d21f67e3e30ac25ce542d5d754c5e03f5c",
+      "memory_query": "utilise tes couches cognitives pour me répondre",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T00:21:14.128730+00:00"
+}

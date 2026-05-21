@@ -1,0 +1,45 @@
+# BRODY SESSION MEMORY LEDGER RECORD — READONLY V2
+
+- status: BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_RECORD
+- session_id: local
+- sequence: 2936
+- created_at: 2026-05-20T18:17:18.180280+00:00
+- memory_query: test
+- packet_results_count: 0
+- event_hash: 15ffebabeba4ff1800e14ae3e1035d2e22fb93d30a288cfe6c63f774b61ba74e
+- previous_event_hash: 5a16934255a12226662863b89f563a0e57c8a105dc1a6dcd2a75a15a8754fe8e
+
+## User input
+
+test
+
+## Brody response
+
+RÉPONSE STRUCTURELLE.
+Requête mémoire extraite : test
+
+Sources :
+
+Boundary: READONLY=true | DECISION_AUTHORITY=KX108_ONLY
+
+## Boundary
+
+- readonly: True
+- response_only: True
+- memory_role: GUIDE_CONTEXT_NAVIGATION_ONLY
+- memory_decision: False
+- allowed_to_decide: False
+- emits_act: False
+- emits_allow_hold_block: False
+- emits_verdict: False
+- kernel_mutation: False
+- x108_mutation: False
+- x108_runtime_binding: False
+- x108_merge: False
+- neo4j_role: LIVE_GRAPH_MEMORY_SURFACE_ONLY
+- brody_role: SESSION_MEMORY_LEDGER_READONLY
+- decision_authority: KX108_ONLY
+- ui: False
+- auto_triage: False
+- graphiti_index_write: False
+- memory_intake: False

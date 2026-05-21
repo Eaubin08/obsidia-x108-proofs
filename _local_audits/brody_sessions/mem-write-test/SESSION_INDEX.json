@@ -1,0 +1,329 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "mem-write-test",
+  "created_at": "2026-05-20T05:32:01.794510+00:00",
+  "record_count": 30,
+  "latest_event_hash": "96405b4859baa44a7ec3ab7fd50ac0453268d9e22b7aed2c691e3385ddb2a5a5",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "6d80478dedad8f406cb42b4e1ccefe6828cfdbd28e0530fe3010891097217bff",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0001_6d80478dedad.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0001_6d80478dedad.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "8f4792331e129f90af40570e17f9ed78b5e7e8c5356716fd58a637cd30a4d16d",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0002_8f4792331e12.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0002_8f4792331e12.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "95c35c3650531eed5245501df3c8a90257606c7c37da16596b748a58e767aa2f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0003_95c35c365053.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0003_95c35c365053.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "745293feadd7b9cb916873a9f71222ca66a10f3d201f8e021c84b674dcf08060",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0004_745293feadd7.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0004_745293feadd7.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "68717f11f077e0f42ae241e506ea5bf37b884d28c57ed5a141ca177b3f3709e3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0005_68717f11f077.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0005_68717f11f077.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 6,
+      "event_hash": "04fdb38519db6ad38a06cfe5e83675da6f375396591fb03180d23653f09b0d1c",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0006_04fdb38519db.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0006_04fdb38519db.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 7,
+      "event_hash": "1aa0bc6040c68428df41021e74613a9d63540518841b6cbbddb7b9203bdac006",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0007_1aa0bc6040c6.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0007_1aa0bc6040c6.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 8,
+      "event_hash": "b308e14c27f22078643b0ec9c4ade0d5fab8f271859ad452f5d33d5e70f8eb7d",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0008_b308e14c27f2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0008_b308e14c27f2.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 9,
+      "event_hash": "0fc8a694e934fb0fa15275d13b662574f855459a328f3760b8e7627217ae591e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0009_0fc8a694e934.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0009_0fc8a694e934.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 10,
+      "event_hash": "63ab4650bc0d862ae37ba9fe1253d50ef2d1703abaf5a52240dfd291222b070b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0010_63ab4650bc0d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0010_63ab4650bc0d.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 11,
+      "event_hash": "86a0f3e63b1d965f153349e1aeb6b3be2bd051424e3544ac0d3c3414a3c1312b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0011_86a0f3e63b1d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0011_86a0f3e63b1d.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 12,
+      "event_hash": "e5f970441d8aeb1a3d749b13a368c2c2ddfb12e89cc52f4e1c9675ec2f9602dc",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0012_e5f970441d8a.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0012_e5f970441d8a.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 13,
+      "event_hash": "f9dec384b813818855bc93f05f3b7dfa8dc733d073d950bf525e7179acb92049",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0013_f9dec384b813.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0013_f9dec384b813.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 14,
+      "event_hash": "f38ad50091cb2e24ce80f98c9c309e6fb5277e5f854e13565911968174fc43e4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0014_f38ad50091cb.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0014_f38ad50091cb.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 15,
+      "event_hash": "69155a54f36f3e2d24ed22dcefc778f8f94330ff9c157ec1b915f692e61dd75a",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0015_69155a54f36f.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0015_69155a54f36f.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 16,
+      "event_hash": "11b6a055b9dca8f67758d2360b0a4337ac416b8aec72b2089a7c6eff09b63d44",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0016_11b6a055b9dc.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0016_11b6a055b9dc.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 17,
+      "event_hash": "a6453c8f6e04cf13fb13ecb681f4d7fef72b75655355dda45c57d080644c5821",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0017_a6453c8f6e04.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0017_a6453c8f6e04.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 18,
+      "event_hash": "02a847ff09d6831c03d81fabc30d1acdf305a22bc324d046384e4fb354db744b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0018_02a847ff09d6.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0018_02a847ff09d6.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 19,
+      "event_hash": "0370d89fea165ff4cd019e043cb89e1d28c96f86e4c4d9b7ca4afedfeaa0c282",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0019_0370d89fea16.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0019_0370d89fea16.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 20,
+      "event_hash": "a075ccd162f913880957638de08313f2567d3187f88b554262f7eda2750d565e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0020_a075ccd162f9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0020_a075ccd162f9.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 21,
+      "event_hash": "2abe7e6b1b7032141ba6f041370bac944ccbc034306e567741497a5cbed87894",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0021_2abe7e6b1b70.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0021_2abe7e6b1b70.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 22,
+      "event_hash": "e588e7b7a27c5e511259a38d48511b1dd768c2aeb27bf67c7a2a76344343b042",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0022_e588e7b7a27c.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0022_e588e7b7a27c.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 23,
+      "event_hash": "b8570f3966448aeeede765788344e4c80b4129d5c2a64af6c4f31f17a5418f70",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0023_b8570f396644.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0023_b8570f396644.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 24,
+      "event_hash": "e726b8148e358050aac635527cf67a6aa92c0c29f40d43f248ec93cc67ebf37e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0024_e726b8148e35.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0024_e726b8148e35.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 25,
+      "event_hash": "51ed5468be4be1660d57e3a32fc667770cdc28a5a7fd97f3dda1fb9485cbcbf1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0025_51ed5468be4b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0025_51ed5468be4b.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 26,
+      "event_hash": "dd9e1291ea6de08028fbc6588920c81df0b917d2cb674900376ba5c7c2712b42",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0026_dd9e1291ea6d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0026_dd9e1291ea6d.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 27,
+      "event_hash": "db1ffa00580eee8cb9930e767a29863c528a376d7079fa7ff189262c55062098",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0027_db1ffa00580e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0027_db1ffa00580e.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 28,
+      "event_hash": "c564d96939f2d96389852bcedec88ff3bd2aaec95d380d3f95054d51169e32b4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0028_c564d96939f2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0028_c564d96939f2.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 29,
+      "event_hash": "b733b0864175f3ccf618a112d5be4dac2e68e223486ab1f8f371341c9db2b018",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0029_b733b0864175.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0029_b733b0864175.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 30,
+      "event_hash": "96405b4859baa44a7ec3ab7fd50ac0453268d9e22b7aed2c691e3385ddb2a5a5",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0030_96405b4859ba.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\mem-write-test\\records\\0030_96405b4859ba.md",
+      "user_input_sha256": "83de3e03aa6726d426a1f8005a7e87c9212e02a8db86a9fdd0ccdf0e2ce1700a",
+      "response_md_sha256": "55e1379d025753f6e1c27c49e0d2976218b6e7ddeab1dfd5d16c8544f3d2e036",
+      "memory_query": "",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T17:30:23.038291+00:00"
+}

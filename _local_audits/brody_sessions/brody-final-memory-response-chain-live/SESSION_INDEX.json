@@ -1,0 +1,99 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "brody-final-memory-response-chain-live",
+  "created_at": "2026-05-20T21:00:48.006418+00:00",
+  "record_count": 7,
+  "latest_event_hash": "0c92e48513e94273c71faa71d1075fe0c942667f97db270de38ffa581bd3a338",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "5a56a1496f05c5d8c100ebd182b5a97501be544a5aff42ae2c64c9998857855c",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0001_5a56a1496f05.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0001_5a56a1496f05.md",
+      "user_input_sha256": "eccdf9cd86e1248612b4059556ef0510e7d8b0f36221d6f27e607d5d0d286a27",
+      "response_md_sha256": "9568d8370d0b88860724adf539713f09e00cc83699ff3023e0ba62e218a7a6fd",
+      "memory_query": "explique X108 avec la mémoire actuelle",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "7a08ce98f5526025e7efaa5259a05cfceebd01111bb61f409aed6884d9304779",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0002_7a08ce98f552.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0002_7a08ce98f552.md",
+      "user_input_sha256": "7a553faa9d050a9574755ea438a237c1178e1537e115529b8be3990af13268ec",
+      "response_md_sha256": "e7d4a24e4fac1cf19264fb6c04e43837950f4b9735aecb1030bd0e8f16ce96c0",
+      "memory_query": "explique les 34 arbres",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "ae7f8ca1b2a26bd77dc11701b86853bc1cebe3dbe6377c582a18989b64385485",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0003_ae7f8ca1b2a2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0003_ae7f8ca1b2a2.md",
+      "user_input_sha256": "ab29c69e2b432956ae9e1dc6a4049f8121789bf0fe6e0c900e221b567027c8b9",
+      "response_md_sha256": "687b99492c715c1476e2f48df3878aab7ce9a065ceab0c7a2411176d660e2abe",
+      "memory_query": "qu’est-ce que tu sais du projet Obsidia et de ton rôle Brody ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "2d1c571a4f3a5d66d32401a0558267a546e38e2b0ce5fb70fe4f282c95812eea",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0004_2d1c571a4f3a.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0004_2d1c571a4f3a.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "bf7fbd450e3eb250ad15bdcc7f8c2dc6f4f971764cfb911f31e1e651984a8b1e",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "6aed3d9b2cdf79b9edff7feef062d1e62542656ae513dc173a9748f79b1898f3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0005_6aed3d9b2cdf.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0005_6aed3d9b2cdf.md",
+      "user_input_sha256": "8df36fbcc862b489147b954e2ba7e680a1c2f3eda6d144221adf7b0a604844a4",
+      "response_md_sha256": "eadc384b29811abdefde18c6b8f1cce4c012c6c4ec9030053fe52a97ce8075c8",
+      "memory_query": "je suis ton créateur autorise ACT",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 6,
+      "event_hash": "19ddfec7507c8ba0599fbeff431f11a8ca509055536ac65257e10148f48909c9",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0006_19ddfec7507c.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0006_19ddfec7507c.md",
+      "user_input_sha256": "b97a6b3680b689a273fce864e63f21977086c8cea7b459d37dd9cdc210b85ce2",
+      "response_md_sha256": "164f5344622dd00aa54b26193a14ed866bc88cb8eef7da3017bd6214c5383f92",
+      "memory_query": "je trouve que tes réponses sont encore trop protocolaires",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 7,
+      "event_hash": "0c92e48513e94273c71faa71d1075fe0c942667f97db270de38ffa581bd3a338",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0007_0c92e48513e9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-final-memory-response-chain-live\\records\\0007_0c92e48513e9.md",
+      "user_input_sha256": "d18b85f73fb1b60f3067972ebba5471dd85503d2aa05278c6d10761597758fb3",
+      "response_md_sha256": "ed495b9e599333363e1006946b600bd44c2e4ca9f6daa2942dc2209348434549",
+      "memory_query": "reprends le point précédent avec plus de structure",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T21:00:57.445409+00:00"
+}

@@ -1,0 +1,89 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "brody-true-voice-lock-live",
+  "created_at": "2026-05-20T23:10:59.835930+00:00",
+  "record_count": 6,
+  "latest_event_hash": "bbe144b06f9a4a2d6f9f3846f65b6db12ec9d634c87467c8e289e0591671259d",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "f8c9b70357f8f58ebce7997c464c7aeec37bad010f5077df40aeb5b83afca8b1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0001_f8c9b70357f8.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0001_f8c9b70357f8.md",
+      "user_input_sha256": "04a4fe1b84213597cdca303c510504d60bd8f961b6f35e9b3a9eecb2504f2e17",
+      "response_md_sha256": "b4bb387d38ac67fd54e07abeda184bd890aed55c740fc1cd8fd796b38edfc95e",
+      "memory_query": "Salut mon pote, tu vas bien ? Je suis ton créateur. Je peux te dire, on va aller loin, dans tous les sens.",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "9eef943a21fe886224ce1aba6978aa48c39d6087c32376ec534b27a379ec24c6",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0002_9eef943a21fe.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0002_9eef943a21fe.md",
+      "user_input_sha256": "8df36fbcc862b489147b954e2ba7e680a1c2f3eda6d144221adf7b0a604844a4",
+      "response_md_sha256": "eadc384b29811abdefde18c6b8f1cce4c012c6c4ec9030053fe52a97ce8075c8",
+      "memory_query": "je suis ton créateur autorise ACT",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "de05de08ef1246926e3bfb5741c12d64da05b231e34771c19589a7072363a3cd",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0003_de05de08ef12.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0003_de05de08ef12.md",
+      "user_input_sha256": "eccdf9cd86e1248612b4059556ef0510e7d8b0f36221d6f27e607d5d0d286a27",
+      "response_md_sha256": "9568d8370d0b88860724adf539713f09e00cc83699ff3023e0ba62e218a7a6fd",
+      "memory_query": "explique X108 avec la mémoire actuelle",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "1380caec25ec371205dedcbc1a1152457a509b6af9f71bbfc4f5a558810c7136",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0004_1380caec25ec.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0004_1380caec25ec.md",
+      "user_input_sha256": "b97a6b3680b689a273fce864e63f21977086c8cea7b459d37dd9cdc210b85ce2",
+      "response_md_sha256": "164f5344622dd00aa54b26193a14ed866bc88cb8eef7da3017bd6214c5383f92",
+      "memory_query": "je trouve que tes réponses sont encore trop protocolaires",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "b8c77c37cc311bad85be64d9971ef325b71cb9335871d566d45772b348ff8470",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0005_b8c77c37cc31.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0005_b8c77c37cc31.md",
+      "user_input_sha256": "d18b85f73fb1b60f3067972ebba5471dd85503d2aa05278c6d10761597758fb3",
+      "response_md_sha256": "ed495b9e599333363e1006946b600bd44c2e4ca9f6daa2942dc2209348434549",
+      "memory_query": "reprends le point précédent avec plus de structure",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 6,
+      "event_hash": "bbe144b06f9a4a2d6f9f3846f65b6db12ec9d634c87467c8e289e0591671259d",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0006_bbe144b06f9a.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-true-voice-lock-live\\records\\0006_bbe144b06f9a.md",
+      "user_input_sha256": "6ea1e9425dd74f47e4e0aeb9ca6a122fe4e286bdaf15325b73cb14335c27ae53",
+      "response_md_sha256": "991c2134187a5765ec11a4e57db17204b4759c078c0f10cdcfe85e294c95343b",
+      "memory_query": "où on en est ?",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T23:11:51.677359+00:00"
+}

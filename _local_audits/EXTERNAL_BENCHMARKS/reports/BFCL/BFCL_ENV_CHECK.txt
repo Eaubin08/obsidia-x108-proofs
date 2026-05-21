@@ -1,0 +1,4 @@
+=== BFCL ENV CHECK ===
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/03_bfcl
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/03_bfcl/.venv/bin/python
+Python 3.12.3

@@ -1,0 +1,5 @@
+=== SYSTEM CHECK ===
+Linux DESKTOP-Q5MD7J7 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+Python 3.12.3
+git version 2.43.0
+Docker version 28.3.2, build 578ccf6

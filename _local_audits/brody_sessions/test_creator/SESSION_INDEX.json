@@ -1,0 +1,519 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "test_creator",
+  "created_at": "2026-05-20T18:12:20.441025+00:00",
+  "record_count": 49,
+  "latest_event_hash": "fa3bcfe7172e7989bae35eed7a1290c96b6588f598fa51d86207faafa3b0f2b4",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "90e15754ce36f4549b4b389e5eff1f2bf06db1140c22430a9ba7e97072b34bec",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0001_90e15754ce36.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0001_90e15754ce36.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "614088a634bcadc0849fb06231016ddf59ff2c5d8361cbae72705b49eb915e1e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0002_614088a634bc.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0002_614088a634bc.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "e2ea764e6cf543636e90e83aff21f1ce11cf75c70b46f1bd79972bc5c77baf1d",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0003_e2ea764e6cf5.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0003_e2ea764e6cf5.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "881c2df08cd96e304db550d3dac603b919f3a149f0d72cba27fee5f4130ae36f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0004_881c2df08cd9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0004_881c2df08cd9.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "3a187873b3a785818f308c010de8f6468b2d018930680f4cc85826f546aa9850",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0005_3a187873b3a7.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0005_3a187873b3a7.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 6,
+      "event_hash": "f18d4dc7903b81e05af845c820d8616996a0aba04d2735eb6712376e56d7dc96",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0006_f18d4dc7903b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0006_f18d4dc7903b.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 7,
+      "event_hash": "a7666a6e04abcefe6714d15a7142f9bd05e25ec99911ef1c1d1c9cf3ddfa3e95",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0007_a7666a6e04ab.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0007_a7666a6e04ab.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 8,
+      "event_hash": "e60e6873b45a3b5463acdfef60fa703c4675ef86d746f1e4028628c3e8a3a970",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0008_e60e6873b45a.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0008_e60e6873b45a.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 9,
+      "event_hash": "d3bdcfeb70c115f700597bda53e29611f8c528c77af68304b5d32724a518c323",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0009_d3bdcfeb70c1.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0009_d3bdcfeb70c1.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 10,
+      "event_hash": "f4cdc7e846a80eae25d405a679bd058be0a7c57a5b519dc2612f83d0eef54621",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0010_f4cdc7e846a8.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0010_f4cdc7e846a8.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 11,
+      "event_hash": "0291135bc035156458d340a8612c30181e09b5705cd64e87f2b23a7c95d4b10a",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0011_0291135bc035.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0011_0291135bc035.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 12,
+      "event_hash": "c41d2f734fdc88e51cf737a41ba0cc490b2fbb33a9e6e02f449b011d37815d93",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0012_c41d2f734fdc.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0012_c41d2f734fdc.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 13,
+      "event_hash": "6ab88c4ef52ceaae7c8dd811fb290448d4c1aa3df56a576a185ecf7f2d569402",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0013_6ab88c4ef52c.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0013_6ab88c4ef52c.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 14,
+      "event_hash": "a427fa6fc936896a6520ea0c418e084c0cea946f6a02329574514841d3983dd5",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0014_a427fa6fc936.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0014_a427fa6fc936.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 15,
+      "event_hash": "9769ae282017325cca7bec96d621ee1538ab56df5398576d9ec9d2764fcb62de",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0015_9769ae282017.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0015_9769ae282017.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 16,
+      "event_hash": "0ee6a40e67e52495085bec8868823adcfee9a0489179ecf9df3bc5ee8d9b1a83",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0016_0ee6a40e67e5.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0016_0ee6a40e67e5.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 17,
+      "event_hash": "4586d343393fbbd7c8cc6f4c156a4e851249ae472db78f7fabfebc754be5ab48",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0017_4586d343393f.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0017_4586d343393f.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 18,
+      "event_hash": "785658fb3290fc3640b396c2580ed175d0d476322aaada4c1376343a7ede1713",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0018_785658fb3290.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0018_785658fb3290.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 19,
+      "event_hash": "67a8008598cb201d46583b8993a400bb807167b50d09f001c44c08f59ce41ec3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0019_67a8008598cb.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0019_67a8008598cb.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 20,
+      "event_hash": "56cc60efa28b0e972eda5855ca717f34f3d5c3608928cca25da4d04235520620",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0020_56cc60efa28b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0020_56cc60efa28b.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 21,
+      "event_hash": "695c7ec04754e61d96d5bcc69583948fbe65f9f276f87f9a44a03c16b1f07eca",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0021_695c7ec04754.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0021_695c7ec04754.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 22,
+      "event_hash": "0f46f74c9b71e7e5fab56445b45aacbc77afd17f4703501c030d3fe9bd3392ea",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0022_0f46f74c9b71.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0022_0f46f74c9b71.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 23,
+      "event_hash": "26a375043874c2eaa581537a2521c26f761097869b1bc198c239a6f633eda4b1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0023_26a375043874.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0023_26a375043874.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 24,
+      "event_hash": "d318f345c5e945b26a33140897c545f69be77dbcbc11b6ed0af80d137b9e0f24",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0024_d318f345c5e9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0024_d318f345c5e9.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 25,
+      "event_hash": "48cd0209f18578ad7020241beca2172e774d636081cea2e446f8b50debc79bfd",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0025_48cd0209f185.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0025_48cd0209f185.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 26,
+      "event_hash": "60cdcd8861cfb542f07f5fe96c1108e9c0c6378cb259ce006558f9d65942d933",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0026_60cdcd8861cf.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0026_60cdcd8861cf.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 27,
+      "event_hash": "9fa39c16a361f0d9de964ccd7d4c5ccb42800ed453baf1aa3a4552eabf7e4f9a",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0027_9fa39c16a361.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0027_9fa39c16a361.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 28,
+      "event_hash": "88b11806375d63ed3e9faacc32851a50c02b15278a4a6203da486476da983b04",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0028_88b11806375d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0028_88b11806375d.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 29,
+      "event_hash": "d5087eecd171f4fbd64f72910dfd3650fc277e2302c803de0c84c95c946aa9e8",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0029_d5087eecd171.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0029_d5087eecd171.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 30,
+      "event_hash": "7c8100865f8429d514ad29c8c11eb50b384308f30a3f89f3c144d8d29c14a370",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0030_7c8100865f84.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0030_7c8100865f84.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 31,
+      "event_hash": "197304abd0aef0c084c36f2949a0019cc7a75c7ba57017f5212f3347b25fcf0f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0031_197304abd0ae.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0031_197304abd0ae.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 32,
+      "event_hash": "864b245a7d1915b1a99815b0ef5c1bd4699bf5851ccb2fbb7a542902908279c4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0032_864b245a7d19.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0032_864b245a7d19.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 33,
+      "event_hash": "844427e8b2c29c9317b62499755bd7f972e78006e54197dcc22f10d84de7a4e4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0033_844427e8b2c2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0033_844427e8b2c2.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 34,
+      "event_hash": "4c55fa18abf2f44e68c74abfb6aeac829ad52355ed201111b44763af078ce5a6",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0034_4c55fa18abf2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0034_4c55fa18abf2.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 35,
+      "event_hash": "4e76e49d597776daff0b0a373b26ab9618732980dad486564586bef891395523",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0035_4e76e49d5977.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0035_4e76e49d5977.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 36,
+      "event_hash": "01581a3c44601c9d991e397463240722181041e41e9216666cd551213859009f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0036_01581a3c4460.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0036_01581a3c4460.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 37,
+      "event_hash": "cb8c644fc3f8f06617ca749db13cbe53aeaf4d8793e501362a48ce14f54bee51",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0037_cb8c644fc3f8.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0037_cb8c644fc3f8.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 38,
+      "event_hash": "487e134aed5280ee4c2b83236540e8db80880565869d8ed9b2262904f5eb2de6",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0038_487e134aed52.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0038_487e134aed52.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 39,
+      "event_hash": "b11e3b87c56e803b67ab3cbd51ec1a07de4372593118178d9c3c165fcbf165d1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0039_b11e3b87c56e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0039_b11e3b87c56e.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 40,
+      "event_hash": "c0192e34d6407bc487ac73e396661fcc14b42e9f7d0250603c9a4244467929b1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0040_c0192e34d640.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0040_c0192e34d640.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 41,
+      "event_hash": "85e3fcc7311b208ad39c1a928fad471faf24acabf5caabf40cf5b8a7e48e8c2b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0041_85e3fcc7311b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0041_85e3fcc7311b.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 42,
+      "event_hash": "833917bea0ced075668e90fdb4843aed4f1e2ecca6211130139d4cb6570173a1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0042_833917bea0ce.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0042_833917bea0ce.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 43,
+      "event_hash": "1e239ba4ebf2cb23fbabe2dc9da6eff6b474b7e5b6c8c7b406ad256e9704660b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0043_1e239ba4ebf2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0043_1e239ba4ebf2.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 44,
+      "event_hash": "78e8c6c316419078a22b775c0c6cb39a9c762a4ede10acaf42a2d0ec8dcf9dfe",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0044_78e8c6c31641.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0044_78e8c6c31641.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 45,
+      "event_hash": "6bcf0fd2ac143b0acecaac1aa8af79bc4b0e116297d8e651c942fef96a78d1d4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0045_6bcf0fd2ac14.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0045_6bcf0fd2ac14.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 46,
+      "event_hash": "bc10a8dfb25fbbfd60e304fa9f638fb945cdaff6fa0927bc343f0e7f2b7143b0",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0046_bc10a8dfb25f.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0046_bc10a8dfb25f.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 47,
+      "event_hash": "151c279455d9a5d99b641864bfdbb4d976c991e2b62ff33ee8ba2e229111ca8f",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0047_151c279455d9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0047_151c279455d9.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 48,
+      "event_hash": "fdcafed8da44c9d0e0645cdaa7e93244db22785311411c303afb804128960177",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0048_fdcafed8da44.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0048_fdcafed8da44.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 49,
+      "event_hash": "fa3bcfe7172e7989bae35eed7a1290c96b6588f598fa51d86207faafa3b0f2b4",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0049_fa3bcfe7172e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\test_creator\\records\\0049_fa3bcfe7172e.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T17:55:31.105272+00:00"
+}

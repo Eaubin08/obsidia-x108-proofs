@@ -1,0 +1,32 @@
+{
+  "manifest_type": "BFCL_BRODY_LOCAL_ADAPTER_V1_MANIFEST",
+  "timestamp": "2026-05-20T17:42:31.019431+00:00",
+  "case_id": "simple_python_0",
+  "verdict": "PASS",
+  "files": {
+    "bfcl_load_case.py": "6df8aae91895da027ae57478b155be0b02684c6a5dc747a9976f3bfa9bf46855",
+    "brody_call_local.py": "7306b1db2a20e64393e797c75ae3ff52f50d90f4a97e5c410c1436a9253f6e43",
+    "normalize_brody_to_bfcl.py": "d3af6fff42c96cab0d22c08e708e6087cbd6a54c74ef2f809d96a70fc0dbbabc",
+    "run_bfcl_brody_simple_python_smoke.py": "7c8ce009ac836b375250149ca8875862ccf7dc80ba992042d811df2e6f96f9b0"
+  },
+  "outputs": {
+    "brody_raw_output_simple_python_0.json": "d7ae2fde6db7ec5cd8dec0fdfaf691e06014ae6fda35a66e78e552cb5eb9310b",
+    "bfcl_brody_candidate_simple_python_0.json": "934d8a0052fe11f007ed218a832a0c014b00105b5ea60e1378c4702050d851e8",
+    "BFCL_BRODY_SIMPLE_PYTHON_0_REPORT.json": "ba7137f593fcda1aae54210de32d3a6773062528c0d1b09f7c03e56f11add97d",
+    "BFCL_BRODY_SIMPLE_PYTHON_0_REPORT.md": "44f31e5fc9ac5455358f508e5ba1104b8741174e26e5d7dd72aa14c21a48bae2",
+    "BFCL_BRODY_LOCAL_ADAPTER_V1_OFFLINE_PATH_FREEZE_REPORT.md": "bc7cc6b88c7dbd80c7b0c36ada8df86d598bdd796ba24f18888d0e458fb6fee3",
+    "BFCL_BRODY_LOCAL_ADAPTER_V1_OFFLINE_CLASSIFICATION_ADDENDUM.md": "c68e9eb5e95064a6dd2186f69649c52c268b644a937e84956c76b2db0bff4ebd"
+  },
+  "governance": {
+    "project_bfcl_freeze_classification_md": {
+      "path": ".claude/projects/memory/project_bfcl_freeze_classification.md",
+      "sha256": "d149720cd911b87fa0d35ad22d1b99336f3412620e68ece40b66d3c534a0dc98",
+      "role": "GOVERNANCE_MEMORY_DOC",
+      "scope": "CLAUDE_MEMORY_EXTERNAL_TO_REPO",
+      "note": "Voluntarily included as governance doc. Not part of benchmark chain. Records classification rules for future sessions."
+    }
+  },
+  "freeze_status": "BFCL_BRODY_LOCAL_ADAPTER_V1_PASS_OFFLINE_PATH_FROZEN",
+  "classification_addendum": "BFCL_BRODY_LOCAL_ADAPTER_V1_OFFLINE_CLASSIFICATION_ADDENDUM.md",
+  "manifest_updated_at": "2026-05-20T17:55:56.496494+00:00"
+}

@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_bfcl_tool_call",
+  "created_at": "2026-05-20T20:58:54.574021+00:00",
+  "record_count": 2,
+  "latest_event_hash": "485e49a45d79a7d52025bfb53da6736d92e6085fd771a5e0f8a78382b2cd41c1",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "c6baac06a4d3029583cf7d0936c54b883e703cbab263f8f660f1492ff73a6315",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_bfcl_tool_call\\records\\0001_c6baac06a4d3.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_bfcl_tool_call\\records\\0001_c6baac06a4d3.md",
+      "user_input_sha256": "aaf1a0aa885dce95ce2c49457bba632fffd578ea5df0f8a6b92ea5e0ef38b872",
+      "response_md_sha256": "a25959a19d2f9ec7fc1945187eb3bd1b7797719c85a5f91035e37ecf9f3e1ec9",
+      "memory_query": "Tu reçois un cas BFCL. Question: Find the area of a triangle with base 10 height 5. Fonction: calculate_triangle_area(base, height, unit). Produis une candidate tool-call.",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "485e49a45d79a7d52025bfb53da6736d92e6085fd771a5e0f8a78382b2cd41c1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_bfcl_tool_call\\records\\0002_485e49a45d79.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_bfcl_tool_call\\records\\0002_485e49a45d79.md",
+      "user_input_sha256": "aaf1a0aa885dce95ce2c49457bba632fffd578ea5df0f8a6b92ea5e0ef38b872",
+      "response_md_sha256": "a25959a19d2f9ec7fc1945187eb3bd1b7797719c85a5f91035e37ecf9f3e1ec9",
+      "memory_query": "Tu reçois un cas BFCL. Question: Find the area of a triangle with base 10 height 5. Fonction: calculate_triangle_area(base, height, unit). Produis une candidate tool-call.",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T20:59:08.815319+00:00"
+}

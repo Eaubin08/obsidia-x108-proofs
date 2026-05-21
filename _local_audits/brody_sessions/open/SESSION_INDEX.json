@@ -1,0 +1,79 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "open",
+  "created_at": "2026-05-21T00:11:16.589843+00:00",
+  "record_count": 5,
+  "latest_event_hash": "500085650bf779e9ef7fa4580032ca0452ed353aa432e2b0397fb133fa5f11f3",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "b9b87267f76807f8a234fcc033bdb926d9e755381d787c801cbefe5d9cb38805",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0001_b9b87267f768.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0001_b9b87267f768.md",
+      "user_input_sha256": "a75ffc5a8689f32845210cf20b39c01a513db2d64b0859e9b60a65c0f5b98fda",
+      "response_md_sha256": "08b030671b33914270ac861958174291b4650d7796e13967a9c909614e1d8021",
+      "memory_query": "que peux-tu faire avec les arbres sans decider ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "9ca44398687e5e7e52d0098c4d7e7d20483945770c0c21419e4ffb769a80870b",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0002_9ca44398687e.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0002_9ca44398687e.md",
+      "user_input_sha256": "771bc0453f4a936d2b3431fbdb1b377fdc5188077067c342267ec051ce7d1099",
+      "response_md_sha256": "7a16ac2c6da834cf3432b73f8dfab176081867c1be981ec487ae60fc4cb80061",
+      "memory_query": "ou on en est ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "ac8b50f8a5da56c45ee9252d79aa4b7e0018a5645c35839aaa67c6da329fc779",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0003_ac8b50f8a5da.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0003_ac8b50f8a5da.md",
+      "user_input_sha256": "91dc3b476fede705928d00cb50a4085e2398c479501882eec6ea8624faf9afec",
+      "response_md_sha256": "6534c7c2971543044ec368bc1294c1abfa62ce7c1bac2c97ff0084b2cadc219d",
+      "memory_query": "qu'est-ce qu'on prepare ensuite ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "20117b09426a7294664614ed17f6b938db8e3aa72497565aec2b44ca0ef00b4a",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0004_20117b09426a.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0004_20117b09426a.md",
+      "user_input_sha256": "e734684b1b48f8673456e1f1a0635ed7612711ba8fd80e821a4560495a39798b",
+      "response_md_sha256": "d43177f44c8ad76257acd420e090e6f73412985e10dfd4cb97975f2d2aa334bd",
+      "memory_query": "explique passe present futur dans Obsidia",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "500085650bf779e9ef7fa4580032ca0452ed353aa432e2b0397fb133fa5f11f3",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0005_500085650bf7.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\open\\records\\0005_500085650bf7.md",
+      "user_input_sha256": "8888b34c3f08b78a60133cb63bdbf917374fd3f99be04cdc92f05a2ced951b74",
+      "response_md_sha256": "eb7a70f77635086bea53ff50860ff4adc146a9092baea456ccd5662361874335",
+      "memory_query": "utilise tes couches cognitives pour me repondre",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T00:11:32.042173+00:00"
+}

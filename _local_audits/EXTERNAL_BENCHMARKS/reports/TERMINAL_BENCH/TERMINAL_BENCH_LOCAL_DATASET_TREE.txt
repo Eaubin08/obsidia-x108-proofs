@@ -1,0 +1,7 @@
+=== LOCAL DATASET TREE ===
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/Dockerfile
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/docker-compose.yaml
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/run-tests.sh
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/solution.sh
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/task.yaml
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/tests/test_outputs.py

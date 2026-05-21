@@ -1,0 +1,14 @@
+=== BFCL RESULTS HELP ===
+                                                                                
+ Usage: bfcl results [OPTIONS]                                                  
+                                                                                
+ List the results available for evaluation.                                     
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --result-dir          TEXT  Relative path to the model response folder, if   │
+│                             different from the default; Path should be       │
+│                             relative to the                                  │
+│                             `berkeley-function-call-leaderboard` root folder │
+│ --help        -h            Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

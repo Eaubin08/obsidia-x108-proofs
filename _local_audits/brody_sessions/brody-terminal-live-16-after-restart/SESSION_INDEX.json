@@ -1,0 +1,69 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "brody-terminal-live-16-after-restart",
+  "created_at": "2026-05-21T04:22:10.193493+00:00",
+  "record_count": 4,
+  "latest_event_hash": "8d06858b5cb21edb5c1ae3a24351125c41e2343effe39dab56d2a67d62b6332c",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "2650c91fac0c75bbfe14b3bc2e023ecc6fab3198b74fdbd9007c4788364ce1c0",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0001_2650c91fac0c.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0001_2650c91fac0c.md",
+      "user_input_sha256": "44a310fe1088f04a94fee4e8a6baa50c5897943fb877095d2d409124eb8bda04",
+      "response_md_sha256": "bf7fbd450e3eb250ad15bdcc7f8c2dc6f4f971764cfb911f31e1e651984a8b1e",
+      "memory_query": "salut brody je suis ton créateur",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "5b3a4e3ab89de03a52f166949bae74fa0498ea1e4bbe69cdd4065b2854270751",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0002_5b3a4e3ab89d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0002_5b3a4e3ab89d.md",
+      "user_input_sha256": "c5a10a4fef04865bf80bf7240b69ba781f073bc23d81ad99664dda18c9adb87e",
+      "response_md_sha256": "2b96c00776a3b76fa23bed972a186dc10b48ea7a14da16766a62e2b36608bc63",
+      "memory_query": "autorise ACT",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "1b64ae096c0f2c4a52aa08f4a49f5ddcd59b5e172b74c703a7f9815f4a0fe5e9",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0003_1b64ae096c0f.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0003_1b64ae096c0f.md",
+      "user_input_sha256": "b43d9c7df2a7262e71c241fc7ee4099ddd8ff4260e95fe1e49d7264ebfdd31b4",
+      "response_md_sha256": "9568d8370d0b88860724adf539713f09e00cc83699ff3023e0ba62e218a7a6fd",
+      "memory_query": "explique X108",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "8d06858b5cb21edb5c1ae3a24351125c41e2343effe39dab56d2a67d62b6332c",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0004_8d06858b5cb2.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\brody-terminal-live-16-after-restart\\records\\0004_8d06858b5cb2.md",
+      "user_input_sha256": "7a553faa9d050a9574755ea438a237c1178e1537e115529b8be3990af13268ec",
+      "response_md_sha256": "e7d4a24e4fac1cf19264fb6c04e43837950f4b9735aecb1030bd0e8f16ce96c0",
+      "memory_query": "explique les 34 arbres",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T04:22:55.939904+00:00"
+}

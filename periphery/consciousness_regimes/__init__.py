@@ -1,0 +1,1 @@
+# Consciousness Regimes — SANDBOX_ONLY. NO_CONSCIOUSNESS_CLAIM. NO_AGI_CLAIM.

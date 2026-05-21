@@ -1,0 +1,61 @@
+{
+    "lockfile_version": "1.0",
+    "created_at": "2026-05-19T22:52:57.774915+02:00",
+    "invocation": {
+        "command": "tb",
+        "args": [
+            "run",
+            "--dataset-path",
+            "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks",
+            "--agent",
+            "oracle",
+            "--task-id",
+            "obsidia-hello-world",
+            "--n-concurrent",
+            "1",
+            "--run-id",
+            "obsidia_terminal_bench_local_oracle_smoke",
+            "--output-path",
+            "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_local_audits/EXTERNAL_BENCHMARKS/smokes/TERMINAL_BENCH/runs"
+        ]
+    },
+    "harness": {
+        "package": "terminal-bench",
+        "version": "0.2.18",
+        "is_editable_installation": false
+    },
+    "agent": {
+        "name": "oracle",
+        "import_path": "terminal_bench.agents.oracle_agent:OracleAgent",
+        "model_name": "Oracle",
+        "extra_kwargs": {
+            "no_rebuild": false
+        }
+    },
+    "run_config": {
+        "log_level": "info",
+        "livestream": false,
+        "n_concurrent_trials": 1,
+        "n_attempts": 1,
+        "no_rebuild": false,
+        "cleanup": true,
+        "global_timeout_multiplier": 1.0,
+        "global_agent_timeout_sec": null,
+        "global_test_timeout_sec": null
+    },
+    "dataset": {
+        "name": null,
+        "version": null,
+        "local_path": "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks",
+        "task_ids": [
+            "obsidia-hello-world"
+        ],
+        "registry_url": null,
+        "local_registry_path": null
+    },
+    "local_config": {
+        "output_path": "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_local_audits/EXTERNAL_BENCHMARKS/smokes/TERMINAL_BENCH/runs",
+        "run_id": "obsidia_terminal_bench_local_oracle_smoke",
+        "upload_results": false
+    }
+}

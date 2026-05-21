@@ -1,0 +1,40 @@
+# BRODY SESSION MEMORY LEDGER RECORD — READONLY V2
+
+- status: BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_RECORD
+- session_id: mem-test-001
+- sequence: 145
+- created_at: 2026-05-20T18:26:23.232354+00:00
+- memory_query: garde ça en mémoire
+- packet_results_count: 0
+- event_hash: 67aaefe4ebeda5f199f29a71557ed78e2b98abbfff28bf78c7a4e0e7496b1da6
+- previous_event_hash: 8f6c4cb2c1b4b6a05b01a55f72dd6f995c772067145f1760acb28404575cbcab
+
+## User input
+
+garde ça en mémoire
+
+## Brody response
+
+Je prépare un candidat mémoire. graphiti_write=false.
+
+## Boundary
+
+- readonly: True
+- response_only: True
+- memory_role: GUIDE_CONTEXT_NAVIGATION_ONLY
+- memory_decision: False
+- allowed_to_decide: False
+- emits_act: False
+- emits_allow_hold_block: False
+- emits_verdict: False
+- kernel_mutation: False
+- x108_mutation: False
+- x108_runtime_binding: False
+- x108_merge: False
+- neo4j_role: LIVE_GRAPH_MEMORY_SURFACE_ONLY
+- brody_role: SESSION_MEMORY_LEDGER_READONLY
+- decision_authority: KX108_ONLY
+- ui: False
+- auto_triage: False
+- graphiti_index_write: False
+- memory_intake: False

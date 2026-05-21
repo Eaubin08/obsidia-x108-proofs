@@ -1,0 +1,31 @@
+name: X108 Periphery CI
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '.claude/**'
+      - '_local_audits/**'
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python syntax check
+        run: python -m compileall periphery -q
+      - name: Run all tests
+        run: python -m pytest tests/ -q --tb=short
+      - name: Protected files check
+        run: |
+          git diff --exit-code -- sigma/guard.py sigma/contracts.py sigma/protocols.py sigma/aggregation.py proofs/lean/ formal/tla/ merkle_seal.json
+      - name: Forbidden content check
+        run: python scripts/check_forbidden_content.py
+      - name: Generate manifest
+        run: python scripts/generate_recursive_manifest.py
+      - name: Verify manifest
+        run: python scripts/verify_recursive_manifest.py

@@ -1,0 +1,115 @@
+{
+  "pack": "OBSIDIA_GENCOIN_ENGINE_LARGE_SANDBOX_PRE_FREEZE",
+  "files": [
+    {
+      "path": "00_CANON/AVDR_CANON.md",
+      "sha256": "060e527f7fb1e8e941c03afb585e78bb4fb41a16711988acf3d699b48fcbc7d1",
+      "size": 799
+    },
+    {
+      "path": "00_CANON/BALANCE_CANON.md",
+      "sha256": "06df55c2853b0432a25a8723e3469f21908fa5943afbc35336e1552b0a2eabdf",
+      "size": 1625
+    },
+    {
+      "path": "00_CANON/GENCOIN_CANON.md",
+      "sha256": "1d1b1453020dfa037a82cd5dda235592439dd5a8087e76911f2ecde10b72e90f",
+      "size": 1634
+    },
+    {
+      "path": "00_CANON/ZONES_SECURITE_CANON.md",
+      "sha256": "923089aafe653ad8e452a3d675ee985df65cefb4e080b423c7d8b0eb47ef4094",
+      "size": 1529
+    },
+    {
+      "path": "01_MATH_CORE/FORMULAS.md",
+      "sha256": "4371fc9a8c565a347fef425d98f73ff2aa74cc7799ca51a3e6c40d10ddffcc24",
+      "size": 835
+    },
+    {
+      "path": "02_STATE_MACHINE/STATES.md",
+      "sha256": "b1032b6576703fad2a5f8e171b1767d067f7c69bd82864a881e64de0b4e82b18",
+      "size": 500
+    },
+    {
+      "path": "02_STATE_MACHINE/TRANSITIONS.csv",
+      "sha256": "2f13b57842165a583c2db705cac2096b704dc7c774deec93f08d5e02296b5f30",
+      "size": 483
+    },
+    {
+      "path": "03_PACKS/PACK_A_FAMILLES_PHYSIQUES.md",
+      "sha256": "d20580340a5013607a84762095aff30867aaf7c6164a95ecb9755c63a5f90421",
+      "size": 1630
+    },
+    {
+      "path": "03_PACKS/PACK_B_M2_CAPTATION.md",
+      "sha256": "34aaef0e59b89870d89de0e5ecfa2e3bbcb916a1b552b95556aa32873f84a45f",
+      "size": 1673
+    },
+    {
+      "path": "03_PACKS/PACK_C_M3_CONVERSION.md",
+      "sha256": "eb45f6255a634b6218ce9fc3c64f261d160253ce119bdde731bb1a001f7174cf",
+      "size": 1411
+    },
+    {
+      "path": "03_PACKS/PACK_D_M4_TOPOLOGIES.md",
+      "sha256": "a304babfce84bf7e3532fd9151ea2d2529410f47e20d2911b66cd1edc7c905e8",
+      "size": 741
+    },
+    {
+      "path": "03_PACKS/PACK_E_P3_P4.md",
+      "sha256": "7f5fa7ec0f0dc15e45b54bd33645e7df0b8152597e56611497ade2f1fd9d29be",
+      "size": 857
+    },
+    {
+      "path": "03_PACKS/PACK_F_MISSION_CONTEXTE.md",
+      "sha256": "7a81940653dafe28b2a289be2ace93643ebeaad041a7bafa4f48b6c6368ba188",
+      "size": 1063
+    },
+    {
+      "path": "03_PACKS/PACK_G_METRICS.md",
+      "sha256": "8dce4b5cf4b4c672d1b1275ede8babd8912ef3067346c8b783ee2d7146504d2e",
+      "size": 897
+    },
+    {
+      "path": "03_PACKS/PACK_H_HYPOTHESES.md",
+      "sha256": "6060ae266a1b54cfbb247bc39668816ba7c2c7d6a7284cc88ac5487089457403",
+      "size": 653
+    },
+    {
+      "path": "03_PACKS/PACK_I_SATURATIONS.md",
+      "sha256": "31ea7ee3e5b20ae9c0217535bba7d77356976d9aff1c3d249abe7f21d0304bac",
+      "size": 1008
+    },
+    {
+      "path": "03_PACKS/PACK_J_TRANSITIONS.md",
+      "sha256": "053a6b9113f8999840f1e48515961dcab0c6a92f1f41372b2b838cd1284b265b",
+      "size": 841
+    },
+    {
+      "path": "04_SANDBOX_ENGINE/sandbox_engine.py",
+      "sha256": "665a4ba320b51f8770c98abd7322701317da6b6ef1ac241958ef10c2380fbdeb",
+      "size": 4760
+    },
+    {
+      "path": "05_PROTOS/PROTOS.md",
+      "sha256": "1daede628247683ecd854887333b5e0eaf3bc7a740e89e582d8637b3c28218e2",
+      "size": 660
+    },
+    {
+      "path": "06_TESTS/test_sandbox_engine.py",
+      "sha256": "90d12aa8edfb65c81de7db437c51fa6933ec7d1d1da68dadef6a1cc23cd1b58f",
+      "size": 1215
+    },
+    {
+      "path": "07_LIMITS/LIMITS_AND_STATUS.md",
+      "sha256": "39c8ee12cb754d93f649c63fada5e22992a357a237cac96e70ce887301d74947",
+      "size": 981
+    },
+    {
+      "path": "README.md",
+      "sha256": "66ccd11ba026eeb43d2e210cbe4937d8a36478721e1e7d0f8e791b6937155ec3",
+      "size": 673
+    }
+  ]
+}

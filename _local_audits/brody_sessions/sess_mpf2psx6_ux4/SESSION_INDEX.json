@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "sess_mpf2psx6_ux4",
+  "created_at": "2026-05-21T05:52:07.608205+00:00",
+  "record_count": 2,
+  "latest_event_hash": "f76e727382b6562218f0a24300b06197a893242489b9672a8e1362fc01789428",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "db5030d82aa7dcb97a3473044a105150c3e85996fd12e2db86b0483ffddeac2d",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf2psx6_ux4\\records\\0001_db5030d82aa7.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf2psx6_ux4\\records\\0001_db5030d82aa7.md",
+      "user_input_sha256": "59a010e51e308b6d98c106bcd55877c799cb99f9ec371e566c73fc66fcfb9387",
+      "response_md_sha256": "9568d8370d0b88860724adf539713f09e00cc83699ff3023e0ba62e218a7a6fd",
+      "memory_query": "Brody, effectue une lecture active sur le Bloc 15 (LTO-16D) et l'arbre T24. D'après l'index local fusionné des 3267 items, quel est le statut exact de la pépite P136, et pourquoi la politique de l'arbre T24 bloque-t-elle l'écriture mémoire sous l'autorité KX108_ONLY ? Réponds en mode Verbatim intégral sans synthèse.",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "f76e727382b6562218f0a24300b06197a893242489b9672a8e1362fc01789428",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf2psx6_ux4\\records\\0002_f76e727382b6.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf2psx6_ux4\\records\\0002_f76e727382b6.md",
+      "user_input_sha256": "e42d86a570fc792d2cbace32ff20990f47e841e5701659d2b1243d5e115352d6",
+      "response_md_sha256": "bf324be8a63b9dab301bcc7bfc9b9805982f982ab04c704a6742ef15b2261393",
+      "memory_query": "Lecture active index local fusionné : extrait le texte brut de la pépite P136 du Bloc 15 (LTO-16D) et donne la raison exacte du blocage de T24. Mode Verbatim intégral sans synthèse.",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T05:54:04.254709+00:00"
+}

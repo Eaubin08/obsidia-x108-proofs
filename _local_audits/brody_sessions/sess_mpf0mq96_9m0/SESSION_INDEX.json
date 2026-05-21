@@ -1,0 +1,39 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "sess_mpf0mq96_9m0",
+  "created_at": "2026-05-21T04:53:52.284535+00:00",
+  "record_count": 1,
+  "latest_event_hash": "f148b40b8aea90fe129c64987679118cecb939614c67edb9271e8bc5593f5e77",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "f148b40b8aea90fe129c64987679118cecb939614c67edb9271e8bc5593f5e77",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf0mq96_9m0\\records\\0001_f148b40b8aea.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\sess_mpf0mq96_9m0\\records\\0001_f148b40b8aea.md",
+      "user_input_sha256": "bad87ef2c11c4805578723a238f3623b346ce30e7b5c792d39b5276fbf5cecc1",
+      "response_md_sha256": "2ce73cad655640e79498b9f1110a5171eb02a5304d95bde2a29f240faf4a383c",
+      "memory_query": "Fais-moi un résumé de ce qu'on vient de réparer ensemble sur les scripts de triage et le port 7688.",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-21T04:53:52.287786+00:00"
+}

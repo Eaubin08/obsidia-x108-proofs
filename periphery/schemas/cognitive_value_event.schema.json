@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CognitiveValueEvent",
+  "description": "Gencoin cognitive value candidate. No real token. Post-proof only.",
+  "type": "object",
+  "required": ["event_id", "action_id", "os3_ticket_id", "gencoin_candidate", "mint_allowed", "truth_score", "regime_state", "timestamp"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "action_id": {"type": "string"},
+    "os3_ticket_id": {"type": "string"},
+    "gencoin_candidate": {"type": "number", "minimum": 0},
+    "mint_allowed": {"type": "boolean", "const": false},
+    "truth_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "regime_state": {"type": "string"},
+    "assisted_ratio": {"type": "number"},
+    "distribution": {"type": "object"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "bfcl-brody-v2-full-runtime-simple-python-0",
+  "created_at": "2026-05-20T19:26:38.581248+00:00",
+  "record_count": 2,
+  "latest_event_hash": "f427aeecbe6d7f23154f2bd8ff8dc9a32e155fc17b1e45a746d1164724b6aac7",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "a72d9e35432d965f5f57c0875b1cef239f59e4fa8cf181da51df2c6ae6229cdd",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\bfcl-brody-v2-full-runtime-simple-python-0\\records\\0001_a72d9e35432d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\bfcl-brody-v2-full-runtime-simple-python-0\\records\\0001_a72d9e35432d.md",
+      "user_input_sha256": "1e74e30a09275645db241726eaadc94ac37101d36cea7e6f9eb76348094c3845",
+      "response_md_sha256": "73a50cb8c2412dac506157a6af0ac646da21d2bc9150712c998b92e084f6492f",
+      "memory_query": "Tu recois un cas BFCL tool-calling.\nTu es Brody Obsidien en runtime Three Foundations.\nTu dois produire une intention d appel outil candidate uniquement si elle est deductible de la question et du schema.\n\nQuestion utilisateur :\nFind the area of a triangle with a base of 10 units and height of 5 units.\n\nFonction disponible :\ncalculate_triangle_area(base: integer, height: integer, unit: string)\n\nReponds avec une candidate tool-call structuree si possible :\n\nCANDIDATE_TOOL_CALL: {\"function\": \"calculate_triangle_area\", \"arguments\": {\"base\": 10, \"height\": 5, \"unit\": \"units\"}}\n\nBoundary obligatoire :\ntool_call_is_candidate_only=true\ndecision_authority=KX108_ONLY\nemits_act=false\nmemory_write=false",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "f427aeecbe6d7f23154f2bd8ff8dc9a32e155fc17b1e45a746d1164724b6aac7",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\bfcl-brody-v2-full-runtime-simple-python-0\\records\\0002_f427aeecbe6d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\bfcl-brody-v2-full-runtime-simple-python-0\\records\\0002_f427aeecbe6d.md",
+      "user_input_sha256": "97c3940eab03e2b2b5de921c16013fa834e87c7449209dd8e2398fc6b414d991",
+      "response_md_sha256": "5546b130eb9af58b449f00a8499bb68ed63e388307c7fa537c28bdafc1e739de",
+      "memory_query": "Tu recois un cas BFCL tool-calling.\nTu es Brody Obsidien en runtime Three Foundations.\nTu ne dois pas executer l'outil.\nTu ne dois pas decider ACT.\nTu ne dois pas appeler d'API externe.\nTu dois produire une intention d'appel outil candidate uniquement si elle est deductible de la question et du schema.\n\nQuestion utilisateur :\nFind the area of a triangle with a base of 10 units and height of 5 units.\n\nFonction disponible :\ncalculate_triangle_area(base: integer, height: integer, unit: string)\n\nReponds avec une candidate tool-call structuree si possible :\n\nCANDIDATE_TOOL_CALL:\n{\n  \"function\": \"calculate_triangle_area\",\n  \"arguments\": { ... }\n}\n\nBoundary obligatoire :\ntool_call_is_candidate_only=true\nbrody_decision=false\nbrody_tool_authority=false\ndecision_authority=KX108_ONLY\nemits_act=false\nmemory_write=false",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T19:31:39.363394+00:00"
+}

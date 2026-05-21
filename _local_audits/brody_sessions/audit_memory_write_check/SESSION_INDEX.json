@@ -1,0 +1,39 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_memory_write_check",
+  "created_at": "2026-05-20T20:58:54.012621+00:00",
+  "record_count": 1,
+  "latest_event_hash": "93a48a769babe634d72901750e9a1744d964c91150c9f558fbfe6a9f3711668e",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "93a48a769babe634d72901750e9a1744d964c91150c9f558fbfe6a9f3711668e",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_memory_write_check\\records\\0001_93a48a769bab.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_memory_write_check\\records\\0001_93a48a769bab.md",
+      "user_input_sha256": "25c1933888fc8ed19b4a61bd6bca0e47ccc5db0d235604a7f109a6de8dd05faa",
+      "response_md_sha256": "677f0e4a0f1f35ddc878f15f226d53696d272b223d8b149d281ce494f6e5a65a",
+      "memory_query": "montre-moi ce que tu peux retenir sans écrire réellement",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T20:58:54.017085+00:00"
+}

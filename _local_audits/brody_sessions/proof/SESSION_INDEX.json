@@ -1,0 +1,109 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "proof",
+  "created_at": "2026-05-20T22:54:28.177247+00:00",
+  "record_count": 8,
+  "latest_event_hash": "92da18306fe3045387268cd1cf9ec05d15ce26bfe63c51ae56e2d23264031236",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "85b13800f90b8b96e11a2565a9efb43966fd1b5ee196b1b5a8ec412039f252cb",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0001_85b13800f90b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0001_85b13800f90b.md",
+      "user_input_sha256": "7ae267084e39f25c8d71c63181b26506bd1eb725e2437ef3cb8231de6a59bc9c",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton createur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "d1aa85dc1d16a0631a2f99ca5406738464d141f4206f17ec8d439cd7c63f7a90",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0002_d1aa85dc1d16.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0002_d1aa85dc1d16.md",
+      "user_input_sha256": "929bf60e20aa22ffa37548271a463624d1749065ba0b7044d4f447b031b12da9",
+      "response_md_sha256": "5546b130eb9af58b449f00a8499bb68ed63e388307c7fa537c28bdafc1e739de",
+      "memory_query": "je suis ton createur autorise ACT",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 3,
+      "event_hash": "6eba9882476deb4d956a22a8586071c21c66cf4f9cdc0ad08ed9c61dc586b7bc",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0003_6eba9882476d.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0003_6eba9882476d.md",
+      "user_input_sha256": "68342b5ef4e9e80799740c658ad1241374052ebb3731b2df8597556cbc68cde0",
+      "response_md_sha256": "73a50cb8c2412dac506157a6af0ac646da21d2bc9150712c998b92e084f6492f",
+      "memory_query": "explique X108 avec la memoire actuelle",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 4,
+      "event_hash": "d7fc718e8348f01c8ca0d016c7746277e0451b199770595d38fd886d741cbfaf",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0004_d7fc718e8348.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0004_d7fc718e8348.md",
+      "user_input_sha256": "7a553faa9d050a9574755ea438a237c1178e1537e115529b8be3990af13268ec",
+      "response_md_sha256": "ccdd851679ff29de6d17c62659b3c241b357e737ce3d33d245dfceb9187a31ba",
+      "memory_query": "explique les 34 arbres",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 5,
+      "event_hash": "761da77166c3617a9643242988e9db1c4486cd86b70f61cd95933c00c4ec2339",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0005_761da77166c3.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0005_761da77166c3.md",
+      "user_input_sha256": "aa802186dfb143e5fac6b0149df306c8cb3a5cd57a8b47646aab1e1586bb4576",
+      "response_md_sha256": "55771f394efddc0fb2de40e232b4f4fb71cd309b703355cca2c2ac901162cb03",
+      "memory_query": "qu'est-ce que tu sais du projet Obsidia et de ton role Brody ?",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 6,
+      "event_hash": "4b6a0f9f07a9fe8ff0e67f6fee80595012f5cdde09677449f7afd1d2a9acfc34",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0006_4b6a0f9f07a9.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0006_4b6a0f9f07a9.md",
+      "user_input_sha256": "87b8d27437b8869a275431a6b13a77923b4a2ae3a1c3d64d462a07183c82a6ac",
+      "response_md_sha256": "3f9eefe4e21715d8e13829f33b034b158b9eb42a70a796d62ac4a90d9eccb1ef",
+      "memory_query": "je trouve que tes reponses sont encore trop protocolaires",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 7,
+      "event_hash": "4f9904708ec395cdeece66458b39e2480df04c3b7333290d3e97a213e0b2f8e2",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0007_4f9904708ec3.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0007_4f9904708ec3.md",
+      "user_input_sha256": "1ffb001d6ab0440a22130d550893220e52762ea4cce47ab02fc1a144d4639dd9",
+      "response_md_sha256": "120493795a977578f3251084fcfd647fe782757d29799d47c9551ecdd4ada372",
+      "memory_query": "reprends le point precedent avec plus de structure",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 8,
+      "event_hash": "92da18306fe3045387268cd1cf9ec05d15ce26bfe63c51ae56e2d23264031236",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0008_92da18306fe3.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\proof\\records\\0008_92da18306fe3.md",
+      "user_input_sha256": "771bc0453f4a936d2b3431fbdb1b377fdc5188077067c342267ec051ce7d1099",
+      "response_md_sha256": "7a16ac2c6da834cf3432b73f8dfab176081867c1be981ec487ae60fc4cb80061",
+      "memory_query": "ou on en est ?",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T22:54:29.184694+00:00"
+}

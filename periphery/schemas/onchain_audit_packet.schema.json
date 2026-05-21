@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OnChainAuditPacket",
+  "type": "object",
+  "required": ["packet_id", "action_id", "gate_result", "dry_run_only", "real_chain_write", "hash"],
+  "properties": {
+    "packet_id": {"type": "string"},
+    "action_id": {"type": "string"},
+    "chain_id": {"type": "string"},
+    "action_class": {"type": "string"},
+    "gate_result": {"type": "string"},
+    "reason": {"type": "string"},
+    "risk_flags": {"type": "array", "items": {"type": "string"}},
+    "timestamp": {"type": "string"},
+    "dry_run_only": {"type": "boolean", "const": true},
+    "real_chain_write": {"type": "boolean", "const": false},
+    "hash": {"type": "string"}
+  }
+}

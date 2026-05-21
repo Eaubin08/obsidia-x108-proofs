@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_1",
+  "created_at": "2026-05-20T21:04:24.754329+00:00",
+  "record_count": 2,
+  "latest_event_hash": "6c07133dd4196da50aea0e2f28527c7522485d8f5a0e5119945cd15a74d41259",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "b81f092a15a75127cbcd287e28ada89ae88e51db33e54c6e086ec75c1a6356da",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_1\\records\\0001_b81f092a15a7.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_1\\records\\0001_b81f092a15a7.md",
+      "user_input_sha256": "7b143a0e90a17487cd4c765e16fae9be18a03503cb7c4de8806947bfb584b8f3",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton créateur on va aller loin ensemble",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "6c07133dd4196da50aea0e2f28527c7522485d8f5a0e5119945cd15a74d41259",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_1\\records\\0002_6c07133dd419.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_1\\records\\0002_6c07133dd419.md",
+      "user_input_sha256": "7ae267084e39f25c8d71c63181b26506bd1eb725e2437ef3cb8231de6a59bc9c",
+      "response_md_sha256": "cb366bbe6c784d77dca25e87e74366d21e5aa5f0f4e5245b96525600cc651671",
+      "memory_query": "salut brody je suis ton createur on va aller loin ensemble",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T21:39:37.103682+00:00"
+}

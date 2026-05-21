@@ -1,0 +1,48 @@
+{
+  "source_type": "LOCAL_EXISTING_SOURCES",
+  "source_mode": "EXISTING_PROJECT_MEMORY_ONLY",
+  "status": "FOUNDATION_A_PARTIAL",
+  "created_at": "2026-05-20T18:12:23.457873+00:00",
+  "context_packet_query_found": true,
+  "content_hydration_found": true,
+  "local_response_engine_found": true,
+  "brody_memory_doc_available": false,
+  "graphiti_v20_found": true,
+  "graphiti_index_item_count": 0,
+  "candidate_ledger_found": true,
+  "candidate_ledger_count": 50,
+  "auto_triage_found": true,
+  "contextual_material_status": "PARTIAL_PROJECT_MEMORY",
+  "project_memory_used_by_api": false,
+  "missing_links": [
+    "brody_memory_doc_not_available_via_neo4j"
+  ],
+  "source_files": [
+    "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_graphiti_readonly_indexes\\GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854\\graphiti_readonly_index_v2.json",
+    "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\memory_candidate_ledger.jsonl"
+  ],
+  "readonly": true,
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "foundation": "PROJECT_MEMORY",
+  "available_sources": {
+    "graphiti_v20": true,
+    "brody_memory_doc": false,
+    "context_packets": true,
+    "project_ledgers": true,
+    "tree_policy": true,
+    "mmonde_or_34trees": false
+  },
+  "graphiti_v20": true,
+  "brody_memory_doc": false,
+  "context_packets": true,
+  "project_ledgers": true,
+  "tree_policy": true,
+  "mmonde_or_34trees": false,
+  "used_by_api_now": false
+}

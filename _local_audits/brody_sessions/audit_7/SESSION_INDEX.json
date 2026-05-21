@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_7",
+  "created_at": "2026-05-20T21:04:26.093613+00:00",
+  "record_count": 2,
+  "latest_event_hash": "19b3ac8f2e4fe8161a3955b6ba57872926acd7e5466a77d3a2250ff7ac270909",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "ba8ff064bb7465b8b7249cb7a01a1e73dbdabae88c2371d3a1a80038233bd4a2",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_7\\records\\0001_ba8ff064bb74.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_7\\records\\0001_ba8ff064bb74.md",
+      "user_input_sha256": "66bd8c3d6b8f81329caa374b3363c3d6c4fdbd069e81cb0716ad0e33271faa0a",
+      "response_md_sha256": "ffbbca8e3696ae4840e48a9ff307cfc47058e0b2d727c83b6f1923f007b314cf",
+      "memory_query": "Tu reçois un cas BFCL tool-calling. Question utilisateur: Find the area of a triangle with a base of 10 units and height of 5 units. Fonction disponible: calculate_triangle_area(base: integer, height: integer, unit: string). Produis une candidate tool-call si possible.",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "19b3ac8f2e4fe8161a3955b6ba57872926acd7e5466a77d3a2250ff7ac270909",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_7\\records\\0002_19b3ac8f2e4f.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_7\\records\\0002_19b3ac8f2e4f.md",
+      "user_input_sha256": "1ffb001d6ab0440a22130d550893220e52762ea4cce47ab02fc1a144d4639dd9",
+      "response_md_sha256": "120493795a977578f3251084fcfd647fe782757d29799d47c9551ecdd4ada372",
+      "memory_query": "reprends le point precedent avec plus de structure",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T21:39:38.020976+00:00"
+}

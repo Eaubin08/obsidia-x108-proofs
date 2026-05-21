@@ -1,0 +1,49 @@
+{
+  "status": "BRODY_SESSION_MEMORY_LEDGER_READONLY_V2_INDEX",
+  "session_id": "audit_6",
+  "created_at": "2026-05-20T21:04:25.893315+00:00",
+  "record_count": 2,
+  "latest_event_hash": "3e9356ed0304f3128141b654b5ca37dd4266b1d9f4dcae89dd15f60020548be1",
+  "records": [
+    {
+      "sequence": 1,
+      "event_hash": "97345bb5981bb29c88e97a9eac098df386a67a392eebf951fa6b85fe36a5dc03",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_6\\records\\0001_97345bb5981b.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_6\\records\\0001_97345bb5981b.md",
+      "user_input_sha256": "16a7f4dc1b4b59b2d267705c8d2515c67f371596b2879dda6475ce16aa1d96bc",
+      "response_md_sha256": "65a03f8b88b141718c95b9eb9b475fc9e312caa6dc75acc04190e872b8596819",
+      "memory_query": "explique operator loop, command gate, receipt et handoff",
+      "packet_results_count": 0
+    },
+    {
+      "sequence": 2,
+      "event_hash": "3e9356ed0304f3128141b654b5ca37dd4266b1d9f4dcae89dd15f60020548be1",
+      "record_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_6\\records\\0002_3e9356ed0304.json",
+      "record_md": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\_local_audits\\brody_sessions\\audit_6\\records\\0002_3e9356ed0304.md",
+      "user_input_sha256": "87b8d27437b8869a275431a6b13a77923b4a2ae3a1c3d64d462a07183c82a6ac",
+      "response_md_sha256": "3f9eefe4e21715d8e13829f33b034b158b9eb42a70a796d62ac4a90d9eccb1ef",
+      "memory_query": "je trouve que tes reponses sont encore trop protocolaires",
+      "packet_results_count": 0
+    }
+  ],
+  "readonly": true,
+  "response_only": true,
+  "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_allow_hold_block": false,
+  "emits_verdict": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
+  "brody_role": "SESSION_MEMORY_LEDGER_READONLY",
+  "decision_authority": "KX108_ONLY",
+  "ui": false,
+  "auto_triage": false,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "updated_at": "2026-05-20T21:39:37.886660+00:00"
+}
