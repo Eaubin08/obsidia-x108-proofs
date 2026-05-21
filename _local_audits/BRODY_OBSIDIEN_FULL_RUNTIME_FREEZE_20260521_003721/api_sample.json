@@ -1,0 +1,19 @@
+{
+  "status": "API_SAMPLE_PASS",
+  "http_status": 200,
+  "decision_authority": "KX108_ONLY",
+  "memory_write": false,
+  "emits_act": false,
+  "voice_source": "MEMORY_RESPONSE_CHAIN",
+  "memory_chain_pass": true,
+  "local_records_count": 3267,
+  "text_excerpt_records_count": 2363,
+  "runtime_context_status": "BRODY_RUNTIME_CONTEXT_READY",
+  "final_answer_len": 596,
+  "final_answer_preview": "X108 constitue le verrou decisionnel du systeme Obsidia : c'est la frontiere entre cognition/analyse et action irreversible. Brody peut lire, structurer, contextualiser, preparer des candidats, mais ne franchit jamais cette frontiere. Seul le kernel X108 autorise une action.\nLa memoire confirme la p",
+  "project_memory_status": "BRODY_PROJECT_MEMORY_SOURCE_MAP_PASS",
+  "candidate_status": "CANDIDATE_MEMORY_READY",
+  "operator_loop_status": "7/7 PASS",
+  "tree_policy_status": "BRODY_TREE_POLICY_READY",
+  "cognitive_modules_status": "BRODY_COGNITIVE_MODULES_SNAPSHOT_PASS"
+}

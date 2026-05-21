@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import json
 import re
 import unicodedata
@@ -7,6 +7,54 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from xml.etree import ElementTree as ET
+
+# --- BRODY_SAFE_HYDRATION_SCAN_V1 ---
+# Avoid crashing hydration on local dev folders / broken venv links.
+import os as _brody_os
+
+_BRODY_SKIP_DIRS = {
+    ".git", ".hg", ".svn",
+    ".venv", "venv", "env",
+    "node_modules",
+    "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+    "dist", "build",
+    "site-packages", "lib64", "Lib", "Scripts",
+    "_external_benchmarks",
+}
+
+def _brody_safe_files(root):
+    root = Path(root)
+    try:
+        if not root.exists():
+            return
+    except OSError:
+        return
+
+    try:
+        walker = _brody_os.walk(root, topdown=True, followlinks=False)
+        for dirpath, dirnames, filenames in walker:
+            # mutate dirnames in-place so os.walk does not descend into skipped dirs
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in _BRODY_SKIP_DIRS and not d.startswith(".venv")
+            ]
+
+            try:
+                base = Path(dirpath)
+            except OSError:
+                continue
+
+            for filename in filenames:
+                p = base / filename
+                try:
+                    if p.is_file():
+                        yield p
+                except OSError:
+                    continue
+    except OSError:
+        return
+# --- END BRODY_SAFE_HYDRATION_SCAN_V1 ---
+
 
 
 BOUNDARY_FALSE_KEYS = [
@@ -121,7 +169,7 @@ def default_roots(script_path: Path):
 
 def iter_files(roots):
     for root in roots:
-        for path in root.rglob("*"):
+        for path in _brody_safe_files(root):
             if not path.is_file():
                 continue
             parts = set(path.parts)
