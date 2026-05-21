@@ -300,6 +300,106 @@ def build_true_brody_answer(
         if not voice_source:
             voice_source = "MEMORY_RESPONSE_CHAIN_NO_MATERIAL"
 
+    elif (
+        chain.get("status") == "ERROR"
+        and not creator_detected
+        and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+    ):
+        # Infrastructure error — surface transparently, never mask with semantic advisory.
+        error_type = str(chain.get("error_type") or chain.get("error") or "UNKNOWN")
+        neo4j = str(chain.get("neo4j_status", ""))
+        detail = str(chain.get("error_message") or chain.get("error") or "")[:120]
+        answer_parts = []
+        if fr:
+            answer_parts.append(
+                f"Erreur infrastructure chaîne mémoire : `{error_type}`. "
+                + (f"Neo4j : {neo4j}. " if neo4j else "")
+                + (f"Détail : {detail}. " if detail and detail != error_type else "")
+                + "Réponse structurelle uniquement — aucun accès mémoire. "
+                "Vérifier la disponibilité du backend et de l'index local."
+            )
+        else:
+            answer_parts.append(
+                f"Memory chain infrastructure error: `{error_type}`. "
+                + (f"Neo4j: {neo4j}. " if neo4j else "")
+                + (f"Detail: {detail}. " if detail and detail != error_type else "")
+                + "Structural response only — no memory access. "
+                "Check backend and local index availability."
+            )
+        voice_source = "MEMORY_CHAIN_INFRASTRUCTURE_ERROR"
+
+    elif (
+        chain.get("status") in ("NO_MEMORY_RESULTS", "PARTIAL_QUERY_ONLY")
+        and not creator_detected
+        and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+    ):
+        chain_topic_ctx: str = (
+            chain.get("topic")
+            or ctx.get("semantic_query_snapshot", {}).get("topic", "GENERAL")
+            or "GENERAL"
+        )
+        if chain_topic_ctx == "GENERAL":
+            explicit_id = _detect_explicit_identifier(user_message)
+            attempted = chain.get("attempted_queries", [])
+            tried = [a.get("query", "") for a in attempted if isinstance(a, dict) and a.get("query")]
+            answer_parts = []
+            if explicit_id:
+                # Explicit identifier miss — notify precisely, do not simulate open discussion.
+                if fr:
+                    tried_str = ", ".join(f"`{q}`" for q in tried[:4]) if tried else f"`{explicit_id}`"
+                    answer_parts.append(
+                        f"Aucune correspondance locale pour `{explicit_id}`. "
+                        f"Requêtes tentées : {tried_str}. "
+                        "L'index local Graphiti (3267 items JSONL) ne contient pas de nœud "
+                        f"correspondant à cet identifiant. "
+                        "Neo4j hors ligne : recherche live indisponible. "
+                        "Pour accéder à cet identifiant : l'ajouter à l'index JSONL "
+                        "ou démarrer Neo4j pour une recherche live."
+                    )
+                else:
+                    tried_str = ", ".join(f"`{q}`" for q in tried[:4]) if tried else f"`{explicit_id}`"
+                    answer_parts.append(
+                        f"No local match for `{explicit_id}`. "
+                        f"Queries attempted: {tried_str}. "
+                        "Local Graphiti index (3267 JSONL items) has no node for this identifier. "
+                        "Neo4j offline: live search unavailable. "
+                        "To access this identifier: add it to the JSONL index or start Neo4j."
+                    )
+                voice_source = "SEMANTIC_MATCH_FAILED_EXPLICIT_TAG"
+            else:
+                # Generic query, GENERAL topic, no match — notify miss, do not fake open question.
+                if fr:
+                    tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "aucune"
+                    answer_parts.append(
+                        f"Requête non classifiée — aucune correspondance dans l'index local. "
+                        f"Requêtes tentées : {tried_str}. "
+                        "Reformuler avec un terme clé reconnu "
+                        "(X108, mémoire, arbres, preuves, opérateur, gencoin) "
+                        "ou un identifiant explicite (ex. P136, T13)."
+                    )
+                else:
+                    tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "none"
+                    answer_parts.append(
+                        f"Unclassified query — no match in local index. "
+                        f"Queries attempted: {tried_str}. "
+                        "Reformulate with a recognized keyword "
+                        "(X108, memory, trees, proofs, operator, gencoin) "
+                        "or an explicit identifier (e.g. P136, T13)."
+                    )
+                voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
+        else:
+            # Known topic but no index results — synthesize from topic classification.
+            answer_parts = []
+            if fr:
+                answer_parts.append(_synthesize_auditor_response_fr(
+                    user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
+                ))
+            else:
+                answer_parts.append(_synthesize_auditor_response_en(
+                    user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
+                ))
+            voice_source = "SEMANTIC_ADVISORY_NO_MEMORY"
+
     # 8. X108 boundary footer (always)
     if fr:
         answer_parts.append(
@@ -639,3 +739,35 @@ def _clean_title(title: str) -> str:
     if len(t) > 80:
         t = t[:77] + "..."
     return t
+
+
+# Common uppercase tokens that are NOT Obsidia-specific identifiers
+_COMMON_CAPS_EXCLUDE = frozenset({
+    "BRODY", "TRUE", "FALSE", "NULL", "NONE", "FROM", "WITH", "THIS", "THAT",
+    "JUST", "HAVE", "BEEN", "WILL", "DOES", "WHAT", "WHEN", "WHERE", "THEN",
+    "ONLY", "ALSO", "BOTH", "VERY", "MORE", "SOME", "MOST", "INTO", "OVER",
+    "EACH", "MÊME", "DANS", "AVEC", "POUR", "TOUT", "PLUS", "BIEN", "QUOI",
+    "DONC", "MAIS", "SANS", "SOUS", "LEUR", "COMME", "SELON", "ENTRE",
+    "PASS", "FAIL", "LOCK", "NODE", "TYPE", "VOID", "MOCK", "LIVE", "STUB",
+})
+
+
+def _detect_explicit_identifier(text: str) -> str:
+    """
+    Return the first explicit Obsidia project identifier found in text, '' if none.
+
+    Matches:
+      - Letter + 1-4 digits: P136, B12, T20, C7  (pépites, blocs, trees)
+      - 4+ consecutive uppercase letters not in common-word exclusion list: BLOC, PEPITE
+    These patterns indicate a specific artifact reference the user expects to resolve.
+    """
+    import re as _re
+    # Priority 1: letter + digits — most unambiguous explicit references
+    m = _re.search(r'\b([A-Z][0-9]{1,4})\b', text)
+    if m:
+        return m.group(1)
+    # Priority 2: ALL_CAPS words >= 4 chars not in exclusion set
+    for w in _re.findall(r'\b([A-Z]{4,})\b', text):
+        if w not in _COMMON_CAPS_EXCLUDE:
+            return w
+    return ""
