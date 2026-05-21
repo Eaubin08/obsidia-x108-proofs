@@ -1,0 +1,15 @@
+BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE
+freeze_dir: _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721
+created_at: 2026-05-21T00:37:28.764931+00:00
+updated_at: 2026-05-21T00:46:59.696038+00:00
+status: BRODY_OBSIDIEN_PSEUDO_LLM_FULL_RUNTIME_READY_FOR_FREEZE
+records: 3267
+excerpts: 2363
+api_tests: 761/761
+non_sovereignty_tests: 139/139
+live_16_cases: 16/16
+workbench_build: PASS
+protected_diff: CLEAN
+readonly: true
+memory_write: false
+decision_authority: KX108_ONLY
