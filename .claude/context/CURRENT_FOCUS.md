@@ -7,48 +7,47 @@
 
 ## Current phase
 
-Configuring Claude Code for Obsidia-safe local operation (project-local guidance layer).
+Public repo cleanup completed. Canonical repo established. Next mission: choose next technical phase from roadmap.
 
 ## Active branch (as of last inspection)
 
-- Branch: `ci-strict-sigma-qa-no-false-error_20260502_235213`
+- Branch: `main`
 - Working tree: clean
-- Ahead of `origin/main`: 2 commits, NOT pushed
-- Recent theme: CI hardening — Sigma QA false-positive reduction, RFC3161 cross-platform skip when no tests collect
+- HEAD: `5c5c2ef` (aligned with origin/main)
+- Canonical repo: `obsidia-x108-proofs_REMOTE_A5F21C6B`
+- Old repo (`obsidia-x108-proofs`): `.git/config` corrupted — kept local, not canonical
 
 ## Known issues
 
-- `proofs/PROOFKIT_REPORT.json` reports **FAIL** on `V18_3_1_root_hash_verify` (hash mismatch). **Do not silently fix.** Diagnose first.
+- V18_3_1 root hash mismatch: **RESOLVED** (PROOFKIT_REPORT.json regenerated 2026-05-21, all checks PASS)
+- Old repo `.git/config` corruption: NOT fixed — circumvented by using REMOTE clone as canonical
 
-## Next technical mission (after configuration is complete)
+## Next technical mission
 
-**Investigate the V18_3_1 root hash mismatch in read-only mode before any repair.**
+Choose next mission from `docs/roadmap/NOT_YET_IMPLEMENTED_AFTER_V2.md`:
 
-Determine which of these is the cause:
-
-- [ ] Stale manifest
-- [ ] Content corruption
-- [ ] Encoding drift (UTF-8 BOM, etc.)
-- [ ] Line-ending drift (CRLF vs LF)
-- [ ] Wrong working directory at hash time
-- [ ] Root file mismatch (which file is the "root"?)
-- [ ] `aggregation_stable.py` hash changed between freeze and current
-- [ ] Generated root artifact mismatch
-
-**Do not repair yet.** Diagnosis first, then propose, then approve, then patch surgically.
+- [ ] Runtime ACT réel
+- [ ] Graphiti/Brody feedback loop
+- [ ] Ledger Gencoin persistant
+- [ ] Tests adversariaux
+- [ ] Seuils par domaine
+- [ ] Vue régulateur
+- [ ] Machine-checking
 
 ## Open questions
 
-- (none recorded yet — add as they come up)
-
-## What changed last session
-
-- 2026-05-05 settings-cleanup: removed invalid Claude hooks placeholder from `.claude/settings.json` (4ea9de5). Configuration layer closed. V18_3_1 hash investigation queued.
+- (none)
 
 ## 2026-05-05 settings-cleanup
 - branch: ci-strict-sigma-qa-no-false-error_20260502_235213
 - did: removed invalid `hooks._disabled_by_default` key from `.claude/settings.json`; committed as 4ea9de5
 - next: begin read-only PROOF_SENTINEL diagnosis of V18_3_1 root hash mismatch
+- blocked on: nothing
+
+## 2026-05-26 public-cleanup-freeze
+- branch: main (canonical: obsidia-x108-proofs_REMOTE_A5F21C6B)
+- did: phases 1-4 public repo cleanup completed + 4 git tags pushed (HEAD 5c5c2ef)
+- next: choose next technical mission from NOT_YET_IMPLEMENTED_AFTER_V2.md
 - blocked on: nothing
 
 ---
