@@ -71,6 +71,7 @@ async def brody_chat(req: BrodyChatRequest):
         session_id=req.session_id or "local",
     )
     response_md = r.get("response_md", r.get("response", ""))
+    response_md = normalize_brody_text(response_md)  # early repair before any propagation
     context_packet = r.get("context_packet", {})
     action_risk = r.get("action_risk", False)
 
