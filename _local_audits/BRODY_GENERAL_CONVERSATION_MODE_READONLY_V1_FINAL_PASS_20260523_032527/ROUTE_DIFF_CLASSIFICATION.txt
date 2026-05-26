@@ -1,4 +1,0 @@
-﻿ROUTE_DIFF_STATUS=PREEXISTING_NOT_THIS_PALIER
-DO_NOT_REVERT=true
-REASON=routes/brody.py contains previously stabilized UTF8/compact/debug/final_answer_source payload exposure.
-CURRENT_PALIER_SCOPE=brody_true_voice_adapter.py + general conversation test + memory intake test encoding fix.

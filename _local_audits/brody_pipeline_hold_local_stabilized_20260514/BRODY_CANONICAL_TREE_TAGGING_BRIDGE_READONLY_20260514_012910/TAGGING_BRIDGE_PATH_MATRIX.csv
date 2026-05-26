@@ -1,6 +1,0 @@
-path_id,path_name,recommended,status,maturity,risk,tagging_basis,confidence,coverage_docs,coverage_pct,heuristic,llm_guess,invention,writes_required,gate_required,blocking_reason
-PATH_A,registry_34_tree_direct,true,READY_PENDING_GATE,HIGH,LOW,TITLE_REGEX_MATCH,0.99,48,1.8,false,false,false,true,true,
-PATH_B,kernel_metric_bridge,false,BLOCKED,NONE,HIGH,HEURISTIC,0.10,,null,true,false,false,true,true,IR Alphabet = opérations pas familles. Table token_IR→tree_id manquante.
-PATH_C,alphabet_bridge,false,BLOCKED,LOW,HIGH,HEURISTIC,0.20,,null,true,false,false,true,true,Reverse OS concepts sans tree_id explicite. Inférer = heuristique.
-PATH_D,os_trad_reverse_language_bridge,false,BLOCKED,NONE,HIGH,NOT_APPLICABLE,0.05,,null,false,false,false,false,false,OS Trad = protocole opérations pas taxonomie arbre. reverse_os.registry.json vide.
-PATH_E,hybrid_bridge,false,PENDING_OPERATOR_INPUT,LOW,MEDIUM,OPERATOR_EXPLICIT+TITLE_REGEX_MATCH,0.70,,null,false,false,false,true,true,Table concept→arbre opérateur manquante. PATH_A doit être exécuté en premier.

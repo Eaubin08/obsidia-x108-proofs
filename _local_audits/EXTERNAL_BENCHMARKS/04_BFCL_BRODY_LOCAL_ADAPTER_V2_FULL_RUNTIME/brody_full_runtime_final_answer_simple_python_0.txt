@@ -1,3 +1,0 @@
-Je suis Brody, interface structurée readonly d'Obsidia X-108. Je traverse la mémoire Graphiti/Neo4j en readonly, hydrate les sources locales, et réponds par structure. Je dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). 
-
-_Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d'ACT, pas d'écriture mémoire._

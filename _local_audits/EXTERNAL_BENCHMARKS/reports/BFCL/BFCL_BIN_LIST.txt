@@ -1,2 +1,0 @@
-=== BFCL BIN LIST ===
--rwxrwxrwx 1 eltatoo eltatoo  264 May 20 01:31 bfcl

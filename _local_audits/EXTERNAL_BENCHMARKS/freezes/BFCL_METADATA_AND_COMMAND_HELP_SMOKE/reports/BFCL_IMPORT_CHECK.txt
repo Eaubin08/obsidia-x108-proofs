@@ -1,3 +1,0 @@
-=== BFCL PYTHON IMPORT CHECK ===
-BFCL_IMPORT_OK
-BFCL_PATH= /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/03_bfcl/.venv/lib/python3.12/site-packages/bfcl_eval

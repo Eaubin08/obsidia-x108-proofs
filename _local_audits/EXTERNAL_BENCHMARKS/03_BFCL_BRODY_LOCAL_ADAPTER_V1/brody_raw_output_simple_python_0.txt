@@ -1,4 +1,0 @@
-RÉPONSE STRUCTURELLE BFCL — OFFLINE PATH.
-Boundary: READONLY=true | DECISION_AUTHORITY=KX108_ONLY | NEO4J_OFFLINE
-tool_call_is_candidate_only=true, brody_decision=false, brody_tool_authority=false, decision_authority=KX108_ONLY, emits_act=false
-CANDIDATE_TOOL_CALL: {"function": "calculate_triangle_area", "arguments": {"base": 10, "height": 5, "unit": "units"}}
