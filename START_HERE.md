@@ -21,8 +21,8 @@
 4. Lire `docs/AUDIT_GUIDE.md`
 
 ### Décideur / Régulateur
-1. Lire `PUBLIC_STATUS.md` — état exact du projet
-2. Lire `USE_CASES.md` — 5 cas d'usage concrets
+1. Lire `docs/status/PUBLIC_STATUS.md` — état exact du projet
+2. Lire `docs/status/USE_CASES.md` — 5 cas d'usage concrets
 3. Lire `PROOF_INDEX.md` — index des preuves disponibles
 
 ---
@@ -47,7 +47,7 @@ cd proofs/lean && lake build
 ---
 
 ## Ordre de lecture recommandé
-1. `PUBLIC_STATUS.md` — ce que c'est, ce que ce n'est pas
+1. `docs/status/PUBLIC_STATUS.md` — ce que c'est, ce que ce n'est pas
 2. `PROOF_INDEX.md` — index complet du repo
 3. `README.md` — vue d'ensemble publique
 4. `docs/KERNEL_OVERVIEW.md` — spécification du noyau X-108
@@ -55,3 +55,4 @@ cd proofs/lean && lake build
 
 ---
 Dernière mise à jour : 2026-04-22
+
