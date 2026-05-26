@@ -73,7 +73,7 @@
 |---|---|---|---|---|
 | **README** | Vue d'ensemble | À METTRE À JOUR | `README.md` | Alignement Sigma |
 | **KERNEL_OVERVIEW** | Spécification | À CRÉER | `docs/KERNEL_OVERVIEW.md` | Rôle du kernel |
-| **USE_CASES** | Cas d'usage | À CRÉER | `docs/USE_CASES.md` | 3-5 cas concrets |
+| **USE_CASES** | Cas d'usage | À CRÉER | `docs/status/USE_CASES.md` | 3-5 cas concrets |
 | **AUDIT_GUIDE** | Guide d'audit | À VÉRIFIER | `docs/AUDIT_GUIDE.md` | Procédure d'audit |
 | **LIMITS** | Limites | À VÉRIFIER | `docs/LIMITS.md` | Vecteurs non couverts |
 | **SIGMA** | Spécification | À ALIGNER | `docs/SIGMA.md` | Statut public clair |
@@ -125,7 +125,7 @@
 
 ### À CRÉER
 - `KERNEL_OVERVIEW.md`
-- `USE_CASES.md`
+- `docs/status/USE_CASES.md`
 - `START_HERE.md`
 - `ASK_AN_AI.md`
 
@@ -159,7 +159,7 @@
 
 ### Pour une **IA externe**
 1. Lire `ASK_AN_AI.md`
-2. Lire `PUBLIC_STATUS.md`
+2. Lire `docs/status/PUBLIC_STATUS.md`
 3. Lire `PROOF_INDEX.md` (ce fichier)
 4. Consulter les éléments pertinents selon la question
 

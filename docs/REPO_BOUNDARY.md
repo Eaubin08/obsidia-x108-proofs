@@ -111,7 +111,7 @@ Dans les autres documents du dépôt, la formule recommandée est :
 
 - `README.md` → vue d'ensemble du dépôt public
 - `docs/PROOF_SCOPE.md` → taxonomie des claims et compteurs
-- `PUBLIC_STATUS.md` → état réel public
+- `docs/status/PUBLIC_STATUS.md` → état réel public
 - `ECOSYSTEM.md` → contexte élargi multi-repo
 
 ---

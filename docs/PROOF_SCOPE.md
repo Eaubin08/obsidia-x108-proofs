@@ -94,8 +94,8 @@ Ce repo n'est pas :
 
 En cas de doute, lire dans cet ordre :
 
-1. `P1_FREEZE_NOTE.md`
-2. `PUBLIC_STATUS.md`
+1. `docs/status/P1_FREEZE_NOTE.md`
+2. `docs/status/PUBLIC_STATUS.md`
 3. `README.md`
 4. ce fichier
 5. `docs/AUDIT_TOOLS.md`

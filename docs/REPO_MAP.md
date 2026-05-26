@@ -7,8 +7,8 @@ Ce fichier aide un lecteur externe à naviguer dans le dépôt public P1.
 ## Facade racine
 
 - `README.md` — page d'accueil du dépôt public
-- `PUBLIC_STATUS.md` — matrice publique PASS / périmètre
-- `P1_FREEZE_NOTE.md` — référence de gel P1
+- `docs/status/PUBLIC_STATUS.md` — matrice publique PASS / périmètre
+- `docs/status/P1_FREEZE_NOTE.md` — référence de gel P1
 
 ## Périmètre de preuves public
 
@@ -58,7 +58,7 @@ Voir aussi : `docs/AUDIT_TOOLS.md` pour le guide d'utilisation.
 | Point d'entrée | Rôle |
 |---|---|
 | `README.md` | Landing page auditeur |
-| `PUBLIC_STATUS.md` | Matrice de statut P1 |
+| `docs/status/PUBLIC_STATUS.md` | Matrice de statut P1 |
 | `run_all_proofs.ps1` | Runner e2e public |
 | `sigma/run_pipeline.py` | Entrée Sigma publique |
 | `proofs/verify_all.py` | Vérificateur Python principal |
@@ -67,12 +67,12 @@ Voir aussi : `docs/AUDIT_TOOLS.md` pour le guide d'utilisation.
 ## Chemins de lecture recommandés
 
 **Lecteur rapide :**
-1. `PUBLIC_STATUS.md`
-2. `P1_FREEZE_NOTE.md`
+1. `docs/status/PUBLIC_STATUS.md`
+2. `docs/status/P1_FREEZE_NOTE.md`
 3. `README.md`
 
 **Chemin auditeur :**
-1. `PUBLIC_STATUS.md`
+1. `docs/status/PUBLIC_STATUS.md`
 2. `docs/PROOF_SCOPE.md`
 3. `docs/REPO_MAP.md` (ce fichier)
 4. `docs/AUDIT_TOOLS.md`

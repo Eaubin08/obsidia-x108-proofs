@@ -72,5 +72,5 @@ Cold reading for an external auditor:
 ## Related files
 
 - `README.md`
-- `P1_FREEZE_NOTE.md`
-- `PUBLIC_STATUS.md`
+- `docs/status/P1_FREEZE_NOTE.md`
+- `docs/status/PUBLIC_STATUS.md`

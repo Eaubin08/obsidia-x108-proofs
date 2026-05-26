@@ -55,6 +55,6 @@ Son intégration dans le périmètre public P2 sera documentée lors du gel P2.
 
 ## Liens utiles
 
-- `P1_FREEZE_NOTE.md` — référence du gel P1
-- `PUBLIC_STATUS.md` — statut public actuel
+- `docs/status/P1_FREEZE_NOTE.md` — référence du gel P1
+- `docs/status/PUBLIC_STATUS.md` — statut public actuel
 - `docs/REPO_MAP.md` — carte du dépôt
