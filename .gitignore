@@ -196,3 +196,8 @@ audit_logs/
 *.gz
 GAVAGE_REALISE_ACCORD.json
 OBSIDIA_X108_FULL_STACK_V3_V4_PLUS_WORLD_GATEWAY_PATCH.zip
+
+# === LOCAL SENSITIVE PROBES ===
+test_neo4j.py
+*_local_password*
+*.local.secret
