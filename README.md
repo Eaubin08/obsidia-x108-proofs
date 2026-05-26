@@ -16,6 +16,28 @@ It contains:
 
 It is not the full proprietary production engine.
 
+## Current main branch status
+
+`main` is now a cleaned public continuation branch after the 2026-05-26 public hygiene freeze.
+
+Current public cleanup references:
+- `docs/status/PUBLIC_REPO_CLEANUP_FREEZE_20260526.md`
+- `docs/status/README_STATUS_INDEX.md`
+- `docs/status/PERIPHERY_PUBLIC_INDEX.md`
+- `docs/status/GRAPHITI_FULL_RECORDS_KEEP_DECISION.md`
+
+Current hygiene state:
+- tracked `.docx` files: 0
+- tracked Python / PowerShell scripts at repo root: 0
+- root Mmonde duplicate: resolved into `docs/status/mmonde_reconciliation/`
+- Graphiti full readonly records: kept intentionally until a tested light dataset exists
+
+Boundary:
+- no kernel mutation
+- no X108 merge
+- no Graphiti reduction
+- public documentation alignment only
+
 ## Reference points
 
 Three public references must be distinguished:
@@ -41,7 +63,7 @@ This does not change the canonical P1 audit target.
 An auditor should read `main` as an active continuation branch, not as the definition of the frozen P1 perimeter.
 
 See also:
-- `P1_FREEZE_NOTE.md`
+- `docs/status/P1_FREEZE_NOTE.md`
 - `docs/P1_FREEZE_AUDIT_READABILITY_NOTE.md`
 
 ## What is included
@@ -115,12 +137,12 @@ A successful P1 public run should produce:
 ## Suggested reading paths
 
 Fast reader:
-1. `PUBLIC_STATUS.md`
-2. `P1_FREEZE_NOTE.md`
+1. `docs/status/PUBLIC_STATUS.md`
+2. `docs/status/P1_FREEZE_NOTE.md`
 3. this README
 
 Auditor path:
-1. `PUBLIC_STATUS.md`
+1. `docs/status/PUBLIC_STATUS.md`
 2. `docs/PROOF_SCOPE.md`
 3. `docs/REPO_MAP.md`
 4. `.\\run_all_proofs.ps1`
@@ -139,8 +161,8 @@ RFC3161-focused path:
 ## Repository guide
 
 Detailed guidance is available in:
-- `PUBLIC_STATUS.md`
-- `P1_FREEZE_NOTE.md`
+- `docs/status/PUBLIC_STATUS.md`
+- `docs/status/P1_FREEZE_NOTE.md`
 - `docs/P1_FREEZE_AUDIT_READABILITY_NOTE.md`
 - `docs/SIGMA.md`
 - `docs/LIMITS.md`
@@ -177,3 +199,4 @@ Mainline note:
 - `main` can continue after the freeze
 - P2-bank and later public packs do not redefine P1
 - the frozen P1 perimeter remains the tag / commit above
+
