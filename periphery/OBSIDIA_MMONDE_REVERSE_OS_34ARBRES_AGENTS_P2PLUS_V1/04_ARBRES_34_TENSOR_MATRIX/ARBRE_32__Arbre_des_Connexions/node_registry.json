@@ -1,0 +1,11 @@
+{
+  "tree_id": "32",
+  "nodes": [
+    {
+      "id": "T32_N01",
+      "label": "Connexions",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

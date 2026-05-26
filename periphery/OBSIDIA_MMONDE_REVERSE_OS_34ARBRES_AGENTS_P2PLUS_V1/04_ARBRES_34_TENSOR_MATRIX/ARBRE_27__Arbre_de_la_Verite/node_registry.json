@@ -1,0 +1,11 @@
+{
+  "tree_id": "27",
+  "nodes": [
+    {
+      "id": "T27_N01",
+      "label": "Verite",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

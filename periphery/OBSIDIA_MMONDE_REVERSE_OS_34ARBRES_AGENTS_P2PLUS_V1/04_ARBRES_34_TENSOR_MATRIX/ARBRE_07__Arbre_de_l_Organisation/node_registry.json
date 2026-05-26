@@ -1,0 +1,11 @@
+{
+  "tree_id": "07",
+  "nodes": [
+    {
+      "id": "T07_N01",
+      "label": "Organisation",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

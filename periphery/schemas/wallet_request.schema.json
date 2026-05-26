@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WalletSecurityDecision",
+  "type": "object",
+  "required": ["request_id", "blocked", "reason", "real_wallet_access_allowed"],
+  "properties": {
+    "request_id": {"type": "string"},
+    "request_type": {"type": "string"},
+    "blocked": {"type": "boolean"},
+    "reason": {"type": "string"},
+    "private_key_requested": {"type": "boolean"},
+    "seed_phrase_requested": {"type": "boolean"},
+    "wallet_connect_requested": {"type": "boolean"},
+    "real_wallet_access_allowed": {"type": "boolean", "const": false}
+  }
+}

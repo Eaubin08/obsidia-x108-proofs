@@ -1,0 +1,25 @@
+﻿{
+    "decision_authority":  "KX108_ONLY",
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "memory_write":  false,
+    "graphiti_write":  false,
+    "neo4j_write":  false,
+    "kernel_mutation":  false,
+    "readonly":  true,
+    "source":  "OBSIDIA_API",
+    "route":  "/bus/bridge",
+    "timestamp":  "2026-05-22T19:16:47.197630+00:00",
+    "compact":  true,
+    "debug":  false,
+    "status":  "OK",
+    "deep_snapshots_omitted":  true,
+    "deep_snapshots_available":  true,
+    "debug_payload_omitted":  true,
+    "debug_payload_available":  true,
+    "omitted_debug_fields":  [
+                                 "bridge_id",
+                                 "is_attached",
+                                 "stats"
+                             ]
+}

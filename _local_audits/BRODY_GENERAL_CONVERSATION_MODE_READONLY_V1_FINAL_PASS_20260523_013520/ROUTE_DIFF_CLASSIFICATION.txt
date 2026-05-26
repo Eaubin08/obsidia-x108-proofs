@@ -1,0 +1,19 @@
+ROUTE_DIFF_CLASSIFICATION
+==========================
+File: apps/obsidia_api/routes/brody.py
+Status: PREEXISTING_NOT_THIS_PALIER
+DO_NOT_REVERT: true
+
+Reason:
+routes/brody.py contains stabilized blocks from prior paliers:
+  - UTF-8 last-mile repair
+  - compact/debug payload packetization
+  - final_answer_source exposure
+  - JSONResponse charset=utf-8
+
+This diff is load-bearing for the current live runtime.
+It predates BRODY_GENERAL_CONVERSATION_MODE_READONLY_V1.
+It was NOT introduced by this palier.
+It MUST NOT be reverted.
+
+This palier touched: brody_true_voice_adapter.py only (within routes scope).

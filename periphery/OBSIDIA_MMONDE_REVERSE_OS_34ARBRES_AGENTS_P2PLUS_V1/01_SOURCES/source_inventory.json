@@ -1,0 +1,58 @@
+{
+  "source_count": 18,
+  "files": [
+    "Architecture BDF et Protocole d_Eveil Cognitif d_Obsidia.docx",
+    "Architecture d'Obsidia _ Fusion des 34 Arbres et HexaFlux.docx",
+    "Architecture et Protocoles de l'OS Cognitif Obsidia.docx",
+    "Architecture et Visualisation du Reverse OS d'Obsidia.docx",
+    "Constitution d_Obsidia et Protocoles de Securite Cognitive.docx",
+    "Dossier de Fabrication d_Obsidia X-108 - Eveil du Maitre d_Oeuvre.docx",
+    "Dossier de Fabrication et Checklist d_Eveil P2+ Obsidia (1).docx",
+    "L'Agent Shazam Cognitif et la Matrice des 34 Arbres.docx",
+    "L'Algorithme Shazam Cognitif et la Matrice des 34 Arbres.docx",
+    "L'Architecture Narrative du Reverse OS d'Obsidia.docx",
+    "LES 34 ARBRES _ Architecture et Structure Cognitive Globale.docx",
+    "La Matrice Cognitive d_Obsidia - Mecanique Tensorielle des 34 Arbres.docx",
+    "Le Reverse OS - Eloquence Semantique d_Obsidia.docx",
+    "OBSIDIA_TOUS_LES_AGENTS.docx",
+    "Obsidia - Souverainete Cognitive et Protocole MCP.docx",
+    "Plan d_Execution Industriel et Checklist de Forge Holistique P2+.docx",
+    "bazar suite kernel moteur memoire phrise chrono + comos ect reflex  .docx",
+    "math formlisation memoir eect .docx"
+  ],
+  "renamed_mojibake_sources": [
+    {
+      "from": "Architecture BDF et Protocole d'├ëveil Cognitif d'Obsidia.docx",
+      "to": "Architecture BDF et Protocole d_Eveil Cognitif d_Obsidia.docx"
+    },
+    {
+      "from": "Constitution d'Obsidia et Protocoles de S├⌐curit├⌐ Cognitive.docx",
+      "to": "Constitution d_Obsidia et Protocoles de Securite Cognitive.docx"
+    },
+    {
+      "from": "Dossier de Fabrication d'Obsidia X-108 _ L'├ëveil du Ma├«tre d'┼Æuvre.docx",
+      "to": "Dossier de Fabrication d_Obsidia X-108 - Eveil du Maitre d_Oeuvre.docx"
+    },
+    {
+      "from": "Dossier de Fabrication et Checklist d'├ëveil P2+ Obsidia (1).docx",
+      "to": "Dossier de Fabrication et Checklist d_Eveil P2+ Obsidia (1).docx"
+    },
+    {
+      "from": "La Matrice Cognitive dΓÇÖObsidia _ M├⌐canique Tensorielle des 34 Arbres.docx",
+      "to": "La Matrice Cognitive d_Obsidia - Mecanique Tensorielle des 34 Arbres.docx"
+    },
+    {
+      "from": "Le Reverse OS _ L'├ëloquence S├⌐mantique d'Obsidia.docx",
+      "to": "Le Reverse OS - Eloquence Semantique d_Obsidia.docx"
+    },
+    {
+      "from": "Obsidia _ Souverainet├⌐ Cognitive et Protocole MCP.docx",
+      "to": "Obsidia - Souverainete Cognitive et Protocole MCP.docx"
+    },
+    {
+      "from": "Plan d'Ex├⌐cution Industriel et Checklist de Forge Holistique P2+.docx",
+      "to": "Plan d_Execution Industriel et Checklist de Forge Holistique P2+.docx"
+    }
+  ],
+  "status": "UPDATED_AFTER_FINAL_LIGHT_PATCH"
+}

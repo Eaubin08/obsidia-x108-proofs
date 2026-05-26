@@ -1,0 +1,69 @@
+{
+  "report_id": "BRODY_REAL_MEMORY_RESPONSE_CHAIN_LIVE_RETEST_AFTER_PATCH",
+  "date": "2026-05-20T20:18:26.105271+00:00",
+  "local_index_records": 3267,
+  "chain_results": {
+    "X108 kernel": {
+      "status": "LOCAL_INDEX_FALLBACK_PARTIAL",
+      "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+      "effective_query": "x108",
+      "results_count": 8
+    },
+    "mémoire graphiti candidat": {
+      "status": "LOCAL_INDEX_FALLBACK_PARTIAL",
+      "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+      "effective_query": "memory",
+      "results_count": 8
+    },
+    "34 arbres bloqués": {
+      "status": "LOCAL_INDEX_FALLBACK_PARTIAL",
+      "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+      "effective_query": "34_arbres",
+      "results_count": 8
+    },
+    "gencoin jeton": {
+      "status": "LOCAL_INDEX_FALLBACK_PARTIAL",
+      "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+      "effective_query": "gencoin",
+      "results_count": 3
+    }
+  },
+  "followup_tests": {
+    "encore trop protocolaires": false,
+    "reprends ce point": true,
+    "continue le travail": false,
+    "continue sur ça": true
+  },
+  "patches_applied": [
+    "brody_semantic_query_router.py: primary_query + fallback_queries ladder",
+    "brody_memory_response_chain_adapter.py: local Graphiti index fallback (NEO4J offline)",
+    "brody_session_memory_adapter.py: strict followup patterns",
+    "brody_session_memory_runtime.py: strict _FOLLOWUP_KEYWORDS",
+    "brody_true_voice_adapter.py: LOCAL_GRAPHITI_INDEX_FALLBACK synthesis",
+    "RightPanel.tsx: Memory Chain + Semantic Query panels"
+  ],
+  "test_results": {
+    "new_tests": 37,
+    "total_suite": 1261,
+    "failures": 0
+  },
+  "boundary": {
+    "readonly": true,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "emits_act": false,
+    "kernel_mutation": false,
+    "decision_authority": "KX108_ONLY",
+    "graphiti_live": false,
+    "neo4j_live": false
+  },
+  "honest_classification": {
+    "GRAPHITI_LIVE_FULL_READY": false,
+    "NEO4J_MEMORY_READY": false,
+    "LOCAL_GRAPHITI_INDEX_READY": true,
+    "QUERY_LADDER_READY": true,
+    "FOLLOWUP_STRICT_READY": true
+  },
+  "status": "BRODY_REAL_MEMORY_RESPONSE_CHAIN_LIVE_READY_FOR_OPERATOR_RETEST"
+}

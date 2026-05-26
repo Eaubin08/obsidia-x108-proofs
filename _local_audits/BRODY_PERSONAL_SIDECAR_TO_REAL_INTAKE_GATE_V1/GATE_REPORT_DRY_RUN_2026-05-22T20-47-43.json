@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-05-22T20:47:43.282509+00:00",
+  "mode": "dry-run",
+  "source_candidates": 1,
+  "converted_count": 1,
+  "rejected_count": 0,
+  "rejected_reasons": [],
+  "plan_path": "_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\DRY_RUN_PLAN_2026-05-22T20-47-43.jsonl",
+  "neo4j_write": false,
+  "graphiti_write": false,
+  "memory_write": false,
+  "decision_authority": "KX108_ONLY"
+}

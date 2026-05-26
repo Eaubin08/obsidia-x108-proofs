@@ -1,0 +1,64 @@
+{
+  "manifest_id": "BRODY_CONNECTION_MAP_AUDIT_MANIFEST_20260520",
+  "audit_dir": "_local_audits/BRODY_CONNECTION_MAP_AUDIT_20260520/",
+  "audit_date": "2026-05-20",
+  "audit_result": "BRODY_CONNECTION_MAP_AUDIT_PASS",
+  "algorithm": "sha256",
+  "files": [
+    {
+      "filename": "BRODY_CONNECTION_MAP_AUDIT_REPORT.md",
+      "sha256": "1826565a6f16309978e6448d2aecdabfb9ab9b8161bec50776f9383aaaddc38d",
+      "role": "main_audit_report"
+    },
+    {
+      "filename": "BRODY_CONNECTION_MAP_AUDIT_REPORT.json",
+      "sha256": "b82a901ef3117bff8d37350504828b57dd76bb90de48a4d78d16e031f7e9112f",
+      "role": "main_audit_report_json"
+    },
+    {
+      "filename": "BRODY_MODULE_INVENTORY.csv",
+      "sha256": "3ab1d77d7727d66d962651c5b63619afdd089d041818db607c2520c7b266a2db",
+      "role": "module_inventory_44_rows"
+    },
+    {
+      "filename": "BRODY_FREEZE_LEDGER_SCAN.md",
+      "sha256": "abbaefdd20dcf52c53dd6dd6110242f9dfc2806d52d9122c7c87765a2b148ed6",
+      "role": "freeze_ledger_15_entries"
+    },
+    {
+      "filename": "BRODY_RUNTIME_BINDING_MATRIX.md",
+      "sha256": "615bc6ad7accac7f2a061eebf4911c2bd9c2d823f2ec6b0f9ac43b212676297e",
+      "role": "runtime_binding_matrix_42_rows"
+    },
+    {
+      "filename": "BRODY_UNBOUND_MODULES.md",
+      "sha256": "c0aa135cf5bc55ab27923af23e841a89e91fec6d8da0a1cdab6d11d1541c4c6f",
+      "role": "unbound_module_classification_ABCDE"
+    },
+    {
+      "filename": "BRODY_NEXT_BINDING_PRIORITY.md",
+      "sha256": "1356e7c948ff29aff9ca4c0a01c258b8869f3d2a54da05d9957cec030b1e10e2",
+      "role": "next_binding_priority_P0_to_P6"
+    }
+  ],
+  "summary": {
+    "total_files": 7,
+    "total_modules_scanned": 67,
+    "runtime_active_count": 20,
+    "api_bound_count": 34,
+    "unbound_should_bind_count": 4,
+    "protected_count": 9,
+    "stale_or_duplicate_count": 5,
+    "next_priority_1": "tool_call_candidate readonly adapter (BFCL V2 PASS)",
+    "next_priority_2": "operator_loop status activation",
+    "graphiti_status": "GRAPHITI_LIVE_BLOCKED",
+    "neo4j_status": "NEO4J_PASSWORD_NOT_SET",
+    "tool_call_candidate_status": "MISSING",
+    "bfcl_v2_status": "BLOCKED_NO_CANDIDATE",
+    "decision_authority": "KX108_ONLY",
+    "memory_write": false,
+    "emits_act": false,
+    "readonly": true,
+    "kernel_mutation": false
+  }
+}

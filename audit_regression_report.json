@@ -1,0 +1,135 @@
+{
+  "total": 21,
+  "passed": 21,
+  "failed": 0,
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "results": [
+    {
+      "module": "apps.obsidia_api.routes.status",
+      "status": "PASS",
+      "message": "OK (313 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.brody",
+      "status": "PASS",
+      "message": "OK (32 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.translation",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.context",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.memory",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.gencoin",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.graphiti",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.x108",
+      "status": "PASS",
+      "message": "OK (32 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.os3",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.worldcalls",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.blockchain",
+      "status": "PASS",
+      "message": "OK (73 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.audit",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.periphery_ops",
+      "status": "PASS",
+      "message": "OK (69 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "apps.obsidia_api.routes.brody_monitoring",
+      "status": "PASS",
+      "message": "OK (10 transitive)",
+      "layer": "route"
+    },
+    {
+      "module": "periphery.common",
+      "status": "PASS",
+      "message": "OK (0 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.common_types",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.event_bus",
+      "status": "PASS",
+      "message": "OK (1 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.math_core.governance_partition",
+      "status": "PASS",
+      "message": "OK (0 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.engine_gates.data_gate",
+      "status": "PASS",
+      "message": "OK (0 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.modules_agents.agent_registry",
+      "status": "PASS",
+      "message": "OK (0 transitive)",
+      "layer": "periphery"
+    },
+    {
+      "module": "periphery.feedback_memory_candidate",
+      "status": "PASS",
+      "message": "OK (0 transitive)",
+      "layer": "periphery"
+    }
+  ]
+}

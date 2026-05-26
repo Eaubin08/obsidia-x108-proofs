@@ -1,0 +1,35 @@
+{
+  "report_id": "BRODY_BRIDGE_LIFECYCLE_REGISTRATION_FIX_PASS",
+  "created_at": "2026-05-22T00:00:00+00:00",
+  "session": "post_crash_resumption_20260521_003721",
+  "bus_singleton_used": true,
+  "same_bus_instance": true,
+  "bridge_registered_on_startup": true,
+  "duplicate_subscription_prevented": true,
+  "publish_nowait_reaches_bridge": true,
+  "generated_output_jsonl_test_pass": true,
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "kernel_untouched": true,
+  "allowed_to_decide": false,
+  "allowed_to_act": false,
+  "tests": {
+    "test_bridge_connection": {"passed": 6, "failed": 0, "result": "PASS", "duration_s": 2.12},
+    "test_http_audit_generated_output": {"passed": 3, "failed": 0, "result": "PASS", "duration_s": 2.12},
+    "test_brody_three_foundations_no_500": {"passed": 16, "failed": 0, "result": "PASS", "duration_s": 89.61}
+  },
+  "protected_diff": "CLEAN",
+  "sigma_untouched": true,
+  "proofs_lean_untouched": true,
+  "formal_tla_untouched": true,
+  "merkle_seal_untouched": true,
+  "secondary_fix": {
+    "description": "Removed receipt re-emission from BrodyBridge.handle() — caused asyncio feedback loop preventing drain_loop cancellation",
+    "file": "periphery/brody_bridge.py",
+    "lines_removed": "107-115",
+    "risk": "LOW"
+  }
+}

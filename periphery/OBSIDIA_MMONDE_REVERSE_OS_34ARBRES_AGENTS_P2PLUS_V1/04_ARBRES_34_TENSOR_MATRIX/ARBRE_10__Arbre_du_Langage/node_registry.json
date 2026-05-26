@@ -1,0 +1,11 @@
+{
+  "tree_id": "10",
+  "nodes": [
+    {
+      "id": "T10_N01",
+      "label": "Langage",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

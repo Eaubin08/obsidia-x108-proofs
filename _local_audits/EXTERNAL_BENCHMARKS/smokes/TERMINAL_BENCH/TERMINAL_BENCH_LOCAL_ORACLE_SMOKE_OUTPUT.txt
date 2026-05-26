@@ -1,0 +1,132 @@
+Failed to load task obsidia-hello-world: 1 validation error for Task
+instruction
+  Field required [type=missing, input_value={'descriptions': [{'key':...ts_in_same_shell': True}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing. Using fallback duration.
+Starting harness run
+Run ID: obsidia_terminal_bench_local_oracle_smoke
+Error validating task /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/task.yaml
+Error validating task /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/task.yaml
+Error validating task /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks/obsidia-hello-world/task.yaml
+⠋ Running tasks (0/1, Accuracy: 0.00%)                                0% 0:00:00
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/cli/tb/runs.py:402 in create                                        │
+│                                                                              │
+│   399 │   │   global_test_timeout_sec=global_test_timeout_sec,               │
+│   400 │   )                                                                  │
+│   401 │                                                                      │
+│ ❱ 402 │   results = harness.run()                                            │
+│   403 │   _print_rich_results(results, harness._results_output_path)         │
+│   404                                                                        │
+│   405                                                                        │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/harness/harness.py:1240 in run                                      │
+│                                                                              │
+│   1237 │   │   │   self._write_run_metadata()                                │
+│   1238 │   │   │   self._create_run_lock()                                   │
+│   1239 │   │                                                                 │
+│ ❱ 1240 │   │   results = self._execute_tasks()                               │
+│   1241 │   │                                                                 │
+│   1242 │   │   # Only update metadata on end if not resuming                 │
+│   1243 │   │   if not self._is_resuming:                                     │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/harness/harness.py:1160 in _execute_tasks                           │
+│                                                                              │
+│   1157 │   │   │   │   │   )                                                 │
+│   1158 │   │   │   │   │                                                     │
+│   1159 │   │   │   │   │   for future in as_completed(future_to_task):       │
+│ ❱ 1160 │   │   │   │   │   │   trial_results = future.result()               │
+│   1161 │   │   │   │   │   │                                                 │
+│   1162 │   │   │   │   │   │   # Check for duplicates before adding          │
+│   1163 │   │   │   │   │   │   trial_key = (trial_results.task_id,           │
+│        trial_results.trial_name)                                             │
+│                                                                              │
+│ /usr/lib/python3.12/concurrent/futures/_base.py:449 in result                │
+│                                                                              │
+│   446 │   │   │   │   if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]: │
+│   447 │   │   │   │   │   raise CancelledError()                             │
+│   448 │   │   │   │   elif self._state == FINISHED:                          │
+│ ❱ 449 │   │   │   │   │   return self.__get_result()                         │
+│   450 │   │   │   │                                                          │
+│   451 │   │   │   │   self._condition.wait(timeout)                          │
+│   452                                                                        │
+│                                                                              │
+│ /usr/lib/python3.12/concurrent/futures/_base.py:401 in __get_result          │
+│                                                                              │
+│   398 │   def __get_result(self):                                            │
+│   399 │   │   if self._exception:                                            │
+│   400 │   │   │   try:                                                       │
+│ ❱ 401 │   │   │   │   raise self._exception                                  │
+│   402 │   │   │   finally:                                                   │
+│   403 │   │   │   │   # Break a reference cycle with the exception in        │
+│       self._exception                                                        │
+│   404 │   │   │   │   self = None                                            │
+│                                                                              │
+│ /usr/lib/python3.12/concurrent/futures/thread.py:58 in run                   │
+│                                                                              │
+│    55 │   │   │   return                                                     │
+│    56 │   │                                                                  │
+│    57 │   │   try:                                                           │
+│ ❱  58 │   │   │   result = self.fn(*self.args, **self.kwargs)                │
+│    59 │   │   except BaseException as exc:                                   │
+│    60 │   │   │   self.future.set_exception(exc)                             │
+│    61 │   │   │   # Break a reference cycle with the exception 'exc'         │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/harness/harness.py:1004 in _execute_single_trial                    │
+│                                                                              │
+│   1001 │   │   Returns:                                                      │
+│   1002 │   │   │   TrialResults: The results of the trial execution          │
+│   1003 │   │   """                                                           │
+│ ❱ 1004 │   │   trial_handler = TrialHandler(                                 │
+│   1005 │   │   │   trial_name=trial_name,                                    │
+│   1006 │   │   │   input_path=task_path,                                     │
+│   1007 │   │   │   output_path=self._run_path,                               │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/handlers/trial_handler.py:249 in __init__                           │
+│                                                                              │
+│   246 │   │                                                                  │
+│   247 │   │   self._logger = logger.getChild(__name__)                       │
+│   248 │   │   self.task_paths = TaskPaths(input_path)                        │
+│ ❱ 249 │   │   self.task = Task.from_yaml(self.task_paths.task_config_path)   │
+│   250 │   │   self.parser = ParserFactory.get_parser(self.task.parser_name)  │
+│   251 │   │                                                                  │
+│   252 │   │   if output_path is not None:                                    │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/termin │
+│ al_bench/handlers/trial_handler.py:102 in from_yaml                          │
+│                                                                              │
+│    99 │   def from_yaml(cls, path: Path) -> "Task":                          │
+│   100 │   │   data = yaml.safe_load(path.read_text())                        │
+│   101 │   │   try:                                                           │
+│ ❱ 102 │   │   │   return cls.model_validate(data)                            │
+│   103 │   │   except:                                                        │
+│   104 │   │   │   print("Error validating task", path)                       │
+│   105 │   │   │   raise                                                      │
+│                                                                              │
+│ /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_ext │
+│ ernal_benchmarks/02_terminal_bench/.venv/lib/python3.12/site-packages/pydant │
+│ ic/main.py:732 in model_validate                                             │
+│                                                                              │
+│    729 │   │   │   │   code='validate-by-alias-and-name-false',              │
+│    730 │   │   │   )                                                         │
+│    731 │   │                                                                 │
+│ ❱  732 │   │   return cls.__pydantic_validator__.validate_python(            │
+│    733 │   │   │   obj,                                                      │
+│    734 │   │   │   strict=strict,                                            │
+│    735 │   │   │   extra=extra,                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ValidationError: 1 validation error for Task
+instruction
+  Field required [type=missing, input_value={'descriptions': 
+[{'key':...ts_in_same_shell': True}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing

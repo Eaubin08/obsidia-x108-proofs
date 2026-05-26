@@ -1,0 +1,11 @@
+{
+  "tree_id": "23",
+  "nodes": [
+    {
+      "id": "T23_N01",
+      "label": "Temps",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

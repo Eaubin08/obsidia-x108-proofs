@@ -1,0 +1,12 @@
+{
+  "message": "explique-moi ce qu'on vient de stabiliser",
+  "topic": "GENERAL",
+  "final_answer_source": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+  "decision_authority": "KX108_ONLY",
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "kernel_mutation": false,
+  "emits_act": false,
+  "final_answer": "Index Graphiti local (hors-ligne) — requête : `explique` :\n\n- **AB59E40E3320_EXPLIQUE_A_UN_HUMAIN.md** [34_arbres, agents, audit, canon]\n- **EXPLIQUE_A_UN_HUMAIN.md** [agents, canon, hexaflux, kernel]"
+}

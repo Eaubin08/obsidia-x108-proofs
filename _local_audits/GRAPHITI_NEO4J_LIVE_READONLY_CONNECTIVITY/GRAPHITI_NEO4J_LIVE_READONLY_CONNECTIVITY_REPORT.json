@@ -1,0 +1,48 @@
+{
+  "report_id": "GRAPHITI_NEO4J_LIVE_READONLY_CONNECTIVITY",
+  "timestamp": "2026-05-22T14:56:00Z",
+  "method_id": "BRODY_NATURAL_LANGUAGE_QUALITY_16",
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+  "verdict": "GRAPHITI_NEO4J_LIVE_READONLY_CONNECTIVITY_BLOCKED_WITH_REASON",
+  "blockers": [
+    "NEO4J_PASSWORD_NOT_SET_IN_ENVIRONMENT"
+  ],
+  "resolution": "Export NEO4J_PASSWORD=obsidia_neo4j_2026 in PowerShell before launching Brody API on port 8001.",
+  "neo4j": {
+    "container": "deploy-neo4j-1 (neo4j:5.26-community)",
+    "status": "Up",
+    "port_host": 7688,
+    "port_container": 7687,
+    "bolt_uri": "bolt://127.0.0.1:7688",
+    "auth_user": "neo4j",
+    "connectivity_test": "PASS",
+    "socket_7688": "OPEN"
+  },
+  "obsidiashell_bridge": {
+    "port": 8011,
+    "socket_8011": "OPEN",
+    "file": "obsidiashell-main/obsidia_core/agent_bridge.py"
+  },
+  "brody_api": {
+    "port": 8001,
+    "socket_8001": "CLOSED",
+    "pipeline": "apps/obsidia_api/brody_real_response_pipeline.py",
+    "probe": "_probe_graphiti() checks port 7688 + port 8011 + NEO4J_PASSWORD env"
+  },
+  "graphiti_live": {
+    "exists": true,
+    "path": "periphery/graphiti/graphiti_readonly_bridge.py",
+    "status": "STUB - query_graphiti_readonly returns empty result; real bolt queries are in brody_real_response_pipeline via _CONTEXT_QUERY.query_neo4j()"
+  },
+  "graphiti_frozen_v20": {
+    "exists": true,
+    "path": "obsidiashell-main/obsidia_core/agent_bridge.py",
+    "endpoints": ["/graph/v20/frozen/status", "/graph/v20/frozen/entities", "/graph/v20/frozen/context", "/graph/v20/frozen/relations"]
+  },
+  "env_config": {
+    "graphiti_lab": ".env.graphiti.local -> NEO4J_URI=bolt://127.0.0.1:7688, NEO4J_USER=neo4j, NEO4J_PASSWORD=obsidia_neo4j_2026",
+    "obsidiashell": ".env.obsidiashell.local -> GRAPHITI_V20_NEO4J_URI=bolt://127.0.0.1:7688, GRAPHITI_V20_NEO4J_PASSWORD=obsidia_neo4j_2026"
+  },
+  "next_action": "Set $env:NEO4J_PASSWORD='obsidia_neo4j_2026' in Terminal B, then launch Brody API. Run _probe_graphiti() to confirm GRAPHITI_LIVE_READONLY_PASS."
+}

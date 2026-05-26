@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TransactionSimulationResult",
+  "type": "object",
+  "required": ["tx_id", "simulated", "broadcast_attempted", "real_tx_sent", "simulation_status"],
+  "properties": {
+    "tx_id": {"type": "string"},
+    "chain_id": {"type": "string"},
+    "simulated": {"type": "boolean", "const": true},
+    "broadcast_attempted": {"type": "boolean", "const": false},
+    "real_tx_sent": {"type": "boolean", "const": false},
+    "estimated_gas": {"type": "integer"},
+    "risk_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "risk_flags": {"type": "array", "items": {"type": "string"}},
+    "simulation_status": {"type": "string", "const": "DRY_RUN_ONLY"}
+  }
+}

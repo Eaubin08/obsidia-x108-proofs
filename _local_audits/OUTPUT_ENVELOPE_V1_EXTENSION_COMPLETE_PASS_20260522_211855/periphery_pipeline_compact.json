@@ -1,0 +1,31 @@
+﻿{
+    "decision_authority":  "KX108_ONLY",
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "memory_write":  false,
+    "graphiti_write":  false,
+    "neo4j_write":  false,
+    "kernel_mutation":  false,
+    "readonly":  true,
+    "source":  "OBSIDIA_API",
+    "route":  "/api/periphery/pipeline/run",
+    "timestamp":  "2026-05-22T19:17:32.419674+00:00",
+    "compact":  true,
+    "debug":  false,
+    "status":  "OK",
+    "deep_snapshots_omitted":  true,
+    "deep_snapshots_available":  true,
+    "debug_payload_omitted":  true,
+    "debug_payload_available":  true,
+    "omitted_debug_fields":  [
+                                 "action_id",
+                                 "domain",
+                                 "extra_metrics",
+                                 "unknowns",
+                                 "risk_flags",
+                                 "contradictions",
+                                 "evidence_refs",
+                                 "recommended_gate",
+                                 "can_emit_act"
+                             ]
+}

@@ -1,0 +1,11 @@
+{
+  "tree_id": "13",
+  "nodes": [
+    {
+      "id": "T13_N01",
+      "label": "Art",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

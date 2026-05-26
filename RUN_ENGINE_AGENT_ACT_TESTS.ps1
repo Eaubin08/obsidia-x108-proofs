@@ -1,0 +1,1 @@
+python -m pytest .\tests\periphery\test_agent_contracts.py .\tests\periphery\test_agent_registry.py .\tests\periphery\test_action_lifecycle.py .\tests\periphery\test_action_sequence_governor.py .\tests\periphery\test_world_action_gateway.py .\tests\periphery\test_feedback_memory_candidate.py .\tests\non_sovereignty\test_world_action_gateway_dry_run.py

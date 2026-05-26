@@ -1,0 +1,11 @@
+{
+  "tree_id": "25",
+  "nodes": [
+    {
+      "id": "T25_N01",
+      "label": "Histoire",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

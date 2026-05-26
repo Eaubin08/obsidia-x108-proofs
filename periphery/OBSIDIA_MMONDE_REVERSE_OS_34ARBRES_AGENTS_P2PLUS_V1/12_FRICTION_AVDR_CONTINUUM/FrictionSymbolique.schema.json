@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FrictionSymbolique",
+  "type": "object",
+  "description": "Schema placeholder for FrictionSymbolique.",
+  "properties": {}
+}

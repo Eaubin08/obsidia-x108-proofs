@@ -1,0 +1,11 @@
+{
+  "tree_id": "19",
+  "nodes": [
+    {
+      "id": "T19_N01",
+      "label": "Culture",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

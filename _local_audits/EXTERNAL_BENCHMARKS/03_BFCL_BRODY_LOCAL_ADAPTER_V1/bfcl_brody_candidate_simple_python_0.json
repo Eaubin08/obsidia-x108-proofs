@@ -1,0 +1,19 @@
+{
+  "id": "simple_python_0",
+  "candidate": {
+    "function_name": "calculate_triangle_area",
+    "arguments": {
+      "base": 10,
+      "height": 5,
+      "unit": "units"
+    }
+  },
+  "source": "BRODY_LOCAL",
+  "decision_authority": "KX108_ONLY",
+  "tool_authority": false,
+  "tool_call_is_candidate_only": true,
+  "emits_act": false,
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false
+}

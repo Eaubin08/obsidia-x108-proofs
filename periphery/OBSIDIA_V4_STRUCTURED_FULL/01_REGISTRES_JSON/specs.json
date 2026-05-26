@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "name": "Event Schema Obsidia (format canonique JSON, P1-P10)",
+    "status": "VALIDÉ"
+  },
+  {
+    "id": 2,
+    "name": "Decision Ticket Obsidia (schéma ticket signé, P11-P20)",
+    "status": "VALIDÉ"
+  },
+  {
+    "id": 3,
+    "name": "Sandbox Policy (isolation et gouvernance, P21-P30)",
+    "status": "VALIDÉ"
+  },
+  {
+    "id": 4,
+    "name": "Violation Schema (schéma violation, P31-P40) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 5,
+    "name": "Replay OS3 (matching attendu/observé, P41-P46) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 6,
+    "name": "Cryptographique (keys, rotation, trust chain, P47-P63)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 7,
+    "name": "Replay Pack Format (bundle standard, P64-P70) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 8,
+    "name": "Audit Report HTML/PDF Canon (ToC + signature, P71-P80) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 9,
+    "name": "Tool Adapter MCP → Policy Gate (mapping tools/scopes, P81-P90) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 10,
+    "name": "Tool Registry Canonical (registre outils, P91-P100) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 11,
+    "name": "Policy Compile (compilation règles, P101-P110) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 12,
+    "name": "MCP Server Attestation (intégrité serveur, P111-P113) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 13,
+    "name": "Violation Taxonomy & Severity Matrix (P114-P120) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 14,
+    "name": "Policy Hot-Reload Safe (P121-P130) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 15,
+    "name": "End-to-End Example (P131-P140) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 16,
+    "name": "Governance Dashboard (P141-P148) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 17,
+    "name": "Legal-Grade Audit Export (P149)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 18,
+    "name": "Incident Response Protocol (P150-P154) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 19,
+    "name": "Governance UI Wireframe textual (P155)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 20,
+    "name": "Regulatory Compliance Mapping EU/FR (P156-P160) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 21,
+    "name": "Aléatoire Quantique (source aléatoire, P161) — preuve formelle requise",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 22,
+    "name": "Regulator Read-Only Portal (P1-P10) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 23,
+    "name": "Cross-Territory Audit Federation (P11-P20) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 24,
+    "name": "Human Veto Formal Proof (P21-P30) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 25,
+    "name": "Constitution Obsidia (P31-P40) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 26,
+    "name": "Liability Boundary & Responsibility Graph (P41-P46) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 27,
+    "name": "Public Transparency Minimal Interface (P47-P63)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 28,
+    "name": "Obsidia as Public Infrastructure (P64-P70) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 29,
+    "name": "Treaty-Compatible Deployment (P71-P80) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 30,
+    "name": "Certification Path ANSSI/EU AI Act (P81-P90) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 31,
+    "name": "Economic Concession Model DSP (P91-P100) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 32,
+    "name": "Obsidia Foundation / Trust Model (P101-P110) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 33,
+    "name": "National AI Oversight Stack (P111-P113) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 34,
+    "name": "Formal Proof Pack Math/Juridique (P114-P120) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 35,
+    "name": "Public Transparency Layer Citoyen (P121-P130) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 36,
+    "name": "Inter-Foundation Federation Protocol (P131-P140) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 37,
+    "name": "Citizen Recourse Protocol (P141-P148) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 38,
+    "name": "Constitution Amendment Process (P149)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  },
+  {
+    "id": 39,
+    "name": "End-of-Life / Decommission Protocol (P150-P154) — valider V4",
+    "status": "FORMALISÉ_À_VALIDER"
+  },
+  {
+    "id": 40,
+    "name": "Foundational Charter / Charte constitutionnelle (P155)",
+    "status": "À_FORMALISER_OU_À_PROUVER"
+  }
+]

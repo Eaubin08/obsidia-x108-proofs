@@ -1,0 +1,29 @@
+=== BFCL EVALUATE HELP ===
+                                                                                
+ Usage: bfcl evaluate [OPTIONS]                                                 
+                                                                                
+ Evaluate results from run of one or more models on a test-category (same as    
+ eval_runner.py).                                                               
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --model                  TEXT  A list of model names to evaluate.            │
+│ --test-category          TEXT  A list of test categories to run the          │
+│                                evaluation on.                                │
+│                                [default: all]                                │
+│ --result-dir             TEXT  Relative path to the model response folder,   │
+│                                if different from the default; Path should be │
+│                                relative to the                               │
+│                                `berkeley-function-call-leaderboard` root     │
+│                                folder                                        │
+│ --score-dir              TEXT  Relative path to the evaluation score folder, │
+│                                if different from the default; Path should be │
+│                                relative to the                               │
+│                                `berkeley-function-call-leaderboard` root     │
+│                                folder                                        │
+│ --partial-eval                 Run evaluation on a partial set of benchmark  │
+│                                entries (eg. entries present in the model     │
+│                                result files) without raising for missing     │
+│                                IDs.                                          │
+│ --help           -h            Show this message and exit.                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+

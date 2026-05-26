@@ -1,0 +1,30 @@
+{
+    "run_id": "obsidia_terminal_bench_local_oracle_smoke_v7",
+    "uuid": "a851899e-81d7-433a-ac24-74c8f362f98a",
+    "dataset_path": "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_external_benchmarks/02_terminal_bench/local_dataset/tasks",
+    "dataset_name": null,
+    "dataset_version": null,
+    "output_path": "/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_local_audits/EXTERNAL_BENCHMARKS/smokes/TERMINAL_BENCH/runs",
+    "agent_name": "oracle",
+    "no_rebuild": false,
+    "cleanup": true,
+    "log_level": 20,
+    "task_ids": [
+        "obsidia-hello-world"
+    ],
+    "exclude_task_ids": null,
+    "n_tasks": null,
+    "n_concurrent_trials": 1,
+    "n_attempts": 1,
+    "dataset_size": 1,
+    "accuracy": 1.0,
+    "model_name": "Oracle",
+    "start_time": "2026-05-19T21:59:25.055580+00:00",
+    "end_time": "2026-05-19T22:00:03.523331+00:00",
+    "commit_hash": "93a777cfc9e00423a9313e4985688fd92ecd4a79",
+    "username": "eltatoo",
+    "s3_bucket": null,
+    "agent_kwargs": null,
+    "pass_at_k": {},
+    "resumed_at": null
+}

@@ -1,0 +1,68 @@
+                                                                                                                      
+ Usage: tb run [OPTIONS]                                                                                              
+                                                                                                                      
+ Run the terminal-bench harness (alias for `tb runs create`)                                                          
+                                                                                                                      
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                                                        │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Dataset ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --dataset              -d      TEXT  Dataset name or 'name==version' (e.g. 'terminal-bench-core' or                │
+│                                      'terminal-bench-core==0.1.1')                                                 │
+│ --dataset-path         -p      PATH  Path to the dataset directory [default: (tasks/)]                             │
+│ --dataset-config               PATH  Path to dataset configuration file                                            │
+│ --registry-url                 TEXT  Registry URL (should be an endpoint that returns text-based json).            │
+│                                      [default: (The default terminal-bench registry.)]                             │
+│ --local-registry-path          PATH  Path to local registry file. If provided, will use the local registry instead │
+│                                      of the remote registry.                                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Output ───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output-path                              PATH  Path to output directory [default: runs]                          │
+│ --run-id                                   TEXT  Unique identifier for this run [default: (YYYY-MM-DD__HH-MM-SS)]  │
+│ --upload-results    --no-upload-results          Whether to upload results [default: no-upload-results]            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Tasks ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --task-id          -t      TEXT     Specific task IDs or glob patterns to run. Can be set multiple times to run    │
+│                                     multiple tasks.                                                                │
+│                                     [default: (All dataset tasks)]                                                 │
+│ --n-tasks                  INTEGER  Number of tasks to run [default: (All dataset tasks)]                          │
+│ --exclude-task-id  -e      TEXT     Task IDs or glob patterns to exclude. Can be set multiple times to exclude     │
+│                                     multiple tasks.                                                                │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Build ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --no-rebuild    --rebuild         Skip rebuilding containers [default: rebuild]                                    │
+│ --cleanup       --no-cleanup      Remove all run docker images [default: cleanup]                                  │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Agent ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --model              -m      TEXT                                       Name of the model to use                   │
+│                                                                         (provider/model_name)                      │
+│ --agent              -a      [oracle|naive|terminus|terminus-1|terminu  The name of the agent to use.              │
+│                              s-2|mcp-terminus|claude-code|aider|codex|  [default: (oracle)]                        │
+│                              goose-mcp|goose|gemini-cli|nop|openhands|                                             │
+│                              grok-cli|mini-swe-agent|opencode|qwen-cod                                             │
+│                              er|cursor-cli]                                                                        │
+│ --agent-import-path          TEXT                                       The import path of a custom agent to use.  │
+│                                                                         If provided, will override the agent name. │
+│                                                                         E.g. `some.module.path:SomeAgent`.         │
+│ --agent-kwarg        -k      TEXT                                       Additional agent kwarg in the format       │
+│                                                                         'key=value'. You can view available kwargs │
+│                                                                         by looking at the agent's `__init__`       │
+│                                                                         method. Can be set multiple times to set   │
+│                                                                         multiple kwargs. Common kwargs include:    │
+│                                                                         version, prompt_template, etc.             │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Logging ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --log-level                        [debug|info|warning|error|critical]  Logging level [default: info]              │
+│ --livestream    --no-livestream                                         Enable livestreaming                       │
+│                                                                         [default: no-livestream]                   │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Concurrency ──────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --n-concurrent        INTEGER  Number of concurrent trials [default: 4]                                            │
+│ --n-attempts          INTEGER  Number of attempts per task [default: 1]                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Timeout ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --global-timeout-multiplier        FLOAT  Multiplier for the global timeout for agent runs [default: 1.0]          │
+│ --global-agent-timeout-sec         FLOAT  Global timeout for agent runs in seconds(overrides timeout multiplier)   │
+│ --global-test-timeout-sec          FLOAT  Global timeout for test runs in seconds(overrides timeout multiplier)    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+

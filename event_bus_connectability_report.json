@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "bus_module": "periphery.event_bus",
+  "importable": true,
+  "import_message": "OK (module id: 2728893872176)",
+  "missing_api": [],
+  "forbidden_dependency_count": 0,
+  "forbidden_deps": [],
+  "module_errors_count": 0,
+  "errors": [],
+  "warnings": [],
+  "connected_files": [
+    "periphery/event_bus.py",
+    "scripts/audit_event_bus_connectability.py",
+    "scripts/audit_regression.py",
+    "apps/obsidia_api/main.py"
+  ],
+  "scanned_files": "all periphery/**/*.py",
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "emits_act": false
+}

@@ -1,0 +1,20 @@
+Starting harness run
+Run ID: obsidia_terminal_bench_local_oracle_smoke_v5
+Error parsing results for task obsidia-hello-world: No short test summary info found in the provided content.. It's possible that the tests failed to run. Inspect /mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_local_audits/EXTERNAL_BENCHMARKS/smokes/TERMINAL_BENCH/runs/obsidia_terminal_bench_local_oracle_smoke_v5/obsidia-hello-world/obsidia-hello-world.1-of-1.obsidia_terminal_bench_local_oracle_smoke_v5/panes/post-test.txt for more information.
+  Running tasks (1/1, Accuracy: 0.00%) - Last: obsidia-hello-world ✗ ━━ 100% 0:…
+
+Results Summary:
++-------------------+---------+
+| Metric            | Value   |
++===================+=========+
+| Resolved Trials   | 0       |
++-------------------+---------+
+| Unresolved Trials | 1       |
++-------------------+---------+
+| Accuracy          | 0.00%   |
++-------------------+---------+
+
+Results written to 
+/mnt/c/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs/_local_a
+udits/EXTERNAL_BENCHMARKS/smokes/TERMINAL_BENCH/runs/obsidia_terminal_bench_loca
+l_oracle_smoke_v5/results.json

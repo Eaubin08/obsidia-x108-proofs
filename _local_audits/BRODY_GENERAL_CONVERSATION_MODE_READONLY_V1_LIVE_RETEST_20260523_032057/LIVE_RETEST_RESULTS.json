@@ -1,0 +1,52 @@
+﻿[
+    {
+        "Check":  "API_8000",
+        "Pass":  true,
+        "Details":  "openapi OK"
+    },
+    {
+        "Check":  "GRAPHITI_FROZEN_8011",
+        "Pass":  true,
+        "Details":  "ok=True; mode=FROZEN_READONLY; nodes=167; rels=477"
+    },
+    {
+        "Check":  "BRODY_GENERAL_BONJOUR_MAMAN",
+        "Pass":  true,
+        "Details":  "source=GENERAL_CONVERSATION_READONLY; topic=GENERAL; answer=Bonjour maman.  _Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d\u0027[REDACTED_ACT], pas d\u0027écriture mémoire._"
+    },
+    {
+        "Check":  "BRODY_GENERAL_BONJOUR",
+        "Pass":  true,
+        "Details":  "source=GENERAL_CONVERSATION_READONLY; topic=GENERAL; answer=Bonjour.  _Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d\u0027[REDACTED_ACT], pas d\u0027écriture mémoire._"
+    },
+    {
+        "Check":  "BRODY_GENERAL_STABILISE",
+        "Pass":  true,
+        "Details":  "source=GENERAL_CONVERSATION_READONLY; topic=GENERAL; answer=On vient de stabiliser une chaîne terminal Brody en lecture seule : conversation locale, capture de candidats mémoire, sidecar, dry-run, prepare-write, rollback/read-link, sans écriture réelle par défaut.  _Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d\u0027[REDACTED_ACT], pas d\u0027écriture mémoire._"
+    },
+    {
+        "Check":  "BRODY_RISK_NOT_GENERAL",
+        "Pass":  false,
+        "Details":  "source=SEMANTIC_MATCH_FAILED_GENERAL; topic=GENERAL; answer=Requête non classifiée — aucune correspondance dans l\u0027index local. Requêtes tentées : aucune. Reformuler avec un terme clé reconnu (X108, mémoire, arbres, preuves, opérateur, gencoin) ou un identifiant explicite (ex. P136, T13).  _Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d\u0027[REDACTED_ACT], pas d\u0027écriture mémoire._"
+    },
+    {
+        "Check":  "BRODY_X108_NOT_GENERAL",
+        "Pass":  true,
+        "Details":  "source=SEMANTIC_ADVISORY_NO_MEMORY; topic=X108; answer=X108 constitue le verrou decisionnel du systeme Obsidia : c\u0027est la frontiere entre cognition/analyse et action irreversible. Brody peut lire, structurer, contextualiser, preparer des candidats, mais ne franchit jamais cette frontiere. Seul le kernel X108 autorise une action.  X108 reste seul decideur. Je peux preparer, contextualiser, structurer — pas agir.  _Brody — réponse structurée readonly. KX108_ONLY. Pas de décision, pas d\u0027[REDACTED_ACT], pas d\u0027écriture mémoire._"
+    },
+    {
+        "Check":  "MEMORY_GATE_DRY_RUN",
+        "Pass":  true,
+        "Details":  "source=3; converted=3; write=false"
+    },
+    {
+        "Check":  "MEMORY_GATE_PREPARE_WRITE_NO_WRITE",
+        "Pass":  true,
+        "Details":  "converted=3; snapshot=_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\PRE_WRITE_SNAPSHOT_2026-05-23T01-20-58.json; rollback=_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\ROLLBACK_PLAN_2026-05-23T01-20-58.cypher; write=false"
+    },
+    {
+        "Check":  "PROTECTED_DIFF_EMPTY",
+        "Pass":  true,
+        "Details":  "protected diff length=0"
+    }
+]

@@ -1,0 +1,34 @@
+{
+    "id": "25575990-1536-417e-91a1-5466504f9c52",
+    "results": [
+        {
+            "id": "9c0d13a1-84c6-4836-9ec9-b52ecc949424",
+            "trial_name": "obsidia-hello-world.1-of-1.obsidia_terminal_bench_local_oracle_smoke_v7",
+            "task_id": "obsidia-hello-world",
+            "instruction": "Create a file named obsidia_output.txt in /app.\nThe file must contain exactly:\nOBSIDIA_TERMINAL_BENCH_OK\n",
+            "is_resolved": true,
+            "failure_mode": "unset",
+            "parser_results": {
+                "test_obsidia_output_file_exists": "passed",
+                "test_obsidia_output_content": "passed"
+            },
+            "recording_path": "obsidia_terminal_bench_local_oracle_smoke_v7/obsidia-hello-world/obsidia-hello-world.1-of-1.obsidia_terminal_bench_local_oracle_smoke_v7/sessions/agent.cast",
+            "total_input_tokens": 0,
+            "total_output_tokens": 0,
+            "trial_started_at": "2026-05-19T21:59:25.204401+00:00",
+            "trial_ended_at": "2026-05-19T22:00:03.425852+00:00",
+            "agent_started_at": "2026-05-19T21:59:47.615313+00:00",
+            "agent_ended_at": "2026-05-19T21:59:48.152650+00:00",
+            "test_started_at": "2026-05-19T21:59:48.300570+00:00",
+            "test_ended_at": "2026-05-19T21:59:49.226673+00:00"
+        }
+    ],
+    "pass_at_k": {},
+    "n_resolved": 1,
+    "n_unresolved": 0,
+    "resolved_ids": [
+        "obsidia-hello-world"
+    ],
+    "unresolved_ids": [],
+    "accuracy": 1.0
+}

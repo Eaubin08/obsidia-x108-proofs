@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VisualState",
+  "type": "object",
+  "description": "Schema placeholder for VisualState.",
+  "properties": {}
+}

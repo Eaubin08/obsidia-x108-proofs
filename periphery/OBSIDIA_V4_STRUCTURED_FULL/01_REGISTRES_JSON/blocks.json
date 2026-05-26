@@ -1,0 +1,351 @@
+[
+  {
+    "id": 1,
+    "title": "Noyau Mathématique et Déterministe",
+    "description": "Le cœur du système, garantissant la cohérence mathématique et le non-forçage.",
+    "declared_count": 12,
+    "primary": [
+      "P34",
+      "P35",
+      "P36",
+      "P37",
+      "P38",
+      "P39",
+      "P40",
+      "P41",
+      "P42",
+      "P43",
+      "P86",
+      "P87"
+    ],
+    "secondary": [
+      "P13",
+      "P15",
+      "P17"
+    ],
+    "raw": "* **Description :** Le cœur du système, garantissant la cohérence mathématique et le non-forçage.\n* **Pépites Principales (12) :** P34, P35, P36, P37, P38, P39, P40, P41, P42, P43, P86, P87.\n* **Pépites Secondaires :** P13, P15, P17 (liées à la trace cryptographique)."
+  },
+  {
+    "id": 2,
+    "title": "Architecture Cognitive (C6)",
+    "description": "L'organisation de la pensée du moteur, la RLU, la compréhension avant génération.",
+    "declared_count": 13,
+    "primary": [
+      "P59",
+      "P60",
+      "P61",
+      "P62",
+      "P63",
+      "P64",
+      "P65",
+      "P66",
+      "P131",
+      "P132",
+      "P133",
+      "P134",
+      "P135"
+    ],
+    "secondary": [
+      "P2"
+    ],
+    "raw": "* **Description :** L'organisation de la pensée du moteur, la RLU, la compréhension avant génération.\n* **Pépites Principales (13) :** P59, P60, P61, P62, P63, P64, P65, P66, P131, P132, P133, P134, P135.\n* **Pépites Secondaires :** P2 (mémoire fractale)."
+  },
+  {
+    "id": 3,
+    "title": "Couche Mémoire (C1)",
+    "description": "La gestion du souvenir, l'oubli actif, le garde-fou contre l'hallucination.",
+    "declared_count": 12,
+    "primary": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10",
+      "P11",
+      "P12"
+    ],
+    "secondary": [
+      "P138"
+    ],
+    "raw": "* **Description :** La gestion du souvenir, l'oubli actif, le garde-fou contre l'hallucination.\n* **Pépites Principales (12) :** P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12.\n* **Pépites Secondaires :** P138 (récit et mémoire)."
+  },
+  {
+    "id": 4,
+    "title": "Couche Temporelle (C2)",
+    "description": "Le temps réversible vs irréversible, la tension créatrice.",
+    "declared_count": 6,
+    "primary": [
+      "P21",
+      "P22",
+      "P23",
+      "P24",
+      "P25",
+      "P26"
+    ],
+    "secondary": [
+      "P43"
+    ],
+    "raw": "* **Description :** Le temps réversible vs irréversible, la tension créatrice.\n* **Pépites Principales (6) :** P21, P22, P23, P24, P25, P26.\n* **Pépites Secondaires :** P43 (pont temporel)."
+  },
+  {
+    "id": 5,
+    "title": "Couche Identité et Sémantique (C3)",
+    "description": "Le sens profond, l'ancrage identitaire.",
+    "declared_count": 7,
+    "primary": [
+      "P27",
+      "P28",
+      "P29",
+      "P30",
+      "P31",
+      "P32",
+      "P33"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Le sens profond, l'ancrage identitaire.\n* **Pépites Principales (7) :** P27, P28, P29, P30, P31, P32, P33."
+  },
+  {
+    "id": 6,
+    "title": "Couche Cosmologique (C5)",
+    "description": "La vision du réel comme système vivant.",
+    "declared_count": 12,
+    "primary": [
+      "P47",
+      "P48",
+      "P49",
+      "P50",
+      "P51",
+      "P52",
+      "P53",
+      "P54",
+      "P55",
+      "P56",
+      "P57",
+      "P58"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** La vision du réel comme système vivant.\n* **Pépites Principales (12) :** P47, P48, P49, P50, P51, P52, P53, P54, P55, P56, P57, P58."
+  },
+  {
+    "id": 7,
+    "title": "Couche Éthique (C6+)",
+    "description": "Le filtre de l'action, la responsabilité.",
+    "declared_count": 7,
+    "primary": [
+      "P67",
+      "P68",
+      "P69",
+      "P70",
+      "P71",
+      "P72",
+      "P73"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Le filtre de l'action, la responsabilité.\n* **Pépites Principales (7) :** P67, P68, P69, P70, P71, P72, P73."
+  },
+  {
+    "id": 8,
+    "title": "Couche Émotionnelle et Interaction (C7)",
+    "description": "L'empathie structurelle, l'interaction non-mécanique.",
+    "declared_count": 12,
+    "primary": [
+      "P74",
+      "P75",
+      "P76",
+      "P77",
+      "P78",
+      "P79",
+      "P80",
+      "P81",
+      "P82",
+      "P83",
+      "P84",
+      "P85"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** L'empathie structurelle, l'interaction non-mécanique.\n* **Pépites Principales (12) :** P74, P75, P76, P77, P78, P79, P80, P81, P82, P83, P84, P85."
+  },
+  {
+    "id": 9,
+    "title": "Les 7 Lois Obsidiennes (C8)",
+    "description": "Les principes fondamentaux d'opération.",
+    "declared_count": 7,
+    "primary": [
+      "P88",
+      "P89",
+      "P90",
+      "P91",
+      "P92",
+      "P93",
+      "P94"
+    ],
+    "secondary": [
+      "P86",
+      "P87"
+    ],
+    "raw": "* **Description :** Les principes fondamentaux d'opération.\n* **Pépites Principales (7) :** P88, P89, P90, P91, P92, P93, P94.\n* **Pépites Secondaires :** P86, P87 (déjà dans Bloc 1)."
+  },
+  {
+    "id": 10,
+    "title": "Les 7 Géométries (C9)",
+    "description": "La structuration de l'espace cognitif.",
+    "declared_count": 7,
+    "primary": [
+      "P95",
+      "P96",
+      "P97",
+      "P98",
+      "P99",
+      "P100",
+      "P101"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** La structuration de l'espace cognitif.\n* **Pépites Principales (7) :** P95, P96, P97, P98, P99, P100, P101."
+  },
+  {
+    "id": 11,
+    "title": "Trace et Immuabilité (C10)",
+    "description": "La cryptographie, le Merkle Tree, l'auditabilité.",
+    "declared_count": 6,
+    "primary": [
+      "P13",
+      "P14",
+      "P15",
+      "P16",
+      "P17",
+      "P18"
+    ],
+    "secondary": [
+      "P9",
+      "P10",
+      "P11",
+      "P12"
+    ],
+    "raw": "* **Description :** La cryptographie, le Merkle Tree, l'auditabilité.\n* **Pépites Principales (6) :** P13, P14, P15, P16, P17, P18.\n* **Pépites Secondaires :** P9, P10, P11, P12 (déjà dans Bloc 3)."
+  },
+  {
+    "id": 12,
+    "title": "Dynamique de l'Effondrement (C11)",
+    "description": "Le Trou Cognitif, l'entropie, l'inégalité de Lyapunov.",
+    "declared_count": 12,
+    "primary": [
+      "P102",
+      "P103",
+      "P104",
+      "P105",
+      "P106",
+      "P107",
+      "P108",
+      "P109",
+      "P110",
+      "P111",
+      "P112",
+      "P113"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Le Trou Cognitif, l'entropie, l'inégalité de Lyapunov.\n* **Pépites Principales (12) :** P102, P103, P104, P105, P106, P107, P108, P109, P110, P111, P112, P113."
+  },
+  {
+    "id": 13,
+    "title": "Infrastructure et Agents (C11+)",
+    "description": "L'incarnation physique du moteur.",
+    "declared_count": 10,
+    "primary": [
+      "P114",
+      "P115",
+      "P116",
+      "P117",
+      "P118",
+      "P119",
+      "P120",
+      "P121",
+      "P122",
+      "P123"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** L'incarnation physique du moteur.\n* **Pépites Principales (10) :** P114, P115, P116, P117, P118, P119, P120, P121, P122, P123."
+  },
+  {
+    "id": 14,
+    "title": "Économie et Énergie (C12)",
+    "description": "Gencoin, la balance universelle, la calibration énergétique.",
+    "declared_count": 13,
+    "primary": [
+      "P124",
+      "P125",
+      "P126",
+      "P127",
+      "P128",
+      "P129",
+      "P130",
+      "P156",
+      "P157",
+      "P158",
+      "P159",
+      "P160",
+      "P161"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Gencoin, la balance universelle, la calibration énergétique.\n* **Pépites Principales (13) :** P124, P125, P126, P127, P128, P129, P130, P156, P157, P158, P159, P160, P161."
+  },
+  {
+    "id": 15,
+    "title": "Les 16 Dimensions Cognitives (LTO-16D)",
+    "description": "Le métalangage opératoire.",
+    "declared_count": 7,
+    "primary": [
+      "P136",
+      "P137",
+      "P138",
+      "P139",
+      "P140",
+      "P141",
+      "P142"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Le métalangage opératoire.\n* **Pépites Principales (7) :** P136, P137, P138, P139, P140, P141, P142."
+  },
+  {
+    "id": 16,
+    "title": "Récit et Narration (C13)",
+    "description": "L'histoire comme structure.",
+    "declared_count": 13,
+    "primary": [
+      "P143",
+      "P144",
+      "P145",
+      "P146",
+      "P147",
+      "P148",
+      "P149",
+      "P150",
+      "P151",
+      "P152",
+      "P153",
+      "P154",
+      "P155"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** L'histoire comme structure.\n* **Pépites Principales (13) :** P143, P144, P145, P146, P147, P148, P149, P150, P151, P152, P153, P154, P155."
+  },
+  {
+    "id": 17,
+    "title": "Synthèse et Interfaces",
+    "description": "Les frontières du système.",
+    "declared_count": 5,
+    "primary": [
+      "P19",
+      "P20",
+      "P44",
+      "P45",
+      "P46"
+    ],
+    "secondary": [],
+    "raw": "* **Description :** Les frontières du système.\n* **Pépites Principales (5) :** P19, P20, P44, P45, P46.\n\n---\n\n## 3. Bilan Quantitatif (Contrôle d'intégrité)\n\n| Bloc | Pépites Principales | Pépites Secondaires (Non comptées) |\n|---|---|---|\n| Bloc 1 | 12 | P13, P15, P17 |\n| Bloc 2 | 13 | P2 |\n| Bloc 3 | 12 | P138 |\n| Bloc 4 | 6 | P43 |\n| Bloc 5 | 7 | - |\n| Bloc 6 | 12 | - |\n| Bloc 7 | 7 | - |\n| Bloc 8 | 12 | - |\n| Bloc 9 | 7 | P86, P87 |\n| Bloc 10 | 7 | - |\n| Bloc 11 | 6 | P9, P10, P11, P12 |\n| Bloc 12 | 12 | - |\n| Bloc 13 | 10 | - |\n| Bloc 14 | 13 | - |\n| Bloc 15 | 7 | - |\n| Bloc 16 | 13 | - |\n| Bloc 17 | 5 | - |\n| **TOTAL** | **161** | **-** |\n\n**Le compte est exact.** Chaque pépite P1 à P161 appartient à un et un seul bloc principal."
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "readonly": true,
+  "advisory_only": true,
+  "context_signal_only": true,
+  "allowed_to_decide": false,
+  "label": "BrodyImportedMemory",
+  "batch_id": "brody-terminal-2026-05-22T22-12-57",
+  "query": "MATCH (n:BrodyImportedMemory) WHERE n.batch_id = 'brody-terminal-2026-05-22T22-12-57' RETURN n LIMIT 100",
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "memory_write": false,
+  "kernel_mutation": false
+}

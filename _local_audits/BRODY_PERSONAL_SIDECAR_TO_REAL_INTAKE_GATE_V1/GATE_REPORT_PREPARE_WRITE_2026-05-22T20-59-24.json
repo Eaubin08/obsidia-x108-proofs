@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-05-22T20:59:24.374124+00:00",
+  "mode": "prepare-write",
+  "source_candidates": 1,
+  "converted_count": 1,
+  "rejected_count": 0,
+  "snapshot_path": "_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\PRE_WRITE_SNAPSHOT_2026-05-22T20-59-24.json",
+  "rollback_path": "_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\ROLLBACK_PLAN_2026-05-22T20-59-24.cypher",
+  "read_link_path": "_local_audits\\BRODY_PERSONAL_SIDECAR_TO_REAL_INTAKE_GATE_V1\\READ_LINK_CANDIDATE_2026-05-22T20-59-24.json",
+  "neo4j_write": false,
+  "graphiti_write": false,
+  "memory_write": false,
+  "decision_authority": "KX108_ONLY"
+}

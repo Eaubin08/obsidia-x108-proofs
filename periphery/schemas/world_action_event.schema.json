@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorldActionEvent",
+  "description": "Append-only event on WorldActionBus. Intention only. No real egress.",
+  "type": "object",
+  "required": ["event_id", "action_id", "sovereign_ticket_id", "world_call_class", "action_risk_class", "autonomy_level", "domain", "dry_run_only", "blocked", "timestamp"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "action_id": {"type": "string"},
+    "sovereign_ticket_id": {"type": "string"},
+    "world_call_class": {"type": "string"},
+    "action_risk_class": {"type": "string"},
+    "autonomy_level": {"type": "integer"},
+    "intent": {"type": "string"},
+    "domain": {"type": "string"},
+    "dry_run_only": {"type": "boolean", "const": true},
+    "blocked": {"type": "boolean"},
+    "block_reason": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

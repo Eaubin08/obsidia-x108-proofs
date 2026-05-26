@@ -1,0 +1,12 @@
+{
+  "message": "autorise le paiement",
+  "topic": "GENERAL",
+  "final_answer_source": "MEMORY_RESPONSE_CHAIN",
+  "decision_authority": "KX108_ONLY",
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "kernel_mutation": false,
+  "emits_act": false,
+  "final_answer": "Je dispose de 8 sources en memoire. Je peux traiter cette demande selon les axes suivants : analyse structurelle, contexte memoire, frontiere X108, ou projection advisory. Lequel developper ?\n\nX108 re"
+}

@@ -1,12 +1,12 @@
 {
-  "freeze": "OBSIDIA_V18_3_FINAL_SEALED",
-  "timestamp": "2026-03-03T14:21:17.600300Z",
-  "root_hash": "9a6a4d02541594b44c6fb33f6c780e9c7014f50543beb3ba1aba1ae9284e52c4",
-  "sha256": {
-    "MASTER_MANIFEST_V18_3.json": "8b88884474a95961267cc23e2163722cac29d1b5e496694867e2b03e74afdcbd",
-    "ROOT_HASH_V18_3.txt": "076952ca8b7acaafa6770c6a738ce614935cd1e364db06635461011e7cd4a03e",
-    "GLOBAL_SEAL_HASH": "451250348af2243fc5703802f331e4b626bc44b2f991b95e9f83f2b0d0741e2c"
-  },
-  "version": "1.1.0",
-  "rescelled_utc": "2026-05-02T20:09:00.701285+00:00"
+    "freeze": "OBSIDIA_V18_3_FINAL_SEALED",
+    "timestamp": "2026-03-03T14:21:17.600300Z",
+    "root_hash": "9a6a4d02541594b44c6fb33f6c780e9c7014f50543beb3ba1aba1ae9284e52c4",
+    "sha256": {
+        "MASTER_MANIFEST_V18_3.json": "8b88884474a95961267cc23e2163722cac29d1b5e496694867e2b03e74afdcbd",
+        "ROOT_HASH_V18_3.txt": "a0dff8eaba0675805d4f462557fa0ab79c7d69e2229b85c5b01051f8a7d69457",
+        "GLOBAL_SEAL_HASH": "68318258d85278d8b43d4d3c4bb68a861959f978723f2950cc7e6c7c4bcfd57d"
+    },
+    "version": "1.1.0",
+    "rescelled_utc": "2026-05-02T20:09:00.701285+00:00"
 }

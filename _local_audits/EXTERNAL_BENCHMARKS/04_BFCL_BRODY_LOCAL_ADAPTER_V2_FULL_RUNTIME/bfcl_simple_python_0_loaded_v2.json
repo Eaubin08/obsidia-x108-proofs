@@ -1,0 +1,94 @@
+{
+  "id": "simple_python_0",
+  "question": "Find the area of a triangle with a base of 10 units and height of 5 units.",
+  "function": {
+    "name": "calculate_triangle_area",
+    "description": "Calculate the area of a triangle given its base and height.",
+    "parameters": {
+      "type": "dict",
+      "properties": {
+        "base": {
+          "type": "integer",
+          "description": "The base of the triangle."
+        },
+        "height": {
+          "type": "integer",
+          "description": "The height of the triangle."
+        },
+        "unit": {
+          "type": "string",
+          "description": "The unit of measure (defaults to 'units' if not specified)"
+        }
+      },
+      "required": [
+        "base",
+        "height"
+      ]
+    }
+  },
+  "expected": {
+    "function_name": "calculate_triangle_area",
+    "arguments": {
+      "base": 10,
+      "height": 5,
+      "unit": "units"
+    }
+  },
+  "raw_question": {
+    "id": "simple_python_0",
+    "question": [
+      [
+        {
+          "role": "user",
+          "content": "Find the area of a triangle with a base of 10 units and height of 5 units."
+        }
+      ]
+    ],
+    "function": [
+      {
+        "name": "calculate_triangle_area",
+        "description": "Calculate the area of a triangle given its base and height.",
+        "parameters": {
+          "type": "dict",
+          "properties": {
+            "base": {
+              "type": "integer",
+              "description": "The base of the triangle."
+            },
+            "height": {
+              "type": "integer",
+              "description": "The height of the triangle."
+            },
+            "unit": {
+              "type": "string",
+              "description": "The unit of measure (defaults to 'units' if not specified)"
+            }
+          },
+          "required": [
+            "base",
+            "height"
+          ]
+        }
+      }
+    ]
+  },
+  "raw_answer": {
+    "id": "simple_python_0",
+    "ground_truth": [
+      {
+        "calculate_triangle_area": {
+          "base": [
+            10
+          ],
+          "height": [
+            5
+          ],
+          "unit": [
+            "units",
+            ""
+          ]
+        }
+      }
+    ]
+  }
+}

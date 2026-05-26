@@ -1,0 +1,22 @@
+{
+  "manifest_status": "PASS",
+  "created_at": "2026-05-22T00:00:00+00:00",
+  "algorithm": "SHA256",
+  "audit_artifacts": {
+    "BRODY_BRIDGE_LIFECYCLE_BEFORE.md": "ad986b0b58ab96c6c075d4882b250f0456d7041f8df45692db84a64c91aa24be",
+    "BRODY_BRIDGE_LIFECYCLE_FIX_REPORT.md": "f59857bf89dcd9758a00b211f8c550623dc87b3b64498de1d64f638124bf6cef",
+    "BRODY_BRIDGE_LIFECYCLE_FIX_REPORT.json": "6990e0ee5a6021805b44c882fa158c74d413e244cfc6a2920de9feddd12de16b",
+    "BUS_BRIDGE_REGISTRATION_SNAPSHOT.json": "de82fe0e4084cde52a939894b98727dfd999e8d78dc68b0da33a2cbfaf6297d2"
+  },
+  "production_files": {
+    "periphery/brody_bridge.py": "662b9408715d126646f113b544ccc6bcdf968bc640a8dc48c7fe5fd8c5b6a223",
+    "apps/obsidia_api/brody_bridge_lifecycle.py": "db8bd6cbe024cc79bf3f21cd4678d2bc7c4bf133fcc285d737c699ed42fba284",
+    "apps/obsidia_api/main.py": "8c648faeb1766a054f78b7c42a0a2ed90f2617289688833f9a8bb3b3c1ad8ae2"
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "memory_write": false,
+    "emits_act": false,
+    "kernel_mutation": false
+  }
+}

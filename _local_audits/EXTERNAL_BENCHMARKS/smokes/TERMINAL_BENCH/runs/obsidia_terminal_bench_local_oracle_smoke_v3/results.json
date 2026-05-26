@@ -1,0 +1,31 @@
+{
+    "id": "e3cebd96-2500-40df-8edc-afb5df14a7d6",
+    "results": [
+        {
+            "id": "1d8984a3-5de4-44b0-9aae-0046b88e04c2",
+            "trial_name": "obsidia-hello-world.1-of-1.obsidia_terminal_bench_local_oracle_smoke_v3",
+            "task_id": "obsidia-hello-world",
+            "instruction": "Create a file named obsidia_output.txt in /app.\nThe file must contain exactly:\nOBSIDIA_TERMINAL_BENCH_OK\n",
+            "is_resolved": null,
+            "failure_mode": "unknown_agent_error",
+            "parser_results": null,
+            "recording_path": null,
+            "total_input_tokens": null,
+            "total_output_tokens": null,
+            "trial_started_at": null,
+            "trial_ended_at": null,
+            "agent_started_at": null,
+            "agent_ended_at": null,
+            "test_started_at": null,
+            "test_ended_at": null
+        }
+    ],
+    "pass_at_k": {},
+    "n_resolved": 0,
+    "n_unresolved": 1,
+    "resolved_ids": [],
+    "unresolved_ids": [
+        "obsidia-hello-world"
+    ],
+    "accuracy": 0.0
+}

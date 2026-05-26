@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BlockchainActionDecision",
+  "type": "object",
+  "required": ["action_id", "action_class", "gate", "reason", "dry_run_only", "real_chain_action_allowed"],
+  "properties": {
+    "action_id": {"type": "string"},
+    "action_class": {"type": "string"},
+    "gate": {"type": "string", "enum": ["ALLOW", "HOLD", "BLOCK"]},
+    "reason": {"type": "string"},
+    "dry_run_only": {"type": "boolean", "const": true},
+    "real_chain_action_allowed": {"type": "boolean", "const": false}
+  }
+}
