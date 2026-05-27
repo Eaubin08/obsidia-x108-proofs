@@ -1,0 +1,62 @@
+{
+    "freeze":  "BRODY_PHASE11G_NATIVE_FULL_SURFACE_FREEZE_20260527",
+    "status":  "FROZEN_PASS",
+    "decision_authority":  "KX108_ONLY",
+    "readonly":  true,
+    "graphiti":  "LIVE_READONLY_PASS",
+    "backend":  "BRODY_NATIVE_FULL_SURFACE",
+    "terminal":  "BRODY_TERMINAL_NATIVE_DISPLAY",
+    "ui":  "RIGHTPANEL_NATIVE_DISPLAY",
+    "files":  [
+                  {
+                      "path":  "apps/obsidia_api/routes/brody.py",
+                      "sha256":  "3FBD68BA6A3DF2EE606D7718C15F1264543238A8DE06D5B6D1BA9CDDE87BBB8C",
+                      "bytes":  14622
+                  },
+                  {
+                      "path":  "apps/obsidia_api/brody_contracts_packet.py",
+                      "sha256":  "E77A88AE5E1EA1D9898A00677EB2040321FDC61DF54069F40E19130F108E9278",
+                      "bytes":  11680
+                  },
+                  {
+                      "path":  "apps/obsidia_api/brody_machination_composer.py",
+                      "sha256":  "B7E2545F8931742904D9ED6269F3EFEDA93E5152A8B6BE114CF021B83FA92F11",
+                      "bytes":  11724
+                  },
+                  {
+                      "path":  "tests/api/test_brody_native_machination_packet.py",
+                      "sha256":  "5747C5584FA03EFDBDBE876649B26CAA4D898EE82B811888EB102166544B6972",
+                      "bytes":  4174
+                  },
+                  {
+                      "path":  "tools/brody_chat.py",
+                      "sha256":  "3089571FAE476D8A86FC820EC2219CEEB3AC13810E8DC161080E46F81BE9E940",
+                      "bytes":  13726
+                  },
+                  {
+                      "path":  "apps/obsidia-workbench/src/components/RightPanel.tsx",
+                      "sha256":  "D2D688D508A9E811A5A3F530E976CD95F1D58AE127B1C4E6AF41D0D1BA55DD2F",
+                      "bytes":  49322
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE11B_NATIVE_COMPOSITION_REPORT_20260527.md",
+                      "sha256":  "D2B882F72BD4A2476B8B92608846EA4293A4F64F5946915CCE4598E9C8C5F543",
+                      "bytes":  2167
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE11D_TERMINAL_NATIVE_DISPLAY_20260527.md",
+                      "sha256":  "06A76B5A9029891572A23CB041CC894CE7B67B1B1374FCCEC8C64C0ED5463890",
+                      "bytes":  946
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE11E_RIGHTPANEL_NATIVE_DISPLAY_20260527.md",
+                      "sha256":  "91A1B22E4F0F55181059D5CD3D7A25CB823B6D97958C6579FBB44F57B147344A",
+                      "bytes":  797
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE11G_NATIVE_FULL_SURFACE_FREEZE_20260527.md",
+                      "sha256":  "630B924738F8DA5DA211D853B7BAEBA16818B46758F062797FB2022566E76FA0",
+                      "bytes":  3229
+                  }
+              ]
+}
