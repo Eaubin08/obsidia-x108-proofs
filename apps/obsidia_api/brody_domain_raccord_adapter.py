@@ -76,12 +76,11 @@ def has_negated_action(text: str) -> bool:
 
 def has_memory_write_request(text: str) -> bool:
     low = _fold(text)
-    write_terms = ("ecris", "ecrit", "write", "inscris", "enregistre", "sauvegarde", "save", "store")
+    write_terms = ("ecris", "ecrit", "ecrire", "write", "inscris", "enregistre", "sauvegarde", "save", "store")
     memory_terms = ("memoire", "memory", "graphiti", "neo4j", "canon", "canonical", "valide", "valider", "promotion", "freeze")
-    if has_negated_action(text):
-        # "sans écrire" is a boundary statement, not a request.
-        if _negated_near(low, write_terms):
-            return False
+    # Negated write form ("sans écrire", "sans y écrire") is NOT a write request.
+    if _negated_near(low, write_terms):
+        return False
     return _has_any(low, write_terms) and _has_any(low, memory_terms)
 
 
