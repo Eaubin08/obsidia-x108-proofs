@@ -44,7 +44,7 @@ export function SettingsView({ sessionLanguage }: Props) {
         <div className="bg-obs-surface border border-obs-border rounded-lg p-3 text-[9px] font-mono text-obs-mtext space-y-1">
           <div className="text-obs-dtext mb-1">Create <span className="text-obs-memory">.env.local</span> in apps/obsidia-workbench/:</div>
           <div className="text-obs-mtext">VITE_OBSIDIA_API_BASE=http://127.0.0.1:8011</div>
-          <div className="text-obs-mtext">VITE_ENGINE_API_BASE=http://127.0.0.1:8000</div>
+          <div className="text-obs-mtext">VITE_ENGINE_API_BASE=http://127.0.0.1:8012</div>
           <div className="text-obs-mtext">VITE_USE_MOCK_FALLBACK=true</div>
           <div className="text-obs-mtext">VITE_PROBE_TIMEOUT_MS=3000</div>
           <div className="mt-2 text-obs-dtext">Restart dev server after changes.</div>

@@ -1,4 +1,4 @@
-// FALLBACK ONLY. Primary Brody response source is POST /api/brody/chat (port 8000).
+// FALLBACK ONLY. Primary Brody response source is POST /api/brody/chat (port 8012).
 // This module is used only when the backend API is unreachable.
 import type { DetectedLanguage } from './language'
 import type { TranslationTrace } from '../types/translation'

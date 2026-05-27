@@ -15,7 +15,7 @@ import { AuditView } from './views/AuditView'
 import { SettingsView } from './views/SettingsView'
 import { TranslationView } from './views/TranslationView'
 import { INITIAL_MESSAGES, KERNEL_STATUS } from './data/mockData'
-import { getKernelStatus, sendBrodyMessage } from './api/obsidiaClient'
+import { getKernelStatus, sendBrodyMessage, callOSTradTranslateSupport, callIRCandidateSupport, callOSReverseProjectSupport } from './api/obsidiaClient'
 import { composeBrodyResponse } from './lib/brodyResponseComposer'
 import { getResponseLanguage } from './lib/language'
 import { runOSTradPipeline } from './lib/osTradPipeline'
@@ -62,6 +62,7 @@ export default function App() {
 
   const handleSend = async (text: string) => {
     const lang = getResponseLanguage(text, sessionLanguage)
+    const supportLang: 'auto' | 'fr' | 'en' = lang === 'fr' || lang === 'en' ? lang : 'auto'
     setLang(lang)
     setSessionLanguage(lang)
 
@@ -104,8 +105,76 @@ export default function App() {
       backendSource = 'FRONTEND_MOCK'
     }
 
+    let supportPayload: Record<string, unknown> | undefined
+
+    if (backendSource && backendSource !== 'FRONTEND_MOCK' && backendSource !== 'API_ERROR') {
+      try {
+        const osTradSupport = await callOSTradTranslateSupport({
+          text,
+          language: supportLang,
+          session_id: activeSessionId,
+          include_context: true,
+          include_tree_context: true,
+          include_graphiti_context: true,
+        }) as Record<string, unknown>
+
+        const irSupport = await callIRCandidateSupport({
+          text,
+          language: supportLang,
+          alphabet_units: Array.isArray(osTradSupport.alphabet_units)
+            ? osTradSupport.alphabet_units as Array<Record<string, unknown>>
+            : [],
+          tree_context: osTradSupport.tree_context as Record<string, unknown> ?? {},
+          graphiti_context: osTradSupport.graphiti_context as Record<string, unknown> ?? {},
+          session_id: activeSessionId,
+        }) as Record<string, unknown>
+
+        const osReverseSupport = await callOSReverseProjectSupport({
+          text,
+          language: supportLang,
+          ir_candidate: irSupport.ir_candidate as Record<string, unknown> ?? {},
+          audience: 'operator',
+          format: 'ui',
+          tree_context: osTradSupport.tree_context as Record<string, unknown> ?? {},
+          graphiti_context: osTradSupport.graphiti_context as Record<string, unknown> ?? {},
+          session_id: activeSessionId,
+        }) as Record<string, unknown>
+
+        supportPayload = {
+          source: 'REAL_BACKEND_SUPPORT',
+          os_trad: osTradSupport,
+          ir_candidate: irSupport,
+          os_reverse: osReverseSupport,
+        }
+
+        if (backendPayload) {
+          backendPayload = {
+            ...backendPayload,
+            support_routes: supportPayload,
+          }
+          setLastBackendPayload(backendPayload)
+        }
+      } catch (err) {
+        supportPayload = {
+          source: 'SUPPORT_ROUTE_ERROR',
+          error: err instanceof Error ? err.message : String(err),
+        }
+
+        if (backendPayload) {
+          backendPayload = {
+            ...backendPayload,
+            support_routes: supportPayload,
+          }
+          setLastBackendPayload(backendPayload)
+        }
+      }
+    }
+
     // Build translation trace — prefer backend data if available
-    const trace: TranslationTrace = backendPayload?.translation_trace as TranslationTrace ?? runOSTradPipeline(text, lang)
+    const baseTrace: TranslationTrace = backendPayload?.translation_trace as TranslationTrace ?? runOSTradPipeline(text, lang)
+    const trace: TranslationTrace = supportPayload
+      ? ({ ...baseTrace, backend_support: supportPayload } as unknown as TranslationTrace)
+      : baseTrace
 
     const brodyId = `b_${Date.now() + 1}`
     const brodyMsg: BrodyMessage = {

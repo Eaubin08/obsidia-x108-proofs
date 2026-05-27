@@ -1,5 +1,5 @@
 /**
- * API contracts — mirrors ObsidiaShell (port 8011) + Engine API (port 8000) response shapes.
+ * API contracts — mirrors ObsidiaShell (port 8011) + Engine API (port 8012) response shapes.
  * Read-only. No mutation types defined.
  */
 

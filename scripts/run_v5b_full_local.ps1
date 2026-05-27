@@ -7,7 +7,7 @@ Set-Location $PSScriptRoot\..
 Write-Host "=== Obsidia X-108 V5B Full Local Stack ===" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "[1/3] Starting Obsidia API on http://127.0.0.1:8000 ..." -ForegroundColor Yellow
+Write-Host "[1/3] Starting Obsidia API on http://127.0.0.1:8012 ..." -ForegroundColor Yellow
 Start-Process -NoNewWindow python -ArgumentList "-m", "uvicorn", "apps.obsidia_api.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"
 Start-Sleep -Seconds 2
 

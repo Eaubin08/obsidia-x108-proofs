@@ -10,7 +10,7 @@ export interface ModuleProbe {
 }
 
 const API_BASE    = (import.meta.env.VITE_OBSIDIA_API_BASE ?? 'http://127.0.0.1:8011').replace(/\/$/, '')
-const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE  ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
+const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE  ?? 'http://127.0.0.1:8012').replace(/\/$/, '')
 const USE_MOCK    = import.meta.env.VITE_USE_MOCK_FALLBACK === 'true'
 const TIMEOUT_MS  = Number(import.meta.env.VITE_PROBE_TIMEOUT_MS ?? 2500)
 

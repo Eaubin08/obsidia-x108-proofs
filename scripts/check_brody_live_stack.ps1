@@ -51,7 +51,7 @@ Write-Host "3. Obsidia API (8000):" -ForegroundColor Yellow
 $api = Check-Port "127.0.0.1" 8000 "Obsidia API"
 if ($api) {
     try {
-        $r = Invoke-RestMethod "http://127.0.0.1:8000/api/status" -TimeoutSec 5
+        $r = Invoke-RestMethod "http://127.0.0.1:8012/api/status" -TimeoutSec 5
         Write-Host "     status: $($r.status ?? 'OK') | version: $($r.version ?? 'V5B')" -ForegroundColor Green
     } catch {
         Write-Host "     /api/status → error: $_" -ForegroundColor DarkYellow

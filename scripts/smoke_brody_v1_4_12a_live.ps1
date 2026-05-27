@@ -1,12 +1,12 @@
 # Brody V1.4.12A — Live API Smoke Test
-# Requires: Obsidia API running on http://127.0.0.1:8000
+# Requires: Obsidia API running on http://127.0.0.1:8012
 # Output:   docs/freeze/BRODY_V1_4_12A_LIVE_SMOKE_OUTPUT.json
 
 $ErrorActionPreference = "Continue"
 Set-Location $PSScriptRoot\..
 
 $outFile = "docs\freeze\BRODY_V1_4_12A_LIVE_SMOKE_OUTPUT.json"
-$base = "http://127.0.0.1:8000"
+$base = "http://127.0.0.1:8012"
 $endpoint = "$base/api/brody/chat"
 $allPass = $true
 $results = @()
