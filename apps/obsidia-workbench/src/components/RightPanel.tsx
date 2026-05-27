@@ -344,6 +344,12 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
   const temporal = live?.temporal_context_snapshot as Record<string, unknown> | undefined
   const cogMod = live?.cognitive_modules_snapshot as Record<string, unknown> | undefined
   const rtCtx = live?.runtime_context as Record<string, unknown> | undefined
+  const operatorView = live?.operator_view_packet as Record<string, unknown> | undefined
+  const opReadiness = operatorView?.["readiness"] as Record<string, unknown> | undefined
+  const opUsable = operatorView?.["usable"] as Record<string, unknown> | undefined
+  const opBlocked = operatorView?.["blocked"] as Record<string, unknown> | undefined
+  const opEvidence = operatorView?.["evidence"] as Record<string, unknown> | undefined
+  const opSummary = operatorView?.["summary"] as Record<string, unknown> | undefined
   return (
     <div className="space-y-4">
       {authoritySnap && Object.keys(authoritySnap).length > 0 && (
@@ -368,6 +374,33 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
             <CopyableKV k="decision_authority" v={String(live.decision_authority ?? "KX108_ONLY")} vClass="text-obs-kernel" />
             <CopyableKV k="readonly" v="true" vClass="text-obs-pass" />
             <CopyableKV k="emits_act" v="false" vClass="text-obs-block" />
+          </div>
+        </div>
+      )}
+      {operatorView && (
+        <div>
+          <SectionTitle>Transverse Operator View</SectionTitle>
+          <div className="obs-card p-3 space-y-0.5 border-obs-proof/20 bg-obs-proof/5">
+            <CopyableKV k="system_status" v={String(operatorView["system_status"] ?? "-")} vClass={String(operatorView["system_status"] ?? "").includes("READY") ? "text-obs-pass" : String(operatorView["system_status"] ?? "").includes("ATTENTION") ? "text-obs-hold" : "text-obs-brody"} />
+            <CopyableKV k="next_safe_action" v={String(operatorView["next_safe_action"] ?? "-")} vClass="text-obs-proof" />
+            <CopyableKV k="decision_authority" v={String(operatorView["decision_authority"] ?? "KX108_ONLY")} vClass="text-obs-kernel" />
+            <CopyableKV k="readonly" v={String(operatorView["readonly"] ?? true)} vClass="text-obs-pass" />
+            <CopyableKV k="emits_act" v={String(operatorView["emits_act"] ?? false)} vClass="text-obs-block" />
+            <CopyableKV k="emits_verdict" v={String(operatorView["emits_verdict"] ?? false)} vClass="text-obs-block" />
+            {opSummary && <CopyableKV k="all_core_packets_ready" v={String(opSummary["all_core_packets_ready"] ?? false)} vClass={opSummary["all_core_packets_ready"] ? "text-obs-pass" : "text-obs-hold"} />}
+            {opSummary && <CopyableKV k="safe_boundary_ok" v={String(opSummary["safe_boundary_ok"] ?? false)} vClass={opSummary["safe_boundary_ok"] ? "text-obs-pass" : "text-obs-block"} />}
+            {opSummary && <CopyableKV k="operator_can_write" v={String(opSummary["operator_can_write"] ?? false)} vClass="text-obs-block" />}
+            {opSummary && <CopyableKV k="operator_can_decide" v={String(opSummary["operator_can_decide"] ?? false)} vClass="text-obs-block" />}
+            {opReadiness && <CopyableKV k="readiness" v={JSON.stringify(opReadiness)} />}
+            {opUsable && <CopyableKV k="usable" v={JSON.stringify(opUsable)} />}
+            {opBlocked && Array.isArray(opBlocked["hard_risks"]) ? (
+              <CopyableKV k="hard_risks" v={JSON.stringify((opBlocked["hard_risks"] as unknown[]).slice(0, 8))} vClass={(opBlocked["hard_risks"] as unknown[]).length > 0 ? "text-obs-hold" : "text-obs-pass"} />
+            ) : null}
+            {opBlocked && Array.isArray(opBlocked["missing_packets"]) ? (
+              <CopyableKV k="missing_packets" v={JSON.stringify((opBlocked["missing_packets"] as unknown[]).slice(0, 8))} vClass={(opBlocked["missing_packets"] as unknown[]).length > 0 ? "text-obs-hold" : "text-obs-pass"} />
+            ) : null}
+            {opEvidence && <CopyableKV k="memory_guard_status" v={String(opEvidence["memory_guard_status"] ?? "-")} />}
+            {opEvidence && <CopyableKV k="value_layer_scores_null" v={String(opEvidence["value_layer_scores_null"] ?? "-")} vClass={opEvidence["value_layer_scores_null"] ? "text-obs-pass" : "text-obs-block"} />}
           </div>
         </div>
       )}
