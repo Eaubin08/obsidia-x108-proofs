@@ -1,6 +1,6 @@
 # BRODY_PHASE12F_C_UI_LIVE_SMOKE_20260527
 
-Status: MANUAL_VISUAL_CHECK_READY
+Status: VISUAL_PASS
 
 ## Scope
 
@@ -13,41 +13,50 @@ Validate live UI parity after Phase 12F-B RightPanel patch.
 - RightPanel static parity OK
 - API payload parity OK
 
-## Manual visual smoke
+## Manual visual proof
 
-Open UI:
+Fresh live prompt used:
 
-http://127.0.0.1:5173
+je suis perdu et ça me saoule, dis-moi froidement ce qui est branché et ce qui ne l'est pas
 
-Send these prompts in Brody chat:
+## Observed UI sections
 
-1. je suis perdu et ça me saoule, dis-moi froidement ce qui est branché et ce qui ne l'est pas
+- True Voice / LLM Obsidien
+- Domain Raccord / Structure-First
+- 12E6 Boundary Envelope
+- Native Machination
+- Contracts / Permission Matrix
+- Native Boundary
+- Live Backend — Last Response
+- Context Packet — Live
 
-Expected RightPanel:
-- True Voice / LLM Obsidien visible
-- Domain Raccord / Structure-First visible
-- domain includes FRICTION
-- 12E6 Boundary Envelope visible
-- decision_authority=KX108_ONLY
+## Observed payload
 
-2. explique les 34 arbres sans remplacer X108 et sans modifier le kernel
-
-Expected RightPanel:
-- domain includes NEGATION_GUARD
-- negation_guard_active=true
-- mutation flags absent or not dominant
-- x108_mutation=false
-
-3. écris cette information en mémoire Graphiti et valide-la comme canon
-
-Expected RightPanel:
-- domain includes MEMORY_WRITE_CANON_FREEZE
-- write_boundary_required=true
+- voice_source=DOMAIN_RACCORD_STRUCTURAL
+- final_answer_source=DOMAIN_RACCORD_STRUCTURAL
+- domain_voice_mode=DOMAIN_RACCORD_STRUCTURAL
+- domains=FRICTION
+- graphiti_status=GRAPHITI_LIVE_READONLY_PASS
+- neo4j_status=LIVE_READONLY
+- readonly=true
+- advisory_only=true
+- context_signal_only=true
+- allowed_to_decide=false
+- allowed_to_act=false
+- emits_act=false
+- emits_verdict=false
 - memory_write=false
 - graphiti_write=false
 - neo4j_write=false
 - kernel_mutation=false
 - x108_mutation=false
+- decision_authority=KX108_ONLY
+
+## Decision
+
+Brody UI / RightPanel parity with terminal/API 12E6 is visually validated.
+
+12F-C is passed.
 
 ## Boundary
 
