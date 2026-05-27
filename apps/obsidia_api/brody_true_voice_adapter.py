@@ -282,7 +282,7 @@ def build_true_brody_answer(
                     f"\n\nMemory material available as enrichment: {item_count} readonly item(s). "
                     "It does not replace the structural raccord above."
                 )
-    elif chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+    elif (not action_boundary_already) and chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
         # Reset answer — synthesize from memory chain, not raw dump
         answer_parts = []
         if creator_detected:
