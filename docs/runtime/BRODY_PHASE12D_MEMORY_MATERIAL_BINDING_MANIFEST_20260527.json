@@ -1,0 +1,28 @@
+{
+    "freeze":  "BRODY_PHASE12D_MEMORY_MATERIAL_BINDING_FREEZE_20260527",
+    "status":  "FROZEN_PASS",
+    "decision_authority":  "KX108_ONLY",
+    "readonly":  true,
+    "memory_write":  false,
+    "graphiti_write":  false,
+    "kernel_mutation":  false,
+    "graphiti":  "V20_FROZEN_HTTP_READONLY_FALLBACK",
+    "brody_memory_chain":  "MATERIAL_BINDING_REPAIRED",
+    "files":  [
+                  {
+                      "path":  "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+                      "sha256":  "014812E7083432DA43099BC78609118F79A9DCAA3F514836F7407B91A735EF61",
+                      "bytes":  34951
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12B_MEMORY_MATERIAL_BINDING_REPORT_20260527.md",
+                      "sha256":  "759BE9C3485496FF992DB0BFBACE2BCBC8D3E5F8C44754B903232D6B8163FF2A",
+                      "bytes":  1389
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12D_MEMORY_MATERIAL_BINDING_FREEZE_20260527.md",
+                      "sha256":  "AFB17158C43869A7B0DD622F4492E56C7B6C1EAF3C0B5751CD83F6EE8783BE8F",
+                      "bytes":  2211
+                  }
+              ]
+}
