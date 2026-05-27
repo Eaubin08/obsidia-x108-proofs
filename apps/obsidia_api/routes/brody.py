@@ -34,6 +34,7 @@ from apps.obsidia_api.brody_gencoin_transverse_interface import (
 from apps.obsidia_api.brody_anti_mismatch_signal import build_anti_mismatch_signal
 from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_packet
 from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
+from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -298,6 +299,7 @@ async def brody_chat(req: BrodyChatRequest):
         sigma_packet=_sigma_packet,
         thermodynamics_packet=_thermodynamics_packet,
         gencoin_shadow_packet=_gencoin_shadow_packet,
+        tree_signal_packet=_tree_signal_packet,
     )
     value_layer = _gencoin_raw.get("value_layer", {}) if isinstance(_gencoin_raw, dict) else {}
 
@@ -391,4 +393,5 @@ async def brody_chat(req: BrodyChatRequest):
         "anti_mismatch_packet": _anti_mismatch_packet,
         "thermodynamics_packet": _thermodynamics_packet,
         "gencoin_shadow_packet": _gencoin_shadow_packet,
+        "tree_signal_packet": _tree_signal_packet,
     }, source=r.get("source", "REAL_BACKEND"))

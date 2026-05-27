@@ -287,6 +287,7 @@ def build_gencoin_transverse_packet(
     sigma_packet: dict[str, Any] | None = None,
     thermodynamics_packet: dict[str, Any] | None = None,
     gencoin_shadow_packet: dict[str, Any] | None = None,
+    tree_signal_packet: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the GENCOIN_TRANSVERSE_INTERFACE_V0 packet.
 
@@ -318,6 +319,7 @@ def build_gencoin_transverse_packet(
     sp = sigma_packet if isinstance(sigma_packet, dict) else {}
     tp = thermodynamics_packet if isinstance(thermodynamics_packet, dict) else {}
     gsp = gencoin_shadow_packet if isinstance(gencoin_shadow_packet, dict) else {}
+    tsp = tree_signal_packet if isinstance(tree_signal_packet, dict) else {}
 
     # ── BLOC D: hook detection ───────────────────────────────────────────
     ir_present = bool(ir.get("intent_type") or ir.get("entities") is not None)
@@ -332,6 +334,9 @@ def build_gencoin_transverse_packet(
     # gencoin_shadow: F4+ — present if GENCOIN_SHADOW_VALUE_PACKET_V1 wired
     gsp_present = gsp.get("version") == "GENCOIN_SHADOW_VALUE_PACKET_V1"
     gsp_usable = bool(gsp.get("usable_shadow_value")) if gsp_present else False
+    tree_signal_present = tsp.get("version") == "TREE_SIGNAL_PACKET_V1"
+    trees_formal = bool(tree_signal_present and tsp.get("trees_formal_computation") is True)
+
 
     # Reverse OS: final_answer in true_voice_snapshot means Reverse OS projected a response.
     reverse_os_present = bool(
@@ -363,7 +368,7 @@ def build_gencoin_transverse_packet(
         "thermodynamics": thermo_present,
         "gencoin_shadow": gsp_present,
         "trees_textual_signal": trees_textual,
-        "trees_formal_computation": False,
+        "trees_formal_computation": trees_formal,
         "memory": memory_present,
         "proof": has_proof_readonly,
         "reverse_os": reverse_os_present,
@@ -378,7 +383,7 @@ def build_gencoin_transverse_packet(
             else ("NOT_USABLE_SHADOW_VALUE" if gsp_present else "DEFERRED")
         ),
         "trees_textual_signal": "TEXTUAL_SIGNAL_ONLY" if trees_textual else "OPTIONAL_SIGNAL_ONLY",
-        "trees_formal_computation": "DEFERRED",
+        "trees_formal_computation": ("FORMAL_READONLY_SIGNAL" if trees_formal else "DEFERRED"),
         "memory": "READONLY_CONTEXT_ONLY" if memory_present else "NO_MATERIAL",
         "proof": "READONLY_PROOF_ONLY" if has_proof_readonly else "NOT_VISIBLE",
         "reverse_os": "OPTIONAL_PROJECTION_COST" if reverse_os_present else "NOT_PRESENT",
