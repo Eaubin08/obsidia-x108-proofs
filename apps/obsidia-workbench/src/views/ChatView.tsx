@@ -42,6 +42,7 @@ function TracePanel({ trace }: { trace: TranslationTrace }) {
 }
 
 function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
+  const [cmdCopied, setCmdCopied] = useState(false)
   const op = payload?.operator_view_packet as Record<string, unknown> | undefined
   if (!op) return null
 
@@ -87,6 +88,16 @@ function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
     ...commandLines,
   ]
 
+  const copyableCommand = commandCopy?.["command"] as string | undefined
+  const hasCopyableCommand = Boolean(copyableCommand && copyableCommand !== "-")
+
+  const handleCopyCommand = async () => {
+    if (!copyableCommand || copyableCommand === "-") return
+    await navigator.clipboard.writeText(copyableCommand)
+    setCmdCopied(true)
+    setTimeout(() => setCmdCopied(false), 1500)
+  }
+
   return (
     <div className="mt-2 rounded-lg border border-obs-proof/20 bg-black/30 p-2.5">
       <div className="text-obs-proof text-[9px] font-mono font-semibold mb-1 flex items-center gap-2">
@@ -96,6 +107,19 @@ function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
       <pre className="text-[9px] leading-relaxed font-mono text-obs-mtext whitespace-pre-wrap break-words max-h-56 overflow-y-auto">
         {lines.join("\n")}
       </pre>
+      {hasCopyableCommand && (
+        <div className="mt-1.5 pt-1.5 border-t border-obs-proof/10 flex items-center gap-2">
+          <span className="text-[8px] font-mono text-obs-dtext">copy_only=true · execution_allowed_for_brody=false · packet_executed=false</span>
+          <button
+            onClick={handleCopyCommand}
+            className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-mono bg-obs-proof/10 border border-obs-proof/20 text-obs-proof hover:bg-obs-proof/20 transition-colors"
+            title="Copy command to clipboard — no execution"
+          >
+            {cmdCopied ? <Check size={8} className="text-obs-pass" /> : <Copy size={8} />}
+            {cmdCopied ? 'COPIED' : 'COPY CMD'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
