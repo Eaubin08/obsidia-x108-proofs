@@ -191,8 +191,15 @@ def build_true_brody_answer(
 
     # 4B. Domain raccords already present in repo, now made visible in true voice.
     # Phase 12E4-C: domain raccord must have voice priority.
+    # Phase 12I-B: useful freestyle intents keep priority over generic negation/temporal guard.
     # Memory chain enriches; it must not overwrite domain/coherence/friction/negation regimes.
     action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+    domain_names = domain_raccord.get("domains", []) if isinstance(domain_raccord.get("domains", []), list) else []
+    useful_domain_priority = any(d in domain_names for d in ("CODE_DEBUG_GUIDANCE", "ARCHITECTURE_EXPLANATION"))
+
+    if action_boundary_already and not domain_raccord.get("write_boundary_required"):
+        # Safety boundary stays primary for real ACT/mutation requests.
+        domain_answered = False
 
     if domain_raccord.get("write_boundary_required"):
         answer_parts = []
@@ -212,7 +219,7 @@ def build_true_brody_answer(
         voice_source = "DOMAIN_RACCORD_WRITE_BOUNDARY"
         domain_answered = True
 
-    elif (not action_boundary_already) and domain_raccord.get("structural_answer_available"):
+    elif ((not action_boundary_already) or useful_domain_priority) and domain_raccord.get("structural_answer_available"):
         answer_parts = [str(domain_raccord.get("structural_answer") or "")]
         voice_source = str(domain_raccord.get("voice_mode") or "DOMAIN_RACCORD_STRUCTURAL")
         domain_answered = True

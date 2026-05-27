@@ -85,8 +85,49 @@ def has_memory_write_request(text: str) -> bool:
     return _has_any(low, write_terms) and _has_any(low, memory_terms)
 
 
+def has_code_debug_request(text: str) -> bool:
+    low = _fold(text)
+    return _has_any(low, (
+        "pytest", "fastapi", "traceback", "exception", "bug", "debug",
+        "erreur", "route", "stack", "powershell", "diagnostiquer", "diagnostic",
+    ))
+
+
+def has_architecture_question(text: str) -> bool:
+    low = _fold(text)
+    arch_terms = ("os trad", "ir", "reverse", "graphiti", "memoire", "memory", "contrat", "contracts", "34 arbres", "arbres")
+    explain_terms = ("explique", "comment", "aident", "architecture", "pipeline", "raccord")
+    return _has_any(low, arch_terms) and _has_any(low, explain_terms)
+
+
+def has_boundary_preserving_instruction(text: str) -> bool:
+    low = _fold(text)
+    return _has_any(low, (
+        "garde kx108_only", "garder kx108_only", "keep kx108_only",
+        "sans remplacer x108", "sans modifier x108", "sans modifier le kernel",
+        "ne remplace pas x108", "ne modifie pas le kernel",
+        "readonly", "lecture seule",
+    ))
+
+
+def has_real_mutation_request(text: str) -> bool:
+    low = _fold(text)
+    if has_negated_mutation(text):
+        return False
+    mutation_verbs = (
+        "modifie", "modifier", "modify", "remplace", "remplacer", "replace",
+        "patch", "patcher", "mute", "mutate", "ecrase", "écrase", "override",
+        "bypass", "contourne", "supprime", "delete",
+    )
+    targets = ("x108", "x-108", "kernel", "kx108", "contrat", "contract")
+    return _has_any(low, mutation_verbs) and _has_any(low, targets)
+
+
 def adjust_risk_flags(text: str, flags: list[str]) -> list[str]:
     values = list(dict.fromkeys(str(f) for f in (flags or []) if f))
+
+    if "mutation_request" in values and not has_real_mutation_request(text):
+        values = [f for f in values if f != "mutation_request"]
 
     if has_negated_mutation(text):
         values = [f for f in values if f != "mutation_request"]
@@ -104,6 +145,27 @@ def adjust_risk_flags(text: str, flags: list[str]) -> list[str]:
 
 def _domain_text_fr(domains: list[str], text: str) -> str:
     parts: list[str] = []
+
+    if "CODE_DEBUG_GUIDANCE" in domains:
+        parts.append(
+            "Diagnostic technique readonly : commence par isoler la couche qui casse. "
+            "1) vérifie le code HTTP et le body exact retourné par la route FastAPI ; "
+            "2) compare le schéma attendu par le test pytest avec le payload réel ; "
+            "3) contrôle les champs obligatoires, les noms de clés et les types ; "
+            "4) relance un test ciblé avec -q puis capture la première assertion qui tombe. "
+            "Brody peut guider le diagnostic, pas modifier le kernel."
+        )
+
+    if "ARCHITECTURE_EXPLANATION" in domains:
+        parts.append(
+            "Lecture architecture : OS Trad transforme l'intention utilisateur en unités structurées ; "
+            "IR Candidate stabilise ces unités en candidat vérifiable ; "
+            "Reverse OS reprojette le candidat vers une réponse compréhensible ; "
+            "Graphiti/mémoire apportent du contexte readonly ; "
+            "les contrats et la permission matrix bornent ce que Brody peut dire ou préparer ; "
+            "les 34 arbres servent de filtres cognitifs et de repères d'activation. "
+            "Tout cela aide Brody à répondre mieux sans remplacer X108."
+        )
 
     if "MEMORY_WRITE_CANON_FREEZE" in domains:
         parts.append(
@@ -175,8 +237,15 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
 
     domains: list[str] = []
 
+    if has_code_debug_request(text):
+        domains.append("CODE_DEBUG_GUIDANCE")
+
+    if has_architecture_question(text):
+        domains.append("ARCHITECTURE_EXPLANATION")
+
     if _has_any(low, ("friction", "saoule", "perdu", "bloque", "bug", "faille", "raccord manque")):
-        domains.append("FRICTION")
+        if "CODE_DEBUG_GUIDANCE" not in domains:
+            domains.append("FRICTION")
 
     if _has_any(low, ("thermodynamique", "thermodynamic", "entropie", "entropy", "dissipation", "temperature", "chaleur", "heat")):
         domains.append("THERMODYNAMICS")
@@ -199,7 +268,7 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     if has_memory_write_request(text):
         domains.append("MEMORY_WRITE_CANON_FREEZE")
 
-    if has_negated_mutation(text):
+    if has_negated_mutation(text) and not has_code_debug_request(text):
         domains.append("NEGATION_GUARD")
 
     # Deduplicate but preserve order.
@@ -211,6 +280,10 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     mode = "DOMAIN_RACCORD"
     if boundary_required:
         mode = "DOMAIN_RACCORD_BOUNDARY"
+    elif "CODE_DEBUG_GUIDANCE" in domains:
+        mode = "DOMAIN_RACCORD_CODE_DEBUG"
+    elif "ARCHITECTURE_EXPLANATION" in domains:
+        mode = "DOMAIN_RACCORD_ARCHITECTURE"
     elif "NEGATION_GUARD" in domains:
         mode = "DOMAIN_RACCORD_NEGATION_GUARD"
     elif domains:
