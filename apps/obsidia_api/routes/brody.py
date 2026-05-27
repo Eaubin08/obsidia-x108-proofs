@@ -35,6 +35,7 @@ from apps.obsidia_api.brody_anti_mismatch_signal import build_anti_mismatch_sign
 from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_packet
 from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
 from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
+from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -284,6 +285,24 @@ async def brody_chat(req: BrodyChatRequest):
         if isinstance(_gencoin_shadow_raw, dict) else {}
     )
 
+    # Step 6F: memory promotion guard — SHADOW_READONLY, no write, no canon promotion
+    _memory_guard_raw = safe_call_snapshot(
+        "memory_promotion_guard_packet",
+        build_memory_promotion_guard_packet,
+        request_text=_tree_text,
+        sigma_packet=_sigma_packet,
+        anti_mismatch_packet=_anti_mismatch_packet,
+        thermodynamics_packet=_thermodynamics_packet,
+        gencoin_shadow_packet=_gencoin_shadow_packet,
+        tree_signal_packet=_tree_signal_packet,
+        memory_chain=memory_response_chain,
+        candidate_memory=cand_snap,
+    )
+    _memory_promotion_guard_packet = (
+        _memory_guard_raw.get("memory_promotion_guard_packet", {})
+        if isinstance(_memory_guard_raw, dict) else {}
+    )
+
     # Step 6: gencoin transverse interface — SHADOW_READONLY, no final scoring
     # value_layer.scores remain null; shadow_scores live in gencoin_shadow_packet only
     _gencoin_raw = safe_call_snapshot(
@@ -394,4 +413,5 @@ async def brody_chat(req: BrodyChatRequest):
         "thermodynamics_packet": _thermodynamics_packet,
         "gencoin_shadow_packet": _gencoin_shadow_packet,
         "tree_signal_packet": _tree_signal_packet,
+        "memory_promotion_guard_packet": _memory_promotion_guard_packet,
     }, source=r.get("source", "REAL_BACKEND"))
