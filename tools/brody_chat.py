@@ -211,6 +211,35 @@ def _print_domain_raccord_snapshot(data: dict[str, Any]) -> None:
     print(dim("priority=domain_raccord_first; memory=enrichment_only; authority=KX108_ONLY"))
 
 
+def _print_adaptive_response_policy(data: dict[str, Any]) -> None:
+    tv = data.get("true_voice_snapshot") or {}
+    policy = {}
+    if isinstance(tv, dict):
+        policy = tv.get("adaptive_response_policy") or {}
+    if not isinstance(policy, dict) or not policy:
+        return
+
+    print(SEP)
+    print(bold(yellow("ADAPTIVE RESPONSE POLICY / SIGMA")))
+    print(dim(f"status={policy.get('status', '-')}  source={policy.get('source', '-')}"))
+    print(dim(
+        f"response_size={policy.get('response_size', '-')}  "
+        f"density={policy.get('density', '-')}  "
+        f"context_need={policy.get('context_need', '-')}"
+    ))
+    print(dim(
+        f"sigma_pressure={policy.get('sigma_pressure', '-')}  "
+        f"observed={policy.get('observed_answer_size', '-')}:{policy.get('observed_answer_words', '-')}"
+    ))
+    print(dim(f"reason={policy.get('reason', '-')}"))
+    print(dim(
+        "boundary="
+        f"{_bool_text(policy.get('boundary_detected'))}  "
+        f"readonly={_bool_text(policy.get('readonly'))}  "
+        f"authority={policy.get('decision_authority', 'KX108_ONLY')}"
+    ))
+
+
 def _print_true_voice_snapshot(data: dict[str, Any]) -> None:
     tv = data.get("true_voice_snapshot") or {}
     trs = data.get("true_response_structure_snapshot") or {}
@@ -265,6 +294,8 @@ def _print_response(data: dict[str, Any], elapsed: float) -> None:
     _print_true_voice_snapshot(data)
     print()
     _print_domain_raccord_snapshot(data)
+    print()
+    _print_adaptive_response_policy(data)
     print()
     _print_native_machination(data)
     print()

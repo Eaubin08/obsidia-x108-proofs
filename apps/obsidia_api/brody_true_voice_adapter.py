@@ -39,6 +39,11 @@ try:
 except Exception:  # pragma: no cover
     build_domain_raccord_snapshot = None
 
+try:
+    from apps.obsidia_api.brody_adaptive_response_policy import build_adaptive_response_policy
+except Exception:  # pragma: no cover
+    build_adaptive_response_policy = None
+
 # ── Import existing peripheral Reverse OS / Language modules ──────────────
 import importlib.util, sys as _sys
 from pathlib import Path as _Path
@@ -488,6 +493,25 @@ def build_true_brody_answer(
         except Exception:
             pass
 
+    adaptive_response_policy = (
+        build_adaptive_response_policy(
+            user_message,
+            final_answer=final_answer,
+            voice_source=voice_source,
+            request_type=request_type,
+            domain_raccord=domain_raccord,
+            support_summary=ctx.get("support_summary", {}),
+            memory_chain=chain,
+        )
+        if build_adaptive_response_policy
+        else {
+            "source": "BRODY_ADAPTIVE_RESPONSE_POLICY_UNAVAILABLE",
+            "status": "UNAVAILABLE",
+            "readonly": True,
+            "decision_authority": "KX108_ONLY",
+        }
+    )
+
     # ── Validate contract (periphery/brody) ──────────────────────────────
     contract = _get_periph("contract", "brody/brody_response_contract.py")
     if contract:
@@ -521,6 +545,11 @@ def build_true_brody_answer(
         "domain_raccord_snapshot": domain_raccord,
         "domain_voice_mode": domain_raccord.get("voice_mode"),
         "domain_raccord_domains": domain_raccord.get("domains", []),
+        "adaptive_response_policy": adaptive_response_policy,
+        "response_size": adaptive_response_policy.get("response_size"),
+        "density": adaptive_response_policy.get("density"),
+        "context_need": adaptive_response_policy.get("context_need"),
+        "sigma_pressure": adaptive_response_policy.get("sigma_pressure"),
         "project_memory_used": project_has_material,
         "session_memory_used": followup_resolved,
         "followup_resolved": followup_resolved,
