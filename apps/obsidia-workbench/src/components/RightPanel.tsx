@@ -63,6 +63,89 @@ function boolLike(value: unknown): string {
   return String(value)
 }
 
+
+function TrueVoiceSection({ live }: { live: Record<string, unknown> }) {
+  const tv = asRecord(live.true_voice_snapshot)
+  const trs = asRecord(live.true_response_structure_snapshot)
+
+  if (!Object.keys(tv).length && !Object.keys(trs).length) return null
+
+  return (
+    <div>
+      <SectionTitle>True Voice / LLM Obsidien</SectionTitle>
+      <div className="obs-card p-3 space-y-0.5 border-obs-brody/30 bg-obs-brody/5">
+        <CopyableKV k="status" v={String(tv.status ?? '—')} vClass={String(tv.status ?? '').includes('PASS') ? 'text-obs-pass' : 'text-obs-hold'} />
+        <CopyableKV k="voice_source" v={String(tv.voice_source ?? tv.final_answer_source ?? '—')} vClass="text-obs-brody" />
+        <CopyableKV k="final_answer_source" v={String(tv.final_answer_source ?? '—')} vClass="text-obs-brody" />
+        <CopyableKV k="source_mode" v={String(tv.source_mode ?? '—')} />
+        <CopyableKV k="domain_voice_mode" v={String(tv.domain_voice_mode ?? '—')} vClass={String(tv.domain_voice_mode ?? '').includes('DOMAIN') ? 'text-obs-pass' : 'text-obs-dtext'} />
+        <CopyableKV k="model_position" v={String(trs.model_position ?? 'LLM_OBSIDIEN_READONLY_ADVISORY')} vClass="text-obs-proof" />
+        <CopyableKV k="structure_first" v="true" vClass="text-obs-pass" />
+        <CopyableKV k="memory_enrichment" v="optional" vClass="text-obs-memory" />
+        <CopyableKV k="decision_authority" v={String(live.decision_authority ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+      </div>
+    </div>
+  )
+}
+
+function DomainRaccordSection({ live }: { live: Record<string, unknown> }) {
+  const tv = asRecord(live.true_voice_snapshot)
+  const support = asRecord(live.support_summary)
+
+  const tvDomain = asRecord(tv.domain_raccord_snapshot)
+  const supportDomain = asRecord(support.domain_raccord_snapshot)
+  const domain = Object.keys(tvDomain).length > 0 ? tvDomain : supportDomain
+
+  const domains = Array.isArray(tv.domain_raccord_domains)
+    ? tv.domain_raccord_domains
+    : Array.isArray(domain.domains)
+      ? domain.domains
+      : []
+
+  if (!Object.keys(domain).length && domains.length === 0) return null
+
+  return (
+    <div>
+      <SectionTitle>Domain Raccord / Structure-First</SectionTitle>
+      <div className="obs-card p-3 space-y-0.5 border-obs-proof/30 bg-obs-proof/5">
+        <CopyableKV k="status" v={String(domain.status ?? '—')} vClass={String(domain.status ?? '').includes('READY') ? 'text-obs-pass' : 'text-obs-hold'} />
+        <CopyableKV k="voice_mode" v={String(domain.voice_mode ?? tv.domain_voice_mode ?? '—')} vClass="text-obs-brody" />
+        <CopyableKV k="domains" v={textList(domains)} vClass="text-obs-proof" />
+        <CopyableKV k="structural_answer_available" v={boolLike(domain.structural_answer_available)} vClass={domain.structural_answer_available === true ? 'text-obs-pass' : 'text-obs-hold'} />
+        <CopyableKV k="negation_guard_active" v={boolLike(domain.negation_guard_active)} vClass={domain.negation_guard_active === true ? 'text-obs-pass' : 'text-obs-dtext'} />
+        <CopyableKV k="write_boundary_required" v={boolLike(domain.write_boundary_required)} vClass={domain.write_boundary_required === true ? 'text-obs-block' : 'text-obs-dtext'} />
+        <CopyableKV k="memory_dependency" v={String(domain.memory_dependency ?? 'NONE')} vClass="text-obs-pass" />
+        <CopyableKV k="memory_enrichment" v={String(domain.memory_enrichment ?? 'OPTIONAL')} vClass="text-obs-memory" />
+        <CopyableKV k="priority" v="domain_raccord_first; memory=enrichment_only; authority=KX108_ONLY" vClass="text-obs-kernel" />
+      </div>
+    </div>
+  )
+}
+
+function BoundaryEnvelopeSection({ live }: { live: Record<string, unknown> }) {
+  return (
+    <div>
+      <SectionTitle>12E6 Boundary Envelope</SectionTitle>
+      <div className="obs-card p-3 space-y-0.5 border-obs-block/25 bg-obs-block/5">
+        <CopyableKV k="readonly" v={boolLike(live.readonly)} vClass={live.readonly === true ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="advisory_only" v={boolLike(live.advisory_only)} vClass={live.advisory_only === true ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="context_signal_only" v={boolLike(live.context_signal_only)} vClass={live.context_signal_only === true ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="allowed_to_decide" v={boolLike(live.allowed_to_decide)} vClass={live.allowed_to_decide === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="allowed_to_act" v={boolLike(live.allowed_to_act)} vClass={live.allowed_to_act === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="emits_act" v={boolLike(live.emits_act)} vClass={live.emits_act === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="emits_verdict" v={boolLike(live.emits_verdict)} vClass={live.emits_verdict === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="memory_write" v={boolLike(live.memory_write)} vClass={live.memory_write === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="graphiti_write" v={boolLike(live.graphiti_write)} vClass={live.graphiti_write === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="neo4j_write" v={boolLike(live.neo4j_write)} vClass={live.neo4j_write === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="kernel_mutation" v={boolLike(live.kernel_mutation)} vClass={live.kernel_mutation === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="x108_mutation" v={boolLike(live.x108_mutation)} vClass={live.x108_mutation === false ? 'text-obs-pass' : 'text-obs-block'} />
+        <CopyableKV k="decision_authority" v={String(live.decision_authority ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+      </div>
+    </div>
+  )
+}
+
+
 function NativeMachinationSection({ live }: { live: Record<string, unknown> }) {
   const hasNative = Boolean(
     live.support_summary ||
@@ -231,6 +314,9 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
       {authoritySnap && Object.keys(authoritySnap).length > 0 && (
         <AuthoritySnapshotSection snap={authoritySnap} />
       )}
+      {live && <TrueVoiceSection live={live} />}
+      {live && <DomainRaccordSection live={live} />}
+      {live && <BoundaryEnvelopeSection live={live} />}
       {live && <NativeMachinationSection live={live} />}
       {live && (
         <div>
@@ -243,7 +329,7 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
             } /> : null}
             {live.graphiti_status ? <CopyableKV k="graphiti_status" v={String(live.graphiti_status)} vClass={String(live.graphiti_status).includes('LIVE') ? 'text-obs-pass' : 'text-obs-hold'} /> : null}
             {live.neo4j_status ? <CopyableKV k="neo4j_status" v={String(live.neo4j_status)} vClass={live.neo4j_status === 'ONLINE' ? 'text-obs-pass' : 'text-obs-hold'} /> : null}
-            <CopyableKV k="decision_authority" v="X108_ONLY" vClass="text-obs-kernel" />
+            <CopyableKV k="decision_authority" v={String(live.decision_authority ?? "KX108_ONLY")} vClass="text-obs-kernel" />
             <CopyableKV k="readonly" v="true" vClass="text-obs-pass" />
             <CopyableKV k="emits_act" v="false" vClass="text-obs-block" />
           </div>
