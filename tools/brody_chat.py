@@ -62,6 +62,107 @@ def _http_post(url: str, payload: dict[str, Any], timeout: int = TIMEOUT) -> dic
 
 # ── Display ───────────────────────────────────────────────────────────────────
 
+
+def _get_path(data: dict[str, Any], path: list[str], default: Any = "") -> Any:
+    cur: Any = data
+    for key in path:
+        if not isinstance(cur, dict):
+            return default
+        cur = cur.get(key, default)
+    return cur
+
+
+def _fmt_list(value: Any) -> str:
+    if isinstance(value, list):
+        return ", ".join(str(v) for v in value) if value else "-"
+    if value in (None, ""):
+        return "-"
+    return str(value)
+
+
+def _bool_text(value: Any) -> str:
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if value in (None, ""):
+        return "-"
+    return str(value)
+
+
+def _print_native_machination(data: dict[str, Any]) -> None:
+    has_native = any(k in data for k in (
+        "support_summary",
+        "contracts",
+        "permission_matrix",
+        "machination_packet",
+        "boundary_contract",
+        "kernel_contract",
+    ))
+
+    if not has_native:
+        print(dim("Machination native : non exposée par le payload."))
+        return
+
+    support = data.get("support_summary") or {}
+    contracts = data.get("contracts") or {}
+    permission = data.get("permission_matrix") or contracts.get("permission_matrix") or {}
+    boundary = data.get("boundary_contract") or contracts.get("boundary_contract") or {}
+    kernel = data.get("kernel_contract") or contracts.get("kernel_contract") or {}
+    machination = data.get("machination_packet") or {}
+
+    print(SEP)
+    print(bold(yellow("MACHINATION NATIVE")))
+    print(dim(f"status={machination.get('status', '-')}  source={machination.get('source', '-')}"))
+    print(dim(f"support_intent={support.get('intent', '-')}  boundary={support.get('boundary_notice', '-')}"))
+    print(dim(f"risk_flags={_fmt_list(support.get('risk_flags'))}"))
+    print(dim(f"contradictions={_fmt_list(support.get('contradictions'))}"))
+
+    print()
+    print(bold(yellow("CONTRATS / PERMISSIONS")))
+    print(dim(f"decision_authority={data.get('decision_authority', 'KX108_ONLY')}"))
+    print(dim(f"kernel={kernel.get('kernel', 'X108/KX108')}  kernel_mutation={_bool_text(kernel.get('kernel_mutation', data.get('kernel_mutation')))}  x108_mutation={_bool_text(kernel.get('x108_mutation'))}"))
+
+    brody_perm = permission.get("brody", {}) if isinstance(permission, dict) else {}
+    x108_perm = permission.get("x108", {}) if isinstance(permission, dict) else {}
+    memory_perm = permission.get("memory", {}) if isinstance(permission, dict) else {}
+    automation_perm = permission.get("automation", {}) if isinstance(permission, dict) else {}
+
+    print(dim(
+        "brody: "
+        f"can_decide={_bool_text(brody_perm.get('can_decide'))} "
+        f"can_act={_bool_text(brody_perm.get('can_act'))} "
+        f"can_write_memory={_bool_text(brody_perm.get('can_write_memory'))} "
+        f"can_mutate_x108={_bool_text(brody_perm.get('can_mutate_x108'))}"
+    ))
+    print(dim(
+        "memory/automation: "
+        f"memory_commit={_bool_text(memory_perm.get('can_commit'))} "
+        f"automation_execute={_bool_text(automation_perm.get('can_execute'))} "
+        f"requires_x108={_bool_text(automation_perm.get('requires_x108_decision'))}"
+    ))
+    print(dim(
+        "x108: "
+        f"sole_decision_authority={_bool_text(x108_perm.get('sole_decision_authority'))} "
+        f"can_authorize_act={_bool_text(x108_perm.get('can_authorize_act'))}"
+    ))
+
+    print()
+    print(bold(yellow("BOUNDARY")))
+    print(dim(
+        f"readonly={_bool_text(boundary.get('readonly', data.get('readonly')))}  "
+        f"emits_act={_bool_text(boundary.get('emits_act', data.get('emits_act')))}  "
+        f"emits_verdict={_bool_text(boundary.get('emits_verdict', data.get('emits_verdict')))}"
+    ))
+    print(dim(
+        f"memory_write={_bool_text(boundary.get('memory_write', data.get('memory_write')))}  "
+        f"graphiti_write={_bool_text(boundary.get('graphiti_write', data.get('graphiti_write')))}  "
+        f"kernel_mutation={_bool_text(boundary.get('kernel_mutation', data.get('kernel_mutation')))}  "
+        f"x108_mutation={_bool_text(boundary.get('x108_mutation'))}"
+    ))
+    print(dim(f"signal_contract={_get_path(contracts, ['signal_contract', 'decision_authority'], 'KX108_ONLY')}"))
+
+
 def _print_response(data: dict[str, Any], elapsed: float) -> None:
     final    = (data.get("final_answer") or data.get("response") or "").strip()
     source   = data.get("source", "?")
@@ -82,6 +183,8 @@ def _print_response(data: dict[str, Any], elapsed: float) -> None:
         print(final)
     else:
         print(red("(réponse vide — vérifier les logs du backend)"))
+    print()
+    _print_native_machination(data)
     print()
     print(dim(f"⏱  {elapsed:.1f}s"))
     print()
@@ -123,6 +226,44 @@ def _check_health() -> bool:
 
 
 # ── Main REPL ─────────────────────────────────────────────────────────────────
+
+def run_once(session_id: str, message: str) -> None:
+    print()
+    print(bold(cyan("╔══ Brody Terminal CLI / once ══╗")))
+    print(dim(f"  Endpoint : {ENDPOINT}"))
+    print(dim(f"  Session  : {session_id}"))
+    print()
+
+    if not _check_health():
+        sys.exit(1)
+
+    print(dim(f"⟳  Envoi vers {ENDPOINT} ..."), flush=True)
+    t0 = time.monotonic()
+
+    data = _http_post(ENDPOINT, {
+        "message": message,
+        "language": "fr",
+        "session_id": session_id,
+    })
+    _print_response(data, time.monotonic() - t0)
+
+    required = ("contracts", "machination_packet", "support_routes", "support_summary")
+    missing = [k for k in required if k not in data]
+    if missing:
+        raise SystemExit(f"MISSING_NATIVE_FIELDS: {missing}")
+
+    if data.get("decision_authority") != "KX108_ONLY":
+        raise SystemExit("DECISION_AUTHORITY_DRIFT")
+
+    if data.get("emits_act") is not False:
+        raise SystemExit("EMITS_ACT_DRIFT")
+
+    if data.get("memory_write") is not False:
+        raise SystemExit("MEMORY_WRITE_DRIFT")
+
+    print(green("BRODY_TERMINAL_NATIVE_ONCE_OK"))
+
+
 
 def run_repl(session_id: str) -> None:
     print()
@@ -212,6 +353,10 @@ def main() -> None:
         "--url", default=None,
         help=f"URL de base du backend (défaut: {BASE_URL})",
     )
+    parser.add_argument(
+        "--once", default=None,
+        help="Envoie un seul message puis ferme le terminal.",
+    )
     args = parser.parse_args()
 
     if args.url:
@@ -219,7 +364,10 @@ def main() -> None:
         ENDPOINT  = f"{BASE_URL}/api/brody/chat"
         HEALTH_EP = f"{BASE_URL}/openapi.json"
 
-    run_repl(args.session)
+    if args.once:
+        run_once(args.session, args.once)
+    else:
+        run_repl(args.session)
 
 
 if __name__ == "__main__":
