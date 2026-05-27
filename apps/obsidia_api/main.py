@@ -13,6 +13,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET","PO
 from apps.obsidia_api.routes.status import router as status_router
 from apps.obsidia_api.routes.brody import router as brody_router
 from apps.obsidia_api.routes.translation import router as translation_router
+from apps.obsidia_api.routes.os_trad_ir_reverse import router as os_trad_ir_reverse_router
 from apps.obsidia_api.routes.context import router as context_router
 from apps.obsidia_api.routes.memory import router as memory_router
 from apps.obsidia_api.routes.gencoin import router as gencoin_router
@@ -25,7 +26,7 @@ from apps.obsidia_api.routes.audit import router as audit_router
 from apps.obsidia_api.routes.periphery_ops import router as periphery_ops_router
 from apps.obsidia_api.routes.brody_monitoring import router as brody_monitoring_router
 
-for r in [status_router, brody_router, translation_router, context_router,
+for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
            memory_router, gencoin_router, graphiti_router, x108_router,
            os3_router, worldcalls_router, blockchain_router, audit_router,
            periphery_ops_router, brody_monitoring_router]:
