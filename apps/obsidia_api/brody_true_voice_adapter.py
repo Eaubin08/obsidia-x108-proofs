@@ -44,6 +44,11 @@ try:
 except Exception:  # pragma: no cover
     build_adaptive_response_policy = None
 
+try:
+    from apps.obsidia_api.brody_gencoin_transverse_interface import build_sigma_packet as _build_sigma_packet
+except Exception:  # pragma: no cover
+    _build_sigma_packet = None
+
 # ── Import existing peripheral Reverse OS / Language modules ──────────────
 import importlib.util, sys as _sys
 from pathlib import Path as _Path
@@ -512,6 +517,34 @@ def build_true_brody_answer(
         }
     )
 
+    # ── Sigma packet — BLOC C/F2B — SHADOW_READONLY calibrated metric ────
+    if _build_sigma_packet:
+        sigma_packet: dict = _build_sigma_packet(
+            adaptive_response_policy,
+            domain_raccord=domain_raccord,
+            memory_chain=chain,
+        )
+    else:
+        sigma_packet = {
+            "version": "SIGMA_CALIBRATION_PACKET_V1",
+            "mode": "SHADOW_READONLY",
+            "source": "BRODY_SIGMA_CALIBRATION_F2B",
+            "calibration_status": "INSUFFICIENT_MATERIAL",
+            "usable_for_gencoin": False,
+            "usable_for_thermodynamics": False,
+            "truth_score": None,
+            "sigma_pressure": adaptive_response_policy.get("sigma_pressure") if isinstance(adaptive_response_policy, dict) else None,
+            "reason": "SIGMA_BUILD_UNAVAILABLE",
+            "decision_authority": "KX108_ONLY",
+            "advisory_only": True,
+            "readonly": True,
+            "emits_act": False,
+            "emits_verdict": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+            "x108_mutation": False,
+        }
+
     # ── Validate contract (periphery/brody) ──────────────────────────────
     contract = _get_periph("contract", "brody/brody_response_contract.py")
     if contract:
@@ -546,6 +579,7 @@ def build_true_brody_answer(
         "domain_voice_mode": domain_raccord.get("voice_mode"),
         "domain_raccord_domains": domain_raccord.get("domains", []),
         "adaptive_response_policy": adaptive_response_policy,
+        "sigma_packet": sigma_packet,
         "response_size": adaptive_response_policy.get("response_size"),
         "density": adaptive_response_policy.get("density"),
         "context_need": adaptive_response_policy.get("context_need"),

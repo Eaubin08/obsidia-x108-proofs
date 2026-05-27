@@ -27,6 +27,13 @@ from apps.obsidia_api.brody_structured_response_engine_adapter import make_struc
 from apps.obsidia_api.brody_freeze_metrics_snapshot import build_freeze_metrics_snapshot
 from apps.obsidia_api.runtime_loader import load_runtime_components
 from apps.obsidia_api.safe_response import safe_backend_response, strip_forbidden_tokens
+from apps.obsidia_api.brody_gencoin_transverse_interface import (
+    build_gencoin_transverse_packet,
+    build_sigma_packet,
+)
+from apps.obsidia_api.brody_anti_mismatch_signal import build_anti_mismatch_signal
+from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_packet
+from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -199,6 +206,101 @@ async def brody_chat(req: BrodyChatRequest):
         "decision_authority": "KX108_ONLY",
     }
 
+    # ── F2C pipeline: sigma(initial) → anti_mismatch → sigma(formal) → gencoin ──
+    _tvs = true_voice_snapshot if isinstance(true_voice_snapshot, dict) else {}
+    _tvs_pol = _tvs.get("adaptive_response_policy", {})
+    _tvs_dr = _tvs.get("domain_raccord_snapshot", {})
+
+    # Step 1: initial sigma (without formal anti_mismatch — provides truth_score for anti_mismatch)
+    _sigma_initial = safe_call_snapshot(
+        "sigma_packet_initial",
+        build_sigma_packet,
+        adaptive_response_policy=_tvs_pol,
+        ir_candidate=ir_candidate_payload,
+        domain_raccord=_tvs_dr,
+        memory_chain=memory_response_chain,
+        true_voice_snapshot=true_voice_snapshot,
+    )
+
+    # Step 2: anti_mismatch formal signal (consumes initial sigma's truth_score)
+    _anti_mismatch_raw = safe_call_snapshot(
+        "anti_mismatch_signal",
+        build_anti_mismatch_signal,
+        ir_candidate=ir_candidate_payload,
+        true_voice_snapshot=true_voice_snapshot,
+        adaptive_response_policy=_tvs_pol,
+        domain_raccord=_tvs_dr,
+        sigma_packet=_sigma_initial,
+        memory_chain=memory_response_chain,
+    )
+    _anti_mismatch_packet = (
+        _anti_mismatch_raw.get("anti_mismatch_packet", {})
+        if isinstance(_anti_mismatch_raw, dict) else {}
+    )
+
+    # Step 3: final sigma (formal anti_mismatch replaces textual decorative_coherence_risk)
+    _sigma_packet = safe_call_snapshot(
+        "sigma_packet",
+        build_sigma_packet,
+        adaptive_response_policy=_tvs_pol,
+        ir_candidate=ir_candidate_payload,
+        domain_raccord=_tvs_dr,
+        memory_chain=memory_response_chain,
+        true_voice_snapshot=true_voice_snapshot,
+        anti_mismatch_packet=_anti_mismatch_packet,
+    )
+
+    # Step 4: thermodynamics — SHADOW_READONLY, observes sigma_final + anti_mismatch
+    _thermo_raw = safe_call_snapshot(
+        "thermodynamics_packet",
+        build_thermodynamics_packet,
+        sigma_packet=_sigma_packet,
+        anti_mismatch_packet=_anti_mismatch_packet,
+        ir_candidate=ir_candidate_payload,
+        true_voice_snapshot=true_voice_snapshot,
+        adaptive_response_policy=_tvs_pol,
+        memory_chain=memory_response_chain,
+    )
+    _thermodynamics_packet = (
+        _thermo_raw.get("thermodynamics_packet", {})
+        if isinstance(_thermo_raw, dict) else {}
+    )
+
+    # Step 5: gencoin shadow value — non-final shadow scores from sigma+anti_mismatch+thermo
+    _gencoin_shadow_raw = safe_call_snapshot(
+        "gencoin_shadow_packet",
+        build_gencoin_shadow_value_packet,
+        sigma_packet=_sigma_packet,
+        anti_mismatch_packet=_anti_mismatch_packet,
+        thermodynamics_packet=_thermodynamics_packet,
+        ir_candidate=ir_candidate_payload,
+        true_voice_snapshot=true_voice_snapshot,
+        memory_chain=memory_response_chain,
+        has_proof_readonly=True,
+    )
+    _gencoin_shadow_packet = (
+        _gencoin_shadow_raw.get("gencoin_shadow_packet", {})
+        if isinstance(_gencoin_shadow_raw, dict) else {}
+    )
+
+    # Step 6: gencoin transverse interface — SHADOW_READONLY, no final scoring
+    # value_layer.scores remain null; shadow_scores live in gencoin_shadow_packet only
+    _gencoin_raw = safe_call_snapshot(
+        "gencoin_transverse_interface",
+        build_gencoin_transverse_packet,
+        ir_candidate=ir_candidate_payload,
+        true_voice_snapshot=true_voice_snapshot,
+        domain_raccord=_tvs_dr,
+        trees_snap=trees_snap,
+        memory_chain=memory_response_chain,
+        has_proof_readonly=True,
+        adaptive_response_policy=_tvs_pol,
+        sigma_packet=_sigma_packet,
+        thermodynamics_packet=_thermodynamics_packet,
+        gencoin_shadow_packet=_gencoin_shadow_packet,
+    )
+    value_layer = _gencoin_raw.get("value_layer", {}) if isinstance(_gencoin_raw, dict) else {}
+
     machination_packet = build_machination_packet(
         user_message=req.message,
         language=r.get("language", req.language),
@@ -284,4 +386,9 @@ async def brody_chat(req: BrodyChatRequest):
         "machination_packet": machination_packet,
         "support_routes": machination_packet.get("support_routes", {}),
         "support_summary": machination_packet.get("support_summary", {}),
+        "value_layer": value_layer,
+        "sigma_packet": _sigma_packet,
+        "anti_mismatch_packet": _anti_mismatch_packet,
+        "thermodynamics_packet": _thermodynamics_packet,
+        "gencoin_shadow_packet": _gencoin_shadow_packet,
     }, source=r.get("source", "REAL_BACKEND"))
