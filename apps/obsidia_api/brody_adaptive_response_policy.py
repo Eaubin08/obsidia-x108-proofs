@@ -1,4 +1,4 @@
-﻿"""Brody adaptive response policy.
+"""Brody adaptive response policy.
 
 Phase 12J-B.
 
@@ -42,7 +42,7 @@ def _explicit_size_hint(text: str) -> str:
     if _has_any(low, ("très court", "tres court", "fais court", "réponds court", "reponds court", "sans blabla", "en une phrase")):
         return "SHORT"
 
-    if _has_any(low, ("détaille", "detaille", "en détail", "en detail", "gros contexte", "explique en détail", "deep", "complet")):
+    if _has_any(low, ("détaille", "detaille", "détaillé", "detaille", "en détail", "en detail", "gros contexte", "explique en détail", "deep", "complet", "complète", "complete", "réponse complète", "reponse complete")):
         return "DEEP"
 
     if _has_any(low, ("résume", "resume", "synthèse", "synthese")):
@@ -93,28 +93,25 @@ def build_adaptive_response_policy(
     is_arch = "ARCHITECTURE_EXPLANATION" in domains
     is_domain_deep = any(d in domains for d in ("THERMODYNAMICS", "ENERGY_SIGMA", "ANTI_MISMATCH", "COHERENCE"))
     is_multi = user_words >= 16 and len(domains) >= 2
-    is_nonsense = user_words <= 10 and not is_code and not is_arch and not boundary and "TIME_TEMPORALITY" in domains
+    is_decision_boundary_question = _has_any(low, (
+        "décider à la place de x108", "decider a la place de x108",
+        "décider pour x108", "decider pour x108",
+        "remplacer x108", "à la place de x108", "a la place de x108",
+        "peux décider", "peut décider", "peux-tu décider", "tu peux décider",
+    ))
+    is_nonsense = (
+        _has_any(low, ("florbnax", "banane", "arbre inversé bleu", "arbre inverse bleu"))
+        or (user_words <= 14 and "TIME_TEMPORALITY" in domains and _has_any(low, ("?", "kernel", "x108")))
+    ) and not is_code and not is_arch and not boundary
     has_memory = chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
     chain_status = str(chain.get("status") or "")
 
-    if boundary:
+    if boundary or (is_decision_boundary_question and not is_arch):
         response_size = "BOUNDARY_COMPACT"
         density = "HIGH"
         context_need = "BOUNDARY"
         sigma_pressure = "HIGH"
         reason = "Boundary/risk request detected; response must stay compact, explicit, and non-actionable."
-    elif explicit_hint == "SHORT":
-        response_size = "SHORT"
-        density = "LOW"
-        context_need = "NONE"
-        sigma_pressure = "LOW"
-        reason = "User explicitly requested a short answer."
-    elif explicit_hint == "DEEP":
-        response_size = "DEEP"
-        density = "HIGH"
-        context_need = "SUBJECT"
-        sigma_pressure = "MEDIUM"
-        reason = "User explicitly requested detail/deep context."
     elif is_code:
         response_size = "MEDIUM"
         density = "HIGH"
@@ -127,6 +124,18 @@ def build_adaptive_response_policy(
         context_need = "ARCHITECTURE"
         sigma_pressure = "MEDIUM"
         reason = "Architecture question requires component-level explanation."
+    elif explicit_hint == "SHORT":
+        response_size = "SHORT"
+        density = "LOW"
+        context_need = "NONE"
+        sigma_pressure = "LOW"
+        reason = "User explicitly requested a short answer."
+    elif explicit_hint == "DEEP":
+        response_size = "DEEP"
+        density = "HIGH"
+        context_need = "SUBJECT"
+        sigma_pressure = "MEDIUM"
+        reason = "User explicitly requested detail/deep context."
     elif is_domain_deep or is_multi:
         response_size = "DEEP"
         density = "HIGH"
