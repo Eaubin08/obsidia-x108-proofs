@@ -1,6 +1,6 @@
 /**
  * Obsidia API Client — V5B+ Backend-first.
- * All calls try port 8000 first, fall back to mock.
+ * All calls try the live Brody API on port 8012 first, then fall back to mock.
  * No real action. No wallet. KX108_ONLY always.
  */
 import type { Resolved } from './contracts'
@@ -13,7 +13,7 @@ import type { KernelStatus, ContextPacket, OS3ProofTicket, SovereignTicket,
               WorldCallEvent, MemoryCandidate, GencoinEntry, AuditEvent } from '../types/obsidia'
 
 const API_BASE    = (import.meta.env.VITE_OBSIDIA_API_BASE  ?? 'http://127.0.0.1:8011').replace(/\/$/, '')
-const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
+const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8012').replace(/\/$/, '')
 const USE_MOCK    = import.meta.env.VITE_USE_MOCK_FALLBACK === 'true'
 const TIMEOUT_MS  = Number(import.meta.env.VITE_PROBE_TIMEOUT_MS ?? 3000)
 // Brody chat can be slow on cold start (hydration scan ~40-50s) — use a separate longer timeout

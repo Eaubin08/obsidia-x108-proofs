@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Brody Terminal CLI
-Dialogue direct avec le moteur Obsidia via http://127.0.0.1:8001/api/brody/chat
+Dialogue direct avec le moteur Obsidia via http://127.0.0.1:8012/api/brody/chat
 Aucune dépendance externe — stdlib Python 3.8+ uniquement.
 
 Usage :
@@ -20,9 +20,9 @@ from typing import Any
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-BASE_URL  = "http://127.0.0.1:8001"
+BASE_URL  = "http://127.0.0.1:8012"
 ENDPOINT  = f"{BASE_URL}/api/brody/chat"
-HEALTH_EP = f"{BASE_URL}/bus/health"
+HEALTH_EP = f"{BASE_URL}/openapi.json"
 TIMEOUT   = 120  # secondes — Brody peut être lent à l'hydratation (~40s)
 
 # ── ANSI colors (désactivés si pas de TTY) ────────────────────────────────────
@@ -200,6 +200,7 @@ def run_repl(session_id: str) -> None:
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
+    global BASE_URL, ENDPOINT, HEALTH_EP
     parser = argparse.ArgumentParser(
         description="Brody Terminal CLI — dialogue direct avec le moteur Obsidia"
     )
@@ -214,10 +215,9 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.url:
-        global BASE_URL, ENDPOINT, HEALTH_EP
         BASE_URL  = args.url.rstrip("/")
         ENDPOINT  = f"{BASE_URL}/api/brody/chat"
-        HEALTH_EP = f"{BASE_URL}/bus/health"
+        HEALTH_EP = f"{BASE_URL}/openapi.json"
 
     run_repl(args.session)
 
