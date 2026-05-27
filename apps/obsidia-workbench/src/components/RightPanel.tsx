@@ -46,6 +46,104 @@ function CopyableBool({ k, v }: { k: string; v: boolean }) {
   return <CopyableKV k={k} v={String(v)} vClass={v ? 'text-obs-pass' : 'text-obs-block'} />
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
+}
+
+function textList(value: unknown): string {
+  if (Array.isArray(value)) return value.length ? value.map(String).join(', ') : '—'
+  if (value === undefined || value === null || value === '') return '—'
+  return String(value)
+}
+
+function boolLike(value: unknown): string {
+  if (value === true) return 'true'
+  if (value === false) return 'false'
+  if (value === undefined || value === null || value === '') return '—'
+  return String(value)
+}
+
+function NativeMachinationSection({ live }: { live: Record<string, unknown> }) {
+  const hasNative = Boolean(
+    live.support_summary ||
+    live.contracts ||
+    live.permission_matrix ||
+    live.machination_packet ||
+    live.boundary_contract ||
+    live.kernel_contract
+  )
+
+  if (!hasNative) return null
+
+  const support = asRecord(live.support_summary)
+  const contracts = asRecord(live.contracts)
+  const permissionDirect = asRecord(live.permission_matrix)
+  const permissionFromContracts = asRecord(contracts.permission_matrix)
+  const permission = Object.keys(permissionDirect).length > 0 ? permissionDirect : permissionFromContracts
+  const boundary = Object.keys(asRecord(live.boundary_contract)).length > 0 ? asRecord(live.boundary_contract) : asRecord(contracts.boundary_contract)
+  const kernel = Object.keys(asRecord(live.kernel_contract)).length > 0 ? asRecord(live.kernel_contract) : asRecord(contracts.kernel_contract)
+  const signal = Object.keys(asRecord(live.signal_contract)).length > 0 ? asRecord(live.signal_contract) : asRecord(contracts.signal_contract)
+  const forbidden = Object.keys(asRecord(live.forbidden_output_contract)).length > 0 ? asRecord(live.forbidden_output_contract) : asRecord(contracts.forbidden_output_contract)
+  const machination = asRecord(live.machination_packet)
+
+  const brodyPerm = asRecord(permission.brody)
+  const x108Perm = asRecord(permission.x108)
+  const memoryPerm = asRecord(permission.memory)
+  const automationPerm = asRecord(permission.automation)
+  const graphitiPerm = asRecord(permission.graphiti)
+  const treePerm = asRecord(permission.trees)
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <SectionTitle>Native Machination</SectionTitle>
+        <div className="obs-card p-3 space-y-0.5 border-obs-proof/30 bg-obs-proof/5">
+          <CopyableKV k="status" v={String(machination.status ?? '—')} vClass={String(machination.status ?? '').includes('READY') ? 'text-obs-pass' : 'text-obs-hold'} />
+          <CopyableKV k="source" v={String(machination.source ?? '—')} vClass="text-obs-proof" />
+          <CopyableKV k="support_intent" v={String(support.intent ?? '—')} vClass="text-obs-brody" />
+          <CopyableKV k="risk_flags" v={textList(support.risk_flags)} vClass="text-obs-hold" />
+          <CopyableKV k="contradictions" v={textList(support.contradictions)} vClass={Array.isArray(support.contradictions) && support.contradictions.length > 0 ? 'text-obs-block' : 'text-obs-dtext'} />
+          <CopyableKV k="projection_mode" v={String(support.projection_mode ?? '—')} />
+          <CopyableKV k="boundary_notice" v={String(support.boundary_notice ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+        </div>
+      </div>
+
+      <div>
+        <SectionTitle>Contracts / Permission Matrix</SectionTitle>
+        <div className="obs-card p-3 space-y-0.5 border-obs-kernel/30 bg-obs-kernel/5">
+          <CopyableKV k="decision_authority" v={String(live.decision_authority ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+          <CopyableKV k="kernel" v={String(kernel.kernel ?? 'X108/KX108')} vClass="text-obs-kernel" />
+          <CopyableKV k="brody.can_decide" v={boolLike(brodyPerm.can_decide)} vClass={brodyPerm.can_decide === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="brody.can_act" v={boolLike(brodyPerm.can_act)} vClass={brodyPerm.can_act === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="brody.can_write_memory" v={boolLike(brodyPerm.can_write_memory)} vClass={brodyPerm.can_write_memory === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="memory.can_commit" v={boolLike(memoryPerm.can_commit)} vClass={memoryPerm.can_commit === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="automation.can_execute" v={boolLike(automationPerm.can_execute)} vClass={automationPerm.can_execute === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="graphiti.can_write" v={boolLike(graphitiPerm.can_write)} vClass={graphitiPerm.can_write === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="trees.can_decide" v={boolLike(treePerm.can_decide)} vClass={treePerm.can_decide === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="x108.sole_decision" v={boolLike(x108Perm.sole_decision_authority)} vClass={x108Perm.sole_decision_authority === true ? 'text-obs-pass' : 'text-obs-hold'} />
+        </div>
+      </div>
+
+      <div>
+        <SectionTitle>Native Boundary</SectionTitle>
+        <div className="obs-card p-3 space-y-0.5 border-obs-block/25 bg-obs-block/5">
+          <CopyableKV k="readonly" v={boolLike(boundary.readonly ?? live.readonly)} vClass="text-obs-pass" />
+          <CopyableKV k="allowed_to_decide" v={boolLike(boundary.allowed_to_decide)} vClass={boundary.allowed_to_decide === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="allowed_to_act" v={boolLike(boundary.allowed_to_act)} vClass={boundary.allowed_to_act === false ? 'text-obs-pass' : 'text-obs-block'} />
+          <CopyableKV k="emits_act" v={boolLike(boundary.emits_act ?? live.emits_act)} vClass="text-obs-block" />
+          <CopyableKV k="emits_verdict" v={boolLike(boundary.emits_verdict)} vClass="text-obs-block" />
+          <CopyableKV k="memory_write" v={boolLike(boundary.memory_write ?? live.memory_write)} vClass="text-obs-block" />
+          <CopyableKV k="graphiti_write" v={boolLike(boundary.graphiti_write ?? live.graphiti_write)} vClass="text-obs-block" />
+          <CopyableKV k="kernel_mutation" v={boolLike(boundary.kernel_mutation ?? live.kernel_mutation)} vClass="text-obs-block" />
+          <CopyableKV k="x108_mutation" v={boolLike(boundary.x108_mutation)} vClass="text-obs-block" />
+          <CopyableKV k="signal_authority" v={String(signal.decision_authority ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+          <CopyableKV k="forbidden_tokens" v={textList(forbidden.forbidden_tokens_as_authority)} vClass="text-obs-hold" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AuthoritySnapshotSection({ snap }: { snap: Record<string, unknown> }) {
   const mode = snap.response_mode as string | undefined
   const reqType = snap.request_type as string | undefined
@@ -133,6 +231,7 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
       {authoritySnap && Object.keys(authoritySnap).length > 0 && (
         <AuthoritySnapshotSection snap={authoritySnap} />
       )}
+      {live && <NativeMachinationSection live={live} />}
       {live && (
         <div>
           <SectionTitle>Live Backend — Last Response</SectionTitle>
