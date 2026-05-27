@@ -1,0 +1,44 @@
+﻿# OBSIDIA F12A — TERMINAL CHAT VISIBLE SMOKE REPORT
+
+Date: 20260527_230633
+
+## STATUS
+
+F12A_TERMINAL_CHAT_VISIBLE_SMOKE_EXECUTED
+
+## BACKEND
+
+Base URL: http://127.0.0.1:8000  
+Route: /api/brody/chat  
+Prerequisite: F11 live runtime smoke passed.
+
+## TERMINAL RUNS
+
+- F12A_TERMINAL_ONCE_DEBUG_FASTAPI_20260527_230633.txt
+- F12A_TERMINAL_ONCE_COMMAND_PACKET_20260527_230633.txt
+- F12A_TERMINAL_ONCE_ARCHITECTURE_20260527_230633.txt
+
+## ASSERTION SCRIPT
+
+- scripts/f12a_terminal_visible_assert.py
+
+## EXPECTED VISIBLE MARKERS
+
+- BRODY header
+- KX108_ONLY
+- readonly
+- TRUE VOICE / LLM OBSIDIEN or runtime equivalent
+- DOMAIN RACCORD / STRUCTURE-FIRST or runtime equivalent
+- ADAPTIVE RESPONSE POLICY / SIGMA or operator packet equivalent
+- BOUNDARY / CONTRATS / PERMISSIONS
+- human command packet or command_copy_block visibility
+- no ACT / no write / no verdict
+
+## BOUNDARY
+
+TERMINAL_DECIDES=false
+TERMINAL_EXECUTES=false
+BRODY_EXECUTE_ALLOWED=false
+EXECUTION_ALLOWED_FOR_BRODY=false
+READONLY=true
+KX108_ONLY=true

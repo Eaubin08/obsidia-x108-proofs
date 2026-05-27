@@ -76,11 +76,59 @@ def has_negated_action(text: str) -> bool:
 
 def has_memory_write_request(text: str) -> bool:
     low = _fold(text)
-    write_terms = ("ecris", "ecrit", "ecrire", "write", "inscris", "enregistre", "sauvegarde", "save", "store")
-    memory_terms = ("memoire", "memory", "graphiti", "neo4j", "canon", "canonical", "valide", "valider", "promotion", "freeze")
+
+    # Explicit write-boundary labels / direct operator probes win before negation filters.
+    early_write_boundary_markers = (
+        "domain_raccord_write_boundary",
+        "memory_write_canon_freeze",
+        "write graphiti",
+        "write memory",
+        "write canon",
+        "graphiti memory",
+        "memory + canon",
+        "graphiti canon",
+        "memoire graphiti",
+        "mémoire graphiti",
+        "canonise ce bloc",
+        "canonise",
+        "canoniser",
+        "canonicalize",
+        "canonicalise",
+    )
+    if _has_any(low, early_write_boundary_markers):
+        return True
+    write_terms = (
+        "ecris", "ecrit", "ecrire", "write", "inscris", "enregistre", "sauvegarde",
+        "save", "store", "canonise", "canoniser", "canonicalise", "canonicalize",
+        "promote", "promotion", "freeze", "valide", "valider"
+    )
+    memory_terms = (
+        "memoire", "memory", "graphiti", "neo4j", "canon", "canonical",
+        "canonicalise", "canonicalize", "promotion", "freeze"
+    )
     # Negated write form ("sans écrire", "sans y écrire") is NOT a write request.
     if _negated_near(low, write_terms):
         return False
+
+    direct_write_boundary_markers = (
+        "domain_raccord_write_boundary",
+        "memory_write_canon_freeze",
+        "write graphiti",
+        "write memory",
+        "write canon",
+        "graphiti memory",
+        "memory + canon",
+        "memoire graphiti",
+        "graphiti canon",
+        "canonise ce bloc",
+        "canonise",
+        "canoniser",
+        "canonicalize",
+        "canonicalise",
+    )
+    if _has_any(low, direct_write_boundary_markers):
+        return True
+
     return _has_any(low, write_terms) and _has_any(low, memory_terms)
 
 
@@ -120,6 +168,16 @@ def has_real_mutation_request(text: str) -> bool:
     )
     targets = ("x108", "x-108", "kernel", "kx108", "contrat", "contract")
     return _has_any(low, mutation_verbs) and _has_any(low, targets)
+
+
+def has_action_mutation_attack_signal(text: str) -> bool:
+    low = _fold(text)
+    attack_terms = ("attack", "attaque", "mutation attack", "bypass", "contourne", "override")
+    action_terms = ("act", "autorise act", "authorize act", "declenche act", "execute", "exécute")
+    targets = ("x108", "x-108", "kernel", "kx108")
+    if has_negated_action(text) and not _has_any(low, attack_terms):
+        return False
+    return _has_any(low, targets) and (_has_any(low, attack_terms) or _has_any(low, action_terms))
 
 
 def adjust_risk_flags(text: str, flags: list[str]) -> list[str]:
@@ -172,6 +230,14 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
             "Brody ne peut pas écrire, valider canon, promouvoir un freeze ou modifier Graphiti. "
             "Le raccord actif doit rester une projection readonly : signaler la demande, exposer le refus, "
             "et laisser toute autorité à KX108/humain."
+        )
+
+    if "ACTION_MUTATION_BOUNDARY" in domains:
+        parts.append(
+            "La demande touche une frontière ACT / mutation X108. "
+            "Brody ne peut pas autoriser ACT, muter X108, modifier le kernel ou franchir l'irréversibilité. "
+            "Le raccord actif reste une projection readonly : exposer le risque, maintenir KX108_ONLY, "
+            "et ne produire aucune action."
         )
 
     if "NEGATION_GUARD" in domains:
@@ -251,6 +317,9 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
 
     if _has_any(low, ("temps", "temporal", "x108", "x-108", "hold", "irreversible", "irreversibilite", "tau")):
         domains.append("TIME_TEMPORALITY")
+
+    if has_action_mutation_attack_signal(text):
+        domains.append("ACTION_MUTATION_BOUNDARY")
 
     if _has_any(low, ("coherence", "cohérence", "non-contradiction", "contradiction", "coherence_loop")):
         domains.append("COHERENCE")
