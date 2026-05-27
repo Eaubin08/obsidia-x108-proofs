@@ -1,0 +1,70 @@
+{
+    "freeze":  "BRODY_PHASE12E6_OBSIDIAN_VOICE_DOMAIN_RACCORD_FREEZE_20260527",
+    "status":  "FROZEN_PASS",
+    "decision_authority":  "KX108_ONLY",
+    "readonly":  true,
+    "advisory_only":  true,
+    "context_signal_only":  true,
+    "allowed_to_decide":  false,
+    "allowed_to_act":  false,
+    "emits_act":  false,
+    "emits_verdict":  false,
+    "memory_write":  false,
+    "graphiti_write":  false,
+    "neo4j_write":  false,
+    "kernel_mutation":  false,
+    "x108_mutation":  false,
+    "regression":  "BRODY_PHASE12E5_POST_DOMAIN_FIRST_ADAPTIVE_REGRESSION_CLEAN",
+    "files":  [
+                  {
+                      "path":  "apps/obsidia_api/brody_domain_raccord_adapter.py",
+                      "sha256":  "6A3C5683F2E030C652ABCC7790D0FF54A5B23EE275E79AE204EB7CA9346EE5ED",
+                      "bytes":  8992
+                  },
+                  {
+                      "path":  "apps/obsidia_api/brody_machination_composer.py",
+                      "sha256":  "A17522CA91DB7C1C4FCA2D04B7B79255BCC4B6C032A198882D76AD7419FBF616",
+                      "bytes":  13547
+                  },
+                  {
+                      "path":  "apps/obsidia_api/brody_true_voice_adapter.py",
+                      "sha256":  "0CC713B4A00DA0768C824581D090E62F2894EADB6471F97297E313C474E61AC0",
+                      "bytes":  37774
+                  },
+                  {
+                      "path":  "apps/obsidia_api/routes/brody.py",
+                      "sha256":  "529CBC3E8BFD5899510A38DE2F9C25C430994DC27127A653A26702082ACFDD8D",
+                      "bytes":  14910
+                  },
+                  {
+                      "path":  "tools/brody_chat.py",
+                      "sha256":  "CF8C53215F790231AD49BF1DBB1BEDDF60F9652B69B665CF77D584089C49092B",
+                      "bytes":  16973
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12E4_B_DOMAIN_RACCORD_READONLY_PATCH_20260527.md",
+                      "sha256":  "FF140674441E5AE174DF654B54D5BC185DD95F6708AC9FB96752313CA692AF8F",
+                      "bytes":  1727
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12E4_C_DOMAIN_VOICE_PRIORITY_PATCH_20260527.md",
+                      "sha256":  "59116E173ACBDD2EAAA3BD364BDA4881EB10CF6D90101E82420ACF22BE8E6374",
+                      "bytes":  1403
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12E5_A_TOP_LEVEL_BOUNDARY_INVARIANT_PATCH_20260527.md",
+                      "sha256":  "B23ADA3E94C174F7A67AEA40CD0FD4E51CDDF795E246F197884138EBD918FA8C",
+                      "bytes":  1200
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12E5_POST_DOMAIN_FIRST_ADAPTIVE_REGRESSION_20260527.md",
+                      "sha256":  "DD75B1EFB26F50E0A13DA2C0F2E4626CC7778467CB86783D9024AF5D45373022",
+                      "bytes":  24403
+                  },
+                  {
+                      "path":  "docs/runtime/BRODY_PHASE12E6_OBSIDIAN_VOICE_DOMAIN_RACCORD_FREEZE_20260527.md",
+                      "sha256":  "5E616855C0A9034BBE221887A973D2A0E699F2F9B59DB71C6E9AE4ABF3C278AF",
+                      "bytes":  2141
+                  }
+              ]
+}
