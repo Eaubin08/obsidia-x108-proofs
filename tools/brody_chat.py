@@ -13,6 +13,24 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
+import os
+
+
+def _configure_console_encoding() -> None:
+    """Prevent Windows cp1252 crashes on box-drawing / unicode terminal output."""
+    try:
+        os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+_configure_console_encoding()
+
 import time
 import urllib.error
 import urllib.request
@@ -163,8 +181,39 @@ def _print_native_machination(data: dict[str, Any]) -> None:
     print(dim(f"signal_contract={_get_path(contracts, ['signal_contract', 'decision_authority'], 'KX108_ONLY')}"))
 
 
+
+def _print_true_voice_snapshot(data: dict[str, Any]) -> None:
+    tv = data.get("true_voice_snapshot") or {}
+    trs = data.get("true_response_structure_snapshot") or {}
+
+    has_tv = isinstance(tv, dict) and bool(tv)
+    has_trs = isinstance(trs, dict) and bool(trs)
+
+    if not has_tv and not has_trs:
+        return
+
+    print(SEP)
+    print(bold(yellow("TRUE VOICE / LLM OBSIDIEN")))
+
+    if has_tv:
+        print(dim(f"status={tv.get('status', '-')}"))
+        print(dim(f"voice_source={tv.get('voice_source', tv.get('final_answer_source', '-'))}"))
+        print(dim(f"final_answer_source={tv.get('final_answer_source', '-')}"))
+        print(dim(f"source_mode={tv.get('source_mode', '-')}"))
+        print(dim(f"boundary_integrated={_bool_text(tv.get('boundary_integrated'))}  no_metric_dump={_bool_text(tv.get('no_metric_dump'))}"))
+
+    if has_trs:
+        print(dim(f"model_position={trs.get('model_position', 'LLM_OBSIDIEN_READONLY_ADVISORY')}"))
+        print(dim(f"foundation={trs.get('foundation', 'TRUE_RESPONSE_STRUCTURE')}  status={trs.get('status', '-')}"))
+        print(dim(f"terminal_dialogue={_bool_text(trs.get('terminal_dialogue'))}  local_response_engine={_bool_text(trs.get('local_response_engine'))}"))
+
+    print(dim("mode=structure-first; memory=enrichment; authority=KX108_ONLY"))
+
+
 def _print_response(data: dict[str, Any], elapsed: float) -> None:
-    final    = (data.get("final_answer") or data.get("response") or "").strip()
+    true_voice = data.get("true_voice_snapshot") or {}
+    tv_answer = true_voice.get("final_answer") if isinstance(true_voice, dict) else ""
+    final    = (tv_answer or data.get("final_answer") or data.get("response") or data.get("response_md") or "").strip()
     source   = data.get("source", "?")
     g_status = data.get("graphiti_status", "")
     neo4j    = data.get("neo4j_status", "")
@@ -183,6 +232,8 @@ def _print_response(data: dict[str, Any], elapsed: float) -> None:
         print(final)
     else:
         print(red("(réponse vide — vérifier les logs du backend)"))
+    print()
+    _print_true_voice_snapshot(data)
     print()
     _print_native_machination(data)
     print()
@@ -229,7 +280,7 @@ def _check_health() -> bool:
 
 def run_once(session_id: str, message: str) -> None:
     print()
-    print(bold(cyan("╔══ Brody Terminal CLI / once ══╗")))
+    print(bold(cyan("=== Brody Terminal CLI / once ===")))
     print(dim(f"  Endpoint : {ENDPOINT}"))
     print(dim(f"  Session  : {session_id}"))
     print()
@@ -267,7 +318,7 @@ def run_once(session_id: str, message: str) -> None:
 
 def run_repl(session_id: str) -> None:
     print()
-    print(bold(cyan("╔══ Brody Terminal CLI ══╗")))
+    print(bold(cyan("=== Brody Terminal CLI ===")))
     print(dim(f"  Endpoint : {ENDPOINT}"))
     print(dim(f"  Session  : {session_id}"))
     print(dim("  Commandes: 'exit' / 'quit' / Ctrl+C pour fermer"))
