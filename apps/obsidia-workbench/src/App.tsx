@@ -40,6 +40,23 @@ function initSession(): { sessionId: string; msgs: BrodyMessage[] } {
   return { sessionId: s.id, msgs: INITIAL_MESSAGES }
 }
 
+
+function getLastStoredBackendPayload(msgs: BrodyMessage[]): Record<string, unknown> | undefined {
+  for (let i = msgs.length - 1; i >= 0; i -= 1) {
+    const msg = msgs[i]
+    const payload = msg.backendPayload
+    if (
+      msg.role === 'brody' &&
+      payload &&
+      typeof payload === 'object' &&
+      !Array.isArray(payload)
+    ) {
+      return payload as Record<string, unknown>
+    }
+  }
+  return undefined
+}
+
 export default function App() {
   const [activeView, setActiveView] = useState<ViewId>('chat')
   const [kernel, setKernel]         = useState<KernelStatus>(KERNEL_STATUS)
@@ -50,7 +67,7 @@ export default function App() {
   const [activeSessionId, setActiveSessId] = useState(sessionId)
   const [messages, setMessages]           = useState<BrodyMessage[]>(initMsgs)
   const [traces, setTraces]               = useState<Record<string, TranslationTrace>>({})
-  const [lastBackendPayload, setLastBackendPayload] = useState<Record<string, unknown> | undefined>()
+  const [lastBackendPayload, setLastBackendPayload] = useState<Record<string, unknown> | undefined>(() => getLastStoredBackendPayload(initMsgs))
 
   useEffect(() => {
     getKernelStatus().then(r => setKernel(r.data))
@@ -202,6 +219,7 @@ export default function App() {
     setActiveSessionId(s.id)
     saveMessages(s.id, INITIAL_MESSAGES)
     setMessages(INITIAL_MESSAGES)
+    setLastBackendPayload(undefined)
     setTraces({})
     setSessions(getSessions())
   }
@@ -210,7 +228,9 @@ export default function App() {
     setActiveSessId(id)
     setActiveSessionId(id)
     const msgs = getMessages(id)
-    setMessages(msgs.length > 0 ? msgs : INITIAL_MESSAGES)
+    const resolvedMsgs = msgs.length > 0 ? msgs : INITIAL_MESSAGES
+    setMessages(resolvedMsgs)
+    setLastBackendPayload(getLastStoredBackendPayload(resolvedMsgs))
     setTraces({})
   }
 
