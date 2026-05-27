@@ -36,6 +36,7 @@ from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_pa
 from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
 from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
+from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -322,6 +323,23 @@ async def brody_chat(req: BrodyChatRequest):
     )
     value_layer = _gencoin_raw.get("value_layer", {}) if isinstance(_gencoin_raw, dict) else {}
 
+    # Step 7: operator view packet — SHADOW_READONLY transverse stack inspection
+    _operator_view_raw = safe_call_snapshot(
+        "operator_view_packet",
+        build_operator_view_packet,
+        value_layer=value_layer,
+        sigma_packet=_sigma_packet,
+        anti_mismatch_packet=_anti_mismatch_packet,
+        thermodynamics_packet=_thermodynamics_packet,
+        gencoin_shadow_packet=_gencoin_shadow_packet,
+        tree_signal_packet=_tree_signal_packet,
+        memory_promotion_guard_packet=_memory_promotion_guard_packet,
+    )
+    _operator_view_packet = (
+        _operator_view_raw.get("operator_view_packet", {})
+        if isinstance(_operator_view_raw, dict) else {}
+    )
+
     machination_packet = build_machination_packet(
         user_message=req.message,
         language=r.get("language", req.language),
@@ -414,4 +432,5 @@ async def brody_chat(req: BrodyChatRequest):
         "gencoin_shadow_packet": _gencoin_shadow_packet,
         "tree_signal_packet": _tree_signal_packet,
         "memory_promotion_guard_packet": _memory_promotion_guard_packet,
+        "operator_view_packet": _operator_view_packet,
     }, source=r.get("source", "REAL_BACKEND"))
