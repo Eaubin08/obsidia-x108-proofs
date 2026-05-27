@@ -41,6 +41,46 @@ function TracePanel({ trace }: { trace: TranslationTrace }) {
   )
 }
 
+function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
+  const op = payload?.operator_view_packet as Record<string, unknown> | undefined
+  if (!op) return null
+
+  const summary = op["summary"] as Record<string, unknown> | undefined
+  const blocked = op["blocked"] as Record<string, unknown> | undefined
+  const evidence = op["evidence"] as Record<string, unknown> | undefined
+  const hardRisks = Array.isArray(blocked?.["hard_risks"]) ? blocked?.["hard_risks"] as unknown[] : []
+  const missingPackets = Array.isArray(blocked?.["missing_packets"]) ? blocked?.["missing_packets"] as unknown[] : []
+
+  const lines = [
+    `OBSIDIA_TERMINAL_VIEW_V1`,
+    `system_status=${String(op["system_status"] ?? "-")}`,
+    `next_safe_action=${String(op["next_safe_action"] ?? "-")}`,
+    `decision_authority=${String(op["decision_authority"] ?? "KX108_ONLY")}`,
+    `readonly=${String(op["readonly"] ?? true)}`,
+    `emits_act=${String(op["emits_act"] ?? false)}`,
+    `emits_verdict=${String(op["emits_verdict"] ?? false)}`,
+    `safe_boundary_ok=${String(summary?.["safe_boundary_ok"] ?? false)}`,
+    `operator_can_write=${String(summary?.["operator_can_write"] ?? false)}`,
+    `operator_can_decide=${String(summary?.["operator_can_decide"] ?? false)}`,
+    `hard_risks=${JSON.stringify(hardRisks.slice(0, 8))}`,
+    `missing_packets=${JSON.stringify(missingPackets.slice(0, 8))}`,
+    `memory_guard_status=${String(evidence?.["memory_guard_status"] ?? "-")}`,
+    `value_layer_scores_null=${String(evidence?.["value_layer_scores_null"] ?? "-")}`,
+  ]
+
+  return (
+    <div className="mt-2 rounded-lg border border-obs-proof/20 bg-black/30 p-2.5">
+      <div className="text-obs-proof text-[9px] font-mono font-semibold mb-1 flex items-center gap-2">
+        BRODY TERMINAL — TRANSVERSE STACK
+        <span className="ml-auto text-obs-dtext">readonly / no ACT / no write</span>
+      </div>
+      <pre className="text-[9px] leading-relaxed font-mono text-obs-mtext whitespace-pre-wrap break-words max-h-56 overflow-y-auto">
+        {lines.join("\n")}
+      </pre>
+    </div>
+  )
+}
+
 function MessageBubble({ msg, trace, showTrace }: { msg: BrodyMessage; trace?: TranslationTrace; showTrace: boolean }) {
   const isUser = msg.role === 'user'
   const ts = new Date(msg.timestamp).toLocaleTimeString()
@@ -135,6 +175,8 @@ function MessageBubble({ msg, trace, showTrace }: { msg: BrodyMessage; trace?: T
             {msg.backendPayload.action_risk ? <span className="text-obs-block">ACTION_RISK</span> : null}
           </div>
         )}
+
+        <BrodyTerminalView payload={msg.backendPayload as Record<string, unknown> | undefined} />
       </div>
     </div>
   )
