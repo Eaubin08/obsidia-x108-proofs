@@ -1,0 +1,12 @@
+[
+  {
+    "url": "http://127.0.0.1:8011/api/brody/chat",
+    "status": 404,
+    "body_type": "str"
+  },
+  {
+    "url": "http://127.0.0.1:8000/api/brody/chat",
+    "status": 200,
+    "body_type": "dict"
+  }
+]

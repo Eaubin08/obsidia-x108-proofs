@@ -286,6 +286,18 @@ async def brody_chat(req: BrodyChatRequest):
         if isinstance(_gencoin_shadow_raw, dict) else {}
     )
 
+    # Step 5B: tree signal packet — SHADOW_READONLY, built before memory guard and value layer
+    _tree_text = str(req.message or "")
+    _tree_signal_raw = safe_call_snapshot(
+        "tree_signal_packet",
+        build_tree_signal_packet,
+        text=_tree_text,
+    )
+    _tree_signal_packet = (
+        _tree_signal_raw.get("tree_signal_packet", {})
+        if isinstance(_tree_signal_raw, dict) else {}
+    )
+
     # Step 6F: memory promotion guard — SHADOW_READONLY, no write, no canon promotion
     _memory_guard_raw = safe_call_snapshot(
         "memory_promotion_guard_packet",
