@@ -1,0 +1,180 @@
+# BRODY_PHASE12E4_A_SEMANTIC_DRIFT_SOURCE_AUDIT_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Scope
+Locate source code responsible for Phase 12E3 semantic drifts before patching.
+
+## 12E3 drifts
+- memory_write_attack not detected as boundary/write/canon request
+- negation false positive: 'sans remplacer X108' / 'sans modifier kernel' -> mutation_request
+- legacy Neo4j phrases while neo4j_status=LIVE_READONLY
+- general/friction cases too often fall into unclassified response
+
+## Files inspected
+- exists=True path=apps/obsidia_api/routes/brody.py
+- exists=True path=apps/obsidia_api/brody_true_voice_adapter.py
+- exists=True path=apps/obsidia_api/brody_machination_composer.py
+- exists=True path=apps/obsidia_api/brody_contracts_packet.py
+- exists=True path=apps/obsidia_api/brody_memory_response_chain_adapter.py
+- exists=True path=apps/obsidia_api/brody_semantic_query_router.py
+- exists=True path=apps/obsidia_api/brody_full_runtime_reconnect.py
+- exists=True path=periphery/brody_memory_readonly/local_response_engine_readonly/brody_local_response_engine_readonly_v1.py
+- exists=True path=periphery/brody_memory_readonly/terminal_structural_dialogue_readonly/brody_terminal_structural_dialogue_readonly_v1.py
+
+## Hits
+- apps\obsidia_api\routes\brody.py:1: """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+- apps\obsidia_api\routes\brody.py:5: from apps.obsidia_api.brody_v1_4_12a_final_answer_adapter import (
+- apps\obsidia_api\routes\brody.py:6: run_brody_v1_4_12a_final_answer,
+- apps\obsidia_api\routes\brody.py:7: enrich_final_answer_with_automation,
+- apps\obsidia_api\routes\brody.py:23: from apps.obsidia_api.brody_true_voice_adapter import build_true_brody_answer
+- apps\obsidia_api\routes\brody.py:88: v1412a = safe_call_snapshot("v1412a_final_answer", run_brody_v1_4_12a_final_answer,
+- apps\obsidia_api\routes\brody.py:118: true_voice_snapshot = safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
+- apps\obsidia_api\routes\brody.py:128: true_voice_final = true_voice_snapshot.get("final_answer") if isinstance(true_voice_snapshot, dict) else ""
+- apps\obsidia_api\routes\brody.py:130: raw_final_answer = true_voice_final
+- apps\obsidia_api\routes\brody.py:132: v1412a_final = v1412a.get("final_answer") if isinstance(v1412a, dict) else ""
+- apps\obsidia_api\routes\brody.py:133: raw_final_answer = v1412a_final or response_md or "Brody - reponse structurelle indisponible. KX108_ONLY."
+- apps\obsidia_api\routes\brody.py:135: final_answer = normalize_brody_text(strip_forbidden_tokens(
+- apps\obsidia_api\routes\brody.py:136: enrich_final_answer_with_automation(raw_final_answer, automation_snapshot, req.language)))
+- apps\obsidia_api\routes\brody.py:139: auth_esc = intent in ("creator_claim", "action_request")
+- apps\obsidia_api\routes\brody.py:184: "memory_write": False,
+- apps\obsidia_api\routes\brody.py:193: "risk_flags": ["AUTHORITY_ESCALATION_BLOCKED"] if auth_esc else [],
+- apps\obsidia_api\routes\brody.py:194: "contradictions": ["BRODY_CANNOT_AUTHORIZE_ACT", "ACT_AUTHORITY_DENIED"] if auth_esc else [],
+- apps\obsidia_api\routes\brody.py:197: "memory_write": False,
+- apps\obsidia_api\routes\brody.py:227: "response": final_answer,
+- apps\obsidia_api\routes\brody.py:228: "final_answer": final_answer,
+- apps\obsidia_api\routes\brody.py:233: "memory_write": False,
+- apps\obsidia_api\routes\brody.py:234: "graphiti_write": False,
+- apps\obsidia_api\brody_true_voice_adapter.py:34: MEMORY_WRITE_REQUEST,
+- apps\obsidia_api\brody_true_voice_adapter.py:66: def build_true_brody_answer(
+- apps\obsidia_api\brody_true_voice_adapter.py:82: true_voice_snapshot with final_answer, voice_source,
+- apps\obsidia_api\brody_true_voice_adapter.py:164: if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- apps\obsidia_api\brody_true_voice_adapter.py:180: if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- apps\obsidia_api\brody_true_voice_adapter.py:261: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)):
+- apps\obsidia_api\brody_true_voice_adapter.py:262: # Local Graphiti index fallback — Neo4j offline; synthesize from index metadata
+- apps\obsidia_api\brody_true_voice_adapter.py:306: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+- apps\obsidia_api\brody_true_voice_adapter.py:334: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+- apps\obsidia_api\brody_true_voice_adapter.py:355: "Neo4j hors ligne : recherche live indisponible. "
+- apps\obsidia_api\brody_true_voice_adapter.py:365: "Neo4j offline: live search unavailable. "
+- apps\obsidia_api\brody_true_voice_adapter.py:374: f"Requête non classifiée — aucune correspondance dans l'index local. "
+- apps\obsidia_api\brody_true_voice_adapter.py:389: voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
+- apps\obsidia_api\brody_true_voice_adapter.py:412: "KX108_ONLY. No decision, no ACT, no memory write._"
+- apps\obsidia_api\brody_true_voice_adapter.py:418: final_answer = "".join(answer_parts)
+- apps\obsidia_api\brody_true_voice_adapter.py:424: sanitized = sanitizer.sanitize_brody_response("true_voice", final_answer)
+- apps\obsidia_api\brody_true_voice_adapter.py:425: final_answer = sanitized.sanitized_text
+- apps\obsidia_api\brody_true_voice_adapter.py:445: if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- apps\obsidia_api\brody_true_voice_adapter.py:452: "final_answer": final_answer,
+- apps\obsidia_api\brody_true_voice_adapter.py:453: "final_answer_source": voice_source,
+- apps\obsidia_api\brody_true_voice_adapter.py:454: "final_answer_length": len(final_answer),
+- apps\obsidia_api\brody_true_voice_adapter.py:460: "rights_action_used": request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST),
+- apps\obsidia_api\brody_true_voice_adapter.py:465: "action_boundary_detected": request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST),
+- apps\obsidia_api\brody_true_voice_adapter.py:470: "memory_write": False,
+- apps\obsidia_api\brody_true_voice_adapter.py:471: "graphiti_write": False,
+- apps\obsidia_api\brody_true_voice_adapter.py:472: "neo4j_write": False,
+- apps\obsidia_api\brody_true_voice_adapter.py:576: "Aucune ecriture n'est activee : graphiti_write=false, neo4j_write=false, "
+- apps\obsidia_api\brody_true_voice_adapter.py:577: "memory_write=false."
+- apps\obsidia_api\brody_true_voice_adapter.py:582: "n'est pas disponible sans Neo4j live. L'index local fournit les references."
+- apps\obsidia_api\brody_true_voice_adapter.py:718: "- CANONICAL_SELECTOR",
+- apps\obsidia_api\brody_machination_composer.py:8: This module is readonly/advisory only. It does not decide, act, write memory,
+- apps\obsidia_api\brody_machination_composer.py:9: write Graphiti, write Neo4j, mutate the kernel, or mutate X108.
+- apps\obsidia_api\brody_machination_composer.py:27: _risk_flags,
+- apps\obsidia_api\brody_machination_composer.py:34: _risk_flags = None
+- apps\obsidia_api\brody_machination_composer.py:46: if _risk_flags:
+- apps\obsidia_api\brody_machination_composer.py:48: return list(_risk_flags(text))
+- apps\obsidia_api\brody_machination_composer.py:55: flags.append("authority_claim")
+- apps\obsidia_api\brody_machination_composer.py:56: if any(token in low for token in ("act", "agir", "execute", "exécute", "lance", "write")):
+- apps\obsidia_api\brody_machination_composer.py:57: flags.append("action_request")
+- apps\obsidia_api\brody_machination_composer.py:59: flags.append("mutation_request")
+- apps\obsidia_api\brody_machination_composer.py:84: if "authority_claim" in flags:
+- apps\obsidia_api\brody_machination_composer.py:85: return "authority_claim"
+- apps\obsidia_api\brody_machination_composer.py:86: if "action_request" in flags:
+- apps\obsidia_api\brody_machination_composer.py:87: return "action_request"
+- apps\obsidia_api\brody_machination_composer.py:105: "NO_MEMORY_WRITE",
+- apps\obsidia_api\brody_machination_composer.py:106: "NO_GRAPHITI_WRITE",
+- apps\obsidia_api\brody_machination_composer.py:111: if any(flag in flags for flag in ("action_request", "mutation_request", "write_request")):
+- apps\obsidia_api\brody_machination_composer.py:112: values.append("ACTION_REQUEST_FORCED_TO_READONLY_PROJECTION")
+- apps\obsidia_api\brody_machination_composer.py:153: contradictions: list[str] = []
+- apps\obsidia_api\brody_machination_composer.py:154: if any(flag in flags for flag in ("action_request", "mutation_request", "write_request")):
+- apps\obsidia_api\brody_machination_composer.py:155: contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
+- apps\obsidia_api\brody_machination_composer.py:164: "risk_flags": flags,
+- apps\obsidia_api\brody_machination_composer.py:186: "risk_flags": flags,
+- apps\obsidia_api\brody_machination_composer.py:187: "contradictions": contradictions,
+- apps\obsidia_api\brody_machination_composer.py:195: "memory_write": False,
+- apps\obsidia_api\brody_machination_composer.py:213: "risk_flags": flags,
+- apps\obsidia_api\brody_machination_composer.py:214: "contradictions": contradictions,
+- apps\obsidia_api\brody_machination_composer.py:240: "risk_flags": _as_list(os_trad.get("risk_flags")) or _as_list(irc.get("risk_flags")),
+- apps\obsidia_api\brody_machination_composer.py:241: "contradictions": _as_list(irc.get("contradictions")),
+- apps\obsidia_api\brody_machination_composer.py:327: "graphiti_write": False,
+- apps\obsidia_api\brody_machination_composer.py:328: "neo4j_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:5: This module does not decide, act, write memory, write Graphiti, mutate the
+- apps\obsidia_api\brody_contracts_packet.py:27: "memory_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:28: "graphiti_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:29: "neo4j_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:54: "graphiti_write",
+- apps\obsidia_api\brody_contracts_packet.py:55: "neo4j_write",
+- apps\obsidia_api\brody_contracts_packet.py:83: "graphiti_write",
+- apps\obsidia_api\brody_contracts_packet.py:84: "neo4j_write",
+- apps\obsidia_api\brody_contracts_packet.py:137: "can_write_memory": False,
+- apps\obsidia_api\brody_contracts_packet.py:138: "can_write_graphiti": False,
+- apps\obsidia_api\brody_contracts_packet.py:139: "can_write_neo4j": False,
+- apps\obsidia_api\brody_contracts_packet.py:158: "memory_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:162: "can_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:165: "graphiti_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:169: "can_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:170: "neo4j_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:215: "memory_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:245: "graphiti_write": False,
+- apps\obsidia_api\brody_contracts_packet.py:247: "neo4j_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:21: Boundary: readonly, no Neo4j write, no Graphiti write, KX108_ONLY.
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:38: "memory_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:39: "graphiti_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:40: "neo4j_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:54: password = os.environ.get("NEO4J_PASSWORD", "")
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:56: return False, "NEO4J_PASSWORD_NOT_SET"
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:313: "memory_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:314: "graphiti_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:395: # Route to canonical semantic query
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:429: "final_answer_uses_response_md": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:469: "final_answer_uses_response_md": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:541: "memory_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:602: "final_answer_uses_response_md": bool(response_md and len(response_md) > 50),
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:671: "memory_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:672: "graphiti_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:724: "final_answer_uses_response_md": bool(response_md and len(response_md) > 50),
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:751: "final_answer_uses_response_md": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:768: "memory_write": False,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:803: "final_answer_uses_response_md": True,
+- apps\obsidia_api\brody_memory_response_chain_adapter.py:839: "final_answer_uses_response_md": False,
+- apps\obsidia_api\brody_semantic_query_router.py:4: Converts raw user messages to canonical semantic queries for Neo4j BrodyMemoryDoc.
+- apps\obsidia_api\brody_semantic_query_router.py:8: - Maps known intents to canonical topic + short query
+- apps\obsidia_api\brody_semantic_query_router.py:52: # ── Canonical topic routing ──────────────────────────────────────────────────
+- apps\obsidia_api\brody_semantic_query_router.py:172: Convert raw user message to canonical semantic query for Neo4j / local index.
+- apps\obsidia_api\brody_semantic_query_router.py:181: normalized_message, is_canonical
+- apps\obsidia_api\brody_semantic_query_router.py:200: "is_canonical": True,
+- apps\obsidia_api\brody_semantic_query_router.py:215: "is_canonical": True,
+- apps\obsidia_api\brody_semantic_query_router.py:219: # Try canonical topic routes — match on both accented and accent-folded
+- apps\obsidia_api\brody_semantic_query_router.py:229: "is_canonical": True,
+- apps\obsidia_api\brody_semantic_query_router.py:246: "is_canonical": False,
+- apps\obsidia_api\brody_full_runtime_reconnect.py:16: Boundary: readonly, KX108_ONLY, no write.
+- apps\obsidia_api\brody_full_runtime_reconnect.py:173: "memory_write": False,
+- apps\obsidia_api\brody_full_runtime_reconnect.py:174: "graphiti_write": False,
+- apps\obsidia_api\brody_full_runtime_reconnect.py:175: "neo4j_write": False,
+- periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:242: out.write_text(json.dumps(response, indent=2, ensure_ascii=False), encoding="utf-8")
+- periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:247: out.write_text(response["response_md"], encoding="utf-8")
+- periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:41: ("osmose", "osmose"), ("hexaflux", "HexaFlux"), ("canon", "canon"),
+- periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:51: "structure": ["structure", "arbre", "arbres", "graphiti", "canon"],
+
+## Expected patch targets
+- intent/risk classifier: detect memory write / Graphiti write / canon validation
+- negation guard: prevent mutation_request when request says sans/ne pas/no without replacing/modifying X108/kernel
+- true voice / local response phrase: remove legacy Neo4j offline claim when neo4j_status=LIVE_READONLY
+- general fallback: keep structural answer instead of bare unclassified where possible
+
+## Boundary
+- Audit only.
+- No patch.
+- No commit.
+- No memory write.
+- No Graphiti write.
+- No kernel mutation.
+- No X108 mutation.
