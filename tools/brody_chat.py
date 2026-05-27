@@ -182,6 +182,35 @@ def _print_native_machination(data: dict[str, Any]) -> None:
 
 
 
+
+def _print_domain_raccord_snapshot(data: dict[str, Any]) -> None:
+    tv = data.get("true_voice_snapshot") or {}
+    support = data.get("support_summary") or {}
+
+    domain = {}
+    if isinstance(tv, dict):
+        domain = tv.get("domain_raccord_snapshot") or {}
+    if not domain and isinstance(support, dict):
+        domain = support.get("domain_raccord_snapshot") or {}
+
+    if not isinstance(domain, dict) or not domain:
+        return
+
+    domains = domain.get("domains") or []
+    if not domains:
+        return
+
+    print(SEP)
+    print(bold(yellow("DOMAIN RACCORD / STRUCTURE-FIRST")))
+    print(dim(f"status={domain.get('status', '-')}"))
+    print(dim(f"voice_mode={domain.get('voice_mode', '-')}"))
+    print(dim(f"domains={', '.join(str(x) for x in domains)}"))
+    print(dim(f"structural_answer_available={_bool_text(domain.get('structural_answer_available'))}"))
+    print(dim(f"negation_guard_active={_bool_text(domain.get('negation_guard_active'))}"))
+    print(dim(f"write_boundary_required={_bool_text(domain.get('write_boundary_required'))}"))
+    print(dim("priority=domain_raccord_first; memory=enrichment_only; authority=KX108_ONLY"))
+
+
 def _print_true_voice_snapshot(data: dict[str, Any]) -> None:
     tv = data.get("true_voice_snapshot") or {}
     trs = data.get("true_response_structure_snapshot") or {}
@@ -234,6 +263,8 @@ def _print_response(data: dict[str, Any], elapsed: float) -> None:
         print(red("(réponse vide — vérifier les logs du backend)"))
     print()
     _print_true_voice_snapshot(data)
+    print()
+    _print_domain_raccord_snapshot(data)
     print()
     _print_native_machination(data)
     print()

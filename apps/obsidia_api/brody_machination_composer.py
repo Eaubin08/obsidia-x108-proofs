@@ -1,4 +1,4 @@
-﻿"""Brody native machination composer.
+"""Brody native machination composer.
 
 Phase 11B.
 
@@ -33,6 +33,15 @@ except Exception:  # pragma: no cover
     _intent = None
     _risk_flags = None
 
+try:
+    from apps.obsidia_api.brody_domain_raccord_adapter import (
+        adjust_risk_flags,
+        build_domain_raccord_snapshot,
+    )
+except Exception:  # pragma: no cover
+    adjust_risk_flags = None
+    build_domain_raccord_snapshot = None
+
 
 def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
@@ -45,7 +54,8 @@ def _as_list(value: Any) -> list[Any]:
 def _safe_flags(text: str) -> list[str]:
     if _risk_flags:
         try:
-            return list(_risk_flags(text))
+            flags = list(_risk_flags(text))
+            return adjust_risk_flags(text, flags) if adjust_risk_flags else flags
         except Exception:
             pass
 
@@ -59,7 +69,7 @@ def _safe_flags(text: str) -> list[str]:
         flags.append("mutation_request")
     if any(token in low for token in ("pytest", "traceback", "exception", "bug", "debug", "powershell")):
         flags.append("code_debug")
-    return flags
+    return adjust_risk_flags(text, flags) if adjust_risk_flags else flags
 
 
 def _safe_language(text: str, requested: str) -> str:
@@ -83,9 +93,11 @@ def _safe_intent(text: str, flags: list[str]) -> str:
         return "code_debug"
     if "authority_claim" in flags:
         return "authority_claim"
+    if any(flag in flags for flag in ("write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
+        return "write_request"
     if "action_request" in flags:
         return "action_request"
-    if "?" in text or "comment" in text.lower() or "pourquoi" in text.lower():
+    if "?" in text or "comment" in text.lower() or "pourquoi" in text.lower() or "explique" in text.lower():
         return "question"
     return "unknown"
 
@@ -108,7 +120,7 @@ def _safe_constraints(flags: list[str]) -> list[str]:
         "NO_X108_MUTATION",
         "DECISION_AUTHORITY_KX108_ONLY",
     ]
-    if any(flag in flags for flag in ("action_request", "mutation_request", "write_request")):
+    if any(flag in flags for flag in ("action_request", "mutation_request", "write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
         values.append("ACTION_REQUEST_FORCED_TO_READONLY_PROJECTION")
     return values
 
@@ -151,8 +163,16 @@ def build_support_routes(
     graphiti_ctx = _as_dict(graphiti_context)
 
     contradictions: list[str] = []
-    if any(flag in flags for flag in ("action_request", "mutation_request", "write_request")):
+    if any(flag in flags for flag in ("write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
+        contradictions.append("REQUEST_REQUIRES_WRITE_BUT_ROUTE_IS_READONLY")
+    if any(flag in flags for flag in ("action_request", "mutation_request")):
         contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
+
+    domain_raccord = build_domain_raccord_snapshot(text) if build_domain_raccord_snapshot else {
+        "source": "BRODY_DOMAIN_RACCORD_ADAPTER_UNAVAILABLE",
+        "status": "UNAVAILABLE",
+        "domains": [],
+    }
 
     os_trad = {
         **BOUNDARY_CONTRACT,
@@ -174,6 +194,7 @@ def build_support_routes(
             "mode": "readonly_context",
         },
         "session_id": session_id,
+        "domain_raccord": domain_raccord,
     }
 
     ir_candidate = {
@@ -196,6 +217,7 @@ def build_support_routes(
             "kernel_mutation": False,
             "x108_mutation": False,
             "decision_authority": "KX108_ONLY",
+            "domain_raccord": domain_raccord,
         },
         "session_id": session_id,
     }
@@ -212,6 +234,7 @@ def build_support_routes(
             "intent": intent,
             "risk_flags": flags,
             "contradictions": contradictions,
+            "domain_raccord": domain_raccord,
         },
         "session_id": session_id,
     }
@@ -219,6 +242,7 @@ def build_support_routes(
     return {
         "source": "REAL_BACKEND_SUPPORT_NATIVE",
         "status": "SUPPORT_ROUTES_COMPOSED",
+        "domain_raccord_snapshot": domain_raccord,
         "os_trad": os_trad,
         "ir_candidate": ir_candidate,
         "os_reverse": os_reverse,
@@ -232,6 +256,7 @@ def build_support_summary(support_routes: dict[str, Any]) -> dict[str, Any]:
     irc = _as_dict(ir.get("ir_candidate"))
     rev = _as_dict(support_routes.get("os_reverse"))
     proj = _as_dict(rev.get("projection"))
+    domain_raccord = _as_dict(support_routes.get("domain_raccord_snapshot")) or _as_dict(os_trad.get("domain_raccord"))
 
     return {
         "source": "BRODY_NATIVE_SUPPORT_SUMMARY_V1",
@@ -243,6 +268,11 @@ def build_support_summary(support_routes: dict[str, Any]) -> dict[str, Any]:
         "projection_mode": proj.get("response_mode", "readonly_projection"),
         "next_safe_step": proj.get("next_safe_step", "inspect_trace_or_call_brody_chat"),
         "boundary_notice": proj.get("boundary_notice", "KX108_ONLY"),
+        "domain_raccord_snapshot": domain_raccord,
+        "domain_raccord_domains": _as_list(domain_raccord.get("domains")),
+        "domain_voice_mode": domain_raccord.get("voice_mode"),
+        "negation_guard_active": bool(domain_raccord.get("negation_guard_active")),
+        "write_boundary_required": bool(domain_raccord.get("write_boundary_required")),
         **BOUNDARY_CONTRACT,
     }
 
@@ -320,6 +350,7 @@ def build_machination_packet(
         "ir_candidate_snapshot": ir_candidate_snapshot,
         "support_routes": support_routes,
         "support_summary": support_summary,
+        "domain_raccord_snapshot": support_routes.get("domain_raccord_snapshot"),
         "graphiti": {
             "status": graphiti_status,
             "neo4j_status": neo4j_status,

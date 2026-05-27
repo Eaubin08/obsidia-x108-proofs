@@ -34,6 +34,11 @@ from apps.obsidia_api.brody_rights_authority_matrix import (
     MEMORY_WRITE_REQUEST,
 )
 
+try:
+    from apps.obsidia_api.brody_domain_raccord_adapter import build_domain_raccord_snapshot
+except Exception:  # pragma: no cover
+    build_domain_raccord_snapshot = None
+
 # ── Import existing peripheral Reverse OS / Language modules ──────────────
 import importlib.util, sys as _sys
 from pathlib import Path as _Path
@@ -108,6 +113,14 @@ def build_true_brody_answer(
     chain_selected_items: list[dict] = chain.get("selected_items", [])
     chain_effective_query: str = chain.get("effective_query", "") or chain.get("primary_query", "")
 
+    domain_raccord = build_domain_raccord_snapshot(user_message, ctx) if build_domain_raccord_snapshot else {
+        "source": "BRODY_DOMAIN_RACCORD_ADAPTER_UNAVAILABLE",
+        "status": "UNAVAILABLE",
+        "domains": [],
+        "structural_answer": "",
+    }
+    domain_answered = False
+
     # ── Determine answer source ──────────────────────────────────────────
     answer_parts: list[str] = []
     voice_source = ""
@@ -176,6 +189,34 @@ def build_true_brody_answer(
             )
         voice_source = "ACTION_BOUNDARY"
 
+    # 4B. Domain raccords already present in repo, now made visible in true voice.
+    # Phase 12E4-C: domain raccord must have voice priority.
+    # Memory chain enriches; it must not overwrite domain/coherence/friction/negation regimes.
+    action_boundary_already = request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+
+    if domain_raccord.get("write_boundary_required"):
+        answer_parts = []
+        if fr:
+            answer_parts.append(
+                "Je ne peux pas écrire en mémoire, modifier Graphiti, valider canon ou promouvoir un freeze. "
+                "Je peux seulement exposer la demande comme signal readonly et maintenir KX108_ONLY. "
+            )
+        else:
+            answer_parts.append(
+                "I cannot write memory, mutate Graphiti, validate canon, or promote a freeze. "
+                "I can only expose this as a readonly signal and keep KX108_ONLY. "
+            )
+        domain_structural = str(domain_raccord.get("structural_answer") or "").strip()
+        if domain_structural:
+            answer_parts.append("\n\n" + domain_structural)
+        voice_source = "DOMAIN_RACCORD_WRITE_BOUNDARY"
+        domain_answered = True
+
+    elif (not action_boundary_already) and domain_raccord.get("structural_answer_available"):
+        answer_parts = [str(domain_raccord.get("structural_answer") or "")]
+        voice_source = str(domain_raccord.get("voice_mode") or "DOMAIN_RACCORD_STRUCTURAL")
+        domain_answered = True
+
     # 5. Project memory context
     if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
         item_count = project.get("local_index_item_count", project.get("graphiti_index_item_count", 0))
@@ -220,7 +261,21 @@ def build_true_brody_answer(
                 )
 
     # 7. Memory response chain — if PASS, transform response_md to natural auditor language
-    if chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+    if domain_answered:
+        # Keep domain voice as the primary answer. Add memory only as enrichment metadata.
+        if chain_pass and chain_has_mat and chain_selected_items:
+            item_count = chain.get("query_results_count", 0)
+            if fr:
+                answer_parts.append(
+                    f"\n\nMatière mémoire disponible en enrichissement : {item_count} item(s) readonly. "
+                    "Elle ne remplace pas le raccord structurel ci-dessus."
+                )
+            else:
+                answer_parts.append(
+                    f"\n\nMemory material available as enrichment: {item_count} readonly item(s). "
+                    "It does not replace the structural raccord above."
+                )
+    elif chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
         # Reset answer — synthesize from memory chain, not raw dump
         answer_parts = []
         if creator_detected:
@@ -352,7 +407,7 @@ def build_true_brody_answer(
                         f"Requêtes tentées : {tried_str}. "
                         "L'index local Graphiti (3267 items JSONL) ne contient pas de nœud "
                         f"correspondant à cet identifiant. "
-                        "Neo4j hors ligne : recherche live indisponible. "
+                        "Aucune correspondance exploitable dans l'index consulté ; vérifier l'état live dans le payload technique. "
                         "Pour accéder à cet identifiant : l'ajouter à l'index JSONL "
                         "ou démarrer Neo4j pour une recherche live."
                     )
@@ -362,7 +417,7 @@ def build_true_brody_answer(
                         f"No local match for `{explicit_id}`. "
                         f"Queries attempted: {tried_str}. "
                         "Local Graphiti index (3267 JSONL items) has no node for this identifier. "
-                        "Neo4j offline: live search unavailable. "
+                        "No usable match in the consulted index; check live state in the technical payload. "
                         "To access this identifier: add it to the JSONL index or start Neo4j."
                     )
                 voice_source = "SEMANTIC_MATCH_FAILED_EXPLICIT_TAG"
@@ -444,6 +499,8 @@ def build_true_brody_answer(
         used_modules.append("session_memory_ledger_v2")
     if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
         used_modules.append("rights_authority_matrix")
+    if domain_raccord.get("domains"):
+        used_modules.append("brody_domain_raccord_adapter")
 
     return {
         "source_mode": "EXISTING_BRODY_RESPONSE_STRUCTURE",
@@ -454,6 +511,9 @@ def build_true_brody_answer(
         "final_answer_length": len(final_answer),
         "voice_source": voice_source,
         "used_existing_modules": used_modules,
+        "domain_raccord_snapshot": domain_raccord,
+        "domain_voice_mode": domain_raccord.get("voice_mode"),
+        "domain_raccord_domains": domain_raccord.get("domains", []),
         "project_memory_used": project_has_material,
         "session_memory_used": followup_resolved,
         "followup_resolved": followup_resolved,
@@ -579,7 +639,7 @@ def _synthesize_auditor_response_fr(
         else:
             lines.append(
                 "La memoire est accessible en structure mais le materiel textuel complet "
-                "n'est pas disponible sans Neo4j live. L'index local fournit les references."
+                "n'est pas attaché à cette réponse. Vérifier selected_items/material_quality dans le payload technique."
             )
 
     elif topic == "TREE_POLICY":
