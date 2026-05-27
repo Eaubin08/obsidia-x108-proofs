@@ -271,7 +271,13 @@ def _run_operator_loop(
             "human_command_packet_ready": False,
             "command_gate_classification": "NOT_APPLICABLE",
             "execution_allowed_for_brody": False,
+            "brody_execute_allowed": False,
             "human_operator_required": authority_snapshot.get("requires_human_operator", False),
+            "human_execution_required": False,
+            "copy_only": False,
+            "present_packet_to_operator": False,
+            "human_command_packet": None,
+            "command_copy_block": None,
         }
 
     if _PACKET_OK and _packet_build is not None:
@@ -283,14 +289,29 @@ def _run_operator_loop(
                 "expected_output": "",
                 "rollback_note": "",
             })
+            req = packet.get("request", {}) if isinstance(packet.get("request"), dict) else {}
             return {
                 "human_command_packet_ready": True,
                 "command_gate_classification": packet.get(
                     "classification", "UNKNOWN_COMMAND_REVIEW_REQUIRED"
                 ),
                 "execution_allowed_for_brody": False,
+                "brody_execute_allowed": False,
                 "human_operator_required": True,
+                "human_execution_required": True,
+                "copy_only": True,
+                "present_packet_to_operator": True,
                 "packet_status": packet.get("status", ""),
+                "human_command_packet": packet,
+                "command_copy_block": {
+                    "label": "HUMAN_OPERATOR_COMMAND_PACKET_COPY_ONLY",
+                    "command": req.get("command", ""),
+                    "claimed_purpose": req.get("claimed_purpose", ""),
+                    "target_repo": req.get("target_repo", ""),
+                    "expected_output": req.get("expected_output", ""),
+                    "rollback_note": req.get("rollback_note", ""),
+                    "warning": "Manual human review required. Brody cannot execute.",
+                },
             }
         except Exception:
             pass
@@ -299,7 +320,13 @@ def _run_operator_loop(
         "human_command_packet_ready": False,
         "command_gate_classification": "COMMAND_PACKET_MODULE_UNAVAILABLE",
         "execution_allowed_for_brody": False,
+        "brody_execute_allowed": False,
         "human_operator_required": True,
+        "human_execution_required": False,
+        "copy_only": False,
+        "present_packet_to_operator": False,
+        "human_command_packet": None,
+        "command_copy_block": None,
     }
 
 

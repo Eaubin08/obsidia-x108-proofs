@@ -48,8 +48,26 @@ function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
   const summary = op["summary"] as Record<string, unknown> | undefined
   const blocked = op["blocked"] as Record<string, unknown> | undefined
   const evidence = op["evidence"] as Record<string, unknown> | undefined
+  const automation = payload?.automation_snapshot as Record<string, unknown> | undefined
+  const operatorLoop = automation?.["operator_loop"] as Record<string, unknown> | undefined
+  const commandCopy = operatorLoop?.["command_copy_block"] as Record<string, unknown> | undefined
+  const humanPacket = operatorLoop?.["human_command_packet"] as Record<string, unknown> | undefined
   const hardRisks = Array.isArray(blocked?.["hard_risks"]) ? blocked?.["hard_risks"] as unknown[] : []
   const missingPackets = Array.isArray(blocked?.["missing_packets"]) ? blocked?.["missing_packets"] as unknown[] : []
+
+  const commandLines = operatorLoop ? [
+    `--- HUMAN_COMMAND_PACKET_READONLY ---`,
+    `human_command_packet_ready=${String(operatorLoop["human_command_packet_ready"] ?? false)}`,
+    `command_gate_classification=${String(operatorLoop["command_gate_classification"] ?? "-")}`,
+    `execution_allowed_for_brody=${String(operatorLoop["execution_allowed_for_brody"] ?? false)}`,
+    `brody_execute_allowed=${String(operatorLoop["brody_execute_allowed"] ?? false)}`,
+    `copy_only=${String(operatorLoop["copy_only"] ?? false)}`,
+    `present_packet_to_operator=${String(operatorLoop["present_packet_to_operator"] ?? false)}`,
+    `packet_status=${String(operatorLoop["packet_status"] ?? "-")}`,
+    `copy_command=${String(commandCopy?.["command"] ?? "-")}`,
+    `packet_kind=${String(humanPacket?.["packet_kind"] ?? "-")}`,
+    `packet_executed=${String(humanPacket?.["executed"] ?? false)}`,
+  ] : []
 
   const lines = [
     `OBSIDIA_TERMINAL_VIEW_V1`,
@@ -66,6 +84,7 @@ function BrodyTerminalView({ payload }: { payload?: Record<string, unknown> }) {
     `missing_packets=${JSON.stringify(missingPackets.slice(0, 8))}`,
     `memory_guard_status=${String(evidence?.["memory_guard_status"] ?? "-")}`,
     `value_layer_scores_null=${String(evidence?.["value_layer_scores_null"] ?? "-")}`,
+    ...commandLines,
   ]
 
   return (
