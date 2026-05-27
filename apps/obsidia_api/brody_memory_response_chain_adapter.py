@@ -221,6 +221,154 @@ def _query_local_index(query: str, records: list[dict], limit: int = 8) -> list[
     return items
 
 
+
+def _first_text_value(obj: dict[str, Any], keys: list[str]) -> str:
+    for key in keys:
+        value = obj.get(key)
+        if value is None:
+            continue
+        if isinstance(value, (str, int, float, bool)):
+            text = _safe_excerpt(str(value), max_chars=1200)
+            if text:
+                return text
+        if isinstance(value, dict):
+            text = _safe_excerpt(" ".join(f"{k}: {v}" for k, v in value.items() if isinstance(v, (str, int, float, bool))), max_chars=1200)
+            if text:
+                return text
+    return ""
+
+
+def _extract_graphiti_http_list(obj: Any) -> list[dict]:
+    """Extract result items from frozen Graphiti HTTP responses without assuming one schema."""
+    if isinstance(obj, list):
+        return [x for x in obj if isinstance(x, dict)]
+
+    if not isinstance(obj, dict):
+        return []
+
+    for key in ("items", "results", "matches", "context_items", "entities", "nodes", "selected_items"):
+        value = obj.get(key)
+        if isinstance(value, list):
+            dicts = [x for x in value if isinstance(x, dict)]
+            if dicts:
+                return dicts
+
+    # One-level nested fallbacks, defensive only.
+    for value in obj.values():
+        if isinstance(value, dict):
+            nested = _extract_graphiti_http_list(value)
+            if nested:
+                return nested
+
+    return []
+
+
+def _normalize_graphiti_http_item(raw: dict[str, Any], rank: int, query: str, source: str) -> dict[str, Any]:
+    title = _first_text_value(raw, ["title", "name", "label", "entity", "id", "source_ref"]) or f"Graphiti item {rank}"
+
+    material = _first_text_value(raw, [
+        "excerpt",
+        "text_excerpt",
+        "text_preview",
+        "preview",
+        "summary",
+        "description",
+        "body",
+        "content",
+        "text",
+        "material",
+        "hydrated_excerpt",
+    ])
+
+    if not material:
+        scalar_pairs: list[str] = []
+        for k, v in raw.items():
+            if k in ("embedding", "vector"):
+                continue
+            if isinstance(v, (str, int, float, bool)) and str(v).strip():
+                scalar_pairs.append(f"{k}={v}")
+        material = _safe_excerpt("; ".join(scalar_pairs), max_chars=1000)
+
+    tags = raw.get("tags")
+    if not isinstance(tags, list):
+        tags = []
+    for k in ("type", "domain", "kind", "label", "source"):
+        v = raw.get(k)
+        if isinstance(v, str) and v and v not in tags:
+            tags.append(v)
+
+    return {
+        "rank": rank,
+        "id": raw.get("id") or raw.get("uuid") or raw.get("name") or f"graphiti_http_{rank}",
+        "title": title,
+        "source": source,
+        "path": raw.get("path") or raw.get("source_path") or raw.get("source_ref") or "",
+        "tags": tags,
+        "score": raw.get("score") or raw.get("relevance") or raw.get("rank") or (1000 - rank),
+        "excerpt": material,
+        "summary": material,
+        "source_ref": raw.get("source_ref") or raw.get("path") or raw.get("id") or title,
+        "readonly": True,
+        "decision_authority": "KX108_ONLY",
+        "memory_write": False,
+        "graphiti_write": False,
+        "kernel_mutation": False,
+    }
+
+
+def _query_graphiti_frozen_http_once(query: str, limit: int = 8) -> list[dict]:
+    """Read-only fallback against ObsidiaShell Graphiti V20 frozen HTTP endpoints."""
+    import json as _json
+    import urllib.parse as _parse
+    import urllib.request as _request
+
+    if not query:
+        return []
+
+    encoded = _parse.quote(query)
+    endpoints = [
+        ("GRAPHITI_V20_FROZEN_CONTEXT_HTTP", f"http://127.0.0.1:8011/graph/v20/frozen/context?q={encoded}&limit={limit}"),
+        ("GRAPHITI_V20_FROZEN_SEARCH_HTTP", f"http://127.0.0.1:8011/graph/v20/frozen/search?q={encoded}&limit={limit}"),
+    ]
+
+    for source, url in endpoints:
+        try:
+            with _request.urlopen(url, timeout=5) as resp:
+                data = _json.loads(resp.read().decode("utf-8", errors="replace"))
+            raw_items = _extract_graphiti_http_list(data)
+            if raw_items:
+                return [
+                    _normalize_graphiti_http_item(raw, idx, query=query, source=source)
+                    for idx, raw in enumerate(raw_items[:limit], 1)
+                ]
+        except Exception:
+            continue
+
+    return []
+
+
+def _query_graphiti_frozen_http_ladder(queries: list[str], limit: int = 8) -> tuple[list[dict], str | None, list[dict]]:
+    attempted: list[dict] = []
+    seen: set[str] = set()
+
+    for q in queries:
+        q = (q or "").strip()
+        if not q:
+            continue
+        key = q.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+
+        items = _query_graphiti_frozen_http_once(q, limit=limit)
+        attempted.append({"query": q, "results_count": len(items), "source": "GRAPHITI_V20_FROZEN_HTTP"})
+        if items:
+            return items, q, attempted
+
+    return [], None, attempted
+
+
+
 def build_memory_response_chain(
     user_message: str = "",
     semantic_query: str = "",
@@ -500,13 +648,98 @@ def build_memory_response_chain(
                 effective_query = fb
 
         if query_results_count == 0:
+            # Phase 12B: Neo4j/BrodyMemoryDoc may be live but empty for a query while
+            # the validated Graphiti V20 frozen HTTP surface already has readonly material.
+            # Use it as a context-only fallback before returning NO_MEMORY_RESULTS.
+            graphiti_http_queries = [primary] + list(fallbacks[:4]) + [query, user_message]
+            graphiti_items, graphiti_effective_query, graphiti_attempts = _query_graphiti_frozen_http_ladder(
+                graphiti_http_queries,
+                limit=limit,
+            )
+
+            if graphiti_items:
+                try:
+                    engine_input = {
+                        "context_packet": {
+                            "items": graphiti_items,
+                            "query": graphiti_effective_query or primary,
+                            "source": "GRAPHITI_V20_FROZEN_HTTP_FALLBACK",
+                            "results_count": len(graphiti_items),
+                        },
+                        "query": graphiti_effective_query or primary,
+                        "text": user_message,
+                        "memory_write": False,
+                        "graphiti_write": False,
+                        "emits_act": False,
+                        "kernel_mutation": False,
+                        "decision_authority": "KX108_ONLY",
+                    }
+                    engine_result = engine_mod.build_response(engine_input, max_items=max_items)
+                    if isinstance(engine_result, dict):
+                        response_md = engine_result.get("response_md", "")
+                        material_quality = engine_result.get("material_quality", "PARTIAL_MATERIAL")
+                        selected_items = engine_result.get("selected_items", graphiti_items[:max_items])
+                        tag_counts = engine_result.get("tag_counts", {})
+                        engine_used = True
+                    else:
+                        response_md = ""
+                        material_quality = "PARTIAL_MATERIAL"
+                        selected_items = graphiti_items[:max_items]
+                        tag_counts = {}
+                        engine_used = False
+                except Exception:
+                    response_md = ""
+                    material_quality = "PARTIAL_MATERIAL"
+                    selected_items = graphiti_items[:max_items]
+                    tag_counts = {}
+                    engine_used = False
+
+                chain_result_status = (
+                    "BRODY_MEMORY_RESPONSE_CHAIN_PASS"
+                    if (material_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL", "LOW_MATERIAL") and selected_items)
+                    else "GRAPHITI_HTTP_FALLBACK_PARTIAL"
+                )
+
+                return {
+                    "status": chain_result_status,
+                    "source_mode": "GRAPHITI_V20_FROZEN_HTTP_FALLBACK",
+                    "topic": topic,
+                    "semantic_query": query,
+                    "primary_query": primary,
+                    "effective_query": graphiti_effective_query,
+                    "attempted_queries": attempted_queries,
+                    "graphiti_http_attempted_queries": graphiti_attempts,
+                    "query_module_used": True,
+                    "query_results_count": 0,
+                    "graphiti_http_results_count": len(graphiti_items),
+                    "hydration_module_used": False,
+                    "hydrated_excerpt_count": len([it for it in graphiti_items if it.get("excerpt")]),
+                    "local_response_engine_used": engine_used,
+                    "material_quality": material_quality,
+                    "response_md": response_md,
+                    "response_md_length": len(response_md),
+                    "selected_items_count": len(selected_items),
+                    "selected_items": selected_items[:3],
+                    "tag_counts": tag_counts,
+                    "final_answer_uses_response_md": bool(response_md and len(response_md) > 50),
+                    "chain_source": "query_neo4j_zero→graphiti_v20_frozen_http→local_response_engine",
+                    "note": "Neo4j/BrodyMemoryDoc returned 0 results; used Graphiti V20 frozen HTTP readonly fallback.",
+                    "created_at": _now(),
+                    **MEMORY_CHAIN_BOUNDARY,
+                }
+
             return {
                 "status": "NO_MEMORY_RESULTS",
                 "source_mode": "MEMORY_RESPONSE_CHAIN",
                 "topic": topic,
                 "semantic_query": query,
+                "primary_query": primary,
+                "effective_query": None,
+                "attempted_queries": attempted_queries,
+                "graphiti_http_attempted_queries": graphiti_attempts,
                 "query_module_used": True,
                 "query_results_count": 0,
+                "graphiti_http_results_count": 0,
                 "hydration_module_used": False,
                 "hydrated_excerpt_count": 0,
                 "local_response_engine_used": False,
@@ -516,7 +749,7 @@ def build_memory_response_chain(
                 "selected_items_count": 0,
                 "selected_items": [],
                 "final_answer_uses_response_md": False,
-                "note": "Query returned 0 results. BrodyMemoryDoc may not contain matching nodes for this query.",
+                "note": "Query returned 0 results in Neo4j/BrodyMemoryDoc and Graphiti V20 HTTP fallback.",
                 "created_at": _now(),
                 **MEMORY_CHAIN_BOUNDARY,
             }
