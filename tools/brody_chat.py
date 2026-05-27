@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Brody Terminal CLI
-Dialogue direct avec le moteur Obsidia via http://127.0.0.1:8012/api/brody/chat
+Dialogue direct avec le moteur Obsidia via http://127.0.0.1:8000/api/brody/chat
 Aucune dépendance externe — stdlib Python 3.8+ uniquement.
 
 Usage :
@@ -38,7 +38,7 @@ from typing import Any
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-BASE_URL  = "http://127.0.0.1:8012"
+BASE_URL  = "http://127.0.0.1:8000"
 ENDPOINT  = f"{BASE_URL}/api/brody/chat"
 HEALTH_EP = f"{BASE_URL}/openapi.json"
 TIMEOUT   = 120  # secondes — Brody peut être lent à l'hydratation (~40s)
