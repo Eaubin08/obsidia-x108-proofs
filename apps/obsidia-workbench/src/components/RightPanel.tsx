@@ -122,6 +122,41 @@ function DomainRaccordSection({ live }: { live: Record<string, unknown> }) {
   )
 }
 
+function AdaptiveSigmaSection({ live }: { live: Record<string, unknown> }) {
+  const tv  = asRecord(live.true_voice_snapshot)
+  const pol = asRecord(tv.adaptive_response_policy)
+
+  if (!Object.keys(pol).length) return null
+
+  const sizeColor = (s: unknown) =>
+    s === 'BOUNDARY_COMPACT' ? 'text-obs-block' :
+    s === 'DEEP'             ? 'text-obs-brody' :
+    s === 'MEDIUM'           ? 'text-obs-pass'  : 'text-obs-dtext'
+
+  const pressureColor = (p: unknown) =>
+    p === 'HIGH'   ? 'text-obs-block' :
+    p === 'MEDIUM' ? 'text-obs-hold'  : 'text-obs-pass'
+
+  return (
+    <div>
+      <SectionTitle>Adaptive Response Policy / Sigma</SectionTitle>
+      <div className="obs-card p-3 space-y-0.5 border-obs-hold/30 bg-obs-hold/5">
+        <CopyableKV k="status"                v={String(pol.status ?? '—')}                vClass={String(pol.status ?? '').includes('READY') ? 'text-obs-pass' : 'text-obs-hold'} />
+        <CopyableKV k="response_size"         v={String(pol.response_size ?? '—')}         vClass={sizeColor(pol.response_size)} />
+        <CopyableKV k="density"               v={String(pol.density ?? '—')}               vClass="text-obs-mtext" />
+        <CopyableKV k="context_need"          v={String(pol.context_need ?? '—')}          vClass="text-obs-brody" />
+        <CopyableKV k="sigma_pressure"        v={String(pol.sigma_pressure ?? '—')}        vClass={pressureColor(pol.sigma_pressure)} />
+        <CopyableKV k="reason"                v={String(pol.reason ?? '—')} />
+        <CopyableKV k="observed_answer_size"  v={String(pol.observed_answer_size ?? '—')} />
+        <CopyableKV k="observed_answer_words" v={String(pol.observed_answer_words ?? '—')} />
+        <CopyableKV k="boundary_detected"     v={boolLike(pol.boundary_detected)}          vClass={pol.boundary_detected === true ? 'text-obs-block' : 'text-obs-dtext'} />
+        <CopyableKV k="decision_authority"    v={String(pol.decision_authority ?? 'KX108_ONLY')} vClass="text-obs-kernel" />
+        <CopyableKV k="readonly"              v={boolLike(pol.readonly)}                   vClass="text-obs-pass" />
+      </div>
+    </div>
+  )
+}
+
 function BoundaryEnvelopeSection({ live }: { live: Record<string, unknown> }) {
   return (
     <div>
@@ -315,6 +350,7 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
         <AuthoritySnapshotSection snap={authoritySnap} />
       )}
       {live && <TrueVoiceSection live={live} />}
+      {live && <AdaptiveSigmaSection live={live} />}
       {live && <DomainRaccordSection live={live} />}
       {live && <BoundaryEnvelopeSection live={live} />}
       {live && <NativeMachinationSection live={live} />}
