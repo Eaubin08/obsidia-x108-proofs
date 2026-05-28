@@ -35,6 +35,7 @@ from apps.obsidia_api.brody_anti_mismatch_signal import build_anti_mismatch_sign
 from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_packet
 from apps.obsidia_api.brody_thermo_coherence_time_unified import build_unified_thermo_coherence_time_packet
 from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
+from apps.obsidia_api.brody_gencoin_cognitive_ledger import build_gencoin_cognitive_ledger_packet
 from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
@@ -317,6 +318,22 @@ async def brody_chat(req: BrodyChatRequest):
         if isinstance(_gencoin_shadow_raw, dict) else {}
     )
 
+    _gencoin_cognitive_ledger_packet = safe_call_snapshot(
+        "gencoin_cognitive_ledger_packet",
+        build_gencoin_cognitive_ledger_packet,
+        gencoin_shadow_packet=_gencoin_shadow_packet,
+        thermo_unified_packet=_thermo_unified_packet,
+        value_layer={},
+        ledger_status={
+            "status": "LIVE_EMPTY_REGISTRY",
+            "source": "LIVE_EMPTY_REGISTRY",
+            "total": 0,
+            "reason": "NO_REAL_GENCOIN_LEDGER_ENTRY_YET",
+        },
+        session_id=req.session_id or "local",
+        source=r.get("source", "REAL_BACKEND"),
+    )
+
     # Step 5B: tree signal packet — SHADOW_READONLY, built before memory guard and value layer
     _tree_text = str(req.message or "")
     _tree_signal_raw = safe_call_snapshot(
@@ -474,6 +491,7 @@ async def brody_chat(req: BrodyChatRequest):
         "thermodynamics_packet": _thermodynamics_packet,
         "thermo_unified_packet": _thermo_unified_packet,
         "gencoin_shadow_packet": _gencoin_shadow_packet,
+        "gencoin_cognitive_ledger_packet": _gencoin_cognitive_ledger_packet,
         "tree_signal_packet": _tree_signal_packet,
         "memory_promotion_guard_packet": _memory_promotion_guard_packet,
         "operator_view_packet": _operator_view_packet,

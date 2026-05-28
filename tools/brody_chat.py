@@ -268,6 +268,66 @@ def _print_true_voice_snapshot(data: dict[str, Any]) -> None:
     print(dim("mode=structure-first; memory=enrichment; authority=KX108_ONLY"))
 
 
+
+def _print_gencoin_cognitive_ledger(data: dict[str, Any]) -> None:
+    ledger = data.get("gencoin_cognitive_ledger_packet") or {}
+    shadow = data.get("gencoin_shadow_packet") or {}
+
+    if not isinstance(ledger, dict) or not ledger:
+        return
+
+    entries = ledger.get("entries") or []
+    entry = entries[0] if isinstance(entries, list) and entries else {}
+    scores = entry.get("shadow_scores") if isinstance(entry, dict) else {}
+    if not isinstance(scores, dict):
+        scores = {}
+
+    print(SEP)
+    print(bold(yellow("GENCOIN COGNITIVE LEDGER / READONLY")))
+    print(dim(
+        f"status={ledger.get('status', '-')}  "
+        f"source={ledger.get('source', '-')}  "
+        f"mode={ledger.get('mode', '-')}"
+    ))
+    print(dim(
+        f"shadow={shadow.get('version', '-')}  "
+        f"usable_shadow={_bool_text(shadow.get('usable_shadow_value'))}  "
+        f"score={entry.get('cognitive_ledger_score', '-')}  "
+        f"score_status={entry.get('score_status', '-')}"
+    ))
+    print(dim(
+        f"ledger_status={ledger.get('ledger_status', '-')}  "
+        f"entry_count={ledger.get('entry_count', '-')}  "
+        f"projected_only={_bool_text(ledger.get('projected_only'))}  "
+        f"persisted={_bool_text(ledger.get('persisted'))}"
+    ))
+    print(dim(
+        "scores: "
+        f"cognitive={scores.get('cognitive_value', '-')}  "
+        f"proof={scores.get('proof_value', '-')}  "
+        f"reuse={scores.get('reuse_value', '-')}  "
+        f"memory={scores.get('memory_value', '-')}  "
+        f"stability={scores.get('stability_value', '-')}"
+    ))
+    print(dim(
+        "costs: "
+        f"attention={scores.get('attention_cost', '-')}  "
+        f"energy={scores.get('energy_cost', '-')}  "
+        f"economic_projection={scores.get('economic_projection', '-')}"
+    ))
+    print(dim(
+        "boundary: "
+        f"mint_allowed={_bool_text(ledger.get('mint_allowed'))}  "
+        f"wallet_enabled={_bool_text(ledger.get('wallet_enabled'))}  "
+        f"blockchain_enabled={_bool_text(ledger.get('blockchain_enabled'))}  "
+        f"is_real_token={_bool_text(ledger.get('is_real_token'))}"
+    ))
+    print(dim(
+        f"readonly={_bool_text(ledger.get('readonly'))}  "
+        f"emits_act={_bool_text(ledger.get('emits_act'))}  "
+        f"authority={ledger.get('decision_authority', 'KX108_ONLY')}"
+    ))
+
 def _print_response(data: dict[str, Any], elapsed: float) -> None:
     true_voice = data.get("true_voice_snapshot") or {}
     tv_answer = true_voice.get("final_answer") if isinstance(true_voice, dict) else ""
@@ -296,6 +356,8 @@ def _print_response(data: dict[str, Any], elapsed: float) -> None:
     _print_domain_raccord_snapshot(data)
     print()
     _print_adaptive_response_policy(data)
+    print()
+    _print_gencoin_cognitive_ledger(data)
     print()
     _print_native_machination(data)
     print()
