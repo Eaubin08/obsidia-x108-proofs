@@ -9,6 +9,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from apps.obsidia_api.safe_response import safe_backend_response
+from periphery.workflow_governance_readonly.integration.brody_workflow_governance_snapshot_adapter import build_brody_workflow_governance_snapshot
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
 from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context
 from sigma.evaluate import evaluate_sigma_domain
@@ -1072,6 +1073,125 @@ async def periphery_governed_operator_runtime(body: GovernedOperatorRuntimePaylo
         "can_emit_act": False,
         "emits_act": False,
         "emits_verdict": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "decision_authority": "KX108_ONLY",
+    }, source="REAL_BACKEND")
+
+
+class WorkflowGovernancePacketPayload(BaseModel):
+    sop_text: str
+    title: str = "workflow governance candidate"
+    session_id: str = "manual-session"
+    request_type: str = "STRUCTURAL_PREPARATION"
+
+
+@router.post("/workflow-governance/packet")
+async def workflow_governance_packet(payload: WorkflowGovernancePacketPayload):
+    """
+    F30.4 readonly workflow governance packet route.
+
+    Builds:
+    - workflow governance snapshot
+    - workflow governance packet
+    - X108 readonly ingress envelope
+
+    No ACT.
+    No verdict.
+    No workflow execution.
+    No memory/Graphiti/Neo4j write.
+    No kernel/X108 mutation.
+    Decision authority remains KX108_ONLY.
+    """
+    snapshot = build_brody_workflow_governance_snapshot(
+        sop_text=payload.sop_text,
+        title=payload.title,
+        session_id=payload.session_id,
+        request_type=payload.request_type,
+    )
+
+    workflow_governance_packet = snapshot.get("workflow_governance_packet", {})
+    x108_readonly_ingress_envelope = snapshot.get("x108_readonly_ingress_envelope", {})
+    context_packet = x108_readonly_ingress_envelope.get("context_packet", {})
+
+    operator_packet = workflow_governance_packet.get("operator_packet", {})
+    swarm_result = operator_packet.get("swarm_result", {})
+    obsidiashell_workbench_state = workflow_governance_packet.get("obsidiashell_workbench_state", {})
+
+    workflow_graph = (
+        workflow_governance_packet.get("workflow_graph")
+        or swarm_result.get("workflow_graph")
+        or obsidiashell_workbench_state.get("workflow_graph")
+        or {
+            "graph_kind": "workflow_graph_readonly_candidate",
+            "source_workflow_id": context_packet.get("source_workflow_id"),
+            "candidate_only": True,
+            "boundary": snapshot.get("boundary", {}),
+        }
+    )
+
+    obsidia_ir = (
+        workflow_governance_packet.get("obsidia_ir")
+        or swarm_result.get("obsidia_ir")
+        or obsidiashell_workbench_state.get("obsidia_ir")
+        or {
+            "ir_kind": "obsidia_ir_candidate",
+            "ir_id": context_packet.get("source_ir_id"),
+            "authority": "KX108_ONLY",
+            "candidate_only": True,
+            "boundary": snapshot.get("boundary", {}),
+        }
+    )
+
+    normalized_context_packet = (
+        workflow_governance_packet.get("context_packet")
+        or context_packet
+        or {
+            "packet_kind": "workflow_governance_context_packet",
+            "candidate_only": True,
+            "boundary": snapshot.get("boundary", {}),
+        }
+    )
+
+    normalized_packet = {
+        **workflow_governance_packet,
+        "workflow_graph": workflow_graph,
+        "obsidia_ir": obsidia_ir,
+        "context_packet": normalized_context_packet,
+        "x108_readonly_ingress_envelope": x108_readonly_ingress_envelope,
+    }
+
+    return safe_backend_response({
+        "version": "WORKFLOW_GOVERNANCE_PACKET_ROUTE_V1",
+        "mode": "READONLY_WORKFLOW_GOVERNANCE_PACKET_ROUTE",
+        "workflow_governance_snapshot": snapshot,
+        "workflow_governance_packet": normalized_packet,
+        "workflow_graph": workflow_graph,
+        "obsidia_ir": obsidia_ir,
+        "context_packet": normalized_context_packet,
+        "x108_readonly_ingress_envelope": x108_readonly_ingress_envelope,
+        "snapshot_attached": True,
+        "packet_attached": True,
+        "workflow_graph_attached": True,
+        "obsidia_ir_attached": True,
+        "context_packet_attached": True,
+        "x108_readonly_ingress_attached": True,
+        "readonly": True,
+        "advisory_only": True,
+        "context_signal_only": True,
+        "allowed_to_decide": False,
+        "can_decide": False,
+        "can_emit_act": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "workflow_decision": False,
+        "memory_decision": False,
+        "graphiti_decision": False,
+        "brody_decision": False,
+        "runtime_execute": False,
         "memory_write": False,
         "graphiti_write": False,
         "neo4j_write": False,

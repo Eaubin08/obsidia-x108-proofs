@@ -1,0 +1,84 @@
+{
+  "report_id": "OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_001106",
+  "phase": "F30.3",
+  "mode": "IMPORT_COMPILE_VALIDATE_NO_RUNTIME_PATCH",
+  "commit": false,
+  "tag": false,
+  "freeze": false,
+  "head": "79f329c",
+  "tag_context": "BRODY_F26_MONITOR_GOVERNED_RUNTIME_PALIER_20260528",
+  "target": "periphery/workflow_governance_readonly",
+  "python_file_count": 46,
+  "compile_ok_count": 46,
+  "compile_fail_count": 0,
+  "import_ok_count": 15,
+  "import_fail_count": 0,
+  "danger_hit_count": 5,
+  "confirmed_violation_count": 0,
+  "compile_fail": [],
+  "import_fail": [],
+  "danger_hits": [
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "token": "session.write_transaction",
+      "classification": "FALSE_POSITIVE_QUARANTINE_PATTERN_LITERAL",
+      "confirmed_violation": false,
+      "line": "\"session.write_transaction\",",
+      "line_number": 78
+    },
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "token": "execute_write",
+      "classification": "FALSE_POSITIVE_QUARANTINE_PATTERN_LITERAL",
+      "confirmed_violation": false,
+      "line": "\"execute_write\",",
+      "line_number": 79
+    },
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "token": "git commit",
+      "classification": "FALSE_POSITIVE_QUARANTINE_PATTERN_LITERAL",
+      "confirmed_violation": false,
+      "line": "\"git commit\",",
+      "line_number": 85
+    },
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "token": "git push",
+      "classification": "FALSE_POSITIVE_QUARANTINE_PATTERN_LITERAL",
+      "confirmed_violation": false,
+      "line": "\"git push\",",
+      "line_number": 86
+    },
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "token": "os.system(",
+      "classification": "FALSE_POSITIVE_QUARANTINE_PATTERN_LITERAL",
+      "confirmed_violation": false,
+      "line": "\"os.system(\",",
+      "line_number": 87
+    }
+  ],
+  "confirmed_violations": [],
+  "validation_status": "PASS",
+  "boundary_expected": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "runtime_execute": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "locked_decisions": [
+    "F30.3 validates copied V5 module only.",
+    "No runtime route patch in F30.3.",
+    "No X108 binding.",
+    "No Graphiti/Neo4j write.",
+    "No memory write.",
+    "Decision authority remains KX108_ONLY."
+  ],
+  "next_recommended": "F30.4_WORKFLOW_GOVERNANCE_ROUTE_PATCH",
+  "status": "F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_DONE"
+}
