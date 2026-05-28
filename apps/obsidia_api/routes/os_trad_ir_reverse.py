@@ -8,6 +8,7 @@ They do not decide, act, mutate memory, mutate Graphiti, or mutate X108.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Optional
 
 from fastapi import APIRouter
@@ -136,7 +137,19 @@ def _risk_flags(text: str) -> list[str]:
     if any(token in low for token in ["autorise", "authorize", "je suis le créateur", "i am the creator", "admin", "root"]):
         flags.append("authority_claim")
 
-    if any(token in low for token in ["act", "agir", "lance", "execute", "exécute", "send", "transfer", "write"]):
+    # F22B: "act" must be a whole token — "actifs" and "action" must NOT match.
+    # "ne propose aucune action" is a negation, NOT an action_request.
+    _action_negation = bool(re.search(
+        r"ne\s+propose\s+(?:aucune|pas\s+de)\s+action|"
+        r"\bsans\s+action\b|\bno\s+action\b|\bwithout\s+action\b",
+        low,
+    ))
+    _action_tokens = ["agir", "lance", "execute", "exécute", "send", "transfer", "write"]
+    _has_action = (
+        any(token in low for token in _action_tokens)
+        or bool(re.search(r"\bact\b", low))
+    )
+    if _has_action and not _action_negation:
         flags.append("action_request")
 
     if any(token in low for token in ["kernel", "x108", "mutation", "patch", "modify", "modifie"]):

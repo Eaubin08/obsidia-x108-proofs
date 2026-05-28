@@ -43,6 +43,15 @@ def _has_any(low: str, terms: tuple[str, ...]) -> bool:
     return any(t in low for t in terms)
 
 
+def _has_any_word(low: str, terms: tuple[str, ...]) -> bool:
+    """Word-boundary-safe variant: each term is matched as a complete token.
+
+    Prevents "decris" from matching write_term "ecris", and "actifs" from
+    matching action_term "act".
+    """
+    return any(re.search(r"\b" + re.escape(t) + r"\b", low) for t in terms)
+
+
 def _negated_near(low: str, verbs: tuple[str, ...]) -> bool:
     negators = (
         "sans ", "ne pas ", "n' ", "n’ ", "no ", "without ",
@@ -129,7 +138,8 @@ def has_memory_write_request(text: str) -> bool:
     if _has_any(low, direct_write_boundary_markers):
         return True
 
-    return _has_any(low, write_terms) and _has_any(low, memory_terms)
+    # Use word-boundary matching for write_terms: "decris" must NOT match "ecris".
+    return _has_any_word(low, write_terms) and _has_any(low, memory_terms)
 
 
 def has_code_debug_request(text: str) -> bool:
@@ -211,6 +221,14 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
             "3) contrôle les champs obligatoires, les noms de clés et les types ; "
             "4) relance un test ciblé avec -q puis capture la première assertion qui tombe. "
             "Brody peut guider le diagnostic, pas modifier le kernel."
+        )
+
+    if "RUNTIME_STATE_READONLY" in domains:
+        parts.append(
+            "Lecture de l'état runtime en cours (readonly) : modules actifs, mémoire candidate, "
+            "Graphiti V20 gelé, IR Candidate, Reverse OS, Thermo, Gencoin, Dashboard runtime. "
+            "Ce rapport est advisory uniquement — KX108_ONLY, aucune action, aucune écriture, "
+            "aucune mutation kernel. write_boundary_required=false."
         )
 
     if "ARCHITECTURE_EXPLANATION" in domains:
@@ -297,8 +315,14 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
 
 
 def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
+    from apps.obsidia_api.brody_readonly_intent_guard import detect_readonly_runtime_state_intent
+
     text = user_message or ""
     low = _fold(text)
+
+    # F22B: Run readonly intent guard FIRST, before any write-boundary logic.
+    _guard = detect_readonly_runtime_state_intent(text)
+    _is_readonly_state_query = _guard.get("status") == "RUNTIME_STATE_READONLY_INTENT_PASS"
 
     domains: list[str] = []
 
@@ -333,7 +357,13 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     if _has_any(low, ("cristal", "transition", "neant", "néant", "autosort", "sovereignsealer", "reflexreducer", "frictionengine")):
         domains.append("REGIMES")
 
-    if has_memory_write_request(text):
+    if _is_readonly_state_query:
+        # Guard confirmed: this is a readonly description request.
+        # Inject RUNTIME_STATE_READONLY and suppress MEMORY_WRITE_CANON_FREEZE.
+        if "ARCHITECTURE_EXPLANATION" not in domains:
+            domains.append("ARCHITECTURE_EXPLANATION")
+        domains.append("RUNTIME_STATE_READONLY")
+    elif has_memory_write_request(text):
         domains.append("MEMORY_WRITE_CANON_FREEZE")
 
     if has_negated_mutation(text) and not has_code_debug_request(text):
@@ -348,6 +378,8 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     mode = "DOMAIN_RACCORD"
     if boundary_required:
         mode = "DOMAIN_RACCORD_BOUNDARY"
+    elif "RUNTIME_STATE_READONLY" in domains:
+        mode = "DOMAIN_RACCORD_READONLY_STATE"
     elif "CODE_DEBUG_GUIDANCE" in domains:
         mode = "DOMAIN_RACCORD_CODE_DEBUG"
     elif "ARCHITECTURE_EXPLANATION" in domains:
@@ -369,6 +401,7 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
         "boundary_required": boundary_required,
         "negation_guard_active": "NEGATION_GUARD" in domains,
         "write_boundary_required": boundary_required,
+        "readonly_intent_guard": _guard,
         "risk_flags_patch": adjust_risk_flags(text, []),
         **BOUNDARY,
     }

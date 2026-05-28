@@ -1,0 +1,34 @@
+{
+  "port": 8012,
+  "readonly_intent_guard_packet": {
+    "status": "RUNTIME_STATE_READONLY_INTENT_PASS",
+    "intent": "RUNTIME_STATE_READONLY",
+    "support_intent": "runtime_state_query",
+    "ir_op": "READ",
+    "ir_target": "STATE(runtime_status)",
+    "domains": [
+      "ARCHITECTURE_EXPLANATION",
+      "RUNTIME_STATE_READONLY"
+    ],
+    "write_boundary_required": false,
+    "risk_flags": [],
+    "contradictions": [],
+    "readonly": true,
+    "decision_authority": "KX108_ONLY"
+  },
+  "domain_raccord_domains": [
+    "ARCHITECTURE_EXPLANATION",
+    "RUNTIME_STATE_READONLY"
+  ],
+  "domain_raccord_write_boundary_required": false,
+  "domain_raccord_voice_mode": "DOMAIN_RACCORD_READONLY_STATE",
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "emits_act": false,
+  "memory_write": false,
+  "graphiti_write": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "MEMORY_WRITE_CANON_FREEZE_absent": true,
+  "RUNTIME_STATE_READONLY_present": true
+}

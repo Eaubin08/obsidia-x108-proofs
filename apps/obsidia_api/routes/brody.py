@@ -40,6 +40,7 @@ from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
 from apps.obsidia_api.brody_existing_reverse_os_bridge import build_existing_reverse_os_projection
+from apps.obsidia_api.brody_readonly_intent_guard import detect_readonly_runtime_state_intent
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -79,6 +80,9 @@ class BrodyChatRequest(BaseModel):
 @router.post("/chat")
 async def brody_chat(req: BrodyChatRequest):
     rt = load_runtime_components()
+
+    # F22B: run readonly intent guard before the pipeline so domain raccord has the right signal.
+    readonly_intent_guard_packet = detect_readonly_runtime_state_intent(req.message)
 
     r = run_brody_real_response_pipeline(
         message=req.message, language=req.language,
@@ -496,4 +500,5 @@ async def brody_chat(req: BrodyChatRequest):
         "tree_signal_packet": _tree_signal_packet,
         "memory_promotion_guard_packet": _memory_promotion_guard_packet,
         "operator_view_packet": _operator_view_packet,
+        "readonly_intent_guard_packet": readonly_intent_guard_packet,
     }, source=r.get("source", "REAL_BACKEND"))

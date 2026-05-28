@@ -66,6 +66,11 @@ _QUERY_OVERRIDES = [
     "montre", "affiche", "explique", "comment", "qu'est", "qu est", "quel",
     "analyse", "dis-moi", "dis moi", "donne moi", "show me", "explain",
     "how ", "what ", "tell me", "give me", "describe",
+    # F22B: FR readonly description terms — prevent false critical_pressure on read queries.
+    # Note: _norm() strips accents, so "décris"→"decris", "état"→"etat", etc.
+    "decris", "decrire", "etat systeme", "etat runtime", "etat actuel",
+    "modules actifs", "lecture seule", "readonly", "read only",
+    "statut", "diagnostic", "dashboard runtime", "ne propose aucune action",
 ]
 
 

@@ -1,0 +1,27 @@
+F22B_RUNTIME_STATE_READONLY_INTENT_REPAIR — PORT 8012 — 20260528_062025
+======================================================================
+PROMPT: Decris ton etat systeme actuel en lecture seule : modules actifs, memoire, Graphiti, IR, Reverse OS, Thermo, Gencoin, Dashboard runtime. Ne propose aucune action.
+
+readonly_intent_guard_packet.status: RUNTIME_STATE_READONLY_INTENT_PASS
+readonly_intent_guard_packet.intent: RUNTIME_STATE_READONLY
+readonly_intent_guard_packet.write_boundary_required: False
+readonly_intent_guard_packet.ir_op: READ
+readonly_intent_guard_packet.ir_target: STATE(runtime_status)
+readonly_intent_guard_packet.risk_flags: []
+
+domain_raccord_snapshot.domains: ['ARCHITECTURE_EXPLANATION', 'RUNTIME_STATE_READONLY']
+domain_raccord_snapshot.write_boundary_required: False
+domain_raccord_snapshot.voice_mode: DOMAIN_RACCORD_READONLY_STATE
+
+MEMORY_WRITE_CANON_FREEZE absent: True
+RUNTIME_STATE_READONLY present: True
+
+decision_authority: KX108_ONLY
+readonly: True
+emits_act: False
+memory_write: False
+graphiti_write: False
+kernel_mutation: False
+x108_mutation: False
+
+VERDICT: PASS
