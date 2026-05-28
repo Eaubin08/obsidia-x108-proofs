@@ -1,0 +1,48 @@
+﻿# OBSIDIA F17C — SOURCE LABEL FIX REPORT
+
+Date: 20260528_023046
+CHECKPOINT: F17C_SOURCE_LABEL_FIX
+MODE: PATCH
+STATUS: PASS_LOCAL_AWAITING_COMMIT
+
+## RESULT
+
+Brody source label now matches effective Graphiti status.
+
+Before:
+BRODY [REAL_BRODY_RUNTIME_NO_GRAPHITI]
+graphiti=GRAPHITI_V20_FROZEN_READONLY_PASS
+
+After:
+BRODY [REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY]
+graphiti=GRAPHITI_V20_FROZEN_READONLY_PASS
+
+## VALIDATED PORTS
+
+8000:
+source=REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY
+graphiti_status=GRAPHITI_V20_FROZEN_READONLY_PASS
+source_mode=GRAPHITI_V20_FROZEN_HTTP_PRIMARY
+
+8012:
+source=REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY
+graphiti_status=GRAPHITI_V20_FROZEN_READONLY_PASS
+source_mode=GRAPHITI_V20_FROZEN_HTTP_PRIMARY
+
+## TESTS
+
+F17B/F17C tests: PASS
+Regression tests: PASS
+Final tests: 82 passed
+Diff check: clean
+
+## BOUNDARY
+
+KX108_ONLY=true
+readonly=true
+graphiti_write=false
+memory_write=false
+emits_act=false
+emits_verdict=false
+kernel_mutation=false
+x108_mutation=false

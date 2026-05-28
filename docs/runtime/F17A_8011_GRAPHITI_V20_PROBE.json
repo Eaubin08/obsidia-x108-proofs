@@ -1,0 +1,414 @@
+{
+  "/graph/v20/frozen/status": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "nodes": 167,
+      "rels": 477,
+      "indexed_episodes": 20,
+      "failed_episodes": 0,
+      "manifest_files": 4,
+      "live_neo4j_dependency": false,
+      "x108_merge_status": "NOT_MERGED",
+      "commit_status": "LOCAL_ONLY"
+    }
+  },
+  "/graph/v20/frozen/counts": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "report_counts": {
+        "nodes": 167,
+        "rels": 477,
+        "labels": [
+          {
+            "label": "Entity",
+            "c": 147
+          },
+          {
+            "label": "Episodic",
+            "c": 20
+          }
+        ]
+      },
+      "snapshot_counts": {
+        "nodes": 167,
+        "rels": 477
+      },
+      "labels": [
+        {
+          "label": "Entity",
+          "c": 147
+        },
+        {
+          "label": "Episodic",
+          "c": 20
+        }
+      ],
+      "rel_types": [
+        {
+          "rel_type": "MENTIONS",
+          "c": 271
+        },
+        {
+          "rel_type": "RELATES_TO",
+          "c": 206
+        }
+      ],
+      "report": {
+        "max_episodes": 20,
+        "max_chars": 1200,
+        "models": {
+          "llm": "gemini-2.5-flash",
+          "embedding": "gemini-embedding-001",
+          "reranker": "gemini-2.5-flash-lite"
+        },
+        "ok": 20,
+        "fail": 0
+      }
+    }
+  },
+  "/graph/v20/frozen/metrics": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY_METRICS",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "corpus": {
+        "indexed_episodes": 20,
+        "failed_episodes": 0,
+        "nodes": 167,
+        "rels": 477,
+        "labels": [
+          {
+            "label": "Entity",
+            "c": 147
+          },
+          {
+            "label": "Episodic",
+            "c": 20
+          }
+        ],
+        "rel_types": [
+          {
+            "rel_type": "MENTIONS",
+            "c": 271
+          },
+          {
+            "rel_type": "RELATES_TO",
+            "c": 206
+          }
+        ],
+        "relation_density": 2.8563,
+        "entity_episode_ratio": 8.35
+      },
+      "search_quality": {
+        "queries": [
+          {
+            "query": "X-108",
+            "entity_count": 1,
+            "relation_count": 0,
+            "richness_score": 0.0667,
+            "kernel_decision": "NONE",
+            "graphiti_decision": "NONE"
+          },
+          {
+            "query": "CANON",
+            "entity_count": 5,
+            "relation_count": 2,
+            "richness_score": 0.6,
+            "kernel_decision": "NONE",
+            "graphiti_decision": "NONE"
+          },
+          {
+            "query": "Kernel",
+            "entity_count": 5,
+            "relation_count": 0,
+            "richness_score": 0.3333,
+            "kernel_decision": "NONE",
+            "graphiti_decision": "NONE"
+          },
+          {
+            "query": "Proof",
+            "entity_count": 5,
+            "relation_count": 3,
+            "richness_score": 0.7333,
+            "kernel_decision": "NONE",
+            "graphiti_decision": "NONE"
+          },
+          {
+            "query": "Freeze",
+            "entity_count": 4,
+            "relation_count": 3,
+            "richness_score": 0.6667,
+            "kernel_decision": "NONE",
+            "graphiti_decision": "NONE"
+          }
+        ],
+        "empty_query_allowed": false
+      },
+      "integrity": {
+        "manifest_files": 4,
+        "snapshot_present": true,
+        "report_present": true,
+        "manifest_present": true,
+        "live_neo4j_dependency": false
+      },
+      "isolation": {
+        "commit_status": "LOCAL_ONLY",
+        "x108_merge_status": "NOT_MERGED",
+        "v50_ignored": true,
+        "live_graph_ignored": true
+      }
+    }
+  },
+  "/graph/v20/frozen/readiness": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY_READINESS",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "kernel_decision": "NONE",
+      "graphiti_decision": "NONE",
+      "allowed_to_decide": false,
+      "allowed_to_modify_kernel": false,
+      "allowed_to_modify_x108": false,
+      "ready_for_kernel_binding": false,
+      "ready_for_x108_merge": false,
+      "merge_gate": "BLOCKED_FOR_NOW",
+      "reason": "Graphiti V20 is validated as read-only context provider, but not yet connected to kernel corpus or X108 decision flow.",
+      "warnings": [
+        "X108_CORPUS_DIRECT_COVERAGE_LOW",
+        "KERNEL_RELATION_COVERAGE_LOW",
+        "NOT_KERNEL_BOUND",
+        "READONLY_CONTEXT_ONLY",
+        "NOT_MERGED_INTO_X108"
+      ],
+      "coverage": {
+        "x108": {
+          "entity_count": 1,
+          "relation_count": 0,
+          "richness_score": 0.0667
+        },
+        "kernel": {
+          "entity_count": 5,
+          "relation_count": 0,
+          "richness_score": 0.3333
+        },
+        "proof": {
+          "entity_count": 5,
+          "relation_count": 3,
+          "richness_score": 0.7333
+        },
+        "freeze": {
+          "entity_count": 4,
+          "relation_count": 3,
+          "richness_score": 0.6667
+        }
+      }
+    }
+  },
+  "/graph/v20/frozen/manifest": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "manifest": [
+        {
+          "file": "graphiti_index_phase0_limited_20.py",
+          "sha256": "9065786D1EE50BBAE9BB7A286799905C2E9DDF6426CB1AB44ECFB365B917D0D9",
+          "bytes": 6486
+        },
+        {
+          "file": "graphiti_phase0_v20_db_snapshot.json",
+          "sha256": "538D8ACF6013DACF355C464989724B13B55A4A52BEF6FB321E012CBE1BED9053",
+          "bytes": 26002
+        },
+        {
+          "file": "inspect_graphiti_phase0_v20.py",
+          "sha256": "5E7E2D60AF46FA73F613F89646460D64E826E2D1826D7963C592FB073B0E1370",
+          "bytes": 1290
+        },
+        {
+          "file": "phase0_limited_index_report_20.json",
+          "sha256": "5A5432747FDE49C62C1E677E60C96D51CC422CAE161C7C5CABEE18A4F9E5F0E8",
+          "bytes": 3477
+        }
+      ]
+    }
+  },
+  "/graph/v20/frozen/evidence": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY_EVIDENCE",
+      "freeze_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+      "base_artifacts": {
+        "manifest": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654\\MANIFEST_SHA256.json",
+        "report": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654\\phase0_limited_index_report_20.json",
+        "snapshot": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654\\graphiti_phase0_v20_db_snapshot.json"
+      },
+      "manifest": [
+        {
+          "file": "graphiti_index_phase0_limited_20.py",
+          "sha256": "9065786D1EE50BBAE9BB7A286799905C2E9DDF6426CB1AB44ECFB365B917D0D9",
+          "bytes": 6486
+        },
+        {
+          "file": "graphiti_phase0_v20_db_snapshot.json",
+          "sha256": "538D8ACF6013DACF355C464989724B13B55A4A52BEF6FB321E012CBE1BED9053",
+          "bytes": 26002
+        },
+        {
+          "file": "inspect_graphiti_phase0_v20.py",
+          "sha256": "5E7E2D60AF46FA73F613F89646460D64E826E2D1826D7963C592FB073B0E1370",
+          "bytes": 1290
+        },
+        {
+          "file": "phase0_limited_index_report_20.json",
+          "sha256": "5A5432747FDE49C62C1E677E60C96D51CC422CAE161C7C5CABEE18A4F9E5F0E8",
+          "bytes": 3477
+        }
+      ],
+      "metrics_summary": {
+        "nodes": 167,
+        "rels": 477,
+        "indexed_episodes": 20,
+        "failed_episodes": 0,
+        "manifest_files": 4
+      },
+      "readiness_summary": {
+        "ready_for_kernel_binding": false,
+        "ready_for_x108_merge": false,
+        "merge_gate": "BLOCKED_FOR_NOW",
+        "warnings": [
+          "X108_CORPUS_DIRECT_COVERAGE_LOW",
+          "KERNEL_RELATION_COVERAGE_LOW",
+          "NOT_KERNEL_BOUND",
+          "READONLY_CONTEXT_ONLY",
+          "NOT_MERGED_INTO_X108"
+        ]
+      },
+      "validated_routes_expected": [
+        "/graph/v20/frozen/status",
+        "/graph/v20/frozen/counts",
+        "/graph/v20/frozen/entities",
+        "/graph/v20/frozen/relations",
+        "/graph/v20/frozen/manifest",
+        "/graph/v20/frozen/search",
+        "/graph/v20/frozen/context",
+        "/graph/v20/frozen/metrics",
+        "/graph/v20/frozen/readiness",
+        "/graph/v20/frozen/evidence"
+      ],
+      "decision": {
+        "commit_status": "LOCAL_ONLY",
+        "x108_merge_status": "NOT_MERGED",
+        "kernel_decision": "NONE",
+        "graphiti_decision": "NONE"
+      }
+    }
+  },
+  "/graph/v20/frozen/search?q=X-108&limit=3": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "query": "X-108",
+      "limit": 3,
+      "entity_count": 1,
+      "relation_count": 0,
+      "entities": [
+        {
+          "name": "CANON_GUARDIAN",
+          "summary": "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+        }
+      ],
+      "relations": []
+    }
+  },
+  "/graph/v20/frozen/context?q=X-108&limit=3": {
+    "status": 200,
+    "data": {
+      "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+      "ok": true,
+      "mode": "FROZEN_READONLY_CONTEXT",
+      "query": "X-108",
+      "limit": 3,
+      "kernel_decision": "NONE",
+      "graphiti_decision": "NONE",
+      "graphiti_role": "READONLY_CONTEXT_PROVIDER",
+      "x108_merge_status": "NOT_MERGED",
+      "commit_status": "LOCAL_ONLY",
+      "live_neo4j_dependency": false,
+      "entity_count": 1,
+      "relation_count": 0,
+      "context_packet": {
+        "facts": [
+          "CANON_GUARDIAN: CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+        ],
+        "warnings": [
+          "NO_RELATION_MATCH_IN_FROZEN_V20",
+          "X108_CONTEXT_LIMITED_IN_PHASE0_V20_CORPUS"
+        ],
+        "entities": [
+          {
+            "name": "CANON_GUARDIAN",
+            "summary": "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+          }
+        ],
+        "relations": [],
+        "source": "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN"
+      },
+      "entities": [
+        {
+          "name": "CANON_GUARDIAN",
+          "summary": "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+        }
+      ],
+      "relations": [],
+      "visible_entities": [
+        {
+          "name": "CANON_GUARDIAN",
+          "summary": "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+        }
+      ],
+      "visible_relations": [],
+      "llm_context_packet": {
+        "query": "X-108",
+        "mode": "FROZEN_READONLY_CONTEXT",
+        "kernel_decision": "NONE",
+        "graphiti_decision": "NONE",
+        "graphiti_role": "READONLY_CONTEXT_PROVIDER",
+        "x108_merge_status": "NOT_MERGED",
+        "commit_status": "LOCAL_ONLY",
+        "live_neo4j_dependency": false,
+        "entity_count": 1,
+        "relation_count": 0,
+        "entities": [
+          {
+            "name": "CANON_GUARDIAN",
+            "summary": "CANON_GUARDIAN has Vertex AI as a deployment option.\nCANON_GUARDIAN belongs to the 'À créer en premier / Top 5 founders' family of agents.\nCANON_GUARDIAN is deployed on Vertex AI or locally.\nCANON_GUARDIAN has the Claude Code skill 'freeze-guardian (reduced)'.\nThe freeze-guardian Claude Code skill is mapped as a reduced skill for the CANON_GUARDIAN agent.\nCANON_GUARDIAN is described in the `OBSIDIA_TOUS_LES_AGENTS.docx` document.\nCANON_GUARDIAN is a Top 5 founding agent.\nCANON_GUARDIAN is the guardian of the canon Obsidia.\nCANON_GUARDIAN belongs to the Fondateurs family, designated as 'À créer en premier (top 5)'.\nCANON_GUARDIAN protects the canon Obsidia.\nCANON_GUARDIAN verifies name collisions for Obsidia.\nCANON_GUARDIAN verifies name collisions for X-108.\nCANON_GUARDIAN verifies name collisions for AVDR.\nCANON_GUARDIAN verifies name collisions for ACP.\nCANON_GUARDIAN verifies name collisions for Freeze.\nCANON_GUARDIAN verifies name collisions for Kernel.\nCANON_GUARDIAN verifies name collisions for Mémoire fractale.\nCANON_GUARDIAN verifies name collisions for 34 arbres.\nCANON_GUARDIAN verifies name collisions for Frise humaine.\nCANON_GUARDIAN verifies name collisions for Balance exponentielle.\nCANON_GUARDIAN verifies name collisions for Calibration procédurale."
+          }
+        ],
+        "relations": [],
+        "warnings": [
+          "NO_RELATION_MATCH_IN_FROZEN_V20",
+          "X108_CONTEXT_LIMITED_IN_PHASE0_V20_CORPUS"
+        ]
+      }
+    }
+  },
+  "/health": {
+    "status": null,
+    "data": {
+      "error": "timed out"
+    }
+  }
+}

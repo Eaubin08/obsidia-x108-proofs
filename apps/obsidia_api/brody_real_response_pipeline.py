@@ -30,24 +30,79 @@ def _load():
 
 
 def _probe_graphiti() -> dict[str, Any]:
-    result = {"status": "GRAPHITI_LIVE_BLOCKED", "port_7688_open": False, "port_8011_open": False,
-              "blocker": "", "run_command": ""}
+    result = {
+        "status": "GRAPHITI_UNAVAILABLE",
+        "effective_status": "GRAPHITI_UNAVAILABLE",
+        "neo4j_status": "NEO4J_UNKNOWN",
+        "v20_status": "GRAPHITI_V20_UNKNOWN",
+        "port_7688_open": False,
+        "port_8011_open": False,
+        "blocker": "",
+        "neo4j_blocker": "",
+        "run_command": "",
+        "live_neo4j_dependency": False,
+        "readonly": True,
+        "decision_authority": "KX108_ONLY",
+        "graphiti_write": False,
+        "memory_write": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+    }
     for port, key in [(7688, "port_7688_open"), (8011, "port_8011_open")]:
         try:
             s = socket.socket(); s.settimeout(1)
             s.connect(('127.0.0.1', port)); s.close()
             result[key] = True
-        except: pass
-    blockers = []
-    if not os.environ.get("NEO4J_PASSWORD"): blockers.append("NEO4J_PASSWORD not set")
-    if not result["port_7688_open"]: blockers.append("Neo4j port 7688 closed")
-    if not result["port_8011_open"]: blockers.append("ObsidiaShell port 8011 closed")
-    if not blockers:
-        result["status"] = "GRAPHITI_LIVE_READONLY_PASS"
+        except Exception:
+            pass
+
+    neo4j_blockers = []
+    if not os.environ.get("NEO4J_PASSWORD"):
+        neo4j_blockers.append("NEO4J_PASSWORD not set")
+    if not result["port_7688_open"]:
+        neo4j_blockers.append("Neo4j port 7688 closed")
+
+    if not neo4j_blockers:
+        result["neo4j_status"] = "NEO4J_LIVE_READONLY_AVAILABLE"
     else:
+        result["neo4j_status"] = "NEO4J_BLOCKED"
+        result["neo4j_blocker"] = " | ".join(neo4j_blockers)
+
+    if result["port_8011_open"]:
+        result["v20_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+    else:
+        result["v20_status"] = "GRAPHITI_V20_FROZEN_UNAVAILABLE"
+
+    if result["neo4j_status"] == "NEO4J_LIVE_READONLY_AVAILABLE":
+        result["status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
+        result["effective_status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
+        result["live_neo4j_dependency"] = True
+    elif result["v20_status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS":
+        result["status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+        result["effective_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+        result["blocker"] = result["neo4j_blocker"]
+        result["live_neo4j_dependency"] = False
+    else:
+        result["status"] = "GRAPHITI_UNAVAILABLE"
+        result["effective_status"] = "GRAPHITI_UNAVAILABLE"
+        blockers = list(neo4j_blockers)
+        if not result["port_8011_open"]:
+            blockers.append("ObsidiaShell port 8011 closed")
         result["blocker"] = " | ".join(blockers)
-        result["run_command"] = "Set NEO4J_PASSWORD, start Neo4j, then: uvicorn obsidia_core.agent_bridge:app --host 127.0.0.1 --port 8011"
+        result["run_command"] = "Start ObsidiaShell Graphiti V20 on 8011 or set NEO4J_PASSWORD for live Neo4j."
     return result
+
+
+def _source_label_from_graphiti_probe(probe: dict[str, Any]) -> str:
+    """Return honest runtime source label from effective Graphiti status."""
+    status = str(probe.get("status") or probe.get("effective_status") or "")
+    if status == "GRAPHITI_NEO4J_LIVE_READONLY_PASS":
+        return "REAL_BRODY_GRAPHITI_NEO4J_LIVE_READONLY"
+    if status == "GRAPHITI_V20_FROZEN_READONLY_PASS":
+        return "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY"
+    return "REAL_BRODY_RUNTIME_NO_GRAPHITI"
 
 
 SOV: dict[str, Any] = {
@@ -77,7 +132,7 @@ def run_brody_real_response_pipeline(
     r["timestamp"] = datetime.now(timezone.utc).isoformat()
 
     r["graphiti_probe"] = _probe_graphiti()
-    graphiti_live = r["graphiti_probe"]["status"] == "GRAPHITI_LIVE_READONLY_PASS"
+    graphiti_live = r["graphiti_probe"]["status"] in ("GRAPHITI_NEO4J_LIVE_READONLY_PASS", "GRAPHITI_V20_FROZEN_READONLY_PASS")
 
     memory_query = message
     action_risk = False
@@ -94,7 +149,7 @@ def run_brody_real_response_pipeline(
 
     response_md = ""
     engine_used = False
-    source = "REAL_BRODY_RUNTIME_NO_GRAPHITI"
+    source = _source_label_from_graphiti_probe(r["graphiti_probe"])
     material_quality = ""
     selected_items: list = []
     tag_counts: dict = {}
@@ -141,7 +196,7 @@ def run_brody_real_response_pipeline(
                         response_md = terminal_result.get("response_text", str(terminal_result))
                 else:
                     response_md = str(terminal_result)
-                source = "REAL_BRODY_RUNTIME_NO_GRAPHITI"
+                source = _source_label_from_graphiti_probe(r["graphiti_probe"])
         except: pass
 
     if not response_md and _TERMINAL and hasattr(_TERMINAL, 'command_response'):

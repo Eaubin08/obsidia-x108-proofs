@@ -369,6 +369,116 @@ def _query_graphiti_frozen_http_ladder(queries: list[str], limit: int = 8) -> tu
 
 
 
+
+def _build_graphiti_v20_frozen_chain_result(
+    *,
+    graphiti_items: list[dict],
+    graphiti_effective_query: str | None,
+    graphiti_attempts: list[dict],
+    user_message: str,
+    query: str,
+    primary_query: str,
+    topic: str,
+    neo4j_reason: str,
+    max_items: int,
+    workspace: Path,
+) -> dict[str, Any]:
+    """Build a readonly memory chain result from Graphiti V20 frozen HTTP items."""
+    periphery = workspace / "periphery" / "brody_memory_readonly"
+    engine_mod = _import_module(
+        periphery / "local_response_engine_readonly" / "brody_local_response_engine_readonly_v1.py"
+    )
+
+    try:
+        if engine_mod:
+            engine_input = {
+                "context_packet": {
+                    "items": graphiti_items,
+                    "query": graphiti_effective_query or primary_query or query,
+                    "source": "GRAPHITI_V20_FROZEN_HTTP_PRIMARY",
+                    "results_count": len(graphiti_items),
+                    "readonly": True,
+                    "decision_authority": "KX108_ONLY",
+                    "memory_write": False,
+                    "graphiti_write": False,
+                    "kernel_mutation": False,
+                    "x108_mutation": False,
+                },
+                "query": graphiti_effective_query or primary_query or query,
+                "text": user_message,
+                "memory_write": False,
+                "graphiti_write": False,
+                "emits_act": False,
+                "kernel_mutation": False,
+                "x108_mutation": False,
+                "decision_authority": "KX108_ONLY",
+            }
+            engine_result = engine_mod.build_response(engine_input, max_items=max_items)
+            if isinstance(engine_result, dict):
+                response_md = engine_result.get("response_md", "")
+                material_quality = engine_result.get("material_quality", "PARTIAL_MATERIAL")
+                selected_items = engine_result.get("selected_items", graphiti_items[:max_items])
+                tag_counts = engine_result.get("tag_counts", {})
+                engine_used = True
+            else:
+                response_md = ""
+                material_quality = "PARTIAL_MATERIAL"
+                selected_items = graphiti_items[:max_items]
+                tag_counts = {}
+                engine_used = False
+        else:
+            response_md = ""
+            material_quality = "PARTIAL_MATERIAL"
+            selected_items = graphiti_items[:max_items]
+            tag_counts = {}
+            engine_used = False
+    except Exception:
+        response_md = ""
+        material_quality = "PARTIAL_MATERIAL"
+        selected_items = graphiti_items[:max_items]
+        tag_counts = {}
+        engine_used = False
+
+    chain_result_status = (
+        "BRODY_MEMORY_RESPONSE_CHAIN_PASS"
+        if (material_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL", "LOW_MATERIAL") and selected_items)
+        else "GRAPHITI_V20_FROZEN_HTTP_PARTIAL"
+    )
+
+    return {
+        "status": chain_result_status,
+        "source_mode": "GRAPHITI_V20_FROZEN_HTTP_PRIMARY",
+        "topic": topic,
+        "semantic_query": query,
+        "primary_query": primary_query,
+        "effective_query": graphiti_effective_query,
+        "attempted_queries": graphiti_attempts,
+        "graphiti_http_attempted_queries": graphiti_attempts,
+        "neo4j_status": neo4j_reason,
+        "graphiti_status": "GRAPHITI_V20_FROZEN_READONLY_PASS",
+        "graphiti_live": True,
+        "graphiti_v20_frozen_http": True,
+        "live_neo4j_dependency": False,
+        "query_module_used": False,
+        "query_results_count": 0,
+        "graphiti_http_results_count": len(graphiti_items),
+        "hydration_module_used": False,
+        "hydrated_excerpt_count": len([it for it in graphiti_items if it.get("excerpt")]),
+        "local_response_engine_used": engine_used,
+        "material_quality": material_quality,
+        "response_md": response_md,
+        "response_md_length": len(response_md),
+        "selected_items_count": len(selected_items),
+        "selected_items": selected_items[:3],
+        "tag_counts": tag_counts,
+        "final_answer_uses_response_md": bool(response_md and len(response_md) > 50),
+        "chain_source": "neo4j_unavailable→graphiti_v20_frozen_http→local_response_engine",
+        "note": f"Neo4j unavailable ({neo4j_reason}); used Graphiti V20 frozen HTTP readonly source before local JSONL fallback.",
+        "created_at": _now(),
+        **MEMORY_CHAIN_BOUNDARY,
+    }
+
+
 def build_memory_response_chain(
     user_message: str = "",
     semantic_query: str = "",
@@ -402,6 +512,29 @@ def build_memory_response_chain(
     # ── 1. Check Neo4j availability ───────────────────────────────────────
     neo4j_ok, neo4j_reason = _neo4j_available()
     if not neo4j_ok:
+        # ── GRAPHITI V20 FROZEN HTTP PRIMARY FALLBACK ────────────────────
+        # F17B: When Neo4j credentials are missing/unavailable, do not jump
+        # directly to the flat local JSONL index. First try the validated
+        # Graphiti V20 frozen readonly sidecar on 8011 (no live Neo4j dependency).
+        graphiti_http_queries = [primary_q] + list(fallback_qs[:4]) + [query, user_message]
+        graphiti_items, graphiti_effective_query, graphiti_attempts = _query_graphiti_frozen_http_ladder(
+            graphiti_http_queries,
+            limit=limit,
+        )
+        if graphiti_items:
+            return _build_graphiti_v20_frozen_chain_result(
+                graphiti_items=graphiti_items,
+                graphiti_effective_query=graphiti_effective_query,
+                graphiti_attempts=graphiti_attempts,
+                user_message=user_message,
+                query=query,
+                primary_query=primary_q,
+                topic=topic,
+                neo4j_reason=neo4j_reason,
+                max_items=max_items,
+                workspace=workspace,
+            )
+
         # ── LOCAL INDEX FALLBACK ──────────────────────────────────────────
         records = _load_local_graphiti_index(workspace)
         if not records:

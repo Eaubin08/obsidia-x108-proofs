@@ -57,14 +57,27 @@ def _load_all():
 
 def _probe_graphiti() -> dict[str, Any]:
     result = {
-        "status": "GRAPHITI_LIVE_BLOCKED",
+        "status": "GRAPHITI_UNAVAILABLE",
+        "effective_status": "GRAPHITI_UNAVAILABLE",
         "neo4j_uri_set": bool(os.environ.get("NEO4J_URI")),
         "neo4j_password_set": bool(os.environ.get("NEO4J_PASSWORD")),
+        "neo4j_status": "NEO4J_UNKNOWN",
+        "v20_status": "GRAPHITI_V20_UNKNOWN",
         "port_7688_open": False,
         "port_8011_open": False,
         "driver_installed": False,
         "blocker": "",
+        "neo4j_blocker": "",
         "run_command": "",
+        "live_neo4j_dependency": False,
+        "readonly": True,
+        "decision_authority": "KX108_ONLY",
+        "graphiti_write": False,
+        "memory_write": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
     }
     try:
         import neo4j
@@ -79,24 +92,45 @@ def _probe_graphiti() -> dict[str, Any]:
             s.connect(('127.0.0.1', port))
             s.close()
             result[key] = True
-        except:
+        except Exception:
             pass
 
-    blockers: list[str] = []
+    neo4j_blockers: list[str] = []
     if not result["neo4j_uri_set"]:
-        blockers.append("NEO4J_URI not set")
+        neo4j_blockers.append("NEO4J_URI not set")
     if not result["neo4j_password_set"]:
-        blockers.append("NEO4J_PASSWORD not set")
+        neo4j_blockers.append("NEO4J_PASSWORD not set")
     if not result["port_7688_open"]:
-        blockers.append("Neo4j port 7688 closed")
-    if not result["port_8011_open"]:
-        blockers.append("ObsidiaShell port 8011 closed")
+        neo4j_blockers.append("Neo4j port 7688 closed")
 
-    if not blockers:
-        result["status"] = "GRAPHITI_LIVE_READONLY_PASS"
+    if not neo4j_blockers:
+        result["neo4j_status"] = "NEO4J_LIVE_READONLY_AVAILABLE"
     else:
+        result["neo4j_status"] = "NEO4J_BLOCKED"
+        result["neo4j_blocker"] = " | ".join(neo4j_blockers)
+
+    if result["port_8011_open"]:
+        result["v20_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+    else:
+        result["v20_status"] = "GRAPHITI_V20_FROZEN_UNAVAILABLE"
+
+    if result["neo4j_status"] == "NEO4J_LIVE_READONLY_AVAILABLE":
+        result["status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
+        result["effective_status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
+        result["live_neo4j_dependency"] = True
+    elif result["v20_status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS":
+        result["status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+        result["effective_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
+        result["blocker"] = result["neo4j_blocker"]
+        result["live_neo4j_dependency"] = False
+    else:
+        result["status"] = "GRAPHITI_UNAVAILABLE"
+        result["effective_status"] = "GRAPHITI_UNAVAILABLE"
+        blockers = list(neo4j_blockers)
+        if not result["port_8011_open"]:
+            blockers.append("ObsidiaShell port 8011 closed")
         result["blocker"] = " | ".join(blockers)
-        result["run_command"] = "Set NEO4J_URI/NEO4J_PASSWORD env vars and start Neo4j, then: uvicorn obsidia_core.agent_bridge:app --host 127.0.0.1 --port 8011"
+        result["run_command"] = "Start ObsidiaShell Graphiti V20 on 8011 or set NEO4J credentials for live Neo4j."
 
     return result
 
