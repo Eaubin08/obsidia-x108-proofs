@@ -53,19 +53,29 @@ def _has_any_word(low: str, terms: tuple[str, ...]) -> bool:
 
 
 def _negated_near(low: str, verbs: tuple[str, ...]) -> bool:
-    negators = (
-        "sans ", "ne pas ", "n' ", "n’ ", "no ", "without ",
-        "pas de ", "aucune ", "aucun ", "non "
-    )
-    for verb in verbs:
-        idx = low.find(verb)
-        if idx < 0:
-            continue
-        window = low[max(0, idx - 32):idx + len(verb) + 32]
-        if any(n in window for n in negators):
-            return True
-    return False
+    """Detect real negation immediately before a verb.
 
+    Important:
+    - Must catch: "sans écrire", "n'écris rien", "ne rien écrire", "do not write".
+    - Must NOT treat the "n " inside words/fragments like "en mémoire" as negation.
+    """
+    for verb in verbs:
+        for match in re.finditer(r"\b" + re.escape(verb) + r"\b", low):
+            idx = match.start()
+            prefix = low[max(0, idx - 48):idx]
+            suffix = low[match.end():match.end() + 36]
+
+            if re.search(r"(sans|ne pas|ne rien|no|without|do not)\s*$", prefix):
+                return True
+
+            if re.search(r"(n['’])\s*$", prefix):
+                return True
+
+            # English post-negation pattern: "write nothing", "write no memory".
+            if re.match(r"\s+(nothing|no\s+memory|no\s+graphiti)", suffix):
+                return True
+
+    return False
 
 def has_negated_mutation(text: str) -> bool:
     low = _fold(text)
@@ -86,48 +96,15 @@ def has_negated_action(text: str) -> bool:
 def has_memory_write_request(text: str) -> bool:
     low = _fold(text)
 
-    # Explicit write-boundary labels / direct operator probes win before negation filters.
-    early_write_boundary_markers = (
-        "domain_raccord_write_boundary",
-        "memory_write_canon_freeze",
-        "write graphiti",
-        "write memory",
-        "write canon",
-        "graphiti memory",
-        "memory + canon",
-        "graphiti canon",
-        "memoire graphiti",
-        "mémoire graphiti",
-        "canonise ce bloc",
-        "canonise",
-        "canoniser",
-        "canonicalize",
-        "canonicalise",
-    )
-    if _has_any(low, early_write_boundary_markers):
-        return True
-    write_terms = (
-        "ecris", "ecrit", "ecrire", "write", "inscris", "enregistre", "sauvegarde",
-        "save", "store", "canonise", "canoniser", "canonicalise", "canonicalize",
-        "promote", "promotion", "freeze", "valide", "valider"
-    )
-    memory_terms = (
-        "memoire", "memory", "graphiti", "neo4j", "canon", "canonical",
-        "canonicalise", "canonicalize", "promotion", "freeze"
-    )
-    # Negated write form ("sans écrire", "sans y écrire") is NOT a write request.
-    if _negated_near(low, write_terms):
-        return False
-
+    # Direct operator labels / explicit canon-write probes.
     direct_write_boundary_markers = (
         "domain_raccord_write_boundary",
         "memory_write_canon_freeze",
         "write graphiti",
         "write memory",
         "write canon",
-        "graphiti memory",
+        "graphiti memory update",
         "memory + canon",
-        "memoire graphiti",
         "graphiti canon",
         "canonise ce bloc",
         "canonise",
@@ -138,9 +115,68 @@ def has_memory_write_request(text: str) -> bool:
     if _has_any(low, direct_write_boundary_markers):
         return True
 
-    # Use word-boundary matching for write_terms: "decris" must NOT match "ecris".
-    return _has_any_word(low, write_terms) and _has_any(low, memory_terms)
+    write_terms = (
+        "ecris", "ecrit", "ecrire", "write", "inscris", "enregistre", "sauvegarde",
+        "save", "store", "valide", "valider", "promote", "promotion", "freeze",
+    )
+    create_terms = (
+        "cree", "creer", "create", "add", "ajoute", "ajouter",
+        "mets", "mettre", "update", "nouveau noeud", "new node",
+    )
+    canon_terms = (
+        "canonise", "canoniser", "canonicalise", "canonicalize",
+    )
+    memory_terms = (
+        "memoire", "memory", "graphiti", "neo4j", "canon", "canonical",
+        "canonicalise", "canonicalize", "promotion", "freeze", "node", "noeud", "nœud",
+    )
 
+    # Explicit creation/mutation of Graphiti/Neo4j/memory/canon is a write boundary.
+    if _has_any_word(low, create_terms) and _has_any(low, memory_terms):
+        return True
+
+    if _has_any_word(low, canon_terms):
+        return True
+
+    # Negated write form is NOT a write request:
+    # "sans écrire", "n'écris rien", "n’écris rien en mémoire".
+    if (
+        _negated_near(low, write_terms + create_terms + canon_terms)
+        or _has_any(low, (
+            "sans ecrire", "sans écrire",
+            "n'ecris rien", "n’écris rien",
+            "ne rien ecrire", "ne rien écrire",
+            "without writing", "do not write",
+        ))
+    ):
+        return False
+
+    # READ/WRITE as a diagnostic phrase is mention-only, not a write command.
+    read_write_mentions = (
+        "read/write", "read write", "lecture/ecriture", "lecture/écriture",
+        "confusion read/write", "confusion lecture/ecriture",
+    )
+    if _has_any(low, read_write_mentions) and not _has_any(low, (
+        "write memory", "write graphiti", "write canon",
+        "ecris", "ecrire", "inscris", "enregistre", "sauvegarde",
+        "cree", "creer", "ajoute", "mets", "canonise",
+    )):
+        return False
+
+    # Readonly descriptions mentioning memory/Graphiti must not become writes.
+    readonly_markers = (
+        "lecture seule", "readonly", "read only", "decris", "décris",
+        "decrire", "décrire", "explique", "describe", "explain",
+    )
+    if _has_any(low, readonly_markers) and not _has_any(low, (
+        "quand meme", "quand même", "malgre", "malgré",
+        "ecris quand meme", "écris quand même",
+        "write anyway", "force write",
+    )):
+        if not _has_any_word(low, create_terms + canon_terms):
+            return False
+
+    return _has_any_word(low, write_terms) and _has_any(low, memory_terms)
 
 def has_code_debug_request(text: str) -> bool:
     low = _fold(text)
@@ -153,8 +189,31 @@ def has_code_debug_request(text: str) -> bool:
 def has_architecture_question(text: str) -> bool:
     low = _fold(text)
     arch_terms = ("os trad", "ir", "reverse", "graphiti", "memoire", "memory", "contrat", "contracts", "34 arbres", "arbres")
-    explain_terms = ("explique", "comment", "aident", "architecture", "pipeline", "raccord")
+    explain_terms = ("explique", "comment", "aident", "architecture", "pipeline", "raccord", "jarvis", "copilote")
     return _has_any(low, arch_terms) and _has_any(low, explain_terms)
+
+
+def has_authority_question(text: str) -> bool:
+    low = _fold(text)
+    authority_terms = (
+        "qui decide", "qui décide", "qui est decisionnaire", "qui est décisionnaire",
+        "qui a autorite", "qui a autorité", "qui autorise", "qui tranche",
+        "who decides", "who has authority", "decision authority",
+        "peut decider", "peut décider", "peut-il decider", "peut-il décider",
+        "brody peut decider", "brody peut décider",
+        "decider a la place", "décider à la place",
+        "a la place de x108", "à la place de x108",
+        "remplacer x108", "override x108",
+    )
+    return _has_any(low, authority_terms)
+
+def _is_jarvis_readonly_request(text: str) -> bool:
+    low = _fold(text)
+    return _has_any(low, (
+        "jarvis", "copilote jarvis", "copilote readonly", "mode jarvis",
+        "etat systeme", "état système", "etat runtime", "état runtime",
+        "dashboard runtime", "lecture seule", "readonly",
+    ))
 
 
 def has_boundary_preserving_instruction(text: str) -> bool:
@@ -223,23 +282,39 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
             "Brody peut guider le diagnostic, pas modifier le kernel."
         )
 
-    if "RUNTIME_STATE_READONLY" in domains:
+    if "AUTHORITY_DECISION_EXPLANATION" in domains:
         parts.append(
-            "Lecture de l'état runtime en cours (readonly) : modules actifs, mémoire candidate, "
-            "Graphiti V20 gelé, IR Candidate, Reverse OS, Thermo, Gencoin, Dashboard runtime. "
-            "Ce rapport est advisory uniquement — KX108_ONLY, aucune action, aucune écriture, "
-            "aucune mutation kernel. write_boundary_required=false."
+            "KX108 décide. Brody ne décide pas. Graphiti ne décide pas. Reverse OS ne décide pas. "
+            "Thermo ne décide pas. Gencoin ne décide pas. "
+            "Brody lit, structure, projette et explique en readonly ; l'autorité d'action reste KX108/humain."
         )
 
-    if "ARCHITECTURE_EXPLANATION" in domains:
+    runtime_state = "RUNTIME_STATE_READONLY" in domains
+    architecture = "ARCHITECTURE_EXPLANATION" in domains
+    jarvis_mode = _is_jarvis_readonly_request(text)
+
+    if runtime_state and architecture:
+        prefix = "Mode Jarvis readonly : " if jarvis_mode else "État système readonly : "
         parts.append(
-            "Lecture architecture : OS Trad transforme l'intention utilisateur en unités structurées ; "
-            "IR Candidate stabilise ces unités en candidat vérifiable ; "
-            "Reverse OS reprojette le candidat vers une réponse compréhensible ; "
-            "Graphiti/mémoire apportent du contexte readonly ; "
-            "les contrats et la permission matrix bornent ce que Brody peut dire ou préparer ; "
-            "les 34 arbres servent de filtres cognitifs et de repères d'activation. "
-            "Tout cela aide Brody à répondre mieux sans remplacer X108."
+            prefix
+            + "Brody observe le runtime sans écrire. Graphiti V20 est gelé en lecture seule ; "
+            "Neo4j est consulté en readonly ; OS Trad lit l'intention ; IR Candidate la stabilise ; "
+            "Reverse OS la rend lisible ; Thermo mesure la cohérence temporelle ; "
+            "Gencoin projette une valeur cognitive non monétaire ; le Dashboard F2→F20 expose les preuves. "
+            "Autorité : KX108_ONLY. Aucune décision, aucune écriture, aucune mutation."
+        )
+    elif runtime_state:
+        parts.append(
+            "État runtime readonly : modules actifs, mémoire candidate, Graphiti V20 gelé, "
+            "IR Candidate, Reverse OS, Thermo, Gencoin et Dashboard runtime sont lisibles sans écriture. "
+            "Autorité : KX108_ONLY. write_boundary_required=false."
+        )
+    elif architecture:
+        parts.append(
+            "Architecture readonly : OS Trad traduit l'intention ; IR Candidate stabilise ; "
+            "Reverse OS reprojette en langage humain ; Graphiti enrichit en contexte ; "
+            "les contrats bornent Brody ; les 34 arbres orientent la lecture. "
+            "Brody explique la structure, mais ne remplace jamais KX108."
         )
 
     if "MEMORY_WRITE_CANON_FREEZE" in domains:
@@ -332,6 +407,9 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     if has_architecture_question(text):
         domains.append("ARCHITECTURE_EXPLANATION")
 
+    if has_authority_question(text):
+        domains.append("AUTHORITY_DECISION_EXPLANATION")
+
     if _has_any(low, ("friction", "saoule", "perdu", "bloque", "bug", "faille", "raccord manque")):
         if "CODE_DEBUG_GUIDANCE" not in domains:
             domains.append("FRICTION")
@@ -378,6 +456,8 @@ def build_domain_raccord_snapshot(user_message: str, context: dict[str, Any] | N
     mode = "DOMAIN_RACCORD"
     if boundary_required:
         mode = "DOMAIN_RACCORD_BOUNDARY"
+    elif "AUTHORITY_DECISION_EXPLANATION" in domains:
+        mode = "DOMAIN_RACCORD_AUTHORITY"
     elif "RUNTIME_STATE_READONLY" in domains:
         mode = "DOMAIN_RACCORD_READONLY_STATE"
     elif "CODE_DEBUG_GUIDANCE" in domains:

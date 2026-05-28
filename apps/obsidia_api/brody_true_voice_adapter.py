@@ -239,17 +239,18 @@ def build_true_brody_answer(
         item_count = project.get("local_index_item_count", project.get("graphiti_index_item_count", 0))
         tags = project.get("top_context_tags", project.get("top_context_items", []))
         tags_str = ", ".join(tags[:5]) if tags else ""
-        
+        memory_prefix = "\n\n" if answer_parts else ""
+
         if fr:
             if item_count > 0:
                 answer_parts.append(
-                    f"Je dispose de mémoire projet locale "
+                    f"{memory_prefix}Je dispose de mémoire projet locale "
                     f"({item_count} items indexés Graphiti. "
                     f"Tags dominants : {tags_str or 'contexte Obsidia'}). "
                 )
             else:
                 answer_parts.append(
-                    "La mémoire projet est accessible en structure "
+                    f"{memory_prefix}La mémoire projet est accessible en structure "
                     "mais le matériel textuel n'est pas encore chargé. "
                 )
         else:

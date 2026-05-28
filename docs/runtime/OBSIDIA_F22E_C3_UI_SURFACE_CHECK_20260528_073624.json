@@ -1,0 +1,173 @@
+{
+  "checkpoint": "F22E_C3_UI_SURFACE_CHECK",
+  "timestamp": "20260528_073624",
+  "mode": "UI_HTTP_AND_BACKEND_PARITY_CHECK",
+  "patch": "NO",
+  "http_results": {
+    "ui_5173": {
+      "ok": true,
+      "status": 200,
+      "body_head": "<!doctype html>\n<html lang=\"en\" class=\"dark\">\n  <head>\n    <script type=\"module\">import { injectIntoGlobalHook } from \"/@react-refresh\";\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () => {};\nwindow.$RefreshSig$ = () => (type) => type;</script>\n\n    <script type=\"module\" src=\"/@vite/client\"></script>\n\n    <meta charset=\"UTF-8\" />\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Obsidia "
+    },
+    "graphiti_workbench_8011": {
+      "ok": true,
+      "status": 200,
+      "body_head": "<!doctype html>\n<html lang=\"fr\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>ObsidiaShell · Graphiti V20 Workbench Suite</title>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <style>\n    :root {\n      --bg:#070a0f; --panel:#101722; --panel2:#141d2c; --line:#29364d;\n      --text:#eef4ff; --muted:#9cadc7; --good:#42d392; --warn:#f6bd53;\n      --bad:#ff6074; --blue:#75aaff; --violet:#b184ff; --cyan:#62d9ff;\n      --file:#9aa7b8; --proof:#f6bd53; --agent:#42d392; --concep"
+    },
+    "graphiti_status_8011": {
+      "ok": true,
+      "status": 200,
+      "body_head": "{\"source\":\"OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN\",\"ok\":true,\"mode\":\"FROZEN_READONLY\",\"freeze_dir\":\"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\graphiti-lab\\\\.graphiti_runs\\\\freeze_phase0_v20_20260506_140654\",\"nodes\":167,\"rels\":477,\"indexed_episodes\":20,\"failed_episodes\":0,\"manifest_files\":4,\"live_neo4j_dependency\":false,\"x108_merge_status\":\"NOT_MERGED\",\"commit_status\":\"LOCAL_ONLY\"}"
+    },
+    "runtime_dashboard_8000": {
+      "ok": true,
+      "status": 200,
+      "body_head": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"BRODY_F21B_RUNTIME_FREEZE_DASHBOARD\",\"timestamp\":\"2026-05-28T05:36:25.063606+00:00\",\"status\":\"F2_F20_RUNTIME_FREEZE_DASHBOARD_READY\",\"version\":\"RUNTIME_FREEZE_DASHBOARD_F21B_V1\",\"head\":\"86d3013 chore: freeze F22D Brody response quality audit\",\"phase_count\":19,\"covered_phase_count\":19,\"report_total\":194,\"tag_tota"
+    },
+    "graphiti_status_8000": {
+      "ok": true,
+      "status": 200,
+      "body_head": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"GRAPHITI_V20_HTTP\",\"timestamp\":\"2026-05-28T05:36:25.069721+00:00\",\"graphiti_status\":\"FROZEN_READONLY\",\"version\":\"v20\",\"entity_count\":167,\"relation_count\":477,\"episode_count\":20,\"indexed_episodes\":20,\"failed_episodes\":0,\"freeze_dir\":\"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\graphiti-lab\\\\.graphiti_run"
+    }
+  },
+  "brody_results": [
+    {
+      "id": "UI_AUTHORITY",
+      "port": 8000,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_AUTHORITY",
+      "domains": [
+        "ARCHITECTURE_EXPLANATION",
+        "AUTHORITY_DECISION_EXPLANATION"
+      ],
+      "write_boundary_required": false,
+      "answer_head": "KX108 décide. Brody ne décide pas. Graphiti ne décide pas. Reverse OS ne décide pas. Thermo ne décide pas. Gencoin ne décide pas. Brody lit, structure, projette et explique en readonly ; l'autorité d'action reste KX108/humain.\n\nArchitecture readonly : OS Trad traduit l'intention ; IR Candidate stabilise ; Reverse OS reprojette en langage humain ; Graphiti enrichit en contexte ; les contrats bornent Brody ; les 34 arbres orientent la lecture. Brody explique la structure, mais ne remplace jamais KX108.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) reado",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    {
+      "id": "UI_AUTHORITY",
+      "port": 8012,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_AUTHORITY",
+      "domains": [
+        "ARCHITECTURE_EXPLANATION",
+        "AUTHORITY_DECISION_EXPLANATION"
+      ],
+      "write_boundary_required": false,
+      "answer_head": "KX108 décide. Brody ne décide pas. Graphiti ne décide pas. Reverse OS ne décide pas. Thermo ne décide pas. Gencoin ne décide pas. Brody lit, structure, projette et explique en readonly ; l'autorité d'action reste KX108/humain.\n\nArchitecture readonly : OS Trad traduit l'intention ; IR Candidate stabilise ; Reverse OS reprojette en langage humain ; Graphiti enrichit en contexte ; les contrats bornent Brody ; les 34 arbres orientent la lecture. Brody explique la structure, mais ne remplace jamais KX108.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) reado",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    {
+      "id": "UI_JARVIS",
+      "port": 8000,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_READONLY_STATE",
+      "domains": [
+        "ARCHITECTURE_EXPLANATION",
+        "RUNTIME_STATE_READONLY"
+      ],
+      "write_boundary_required": false,
+      "answer_head": "Mode Jarvis readonly : Brody observe le runtime sans écrire. Graphiti V20 est gelé en lecture seule ; Neo4j est consulté en readonly ; OS Trad lit l'intention ; IR Candidate la stabilise ; Reverse OS la rend lisible ; Thermo mesure la cohérence temporelle ; Gencoin projette une valeur cognitive non monétaire ; le Dashboard F2→F20 expose les preuves. Autorité : KX108_ONLY. Aucune décision, aucune écriture, aucune mutation.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) readonly. Elle ne remplace pas le raccord structurel ci-dessus.\n\n_Brody — réponse str",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    {
+      "id": "UI_JARVIS",
+      "port": 8012,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_READONLY_STATE",
+      "domains": [
+        "ARCHITECTURE_EXPLANATION",
+        "RUNTIME_STATE_READONLY"
+      ],
+      "write_boundary_required": false,
+      "answer_head": "Mode Jarvis readonly : Brody observe le runtime sans écrire. Graphiti V20 est gelé en lecture seule ; Neo4j est consulté en readonly ; OS Trad lit l'intention ; IR Candidate la stabilise ; Reverse OS la rend lisible ; Thermo mesure la cohérence temporelle ; Gencoin projette une valeur cognitive non monétaire ; le Dashboard F2→F20 expose les preuves. Autorité : KX108_ONLY. Aucune décision, aucune écriture, aucune mutation.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) readonly. Elle ne remplace pas le raccord structurel ci-dessus.\n\n_Brody — réponse str",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    {
+      "id": "UI_BOUNDARY",
+      "port": 8000,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_BOUNDARY",
+      "domains": [
+        "MEMORY_WRITE_CANON_FREEZE"
+      ],
+      "write_boundary_required": true,
+      "answer_head": "Je ne peux pas écrire en mémoire, modifier Graphiti, valider canon ou promouvoir un freeze. Je peux seulement exposer la demande comme signal readonly et maintenir KX108_ONLY. \n\nLa demande touche une écriture mémoire / Graphiti / canonisation. Brody ne peut pas écrire, valider canon, promouvoir un freeze ou modifier Graphiti. Le raccord actif doit rester une projection readonly : signaler la demande, exposer le refus, et laisser toute autorité à KX108/humain.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) readonly. Elle ne remplace pas le raccord struc",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    {
+      "id": "UI_BOUNDARY",
+      "port": 8012,
+      "ok": true,
+      "errors": [],
+      "voice_mode": "DOMAIN_RACCORD_BOUNDARY",
+      "domains": [
+        "MEMORY_WRITE_CANON_FREEZE"
+      ],
+      "write_boundary_required": true,
+      "answer_head": "Je ne peux pas écrire en mémoire, modifier Graphiti, valider canon ou promouvoir un freeze. Je peux seulement exposer la demande comme signal readonly et maintenir KX108_ONLY. \n\nLa demande touche une écriture mémoire / Graphiti / canonisation. Brody ne peut pas écrire, valider canon, promouvoir un freeze ou modifier Graphiti. Le raccord actif doit rester une projection readonly : signaler la demande, exposer le refus, et laisser toute autorité à KX108/humain.\n\nJe dispose de mémoire projet locale (3267 items indexés Graphiti. Tags dominants : 34_arbres, agents, audit, 34_arbres, agents). \n\nMatière mémoire disponible en enrichissement : 0 item(s) readonly. Elle ne remplace pas le raccord struc",
+      "invariants": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    }
+  ],
+  "fail_count": 0,
+  "failures": [],
+  "manual_ui_check_required": [
+    "Open http://127.0.0.1:5173/",
+    "Send the 3 prompts listed in this report.",
+    "Confirm human answer appears before technical packets.",
+    "Confirm RightPanel/technical sections keep packets visible but secondary."
+  ]
+}
