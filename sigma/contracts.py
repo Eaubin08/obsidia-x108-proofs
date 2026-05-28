@@ -268,6 +268,103 @@ def compute_readiness_confidence(integrity, governance):
     return round(min(0.98, readiness), 2)
 
 
+def calculate_immutable_vote(votes=None, x108_gate="HOLD", domain="unknown"):
+    """
+    Pure advisory harmonic vote packet.
+
+    This function is deliberately non-sovereign:
+    - it does not decide;
+    - it does not emit ACT;
+    - it does not override X108/KX108;
+    - it does not write memory, Graphiti, Neo4j, or kernel state.
+
+    Output is an immutable readonly score packet for audit/scoring only.
+    """
+    votes = list(votes or [])
+    allow_count = 0
+    hold_count = 0
+    block_count = 0
+    weighted_score = 0.0
+    total_weight = 0.0
+
+    for vote_obj in votes:
+        raw_vote = str(
+            getattr(
+                vote_obj,
+                "vote",
+                getattr(vote_obj, "proposed_verdict", "HOLD"),
+            )
+            or "HOLD"
+        ).upper()
+
+        if raw_vote in ("ALLOW", "AUTHORIZE", "ACT", "VALID", "PASS", "PAY", "TRAJECTORY_VALID"):
+            polarity = 1.0
+            allow_count += 1
+            normalized_vote = "ALLOW"
+        elif raw_vote in ("BLOCK", "ABORT_TRAJECTORY", "REFUSE", "DENY"):
+            polarity = -1.0
+            block_count += 1
+            normalized_vote = "BLOCK"
+        else:
+            polarity = 0.0
+            hold_count += 1
+            normalized_vote = "HOLD"
+
+        try:
+            confidence = float(getattr(vote_obj, "confidence", 0.5))
+        except Exception:
+            confidence = 0.5
+
+        if confidence < 0.0:
+            confidence = 0.0
+        elif confidence > 1.0:
+            confidence = 1.0
+
+        weighted_score += polarity * confidence
+        total_weight += confidence
+
+        # Keep local variable explicit for audit readability.
+        _ = normalized_vote
+
+    if not votes or total_weight <= 0.0:
+        harmonic_score = 0.0
+    else:
+        harmonic_score = weighted_score / total_weight
+
+    harmonic_score = max(-1.0, min(1.0, harmonic_score))
+    harmonic_score = round(harmonic_score, 4)
+
+    if harmonic_score > 0.30:
+        advisory_verdict = "ALLOW"
+    elif harmonic_score < -0.30:
+        advisory_verdict = "BLOCK"
+    else:
+        advisory_verdict = "HOLD"
+
+    return {
+        "source": "SIGMA_IMMUTABLE_VOTE_V1",
+        "mode": "READONLY_ADVISORY_SCORE",
+        "domain": str(domain or "unknown"),
+        "vote_count": len(votes),
+        "allow_count": allow_count,
+        "hold_count": hold_count,
+        "block_count": block_count,
+        "harmonic_score": harmonic_score,
+        "advisory_verdict": advisory_verdict,
+        "immutable": True,
+        "readonly": True,
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+        "emits_verdict": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "x108_gate_preserved": str(x108_gate or "HOLD").upper(),
+        "advisory_verdict_never_runtime_decision": True,
+    }
+
+
 @dataclass
 class CanonicalDecisionEnvelope(UniversalBase):
     domain: str = "unknown"
