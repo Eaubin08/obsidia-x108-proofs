@@ -9,6 +9,8 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from apps.obsidia_api.safe_response import safe_backend_response
+from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
+from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context
 from sigma.evaluate import evaluate_sigma_domain
 from periphery.common import ActionCandidate, PeripheralSignalPacket
 
@@ -1002,5 +1004,78 @@ async def sigma_evaluate(payload: SigmaEvaluatePayload):
         "kernel_mutation": False,
         "x108_mutation": False,
         "runtime_execute": False,
+        "decision_authority": "KX108_ONLY",
+    }, source="REAL_BACKEND")
+
+
+class GovernedOperatorRuntimePayload(BaseModel):
+    runtime_id: str = "governed-operator-runtime"
+    domain: str = "general"
+    sigma_payload: dict[str, Any] = Field(default_factory=dict)
+    tree_signal_id: str = "governed-tree-signal"
+    activations: list[float] = Field(default_factory=list)
+    theta: float = 0.15
+
+
+@router.post("/operator/governed-runtime")
+async def periphery_governed_operator_runtime(body: GovernedOperatorRuntimePayload):
+    """
+    F28.2 governed operator runtime.
+
+    Aggregates existing readonly packets:
+    - domain_sigma_envelope
+    - tree_signal_packet
+    - operator_view_packet
+    - runtime_context
+
+    No ACT.
+    No verdict.
+    No memory/Graphiti/Neo4j write.
+    No kernel/X108 mutation.
+    Decision authority remains KX108_ONLY.
+    """
+    domain_sigma_envelope = evaluate_sigma_domain(body.domain, body.sigma_payload)
+
+    tree_signal_packet = build_tree_signal_packet(
+        body.tree_signal_id,
+        body.activations,
+        theta=body.theta,
+        domain_sigma_envelope=domain_sigma_envelope,
+    ).to_dict()
+
+    operator_view_packet = build_operator_view_packet(
+        domain_sigma_envelope=domain_sigma_envelope,
+        tree_signal_packet=tree_signal_packet,
+    )
+
+    runtime_context = build_runtime_context(
+        domain_sigma_envelope_snapshot=domain_sigma_envelope,
+        tree_signal_packet_snapshot=tree_signal_packet,
+        brody_full_context=operator_view_packet,
+    )
+
+    return safe_backend_response({
+        "version": "GOVERNED_OPERATOR_RUNTIME_V1",
+        "mode": "READONLY_GOVERNED_OPERATOR_RUNTIME",
+        "runtime_id": body.runtime_id,
+        "domain_sigma_envelope": domain_sigma_envelope,
+        "tree_signal_packet": tree_signal_packet,
+        "operator_view_packet": operator_view_packet,
+        "runtime_context": runtime_context,
+        "domain_sigma_attached": True,
+        "tree_signal_attached": True,
+        "operator_runtime_attached": True,
+        "readonly": True,
+        "advisory_only": True,
+        "context_signal_only": True,
+        "can_decide": False,
+        "can_emit_act": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
         "decision_authority": "KX108_ONLY",
     }, source="REAL_BACKEND")

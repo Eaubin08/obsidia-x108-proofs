@@ -46,6 +46,7 @@ def build_runtime_context(
     temporal_context_snapshot: dict[str, Any] | None = None,
     cognitive_modules_snapshot: dict[str, Any] | None = None,
     domain_sigma_envelope_snapshot: dict[str, Any] | None = None,
+    tree_signal_packet_snapshot: dict[str, Any] | None = None,
     brody_full_context: dict[str, Any] | None = None,
     true_voice_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -65,6 +66,7 @@ def build_runtime_context(
     cog = cognitive_modules_snapshot or {}
     tv = true_voice_snapshot or {}
     dse = domain_sigma_envelope_snapshot or {}
+    tsp = tree_signal_packet_snapshot or {}
     auth = authority_snapshot or {}
     sem = semantic_query_snapshot or {}
 
@@ -85,6 +87,7 @@ def build_runtime_context(
         "temporal_context_snapshot": temporal,
         "cognitive_modules_snapshot": cog,
         "domain_sigma_envelope_snapshot": dse,
+        "tree_signal_packet_snapshot": tsp,
         "brody_full_context": brody_full_context or {},
         "true_voice_snapshot": tv,
         # — Derived summaries ———————————————————————————————————————————
@@ -101,6 +104,10 @@ def build_runtime_context(
         "domain_sigma_domain": dse.get("domain", "UNKNOWN"),
         "domain_sigma_gate": dse.get("x108_gate", "UNKNOWN"),
         "domain_sigma_authority": dse.get("decision_authority", "UNKNOWN"),
+        "tree_signal_ready": bool(tsp),
+        "tree_signal_version": tsp.get("version", "UNKNOWN"),
+        "tree_signal_dominant_count": tsp.get("dominant_count", 0),
+        "tree_signal_patterns": tsp.get("patterns_detected", []),
         "voice_source": tv.get("voice_source", "UNKNOWN"),
         "topic": sem.get("topic", "GENERAL"),
         "request_type": auth.get("request_type", "INFORMATION_REQUEST"),
