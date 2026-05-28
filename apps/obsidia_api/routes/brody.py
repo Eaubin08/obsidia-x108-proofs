@@ -469,6 +469,7 @@ async def brody_chat(req: BrodyChatRequest):
         "true_response_structure_snapshot": brody_full_context.get("true_response_structure_snapshot", {}),
         "brody_full_context": brody_full_context,
         "true_voice_snapshot": true_voice_snapshot,
+        "adaptive_response_policy": _tvs_pol,
         "candidate_memory_snapshot": cand_snap,
         "operator_loop_snapshot": oploop_snap,
         "tree_policy_snapshot": trees_snap,
