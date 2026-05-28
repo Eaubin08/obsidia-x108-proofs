@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import hashlib
 import json
 import os
@@ -6,19 +6,28 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+MANUAL_NEO4J_WRITE_ENV = "OBSIDIA_ALLOW_MANUAL_NEO4J_WRITE"
+MANUAL_NEO4J_WRITE_CONFIRMATION = "KX108_MANUAL_REVIEW_GRAPH_WRITE_OK"
+
 BOUNDARY = {
     "readonly": True,
+    "runtime_readonly": True,
+    "manual_write_surface": True,
+    "manual_operator_required": True,
+    "manual_write_guard_required": True,
     "memory_authority": False,
     "memory_decision": False,
     "allowed_to_decide": False,
     "emits_act": False,
+    "emits_verdict": False,
+    "runtime_execute": False,
     "kernel_binding": False,
     "x108_runtime_binding": False,
     "x108_merge": False,
     "kernel_mutation": False,
     "x108_mutation": False,
     "decision_authority": "KX108_ONLY",
-    "scope": "BRODY_NEO4J_GUIDE_BRIDGE_READONLY_ONLY",
+    "scope": "BRODY_NEO4J_GUIDE_BRIDGE_MANUAL_WRITE_SURFACE_GUARDED",
 }
 
 def sha256_file(path: Path) -> str:
@@ -92,6 +101,28 @@ def stable_id(record, i):
     raw = json.dumps(record, sort_keys=True, ensure_ascii=False)
     return "BRODY_NEO4J_DOC_" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16].upper()
 
+def require_manual_neo4j_write_confirmation(confirm_manual_write: str | None = None):
+    """
+    Hard guard for the only write-capable path in this file.
+
+    This module is not a runtime route and must never be called by Brody,
+    Graphiti, memory, X108, or kernel automation. It can only be used as a
+    human-operated maintenance import after explicit confirmation.
+    """
+    env_ok = os.environ.get(MANUAL_NEO4J_WRITE_ENV) == MANUAL_NEO4J_WRITE_CONFIRMATION
+    token_ok = confirm_manual_write == MANUAL_NEO4J_WRITE_CONFIRMATION
+
+    if not env_ok or not token_ok:
+        raise RuntimeError(
+            "MANUAL_NEO4J_WRITE_BLOCKED: this guarded import writes to Neo4j. "
+            f"Set {MANUAL_NEO4J_WRITE_ENV}={MANUAL_NEO4J_WRITE_CONFIRMATION} "
+            f"and pass --confirm-manual-write {MANUAL_NEO4J_WRITE_CONFIRMATION}. "
+            "No runtime, Brody, Graphiti, memory, X108, or kernel automation may call this."
+        )
+
+    return True
+
+
 def require_neo4j():
     try:
         from neo4j import GraphDatabase
@@ -106,7 +137,8 @@ def neo4j_env():
     database = os.environ.get("NEO4J_DATABASE", "neo4j")
     return uri, user, password, database
 
-def import_records(records_path: Path, batch_size: int):
+def import_records(records_path: Path, batch_size: int, confirm_manual_write: str | None = None):
+    require_manual_neo4j_write_confirmation(confirm_manual_write)
     GraphDatabase = require_neo4j()
     uri, user, password, database = neo4j_env()
 
@@ -136,7 +168,7 @@ def import_records(records_path: Path, batch_size: int):
         with driver.session(database=database) as session:
             session.run("CREATE CONSTRAINT brody_memory_doc_id IF NOT EXISTS FOR (d:BrodyMemoryDoc) REQUIRE d.id IS UNIQUE")
             session.run("CREATE CONSTRAINT brody_memory_tag_name IF NOT EXISTS FOR (t:BrodyMemoryTag) REQUIRE t.name IS UNIQUE")
-            
+
             for i, line in enumerate(f):
                 line = line.strip()
                 if not line: continue
@@ -152,25 +184,29 @@ def import_records(records_path: Path, batch_size: int):
                     "memory_decision": False,
                     "decision_authority": "KX108_ONLY",
                 })
-                
+
                 if len(batch) >= batch_size:
                     session.run(cypher, docs=batch)
                     total += len(batch)
                     batch = []
-            
+
             if batch:
                 session.run(cypher, docs=batch)
                 total += len(batch)
-                
+
             counts = session.run("MATCH (d:BrodyMemoryDoc) RETURN count(d) AS docs").single()["docs"]
 
     driver.close()
     return {
-        "status": "BRODY_NEO4J_GUIDE_BRIDGE_IMPORT_PASS",
+        "status": "BRODY_NEO4J_GUIDE_BRIDGE_MANUAL_IMPORT_PASS",
         "imported_count": total,
         "neo4j_docs_count": counts,
         "uri": uri,
         "database": database,
+        "manual_write_guard_satisfied": True,
+        "runtime_execute": False,
+        "runtime_binding": False,
+        "manual_operator_required": True,
         **BOUNDARY,
     }
 
@@ -179,6 +215,7 @@ def main():
     ap.add_argument("--records", required=True)
     ap.add_argument("--mode", choices=["import"], required=True)
     ap.add_argument("--batch-size", type=int, default=100)
+    ap.add_argument("--confirm-manual-write", default="")
     args = ap.parse_args()
 
     records_path = Path(args.records)
@@ -186,7 +223,7 @@ def main():
         raise FileNotFoundError(records_path)
 
     if args.mode == "import":
-        res = import_records(records_path, args.batch_size)
+        res = import_records(records_path, args.batch_size, args.confirm_manual_write)
         print(json.dumps(res, indent=2, ensure_ascii=False))
 
 if __name__ == "__main__":

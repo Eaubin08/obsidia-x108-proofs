@@ -1,0 +1,104 @@
+{
+  "report_id": "OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005542",
+  "phase": "F29.2",
+  "mode": "TARGETED_REAUDIT_NO_RUNTIME_PATCH",
+  "commit": false,
+  "tag": false,
+  "freeze": false,
+  "head": "1744efc",
+  "tag_context": "BRODY_F30_WORKFLOW_GOVERNANCE_V5_PALIER_20260529",
+  "target": "periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py",
+  "functions": [
+    "sha256_file",
+    "load_jsonl",
+    "get_text",
+    "get_title",
+    "get_source",
+    "get_path",
+    "get_tags",
+    "stable_id",
+    "require_manual_neo4j_write_confirmation",
+    "require_neo4j",
+    "neo4j_env",
+    "import_records",
+    "main"
+  ],
+  "write_surface_present": true,
+  "write_hit_count": 11,
+  "write_hits": [
+    {
+      "line": 147,
+      "token": "MERGE ",
+      "text": "MERGE (d:BrodyMemoryDoc {id: doc.id})"
+    },
+    {
+      "line": 148,
+      "token": "SET ",
+      "text": "SET d.title = doc.title,"
+    },
+    {
+      "line": 158,
+      "token": "MERGE ",
+      "text": "MERGE (t:BrodyMemoryTag {name: tag})"
+    },
+    {
+      "line": 159,
+      "token": "MERGE ",
+      "text": "MERGE (d)-[:HAS_TAG]->(t)"
+    },
+    {
+      "line": 169,
+      "token": "CREATE ",
+      "text": "session.run(\"CREATE CONSTRAINT brody_memory_doc_id IF NOT EXISTS FOR (d:BrodyMemoryDoc) REQUIRE d.id IS UNIQUE\")"
+    },
+    {
+      "line": 169,
+      "token": "session.run",
+      "text": "session.run(\"CREATE CONSTRAINT brody_memory_doc_id IF NOT EXISTS FOR (d:BrodyMemoryDoc) REQUIRE d.id IS UNIQUE\")"
+    },
+    {
+      "line": 170,
+      "token": "CREATE ",
+      "text": "session.run(\"CREATE CONSTRAINT brody_memory_tag_name IF NOT EXISTS FOR (t:BrodyMemoryTag) REQUIRE t.name IS UNIQUE\")"
+    },
+    {
+      "line": 170,
+      "token": "session.run",
+      "text": "session.run(\"CREATE CONSTRAINT brody_memory_tag_name IF NOT EXISTS FOR (t:BrodyMemoryTag) REQUIRE t.name IS UNIQUE\")"
+    },
+    {
+      "line": 189,
+      "token": "session.run",
+      "text": "session.run(cypher, docs=batch)"
+    },
+    {
+      "line": 194,
+      "token": "session.run",
+      "text": "session.run(cypher, docs=batch)"
+    },
+    {
+      "line": 197,
+      "token": "session.run",
+      "text": "counts = session.run(\"MATCH (d:BrodyMemoryDoc) RETURN count(d) AS docs\").single()[\"docs\"]"
+    }
+  ],
+  "required_missing": [],
+  "boundary_false_missing": [],
+  "boundary_true_missing": [],
+  "guard_order_ok": true,
+  "cli_guard_ok": true,
+  "manual_guard_function_ok": true,
+  "import_records_ok": true,
+  "validation_status": "PASS",
+  "failures": [],
+  "classification": {
+    "write_surface_present": true,
+    "runtime_violation_confirmed": false,
+    "manual_double_guard_required": true,
+    "manual_operator_required": true,
+    "runtime_binding": false,
+    "decision_authority": "KX108_ONLY"
+  },
+  "next_recommended": "F29.3_CHECKPOINT_COMMIT_TAG",
+  "status": "F29_2_NEO4J_MANUAL_GUARD_REAUDIT_DONE"
+}
