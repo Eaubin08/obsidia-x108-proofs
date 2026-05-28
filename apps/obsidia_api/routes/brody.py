@@ -33,6 +33,7 @@ from apps.obsidia_api.brody_gencoin_transverse_interface import (
 )
 from apps.obsidia_api.brody_anti_mismatch_signal import build_anti_mismatch_signal
 from apps.obsidia_api.brody_thermodynamics_signal import build_thermodynamics_packet
+from apps.obsidia_api.brody_thermo_coherence_time_unified import build_unified_thermo_coherence_time_packet
 from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet
 from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
@@ -276,6 +277,29 @@ async def brody_chat(req: BrodyChatRequest):
         if isinstance(_thermo_raw, dict) else {}
     )
 
+    _thermo_unified_payload = {
+        "thermodynamics_packet": _thermodynamics_packet,
+        "sigma_packet": _sigma_packet,
+        "anti_mismatch_packet": _anti_mismatch_packet,
+        "ir_candidate": ir_candidate_payload,
+        "memory_response_chain_snapshot": memory_response_chain,
+        "temporal_context_snapshot": temp_snap if "temp_snap" in locals() else {},
+        "audit_event": r.get("audit_event", {}),
+        "action_risk": action_risk,
+        "readonly": True,
+        "emits_act": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "decision_authority": "KX108_ONLY",
+    }
+    _thermo_unified_packet = safe_call_snapshot(
+        "thermo_coherence_time_unified",
+        build_unified_thermo_coherence_time_packet,
+        payload=_thermo_unified_payload,
+    )
+
     # Step 5: gencoin shadow value — non-final shadow scores from sigma+anti_mismatch+thermo
     _gencoin_shadow_raw = safe_call_snapshot(
         "gencoin_shadow_packet",
@@ -448,6 +472,7 @@ async def brody_chat(req: BrodyChatRequest):
         "sigma_packet": _sigma_packet,
         "anti_mismatch_packet": _anti_mismatch_packet,
         "thermodynamics_packet": _thermodynamics_packet,
+        "thermo_unified_packet": _thermo_unified_packet,
         "gencoin_shadow_packet": _gencoin_shadow_packet,
         "tree_signal_packet": _tree_signal_packet,
         "memory_promotion_guard_packet": _memory_promotion_guard_packet,
