@@ -11,12 +11,12 @@ F23A audit/plan/matrix pack freezes the memory reflex / automation / rights / co
 
 ## Frozen chain
 
-- F23A1 — source audit: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.md.Name)
-- F23A2 — plan from real paths: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A2_REFLEX_ORCHESTRATOR_PLAN_FROM_REAL_PATHS_20260528_083904.md.Name)
-- F23A3.0 — existing rights/contracts/flow audit: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.md.Name)
-- F23A3.1 — existing contract matrix synthesis: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.md.Name)
-- F23A3.2 — matrix validation: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A3_2_VALIDATE_SYNTHESIZED_MATRIX_20260528_084822.md.Name)
-- F23A3.3 — deep metrics audit: $(C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\docs\runtime\OBSIDIA_F23A3_3_DEEP_METRICS_AUDIT_20260528_085059.md.Name)
+- F23A1 — source audit: OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.md
+- F23A2 — plan from real paths: OBSIDIA_F23A2_REFLEX_ORCHESTRATOR_PLAN_FROM_REAL_PATHS_20260528_083904.md
+- F23A3.0 — existing rights/contracts/flow audit: OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.md
+- F23A3.1 — existing contract matrix synthesis: OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.md
+- F23A3.2 — matrix validation: OBSIDIA_F23A3_2_VALIDATE_SYNTHESIZED_MATRIX_20260528_084822.md
+- F23A3.3 — deep metrics audit: OBSIDIA_F23A3_3_DEEP_METRICS_AUDIT_20260528_085059.md
 
 ## Final metrics
 
