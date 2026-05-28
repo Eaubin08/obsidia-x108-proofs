@@ -43,6 +43,7 @@ from periphery.cognitive_trees.tree_registry import get_all_trees, get_tree_by_i
 from periphery.cognitive_trees.memory_world_mapper import map_memory_world
 from periphery.cognitive_trees.shazam_cognitif import ShazamCognitifResult
 from periphery.cognitive_trees.dominant_trees import DominantTreeResult
+from periphery.cognitive_trees.tree_signal_packet import build_tree_signal_packet
 
 # ── Context & ingress ─────────────────────────────────────────────────────────
 from periphery.context.context_packet_builder import build_context_packet
@@ -175,6 +176,13 @@ class MemoryWorldPayload(BaseModel):
     vector_id: str = "v0"
     dominant_ids: list[int] = Field(default_factory=list)
     patterns_detected: list[str] = Field(default_factory=list)
+
+
+class TreeSignalPayload(BaseModel):
+    signal_id: str = "tree-signal"
+    activations: list[float] = Field(default_factory=list)
+    theta: float = 0.15
+    domain_sigma_envelope: dict[str, Any] = Field(default_factory=dict)
 
 
 class ContextBuildPayload(BaseModel):
@@ -625,6 +633,17 @@ async def periphery_memory_world_map(body: MemoryWorldPayload):
     )
     ctx = map_memory_world(shazam)
     return safe_backend_response({**ctx.to_dict(), **_BOUNDARY}, source="REAL_BACKEND")
+
+
+@router.post("/cognitive/tree-signal")
+async def periphery_tree_signal(body: TreeSignalPayload):
+    packet = build_tree_signal_packet(
+        body.signal_id,
+        body.activations,
+        theta=body.theta,
+        domain_sigma_envelope=body.domain_sigma_envelope,
+    )
+    return safe_backend_response({**packet.to_dict(), **_BOUNDARY}, source="REAL_BACKEND")
 
 
 # ── CONTEXT & INGRESS ─────────────────────────────────────────────────────────
