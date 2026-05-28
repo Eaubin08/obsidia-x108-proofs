@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any
 
@@ -43,6 +43,7 @@ def build_operator_view_packet(
     *,
     value_layer: dict[str, Any] | None = None,
     sigma_packet: dict[str, Any] | None = None,
+    domain_sigma_envelope: dict[str, Any] | None = None,
     anti_mismatch_packet: dict[str, Any] | None = None,
     thermodynamics_packet: dict[str, Any] | None = None,
     gencoin_shadow_packet: dict[str, Any] | None = None,
@@ -51,6 +52,7 @@ def build_operator_view_packet(
 ) -> dict[str, Any]:
     vl = value_layer if isinstance(value_layer, dict) else {}
     sp = sigma_packet if isinstance(sigma_packet, dict) else {}
+    dse = domain_sigma_envelope if isinstance(domain_sigma_envelope, dict) else {}
     amp = anti_mismatch_packet if isinstance(anti_mismatch_packet, dict) else {}
     tp = thermodynamics_packet if isinstance(thermodynamics_packet, dict) else {}
     gp = gencoin_shadow_packet if isinstance(gencoin_shadow_packet, dict) else {}
@@ -58,6 +60,11 @@ def build_operator_view_packet(
     mgp = memory_promotion_guard_packet if isinstance(memory_promotion_guard_packet, dict) else {}
 
     sigma_ready = sp.get("version") == "SIGMA_CALIBRATION_PACKET_V1"
+    domain_sigma_ready = bool(dse) and (
+        dse.get("domain_sigma_envelope") is True
+        or dse.get("mode") == "READONLY_DOMAIN_SIGMA_ENVELOPE"
+        or "x108_gate" in dse
+    )
     anti_mismatch_ready = amp.get("version") == "ANTI_MISMATCH_SIGNAL_V1"
     thermo_ready = tp.get("version") == "THERMODYNAMICS_PACKET_V1"
     gencoin_shadow_ready = gp.get("version") == "GENCOIN_SHADOW_VALUE_PACKET_V1"
@@ -104,6 +111,7 @@ def build_operator_view_packet(
     for name, ready in (
         ("value_layer", value_layer_ready),
         ("sigma_packet", sigma_ready),
+        ("domain_sigma_envelope", domain_sigma_ready),
         ("anti_mismatch_packet", anti_mismatch_ready),
         ("thermodynamics_packet", thermo_ready),
         ("gencoin_shadow_packet", gencoin_shadow_ready),
@@ -138,6 +146,7 @@ def build_operator_view_packet(
         "readiness": {
             "value_layer": _status_label(value_layer_ready),
             "sigma": _status_label(sigma_ready),
+            "domain_sigma": _status_label(domain_sigma_ready),
             "anti_mismatch": _status_label(anti_mismatch_ready, mismatch_risk == "HIGH"),
             "thermodynamics": _status_label(thermo_ready, stability_state in ("HOT", "UNSTABLE", "INSUFFICIENT_MATERIAL")),
             "gencoin_shadow": _status_label(gencoin_shadow_ready),
@@ -158,8 +167,14 @@ def build_operator_view_packet(
             "hard_risks": hard_risks,
             "missing_packets": missing,
         },
+        "domain_sigma_envelope": dse,
+        "domain_sigma_attached": domain_sigma_ready,
         "evidence": {
             "sigma_truth_score": _get(sp, "truth_score"),
+            "domain_sigma_domain": _get(dse, "domain"),
+            "domain_sigma_gate": _get(dse, "x108_gate"),
+            "domain_sigma_authority": _get(dse, "decision_authority"),
+            "domain_sigma_emits_act": _get(dse, "emits_act"),
             "mismatch_score": mismatch_score,
             "mismatch_risk": mismatch_risk,
             "stability_state": stability_state,
@@ -176,6 +191,7 @@ def build_operator_view_packet(
             "operator_can_view": True,
             "operator_can_write": False,
             "operator_can_decide": False,
+            "domain_sigma_ready": domain_sigma_ready,
         },
         "notes": [
             "Operator view is readonly.",

@@ -9,6 +9,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from apps.obsidia_api.safe_response import safe_backend_response
+from sigma.evaluate import evaluate_sigma_domain
 from periphery.common import ActionCandidate, PeripheralSignalPacket
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
@@ -102,6 +103,11 @@ from periphery.feedback_memory_candidate import build_feedback_memory_candidate
 from periphery.feedback_memory_bridge_brody_readonly import build_memory_candidate as build_bridge_memory_candidate
 
 # ─────────────────────────────────────────────────────────────────────────────
+
+class SigmaEvaluatePayload(BaseModel):
+    domain: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+
 
 router = APIRouter(prefix="/api/periphery", tags=["periphery"])
 
@@ -951,3 +957,31 @@ async def periphery_bridge_candidate(body: BridgeCandidatePayload):
     except AssertionError as exc:
         return safe_backend_response({"error": str(exc), "memory_write_allowed": False, **_BOUNDARY}, source="REAL_BACKEND")
     return safe_backend_response({**candidate.to_dict(), **_BOUNDARY}, source="REAL_BACKEND")
+
+@router.post("/sigma/evaluate")
+async def sigma_evaluate(payload: SigmaEvaluatePayload):
+    """
+    F23A6.2 readonly Sigma evaluation endpoint.
+
+    Exposes Sigma dispatcher through periphery API.
+    Does not execute action.
+    Does not mutate memory, Graphiti, Neo4j, kernel, or X108.
+    Decision authority remains KX108_ONLY.
+    """
+    envelope = evaluate_sigma_domain(payload.domain, payload.payload)
+
+    return safe_backend_response({
+        "domain_sigma_envelope": envelope,
+        "domain_sigma_attached": True,
+        "readonly": True,
+        "advisory_only": True,
+        "emits_act": False,
+        "emits_verdict": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "runtime_execute": False,
+        "decision_authority": "KX108_ONLY",
+    }, source="REAL_BACKEND")

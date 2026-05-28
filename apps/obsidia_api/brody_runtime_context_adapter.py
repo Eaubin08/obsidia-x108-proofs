@@ -45,6 +45,7 @@ def build_runtime_context(
     tree_policy_snapshot: dict[str, Any] | None = None,
     temporal_context_snapshot: dict[str, Any] | None = None,
     cognitive_modules_snapshot: dict[str, Any] | None = None,
+    domain_sigma_envelope_snapshot: dict[str, Any] | None = None,
     brody_full_context: dict[str, Any] | None = None,
     true_voice_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -63,6 +64,7 @@ def build_runtime_context(
     temporal = temporal_context_snapshot or {}
     cog = cognitive_modules_snapshot or {}
     tv = true_voice_snapshot or {}
+    dse = domain_sigma_envelope_snapshot or {}
     auth = authority_snapshot or {}
     sem = semantic_query_snapshot or {}
 
@@ -82,6 +84,7 @@ def build_runtime_context(
         "tree_policy_snapshot": trees,
         "temporal_context_snapshot": temporal,
         "cognitive_modules_snapshot": cog,
+        "domain_sigma_envelope_snapshot": dse,
         "brody_full_context": brody_full_context or {},
         "true_voice_snapshot": tv,
         # — Derived summaries ———————————————————————————————————————————
@@ -94,6 +97,10 @@ def build_runtime_context(
         "operator_loop_ready": "7/7" in str(oploop.get("status", "")),
         "tree_policy_ready": trees.get("status") == "BRODY_TREE_POLICY_READY",
         "cognitive_modules_count": cog.get("total_known", 0),
+        "domain_sigma_ready": bool(dse),
+        "domain_sigma_domain": dse.get("domain", "UNKNOWN"),
+        "domain_sigma_gate": dse.get("x108_gate", "UNKNOWN"),
+        "domain_sigma_authority": dse.get("decision_authority", "UNKNOWN"),
         "voice_source": tv.get("voice_source", "UNKNOWN"),
         "topic": sem.get("topic", "GENERAL"),
         "request_type": auth.get("request_type", "INFORMATION_REQUEST"),
