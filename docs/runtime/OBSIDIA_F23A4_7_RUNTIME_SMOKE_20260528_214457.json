@@ -1,0 +1,87 @@
+﻿{
+    "report_id":  "OBSIDIA_F23A4_7_RUNTIME_SMOKE_20260528_214457",
+    "phase":  "F23A4.7",
+    "mode":  "RUNTIME_SMOKE_NO_PATCH",
+    "patch":  false,
+    "commit":  false,
+    "tag":  false,
+    "freeze":  false,
+    "ports":  [
+                  8000,
+                  8012
+              ],
+    "results":  [
+                    {
+                        "port":  8000,
+                        "case":  "bank",
+                        "ok":  true,
+                        "domain":  "bank",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    },
+                    {
+                        "port":  8000,
+                        "case":  "trading",
+                        "ok":  true,
+                        "domain":  "trading",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    },
+                    {
+                        "port":  8000,
+                        "case":  "gps",
+                        "ok":  true,
+                        "domain":  "gps_defense_aviation",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    },
+                    {
+                        "port":  8012,
+                        "case":  "bank",
+                        "ok":  true,
+                        "domain":  "bank",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    },
+                    {
+                        "port":  8012,
+                        "case":  "trading",
+                        "ok":  true,
+                        "domain":  "trading",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    },
+                    {
+                        "port":  8012,
+                        "case":  "gps",
+                        "ok":  true,
+                        "domain":  "gps_defense_aviation",
+                        "x108_gate":  "ALLOW",
+                        "decision_authority":  "KX108_ONLY",
+                        "emits_act":  false,
+                        "readonly":  true,
+                        "status":  "PASS"
+                    }
+                ],
+    "boundary_expected":  {
+                              "decision_authority":  "KX108_ONLY",
+                              "readonly":  true,
+                              "emits_act":  false
+                          },
+    "next_recommended":  "F23A4.8_CONNECTORS_ALIGNMENT"
+}

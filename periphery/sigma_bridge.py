@@ -1,12 +1,18 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Any
 
 from .common import PeripheralSignalPacket
 
-from sigma.aggregation import aggregate_bank, aggregate_trading, aggregate_gps_defense_aviation
+from sigma.aggregation import (
+    aggregate_bank,
+    aggregate_trading,
+    aggregate_ecom,
+    aggregate_gps_defense_aviation,
+)
 from sigma.domains.bank_agents import build_bank_agents
 from sigma.domains.trading_agents import build_trading_agents
+from sigma.domains.ecom_agents import build_ecom_agents
 from sigma.domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents
 from sigma.domains.meta_agents import build_meta_agents
 from sigma.guard import GuardX108
@@ -43,6 +49,7 @@ def _apply_meta_agents(aggregate: Any) -> Any:
         aggregate.unknowns.extend(meta_vote.unknowns)
         aggregate.risk_flags.extend(meta_vote.risk_flags)
         aggregate.evidence_refs.append(f"meta:{meta_vote.agent_id}")
+
     aggregate.unknowns = sorted(set(aggregate.unknowns))
     aggregate.risk_flags = sorted(set(aggregate.risk_flags))
     aggregate.contradictions = sorted(set(aggregate.contradictions))
@@ -64,8 +71,17 @@ def run_trading_with_periphery(state: Any, packet: PeripheralSignalPacket) -> An
     return GuardX108().decide(aggregate)
 
 
+def run_ecom_with_periphery(state: Any, packet: PeripheralSignalPacket) -> Any:
+    aggregate = aggregate_ecom([agent.evaluate(state) for agent in build_ecom_agents()])
+    aggregate = _merge_periphery_into_aggregate(aggregate, packet)
+    aggregate = _apply_meta_agents(aggregate)
+    return GuardX108().decide(aggregate)
+
+
 def run_gps_with_periphery(state: Any, packet: PeripheralSignalPacket) -> Any:
-    aggregate = aggregate_gps_defense_aviation([agent.evaluate(state) for agent in build_gps_defense_aviation_agents()])
+    aggregate = aggregate_gps_defense_aviation(
+        [agent.evaluate(state) for agent in build_gps_defense_aviation_agents()]
+    )
     aggregate = _merge_periphery_into_aggregate(aggregate, packet)
     aggregate = _apply_meta_agents(aggregate)
     return GuardX108().decide(aggregate)
