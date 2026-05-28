@@ -81,6 +81,7 @@ def build_temporal_context_snapshot(
         "graphiti_write": False,
         "neo4j_write": False,
         "kernel_mutation": False,
+        "x108_mutation": False,
         "audit_refs": [],
         "receipt_refs": [],
         "proof_refs": [
@@ -89,9 +90,9 @@ def build_temporal_context_snapshot(
     }
 
     # Determine overall status
-    has_past = past["session_history_available"] or past["freeze_refs_count"] > 0
-    has_present = mc.get("status") and mc.get("status") != "ERROR"
-    has_future = future["candidate_pipeline_available"]
+    has_past = bool(past["session_history_available"] or past["freeze_refs_count"] > 0)
+    has_present = bool(mc.get("status") and mc.get("status") != "ERROR")
+    has_future = bool(future["candidate_pipeline_available"])
     has_proof = True  # Always: KX108_ONLY boundary is proof layer
 
     all_layers = sum([has_past, has_present, has_future, has_proof])
@@ -119,5 +120,6 @@ def build_temporal_context_snapshot(
         "emits_act": False,
         "emits_verdict": False,
         "kernel_mutation": False,
+        "x108_mutation": False,
         "decision_authority": "KX108_ONLY",
     }

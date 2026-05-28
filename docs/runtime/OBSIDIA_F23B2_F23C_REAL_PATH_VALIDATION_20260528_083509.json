@@ -1,0 +1,271 @@
+{
+  "checkpoint": "F23B2_F23C_REAL_PATH_VALIDATION",
+  "timestamp": "20260528_083509",
+  "mode": "VALIDATION_NO_PATCH_REAL_PATHS",
+  "patch": "NO",
+  "commit": "NO",
+  "head": "11ee2de",
+  "tag": "BRODY_F25B_IMMUTABLE_VOTE_MINIMAL_20260528",
+  "git_status": "## main...origin/main\n M apps/obsidia_api/brody_temporal_context_adapter.py\n?? docs/runtime/OBSIDIA_F23B1_1_FOCUSED_CONTEXT_PACKET_DISCOVERY_20260528_082922.json\n?? docs/runtime/OBSIDIA_F23B1_1_FOCUSED_CONTEXT_PACKET_DISCOVERY_20260528_082922.md\n?? docs/runtime/OBSIDIA_F23B2_F23C_REAL_PATH_VALIDATION_20260528_083329.json\n?? docs/runtime/OBSIDIA_F23B2_F23C_REAL_PATH_VALIDATION_20260528_083329.md\n?? scripts/f23b1_1_focused_context_packet_discovery.py\n?? scripts/f23b2_f23c_real_path_validation.py\n?? tests/api/test_f23b_temporal_context_boundary.py",
+  "f23b_pass": true,
+  "f23c_pass": true,
+  "f23b_compile": {
+    "ok": true,
+    "output": "",
+    "files": [
+      "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+      "apps/obsidia_api/brody_project_memory_adapter.py",
+      "apps/obsidia_api/brody_runtime_context_adapter.py",
+      "apps/obsidia_api/brody_temporal_context_adapter.py",
+      "periphery/brody_memory_readonly/context_packet_consumer_readonly/brody_context_packet_consumer_readonly_v1.py",
+      "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+      "periphery/context/context_packet_sanitizer.py",
+      "periphery/context/context_packet_exporter.py"
+    ]
+  },
+  "f23c_compile": {
+    "ok": true,
+    "output": "",
+    "files": [
+      "apps/obsidia_api/routes/worldcalls.py",
+      "apps/obsidia_api/routes/os3.py",
+      "apps/obsidia_api/brody_contracts_packet.py",
+      "apps/obsidia_api/brody_adaptive_response_policy.py",
+      "apps/obsidia_api/graphiti_v20_readonly_client.py"
+    ]
+  },
+  "f23b_results": [
+    {
+      "path": "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+      "role": "runtime response-chain adapter",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write",
+        "kernel_mutation",
+        "x108_mutation"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_project_memory_adapter.py",
+      "role": "project memory adapter / source map",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_response_chain"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_runtime_context_adapter.py",
+      "role": "runtime context adapter",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_response_chain"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_temporal_context_adapter.py",
+      "role": "temporal context adapter",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write",
+        "kernel_mutation",
+        "x108_mutation"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "periphery/brody_memory_readonly/context_packet_consumer_readonly/brody_context_packet_consumer_readonly_v1.py",
+      "role": "readonly context packet consumer",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY",
+        "readonly"
+      ],
+      "required_all": [],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py",
+      "role": "readonly context packet query",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY",
+        "readonly"
+      ],
+      "required_all": [],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "periphery/context/context_packet_sanitizer.py",
+      "role": "context packet sanitizer",
+      "exists": true,
+      "required_any": [
+        "sanitize",
+        "sanit"
+      ],
+      "required_all": [],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "periphery/context/context_packet_exporter.py",
+      "role": "context packet exporter",
+      "exists": true,
+      "required_any": [
+        "export"
+      ],
+      "required_all": [],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "f23c_results": [
+    {
+      "path": "apps/obsidia_api/routes/worldcalls.py",
+      "role": "worldcalls automation boundary route",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write",
+        "kernel_mutation",
+        "x108_mutation"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/routes/os3.py",
+      "role": "OS3 boundary route",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write",
+        "kernel_mutation",
+        "x108_mutation"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_contracts_packet.py",
+      "role": "contracts packet",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY"
+      ],
+      "required_all": [
+        "can_act",
+        "can_write_memory",
+        "memory_write",
+        "graphiti_write"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_adaptive_response_policy.py",
+      "role": "adaptive response policy",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY",
+        "advisory"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    },
+    {
+      "path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "role": "Graphiti V20 readonly client",
+      "exists": true,
+      "required_any": [
+        "KX108_ONLY",
+        "readonly"
+      ],
+      "required_all": [
+        "memory_write",
+        "graphiti_write",
+        "kernel_mutation",
+        "x108_mutation"
+      ],
+      "any_ok": true,
+      "missing_all": [],
+      "forbidden_write_hits": [],
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "interpretation": {
+    "f23b_previous_fail_reason": "phantom expected filenames, not proven absence of context packet family",
+    "f23b_real_surface": "memory_response_chain + project/runtime/temporal adapters + readonly periphery query/consumer + context sanitizer/exporter",
+    "f23c_surface": "worldcalls/os3/contracts/adaptive policy/Graphiti readonly client"
+  },
+  "next": "COMMIT_TAG_PUSH_VALIDATION_REPORT"
+}
