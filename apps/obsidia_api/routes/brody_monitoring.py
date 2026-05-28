@@ -1,4 +1,4 @@
-﻿"""
+"""
 Brody CLI Registry — monitoring endpoint for brody_memory_readonly scripts.
 Exposes /api/periphery/monitoring/brody-cli-registry
 
@@ -18,6 +18,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from apps.obsidia_api.safe_response import safe_backend_response
+from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
+from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context
 
 from periphery.adapters.bank_adapter import build_bank_action, build_bank_state
 from periphery.adapters.gps_adapter import build_gps_action, build_gps_state
@@ -40,6 +42,7 @@ from periphery.brody_memory_readonly.session_trace_ledger.brody_session_trace_le
 )
 
 from sigma.evaluate import evaluate_sigma_domain
+from periphery.cognitive_trees.tree_signal_packet import build_tree_signal_packet
 
 
 router = APIRouter(prefix="/api/periphery/monitoring", tags=["monitoring"])
@@ -334,5 +337,69 @@ async def monitor_brody_historical_convergence(payload: HistoricalConvergencePay
         "chain_break_details": chain_breaks[:5],
         "semantic_drift_delta": semantic_drift,
         "last_event_hash": prev_hash,
+        **_BOUNDARY,
+    }, source="REAL_BACKEND")
+
+
+class MonitorGovernedRuntimePayload(BaseModel):
+    runtime_id: str = "monitor-governed-runtime"
+    domain: str = "general"
+    sigma_payload: dict[str, Any] = {}
+    tree_signal_id: str = "monitor-tree-signal"
+    activations: list[float] = []
+    theta: float = 0.15
+
+
+@router.post("/operator/governed-runtime")
+async def monitor_governed_runtime(payload: MonitorGovernedRuntimePayload):
+    """
+    F26.1 monitoring view over governed operator runtime.
+
+    Observes:
+    - domain_sigma_envelope
+    - tree_signal_packet
+    - operator_view_packet
+    - runtime_context
+
+    Monitoring only. No ACT. No verdict. No runtime execution.
+    Decision authority remains KX108_ONLY.
+    """
+    domain_sigma_envelope = evaluate_sigma_domain(payload.domain, payload.sigma_payload)
+
+    tree_signal_packet = build_tree_signal_packet(
+        payload.tree_signal_id,
+        payload.activations,
+        theta=payload.theta,
+        domain_sigma_envelope=domain_sigma_envelope,
+    ).to_dict()
+
+    operator_view_packet = build_operator_view_packet(
+        domain_sigma_envelope=domain_sigma_envelope,
+        tree_signal_packet=tree_signal_packet,
+    )
+
+    runtime_context = build_runtime_context(
+        domain_sigma_envelope_snapshot=domain_sigma_envelope,
+        tree_signal_packet_snapshot=tree_signal_packet,
+        brody_full_context=operator_view_packet,
+    )
+
+    return safe_backend_response({
+        "version": "MONITOR_GOVERNED_RUNTIME_V1",
+        "observed_runtime_version": "GOVERNED_OPERATOR_RUNTIME_V1",
+        "mode": "READONLY_MONITOR_GOVERNED_RUNTIME",
+        "runtime_id": payload.runtime_id,
+        "domain_sigma_envelope": domain_sigma_envelope,
+        "tree_signal_packet": tree_signal_packet,
+        "operator_view_packet": operator_view_packet,
+        "runtime_context": runtime_context,
+        "domain_sigma_attached": True,
+        "tree_signal_attached": True,
+        "operator_view_attached": True,
+        "runtime_context_attached": True,
+        "monitor_observes_governed_runtime": True,
+        "can_decide": False,
+        "can_emit_act": False,
+        "context_signal_only": True,
         **_BOUNDARY,
     }, source="REAL_BACKEND")
