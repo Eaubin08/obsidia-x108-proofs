@@ -37,6 +37,7 @@ from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_val
 from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion_guard_packet
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
+from apps.obsidia_api.brody_existing_reverse_os_bridge import build_existing_reverse_os_projection
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
@@ -181,33 +182,39 @@ async def brody_chat(req: BrodyChatRequest):
         brody_full_context=brody_full_context,
         true_voice_snapshot=true_voice_snapshot)
 
-    translation_trace = {
-        "detected_language": req.language,
-        "response_language": r.get("language", req.language),
-        "os_trad_status": "READONLY_PASS",
-        "alphabet_units": [],
-        "os_reverse_projection": {"readonly": True, "advisory_only": True},
-        "x108_boundary_status": "READONLY",
-        "readonly": True,
-        "allowed_to_decide": False,
-        "allowed_to_act": False,
-        "memory_write": False,
-        "kernel_mutation": False,
-        "source": "REAL_BACKEND",
-    }
+    reverse_os_bridge = safe_call_snapshot(
+        "existing_reverse_os_bridge",
+        build_existing_reverse_os_projection,
+        user_message=req.message,
+        intent=intent,
+        semantic_query_snapshot=semantic_query_snapshot,
+        authority_snapshot=authority_snapshot,
+        tree_signal_packet={},
+        tree_policy_snapshot=trees_snap,
+    )
 
-    ir_candidate_payload = {
-        "intent_type": intent,
-        "entities": [],
-        "constraints": [],
-        "risk_flags": ["AUTHORITY_ESCALATION_BLOCKED"] if auth_esc else [],
-        "contradictions": ["BRODY_CANNOT_AUTHORIZE_ACT", "ACT_AUTHORITY_DENIED"] if auth_esc else [],
-        "allowed_to_decide": False,
-        "allowed_to_act": False,
-        "memory_write": False,
-        "kernel_mutation": False,
-        "decision_authority": "KX108_ONLY",
-    }
+    translation_trace = reverse_os_bridge.get("translation_trace", {})
+    if isinstance(translation_trace, dict):
+        translation_trace["detected_language"] = req.language
+        translation_trace["response_language"] = r.get("language", req.language)
+
+    ir_candidate_payload = reverse_os_bridge.get("ir_candidate", {})
+    if not isinstance(ir_candidate_payload, dict) or not ir_candidate_payload:
+        ir_candidate_payload = {
+            "status": "IR_CANDIDATE_FALLBACK_READONLY",
+            "intent_type": intent,
+            "entities": [],
+            "constraints": ["KX108_ONLY", "READONLY_ONLY"],
+            "risk_flags": ["AUTHORITY_ESCALATION_BLOCKED"] if auth_esc else [],
+            "contradictions": ["BRODY_CANNOT_AUTHORIZE_ACT", "ACT_AUTHORITY_DENIED"] if auth_esc else [],
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "memory_write": False,
+            "graphiti_write": False,
+            "kernel_mutation": False,
+            "x108_mutation": False,
+            "decision_authority": "KX108_ONLY",
+        }
 
     # ── F2C pipeline: sigma(initial) → anti_mismatch → sigma(formal) → gencoin ──
     _tvs = true_voice_snapshot if isinstance(true_voice_snapshot, dict) else {}
