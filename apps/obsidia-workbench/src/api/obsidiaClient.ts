@@ -1,19 +1,19 @@
 /**
  * Obsidia API Client — V5B+ Backend-first.
- * All calls try the live Brody API on port 8012 first, then fall back to mock.
+ * All calls try the live Brody API on port 8000 first, then fall back to mock.
  * No real action. No wallet. KX108_ONLY always.
  */
 import type { Resolved } from './contracts'
 import type {
   ApiHealthResponse, GraphitiStatusResponse, GraphitiContextResponse,
-  GraphitiReadinessResponse, GraphitiMetricsResponse, AuditChainResponse,
+  GraphitiReadinessResponse, GraphitiMetricsResponse,
 } from './contracts'
 import * as mock from './mockFallback'
 import type { KernelStatus, ContextPacket, OS3ProofTicket, SovereignTicket,
               WorldCallEvent, MemoryCandidate, GencoinEntry, AuditEvent } from '../types/obsidia'
 
 const API_BASE    = (import.meta.env.VITE_OBSIDIA_API_BASE  ?? 'http://127.0.0.1:8011').replace(/\/$/, '')
-const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8012').replace(/\/$/, '')
+const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
 const USE_MOCK    = import.meta.env.VITE_USE_MOCK_FALLBACK === 'true'
 const TIMEOUT_MS  = Number(import.meta.env.VITE_PROBE_TIMEOUT_MS ?? 3000)
 // Brody chat can be slow on cold start (hydration scan ~40-50s) — use a separate longer timeout
@@ -145,8 +145,17 @@ export async function getAlphabetUnits(userInput: string): Promise<{ data: null;
 }
 
 export async function getAuditEvents(): Promise<Resolved<AuditEvent[]>> {
-  const raw = await safeFetch<AuditChainResponse>(`${ENGINE_BASE}/v1/audit/chain`, mock.MOCK_AUDIT_CHAIN)
-  return { data: raw.data.chain.map(c => ({ event_id: c.trace_id, type: (c.action as AuditEvent['type']) ?? 'governance_check', description: c.action ?? '', result: (c.result as AuditEvent['result']) ?? 'OK', timestamp: c.timestamp })), source: raw.source }
+  const raw = await safeFetch<{events: Record<string, unknown>[]; total: number}>(`${ENGINE_BASE}/api/audit/events`, { events: [], total: 0 })
+  return {
+    data: (raw.data.events ?? []).map(e => ({
+      event_id: String(e.event_id ?? ''),
+      type: 'world_call' as AuditEvent['type'],
+      description: String(e.intent ?? e.action_id ?? ''),
+      result: (e.blocked ? 'BLOCKED' : 'OK') as AuditEvent['result'],
+      timestamp: String(e.timestamp ?? ''),
+    })),
+    source: raw.source,
+  }
 }
 
 export async function getOS3Ticket(): Promise<Resolved<OS3ProofTicket>> {

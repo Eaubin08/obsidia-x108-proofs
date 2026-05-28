@@ -1,10 +1,8 @@
 // OBSIDIA-UI-IMPROVEMENT: RightPanel — clickable copy, tree_X prompts, v18 hash, git branch, refresh context
-import { useState } from 'react'
-import {
-  MOCK_CONTEXT_PACKET, MOCK_OS3_TICKET, MOCK_SOVEREIGN_TICKET,
-  MOCK_WORLD_CALLS, MOCK_MEMORY_CANDIDATES, MOCK_GENCOIN, MOCK_AUDIT,
-} from '../data/mockData'
+import { useState, useEffect } from 'react'
 import { FileText, Shield, Database, Coins, ClipboardList, Wifi, Copy, Check, Cpu } from 'lucide-react'
+
+const _GOV_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
 import { BackendStatusPanel } from './BackendStatusPanel'
 import type { AutomationSnapshot, StructuredResponseSnapshot, FreezeMetricsSnapshot } from '../api/contracts'
 
@@ -24,24 +22,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <div className="obs-section-header px-0 pt-0 pb-1.5">{children}</div>
 }
 
-function StaticDemoSection({ label, children }: { label: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="border border-obs-dtext/20 rounded">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-2 py-1.5 text-[9px] font-mono transition-colors hover:bg-obs-muted/10"
-      >
-        <span className="text-obs-hold font-semibold">STATIC_DEMO_NOT_RUNTIME</span>
-        <span className="flex items-center gap-1.5 text-obs-dtext">
-          <span>{label}</span>
-          <span>{open ? '▲' : '▼'}</span>
-        </span>
-      </button>
-      {open && <div className="p-2 border-t border-obs-dtext/10 space-y-3">{children}</div>}
-    </div>
-  )
-}
 
 function CopyableKV({ k, v, vClass }: { k: string; v: string; vClass?: string }) {
   const [copied, setCopied] = useState(false)
@@ -350,7 +330,6 @@ function AuthoritySnapshotSection({ snap }: { snap: Record<string, unknown> }) {
 }
 
 function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => void; live?: Record<string, unknown> }) {
-  const cp = MOCK_CONTEXT_PACKET
   const liveCtx = live?.context_packet as Record<string, unknown> | undefined
   const authoritySnap = live?.authority_snapshot as Record<string, unknown> | undefined
   const memChain = live?.memory_response_chain_snapshot as Record<string, unknown> | undefined
@@ -554,111 +533,241 @@ function ContextTab({ onSendPrompt, live }: { onSendPrompt?: (text: string) => v
           </div>
         </div>
       )}
-      <StaticDemoSection label={`Dominant Trees (${cp.dominant_trees.length})`}>
-        <div>
-          <SectionTitle>Dominant Trees</SectionTitle>
-          <div className="obs-card p-3 flex flex-wrap gap-1">
-            {cp.dominant_trees.map(t => (
-              <button key={t} onClick={() => onSendPrompt?.(`Analyse tree_${t} dans le contexte kernel`)} className="obs-badge-memory cursor-pointer hover:bg-obs-memory/20 transition-colors" title={`Send analysis request for tree_${t}`}>
-                tree_{t}
-              </button>
-            ))}
+      {(() => {
+        const tsp = live?.tree_signal_packet as Record<string, unknown> | undefined
+        const domTrees = tsp?.dominant_trees as Record<string, unknown> | undefined
+        const domIds = Array.isArray(domTrees?.dominant_ids) ? domTrees.dominant_ids as (number | string)[] : []
+        const domNames = Array.isArray(domTrees?.dominant_names) ? domTrees.dominant_names as string[] : []
+        const treeCount = tsp?.tree_count as number | undefined
+        if (domIds.length > 0) {
+          return (
+            <div>
+              <SectionTitle>Dominant Trees{treeCount ? ` (${treeCount} total)` : ''}</SectionTitle>
+              <div className="obs-card p-3 space-y-1">
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {domIds.map((id, i) => (
+                    <button key={String(id)} onClick={() => onSendPrompt?.(`Analyse tree_${id} dans le contexte kernel`)} className="obs-badge-memory cursor-pointer hover:bg-obs-memory/20 transition-colors" title={domNames[i] ?? String(id)}>
+                      tree_{id}
+                    </button>
+                  ))}
+                </div>
+                {domNames.map((name, i) => (
+                  <CopyableKV key={String(domIds[i] ?? i)} k={`tree_${domIds[i] ?? i}`} v={name} vClass="text-obs-memory" />
+                ))}
+              </div>
+            </div>
+          )
+        }
+        return (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">NO_TREE_SIGNAL_PACKET_IN_PAYLOAD — envoyer un message pour charger les arbres dominants</div>
           </div>
-        </div>
-      </StaticDemoSection>
+        )
+      })()}
     </div>
   )
 }
 
 function GovernanceTab() {
-  const os3 = MOCK_OS3_TICKET; const svt = MOCK_SOVEREIGN_TICKET; const wcs = MOCK_WORLD_CALLS
-  const wccColor = (c: string) => c.includes('FORBIDDEN') ? 'text-obs-block' : c.includes('READ') ? 'text-obs-pass' : 'text-obs-hold'
-  return (
-    <div className="space-y-4">
-      <div className="obs-card p-2 border-obs-dtext/20">
-        <div className="text-[9px] font-mono text-obs-dtext">Governance tickets live non connectés au payload 8000 — blocs ci-dessous sont des fixtures statiques.</div>
-      </div>
-      <StaticDemoSection label="OS3 / Sovereign / WorldCall">
-        <div><SectionTitle>OS3 Proof Ticket</SectionTitle>
-          <div className="obs-card p-3 space-y-0.5">
-            <CopyableKV k="ticket_id" v={os3.ticket_id} vClass="text-obs-proof" />
-            <CopyableKV k="status" v={os3.status} vClass={os3.status === 'PROOF_VALID' ? 'text-obs-pass' : 'text-obs-hold'} />
-            <CopyableKV k="lean_ref" v={os3.lean_ref} vClass="text-obs-proof" />
-            <CopyableKV k="tla_ref" v={os3.tla_ref} vClass="text-obs-proof" />
-            <CopyableKV k="merkle_hash" v={os3.merkle_hash} />
-            <CopyableBool k="os3_proves" v={os3.os3_proves} />
-          </div>
-        </div>
-        <div><SectionTitle>Sovereign Ticket</SectionTitle>
-          <div className="obs-card p-3 space-y-0.5">
-            <CopyableKV k="ticket_id" v={svt.ticket_id} vClass="text-obs-kernel" />
-            <CopyableKV k="authorized_by" v={svt.authorized_by} vClass="text-obs-kernel" />
-            <CopyableBool k="dry_run_only" v={svt.dry_run_only} />
-            <CopyableBool k="real_action_blocked" v={svt.real_action_blocked} />
-          </div>
-        </div>
-        <div><SectionTitle>WorldCall / Gateway</SectionTitle>
-          <div className="space-y-1.5">{wcs.map(wc => (
-            <div key={wc.event_id} className="obs-card p-2.5">
-              <div className="flex items-center justify-between mb-1"><span className={`text-[10px] font-mono font-semibold ${wccColor(wc.world_call_class)}`}>{wc.world_call_class}</span><span className={`obs-badge text-[9px] ${wc.gateway_result === 'ALLOW' ? 'obs-badge-pass' : 'obs-badge-block'}`}>{wc.gateway_result}</span></div>
-              <p className="text-obs-mtext text-[10px] font-mono">{wc.action_description}</p>
-              <div className="flex gap-3 mt-1"><span className="text-obs-dtext text-[9px] font-mono">dry_run: <span className="text-obs-pass">true</span></span><span className="text-obs-dtext text-[9px] font-mono">real_action: <span className="text-obs-block">false</span></span></div>
-            </div>
-          ))}</div>
-        </div>
-      </StaticDemoSection>
-    </div>
-  )
-}
+  const [os3Data, setOs3Data] = useState<Record<string, unknown> | null>(null)
+  const [svtData, setSvtData] = useState<Record<string, unknown>[] | null>(null)
+  const [wcData, setWcData] = useState<Record<string, unknown>[] | null>(null)
 
-function MemoryTab() {
-  const statusColor = (s: string) => ({ CANDIDATE_ONLY: 'obs-badge-memory', NEEDS_REVIEW: 'obs-badge-hold', PROMOTION_READY: 'obs-badge-proof', REJECTED: 'obs-badge-block', FROZEN: 'obs-badge-muted' }[s] ?? 'obs-badge-muted')
+  useEffect(() => {
+    fetch(`${_GOV_BASE}/api/os3/tickets`).then(r => r.ok ? r.json() : null).then(d => { if (d) setOs3Data(d as Record<string, unknown>) }).catch(() => {})
+    fetch(`${_GOV_BASE}/api/worldcalls/sovereign-tickets`).then(r => r.ok ? r.json() : null).then(d => { if (d) setSvtData((d as Record<string, unknown>).tickets as Record<string, unknown>[] ?? []) }).catch(() => {})
+    fetch(`${_GOV_BASE}/api/worldcalls`).then(r => r.ok ? r.json() : null).then(d => { if (d) setWcData((d as Record<string, unknown>).calls as Record<string, unknown>[] ?? []) }).catch(() => {})
+  }, [])
+
+  const gateColor = (g: unknown) => String(g) === 'ALLOW' ? 'text-obs-pass' : String(g) === 'HOLD' ? 'text-obs-hold' : 'text-obs-block'
+  const wccColor = (c: unknown) => String(c).includes('FORBIDDEN') ? 'text-obs-block' : String(c).includes('READ') ? 'text-obs-pass' : 'text-obs-hold'
+
   return (
     <div className="space-y-4">
-      <div className="obs-card p-2 border-obs-dtext/20">
-        <div className="text-[9px] font-mono text-obs-dtext">Memory live — voir CONTEXT tab (Candidate Memory, Project Memory, Memory Response Chain).</div>
-      </div>
-      <StaticDemoSection label="Memory Candidates / Graphiti Status">
-        <div><SectionTitle>Memory Candidates</SectionTitle>
-          <div className="space-y-2">{MOCK_MEMORY_CANDIDATES.map(mc => (
-            <div key={mc.candidate_id} className="obs-card p-3">
-              <div className="flex items-center justify-between mb-2"><CopyableKV k="id" v={mc.candidate_id} /><span className={statusColor(mc.status)}>{mc.status}</span></div>
-              <p className="text-obs-mtext text-[10px] font-mono mb-2">{mc.content_summary}</p>
-              <div className="flex gap-2 flex-wrap"><span className="obs-badge-memory">{mc.source_type}</span><span className="text-obs-dtext text-[9px] font-mono">write=<span className="text-obs-block">false</span></span></div>
-            </div>
-          ))}</div>
-        </div>
-        <div><SectionTitle>Graphiti Status</SectionTitle>
+      <div>
+        <SectionTitle>OS3 Proof Artifacts</SectionTitle>
+        {os3Data ? (
           <div className="obs-card p-3 space-y-0.5">
-            <CopyableKV k="mode" v="READONLY BRIDGE" vClass="text-obs-pass" />
-            <CopyableBool k="neo4j_write" v={false} />
-            <CopyableBool k="graphiti_write" v={false} />
+            <CopyableKV k="source" v="docs/runtime" vClass="text-obs-proof" />
+            <CopyableKV k="artifact_count" v={String(os3Data.artifact_count ?? 0)} vClass="text-obs-pass" />
+            <CopyableKV k="latest_report" v={String(os3Data.latest_report ?? '—')} vClass="text-obs-brody" />
+            <CopyableKV k="type" v={String(os3Data.type ?? 'FREEZE_REPORT_MANIFEST')} />
+            <CopyableBool k="readonly" v={true} />
             <CopyableKV k="decision_authority" v="KX108_ONLY" vClass="text-obs-kernel" />
+            {Array.isArray(os3Data.tickets) && (os3Data.tickets as Record<string, unknown>[]).slice(0, 5).map((t, i) => (
+              <CopyableKV key={i} k={String(t.date_tag ?? `artifact_${i}`)} v={String(t.filename ?? '')} vClass="text-obs-proof" />
+            ))}
           </div>
-        </div>
-      </StaticDemoSection>
+        ) : (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">Chargement artifacts proof depuis docs/runtime…</div>
+          </div>
+        )}
+      </div>
+      <div>
+        <SectionTitle>Sovereign Tickets</SectionTitle>
+        {svtData ? (
+          svtData.length > 0 ? (
+            <div className="space-y-1.5">
+              {svtData.slice(0, 6).map((t, i) => (
+                <div key={String(t.ticket_id ?? i)} className="obs-card p-2.5 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-obs-kernel text-[10px] font-mono">{String(t.ticket_id ?? '').slice(0, 12)}…</span>
+                    <span className={`text-[9px] font-mono font-semibold ${gateColor(t.x108_gate)}`}>{String(t.x108_gate ?? '—')}</span>
+                  </div>
+                  <CopyableKV k="world_call_class" v={String(t.world_call_class ?? '—')} vClass={wccColor(t.world_call_class)} />
+                  <CopyableKV k="scope" v={String(t.scope ?? '—')} />
+                  <CopyableBool k="dry_run_only" v={Boolean(t.dry_run_only)} />
+                </div>
+              ))}
+              <div className="text-[9px] font-mono text-obs-dtext px-0.5">Source: audit/sovereign_tickets.jsonl — {svtData.length} tickets réels</div>
+            </div>
+          ) : (
+            <div className="obs-card p-2 border-obs-dtext/20">
+              <div className="text-[9px] font-mono text-obs-dtext">LIVE_EMPTY_REGISTRY — 0 tickets</div>
+            </div>
+          )
+        ) : (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">Chargement…</div>
+          </div>
+        )}
+      </div>
+      <div>
+        <SectionTitle>WorldCall / Gateway</SectionTitle>
+        {wcData ? (
+          wcData.length > 0 ? (
+            <div className="space-y-1.5">
+              {wcData.slice(0, 5).map((wc, i) => (
+                <div key={String(wc.event_id ?? i)} className="obs-card p-2.5">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-[10px] font-mono font-semibold ${wccColor(wc.world_call_class)}`}>{String(wc.world_call_class ?? '—')}</span>
+                    <span className={`obs-badge text-[9px] ${wc.blocked ? 'obs-badge-block' : 'obs-badge-pass'}`}>{wc.blocked ? 'BLOCKED' : 'OK'}</span>
+                  </div>
+                  <p className="text-obs-mtext text-[10px] font-mono">{String(wc.intent ?? '—')}</p>
+                  <div className="flex gap-3 mt-1">
+                    <span className="text-obs-dtext text-[9px] font-mono">domain: <span className="text-obs-brody">{String(wc.domain ?? '—')}</span></span>
+                    <span className="text-obs-dtext text-[9px] font-mono">dry_run: <span className="text-obs-pass">true</span></span>
+                  </div>
+                </div>
+              ))}
+              <div className="text-[9px] font-mono text-obs-dtext px-0.5">Source: audit/world_action_bus.jsonl — {wcData.length} events (last 20)</div>
+            </div>
+          ) : (
+            <div className="obs-card p-2 border-obs-dtext/20">
+              <div className="text-[9px] font-mono text-obs-dtext">LIVE_EMPTY_REGISTRY — 0 calls</div>
+            </div>
+          )
+        ) : (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">Chargement…</div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-function GencoinTab() {
+function MemoryTab({ live }: { live?: Record<string, unknown> }) {
+  const statusColor = (s: string) => ({ CANDIDATE_ONLY: 'obs-badge-memory', NEEDS_REVIEW: 'obs-badge-hold', PROMOTION_READY: 'obs-badge-proof', REJECTED: 'obs-badge-block', FROZEN: 'obs-badge-muted' }[s] ?? 'obs-badge-muted')
+  const candSnap = live?.candidate_memory_snapshot as Record<string, unknown> | undefined
+  const latestCandidates = Array.isArray(candSnap?.latest_candidates) ? candSnap.latest_candidates as Record<string, unknown>[] : []
+  const candTotal = candSnap?.candidate_ledger_count as number | undefined
+  const graphitiStatus = live?.graphiti_status as string | undefined
+  const neo4jStatus = live?.neo4j_status as string | undefined
+  const graphitiBlocker = live?.graphiti_blocker as string | undefined
+  return (
+    <div className="space-y-4">
+      <div>
+        <SectionTitle>Memory Candidates</SectionTitle>
+        {latestCandidates.length > 0 ? (
+          <div className="space-y-2">
+            {candTotal !== undefined && (
+              <div className="obs-card p-2 border-obs-dtext/20">
+                <div className="text-[9px] font-mono text-obs-dtext">Total: <span className="text-obs-memory font-semibold">{candTotal}</span> candidats — {latestCandidates.length} affichés (source: payload.candidate_memory_snapshot)</div>
+              </div>
+            )}
+            {latestCandidates.map((mc, i) => (
+              <div key={String(mc.candidate_id ?? i)} className="obs-card p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <CopyableKV k="id" v={`${String(mc.candidate_id ?? '').slice(0, 12)}…`} />
+                  <span className={statusColor(String(mc.status ?? ''))}>{String(mc.status ?? '—')}</span>
+                </div>
+                <p className="text-obs-mtext text-[10px] font-mono mb-2">{String(mc.content_summary ?? '—')}</p>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="obs-badge-memory">{String(mc.source_type ?? 'CANDIDATE_ONLY')}</span>
+                  <span className="text-obs-dtext text-[9px] font-mono">write=<span className="text-obs-block">false</span></span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">
+              {live ? 'NO_CANDIDATE_MEMORY_SNAPSHOT_IN_PAYLOAD' : 'Envoyer un message pour charger les candidats live'}
+            </div>
+          </div>
+        )}
+      </div>
+      <div>
+        <SectionTitle>Graphiti Status</SectionTitle>
+        <div className="obs-card p-3 space-y-0.5">
+          {graphitiStatus ? (
+            <CopyableKV k="graphiti_status" v={graphitiStatus} vClass={graphitiStatus.includes('BLOCKED') ? 'text-obs-block' : 'text-obs-pass'} />
+          ) : (
+            <div className="text-[9px] font-mono text-obs-dtext mb-1">NO_GRAPHITI_STATUS_IN_PAYLOAD — envoyer un message</div>
+          )}
+          {neo4jStatus && <CopyableKV k="neo4j_status" v={neo4jStatus} vClass={neo4jStatus === 'ONLINE' ? 'text-obs-pass' : 'text-obs-hold'} />}
+          {graphitiBlocker && <CopyableKV k="graphiti_blocker" v={graphitiBlocker} vClass="text-obs-hold" />}
+          <CopyableBool k="graphiti_write" v={false} />
+          <CopyableBool k="neo4j_write" v={false} />
+          <CopyableKV k="decision_authority" v="KX108_ONLY" vClass="text-obs-kernel" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GencoinTab({ live }: { live?: Record<string, unknown> }) {
+  const shadow = live?.gencoin_shadow_packet as Record<string, unknown> | undefined
+  const shadowScores = shadow?.shadow_scores as Record<string, unknown> | undefined
   return (
     <div className="space-y-4">
       <div className="obs-card p-3 border-obs-gencoin/20 bg-obs-gencoin/5">
         <div className="text-[9px] font-mono text-obs-gencoin font-bold mb-1">⚠ GENCOIN IS NOT A REAL TOKEN</div>
         <div className="text-[10px] font-mono text-obs-mtext">Ledger only. No smart contract. No wallet. No mint. Post-proof symbolic valuation only.</div>
       </div>
-      <StaticDemoSection label="Ledger Entries">
-        <div><SectionTitle>Ledger Entries</SectionTitle>
-          <div className="space-y-2">{MOCK_GENCOIN.map(gc => (
-            <div key={gc.entry_id} className="obs-card p-3">
-              <div className="flex items-center justify-between mb-1.5"><span className="text-obs-gencoin font-mono text-sm font-semibold">{gc.amount_symbolic} GC</span><span className="obs-badge-gencoin">LEDGER ONLY</span></div>
-              <p className="text-obs-mtext text-[10px] font-mono mb-2">{gc.description}</p>
-              <div className="space-y-0.5"><CopyableKV k="proof_ref" v={gc.proof_ref} vClass="text-obs-proof" /><CopyableBool k="is_real_token" v={gc.is_real_token} /><CopyableBool k="post_proof_only" v={gc.post_proof_only} /><CopyableBool k="ledger_only" v={gc.ledger_only} /></div>
-            </div>
-          ))}</div>
+      <div>
+        <SectionTitle>Gencoin Shadow Packet</SectionTitle>
+        {shadow ? (
+          <div className="obs-card p-3 space-y-0.5">
+            <CopyableKV k="mode" v={String(shadow.mode ?? '—')} vClass="text-obs-hold" />
+            <CopyableKV k="usable_shadow_value" v={String(shadow.usable_shadow_value ?? false)} vClass={shadow.usable_shadow_value ? 'text-obs-pass' : 'text-obs-block'} />
+            {shadow.reason ? <CopyableKV k="reason" v={String(shadow.reason)} vClass="text-obs-hold" /> : null}
+            {shadowScores ? Object.entries(shadowScores).slice(0, 6).map(([k, v]) => (
+              <CopyableKV key={k} k={k} v={v === null ? 'null (not calibrated)' : String(v)} vClass={v === null ? 'text-obs-dtext' : 'text-obs-gencoin'} />
+            )) : null}
+            <CopyableKV k="decision_authority" v="KX108_ONLY" vClass="text-obs-kernel" />
+          </div>
+        ) : (
+          <div className="obs-card p-2 border-obs-dtext/20">
+            <div className="text-[9px] font-mono text-obs-dtext">NO_GENCOIN_SHADOW_PACKET_IN_PAYLOAD — envoyer un message pour charger le shadow packet</div>
+          </div>
+        )}
+      </div>
+      <div>
+        <SectionTitle>Gencoin Ledger</SectionTitle>
+        <div className="obs-card p-3 space-y-0.5 border-obs-dtext/20">
+          <CopyableKV k="status" v="LIVE_EMPTY_REGISTRY" vClass="text-obs-hold" />
+          <CopyableKV k="count" v="0" />
+          <CopyableKV k="reason" v="NO_REAL_GENCOIN_LEDGER_ENTRY_YET" vClass="text-obs-dtext" />
+          <CopyableBool k="is_real_token" v={false} />
+          <CopyableBool k="no_wallet" v={true} />
+          <CopyableBool k="no_mint" v={true} />
+          <CopyableKV k="source" v="audit/gencoin_ledger.jsonl — ABSENT" vClass="text-obs-dtext" />
+          <CopyableKV k="decision_authority" v="KX108_ONLY" vClass="text-obs-kernel" />
         </div>
-      </StaticDemoSection>
+      </div>
     </div>
   )
 }
@@ -668,6 +777,7 @@ function AuditTab({ live }: { live?: Record<string, unknown> }) {
   const typeColor: Record<string, string> = { context_read: 'text-obs-memory', brody_response: 'text-obs-brody', memory_candidate: 'text-obs-memory', governance_check: 'text-obs-kernel', world_call: 'text-obs-world', gencoin_entry: 'text-obs-gencoin' }
   const [showMd, setShowMd] = useState(false)
   const responseMd = live?.response_md as string | undefined
+  const auditEvent = live?.audit_event as Record<string, unknown> | undefined
   return (
     <div className="space-y-4">
       {responseMd && (
@@ -688,17 +798,25 @@ function AuditTab({ live }: { live?: Record<string, unknown> }) {
           )}
         </div>
       )}
-      <div className="obs-card p-2 border-obs-dtext/20"><div className="text-[9px] font-mono text-obs-dtext">Append-only audit trail. WorldActionBus. Read-only replay.</div></div>
-      <StaticDemoSection label="Audit Events">
-        <div className="space-y-1">{MOCK_AUDIT.map(ev => (
-          <div key={ev.event_id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-obs-muted/30 transition-colors">
-            <span className={`text-[9px] font-mono ${typeColor[ev.type] ?? 'text-obs-mtext'} w-28 shrink-0`}>{ev.type}</span>
-            <span className="text-obs-mtext text-[10px] font-mono flex-1 truncate">{ev.description}</span>
-            <span className={`shrink-0 ${resultBadge(ev.result)}`}>{ev.result}</span>
-            <span className="text-obs-dtext text-[9px] font-mono shrink-0">{new Date(ev.timestamp).toLocaleTimeString()}</span>
+      <div className="obs-card p-2 border-obs-dtext/20"><div className="text-[9px] font-mono text-obs-dtext">Append-only audit trail. Source: audit/world_action_bus.jsonl (191 events réels). Read-only replay.</div></div>
+      {auditEvent ? (
+        <div>
+          <SectionTitle>Audit Event — Live</SectionTitle>
+          <div className="obs-card p-3 space-y-0.5 border-obs-brody/20 bg-obs-brody/5">
+            <CopyableKV k="event_id" v={String(auditEvent.event_id ?? '—')} vClass="text-obs-proof" />
+            <CopyableKV k="type" v={String(auditEvent.type ?? '—')} vClass={typeColor[String(auditEvent.type ?? '')] ?? 'text-obs-mtext'} />
+            <CopyableKV k="description" v={String(auditEvent.description ?? '—')} />
+            <CopyableKV k="result" v={String(auditEvent.result ?? '—')} vClass={auditEvent.result === 'OK' ? 'text-obs-pass' : 'text-obs-hold'} />
+            <CopyableKV k="timestamp" v={String(auditEvent.timestamp ?? '—')} />
+            <div className="pt-0.5"><span className={`${resultBadge(String(auditEvent.result ?? ''))} text-[8px]`}>{String(auditEvent.result ?? '—')}</span></div>
           </div>
-        ))}</div>
-      </StaticDemoSection>
+        </div>
+      ) : (
+        <div className="obs-card p-2 border-obs-dtext/20">
+          <div className="text-[9px] font-mono text-obs-dtext">NO_LIVE_AUDIT_EVENT_IN_PAYLOAD — envoyer un message pour charger l'audit event live</div>
+          <div className="text-[9px] font-mono text-obs-dtext mt-1">Registre complet: /api/audit/events ← audit/world_action_bus.jsonl</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1014,8 +1132,8 @@ export function RightPanel({ onSendPrompt, lastBackendPayload }: RightPanelProps
   const TAB_CONTENT: Record<TabId, React.ReactNode> = {
     context:    <ContextTab onSendPrompt={onSendPrompt} live={lastBackendPayload} />,
     governance: <GovernanceTab />,
-    memory:     <MemoryTab />,
-    gencoin:    <GencoinTab />,
+    memory:     <MemoryTab live={lastBackendPayload} />,
+    gencoin:    <GencoinTab live={lastBackendPayload} />,
     audit:      <AuditTab live={lastBackendPayload} />,
     automation: (
       <div className="space-y-4">

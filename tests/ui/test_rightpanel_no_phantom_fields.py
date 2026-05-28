@@ -1,11 +1,12 @@
-"""F15C — RightPanel strict live surface verification.
+"""F16B — RightPanel live source verification.
 
-Source-assert tests. Verify that:
-- No hardcoded phantom fields (v18_hash_status, git_branch, cp_a1b2c3d4).
-- tree_policy safe_trees reads nested path.
-- All mock sections are wrapped in STATIC_DEMO_NOT_RUNTIME disclosure (hidden by default).
-- Mock section titles do NOT carry inline NOT_RUNTIME suffixes (moved to wrapper).
-- Live surface (CONTEXT tab) blocks remain intact and payload-driven.
+Source-assert tests verifying:
+- No hardcoded phantom fields (v18_hash_status, git_branch, cp_a1b2c3d4)
+- No mock data in runtime surface (MOCK_* removed from runtime rendering)
+- Live sources wired: tree_signal_packet, candidate_memory_snapshot,
+  gencoin_shadow_packet, audit_event, endpoint fetch for governance
+- LIVE_EMPTY_REGISTRY for gencoin ledger
+- Boundary labels present in CONTEXT tab
 """
 from pathlib import Path
 
@@ -43,74 +44,85 @@ def test_tree_policy_uses_nested_path():
     assert "safe_trees" in SRC
 
 
-# ── STATIC_DEMO_NOT_RUNTIME wrapper ─────────────────────────────────────────
+# ── Mock removal from runtime surface ───────────────────────────────────────
 
-def test_static_demo_component_present():
-    """StaticDemoSection component must exist in RightPanel source."""
-    assert "StaticDemoSection" in SRC
-    assert "STATIC_DEMO_NOT_RUNTIME" in SRC
-
-
-def test_static_demo_hidden_by_default():
-    """StaticDemoSection starts closed — toggle state initialized to false."""
-    assert "const [open, setOpen] = useState(false)" in SRC
+def test_no_mock_os3_ticket():
+    """MOCK_OS3_TICKET must not appear in RightPanel source."""
+    assert "MOCK_OS3_TICKET" not in SRC
 
 
-def test_governance_sections_in_static_demo():
-    """GovernanceTab sections are wrapped in StaticDemoSection, not in live surface."""
-    assert 'StaticDemoSection label="OS3 / Sovereign / WorldCall"' in SRC
+def test_no_mock_sovereign_ticket():
+    """MOCK_SOVEREIGN_TICKET must not appear in RightPanel source."""
+    assert "MOCK_SOVEREIGN_TICKET" not in SRC
 
 
-def test_governance_titles_no_inline_not_runtime():
-    """OS3/Sovereign/WorldCall section titles must NOT carry inline — NOT_RUNTIME suffix."""
-    assert "OS3 Proof Ticket — NOT_RUNTIME" not in SRC
-    assert "Sovereign Ticket — NOT_RUNTIME" not in SRC
-    assert "WorldCall / Gateway — NOT_RUNTIME" not in SRC
+def test_no_mock_world_calls():
+    """MOCK_WORLD_CALLS must not appear in RightPanel source."""
+    assert "MOCK_WORLD_CALLS" not in SRC
 
 
-def test_memory_sections_in_static_demo():
-    """MemoryTab sections are wrapped in StaticDemoSection."""
-    assert 'StaticDemoSection label="Memory Candidates / Graphiti Status"' in SRC
+def test_no_mock_memory_candidates():
+    """MOCK_MEMORY_CANDIDATES must not appear in RightPanel source."""
+    assert "MOCK_MEMORY_CANDIDATES" not in SRC
 
 
-def test_memory_titles_no_inline_not_runtime():
-    """Memory section titles must NOT carry inline NOT_RUNTIME suffixes."""
-    assert "Memory Candidates — NOT_RUNTIME / STATIC" not in SRC
-    assert "Graphiti Status — STATIC / NOT_RUNTIME" not in SRC
+def test_no_mock_gencoin():
+    """MOCK_GENCOIN must not appear in RightPanel source."""
+    assert "MOCK_GENCOIN" not in SRC
 
 
-def test_gencoin_ledger_in_static_demo():
-    """GencoinTab Ledger Entries are wrapped in StaticDemoSection."""
-    assert 'StaticDemoSection label="Ledger Entries"' in SRC
+def test_no_mock_audit():
+    """MOCK_AUDIT must not appear in RightPanel source."""
+    assert "MOCK_AUDIT" not in SRC
 
 
-def test_gencoin_title_no_inline_not_runtime():
-    """Ledger Entries section title must NOT carry inline NOT_RUNTIME suffix."""
-    assert "Ledger Entries — NOT_RUNTIME / SYMBOLIC" not in SRC
+def test_no_mock_context_packet_dominant_trees():
+    """cp.dominant_trees from MOCK_CONTEXT_PACKET must not be the source."""
+    assert "cp.dominant_trees" not in SRC
+    assert "MOCK_CONTEXT_PACKET" not in SRC
 
 
-def test_audit_events_in_static_demo():
-    """AuditTab Audit Events are wrapped in StaticDemoSection."""
-    assert 'StaticDemoSection label="Audit Events"' in SRC
+# ── Live sources wired ───────────────────────────────────────────────────────
+
+def test_dominant_trees_reads_tree_signal_packet():
+    """Dominant Trees block must read from live.tree_signal_packet."""
+    assert "tree_signal_packet" in SRC
 
 
-def test_audit_title_no_inline_not_runtime():
-    """Audit Events section title must NOT carry inline NOT_RUNTIME suffix."""
-    assert "Audit Events — NOT_RUNTIME / STATIC" not in SRC
+def test_memory_tab_reads_candidate_memory_snapshot():
+    """MemoryTab must read from candidate_memory_snapshot.latest_candidates."""
+    assert "candidate_memory_snapshot" in SRC
+    assert "latest_candidates" in SRC
 
 
-def test_dominant_trees_in_static_demo():
-    """ContextTab Dominant Trees are wrapped in StaticDemoSection."""
-    assert "Dominant Trees" in SRC
-    assert "StaticDemoSection" in SRC
+def test_memory_tab_reads_graphiti_status():
+    """MemoryTab must read graphiti_status from live payload."""
+    assert "graphiti_status" in SRC
 
 
-def test_dominant_trees_title_no_inline_not_runtime():
-    """Dominant Trees title must NOT carry inline NOT_RUNTIME / STATIC suffix."""
-    assert "Dominant Trees — NOT_RUNTIME / STATIC" not in SRC
+def test_gencoin_tab_reads_shadow_packet():
+    """GencoinTab must read from live.gencoin_shadow_packet."""
+    assert "gencoin_shadow_packet" in SRC
 
 
-# ── Live surface boundary labels remain ─────────────────────────────────────
+def test_gencoin_tab_live_empty_registry():
+    """GencoinTab must display LIVE_EMPTY_REGISTRY for ledger."""
+    assert "LIVE_EMPTY_REGISTRY" in SRC
+
+
+def test_audit_tab_reads_audit_event():
+    """AuditTab must read from live.audit_event."""
+    assert "audit_event" in SRC
+
+
+def test_governance_tab_uses_endpoint_fetch():
+    """GovernanceTab must fetch from real endpoints using useEffect."""
+    assert "useEffect" in SRC
+    assert "/api/os3/tickets" in SRC
+    assert "/api/worldcalls" in SRC
+
+
+# ── Live boundary labels present ─────────────────────────────────────────────
 
 def test_live_boundary_labels_present():
     """Live boundary labels (decision_authority, readonly, emits_act) remain in CONTEXT tab."""
