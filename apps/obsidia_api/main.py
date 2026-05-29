@@ -26,11 +26,12 @@ from apps.obsidia_api.routes.audit import router as audit_router
 from apps.obsidia_api.routes.periphery_ops import router as periphery_ops_router
 from apps.obsidia_api.routes.brody_monitoring import router as brody_monitoring_router
 from apps.obsidia_api.routes.runtime_freeze import router as runtime_freeze_router
+from apps.obsidia_api.routes.bus import router as bus_router
 
 for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
            memory_router, gencoin_router, graphiti_router, x108_router,
            os3_router, worldcalls_router, blockchain_router, audit_router,
-           periphery_ops_router, brody_monitoring_router, runtime_freeze_router]:
+           periphery_ops_router, brody_monitoring_router, runtime_freeze_router, bus_router]:
     app.include_router(r)
 
 

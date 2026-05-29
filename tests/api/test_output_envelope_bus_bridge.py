@@ -19,22 +19,7 @@ from apps.obsidia_api.main import app
 
 client = pytest.importorskip("fastapi.testclient").TestClient(app)
 
-# F52 QUARANTINE — F51_ROUTE_MISSING_CONFIRMED
-# bus/stats and bus/bridge are future contract surfaces.
-# They are intended to become connective interfaces for internal state, proof state,
-# runtime state, memory/context state, and external incoming signals.
-# They are not implemented in Brody V1 runtime routes yet.
-# Tests quarantined by F52; do not treat as Brody V1 regression.
-# Implementation plan: F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN
-pytestmark = pytest.mark.skip(
-    reason=(
-        "F51_ROUTE_MISSING_CONFIRMED: bus/stats and bus/bridge are future contract surfaces. "
-        "Intended as connective interfaces for internal state, proof state, runtime state, "
-        "memory/context state, and external incoming signals. "
-        "Not implemented in Brody V1 runtime routes. "
-        "Quarantined by F52. Implementation: F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN."
-    )
-)
+# F52 quarantine lifted by F54 after /bus/stats and /bus/bridge implementation.
 
 
 @pytest.fixture(scope="module")
