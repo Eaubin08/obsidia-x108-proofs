@@ -1,0 +1,104 @@
+{
+  "package_id": "OBSIDIA_F49_PUBLIC_RELEASE_PACKAGE_DEMO_EXPORT_PACK_20260529_190000",
+  "palier": "F49",
+  "parent": "F48_POST_HARDENING_VERIFICATION_RELEASE_READINESS_CHECK",
+  "sealed_at": "20260529_190000",
+  "status": "PASS",
+  "head": "378867f",
+  "parent_tag": "BRODY_F48_POST_HARDENING_VERIFICATION_RELEASE_READINESS_CHECK_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "version": "V1.0.0-RC-CLOSED",
+  "public_release_gate": "LIFTED",
+  "package_contents": {
+    "public_release_package": "docs/release/BRODY_GPT_V1_PUBLIC_RELEASE_PACKAGE.md",
+    "demo_commands": "docs/release/BRODY_GPT_V1_DEMO_COMMANDS.md",
+    "proof_index": "docs/release/BRODY_GPT_V1_PROOF_INDEX_F42_F48.md",
+    "limitations": "docs/release/BRODY_GPT_V1_LIMITATIONS_AND_BOUNDARIES.md"
+  },
+  "proof_chain": {
+    "F42": {
+      "name": "Brody GPT V1 Final Release Seal",
+      "tag": "BRODY_F42_BRODY_GPT_V1_FINAL_RELEASE_SEAL_PALIER_20260529",
+      "manifest_sha256": "D11CCF61E06402862042DF118A4CFB8C58F1D63FB74F0461D3DEC05100646420"
+    },
+    "F43": {
+      "name": "Live Server Port Matrix Audit",
+      "tag": "BRODY_F43_BRODY_V1_FULL_LIVE_SERVER_PORT_MATRIX_AUDIT_PALIER_20260529",
+      "manifest_sha256": "5F42AFEA3E31EF999E1463DCBC141782140EAA6D352CB8C5FA49D2362888E21E"
+    },
+    "F44": {
+      "name": "Canonical Integrity Audit",
+      "tag": "BRODY_F44_CANONICAL_INTEGRITY_AUDIT_PALIER_20260529",
+      "manifest_sha256": "B3A1FF877520BADAC1E7CF3FDC0AEA527AAAE40FF2897B0F982B412E9944E84B",
+      "findings": 7,
+      "confirmed_post_f47": 0
+    },
+    "F45": {
+      "name": "Terminal Observation Battery",
+      "tag": "BRODY_F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY_PALIER_20260529",
+      "manifest_sha256": "99DD2A966C379766451938E25F200ECA5813C1B912A7253087F8651F5E623416",
+      "baseline_tests": "103/103"
+    },
+    "F46": {
+      "name": "Canonical Hardening Plan",
+      "tag": "BRODY_F46_CANONICAL_HARDENING_PLAN_PALIER_20260529",
+      "manifest_sha256": "C2DCB18BBFB485C8A8693A88A2C28D8EEF506D4101F68EDB3CB17533F81064D6"
+    },
+    "F47": {
+      "name": "Canonical Hardening Patch Sequence",
+      "tag": "BRODY_F47_CANONICAL_HARDENING_PATCH_PALIER_20260529",
+      "manifest_sha256": "C06BF8471417B4C8C538B06EEF09487019D652ED0AD8A9AF95CB000E077940C2",
+      "sovereignty_checks": "13/13",
+      "sanitizer_checks": "42/42",
+      "confirmed_findings_remaining": 0
+    },
+    "F48": {
+      "name": "Post-Hardening Release Readiness Check",
+      "tag": "BRODY_F48_POST_HARDENING_VERIFICATION_RELEASE_READINESS_CHECK_PALIER_20260529",
+      "manifest_sha256": "2C4E8FA9E87DA36B394C92FAFAB2087F24E68181C53EC4A4A48878EB251A1D7E",
+      "public_release_gate": "LIFTED",
+      "sha256_recompute": "10/10 OK"
+    }
+  },
+  "v1_metrics": {
+    "unit_tests": "103/103 PASS",
+    "smoke_checks_cumulative": 474,
+    "live_server_proofs": 3,
+    "api_routes": "7 READY_READONLY",
+    "git_tags_f24_f48": "17 present",
+    "forbidden_tokens_in_output": 0,
+    "mutation_flags_triggered": 0,
+    "sovereignty_flags_enforced": "13/13"
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false
+  },
+  "explicit_non_claims": [
+    "NOT production-ready",
+    "NOT certified",
+    "NOT Lean-proven",
+    "NOT cloud-ready",
+    "Brody does NOT decide",
+    "KX108 kernel NOT instantiated in V1",
+    "NOT adversarially hardened",
+    "NOT load-tested"
+  ],
+  "release_docs_sha256": {
+    "docs/release/BRODY_GPT_V1_PUBLIC_RELEASE_PACKAGE.md": "1588678220B18FE78D371CE46822D2ABA282538910C829DCF1ED2D2D767EE871",
+    "docs/release/BRODY_GPT_V1_DEMO_COMMANDS.md": "8A4FDFFB2903290D7F9A1E379A3821AB4FBCDEE805226769951A4214B52560FC",
+    "docs/release/BRODY_GPT_V1_PROOF_INDEX_F42_F48.md": "5AE80256DA4522CBC7B4E4743124575075C1D1F9E9FE1A5506EFB22A938C592C",
+    "docs/release/BRODY_GPT_V1_LIMITATIONS_AND_BOUNDARIES.md": "E6CD9E807FB7CE288D031C529E26D1DB3CB7B67DD69BEB57CB1C22224651399F"
+  },
+  "patch_applied": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "next": "commit F49 after user validation — tag BRODY_F49_PUBLIC_RELEASE_PACKAGE_DEMO_EXPORT_PACK_PALIER_20260529"
+}
