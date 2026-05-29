@@ -1,0 +1,48 @@
+{
+  "freeze_id": "F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY_20260529_090000",
+  "palier": "F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY",
+  "version": "F45_V1",
+  "timestamp": "20260529_090000",
+  "mode": "AUDIT_ARTIFACT_ONLY \u00b7 READONLY \u00b7 KX108_ONLY \u00b7 emits_act=false",
+  "status": "PASS_WITH_CONFIRMED_FINDINGS",
+  "head": "265b330",
+  "parent_tag": "BRODY_F44_CANONICAL_INTEGRITY_AUDIT_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "type": "CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY",
+  "test_results": {
+    "F2_controlled_response_text_unsanitized": "CONFIRMED",
+    "F4_base_update_override": "CONFIRMED",
+    "F6_kernel_trace_forbidden_tokens": "DOC_ONLY",
+    "F1_boundary_truncated": "CONFIRMED_LEGACY_ONLY",
+    "F3_surfaces_ready_env_dependent": "DOC_ONLY",
+    "F5_token_scan_scope": "CONFIRMED_LEGACY_SCOPE",
+    "F7_hardcoded_proof_links": "DOC_ONLY"
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "audit_index": {
+      "path": "docs\\runtime\\OBSIDIA_F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY_20260529_090000.json",
+      "sha256": "AD8B5782828F636FA60A3A2FD4EAC876148F2826DD49D6A6CAD93656BA7FEEEC"
+    },
+    "audit_report": {
+      "path": "docs\\runtime\\OBSIDIA_F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY_20260529_090000.md",
+      "sha256": "B231EDCB5975C4035D421C1D509BAFF43570D88136548D89D15CA52A4ED6371F"
+    },
+    "demo_findings": {
+      "path": "docs\\demo\\OBSIDIA_F45_CANONICAL_OBSERVATION_FINDINGS.md",
+      "sha256": "1164974F144CB2B73962E8C9DA2CBF9CEA2F2408FC883448612C1F1997F7E0F3"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
