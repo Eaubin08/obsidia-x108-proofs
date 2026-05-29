@@ -1,0 +1,52 @@
+{
+  "freeze_id": "F46_CANONICAL_HARDENING_PLAN_20260529_095000",
+  "palier": "F46_CANONICAL_HARDENING_PLAN_PREP",
+  "version": "F46_V1",
+  "timestamp": "20260529_095000",
+  "mode": "PLAN_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "PASS",
+  "head": "9f59eeb",
+  "parent_tag": "BRODY_F45_CANONICAL_OBSERVATION_TERMINAL_TEST_BATTERY_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "type": "CANONICAL_HARDENING_PLAN_PREP",
+  "public_release_gate": "BLOCKED_UNTIL_F47_HARDENING",
+  "plan_summary": {
+    "confirmed_findings_addressed": ["F2", "F4", "F5", "F1"],
+    "doc_only_findings_addressed": ["F6", "F3", "F7"],
+    "f47_phases": 7,
+    "high_priority_patches": ["F47.1 (safe_response.py merge order)", "F47.2 (controlled_response.text sanitizer)"],
+    "low_priority_patches": ["F47.4 (legacy _BOUNDARY annotation)", "F47.5 (doc corrections)"],
+    "no_touch": ["KX108 kernel", "BOUNDARY constants", "route Pydantic models", "Neo4j", "Graphiti"]
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "hardening_plan_index": {
+      "path": "docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.json",
+      "sha256": "1A7076D5F0BA8B7030FD80DF80BBE90D88A69E42C39AD9D959ECB96EDB6EE810"
+    },
+    "hardening_plan_report": {
+      "path": "docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.md",
+      "sha256": "51593E980988225FFA7A1BDF709819A310635DB68609D9C5DF4779B8A6629B9E"
+    },
+    "public_readiness_gate": {
+      "path": "docs/demo/OBSIDIA_F46_PUBLIC_READINESS_GATE.md",
+      "sha256": "4BBE305F6170B0BF8498CDDD52D21BCF11298C1A28A0B21ADB2C76411CB0D7B9"
+    },
+    "patch_sequence": {
+      "path": "docs/demo/OBSIDIA_F46_F47_PATCH_SEQUENCE.md",
+      "sha256": "E7A9217EA84923E0968DA25ADBBE437FA276564C0D50C68575B52A3906BB36BE"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
