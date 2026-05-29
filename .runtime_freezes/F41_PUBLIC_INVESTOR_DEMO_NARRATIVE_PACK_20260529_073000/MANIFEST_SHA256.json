@@ -1,0 +1,58 @@
+{
+  "freeze_id": "F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_PACK_20260529_073000",
+  "palier": "F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_PACK",
+  "version": "F41_V1",
+  "timestamp": "20260529_073000",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "PASS",
+  "head": "ff33bac",
+  "parent_tag": "BRODY_F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX_PALIER_20260529",
+  "type": "NARRATIVE_DOCUMENTATION_ONLY",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38 → F39 → F40 → F41",
+  "inherited": {
+    "tests_pass": "103/103",
+    "smoke_checks_cumulative": 474,
+    "live_server_proofs": 3,
+    "routes": 7,
+    "tags": 10
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "narrative_index": {
+      "path": "docs/runtime/OBSIDIA_F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_INDEX_20260529_073000.json",
+      "sha256": "4FF98C5F50046EF01E32B267DF495ED4E3864B2BC2CE473E743663F605EEECC3"
+    },
+    "narrative_report": {
+      "path": "docs/runtime/OBSIDIA_F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_REPORT_20260529_073000.md",
+      "sha256": "8234FAE6B72B431CA977C80C5349814AC6F168A0C23C06882D06C6B832A1047A"
+    },
+    "investor_pitch": {
+      "path": "docs/demo/OBSIDIA_F41_PUBLIC_INVESTOR_PITCH.md",
+      "sha256": "1207F37E1693B691D40ADF89C5C3439D724F0963B44199961C8D0E3C739547F4"
+    },
+    "demo_script": {
+      "path": "docs/demo/OBSIDIA_F41_DEMO_SCRIPT_3_5_MIN.md",
+      "sha256": "28C89A4BD550703B975CDE4098489B14621D5A06233CEE031386C02A6E03D601"
+    },
+    "proof_perimeter": {
+      "path": "docs/demo/OBSIDIA_F41_WHAT_IT_PROVES_AND_DOES_NOT_PROVE.md",
+      "sha256": "E03E65D712038615FFC3E4532235249680FC505CEBA48C9647FF86ECC8C01E75"
+    },
+    "investor_faq": {
+      "path": "docs/demo/OBSIDIA_F41_INVESTOR_JURY_FAQ.md",
+      "sha256": "D0E00D65E6DEDA8BE7778BBC8C479A5FBCB0C0D6C08249D83C2513C70AD39A40"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
