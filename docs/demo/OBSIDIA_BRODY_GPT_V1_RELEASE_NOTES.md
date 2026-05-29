@@ -62,7 +62,7 @@ Brody GPT V1 is the first closed, auditable version of the Brody advisory runtim
 #### F36 — User Scenario Brody Workbench Controlled Response
 - `POST /api/periphery/brody-runtime/f36/user-scenario`
 - End-to-end: user_input → F33 → F32 → workbench summary → controlled readonly response
-- Word-boundary forbidden token check applied to all generated text
+- Word-boundary forbidden token check applied to `controlled_response.text` and user-facing response fields (F47 hardening); KERNEL_TRACE stderr is internal computation only
 - 14 unit tests
 
 #### F36B — True Live Uvicorn User Scenario Smoke

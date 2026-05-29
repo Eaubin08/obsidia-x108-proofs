@@ -246,7 +246,7 @@ Every Brody V1 response must carry:
 | `brody_decision` | `false` |
 
 Forbidden tokens: `ALLOW · HOLD · BLOCK · ACT · DECIDE · VERDICT`  
-Check: word-boundary regex `\bTOKEN\b` on all generated text.
+Check: word-boundary regex `\bTOKEN\b` applied to `controlled_response.text` and `response`/`response_text` fields (F47 hardening). KERNEL_TRACE stderr tokens (ALLOW, VERDICT, GATE, BLOCK) are internal computation results from sigma/evaluate — they are NOT Brody API response emissions and are excluded from this scan.
 
 ---
 

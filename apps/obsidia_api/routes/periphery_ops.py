@@ -116,6 +116,11 @@ class SigmaEvaluatePayload(BaseModel):
 
 router = APIRouter(prefix="/api/periphery", tags=["periphery"])
 
+# F47.4 — LEGACY_BOUNDARY_TRUNCATED
+# This constant (4 of 15 canonical flags) is used only by pre-F32 pipeline/governance
+# routes in this file. It is NOT used by Brody V1 routes (F33/F35/F36/F38) — those
+# use the full 15-flag BOUNDARY from their respective modules.
+# Expand to 15 flags or deprecate legacy routes in F50+.
 _BOUNDARY: dict[str, Any] = {
     "readonly": True,
     "emits_act": False,
@@ -1543,6 +1548,10 @@ async def f35_workbench_runtime_connector():
             "surfaces_missing": snapshot.get("surfaces_missing"),
         },
         "surface_rows": snapshot.get("surface_rows", []),
+        # F47.5 — F7 STATIC_PROOF_LINKS_SNAPSHOT
+        # These paths are a static snapshot sealed at F34B (2026-05-29). They do not
+        # update dynamically. For current proof inventory see F40 release candidate index:
+        # docs/runtime/OBSIDIA_F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX_20260529_061923.json
         "proof_links": [
             "docs/runtime/F34B_LIVE_UVICORN_ROUTE_PROOF_20260529_044331.json",
             "docs/runtime/OBSIDIA_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_20260529_024438.md",

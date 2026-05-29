@@ -25,7 +25,7 @@ Regulatory frameworks (EU AI Act, financial sector AI governance requirements) a
 
 Obsidia X-108 is a kernel-layer governance component. It intercepts every AI-generated output before it reaches an execution surface, checks it against a deterministic rule engine, and ensures the AI operates as advisory context only — never as a decision authority.
 
-**Brody** (the advisory AI component) consults 7 runtime surfaces and generates context-only responses. It cannot decide, execute, or mutate state. This constraint is not a configuration — it is enforced simultaneously at:
+**Brody** (the advisory AI component) consults 7 runtime surfaces (nominal configuration — reported dynamically at runtime) and generates context-only responses. It cannot decide, execute, or mutate state. This constraint is not a configuration — it is enforced simultaneously at:
 
 1. **Module level** — every Python function returns a 15-flag BOUNDARY dict
 2. **Route level** — every FastAPI endpoint calls `safe_backend_response()` which enforces the boundary

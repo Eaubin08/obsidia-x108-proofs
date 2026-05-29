@@ -77,9 +77,11 @@ def _build_controlled_response_text(
     surface_names: list[str],
     surfaces_ready: int,
 ) -> str:
+    from apps.obsidia_api.safe_response import sanitize_user_facing_text  # noqa: PLC0415
+    safe_input = sanitize_user_facing_text(user_input)
     surfaces_list = ", ".join(surface_names)
     return (
-        f"Demande reçue : « {user_input} »\n"
+        f"Demande reçue : « {safe_input} »\n"
         f"Domaine consulté : {domain}.\n"
         f"Contexte disponible : {surfaces_ready} surfaces runtime opérationnelles "
         f"({surfaces_list}).\n"

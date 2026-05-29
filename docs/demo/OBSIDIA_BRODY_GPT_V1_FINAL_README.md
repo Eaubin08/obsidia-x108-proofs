@@ -16,7 +16,7 @@ Brody GPT V1 is a read-only advisory runtime component. It consults 7 runtime su
 This constraint is enforced at three independent layers simultaneously:
 1. Module level — every function returns a 15-flag `BOUNDARY` dict
 2. Route level — every FastAPI endpoint wraps output through `safe_backend_response()`
-3. Response level — word-boundary regex scan verifies absence of forbidden tokens in all generated text
+3. Response level — word-boundary regex scan applied to `controlled_response.text` and user-facing response fields (F47 hardening). KERNEL_TRACE stderr is internal computation only — not in scope of API token scan.
 
 ---
 
@@ -93,10 +93,12 @@ Start-Process "http://127.0.0.1:8011/api/periphery/operator/runtime-panel.html"
 
 | Domain | Status | Surfaces |
 |--------|--------|----------|
-| `bank` | READY_READONLY | 7 |
-| `gps_defense_aviation` | READY_READONLY | 7 |
-| `trading` | READY_READONLY | 7 |
+| `bank` | READY_READONLY | 7 (nominal config) |
+| `gps_defense_aviation` | READY_READONLY | 7 (nominal config) |
+| `trading` | READY_READONLY | 7 (nominal config) |
 | `unknown_refusal` | REFUSAL_READONLY | — |
+
+> **Note (F3):** `surfaces_ready=7` is the nominal configuration validated by unit tests and smoke proofs. This value is reported dynamically at runtime — it reflects whichever surfaces the orchestrator successfully queries at call time.
 
 ---
 
