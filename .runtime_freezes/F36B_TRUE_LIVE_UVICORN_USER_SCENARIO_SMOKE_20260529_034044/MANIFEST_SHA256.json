@@ -1,0 +1,34 @@
+{
+  "freeze_id": "F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE_20260529_034044",
+  "palier": "F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE",
+  "timestamp": "20260529_034044",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "smoke_status": "PASS",
+  "server_mode": "LIVE_UVICORN",
+  "port": 8011,
+  "source": "LIVE_SERVER_8011",
+  "checks": "61/61",
+  "tests": "65/65",
+  "route": "POST /api/periphery/brody-runtime/f36/user-scenario",
+  "scenario_id": "F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "proof_json": {
+      "path": "docs/runtime/F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_PROOF_20260529_034044.json",
+      "sha256": "A6FD4BC22B9EA7032E9AA325B193D8928BE969410DAE921A929A4DFF4A7592E4",
+      "size_bytes": 1350
+    },
+    "smoke": "scripts/smoke_f36b_true_live_uvicorn_user_scenario.py",
+    "report": "docs/runtime/OBSIDIA_F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE_20260529_034044.md"
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
