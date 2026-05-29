@@ -1,0 +1,49 @@
+{
+  "freeze_id": "F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000",
+  "palier": "F44_CANONICAL_INTEGRITY_AUDIT_SINCE_20260526",
+  "version": "F44_V1",
+  "timestamp": "20260529_090000",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "PASS_WITH_OBSERVATIONS",
+  "head": "f615e9e",
+  "parent_tag": "BRODY_F43_BRODY_V1_FULL_LIVE_SERVER_PORT_MATRIX_AUDIT_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "type": "CANONICAL_INTEGRITY_AUDIT_POST_V1_RELEASE",
+  "audit_results": {
+    "critical_findings": 0,
+    "high_findings": 0,
+    "medium_findings": 2,
+    "low_medium_findings": 1,
+    "low_findings": 4,
+    "total_findings": 7,
+    "clean_confirmations": 8,
+    "v1_integrity": "CONFIRMED_WITH_OBSERVATIONS",
+    "boundary_drift": false,
+    "hardcoding_found": false,
+    "fake_proofs_found": false,
+    "blocks_v1": false
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "audit_report": {
+      "path": "docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.md",
+      "sha256": "5356500EA42F52A6FAE1F7A289DFFBBCB369F38C74BD1299496E2CC5A08B5435"
+    },
+    "audit_index": {
+      "path": "docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.json",
+      "sha256": "6FD7D19FD3A14954AA915C2E2077A8F37F25C44D014A4295419163170F2AA577"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
