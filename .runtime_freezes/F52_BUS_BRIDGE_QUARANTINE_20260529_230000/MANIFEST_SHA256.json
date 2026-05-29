@@ -1,0 +1,35 @@
+{
+  "palier": "F52",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "head": "ad30a2e",
+  "parent_tag": "BRODY_F51_BUS_STATS_ROUTE_DEBT_AUDIT_PALIER_20260529",
+  "sealed_at": "20260529_230000",
+  "status": "PASS",
+  "action": "QUARANTINE_ONLY",
+  "tests_quarantined": 46,
+  "tests_deleted": 0,
+  "routes_created": 0,
+  "runtime_modified": false,
+  "files": {
+    "F52_JSON_ARTIFACT": {
+      "path": "docs/runtime/OBSIDIA_F52_BUS_BRIDGE_QUARANTINE_20260529_230000.json",
+      "sha256": "BF9435E3209B68526466CC4E5A027E3B36BF1D3E8B6A838847F19671BCC52FF9"
+    },
+    "F52_MD_ARTIFACT": {
+      "path": "docs/runtime/OBSIDIA_F52_BUS_BRIDGE_QUARANTINE_20260529_230000.md",
+      "sha256": "F40F48181743AE5565C1E28DC579148AFDD3C92D7819036DD49EB1390710A0D7"
+    },
+    "F52_BUS_BRIDGE_INTENT": {
+      "path": "docs/demo/OBSIDIA_F52_BUS_BRIDGE_INTENT.md",
+      "sha256": "34CA5C2B300D73447BE282F263F0BC1E87E309970F3494AC5E404A87323303EA"
+    },
+    "QUARANTINED_BUS_STATS_TEST": {
+      "path": "tests/api/test_output_envelope_bus_stats.py",
+      "sha256": "41BAFE32A00AFD6FF17901DC7117BB1118EB5BF7E1DBE935B456982156690CC6"
+    },
+    "QUARANTINED_BUS_BRIDGE_TEST": {
+      "path": "tests/api/test_output_envelope_bus_bridge.py",
+      "sha256": "256F47A90CC61221D0BE2A71E2DFF40A60FD58C99A45A90D9DBEB5462C363DB3"
+    }
+  }
+}

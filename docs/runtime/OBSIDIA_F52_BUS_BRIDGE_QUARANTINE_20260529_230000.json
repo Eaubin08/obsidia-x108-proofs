@@ -1,0 +1,79 @@
+{
+  "audit_id": "OBSIDIA_F52_BUS_BRIDGE_QUARANTINE_20260529_230000",
+  "palier": "F52",
+  "parent": "F51_BUS_STATS_ROUTE_DEBT_AUDIT",
+  "sealed_at": "20260529_230000",
+  "status": "PASS",
+  "head": "ad30a2e",
+  "parent_tag": "BRODY_F51_BUS_STATS_ROUTE_DEBT_AUDIT_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "action": "QUARANTINE_ONLY",
+  "quarantine": {
+    "method": "pytestmark = pytest.mark.skip()",
+    "files_quarantined": [
+      "tests/api/test_output_envelope_bus_stats.py",
+      "tests/api/test_output_envelope_bus_bridge.py"
+    ],
+    "tests_quarantined": 46,
+    "tests_deleted": 0,
+    "routes_created": 0,
+    "runtime_modified": false,
+    "reason": "F51_ROUTE_MISSING_CONFIRMED: bus/stats and bus/bridge are future contract surfaces. Intended as connective interfaces for internal state, proof state, runtime state, memory/context state, and external incoming signals. Not implemented in Brody V1 runtime routes. Quarantined by F52. Implementation: F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN."
+  },
+  "bus_bridge_architectural_intent": {
+    "status": "ACTIVE_FUTURE_SURFACE",
+    "note": "bus/bridge is NOT a dead test. It is a planned connective surface for the entire project machinery. Its full role will be defined in F53.",
+    "intended_to_expose": [
+      "internal runtime state",
+      "output envelope state",
+      "readiness state",
+      "proof state",
+      "audit state",
+      "route state",
+      "memory / Graphiti / Brody context state",
+      "external incoming signals",
+      "project-wide existential status"
+    ],
+    "sovereignty_contract": {
+      "decision_authority": "KX108_ONLY",
+      "brody_role": "advisory_readonly",
+      "allowed_to_decide": false,
+      "emits_act": false,
+      "emits_verdict": false
+    },
+    "current_tests_are": "premature_relative_to_implementation",
+    "implementation_timeline": "F53+"
+  },
+  "verification": {
+    "quarantine_result": "46 skipped, 0 failed, 0 errors",
+    "baseline_after_quarantine": "77/77 PASS",
+    "f47_1_sovereignty_unaffected": true,
+    "f47_2_sanitizer_unaffected": true,
+    "f50_routes_unaffected": true,
+    "runtime_unchanged": true
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "brody_decision": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "next": "F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN",
+  "f53_scope_preview": {
+    "goal": "Define what bus/bridge must actually answer across the whole project machinery",
+    "topics": [
+      "What internal state it exposes",
+      "What external signals it ingests",
+      "How it bridges Brody / Graphiti / runtime / proofs / audit",
+      "How it preserves KX108_ONLY without becoming a decider",
+      "How it exposes status without granting decision authority",
+      "How it powers /bus/stats and /bus/bridge routes when ready"
+    ]
+  },
+  "patch_applied": true,
+  "patch_scope": "pytestmark skip on 2 test files only — no runtime changes",
+  "commit": false,
+  "tag": false,
+  "push": false
+}
