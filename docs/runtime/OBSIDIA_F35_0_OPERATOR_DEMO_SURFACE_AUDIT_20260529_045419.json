@@ -1,0 +1,3387 @@
+{
+  "report_id": "OBSIDIA_F35_0_OPERATOR_DEMO_SURFACE_AUDIT_20260529_045419",
+  "phase": "F35.0",
+  "mode": "AUDIT_ONLY_NO_PATCH",
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "head": "afce5b3",
+  "tag_context": "BRODY_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_PALIER_20260529",
+  "git_status": "## main...origin/main\n?? scripts/f35_0_operator_demo_surface_audit.py",
+  "live_8000_probe": "{\"root_status\":200,\"total_routes\":135,\"f33_route_found\":true,\"workflow_route_found\":true,\"monitor_route_count\":9}",
+  "scanned_files": 2493,
+  "active_records": 573,
+  "danger_records": [
+    {
+      "path": "periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py",
+      "read_ok": true,
+      "line_count": 144,
+      "token_hits": [
+        {
+          "line": 24,
+          "token": "workflow-governance",
+          "text": "\"preferred_branch_name\": \"periphery/workflow-governance-readonly-v5\","
+        },
+        {
+          "line": 24,
+          "token": "readonly",
+          "text": "\"preferred_branch_name\": \"periphery/workflow-governance-readonly-v5\","
+        },
+        {
+          "line": 38,
+          "token": "runtime",
+          "text": "\"brody_runtime_context_adapter\": \"apps/obsidia_api/brody_runtime_context_adapter.py\","
+        },
+        {
+          "line": 39,
+          "token": "operator",
+          "text": "\"brody_operator_view_packet\": \"apps/obsidia_api/brody_operator_view_packet.py\","
+        },
+        {
+          "line": 40,
+          "token": "operator",
+          "text": "\"brody_operator_loop_adapter\": \"apps/obsidia_api/brody_operator_loop_adapter.py\","
+        },
+        {
+          "line": 41,
+          "token": "readonly",
+          "text": "\"brody_memory_readonly_root\": \"periphery/brody_memory_readonly/\","
+        },
+        {
+          "line": 42,
+          "token": "runtime",
+          "text": "\"brody_readonly_runtime_root\": \"periphery/brody/\","
+        },
+        {
+          "line": 42,
+          "token": "readonly",
+          "text": "\"brody_readonly_runtime_root\": \"periphery/brody/\","
+        },
+        {
+          "line": 46,
+          "token": "workbench",
+          "text": "\"workbench_app_root\": \"apps/obsidia-workbench/\","
+        },
+        {
+          "line": 47,
+          "token": "workbench",
+          "text": "\"right_panel_component\": \"apps/obsidia-workbench/src/components/RightPanel.tsx\","
+        },
+        {
+          "line": 47,
+          "token": "panel",
+          "text": "\"right_panel_component\": \"apps/obsidia-workbench/src/components/RightPanel.tsx\","
+        },
+        {
+          "line": 48,
+          "token": "runtime",
+          "text": "\"runtime_docs_root\": \"docs/runtime/\","
+        },
+        {
+          "line": 53,
+          "token": "readonly",
+          "text": "\"module_root\": \"periphery/workflow_governance_readonly/\","
+        },
+        {
+          "line": 54,
+          "token": "readonly",
+          "text": "\"python_package_root\": \"periphery/workflow_governance_readonly/obsidia_workflow_governance/\","
+        },
+        {
+          "line": 55,
+          "token": "runtime",
+          "text": "\"repo_alignment_doc\": \"docs/runtime/OBSIDIA_WORKFLOW_GOVERNANCE_REPO_AWARE_V5_ALIGNMENT.md\","
+        },
+        {
+          "line": 56,
+          "token": "runtime",
+          "text": "\"freeze_report_doc\": \"docs/runtime/OBSIDIA_WORKFLOW_GOVERNANCE_PRIMITIVE_V5_FREEZE_REPORT.md\","
+        },
+        {
+          "line": 58,
+          "token": "panel",
+          "text": "\"rightpanel_patch_plan\": \"patch_plans/WORKFLOW_GOVERNANCE_RIGHTPANEL_PATCH_PLAN_V5.md\","
+        },
+        {
+          "line": 67,
+          "token": "readonly",
+          "text": "\"periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/\","
+        },
+        {
+          "line": 68,
+          "token": "readonly",
+          "text": "\"periphery/brody_memory_readonly/graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only/\","
+        },
+        {
+          "line": 108,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\src\\\\obsidia_workflow_governance .\\\\periphery\\\\workflow_governance_readonly\\\\obsidia_workflow_governance\","
+        },
+        {
+          "line": 109,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\contracts .\\\\periphery\\\\workflow_governance_readonly\\\\contracts\","
+        },
+        {
+          "line": 110,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\schemas .\\\\periphery\\\\workflow_governance_readonly\\\\schemas\","
+        },
+        {
+          "line": 111,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\tests .\\\\periphery\\\\workflow_governance_readonly\\\\tests\","
+        },
+        {
+          "line": 112,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\scripts .\\\\periphery\\\\workflow_governance_readonly\\\\scripts\","
+        },
+        {
+          "line": 113,
+          "token": "readonly",
+          "text": "\"Copy-Item -Recurse -Force .\\\\docs .\\\\periphery\\\\workflow_governance_readonly\\\\docs\","
+        },
+        {
+          "line": 116,
+          "token": "readonly",
+          "text": "\"python -m compileall periphery/workflow_governance_readonly -q\","
+        },
+        {
+          "line": 117,
+          "token": "readonly",
+          "text": "\"$env:PYTHONPATH=\\\"$PWD\\\\periphery\\\\workflow_governance_readonly\\\"; python periphery/workflow_governance_readonly/scripts/audit_v5_repo_alignment.py\","
+        },
+        {
+          "line": 118,
+          "token": "readonly",
+          "text": "\"$env:PYTHONPATH=\\\"$PWD\\\\periphery\\\\workflow_governance_readonly\\\"; python periphery/workflow_governance_readonly/scripts/smoke_workflow_governance_v5.py\","
+        },
+        {
+          "line": 119,
+          "token": "readonly",
+          "text": "\"$env:PYTHONPATH=\\\"$PWD\\\\periphery\\\\workflow_governance_readonly\\\"; python -m pytest periphery/workflow_governance_readonly/tests -q\","
+        }
+      ],
+      "danger_hits": [
+        {
+          "line": 78,
+          "token": "write_transaction",
+          "text": "\"session.write_transaction\","
+        },
+        {
+          "line": 79,
+          "token": "execute_write",
+          "text": "\"execute_write\","
+        },
+        {
+          "line": 87,
+          "token": "os.system",
+          "text": "\"os.system(\","
+        }
+      ]
+    }
+  ],
+  "active_records_sample": [
+    {
+      "path": "apps/obsidia-workbench/audit_brody.py",
+      "read_ok": true,
+      "line_count": 16,
+      "token_hits": [
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "'message': 'Explique ton architecture technique. Comment re?ois-tu les ?v?nements Gencoin et pourquoi es-tu en mode readonly ?',"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/BACKEND_BINDING_PLAN_X108_PROOFS.md",
+      "read_ok": true,
+      "line_count": 74,
+      "token_hits": [
+        {
+          "line": 12,
+          "token": "runtime",
+          "text": "| `getKernelStatus()` | LIVE (ObsidiaShell /health) | `periphery/brody/brody_runtime_readonly.py` | `GET /api/x108/status` | readonly |"
+        },
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "| `getKernelStatus()` | LIVE (ObsidiaShell /health) | `periphery/brody/brody_runtime_readonly.py` | `GET /api/x108/status` | readonly |"
+        },
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "| `getBackendHealth()` | LIVE (ObsidiaShell /health) | ObsidiaShell core | `GET /health` | readonly |"
+        },
+        {
+          "line": 14,
+          "token": "readonly",
+          "text": "| `getGraphitiStatus()` | LIVE (ObsidiaShell /graph/v20/frozen/status) | Graphiti V20 | existing | readonly |"
+        },
+        {
+          "line": 15,
+          "token": "readonly",
+          "text": "| `getGraphitiReadiness()` | LIVE (ObsidiaShell /graph/v20/frozen/readiness) | Graphiti V20 | existing | readonly |"
+        },
+        {
+          "line": 16,
+          "token": "readonly",
+          "text": "| `getGraphitiMetrics()` | LIVE (ObsidiaShell /graph/v20/frozen/metrics) | Graphiti V20 | existing | readonly |"
+        },
+        {
+          "line": 17,
+          "token": "readonly",
+          "text": "| `getContextPacket()` | LIVE (ObsidiaShell /graph/v20/frozen/context) | `periphery/context/context_packet_builder_v2.py` | existing | readonly |"
+        },
+        {
+          "line": 18,
+          "token": "runtime",
+          "text": "| `sendBrodyMessage()` | STUB (composer in frontend) | `periphery/brody/brody_runtime_readonly.py` | `POST /api/brody/chat` | advisory_only |"
+        },
+        {
+          "line": 18,
+          "token": "readonly",
+          "text": "| `sendBrodyMessage()` | STUB (composer in frontend) | `periphery/brody/brody_runtime_readonly.py` | `POST /api/brody/chat` | advisory_only |"
+        },
+        {
+          "line": 19,
+          "token": "readonly",
+          "text": "| `getOS3Ticket()` | MOCK_ONLY | `periphery/os3_ticket.py` | `GET /api/os3/tickets` | readonly |"
+        },
+        {
+          "line": 20,
+          "token": "readonly",
+          "text": "| `getSovereignTickets()` | MOCK_ONLY | `periphery/world_calls/` | `GET /api/worldcalls/sovereign` | readonly |"
+        },
+        {
+          "line": 22,
+          "token": "readonly",
+          "text": "| `getMemoryCandidates()` | MOCK_ONLY | `periphery/brody_memory_readonly/` | `GET /api/memory/candidates` | readonly |"
+        },
+        {
+          "line": 23,
+          "token": "readonly",
+          "text": "| `getGencoinLedger()` | MOCK_ONLY | `periphery/gencoin_ledger.py` | `GET /api/gencoin/ledger` | readonly |"
+        },
+        {
+          "line": 24,
+          "token": "readonly",
+          "text": "| `getAuditEvents()` | MOCK (engine /v1/audit/chain) | `periphery/world_action_gateway.py` | `GET /api/audit/events` | readonly |"
+        },
+        {
+          "line": 27,
+          "token": "readonly",
+          "text": "| `getOSReverseProjection()` | STUB | `periphery/reverse_os/action_projection_readonly.py` | `POST /api/os-reverse/project` | advisory_only |"
+        },
+        {
+          "line": 28,
+          "token": "readonly",
+          "text": "| `getAlphabetUnits()` | STUB | new periphery/alphabet module needed | `GET /api/alphabet/units` | readonly |"
+        },
+        {
+          "line": 61,
+          "token": "readonly",
+          "text": "| `POST /api/os-reverse/project` | Reverse projection | `periphery/reverse_os/action_projection_readonly.py` |"
+        },
+        {
+          "line": 74,
+          "token": "KX108_ONLY",
+          "text": "- decision_authority = KX108_ONLY for all"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/BACKEND_DISCOVERY_REPORT.md",
+      "read_ok": true,
+      "line_count": 97,
+      "token_hits": [
+        {
+          "line": 1,
+          "token": "Workbench",
+          "text": "# Backend Discovery Report — Obsidia Workbench"
+        },
+        {
+          "line": 14,
+          "token": "workbench",
+          "text": "**CORS:** `allow_origins=[\"*\"]` — no CORS issue for workbench"
+        },
+        {
+          "line": 16,
+          "token": "workbench",
+          "text": "### Available Endpoints (read-only subset relevant to workbench)"
+        },
+        {
+          "line": 66,
+          "token": "workbench",
+          "text": "This API requires `unified_interface.pipeline` and `obsidia_kernel.contract` modules which are part of the proof core. Start command not confirmed — workbench treats it as optional."
+        },
+        {
+          "line": 72,
+          "token": "workbench",
+          "text": "No dedicated `/brody` or `/context` endpoint was found in either server. Brody responses in the workbench are purely advisory mock responses. When a real Brody HTTP endpoint is available, update `obsidiaClient.ts::sendBrodyMessage()`."
+        },
+        {
+          "line": 76,
+          "token": "Workbench",
+          "text": "## 4. Workbench API Mapping"
+        },
+        {
+          "line": 97,
+          "token": "workbench",
+          "text": "All backend calls from the workbench are GET (read-only). No mutation. No wallet. No real action. `real_chain_action_allowed=false` enforced client-side."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/dist/index.html",
+      "read_ok": true,
+      "line_count": 14,
+      "token_hits": [
+        {
+          "line": 7,
+          "token": "Workbench",
+          "text": "<title>Obsidia X-108 Workbench</title>"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/FASTAPI_ADAPTER_PLAN.md",
+      "read_ok": true,
+      "line_count": 141,
+      "token_hits": [
+        {
+          "line": 42,
+          "token": "readonly",
+          "text": "→ KernelStatus: id, status, readonly, tests_passing, protected_files_clean"
+        },
+        {
+          "line": 49,
+          "token": "readonly",
+          "text": "→ BrodyResponse: response, readonly=true, advisory_only=true, emits_act=false,"
+        },
+        {
+          "line": 57,
+          "token": "readonly",
+          "text": "→ ContextPacket (readonly, context_signal_only=true)"
+        },
+        {
+          "line": 67,
+          "token": "readonly",
+          "text": "→ list[OS3ProofTicket] (readonly)"
+        },
+        {
+          "line": 84,
+          "token": "readonly",
+          "text": "→ TranslationTrace (readonly, allowed_to_decide=false, mode=LIVE)"
+        },
+        {
+          "line": 95,
+          "token": "readonly",
+          "text": "Maps to: periphery/reverse_os/action_projection_readonly.py"
+        },
+        {
+          "line": 103,
+          "token": "readonly",
+          "text": "→ ContextPacket (readonly, context_signal_only=true)"
+        },
+        {
+          "line": 125,
+          "token": "KX108_ONLY",
+          "text": "| decision_authority = KX108_ONLY | ✓ |"
+        },
+        {
+          "line": 137,
+          "token": "workbench",
+          "text": "Then in `.env.local` of workbench:"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/FRONTEND_BACKEND_BRIDGE_REPORT.md",
+      "read_ok": true,
+      "line_count": 114,
+      "token_hits": [
+        {
+          "line": 12,
+          "token": "Workbench",
+          "text": "│  Obsidia Workbench (React + Tailwind, port 5173)    │"
+        },
+        {
+          "line": 70,
+          "token": "workbench",
+          "text": "The `BACKEND` panel in the workbench right panel shows which source is active."
+        },
+        {
+          "line": 70,
+          "token": "panel",
+          "text": "The `BACKEND` panel in the workbench right panel shows which source is active."
+        },
+        {
+          "line": 98,
+          "token": "KX108_ONLY",
+          "text": "- `sendBrodyMessage()` always returns `emits_act: false, memory_write: false, decision_authority: 'KX108_ONLY'`"
+        },
+        {
+          "line": 100,
+          "token": "KX108_ONLY",
+          "text": "- `getContextPacket()` normalizes backend response into a `ContextPacket` with all `false`/`KX108_ONLY` fields"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/index.html",
+      "read_ok": true,
+      "line_count": 13,
+      "token_hits": [
+        {
+          "line": 7,
+          "token": "Workbench",
+          "text": "<title>Obsidia X-108 Workbench</title>"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/LOCAL_RUNBOOK.md",
+      "read_ok": true,
+      "line_count": 111,
+      "token_hits": [
+        {
+          "line": 1,
+          "token": "Workbench",
+          "text": "# Local Runbook — Obsidia Workbench"
+        },
+        {
+          "line": 18,
+          "token": "workbench",
+          "text": "cd \"C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\apps\\obsidia-workbench\""
+        },
+        {
+          "line": 31,
+          "token": "workbench",
+          "text": "Create `.env.local` in the workbench root with:"
+        },
+        {
+          "line": 81,
+          "token": "workbench",
+          "text": "cd \"C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs\\apps\\obsidia-workbench\""
+        },
+        {
+          "line": 105,
+          "token": "KX108_ONLY",
+          "text": "| `decision_authority` | `KX108_ONLY` |"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@alloc/quick-lru/index.d.ts",
+      "read_ok": true,
+      "line_count": 128,
+      "token_hits": [
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "readonly maxAge?: number;"
+        },
+        {
+          "line": 18,
+          "token": "readonly",
+          "text": "readonly maxSize: number;"
+        },
+        {
+          "line": 34,
+          "token": "readonly",
+          "text": "readonly size: number;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@babel/parser/CHANGELOG.md",
+      "read_ok": true,
+      "line_count": 1073,
+      "token_hits": [
+        {
+          "line": 21,
+          "token": "operator",
+          "text": "* Fix typo in flow spread operator error (Brian Ng)"
+        },
+        {
+          "line": 912,
+          "token": "runtime",
+          "text": "The only change is to remove the `babel-runtime` dependency by compiling with Babel's ES2015 loose mode. So using babylon standalone should be smaller."
+        },
+        {
+          "line": 916,
+          "token": "Operator",
+          "text": "This release contains mainly small bugfixes but also updates babylons default mode to es2017. The features for `exponentiationOperator`, `asyncFunctions` and `trailingFunctionCommas` which previously needed to be activated via plugin are now enabled by default"
+        },
+        {
+          "line": 924,
+          "token": "Operator",
+          "text": "- Remove exponentiationOperator, asyncFunctions, trailingFunctionCommas plugins and enable them by default ([#98](https://github.com/babel/babylon/pull/98)) @danez"
+        },
+        {
+          "line": 955,
+          "token": "operator",
+          "text": "- Fix exponential operator to behave according to spec ([#75](https://github.com/babel/babylon/pull/75)) @danez"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@babel/parser/typings/babel-parser.d.ts",
+      "read_ok": true,
+      "line_count": 262,
+      "token_hits": [
+        {
+          "line": 13,
+          "token": "Operator",
+          "text": "type SyntaxPlugin = \"flow\" | \"typescript\" | \"jsx\" | \"pipelineOperator\" | \"placeholders\";"
+        },
+        {
+          "line": 60,
+          "token": "Operator",
+          "text": "| IF_BABEL_7<\"nullishCoalescingOperator\">"
+        },
+        {
+          "line": 82,
+          "token": "Operator",
+          "text": "| [\"pipelineOperator\", PipelineOperatorPluginOptions]"
+        },
+        {
+          "line": 94,
+          "token": "Operator",
+          "text": "interface PipelineOperatorPluginOptions {"
+        },
+        {
+          "line": 262,
+          "token": "Operator",
+          "text": "export { DecoratorsPluginOptions, FlowPluginOptions, ParseError, ParseResult, ParserOptions, PluginConfig as ParserPlugin, ParserPluginWithOptions, PipelineOperatorPluginOptions, RecordAndTuplePluginOptions, TypeScriptPluginOptions, parse, parseExpression, tok"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@babel/types/lib/index-legacy.d.ts",
+      "read_ok": true,
+      "line_count": 2797,
+      "token_hits": [
+        {
+          "line": 45,
+          "token": "Operator",
+          "text": "export type Node = Accessor | AnyTypeAnnotation | ArgumentPlaceholder | ArrayExpression | ArrayPattern | ArrayTypeAnnotation | ArrowFunctionExpression | AssignmentExpression | AssignmentPattern | AwaitExpression | BigIntLiteral | Binary | BinaryExpression | Bi"
+        },
+        {
+          "line": 54,
+          "token": "operator",
+          "text": "operator: string;"
+        },
+        {
+          "line": 61,
+          "token": "operator",
+          "text": "operator: \"+\" | \"-\" | \"/\" | \"%\" | \"*\" | \"**\" | \"&\" | \"|\" | \">>\" | \">>>\" | \"<<\" | \"^\" | \"==\" | \"===\" | \"!=\" | \"!==\" | \"in\" | \"instanceof\" | \">\" | \"<\" | \">=\" | \"<=\" | \"|>\";"
+        },
+        {
+          "line": 233,
+          "token": "operator",
+          "text": "operator: \"||\" | \"&&\" | \"??\";"
+        },
+        {
+          "line": 344,
+          "token": "operator",
+          "text": "operator: \"void\" | \"throw\" | \"delete\" | \"!\" | \"+\" | \"-\" | \"~\" | \"typeof\";"
+        },
+        {
+          "line": 351,
+          "token": "operator",
+          "text": "operator: \"++\" | \"--\";"
+        },
+        {
+          "line": 634,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 652,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 664,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 1276,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 1336,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 1354,
+          "token": "readonly",
+          "text": "readonly: boolean | null;"
+        },
+        {
+          "line": 1508,
+          "token": "Operator",
+          "text": "export interface TSTypeOperator extends BaseNode {"
+        },
+        {
+          "line": 1509,
+          "token": "Operator",
+          "text": "type: \"TSTypeOperator\";"
+        },
+        {
+          "line": 1511,
+          "token": "operator",
+          "text": "operator: string;"
+        },
+        {
+          "line": 1526,
+          "token": "readonly",
+          "text": "readonly: true | false | \"+\" | \"-\" | null;"
+        },
+        {
+          "line": 1754,
+          "token": "Operator",
+          "text": "export type TypeScript = TSParameterProperty | TSDeclareFunction | TSDeclareMethod | TSQualifiedName | TSCallSignatureDeclaration | TSConstructSignatureDeclaration | TSPropertySignature | TSMethodSignature | TSIndexSignature | TSAnyKeyword | TSBooleanKeyword |"
+        },
+        {
+          "line": 1756,
+          "token": "Operator",
+          "text": "export type TSType = TSAnyKeyword | TSBooleanKeyword | TSBigIntKeyword | TSIntrinsicKeyword | TSNeverKeyword | TSNullKeyword | TSNumberKeyword | TSObjectKeyword | TSStringKeyword | TSSymbolKeyword | TSUndefinedKeyword | TSUnknownKeyword | TSVoidKeyword | TSThi"
+        },
+        {
+          "line": 1815,
+          "token": "operator",
+          "text": "export function assignmentExpression(operator: string, left: LVal | OptionalMemberExpression, right: Expression): AssignmentExpression;"
+        },
+        {
+          "line": 1816,
+          "token": "operator",
+          "text": "export function binaryExpression(operator: \"+\" | \"-\" | \"/\" | \"%\" | \"*\" | \"**\" | \"&\" | \"|\" | \">>\" | \">>>\" | \"<<\" | \"^\" | \"==\" | \"===\" | \"!=\" | \"!==\" | \"in\" | \"instanceof\" | \">\" | \"<\" | \">=\" | \"<=\" | \"|>\", left: Expression | PrivateName, right: Expression): Bina"
+        },
+        {
+          "line": 1843,
+          "token": "operator",
+          "text": "export function logicalExpression(operator: \"||\" | \"&&\" | \"??\", left: Expression, right: Expression): LogicalExpression;"
+        },
+        {
+          "line": 1859,
+          "token": "operator",
+          "text": "export function unaryExpression(operator: \"void\" | \"throw\" | \"delete\" | \"!\" | \"+\" | \"-\" | \"~\" | \"typeof\", argument: Expression, prefix?: boolean): UnaryExpression;"
+        },
+        {
+          "line": 1860,
+          "token": "operator",
+          "text": "export function updateExpression(operator: \"++\" | \"--\", argument: Expression, prefix?: boolean): UpdateExpression;"
+        },
+        {
+          "line": 2041,
+          "token": "operator",
+          "text": "export function tsTypeOperator(typeAnnotation: TSType, operator?: string): TSTypeOperator;"
+        },
+        {
+          "line": 2041,
+          "token": "Operator",
+          "text": "export function tsTypeOperator(typeAnnotation: TSType, operator?: string): TSTypeOperator;"
+        },
+        {
+          "line": 2603,
+          "token": "Operator",
+          "text": "export function isTSTypeOperator(node: object | null | undefined, opts?: object | null): node is TSTypeOperator;"
+        },
+        {
+          "line": 2604,
+          "token": "Operator",
+          "text": "export function assertTSTypeOperator(node: object | null | undefined, opts?: object | null): void;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@babel/types/lib/index.d.ts",
+      "read_ok": true,
+      "line_count": 3617,
+      "token_hits": [
+        {
+          "line": 233,
+          "token": "Operator",
+          "text": "declare function assertTSTypeOperator(node: object | null | undefined, opts?: object | null): asserts node is TSTypeOperator;"
+        },
+        {
+          "line": 378,
+          "token": "Operator",
+          "text": "type Node = AnyTypeAnnotation | ArgumentPlaceholder | ArrayExpression | ArrayPattern | ArrayTypeAnnotation | ArrowFunctionExpression | AssignmentExpression | AssignmentPattern | AwaitExpression | BigIntLiteral | BinaryExpression | BindExpression | BlockStateme"
+        },
+        {
+          "line": 385,
+          "token": "operator",
+          "text": "operator: string;"
+        },
+        {
+          "line": 391,
+          "token": "operator",
+          "text": "operator: \"+\" | \"-\" | \"/\" | \"%\" | \"*\" | \"**\" | \"&\" | \"|\" | \">>\" | \">>>\" | \"<<\" | \"^\" | \"==\" | \"===\" | \"!=\" | \"!==\" | \"in\" | \"instanceof\" | \">\" | \"<\" | \">=\" | \"<=\" | \"|>\";"
+        },
+        {
+          "line": 551,
+          "token": "operator",
+          "text": "operator: \"||\" | \"&&\" | \"??\";"
+        },
+        {
+          "line": 656,
+          "token": "operator",
+          "text": "operator: \"void\" | \"throw\" | \"delete\" | \"!\" | \"+\" | \"-\" | \"~\" | \"typeof\";"
+        },
+        {
+          "line": 662,
+          "token": "operator",
+          "text": "operator: \"++\" | \"--\";"
+        },
+        {
+          "line": 922,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 939,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 950,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 1462,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 1516,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 1532,
+          "token": "readonly",
+          "text": "readonly?: boolean | null;"
+        },
+        {
+          "line": 1655,
+          "token": "Operator",
+          "text": "interface TSTypeOperator extends BaseNode {"
+        },
+        {
+          "line": 1656,
+          "token": "Operator",
+          "text": "type: \"TSTypeOperator\";"
+        },
+        {
+          "line": 1658,
+          "token": "operator",
+          "text": "operator: string;"
+        },
+        {
+          "line": 1671,
+          "token": "readonly",
+          "text": "readonly?: true | false | \"+\" | \"-\" | null;"
+        },
+        {
+          "line": 1853,
+          "token": "Operator",
+          "text": "type TypeScript = TSParameterProperty | TSDeclareFunction | TSDeclareMethod | TSQualifiedName | TSCallSignatureDeclaration | TSConstructSignatureDeclaration | TSPropertySignature | TSMethodSignature | TSIndexSignature | TSAnyKeyword | TSBooleanKeyword | TSBigI"
+        },
+        {
+          "line": 1855,
+          "token": "Operator",
+          "text": "type TSType = TSAnyKeyword | TSBooleanKeyword | TSBigIntKeyword | TSIntrinsicKeyword | TSNeverKeyword | TSNullKeyword | TSNumberKeyword | TSObjectKeyword | TSStringKeyword | TSSymbolKeyword | TSUndefinedKeyword | TSUnknownKeyword | TSVoidKeyword | TSThisType |"
+        },
+        {
+          "line": 2076,
+          "token": "Operator",
+          "text": "TSAnyKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TS"
+        },
+        {
+          "line": 2077,
+          "token": "Operator",
+          "text": "TSArrayType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TST"
+        },
+        {
+          "line": 2079,
+          "token": "Operator",
+          "text": "TSBigIntKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2080,
+          "token": "Operator",
+          "text": "TSBooleanKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType "
+        },
+        {
+          "line": 2082,
+          "token": "Operator",
+          "text": "TSConditionalType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType"
+        },
+        {
+          "line": 2084,
+          "token": "Operator",
+          "text": "TSConstructorType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType"
+        },
+        {
+          "line": 2091,
+          "token": "Operator",
+          "text": "TSExpressionWithTypeArguments: ClassDeclaration | ClassExpression | TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSInterfaceDeclaration | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType "
+        },
+        {
+          "line": 2093,
+          "token": "Operator",
+          "text": "TSFunctionType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | "
+        },
+        {
+          "line": 2095,
+          "token": "Operator",
+          "text": "TSImportType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TS"
+        },
+        {
+          "line": 2097,
+          "token": "Operator",
+          "text": "TSIndexedAccessType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleTy"
+        },
+        {
+          "line": 2098,
+          "token": "Operator",
+          "text": "TSInferType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TST"
+        },
+        {
+          "line": 2102,
+          "token": "Operator",
+          "text": "TSIntersectionType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleTyp"
+        },
+        {
+          "line": 2103,
+          "token": "Operator",
+          "text": "TSIntrinsicKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleTyp"
+        },
+        {
+          "line": 2104,
+          "token": "Operator",
+          "text": "TSLiteralType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | T"
+        },
+        {
+          "line": 2105,
+          "token": "Operator",
+          "text": "TSMappedType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TS"
+        },
+        {
+          "line": 2111,
+          "token": "Operator",
+          "text": "TSNeverKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | "
+        },
+        {
+          "line": 2113,
+          "token": "Operator",
+          "text": "TSNullKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | T"
+        },
+        {
+          "line": 2114,
+          "token": "Operator",
+          "text": "TSNumberKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2115,
+          "token": "Operator",
+          "text": "TSObjectKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2116,
+          "token": "Operator",
+          "text": "TSOptionalType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | "
+        },
+        {
+          "line": 2118,
+          "token": "Operator",
+          "text": "TSParenthesizedType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleTy"
+        },
+        {
+          "line": 2121,
+          "token": "Operator",
+          "text": "TSRestType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TSTy"
+        },
+        {
+          "line": 2123,
+          "token": "Operator",
+          "text": "TSStringKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2124,
+          "token": "Operator",
+          "text": "TSSymbolKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2125,
+          "token": "Operator",
+          "text": "TSTemplateLiteralType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTuple"
+        },
+        {
+          "line": 2126,
+          "token": "Operator",
+          "text": "TSThisType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TSTy"
+        },
+        {
+          "line": 2127,
+          "token": "Operator",
+          "text": "TSTupleType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TST"
+        },
+        {
+          "line": 2131,
+          "token": "Operator",
+          "text": "TSTypeLiteral: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | T"
+        },
+        {
+          "line": 2132,
+          "token": "Operator",
+          "text": "TSTypeOperator: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | "
+        },
+        {
+          "line": 2136,
+          "token": "Operator",
+          "text": "TSTypePredicate: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2137,
+          "token": "Operator",
+          "text": "TSTypeQuery: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TST"
+        },
+        {
+          "line": 2138,
+          "token": "Operator",
+          "text": "TSTypeReference: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType |"
+        },
+        {
+          "line": 2139,
+          "token": "Operator",
+          "text": "TSUndefinedKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleTyp"
+        },
+        {
+          "line": 2140,
+          "token": "Operator",
+          "text": "TSUnionType: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | TST"
+        },
+        {
+          "line": 2141,
+          "token": "Operator",
+          "text": "TSUnknownKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType "
+        },
+        {
+          "line": 2142,
+          "token": "Operator",
+          "text": "TSVoidKeyword: TSArrayType | TSAsExpression | TSConditionalType | TSIndexedAccessType | TSIntersectionType | TSMappedType | TSNamedTupleMember | TSOptionalType | TSParenthesizedType | TSRestType | TSSatisfiesExpression | TSTemplateLiteralType | TSTupleType | T"
+        },
+        {
+          "line": 2177,
+          "token": "operator",
+          "text": "declare function assignmentExpression(operator: string, left: LVal | OptionalMemberExpression, right: Expression): AssignmentExpression;"
+        },
+        {
+          "line": 2178,
+          "token": "operator",
+          "text": "declare function binaryExpression(operator: \"+\" | \"-\" | \"/\" | \"%\" | \"*\" | \"**\" | \"&\" | \"|\" | \">>\" | \">>>\" | \"<<\" | \"^\" | \"==\" | \"===\" | \"!=\" | \"!==\" | \"in\" | \"instanceof\" | \">\" | \"<\" | \">=\" | \"<=\" | \"|>\", left: Expression | PrivateName, right: Expression): Bin"
+        },
+        {
+          "line": 2205,
+          "token": "operator",
+          "text": "declare function logicalExpression(operator: \"||\" | \"&&\" | \"??\", left: Expression, right: Expression): LogicalExpression;"
+        },
+        {
+          "line": 2221,
+          "token": "operator",
+          "text": "declare function unaryExpression(operator: \"void\" | \"throw\" | \"delete\" | \"!\" | \"+\" | \"-\" | \"~\" | \"typeof\", argument: Expression, prefix?: boolean): UnaryExpression;"
+        },
+        {
+          "line": 2222,
+          "token": "operator",
+          "text": "declare function updateExpression(operator: \"++\" | \"--\", argument: Expression, prefix?: boolean): UpdateExpression;"
+        },
+        {
+          "line": 2459,
+          "token": "operator",
+          "text": "declare function tsTypeOperator(typeAnnotation: TSType, operator?: string): TSTypeOperator;"
+        },
+        {
+          "line": 2459,
+          "token": "Operator",
+          "text": "declare function tsTypeOperator(typeAnnotation: TSType, operator?: string): TSTypeOperator;"
+        },
+        {
+          "line": 2588,
+          "token": "Operator",
+          "text": "declare const STANDARDIZED_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bina"
+        },
+        {
+          "line": 2589,
+          "token": "Operator",
+          "text": "declare const EXPRESSION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binary"
+        },
+        {
+          "line": 2590,
+          "token": "Operator",
+          "text": "declare const BINARY_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpr"
+        },
+        {
+          "line": 2591,
+          "token": "Operator",
+          "text": "declare const SCOPABLE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2592,
+          "token": "Operator",
+          "text": "declare const BLOCKPARENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binar"
+        },
+        {
+          "line": 2593,
+          "token": "Operator",
+          "text": "declare const BLOCK_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpre"
+        },
+        {
+          "line": 2594,
+          "token": "Operator",
+          "text": "declare const STATEMENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryE"
+        },
+        {
+          "line": 2595,
+          "token": "Operator",
+          "text": "declare const TERMINATORLESS_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bi"
+        },
+        {
+          "line": 2596,
+          "token": "Operator",
+          "text": "declare const COMPLETIONSTATEMENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" "
+        },
+        {
+          "line": 2597,
+          "token": "Operator",
+          "text": "declare const CONDITIONAL_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binar"
+        },
+        {
+          "line": 2598,
+          "token": "Operator",
+          "text": "declare const LOOP_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpres"
+        },
+        {
+          "line": 2599,
+          "token": "Operator",
+          "text": "declare const WHILE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpre"
+        },
+        {
+          "line": 2600,
+          "token": "Operator",
+          "text": "declare const EXPRESSIONWRAPPER_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | "
+        },
+        {
+          "line": 2601,
+          "token": "Operator",
+          "text": "declare const FOR_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpress"
+        },
+        {
+          "line": 2602,
+          "token": "Operator",
+          "text": "declare const FORXSTATEMENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bin"
+        },
+        {
+          "line": 2603,
+          "token": "Operator",
+          "text": "declare const FUNCTION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2604,
+          "token": "Operator",
+          "text": "declare const FUNCTIONPARENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bi"
+        },
+        {
+          "line": 2605,
+          "token": "Operator",
+          "text": "declare const PUREISH_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExp"
+        },
+        {
+          "line": 2606,
+          "token": "Operator",
+          "text": "declare const DECLARATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binar"
+        },
+        {
+          "line": 2607,
+          "token": "Operator",
+          "text": "declare const FUNCTIONPARAMETER_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | "
+        },
+        {
+          "line": 2608,
+          "token": "Operator",
+          "text": "declare const PATTERNLIKE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binar"
+        },
+        {
+          "line": 2609,
+          "token": "Operator",
+          "text": "declare const LVAL_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpres"
+        },
+        {
+          "line": 2610,
+          "token": "Operator",
+          "text": "declare const TSENTITYNAME_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bina"
+        },
+        {
+          "line": 2611,
+          "token": "Operator",
+          "text": "declare const LITERAL_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExp"
+        },
+        {
+          "line": 2612,
+          "token": "Operator",
+          "text": "declare const IMMUTABLE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryE"
+        },
+        {
+          "line": 2613,
+          "token": "Operator",
+          "text": "declare const USERWHITESPACABLE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | "
+        },
+        {
+          "line": 2614,
+          "token": "Operator",
+          "text": "declare const METHOD_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpr"
+        },
+        {
+          "line": 2615,
+          "token": "Operator",
+          "text": "declare const OBJECTMEMBER_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bina"
+        },
+        {
+          "line": 2616,
+          "token": "Operator",
+          "text": "declare const PROPERTY_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2617,
+          "token": "Operator",
+          "text": "declare const UNARYLIKE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryE"
+        },
+        {
+          "line": 2618,
+          "token": "Operator",
+          "text": "declare const PATTERN_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExp"
+        },
+        {
+          "line": 2619,
+          "token": "Operator",
+          "text": "declare const CLASS_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpre"
+        },
+        {
+          "line": 2620,
+          "token": "Operator",
+          "text": "declare const IMPORTOREXPORTDECLARATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLit"
+        },
+        {
+          "line": 2621,
+          "token": "Operator",
+          "text": "declare const EXPORTDECLARATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | "
+        },
+        {
+          "line": 2622,
+          "token": "Operator",
+          "text": "declare const MODULESPECIFIER_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"B"
+        },
+        {
+          "line": 2623,
+          "token": "Operator",
+          "text": "declare const ACCESSOR_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2624,
+          "token": "Operator",
+          "text": "declare const PRIVATE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExp"
+        },
+        {
+          "line": 2625,
+          "token": "Operator",
+          "text": "declare const FLOW_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpres"
+        },
+        {
+          "line": 2626,
+          "token": "Operator",
+          "text": "declare const FLOWTYPE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2627,
+          "token": "Operator",
+          "text": "declare const FLOWBASEANNOTATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" |"
+        },
+        {
+          "line": 2628,
+          "token": "Operator",
+          "text": "declare const FLOWDECLARATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"B"
+        },
+        {
+          "line": 2629,
+          "token": "Operator",
+          "text": "declare const FLOWPREDICATE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bin"
+        },
+        {
+          "line": 2630,
+          "token": "Operator",
+          "text": "declare const ENUMBODY_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryEx"
+        },
+        {
+          "line": 2631,
+          "token": "Operator",
+          "text": "declare const ENUMMEMBER_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binary"
+        },
+        {
+          "line": 2632,
+          "token": "Operator",
+          "text": "declare const JSX_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpress"
+        },
+        {
+          "line": 2633,
+          "token": "Operator",
+          "text": "declare const MISCELLANEOUS_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bin"
+        },
+        {
+          "line": 2634,
+          "token": "Operator",
+          "text": "declare const TYPESCRIPT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binary"
+        },
+        {
+          "line": 2635,
+          "token": "Operator",
+          "text": "declare const TSTYPEELEMENT_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Bin"
+        },
+        {
+          "line": 2636,
+          "token": "Operator",
+          "text": "declare const TSTYPE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"BinaryExpr"
+        },
+        {
+          "line": 2637,
+          "token": "Operator",
+          "text": "declare const TSBASETYPE_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | \"Binary"
+        },
+        {
+          "line": 2641,
+          "token": "Operator",
+          "text": "declare const MODULEDECLARATION_TYPES: (\"AnyTypeAnnotation\" | \"ArgumentPlaceholder\" | \"ArrayExpression\" | \"ArrayPattern\" | \"ArrayTypeAnnotation\" | \"ArrowFunctionExpression\" | \"AssignmentExpression\" | \"AssignmentPattern\" | \"AwaitExpression\" | \"BigIntLiteral\" | "
+        },
+        {
+          "line": 2646,
+          "token": "readonly",
+          "text": "declare const COMMENT_KEYS: readonly [\"leadingComments\", \"trailingComments\", \"innerComments\"];"
+        },
+        {
+          "line": 2661,
+          "token": "readonly",
+          "text": "readonly optional: readonly [\"typeAnnotation\", \"typeParameters\", \"returnType\"];"
+        },
+        {
+          "line": 2662,
+          "token": "readonly",
+          "text": "readonly force: readonly [\"start\", \"loc\", \"end\"];"
+        },
+        {
+          "line": 2716,
+          "token": "readonly",
+          "text": "(value: readonly unknown[]): ArrayExpression;"
+        },
+        {
+          "line": 2744,
+          "token": "readonly",
+          "text": "chainOf: readonly Validator[];"
+        },
+        {
+          "line": 2747,
+          "token": "readonly",
+          "text": "oneOf: readonly any[];"
+        },
+        {
+          "line": 2750,
+          "token": "readonly",
+          "text": "oneOfNodeTypes: readonly NodeTypes[];"
+        },
+        {
+          "line": 2753,
+          "token": "readonly",
+          "text": "oneOfNodeOrValueTypes: readonly (NodeTypes | PrimitiveTypes)[];"
+        },
+        {
+          "line": 2766,
+          "token": "readonly",
+          "text": "declare const PLACEHOLDERS: readonly [\"Identifier\", \"StringLiteral\", \"Expression\", \"Statement\", \"Declaration\", \"BlockStatement\", \"ClassBody\", \"Pattern\"];"
+        },
+        {
+          "line": 2808,
+          "token": "readonly",
+          "text": "declare function removeTypeDuplicates(nodesIn: readonly (FlowType | false | null | undefined)[]): FlowType[];"
+        },
+        {
+          "line": 3430,
+          "token": "Operator",
+          "text": "declare function isTSTypeOperator(node: Node | null | undefined): node is TSTypeOperator;"
+        },
+        {
+          "line": 3431,
+          "token": "Operator",
+          "text": "declare function isTSTypeOperator<Opts extends Options<TSTypeOperator>>(node: Node | null | undefined, opts?: Opts | null): node is TSTypeOperator & Opts;"
+        },
+        {
+          "line": 3617,
+          "token": "Operator",
+          "text": "export { ACCESSOR_TYPES, ALIAS_KEYS, ASSIGNMENT_OPERATORS, Accessor, Aliases, AnyTypeAnnotation, ArgumentPlaceholder, ArrayExpression, ArrayPattern, ArrayTypeAnnotation, ArrowFunctionExpression, AssignmentExpression, AssignmentPattern, AwaitExpression, BINARY_"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys/dist/index.d.ts",
+      "read_ok": true,
+      "line_count": 16,
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "* @returns {readonly string[]} Visitor keys of the node."
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "export function getKeys(node: object): readonly string[];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys/dist/visitor-keys.d.ts",
+      "read_ok": true,
+      "line_count": 12,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "readonly",
+          "text": "readonly [type: string]: readonly string[];"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "* @typedef {{ readonly [type: string]: ReadonlyArray<string> }} VisitorKeys"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint-community/regexpp/index.d.ts",
+      "read_ok": true,
+      "line_count": 1163,
+      "token_hits": [
+        {
+          "line": 590,
+          "token": "readonly",
+          "text": "readonly source: string;"
+        },
+        {
+          "line": 591,
+          "token": "readonly",
+          "text": "readonly start: number;"
+        },
+        {
+          "line": 592,
+          "token": "readonly",
+          "text": "readonly end: number;"
+        },
+        {
+          "line": 593,
+          "token": "readonly",
+          "text": "readonly kind: \"flags\" | \"literal\" | \"pattern\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/config-array/README.md",
+      "read_ok": true,
+      "line_count": 369,
+      "token_hits": [
+        {
+          "line": 11,
+          "token": "runtime",
+          "text": "For Node.js and compatible runtimes:"
+        },
+        {
+          "line": 270,
+          "token": "operator",
+          "text": "The `normalize()` method returns a promise, so be sure to use the `await` operator. The config array instance is normalized in-place, so you don't need to create a new variable."
+        },
+        {
+          "line": 272,
+          "token": "operator",
+          "text": "If you want to disallow async config functions, you can call `normalizeSync()` instead. This method is completely synchronous and does not require using the `await` operator as it does not return a promise:"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/config-helpers/README.md",
+      "read_ok": true,
+      "line_count": 150,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "runtime",
+          "text": "For Node.js and compatible runtimes:"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/core/dist/esm/types.d.ts",
+      "read_ok": true,
+      "line_count": 1159,
+      "token_hits": [
+        {
+          "line": 135,
+          "token": "readonly",
+          "text": "replacedBy?: readonly string[] | undefined;"
+        },
+        {
+          "line": 632,
+          "token": "readonly",
+          "text": "export type GlobalAccess = boolean | \"off\" | \"readable\" | \"readonly\" | \"writable\" | \"writeable\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/core/README.md",
+      "read_ok": true,
+      "line_count": 29,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "runtime",
+          "text": "This package is the future home of the rewritten, runtime-agnostic ESLint core."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/js/types/index.d.ts",
+      "read_ok": true,
+      "line_count": 14,
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "readonly meta: {"
+        },
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "readonly name: string;"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "readonly version: string;"
+        },
+        {
+          "line": 8,
+          "token": "readonly",
+          "text": "readonly configs: {"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "readonly recommended: { readonly rules: Readonly<Linter.RulesRecord> };"
+        },
+        {
+          "line": 10,
+          "token": "readonly",
+          "text": "readonly all: { readonly rules: Readonly<Linter.RulesRecord> };"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/object-schema/README.md",
+      "read_ok": true,
+      "line_count": 275,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "runtime",
+          "text": "For Node.js and compatible runtimes:"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/plugin-kit/dist/esm/index.d.ts",
+      "read_ok": true,
+      "line_count": 329,
+      "token_hits": [
+        {
+          "line": 38,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 40,
+          "token": "readonly",
+          "text": "readonly type: \"call\";"
+        },
+        {
+          "line": 45,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 47,
+          "token": "readonly",
+          "text": "readonly kind: 2;"
+        },
+        {
+          "line": 120,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 122,
+          "token": "readonly",
+          "text": "readonly type: DirectiveType;"
+        },
+        {
+          "line": 126,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 128,
+          "token": "readonly",
+          "text": "readonly node: unknown;"
+        },
+        {
+          "line": 133,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 135,
+          "token": "readonly",
+          "text": "readonly value: string;"
+        },
+        {
+          "line": 139,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 141,
+          "token": "readonly",
+          "text": "readonly justification: string;"
+        },
+        {
+          "line": 274,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 276,
+          "token": "readonly",
+          "text": "readonly type: \"visit\";"
+        },
+        {
+          "line": 281,
+          "token": "readonly",
+          "text": "* @readonly"
+        },
+        {
+          "line": 283,
+          "token": "readonly",
+          "text": "readonly kind: 1;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@eslint/plugin-kit/README.md",
+      "read_ok": true,
+      "line_count": 273,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "runtime",
+          "text": "For Node.js and compatible runtimes:"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@humanfs/core/README.md",
+      "read_ok": true,
+      "line_count": 140,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "runtime",
+          "text": "The core functionality for humanfs that is shared across all implementations for all runtimes. The contents of this package are intentionally runtime agnostic and are not intended to be used alone."
+        },
+        {
+          "line": 11,
+          "token": "runtime",
+          "text": "Currently, this package simply exports the `Hfs` class, which is an abstract base class intended to be inherited from in runtime-specific hfs packages (like `@humanfs/node`)."
+        },
+        {
+          "line": 80,
+          "token": "runtime",
+          "text": "The `Hfs` class contains all of the basic functionality for an `Hfs` instance *without* a predefined impl. This class is mostly used for creating runtime-specific impls, such as `NodeHfs` and `DenoHfs`."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@humanfs/node/README.md",
+      "read_ok": true,
+      "line_count": 141,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "runtime",
+          "text": "The `hfs` bindings for use in Node.js and Node.js-compatible runtimes."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@humanwhocodes/retry/dist/retrier.d.ts",
+      "read_ok": true,
+      "line_count": 46,
+      "token_hits": [
+        {
+          "line": 39,
+          "token": "monitor",
+          "text": "* @param {AbortSignal} [options.signal] The AbortSignal to monitor for cancellation."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/gen-mapping/dist/types/set-array.d.ts",
+      "read_ok": true,
+      "line_count": 32,
+      "token_hits": [
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "array: readonly T[];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/gen-mapping/dist/types/types.d.ts",
+      "read_ok": true,
+      "line_count": 43,
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "names: readonly string[];"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "sources: readonly (string | null)[];"
+        },
+        {
+          "line": 7,
+          "token": "readonly",
+          "text": "sourcesContent?: readonly (string | null)[];"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "ignoreList?: readonly number[];"
+        },
+        {
+          "line": 15,
+          "token": "readonly",
+          "text": "mappings: readonly SourceMapSegment[][];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/gen-mapping/src/set-array.ts",
+      "read_ok": true,
+      "line_count": 82,
+      "token_hits": [
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "declare array: readonly T[];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/gen-mapping/src/types.ts",
+      "read_ok": true,
+      "line_count": 61,
+      "token_hits": [
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "names: readonly string[];"
+        },
+        {
+          "line": 8,
+          "token": "readonly",
+          "text": "sources: readonly (string | null)[];"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "sourcesContent?: readonly (string | null)[];"
+        },
+        {
+          "line": 11,
+          "token": "readonly",
+          "text": "ignoreList?: readonly number[];"
+        },
+        {
+          "line": 21,
+          "token": "readonly",
+          "text": "mappings: readonly SourceMapSegment[][];"
+        },
+        {
+          "line": 22,
+          "token": "readonly",
+          "text": "// originalScopes: readonly OriginalScope[][];"
+        },
+        {
+          "line": 23,
+          "token": "readonly",
+          "text": "// generatedRanges: readonly GeneratedRange[];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/remapping/README.md",
+      "read_ok": true,
+      "line_count": 218,
+      "token_hits": [
+        {
+          "line": 33,
+          "token": "readonly",
+          "text": "readonly importer: string;"
+        },
+        {
+          "line": 34,
+          "token": "readonly",
+          "text": "readonly depth: number;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/remapping/src/types.ts",
+      "read_ok": true,
+      "line_count": 27,
+      "token_hits": [
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "readonly importer: string;"
+        },
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "readonly depth: number;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/trace-mapping/src/by-source.ts",
+      "read_ok": true,
+      "line_count": 41,
+      "token_hits": [
+        {
+          "line": 11,
+          "token": "readonly",
+          "text": "decoded: readonly SourceMapSegment[][],"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@jridgewell/trace-mapping/src/trace-mapping.ts",
+      "read_ok": true,
+      "line_count": 502,
+      "token_hits": [
+        {
+          "line": 335,
+          "token": "readonly",
+          "text": "): Omit<DecodedSourceMap, 'mappings'> & { mappings: readonly SourceMapSegment[][] } {"
+        },
+        {
+          "line": 347,
+          "token": "readonly",
+          "text": "function clone<T extends string | readonly SourceMapSegment[][]>("
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.scandir/out/settings.d.ts",
+      "read_ok": true,
+      "line_count": 20,
+      "token_hits": [
+        {
+          "line": 11,
+          "token": "readonly",
+          "text": "private readonly _options;"
+        },
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "readonly followSymbolicLinks: boolean;"
+        },
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "readonly fs: fs.FileSystemAdapter;"
+        },
+        {
+          "line": 14,
+          "token": "readonly",
+          "text": "readonly pathSegmentSeparator: string;"
+        },
+        {
+          "line": 15,
+          "token": "readonly",
+          "text": "readonly stats: boolean;"
+        },
+        {
+          "line": 16,
+          "token": "readonly",
+          "text": "readonly throwErrorOnBrokenSymbolicLink: boolean;"
+        },
+        {
+          "line": 17,
+          "token": "readonly",
+          "text": "readonly fsStatSettings: fsStat.Settings;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.stat/out/settings.d.ts",
+      "read_ok": true,
+      "line_count": 16,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "private readonly _options;"
+        },
+        {
+          "line": 10,
+          "token": "readonly",
+          "text": "readonly followSymbolicLink: boolean;"
+        },
+        {
+          "line": 11,
+          "token": "readonly",
+          "text": "readonly fs: fs.FileSystemAdapter;"
+        },
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "readonly markSymbolicLink: boolean;"
+        },
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "readonly throwErrorOnBrokenSymbolicLink: boolean;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/providers/async.d.ts",
+      "read_ok": true,
+      "line_count": 12,
+      "token_hits": [
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "private readonly _root;"
+        },
+        {
+          "line": 7,
+          "token": "readonly",
+          "text": "private readonly _settings;"
+        },
+        {
+          "line": 8,
+          "token": "readonly",
+          "text": "protected readonly _reader: AsyncReader;"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "private readonly _storage;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/providers/stream.d.ts",
+      "read_ok": true,
+      "line_count": 12,
+      "token_hits": [
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "private readonly _root;"
+        },
+        {
+          "line": 7,
+          "token": "readonly",
+          "text": "private readonly _settings;"
+        },
+        {
+          "line": 8,
+          "token": "readonly",
+          "text": "protected readonly _reader: AsyncReader;"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "protected readonly _stream: Readable;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/providers/sync.d.ts",
+      "read_ok": true,
+      "line_count": 10,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "private readonly _root;"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "private readonly _settings;"
+        },
+        {
+          "line": 7,
+          "token": "readonly",
+          "text": "protected readonly _reader: SyncReader;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/readers/async.d.ts",
+      "read_ok": true,
+      "line_count": 30,
+      "token_hits": [
+        {
+          "line": 11,
+          "token": "readonly",
+          "text": "protected readonly _settings: Settings;"
+        },
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "protected readonly _scandir: typeof fsScandir.scandir;"
+        },
+        {
+          "line": 13,
+          "token": "readonly",
+          "text": "protected readonly _emitter: EventEmitter;"
+        },
+        {
+          "line": 14,
+          "token": "readonly",
+          "text": "private readonly _queue;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/readers/reader.d.ts",
+      "read_ok": true,
+      "line_count": 6,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "readonly",
+          "text": "protected readonly _root: string;"
+        },
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "protected readonly _settings: Settings;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/readers/sync.d.ts",
+      "read_ok": true,
+      "line_count": 15,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "protected readonly _scandir: typeof fsScandir.scandirSync;"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "private readonly _storage;"
+        },
+        {
+          "line": 7,
+          "token": "readonly",
+          "text": "private readonly _queue;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@nodelib/fs.walk/out/settings.d.ts",
+      "read_ok": true,
+      "line_count": 30,
+      "token_hits": [
+        {
+          "line": 20,
+          "token": "readonly",
+          "text": "private readonly _options;"
+        },
+        {
+          "line": 21,
+          "token": "readonly",
+          "text": "readonly basePath?: string;"
+        },
+        {
+          "line": 22,
+          "token": "readonly",
+          "text": "readonly concurrency: number;"
+        },
+        {
+          "line": 23,
+          "token": "readonly",
+          "text": "readonly deepFilter: DeepFilterFunction | null;"
+        },
+        {
+          "line": 24,
+          "token": "readonly",
+          "text": "readonly entryFilter: EntryFilterFunction | null;"
+        },
+        {
+          "line": 25,
+          "token": "readonly",
+          "text": "readonly errorFilter: ErrorFilterFunction | null;"
+        },
+        {
+          "line": 26,
+          "token": "readonly",
+          "text": "readonly pathSegmentSeparator: string;"
+        },
+        {
+          "line": 27,
+          "token": "readonly",
+          "text": "readonly fsScandirSettings: fsScandir.Settings;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@oxc-project/types/types.d.ts",
+      "read_ok": true,
+      "line_count": 1912,
+      "token_hits": [
+        {
+          "line": 221,
+          "token": "operator",
+          "text": "operator: UpdateOperator;"
+        },
+        {
+          "line": 221,
+          "token": "Operator",
+          "text": "operator: UpdateOperator;"
+        },
+        {
+          "line": 229,
+          "token": "operator",
+          "text": "operator: UnaryOperator;"
+        },
+        {
+          "line": 229,
+          "token": "Operator",
+          "text": "operator: UnaryOperator;"
+        },
+        {
+          "line": 238,
+          "token": "operator",
+          "text": "operator: BinaryOperator;"
+        },
+        {
+          "line": 238,
+          "token": "Operator",
+          "text": "operator: BinaryOperator;"
+        },
+        {
+          "line": 246,
+          "token": "operator",
+          "text": "operator: \"in\";"
+        },
+        {
+          "line": 254,
+          "token": "operator",
+          "text": "operator: LogicalOperator;"
+        },
+        {
+          "line": 254,
+          "token": "Operator",
+          "text": "operator: LogicalOperator;"
+        },
+        {
+          "line": 269,
+          "token": "operator",
+          "text": "operator: AssignmentOperator;"
+        },
+        {
+          "line": 269,
+          "token": "Operator",
+          "text": "operator: AssignmentOperator;"
+        },
+        {
+          "line": 686,
+          "token": "readonly",
+          "text": "readonly: boolean;"
+        },
+        {
+          "line": 774,
+          "token": "readonly",
+          "text": "readonly?: boolean;"
+        },
+        {
+          "line": 818,
+          "token": "readonly",
+          "text": "readonly?: false;"
+        },
+        {
+          "line": 1162,
+          "token": "Operator",
+          "text": "| TSTypeOperator"
+        },
+        {
+          "line": 1199,
+          "token": "Operator",
+          "text": "export interface TSTypeOperator extends Span {"
+        },
+        {
+          "line": 1200,
+          "token": "Operator",
+          "text": "type: \"TSTypeOperator\";"
+        },
+        {
+          "line": 1201,
+          "token": "operator",
+          "text": "operator: TSTypeOperatorOperator;"
+        },
+        {
+          "line": 1201,
+          "token": "Operator",
+          "text": "operator: TSTypeOperatorOperator;"
+        },
+        {
+          "line": 1206,
+          "token": "Operator",
+          "text": "export type TSTypeOperatorOperator = \"keyof\" | \"unique\" | \"readonly\";"
+        },
+        {
+          "line": 1206,
+          "token": "readonly",
+          "text": "export type TSTypeOperatorOperator = \"keyof\" | \"unique\" | \"readonly\";"
+        },
+        {
+          "line": 1396,
+          "token": "readonly",
+          "text": "readonly: boolean;"
+        },
+        {
+          "line": 1415,
+          "token": "readonly",
+          "text": "readonly: boolean;"
+        },
+        {
+          "line": 1441,
+          "token": "readonly",
+          "text": "readonly: false;"
+        },
+        {
+          "line": 1570,
+          "token": "Operator",
+          "text": "optional: TSMappedTypeModifierOperator | false;"
+        },
+        {
+          "line": 1571,
+          "token": "Operator",
+          "text": "readonly: TSMappedTypeModifierOperator | null;"
+        },
+        {
+          "line": 1571,
+          "token": "readonly",
+          "text": "readonly: TSMappedTypeModifierOperator | null;"
+        },
+        {
+          "line": 1575,
+          "token": "Operator",
+          "text": "export type TSMappedTypeModifierOperator = true | \"+\" | \"-\";"
+        },
+        {
+          "line": 1681,
+          "token": "Operator",
+          "text": "export type AssignmentOperator ="
+        },
+        {
+          "line": 1699,
+          "token": "Operator",
+          "text": "export type BinaryOperator ="
+        },
+        {
+          "line": 1723,
+          "token": "Operator",
+          "text": "export type LogicalOperator = \"||\" | \"&&\" | \"??\";"
+        },
+        {
+          "line": 1725,
+          "token": "Operator",
+          "text": "export type UnaryOperator = \"+\" | \"-\" | \"!\" | \"~\" | \"typeof\" | \"void\" | \"delete\";"
+        },
+        {
+          "line": 1727,
+          "token": "Operator",
+          "text": "export type UpdateOperator = \"++\" | \"--\";"
+        },
+        {
+          "line": 1849,
+          "token": "Operator",
+          "text": "| TSTypeOperator"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/estree/index.d.ts",
+      "read_ok": true,
+      "line_count": 694,
+      "token_hits": [
+        {
+          "line": 2,
+          "token": "runtime",
+          "text": "// runtime type checks based on the `type` parameter. In order to explain this"
+        },
+        {
+          "line": 348,
+          "token": "operator",
+          "text": "operator: UnaryOperator;"
+        },
+        {
+          "line": 348,
+          "token": "Operator",
+          "text": "operator: UnaryOperator;"
+        },
+        {
+          "line": 355,
+          "token": "operator",
+          "text": "operator: BinaryOperator;"
+        },
+        {
+          "line": 355,
+          "token": "Operator",
+          "text": "operator: BinaryOperator;"
+        },
+        {
+          "line": 362,
+          "token": "operator",
+          "text": "operator: AssignmentOperator;"
+        },
+        {
+          "line": 362,
+          "token": "Operator",
+          "text": "operator: AssignmentOperator;"
+        },
+        {
+          "line": 369,
+          "token": "operator",
+          "text": "operator: UpdateOperator;"
+        },
+        {
+          "line": 369,
+          "token": "Operator",
+          "text": "operator: UpdateOperator;"
+        },
+        {
+          "line": 376,
+          "token": "operator",
+          "text": "operator: LogicalOperator;"
+        },
+        {
+          "line": 376,
+          "token": "Operator",
+          "text": "operator: LogicalOperator;"
+        },
+        {
+          "line": 457,
+          "token": "Operator",
+          "text": "export type UnaryOperator = \"-\" | \"+\" | \"!\" | \"~\" | \"typeof\" | \"void\" | \"delete\";"
+        },
+        {
+          "line": 459,
+          "token": "Operator",
+          "text": "export type BinaryOperator ="
+        },
+        {
+          "line": 483,
+          "token": "Operator",
+          "text": "export type LogicalOperator = \"||\" | \"&&\" | \"??\";"
+        },
+        {
+          "line": 485,
+          "token": "Operator",
+          "text": "export type AssignmentOperator ="
+        },
+        {
+          "line": 503,
+          "token": "Operator",
+          "text": "export type UpdateOperator = \"++\" | \"--\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/json-schema/index.d.ts",
+      "read_ok": true,
+      "line_count": 749,
+      "token_hits": [
+        {
+          "line": 737,
+          "token": "readonly",
+          "text": "* This is slightly different than the validate method in that it will fail if the schema is readonly and it will"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react-dom/server.d.ts",
+      "read_ok": true,
+      "line_count": 183,
+      "token_hits": [
+        {
+          "line": 150,
+          "token": "runtime",
+          "text": "* Only available in the environments with [Web Streams](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) (this includes browsers, Deno, and some modern edge runtimes)."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react-dom/static.d.ts",
+      "read_ok": true,
+      "line_count": 153,
+      "token_hits": [
+        {
+          "line": 100,
+          "token": "runtime",
+          "text": "* Only available in the environments with [Web Streams](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) (this includes browsers, Deno, and some modern edge runtimes)."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/experimental.d.ts",
+      "read_ok": true,
+      "line_count": 184,
+      "token_hits": [
+        {
+          "line": 64,
+          "token": "runtime",
+          "text": "* it is a runtime warning to provide only a single child."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/global.d.ts",
+      "read_ok": true,
+      "line_count": 166,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "runtime",
+          "text": "React Native applications use React, but there is no DOM available. The JavaScript runtime"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/index.d.ts",
+      "read_ok": true,
+      "line_count": 4370,
+      "token_hits": [
+        {
+          "line": 572,
+          "token": "readonly",
+          "text": "readonly $$typeof: symbol;"
+        },
+        {
+          "line": 726,
+          "token": "readonly",
+          "text": "children: C | readonly C[],"
+        },
+        {
+          "line": 729,
+          "token": "readonly",
+          "text": "forEach<C>(children: C | readonly C[], fn: (child: C, index: number) => void): void;"
+        },
+        {
+          "line": 912,
+          "token": "runtime",
+          "text": "* If set, `this.context` will be set at runtime to the current value of the given Context."
+        },
+        {
+          "line": 979,
+          "token": "readonly",
+          "text": "readonly props: Readonly<P>;"
+        },
+        {
+          "line": 1555,
+          "token": "readonly",
+          "text": "readonly type: T;"
+        },
+        {
+          "line": 1588,
+          "token": "readonly",
+          "text": "readonly _result: T;"
+        },
+        {
+          "line": 1662,
+          "token": "readonly",
+          "text": "type DependencyList = readonly unknown[];"
+        },
+        {
+          "line": 1831,
+          "token": "runtime",
+          "text": "// the name of the custom hook is itself derived from the function name at runtime:"
+        },
+        {
+          "line": 2560,
+          "token": "readonly",
+          "text": "* @see aria-hidden @see aria-readonly."
+        },
+        {
+          "line": 2646,
+          "token": "readonly",
+          "text": "\"aria-readonly\"?: Booleanish | undefined;"
+        },
+        {
+          "line": 2774,
+          "token": "panel",
+          "text": "| \"tabpanel\""
+        },
+        {
+          "line": 2788,
+          "token": "readonly",
+          "text": "defaultValue?: string | number | readonly string[] | undefined;"
+        },
+        {
+          "line": 2994,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3068,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3086,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3312,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3335,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3401,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3435,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3446,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3451,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3481,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3533,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3772,
+          "token": "operator",
+          "text": "operator?: number | string | undefined;"
+        },
+        {
+          "line": 4132,
+          "token": "runtime",
+          "text": "// Keep in sync with JSX namespace in ./jsx-runtime.d.ts and ./jsx-dev-runtime.d.ts"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/ts5.0/experimental.d.ts",
+      "read_ok": true,
+      "line_count": 184,
+      "token_hits": [
+        {
+          "line": 64,
+          "token": "runtime",
+          "text": "* it is a runtime warning to provide only a single child."
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/ts5.0/global.d.ts",
+      "read_ok": true,
+      "line_count": 166,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "runtime",
+          "text": "React Native applications use React, but there is no DOM available. The JavaScript runtime"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@types/react/ts5.0/index.d.ts",
+      "read_ok": true,
+      "line_count": 4357,
+      "token_hits": [
+        {
+          "line": 573,
+          "token": "readonly",
+          "text": "readonly $$typeof: symbol;"
+        },
+        {
+          "line": 727,
+          "token": "readonly",
+          "text": "children: C | readonly C[],"
+        },
+        {
+          "line": 730,
+          "token": "readonly",
+          "text": "forEach<C>(children: C | readonly C[], fn: (child: C, index: number) => void): void;"
+        },
+        {
+          "line": 913,
+          "token": "runtime",
+          "text": "* If set, `this.context` will be set at runtime to the current value of the given Context."
+        },
+        {
+          "line": 980,
+          "token": "readonly",
+          "text": "readonly props: Readonly<P>;"
+        },
+        {
+          "line": 1554,
+          "token": "readonly",
+          "text": "readonly type: T;"
+        },
+        {
+          "line": 1587,
+          "token": "readonly",
+          "text": "readonly _result: T;"
+        },
+        {
+          "line": 1661,
+          "token": "readonly",
+          "text": "type DependencyList = readonly unknown[];"
+        },
+        {
+          "line": 1830,
+          "token": "runtime",
+          "text": "// the name of the custom hook is itself derived from the function name at runtime:"
+        },
+        {
+          "line": 2559,
+          "token": "readonly",
+          "text": "* @see aria-hidden @see aria-readonly."
+        },
+        {
+          "line": 2645,
+          "token": "readonly",
+          "text": "\"aria-readonly\"?: Booleanish | undefined;"
+        },
+        {
+          "line": 2773,
+          "token": "panel",
+          "text": "| \"tabpanel\""
+        },
+        {
+          "line": 2787,
+          "token": "readonly",
+          "text": "defaultValue?: string | number | readonly string[] | undefined;"
+        },
+        {
+          "line": 2993,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3067,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3085,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3311,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3334,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3400,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3434,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3445,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3450,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3480,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3532,
+          "token": "readonly",
+          "text": "value?: string | readonly string[] | number | undefined;"
+        },
+        {
+          "line": 3771,
+          "token": "operator",
+          "text": "operator?: number | string | undefined;"
+        },
+        {
+          "line": 4131,
+          "token": "runtime",
+          "text": "// Keep in sync with JSX namespace in ./jsx-runtime.d.ts and ./jsx-dev-runtime.d.ts"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/configs/eslintrc/all.d.ts",
+      "read_ok": true,
+      "line_count": 159,
+      "token_hits": [
+        {
+          "line": 65,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 135,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"error\";"
+        },
+        {
+          "line": 136,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"error\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/configs/eslintrc/disable-type-checked.d.ts",
+      "read_ok": true,
+      "line_count": 71,
+      "token_hits": [
+        {
+          "line": 21,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"off\";"
+        },
+        {
+          "line": 51,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"off\";"
+        },
+        {
+          "line": 52,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"off\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/configs/eslintrc/strict-type-checked-only.d.ts",
+      "read_ok": true,
+      "line_count": 64,
+      "token_hits": [
+        {
+          "line": 14,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/configs/eslintrc/strict-type-checked.d.ts",
+      "read_ok": true,
+      "line_count": 98,
+      "token_hits": [
+        {
+          "line": 26,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/index.d.ts",
+      "read_ok": true,
+      "line_count": 1128,
+      "token_hits": [
+        {
+          "line": 67,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 137,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"error\";"
+        },
+        {
+          "line": 138,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"error\";"
+        },
+        {
+          "line": 188,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"off\";"
+        },
+        {
+          "line": 218,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"off\";"
+        },
+        {
+          "line": 219,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"off\";"
+        },
+        {
+          "line": 478,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 563,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 862,
+          "token": "operator",
+          "text": "'no-meaningless-void-operator': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./rules/no-meaningless-void-operator\").Options, import(\"../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-e"
+        },
+        {
+          "line": 862,
+          "token": "Operator",
+          "text": "'no-meaningless-void-operator': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./rules/no-meaningless-void-operator\").Options, import(\"../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-e"
+        },
+        {
+          "line": 1055,
+          "token": "readonly",
+          "text": "'prefer-readonly': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"preferReadonly\", import(\"./rules/prefer-readonly\").Options, import(\"../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-eslint\").RuleListener> & {"
+        },
+        {
+          "line": 1058,
+          "token": "readonly",
+          "text": "'prefer-readonly-parameter-types': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"shouldBeReadonly\", import(\"./rules/prefer-readonly-parameter-types\").Options, import(\"../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-eslint\").RuleList"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/raw-plugin.d.ts",
+      "read_ok": true,
+      "line_count": 1152,
+      "token_hits": [
+        {
+          "line": 89,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 159,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"error\";"
+        },
+        {
+          "line": 160,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"error\";"
+        },
+        {
+          "line": 210,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"off\";"
+        },
+        {
+          "line": 240,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly': \"off\";"
+        },
+        {
+          "line": 241,
+          "token": "readonly",
+          "text": "'@typescript-eslint/prefer-readonly-parameter-types': \"off\";"
+        },
+        {
+          "line": 501,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 586,
+          "token": "operator",
+          "text": "'@typescript-eslint/no-meaningless-void-operator': \"error\";"
+        },
+        {
+          "line": 885,
+          "token": "operator",
+          "text": "'no-meaningless-void-operator': TSESLint.RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./rules/no-meaningless-void-operator\").Options, import(\"../rules\").ESLintPluginDocs, TSESLint.RuleListener> & {"
+        },
+        {
+          "line": 885,
+          "token": "Operator",
+          "text": "'no-meaningless-void-operator': TSESLint.RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./rules/no-meaningless-void-operator\").Options, import(\"../rules\").ESLintPluginDocs, TSESLint.RuleListener> & {"
+        },
+        {
+          "line": 1078,
+          "token": "readonly",
+          "text": "'prefer-readonly': TSESLint.RuleModule<\"preferReadonly\", import(\"./rules/prefer-readonly\").Options, import(\"../rules\").ESLintPluginDocs, TSESLint.RuleListener> & {"
+        },
+        {
+          "line": 1081,
+          "token": "readonly",
+          "text": "'prefer-readonly-parameter-types': TSESLint.RuleModule<\"shouldBeReadonly\", import(\"./rules/prefer-readonly-parameter-types\").Options, import(\"../rules\").ESLintPluginDocs, TSESLint.RuleListener> & {"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/array-type.d.ts",
+      "read_ok": true,
+      "line_count": 12,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "readonly?: OptionString;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/consistent-type-assertions.d.ts",
+      "read_ok": true,
+      "line_count": 14,
+      "token_hits": [
+        {
+          "line": 10,
+          "token": "readonly",
+          "text": "export type Options = readonly [OptUnion];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/index.d.ts",
+      "read_ok": true,
+      "line_count": 448,
+      "token_hits": [
+        {
+          "line": 183,
+          "token": "operator",
+          "text": "'no-meaningless-void-operator': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./no-meaningless-void-operator\").Options, import(\"../../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-esli"
+        },
+        {
+          "line": 183,
+          "token": "Operator",
+          "text": "'no-meaningless-void-operator': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", import(\"./no-meaningless-void-operator\").Options, import(\"../../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-esli"
+        },
+        {
+          "line": 376,
+          "token": "readonly",
+          "text": "'prefer-readonly': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"preferReadonly\", import(\"./prefer-readonly\").Options, import(\"../../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-eslint\").RuleListener> & {"
+        },
+        {
+          "line": 379,
+          "token": "readonly",
+          "text": "'prefer-readonly-parameter-types': import(\"@typescript-eslint/utils/ts-eslint\").RuleModule<\"shouldBeReadonly\", import(\"./prefer-readonly-parameter-types\").Options, import(\"../../rules\").ESLintPluginDocs, import(\"@typescript-eslint/utils/ts-eslint\").RuleListene"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/member-ordering.d.ts",
+      "read_ok": true,
+      "line_count": 33,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "readonly",
+          "text": "type ReadonlyType = 'readonly-field' | 'readonly-signature';"
+        },
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "type DecoratedMemberKind = 'accessor' | 'field' | 'get' | 'method' | 'set' | Exclude<ReadonlyType, 'readonly-signature'>;"
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "type NonCallableMemberKind = Exclude<MemberKind, 'constructor' | 'readonly-signature' | 'signature'>;"
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "type BaseMemberType = `${Accessibility}-${Exclude<MemberKind, 'readonly-signature' | 'signature' | 'static-initialization'>}` | `${Accessibility}-${MemberScope}-${NonCallableMemberKind}` | `${Accessibility}-decorated-${DecoratedMemberKind}` | `${MemberScope}-$"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/naming-convention-utils/enums.d.ts",
+      "read_ok": true,
+      "line_count": 79,
+      "token_hits": [
+        {
+          "line": 54,
+          "token": "readonly",
+          "text": "readonly = 2,"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-confusing-non-null-assertion.d.ts",
+      "read_ok": true,
+      "line_count": 6,
+      "token_hits": [
+        {
+          "line": 2,
+          "token": "Operator",
+          "text": "export type MessageId = 'confusingAssign' | 'confusingEqual' | 'confusingOperator' | 'notNeedInAssign' | 'notNeedInEqualTest' | 'notNeedInOperator' | 'wrapUpLeft';"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-confusing-void-expression.d.ts",
+      "read_ok": true,
+      "line_count": 13,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "Operator",
+          "text": "ignoreVoidOperator?: boolean;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-meaningless-void-operator.d.ts",
+      "read_ok": true,
+      "line_count": 10,
+      "token_hits": [
+        {
+          "line": 7,
+          "token": "Operator",
+          "text": "declare const _default: TSESLint.RuleModule<\"meaninglessVoidOperator\" | \"removeVoid\", Options, import(\"../../rules\").ESLintPluginDocs, TSESLint.RuleListener> & {"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/no-restricted-types.d.ts",
+      "read_ok": true,
+      "line_count": 16,
+      "token_hits": [
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "suggest?: readonly string[];"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/parameter-properties.d.ts",
+      "read_ok": true,
+      "line_count": 13,
+      "token_hits": [
+        {
+          "line": 1,
+          "token": "readonly",
+          "text": "type Modifier = 'private' | 'private readonly' | 'protected' | 'protected readonly' | 'public' | 'public readonly' | 'readonly';"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/prefer-function-type.d.ts",
+      "read_ok": true,
+      "line_count": 9,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "readonly",
+          "text": "readonly TSInterfaceDeclaration: \"Interface\";"
+        },
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "readonly TSTypeLiteral: \"Type literal\";"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/rules/prefer-optional-chain-utils/analyzeChain.d.ts",
+      "read_ok": true,
+      "line_count": 7,
+      "token_hits": [
+        {
+          "line": 7,
+          "token": "operator",
+          "text": "]>, parserServices: ParserServicesWithTypeInformation, options: PreferOptionalChainOptions, node: TSESTree.Node, operator: TSESTree.LogicalExpression['operator'], chain: ValidOperand[], lastChainOperand?: LastChainOperand): void;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/class-scope-analyzer/classScopeAnalyzer.d.ts",
+      "read_ok": true,
+      "line_count": 52,
+      "token_hits": [
+        {
+          "line": 8,
+          "token": "readonly",
+          "text": "readonly node: MemberNode;"
+        },
+        {
+          "line": 12,
+          "token": "readonly",
+          "text": "readonly key: Key;"
+        },
+        {
+          "line": 16,
+          "token": "readonly",
+          "text": "readonly name: string;"
+        },
+        {
+          "line": 21,
+          "token": "readonly",
+          "text": "readonly nameNode: TSESTree.Node;"
+        },
+        {
+          "line": 43,
+          "token": "readonly",
+          "text": "readonly className: string | null;"
+        },
+        {
+          "line": 47,
+          "token": "readonly",
+          "text": "readonly members: {"
+        },
+        {
+          "line": 48,
+          "token": "readonly",
+          "text": "readonly instance: Map<Key, Member>;"
+        },
+        {
+          "line": 49,
+          "token": "readonly",
+          "text": "readonly static: Map<Key, Member>;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/collectUnusedVariables.d.ts",
+      "read_ok": true,
+      "line_count": 15,
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "readonly",
+          "text": "readonly unusedVariables: ReadonlySet<ScopeVariable>;"
+        },
+        {
+          "line": 5,
+          "token": "readonly",
+          "text": "readonly usedVariables: ReadonlySet<ScopeVariable>;"
+        },
+        {
+          "line": 14,
+          "token": "readonly",
+          "text": "export declare function collectVariables<MessageIds extends string, Options extends readonly unknown[]>(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): VariableAnalysis;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/createRule.d.ts",
+      "read_ok": true,
+      "line_count": 5,
+      "token_hits": [
+        {
+          "line": 3,
+          "token": "readonly",
+          "text": "export declare const createRule: <Options extends readonly unknown[], MessageIds extends string>({ meta, name, ...rule }: Readonly<ESLintUtils.RuleWithMetaAndName<Options, MessageIds, ESLintPluginDocs>>) => ESLintUtils.RuleModule<MessageIds, Options, ESLintPlu"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/getOperatorPrecedence.d.ts",
+      "read_ok": true,
+      "line_count": 39,
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "Operator",
+          "text": "export declare enum OperatorPrecedence {"
+        },
+        {
+          "line": 35,
+          "token": "Operator",
+          "text": "export declare function getOperatorPrecedenceForNode(node: TSESTree.Node): OperatorPrecedence;"
+        },
+        {
+          "line": 36,
+          "token": "Operator",
+          "text": "type TSESTreeOperatorKind = ValueOf<TSESTree.BinaryOperatorToText> | ValueOf<TSESTree.PunctuatorTokenToText>;"
+        },
+        {
+          "line": 37,
+          "token": "operator",
+          "text": "export declare function getOperatorPrecedence(nodeKind: SyntaxKind, operatorKind: SyntaxKind, hasArguments?: boolean): OperatorPrecedence;"
+        },
+        {
+          "line": 37,
+          "token": "Operator",
+          "text": "export declare function getOperatorPrecedence(nodeKind: SyntaxKind, operatorKind: SyntaxKind, hasArguments?: boolean): OperatorPrecedence;"
+        },
+        {
+          "line": 38,
+          "token": "Operator",
+          "text": "export declare function getBinaryOperatorPrecedence(kind: SyntaxKind | TSESTreeOperatorKind): OperatorPrecedence;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/getWrappedCode.d.ts",
+      "read_ok": true,
+      "line_count": 2,
+      "token_hits": [
+        {
+          "line": 1,
+          "token": "Operator",
+          "text": "import type { OperatorPrecedence } from './getOperatorPrecedence';"
+        },
+        {
+          "line": 2,
+          "token": "Operator",
+          "text": "export declare function getWrappedCode(text: string, nodePrecedence: OperatorPrecedence, parentPrecedence: OperatorPrecedence): string;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/index.d.ts",
+      "read_ok": true,
+      "line_count": 40,
+      "token_hits": [
+        {
+          "line": 9,
+          "token": "Operator",
+          "text": "export * from './getOperatorPrecedence';"
+        },
+        {
+          "line": 36,
+          "token": "readonly",
+          "text": "readonly MissingParent: \"Expected node to have a parent.\";"
+        },
+        {
+          "line": 37,
+          "token": "readonly",
+          "text": "readonly MissingToken: (token: string, thing: string) => string;"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia-workbench/node_modules/@typescript-eslint/eslint-plugin/dist/util/misc.d.ts",
+      "read_ok": true,
+      "line_count": 115,
+      "token_hits": [
+        {
+          "line": 67,
+          "token": "runtime",
+          "text": "* access key at runtime. Otherwise, returns `undefined`."
+        }
+      ],
+      "danger_hits": []
+    }
+  ],
+  "candidate_surfaces": [
+    {
+      "id": "F35_C01",
+      "name": "Operator Live Runtime Panel",
+      "purpose": "Afficher la réponse F33/F34B live sur 8000 avec 7 surfaces READY et boundary KX108_ONLY.",
+      "route_needed": "GET /api/operator/runtime-panel or static HTML",
+      "risk": "LOW if readonly only"
+    },
+    {
+      "id": "F35_C02",
+      "name": "Investor Demo Packet",
+      "purpose": "Transformer la preuve runtime en endpoint/report lisible investisseur.",
+      "route_needed": "GET /api/demo/runtime-readiness",
+      "risk": "LOW if report-only"
+    },
+    {
+      "id": "F35_C03",
+      "name": "Workbench Connector Surface",
+      "purpose": "Brancher une surface opérateur sur F33 + workflow governance + monitor.",
+      "route_needed": "HTML/JSON readonly",
+      "risk": "MEDIUM if UI starts mixing runtime/context layers"
+    }
+  ],
+  "recommendation": {
+    "next_best_palier": "F35.1_OPERATOR_LIVE_RUNTIME_PANEL_READONLY",
+    "why": "F34B already proves live backend readiness. Next useful layer is an operator-readable surface, not another backend gate.",
+    "patch_scope": [
+      "readonly route or static panel only",
+      "consume existing F33 endpoint",
+      "display boundary + surfaces + proof links",
+      "no ACT",
+      "no runtime execution",
+      "no memory/Graphiti/Neo4j write"
+    ]
+  },
+  "boundary_expected": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "runtime_execute": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false
+  },
+  "next_recommended": "F35.1_OPERATOR_LIVE_RUNTIME_PANEL_READONLY",
+  "status": "F35_0_OPERATOR_DEMO_SURFACE_AUDIT_DONE"
+}

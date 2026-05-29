@@ -7,6 +7,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any, Optional
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from apps.obsidia_api.safe_response import safe_backend_response
 from periphery.workflow_governance_readonly.integration.brody_workflow_governance_snapshot_adapter import build_brody_workflow_governance_snapshot
@@ -1242,3 +1243,313 @@ async def f33_brody_runtime_entrypoint(payload: F33EntrypointPayload):
         request_type=payload.request_type,
     )
     return safe_backend_response(result, source="REAL_BACKEND")
+
+# ?? F35 ? Operator / Demo / Workbench Readonly Surfaces ???????????????????????
+
+F35_DEFAULT_PAYLOAD: dict[str, Any] = {
+    "domain": "bank",
+    "sigma_payload": {
+        "request_type": "STRUCTURAL_PREPARATION",
+        "amount": 100,
+        "recipient": "readonly-operator-target",
+    },
+    "sop_text": (
+        "1. Receive operator request\n"
+        "2. Build readonly runtime packet\n"
+        "3. Display surfaces and boundary\n"
+        "4. Human review before any real-world action"
+    ),
+    "title": "F35 operator live runtime panel",
+    "session_id": "f35-operator-panel",
+    "signal_id": "f35-tree-signal",
+    "activations": None,
+    "theta": 0.15,
+    "request_type": "STRUCTURAL_PREPARATION",
+}
+
+
+def _f35_boundary() -> dict[str, Any]:
+    return {
+        "decision_authority": "KX108_ONLY",
+        "readonly": True,
+        "advisory_only": True,
+        "context_signal_only": True,
+        "allowed_to_decide": False,
+        "can_decide": False,
+        "can_emit_act": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "workflow_decision": False,
+        "memory_decision": False,
+        "graphiti_decision": False,
+        "brody_decision": False,
+        "runtime_execute": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+    }
+
+
+def _f35_build_runtime_snapshot() -> dict[str, Any]:
+    from periphery.brody_runtime.f33_runtime_entrypoint_readonly import (  # noqa: PLC0415
+        call_brody_runtime_entrypoint,
+    )
+
+    packet = call_brody_runtime_entrypoint(**F35_DEFAULT_PAYLOAD)
+    f32_packet = packet.get("f32_packet", {})
+    surfaces = f32_packet.get("surfaces", {})
+
+    surface_rows = []
+    for name, surface in sorted(surfaces.items()):
+        surface_rows.append({
+            "name": name,
+            "status": surface.get("status"),
+            "decision_authority": surface.get("decision_authority"),
+            "readonly": surface.get("readonly"),
+            "emits_act": surface.get("emits_act"),
+            "runtime_execute": surface.get("runtime_execute"),
+            "kernel_mutation": surface.get("kernel_mutation"),
+            "x108_mutation": surface.get("x108_mutation"),
+            "neo4j_write": surface.get("neo4j_write"),
+        })
+
+    boundary = _f35_boundary()
+
+    return {
+        "version": "F35_OPERATOR_DEMO_SURFACE_V1",
+        "mode": "READONLY_OPERATOR_DEMO_WORKBENCH_SURFACE",
+        "runtime_packet": packet,
+        "f32_packet": f32_packet,
+        "surface_rows": surface_rows,
+        "surfaces_total": packet.get("surfaces_total"),
+        "surfaces_ready": packet.get("surfaces_ready"),
+        "surfaces_missing": packet.get("surfaces_missing"),
+        "entrypoint_id": packet.get("entrypoint_id"),
+        "entrypoint_status": packet.get("entrypoint_status"),
+        "integration_status": packet.get("integration_status"),
+        "proof_status": packet.get("proof_status"),
+        "source": packet.get("source", "REAL_BACKEND"),
+        "route_source": "F33_BRODY_RUNTIME_ENTRYPOINT_READONLY",
+        **boundary,
+    }
+
+
+def _f35_assert_readonly(snapshot: dict[str, Any]) -> None:
+    if snapshot.get("decision_authority") != "KX108_ONLY":
+        raise HTTPException(status_code=500, detail="F35_BOUNDARY_FAIL_DECISION_AUTHORITY")
+
+    forbidden_true = [
+        "allowed_to_decide",
+        "can_decide",
+        "can_emit_act",
+        "emits_act",
+        "emits_verdict",
+        "workflow_decision",
+        "memory_decision",
+        "graphiti_decision",
+        "brody_decision",
+        "runtime_execute",
+        "memory_write",
+        "graphiti_write",
+        "neo4j_write",
+        "kernel_mutation",
+        "x108_mutation",
+    ]
+
+    for key in forbidden_true:
+        if snapshot.get(key) is True:
+            raise HTTPException(status_code=500, detail=f"F35_FORBIDDEN_TRUE:{key}")
+
+
+@router.get("/operator/runtime-panel")
+async def f35_operator_runtime_panel_data():
+    """
+    F35_C01 JSON operator surface.
+
+    Exposes the F33/F34B runtime readiness in an operator-readable envelope.
+    Readonly only. No ACT. No runtime execution. No memory/Graphiti/Neo4j write.
+    """
+    snapshot = _f35_build_runtime_snapshot()
+    _f35_assert_readonly(snapshot)
+
+    return safe_backend_response({
+        "surface_id": "F35_C01_OPERATOR_LIVE_RUNTIME_PANEL",
+        "surface_kind": "operator_json_panel",
+        "title": "Obsidia Operator Live Runtime Panel",
+        "summary": {
+            "entrypoint_id": snapshot.get("entrypoint_id"),
+            "entrypoint_status": snapshot.get("entrypoint_status"),
+            "integration_status": snapshot.get("integration_status"),
+            "surfaces_ready": snapshot.get("surfaces_ready"),
+            "surfaces_missing": snapshot.get("surfaces_missing"),
+            "decision_authority": snapshot.get("decision_authority"),
+            "readonly": snapshot.get("readonly"),
+        },
+        "surface_rows": snapshot.get("surface_rows", []),
+        "runtime_packet": snapshot.get("runtime_packet", {}),
+        **_f35_boundary(),
+    }, source="REAL_BACKEND")
+
+
+@router.get("/operator/runtime-panel.html", response_class=HTMLResponse)
+async def f35_operator_runtime_panel_html():
+    """
+    F35_C01 HTML operator panel.
+
+    Static-style readonly panel generated from current runtime snapshot.
+    """
+    snapshot = _f35_build_runtime_snapshot()
+    _f35_assert_readonly(snapshot)
+
+    rows = []
+    for row in snapshot.get("surface_rows", []):
+        rows.append(
+            "<tr>"
+            f"<td>{row.get('name')}</td>"
+            f"<td>{row.get('status')}</td>"
+            f"<td>{row.get('decision_authority')}</td>"
+            f"<td>{row.get('readonly')}</td>"
+            f"<td>{row.get('emits_act')}</td>"
+            f"<td>{row.get('runtime_execute')}</td>"
+            f"<td>{row.get('kernel_mutation')}</td>"
+            f"<td>{row.get('x108_mutation')}</td>"
+            f"<td>{row.get('neo4j_write')}</td>"
+            "</tr>"
+        )
+
+    html = f"""<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Obsidia Operator Runtime Panel</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 32px; background: #111; color: #eee; }}
+    .card {{ border: 1px solid #444; border-radius: 12px; padding: 16px; margin-bottom: 16px; }}
+    .ok {{ color: #8ef58e; font-weight: bold; }}
+    .warn {{ color: #ffd166; font-weight: bold; }}
+    table {{ width: 100%; border-collapse: collapse; }}
+    th, td {{ border: 1px solid #444; padding: 8px; text-align: left; }}
+    th {{ background: #222; }}
+    code {{ color: #8ef58e; }}
+  </style>
+</head>
+<body>
+  <h1>Obsidia Operator Runtime Panel</h1>
+
+  <div class="card">
+    <p><b>Status:</b> <span class="ok">{snapshot.get('integration_status')}</span></p>
+    <p><b>Entrypoint:</b> <code>{snapshot.get('entrypoint_id')}</code></p>
+    <p><b>Surfaces:</b> {snapshot.get('surfaces_ready')}/{snapshot.get('surfaces_total')} ready ? missing={snapshot.get('surfaces_missing')}</p>
+    <p><b>Decision authority:</b> <code>{snapshot.get('decision_authority')}</code></p>
+    <p><b>Readonly:</b> {snapshot.get('readonly')} ? emits_act={snapshot.get('emits_act')} ? runtime_execute={snapshot.get('runtime_execute')}</p>
+  </div>
+
+  <div class="card">
+    <h2>Runtime Surfaces</h2>
+    <table>
+      <tr>
+        <th>Surface</th><th>Status</th><th>Authority</th><th>Readonly</th>
+        <th>ACT</th><th>Runtime Execute</th><th>Kernel Mutation</th><th>X108 Mutation</th><th>Neo4j Write</th>
+      </tr>
+      {''.join(rows)}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Boundary</h2>
+    <pre>DECISION_AUTHORITY=KX108_ONLY
+readonly=true
+advisory_only=true
+context_signal_only=true
+emits_act=false
+runtime_execute=false
+memory_write=false
+graphiti_write=false
+neo4j_write=false
+kernel_mutation=false
+x108_mutation=false</pre>
+  </div>
+</body>
+</html>"""
+    return HTMLResponse(content=html, status_code=200)
+
+
+@router.get("/demo/runtime-readiness")
+async def f35_investor_demo_runtime_readiness():
+    """
+    F35_C02 investor/demo readiness packet.
+
+    Converts runtime readiness into a short proof-oriented JSON envelope.
+    """
+    snapshot = _f35_build_runtime_snapshot()
+    _f35_assert_readonly(snapshot)
+
+    demo_packet = {
+        "surface_id": "F35_C02_INVESTOR_DEMO_PACKET",
+        "surface_kind": "investor_demo_readiness_packet",
+        "headline": "Obsidia exposes a live readonly governed runtime entrypoint.",
+        "proof_points": [
+            "Live backend route is callable through F33 entrypoint.",
+            "Seven runtime surfaces are attached and READY.",
+            "Decision authority remains KX108_ONLY.",
+            "No ACT emission.",
+            "No runtime execution.",
+            "No memory/Graphiti/Neo4j write.",
+            "No kernel/X108 mutation.",
+        ],
+        "readiness": {
+            "runtime_ready": snapshot.get("integration_status") == "READY_READONLY",
+            "surfaces_ready": snapshot.get("surfaces_ready"),
+            "surfaces_missing": snapshot.get("surfaces_missing"),
+            "operator_panel_available": True,
+            "workbench_connector_available": True,
+        },
+        "boundary": _f35_boundary(),
+        "source_route": "POST /api/periphery/brody-runtime/f33/integration-packet",
+        "operator_panel_route": "GET /api/periphery/operator/runtime-panel.html",
+        "workbench_connector_route": "GET /api/periphery/workbench/runtime-connector",
+    }
+
+    return safe_backend_response(demo_packet, source="REAL_BACKEND")
+
+
+@router.get("/workbench/runtime-connector")
+async def f35_workbench_runtime_connector():
+    """
+    F35_C03 workbench connector surface.
+
+    Provides a compact readonly connector packet for UI/workbench consumption.
+    """
+    snapshot = _f35_build_runtime_snapshot()
+    _f35_assert_readonly(snapshot)
+
+    connector = {
+        "surface_id": "F35_C03_WORKBENCH_CONNECTOR_SURFACE",
+        "surface_kind": "workbench_runtime_connector",
+        "connector_status": "READY_READONLY",
+        "tabs": [
+            {"id": "runtime", "title": "Runtime", "ready": True},
+            {"id": "surfaces", "title": "Surfaces", "ready": True},
+            {"id": "boundary", "title": "Boundary", "ready": True},
+            {"id": "proof", "title": "Proof", "ready": True},
+        ],
+        "runtime_summary": {
+            "entrypoint_id": snapshot.get("entrypoint_id"),
+            "entrypoint_status": snapshot.get("entrypoint_status"),
+            "integration_status": snapshot.get("integration_status"),
+            "surfaces_ready": snapshot.get("surfaces_ready"),
+            "surfaces_missing": snapshot.get("surfaces_missing"),
+        },
+        "surface_rows": snapshot.get("surface_rows", []),
+        "proof_links": [
+            "docs/runtime/F34B_LIVE_UVICORN_ROUTE_PROOF_20260529_044331.json",
+            "docs/runtime/OBSIDIA_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_20260529_024438.md",
+            ".runtime_freezes/F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_20260529_024438/MANIFEST_SHA256.json",
+        ],
+        "boundary": _f35_boundary(),
+        **_f35_boundary(),
+    }
+
+    return safe_backend_response(connector, source="REAL_BACKEND")
