@@ -1,0 +1,31 @@
+{
+  "freeze_id": "F37_MULTI_DOMAIN_USER_SCENARIOS_READONLY_20260529_035506",
+  "palier": "F37_MULTI_DOMAIN_USER_SCENARIOS_READONLY",
+  "timestamp": "20260529_035506",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "smoke_status": "PASS",
+  "checks": "139/139",
+  "tests": "83/83",
+  "scenarios": ["bank", "gps_defense_aviation", "trading", "unknown_refusal"],
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "proof_json": {
+      "path": "docs/runtime/F37_MULTI_DOMAIN_PROOF_20260529_035506.json",
+      "sha256": "FE241362C0646115D997F805CE7684E45FBFE96FC628433E8EE2532F43A00768",
+      "size_bytes": 591
+    },
+    "module": "periphery/brody_runtime/f37_multi_domain_user_scenarios_readonly.py",
+    "tests": "tests/api/test_f37_multi_domain_user_scenarios_readonly.py",
+    "smoke": "scripts/smoke_f37_multi_domain_user_scenarios_readonly.py"
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
