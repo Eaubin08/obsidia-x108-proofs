@@ -1,0 +1,32 @@
+{
+  "freeze_id": "F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE_20260529_033111",
+  "palier": "F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE",
+  "timestamp": "20260529_033111",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "smoke_status": "PASS",
+  "checks": "60/60",
+  "tests": "65/65",
+  "source": "TESTCLIENT_FALLBACK",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "proof_json": {
+      "path": "docs/runtime/F36_USER_SCENARIO_PROOF_20260529_033111.json",
+      "sha256": "FEA50112F095E27846674857CE364C9435D42C692D5DB6C83D920509129B7714",
+      "size_bytes": 1246
+    },
+    "module": "periphery/brody_runtime/f36_user_scenario_controlled_response.py",
+    "tests": "tests/api/test_f36_user_scenario_brody_workbench_controlled_response.py",
+    "smoke": "scripts/smoke_f36_user_scenario_controlled_response.py",
+    "route": "apps/obsidia_api/routes/periphery_ops.py"
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}

@@ -1553,3 +1553,39 @@ async def f35_workbench_runtime_connector():
     }
 
     return safe_backend_response(connector, source="REAL_BACKEND")
+
+
+# ── F36 — User Scenario: Brody Workbench Controlled Response ──────────────────
+
+class F36UserScenarioPayload(BaseModel):
+    user_input: str = "Je veux analyser une transaction bancaire avant paiement."
+    domain: str = "bank"
+    sigma_payload: Optional[dict] = None
+    session_id: str = "f36-user-scenario"
+    signal_id: str = "f36-tree-signal"
+    theta: float = 0.15
+    request_type: str = "STRUCTURAL_PREPARATION"
+
+
+@router.post("/brody-runtime/f36/user-scenario")
+async def f36_user_scenario_controlled_response(payload: F36UserScenarioPayload):
+    """
+    F36 user scenario — controlled readonly response.
+
+    Accepts a user input, consults F33/F32 runtime surfaces and the F35
+    workbench connector, returns a controlled readonly advisory response.
+    No ACT. No mutation. No execution. KX108_ONLY decision authority.
+    """
+    from periphery.brody_runtime.f36_user_scenario_controlled_response import (  # noqa: PLC0415
+        build_user_scenario_controlled_response,
+    )
+    result = build_user_scenario_controlled_response(
+        user_input=payload.user_input,
+        domain=payload.domain,
+        sigma_payload=payload.sigma_payload,
+        session_id=payload.session_id,
+        signal_id=payload.signal_id,
+        theta=payload.theta,
+        request_type=payload.request_type,
+    )
+    return safe_backend_response(result, source="REAL_BACKEND")
