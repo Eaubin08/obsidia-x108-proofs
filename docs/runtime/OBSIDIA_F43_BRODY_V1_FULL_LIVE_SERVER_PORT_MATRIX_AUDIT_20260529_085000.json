@@ -1,0 +1,90 @@
+{
+  "audit_id": "F43_BRODY_V1_FULL_LIVE_SERVER_PORT_MATRIX_AUDIT",
+  "version": "F43_V1",
+  "status": "PASS",
+  "timestamp": "20260529_085000",
+  "head": "25ccc4d",
+  "parent_tag": "BRODY_F42_BRODY_GPT_V1_FINAL_RELEASE_SEAL_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "type": "LIVE_SERVER_AUDIT_POST_V1_RELEASE",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8011,
+    "pid": 20288,
+    "started": true,
+    "stopped": true,
+    "ready_polls": 1,
+    "ready_seconds": 2
+  },
+  "port_matrix": {
+    "scanned": [3000, 3001, 3002, 5173, 7474, 7687, 7688, 8000, 8011, 8501, 9010],
+    "occupied": [
+      { "port": 7688, "pid": "6680/5324", "bind": "0.0.0.0", "note": "Bolt variant (Neo4j or other)" },
+      { "port": 8000, "pid": "12076",     "bind": "127.0.0.1", "note": "Existing HTTP server (pre-F43)" }
+    ],
+    "free": [3000, 3001, 3002, 5173, 7474, 7687, 8011, 8501, 9010],
+    "used_for_f43": 8011,
+    "notable_listening": [
+      { "port": 7475, "pid": "6680", "bind": "0.0.0.0", "note": "Neo4j HTTP variant (7474+1)" },
+      { "port": 8090, "pid": "14260", "bind": "0.0.0.0", "note": "Unknown service" }
+    ]
+  },
+  "route_tests": [
+    { "method": "GET",  "path": "/",                                                          "http": 200, "status": "PASS" },
+    { "method": "GET",  "path": "/openapi.json",                                              "http": 200, "status": "PASS", "all_6_routes_present": true },
+    { "method": "POST", "path": "/api/periphery/brody-runtime/f33/integration-packet",       "http": 200, "status": "PASS", "integration_status": "READY_READONLY", "surfaces_ready": 7 },
+    { "method": "GET",  "path": "/api/periphery/operator/runtime-panel",                     "http": 200, "status": "PASS" },
+    { "method": "GET",  "path": "/api/periphery/operator/runtime-panel.html",                "http": 200, "status": "PASS", "content_len": 2698 },
+    { "method": "GET",  "path": "/api/periphery/demo/runtime-readiness",                     "http": 200, "status": "PASS" },
+    { "method": "GET",  "path": "/api/periphery/workbench/runtime-connector",                "http": 200, "status": "PASS" },
+    { "method": "POST", "path": "/api/periphery/brody-runtime/f36/user-scenario",            "http": 200, "status": "PASS", "scenario_id": "F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE", "mode": "READONLY", "can_decide": false, "response_kind": "contextual_explanation_only" },
+    { "method": "POST", "path": "/api/periphery/brody-runtime/f38/multi-domain-scenarios",   "http": 200, "status": "PASS", "global_status": "READY_READONLY", "scenario_count": 4, "all_mutations_false": true, "forbidden_tokens_found": false }
+  ],
+  "routes_pass": 9,
+  "routes_fail": 0,
+  "domain_results": [
+    { "domain": "bank",               "status": "READY_READONLY",  "can_decide": false },
+    { "domain": "gps_defense_aviation","status": "READY_READONLY", "can_decide": false },
+    { "domain": "trading",            "status": "READY_READONLY",  "can_decide": false },
+    { "domain": "unknown_refusal",    "status": "REFUSAL_READONLY","can_decide": false }
+  ],
+  "boundary_verified": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false,
+    "all_mutations_false": true,
+    "forbidden_tokens_found": false
+  },
+  "smoke_scripts": [
+    { "script": "smoke_f34_live_route_contract_readonly.py",          "checks": "73/73",   "status": "PASS", "mode": "LIVE_SERVER_8000", "proof_sha256": "C0DBCA060A524DFABAD9AA6AC9C6547F61964D7AA57517F5A3EEE0B07B408835" },
+    { "script": "smoke_f36_user_scenario_controlled_response.py",     "checks": "60/60",   "status": "PASS", "mode": "TestClient",       "proof_sha256": "1807EFF55AD3F126D3616D141183E059F4818845AE46F7D600540735E94141B1" },
+    { "script": "smoke_f36b_true_live_uvicorn_user_scenario.py",      "checks": "61/61",   "status": "PASS", "mode": "LiveUvicorn_8011", "proof_sha256": "B119FAC6BAB3D7CB6C4D4F7D52D1EF5CFD03509DFF9A9342D84B15C220513BA9" },
+    { "script": "smoke_f37_multi_domain_user_scenarios_readonly.py",  "checks": "139/139", "status": "PASS", "mode": "DirectCall",       "proof_sha256": "F0B320071F89529B739AE97F27C3F53B2D5BD98D6AFDED037EECC567CC47629F" },
+    { "script": "smoke_f38_multi_domain_live_uvicorn_api.py",         "checks": "141/141", "status": "PASS", "mode": "LiveUvicorn_8011", "proof_sha256": "E3247E5F1E3A493F34077EB44277C0F074EBCD075179B6D5CD1877741B3CDAF2" }
+  ],
+  "smoke_checks_total": 474,
+  "smoke_checks_pass": 474,
+  "new_proof_files_generated": [
+    "docs/runtime/F34_LIVE_ROUTE_PROOF_20260529_052241.json",
+    "docs/runtime/F36_USER_SCENARIO_PROOF_20260529_052242.json",
+    "docs/runtime/F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_PROOF_20260529_052033.json",
+    "docs/runtime/F37_MULTI_DOMAIN_PROOF_20260529_052245.json",
+    "docs/runtime/F38_MULTI_DOMAIN_LIVE_UVICORN_PROOF_20260529_052035.json"
+  ],
+  "baseline_tests": {
+    "total": 103,
+    "pass": 103,
+    "fail": 0,
+    "status": "PASS"
+  },
+  "git_diff_check": "CLEAN",
+  "v1_integrity": "CONFIRMED — no runtime modifications, no code changes, no route additions",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
