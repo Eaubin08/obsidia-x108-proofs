@@ -1,0 +1,97 @@
+{
+  "artifact": "OBSIDIA_F58_BUS_LAYER_STALE_ANNOTATION_RECONCILIATION_20260530_000000",
+  "palier": "F58",
+  "parent": "F57_BUS_LAYER_POST_IMPLEMENTATION_AUDIT",
+  "parent_tag": "BRODY_F57_BUS_LAYER_POST_IMPLEMENTATION_AUDIT_PALIER_20260530",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "status": "PASS",
+  "date": "2026-05-30",
+  "patch_type": "metadata_annotation_reconciliation",
+  "runtime_logic_modified": false,
+  "routes_created": false,
+  "main_py_modified": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "files_modified": [
+    "apps/obsidia_api/bus/state_aggregator.py"
+  ],
+  "files_created": [],
+  "stale_annotations_fixed": true,
+  "annotations_reconciled": [
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "module docstring",
+      "before": "Bus/Bridge state aggregator — F54 minimal implementation.",
+      "after": "Bus/Bridge state aggregator — F54/F56/F57 bus layer."
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_stats_state / proof_state / last_palier",
+      "before": "F54",
+      "after": "F58"
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_stats_state / debt_state / post_bus_signal_status",
+      "before": "F55_plus",
+      "after": "implemented_readonly_F56"
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_stats_state / debt_state / bus_signal_future",
+      "before": "bus_signal_future: true",
+      "after": "bus_signal_implemented: true"
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_bridge_state / function docstring",
+      "before": "External signal ingestion deferred to F55+.",
+      "after": "External signal ingestion implemented as POST /bus/signal (F56)."
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_bridge_state / external_signal_state / signal_ingest_endpoint",
+      "before": "not_implemented",
+      "after": "/bus/signal"
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_bridge_state / external_signal_state / post_bus_signal_status",
+      "before": "F55_plus",
+      "after": "implemented_readonly_F56"
+    },
+    {
+      "file": "apps/obsidia_api/bus/state_aggregator.py",
+      "location": "build_bus_bridge_state / debt_state / bus_signal_future",
+      "before": "bus_signal_future: true",
+      "after": "bus_signal_implemented: true"
+    }
+  ],
+  "fields_added": [
+    "proof_state.f56_signal_ingress_ready",
+    "proof_state.f57_bus_layer_audited",
+    "audit_state.f56_signal_ingress_implemented",
+    "audit_state.f57_bus_layer_audited",
+    "readiness_state.bus_signal_route",
+    "readiness_state.f56_signal_ingress_ready"
+  ],
+  "bus_layer_tests": "103/103 PASS",
+  "f47_1": "PASS",
+  "f47_2": "PASS",
+  "f47_3": "PASS",
+  "openapi_bus_routes": "PASS",
+  "direct_state_assertions": "PASS",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "graphiti_write": false,
+    "memory_write": false,
+    "brody_decision": false
+  }
+}

@@ -1,5 +1,5 @@
 """
-Bus/Bridge state aggregator — F54 minimal implementation.
+Bus/Bridge state aggregator — F54/F56/F57 bus layer.
 
 Collects readonly observable state across system dimensions.
 Never decides. Never writes. Never mutates.
@@ -36,24 +36,30 @@ def build_bus_stats_state() -> dict[str, Any]:
             "localhost_only": True,
         },
         "proof_state": {
-            "last_palier": "F54",
+            "last_palier": "F58",
             "f54_minimal_ready": True,
+            "f56_signal_ingress_ready": True,
+            "f57_bus_layer_audited": True,
         },
         "audit_state": {
             "f51_debt_known": True,
             "f52_quarantine_done": True,
             "f53_contract_defined": True,
             "f54_routes_implemented": True,
+            "f56_signal_ingress_implemented": True,
+            "f57_bus_layer_audited": True,
         },
         "readiness_state": {
             "bus_stats_route": True,
             "bus_bridge_route": True,
+            "bus_signal_route": True,
             "f54_minimal_ready": True,
+            "f56_signal_ingress_ready": True,
         },
         "debt_state": {
             "quarantined_tests_reactivated": True,
-            "bus_signal_future": True,
-            "post_bus_signal_status": "F55_plus",
+            "bus_signal_implemented": True,
+            "post_bus_signal_status": "implemented_readonly_F56",
         },
     }
 
@@ -64,7 +70,7 @@ def build_bus_bridge_state() -> dict[str, Any]:
 
     Returns bridge identity fields (bridge_id, is_attached, stats)
     visible in default/debug, omitted in compact.
-    External signal ingestion deferred to F55+.
+    External signal ingestion implemented as POST /bus/signal (F56).
     """
     return {
         "status": "OK",
@@ -79,11 +85,11 @@ def build_bus_bridge_state() -> dict[str, Any]:
         },
         "external_signal_state": {
             "last_signal": "none",
-            "signal_ingest_endpoint": "not_implemented",
-            "post_bus_signal_status": "F55_plus",
+            "signal_ingest_endpoint": "/bus/signal",
+            "post_bus_signal_status": "implemented_readonly_F56",
         },
         "debt_state": {
             "quarantined_tests_reactivated": True,
-            "bus_signal_future": True,
+            "bus_signal_implemented": True,
         },
     }
