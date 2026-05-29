@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "source": "TESTCLIENT_FALLBACK",
+  "http_status": 200,
+  "route": "/api/periphery/brody-runtime/f33/integration-packet",
+  "timestamp": "20260529_015212",
+  "checks_total": 73,
+  "checks_pass": 73,
+  "checks_fail": 0,
+  "failed_checks": {},
+  "contract_summary": {
+    "entrypoint_id": "F33_BRODY_RUNTIME_ENTRYPOINT_READONLY",
+    "version": "F33_V1",
+    "entrypoint_status": "ENTRYPOINT_READY_READONLY",
+    "integration_status": "READY_READONLY",
+    "surfaces_ready": 7,
+    "surfaces_missing": 0,
+    "surfaces_total": 7,
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN"
+  },
+  "surfaces_seen": [
+    "brody_runtime_context",
+    "monitoring_adapters",
+    "neo4j_guide_bridge",
+    "operator_view_packet",
+    "sigma_dispatcher",
+    "tree_signal_packet",
+    "workflow_governance_readonly"
+  ]
+}

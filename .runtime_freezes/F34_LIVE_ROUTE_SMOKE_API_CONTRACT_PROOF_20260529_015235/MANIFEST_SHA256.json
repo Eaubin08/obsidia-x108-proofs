@@ -1,0 +1,53 @@
+{
+  "freeze_id": "F34_LIVE_ROUTE_SMOKE_API_CONTRACT_PROOF_20260529_015235",
+  "palier": "F34",
+  "version": "F34_V1",
+  "timestamp": "20260529_015235",
+  "parent_tag": "BRODY_F33_RUNTIME_ENTRYPOINT_READONLY_PALIER_20260529",
+  "patch_runtime": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "test_result": "14/14 PASS",
+  "test_duration_s": 2.10,
+  "smoke_result": "73/73 PASS",
+  "smoke_source": "TESTCLIENT_FALLBACK",
+  "smoke_http_status": 200,
+  "regression_f33": "12/12 PASS",
+  "regression_f32": "17/17 PASS",
+  "regression_f29": "4/4 PASS",
+  "api_tests_collected": 1513,
+  "route": "POST /api/periphery/brody-runtime/f33/integration-packet",
+  "http_smoke": "PASS",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "runtime_execute": false
+  },
+  "files": [
+    {
+      "path": "scripts/smoke_f34_live_route_contract_readonly.py",
+      "sha256": "7BAD8D5A07D19C7BCAF1D9F17DF4C65F362233418D1A6136CFFEEB7A6EAE60FC",
+      "role": "f34_smoke_script"
+    },
+    {
+      "path": "tests/api/test_f34_live_route_contract_readonly.py",
+      "sha256": "4BC231D48B233E07B9650FA9191AF26BDDF53DAE6A307A366D9474144205B149",
+      "role": "f34_tests"
+    }
+  ],
+  "proof_artifact": "docs/runtime/F34_LIVE_ROUTE_PROOF_20260529_015212.json",
+  "proof_checks": "73/73",
+  "integration_status": "READY_READONLY",
+  "entrypoint_status": "ENTRYPOINT_READY_READONLY"
+}
