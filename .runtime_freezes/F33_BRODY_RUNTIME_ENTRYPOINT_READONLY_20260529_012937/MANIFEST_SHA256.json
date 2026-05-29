@@ -1,0 +1,55 @@
+{
+  "freeze_id": "F33_BRODY_RUNTIME_ENTRYPOINT_READONLY_20260529_012937",
+  "palier": "F33",
+  "version": "F33_V1",
+  "timestamp": "20260529_012937",
+  "parent_tag": "BRODY_F32_FULL_RUNTIME_INTEGRATION_PALIER_20260529",
+  "patch_runtime": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "test_result": "12/12 PASS",
+  "test_duration_s": 0.32,
+  "regression_f32": "17/17 PASS",
+  "regression_f29": "4/4 PASS",
+  "api_tests_collected": 1499,
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "runtime_execute": false
+  },
+  "files": [
+    {
+      "path": "periphery/brody_runtime/f33_runtime_entrypoint_readonly.py",
+      "sha256": "4B8CAE53EE39972D249D6FD9C483DAD26AF36ABD090141A477D1A802012FB7F1",
+      "role": "f33_entrypoint_module"
+    },
+    {
+      "path": "tests/api/test_f33_brody_runtime_entrypoint_readonly.py",
+      "sha256": "07E669DD116C535940EB4A6CBE1CFDC301C756433D05A159A1A5A8C4DE852DA3",
+      "role": "f33_tests"
+    }
+  ],
+  "files_modified": [
+    {
+      "path": "apps/obsidia_api/routes/periphery_ops.py",
+      "change": "appended F33EntrypointPayload model + POST /brody-runtime/f33/integration-packet route"
+    }
+  ],
+  "entrypoint_type": "ADAPTER_MODULE + API_ROUTE",
+  "route": "POST /api/periphery/brody-runtime/f33/integration-packet",
+  "f32_wrapped": "F32_BRODY_FULL_RUNTIME_INTEGRATION_READONLY_PACKET",
+  "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN",
+  "integration_status": "READY_READONLY",
+  "entrypoint_status": "ENTRYPOINT_READY_READONLY"
+}

@@ -1199,3 +1199,46 @@ async def workflow_governance_packet(payload: WorkflowGovernancePacketPayload):
         "x108_mutation": False,
         "decision_authority": "KX108_ONLY",
     }, source="REAL_BACKEND")
+
+
+# ── F33 — Brody Runtime Entrypoint Readonly ───────────────────────────────────
+
+class F33EntrypointPayload(BaseModel):
+    domain: str = "bank"
+    sigma_payload: Optional[dict] = None
+    sop_text: str = (
+        "1. Read readonly request\n"
+        "2. Validate contract boundary\n"
+        "3. Prepare readonly advisory response"
+    )
+    title: str = "F33 entrypoint readonly"
+    session_id: str = "f33-entrypoint"
+    signal_id: str = "f33-tree-signal"
+    activations: Optional[list[float]] = None
+    theta: float = 0.15
+    request_type: str = "STRUCTURAL_PREPARATION"
+
+
+@router.post("/brody-runtime/f33/integration-packet")
+async def f33_brody_runtime_entrypoint(payload: F33EntrypointPayload):
+    """
+    F33 readonly entrypoint — exposes the F32 full runtime integration packet via HTTP.
+
+    Assembles all 7 readonly surfaces (F23A6.2 → F30) and returns a certified
+    readonly entrypoint envelope. No ACT. No verdict. No mutation. KX108_ONLY.
+    """
+    from periphery.brody_runtime.f33_runtime_entrypoint_readonly import (  # noqa: PLC0415
+        call_brody_runtime_entrypoint,
+    )
+    result = call_brody_runtime_entrypoint(
+        domain=payload.domain,
+        sigma_payload=payload.sigma_payload,
+        sop_text=payload.sop_text,
+        title=payload.title,
+        session_id=payload.session_id,
+        signal_id=payload.signal_id,
+        activations=payload.activations,
+        theta=payload.theta,
+        request_type=payload.request_type,
+    )
+    return safe_backend_response(result, source="REAL_BACKEND")
