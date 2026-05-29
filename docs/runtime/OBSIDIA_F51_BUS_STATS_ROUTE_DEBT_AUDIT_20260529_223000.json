@@ -1,0 +1,107 @@
+{
+  "audit_id": "OBSIDIA_F51_BUS_STATS_ROUTE_DEBT_AUDIT_20260529_223000",
+  "palier": "F51",
+  "parent": "F50_LIVE_DEMO_SERVER_ORCHESTRATION_AUDIT",
+  "sealed_at": "20260529_223000",
+  "status": "PASS_WITH_FINDINGS",
+  "head": "cdc3c98",
+  "parent_tag": "BRODY_F50_LIVE_DEMO_SERVER_ORCHESTRATION_AUDIT_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "issue": {
+    "route": "GET /bus/stats",
+    "observed": "404",
+    "companion_route": "GET /bus/bridge",
+    "companion_observed": "404",
+    "source_test": "tests/api/test_output_envelope_bus_stats.py",
+    "companion_test": "tests/api/test_output_envelope_bus_bridge.py",
+    "in_f50_scope": false,
+    "introduced_commit": "a5f21c6",
+    "introduced_commit_date": "2026-05-26",
+    "introduced_commit_message": "chore: clean repo hygiene and exclude generated audit artifacts",
+    "note": "Both test files and output_envelope.py added in a5f21c6 (pre-F42). Route handlers were never implemented."
+  },
+  "classification": "ROUTE_MISSING_CONFIRMED",
+  "classification_detail": "The output_envelope.py utility module exists and is correct. Tests were written expecting GET /bus/stats and GET /bus/bridge HTTP endpoints. No router file (bus.py / bus_stats.py) was ever created. No include_router() call for a bus router exists in apps/obsidia_api/main.py. Both routes return 404 — they were never wired. This is a pre-V1 planned feature left orphaned.",
+  "secondary_classification": "TEST_OUT_OF_SCOPE",
+  "secondary_detail": "From Brody V1 / F50 scope: /bus/stats is not a Brody V1 API route. The 8 F50-verified routes are unaffected. This debt is orthogonal to the sovereignty/boundary/sanitizer contract.",
+  "evidence": {
+    "openapi_contains_bus_stats": false,
+    "openapi_contains_bus_bridge": false,
+    "route_definition_found": false,
+    "bus_router_file_found": false,
+    "include_router_bus_found": false,
+    "output_envelope_module_exists": true,
+    "output_envelope_module_correct": true,
+    "test_expectations_extracted": true,
+    "both_phases_missing": true,
+    "test_origin_commit": "a5f21c6 (2026-05-26) — pre-F42",
+    "baseline_103_still_passes": true,
+    "f50_routes_unaffected": true,
+    "f47_1_sovereignty_unaffected": true,
+    "f47_2_sanitizer_unaffected": true
+  },
+  "test_contract_extracted": {
+    "route_expected": "GET /bus/stats",
+    "boundary_flags": {
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "emits_verdict": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "readonly": true
+    },
+    "envelope_fields": [
+      "source",
+      "route",
+      "timestamp",
+      "compact",
+      "debug",
+      "status"
+    ],
+    "modes": [
+      "default",
+      "compact",
+      "debug"
+    ],
+    "compact_omits": [
+      "brody_context",
+      "sigma_counters",
+      "bridge_snapshot",
+      "bridge_registration"
+    ],
+    "internal_fields_expected": [
+      "emitted",
+      "dropped",
+      "queue_size"
+    ],
+    "source_expected": "OBSIDIA_API"
+  },
+  "root_cause": {
+    "output_envelope_module": "EXISTS — apps/obsidia_api/output_envelope.py",
+    "bus_router_file": "MISSING — no apps/obsidia_api/routes/bus.py or similar",
+    "main_py_include_router": "MISSING — no include_router for bus",
+    "openapi_entry": "ABSENT",
+    "phase_status": "Phase 1 (/bus/stats) and Phase 2 (/bus/bridge) both unimplemented"
+  },
+  "boundary": {
+    "kx108_only_preserved": true,
+    "brody_decision": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "recommendation": {
+    "next": "F52_BUS_STATS_ROUTE_CONTRACT_PATCH",
+    "f52_option_a": "Implement GET /bus/stats + GET /bus/bridge using output_envelope.py — wire router into main.py",
+    "f52_option_b": "Retire test_output_envelope_bus_stats.py and test_output_envelope_bus_bridge.py if /bus/* not planned for V1",
+    "patch_required": true,
+    "patch_now": false,
+    "decision_owner": "USER — choose option A (implement) or option B (retire tests)"
+  },
+  "patch_applied": false,
+  "commit": false,
+  "tag": false,
+  "push": false
+}
