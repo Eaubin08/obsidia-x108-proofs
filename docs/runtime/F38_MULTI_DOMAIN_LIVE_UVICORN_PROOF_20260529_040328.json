@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "source": "LIVE_SERVER_8011",
+  "server_mode": "LIVE_UVICORN",
+  "port": 8011,
+  "http_status": 200,
+  "route": "/api/periphery/brody-runtime/f38/multi-domain-scenarios",
+  "timestamp": "20260529_040328",
+  "checks_total": 141,
+  "checks_pass": 141,
+  "checks_fail": 0,
+  "failed_checks": {},
+  "summary": {
+    "packet_id": "F37_MULTI_DOMAIN_USER_SCENARIOS_READONLY",
+    "global_status": "READY_READONLY",
+    "scenario_count": 4,
+    "scenarios_run": 4,
+    "all_mutations_false": true,
+    "forbidden_tokens_found": false,
+    "decision_authority": "KX108_ONLY",
+    "bank_status": "READY_READONLY",
+    "gps_status": "READY_READONLY",
+    "trading_status": "READY_READONLY",
+    "refusal_status": "REFUSAL_READONLY"
+  }
+}

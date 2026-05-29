@@ -1,0 +1,36 @@
+{
+  "freeze_id": "F38_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE_20260529_040328",
+  "palier": "F38_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE",
+  "timestamp": "20260529_040328",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "smoke_status": "PASS",
+  "server_mode": "LIVE_UVICORN",
+  "port": 8011,
+  "source": "LIVE_SERVER_8011",
+  "route": "POST /api/periphery/brody-runtime/f38/multi-domain-scenarios",
+  "checks": "141/141",
+  "tests": "103/103",
+  "scenarios": ["bank", "gps_defense_aviation", "trading", "unknown_refusal"],
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "proof_json": {
+      "path": "docs/runtime/F38_MULTI_DOMAIN_LIVE_UVICORN_PROOF_20260529_040328.json",
+      "sha256": "746621E5EAE0F11795AB17B4A36E98CFA6F98AA0926CDCB35C2635A758D153CF",
+      "size_bytes": 769
+    },
+    "route_file": "apps/obsidia_api/routes/periphery_ops.py",
+    "tests": "tests/api/test_f38_multi_domain_live_api_route_readonly.py",
+    "smoke": "scripts/smoke_f38_multi_domain_live_uvicorn_api.py",
+    "report": "docs/runtime/OBSIDIA_F38_1_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE_20260529_040328.md"
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}

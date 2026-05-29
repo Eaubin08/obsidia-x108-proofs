@@ -1589,3 +1589,29 @@ async def f36_user_scenario_controlled_response(payload: F36UserScenarioPayload)
         request_type=payload.request_type,
     )
     return safe_backend_response(result, source="REAL_BACKEND")
+
+
+# ── F38 — Multi-Domain Live API Smoke ─────────────────────────────────────────
+
+class F38MultiDomainPayload(BaseModel):
+    theta: float = 0.15
+    request_type: str = "STRUCTURAL_PREPARATION"
+
+
+@router.post("/brody-runtime/f38/multi-domain-scenarios")
+async def f38_multi_domain_scenarios(payload: F38MultiDomainPayload):
+    """
+    F38 multi-domain scenarios — readonly advisory packet.
+
+    Runs all F37 domain scenarios (bank, gps_defense_aviation, trading,
+    unknown_refusal) and returns the readonly global packet.
+    No ACT. No mutation. No execution. KX108_ONLY decision authority.
+    """
+    from periphery.brody_runtime.f37_multi_domain_user_scenarios_readonly import (  # noqa: PLC0415
+        build_multi_domain_user_scenarios,
+    )
+    result = build_multi_domain_user_scenarios(
+        theta=payload.theta,
+        request_type=payload.request_type,
+    )
+    return safe_backend_response(result, source="REAL_BACKEND")
