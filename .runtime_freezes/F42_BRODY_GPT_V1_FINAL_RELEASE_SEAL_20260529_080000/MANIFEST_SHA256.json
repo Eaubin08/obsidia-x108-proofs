@@ -1,0 +1,54 @@
+{
+  "freeze_id": "F42_BRODY_GPT_V1_FINAL_RELEASE_SEAL_20260529_080000",
+  "palier": "F42_BRODY_GPT_V1_FINAL_RELEASE_SEAL",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "version": "V1.0.0-RC-CLOSED",
+  "timestamp": "20260529_080000",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "V1_CLOSED",
+  "head": "b67b2c3",
+  "parent_tag": "BRODY_F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_PACK_PALIER_20260529",
+  "chain": "F24 → F41",
+  "runtime_chain": "F32 → F38",
+  "demo_chain": "F39 → F41",
+  "inherited": {
+    "tags_verified": true,
+    "tags_count": 14,
+    "tests_pass": "103/103",
+    "smoke_checks_cumulative": 474,
+    "live_server_proofs": 3,
+    "api_routes": 7
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false
+  },
+  "files": {
+    "release_seal_index": {
+      "path": "docs/runtime/OBSIDIA_F42_BRODY_GPT_V1_FINAL_RELEASE_SEAL_20260529_080000.json",
+      "sha256": "CD7739FCD0BCE2232D4135D3E3A76D2BD3BA722E239F41E002D0F936069745E8"
+    },
+    "release_report": {
+      "path": "docs/runtime/OBSIDIA_F42_BRODY_GPT_V1_FINAL_RELEASE_REPORT_20260529_080000.md",
+      "sha256": "04EEF72760A944BE7441851AD010EAF76044FCFF9E7F518DB0C757C27ED4C519"
+    },
+    "final_readme": {
+      "path": "docs/demo/OBSIDIA_BRODY_GPT_V1_FINAL_README.md",
+      "sha256": "2187F206C051B83055B14C5B9F2966E35896610C5B1C6A3D5766AB4073575994"
+    },
+    "release_notes": {
+      "path": "docs/demo/OBSIDIA_BRODY_GPT_V1_RELEASE_NOTES.md",
+      "sha256": "6F4F1DA3F9597705077064DC036AA55641BA1F5883AAFD0C2AC4D11A8ACC240F"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
