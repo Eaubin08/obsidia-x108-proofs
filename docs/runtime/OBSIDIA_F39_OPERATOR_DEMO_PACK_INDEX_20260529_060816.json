@@ -1,0 +1,157 @@
+{
+  "pack_id": "F39_OPERATOR_DEMO_PACK_CONSOLIDATION",
+  "version": "F39_V1",
+  "mode": "READONLY",
+  "timestamp": "20260529_060816",
+  "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "runtime_execute": false
+  },
+  "tags": [
+    { "tag": "BRODY_F32_FULL_RUNTIME_INTEGRATION_PALIER_20260529", "palier": "F32" },
+    { "tag": "BRODY_F33_RUNTIME_ENTRYPOINT_READONLY_PALIER_20260529", "palier": "F33" },
+    { "tag": "BRODY_F34_LIVE_ROUTE_SMOKE_API_CONTRACT_PALIER_20260529", "palier": "F34" },
+    { "tag": "BRODY_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_PALIER_20260529", "palier": "F34B" },
+    { "tag": "BRODY_F35_OPERATOR_DEMO_WORKBENCH_SURFACES_PALIER_20260529", "palier": "F35" },
+    { "tag": "BRODY_F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE_PALIER_20260529", "palier": "F36" },
+    { "tag": "BRODY_F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE_PALIER_20260529", "palier": "F36B" },
+    { "tag": "BRODY_F37_MULTI_DOMAIN_USER_SCENARIOS_READONLY_PALIER_20260529", "palier": "F37" },
+    { "tag": "BRODY_F38_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE_PALIER_20260529", "palier": "F38" }
+  ],
+  "api_routes": [
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f33/integration-packet",
+      "palier": "F33",
+      "description": "F33 readonly entrypoint — F32 full runtime integration packet via HTTP",
+      "surfaces_ready": 7,
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/operator/runtime-panel",
+      "palier": "F35-C01",
+      "description": "F35 operator panel — runtime readiness JSON surface",
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/operator/runtime-panel.html",
+      "palier": "F35-C01",
+      "description": "F35 operator panel — runtime readiness HTML surface",
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/demo/runtime-readiness",
+      "palier": "F35-C02",
+      "description": "F35 demo/investor runtime readiness packet",
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/workbench/runtime-connector",
+      "palier": "F35-C03",
+      "description": "F35 workbench connector surface",
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f36/user-scenario",
+      "palier": "F36",
+      "description": "F36 user scenario — controlled readonly advisory response, single domain",
+      "boundary": "KX108_ONLY"
+    },
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f38/multi-domain-scenarios",
+      "palier": "F38",
+      "description": "F38 multi-domain scenarios — 4 domains, all READONLY, global advisory packet",
+      "boundary": "KX108_ONLY"
+    }
+  ],
+  "smoke_scripts": [
+    {
+      "script": "scripts/smoke_f34_live_route_contract_readonly.py",
+      "palier": "F34",
+      "route": "POST /api/periphery/brody-runtime/f33/integration-packet",
+      "checks": 73,
+      "source_required": "TESTCLIENT_FALLBACK"
+    },
+    {
+      "script": "scripts/smoke_f36_user_scenario_controlled_response.py",
+      "palier": "F36",
+      "route": "POST /api/periphery/brody-runtime/f36/user-scenario",
+      "checks": 60,
+      "source_required": "TESTCLIENT_FALLBACK"
+    },
+    {
+      "script": "scripts/smoke_f36b_true_live_uvicorn_user_scenario.py",
+      "palier": "F36B",
+      "route": "POST /api/periphery/brody-runtime/f36/user-scenario",
+      "checks": 61,
+      "source_required": "LIVE_SERVER"
+    },
+    {
+      "script": "scripts/smoke_f37_multi_domain_user_scenarios_readonly.py",
+      "palier": "F37",
+      "route": "direct module call",
+      "checks": 139,
+      "source_required": "direct"
+    },
+    {
+      "script": "scripts/smoke_f38_multi_domain_live_uvicorn_api.py",
+      "palier": "F38",
+      "route": "POST /api/periphery/brody-runtime/f38/multi-domain-scenarios",
+      "checks": 141,
+      "source_required": "LIVE_SERVER"
+    }
+  ],
+  "test_files": [
+    { "file": "tests/api/test_f32_brody_full_runtime_integration_readonly_packet.py", "palier": "F32", "tests": 17 },
+    { "file": "tests/api/test_f33_brody_runtime_entrypoint_readonly.py", "palier": "F33", "tests": 12 },
+    { "file": "tests/api/test_f34_live_route_contract_readonly.py", "palier": "F34", "tests": 14 },
+    { "file": "tests/api/test_f35_1_operator_demo_workbench_surfaces.py", "palier": "F35", "tests": 12 },
+    { "file": "tests/api/test_f36_user_scenario_brody_workbench_controlled_response.py", "palier": "F36", "tests": 14 },
+    { "file": "tests/api/test_f37_multi_domain_user_scenarios_readonly.py", "palier": "F37", "tests": 18 },
+    { "file": "tests/api/test_f38_multi_domain_live_api_route_readonly.py", "palier": "F38", "tests": 20 },
+    { "file": "tests/api/test_f29_1_neo4j_manual_write_surface_guard.py", "palier": "F29", "tests": 4 }
+  ],
+  "proof_artifacts": [
+    { "file": "docs/runtime/F34_LIVE_ROUTE_PROOF_20260529_015212.json", "palier": "F34", "source": "TESTCLIENT_FALLBACK" },
+    { "file": "docs/runtime/F34B_LIVE_UVICORN_ROUTE_PROOF_20260529_044331.json", "palier": "F34B", "source": "REAL_BACKEND", "sha256": "20A27188043C198CEDD66819196CD9C67041E0B97E46CEC963CA11EDEF472997" },
+    { "file": "docs/runtime/F36_USER_SCENARIO_PROOF_20260529_033111.json", "palier": "F36", "source": "TESTCLIENT_FALLBACK", "sha256": "FEA50112F095E27846674857CE364C9435D42C692D5DB6C83D920509129B7714" },
+    { "file": "docs/runtime/F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_PROOF_20260529_034044.json", "palier": "F36B", "source": "LIVE_SERVER_8011", "sha256": "A6FD4BC22B9EA7032E9AA325B193D8928BE969410DAE921A929A4DFF4A7592E4" },
+    { "file": "docs/runtime/F37_MULTI_DOMAIN_PROOF_20260529_035506.json", "palier": "F37", "source": "direct", "sha256": "FE241362C0646115D997F805CE7684E45FBFE96FC628433E8EE2532F43A00768" },
+    { "file": "docs/runtime/F38_MULTI_DOMAIN_LIVE_UVICORN_PROOF_20260529_040328.json", "palier": "F38", "source": "LIVE_SERVER_8011", "sha256": "746621E5EAE0F11795AB17B4A36E98CFA6F98AA0926CDCB35C2635A758D153CF" }
+  ],
+  "runtime_reports": [
+    "docs/runtime/OBSIDIA_F32_0_GLOBAL_RUNTIME_READINESS_AUDIT_20260529_020945.md",
+    "docs/runtime/OBSIDIA_F32_1_BRODY_FULL_RUNTIME_INTEGRATION_READONLY_PACKET_20260529_023206.md",
+    "docs/runtime/OBSIDIA_F33_1_BRODY_RUNTIME_ENTRYPOINT_READONLY_20260529_012937.md",
+    "docs/runtime/OBSIDIA_F34_1_LIVE_ROUTE_SMOKE_API_CONTRACT_PROOF_20260529_015235.md",
+    "docs/runtime/OBSIDIA_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_20260529_024438.md",
+    "docs/runtime/OBSIDIA_F35_0_OPERATOR_DEMO_SURFACE_AUDIT_20260529_045419.md",
+    "docs/runtime/OBSIDIA_F36_1_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE_20260529_033111.md",
+    "docs/runtime/OBSIDIA_F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE_20260529_034044.md",
+    "docs/runtime/OBSIDIA_F37_1_MULTI_DOMAIN_USER_SCENARIOS_READONLY_20260529_035506.md",
+    "docs/runtime/OBSIDIA_F38_1_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE_20260529_040328.md"
+  ],
+  "uvicorn_command": "python -m uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port 8011",
+  "total_tests_passing": 103,
+  "total_smoke_checks": 474,
+  "live_server_proofs": ["F34B", "F36B", "F38"]
+}

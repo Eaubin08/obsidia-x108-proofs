@@ -1,0 +1,37 @@
+{
+  "freeze_id": "F39_OPERATOR_DEMO_PACK_CONSOLIDATION_20260529_060816",
+  "palier": "F39_OPERATOR_DEMO_PACK_CONSOLIDATION",
+  "timestamp": "20260529_060816",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "PASS",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38",
+  "tests_passing": 103,
+  "routes_indexed": 7,
+  "smoke_scripts_indexed": 5,
+  "proofs_indexed": 6,
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "consolidation_report": {
+      "path": "docs/runtime/OBSIDIA_F39_OPERATOR_DEMO_PACK_CONSOLIDATION_20260529_060816.md",
+      "sha256": "B0244CB86E232F8D692623B8A18FCE9735008FA1A9A7C117B51E10C98D0E6906"
+    },
+    "pack_index": {
+      "path": "docs/runtime/OBSIDIA_F39_OPERATOR_DEMO_PACK_INDEX_20260529_060816.json",
+      "sha256": "CBFC22D5E3BD9EA8356F890A62B0A8880F675F17909E78A3A2F0BF4436E8600A"
+    },
+    "operator_readme": {
+      "path": "docs/demo/OBSIDIA_OPERATOR_DEMO_README_F39.md",
+      "sha256": "4CE3A78E40276C99840BB89FEE9778270E681321DEFF58B7D702B0A153F161D4"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
