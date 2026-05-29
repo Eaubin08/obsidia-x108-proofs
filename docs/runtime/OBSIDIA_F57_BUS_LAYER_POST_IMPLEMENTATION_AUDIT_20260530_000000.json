@@ -1,0 +1,117 @@
+{
+  "artifact": "OBSIDIA_F57_BUS_LAYER_POST_IMPLEMENTATION_AUDIT_20260530_000000",
+  "palier": "F57",
+  "parent": "F56_BUS_SIGNAL_MINIMAL_READONLY_ROUTE_IMPLEMENTATION",
+  "parent_tag": "BRODY_F56_BUS_SIGNAL_MINIMAL_READONLY_ROUTE_IMPLEMENTATION_PALIER_20260530",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "status": "PASS",
+  "date": "2026-05-30",
+  "audit_type": "POST_IMPLEMENTATION",
+  "patch_applied": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "routes_audited": {
+    "GET /bus/stats": "PASS",
+    "GET /bus/bridge": "PASS",
+    "POST /bus/signal": "PASS"
+  },
+  "tests": {
+    "bus_layer_total": 103,
+    "bus_layer_passed": 103,
+    "bus_layer_failed": 0,
+    "bus_layer": "PASS",
+    "f47_1": "PASS",
+    "f47_2": "PASS",
+    "f47_3": "PASS",
+    "openapi": "PASS",
+    "live_smoke": "PASS"
+  },
+  "openapi": {
+    "/bus/stats": ["get"],
+    "/bus/bridge": ["get"],
+    "/bus/signal": ["post"],
+    "preexisting_warning": "Duplicate Operation ID x108_status_api_x108_status_get — pre-existing, not introduced by F56"
+  },
+  "storage": {
+    "persistent_storage": false,
+    "last_signal_mutation": false,
+    "last_signal_value_post_signal": "none",
+    "option_a_confirmed": true,
+    "neo4j_write": false,
+    "graphiti_write": false,
+    "memory_write": false
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "graphiti_write": false,
+    "memory_write": false,
+    "allowed_to_decide": false,
+    "advisory_only": true,
+    "brody_decision": false
+  },
+  "live_smoke": {
+    "server_pid": 23116,
+    "server_port": 8011,
+    "server_reused": true,
+    "server_stopped_by_f57": false,
+    "GET /bus/stats": {
+      "http_status": 200,
+      "decision_authority": "KX108_ONLY",
+      "readonly": true,
+      "result": "PASS"
+    },
+    "GET /bus/bridge": {
+      "http_status": 200,
+      "decision_authority": "KX108_ONLY",
+      "last_signal": "none",
+      "result": "PASS"
+    },
+    "POST /bus/signal": {
+      "http_status": 200,
+      "classified_signal_type": "audit_request",
+      "forbidden_tokens_found": true,
+      "no_isolated_forbidden_tokens_in_content": true,
+      "accepted_as_observation": true,
+      "interpreted_as_command": false,
+      "mutation_performed": false,
+      "storage_performed": false,
+      "result": "PASS"
+    },
+    "GET /bus/bridge post-signal (Option A check)": {
+      "last_signal": "none",
+      "persistent_storage_confirmed_false": true,
+      "result": "PASS"
+    }
+  },
+  "audit_notes": {
+    "act_in_redacted_note": "'ACT' is a substring of '[REDACTED]' (R-E-D-A-C-T-E-D). Naive substring check `'ACT' not in content` will fail on sanitized text. Correct verification uses word-boundary regex matching. Behavior is correct — the isolated token ACT is sanitized. The F56 test suite correctly tests ALLOW/DECIDE/VERDICT (none of which appear in REDACTED).",
+    "stale_annotations": {
+      "severity": "DEBT — not a correctness issue",
+      "items": [
+        "state_aggregator.py:2 — docstring still says 'F54 minimal implementation'",
+        "state_aggregator.py:39 — last_palier='F54' (should be F56 now)",
+        "state_aggregator.py:56 — post_bus_signal_status='F55_plus' (F56 implemented)",
+        "state_aggregator.py:82 — signal_ingest_endpoint='not_implemented' (now POST /bus/signal)",
+        "state_aggregator.py:83 — post_bus_signal_status='F55_plus' (F56 implemented)"
+      ],
+      "impact": "None on sovereignty, tests, or live behavior",
+      "recommended_action": "Update in F58 or dedicated annotation pass"
+    },
+    "mutation_scan_false_positives": [
+      "state_aggregator.py:77 — 'graphiti_status': 'not_collected' — string literal, not a write",
+      "signal_model.py:21 — graphiti_event = 'graphiti_event' — enum value, not a write"
+    ]
+  },
+  "routes_not_created": true,
+  "runtime_not_modified": true,
+  "main_py_not_modified": true,
+  "x108_not_modified": true,
+  "kernel_not_modified": true
+}
