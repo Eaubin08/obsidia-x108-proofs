@@ -1,0 +1,50 @@
+{
+  "freeze_id": "F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX_20260529_061923",
+  "palier": "F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX",
+  "version": "F40_RC1",
+  "timestamp": "20260529_061923",
+  "mode": "AUDIT_ARTIFACT_ONLY · READONLY · KX108_ONLY · emits_act=false",
+  "status": "PASS",
+  "head": "23ca559",
+  "parent_tag": "BRODY_F39_OPERATOR_DEMO_PACK_CONSOLIDATION_PALIER_20260529",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38 → F39",
+  "verification": {
+    "tags_verified": true,
+    "tags_count": 10,
+    "reports_count": 19,
+    "smoke_scripts_count": 6,
+    "freeze_dirs_count": 9,
+    "demo_readme_present": true,
+    "tests_pass": "103/103",
+    "routes_count": 7,
+    "live_server_proofs": 3,
+    "smoke_checks_cumulative": 474
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false
+  },
+  "files": {
+    "release_index": {
+      "path": "docs/runtime/OBSIDIA_F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX_20260529_061923.json",
+      "sha256": "1E75365DD0E3A37E895ED1E63F52EA59E3000A479F60C01D9EA531B055FF6839"
+    },
+    "freeze_report": {
+      "path": "docs/runtime/OBSIDIA_F40_RELEASE_CANDIDATE_DEMO_FREEZE_REPORT_20260529_061923.md",
+      "sha256": "38F1A8C91FE8AE7EC1FE74F14FAC59BE66709D8331F1099E615C6FF03AEE9C11"
+    },
+    "operator_checklist": {
+      "path": "docs/demo/OBSIDIA_F40_OPERATOR_RELEASE_CANDIDATE_CHECKLIST.md",
+      "sha256": "2D9E549AB0A132B45F216EBF5E7DAEA5DEE270BA6AAD7D0A9FFAD1F1C693E9FC"
+    }
+  },
+  "PATCH_RUNTIME": "NO",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}

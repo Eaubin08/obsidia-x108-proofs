@@ -1,0 +1,157 @@
+{
+  "release_id": "F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX",
+  "version": "F40_RC1",
+  "mode": "READONLY",
+  "status": "PASS",
+  "timestamp": "20260529_061923",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38 → F39",
+  "head": "23ca559",
+  "parent_tag": "BRODY_F39_OPERATOR_DEMO_PACK_CONSOLIDATION_PALIER_20260529",
+  "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN",
+  "verification": {
+    "tags_verified": true,
+    "tags_count": 10,
+    "reports_verified": true,
+    "reports_count": 19,
+    "smoke_scripts_verified": true,
+    "smoke_scripts_count": 6,
+    "freeze_dirs_count": 9,
+    "demo_readme_present": true,
+    "tests_pass": "103/103",
+    "routes_verified": true
+  },
+  "tags": [
+    { "palier": "F32", "tag": "BRODY_F32_FULL_RUNTIME_INTEGRATION_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F33", "tag": "BRODY_F33_RUNTIME_ENTRYPOINT_READONLY_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F34", "tag": "BRODY_F34_LIVE_ROUTE_SMOKE_API_CONTRACT_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F34B", "tag": "BRODY_F34B_TRUE_LIVE_UVICORN_SERVER_SMOKE_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F35", "tag": "BRODY_F35_OPERATOR_DEMO_WORKBENCH_SURFACES_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F36", "tag": "BRODY_F36_USER_SCENARIO_BRODY_WORKBENCH_CONTROLLED_RESPONSE_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F36B", "tag": "BRODY_F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_SMOKE_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F37", "tag": "BRODY_F37_MULTI_DOMAIN_USER_SCENARIOS_READONLY_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F38", "tag": "BRODY_F38_MULTI_DOMAIN_LIVE_UVICORN_API_SMOKE_PALIER_20260529", "status": "PRESENT" },
+    { "palier": "F39", "tag": "BRODY_F39_OPERATOR_DEMO_PACK_CONSOLIDATION_PALIER_20260529", "status": "PRESENT" }
+  ],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f33/integration-packet",
+      "palier": "F33",
+      "surfaces_ready": 7,
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/operator/runtime-panel",
+      "palier": "F35-C01",
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/operator/runtime-panel.html",
+      "palier": "F35-C01",
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/demo/runtime-readiness",
+      "palier": "F35-C02",
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "GET",
+      "path": "/api/periphery/workbench/runtime-connector",
+      "palier": "F35-C03",
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f36/user-scenario",
+      "palier": "F36",
+      "status": "READY_READONLY"
+    },
+    {
+      "method": "POST",
+      "path": "/api/periphery/brody-runtime/f38/multi-domain-scenarios",
+      "palier": "F38",
+      "scenario_count": 4,
+      "status": "READY_READONLY"
+    }
+  ],
+  "smoke_scripts": [
+    { "script": "scripts/smoke_f34_live_route_contract_readonly.py", "palier": "F34", "checks": 73, "mode": "TestClient" },
+    { "script": "scripts/smoke_f36_user_scenario_controlled_response.py", "palier": "F36", "checks": 60, "mode": "TestClient" },
+    { "script": "scripts/smoke_f36b_true_live_uvicorn_user_scenario.py", "palier": "F36B", "checks": 61, "mode": "LiveUvicorn" },
+    { "script": "scripts/smoke_f37_multi_domain_user_scenarios_readonly.py", "palier": "F37", "checks": 139, "mode": "DirectCall" },
+    { "script": "scripts/smoke_f38_multi_domain_live_uvicorn_api.py", "palier": "F38", "checks": 141, "mode": "LiveUvicorn" },
+    { "script": "scripts/f35_0_operator_demo_surface_audit.py", "palier": "F35", "checks": null, "mode": "TestClient" }
+  ],
+  "test_files": [
+    { "file": "tests/api/test_f29_1_neo4j_manual_write_surface_guard.py", "palier": "F29", "tests": 4, "status": "PASS" },
+    { "file": "tests/api/test_f32_brody_full_runtime_integration_readonly_packet.py", "palier": "F32", "tests": 17, "status": "PASS" },
+    { "file": "tests/api/test_f33_brody_runtime_entrypoint_readonly.py", "palier": "F33", "tests": 12, "status": "PASS" },
+    { "file": "tests/api/test_f34_live_route_contract_readonly.py", "palier": "F34", "tests": 14, "status": "PASS" },
+    { "file": "tests/api/test_f35_1_operator_demo_workbench_surfaces.py", "palier": "F35", "tests": 12, "status": "PASS" },
+    { "file": "tests/api/test_f36_user_scenario_brody_workbench_controlled_response.py", "palier": "F36", "tests": 14, "status": "PASS" },
+    { "file": "tests/api/test_f37_multi_domain_user_scenarios_readonly.py", "palier": "F37", "tests": 18, "status": "PASS" },
+    { "file": "tests/api/test_f38_multi_domain_live_api_route_readonly.py", "palier": "F38", "tests": 20, "status": "PASS" }
+  ],
+  "live_server_proofs": [
+    {
+      "palier": "F34B",
+      "file": "docs/runtime/F34B_LIVE_UVICORN_ROUTE_PROOF_20260529_044331.json",
+      "source": "REAL_BACKEND",
+      "port": 9010,
+      "sha256": "20A27188043C198CEDD66819196CD9C67041E0B97E46CEC963CA11EDEF472997",
+      "checks": 73
+    },
+    {
+      "palier": "F36B",
+      "file": "docs/runtime/F36B_TRUE_LIVE_UVICORN_USER_SCENARIO_PROOF_20260529_034044.json",
+      "source": "LIVE_SERVER_8011",
+      "port": 8011,
+      "sha256": "A6FD4BC22B9EA7032E9AA325B193D8928BE969410DAE921A929A4DFF4A7592E4",
+      "checks": 61
+    },
+    {
+      "palier": "F38",
+      "file": "docs/runtime/F38_MULTI_DOMAIN_LIVE_UVICORN_PROOF_20260529_040328.json",
+      "source": "LIVE_SERVER_8011",
+      "port": 8011,
+      "sha256": "746621E5EAE0F11795AB17B4A36E98CFA6F98AA0926CDCB35C2635A758D153CF",
+      "checks": 141
+    }
+  ],
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "runtime_execute": false
+  },
+  "totals": {
+    "paliers": 10,
+    "tags": 10,
+    "api_routes": 7,
+    "smoke_scripts": 6,
+    "smoke_checks_cumulative": 474,
+    "test_files": 8,
+    "tests_passing": 103,
+    "live_server_proofs": 3,
+    "runtime_reports_md": 13,
+    "proof_artifacts_json": 6,
+    "freeze_dirs": 9
+  },
+  "uvicorn_command": "python -m uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port 8011",
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}
