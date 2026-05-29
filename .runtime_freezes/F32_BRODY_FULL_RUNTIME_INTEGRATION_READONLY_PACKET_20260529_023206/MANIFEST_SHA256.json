@@ -1,0 +1,59 @@
+{
+  "freeze_id": "F32_BRODY_FULL_RUNTIME_INTEGRATION_READONLY_PACKET_20260529_023206",
+  "palier": "F32",
+  "version": "F32_V1",
+  "timestamp": "20260529_023206",
+  "HEAD": "c9ddaf4",
+  "parent_tag": "BRODY_F31_CLEANUP_UNTRACKED_DEBT_PALIER_20260529",
+  "patch_runtime": false,
+  "commit": false,
+  "tag": false,
+  "push": false,
+  "test_result": "17/17 PASS",
+  "test_duration_s": 0.24,
+  "regression_f29": "4/4 PASS",
+  "api_tests_collected": 1487,
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "runtime_execute": false
+  },
+  "files": [
+    {
+      "path": "periphery/brody_runtime/__init__.py",
+      "sha256": "617F092440ECBEE4F1BB3A16AD04343B57D979CF4190C02D593500698B604B59",
+      "role": "package_init"
+    },
+    {
+      "path": "periphery/brody_runtime/f32_full_runtime_integration_readonly_packet.py",
+      "sha256": "39DAE4A3EDAEDBB722561673B68BA041EDA4042D247F926403CD94AA1746493A",
+      "role": "f32_module"
+    },
+    {
+      "path": "tests/api/test_f32_brody_full_runtime_integration_readonly_packet.py",
+      "sha256": "22ACD256DB76B3184BDE59D8D8D7B872B509070A2C0F5B4EC773CD6E5B7DB1EC",
+      "role": "f32_tests"
+    }
+  ],
+  "surfaces_sealed": [
+    "sigma_dispatcher",
+    "tree_signal_packet",
+    "monitoring_adapters",
+    "operator_view_packet",
+    "brody_runtime_context",
+    "workflow_governance_readonly",
+    "neo4j_guide_bridge"
+  ],
+  "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN",
+  "integration_status": "READY_READONLY"
+}
