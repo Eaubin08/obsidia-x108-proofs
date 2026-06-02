@@ -3,7 +3,7 @@ Safe response wrapper — ensures every API response carries sovereignty invaria
 
 F47.1 — Protected response envelope hardening:
     Sovereignty flags are re-applied AFTER data merge (data.update then sovereignty
-    overwrites). A module returning {allowed_to_decide: True} cannot propagate that
+    overwrites). A module returning an unsafe allowed_to_decide truthy value cannot propagate that
     value through this layer. KX108_ONLY is always enforced at output.
 
 F47.2 — controlled_response.text sanitizer:
@@ -50,6 +50,7 @@ _SOVEREIGNTY_PROTECTED: dict[str, Any] = {
     "emits_act": False,
     "emits_verdict": False,
     "memory_write": False,
+    "graphiti_write": False,
     "kernel_mutation": False,
     "x108_mutation": False,
     "neo4j_write": False,
