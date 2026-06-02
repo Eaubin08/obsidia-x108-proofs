@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obsidia/runtime_contracts/os3_evidence_ticket.schema.json",
+  "title": "OS3EvidenceTicket",
+  "description": "Preuve/trace/replay/seal attachée au DecisionTicket. Jamais de décision. Invariants: P13_Immutability, merkleRoot_change_if_leaf_change, P17_AuditGrowth.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id", "linked_decision_ticket", "evidence_type",
+    "source", "hash", "replay_status", "seal_status",
+    "merkle_status", "timestamp_or_tick", "verification_status", "claim_scope"
+  ],
+  "properties": {
+    "evidence_id": { "type": "string", "format": "uuid" },
+    "linked_decision_ticket": { "type": "string", "description": "UUID du DecisionTicket associé." },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["HASH_CHAIN", "REPLAY_TRACE", "SEAL_MERKLE", "AUDIT_LOG", "RFC3161_ANCHOR"]
+    },
+    "source": { "type": "string", "description": "Module ou couche source de la preuve." },
+    "hash": { "type": "string", "description": "sha256 de l'artefact prouvé. P13_Immutability." },
+    "replay_status": {
+      "type": "string",
+      "enum": ["NOT_RUN", "PASS", "FAIL", "PENDING"],
+      "default": "NOT_RUN"
+    },
+    "seal_status": {
+      "type": "string",
+      "enum": ["SEALED", "UNSEALED", "INVALID"]
+    },
+    "merkle_status": {
+      "type": "string",
+      "enum": ["VALID", "INVALID", "NOT_COMPUTED"],
+      "description": "merkleRoot_change_if_leaf_change — modification détectable."
+    },
+    "timestamp_or_tick": { "type": "string" },
+    "verification_status": {
+      "type": "string",
+      "enum": ["VERIFIED", "UNVERIFIED", "FAILED", "PENDING"],
+      "description": "Ne jamais clamer VERIFIED si non vérifié."
+    },
+    "claim_scope": {
+      "type": "string",
+      "enum": ["CLAIMABLE_FORMAL", "CLAIMABLE_ADVISORY", "CLAIMABLE_SPEC_ONLY"]
+    },
+    "input_hash": { "type": ["string", "null"] },
+    "output_hash": { "type": ["string", "null"] },
+    "trace_hash": { "type": ["string", "null"] },
+    "merkle_root": { "type": ["string", "null"] },
+    "rfc3161_anchor_ref": { "type": ["string", "null"] },
+    "runtime_status": {
+      "type": "string",
+      "enum": ["SPEC_ONLY", "CONTRACT_SKELETON_ONLY", "CONTRACT_READY", "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY", "FORBIDDEN_RUNTIME"],
+      "default": "CONTRACT_SKELETON_ONLY"
+    }
+  }
+}

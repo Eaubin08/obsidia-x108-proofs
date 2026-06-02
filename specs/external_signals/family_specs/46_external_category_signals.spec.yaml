@@ -1,0 +1,80 @@
+family: external_category_signals
+status: RSSI patch family
+component_count: 24
+authority: KX108_ONLY
+families:
+- external_timeverse
+- external_consequence_boundary
+components:
+- id: C459
+  name: timeverse_temporal_sidecar
+  family: external_timeverse
+- id: C460
+  name: temporal_context_header
+  family: external_timeverse
+- id: C461
+  name: tick_canonical_validation
+  family: external_timeverse
+- id: C462
+  name: no_float_temporal_math
+  family: external_timeverse
+- id: C463
+  name: anti_replay_horizon
+  family: external_timeverse
+- id: C464
+  name: temporal_challenge
+  family: external_timeverse
+- id: C465
+  name: time_bounded_tool_call_check
+  family: external_timeverse
+- id: C466
+  name: temporal_receipt_metadata
+  family: external_timeverse
+- id: C467
+  name: TSAE_receipt_model
+  family: external_timeverse
+- id: C468
+  name: receipt_anchor_hash
+  family: external_timeverse
+- id: C469
+  name: stale_execution_detection
+  family: external_timeverse
+- id: C470
+  name: temporal_zero_trust_positioning
+  family: external_timeverse
+- id: C471
+  name: gateway_before_endpoint_prefilter
+  family: external_timeverse
+- id: C472
+  name: consequence_boundary_enrichment
+  family: external_consequence_boundary
+- id: C473
+  name: wrapper_non_reauthoring_law
+  family: external_consequence_boundary
+- id: C474
+  name: law_state_input_replay_triplet
+  family: external_consequence_boundary
+- id: C475
+  name: corridor_packaging_registry
+  family: external_consequence_boundary
+- id: C476
+  name: refusal_preserves_structure
+  family: external_consequence_boundary
+- id: C477
+  name: protected_consequence_could_not_bind
+  family: external_consequence_boundary
+- id: C478
+  name: executable_standing_check
+  family: external_consequence_boundary
+- id: C479
+  name: continuation_legitimacy_check
+  family: external_consequence_boundary
+- id: C480
+  name: consequence_binding_status_extended
+  family: external_consequence_boundary
+- id: C481
+  name: visible_enforcement_surface
+  family: external_consequence_boundary
+- id: C482
+  name: intent_effect_receipt_separation
+  family: external_consequence_boundary

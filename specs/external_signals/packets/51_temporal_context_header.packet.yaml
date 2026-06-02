@@ -1,0 +1,16 @@
+packet_id: temporal_context_header
+fields:
+- day_index
+- phase_window
+- tick_index
+- cycle_anchor
+- temporal_nonce
+- issued_at_tick
+- expires_at_tick
+- source_agent
+- temporal_quality
+- signature_status
+- anti_replay_status
+authority: context_signal_only
+decision_authority: KX108_ONLY
+can_emit_ACT: false

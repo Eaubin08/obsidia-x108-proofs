@@ -1,0 +1,13 @@
+packet_id: temporal_receipt
+fields:
+- receipt_id
+- action_intent_hash
+- kx108_decision
+- tick_window
+- temporal_challenge_id
+- anti_replay_status
+- policy_version
+- signature_status
+- replay_pointer
+effect_receipt_rule: effect_receipt_only_after_ACT
+decision_authority: KX108_ONLY

@@ -1,0 +1,12 @@
+packet_id: consequence_boundary
+fields:
+- executable_standing_status
+- continuation_legitimacy_status
+- consequence_binding_status
+- intent_receipt_id
+- effect_receipt_id
+- parent_receipt_hash
+- protected_consequence
+- wrapper_reauthoring_forbidden
+decision_authority: KX108_ONLY
+can_emit_ACT: false
