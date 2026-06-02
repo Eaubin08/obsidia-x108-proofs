@@ -15,12 +15,19 @@ from .protocols import (
     run_ecom_pipeline,
     run_gps_defense_aviation_pipeline,
 )
+from .registry import (
+    list_sigma_domains,
+    get_sigma_domain,
+    validate_sigma_registry,
+)
+from .packets import build_sigma_domain_packet
 
 
 BOUNDARY: dict[str, Any] = {
     "decision_authority": "KX108_ONLY",
     "readonly": True,
     "advisory_only": True,
+    "allowed_to_decide": False,
     "emits_act": False,
     "emits_verdict": False,
     "memory_write": False,
@@ -28,6 +35,7 @@ BOUNDARY: dict[str, Any] = {
     "neo4j_write": False,
     "kernel_mutation": False,
     "x108_mutation": False,
+    "brody_decision": False,
     "runtime_execute": False,
 }
 
@@ -103,7 +111,47 @@ def _envelope_to_dict(envelope: Any, domain: str) -> dict[str, Any]:
         "source": "SIGMA_UNIFIED_DISPATCHER_V1",
         "mode": "READONLY_DOMAIN_SIGMA_ENVELOPE",
         "domain_sigma_envelope": True,
+        "dispatcher_version": "F61",
+        "execution_mode": "READONLY_DESCRIPTOR_EVALUATION",
+        "payload_interpreted_as_command": False,
+        "routed_to_decision": False,
+        "emitted_act": False,
+        "emitted_verdict": False,
+        "mutation_performed": False,
+        "storage_performed": False,
     }
+
+
+def _is_f62_x108_gate(value: Any) -> bool:
+    """Return True only if value is already the normalized F62 x108_gate dict."""
+    return (
+        isinstance(value, dict)
+        and "sigma_allowed_to_decide" in value
+        and "sigma_allowed_to_act" in value
+    )
+
+
+def _enrich_with_packet(
+    base: dict[str, Any],
+    domain: str,
+    payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    try:
+        registry_domain: dict[str, Any] = get_sigma_domain(domain)
+    except Exception:
+        registry_domain = {"runtime_bound": False, "agent_count": 0, "agents": []}
+    packet = build_sigma_domain_packet(domain, registry_domain, payload)
+
+    # Rescue any legacy pipeline x108_gate (string or non-F62 dict) so the
+    # normalized F62 dict from the packet is never overwritten.
+    raw_gate = base.get("x108_gate")
+    if raw_gate is not None and not _is_f62_x108_gate(raw_gate):
+        base = dict(base)  # avoid mutating caller's dict
+        del base["x108_gate"]
+        base["pipeline_x108_gate_observed"] = raw_gate
+
+    # base wins on remaining key conflicts — preserves all F61 flat sovereignty flags
+    return {**packet, **base}
 
 
 def evaluate_sigma_domain(
@@ -113,24 +161,33 @@ def evaluate_sigma_domain(
     normalized = str(domain or "").strip().lower()
 
     if normalized == "bank":
-        envelope = run_bank_pipeline(_hydrate_state(BankState, payload))
-        return _envelope_to_dict(envelope, normalized)
+        base = _envelope_to_dict(
+            run_bank_pipeline(_hydrate_state(BankState, payload)), normalized
+        )
+        return _enrich_with_packet(base, normalized, payload)
 
     if normalized == "trading":
-        envelope = run_trading_pipeline(_hydrate_state(TradingState, payload))
-        return _envelope_to_dict(envelope, normalized)
+        base = _envelope_to_dict(
+            run_trading_pipeline(_hydrate_state(TradingState, payload)), normalized
+        )
+        return _enrich_with_packet(base, normalized, payload)
 
     if normalized == "ecom":
-        envelope = run_ecom_pipeline(_hydrate_state(EcomState, payload))
-        return _envelope_to_dict(envelope, normalized)
+        base = _envelope_to_dict(
+            run_ecom_pipeline(_hydrate_state(EcomState, payload)), normalized
+        )
+        return _enrich_with_packet(base, normalized, payload)
 
     if normalized == "gps_defense_aviation":
-        envelope = run_gps_defense_aviation_pipeline(
-            _hydrate_state(GpsDefenseAviationState, payload)
+        base = _envelope_to_dict(
+            run_gps_defense_aviation_pipeline(
+                _hydrate_state(GpsDefenseAviationState, payload)
+            ),
+            normalized,
         )
-        return _envelope_to_dict(envelope, normalized)
+        return _enrich_with_packet(base, normalized, payload)
 
-    return {
+    fallback: dict[str, Any] = {
         **BOUNDARY,
         "source": "SIGMA_UNIFIED_DISPATCHER_V1",
         "mode": "READONLY_DOMAIN_SIGMA_ENVELOPE",
@@ -143,6 +200,78 @@ def evaluate_sigma_domain(
         "unknowns": ["UNSUPPORTED_SIGMA_DOMAIN"],
         "risk_flags": [],
         "contradictions": [],
+    }
+    return _enrich_with_packet(fallback, normalized or "unknown", payload)
+
+
+def evaluate_sigma_registry(
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    domains = list_sigma_domains()
+    results: dict[str, Any] = {}
+    for domain in domains:
+        results[domain] = evaluate_sigma_domain(domain, payload)
+    return {
+        **BOUNDARY,
+        "source": "SIGMA_UNIFIED_DISPATCHER_V1",
+        "mode": "READONLY_REGISTRY_EVALUATION",
+        "dispatcher_version": "F61",
+        "packet_version": "F62",
+        "execution_mode": "READONLY_DESCRIPTOR_EVALUATION",
+        "payload_interpreted_as_command": False,
+        "routed_to_decision": False,
+        "emitted_act": False,
+        "emitted_verdict": False,
+        "mutation_performed": False,
+        "storage_performed": False,
+        "domains_evaluated": domains,
+        "results": results,
+    }
+
+
+def validate_sigma_dispatcher() -> dict[str, Any]:
+    registry_validation = validate_sigma_registry()
+    domains = list_sigma_domains()
+    errors: list[str] = []
+
+    for domain in domains:
+        result = evaluate_sigma_domain(domain, None)
+        for flag, expected in (
+            ("advisory_only", True),
+            ("allowed_to_decide", False),
+            ("emits_act", False),
+            ("emitted_act", False),
+            ("emits_verdict", False),
+            ("emitted_verdict", False),
+            ("routed_to_decision", False),
+            ("payload_interpreted_as_command", False),
+            ("mutation_performed", False),
+            ("storage_performed", False),
+            ("kernel_mutation", False),
+            ("x108_mutation", False),
+            ("brody_decision", False),
+        ):
+            if result.get(flag) != expected:
+                errors.append(f"{domain}:{flag}={result.get(flag)!r} (expected {expected!r})")
+
+    registry_errors = registry_validation.get("errors", [])
+    errors.extend(registry_errors)
+
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "dispatcher_version": "F61",
+        "canonical_domains_checked": domains,
+        "registry_validation": registry_validation,
+        "errors": errors,
+        "decision_authority": "KX108_ONLY",
+        "readonly": True,
+        "advisory_only": True,
+        "allowed_to_decide": False,
+        "emits_act": False,
+        "emits_verdict": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "brody_decision": False,
     }
 
 

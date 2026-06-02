@@ -10,23 +10,27 @@ from collections import Counter, defaultdict
 ROOT = Path(__file__).resolve().parent.parent.parent
 PACK_PATH = ROOT / "sigma" / "batches" / "bank_enterprise_pack.json"
 OUT_DIR = ROOT / "artifacts" / "p2_bank_enterprise"
-URL_RAGNAROK = "http://localhost:3001/kernel/ragnarok"
+
+# F64: ragnarok bridge (localhost:3001/kernel/ragnarok) superseded by
+# F63 readonly monitoring endpoint.  No POST, no bridge, no decision.
+DEFAULT_API_BASE = os.environ.get("OBSIDIA_API_BASE", "http://127.0.0.1:8000")
+SIGMA_BANK_MONITORING_ENDPOINT = "/api/periphery/monitoring/sigma/bank"
 
 RANK = {"ALLOW": 0, "HOLD": 1, "BLOCK": 2}
 
 def gate_rank(gate: str) -> int:
     return RANK.get(gate, 99)
 
-def run_case(item: dict) -> dict:
-    """Envoie un cas de test au Bridge Node.js (Ragnarok)"""
-    payload = {
-        "domain": "bank",
-        "state": item["payload"]
-    }
-    
+def run_case(item: dict, api_base: str = DEFAULT_API_BASE) -> dict:
+    """Observe bank domain state via F63 readonly monitoring endpoint.
+
+    F64: per-case state dispatch to ragnarok is superseded.
+    The F63 GET endpoint returns the live F62-normalized bank packet
+    (advisory only, KX108_ONLY, no decision).
+    """
+    url = f"{api_base.rstrip('/')}{SIGMA_BANK_MONITORING_ENDPOINT}"
     try:
-        # APPEL AU BRIDGE (MODE LIVE)
-        response = requests.post(URL_RAGNAROK, json=payload, timeout=30)
+        response = requests.get(url, timeout=30)
         data = response.json()
     except Exception as e:
         return {
@@ -34,27 +38,33 @@ def run_case(item: dict) -> dict:
             "family": item["family"],
             "expected_min_gate": item["expected_min_gate"],
             "ok": False,
-            "error": f"Bridge Connection Error: {e}",
+            "error": f"Monitoring Connection Error: {e}",
+            "reconciliation": "F64_READONLY_MONITORING",
         }
 
-    # VALIDATION DES RÉSULTATS
-    gate_ok = gate_rank(data.get("x108_gate", "BLOCK")) >= gate_rank(item["expected_min_gate"])
-    sigma_ok = bool(data.get("sigma_report", {}).get("pass") is True)
+    # F64: advisory observation — not a stateful gate decision.
+    # pipeline_x108_gate_observed is informational only.
+    observed_gate = data.get("pipeline_x108_gate_observed", "UNKNOWN")
+    gate_ok = gate_rank(observed_gate) >= gate_rank(item["expected_min_gate"])
+    sovereignty_ok = (
+        data.get("decision_authority") == "KX108_ONLY"
+        and data.get("allowed_to_decide") is False
+        and data.get("readonly") is True
+    )
 
     return {
         "case_id": item["case_id"],
         "family": item["family"],
         "expected_min_gate": item["expected_min_gate"],
         "note": item.get("note"),
-        "ok": bool(gate_ok and sigma_ok),
+        "ok": gate_ok and sovereignty_ok,
         "gate_ok": gate_ok,
-        "sigma_ok": sigma_ok,
-        "x108_gate": data.get("x108_gate"),
-        "severity": data.get("severity"),
-        "reason_code": data.get("reason_code"),
-        "decision_id": data.get("decision_id"),
-        "trace_id": data.get("trace_id"),
-        "attestation_ref": data.get("attestation_ref"),
+        "sovereignty_ok": sovereignty_ok,
+        "observed_gate": observed_gate,
+        "decision_authority": data.get("decision_authority"),
+        "allowed_to_decide": data.get("allowed_to_decide"),
+        "packet_version": data.get("packet_version"),
+        "reconciliation": "F64_READONLY_MONITORING",
     }
 
 def main():

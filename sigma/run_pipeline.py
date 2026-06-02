@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OS4 Canonical Agent Pipeline CLI Bridge â€” P1 public
+OS4 Canonical Agent Pipeline CLI Bridge - P1 public
 Usage:
   python sigma/run_pipeline.py <domain> <json_state_or_json_file>
 """
