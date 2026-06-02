@@ -1,9 +1,29 @@
-"""Status routes."""
+"""Status routes — health, readiness, status."""
 from fastapi import APIRouter
 from apps.obsidia_api.safe_response import safe_backend_response
 from apps.obsidia_api.runtime_loader import load_runtime_components
 
 router = APIRouter(prefix="/api", tags=["status"])
+
+
+_HEALTH_BOUNDARY = {
+    "decision_authority": "KX108_ONLY",
+    "readonly": True,
+    "emits_act": False,
+    "kernel_mutation": False,
+    "x108_mutation": False,
+    "memory_write": False,
+}
+
+
+@router.get("/health")
+async def health():
+    return {"status": "ok", "service": "obsidia-api", **_HEALTH_BOUNDARY}
+
+
+@router.get("/readiness")
+async def readiness():
+    return {"status": "ready", "mode": "READONLY_READY", **_HEALTH_BOUNDARY}
 
 
 @router.get("/status")

@@ -70,6 +70,28 @@ def normalize_brody_text(text: str) -> str:
     return result
 
 
+
+def repair_mojibake_via_latin1_roundtrip(text: str) -> str:
+    """
+    Repair mojibake that occurs when UTF-8 bytes are decoded as Latin-1/cp1252.
+
+    Strategy:
+      1. Apply normalize_brody_text for paired mojibake sequences (e.g. Ã© -> é).
+      2. Replace remaining U+00E2 (â) with an em dash (U+2014). After step 1, any
+         remaining U+00E2 is a truncated em-dash first byte — the map already
+         resolved complete sequences such as â -> em dash.
+      3. Remove remaining stray U+00C3 (unpaired Ã byte).
+
+    Idempotent: a second call on already-repaired text is a no-op.
+    """
+    if not text:
+        return text
+    result = normalize_brody_text(text)
+    result = result.replace("â", "—")
+    result = result.replace("Ã", "")
+    return result
+
+
 def safe_brody_decode(raw_bytes: bytes) -> str:
     """
     Safely decode bytes to string, trying UTF-8 first,

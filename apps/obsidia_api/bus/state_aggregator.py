@@ -9,6 +9,8 @@ from __future__ import annotations
 import sys
 from typing import Any
 
+from apps.obsidia_api.bus.sigma_bridge import build_sigma_bus_state
+
 
 def build_bus_stats_state() -> dict[str, Any]:
     """
@@ -92,4 +94,5 @@ def build_bus_bridge_state() -> dict[str, Any]:
             "quarantined_tests_reactivated": True,
             "bus_signal_implemented": True,
         },
+        "sigma_bridge_state": build_sigma_bus_state(),
     }

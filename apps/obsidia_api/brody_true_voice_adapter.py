@@ -229,7 +229,20 @@ def build_true_brody_answer(
         voice_source = "DOMAIN_RACCORD_WRITE_BOUNDARY"
         domain_answered = True
 
-    elif ((not action_boundary_already) or useful_domain_priority) and domain_raccord.get("structural_answer_available"):
+    elif (
+        ((not action_boundary_already) or useful_domain_priority)
+        and domain_raccord.get("structural_answer_available")
+        # Don't intercept when chain has a clear semantic routing decision.
+        # ERROR → MEMORY_CHAIN_INFRASTRUCTURE_ERROR must not be masked.
+        # NO_MEMORY_RESULTS / PARTIAL_QUERY_ONLY → semantic routing must not be masked.
+        # BRODY_MEMORY_RESPONSE_CHAIN_PASS → memory chain with usable material wins.
+        and chain.get("status") not in (
+            "ERROR", "NO_MEMORY_RESULTS", "PARTIAL_QUERY_ONLY",
+            "BRODY_MEMORY_RESPONSE_CHAIN_PASS",
+        )
+        # LOCAL_INDEX_FALLBACK_PARTIAL with selected items → local fallback wins.
+        and not (chain_local_fallback_partial and chain_selected_items)
+    ):
         answer_parts = [str(domain_raccord.get("structural_answer") or "")]
         voice_source = str(domain_raccord.get("voice_mode") or "DOMAIN_RACCORD_STRUCTURAL")
         domain_answered = True
@@ -440,26 +453,33 @@ def build_true_brody_answer(
                     )
                 voice_source = "SEMANTIC_MATCH_FAILED_EXPLICIT_TAG"
             else:
-                # Generic query, GENERAL topic, no match — notify miss, do not fake open question.
-                if fr:
-                    tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "aucune"
-                    answer_parts.append(
-                        f"Requête non classifiée — aucune correspondance dans l'index local. "
-                        f"Requêtes tentées : {tried_str}. "
-                        "Reformuler avec un terme clé reconnu "
-                        "(X108, mémoire, arbres, preuves, opérateur, gencoin) "
-                        "ou un identifiant explicite (ex. P136, T13)."
-                    )
+                # Safe general conversation intercept before SEMANTIC_MATCH_FAILED
+                _snap_ctx = ctx.get("semantic_query_snapshot", {"topic": chain_topic_ctx})
+                _auth_ctx = {"request_type": request_type}
+                if is_general_conversation_readonly(user_message, _auth_ctx, _snap_ctx):
+                    answer_parts = [build_general_conversation_answer(user_message)]
+                    voice_source = "GENERAL_CONVERSATION_READONLY"
                 else:
-                    tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "none"
-                    answer_parts.append(
-                        f"Unclassified query — no match in local index. "
-                        f"Queries attempted: {tried_str}. "
-                        "Reformulate with a recognized keyword "
-                        "(X108, memory, trees, proofs, operator, gencoin) "
-                        "or an explicit identifier (e.g. P136, T13)."
-                    )
-                voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
+                    # Generic query, GENERAL topic, no match — notify miss
+                    if fr:
+                        tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "aucune"
+                        answer_parts.append(
+                            f"Requête non classifiée — aucune correspondance dans l'index local. "
+                            f"Requêtes tentées : {tried_str}. "
+                            "Reformuler avec un terme clé reconnu "
+                            "(X108, mémoire, arbres, preuves, opérateur, gencoin) "
+                            "ou un identifiant explicite (ex. P136, T13)."
+                        )
+                    else:
+                        tried_str = ", ".join(f"`{q}`" for q in tried[:3]) if tried else "none"
+                        answer_parts.append(
+                            f"Unclassified query — no match in local index. "
+                            f"Queries attempted: {tried_str}. "
+                            "Reformulate with a recognized keyword "
+                            "(X108, memory, trees, proofs, operator, gencoin) "
+                            "or an explicit identifier (e.g. P136, T13)."
+                        )
+                    voice_source = "SEMANTIC_MATCH_FAILED_GENERAL"
         else:
             # Known topic but no index results — synthesize from topic classification.
             answer_parts = []
@@ -881,6 +901,72 @@ _COMMON_CAPS_EXCLUDE = frozenset({
     "DONC", "MAIS", "SANS", "SOUS", "LEUR", "COMME", "SELON", "ENTRE",
     "PASS", "FAIL", "LOCK", "NODE", "TYPE", "VOID", "MOCK", "LIVE", "STUB",
 })
+
+
+# ── General conversation readonly guard ──────────────────────────────────────
+
+_GENERAL_CONVERSATION_PATTERNS = (
+    "bonjour", "bonsoir", "salut", "hello", "coucou",
+    "merci", "thank",
+    "ok nickel", "nickel", "parfait",
+    "on reprend", "reprend",
+    "stabiliser", "vient de",
+    "naturellement",
+    "réponds",
+    "au revoir", "à bientôt", "a bientot",
+)
+
+
+def is_general_conversation_readonly(
+    message: str,
+    authority: dict,
+    semantic_snap: dict,
+) -> bool:
+    """Return True when message is safe general conversation — no decision, no action."""
+    if authority.get("request_type") in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+        return False
+    if semantic_snap.get("topic", "GENERAL") != "GENERAL":
+        return False
+    msg_lower = message.lower().strip()
+    return any(pat in msg_lower for pat in _GENERAL_CONVERSATION_PATTERNS)
+
+
+def build_general_conversation_answer(message: str) -> str:
+    """Return a short conversational readonly response for safe GENERAL messages."""
+    msg = message.lower().strip()
+    if "dis bonjour" in msg:
+        for name in ("maman", "papa", "mamie", "papi"):
+            if name in msg:
+                return (
+                    f"Bonjour {name} ! Je suis Brody, interface structurée readonly "
+                    f"Obsidia X-108. KX108_ONLY. Pas de décision."
+                )
+        return "Bonjour ! Je suis Brody, interface structurée readonly Obsidia X-108. KX108_ONLY."
+    if any(g in msg for g in ("bonjour", "bonsoir", "salut", "hello", "coucou")):
+        return (
+            "Bonjour ! Je suis Brody, interface structurée readonly Obsidia X-108. "
+            "KX108_ONLY. Pas de décision."
+        )
+    if "merci" in msg or "thank" in msg:
+        return (
+            "Avec plaisir. Je reste en lecture seule — KX108_ONLY. "
+            "Pas de décision, pas d'ACT."
+        )
+    if "nickel" in msg or "parfait" in msg:
+        return "Parfait. Chaîne lecture seule stable. KX108_ONLY. Pas de décision."
+    if "stabiliser" in msg or "vient de" in msg:
+        return (
+            "Voici ce qu'on vient de stabiliser : la chaîne terminal lecture seule — "
+            "registry Sigma, dispatcher, packets, connectors, bus bridge. "
+            "Tout est en lecture seule. KX108_ONLY. Pas de décision."
+        )
+    if "reprend" in msg:
+        return "Je reprends là où on s'est arrêtés. Chaîne readonly active. KX108_ONLY."
+    if "naturellement" in msg:
+        return "Oui, je peux répondre naturellement dans les limites readonly. KX108_ONLY."
+    if "réponds" in msg:
+        return "Entendu. Lecture seule — KX108_ONLY. Pas d'ACT, pas de décision."
+    return "Brody en mode lecture seule. KX108_ONLY. Pas de décision, pas d'ACT."
 
 
 def _detect_explicit_identifier(text: str) -> str:

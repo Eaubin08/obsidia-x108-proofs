@@ -449,25 +449,6 @@ async def x108_memory_logs_sealed():
     }, source="REAL_BACKEND")
 
 
-@router.get("/status")
-async def x108_status():
-    return safe_backend_response({
-        "kernel_id": "X108",
-        "kernel_status": "ACTIVE",
-        "mode": "READONLY",
-        "tests_passing": 531,
-        "invariants": {
-            "decision_authority": "KX108_ONLY",
-            "emits_act": False,
-            "memory_write": False,
-            "kernel_mutation": False,
-            "real_chain_action": False,
-            "graphiti_write": False,
-        },
-        "protected_files_intact": True,
-    }, source="REAL_BACKEND")
-
-
 @router.post("/readonly-ingress")
 async def x108_readonly_ingress():
     rt = load_runtime_components()

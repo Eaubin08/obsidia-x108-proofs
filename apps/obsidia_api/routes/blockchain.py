@@ -6,6 +6,7 @@ from typing import Any
 
 from apps.obsidia_api.runtime_loader import load_runtime_components
 from apps.obsidia_api.safe_response import safe_backend_response
+from apps.obsidia_api.output_envelope import build_output_envelope
 
 from periphery.blockchain.token_policy import evaluate_token_policy
 from periphery.blockchain.signature_boundary import (
@@ -526,6 +527,8 @@ class FraudCheckPayload(BaseModel):
     liquidity_verified: bool = False
     value_eth: float = 0.0
     gas_limit: int = 21000
+    compact: bool = False
+    debug: bool = False
 
 
 _AGENT_MODULES = [world_action_agent, gencoin_value_agent, os3_proof_agent, data_purity_agent, provenance_agent, brody_memory_agent, eml_symbolic_agent, energy_thermo_agent, timeverse_agent, ocs_generation_agent, operational_constance_agent, permission_economic_agent, action_sequence_agent, feedback_memory_agent]
@@ -634,18 +637,24 @@ async def blockchain_classifiers_fraud_check(payload: FraudCheckPayload):
         risk_flags=all_flags,
     )
 
-    return safe_backend_response({
-        "action_id": payload.action_id,
-        "aggregate_gate": aggregate_gate,
-        "action_decision": action_decision.to_dict(),
-        "chain_context": chain_ctx.to_dict(),
-        "tx_simulation": tx_sim.to_dict(),
-        "defi_risk": defi_decision.to_dict() if defi_decision else None,
-        "contract_risk": contract_decision.to_dict() if contract_decision else None,
-        "bridge_risk": bridge_decision.to_dict() if bridge_decision else None,
-        "audit_packet": audit.to_dict(),
-        **_BOUNDARY,
-    }, source="REAL_BACKEND")
+    return build_output_envelope(
+        {
+            "action_id": payload.action_id,
+            "aggregate_gate": aggregate_gate,
+            "action_decision": action_decision.to_dict(),
+            "chain_context": chain_ctx.to_dict(),
+            "tx_simulation": tx_sim.to_dict(),
+            "defi_risk": defi_decision.to_dict() if defi_decision else None,
+            "contract_risk": contract_decision.to_dict() if contract_decision else None,
+            "bridge_risk": bridge_decision.to_dict() if bridge_decision else None,
+            "audit_packet": audit.to_dict(),
+            "status": "OK",
+        },
+        compact=payload.compact,
+        debug=payload.debug,
+        source="REAL_BACKEND",
+        route="/api/blockchain/classifiers/fraud-check",
+    )
 
 
 @router.get("/status")

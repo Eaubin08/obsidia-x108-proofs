@@ -1,5 +1,6 @@
 """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from apps.obsidia_api.auth import require_api_key
 from pydantic import BaseModel
 from apps.obsidia_api.brody_real_response_pipeline import run_brody_real_response_pipeline
 from apps.obsidia_api.brody_v1_4_12a_final_answer_adapter import (
@@ -75,10 +76,12 @@ class BrodyChatRequest(BaseModel):
     allow_provider: bool = False
     allow_memory_candidate: bool = False
     allow_manual_apply: bool = False
+    compact: bool = False
+    debug: bool = False
 
 
 @router.post("/chat")
-async def brody_chat(req: BrodyChatRequest):
+async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     rt = load_runtime_components()
 
     # F22B: run readonly intent guard before the pipeline so domain raccord has the right signal.
@@ -428,7 +431,7 @@ async def brody_chat(req: BrodyChatRequest):
         ir_candidate_snapshot=ir_candidate_payload,
     )
 
-    return safe_backend_response({
+    _payload = {
         "response": final_answer,
         "final_answer": final_answer,
         "response_md": response_md,
@@ -501,4 +504,24 @@ async def brody_chat(req: BrodyChatRequest):
         "memory_promotion_guard_packet": _memory_promotion_guard_packet,
         "operator_view_packet": _operator_view_packet,
         "readonly_intent_guard_packet": readonly_intent_guard_packet,
-    }, source=r.get("source", "REAL_BACKEND"))
+        "final_answer_source": _tvs.get("final_answer_source", _tvs.get("voice_source", "")),
+        "topic": semantic_query_snapshot.get("topic", "") if isinstance(semantic_query_snapshot, dict) else "",
+    }
+    if req.compact:
+        _COMPACT_STRIP = {
+            "brody_full_context", "memory_response_chain_snapshot",
+            "temporal_context_snapshot", "runtime_context",
+            "candidate_memory_snapshot", "operator_loop_snapshot",
+            "tree_policy_snapshot", "cognitive_modules_snapshot",
+            "true_voice_snapshot", "session_memory_snapshot",
+            "true_response_structure_snapshot", "project_memory_snapshot",
+        }
+        for _k in _COMPACT_STRIP:
+            _payload.pop(_k, None)
+        _payload["compact_mode"] = True
+        _payload["deep_snapshots_omitted"] = True
+    if req.debug:
+        _payload["debug_env_mode"] = True
+        _payload["debug_payload_available"] = True
+        _payload["debug_request_id"] = req.session_id or "debug_session"
+    return safe_backend_response(_payload, source=r.get("source", "REAL_BACKEND"))

@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from apps.obsidia_api.safe_response import safe_backend_response
+from apps.obsidia_api.output_envelope import build_output_envelope
 from periphery.workflow_governance_readonly.integration.brody_workflow_governance_snapshot_adapter import build_brody_workflow_governance_snapshot
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
 from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context
@@ -396,11 +397,21 @@ def _pkt(p: PeripheralSignalPacket) -> dict[str, Any]:
 # ── PIPELINE ──────────────────────────────────────────────────────────────────
 
 @router.post("/pipeline/run")
-async def periphery_pipeline_run(body: ActionPayload):
+async def periphery_pipeline_run(
+    body: ActionPayload,
+    compact: bool = False,
+    debug: bool = False,
+):
     a = _make_action(body)
     packet = run_control_plane(a)
     packet.assert_non_sovereign()
-    return safe_backend_response({**_pkt(packet), **_BOUNDARY}, source="REAL_BACKEND")
+    return build_output_envelope(
+        {**_pkt(packet), "status": "OK"},
+        compact=compact,
+        debug=debug,
+        source="REAL_BACKEND",
+        route="/api/periphery/pipeline/run",
+    )
 
 
 @router.post("/pipeline/data-gate")
