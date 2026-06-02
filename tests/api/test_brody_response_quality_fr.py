@@ -38,6 +38,10 @@ def test_french_response_contains_sovereignty_reminder():
 def test_french_response_source_real_backend():
     r = client.post("/api/brody/chat", json={"message": "salut", "language": "fr"})
     data = r.json()
-    assert data["source"] in ("REAL_BACKEND", "BACKEND_STUB", "REAL_BRODY_RUNTIME_NO_GRAPHITI", "REAL_BRODY_TERMINAL_STRUCTURAL_DIALOGUE", "REAL_BRODY_LOCAL_RESPONSE_ENGINE")
+    assert data["source"] in (
+        "REAL_BACKEND", "BACKEND_STUB", "REAL_BRODY_RUNTIME_NO_GRAPHITI",
+        "REAL_BRODY_TERMINAL_STRUCTURAL_DIALOGUE", "REAL_BRODY_LOCAL_RESPONSE_ENGINE",
+        "REAL_BRODY_GRAPHITI_LIVE",
+    )
     assert data["emits_act"] is False
     assert data["decision_authority"] == "KX108_ONLY"

@@ -86,5 +86,8 @@ def test_f23a6_2_sigma_evaluate_endpoint_unknown_domain_hold():
     env = data["domain_sigma_envelope"]
     assert env["domain"] == "unknown_domain"
     assert env["status"] == "UNSUPPORTED_DOMAIN"
-    assert env["x108_gate"] == "HOLD"
+    # F62B: x108_gate is now the normalized F62 dict; legacy "HOLD" preserved in
+    # pipeline_x108_gate_observed (informational only, not authoritative).
+    assert isinstance(env["x108_gate"], dict)
+    assert env.get("pipeline_x108_gate_observed") == "HOLD"
     assert_env_boundary(env)

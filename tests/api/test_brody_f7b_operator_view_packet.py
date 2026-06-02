@@ -54,6 +54,15 @@ def _ready_inputs():
             "canon_promotion_allowed": False,
             "memory_promotion_allowed": False,
         },
+        domain_sigma_envelope={
+            "mode": "READONLY_DOMAIN_SIGMA_ENVELOPE",
+            "domain": "bank",
+            "x108_gate": {"status": "HOLD", "source": "sigma_readonly"},
+            "decision_authority": "KX108_ONLY",
+            "readonly": True,
+            "emits_act": False,
+            "advisory_only": True,
+        },
     )
 
 

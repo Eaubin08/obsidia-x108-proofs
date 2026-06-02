@@ -57,6 +57,15 @@ def test_operator_view_runtime_ready_sample():
             "canon_promotion_allowed": False,
             "memory_promotion_allowed": False,
         },
+        domain_sigma_envelope={
+            "mode": "READONLY_DOMAIN_SIGMA_ENVELOPE",
+            "domain": "bank",
+            "x108_gate": {"status": "HOLD", "source": "sigma_readonly"},
+            "decision_authority": "KX108_ONLY",
+            "readonly": True,
+            "emits_act": False,
+            "advisory_only": True,
+        },
     )["operator_view_packet"]
 
     assert out["version"] == "OPERATOR_VIEW_PACKET_V1"

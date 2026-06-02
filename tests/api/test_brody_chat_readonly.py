@@ -56,4 +56,11 @@ def test_brody_source_is_not_frontend_mock():
     r = client.post("/api/brody/chat", json={"message": "Source test"})
     data = r.json()
     assert data["source"] != "FRONTEND_MOCK"
-    assert data["source"] in ("REAL_BACKEND", "BACKEND_STUB", "REAL_BRODY_RUNTIME_NO_GRAPHITI", "REAL_BRODY_TERMINAL_STRUCTURAL_DIALOGUE", "REAL_BRODY_LOCAL_RESPONSE_ENGINE")
+    assert data["source"] in (
+        "REAL_BACKEND",
+        "BACKEND_STUB",
+        "REAL_BRODY_RUNTIME_NO_GRAPHITI",
+        "REAL_BRODY_TERMINAL_STRUCTURAL_DIALOGUE",
+        "REAL_BRODY_LOCAL_RESPONSE_ENGINE",
+        "REAL_BRODY_GRAPHITI_LIVE",
+    )

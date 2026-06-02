@@ -92,6 +92,9 @@ def test_f23a4_4_sigma_evaluate_unknown_domain_is_hold_only():
     packet = evaluate_sigma_domain("unknown_domain", {})
 
     assert packet["status"] == "UNSUPPORTED_DOMAIN"
-    assert packet["x108_gate"] == "HOLD"
+    # F62B: x108_gate is now the normalized F62 dict; legacy "HOLD" preserved in
+    # pipeline_x108_gate_observed (informational only, not authoritative).
+    assert isinstance(packet["x108_gate"], dict)
+    assert packet.get("pipeline_x108_gate_observed") == "HOLD"
     assert "UNSUPPORTED_SIGMA_DOMAIN" in packet["unknowns"]
     assert_boundary(packet)
