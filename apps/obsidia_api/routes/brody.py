@@ -1,4 +1,5 @@
 """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+import unicodedata
 from fastapi import APIRouter, Depends
 from apps.obsidia_api.auth import require_api_key
 from pydantic import BaseModel
@@ -508,8 +509,13 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "topic": semantic_query_snapshot.get("topic", "") if isinstance(semantic_query_snapshot, dict) else "",
     }
     # Semantic advisory UTF-8 regression guard:
-    # X108 + m?moire actuelle must remain no-memory advisory, even if accents are normalized.
-    _semantic_guard_msg = str(req.message or "").lower().replace("?", "e").replace("?", "e").replace("?", "e")
+    # X108 + mémoire actuelle must remain no-memory advisory.
+    # NFKD strips combining accents so "mémoire" → "memoire" regardless of encoding.
+    _msg_lower = str(req.message or "").lower()
+    _semantic_guard_msg = "".join(
+        c for c in unicodedata.normalize("NFKD", _msg_lower)
+        if not unicodedata.combining(c)
+    )
     _semantic_guard_topic = (
         semantic_query_snapshot.get("topic", "")
         if isinstance(semantic_query_snapshot, dict) else ""
