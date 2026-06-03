@@ -85,9 +85,17 @@ def test_at_least_one_high_confidence_layer_found():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_each_layer_has_required_fields():
-    """Chaque couche a found / matching_files_count / top_files / confidence / keywords_matched."""
+    """Chaque couche a found / matching_files_count / top_files / confidence / keywords_matched
+    et les champs P33D evidence_status / evidence_basis / confidence_reason /
+    source_files_count / strong_files_count."""
     idx = build_os_trad_deep_concept_index()
-    required_fields = ["found", "matching_files_count", "top_files", "confidence", "keywords_matched"]
+    required_fields = [
+        "found", "matching_files_count", "top_files", "confidence", "keywords_matched",
+        # P33D evidence fields
+        "evidence_status", "evidence_basis", "confidence_reason",
+        "source_files_count", "strong_files_count",
+    ]
+    valid_evidence_statuses = {"CORE_STRONG", "PARTIAL_STRONG", "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND"}
     for layer_key in KNOWN_LAYERS:
         layer = idx[layer_key]
         for field in required_fields:
@@ -97,6 +105,11 @@ def test_each_layer_has_required_fields():
         assert isinstance(layer["top_files"], list)
         assert layer["confidence"] in ("HIGH", "MEDIUM", "LOW", "NONE")
         assert isinstance(layer["keywords_matched"], list)
+        assert layer["evidence_status"] in valid_evidence_statuses, (
+            f"evidence_status invalide dans {layer_key}: {layer['evidence_status']}"
+        )
+        assert isinstance(layer["source_files_count"], int)
+        assert isinstance(layer["strong_files_count"], int)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -266,3 +279,95 @@ def test_universal_language_layer_found():
     assert layer["matching_files_count"] >= 1
     assert any("vocabulaire" in f.lower() or "extracted_text" in f.lower()
                for f in layer["top_files"])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tests P33D — Evidence Reconciliation (content-only authority)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_p33d_reverse_windows_layer_not_found():
+    """P33D : REVERSE_WINDOWS_LAYER est NOT_FOUND d'après P33C content-only."""
+    idx = build_os_trad_deep_concept_index()
+    rw = idx["reverse_windows_layer"]
+    assert rw["found"] is False, "REVERSE_WINDOWS_LAYER doit être found=False (P33C NOT_FOUND)"
+    assert rw["evidence_status"] == "NOT_FOUND"
+    assert rw["source_files_count"] == 0
+    assert rw["strong_files_count"] == 0
+
+
+def test_p33d_lctu_not_declared():
+    """P33D : LCTU ne doit pas être déclaré (P33C NOT_FOUND)."""
+    ul_def = _LAYER_DEFINITIONS["UNIVERSAL_LANGUAGE_LAYER"]
+    assert "lctu" not in ul_def["path_patterns"], (
+        "LCTU ne doit pas figurer dans path_patterns (P33C NOT_FOUND)"
+    )
+    idx = build_os_trad_deep_concept_index()
+    ul = idx["universal_language_layer"]
+    lctu_in_kw = any("lctu" in kw.lower() for kw in ul.get("keywords_matched", []))
+    assert not lctu_in_kw, "LCTU ne doit pas être déclaré dans les keywords_matched"
+
+
+def test_p33d_reverse_language_is_medium_signal():
+    """P33D : REVERSE_LANGUAGE_LAYER est MEDIUM_SIGNAL ou WEAK_SIGNAL, pas CORE."""
+    idx = build_os_trad_deep_concept_index()
+    rl = idx["reverse_language_layer"]
+    assert rl["evidence_status"] in ("MEDIUM_SIGNAL", "WEAK_SIGNAL"), (
+        f"REVERSE_LANGUAGE doit être MEDIUM_SIGNAL ou WEAK_SIGNAL, obtenu: {rl['evidence_status']}"
+    )
+    assert rl["source_files_count"] <= 1
+
+
+def test_p33d_ir_is_medium_signal():
+    """P33D : IR_LAYER est MEDIUM_SIGNAL ou WEAK_SIGNAL, pas CORE."""
+    idx = build_os_trad_deep_concept_index()
+    ir = idx["ir_layer"]
+    assert ir["evidence_status"] in ("MEDIUM_SIGNAL", "WEAK_SIGNAL"), (
+        f"IR_LAYER doit être MEDIUM_SIGNAL ou WEAK_SIGNAL, obtenu: {ir['evidence_status']}"
+    )
+    assert ir["source_files_count"] <= 1
+
+
+def test_p33d_laws_protocols_is_core_strong():
+    """P33D : LAWS_PROTOCOLS_LAYER est CORE_STRONG (P33C: 22 LOIS + 97 PROTOCOLES)."""
+    idx = build_os_trad_deep_concept_index()
+    lp = idx["laws_protocols_layer"]
+    assert lp["evidence_status"] == "CORE_STRONG"
+    assert lp["found"] is True
+    assert lp["source_files_count"] >= 100
+
+
+def test_p33d_agents_trees_is_core_strong():
+    """P33D : AGENTS_TREES_LAYER est CORE_STRONG (397 fichiers, 34 arbres, 52 agents)."""
+    idx = build_os_trad_deep_concept_index()
+    at = idx["agents_trees_layer"]
+    assert at["evidence_status"] == "CORE_STRONG"
+    assert at["found"] is True
+    assert at["source_files_count"] >= 100
+
+
+def test_p33d_universal_language_is_partial_strong():
+    """P33D : UNIVERSAL_LANGUAGE_LAYER est PARTIAL_STRONG (5 fichiers, pas LCTU)."""
+    idx = build_os_trad_deep_concept_index()
+    ul = idx["universal_language_layer"]
+    assert ul["evidence_status"] == "PARTIAL_STRONG"
+    assert ul["found"] is True
+    assert 1 <= ul["source_files_count"] <= 10
+
+
+def test_p33d_all_layers_have_evidence_fields():
+    """P33D : Toutes les couches exposent les 5 champs d'évidence P33D."""
+    idx = build_os_trad_deep_concept_index()
+    evidence_fields = [
+        "evidence_status", "evidence_basis", "confidence_reason",
+        "source_files_count", "strong_files_count",
+    ]
+    valid_statuses = {"CORE_STRONG", "PARTIAL_STRONG", "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND"}
+    for layer_key in KNOWN_LAYERS:
+        layer = idx[layer_key]
+        for f in evidence_fields:
+            assert f in layer, f"Champ P33D manquant dans {layer_key}: {f}"
+        assert layer["evidence_status"] in valid_statuses, (
+            f"evidence_status invalide dans {layer_key}: {layer['evidence_status']}"
+        )
+        assert isinstance(layer["source_files_count"], int)
+        assert isinstance(layer["strong_files_count"], int)

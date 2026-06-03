@@ -10,10 +10,10 @@ from typing import Any, Dict, List, Optional
 
 _LAYER_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     "UNIVERSAL_LANGUAGE_LAYER": {
-        "description": "Langage universel, grammaire, syntaxe, alphabet, lexique, LCTU",
+        "description": "Langage universel, grammaire, syntaxe, alphabet, lexique (LCTU absent P33C)",
         "path_patterns": [
             "vocabulaire", "grammaire", "syntaxe", "alphabet", "lexique",
-            "lexicon", "lctu", "universal_language", "langage_universel",
+            "lexicon", "universal_language", "langage_universel",
         ],
         "dir_patterns": [],  # no dedicated dir — detected by filename/path keywords only
         "semantic_role": "LANGUAGE_SPEC",
@@ -72,12 +72,19 @@ _LAYER_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# Scan results from P33 deep analysis (built from zip scan, used as static reference)
+# Scan results — P33D reconciled with P33C content-only audit (authority).
+# Fields added in P33D: evidence_status, evidence_basis, confidence_reason,
+# source_files_count, strong_files_count.
 _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
     "UNIVERSAL_LANGUAGE_LAYER": {
         "found": True,
         "matching_files_count": 7,
         "confidence": "HIGH",
+        "evidence_status": "PARTIAL_STRONG",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "5 fichiers contenu P33C avec termes grammaire/syntaxe/vocabulaire. Concept partiel — langage universel complet non établi. LCTU non trouvé.",
+        "source_files_count": 5,
+        "strong_files_count": 5,
         "top_files": [
             "01_SOURCES/extracted_text_all.md",
             "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/VOCABULAIRE_CANONIQUE.md",
@@ -86,36 +93,56 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "19_REGISTRES_JSON/agents_52.registry.json",
         ],
         "keywords_matched": ["langage universel", "grammaire", "syntaxe", "lexique", "vocabulaire"],
-        "notes": "Langage universel present in source doc + VOCABULAIRE_CANONIQUE dedicated file.",
+        "notes": "Langage universel présent dans doc source + VOCABULAIRE_CANONIQUE dédié. LCTU absent (P33C NOT_FOUND).",
     },
     "REVERSE_LANGUAGE_LAYER": {
         "found": True,
         "matching_files_count": 1,
         "confidence": "LOW",
+        "evidence_status": "MEDIUM_SIGNAL",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "1 fichier contenu P33C (extracted_text_all). Aucun spec dédié. Signal structurel via répertoires 06/16 — pas de spec langage reverse.",
+        "source_files_count": 1,
+        "strong_files_count": 0,
         "top_files": ["01_SOURCES/extracted_text_all.md"],
         "keywords_matched": ["réciproque", "miroir", "inversion"],
-        "notes": "Concepts present in source doc only. No dedicated spec files yet.",
+        "notes": "Concepts présents dans doc source uniquement. Pas de spec dédiée. MEDIUM_SIGNAL, pas CORE.",
     },
     "IR_LAYER": {
         "found": True,
         "matching_files_count": 1,
         "confidence": "LOW",
+        "evidence_status": "MEDIUM_SIGNAL",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "1 fichier contenu P33C. Répertoire 09_MCP_BRIDGE présent dans l'arborescence mais spec IR non confirmée.",
+        "source_files_count": 1,
+        "strong_files_count": 0,
         "top_files": ["01_SOURCES/extracted_text_all.md"],
         "keywords_matched": ["alphabet ir", " ir "],
-        "notes": "IR concept referenced in source doc. MCP bridge dir present.",
+        "notes": "Concept IR référencé dans doc source. Dir MCP bridge présent. MEDIUM_SIGNAL, pas CORE.",
     },
     "REVERSE_WINDOWS_LAYER": {
-        "found": True,
-        "matching_files_count": 1,
-        "confidence": "LOW",
-        "top_files": ["01_SOURCES/extracted_text_all.md"],
-        "keywords_matched": ["window"],
-        "notes": "Window concept found in source doc only. No dedicated windowing spec.",
+        "found": False,
+        "matching_files_count": 0,
+        "confidence": "NONE",
+        "evidence_status": "NOT_FOUND",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "P33C: 0 fichiers contenu. P33B: 1 occurrence 'window' dans extracted_text seulement — insuffisant pour déclarer une couche concept.",
+        "source_files_count": 0,
+        "strong_files_count": 0,
+        "top_files": [],
+        "keywords_matched": [],
+        "notes": "REVERSE_WINDOWS absent des preuves contenu P33C. Répertoires 16/13 présents mais concept windowing non confirmé en contenu.",
     },
     "LAWS_PROTOCOLS_LAYER": {
         "found": True,
         "matching_files_count": 202,
         "confidence": "HIGH",
+        "evidence_status": "CORE_STRONG",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "P33C: LOIS=22 fichiers, PROTOCOLES=97 fichiers = 119 fichiers contenu. Dirs dédiés présents (02_CONSTITUTION, 11_AGENTS_RUNTIME_CONTRACTS, 15_GUARDS).",
+        "source_files_count": 119,
+        "strong_files_count": 22,
         "top_files": [
             "01_SOURCES/extracted_text_all.md",
             "00_INDEX/ARBORESCENCE_COMPLETE.md",
@@ -124,12 +151,17 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "15_GUARDS_NON_DECISION/non_decision_formulas.md",
         ],
         "keywords_matched": ["loi", "lois", "laws", "protocole", "protocol", "non_decision", "boundary"],
-        "notes": "202 files contain laws/protocols/contracts. Dedicated dirs present.",
+        "notes": "119 fichiers contenu (22 LOIS + 97 PROTOCOLES). Couche dominante confirmée. CORE_STRONG.",
     },
     "AGENTS_TREES_LAYER": {
         "found": True,
         "matching_files_count": 397,
         "confidence": "HIGH",
+        "evidence_status": "CORE_STRONG",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "397 fichiers chemin. 34 répertoires d'arbres présents. Registry 52 agents confirmé. Couche la plus dense du pack.",
+        "source_files_count": 397,
+        "strong_files_count": 397,
         "top_files": [
             "00_INDEX/ARBORESCENCE_COMPLETE.md",
             "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/definition.md",
@@ -138,15 +170,20 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "07_BDF_DOUBLE_CERVEAU/BDF.schema.json",
         ],
         "keywords_matched": ["arbre", "arbres", "tree", "agent", "agents", "shazam", "bdf"],
-        "notes": "397 files. 34 tree dirs present. 52 agents registry. Dominant layer.",
+        "notes": "397 fichiers. 34 dirs d'arbres. Registry 52 agents. Couche dominante. CORE_STRONG.",
     },
     "UNKNOWN_RELEVANT": {
         "found": False,
         "matching_files_count": 0,
         "confidence": "NONE",
+        "evidence_status": "NOT_FOUND",
+        "evidence_basis": "P33C_CONTENT_ONLY",
+        "confidence_reason": "Tous les fichiers classifiés dans des couches connues.",
+        "source_files_count": 0,
+        "strong_files_count": 0,
         "top_files": [],
         "keywords_matched": [],
-        "notes": "All files classified into known layers. No unclassified relevant files.",
+        "notes": "Aucun fichier non classifié pertinent.",
     },
 }
 
@@ -226,6 +263,12 @@ def build_os_trad_deep_concept_index(
                 "top_files": static.get("top_files", []),
                 "keywords_matched": static.get("keywords_matched", []),
                 "notes": static.get("notes", ""),
+                # P33D evidence fields — always from P33C static authority
+                "evidence_status": static.get("evidence_status", "NOT_FOUND"),
+                "evidence_basis": static.get("evidence_basis", "P33C_CONTENT_ONLY"),
+                "confidence_reason": static.get("confidence_reason", ""),
+                "source_files_count": static.get("source_files_count", 0),
+                "strong_files_count": static.get("strong_files_count", 0),
             }
     else:
         # Use static results from P33 zip scan
