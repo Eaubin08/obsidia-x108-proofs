@@ -9,7 +9,14 @@ from typing import Any, Dict, List, Optional
 from runtime_wiring.source_runtime.source_runtime_query import QueryResult, query_source_packs
 from runtime_wiring.packet_types import ContextPacket, DecisionTicketDryRun, OS3EvidenceTicketDryRun
 from runtime_wiring.dry_run_packet_router import route_packets
-from runtime_wiring.source_runtime.source_pack_resolver import list_available_families
+from runtime_wiring.source_runtime.source_runtime_cache import (
+    list_available_families_cached,
+    get_cache_stats,
+)
+from runtime_wiring.source_runtime.source_family_selector import (
+    select_families_for_message,
+    describe_selection,
+)
 
 _BOUNDARY = {
     "decision_authority": "KX108_ONLY",
@@ -40,18 +47,23 @@ def build_brody_context_from_source_packs(
     Returns a dict safe to inject into the Brody payload.
     Never raises — all errors produce a graceful fallback.
     """
-    available_families = list_available_families()
+    stats_before = get_cache_stats()
+    available_families = list_available_families_cached()
     if not available_families:
         return _fallback("NO_SOURCE_PACKS_AVAILABLE", query)
 
-    # Restrict to families that are actually available
-    target_families = None
+    # Smart family selection: explicit override OR keyword-based selection
     if families:
         target_families = [f for f in families if f in available_families]
         if not target_families:
             return _fallback("REQUESTED_FAMILIES_NOT_AVAILABLE", query)
+        keyword_matched = True
+        selection_desc = f"EXPLICIT_OVERRIDE:{','.join(target_families)}"
     else:
-        target_families = available_families
+        target_families, keyword_matched = select_families_for_message(
+            query, available_families, max_families=3, fallback_limit=3
+        )
+        selection_desc = describe_selection(query, target_families, keyword_matched)
 
     # Query and hydrate
     results = query_source_packs(
@@ -59,6 +71,8 @@ def build_brody_context_from_source_packs(
         limit=limit,
         prefer_short_files=True,
     )
+    stats_after = get_cache_stats()
+    cache_hit = stats_after["cache_hits"] > stats_before["cache_hits"]
 
     ok_results = [r for r in results if r.hydration_status == "OK" and r.context_packet is not None]
     skipped = [r for r in results if r.hydration_status != "OK"]
@@ -103,6 +117,11 @@ def build_brody_context_from_source_packs(
         "os3_proof_claim": evidence_ticket.proof_claim,
         "os3_verification_status": evidence_ticket.verification_status,
         "context_summary_for_brody": context_summary,
+        "source_pack_selected_families": target_families,
+        "source_pack_selection_desc": selection_desc,
+        "source_pack_keyword_matched": keyword_matched,
+        "source_pack_cache_hit": cache_hit,
+        "source_pack_runtime_stats": get_cache_stats(),
         "hydrated_entries": [
             {
                 "family": r.family,

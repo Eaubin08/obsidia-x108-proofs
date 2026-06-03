@@ -7,13 +7,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from runtime_wiring.source_registry.registry_loader import load_registry_json
 from runtime_wiring.source_registry.registry_types import SourceFileRegistryEntry
 from runtime_wiring.source_registry.registry_to_adapter_dry_run import (
     _FORBIDDEN_DECISIONS,
     _FORBIDDEN_QUARANTINE,
 )
-from runtime_wiring.source_runtime.source_pack_resolver import is_source_pack_available
+from runtime_wiring.source_runtime.source_runtime_cache import (
+    load_registry_cached,
+    is_pack_available_cached,
+)
 from runtime_wiring.source_runtime.source_context_hydrator import (
     HydrationError,
     hydrate_entry,
@@ -46,7 +48,7 @@ def _is_routable(entry: SourceFileRegistryEntry) -> bool:
         return False
     if entry.extension.lower() in (".py", ".pyc"):
         return False
-    if not is_source_pack_available(entry.source_zip):
+    if not is_pack_available_cached(entry.source_zip):
         return False
     return True
 
@@ -75,7 +77,7 @@ def query_source_packs(
     exts = frozenset(e.lower() for e in extensions) if extensions else _PREFERRED_EXTENSIONS
 
     try:
-        all_entries = load_registry_json()
+        all_entries = load_registry_cached()
     except FileNotFoundError:
         return []
 
@@ -127,7 +129,7 @@ def query_source_packs(
                 bytes_read=loaded.bytes_read,
                 hydration_status="OK",
             ))
-        except HydrationError as exc:
+        except Exception as exc:
             results.append(QueryResult(
                 family=entry.source_family,
                 registry_id=entry.registry_id,
@@ -137,7 +139,7 @@ def query_source_packs(
                 content_preview="",
                 content_hash="",
                 bytes_read=0,
-                hydration_status=f"SKIPPED:{exc}",
+                hydration_status=f"SKIPPED:{type(exc).__name__}:{exc}",
             ))
 
     return results

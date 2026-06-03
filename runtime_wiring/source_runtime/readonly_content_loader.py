@@ -126,7 +126,7 @@ def _load_from_zip(
 def _load_from_directory(
     resolved: ResolvedSourcePack, internal_path: str, max_preview_bytes: int
 ) -> LoadedContent:
-    target = resolved.resolved_path / internal_path.replace("/", pathlib.os.sep)
+    target = resolved.resolved_path.joinpath(*internal_path.replace("\\", "/").split("/"))
     if not target.is_file():
         raise FileNotFoundError(
             f"File {internal_path!r} not found in directory {resolved.resolved_path}"
