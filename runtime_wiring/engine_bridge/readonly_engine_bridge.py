@@ -40,6 +40,10 @@ _EXPECTED_FAMILIES: List[str] = [
     "RSSI_RGPD",
     "ATLAS",
     "COMPLIANCE_DATA_GOVERNANCE",
+    # P24 — new families added in coverage repair
+    "RSSI_SECURITY_PRESENTATION",
+    "EXTERNAL_SIGNALS",
+    "NARRATIVE_PROVENANCE_LAYER",
 ]
 
 # ── Engine ContextPacket field names (reference only — no import of periphery) ─

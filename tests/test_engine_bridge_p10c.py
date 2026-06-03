@@ -75,7 +75,7 @@ def test_bridge_types_invariants_pass():
 
     inp = EngineBridgeInput(
         source_pipeline="TEST",
-        registry_entries_count=14779,
+        registry_entries_count=15298,
         families=["A", "B", "C", "D"],
         context_only_decision="ALLOW_CONTEXT_ONLY",
         critical_action_decision="HOLD",
@@ -87,8 +87,8 @@ def test_bridge_types_invariants_pass():
     out = EngineBridgeOutput(
         bridge_status="ENGINE_BRIDGE_PREVIEW_ONLY",
         source_pipeline="TEST",
-        registry_entries_count=14779,
-        input_family_count=4,
+        registry_entries_count=15298,
+        input_family_count=7,
         context_packets_count=4,
         context_only_decision="ALLOW_CONTEXT_ONLY",
         critical_action_decision="HOLD",
@@ -141,14 +141,14 @@ def test_readonly_engine_bridge_preview_builds(engine_bridge_preview):
 def test_bridge_preview_registry_counts(engine_bridge_preview):
     """Bridge preview must reflect 14 779 registry entries and 4 families."""
     out = engine_bridge_preview.bridge_output
-    assert out.registry_entries_count == 14779, (
-        f"Expected 14779 entries, got {out.registry_entries_count}"
+    assert out.registry_entries_count == 15298, (
+        f"Expected 15298 entries, got {out.registry_entries_count}"
     )
-    assert out.input_family_count == 4, (
-        f"Expected 4 families, got {out.input_family_count}"
+    assert out.input_family_count == 7, (
+        f"Expected 7 families, got {out.input_family_count}"
     )
-    assert engine_bridge_preview.bridge_input.registry_entries_count == 14779
-    assert len(engine_bridge_preview.bridge_input.families) == 4
+    assert engine_bridge_preview.bridge_input.registry_entries_count == 15298
+    assert len(engine_bridge_preview.bridge_input.families) == 7
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -177,7 +177,7 @@ def test_bridge_preview_decisions_are_allow_context_only_and_hold(engine_bridge_
 def test_engine_packets_preview_are_readonly_advisory(api_payload):
     """All engine preview packets must have can_decide=False and emits_act=False."""
     packets = api_payload.get("engine_context_packets_preview", [])
-    assert len(packets) == 4, f"Expected 4 engine preview packets, got {len(packets)}"
+    assert len(packets) == 7, f"Expected 7 engine preview packets, got {len(packets)}"
     for pkt in packets:
         assert pkt.get("can_decide") is False, (
             f"can_decide must be False in {pkt.get('packet_id')}"
@@ -214,9 +214,9 @@ def test_api_preview_payload_shape(api_payload):
     assert api_payload["status"] == "ENGINE_BRIDGE_PREVIEW_ONLY"
     assert api_payload["decision_authority"] == "KX108_ONLY"
     assert api_payload["dry_run"] is True
-    assert api_payload["source_registry_entries"] == 14779
-    assert api_payload["families_sampled"] == 4
-    assert api_payload["context_packets_count"] == 4
+    assert api_payload["source_registry_entries"] == 15298
+    assert api_payload["families_sampled"] == 7
+    assert api_payload["context_packets_count"] == 7
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -427,8 +427,8 @@ def test_bridge_types_fail_closed_on_engine_mutation():
         EngineBridgeOutput(
             bridge_status="ENGINE_BRIDGE_PREVIEW_ONLY",
             source_pipeline="TEST",
-            registry_entries_count=14779,
-            input_family_count=4,
+            registry_entries_count=15298,
+            input_family_count=7,
             context_packets_count=4,
             context_only_decision="ALLOW_CONTEXT_ONLY",
             critical_action_decision="HOLD",
@@ -445,8 +445,8 @@ def test_bridge_types_fail_closed_on_wrong_bridge_status():
         EngineBridgeOutput(
             bridge_status="ACTIVE_RUNTIME",   # violation
             source_pipeline="TEST",
-            registry_entries_count=14779,
-            input_family_count=4,
+            registry_entries_count=15298,
+            input_family_count=7,
             context_packets_count=4,
             context_only_decision="ALLOW_CONTEXT_ONLY",
             critical_action_decision="HOLD",
@@ -459,7 +459,7 @@ def test_summarize_engine_bridge_preview(engine_bridge_preview):
     from runtime_wiring.engine_bridge.readonly_engine_bridge import summarize_engine_bridge_preview
     summary = summarize_engine_bridge_preview(engine_bridge_preview)
     assert "ENGINE_BRIDGE_PREVIEW_ONLY" in summary
-    assert "14779" in summary
+    assert "15298" in summary
     assert "ALLOW_CONTEXT_ONLY" in summary
     assert "HOLD" in summary
     assert "emits_act=False" in summary

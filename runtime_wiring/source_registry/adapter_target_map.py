@@ -59,18 +59,61 @@ ADAPTER_TARGET_MAP: Dict[str, Dict[str, Any]] = {
         "source_status": "COPIED_READONLY",
         "notes": "F10 — RGPD/ISO Data Governance pack, scope guard only, legal certification != readiness",
     },
+    # P24 — New families added after coverage audit
+    "RSSI_SECURITY_PRESENTATION": {
+        "source_family": "RSSI_SECURITY_PRESENTATION",
+        "adapter_target": "rssi_security_to_context_packet",
+        "packet_target": "ContextPacket|OS3EvidenceTicketDryRun_ref",
+        "boundary": "RSSI_EVIDENCE_ONLY",
+        "claim_scope": "EVIDENCE_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "label": "RSSI_SECURITY_EVIDENCE_FUTURE",
+        "source_status": "COPIED_READONLY",
+        "notes": "F11/P24 — RSSI Security Presentation pack, evidence only, 80 .py DO_NOT_IMPORT_RUNTIME",
+    },
+    "EXTERNAL_SIGNALS": {
+        "source_family": "EXTERNAL_SIGNALS",
+        "adapter_target": "external_signals_to_context_packet",
+        "packet_target": "ContextPacket",
+        "boundary": "EXTERNAL_SIGNALS_SIGNAL_ONLY",
+        "claim_scope": "SIGNAL_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "label": "EXTERNAL_SIGNALS_FUTURE",
+        "source_status": "COPIED_READONLY",
+        "notes": "F04/P24 — External Signals pack (incl. Timeverse C459 temporal sidecar), 0 .py, signal only",
+    },
+    "NARRATIVE_PROVENANCE_LAYER": {
+        "source_family": "NARRATIVE_PROVENANCE_LAYER",
+        "adapter_target": "npl_to_context_packet",
+        "packet_target": "ContextPacket",
+        "boundary": "NPL_ADVISORY_ONLY",
+        "claim_scope": "ADVISORY_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "label": "NPL_ADVISORY_FUTURE",
+        "source_status": "COPIED_READONLY",
+        "notes": "F12/P24 — Narrative Provenance Layer spec pack, 103 files all .md/.json, 0 .py",
+    },
 }
 
 # Detect source family from CSV source_zip filename
 _ZIP_NAME_TO_FAMILY: Dict[str, str] = {
     "COGNITIVE": "COGNITIVE_REINTEGRATION",
-    "RSSI_EXTERNAL": "RSSI_RGPD",
+    "RSSI_EXTERNAL": "EXTERNAL_SIGNALS",        # P24: External Signals family
+    "RSSI_RGPD_ISO": "COMPLIANCE_DATA_GOVERNANCE",
     "RSSI_RGPD": "RSSI_RGPD",
+    "RSSI_SECURITY": "RSSI_SECURITY_PRESENTATION",  # P24: RSSI Security family
     "BRANCHABLE_ATLAS": "ATLAS",
     "ATLAS": "ATLAS",
-    "RSSI_RGPD_ISO": "COMPLIANCE_DATA_GOVERNANCE",
     "COMPLIANCE": "COMPLIANCE_DATA_GOVERNANCE",
     "DATA_GOVERNANCE": "COMPLIANCE_DATA_GOVERNANCE",
+    "NARRATIVE_PROVENANCE": "NARRATIVE_PROVENANCE_LAYER",  # P24: NPL family
+    "NPL": "NARRATIVE_PROVENANCE_LAYER",
 }
 
 

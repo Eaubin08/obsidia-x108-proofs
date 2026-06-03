@@ -4,36 +4,43 @@
   "zip_extraction": false,
   "source_pack_import": false,
   "runtime_activation": false,
-  "total_entries": 14779,
+  "total_entries": 15298,
   "count_by_family": {
     "COGNITIVE_REINTEGRATION": 2052,
     "RSSI_RGPD": 976,
     "ATLAS": 11263,
-    "COMPLIANCE_DATA_GOVERNANCE": 488
+    "COMPLIANCE_DATA_GOVERNANCE": 488,
+    "RSSI_SECURITY_PRESENTATION": 334,
+    "EXTERNAL_SIGNALS": 82,
+    "NARRATIVE_PROVENANCE_LAYER": 103
   },
   "count_by_adapter_target": {
     "cognitive_to_context_packet": 2052,
     "rssi_rgpd_to_context_packet": 976,
     "atlas_to_context_packet": 11263,
-    "compliance_to_context_packet": 488
+    "compliance_to_context_packet": 488,
+    "rssi_security_to_context_packet": 334,
+    "external_signals_to_context_packet": 82,
+    "npl_to_context_packet": 103
   },
   "count_by_recommended_decision": {
     "INTEGRATE_TO_COGNITIVE_ADVISORY_SPEC_CANDIDATE": 2048,
     "KEEP_SOURCE_ONLY": 4,
-    "INTEGRATE_TO_RSSI_RGPD_SPEC_CANDIDATE": 856,
-    "DO_NOT_IMPORT_RUNTIME": 240,
-    "ARCHIVE_ONLY": 217,
+    "INTEGRATE_TO_RSSI_RGPD_SPEC_CANDIDATE": 1226,
+    "DO_NOT_IMPORT_RUNTIME": 272,
+    "ARCHIVE_ONLY": 231,
     "KEEP_QUARANTINE": 136,
     "INTEGRATE_TO_ATLAS_READONLY_SPEC_CANDIDATE": 10850,
-    "INTEGRATE_TO_COMPLIANCE_DATA_GOVERNANCE_SPEC_CANDIDATE": 428
+    "INTEGRATE_TO_COMPLIANCE_DATA_GOVERNANCE_SPEC_CANDIDATE": 428,
+    "INTEGRATE_TO_NPL_ADVISORY_SPEC_CANDIDATE": 103
   },
   "count_by_quarantine_status": {
-    "CLEAR": 14182,
-    "ARCHIVE_ONLY": 221,
-    "DO_NOT_IMPORT_RUNTIME": 240,
+    "CLEAR": 14655,
+    "ARCHIVE_ONLY": 235,
+    "DO_NOT_IMPORT_RUNTIME": 272,
     "QUARANTINE": 136
   },
-  "py_files_count": 240,
+  "py_files_count": 272,
   "py_files_all_do_not_import": true,
   "runtime_allowed_now_true_count": 0,
   "emits_act_true_count": 0,
@@ -55,6 +62,18 @@
     {
       "family": "COMPLIANCE_DATA_GOVERNANCE",
       "csv": "F10_COMPLIANCE_DATA_GOVERNANCE_ZIP_INTERNAL_INVENTORY_DEDUPED.csv"
+    },
+    {
+      "family": "RSSI_SECURITY_PRESENTATION",
+      "csv": "F11_RSSI_SECURITY_ZIP_INTERNAL_INVENTORY.csv"
+    },
+    {
+      "family": "EXTERNAL_SIGNALS",
+      "csv": "F04_EXTERNAL_SIGNALS_ZIP_INTERNAL_INVENTORY.csv"
+    },
+    {
+      "family": "NARRATIVE_PROVENANCE_LAYER",
+      "csv": "F12_NPL_ZIP_INTERNAL_INVENTORY.csv"
     }
   ]
 }

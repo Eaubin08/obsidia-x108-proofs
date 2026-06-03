@@ -12,6 +12,10 @@ VALID_ADAPTER_TARGETS = frozenset({
     "rssi_rgpd_to_context_packet",
     "atlas_to_context_packet",
     "compliance_to_context_packet",
+    # P24 — new families
+    "rssi_security_to_context_packet",
+    "external_signals_to_context_packet",
+    "npl_to_context_packet",
     "UNKNOWN_NO_ADAPTER",
 })
 

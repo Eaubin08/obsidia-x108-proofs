@@ -16,6 +16,10 @@ from runtime_wiring.source_adapters import (
     rssi_rgpd_to_context_packet,
     atlas_to_context_packet,
     compliance_to_context_packet,
+    # P24 — new families
+    rssi_security_to_context_packet,
+    external_signals_to_context_packet,
+    npl_to_context_packet,
 )
 from runtime_wiring.packet_types import ContextPacket
 from runtime_wiring.dry_run_packet_router import route_packets
@@ -43,6 +47,10 @@ _ADAPTER_DISPATCH = {
     "rssi_rgpd_to_context_packet": rssi_rgpd_to_context_packet,
     "atlas_to_context_packet": atlas_to_context_packet,
     "compliance_to_context_packet": compliance_to_context_packet,
+    # P24 — new families
+    "rssi_security_to_context_packet": rssi_security_to_context_packet,
+    "external_signals_to_context_packet": external_signals_to_context_packet,
+    "npl_to_context_packet": npl_to_context_packet,
 }
 
 

@@ -152,3 +152,106 @@ def compliance_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
     )
     packet.validate_invariants()
     return packet
+
+
+# ── P24 — New adapters for coverage gap families ──────────────────────────────
+
+def rssi_security_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
+    """
+    RSSI Security Presentation → ContextPacket dry-run.
+    Boundary: RSSI_EVIDENCE_ONLY
+    Source pack: COPIED_READONLY (F11/P24 — 835 files, 80 .py DO_NOT_IMPORT_RUNTIME)
+    """
+    packet = ContextPacket(
+        context_id=_make_context_id("rssi_security", metadata),
+        source="rssi_security",
+        source_status="COPIED_READONLY",
+        claim_scope="CLAIMABLE_SPEC_ONLY",
+        boundary="RSSI_EVIDENCE_ONLY",
+        timestamp_or_tick=metadata.get("timestamp", _utcnow()),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=["RSSI_SECURITY_EVIDENCE_FUTURE"],
+        payload={
+            **{k: v for k, v in metadata.items() if k != "timestamp"},
+            "_rssi_security_can_decide": False,
+            "_py_files_excluded": True,
+            "_boundary": "RSSI_EVIDENCE_ONLY",
+            "_dry_run": True,
+        },
+        notes="RSSI Security pack COPIED_READONLY F11 pending. 80 .py DO_NOT_IMPORT_RUNTIME.",
+    )
+    packet.validate_invariants()
+    return packet
+
+
+def external_signals_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
+    """
+    External Signals (incl. Timeverse C459 temporal sidecar) → ContextPacket dry-run.
+    Boundary: EXTERNAL_SIGNALS_SIGNAL_ONLY
+    Source pack: COPIED_READONLY (F04 already extracted in specs/external_signals/, 0 .py)
+    """
+    packet = ContextPacket(
+        context_id=_make_context_id("external_signals", metadata),
+        source="external_signals",
+        source_status="COPIED_READONLY",
+        claim_scope="CLAIMABLE_SPEC_ONLY",
+        boundary="EXTERNAL_SIGNALS_SIGNAL_ONLY",
+        timestamp_or_tick=metadata.get("timestamp", _utcnow()),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=["EXTERNAL_SIGNALS_FUTURE"],
+        payload={
+            **{k: v for k, v in metadata.items() if k != "timestamp"},
+            "_timeverse_included": True,
+            "_timeverse_advisory_only": True,
+            "_can_emit_act": False,
+            "_boundary": "EXTERNAL_SIGNALS_SIGNAL_ONLY",
+            "_dry_run": True,
+        },
+        notes="External Signals F04 extracted specs/external_signals/. Timeverse C459 temporal sidecar included. 0 .py.",
+    )
+    packet.validate_invariants()
+    return packet
+
+
+def npl_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
+    """
+    Narrative Provenance Layer → ContextPacket dry-run.
+    Boundary: NPL_ADVISORY_ONLY
+    Source pack: COPIED_READONLY (F12/P24 — 103 files, all .md/.json, 0 .py)
+    """
+    packet = ContextPacket(
+        context_id=_make_context_id("npl", metadata),
+        source="narrative_provenance_layer",
+        source_status="COPIED_READONLY",
+        claim_scope="CLAIMABLE_SPEC_ONLY",
+        boundary="NPL_ADVISORY_ONLY",
+        timestamp_or_tick=metadata.get("timestamp", _utcnow()),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=["NPL_ADVISORY_FUTURE"],
+        payload={
+            **{k: v for k, v in metadata.items() if k != "timestamp"},
+            "_npl_can_decide": False,
+            "_npl_exposes_chain": True,
+            "_npl_narrative_not_truth": True,
+            "_boundary": "NPL_ADVISORY_ONLY",
+            "_dry_run": True,
+        },
+        notes="NPL spec pack F12 pending. NPL expose la chaine narrative, ne decide pas du recit vrai. 0 .py.",
+    )
+    packet.validate_invariants()
+    return packet

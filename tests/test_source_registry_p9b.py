@@ -59,9 +59,13 @@ _EXPECTED_FAMILIES = {
     "RSSI_RGPD",
     "ATLAS",
     "COMPLIANCE_DATA_GOVERNANCE",
+    # P24 — new families added in coverage repair
+    "RSSI_SECURITY_PRESENTATION",
+    "EXTERNAL_SIGNALS",
+    "NARRATIVE_PROVENANCE_LAYER",
 }
 
-_EXPECTED_TOTAL = 14779
+_EXPECTED_TOTAL = 15298
 
 
 # ── Session-scoped fixtures ───────────────────────────────────────────────────
@@ -188,7 +192,7 @@ def test_all_emits_decision_false(registry_json):
 def test_py_entries_are_do_not_import_runtime(registry_json):
     """All .py files must have recommended_decision=DO_NOT_IMPORT_RUNTIME."""
     py_entries = [e for e in registry_json if e.extension.lower() == ".py"]
-    assert len(py_entries) == 240, f"Expected 240 .py files, got {len(py_entries)}"
+    assert len(py_entries) == 272, f"Expected 272 .py files (240 orig + 32 RSSI Security), got {len(py_entries)}"
     bad = [e for e in py_entries if e.recommended_decision != "DO_NOT_IMPORT_RUNTIME"]
     assert bad == [], (
         f"{len(bad)} .py entries without DO_NOT_IMPORT_RUNTIME: "

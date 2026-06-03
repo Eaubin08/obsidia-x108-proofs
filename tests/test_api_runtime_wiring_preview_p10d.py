@@ -197,21 +197,21 @@ def test_no_packages_created():
 
 def test_preview_registry_entries_count(preview_json):
     """source_registry_entries must be 14 779."""
-    assert preview_json.get("source_registry_entries") == 14779, (
-        f"Expected 14779, got {preview_json.get('source_registry_entries')}"
+    assert preview_json.get("source_registry_entries") == 15298, (
+        f"Expected 15298, got {preview_json.get('source_registry_entries')}"
     )
 
 
 def test_preview_families_sampled(preview_json):
     """families_sampled must be 4."""
-    assert preview_json.get("families_sampled") == 4, (
+    assert preview_json.get("families_sampled") == 7, (
         f"Expected 4, got {preview_json.get('families_sampled')}"
     )
 
 
 def test_preview_engine_packets_count(preview_json):
     """context_packets_count must be 4."""
-    assert preview_json.get("context_packets_count") == 4, (
+    assert preview_json.get("context_packets_count") == 7, (
         f"Expected 4, got {preview_json.get('context_packets_count')}"
     )
 
@@ -219,7 +219,7 @@ def test_preview_engine_packets_count(preview_json):
 def test_preview_engine_packets_advisory(preview_json):
     """All engine preview packets must have can_decide=False."""
     packets = preview_json.get("engine_context_packets_preview", [])
-    assert len(packets) == 4
+    assert len(packets) == 7
     for pkt in packets:
         assert pkt.get("can_decide") is False
         meta = pkt.get("_bridge_meta", {})
