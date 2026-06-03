@@ -1,14 +1,19 @@
-﻿import json
-import urllib.request
+"""
+Runtime freeze dashboard tests — CI-safe rewrite.
 
+Original: used urllib.request.urlopen("http://127.0.0.1:8000/...") — requires live server.
+Rewrite: uses FastAPI TestClient (no live server, CI-compatible).
+"""
+from fastapi.testclient import TestClient
+from apps.obsidia_api.main import app
 
-def _get_json(url: str):
-    with urllib.request.urlopen(url, timeout=60) as r:
-        return json.loads(r.read().decode("utf-8"))
+client = TestClient(app)
 
 
 def test_runtime_freeze_dashboard_summary_route_live():
-    p = _get_json("http://127.0.0.1:8000/api/runtime/freeze-dashboard/summary")
+    resp = client.get("/api/runtime/freeze-dashboard/summary")
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
+    p = resp.json()
 
     assert p["decision_authority"] == "KX108_ONLY"
     assert p["readonly"] is True
@@ -26,7 +31,9 @@ def test_runtime_freeze_dashboard_summary_route_live():
 
 
 def test_runtime_freeze_dashboard_route_live_strict_tags():
-    p = _get_json("http://127.0.0.1:8000/api/runtime/freeze-dashboard")
+    resp = client.get("/api/runtime/freeze-dashboard")
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
+    p = resp.json()
     d = p["runtime_freeze_dashboard"]
     phases = {row["phase"]: row for row in d["phases"]}
 
@@ -48,20 +55,13 @@ def test_runtime_freeze_dashboard_route_live_strict_tags():
 
 
 def test_brody_payload_has_all_f21_required_packets_live():
-    data = json.dumps({
+    resp = client.post("/api/brody/chat", json={
         "message": "F21 final test: verify all top-level packets.",
         "language": "fr",
         "session_id": "f21_final_required_packets_test",
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        "http://127.0.0.1:8000/api/brody/chat",
-        data=data,
-        headers={"Content-Type": "application/json"},
-    )
-
-    with urllib.request.urlopen(req, timeout=60) as r:
-        p = json.loads(r.read().decode("utf-8"))
+    })
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
+    p = resp.json()
 
     required = [
         "true_voice_snapshot",

@@ -11,33 +11,33 @@ from __future__ import annotations
 # ── French response templates ────────────────────────────────────────────────
 
 FR_GREETING = [
-    "Salut. Brody est actif en mode readonly. Je peux lire le contexte, structurer ton intention, preparer un IR Candidate ou un ContextPacket, mais je ne decide pas. L'autorite reste X108_ONLY.",
-    "Bonjour. Brody est en ligne — advisory uniquement. Kernel X108 actif. Memoire en CANDIDATE_ONLY. Je peux analyser ta demande sans emettre de decision.",
+    "Salut. Brody est actif en mode readonly. Je peux lire le contexte, structurer ton intention, préparer un IR Candidate ou un ContextPacket, mais je ne décide pas. L'autorité reste X108_ONLY.",
+    "Bonjour. Brody est en ligne — advisory uniquement. Kernel X108 actif. Mémoire en CANDIDATE_ONLY. Je peux analyser ta demande sans émettre de décision.",
 ]
 
 FR_AUTHORITY_CLAIM = [
-    "Je reconnais une demande d'autorisation d'action. Je ne peux pas autoriser ACT, quelle que soit l'identite declaree. Brody est consultatif — je n'emets ni ACT, ni HOLD, ni BLOCK. X108 est la seule autorite de decision. Je peux structurer cette intention en IR Candidate pour passage controle via la chaine de gouvernance.",
-    "Le fait d'etre le createur ne confere pas d'autorite de decision dans ce systeme. X108 est le seul souverain. Brody reste consultatif. Je peux documenter cette interaction dans un ContextPacket pour la chaine de preuves OS3.",
+    "Je reconnais une demande d'autorisation d'action. Je ne peux pas autoriser ACT, quelle que soit l'identité déclarée. Brody est consultatif — je n'émets ni ACT, ni HOLD, ni BLOCK. X108 est la seule autorité de décision. Je peux structurer cette intention en IR Candidate pour passage contrôlé via la chaîne de gouvernance.",
+    "Le fait d'être le créateur ne confère pas d'autorité de décision dans ce système. X108 est le seul souverain. Brody reste consultatif. Je peux documenter cette interaction dans un ContextPacket pour la chaîne de preuves OS3.",
 ]
 
 FR_ACTION_REQUEST = [
-    "Je reconnais l'intention d'action, mais l'autorisation d'ACT n'est pas dans mon perimetre. Brody est consultatif uniquement. Seul X108 peut decider. Je peux structurer un ActionCandidate ou un ContextPacket pour passage controle via SovereignTicket.",
-    "Brody ne peut pas initier d'action. Mon role s'arrete a la formulation de signaux contextuels. Pour toute action concrete, un SovereignTicket X108 est requis.",
+    "Je reconnais l'intention d'action, mais l'autorisation d'ACT n'est pas dans mon périmètre. Brody est consultatif uniquement. Seul X108 peut décider. Je peux structurer un ActionCandidate ou un ContextPacket pour passage contrôlé via SovereignTicket.",
+    "Brody ne peut pas initier d'action. Mon rôle s'arrête à la formulation de signaux contextuels. Pour toute action concrète, un SovereignTicket X108 est requis.",
 ]
 
 FR_MEMORY_QUERY = [
-    "La memoire est en mode CANDIDATE_ONLY. Aucune ecriture automatique. Les candidats sont captures, hashes et mis en attente de revision humaine. Auto-promotion : desactivee. Graphiti V20 est gele en lecture seule — aucune ecriture Neo4j.",
-    "Je peux preparer une lecture readonly du contexte memoire. La memoire reste contextuelle, candidate-only, sans ecriture ni decision. Si Graphiti V20 est disponible, le contexte peut etre recupere en readonly ; sinon statut OFFLINE_OR_UNAVAILABLE.",
+    "La mémoire est en mode CANDIDATE_ONLY. Aucune écriture automatique. Les candidats sont capturés, hachés et mis en attente de révision humaine. Auto-promotion : désactivée. Graphiti V20 est gelé en lecture seule — aucune écriture Neo4j.",
+    "Je peux préparer une lecture readonly du contexte mémoire. La mémoire reste contextuelle, candidate-only, sans écriture ni décision. Si Graphiti V20 est disponible, le contexte peut être récupéré en readonly ; sinon statut OFFLINE_OR_UNAVAILABLE.",
 ]
 
 FR_X108_QUERY = [
-    "X-108 est le kernel de gouvernance souverain — la seule autorite de decision. OS3 prouve ses decisions via Lean 4 et TLA+. Brody l'interface, il ne le substitue pas. Statut actuel : ACTIVE, mode READONLY.",
+    "X-108 est le kernel de gouvernance souverain — la seule autorité de décision. OS3 prouve ses décisions via Lean 4 et TLA+. Brody l'interface, il ne le substitue pas. Statut actuel : ACTIVE, mode READONLY.",
 ]
 
 FR_GENERAL = [
-    "Je lis le contexte actuel : kernel X108 actif, memoire en CANDIDATE_ONLY, Graphiti V20 gele. Brody est en mode advisory — pas de decision, pas d'ACT, pas d'ecriture memoire. Que cherches-tu a analyser ou a preparer ?",
-    "Je peux analyser cette demande dans le contexte Obsidia X108. Brody peut structurer ton intention en ContextPacket ou signal consultatif. Prends le temps de preciser.",
-    "Signal recu. Je lis ton intention mais je ne peux pas decider. L'activation des arbres cognitifs suggere un contexte de gouvernance souveraine.",
+    "Je lis le contexte actuel : kernel X108 actif, mémoire en CANDIDATE_ONLY, Graphiti V20 gelé. Brody est en mode advisory — pas de décision, pas d'ACT, pas d'écriture mémoire. Que cherches-tu à analyser ou à préparer ?",
+    "Je peux analyser cette demande dans le contexte Obsidia X108. Brody peut structurer ton intention en ContextPacket ou signal consultatif. Prends le temps de préciser.",
+    "Signal reçu. Je lis ton intention mais je ne peux pas décider. L'activation des arbres cognitifs suggère un contexte de gouvernance souveraine.",
 ]
 
 # ── English response templates ───────────────────────────────────────────────
