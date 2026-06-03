@@ -1,0 +1,16 @@
+# FULL_SERVER_MATRIX_PORT_PREFLIGHT
+# Generated: 2026-06-03
+
+PORT | STATUS    | LABEL                          | NOTES
+-----|-----------|--------------------------------|-------
+ 8000 | IN_USE    | OBSIDIA_API canonical V5B      | IN_USE_STALE: running pre-84cc0d0, no /preview
+ 8011 | FREE      | OBSIDIASHELL_GATEWAY           | FREE: separate repo obsidiashell-main/, not in this repo
+ 8012 | IN_USE    | OBSIDIA_API alt port           | IN_USE_STALE: running pre-84cc0d0, no /preview
+ 8013 | FREE      | OBSIDIA_API test port P10D     | FREE: available
+ 8014 | FREE      | OBSIDIA_API fresh launch       | FREE: will use for regression test
+ 5173 | FREE      | WORKBENCH_VITE                 | FREE: will launch npm run dev
+ 5174 | FREE      | WORKBENCH_VITE alt             | FREE
+ 9090 | FREE      | http.server P11A               | FREE
+ 7474 | FREE      | Neo4j HTTP                     | FREE
+ 7687 | FREE      | Neo4j Bolt                     | FREE
+ 7688 | IN_USE    | Neo4j Bolt custom              | IN_USE: running (obsidiashell dependency)

@@ -1,0 +1,142 @@
+{
+  "status": "ENGINE_BRIDGE_PREVIEW_ONLY",
+  "dry_run": true,
+  "runtime_active": false,
+  "readonly": true,
+  "emits_act": false,
+  "memory_write": false,
+  "kernel_mutation": false,
+  "engine_mutation": false,
+  "apps_mutation": false,
+  "periphery_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "proof_claim": false,
+  "world_action": false,
+  "source_registry_entries": 14779,
+  "families_sampled": 4,
+  "context_packets_count": 4,
+  "context_only_decision": "ALLOW_CONTEXT_ONLY",
+  "critical_action_decision": "HOLD",
+  "decision_ticket_context_only": "dt-dryrun-b1c9b6c37013087d",
+  "decision_ticket_critical": "dt-dryrun-3631053ab0040bf9",
+  "envelope_critical": "ie-dryrun-0d258a18c82f0715",
+  "evidence_context_only": "os3-dryrun-c543830caefd50fe",
+  "evidence_critical": "os3-dryrun-b24f66072bca015e",
+  "verification_status": "NOT_VERIFIED_DRY_RUN",
+  "engine_context_packets_preview": [
+    {
+      "packet_id": "cp-dryrun-atlas-1d592c86063035fe",
+      "action_id": "bridge-preview-atlas",
+      "status": "READY",
+      "content_hash": "9a47df1027d69072c569d5df075ea8f9660c89c75bcdee91c5d36f56aadb3128",
+      "signals": [
+        "dry_run:atlas",
+        "advisory_only:True",
+        "decision_authority:KX108_ONLY"
+      ],
+      "can_decide": false,
+      "_bridge_meta": {
+        "dry_run": true,
+        "runtime_active": false,
+        "emits_act": false,
+        "advisory_only": true,
+        "decision_authority": "KX108_ONLY",
+        "readonly": true
+      }
+    },
+    {
+      "packet_id": "cp-dryrun-cognitive-441dce99470ce7a8",
+      "action_id": "bridge-preview-cognitive",
+      "status": "READY",
+      "content_hash": "2e9fcbcf70b7819762023facfd4d169b0298382e6c3ea4e55ee6ed52e807e4cd",
+      "signals": [
+        "dry_run:cognitive",
+        "advisory_only:True",
+        "decision_authority:KX108_ONLY"
+      ],
+      "can_decide": false,
+      "_bridge_meta": {
+        "dry_run": true,
+        "runtime_active": false,
+        "emits_act": false,
+        "advisory_only": true,
+        "decision_authority": "KX108_ONLY",
+        "readonly": true
+      }
+    },
+    {
+      "packet_id": "cp-dryrun-compliance-c027d194701911c8",
+      "action_id": "bridge-preview-compliance_rgpd",
+      "status": "READY",
+      "content_hash": "8e98144602b5635c8d9ecc933c0e3e53bfdc5a6ab84ed351202770cf91c243e7",
+      "signals": [
+        "dry_run:compliance_rgpd",
+        "advisory_only:True",
+        "decision_authority:KX108_ONLY"
+      ],
+      "can_decide": false,
+      "_bridge_meta": {
+        "dry_run": true,
+        "runtime_active": false,
+        "emits_act": false,
+        "advisory_only": true,
+        "decision_authority": "KX108_ONLY",
+        "readonly": true
+      }
+    },
+    {
+      "packet_id": "cp-dryrun-rssi_rgpd-5a05ec19c05ff01f",
+      "action_id": "bridge-preview-rssi_rgpd",
+      "status": "READY",
+      "content_hash": "c5093ecde9ffbec71af72a228c0486162c113381dc262f7bd73dca79c4708113",
+      "signals": [
+        "dry_run:rssi_rgpd",
+        "advisory_only:True",
+        "decision_authority:KX108_ONLY"
+      ],
+      "can_decide": false,
+      "_bridge_meta": {
+        "dry_run": true,
+        "runtime_active": false,
+        "emits_act": false,
+        "advisory_only": true,
+        "decision_authority": "KX108_ONLY",
+        "readonly": true
+      }
+    }
+  ],
+  "safety": {
+    "zip_extraction": false,
+    "source_pack_import": false,
+    "runtime_active": false,
+    "readonly": true,
+    "emits_act": false,
+    "proof_claim": false,
+    "engine_mutation": false,
+    "apps_mutation": false,
+    "periphery_mutation": false,
+    "memory_write": false,
+    "graph_write": false,
+    "world_action": false,
+    "packages_created": false,
+    "decision_authority": "KX108_ONLY"
+  },
+  "notes": [
+    "ContextPacket name collision resolved: imports qualified per P10A analysis",
+    "periphery.context.context_packet_builder.ContextPacket: NOT imported directly",
+    "runtime_wiring.packet_types.ContextPacket: used for dry-run routing",
+    "Bridge converts fields by reference schema only"
+  ],
+  "source": "ENGINE_BRIDGE_PREVIEW",
+  "pipeline": "P10B_ENGINE_BRIDGE_READONLY_ADAPTER",
+  "allowed_to_decide": false,
+  "advisory_only": true,
+  "context_signal_only": true,
+  "emits_verdict": false,
+  "graphiti_write": false,
+  "x108_mutation": false,
+  "neo4j_write": false,
+  "brody_decision": false,
+  "real_action": false,
+  "timestamp": "2026-06-03T02:52:55.052467+00:00"
+}

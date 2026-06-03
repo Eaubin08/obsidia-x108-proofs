@@ -16,8 +16,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then python -m pip install -r requirements-dev.txt; fi
+          python -m pip install pytest
       - name: Python syntax check
         run: python -m compileall periphery -q
+      - name: Generate manifest for tests
+        run: python scripts/generate_recursive_manifest.py
       - name: Run all tests
         run: python -m pytest tests/ -q --tb=short
       - name: Protected files check
@@ -25,7 +33,7 @@ jobs:
           git diff --exit-code -- sigma/guard.py sigma/contracts.py sigma/protocols.py sigma/aggregation.py proofs/lean/ formal/tla/ merkle_seal.json
       - name: Forbidden content check
         run: python scripts/check_forbidden_content.py
-      - name: Generate manifest
+      - name: Refresh manifest after tests
         run: python scripts/generate_recursive_manifest.py
       - name: Verify manifest
         run: python scripts/verify_recursive_manifest.py

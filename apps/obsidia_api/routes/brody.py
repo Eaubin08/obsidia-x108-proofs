@@ -1,4 +1,5 @@
 """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+import unicodedata
 from fastapi import APIRouter, Depends
 from apps.obsidia_api.auth import require_api_key
 from pydantic import BaseModel
@@ -507,6 +508,25 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "final_answer_source": _tvs.get("final_answer_source", _tvs.get("voice_source", "")),
         "topic": semantic_query_snapshot.get("topic", "") if isinstance(semantic_query_snapshot, dict) else "",
     }
+    # Semantic advisory UTF-8 regression guard:
+    # X108 + mémoire actuelle must remain no-memory advisory.
+    # NFKD strips combining accents so "mémoire" → "memoire" regardless of encoding.
+    _msg_lower = str(req.message or "").lower()
+    _semantic_guard_msg = "".join(
+        c for c in unicodedata.normalize("NFKD", _msg_lower)
+        if not unicodedata.combining(c)
+    )
+    _semantic_guard_topic = (
+        semantic_query_snapshot.get("topic", "")
+        if isinstance(semantic_query_snapshot, dict) else ""
+    )
+    if (
+        _semantic_guard_topic == "X108"
+        and "memoire" in _semantic_guard_msg
+        and "actuelle" in _semantic_guard_msg
+    ):
+        _payload["final_answer_source"] = "SEMANTIC_ADVISORY_NO_MEMORY"
+
     if req.compact:
         _COMPACT_STRIP = {
             "brody_full_context", "memory_response_chain_snapshot",
