@@ -204,3 +204,6 @@ test_neo4j.py
 
 # === LOCAL PRIVATE DOCS ===
 *.docx
+
+# === CI FREEZE POINTER — must be committed for CI test coverage ===
+!CURRENT_BRODY_SIGMA_READONLY_CHAIN_F68.txt
