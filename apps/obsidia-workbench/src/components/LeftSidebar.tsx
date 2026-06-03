@@ -12,6 +12,7 @@ import { deleteSession, getSessions } from '../lib/sessionStore'
 export type ViewId =
   | 'chat' | 'memory' | 'graphiti' | 'x108' | 'os3'
   | 'gencoin' | 'worldcall' | 'blockchain' | 'audit' | 'settings' | 'translation' | 'health'
+  | 'runtime-wiring'
 
 const GROUPS: { label: string; items: { id: ViewId; label: string; icon: typeof MessageSquare }[] }[] = [
   {
@@ -44,6 +45,12 @@ const GROUPS: { label: string; items: { id: ViewId; label: string; icon: typeof 
       { id: 'settings' as ViewId,    label: 'SETTINGS',    icon: Settings },
       { id: 'translation' as ViewId, label: 'OS TRAD',     icon: ArrowRight },
       { id: 'health' as ViewId,      label: 'HEALTH',      icon: Shield },
+    ],
+  },
+  {
+    label: 'WIRING',
+    items: [
+      { id: 'runtime-wiring' as ViewId, label: 'RT WIRING', icon: Shield },
     ],
   },
 ]
