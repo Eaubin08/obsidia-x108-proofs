@@ -2,8 +2,8 @@
 GET  /api/runtime-wiring/source-runtime/status  — statut / stats seules, zéro hydration.
 POST /api/runtime-wiring/source-runtime/preview — preview query readonly, même chaîne que Brody.
 
+P36 extension: preview expose capability_path_router (detected_intents, selected_path, etc.)
 NO ACT. NO write. NO extraction. NO zip. KX108_ONLY. READONLY.
-P29 — Workbench / API Source Runtime Surface.
 """
 from __future__ import annotations
 
@@ -20,12 +20,14 @@ try:
     from runtime_wiring.source_runtime.brody_source_context_bridge import (
         build_brody_context_from_source_packs,
     )
+    from runtime_wiring.source_runtime.capability_path_router import route_capability_path
     _SOURCE_RUNTIME_AVAILABLE = True
 except ImportError:
     _SOURCE_RUNTIME_AVAILABLE = False
     list_available_families_cached = None  # type: ignore[assignment]
     get_cache_stats = None  # type: ignore[assignment]
     build_brody_context_from_source_packs = None  # type: ignore[assignment]
+    route_capability_path = None  # type: ignore[assignment]
 
 router = APIRouter(prefix="/api/runtime-wiring/source-runtime", tags=["source-runtime-p29"])
 
@@ -131,7 +133,24 @@ async def source_runtime_preview(req: _PreviewRequest):
             "x108_decision_authority": ctx.get("x108_decision_authority", "KX108_ONLY"),
             "os3_evidence_id": ctx.get("os3_evidence_id", ""),
             "context_summary_for_brody": ctx.get("context_summary_for_brody", ""),
+            # P36 — Capability path router fields
+            "detected_intents": ctx.get("detected_intents", []),
+            "required_capabilities": ctx.get("required_capabilities", []),
+            "ranked_runtime_paths": ctx.get("ranked_runtime_paths", []),
+            "selected_runtime_path": ctx.get("selected_runtime_path", {}),
+            "selected_modules": ctx.get("selected_modules", []),
+            "selected_adapters": ctx.get("selected_adapters", []),
+            "selected_routes": ctx.get("selected_routes", []),
+            "selected_source_families": ctx.get("selected_source_families", []),
+            "selected_source_subfamilies": ctx.get("selected_source_subfamilies", []),
+            "selected_evidence_packs": ctx.get("selected_evidence_packs", []),
+            "hydration_plan": ctx.get("hydration_plan", {}),
+            "source_file_refs": ctx.get("source_file_refs", []),
+            "x108_decision_path": ctx.get("x108_decision_path", "ALLOW_CONTEXT_ONLY"),
+            "runtime_allowed_now": False,
+            "emits_act": False,
+            "decision_authority": "KX108_ONLY",
             **_BOUNDARY,
         },
-        source="SOURCE_RUNTIME_PREVIEW_P29",
+        source="SOURCE_RUNTIME_PREVIEW_P36",
     )

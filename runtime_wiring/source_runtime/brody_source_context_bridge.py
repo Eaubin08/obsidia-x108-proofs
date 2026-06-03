@@ -1,6 +1,6 @@
 # runtime_wiring/source_runtime/brody_source_context_bridge.py
 # Main bridge: query source packs → hydrate → X108 gate → produce Brody context summary.
-# ALLOW_CONTEXT_ONLY mandatory. No ACT. No write. KX108_ONLY.
+# P36 extension: capability_path_router branché. No ACT. No write. KX108_ONLY.
 
 from __future__ import annotations
 from dataclasses import asdict
@@ -17,6 +17,8 @@ from runtime_wiring.source_runtime.source_family_selector import (
     select_families_for_message,
     describe_selection,
 )
+from runtime_wiring.source_runtime.capability_path_router import route_capability_path
+from runtime_wiring.source_runtime.source_hydration_planner import build_hydration_plan_from_path
 
 _BOUNDARY = {
     "decision_authority": "KX108_ONLY",
@@ -41,6 +43,7 @@ def build_brody_context_from_source_packs(
     """
     Query source packs, hydrate into ContextPackets, route through X108, return Brody context.
 
+    P36: capability_path_router branché — détecte intents, sélectionne chemin runtime optimal.
     Decision allowed: ALLOW_CONTEXT_ONLY only.
     If X108 returns HOLD or BLOCK: Brody gets limited context + warning.
 
@@ -52,7 +55,16 @@ def build_brody_context_from_source_packs(
     if not available_families:
         return _fallback("NO_SOURCE_PACKS_AVAILABLE", query)
 
-    # Smart family selection: explicit override OR keyword-based selection
+    # P36 — Route via capability path router
+    cap_routing = route_capability_path(
+        query=query,
+        available_families=available_families,
+        max_paths=5,
+    )
+    selected_path = cap_routing.get("selected_path", {})
+    hydration_plan = build_hydration_plan_from_path(selected_path, max_files=8, max_bytes=50_000)
+
+    # Smart family selection: explicit override OR capability-router-guided selection
     if families:
         target_families = [f for f in families if f in available_families]
         if not target_families:
@@ -60,10 +72,20 @@ def build_brody_context_from_source_packs(
         keyword_matched = True
         selection_desc = f"EXPLICIT_OVERRIDE:{','.join(target_families)}"
     else:
-        target_families, keyword_matched = select_families_for_message(
-            query, available_families, max_families=3, fallback_limit=3
-        )
-        selection_desc = describe_selection(query, target_families, keyword_matched)
+        # Prefer families from selected_path if available
+        path_families = [
+            f for f in selected_path.get("source_families", [])
+            if f in available_families
+        ]
+        if path_families:
+            target_families = path_families[:3]
+            keyword_matched = True
+            selection_desc = f"CAPABILITY_ROUTER:{','.join(target_families)}"
+        else:
+            target_families, keyword_matched = select_families_for_message(
+                query, available_families, max_families=3, fallback_limit=3
+            )
+            selection_desc = describe_selection(query, target_families, keyword_matched)
 
     # Query and hydrate
     results = query_source_packs(
@@ -85,9 +107,9 @@ def build_brody_context_from_source_packs(
     # Route through X108 — always context-only, never critical
     decision_ticket, evidence_ticket, envelope = route_packets(
         packets=packets,
-        critical_action_requested=False,  # Source packs never trigger critical action
+        critical_action_requested=False,
         action_candidate_type="EMIT_CONTEXT",
-        source_module="brody_source_context_bridge_p26",
+        source_module="brody_source_context_bridge_p36",
     )
 
     # Enforce ALLOW_CONTEXT_ONLY
@@ -132,6 +154,22 @@ def build_brody_context_from_source_packs(
             }
             for r in ok_results
         ],
+        # P36 — Capability path router fields
+        "capability_path_router_available": True,
+        "detected_intents": cap_routing.get("detected_intents", []),
+        "required_capabilities": cap_routing.get("required_capabilities", []),
+        "ranked_runtime_paths": cap_routing.get("ranked_runtime_paths", []),
+        "selected_runtime_path": selected_path,
+        "selected_modules": selected_path.get("modules", []),
+        "selected_adapters": selected_path.get("adapters", []),
+        "selected_routes": selected_path.get("routes", []),
+        "selected_source_families": selected_path.get("source_families", []),
+        "selected_source_subfamilies": selected_path.get("source_subfamilies", []),
+        "selected_evidence_packs": selected_path.get("evidence_packs", []),
+        "hydration_plan": hydration_plan,
+        "source_file_refs": hydration_plan.get("planned_files", []),
+        "x108_decision_path": selected_path.get("x108_decision", "ALLOW_CONTEXT_ONLY"),
+        # Safety invariants
         "no_act": True,
         "memory_write": False,
         "graph_write": False,
