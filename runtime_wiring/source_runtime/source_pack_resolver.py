@@ -57,7 +57,7 @@ def resolve_source_pack(source_zip: str) -> ResolvedSourcePack:
     if "NARRATIVE_PROVENANCE" in source_zip.upper() or "NPL" in source_zip.upper():
         return _resolve_npl_directory()
 
-    # Standard zip resolution
+    # Standard zip resolution, with directory pack fallback for _source_packs/
     for root in _SEARCH_ROOTS:
         if not root.exists():
             continue
@@ -70,6 +70,16 @@ def resolve_source_pack(source_zip: str) -> ResolvedSourcePack:
                 source_type="zip",
                 source_status=status,
                 size_bytes=candidate.stat().st_size,
+            )
+        # P35: directory-based packs in _source_packs/ (not Downloads)
+        if candidate.is_dir() and "Downloads" not in str(root):
+            file_count = sum(1 for f in candidate.rglob("*") if f.is_file())
+            return ResolvedSourcePack(
+                source_zip=source_zip,
+                resolved_path=candidate,
+                source_type="directory",
+                source_status="FOUND_LOCAL",
+                size_bytes=file_count,
             )
 
     raise MissingSourcePackError(

@@ -49,6 +49,7 @@ def load_registry_json(path: Optional[pathlib.Path] = None) -> List[SourceFileRe
             emits_act=bool(row.get("emits_act", False)),
             emits_decision=bool(row.get("emits_decision", False)),
             source_status=row.get("source_status", "COPIED_READONLY"),
+            source_subfamily=row.get("source_subfamily", ""),
             notes=row.get("notes", ""),
         )
         entries.append(entry)
@@ -82,6 +83,7 @@ def load_registry_csv(path: Optional[pathlib.Path] = None) -> List[SourceFileReg
                 emits_act=row.get("emits_act", "false").lower() == "true",
                 emits_decision=row.get("emits_decision", "false").lower() == "true",
                 source_status=row.get("source_status", "COPIED_READONLY"),
+                source_subfamily=row.get("source_subfamily", ""),
                 notes=row.get("notes", ""),
             )
             entries.append(entry)

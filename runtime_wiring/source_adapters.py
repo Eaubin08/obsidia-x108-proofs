@@ -259,6 +259,7 @@ def npl_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
 
 # ── P32/P33 — OS Trad / Reverse OS 8th family ────────────────────────────────
 
+
 def os_trad_reverse_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
     """
     OS Trad / Reverse OS / 34 Arbres / Agents 52 → ContextPacket dry-run.
@@ -309,6 +310,71 @@ def os_trad_reverse_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket
             "OS Trad/Reverse OS pack P32/P33. 546 safe .md/.json entries. "
             f"Layer: {os_trad_layer}. Role: {semantic_role}. "
             "63 .py DO_NOT_IMPORT_RUNTIME excluded. 34 arbres advisory. 52 agents readonly."
+        ),
+    )
+    packet.validate_invariants()
+    return packet
+
+
+# ── P35 — Reverse OS Interlanguage Canon V1 extension ────────────────────────
+
+def reverse_os_interlanguage_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
+    """
+    Reverse OS Interlanguage Canon V1 → ContextPacket dry-run.
+    Boundary: REVERSE_OS_INTERLANGUAGE_ADVISORY_ONLY
+    P35: enriched with interlanguage layer, semantic role, subfamily, evidence_pack.
+    Source pack: REVERSE_OS_INTERLANGUAGE_CANON_V1 (P34 canonical directory pack).
+    """
+    try:
+        from runtime_wiring.source_runtime.reverse_os_interlanguage_index import (
+            classify_entry_layer,
+            get_semantic_role,
+        )
+        il_layer = classify_entry_layer(metadata)
+        semantic_role = get_semantic_role(il_layer)
+    except Exception:
+        il_layer = "UNKNOWN_RELEVANT"
+        semantic_role = "UNKNOWN"
+
+    source_subfamily = metadata.get("source_subfamily", "REVERSE_OS_INTERLANGUAGE_CANON_V1")
+
+    packet = ContextPacket(
+        context_id=_make_context_id("reverse_os_interlanguage", metadata),
+        source="reverse_os_interlanguage_canon_v1",
+        source_status="COPIED_READONLY",
+        claim_scope="CLAIMABLE_SPEC_ONLY",
+        boundary="REVERSE_OS_INTERLANGUAGE_ADVISORY_ONLY",
+        timestamp_or_tick=metadata.get("timestamp", _utcnow()),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=["INTERLANGUAGE_CANON_ADVISORY_FUTURE", "OS_TRAD_ADVISORY_FUTURE"],
+        payload={
+            **{k: v for k, v in metadata.items() if k != "timestamp"},
+            "_interlanguage_can_act": False,
+            "_interlanguage_can_decide": False,
+            "_alphabet_ir_included": True,
+            "_reciproque_miroir_included": True,
+            "_boundary": "REVERSE_OS_INTERLANGUAGE_ADVISORY_ONLY",
+            "_dry_run": True,
+            "interlanguage_layer": il_layer,
+            "semantic_role": semantic_role,
+            "source_subfamily": source_subfamily,
+            "evidence_pack": "REVERSE_OS_INTERLANGUAGE_CANON_V1",
+            "canonization_source": "P34",
+            "concepts_detected": [
+                "IR_ALPHABET", "RECIPROQUE_MIROIR", "REVERSE_OS_INTERLANGUAGE",
+                "SCF_RECIPROQUE", "TWIN_CALL", "AUDIENCE_PROJECTION",
+            ],
+        },
+        notes=(
+            f"P35 Interlanguage Canon. Subfamily: {source_subfamily}. "
+            f"Layer: {il_layer}. Role: {semantic_role}. "
+            "IR Alphabet 12-token spec. Réciproque/miroir formalisé. "
+            "KX108_ONLY. 0 .py. No ACT."
         ),
     )
     packet.validate_invariants()

@@ -16,6 +16,10 @@ VALID_ADAPTER_TARGETS = frozenset({
     "rssi_security_to_context_packet",
     "external_signals_to_context_packet",
     "npl_to_context_packet",
+    # P32 — 8th family
+    "os_trad_reverse_to_context_packet",
+    # P35 — OS_TRAD interlanguage canon extension
+    "reverse_os_interlanguage_to_context_packet",
     "UNKNOWN_NO_ADAPTER",
 })
 
@@ -73,6 +77,9 @@ class SourceFileRegistryEntry:
 
     # Source status
     source_status: str = "COPIED_READONLY"
+
+    # Subfamily — extension/subspecification within a family (optional, P35+)
+    source_subfamily: str = ""
 
     # Metadata
     notes: str = ""
@@ -132,5 +139,6 @@ class SourceFileRegistryEntry:
             "emits_act": self.emits_act,
             "emits_decision": self.emits_decision,
             "source_status": self.source_status,
+            "source_subfamily": self.source_subfamily,
             "notes": self.notes,
         }

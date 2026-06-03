@@ -43,7 +43,7 @@ _FAMILY_KEYWORD_MAP: Dict[str, List[str]] = {
         "trace", "origine", "origin", "contexte narratif", "narrative layer",
         "memory", "mémoire", "graphiti", "neo4j", "layer",
     ],
-    # P32 — 8th family
+    # P32 — 8th family + P35 interlanguage extension
     "OS_TRAD_REVERSE_OS": [
         "os trad", "reverse os", "reverse", "ssr", "mmonde",
         "34 arbres", "34arbres", "arbre", "arbres", "tensor",
@@ -52,6 +52,12 @@ _FAMILY_KEYWORD_MAP: Dict[str, List[str]] = {
         "pipeline cognitif", "contexte packet", "context packet",
         "traduction", "intermediate representation", "langage intermédiaire",
         "ir", "structure cognitive", "double cerveau", "jarvis",
+        # P35 — interlanguage canon extension keywords
+        "ir alphabet", "alphabet ir", "reverse os interlanguage",
+        "réciproque miroir", "reciproque miroir", "twin_call", "twin call",
+        "scf réciproque", "scf reciproque", "inversion path",
+        "translation layer", "os trad interlanguage", "interlanguage canon",
+        "alphabet reverse", "langage universel symbolique",
     ],
 }
 
