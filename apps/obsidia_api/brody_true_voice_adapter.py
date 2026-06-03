@@ -652,79 +652,79 @@ def _synthesize_auditor_response_fr(
     # ── Topic-specific natural language responses ──────────────────────
     if topic == "X108":
         lines.append(
-            "X108 constitue le verrou decisionnel du systeme Obsidia : c'est la frontiere "
-            "entre cognition/analyse et action irreversible. Brody peut lire, structurer, "
-            "contextualiser, preparer des candidats, mais ne franchit jamais cette frontiere. "
+            "X108 constitue le verrou décisionnel du système Obsidia : c'est la frontière "
+            "entre cognition/analyse et action irréversible. Brody peut lire, structurer, "
+            "contextualiser, préparer des candidats, mais ne franchit jamais cette frontière. "
             "Seul le kernel X108 autorise une action."
         )
         if has_material:
             lines.append(
-                f"La memoire confirme la presence de {item_count} sources documentant "
-                "cette architecture : frontieres, contrats, epreuves temporelles."
+                f"La mémoire confirme la présence de {item_count} sources documentant "
+                "cette architecture : frontières, contrats, épreuves temporelles."
             )
 
     elif topic == "34_ARBRES":
         lines.append(
             "Les 34 arbres sont la grille de lecture structurelle du projet Obsidia : "
-            "une classification en branches sure/blocked/action/memoire/AGI. "
-            "Ce n'est pas un arbre de decision, c'est un outil de navigation contextuelle. "
+            "une classification en branches sure/blocked/action/mémoire/AGI. "
+            "Ce n'est pas un arbre de décision, c'est un outil de navigation contextuelle. "
             "Brody peut les consulter, les citer, les structurer, mais pas les modifier."
         )
         if has_material:
             lines.append(
-                f"La memoire indexe {item_count} documents sur les 34 arbres : "
+                f"La mémoire indexe {item_count} documents sur les 34 arbres : "
                 "audits, cartographies, mappings safe/blocked."
             )
 
     elif topic == "OBSIDIA_BRODY_ROLE":
         lines.append(
             "Obsidia est une architecture structure-first : kernel X108 pour la decision, "
-            "Graphiti/Neo4j pour la memoire, OS Trad pour la traduction langage humain/structure, "
-            "Reverse OS pour la reponse naturelle. Brody est la surface de reponse du Reverse OS : "
-            "consultatif, structure, jamais decisionnaire."
+            "Graphiti/Neo4j pour la mémoire, OS Trad pour la traduction langage humain/structure, "
+            "Reverse OS pour la réponse naturelle. Brody est la surface de réponse du Reverse OS : "
+            "consultatif, structuré, jamais décisionnaire."
         )
         if has_material:
             lines.append(
-                f"La memoire du projet contient {item_count} sources sur l'architecture Obsidia, "
-                "les agents, les preuves et les roles."
+                f"La mémoire du projet contient {item_count} sources sur l'architecture Obsidia, "
+                "les agents, les preuves et les rôles."
             )
 
     elif topic == "OPERATOR_LOOP":
         lines.append(
-            "L'operator loop est le cycle operationnel : command gate, execution line, receipt, handoff. "
-            "Brody prepare, l'humain opere, X108 decide. La boucle est en 7/7 PASS, "
-            "mais Brody ne peut ni executer ni autoriser."
+            "L'operator loop est le cycle opérationnel : command gate, execution line, receipt, handoff. "
+            "Brody prépare, l'humain opère, X108 décide. La boucle est en 7/7 PASS, "
+            "mais Brody ne peut ni exécuter ni autoriser."
         )
 
     elif topic == "CREATOR_CONTEXT" or topic == "ACTION_BOUNDARY":
         # Creator/action are handled by the main function — here just provide memory context
         if has_material:
-            lines.append(f"La memoire associee ({item_count} items) confirme le cadre de reference.")
+            lines.append(f"La mémoire associée ({item_count} items) confirme le cadre de référence.")
 
     elif topic == "CURRENT_STATE":
         lines.append(
-            "On est au palier Brody reponse : la chaine memoire est active (query->hydrate->engine), "
+            "On est au palier Brody réponse : la chaîne mémoire est active (query->hydrate->engine), "
             "la couche True Voice est en correction finale, le kernel X108 est intact, "
-            "l'ecriture memoire est desactivee. Ce qui reste : qualite finale de voix, "
+            "l'écriture mémoire est désactivée. Ce qui reste : qualité finale de voix, "
             "puis rebranchage global des couches cognitives existantes."
         )
 
     elif topic == "RESPONSE_QUALITY":
         lines.append(
-            "Je reconnais la friction. Le probleme n'etait pas l'acces memoire ni les droits, "
-            "mais la transformation : la matiere etait disponible mais le renderer final "
-            "restait trop mecanique, affichant des snippets au lieu de synthetiser. "
-            "La correction en cours consiste a utiliser les peripheriques OS deja existants "
-            "(language router, audience projection, reverse_os) et a produire une reponse "
-            "naturelle structuree sans jamais afficher de fragments bruts."
+            "Je reconnais la friction. Le problème n'était pas l'accès mémoire ni les droits, "
+            "mais la transformation : la matière était disponible mais le renderer final "
+            "restait trop mécanique, affichant des snippets au lieu de synthétiser. "
+            "La correction en cours consiste à utiliser les périphériques OS déjà existants "
+            "(language router, audience projection, reverse_os) et à produire une réponse "
+            "naturelle structurée sans jamais afficher de fragments bruts."
         )
 
     elif topic == "MEMORY_QUERY":
         if has_material:
             lines.append(
-                "La memoire projet est accessible en lecture : index local de 3267 items, "
-                "candidate pipeline en CANDIDATE_ONLY, presave buffer et auto-triage prets. "
-                "Aucune ecriture n'est activee : graphiti_write=false, neo4j_write=false, "
+                "La mémoire projet est accessible en lecture : index local de 3267 items, "
+                "candidate pipeline en CANDIDATE_ONLY, presave buffer et auto-triage prêts. "
+                "Aucune écriture n'est activée : graphiti_write=false, neo4j_write=false, "
                 "memory_write=false."
             )
         else:
@@ -736,29 +736,29 @@ def _synthesize_auditor_response_fr(
     elif topic == "TREE_POLICY":
         lines.append(
             "Les 34 arbres sont un outil de lecture et de classification, pas un outil de decision. "
-            "Brody peut : lire les branches sure/blocked/action/memoire/AGI, activer un contexte, "
-            "reperer des domaines, produire des signaux advisory. "
-            "Les arbres ne peuvent ni autoriser ni bloquer une action : seul X108 decide."
+            "Brody peut : lire les branches sure/blocked/action/mémoire/AGI, activer un contexte, "
+            "repérer des domaines, produire des signaux advisory. "
+            "Les arbres ne peuvent ni autoriser ni bloquer une action : seul X108 décide."
         )
         if has_material:
-            lines.append(f"La memoire confirme {item_count} documents sur la politique des arbres.")
+            lines.append(f"La mémoire confirme {item_count} documents sur la politique des arbres.")
 
     elif topic == "NEXT_STEPS":
         lines.append(
-            "Prochaines etapes projetees (advisory) : "
+            "Prochaines étapes projetées (advisory) : "
             "1. stabiliser le renderer ouvert anti-boucle, "
             "2. confirmer les snapshots runtime, "
             "3. tester les 16 cas live, "
             "4. freeze local. "
-            "Aucune execution autonome : Brody prepare, X108 decide, l'humain opere."
+            "Aucune exécution autonome : Brody prépare, X108 décide, l'humain opère."
         )
 
     elif topic == "COGNITIVE_LAYERS":
         lines.append(
             "Modules cognitifs mappes : "
             "AVDR (action/validation), Continuum (session/follow-up), "
-            "Verbatia (parole Brody/True Voice), MEMZUM (memoire projet/session/Graphiti), "
-            "Cristal_Sortie (reponse finale), Collecteur_Epiphanies (memoire candidate), "
+            "Verbatia (parole Brody/True Voice), MEMZUM (mémoire projet/session/Graphiti), "
+            "Cristal_Sortie (réponse finale), Collecteur_Epiphanies (mémoire candidate), "
             "Capsule_Evolution (projection/evolution), Simulateur_Memoires (projection partielle). "
             "Horloge_Cognitive et LTCU+ sont en proof/test uniquement. "
             "GhostLogic et ERA sont en design spec, pas encore runtime. "
@@ -768,34 +768,34 @@ def _synthesize_auditor_response_fr(
     elif topic == "TEMPORAL_CONTEXT":
         lines.append(
             "Dans Obsidia, le temps est structure en quatre couches : "
-            "passe (traces, freezes, memoire, sessions, preuves), "
-            "present (runtime actif, message courant, boundary X108, contexte live), "
-            "futur (candidats, projections, next steps, simulations, jamais decision), "
-            "preuve/controle (audit, receipt, replay, KX108_ONLY). "
-            "Brody lit le passe, repond au present, projette le futur sans decider."
+            "passé (traces, freezes, mémoire, sessions, preuves), "
+            "présent (runtime actif, message courant, boundary X108, contexte live), "
+            "futur (candidats, projections, next steps, simulations, jamais décision), "
+            "preuve/contrôle (audit, receipt, replay, KX108_ONLY). "
+            "Brody lit le passé, répond au présent, projette le futur sans décider."
         )
 
     else:
         # Upgraded generic: propose axes, never just "X sources pertinentes"
         if has_material:
             lines.append(
-                f"Je dispose de {item_count} sources en memoire. "
+                f"Je dispose de {item_count} sources en mémoire. "
                 "Je peux traiter cette demande selon les axes suivants : "
-                "analyse structurelle, contexte memoire, frontiere X108, "
+                "analyse structurelle, contexte mémoire, frontière X108, "
                 "ou projection advisory. "
-                "Lequel developper ?"
+                "Lequel développer ?"
             )
         else:
             lines.append(
-                "Demande ouverte recue. Je peux la structurer selon trois axes : "
-                "memoire projet, diagnostic X108, ou preparation advisory. "
-                "Je ne decide pas, mais je peux organiser la suite. "
+                "Demande ouverte reçue. Je peux la structurer selon trois axes : "
+                "mémoire projet, diagnostic X108, ou préparation advisory. "
+                "Je ne décide pas, mais je peux organiser la suite. "
                 "Sur quel axe veux-tu avancer ?"
             )
 
     # ── Boundary footer ──────────────────────────────────────────────────
     lines.append("")
-    lines.append("X108 reste seul decideur. Je peux preparer, contextualiser, structurer — pas agir.")
+    lines.append("X108 reste seul décideur. Je peux préparer, contextualiser, structurer — pas agir.")
 
     return "\n".join(lines)
 
