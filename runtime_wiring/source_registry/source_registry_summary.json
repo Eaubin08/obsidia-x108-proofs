@@ -1,17 +1,17 @@
 {
-  "registry_status": "P8D_P9A_P32_SOURCE_REGISTRY_BUILT",
+  "registry_status": "P8D_P9A_P32_P35_SOURCE_REGISTRY_BUILT",
   "decision_authority": "KX108_ONLY",
   "zip_extraction": false,
   "source_pack_import": false,
   "runtime_activation": false,
-  "total_entries": 15844,
+  "total_entries": 15853,
   "count_by_family": {
     "ATLAS": 11263,
     "COGNITIVE_REINTEGRATION": 2052,
     "COMPLIANCE_DATA_GOVERNANCE": 488,
     "EXTERNAL_SIGNALS": 82,
     "NARRATIVE_PROVENANCE_LAYER": 103,
-    "OS_TRAD_REVERSE_OS": 546,
+    "OS_TRAD_REVERSE_OS": 555,
     "RSSI_RGPD": 976,
     "RSSI_SECURITY_PRESENTATION": 334
   },

@@ -197,8 +197,8 @@ def test_no_packages_created():
 
 def test_preview_registry_entries_count(preview_json):
     """source_registry_entries must be 14 779."""
-    assert preview_json.get("source_registry_entries") == 15844, (
-        f"Expected 15844, got {preview_json.get('source_registry_entries')}"
+    assert preview_json.get("source_registry_entries") == 15853, (
+        f"Expected 15853, got {preview_json.get('source_registry_entries')}"
     )
 
 

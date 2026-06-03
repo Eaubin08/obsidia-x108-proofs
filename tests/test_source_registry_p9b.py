@@ -67,7 +67,7 @@ _EXPECTED_FAMILIES = {
     "OS_TRAD_REVERSE_OS",
 }
 
-_EXPECTED_TOTAL = 15844  # P32: +546 OS_TRAD_REVERSE_OS entries
+_EXPECTED_TOTAL = 15853  # P32: +546 OS_TRAD_REVERSE_OS entries
 
 
 # ── Session-scoped fixtures ───────────────────────────────────────────────────
