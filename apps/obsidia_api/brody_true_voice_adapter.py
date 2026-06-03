@@ -83,6 +83,7 @@ def build_true_brody_answer(
     language: str = "fr",
     session_id: str = "local",
     brody_full_context: dict[str, Any] | None = None,
+    source_pack_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Build projected Brody answer using existing structures only.
@@ -493,6 +494,30 @@ def build_true_brody_answer(
                 ))
             voice_source = "SEMANTIC_ADVISORY_NO_MEMORY"
 
+    # 7.5. Source pack context enrichment (P27) — readonly, advisory, X108-gated
+    sp = source_pack_context or {}
+    _source_pack_enriched = False
+    if sp.get("source_pack_context_used"):
+        sp_families = sp.get("source_pack_families", [])
+        sp_entries = sp.get("source_pack_entries_used", 0)
+        sp_prefix = "\n\n" if answer_parts else ""
+        if fr:
+            families_str = ", ".join(sp_families) if sp_families else "sources disponibles"
+            answer_parts.append(
+                f"{sp_prefix}**Sources de référence (lecture seule, consultatif) :** "
+                f"Familles consultées : {families_str} — {sp_entries} document(s) hydraté(s). "
+                "X108 est seul décideur. Contexte informatif uniquement, sans exécution."
+            )
+        else:
+            families_str = ", ".join(sp_families) if sp_families else "available sources"
+            answer_parts.append(
+                f"{sp_prefix}**Reference sources (readonly, advisory):** "
+                f"Families consulted: {families_str} — {sp_entries} document(s) hydrated. "
+                "X108 is sole authority. Informational context only, no execution."
+            )
+        _source_pack_enriched = True
+        voice_source = voice_source or "SOURCE_PACK_CONTEXT"
+
     # 8. X108 boundary footer (always)
     if fr:
         answer_parts.append(
@@ -614,6 +639,8 @@ def build_true_brody_answer(
         "creator_authority_granted": False,
         "special_authority": False,
         "action_boundary_detected": request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST),
+        "source_pack_enriched": _source_pack_enriched,
+        "source_pack_context_used": _source_pack_enriched,
         "boundary_integrated": True,
         "no_metric_dump": True,
         "readonly": True,
