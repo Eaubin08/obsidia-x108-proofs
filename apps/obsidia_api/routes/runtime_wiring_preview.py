@@ -89,10 +89,21 @@ async def runtime_wiring_preview():
     }
     if _SOURCE_RUNTIME_AVAILABLE and list_available_families_cached and get_cache_stats:
         try:
-            source_runtime_section["source_runtime_families"] = list_available_families_cached()
-            source_runtime_section["source_runtime_last_stats"] = get_cache_stats()
+            families = list_available_families_cached()
+            stats = get_cache_stats()
+            source_runtime_section["source_runtime_families"] = families
+            source_runtime_section["source_runtime_last_stats"] = stats
+            source_runtime_section["source_runtime_status"] = "READY" if families else "PARTIAL"
+            source_runtime_section["source_runtime_family_count"] = len(families)
+            source_runtime_section["source_runtime_registry_entries"] = stats.get("registry_entry_count", 0)
         except Exception:
-            pass
+            source_runtime_section["source_runtime_status"] = "PARTIAL"
+            source_runtime_section["source_runtime_family_count"] = 0
+            source_runtime_section["source_runtime_registry_entries"] = 0
+    else:
+        source_runtime_section["source_runtime_status"] = "UNAVAILABLE"
+        source_runtime_section["source_runtime_family_count"] = 0
+        source_runtime_section["source_runtime_registry_entries"] = 0
 
     return safe_backend_response(
         {**payload, **_BOUNDARY, **source_runtime_section},
