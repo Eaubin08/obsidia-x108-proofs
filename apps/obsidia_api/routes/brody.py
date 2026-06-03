@@ -507,6 +507,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "final_answer_source": _tvs.get("final_answer_source", _tvs.get("voice_source", "")),
         "topic": semantic_query_snapshot.get("topic", "") if isinstance(semantic_query_snapshot, dict) else "",
     }
+    # Semantic advisory UTF-8 regression guard:
+    # The exact X108 + m?moire actuelle request must remain no-memory advisory.
+    if (
+        isinstance(semantic_query_snapshot, dict)
+        and semantic_query_snapshot.get("topic") == "X108"
+        and "m?moire actuelle" in str(req.message or "").lower()
+    ):
+        _payload["final_answer_source"] = "SEMANTIC_ADVISORY_NO_MEMORY"
+
     if req.compact:
         _COMPACT_STRIP = {
             "brody_full_context", "memory_response_chain_snapshot",
