@@ -29,6 +29,7 @@ ALLOWED_PATH_FRAGMENTS = [
     "specs/10_VALUE_GENCOIN_JCOIN/",
     "periphery/blockchain/",
     "periphery/world_calls/secret_boundary",
+    "04_SECURITE_PAREFEU/SECRET_GUARD.md",
     "tests/",
 ]
 

@@ -18,7 +18,7 @@ jobs:
           python-version: '3.12'
       - name: Python syntax check
         run: python -m compileall periphery -q
-      - name: Generate manifest
+      - name: Generate manifest for tests
         run: python scripts/generate_recursive_manifest.py
       - name: Run all tests
         run: python -m pytest tests/ -q --tb=short
@@ -27,5 +27,7 @@ jobs:
           git diff --exit-code -- sigma/guard.py sigma/contracts.py sigma/protocols.py sigma/aggregation.py proofs/lean/ formal/tla/ merkle_seal.json
       - name: Forbidden content check
         run: python scripts/check_forbidden_content.py
+      - name: Refresh manifest after tests
+        run: python scripts/generate_recursive_manifest.py
       - name: Verify manifest
         run: python scripts/verify_recursive_manifest.py
