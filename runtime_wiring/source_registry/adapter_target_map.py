@@ -99,6 +99,20 @@ ADAPTER_TARGET_MAP: Dict[str, Dict[str, Any]] = {
         "source_status": "COPIED_READONLY",
         "notes": "F12/P24 — Narrative Provenance Layer spec pack, 103 files all .md/.json, 0 .py",
     },
+    # P32 — 8th source runtime family
+    "OS_TRAD_REVERSE_OS": {
+        "source_family": "OS_TRAD_REVERSE_OS",
+        "adapter_target": "os_trad_reverse_to_context_packet",
+        "packet_target": "ContextPacket",
+        "boundary": "OS_TRAD_REVERSE_OS_ADVISORY_ONLY",
+        "claim_scope": "ADVISORY_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "label": "OS_TRAD_ADVISORY_FUTURE",
+        "source_status": "COPIED_READONLY",
+        "notes": "P32 — OS Trad/Reverse OS/34 arbres/52 agents, 546 safe .md/.json, 63 .py DO_NOT_IMPORT_RUNTIME",
+    },
 }
 
 # Detect source family from CSV source_zip filename
@@ -107,6 +121,9 @@ _ZIP_NAME_TO_FAMILY: Dict[str, str] = {
     "RSSI_EXTERNAL": "EXTERNAL_SIGNALS",        # P24: External Signals family
     "RSSI_RGPD_ISO": "COMPLIANCE_DATA_GOVERNANCE",
     "RSSI_RGPD": "RSSI_RGPD",
+    "MMONDE": "OS_TRAD_REVERSE_OS",            # P32: OS Trad / Reverse OS family
+    "REVERSE_OS": "OS_TRAD_REVERSE_OS",
+    "P0P1_FIXED": "OS_TRAD_REVERSE_OS",
     "RSSI_SECURITY": "RSSI_SECURITY_PRESENTATION",  # P24: RSSI Security family
     "BRANCHABLE_ATLAS": "ATLAS",
     "ATLAS": "ATLAS",

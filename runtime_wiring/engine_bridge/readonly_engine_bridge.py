@@ -44,6 +44,8 @@ _EXPECTED_FAMILIES: List[str] = [
     "RSSI_SECURITY_PRESENTATION",
     "EXTERNAL_SIGNALS",
     "NARRATIVE_PROVENANCE_LAYER",
+    # P32 — 8th family
+    "OS_TRAD_REVERSE_OS",
 ]
 
 # ── Engine ContextPacket field names (reference only — no import of periphery) ─

@@ -63,9 +63,11 @@ _EXPECTED_FAMILIES = {
     "RSSI_SECURITY_PRESENTATION",
     "EXTERNAL_SIGNALS",
     "NARRATIVE_PROVENANCE_LAYER",
+    # P32 — 8th family
+    "OS_TRAD_REVERSE_OS",
 }
 
-_EXPECTED_TOTAL = 15298
+_EXPECTED_TOTAL = 15844  # P32: +546 OS_TRAD_REVERSE_OS entries
 
 
 # ── Session-scoped fixtures ───────────────────────────────────────────────────

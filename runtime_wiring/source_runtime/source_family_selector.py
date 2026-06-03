@@ -43,6 +43,16 @@ _FAMILY_KEYWORD_MAP: Dict[str, List[str]] = {
         "trace", "origine", "origin", "contexte narratif", "narrative layer",
         "memory", "mémoire", "graphiti", "neo4j", "layer",
     ],
+    # P32 — 8th family
+    "OS_TRAD_REVERSE_OS": [
+        "os trad", "reverse os", "reverse", "ssr", "mmonde",
+        "34 arbres", "34arbres", "arbre", "arbres", "tensor",
+        "shazam", "hexaflux", "bdf", "mcp bridge", "mcp",
+        "agents 52", "52 agents", "non décision", "non decision",
+        "pipeline cognitif", "contexte packet", "context packet",
+        "traduction", "intermediate representation", "langage intermédiaire",
+        "ir", "structure cognitive", "double cerveau", "jarvis",
+    ],
 }
 
 # Fallback order when no keyword matches — most broadly useful families first
@@ -54,6 +64,7 @@ _DEFAULT_FAMILY_ORDER = [
     "COMPLIANCE_DATA_GOVERNANCE",
     "RSSI_SECURITY_PRESENTATION",
     "EXTERNAL_SIGNALS",
+    "OS_TRAD_REVERSE_OS",
 ]
 
 

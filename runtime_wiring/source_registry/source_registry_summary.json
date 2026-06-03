@@ -1,42 +1,45 @@
 {
-  "registry_status": "P8D_P9A_SOURCE_REGISTRY_BUILT",
+  "registry_status": "P8D_P9A_P32_SOURCE_REGISTRY_BUILT",
   "decision_authority": "KX108_ONLY",
   "zip_extraction": false,
   "source_pack_import": false,
   "runtime_activation": false,
-  "total_entries": 15298,
+  "total_entries": 15844,
   "count_by_family": {
-    "COGNITIVE_REINTEGRATION": 2052,
-    "RSSI_RGPD": 976,
     "ATLAS": 11263,
+    "COGNITIVE_REINTEGRATION": 2052,
     "COMPLIANCE_DATA_GOVERNANCE": 488,
-    "RSSI_SECURITY_PRESENTATION": 334,
     "EXTERNAL_SIGNALS": 82,
-    "NARRATIVE_PROVENANCE_LAYER": 103
+    "NARRATIVE_PROVENANCE_LAYER": 103,
+    "OS_TRAD_REVERSE_OS": 546,
+    "RSSI_RGPD": 976,
+    "RSSI_SECURITY_PRESENTATION": 334
   },
   "count_by_adapter_target": {
-    "cognitive_to_context_packet": 2052,
-    "rssi_rgpd_to_context_packet": 976,
     "atlas_to_context_packet": 11263,
+    "cognitive_to_context_packet": 2052,
     "compliance_to_context_packet": 488,
-    "rssi_security_to_context_packet": 334,
     "external_signals_to_context_packet": 82,
-    "npl_to_context_packet": 103
+    "npl_to_context_packet": 103,
+    "os_trad_reverse_to_context_packet": 546,
+    "rssi_rgpd_to_context_packet": 976,
+    "rssi_security_to_context_packet": 334
   },
   "count_by_recommended_decision": {
-    "INTEGRATE_TO_COGNITIVE_ADVISORY_SPEC_CANDIDATE": 2048,
-    "KEEP_SOURCE_ONLY": 4,
-    "INTEGRATE_TO_RSSI_RGPD_SPEC_CANDIDATE": 1226,
-    "DO_NOT_IMPORT_RUNTIME": 272,
     "ARCHIVE_ONLY": 231,
-    "KEEP_QUARANTINE": 136,
+    "DO_NOT_IMPORT_RUNTIME": 272,
     "INTEGRATE_TO_ATLAS_READONLY_SPEC_CANDIDATE": 10850,
+    "INTEGRATE_TO_COGNITIVE_ADVISORY_SPEC_CANDIDATE": 2048,
     "INTEGRATE_TO_COMPLIANCE_DATA_GOVERNANCE_SPEC_CANDIDATE": 428,
-    "INTEGRATE_TO_NPL_ADVISORY_SPEC_CANDIDATE": 103
+    "INTEGRATE_TO_NPL_ADVISORY_SPEC_CANDIDATE": 103,
+    "INTEGRATE_TO_OS_TRAD_ADVISORY_SPEC_CANDIDATE": 546,
+    "INTEGRATE_TO_RSSI_RGPD_SPEC_CANDIDATE": 1226,
+    "KEEP_QUARANTINE": 136,
+    "KEEP_SOURCE_ONLY": 4
   },
   "count_by_quarantine_status": {
-    "CLEAR": 14655,
     "ARCHIVE_ONLY": 235,
+    "CLEAR": 15201,
     "DO_NOT_IMPORT_RUNTIME": 272,
     "QUARANTINE": 136
   },
@@ -74,6 +77,21 @@
     {
       "family": "NARRATIVE_PROVENANCE_LAYER",
       "csv": "F12_NPL_ZIP_INTERNAL_INVENTORY.csv"
+    },
+    {
+      "family": "OS_TRAD_REVERSE_OS",
+      "csv": "P32_OS_TRAD_SAFE_ENTRY_CANDIDATES.csv"
     }
-  ]
+  ],
+  "families": {
+    "ATLAS": 11263,
+    "COGNITIVE_REINTEGRATION": 2052,
+    "COMPLIANCE_DATA_GOVERNANCE": 488,
+    "EXTERNAL_SIGNALS": 82,
+    "NARRATIVE_PROVENANCE_LAYER": 103,
+    "OS_TRAD_REVERSE_OS": 546,
+    "RSSI_RGPD": 976,
+    "RSSI_SECURITY_PRESENTATION": 334
+  },
+  "family_count": 8
 }

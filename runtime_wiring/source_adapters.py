@@ -255,3 +255,45 @@ def npl_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
     )
     packet.validate_invariants()
     return packet
+
+
+# ── P32 — OS Trad / Reverse OS 8th family ────────────────────────────────────
+
+def os_trad_reverse_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
+    """
+    OS Trad / Reverse OS / 34 Arbres / Agents 52 → ContextPacket dry-run.
+    Boundary: OS_TRAD_REVERSE_OS_ADVISORY_ONLY
+    Source pack: COPIED_READONLY (P32 — 629 files, 546 safe .md/.json, 63 .py DO_NOT_IMPORT_RUNTIME)
+    """
+    packet = ContextPacket(
+        context_id=_make_context_id("os_trad_reverse", metadata),
+        source="os_trad_reverse_os",
+        source_status="COPIED_READONLY",
+        claim_scope="CLAIMABLE_SPEC_ONLY",
+        boundary="OS_TRAD_REVERSE_OS_ADVISORY_ONLY",
+        timestamp_or_tick=metadata.get("timestamp", _utcnow()),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=["OS_TRAD_ADVISORY_FUTURE", "REVERSE_OS_ADVISORY_FUTURE"],
+        payload={
+            **{k: v for k, v in metadata.items() if k != "timestamp"},
+            "_os_trad_can_act": False,
+            "_reverse_os_can_decide": False,
+            "_34_arbres_advisory_only": True,
+            "_agents_52_registry_readonly": True,
+            "_py_files_excluded": True,
+            "_boundary": "OS_TRAD_REVERSE_OS_ADVISORY_ONLY",
+            "_dry_run": True,
+        },
+        notes=(
+            "OS Trad/Reverse OS pack P32. 546 safe .md/.json entries. "
+            "63 .py DO_NOT_IMPORT_RUNTIME excluded from registry. "
+            "34 arbres advisory specs. 52 agents registry readonly."
+        ),
+    )
+    packet.validate_invariants()
+    return packet

@@ -80,16 +80,18 @@ def test_source_runtime_families_list():
     assert isinstance(data["source_runtime_families"], list)
 
     if _PACKS_AVAILABLE:
-        assert len(data["source_runtime_families"]) == 7, (
-            f"Attendu 7 familles, obtenu {len(data['source_runtime_families'])}"
+        # P29 vérifie >= 7 (P32+ peut ajouter des familles supplémentaires)
+        assert len(data["source_runtime_families"]) >= 7, (
+            f"Attendu >=7 familles, obtenu {len(data['source_runtime_families'])}"
         )
-        expected = {
+        expected_core = {
             "COGNITIVE_REINTEGRATION", "RSSI_RGPD", "ATLAS",
             "COMPLIANCE_DATA_GOVERNANCE", "RSSI_SECURITY_PRESENTATION",
             "EXTERNAL_SIGNALS", "NARRATIVE_PROVENANCE_LAYER",
         }
         actual = set(data["source_runtime_families"])
-        assert actual == expected, f"Familles inattendues : {actual ^ expected}"
+        missing = expected_core - actual
+        assert not missing, f"Familles core manquantes : {missing}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
