@@ -1,0 +1,60 @@
+{
+  "registry_status": "P8D_P9A_SOURCE_REGISTRY_BUILT",
+  "decision_authority": "KX108_ONLY",
+  "zip_extraction": false,
+  "source_pack_import": false,
+  "runtime_activation": false,
+  "total_entries": 14779,
+  "count_by_family": {
+    "COGNITIVE_REINTEGRATION": 2052,
+    "RSSI_RGPD": 976,
+    "ATLAS": 11263,
+    "COMPLIANCE_DATA_GOVERNANCE": 488
+  },
+  "count_by_adapter_target": {
+    "cognitive_to_context_packet": 2052,
+    "rssi_rgpd_to_context_packet": 976,
+    "atlas_to_context_packet": 11263,
+    "compliance_to_context_packet": 488
+  },
+  "count_by_recommended_decision": {
+    "INTEGRATE_TO_COGNITIVE_ADVISORY_SPEC_CANDIDATE": 2048,
+    "KEEP_SOURCE_ONLY": 4,
+    "INTEGRATE_TO_RSSI_RGPD_SPEC_CANDIDATE": 856,
+    "DO_NOT_IMPORT_RUNTIME": 240,
+    "ARCHIVE_ONLY": 217,
+    "KEEP_QUARANTINE": 136,
+    "INTEGRATE_TO_ATLAS_READONLY_SPEC_CANDIDATE": 10850,
+    "INTEGRATE_TO_COMPLIANCE_DATA_GOVERNANCE_SPEC_CANDIDATE": 428
+  },
+  "count_by_quarantine_status": {
+    "CLEAR": 14182,
+    "ARCHIVE_ONLY": 221,
+    "DO_NOT_IMPORT_RUNTIME": 240,
+    "QUARANTINE": 136
+  },
+  "py_files_count": 240,
+  "py_files_all_do_not_import": true,
+  "runtime_allowed_now_true_count": 0,
+  "emits_act_true_count": 0,
+  "emits_decision_true_count": 0,
+  "safety_invariants_ok": true,
+  "inventories_used": [
+    {
+      "family": "COGNITIVE_REINTEGRATION",
+      "csv": "F07_COGNITIVE_ZIP_INTERNAL_INVENTORY.csv"
+    },
+    {
+      "family": "RSSI_RGPD",
+      "csv": "F03_RSSI_RGPD_ZIP_INTERNAL_INVENTORY_STRICT.csv"
+    },
+    {
+      "family": "ATLAS",
+      "csv": "F06_ATLAS_ZIP_INTERNAL_INVENTORY_CANON_DEDUPED.csv"
+    },
+    {
+      "family": "COMPLIANCE_DATA_GOVERNANCE",
+      "csv": "F10_COMPLIANCE_DATA_GOVERNANCE_ZIP_INTERNAL_INVENTORY_DEDUPED.csv"
+    }
+  ]
+}
