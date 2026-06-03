@@ -18,7 +18,17 @@ _SEARCH_ROOTS = [
     _REPO_ROOT / "_source_packs",
 ]
 
-# NPL is an extracted directory, not a zip
+# NPL canonical zip (P30): preferred over Downloads directory fallback
+_NPL_ZIP_NAME = "OBSIDIA_NARRATIVE_PROVENANCE_LAYER_SPEC_PACK_V1_MAX.zip"
+_NPL_CANONICAL_ZIP = (
+    _REPO_ROOT
+    / "_source_packs"
+    / "OBSIDIA_UNIFIED_IMPLEMENTATION_BACKLOG_RICH_NO_DUPES_V1"
+    / "raw"
+    / _NPL_ZIP_NAME
+)
+
+# NPL Downloads directory fallback (pre-P30 path)
 _NPL_DIR_NAME = "OBSIDIA_NARRATIVE_PROVENANCE_LAYER_SPEC_PACK_V1_MAX"
 _NPL_DIR_INNER = _NPL_DIR_NAME  # double-nested in Downloads
 
@@ -69,21 +79,32 @@ def resolve_source_pack(source_zip: str) -> ResolvedSourcePack:
 
 
 def _resolve_npl_directory() -> ResolvedSourcePack:
-    """Resolve the NPL pack (extracted directory in Downloads)."""
+    """Resolve the NPL pack — canonical local zip preferred (P30), Downloads directory fallback."""
+    # P30: canonical zip in _source_packs/raw/ takes priority
+    if _NPL_CANONICAL_ZIP.is_file():
+        return ResolvedSourcePack(
+            source_zip=_NPL_ZIP_NAME,
+            resolved_path=_NPL_CANONICAL_ZIP,
+            source_type="zip",
+            source_status="FOUND_LOCAL",
+            size_bytes=_NPL_CANONICAL_ZIP.stat().st_size,
+        )
+
+    # Fallback: Downloads directory (pre-P30 state)
     npl_outer = pathlib.Path("C:/Users/User/Downloads") / _NPL_DIR_NAME
     npl_inner = npl_outer / _NPL_DIR_INNER
     for candidate in (npl_inner, npl_outer):
         if candidate.is_dir():
             file_count = sum(1 for f in candidate.rglob("*") if f.is_file())
             return ResolvedSourcePack(
-                source_zip="OBSIDIA_NARRATIVE_PROVENANCE_LAYER_SPEC_PACK_V1_MAX.zip",
+                source_zip=_NPL_ZIP_NAME,
                 resolved_path=candidate,
                 source_type="directory",
                 source_status="FOUND_DOWNLOADS",
                 size_bytes=file_count,
             )
     raise MissingSourcePackError(
-        f"NPL directory not found: expected {npl_inner} or {npl_outer}"
+        f"NPL not found: expected {_NPL_CANONICAL_ZIP} or {npl_inner} or {npl_outer}"
     )
 
 
