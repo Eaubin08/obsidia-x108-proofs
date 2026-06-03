@@ -19,6 +19,8 @@ from runtime_wiring.source_runtime.source_family_selector import (
 )
 from runtime_wiring.source_runtime.capability_path_router import route_capability_path
 from runtime_wiring.source_runtime.source_hydration_planner import build_hydration_plan_from_path
+from runtime_wiring.source_runtime.runtime_inventory_graph import build_runtime_inventory_graph
+from runtime_wiring.source_runtime.capability_inventory_linker import link_capabilities_to_inventory
 
 _BOUNDARY = {
     "decision_authority": "KX108_ONLY",
@@ -61,6 +63,14 @@ def build_brody_context_from_source_packs(
         available_families=available_families,
         max_paths=5,
     )
+
+    # P37 — Enrichit avec l'inventaire (cache chaud après premier appel)
+    try:
+        inventory_graph = build_runtime_inventory_graph()
+        cap_routing = link_capabilities_to_inventory(cap_routing, inventory_graph)
+    except Exception:
+        pass  # L'inventaire est optionnel — le routing P36 fonctionne sans lui
+
     selected_path = cap_routing.get("selected_path", {})
     hydration_plan = build_hydration_plan_from_path(selected_path, max_files=8, max_bytes=50_000)
 
@@ -169,6 +179,15 @@ def build_brody_context_from_source_packs(
         "hydration_plan": hydration_plan,
         "source_file_refs": hydration_plan.get("planned_files", []),
         "x108_decision_path": selected_path.get("x108_decision", "ALLOW_CONTEXT_ONLY"),
+        # P37 — Inventory linker fields
+        "inventory_linked": cap_routing.get("inventory_linked", False),
+        "inventory_status": cap_routing.get("inventory_status", "NOT_LOADED"),
+        "selected_functions": cap_routing.get("selected_functions", []),
+        "selected_classes": cap_routing.get("selected_classes", []),
+        "selected_routes_inventory": cap_routing.get("selected_routes", []),
+        "selected_tests": cap_routing.get("selected_tests", []),
+        "selected_docs": cap_routing.get("selected_docs", []),
+        "coverage_status": cap_routing.get("coverage_status", "UNKNOWN"),
         # Safety invariants
         "no_act": True,
         "memory_write": False,

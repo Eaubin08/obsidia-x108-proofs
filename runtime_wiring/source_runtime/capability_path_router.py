@@ -343,7 +343,7 @@ def _build_path_for_capability(
         "source_subfamilies": list(template.get("source_subfamilies", [])),
         "evidence_packs": list(template.get("evidence_packs", [])),
         "selected_files": list(
-            cap.get("candidate_source_families", [])  # à enrichir par hydration planner
+            cap.get("candidate_source_families", [])
         ),
         "score": round(score, 3),
         "reason": template.get("reason", ""),
@@ -351,6 +351,14 @@ def _build_path_for_capability(
         "runtime_allowed_now": False,
         "emits_act": False,
         "decision_authority": "KX108_ONLY",
+        # P37 — enrichi par capability_inventory_linker si inventaire disponible
+        "selected_functions": [],
+        "selected_classes": [],
+        "selected_routes": [],
+        "selected_tests": [],
+        "selected_docs": [],
+        "inventory_linked": False,
+        "coverage_status": "PENDING_INVENTORY_LINK",
     }
 
 

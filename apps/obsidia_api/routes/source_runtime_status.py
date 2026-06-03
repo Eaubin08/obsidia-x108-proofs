@@ -21,6 +21,7 @@ try:
         build_brody_context_from_source_packs,
     )
     from runtime_wiring.source_runtime.capability_path_router import route_capability_path
+    from runtime_wiring.source_runtime.runtime_inventory_graph import build_runtime_inventory_graph
     _SOURCE_RUNTIME_AVAILABLE = True
 except ImportError:
     _SOURCE_RUNTIME_AVAILABLE = False
@@ -28,6 +29,7 @@ except ImportError:
     get_cache_stats = None  # type: ignore[assignment]
     build_brody_context_from_source_packs = None  # type: ignore[assignment]
     route_capability_path = None  # type: ignore[assignment]
+    build_runtime_inventory_graph = None  # type: ignore[assignment]
 
 router = APIRouter(prefix="/api/runtime-wiring/source-runtime", tags=["source-runtime-p29"])
 
@@ -150,7 +152,19 @@ async def source_runtime_preview(req: _PreviewRequest):
             "runtime_allowed_now": False,
             "emits_act": False,
             "decision_authority": "KX108_ONLY",
+            # P37 — Runtime inventory fields
+            "inventory_linked": ctx.get("inventory_linked", False),
+            "inventory_status": ctx.get("inventory_status", "NOT_LOADED"),
+            "selected_functions": ctx.get("selected_functions", []),
+            "selected_classes": ctx.get("selected_classes", []),
+            "selected_routes": ctx.get("selected_routes_inventory", []),
+            "selected_tests": ctx.get("selected_tests", []),
+            "selected_docs": ctx.get("selected_docs", []),
+            "coverage_status": ctx.get("coverage_status", "UNKNOWN"),
+            "runtime_inventory_status": (
+                "READY" if ctx.get("inventory_linked") else "NOT_LINKED"
+            ),
             **_BOUNDARY,
         },
-        source="SOURCE_RUNTIME_PREVIEW_P36",
+        source="SOURCE_RUNTIME_PREVIEW_P37",
     )
