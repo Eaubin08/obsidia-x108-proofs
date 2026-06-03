@@ -257,14 +257,27 @@ def npl_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
     return packet
 
 
-# ── P32 — OS Trad / Reverse OS 8th family ────────────────────────────────────
+# ── P32/P33 — OS Trad / Reverse OS 8th family ────────────────────────────────
 
 def os_trad_reverse_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket:
     """
     OS Trad / Reverse OS / 34 Arbres / Agents 52 → ContextPacket dry-run.
     Boundary: OS_TRAD_REVERSE_OS_ADVISORY_ONLY
+    P33: enriched with os_trad_layer and semantic_role from path classification.
     Source pack: COPIED_READONLY (P32 — 629 files, 546 safe .md/.json, 63 .py DO_NOT_IMPORT_RUNTIME)
     """
+    # P33 — layer classification from path metadata (never reads zip)
+    try:
+        from runtime_wiring.source_runtime.os_trad_reverse_index import (
+            classify_entry_layer,
+            get_semantic_role,
+        )
+        os_trad_layer = classify_entry_layer(metadata)
+        semantic_role = get_semantic_role(os_trad_layer)
+    except Exception:
+        os_trad_layer = "UNKNOWN_RELEVANT"
+        semantic_role = "UNKNOWN"
+
     packet = ContextPacket(
         context_id=_make_context_id("os_trad_reverse", metadata),
         source="os_trad_reverse_os",
@@ -288,11 +301,14 @@ def os_trad_reverse_to_context_packet(metadata: Dict[str, Any]) -> ContextPacket
             "_py_files_excluded": True,
             "_boundary": "OS_TRAD_REVERSE_OS_ADVISORY_ONLY",
             "_dry_run": True,
+            # P33 — semantic layer enrichment
+            "os_trad_layer": os_trad_layer,
+            "semantic_role": semantic_role,
         },
         notes=(
-            "OS Trad/Reverse OS pack P32. 546 safe .md/.json entries. "
-            "63 .py DO_NOT_IMPORT_RUNTIME excluded from registry. "
-            "34 arbres advisory specs. 52 agents registry readonly."
+            "OS Trad/Reverse OS pack P32/P33. 546 safe .md/.json entries. "
+            f"Layer: {os_trad_layer}. Role: {semantic_role}. "
+            "63 .py DO_NOT_IMPORT_RUNTIME excluded. 34 arbres advisory. 52 agents readonly."
         ),
     )
     packet.validate_invariants()
