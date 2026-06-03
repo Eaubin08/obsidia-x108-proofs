@@ -72,19 +72,33 @@ _LAYER_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# Scan results — P33D reconciled with P33C content-only audit (authority).
-# Fields added in P33D: evidence_status, evidence_basis, confidence_reason,
-# source_files_count, strong_files_count.
+# Scan results — P33D double-evidence reconciliation (P33C ZIP + P33E Core Parent).
+# P33C = ZIP OS_TRAD content-only audit (primary authority for ZIP layer).
+# P33E = Core Parent curated audit (excludes _tmp_* scripts and matrix_cell_* as primary).
+# Fields: evidence_status (reconciled), zip_evidence_status, core_parent_evidence_status,
+#         evidence_basis, confidence_reason, source_files_count, strong_files_count,
+#         canonicalization_needed, evidence_files.
 _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
     "UNIVERSAL_LANGUAGE_LAYER": {
         "found": True,
         "matching_files_count": 7,
         "confidence": "HIGH",
+        # Reconciled verdict: ZIP=PARTIAL_STRONG, Core Parent confirms via interlanguage canon
         "evidence_status": "PARTIAL_STRONG",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "5 fichiers contenu P33C avec termes grammaire/syntaxe/vocabulaire. Concept partiel — langage universel complet non établi. LCTU non trouvé.",
+        "zip_evidence_status": "PARTIAL_STRONG",
+        "core_parent_evidence_status": "CORE_PARENT_CANDIDATE",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "ZIP P33C: 5 fichiers, termes grammaire/syntaxe/vocabulaire. LCTU absent. "
+            "Core Parent P33E: reverse_os_interlanguage_canon_v1 confirme alphabet_ir et "
+            "VOCABULAIRE_CANONIQUE. Langage universel complet non établi dans le ZIP."
+        ),
         "source_files_count": 5,
         "strong_files_count": 5,
+        "canonicalization_needed": False,
+        "evidence_files": [
+            "_local_audits/LOCAL_9_GROUPS_34_ARBRES_SOURCE_SCAN_20260512_220347/source_dumps/0125_5DF672EEB8C3_reverse_os_interlanguage_canon_v1.json.txt",
+        ],
         "top_files": [
             "01_SOURCES/extracted_text_all.md",
             "10_AGENTS_52/02_DOCUMENTATION_THEORIE_FREEZE/VOCABULAIRE_CANONIQUE.md",
@@ -93,56 +107,100 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "19_REGISTRES_JSON/agents_52.registry.json",
         ],
         "keywords_matched": ["langage universel", "grammaire", "syntaxe", "lexique", "vocabulaire"],
-        "notes": "Langage universel présent dans doc source + VOCABULAIRE_CANONIQUE dédié. LCTU absent (P33C NOT_FOUND).",
+        "notes": "PARTIAL_STRONG dans ZIP. Core Parent confirme concept via interlanguage canon. LCTU absent des deux sources.",
     },
     "REVERSE_LANGUAGE_LAYER": {
         "found": True,
         "matching_files_count": 1,
         "confidence": "LOW",
+        # ZIP=MEDIUM_SIGNAL. Core Parent has CORE_PARENT_CANDIDATE (reciproque_miroir formalisé).
+        # Final verdict remains MEDIUM_SIGNAL — ZIP is primary. Core parent = candidate pending canonization.
         "evidence_status": "MEDIUM_SIGNAL",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "1 fichier contenu P33C (extracted_text_all). Aucun spec dédié. Signal structurel via répertoires 06/16 — pas de spec langage reverse.",
+        "zip_evidence_status": "MEDIUM_SIGNAL",
+        "core_parent_evidence_status": "CORE_PARENT_CANDIDATE",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "ZIP P33C: 1 fichier (extracted_text_all), termes miroir/inversion/réciproque. "
+            "Core Parent P33E: reverse_os_interlanguage_canon_v1 définit formellement "
+            "reciproque_miroir (math=f(x)=f⁻¹(x)), SCF Réciproque, TWIN_CALL dans DOCX "
+            "Reverse OS. Canonicalization nécessaire pour promotion."
+        ),
         "source_files_count": 1,
         "strong_files_count": 0,
+        "canonicalization_needed": True,
+        "evidence_files": [
+            "_local_audits/LOCAL_9_GROUPS_34_ARBRES_SOURCE_SCAN_20260512_220347/source_dumps/0125_5DF672EEB8C3_reverse_os_interlanguage_canon_v1.json.txt",
+            "_local_audits/DOCX_9_GROUPS_OSMOSE_SEARCH_20260512_222300/extracted_docx_text/L_Architecture_Narrative_du_Reverse_OS_d_Obsidia.docx.txt",
+            "obsidia-engine-candidate/_local_audits/OBSIDIA_REVERSE_OS_AUDIENCE_ADAPTER_V1_20260508_224555/audience_packet_08_non_tech.json",
+        ],
         "top_files": ["01_SOURCES/extracted_text_all.md"],
         "keywords_matched": ["réciproque", "miroir", "inversion"],
-        "notes": "Concepts présents dans doc source uniquement. Pas de spec dédiée. MEDIUM_SIGNAL, pas CORE.",
+        "notes": "MEDIUM_SIGNAL dans ZIP. Core Parent a CORE_PARENT_CANDIDATE via interlanguage canon + DOCX Reverse OS. Non gonflé par le chemin REVERSE_OS.",
     },
     "IR_LAYER": {
         "found": True,
         "matching_files_count": 1,
         "confidence": "LOW",
+        # ZIP=MEDIUM_SIGNAL. Core Parent has CORE_PARENT_CANDIDATE (interlanguage_canon L2 = IR Alphabet spec).
         "evidence_status": "MEDIUM_SIGNAL",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "1 fichier contenu P33C. Répertoire 09_MCP_BRIDGE présent dans l'arborescence mais spec IR non confirmée.",
+        "zip_evidence_status": "MEDIUM_SIGNAL",
+        "core_parent_evidence_status": "CORE_PARENT_CANDIDATE",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "ZIP P33C: 1 fichier (extracted_text_all), terme 'alphabet ir'. "
+            "Core Parent P33E: reverse_os_interlanguage_canon_v1 définit formellement "
+            "L2='IR Alphabet: VALUE STATE READ WRITE FLOW COND LOOP CALL RETURN EVENT TIME ERROR', "
+            "audience_packet confirme alphabet_ir. Canonicalization nécessaire pour promotion."
+        ),
         "source_files_count": 1,
         "strong_files_count": 0,
+        "canonicalization_needed": True,
+        "evidence_files": [
+            "_local_audits/LOCAL_9_GROUPS_34_ARBRES_SOURCE_SCAN_20260512_220347/source_dumps/0125_5DF672EEB8C3_reverse_os_interlanguage_canon_v1.json.txt",
+            "obsidia-engine-candidate/_local_audits/OBSIDIA_REVERSE_OS_AUDIENCE_ADAPTER_V1_20260508_224555/audience_packet_07_investor.json",
+        ],
         "top_files": ["01_SOURCES/extracted_text_all.md"],
         "keywords_matched": ["alphabet ir", " ir "],
-        "notes": "Concept IR référencé dans doc source. Dir MCP bridge présent. MEDIUM_SIGNAL, pas CORE.",
+        "notes": "MEDIUM_SIGNAL dans ZIP. Core Parent a CORE_PARENT_CANDIDATE via interlanguage_canon (L2 = IR Alphabet formalisé). Canonicalization requise.",
     },
     "REVERSE_WINDOWS_LAYER": {
         "found": False,
         "matching_files_count": 0,
         "confidence": "NONE",
+        # Both ZIP and Core Parent = NOT_FOUND. Double confirmation.
         "evidence_status": "NOT_FOUND",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "P33C: 0 fichiers contenu. P33B: 1 occurrence 'window' dans extracted_text seulement — insuffisant pour déclarer une couche concept.",
+        "zip_evidence_status": "NOT_FOUND",
+        "core_parent_evidence_status": "NOT_FOUND",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "P33C ZIP: 0 fichiers contenu. P33B: 1 occurrence 'window' insuffisante. "
+            "P33E Core Parent: 0 entrées curated pour REVERSE_WINDOWS. Double NOT_FOUND."
+        ),
         "source_files_count": 0,
         "strong_files_count": 0,
+        "canonicalization_needed": False,
+        "evidence_files": [],
         "top_files": [],
         "keywords_matched": [],
-        "notes": "REVERSE_WINDOWS absent des preuves contenu P33C. Répertoires 16/13 présents mais concept windowing non confirmé en contenu.",
+        "notes": "NOT_FOUND dans les deux sources (ZIP P33C + Core Parent P33E). Répertoires 16/13 présents mais concept windowing non confirmé.",
     },
     "LAWS_PROTOCOLS_LAYER": {
         "found": True,
         "matching_files_count": 202,
         "confidence": "HIGH",
         "evidence_status": "CORE_STRONG",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "P33C: LOIS=22 fichiers, PROTOCOLES=97 fichiers = 119 fichiers contenu. Dirs dédiés présents (02_CONSTITUTION, 11_AGENTS_RUNTIME_CONTRACTS, 15_GUARDS).",
+        "zip_evidence_status": "CORE_STRONG",
+        "core_parent_evidence_status": "CORE_STRONG",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "ZIP P33C: LOIS=22 fichiers, PROTOCOLES=97 = 119 fichiers contenu. "
+            "Dirs dédiés (02_CONSTITUTION, 11_AGENTS_RUNTIME_CONTRACTS, 15_GUARDS). "
+            "Core Parent P33E confirme CORE_STRONG. Double validation."
+        ),
         "source_files_count": 119,
         "strong_files_count": 22,
+        "canonicalization_needed": False,
+        "evidence_files": [],
         "top_files": [
             "01_SOURCES/extracted_text_all.md",
             "00_INDEX/ARBORESCENCE_COMPLETE.md",
@@ -151,17 +209,24 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "15_GUARDS_NON_DECISION/non_decision_formulas.md",
         ],
         "keywords_matched": ["loi", "lois", "laws", "protocole", "protocol", "non_decision", "boundary"],
-        "notes": "119 fichiers contenu (22 LOIS + 97 PROTOCOLES). Couche dominante confirmée. CORE_STRONG.",
+        "notes": "CORE_STRONG dans ZIP et Core Parent. 119 fichiers contenu (22 LOIS + 97 PROTOCOLES).",
     },
     "AGENTS_TREES_LAYER": {
         "found": True,
         "matching_files_count": 397,
         "confidence": "HIGH",
         "evidence_status": "CORE_STRONG",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "397 fichiers chemin. 34 répertoires d'arbres présents. Registry 52 agents confirmé. Couche la plus dense du pack.",
+        "zip_evidence_status": "CORE_STRONG",
+        "core_parent_evidence_status": "CORE_STRONG",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": (
+            "ZIP P33C: 397 fichiers, 34 dirs d'arbres, registry 52 agents. "
+            "Core Parent P33E confirme CORE_STRONG. Couche dominante double-validée."
+        ),
         "source_files_count": 397,
         "strong_files_count": 397,
+        "canonicalization_needed": False,
+        "evidence_files": [],
         "top_files": [
             "00_INDEX/ARBORESCENCE_COMPLETE.md",
             "04_ARBRES_34_TENSOR_MATRIX/ARBRE_01__Arbre_de_l_Humain/definition.md",
@@ -170,17 +235,21 @@ _SCAN_RESULTS: Dict[str, Dict[str, Any]] = {
             "07_BDF_DOUBLE_CERVEAU/BDF.schema.json",
         ],
         "keywords_matched": ["arbre", "arbres", "tree", "agent", "agents", "shazam", "bdf"],
-        "notes": "397 fichiers. 34 dirs d'arbres. Registry 52 agents. Couche dominante. CORE_STRONG.",
+        "notes": "CORE_STRONG dans ZIP et Core Parent. 397 fichiers, 34 arbres, 52 agents.",
     },
     "UNKNOWN_RELEVANT": {
         "found": False,
         "matching_files_count": 0,
         "confidence": "NONE",
         "evidence_status": "NOT_FOUND",
-        "evidence_basis": "P33C_CONTENT_ONLY",
-        "confidence_reason": "Tous les fichiers classifiés dans des couches connues.",
+        "zip_evidence_status": "NOT_FOUND",
+        "core_parent_evidence_status": "NOT_FOUND",
+        "evidence_basis": "P33C_ZIP + P33E_CORE_PARENT",
+        "confidence_reason": "Tous les fichiers classifiés dans des couches connues. Aucune preuve dans les deux sources.",
         "source_files_count": 0,
         "strong_files_count": 0,
+        "canonicalization_needed": False,
+        "evidence_files": [],
         "top_files": [],
         "keywords_matched": [],
         "notes": "Aucun fichier non classifié pertinent.",
@@ -263,12 +332,16 @@ def build_os_trad_deep_concept_index(
                 "top_files": static.get("top_files", []),
                 "keywords_matched": static.get("keywords_matched", []),
                 "notes": static.get("notes", ""),
-                # P33D evidence fields — always from P33C static authority
+                # P33D evidence fields — always from static P33C+P33E authority
                 "evidence_status": static.get("evidence_status", "NOT_FOUND"),
-                "evidence_basis": static.get("evidence_basis", "P33C_CONTENT_ONLY"),
+                "zip_evidence_status": static.get("zip_evidence_status", "NOT_FOUND"),
+                "core_parent_evidence_status": static.get("core_parent_evidence_status", "NOT_FOUND"),
+                "evidence_basis": static.get("evidence_basis", "P33C_ZIP + P33E_CORE_PARENT"),
                 "confidence_reason": static.get("confidence_reason", ""),
                 "source_files_count": static.get("source_files_count", 0),
                 "strong_files_count": static.get("strong_files_count", 0),
+                "canonicalization_needed": static.get("canonicalization_needed", False),
+                "evidence_files": static.get("evidence_files", []),
             }
     else:
         # Use static results from P33 zip scan

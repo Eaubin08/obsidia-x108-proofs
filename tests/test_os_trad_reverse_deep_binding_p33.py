@@ -85,17 +85,19 @@ def test_at_least_one_high_confidence_layer_found():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_each_layer_has_required_fields():
-    """Chaque couche a found / matching_files_count / top_files / confidence / keywords_matched
-    et les champs P33D evidence_status / evidence_basis / confidence_reason /
-    source_files_count / strong_files_count."""
+    """Chaque couche a tous les champs requis incluant la double evidence map P33D."""
     idx = build_os_trad_deep_concept_index()
     required_fields = [
         "found", "matching_files_count", "top_files", "confidence", "keywords_matched",
-        # P33D evidence fields
+        # P33D single-source evidence fields
         "evidence_status", "evidence_basis", "confidence_reason",
         "source_files_count", "strong_files_count",
+        # P33D double evidence map (P33C ZIP + P33E Core Parent)
+        "zip_evidence_status", "core_parent_evidence_status",
+        "canonicalization_needed", "evidence_files",
     ]
-    valid_evidence_statuses = {"CORE_STRONG", "PARTIAL_STRONG", "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND"}
+    valid_statuses = {"CORE_STRONG", "PARTIAL_STRONG", "CORE_PARENT_CANDIDATE",
+                      "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND"}
     for layer_key in KNOWN_LAYERS:
         layer = idx[layer_key]
         for field in required_fields:
@@ -105,11 +107,19 @@ def test_each_layer_has_required_fields():
         assert isinstance(layer["top_files"], list)
         assert layer["confidence"] in ("HIGH", "MEDIUM", "LOW", "NONE")
         assert isinstance(layer["keywords_matched"], list)
-        assert layer["evidence_status"] in valid_evidence_statuses, (
+        assert layer["evidence_status"] in valid_statuses, (
             f"evidence_status invalide dans {layer_key}: {layer['evidence_status']}"
+        )
+        assert layer["zip_evidence_status"] in valid_statuses, (
+            f"zip_evidence_status invalide dans {layer_key}: {layer['zip_evidence_status']}"
+        )
+        assert layer["core_parent_evidence_status"] in valid_statuses, (
+            f"core_parent_evidence_status invalide dans {layer_key}: {layer['core_parent_evidence_status']}"
         )
         assert isinstance(layer["source_files_count"], int)
         assert isinstance(layer["strong_files_count"], int)
+        assert isinstance(layer["canonicalization_needed"], bool)
+        assert isinstance(layer["evidence_files"], list)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -355,13 +365,19 @@ def test_p33d_universal_language_is_partial_strong():
 
 
 def test_p33d_all_layers_have_evidence_fields():
-    """P33D : Toutes les couches exposent les 5 champs d'évidence P33D."""
+    """P33D : Toutes les couches exposent tous les champs d'évidence (double map incluse)."""
     idx = build_os_trad_deep_concept_index()
     evidence_fields = [
         "evidence_status", "evidence_basis", "confidence_reason",
         "source_files_count", "strong_files_count",
+        # Double evidence map
+        "zip_evidence_status", "core_parent_evidence_status",
+        "canonicalization_needed", "evidence_files",
     ]
-    valid_statuses = {"CORE_STRONG", "PARTIAL_STRONG", "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND"}
+    valid_statuses = {
+        "CORE_STRONG", "PARTIAL_STRONG", "CORE_PARENT_CANDIDATE",
+        "MEDIUM_SIGNAL", "WEAK_SIGNAL", "NOT_FOUND",
+    }
     for layer_key in KNOWN_LAYERS:
         layer = idx[layer_key]
         for f in evidence_fields:
@@ -369,5 +385,56 @@ def test_p33d_all_layers_have_evidence_fields():
         assert layer["evidence_status"] in valid_statuses, (
             f"evidence_status invalide dans {layer_key}: {layer['evidence_status']}"
         )
+        assert layer["zip_evidence_status"] in valid_statuses
+        assert layer["core_parent_evidence_status"] in valid_statuses
         assert isinstance(layer["source_files_count"], int)
         assert isinstance(layer["strong_files_count"], int)
+        assert isinstance(layer["canonicalization_needed"], bool)
+        assert isinstance(layer["evidence_files"], list)
+
+
+def test_p33d_ir_core_parent_candidate():
+    """P33D : IR_LAYER a core_parent_evidence_status=CORE_PARENT_CANDIDATE (interlanguage canon)."""
+    idx = build_os_trad_deep_concept_index()
+    ir = idx["ir_layer"]
+    assert ir["core_parent_evidence_status"] == "CORE_PARENT_CANDIDATE", (
+        f"IR_LAYER core_parent doit être CORE_PARENT_CANDIDATE, obtenu: {ir['core_parent_evidence_status']}"
+    )
+    assert ir["zip_evidence_status"] in ("MEDIUM_SIGNAL", "WEAK_SIGNAL")
+    assert ir["canonicalization_needed"] is True
+
+
+def test_p33d_reverse_language_core_parent_candidate():
+    """P33D : REVERSE_LANGUAGE_LAYER a core_parent=CORE_PARENT_CANDIDATE (reciproque_miroir, SCF)."""
+    idx = build_os_trad_deep_concept_index()
+    rl = idx["reverse_language_layer"]
+    assert rl["core_parent_evidence_status"] == "CORE_PARENT_CANDIDATE", (
+        f"REVERSE_LANGUAGE core_parent doit être CORE_PARENT_CANDIDATE, obtenu: {rl['core_parent_evidence_status']}"
+    )
+    assert rl["zip_evidence_status"] in ("MEDIUM_SIGNAL", "WEAK_SIGNAL")
+    assert rl["canonicalization_needed"] is True
+    # Vérifier que le signal n'est pas gonflé par le chemin REVERSE_OS
+    assert rl["evidence_status"] in ("MEDIUM_SIGNAL", "WEAK_SIGNAL"), (
+        "REVERSE_LANGUAGE ne doit pas être CORE malgré la présence de répertoires REVERSE_OS"
+    )
+
+
+def test_p33d_reverse_windows_not_found_both_sources():
+    """P33D : REVERSE_WINDOWS est NOT_FOUND dans le ZIP et dans le Core Parent."""
+    idx = build_os_trad_deep_concept_index()
+    rw = idx["reverse_windows_layer"]
+    assert rw["zip_evidence_status"] == "NOT_FOUND"
+    assert rw["core_parent_evidence_status"] == "NOT_FOUND"
+    assert rw["evidence_status"] == "NOT_FOUND"
+    assert rw["found"] is False
+    assert rw["canonicalization_needed"] is False
+
+
+def test_p33d_canonicalization_flags():
+    """P33D : IR et REVERSE_LANGUAGE ont canonicalization_needed=True ; les autres False."""
+    idx = build_os_trad_deep_concept_index()
+    assert idx["ir_layer"]["canonicalization_needed"] is True
+    assert idx["reverse_language_layer"]["canonicalization_needed"] is True
+    assert idx["reverse_windows_layer"]["canonicalization_needed"] is False
+    assert idx["laws_protocols_layer"]["canonicalization_needed"] is False
+    assert idx["agents_trees_layer"]["canonicalization_needed"] is False
