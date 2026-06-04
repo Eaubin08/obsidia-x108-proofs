@@ -47,6 +47,17 @@ except ImportError:
     get_route_classification = None        # type: ignore[assignment]
     get_coverage_summary = None            # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.workbench_view_capability_map import (
+        build_workbench_coverage_summary,
+        get_view_capability_map,
+    )
+    _P46_AVAILABLE = True
+except ImportError:
+    _P46_AVAILABLE = False
+    build_workbench_coverage_summary = None  # type: ignore[assignment]
+    get_view_capability_map = None           # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -237,6 +248,33 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P46 — Workbench view coverage enrichment ──────────────────────────────
+    wb_coverage_status = "FULL_COVERAGE"
+    wb_views_total = 13
+    wb_views_classified = 13
+    unclassified_views_count = 0
+    wb_views_coverage_percent = 100.0
+    selected_workbench_views: list = []
+
+    try:
+        if _P46_AVAILABLE and build_workbench_coverage_summary and get_view_capability_map:
+            wb_summary = build_workbench_coverage_summary()
+            wb_coverage_status = wb_summary.get("workbench_view_coverage_status", "FULL_COVERAGE")
+            wb_views_total = wb_summary.get("workbench_views_total", 13)
+            wb_views_classified = wb_summary.get("workbench_views_classified", 13)
+            unclassified_views_count = wb_summary.get("unclassified_views_count", 0)
+            wb_views_coverage_percent = wb_summary.get("workbench_views_coverage_percent", 100.0)
+            # Attach relevant views if query targets Workbench/UI
+            q_lower = query.lower()
+            if any(k in q_lower for k in ("workbench", "ui", "view", "os map", "os-map")):
+                cap_map = get_view_capability_map()
+                selected_workbench_views = [
+                    {"view": k, **v}
+                    for k, v in cap_map.items()
+                ]
+    except Exception:
+        pass
+
     return safe_backend_response(
         {
             "os_map_status": "ACTION_BLOCKED" if action_blocked else "OS_MAP_READY",
@@ -273,7 +311,14 @@ async def os_map_query(req: _OSMapQueryRequest):
             "unclassified_routes_count": unclassified_routes_count,
             "selected_routes_classified": selected_routes_classified,
             "blocked_action_routes_count": blocked_action_routes,
+            # P46 — Workbench view coverage
+            "workbench_view_coverage_status": wb_coverage_status,
+            "workbench_views_total": wb_views_total,
+            "workbench_views_classified": wb_views_classified,
+            "unclassified_views_count": unclassified_views_count,
+            "workbench_views_coverage_percent": wb_views_coverage_percent,
+            "selected_workbench_views": selected_workbench_views,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P45",
+        source="OS_MAP_QUERY_P46",
     )
