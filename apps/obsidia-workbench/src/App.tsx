@@ -15,6 +15,7 @@ import { AuditView } from './views/AuditView'
 import { SettingsView } from './views/SettingsView'
 import { TranslationView } from './views/TranslationView'
 import { RuntimeWiringPreviewView } from './views/RuntimeWiringPreviewView'
+import { OSMapView } from './views/OSMapView'
 import { INITIAL_MESSAGES, KERNEL_STATUS } from './data/mockData'
 import { getKernelStatus, sendBrodyMessage, callOSTradTranslateSupport, callIRCandidateSupport, callOSReverseProjectSupport } from './api/obsidiaClient'
 import { composeBrodyResponse } from './lib/brodyResponseComposer'
@@ -260,6 +261,7 @@ export default function App() {
         {activeView === 'settings'    && <SettingsView sessionLanguage={sessionLanguage} />}
         {activeView === 'translation'    && <TranslationView sessionLanguage={sessionLanguage} />}
         {activeView === 'runtime-wiring' && <RuntimeWiringPreviewView />}
+        {activeView === 'os-map'         && <OSMapView />}
 
         <RightPanel lastBackendPayload={lastBackendPayload} />
       </div>

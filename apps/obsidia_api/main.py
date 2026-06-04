@@ -106,12 +106,14 @@ from apps.obsidia_api.routes.bus import router as bus_router
 from apps.obsidia_api.routes.sigma_monitoring import router as sigma_monitoring_router
 from apps.obsidia_api.routes.runtime_wiring_preview import router as runtime_wiring_preview_router
 from apps.obsidia_api.routes.source_runtime_status import router as source_runtime_status_router
+from apps.obsidia_api.routes.os_map import router as os_map_router
 
 for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
            memory_router, gencoin_router, graphiti_router, x108_router,
            os3_router, worldcalls_router, blockchain_router, audit_router,
            periphery_ops_router, brody_monitoring_router, runtime_freeze_router, bus_router,
-           sigma_monitoring_router, runtime_wiring_preview_router, source_runtime_status_router]:
+           sigma_monitoring_router, runtime_wiring_preview_router, source_runtime_status_router,
+           os_map_router]:
     app.include_router(r)
 
 
