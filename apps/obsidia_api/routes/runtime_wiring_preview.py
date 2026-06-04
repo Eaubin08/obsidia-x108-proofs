@@ -17,6 +17,17 @@ from runtime_wiring.engine_bridge.readonly_engine_bridge import (
     validate_engine_bridge_safety,
 )
 
+try:
+    from runtime_wiring.source_runtime.source_runtime_cache import (
+        list_available_families_cached,
+        get_cache_stats,
+    )
+    _SOURCE_RUNTIME_AVAILABLE = True
+except ImportError:
+    _SOURCE_RUNTIME_AVAILABLE = False
+    list_available_families_cached = None  # type: ignore[assignment]
+    get_cache_stats = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring", tags=["runtime-wiring-preview"])
 
 _BOUNDARY = {
@@ -67,7 +78,34 @@ async def runtime_wiring_preview():
             source="ENGINE_BRIDGE_PREVIEW_ERROR",
         )
 
+    # P28: Source runtime stats
+    source_runtime_section: dict = {
+        "source_runtime_available": _SOURCE_RUNTIME_AVAILABLE,
+        "source_runtime_cache_enabled": _SOURCE_RUNTIME_AVAILABLE,
+        "source_runtime_families": [],
+        "source_runtime_last_stats": {},
+        "brody_context_bridge_available": _SOURCE_RUNTIME_AVAILABLE,
+        "real_readonly_hydration_available": _SOURCE_RUNTIME_AVAILABLE,
+    }
+    if _SOURCE_RUNTIME_AVAILABLE and list_available_families_cached and get_cache_stats:
+        try:
+            families = list_available_families_cached()
+            stats = get_cache_stats()
+            source_runtime_section["source_runtime_families"] = families
+            source_runtime_section["source_runtime_last_stats"] = stats
+            source_runtime_section["source_runtime_status"] = "READY" if families else "PARTIAL"
+            source_runtime_section["source_runtime_family_count"] = len(families)
+            source_runtime_section["source_runtime_registry_entries"] = stats.get("registry_entry_count", 0)
+        except Exception:
+            source_runtime_section["source_runtime_status"] = "PARTIAL"
+            source_runtime_section["source_runtime_family_count"] = 0
+            source_runtime_section["source_runtime_registry_entries"] = 0
+    else:
+        source_runtime_section["source_runtime_status"] = "UNAVAILABLE"
+        source_runtime_section["source_runtime_family_count"] = 0
+        source_runtime_section["source_runtime_registry_entries"] = 0
+
     return safe_backend_response(
-        {**payload, **_BOUNDARY},
+        {**payload, **_BOUNDARY, **source_runtime_section},
         source="ENGINE_BRIDGE_PREVIEW",
     )

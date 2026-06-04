@@ -1,0 +1,153 @@
+{
+  "verdict": "P39_FULL_SERVER_MATRIX_READY",
+  "all_verdicts_pass": true,
+  "verdicts": {
+    "IR_QUERY": true,
+    "AGENT_TREE_QUERY": true,
+    "LAW_PROTOCOL_QUERY": true,
+    "MEMORY_GRAPHITI_QUERY": true,
+    "ACTION_QUERY": true,
+    "NO_RUNTIME_ALLOWED_NOW": true,
+    "NO_EMITS_ACT": true,
+    "ALL_HTTP_200": true,
+    "WORKBENCH_BUILT": true,
+    "OS_MAP_VIEW_COMPLETE": true
+  },
+  "services": {
+    "API_8000": {
+      "port": 8000,
+      "open": true
+    },
+    "WORKBENCH_5173": {
+      "port": 5173,
+      "open": true
+    },
+    "OBSIDIASHELL_8011": {
+      "port": 8011,
+      "open": true
+    }
+  },
+  "endpoints": {
+    "/api/status": {
+      "http": 200,
+      "service": "obsidia-api",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "readonly": true
+    },
+    "/api/runtime-wiring/preview": {
+      "http": 200,
+      "status": "ENGINE_BRIDGE_PREVIEW_ONLY",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "readonly": true
+    },
+    "/api/runtime-wiring/source-runtime/status": {
+      "http": 200,
+      "source_runtime_status": "READY",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "readonly": true
+    },
+    "/api/runtime-wiring/os-map/status": {
+      "http": 200,
+      "os_map_status": "READY",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "readonly": true
+    },
+    "/api/x108/status": {
+      "http": 200,
+      "kernel_status": "ACTIVE",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "readonly": true
+    }
+  },
+  "queries": {
+    "IR_QUERY": {
+      "query": "IR alphabet reverse OS interlanguage",
+      "http": 200,
+      "os_map_status": "OS_MAP_READY",
+      "selected_capability": "IR_ALPHABET_MAPPING",
+      "x108_decision": "ALLOW_CONTEXT_ONLY",
+      "action_blocked": false,
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "evidence_packs": [
+        "REVERSE_OS_INTERLANGUAGE_CANON_V1"
+      ],
+      "inventory_linked": true,
+      "coverage_status": "FULLY_COVERED"
+    },
+    "AGENT_TREE_QUERY": {
+      "query": "34 arbres agents registry",
+      "http": 200,
+      "os_map_status": "OS_MAP_READY",
+      "selected_capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY",
+      "action_blocked": false,
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "evidence_packs": [],
+      "inventory_linked": true,
+      "coverage_status": "FULLY_COVERED"
+    },
+    "LAW_PROTOCOL_QUERY": {
+      "query": "lois protocoles non décision boundary",
+      "http": 200,
+      "os_map_status": "OS_MAP_READY",
+      "selected_capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY",
+      "action_blocked": false,
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "evidence_packs": [],
+      "inventory_linked": true,
+      "coverage_status": "FULLY_COVERED"
+    },
+    "MEMORY_GRAPHITI_QUERY": {
+      "query": "mémoire Brody Graphiti réintégration",
+      "http": 200,
+      "os_map_status": "OS_MAP_READY",
+      "selected_capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY",
+      "action_blocked": false,
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "evidence_packs": [],
+      "inventory_linked": true,
+      "coverage_status": "IMPLEMENTATION_FOUND_NO_TESTS"
+    },
+    "ACTION_QUERY": {
+      "query": "envoie un mail maintenant",
+      "http": 200,
+      "os_map_status": "ACTION_BLOCKED",
+      "selected_capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY",
+      "action_blocked": true,
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "evidence_packs": [],
+      "inventory_linked": true,
+      "coverage_status": "NO_IMPLEMENTATION_FOUND"
+    }
+  },
+  "workbench": {
+    "OSMapView_exists": true,
+    "App_imports_OSMapView": true,
+    "Sidebar_has_os_map": true,
+    "dist_built": true,
+    "build_bundle_kb": 0,
+    "vite_port_open": true
+  },
+  "boundary": {
+    "readonly": true,
+    "emits_act": false,
+    "decision_authority": "KX108_ONLY",
+    "no_act": true
+  },
+  "note_live_server": "Serveur live :8000 = version antérieure à P29 (153 routes). Routes P36-P38 requièrent redémarrage. Validation via TestClient = source de vérité.",
+  "live_server_routes_count": 153,
+  "testclient_routes_validated": 10
+}

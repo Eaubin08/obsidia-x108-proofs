@@ -20,6 +20,10 @@ from runtime_wiring.source_adapters import (
     rssi_security_to_context_packet,
     external_signals_to_context_packet,
     npl_to_context_packet,
+    # P32 — 8th family
+    os_trad_reverse_to_context_packet,
+    # P35 — OS_TRAD interlanguage canon extension
+    reverse_os_interlanguage_to_context_packet,
 )
 from runtime_wiring.packet_types import ContextPacket
 from runtime_wiring.dry_run_packet_router import route_packets
@@ -51,6 +55,10 @@ _ADAPTER_DISPATCH = {
     "rssi_security_to_context_packet": rssi_security_to_context_packet,
     "external_signals_to_context_packet": external_signals_to_context_packet,
     "npl_to_context_packet": npl_to_context_packet,
+    # P32 — 8th family
+    "os_trad_reverse_to_context_packet": os_trad_reverse_to_context_packet,
+    # P35 — OS_TRAD interlanguage canon extension
+    "reverse_os_interlanguage_to_context_packet": reverse_os_interlanguage_to_context_packet,
 }
 
 

@@ -44,6 +44,13 @@ from apps.obsidia_api.brody_operator_view_packet import build_operator_view_pack
 from apps.obsidia_api.brody_existing_reverse_os_bridge import build_existing_reverse_os_projection
 from apps.obsidia_api.brody_readonly_intent_guard import detect_readonly_runtime_state_intent
 
+try:
+    from runtime_wiring.source_runtime.brody_source_context_bridge import (
+        build_brody_context_from_source_packs as _build_source_pack_context,
+    )
+except ImportError:
+    _build_source_pack_context = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -136,9 +143,20 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
         semantic_query_snapshot=semantic_query_snapshot)
 
+    # P27: Source pack context built BEFORE True Voice so it can enrich final_answer
+    _source_pack_ctx: dict = {}
+    if _build_source_pack_context is not None:
+        _source_pack_ctx = safe_call_snapshot(
+            "source_pack_context",
+            _build_source_pack_context,
+            query=req.message,
+            limit=5,
+        )
+
     true_voice_snapshot = safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
         user_message=req.message, language=req.language,
-        session_id=req.session_id or "local", brody_full_context=brody_full_context)
+        session_id=req.session_id or "local", brody_full_context=brody_full_context,
+        source_pack_context=_source_pack_ctx)
 
     # Final answer priority
     chain_md = memory_response_chain.get("response_md", "")
@@ -507,6 +525,19 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "readonly_intent_guard_packet": readonly_intent_guard_packet,
         "final_answer_source": _tvs.get("final_answer_source", _tvs.get("voice_source", "")),
         "topic": semantic_query_snapshot.get("topic", "") if isinstance(semantic_query_snapshot, dict) else "",
+        # P26/P27 source pack context — readonly, X108-gated, no ACT
+        "source_pack_context": _source_pack_ctx,
+        "source_pack_context_used": _source_pack_ctx.get("source_pack_context_used", False),
+        "source_pack_families": _source_pack_ctx.get("source_pack_families", []),
+        "source_pack_entries_used": _source_pack_ctx.get("source_pack_entries_used", 0),
+        "source_pack_x108_decision": _source_pack_ctx.get("x108_decision", "N/A"),
+        "source_pack_os3_evidence_id": _source_pack_ctx.get("os3_evidence_id", ""),
+        "source_pack_context_summary": _source_pack_ctx.get("context_summary_for_brody", ""),
+        "final_answer_source_pack_enriched": (
+            True if isinstance(true_voice_snapshot, dict)
+            and true_voice_snapshot.get("source_pack_enriched") is True
+            else False
+        ),
     }
     # Semantic advisory UTF-8 regression guard:
     # X108 + mémoire actuelle must remain no-memory advisory.
