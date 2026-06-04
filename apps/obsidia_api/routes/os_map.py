@@ -104,6 +104,17 @@ except ImportError:
     _P50_AVAILABLE = False
     build_controlled_activation_matrix = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.brody_readonly_activation import (
+        build_brody_readonly_activation_state,
+        get_brody_readonly_boundary,
+    )
+    _P51_AVAILABLE = True
+except ImportError:
+    _P51_AVAILABLE = False
+    build_brody_readonly_activation_state = None  # type: ignore[assignment]
+    get_brody_readonly_boundary = None            # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -366,6 +377,28 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P51 — Brody readonly activation ──────────────────────────────────────
+    brody_readonly_activation_status = "ACTIVE_READONLY"
+    brody_readonly_enabled = True
+    brody_activation_level = "LEVEL_1_READONLY_ACTIVE"
+    brody_next_allowed_mode = "READONLY_CONTEXT_ONLY"
+    brody_next_blocked_modes = [
+        "ACTION", "MEMORY_WRITE", "GRAPHITI_WRITE", "WORLD_ACTION",
+    ]
+
+    try:
+        if _P51_AVAILABLE and build_brody_readonly_activation_state:
+            p51_state = build_brody_readonly_activation_state(query=query)
+            brody_readonly_activation_status = p51_state.get(
+                "brody_readonly_activation_status", "ACTIVE_READONLY"
+            )
+            brody_readonly_enabled = p51_state.get("brody_readonly_enabled", True)
+            brody_activation_level = p51_state.get("activation_level", "LEVEL_1_READONLY_ACTIVE")
+            brody_next_allowed_mode = p51_state.get("next_allowed_mode", "READONLY_CONTEXT_ONLY")
+            brody_next_blocked_modes = p51_state.get("next_blocked_modes", brody_next_blocked_modes)
+    except Exception:
+        pass
+
     # ── P50 — Controlled activation matrix ───────────────────────────────────
     activation_matrix_status = "READY"
     activation_allowed_now = False
@@ -556,7 +589,13 @@ async def os_map_query(req: _OSMapQueryRequest):
             "future_action_gate_items": future_action_gate_items,
             "locked_items": locked_items,
             "next_activation_palier": next_activation_palier,
+            # P51 — Brody readonly activation
+            "brody_readonly_activation_status": brody_readonly_activation_status,
+            "brody_readonly_enabled": brody_readonly_enabled,
+            "brody_activation_level": brody_activation_level,
+            "brody_next_allowed_mode": brody_next_allowed_mode,
+            "brody_next_blocked_modes": brody_next_blocked_modes,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P50",
+        source="OS_MAP_QUERY_P51",
     )

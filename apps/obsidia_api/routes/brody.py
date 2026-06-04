@@ -51,6 +51,15 @@ try:
 except ImportError:
     _build_source_pack_context = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.brody_readonly_activation import (
+        build_brody_readonly_activation_state,
+    )
+    _P51_AVAILABLE = True
+except ImportError:
+    _P51_AVAILABLE = False
+    build_brody_readonly_activation_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -142,6 +151,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         freeze_metrics_snapshot=freeze_metrics_snapshot, authority_snapshot=authority_snapshot,
         automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
         semantic_query_snapshot=semantic_query_snapshot)
+
+    # P51 — Brody readonly activation state
+    _brody_readonly_state: dict = {}
+    if _P51_AVAILABLE and build_brody_readonly_activation_state is not None:
+        _brody_readonly_state = safe_call_snapshot(
+            "brody_readonly_activation",
+            build_brody_readonly_activation_state,
+            query=req.message,
+        )
 
     # P27: Source pack context built BEFORE True Voice so it can enrich final_answer
     _source_pack_ctx: dict = {}
@@ -538,6 +556,36 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             and true_voice_snapshot.get("source_pack_enriched") is True
             else False
         ),
+        # P51 — Brody readonly activation contract
+        "brody_readonly_activation_status": _brody_readonly_state.get(
+            "brody_readonly_activation_status", "ACTIVE_READONLY"
+        ),
+        "brody_activation_level": _brody_readonly_state.get(
+            "activation_level", "LEVEL_1_READONLY_ACTIVE"
+        ),
+        "brody_readonly_enabled": _brody_readonly_state.get("brody_readonly_enabled", True),
+        "brody_can_answer": _brody_readonly_state.get("brody_can_answer", True),
+        "brody_can_explain_runtime_path": _brody_readonly_state.get(
+            "brody_can_explain_runtime_path", True
+        ),
+        "brody_can_execute_actions": False,
+        "brody_can_write_memory": False,
+        "brody_can_write_graphiti": False,
+        "brody_action_request_blocked": _brody_readonly_state.get("action_request_blocked", False),
+        "brody_action_status": _brody_readonly_state.get("action_status", "NO_ACTION_IN_QUERY"),
+        "os_map_summary": _brody_readonly_state.get("os_map_summary", {}),
+        "selected_runtime_path": _source_pack_ctx.get("selected_runtime_path", {}),
+        "selected_modules": _source_pack_ctx.get("selected_modules", []),
+        "selected_functions": _source_pack_ctx.get("selected_functions", []),
+        "selected_routes": _source_pack_ctx.get("selected_routes", []),
+        "selected_adapters": _source_pack_ctx.get("selected_adapters", []),
+        "selected_source_families": _source_pack_ctx.get("selected_source_families", []),
+        "selected_evidence_packs": _source_pack_ctx.get("selected_evidence_packs", []),
+        "hydration_plan": _source_pack_ctx.get("hydration_plan", {}),
+        "source_file_refs": _source_pack_ctx.get("source_file_refs", []),
+        "brody_no_act": True,
+        "brody_no_write": True,
+        "brody_kx108_only": True,
     }
     # Semantic advisory UTF-8 regression guard:
     # X108 + mémoire actuelle must remain no-memory advisory.
