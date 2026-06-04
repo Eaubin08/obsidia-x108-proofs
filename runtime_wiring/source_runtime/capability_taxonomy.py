@@ -269,6 +269,7 @@ CAPABILITY_TAXONOMY: Dict[str, Dict[str, Any]] = {
         "candidate_modules": [
             "source_runtime_query",
             "brody_source_context_bridge",
+            "graphiti_v20_readonly_client",  # P44: wired
         ],
         "candidate_adapters": [
             "npl_to_context_packet",
@@ -280,6 +281,97 @@ CAPABILITY_TAXONOMY: Dict[str, Dict[str, Any]] = {
         "candidate_source_families": [
             "NARRATIVE_PROVENANCE_LAYER",
             "COGNITIVE_REINTEGRATION",
+        ],
+        "candidate_subfamilies": [],
+    },
+    # ── P44 : 5 gaps MUST_BIND_NEXT branchés ─────────────────────────────────
+    "ATLAS_CONTEXT_LOOKUP": {
+        "capability_id": "ATLAS_CONTEXT_LOOKUP",
+        "description": "Lookup contexte ATLAS — cartographie des arbres, modules et composants Obsidia (11 263 entrées).",
+        "allowed_runtime_mode": "READONLY_CONTEXT_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "decision_authority": "KX108_ONLY",
+        "candidate_modules": [
+            "source_runtime_query",
+            "brody_source_context_bridge",
+        ],
+        "candidate_adapters": [
+            "atlas_to_context_packet",
+        ],
+        "candidate_routes": [
+            "/api/runtime-wiring/source-runtime/preview",
+        ],
+        "candidate_source_families": [
+            "ATLAS",
+        ],
+        "candidate_subfamilies": [],
+    },
+    "EXTERNAL_SIGNALS_CONTEXT": {
+        "capability_id": "EXTERNAL_SIGNALS_CONTEXT",
+        "description": "Contexte signaux externes TimeVerse — signaux temporels, chronologie, séquences. Advisory readonly. No prediction as action.",
+        "allowed_runtime_mode": "READONLY_CONTEXT_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "decision_authority": "KX108_ONLY",
+        "candidate_modules": [
+            "source_runtime_query",
+            "brody_source_context_bridge",
+        ],
+        "candidate_adapters": [
+            "external_signals_to_context_packet",
+        ],
+        "candidate_routes": [
+            "/api/runtime-wiring/source-runtime/preview",
+        ],
+        "candidate_source_families": [
+            "EXTERNAL_SIGNALS",
+        ],
+        "candidate_subfamilies": [],
+    },
+    "BRODY_CHAT_ENTRYPOINT": {
+        "capability_id": "BRODY_CHAT_ENTRYPOINT",
+        "description": "Entrypoint Brody Chat — route /api/brody/chat, pipeline réponse V1.4.12A. Context routing readonly, no ACT.",
+        "allowed_runtime_mode": "READONLY_CONTEXT_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "decision_authority": "KX108_ONLY",
+        "candidate_modules": [
+            "brody_source_context_bridge",
+            "brody_real_response_pipeline",
+        ],
+        "candidate_adapters": [],
+        "candidate_routes": [
+            "/api/brody/chat",
+        ],
+        "candidate_source_families": [
+            "COGNITIVE_REINTEGRATION",
+        ],
+        "candidate_subfamilies": [],
+    },
+    "OS_TRAD_ROUTE_CONTEXT": {
+        "capability_id": "OS_TRAD_ROUTE_CONTEXT",
+        "description": "Routes OS Trad IR Reverse — translate, ir/candidate, os-reverse/project. Readonly. No mutation.",
+        "allowed_runtime_mode": "READONLY_CONTEXT_ONLY",
+        "runtime_allowed_now": False,
+        "emits_act": False,
+        "decision_authority": "KX108_ONLY",
+        "candidate_modules": [
+            "os_trad_ir_reverse",
+            "os_trad_reverse_index",
+            "source_runtime_query",
+        ],
+        "candidate_adapters": [
+            "os_trad_reverse_to_context_packet",
+            "reverse_os_interlanguage_to_context_packet",
+        ],
+        "candidate_routes": [
+            "/api/runtime-wiring/os-trad/api/os-trad/translate",
+            "/api/runtime-wiring/os-trad/api/ir/candidate",
+            "/api/runtime-wiring/os-trad/api/os-reverse/project",
+        ],
+        "candidate_source_families": [
+            "OS_TRAD_REVERSE_OS",
         ],
         "candidate_subfamilies": [],
     },

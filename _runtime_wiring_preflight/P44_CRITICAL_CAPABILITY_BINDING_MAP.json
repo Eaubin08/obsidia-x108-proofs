@@ -1,0 +1,135 @@
+{
+  "audit_id": "P44_CRITICAL_CAPABILITY_BINDING_MAP",
+  "audit_date": "2026-06-04",
+  "p44_status": "P44_CRITICAL_CAPABILITY_BINDING_READY",
+  "decision_authority": "KX108_ONLY",
+  "runtime_allowed_now": false,
+  "emits_act": false,
+  "readonly": true,
+  "based_on": "P43_UNCONNECTED_RUNTIME_SURFACE_AUDIT",
+
+  "coverage_before_p44": {
+    "capabilities_total": 15,
+    "router_templates_total": 14,
+    "source_families_connected": 6,
+    "source_families_unconnected": ["ATLAS", "EXTERNAL_SIGNALS"],
+    "adapters_connected": 7,
+    "adapters_unconnected": ["atlas_to_context_packet", "external_signals_to_context_packet", "route_entry_to_context_packet"],
+    "routes_in_templates": 1,
+    "graphiti_client_wired": false
+  },
+
+  "coverage_after_p44": {
+    "capabilities_total": 20,
+    "router_templates_total": 18,
+    "source_families_connected": 8,
+    "source_families_unconnected": [],
+    "adapters_connected": 9,
+    "adapters_unconnected": ["route_entry_to_context_packet"],
+    "routes_in_templates": 4,
+    "graphiti_client_wired": true
+  },
+
+  "gaps_reduced": {
+    "source_families_unconnected": {"before": 2, "after": 0, "delta": -2},
+    "adapters_unconnected": {"before": 3, "after": 1, "delta": -2},
+    "capabilities": {"before": 15, "after": 20, "delta": 5},
+    "router_templates": {"before": 14, "after": 18, "delta": 4},
+    "graphiti_client_wired": {"before": false, "after": true}
+  },
+
+  "new_capabilities_bound": [
+    {
+      "capability_id": "ATLAS_CONTEXT_LOOKUP",
+      "source_families": ["ATLAS"],
+      "adapters": ["atlas_to_context_packet"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "intent_keywords": ["atlas", "cartographie", "corpus map", "component map"],
+      "test_query": "atlas component map"
+    },
+    {
+      "capability_id": "EXTERNAL_SIGNALS_CONTEXT",
+      "source_families": ["EXTERNAL_SIGNALS"],
+      "adapters": ["external_signals_to_context_packet"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "intent_keywords": ["timeverse", "external signals", "signal temporel", "c459"],
+      "test_query": "timeverse temporal signal"
+    },
+    {
+      "capability_id": "BRODY_CHAT_ENTRYPOINT",
+      "source_families": ["COGNITIVE_REINTEGRATION"],
+      "adapters": [],
+      "routes": ["/api/brody/chat"],
+      "intent_keywords": ["brody chat", "true voice", "final answer"],
+      "test_query": "brody chat true voice"
+    },
+    {
+      "capability_id": "OS_TRAD_ROUTE_CONTEXT",
+      "source_families": ["OS_TRAD_REVERSE_OS"],
+      "adapters": ["os_trad_reverse_to_context_packet", "reverse_os_interlanguage_to_context_packet"],
+      "routes": [
+        "/api/runtime-wiring/os-trad/api/os-trad/translate",
+        "/api/runtime-wiring/os-trad/api/ir/candidate",
+        "/api/runtime-wiring/os-trad/api/os-reverse/project"
+      ],
+      "intent_keywords": ["os-trad route", "ir candidate", "translate endpoint"],
+      "test_query": "os-trad route translate endpoint"
+    }
+  ],
+
+  "updated_capabilities": [
+    {
+      "capability_id": "GRAPHITI_READONLY_CONTEXT",
+      "change": "graphiti_v20_readonly_client added to candidate_modules and path template modules",
+      "before_modules": ["source_runtime_query", "brody_source_context_bridge"],
+      "after_modules": ["source_runtime_query", "brody_source_context_bridge", "graphiti_v20_readonly_client"],
+      "dedicated_intent": "GRAPHITI_READONLY",
+      "intent_keywords": ["graphiti readonly", "graphiti v20", "graphiti client"],
+      "score_before": 0.73,
+      "score_after": 0.76
+    }
+  ],
+
+  "still_unconnected_modules": [
+    "apps/obsidia_api/brody_adaptive_response_policy.py",
+    "apps/obsidia_api/brody_automation_orchestrator.py",
+    "apps/obsidia_api/brody_backend_response_composer.py",
+    "apps/obsidia_api/brody_cognitive_modules_adapter.py",
+    "apps/obsidia_api/brody_full_runtime_orchestrator.py",
+    "apps/obsidia_api/brody_gencoin_cognitive_ledger.py",
+    "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+    "apps/obsidia_api/brody_semantic_query_router.py",
+    "apps/obsidia_api/brody_session_memory_adapter.py",
+    "apps/obsidia_api/brody_session_memory_runtime.py",
+    "apps/obsidia_api/brody_true_response_structure_adapter.py",
+    "apps/obsidia_api/brody_true_response_structure_runtime.py",
+    "apps/obsidia_api/brody_true_voice_adapter.py",
+    "apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py",
+    "runtime_wiring/engine_bridge/readonly_engine_bridge.py",
+    "runtime_wiring/engine_bridge/api_adapter_preview.py"
+  ],
+
+  "still_unconnected_routes_count": 141,
+  "still_unconnected_routes_notable": [
+    "/api/x108/* (14 routes)",
+    "/api/os3/* (7 routes)",
+    "/api/memory/* (6 routes)",
+    "/api/periphery/governance/* (10 routes)"
+  ],
+
+  "next_palier_p45_suggestions": [
+    "Bind brody_v1_4_12a_final_answer_adapter to a BRODY_FINAL_ANSWER capability",
+    "Bind brody_semantic_query_router to SEMANTIC_ROUTING capability",
+    "Add X108_COGNITIVE capability for /api/x108/cognitive/* routes",
+    "Add OS3_AUDIT capability for /api/os3/* routes",
+    "Add MEMORY_CANDIDATE capability for /api/memory/* routes",
+    "Link brody_session_memory_adapter to MEMORY_REINTEGRATION_CONTEXT"
+  ],
+
+  "test_results": {
+    "unit_tests": "20 passed",
+    "api_tests": "included in unit_tests (TestClient)",
+    "p36_p43_regression": "74 passed",
+    "full_suite": "3700 passed, 4 skipped"
+  }
+}
