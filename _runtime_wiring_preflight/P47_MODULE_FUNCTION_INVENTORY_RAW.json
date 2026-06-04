@@ -1,0 +1,1128 @@
+{
+  "inventory_status": "READY",
+  "phase": "P47",
+  "scan_date": "2026-06-04",
+  "modules_total": 121,
+  "functions_total": 548,
+  "classes_total": 133,
+  "routes_total": 147,
+  "adapters_total": 10,
+  "test_file_count": 140,
+  "doc_file_count": 30,
+  "modules": [
+    {
+      "module_path": "runtime_wiring/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/contracts_loader.py",
+      "stem": "contracts_loader",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/dry_run_packet_router.py",
+      "stem": "dry_run_packet_router",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/engine_bridge/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/engine_bridge/api_adapter_preview.py",
+      "stem": "api_adapter_preview",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/engine_bridge/bridge_types.py",
+      "stem": "bridge_types",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 8,
+      "class_count": 4,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/engine_bridge/readonly_engine_bridge.py",
+      "stem": "readonly_engine_bridge",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 7,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/os3_evidence_stub.py",
+      "stem": "os3_evidence_stub",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/p8b_demo.py",
+      "stem": "p8b_demo",
+      "coverage_status": "ARCHIVE_ONLY",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/packet_types.py",
+      "stem": "packet_types",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 5,
+      "class_count": 5,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_adapters.py",
+      "stem": "source_adapters",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 11,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/adapter_target_map.py",
+      "stem": "adapter_target_map",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/build_source_file_registry.py",
+      "stem": "build_source_file_registry",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 9,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "RUNTIME_ALLOWED_NOW_TRUE",
+        "EMITS_ACT_TRUE"
+      ]
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/p9c_integration_demo.py",
+      "stem": "p9c_integration_demo",
+      "coverage_status": "ARCHIVE_ONLY",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/registry_loader.py",
+      "stem": "registry_loader",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 11,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/registry_to_adapter_dry_run.py",
+      "stem": "registry_to_adapter_dry_run",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 8,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_registry/registry_types.py",
+      "stem": "registry_types",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 1,
+      "route_count": 0,
+      "risk_flags": [
+        "RUNTIME_ALLOWED_NOW_TRUE",
+        "EMITS_ACT_TRUE"
+      ]
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/brody_source_context_bridge.py",
+      "stem": "brody_source_context_bridge",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/capability_inventory_linker.py",
+      "stem": "capability_inventory_linker",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 8,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/capability_path_router.py",
+      "stem": "capability_path_router",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/capability_taxonomy.py",
+      "stem": "capability_taxonomy",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/os_trad_reverse_index.py",
+      "stem": "os_trad_reverse_index",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/readonly_content_loader.py",
+      "stem": "readonly_content_loader",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 3,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/reverse_os_interlanguage_index.py",
+      "stem": "reverse_os_interlanguage_index",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/route_capability_map.py",
+      "stem": "route_capability_map",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/route_coverage_classifier.py",
+      "stem": "route_coverage_classifier",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/runtime_inventory_builder.py",
+      "stem": "runtime_inventory_builder",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 13,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "SUBPROCESS_RISK",
+        "EVAL_RISK",
+        "DYNAMIC_IMPORT_RISK",
+        "SHELL_RISK",
+        "RUNTIME_ALLOWED_NOW_TRUE",
+        "EMITS_ACT_TRUE"
+      ]
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/runtime_inventory_graph.py",
+      "stem": "runtime_inventory_graph",
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "function_count": 5,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_context_hydrator.py",
+      "stem": "source_context_hydrator",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 1,
+      "class_count": 1,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_family_selector.py",
+      "stem": "source_family_selector",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_hydration_planner.py",
+      "stem": "source_hydration_planner",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_pack_resolver.py",
+      "stem": "source_pack_resolver",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 4,
+      "class_count": 2,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_runtime_cache.py",
+      "stem": "source_runtime_cache",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 7,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/source_runtime_query.py",
+      "stem": "source_runtime_query",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 1,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/workbench_view_capability_map.py",
+      "stem": "workbench_view_capability_map",
+      "coverage_status": "CONNECTED_WORKBENCH_SUPPORT",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/source_runtime/workbench_view_coverage_classifier.py",
+      "stem": "workbench_view_coverage_classifier",
+      "coverage_status": "CONNECTED_WORKBENCH_SUPPORT",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "runtime_wiring/x108_admission_stub.py",
+      "stem": "x108_admission_stub",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/audit.py",
+      "stem": "audit",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "stem": "blockchain",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 13,
+      "class_count": 12,
+      "route_count": 13,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/brody.py",
+      "stem": "brody",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 2,
+      "class_count": 1,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "stem": "brody_monitoring",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 13,
+      "class_count": 6,
+      "route_count": 9,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/bus.py",
+      "stem": "bus",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 3,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/context.py",
+      "stem": "context",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 1,
+      "class_count": 1,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/gencoin.py",
+      "stem": "gencoin",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/graphiti.py",
+      "stem": "graphiti",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "stem": "memory",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 7,
+      "class_count": 1,
+      "route_count": 6,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/os3.py",
+      "stem": "os3",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 2,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/os_map.py",
+      "stem": "os_map",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 2,
+      "class_count": 1,
+      "route_count": 2,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/os_trad_ir_reverse.py",
+      "stem": "os_trad_ir_reverse",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 10,
+      "class_count": 3,
+      "route_count": 3,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "stem": "periphery_ops",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 80,
+      "class_count": 45,
+      "route_count": 75,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/runtime_freeze.py",
+      "stem": "runtime_freeze",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "SUBPROCESS_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/runtime_wiring_preview.py",
+      "stem": "runtime_wiring_preview",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "stem": "sigma_monitoring",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 7,
+      "class_count": 0,
+      "route_count": 6,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/source_runtime_status.py",
+      "stem": "source_runtime_status",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 3,
+      "class_count": 1,
+      "route_count": 2,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/status.py",
+      "stem": "status",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 4,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/translation.py",
+      "stem": "translation",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 1,
+      "class_count": 1,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/worldcalls.py",
+      "stem": "worldcalls",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 2,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "stem": "x108",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 14,
+      "class_count": 13,
+      "route_count": 14,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/audit_middleware.py",
+      "stem": "audit_middleware",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 1,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/auth.py",
+      "stem": "auth",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_adaptive_response_policy.py",
+      "stem": "brody_adaptive_response_policy",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 6,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_anti_mismatch_signal.py",
+      "stem": "brody_anti_mismatch_signal",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_automation_orchestrator.py",
+      "stem": "brody_automation_orchestrator",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 10,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "SUBPROCESS_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_backend_response_composer.py",
+      "stem": "brody_backend_response_composer",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_bridge_lifecycle.py",
+      "stem": "brody_bridge_lifecycle",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_candidate_memory_adapter.py",
+      "stem": "brody_candidate_memory_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_cognitive_modules_adapter.py",
+      "stem": "brody_cognitive_modules_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_contracts_packet.py",
+      "stem": "brody_contracts_packet",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_domain_raccord_adapter.py",
+      "stem": "brody_domain_raccord_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 17,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_existing_reverse_os_bridge.py",
+      "stem": "brody_existing_reverse_os_bridge",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_freeze_metrics_snapshot.py",
+      "stem": "brody_freeze_metrics_snapshot",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 9,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_full_runtime_orchestrator.py",
+      "stem": "brody_full_runtime_orchestrator",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "DYNAMIC_IMPORT_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_full_runtime_reconnect.py",
+      "stem": "brody_full_runtime_reconnect",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_gencoin_cognitive_ledger.py",
+      "stem": "brody_gencoin_cognitive_ledger",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_gencoin_shadow_value.py",
+      "stem": "brody_gencoin_shadow_value",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_gencoin_transverse_interface.py",
+      "stem": "brody_gencoin_transverse_interface",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_machination_composer.py",
+      "stem": "brody_machination_composer",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 10,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_memory_promotion_guard.py",
+      "stem": "brody_memory_promotion_guard",
+      "coverage_status": "BLOCKED_ACTION_RUNTIME",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+      "stem": "brody_memory_response_chain_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 15,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_operator_loop_adapter.py",
+      "stem": "brody_operator_loop_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_operator_view_packet.py",
+      "stem": "brody_operator_view_packet",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_project_memory_adapter.py",
+      "stem": "brody_project_memory_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_project_memory_runtime.py",
+      "stem": "brody_project_memory_runtime",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_readonly_intent_guard.py",
+      "stem": "brody_readonly_intent_guard",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_real_response_pipeline.py",
+      "stem": "brody_real_response_pipeline",
+      "coverage_status": "CONNECTED_RUNTIME",
+      "function_count": 5,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "DYNAMIC_IMPORT_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_reflex_diagnostic_packet.py",
+      "stem": "brody_reflex_diagnostic_packet",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_rights_authority_matrix.py",
+      "stem": "brody_rights_authority_matrix",
+      "coverage_status": "CONNECTED_STATUS_ONLY",
+      "function_count": 5,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_runtime_context_adapter.py",
+      "stem": "brody_runtime_context_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_safe_snapshot.py",
+      "stem": "brody_safe_snapshot",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_semantic_query_router.py",
+      "stem": "brody_semantic_query_router",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_session_memory_adapter.py",
+      "stem": "brody_session_memory_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_session_memory_runtime.py",
+      "stem": "brody_session_memory_runtime",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_source_of_truth_adapter.py",
+      "stem": "brody_source_of_truth_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "DYNAMIC_IMPORT_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_structured_response_engine_adapter.py",
+      "stem": "brody_structured_response_engine_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_temporal_context_adapter.py",
+      "stem": "brody_temporal_context_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_text_encoding.py",
+      "stem": "brody_text_encoding",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_thermo_coherence_time_unified.py",
+      "stem": "brody_thermo_coherence_time_unified",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_thermodynamics_signal.py",
+      "stem": "brody_thermodynamics_signal",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_tree_policy.py",
+      "stem": "brody_tree_policy",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_tree_policy_adapter.py",
+      "stem": "brody_tree_policy_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_tree_signal_packet.py",
+      "stem": "brody_tree_signal_packet",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_true_response_structure_adapter.py",
+      "stem": "brody_true_response_structure_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_true_response_structure_runtime.py",
+      "stem": "brody_true_response_structure_runtime",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_true_voice_adapter.py",
+      "stem": "brody_true_voice_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 11,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py",
+      "stem": "brody_v1_4_12a_final_answer_adapter",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 17,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/bus/__init__.py",
+      "stem": "__init__",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/bus/sigma_bridge.py",
+      "stem": "sigma_bridge",
+      "coverage_status": "CONNECTED_ADAPTER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/bus/signal_model.py",
+      "stem": "signal_model",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 3,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/bus/signal_packager.py",
+      "stem": "signal_packager",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 3,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/bus/state_aggregator.py",
+      "stem": "state_aggregator",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/contracts.py",
+      "stem": "contracts",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 26,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/graphiti_env_loader.py",
+      "stem": "graphiti_env_loader",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "stem": "graphiti_v20_readonly_client",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 0,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/main.py",
+      "stem": "main",
+      "coverage_status": "CONNECTED_ROUTE_HANDLER",
+      "function_count": 3,
+      "class_count": 1,
+      "route_count": 1,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/output_envelope.py",
+      "stem": "output_envelope",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 1,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    },
+    {
+      "module_path": "apps/obsidia_api/runtime_loader.py",
+      "stem": "runtime_loader",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 2,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": [
+        "DYNAMIC_IMPORT_RISK"
+      ]
+    },
+    {
+      "module_path": "apps/obsidia_api/safe_response.py",
+      "stem": "safe_response",
+      "coverage_status": "INTERNAL_HELPER",
+      "function_count": 4,
+      "class_count": 0,
+      "route_count": 0,
+      "risk_flags": []
+    }
+  ]
+}
