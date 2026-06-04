@@ -1,0 +1,97 @@
+{
+  "audit_id": "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX_MAP",
+  "audit_date": "2026-06-04",
+  "activation_level": "LEVEL_3_HOLD_GATE_CANDIDATE",
+  "action_gateway_sandbox_status": "ACTIVE_HOLD_BLOCK_SANDBOX",
+  "sandbox_enabled": true,
+  "real_action_enabled": false,
+  "can_evaluate_hold_block": true,
+  "can_emit_act": false,
+  "emits_act": false,
+  "runtime_allowed_now": false,
+  "decision_authority": "KX108_ONLY",
+  "x108_required_before_act": true,
+  "verdict_priority": "BLOCK > HOLD > ALLOW_CONTEXT_ONLY",
+  "action_type_mapping": [
+    {"action_type": "EMAIL_SEND",        "verdict": "BLOCK", "risk_class": "HIGH"},
+    {"action_type": "BLOCKCHAIN_TX",     "verdict": "BLOCK", "risk_class": "CRITICAL"},
+    {"action_type": "MEMORY_WRITE",      "verdict": "BLOCK", "risk_class": "HIGH"},
+    {"action_type": "GRAPHITI_WRITE",    "verdict": "BLOCK", "risk_class": "HIGH"},
+    {"action_type": "EXTERNAL_API_CALL", "verdict": "BLOCK", "risk_class": "HIGH"},
+    {"action_type": "FILE_MUTATION",     "verdict": "HOLD",  "risk_class": "MEDIUM"},
+    {"action_type": "GENERAL_ACTION",    "verdict": "HOLD",  "risk_class": "MEDIUM"},
+    {"action_type": "NO_ACTION",         "verdict": "ALLOW_CONTEXT_ONLY", "risk_class": "NONE"}
+  ],
+  "example_queries": [
+    {
+      "query": "envoie un mail maintenant",
+      "detected_action_type": "EMAIL_SEND",
+      "sandbox_verdict": "BLOCK",
+      "x108_gate_decision": "HOLD",
+      "final_verdict": "BLOCK",
+      "act_blocked_reason": "P54_SANDBOX_BLOCK_EMAIL_SEND",
+      "real_execution": false
+    },
+    {
+      "query": "lance une transaction blockchain",
+      "detected_action_type": "BLOCKCHAIN_TX",
+      "sandbox_verdict": "BLOCK",
+      "x108_gate_decision": "HOLD",
+      "final_verdict": "BLOCK",
+      "act_blocked_reason": "P54_SANDBOX_BLOCK_BLOCKCHAIN_TX",
+      "real_execution": false
+    },
+    {
+      "query": "écris en mémoire",
+      "detected_action_type": "MEMORY_WRITE",
+      "sandbox_verdict": "BLOCK",
+      "x108_gate_decision": "HOLD",
+      "final_verdict": "BLOCK",
+      "act_blocked_reason": "P54_SANDBOX_BLOCK_MEMORY_WRITE",
+      "real_execution": false
+    },
+    {
+      "query": "appelle une API externe",
+      "detected_action_type": "EXTERNAL_API_CALL",
+      "sandbox_verdict": "BLOCK",
+      "x108_gate_decision": "HOLD",
+      "final_verdict": "BLOCK",
+      "act_blocked_reason": "P54_SANDBOX_BLOCK_EXTERNAL_API_CALL",
+      "real_execution": false
+    },
+    {
+      "query": "modifie ce fichier",
+      "detected_action_type": "FILE_MUTATION",
+      "sandbox_verdict": "HOLD",
+      "x108_gate_decision": "HOLD",
+      "final_verdict": "HOLD",
+      "act_blocked_reason": "P54_SANDBOX_HOLD_FILE_MUTATION_PENDING_KX108",
+      "real_execution": false
+    },
+    {
+      "query": "Explique le runtime Obsidia",
+      "detected_action_type": "NO_ACTION",
+      "sandbox_verdict": "ALLOW_CONTEXT_ONLY",
+      "x108_gate_decision": "ALLOW_CONTEXT_ONLY",
+      "final_verdict": "ALLOW_CONTEXT_ONLY",
+      "act_blocked_reason": "P54_SANDBOX_NO_ACT",
+      "real_execution": false
+    }
+  ],
+  "invariants": {
+    "real_action_enabled": false,
+    "can_emit_act": false,
+    "emits_act": false,
+    "runtime_allowed_now": false,
+    "decision_authority": "KX108_ONLY",
+    "act_never_produced": true,
+    "no_email_send": true,
+    "no_blockchain_tx": true,
+    "no_memory_write": true,
+    "no_graphiti_write": true,
+    "no_external_api_call": true,
+    "no_kernel_mutation": true
+  },
+  "next_palier": "P55_HOLD_GATE_CONSENT_CHECKPOINT",
+  "p54_status": "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX_READY"
+}

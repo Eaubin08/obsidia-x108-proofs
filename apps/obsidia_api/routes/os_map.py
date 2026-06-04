@@ -133,6 +133,15 @@ except ImportError:
     _P53_OS_MAP_AVAILABLE = False
     build_world_action_bus_dry_run_state = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.action_gateway_hold_block_sandbox import (
+        build_action_gateway_sandbox_state,
+    )
+    _P54_OS_MAP_AVAILABLE = True
+except ImportError:
+    _P54_OS_MAP_AVAILABLE = False
+    build_action_gateway_sandbox_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -447,6 +456,25 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P54 — Action Gateway Hold/Block sandbox ───────────────────────────────
+    action_gateway_sandbox_status = "MISSING_REAL_COMPONENT"
+    action_gateway_sandbox_verdict = "ALLOW_CONTEXT_ONLY"
+    action_gateway_can_emit_act = False
+    action_gateway_x108_gate_decision = "BLOCK"
+    action_gateway_x108_ticket_id = ""
+
+    try:
+        if _P54_OS_MAP_AVAILABLE and build_action_gateway_sandbox_state:
+            p54_state = build_action_gateway_sandbox_state(query=query)
+            action_gateway_sandbox_status = p54_state.get(
+                "action_gateway_sandbox_status", "MISSING_REAL_COMPONENT"
+            )
+            action_gateway_sandbox_verdict = p54_state.get("sandbox_verdict", "ALLOW_CONTEXT_ONLY")
+            action_gateway_x108_gate_decision = p54_state.get("x108_gate_decision", "BLOCK")
+            action_gateway_x108_ticket_id = p54_state.get("x108_ticket_id", "")
+    except Exception:
+        pass
+
     # ── P51 — Brody readonly activation ──────────────────────────────────────
     brody_readonly_activation_status = "ACTIVE_READONLY"
     brody_readonly_enabled = True
@@ -684,7 +712,15 @@ async def os_map_query(req: _OSMapQueryRequest):
             "world_action_bus_action_request_blocked": world_action_bus_action_request_blocked,
             "world_action_bus_detected_action_type": world_action_bus_detected_action_type,
             "world_action_bus_dry_run_packet": world_action_bus_dry_run_packet,
+            # P54 — Action Gateway Hold/Block sandbox
+            "action_gateway_sandbox_status": action_gateway_sandbox_status,
+            "action_gateway_sandbox_verdict": action_gateway_sandbox_verdict,
+            "action_gateway_can_emit_act": action_gateway_can_emit_act,
+            "action_gateway_real_action_enabled": False,
+            "action_gateway_runtime_allowed_now": False,
+            "action_gateway_x108_gate_decision": action_gateway_x108_gate_decision,
+            "action_gateway_x108_ticket_id": action_gateway_x108_ticket_id,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P53",
+        source="OS_MAP_QUERY_P54",
     )

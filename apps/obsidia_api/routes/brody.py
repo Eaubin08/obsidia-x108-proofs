@@ -78,6 +78,15 @@ except ImportError:
     _P53_AVAILABLE = False
     build_world_action_bus_dry_run_state = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.action_gateway_hold_block_sandbox import (
+        build_action_gateway_sandbox_state,
+    )
+    _P54_AVAILABLE = True
+except ImportError:
+    _P54_AVAILABLE = False
+    build_action_gateway_sandbox_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -194,6 +203,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         _world_action_bus_state = safe_call_snapshot(
             "world_action_bus_dry_run_activation",
             build_world_action_bus_dry_run_state,
+            query=req.message,
+        )
+
+    # P54 — Action Gateway Hold/Block sandbox
+    _action_gateway_sandbox_state: dict = {}
+    if _P54_AVAILABLE and build_action_gateway_sandbox_state is not None:
+        _action_gateway_sandbox_state = safe_call_snapshot(
+            "action_gateway_hold_block_sandbox",
+            build_action_gateway_sandbox_state,
             query=req.message,
         )
 
@@ -662,6 +680,25 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             "detected_action_type", "NO_ACTION"
         ),
         "world_action_bus_dry_run_packet": _world_action_bus_state.get("dry_run_packet", {}),
+        # P54 — Action Gateway Hold/Block sandbox
+        "action_gateway_sandbox_status": _action_gateway_sandbox_state.get(
+            "action_gateway_sandbox_status", "MISSING_REAL_COMPONENT"
+        ),
+        "action_gateway_sandbox_verdict": _action_gateway_sandbox_state.get(
+            "sandbox_verdict", "ALLOW_CONTEXT_ONLY"
+        ),
+        "action_gateway_act_blocked_reason": _action_gateway_sandbox_state.get(
+            "act_blocked_reason", "P54_SANDBOX_NO_ACT"
+        ),
+        "action_gateway_can_emit_act": False,
+        "action_gateway_real_action_enabled": False,
+        "action_gateway_runtime_allowed_now": False,
+        "action_gateway_x108_gate_decision": _action_gateway_sandbox_state.get(
+            "x108_gate_decision", "BLOCK"
+        ),
+        "action_gateway_x108_ticket_id": _action_gateway_sandbox_state.get(
+            "x108_ticket_id", ""
+        ),
     }
     # Semantic advisory UTF-8 regression guard:
     # X108 + mémoire actuelle must remain no-memory advisory.
