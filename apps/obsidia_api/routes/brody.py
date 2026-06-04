@@ -60,6 +60,15 @@ except ImportError:
     _P51_AVAILABLE = False
     build_brody_readonly_activation_state = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.graphiti_memory_readonly_activation import (
+        build_graphiti_memory_readonly_activation_state,
+    )
+    _P52_AVAILABLE = True
+except ImportError:
+    _P52_AVAILABLE = False
+    build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -158,6 +167,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         _brody_readonly_state = safe_call_snapshot(
             "brody_readonly_activation",
             build_brody_readonly_activation_state,
+            query=req.message,
+        )
+
+    # P52 — Graphiti / Memory readonly activation
+    _graphiti_memory_state: dict = {}
+    if _P52_AVAILABLE and build_graphiti_memory_readonly_activation_state is not None:
+        _graphiti_memory_state = safe_call_snapshot(
+            "graphiti_memory_readonly_activation",
+            build_graphiti_memory_readonly_activation_state,
             query=req.message,
         )
 
@@ -586,6 +604,22 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "brody_no_act": True,
         "brody_no_write": True,
         "brody_kx108_only": True,
+        # P52 — Graphiti / Memory readonly activation
+        "graphiti_memory_readonly_activation_status": _graphiti_memory_state.get(
+            "graphiti_memory_readonly_activation_status", "MISSING_REAL_COMPONENT"
+        ),
+        "real_graphiti_component_found": _graphiti_memory_state.get("real_component_found", False),
+        "real_memory_component_found": _graphiti_memory_state.get("memory_real_module", False),
+        "graphiti_read_enabled": _graphiti_memory_state.get("graphiti_read_enabled", False),
+        "memory_read_enabled": _graphiti_memory_state.get("memory_read_enabled", False),
+        "graphiti_write_enabled": False,
+        "memory_write_enabled": False,
+        "graphiti_memory_context_refs": _graphiti_memory_state.get("graphiti_memory_context_refs", []),
+        "graphiti_memory_context_status": _graphiti_memory_state.get(
+            "graphiti_memory_context_status", "MISSING_REAL_COMPONENT"
+        ),
+        "graphiti_nodes": _graphiti_memory_state.get("graphiti_nodes", 0),
+        "graphiti_rels": _graphiti_memory_state.get("graphiti_rels", 0),
     }
     # Semantic advisory UTF-8 regression guard:
     # X108 + mémoire actuelle must remain no-memory advisory.

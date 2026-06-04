@@ -115,6 +115,15 @@ except ImportError:
     build_brody_readonly_activation_state = None  # type: ignore[assignment]
     get_brody_readonly_boundary = None            # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.graphiti_memory_readonly_activation import (
+        build_graphiti_memory_readonly_activation_state,
+    )
+    _P52_OS_MAP_AVAILABLE = True
+except ImportError:
+    _P52_OS_MAP_AVAILABLE = False
+    build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -377,6 +386,28 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P52 — Graphiti / Memory readonly activation ───────────────────────────
+    graphiti_memory_readonly_activation_status = "MISSING_REAL_COMPONENT"
+    real_graphiti_component_found = False
+    real_memory_component_found = False
+    graphiti_read_enabled = False
+    memory_read_enabled = False
+    graphiti_write_enabled = False
+    memory_write_enabled = False
+
+    try:
+        if _P52_OS_MAP_AVAILABLE and build_graphiti_memory_readonly_activation_state:
+            p52_state = build_graphiti_memory_readonly_activation_state(query=query)
+            graphiti_memory_readonly_activation_status = p52_state.get(
+                "graphiti_memory_readonly_activation_status", "MISSING_REAL_COMPONENT"
+            )
+            real_graphiti_component_found = p52_state.get("real_component_found", False)
+            real_memory_component_found = p52_state.get("memory_real_module", False)
+            graphiti_read_enabled = p52_state.get("graphiti_read_enabled", False)
+            memory_read_enabled = p52_state.get("memory_read_enabled", False)
+    except Exception:
+        pass
+
     # ── P51 — Brody readonly activation ──────────────────────────────────────
     brody_readonly_activation_status = "ACTIVE_READONLY"
     brody_readonly_enabled = True
@@ -595,7 +626,15 @@ async def os_map_query(req: _OSMapQueryRequest):
             "brody_activation_level": brody_activation_level,
             "brody_next_allowed_mode": brody_next_allowed_mode,
             "brody_next_blocked_modes": brody_next_blocked_modes,
+            # P52 — Graphiti / Memory readonly activation
+            "graphiti_memory_readonly_activation_status": graphiti_memory_readonly_activation_status,
+            "real_graphiti_component_found": real_graphiti_component_found,
+            "real_memory_component_found": real_memory_component_found,
+            "graphiti_read_enabled": graphiti_read_enabled,
+            "memory_read_enabled": memory_read_enabled,
+            "graphiti_write_enabled": graphiti_write_enabled,
+            "memory_write_enabled": memory_write_enabled,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P51",
+        source="OS_MAP_QUERY_P52",
     )
