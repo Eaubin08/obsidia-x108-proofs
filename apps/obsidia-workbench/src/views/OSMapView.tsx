@@ -16,7 +16,6 @@ const ENGINE_BASE = (
 ).replace(/\/$/, '')
 
 const OS_MAP_QUERY_URL = `${ENGINE_BASE}/api/runtime-wiring/os-map/query`
-const OS_MAP_STATUS_URL = `${ENGINE_BASE}/api/runtime-wiring/os-map/status`
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
