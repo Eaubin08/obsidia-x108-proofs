@@ -95,6 +95,15 @@ except ImportError:
     _P49_AVAILABLE = False
     build_global_runtime_surface_gate = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.controlled_activation_matrix import (
+        build_controlled_activation_matrix,
+    )
+    _P50_AVAILABLE = True
+except ImportError:
+    _P50_AVAILABLE = False
+    build_controlled_activation_matrix = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -357,6 +366,49 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P50 — Controlled activation matrix ───────────────────────────────────
+    activation_matrix_status = "READY"
+    activation_allowed_now = False
+    readonly_activation_candidates: list = []
+    dry_run_activation_candidates: list = []
+    hold_gate_candidates: list = []
+    future_action_gate_items: list = []
+    locked_items: list = []
+    next_activation_palier = "P51_BRODY_READONLY_CONTROLLED_ACTIVATION"
+
+    try:
+        if _P50_AVAILABLE and build_controlled_activation_matrix:
+            p50_matrix = build_controlled_activation_matrix()
+            activation_matrix_status = p50_matrix.get("activation_matrix_status", "READY")
+            activation_allowed_now = p50_matrix.get("activation_allowed_now", False)
+            next_activation_palier = p50_matrix.get(
+                "next_activation_palier",
+                "P51_BRODY_READONLY_CONTROLLED_ACTIVATION",
+            )
+            levels = p50_matrix.get("levels", {})
+            readonly_activation_candidates = [
+                item["id"]
+                for item in levels.get("LEVEL_1_READONLY_ACTIVE_CANDIDATE", [])
+            ]
+            dry_run_activation_candidates = [
+                item["id"]
+                for item in levels.get("LEVEL_2_DRY_RUN_ACTIVE_CANDIDATE", [])
+            ]
+            hold_gate_candidates = [
+                item["id"]
+                for item in levels.get("LEVEL_3_HOLD_GATE_CANDIDATE", [])
+            ]
+            future_action_gate_items = [
+                item["id"]
+                for item in levels.get("LEVEL_4_FUTURE_ACTION_GATE", [])
+            ]
+            locked_items = [
+                item["id"]
+                for item in levels.get("LEVEL_0_LOCKED", [])
+            ]
+    except Exception:
+        pass
+
     # ── P49 — Global runtime surface gate ────────────────────────────────────
     global_runtime_surface_status = "FULL_COVERAGE"
     overall_coverage_percent = 100.0
@@ -495,7 +547,16 @@ async def os_map_query(req: _OSMapQueryRequest):
             "activation_allowed": False,
             "global_surface_gate_passed": global_surface_gate_passed,
             "coverage_categories_summary": coverage_categories_summary,
+            # P50 — Controlled activation matrix
+            "activation_matrix_status": activation_matrix_status,
+            "activation_allowed_now": activation_allowed_now,
+            "readonly_activation_candidates": readonly_activation_candidates,
+            "dry_run_activation_candidates": dry_run_activation_candidates,
+            "hold_gate_candidates": hold_gate_candidates,
+            "future_action_gate_items": future_action_gate_items,
+            "locked_items": locked_items,
+            "next_activation_palier": next_activation_palier,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P49",
+        source="OS_MAP_QUERY_P50",
     )
