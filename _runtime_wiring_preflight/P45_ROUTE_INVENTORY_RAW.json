@@ -1,0 +1,1329 @@
+{
+  "routes": [
+    {
+      "path": "/api/",
+      "method": "GET",
+      "function": "root",
+      "module_path": "apps/obsidia_api/main.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/adapters/bank",
+      "method": "POST",
+      "function": "monitor_bank",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/adapters/gps",
+      "method": "POST",
+      "function": "monitor_gps",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/adapters/trading",
+      "method": "POST",
+      "function": "monitor_trading",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/audit/events",
+      "method": "GET",
+      "function": "audit_events",
+      "module_path": "apps/obsidia_api/routes/audit.py",
+      "coverage_status": "INTERNAL_ONLY",
+      "capability": "NONE",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/agents/status",
+      "method": "GET",
+      "function": "blockchain_agents_status",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/classifiers/fraud-check",
+      "method": "POST",
+      "function": "blockchain_classifiers_fraud_check",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/gencoin/compute",
+      "method": "POST",
+      "function": "blockchain_gencoin_compute",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/policy/evaluate",
+      "method": "POST",
+      "function": "blockchain_policy_evaluate",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/sandbox/simulate",
+      "method": "POST",
+      "function": "blockchain_sandbox_simulate",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/sandbox/truth-gate",
+      "method": "POST",
+      "function": "blockchain_sandbox_truth_gate",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/signature/check",
+      "method": "POST",
+      "function": "blockchain_signature_check",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/status",
+      "method": "GET",
+      "function": "blockchain_status",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/wallet/gate",
+      "method": "POST",
+      "function": "blockchain_wallet_gate",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/world/bus-dispatch",
+      "method": "POST",
+      "function": "blockchain_world_bus_dispatch",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/world/dry-run",
+      "method": "POST",
+      "function": "blockchain_world_dry_run",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/world/gateway",
+      "method": "POST",
+      "function": "blockchain_world_gateway",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/blockchain/world/ticket-status",
+      "method": "POST",
+      "function": "blockchain_world_ticket_status",
+      "module_path": "apps/obsidia_api/routes/blockchain.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/brody-cli-registry",
+      "method": "GET",
+      "function": "brody_cli_registry",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/brody-historical-convergence",
+      "method": "POST",
+      "function": "monitor_brody_historical_convergence",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/brody-trace-analyze",
+      "method": "POST",
+      "function": "monitor_brody_trace_analyze",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/brody/chat",
+      "method": "POST",
+      "function": "brody_chat",
+      "module_path": "apps/obsidia_api/routes/brody.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "BRODY_CHAT_ENTRYPOINT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/bus/bus/bridge",
+      "method": "GET",
+      "function": "bus_bridge",
+      "module_path": "apps/obsidia_api/routes/bus.py",
+      "coverage_status": "INTERNAL_ONLY",
+      "capability": "NONE",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/bus/bus/signal",
+      "method": "POST",
+      "function": "bus_signal",
+      "module_path": "apps/obsidia_api/routes/bus.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/bus/bus/stats",
+      "method": "GET",
+      "function": "bus_stats",
+      "module_path": "apps/obsidia_api/routes/bus.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/context/from-message",
+      "method": "POST",
+      "function": "context_from_message",
+      "module_path": "apps/obsidia_api/routes/context.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "function": "health",
+      "module_path": "apps/obsidia_api/routes/status.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/hexaflux/ltcu-plus",
+      "method": "POST",
+      "function": "monitor_ltcu",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/hexaflux/transition-map",
+      "method": "POST",
+      "function": "monitor_transition",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/candidate-ledger",
+      "method": "GET",
+      "function": "memory_candidate_ledger",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/candidate/from-message",
+      "method": "POST",
+      "function": "memory_candidate_from_message",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/candidates",
+      "method": "GET",
+      "function": "memory_candidates",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/promotion-policy",
+      "method": "GET",
+      "function": "memory_promotion_policy",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/sources",
+      "method": "GET",
+      "function": "memory_sources",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/memory/status",
+      "method": "GET",
+      "function": "memory_status",
+      "module_path": "apps/obsidia_api/routes/memory.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/operator/governed-runtime",
+      "method": "POST",
+      "function": "monitor_governed_runtime",
+      "module_path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/os3/replay/{ticket_id}",
+      "method": "GET",
+      "function": "os3_replay",
+      "module_path": "apps/obsidia_api/routes/os3.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/os3/tickets",
+      "method": "GET",
+      "function": "os3_tickets",
+      "module_path": "apps/obsidia_api/routes/os3.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody-runtime/f33/integration-packet",
+      "method": "POST",
+      "function": "f33_brody_runtime_entrypoint",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "BRODY_CHAT_ENTRYPOINT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody-runtime/f36/user-scenario",
+      "method": "POST",
+      "function": "f36_user_scenario_controlled_response",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody-runtime/f38/multi-domain-scenarios",
+      "method": "POST",
+      "function": "f38_multi_domain_scenarios",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "ATLAS_CONTEXT_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody/context-query",
+      "method": "POST",
+      "function": "periphery_brody_context_query",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "BRODY_CHAT_ENTRYPOINT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody/diffusion-mix",
+      "method": "POST",
+      "function": "periphery_diffusion_mix",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "BRODY_CHAT_ENTRYPOINT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody/double-brain-route",
+      "method": "POST",
+      "function": "periphery_double_brain_route",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "BRODY_CHAT_ENTRYPOINT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/brody/language-route",
+      "method": "POST",
+      "function": "periphery_brody_language_route",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS_TRAD_TRANSLATION",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/cognitive/memory-world-map",
+      "method": "POST",
+      "function": "periphery_memory_world_map",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/cognitive/tree-signal",
+      "method": "POST",
+      "function": "periphery_tree_signal",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/cognitive/trees",
+      "method": "GET",
+      "function": "periphery_trees_all",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/cognitive/trees/domain/{domain}",
+      "method": "GET",
+      "function": "periphery_trees_by_domain",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/cognitive/trees/{tree_id}",
+      "method": "GET",
+      "function": "periphery_tree_by_id",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/context/build",
+      "method": "POST",
+      "function": "periphery_context_build",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/context/export",
+      "method": "POST",
+      "function": "periphery_context_export",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/context/ingress",
+      "method": "POST",
+      "function": "periphery_context_ingress",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/context/sanitize",
+      "method": "POST",
+      "function": "periphery_context_sanitize",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/context/validate",
+      "method": "POST",
+      "function": "periphery_context_validate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/demo/runtime-readiness",
+      "method": "GET",
+      "function": "f35_investor_demo_runtime_readiness",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/education/audience",
+      "method": "POST",
+      "function": "periphery_audience_projection",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "ANSWER_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/education/format",
+      "method": "POST",
+      "function": "periphery_format_projection",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "ANSWER_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/education/score",
+      "method": "POST",
+      "function": "periphery_education_score",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/feedback/bridge-candidate",
+      "method": "POST",
+      "function": "periphery_bridge_candidate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/feedback/candidate",
+      "method": "POST",
+      "function": "periphery_feedback_candidate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/avdr-phase",
+      "method": "POST",
+      "function": "periphery_avdr_phase",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/balance",
+      "method": "POST",
+      "function": "periphery_balance",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/collective-summary",
+      "method": "POST",
+      "function": "periphery_collective_summary",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/consciousness-regime",
+      "method": "POST",
+      "function": "periphery_consciousness_regime",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/passfail",
+      "method": "POST",
+      "function": "periphery_passfail",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/gencoin/regime-state",
+      "method": "POST",
+      "function": "periphery_regime_state",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/agent-run",
+      "method": "POST",
+      "function": "periphery_agent_run",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/agent-spec-check",
+      "method": "POST",
+      "function": "periphery_agent_spec_check",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/agents",
+      "method": "GET",
+      "function": "periphery_list_agents",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/benchmarks",
+      "method": "GET",
+      "function": "periphery_benchmarks",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/failure-classify",
+      "method": "POST",
+      "function": "periphery_failure_classify",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/failure-codes",
+      "method": "GET",
+      "function": "periphery_failure_codes",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/lifecycle",
+      "method": "POST",
+      "function": "periphery_lifecycle",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/partition-gate",
+      "method": "POST",
+      "function": "periphery_partition_gate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/sequence-govern",
+      "method": "POST",
+      "function": "periphery_sequence_govern",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/governance/workflow-guard",
+      "method": "POST",
+      "function": "periphery_workflow_guard",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/graphiti/context-adapt",
+      "method": "POST",
+      "function": "periphery_graphiti_context_adapt",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "GRAPHITI_READONLY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/graphiti/freeze-snapshot/{snapshot_id}",
+      "method": "GET",
+      "function": "periphery_freeze_snapshot",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "GRAPHITI_READONLY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/ingestion/classify-source",
+      "method": "POST",
+      "function": "periphery_classify_source",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/ingestion/document",
+      "method": "POST",
+      "function": "periphery_ingest_document",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "NARRATIVE_PROVENANCE_LAYER",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/ingestion/hash",
+      "method": "POST",
+      "function": "periphery_hash",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/ingestion/memory-sources",
+      "method": "GET",
+      "function": "periphery_memory_sources",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/bias-gate",
+      "method": "POST",
+      "function": "periphery_bias_gate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/bias-trace",
+      "method": "POST",
+      "function": "periphery_bias_trace",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/log-event",
+      "method": "POST",
+      "function": "periphery_interface_log_event",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "INTERNAL_ONLY",
+      "capability": "NONE",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/mcp-access",
+      "method": "POST",
+      "function": "periphery_mcp_access",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/state-packet",
+      "method": "POST",
+      "function": "periphery_interface_state",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/view-contracts",
+      "method": "GET",
+      "function": "periphery_view_contracts",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/interface/workbench-check",
+      "method": "GET",
+      "function": "periphery_workbench_check",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/operator/governed-runtime",
+      "method": "POST",
+      "function": "periphery_governed_operator_runtime",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/operator/runtime-panel",
+      "method": "GET",
+      "function": "f35_operator_runtime_panel_data",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/operator/runtime-panel.html",
+      "method": "GET",
+      "function": "f35_operator_runtime_panel_html",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/os3/manifest",
+      "method": "POST",
+      "function": "periphery_os3_manifest",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/os3/replay-compare",
+      "method": "POST",
+      "function": "periphery_replay_compare",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/os3/replay-run",
+      "method": "POST",
+      "function": "periphery_replay_run",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/os3/ticket",
+      "method": "POST",
+      "function": "periphery_os3_ticket",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/os3/world-action-readiness",
+      "method": "POST",
+      "function": "periphery_world_action_readiness",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/constants",
+      "method": "GET",
+      "function": "periphery_constants",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/data-gate",
+      "method": "POST",
+      "function": "periphery_data_gate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/eml-compression",
+      "method": "POST",
+      "function": "periphery_eml_compression",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/energy-thermo",
+      "method": "POST",
+      "function": "periphery_energy_thermo",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/memory-governor",
+      "method": "POST",
+      "function": "periphery_memory_governor",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/merge",
+      "method": "POST",
+      "function": "periphery_merge",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/ocs-generation",
+      "method": "POST",
+      "function": "periphery_ocs_generation",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/operational-constance",
+      "method": "POST",
+      "function": "periphery_operational_constance",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/permission-economic",
+      "method": "POST",
+      "function": "periphery_permission_economic",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/provenance-gate",
+      "method": "POST",
+      "function": "periphery_provenance_gate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROVENANCE_TRACE",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/run",
+      "method": "POST",
+      "function": "periphery_pipeline_run",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/pipeline/validate-candidate",
+      "method": "POST",
+      "function": "periphery_validate_candidate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/sigma/evaluate",
+      "method": "POST",
+      "function": "sigma_evaluate",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/workbench/runtime-connector",
+      "method": "GET",
+      "function": "f35_workbench_runtime_connector",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/periphery/workflow-governance/packet",
+      "method": "POST",
+      "function": "workflow_governance_packet",
+      "module_path": "apps/obsidia_api/routes/periphery_ops.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/query",
+      "method": "POST",
+      "function": "os_map_query",
+      "module_path": "apps/obsidia_api/routes/os_map.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "ATLAS_CONTEXT_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/readiness",
+      "method": "GET",
+      "function": "readiness",
+      "module_path": "apps/obsidia_api/routes/status.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/os-trad/api/ir/candidate",
+      "method": "POST",
+      "function": "ir_candidate",
+      "module_path": "apps/obsidia_api/routes/os_trad_ir_reverse.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS_TRAD_ROUTE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/os-trad/api/os-reverse/project",
+      "method": "POST",
+      "function": "os_reverse_project",
+      "module_path": "apps/obsidia_api/routes/os_trad_ir_reverse.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS_TRAD_ROUTE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/os-trad/api/os-trad/translate",
+      "method": "POST",
+      "function": "os_trad_translate",
+      "module_path": "apps/obsidia_api/routes/os_trad_ir_reverse.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS_TRAD_ROUTE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/preview",
+      "method": "GET",
+      "function": "runtime_wiring_preview",
+      "module_path": "apps/obsidia_api/routes/runtime_wiring_preview.py",
+      "coverage_status": "WORKBENCH_ONLY",
+      "capability": "WORKBENCH_PREVIEW",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/source-runtime/preview",
+      "method": "POST",
+      "function": "source_runtime_preview",
+      "module_path": "apps/obsidia_api/routes/source_runtime_status.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/runtime-wiring/source-runtime/status",
+      "method": "GET",
+      "function": "source_runtime_status",
+      "module_path": "apps/obsidia_api/routes/source_runtime_status.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/bank",
+      "method": "GET",
+      "function": "sigma_bank",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "RSSI_SECURITY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/domains",
+      "method": "GET",
+      "function": "sigma_domains",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "RSSI_SECURITY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/ecom",
+      "method": "GET",
+      "function": "sigma_ecom",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "RSSI_SECURITY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/evaluate",
+      "method": "GET",
+      "function": "sigma_evaluate",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/gps-defense-aviation",
+      "method": "GET",
+      "function": "sigma_gps_defense_aviation",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "RSSI_SECURITY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/sigma/trading",
+      "method": "GET",
+      "function": "sigma_trading",
+      "module_path": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "RSSI_SECURITY_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/status",
+      "method": "GET",
+      "function": "os_map_status",
+      "module_path": "apps/obsidia_api/routes/os_map.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/status",
+      "method": "GET",
+      "function": "api_status",
+      "module_path": "apps/obsidia_api/routes/status.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/translation/trace",
+      "method": "POST",
+      "function": "translation_trace",
+      "module_path": "apps/obsidia_api/routes/translation.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "OS_TRAD_TRANSLATION",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/worldcalls/gateway-status",
+      "method": "GET",
+      "function": "gateway_status",
+      "module_path": "apps/obsidia_api/routes/worldcalls.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/worldcalls/sovereign-tickets",
+      "method": "GET",
+      "function": "sovereign_tickets",
+      "module_path": "apps/obsidia_api/routes/worldcalls.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/cognitive/dominant-trees",
+      "method": "POST",
+      "function": "x108_cognitive_dominant_trees",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/cognitive/regime-classify",
+      "method": "POST",
+      "function": "x108_cognitive_regime_classify",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/cognitive/shazam",
+      "method": "POST",
+      "function": "x108_cognitive_shazam",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "AGENT_TREE_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/math/lyapunov",
+      "method": "POST",
+      "function": "x108_math_lyapunov",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/math/pog",
+      "method": "POST",
+      "function": "x108_math_pog",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/math/trust-path",
+      "method": "POST",
+      "function": "x108_math_trust_path",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "LAW_PROTOCOL_LOOKUP",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/memory/candidates/append",
+      "method": "POST",
+      "function": "x108_memory_candidates_append",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_BLOCKED_ACTION",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/memory/candidates/read",
+      "method": "GET",
+      "function": "x108_memory_candidates_read",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/memory/logs/sealed",
+      "method": "GET",
+      "function": "x108_memory_logs_sealed",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/memory/replay/coherence",
+      "method": "POST",
+      "function": "x108_memory_replay_coherence",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "PROOF_AUDIT_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/memory/replay/session",
+      "method": "POST",
+      "function": "x108_memory_replay_session",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "MEMORY_REINTEGRATION_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/oracle/freshness",
+      "method": "POST",
+      "function": "x108_oracle_freshness",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/readonly-ingress",
+      "method": "POST",
+      "function": "x108_readonly_ingress",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "SOURCE_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/status",
+      "method": "GET",
+      "function": "x108_status",
+      "module_path": "apps/obsidia_api/routes/status.py",
+      "coverage_status": "STATUS_ONLY",
+      "capability": "OS4_ENGINE_STATUS",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    {
+      "path": "/api/x108/timeverse/sync",
+      "method": "POST",
+      "function": "x108_timeverse_sync",
+      "module_path": "apps/obsidia_api/routes/x108.py",
+      "coverage_status": "CONNECTED_READONLY",
+      "capability": "EXTERNAL_SIGNALS_CONTEXT",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    }
+  ],
+  "total": 147,
+  "audit_date": "2026-06-04"
+}

@@ -29,6 +29,11 @@ try:
     from runtime_wiring.source_runtime.source_hydration_planner import (
         build_hydration_plan_from_path,
     )
+    from runtime_wiring.source_runtime.route_capability_map import (
+        build_route_capability_map,
+        get_route_classification,
+        get_coverage_summary,
+    )
     _OS_MAP_AVAILABLE = True
 except ImportError:
     _OS_MAP_AVAILABLE = False
@@ -38,6 +43,9 @@ except ImportError:
     build_runtime_inventory_graph = None   # type: ignore[assignment]
     link_capabilities_to_inventory = None  # type: ignore[assignment]
     build_hydration_plan_from_path = None  # type: ignore[assignment]
+    build_route_capability_map = None      # type: ignore[assignment]
+    get_route_classification = None        # type: ignore[assignment]
+    get_coverage_summary = None            # type: ignore[assignment]
 
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
@@ -199,6 +207,36 @@ async def os_map_query(req: _OSMapQueryRequest):
     if action_blocked:
         x108_decision = "BLOCK_OR_HOLD_CONTEXT_ONLY"
 
+    # ── P45 — Route coverage enrichment ──────────────────────────────────────
+    route_coverage_status = "UNKNOWN"
+    route_coverage_percent = 0.0
+    unclassified_routes_count = 0
+    selected_routes_classified = []
+    blocked_action_routes: list = []
+
+    try:
+        coverage_summary = get_coverage_summary() if get_coverage_summary else {}
+        route_coverage_percent = coverage_summary.get("coverage_percent", 0.0)
+        unclassified_routes_count = coverage_summary.get("unclassified_count", 0)
+        route_coverage_status = (
+            "FULL_COVERAGE" if route_coverage_percent >= 100.0
+            else "PARTIAL_COVERAGE"
+        )
+        # Classify the selected routes from the capability path
+        for sel_route in selected_path.get("routes", []):
+            cls = get_route_classification(sel_route) if get_route_classification else {}
+            selected_routes_classified.append({
+                "path": sel_route,
+                "coverage_status": cls.get("coverage_status", "UNKNOWN"),
+                "capability": cls.get("capability", ""),
+                "x108_decision": cls.get("x108_decision", "ALLOW_CONTEXT_ONLY"),
+            })
+        # Count blocked action routes in coverage
+        counts = coverage_summary.get("coverage_counts", {})
+        blocked_action_routes = [f"count:{counts.get('CONNECTED_BLOCKED_ACTION', 0)}"]
+    except Exception:
+        pass
+
     return safe_backend_response(
         {
             "os_map_status": "ACTION_BLOCKED" if action_blocked else "OS_MAP_READY",
@@ -229,7 +267,13 @@ async def os_map_query(req: _OSMapQueryRequest):
             # X108
             "x108_decision": x108_decision,
             "action_blocked": action_blocked,
+            # P45 — Route coverage
+            "route_coverage_status": route_coverage_status,
+            "route_coverage_percent": route_coverage_percent,
+            "unclassified_routes_count": unclassified_routes_count,
+            "selected_routes_classified": selected_routes_classified,
+            "blocked_action_routes_count": blocked_action_routes,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P38",
+        source="OS_MAP_QUERY_P45",
     )
