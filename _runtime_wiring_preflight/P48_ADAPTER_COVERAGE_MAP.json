@@ -1,0 +1,125 @@
+{
+  "map_status": "READY",
+  "phase": "P48",
+  "scan_date": "2026-06-04",
+  "adapter_coverage_status": "FULL_COVERAGE",
+  "adapters_total": 10,
+  "adapters_classified": 10,
+  "adapters_unclassified_count": 0,
+  "adapter_coverage_percent": 100.0,
+  "runtime_allowed_now": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "coverage_counts": {
+    "CONNECTED_CONTEXT_PACKET": 7,
+    "CONNECTED_SOURCE_RUNTIME": 2,
+    "CONNECTED_CAPABILITY": 1,
+    "CONNECTED_OS_MAP": 0,
+    "CONNECTED_READONLY_PREVIEW": 0,
+    "BLOCKED_ACTION_ADAPTER": 0,
+    "INTERNAL_ONLY": 0,
+    "ARCHIVE_ONLY": 0,
+    "DO_NOT_BIND_EXPLICIT": 0,
+    "UNCLASSIFIED": 0
+  },
+  "adapter_map": {
+    "cognitive_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "COGNITIVE_REINTEGRATION_ADVISORY"],
+      "source_families": ["COGNITIVE_REINTEGRATION"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "rssi_rgpd_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "RSSI_RGPD_EVIDENCE"],
+      "source_families": ["RSSI_RGPD"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "atlas_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "ATLAS_READONLY_ADVISORY"],
+      "source_families": ["ATLAS_BRANCHABLE"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "compliance_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "RGPD_COMPLIANCE_ADVISORY"],
+      "source_families": ["COMPLIANCE_RGPD"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "rssi_security_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "RSSI_SECURITY_EVIDENCE"],
+      "source_families": ["RSSI_SECURITY"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "external_signals_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "EXTERNAL_SIGNALS_ADVISORY"],
+      "source_families": ["EXTERNAL_SIGNALS"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "npl_to_context_packet": {
+      "coverage_status": "CONNECTED_CONTEXT_PACKET",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "NPL_ADVISORY"],
+      "source_families": ["NARRATIVE_PROVENANCE_LAYER"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "os_trad_reverse_to_context_packet": {
+      "coverage_status": "CONNECTED_SOURCE_RUNTIME",
+      "capabilities": ["SOURCE_CONTEXT_HYDRATOR", "OS_TRAD_REVERSE_OS", "IR_LAYER_CLASSIFICATION"],
+      "source_families": ["OS_TRAD_REVERSE_OS"],
+      "uses_index": "runtime_wiring/source_runtime/os_trad_reverse_index.py",
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "reverse_os_interlanguage_to_context_packet": {
+      "coverage_status": "CONNECTED_SOURCE_RUNTIME",
+      "capabilities": [
+        "SOURCE_CONTEXT_HYDRATOR",
+        "REVERSE_OS_INTERLANGUAGE",
+        "IR_ALPHABET_MAPPING",
+        "RECIPROQUE_MIROIR"
+      ],
+      "source_families": ["REVERSE_OS_INTERLANGUAGE"],
+      "uses_index": "runtime_wiring/source_runtime/reverse_os_interlanguage_index.py",
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY"
+    },
+    "route_entry_to_context_packet": {
+      "coverage_status": "CONNECTED_CAPABILITY",
+      "capabilities": ["SOURCE_REGISTRY_DISPATCH", "DRY_RUN_PACKET_ROUTER"],
+      "source_families": ["SOURCE_REGISTRY_DISPATCH"],
+      "routes": ["/api/runtime-wiring/source-runtime/preview"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "note": "Dispatcher vers les 9 adapters source via _ADAPTER_DISPATCH — never reads zip"
+    }
+  }
+}
