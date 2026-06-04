@@ -1,9 +1,12 @@
 # runtime_wiring/source_runtime/source_runtime_cache.py
 # TTL-based in-memory cache for registry entries and pack availability.
+# P42B: list_available_families_cached() is now CI-safe (registry-first discovery).
 # Never caches file content — only metadata and entry lists.
 # KX108_ONLY. No ACT. No write. No extraction.
 
 from __future__ import annotations
+import json
+import pathlib
 import time
 from typing import Dict, List, Optional, Tuple
 
@@ -22,6 +25,13 @@ _pack_avail_cache: Dict[str, Tuple[bool, float]] = {}
 # Hit/miss counters
 _stats_hits: int = 0
 _stats_misses: int = 0
+
+# Fast path for family discovery — reads from committed summary JSON
+_REGISTRY_SUMMARY_PATH = (
+    pathlib.Path(__file__).resolve().parent.parent
+    / "source_registry"
+    / "source_registry_summary.json"
+)
 
 
 def load_registry_cached() -> List[SourceFileRegistryEntry]:
@@ -51,24 +61,60 @@ def is_pack_available_cached(source_zip: str) -> bool:
     return result
 
 
-def list_available_families_cached() -> List[str]:
-    """Return families with locally available packs, using cached registry + availability."""
+def list_discoverable_families() -> List[str]:
+    """Return all families known to the registry (CI-safe, no local pack check).
+
+    Fast path: reads source_registry_summary.json (committed to git, always present).
+    Fallback: derives from full registry JSON.
+    Returns all 8 canonical families regardless of local pack availability.
+    """
+    try:
+        if _REGISTRY_SUMMARY_PATH.is_file():
+            data = json.loads(_REGISTRY_SUMMARY_PATH.read_text(encoding="utf-8"))
+            families = sorted(data.get("families", {}).keys())
+            if families:
+                return families
+    except Exception:
+        pass
+    # Fallback: derive from full registry
     try:
         entries = load_registry_cached()
+        return sorted({e.source_family for e in entries})
     except FileNotFoundError:
         return []
 
+
+def get_family_local_pack_availability() -> Dict[str, bool]:
+    """Return per-family local pack availability dict.
+
+    True  = local pack present, full hydration possible (FULL_LOCAL).
+    False = no local pack, metadata-only mode (METADATA_ONLY).
+    """
+    try:
+        entries = load_registry_cached()
+    except FileNotFoundError:
+        return {}
     zips_per_family: Dict[str, set] = {}
     for e in entries:
         zips_per_family.setdefault(e.source_family, set()).add(e.source_zip)
+    return {
+        family: any(is_pack_available_cached(z) for z in zips)
+        for family, zips in zips_per_family.items()
+    }
 
-    available = []
-    for family, zips in zips_per_family.items():
-        for z in zips:
-            if is_pack_available_cached(z):
-                available.append(family)
-                break
-    return sorted(set(available))
+
+def list_available_families_cached() -> List[str]:
+    """Return families available for selection (CI-safe, registry-first).
+
+    P42B: Returns ALL families from the canonical registry, regardless of whether
+    local source packs are present. Previously returned only families with locally
+    available packs — this caused CI failures because _source_packs/ is gitignored.
+
+    Semantic change: "available" now means AVAILABLE_FOR_SELECTION (known to the
+    system), not FULLY_HYDRATABLE. Use get_family_local_pack_availability() to
+    distinguish FULL_LOCAL from METADATA_ONLY hydration mode per family.
+    """
+    return list_discoverable_families()
 
 
 def clear_cache() -> None:

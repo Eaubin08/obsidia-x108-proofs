@@ -106,8 +106,12 @@ def build_brody_context_from_source_packs(
     stats_after = get_cache_stats()
     cache_hit = stats_after["cache_hits"] > stats_before["cache_hits"]
 
-    ok_results = [r for r in results if r.hydration_status == "OK" and r.context_packet is not None]
-    skipped = [r for r in results if r.hydration_status != "OK"]
+    # P42B: include METADATA_ONLY entries (CI-safe, no local pack) alongside fully-hydrated OK entries
+    ok_results = [
+        r for r in results
+        if r.hydration_status in ("OK", "METADATA_ONLY") and r.context_packet is not None
+    ]
+    skipped = [r for r in results if r.hydration_status not in ("OK", "METADATA_ONLY")]
 
     if not ok_results:
         return _fallback("NO_HYDRATED_ENTRIES", query)
