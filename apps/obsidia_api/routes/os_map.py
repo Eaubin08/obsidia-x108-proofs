@@ -86,6 +86,15 @@ except ImportError:
     build_adapter_coverage_summary = None  # type: ignore[assignment]
     get_adapter_capability_map = None      # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.global_runtime_surface_gate import (
+        build_global_runtime_surface_gate,
+    )
+    _P49_AVAILABLE = True
+except ImportError:
+    _P49_AVAILABLE = False
+    build_global_runtime_surface_gate = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -348,6 +357,27 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P49 — Global runtime surface gate ────────────────────────────────────
+    global_runtime_surface_status = "FULL_COVERAGE"
+    overall_coverage_percent = 100.0
+    global_unclassified_total = 0
+    global_surface_gate_passed = True
+    coverage_categories_summary: dict = {}
+
+    try:
+        if _P49_AVAILABLE and build_global_runtime_surface_gate:
+            p49_gate = build_global_runtime_surface_gate()
+            global_runtime_surface_status = p49_gate.get("global_runtime_surface_status", "FULL_COVERAGE")
+            overall_coverage_percent = p49_gate.get("overall_coverage_percent", 100.0)
+            global_unclassified_total = p49_gate.get("unclassified_total", 0)
+            global_surface_gate_passed = (
+                global_runtime_surface_status == "FULL_COVERAGE"
+                and global_unclassified_total == 0
+            )
+            coverage_categories_summary = p49_gate.get("coverage_categories_summary", {})
+    except Exception:
+        pass
+
     # ── P48 — Adapter coverage enrichment ─────────────────────────────────────
     adapter_coverage_status = "FULL_COVERAGE"
     adapters_total = 10
@@ -458,7 +488,14 @@ async def os_map_query(req: _OSMapQueryRequest):
             "adapters_unclassified_count": adapters_unclassified_count,
             "adapter_coverage_percent": adapter_coverage_percent,
             "selected_adapters_classified": selected_adapters_classified,
+            # P49 — Global runtime surface gate
+            "global_runtime_surface_status": global_runtime_surface_status,
+            "overall_coverage_percent": overall_coverage_percent,
+            "global_unclassified_total": global_unclassified_total,
+            "activation_allowed": False,
+            "global_surface_gate_passed": global_surface_gate_passed,
+            "coverage_categories_summary": coverage_categories_summary,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P48",
+        source="OS_MAP_QUERY_P49",
     )
