@@ -1,0 +1,147 @@
+{
+  "audit_id": "P52_REAL_GRAPHITI_MEMORY_DISCOVERY",
+  "audit_date": "2026-06-04",
+  "decision": "COMPONENTS_FOUND_PROCEED",
+  "candidates": [
+    {
+      "path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "exists": true,
+      "role_detected": "Graphiti V20 readonly HTTP client (ObsidiaShell gateway 8011)",
+      "callable_functions": [
+        "graphiti_v20_get",
+        "graphiti_v20_available",
+        "graphiti_v20_base_url"
+      ],
+      "readonly_evidence": "graphiti_write=False, neo4j_write=False, emits_act=False in _readonly_envelope",
+      "write_risk": "NONE \u2014 all writes explicitly False in envelope",
+      "activation_candidate": true,
+      "reason": "Real HTTP client to ObsidiaShell V20, server running at 127.0.0.1:8011",
+      "live_status": true,
+      "endpoints_available": [
+        "frozen/status",
+        "frozen/context",
+        "frozen/search",
+        "frozen/metrics",
+        "frozen/readiness"
+      ],
+      "nodes": 167,
+      "rels": 477
+    },
+    {
+      "path": "apps/obsidia_api/routes/graphiti.py",
+      "exists": true,
+      "role_detected": "Graphiti proxy API routes (/api/graphiti/*) \u2014 readonly only",
+      "callable_functions": [
+        "graphiti_status",
+        "graphiti_context",
+        "graphiti_search",
+        "graphiti_metrics",
+        "graphiti_readiness"
+      ],
+      "readonly_evidence": "Docstring: no Graphiti write, no kernel mutation, no Neo4j write",
+      "write_risk": "NONE",
+      "activation_candidate": true,
+      "reason": "Routes already wired to graphiti_v20_readonly_client"
+    },
+    {
+      "path": "apps/obsidia_api/routes/memory.py",
+      "exists": true,
+      "role_detected": "Memory API routes (/api/memory/*) \u2014 candidate_only, no auto-promotion",
+      "callable_functions": [
+        "memory_root",
+        "memory_status",
+        "memory_sources",
+        "memory_candidates"
+      ],
+      "readonly_evidence": "memory_write=False, auto_promotion=False, promotion_requires_human_review=True",
+      "write_risk": "NONE \u2014 no promotion path in API",
+      "activation_candidate": true,
+      "reason": "Memory routes operational, REAL_MODULE confirmed"
+    },
+    {
+      "path": "apps/obsidia_api/brody_project_memory_adapter.py",
+      "exists": true,
+      "role_detected": "Brody project memory snapshot adapter (readonly read)",
+      "callable_functions": [
+        "build_project_memory_snapshot"
+      ],
+      "readonly_evidence": "Returns read-only snapshot; no write path",
+      "write_risk": "NONE",
+      "activation_candidate": true,
+      "reason": "BRODY_PROJECT_MEMORY_SOURCE_MAP_PASS confirmed in test"
+    },
+    {
+      "path": "apps/obsidia_api/brody_session_memory_adapter.py",
+      "exists": true,
+      "role_detected": "Brody session memory adapter (readonly read)",
+      "callable_functions": [
+        "build_session_memory_snapshot"
+      ],
+      "readonly_evidence": "Returns session memory snapshot; no write path",
+      "write_risk": "NONE",
+      "activation_candidate": true,
+      "reason": "Used in brody.py pipeline already"
+    }
+  ],
+  "not_found": [],
+  "graphiti_live_status": {
+    "base_url": "http://127.0.0.1:8011",
+    "available": true,
+    "mode": "FROZEN_READONLY",
+    "nodes": 167,
+    "rels": 477,
+    "allowed_to_modify_kernel": false,
+    "allowed_to_decide": false
+  },
+  "memory_live_status": {
+    "status": "REAL_MODULE",
+    "build_memory_candidate_v2": true,
+    "evaluate_promotion_policy": true,
+    "MemorySourceType": true,
+    "project_memory_status": "BRODY_PROJECT_MEMORY_SOURCE_MAP_PASS"
+  },
+  "gate_decision": "PROCEED \u2014 real components confirmed, all write paths explicitly False",
+  "git_history_sources": [
+    {
+      "commit": "d1dcbbf",
+      "message": "feat: reconnect Brody runtime and Graphiti V20 readonly proxy",
+      "components": [
+        "apps/obsidia_api/graphiti_v20_readonly_client.py",
+        "apps/obsidia_api/routes/graphiti.py"
+      ],
+      "key_invariants": [
+        "graphiti_write=False",
+        "neo4j_write=False",
+        "memory_write=False",
+        "readonly=True",
+        "decision_authority=KX108_ONLY"
+      ]
+    },
+    {
+      "commit": "e9e43e4",
+      "message": "feat(brody): wire full runtime with real project memory",
+      "components": [
+        "brody_memory_response_chain_adapter",
+        "brody_runtime_context_adapter",
+        "brody_project_memory_adapter",
+        "graphiti_readonly_records_v2.jsonl"
+      ],
+      "key_invariants": [
+        "3267 JSONL records",
+        "2363 text_excerpt",
+        "readonly=True",
+        "KX108_ONLY"
+      ]
+    }
+  ],
+  "graphiti_readonly_records_v2": {
+    "path": "_graphiti_readonly_indexes/GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854/graphiti_readonly_records_v2.jsonl",
+    "exists": true,
+    "total_records": 3267,
+    "readonly": true,
+    "emits_act": false,
+    "decision_authority": "KX108_ONLY",
+    "activation_candidate": true,
+    "reason": "Local readonly index from e9e43e4 \u2014 real data, no write path"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "audit_id": "P55_CONTROLLED_ACTIVATION_INVARIANT_MATRIX",
+  "audit_date": "2026-06-04",
+  "invariant_priority": "BLOCK > HOLD > ALLOW_CONTEXT_ONLY — ACT absent",
+  "paliers": {
+    "P49_GLOBAL_RUNTIME_SURFACE_GATE": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "real_action_enabled": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "notes": "Gate confirms 100% surface coverage, no activation"
+    },
+    "P50_CONTROLLED_ACTIVATION_MATRIX": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "real_action_enabled": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "activation_allowed_now": false,
+      "notes": "Matrix defines levels; no level grants ACT"
+    },
+    "P51_BRODY_READONLY": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "real_action_enabled": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "brody_can_execute_actions": false,
+      "brody_can_write_memory": false,
+      "brody_can_write_graphiti": false,
+      "notes": "LEVEL_1_READONLY_ACTIVE — Brody answers only"
+    },
+    "P52_GRAPHITI_MEMORY_READONLY": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "real_action_enabled": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "graphiti_read_enabled": true,
+      "memory_read_enabled": true,
+      "notes": "LEVEL_1_READONLY_ACTIVE — read only, write blocked"
+    },
+    "P53_WORLD_ACTION_BUS_DRY_RUN": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "real_action_enabled": false,
+      "can_execute_real_action": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "dry_run_only": true,
+      "world_action_allowed": false,
+      "notes": "LEVEL_2_DRY_RUN_ACTIVE — dry-run packet only, no egress"
+    },
+    "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX": {
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "can_emit_act": false,
+      "real_action_enabled": false,
+      "can_execute_real_action": false,
+      "graphiti_write_enabled": false,
+      "memory_write_enabled": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "decision_authority": "KX108_ONLY",
+      "act_absent": true,
+      "valid_verdicts": ["ALLOW_CONTEXT_ONLY", "HOLD", "BLOCK"],
+      "act_in_valid_verdicts": false,
+      "notes": "LEVEL_3_HOLD_GATE_CANDIDATE — BLOCK/HOLD only, DecisionTicketDryRun.validate_invariants() enforces no ACT"
+    }
+  },
+  "cross_cutting_invariants": {
+    "decision_authority_kx108_only": true,
+    "runtime_allowed_now_always_false": true,
+    "emits_act_always_false": true,
+    "graphiti_write_always_false": true,
+    "memory_write_always_false": true,
+    "kernel_mutation_always_false": true,
+    "act_not_in_any_valid_decision": true,
+    "all_dry_run_flags_true": true
+  },
+  "verdict": "ALL_INVARIANTS_HOLD_P49_TO_P54"
+}

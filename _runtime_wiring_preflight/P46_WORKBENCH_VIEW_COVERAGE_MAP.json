@@ -1,0 +1,151 @@
+{
+  "map_status": "READY",
+  "phase": "P46",
+  "scan_date": "2026-06-04",
+  "workbench_view_coverage_status": "FULL_COVERAGE",
+  "workbench_views_total": 13,
+  "workbench_views_classified": 13,
+  "unclassified_views_count": 0,
+  "workbench_views_coverage_percent": 100.0,
+  "runtime_allowed_now": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "coverage_counts": {
+    "CONNECTED_TO_RUNTIME": 5,
+    "CONNECTED_TO_OS_MAP": 1,
+    "CONNECTED_TO_STATUS_ONLY": 1,
+    "CONNECTED_TO_WORKBENCH_ONLY": 2,
+    "BLOCKED_ACTION_VIEW": 3,
+    "INTERNAL_UI_ONLY": 1,
+    "ARCHIVE_ONLY": 0,
+    "DO_NOT_BIND_EXPLICIT": 0,
+    "UNCLASSIFIED": 0
+  },
+  "view_map": {
+    "AuditView.tsx": {
+      "coverage_status": "CONNECTED_TO_RUNTIME",
+      "capability": "AUDIT_TRAIL_READONLY",
+      "routes": ["/api/audit/events"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "BlockchainView.tsx": {
+      "coverage_status": "BLOCKED_ACTION_VIEW",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    "ChatView.tsx": {
+      "coverage_status": "CONNECTED_TO_RUNTIME",
+      "capability": "BRODY_CONTEXT_ENGINE",
+      "routes": ["/api/brody/chat"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "GencoinView.tsx": {
+      "coverage_status": "BLOCKED_ACTION_VIEW",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    "GraphitiView.tsx": {
+      "coverage_status": "CONNECTED_TO_RUNTIME",
+      "capability": "GRAPHITI_FROZEN_READONLY",
+      "routes": [
+        "/graph/v20/frozen/status",
+        "/graph/v20/frozen/metrics",
+        "/graph/v20/frozen/readiness",
+        "/graph/v20/frozen/context"
+      ],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "MemoryView.tsx": {
+      "coverage_status": "CONNECTED_TO_RUNTIME",
+      "capability": "MEMORY_CANDIDATE_READONLY",
+      "routes": ["/api/memory/candidates"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "OS3View.tsx": {
+      "coverage_status": "INTERNAL_UI_ONLY",
+      "capability": "OS3_PROOF_DISPLAY",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "OSMapView.tsx": {
+      "coverage_status": "CONNECTED_TO_OS_MAP",
+      "capability": "WORKBENCH_PREVIEW",
+      "routes": ["/api/runtime-wiring/os-map/query"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "RuntimeWiringPreviewView.tsx": {
+      "coverage_status": "CONNECTED_TO_RUNTIME",
+      "capability": "SOURCE_RUNTIME_PREVIEW",
+      "routes": [
+        "/api/runtime-wiring/preview",
+        "/api/runtime-wiring/source-runtime/preview"
+      ],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "SettingsView.tsx": {
+      "coverage_status": "CONNECTED_TO_WORKBENCH_ONLY",
+      "capability": "WORKBENCH_CONFIG_DISPLAY",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "TranslationView.tsx": {
+      "coverage_status": "CONNECTED_TO_WORKBENCH_ONLY",
+      "capability": "OS_TRAD_LOCAL_PIPELINE",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    },
+    "WorldCallView.tsx": {
+      "coverage_status": "BLOCKED_ACTION_VIEW",
+      "capability": "ACTION_REQUEST_BLOCKED",
+      "routes": [],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "BLOCK_OR_HOLD_CONTEXT_ONLY"
+    },
+    "X108View.tsx": {
+      "coverage_status": "CONNECTED_TO_STATUS_ONLY",
+      "capability": "GOVERNANCE_KERNEL_STATUS",
+      "routes": ["/health"],
+      "runtime_allowed_now": false,
+      "emits_act": false,
+      "decision_authority": "KX108_ONLY",
+      "x108_decision": "ALLOW_CONTEXT_ONLY"
+    }
+  }
+}

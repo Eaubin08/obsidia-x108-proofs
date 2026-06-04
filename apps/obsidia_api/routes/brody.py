@@ -51,6 +51,42 @@ try:
 except ImportError:
     _build_source_pack_context = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.brody_readonly_activation import (
+        build_brody_readonly_activation_state,
+    )
+    _P51_AVAILABLE = True
+except ImportError:
+    _P51_AVAILABLE = False
+    build_brody_readonly_activation_state = None  # type: ignore[assignment]
+
+try:
+    from runtime_wiring.source_runtime.graphiti_memory_readonly_activation import (
+        build_graphiti_memory_readonly_activation_state,
+    )
+    _P52_AVAILABLE = True
+except ImportError:
+    _P52_AVAILABLE = False
+    build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
+
+try:
+    from runtime_wiring.source_runtime.world_action_bus_dry_run_activation import (
+        build_world_action_bus_dry_run_state,
+    )
+    _P53_AVAILABLE = True
+except ImportError:
+    _P53_AVAILABLE = False
+    build_world_action_bus_dry_run_state = None  # type: ignore[assignment]
+
+try:
+    from runtime_wiring.source_runtime.action_gateway_hold_block_sandbox import (
+        build_action_gateway_sandbox_state,
+    )
+    _P54_AVAILABLE = True
+except ImportError:
+    _P54_AVAILABLE = False
+    build_action_gateway_sandbox_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -142,6 +178,42 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         freeze_metrics_snapshot=freeze_metrics_snapshot, authority_snapshot=authority_snapshot,
         automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
         semantic_query_snapshot=semantic_query_snapshot)
+
+    # P51 — Brody readonly activation state
+    _brody_readonly_state: dict = {}
+    if _P51_AVAILABLE and build_brody_readonly_activation_state is not None:
+        _brody_readonly_state = safe_call_snapshot(
+            "brody_readonly_activation",
+            build_brody_readonly_activation_state,
+            query=req.message,
+        )
+
+    # P52 — Graphiti / Memory readonly activation
+    _graphiti_memory_state: dict = {}
+    if _P52_AVAILABLE and build_graphiti_memory_readonly_activation_state is not None:
+        _graphiti_memory_state = safe_call_snapshot(
+            "graphiti_memory_readonly_activation",
+            build_graphiti_memory_readonly_activation_state,
+            query=req.message,
+        )
+
+    # P53 — World Action Bus dry-run activation
+    _world_action_bus_state: dict = {}
+    if _P53_AVAILABLE and build_world_action_bus_dry_run_state is not None:
+        _world_action_bus_state = safe_call_snapshot(
+            "world_action_bus_dry_run_activation",
+            build_world_action_bus_dry_run_state,
+            query=req.message,
+        )
+
+    # P54 — Action Gateway Hold/Block sandbox
+    _action_gateway_sandbox_state: dict = {}
+    if _P54_AVAILABLE and build_action_gateway_sandbox_state is not None:
+        _action_gateway_sandbox_state = safe_call_snapshot(
+            "action_gateway_hold_block_sandbox",
+            build_action_gateway_sandbox_state,
+            query=req.message,
+        )
 
     # P27: Source pack context built BEFORE True Voice so it can enrich final_answer
     _source_pack_ctx: dict = {}
@@ -537,6 +609,95 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             True if isinstance(true_voice_snapshot, dict)
             and true_voice_snapshot.get("source_pack_enriched") is True
             else False
+        ),
+        # P51 — Brody readonly activation contract
+        "brody_readonly_activation_status": _brody_readonly_state.get(
+            "brody_readonly_activation_status", "ACTIVE_READONLY"
+        ),
+        "brody_activation_level": _brody_readonly_state.get(
+            "activation_level", "LEVEL_1_READONLY_ACTIVE"
+        ),
+        "brody_readonly_enabled": _brody_readonly_state.get("brody_readonly_enabled", True),
+        "brody_can_answer": _brody_readonly_state.get("brody_can_answer", True),
+        "brody_can_explain_runtime_path": _brody_readonly_state.get(
+            "brody_can_explain_runtime_path", True
+        ),
+        "brody_can_execute_actions": False,
+        "brody_can_write_memory": False,
+        "brody_can_write_graphiti": False,
+        "brody_action_request_blocked": _brody_readonly_state.get("action_request_blocked", False),
+        "brody_action_status": _brody_readonly_state.get("action_status", "NO_ACTION_IN_QUERY"),
+        "os_map_summary": _brody_readonly_state.get("os_map_summary", {}),
+        "selected_runtime_path": _source_pack_ctx.get("selected_runtime_path", {}),
+        "selected_modules": _source_pack_ctx.get("selected_modules", []),
+        "selected_functions": _source_pack_ctx.get("selected_functions", []),
+        "selected_routes": _source_pack_ctx.get("selected_routes", []),
+        "selected_adapters": _source_pack_ctx.get("selected_adapters", []),
+        "selected_source_families": _source_pack_ctx.get("selected_source_families", []),
+        "selected_evidence_packs": _source_pack_ctx.get("selected_evidence_packs", []),
+        "hydration_plan": _source_pack_ctx.get("hydration_plan", {}),
+        "source_file_refs": _source_pack_ctx.get("source_file_refs", []),
+        "brody_no_act": True,
+        "brody_no_write": True,
+        "brody_kx108_only": True,
+        # P52 — Graphiti / Memory readonly activation
+        "graphiti_memory_readonly_activation_status": _graphiti_memory_state.get(
+            "graphiti_memory_readonly_activation_status", "MISSING_REAL_COMPONENT"
+        ),
+        "real_graphiti_component_found": _graphiti_memory_state.get("real_component_found", False),
+        "real_memory_component_found": _graphiti_memory_state.get("memory_real_module", False),
+        "graphiti_read_enabled": _graphiti_memory_state.get("graphiti_read_enabled", False),
+        "memory_read_enabled": _graphiti_memory_state.get("memory_read_enabled", False),
+        "graphiti_write_enabled": False,
+        "memory_write_enabled": False,
+        "graphiti_memory_context_refs": _graphiti_memory_state.get("graphiti_memory_context_refs", []),
+        "graphiti_memory_context_status": _graphiti_memory_state.get(
+            "graphiti_memory_context_status", "MISSING_REAL_COMPONENT"
+        ),
+        "graphiti_nodes": _graphiti_memory_state.get("graphiti_nodes", 0),
+        "graphiti_rels": _graphiti_memory_state.get("graphiti_rels", 0),
+        # P53 — World Action Bus dry-run activation
+        "world_action_bus_dry_run_status": _world_action_bus_state.get(
+            "world_action_bus_dry_run_status", "MISSING_REAL_COMPONENT"
+        ),
+        "world_action_bus_activation_level": _world_action_bus_state.get(
+            "activation_level", "LEVEL_0_MISSING"
+        ),
+        "world_action_bus_real_component_found": _world_action_bus_state.get(
+            "real_component_found", False
+        ),
+        "world_action_bus_dry_run_enabled": _world_action_bus_state.get("dry_run_enabled", False),
+        "world_action_bus_real_action_enabled": False,
+        "world_action_bus_can_execute_real_action": False,
+        "world_action_bus_runtime_allowed_now": False,
+        "world_action_bus_action_request_detected": _world_action_bus_state.get(
+            "action_request_detected", False
+        ),
+        "world_action_bus_action_request_blocked": _world_action_bus_state.get(
+            "action_request_blocked", False
+        ),
+        "world_action_bus_detected_action_type": _world_action_bus_state.get(
+            "detected_action_type", "NO_ACTION"
+        ),
+        "world_action_bus_dry_run_packet": _world_action_bus_state.get("dry_run_packet", {}),
+        # P54 — Action Gateway Hold/Block sandbox
+        "action_gateway_sandbox_status": _action_gateway_sandbox_state.get(
+            "action_gateway_sandbox_status", "MISSING_REAL_COMPONENT"
+        ),
+        "action_gateway_sandbox_verdict": _action_gateway_sandbox_state.get(
+            "sandbox_verdict", "ALLOW_CONTEXT_ONLY"
+        ),
+        "action_gateway_act_blocked_reason": _action_gateway_sandbox_state.get(
+            "act_blocked_reason", "P54_SANDBOX_NO_ACT"
+        ),
+        "action_gateway_can_emit_act": False,
+        "action_gateway_real_action_enabled": False,
+        "action_gateway_runtime_allowed_now": False,
+        "action_gateway_x108_gate_decision": _action_gateway_sandbox_state.get(
+            "x108_gate_decision", "BLOCK"
+        ),
+        "action_gateway_x108_ticket_id": _action_gateway_sandbox_state.get(
+            "x108_ticket_id", ""
         ),
     }
     # Semantic advisory UTF-8 regression guard:

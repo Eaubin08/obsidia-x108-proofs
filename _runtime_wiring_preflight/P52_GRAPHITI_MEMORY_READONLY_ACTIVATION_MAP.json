@@ -1,0 +1,98 @@
+{
+  "audit_id": "P52_GRAPHITI_MEMORY_READONLY_ACTIVATION_MAP",
+  "audit_date": "2026-06-04",
+  "based_on": "P51_BRODY_READONLY_ACTIVATION + d1dcbbf + e9e43e4",
+  "p49_coverage_summary": {
+    "families": "8/8 = 100%",
+    "routes": "147/147 = 100%",
+    "unclassified_total": 0
+  },
+  "p50_activation_level": "LEVEL_1_READONLY_ACTIVE_CANDIDATE for Graphiti + Memory",
+  "p51_brody_activation": "ACTIVE_READONLY",
+  "real_components_confirmed": {
+    "graphiti_v20_readonly_client": {
+      "path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "commit_source": "d1dcbbf",
+      "live_at": "http://127.0.0.1:8011",
+      "nodes": 167,
+      "rels": 477
+    },
+    "graphiti_readonly_records_v2_jsonl": {
+      "path": "_graphiti_readonly_indexes/GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854/graphiti_readonly_records_v2.jsonl",
+      "commit_source": "e9e43e4",
+      "total_records": 3267
+    },
+    "memory_real_module": {
+      "path": "apps/obsidia_api/routes/memory.py",
+      "commit_source": "e9e43e4",
+      "status": "REAL_MODULE"
+    }
+  },
+  "activation_contract": {
+    "audit_id": "P52_GRAPHITI_MEMORY_READONLY_ACTIVATION",
+    "audit_date": "2026-06-04",
+    "graphiti_memory_readonly_activation_status": "ACTIVE_READONLY",
+    "activation_level": "LEVEL_1_READONLY_ACTIVE",
+    "real_component_found": true,
+    "real_component_paths": [
+      "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "apps/obsidia_api/routes/graphiti.py",
+      "apps/obsidia_api/routes/memory.py",
+      "apps/obsidia_api/brody_project_memory_adapter.py",
+      "apps/obsidia_api/brody_session_memory_adapter.py"
+    ],
+    "graphiti_read_enabled": true,
+    "graphiti_write_enabled": false,
+    "graphiti_live": true,
+    "graphiti_nodes": 167,
+    "graphiti_rels": 477,
+    "graphiti_mode": "FROZEN_READONLY",
+    "graphiti_source": "GRAPHITI_V20_HTTP",
+    "graphiti_context": {
+      "graphiti_context_status": "CONTEXT_RETRIEVED",
+      "graphiti_context_query": "IR alphabet reverse OS interlanguage",
+      "graphiti_kernel_decision": "NONE",
+      "graphiti_graphiti_decision": "NONE",
+      "graphiti_graphiti_role": "READONLY_CONTEXT_PROVIDER",
+      "graphiti_write": false
+    },
+    "memory_read_enabled": true,
+    "memory_write_enabled": false,
+    "memory_real_module": true,
+    "memory_source": "REAL_MODULE",
+    "brody_can_use_graphiti_context": true,
+    "brody_can_use_memory_context": true,
+    "graphiti_memory_context_refs": [
+      {
+        "source": "GRAPHITI_V20_HTTP",
+        "base_url": "http://127.0.0.1:8011",
+        "endpoints": [
+          "/graph/v20/frozen/status",
+          "/graph/v20/frozen/context",
+          "/graph/v20/frozen/search"
+        ]
+      },
+      {
+        "source": "MEMORY_REAL_MODULE",
+        "module": "apps/obsidia_api/routes/memory.py",
+        "endpoints": [
+          "/api/memory/status",
+          "/api/memory/candidates"
+        ]
+      }
+    ],
+    "graphiti_memory_context_status": "ACTIVE_READONLY",
+    "runtime_allowed_now": false,
+    "activation_allowed_now": false,
+    "emits_act": false,
+    "decision_authority": "KX108_ONLY",
+    "p52_status": "P52_GRAPHITI_MEMORY_READONLY_CONTROLLED_ACTIVATION_READY",
+    "readonly": true,
+    "memory_write": false,
+    "graphiti_write": false,
+    "neo4j_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "world_action": false
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "audit_id": "P49_GLOBAL_RUNTIME_SURFACE_100_GATE",
+  "audit_date": "2026-06-04",
+  "global_runtime_surface_status": "FULL_COVERAGE",
+  "overall_coverage_percent": 100.0,
+  "total_items_audited": 847,
+  "families": {
+    "families_total": 8,
+    "families_classified": 8,
+    "families_unclassified": 0,
+    "families_coverage_percent": 100.0,
+    "families_connected": [
+      "COGNITIVE",
+      "OS_TRAD_REVERSE",
+      "ATLAS",
+      "RSSI_RGPD",
+      "NPL",
+      "EXTERNAL_SIGNALS",
+      "COMPLIANCE",
+      "ROUTE_ENTRY"
+    ],
+    "families_unconnected": []
+  },
+  "routes": {
+    "routes_total": 147,
+    "routes_classified": 147,
+    "routes_unclassified": 0,
+    "routes_coverage_percent": 100.0,
+    "counts": {
+      "CONNECTED_READONLY": 101,
+      "CONNECTED_BLOCKED_ACTION": 16,
+      "STATUS_ONLY": 21,
+      "WORKBENCH_ONLY": 6,
+      "INTERNAL_ONLY": 3,
+      "ARCHIVE_ONLY": 0,
+      "DO_NOT_BIND_EXPLICIT": 0,
+      "UNCLASSIFIED": 0
+    }
+  },
+  "workbench_views": {
+    "workbench_views_total": 13,
+    "workbench_views_classified": 13,
+    "workbench_views_unclassified": 0,
+    "workbench_views_coverage_percent": 100.0,
+    "counts": {
+      "CONNECTED_TO_RUNTIME": 5,
+      "CONNECTED_TO_OS_MAP": 1,
+      "CONNECTED_TO_STATUS_ONLY": 1,
+      "CONNECTED_TO_WORKBENCH_ONLY": 2,
+      "BLOCKED_ACTION_VIEW": 3,
+      "INTERNAL_UI_ONLY": 1,
+      "ARCHIVE_ONLY": 0,
+      "DO_NOT_BIND_EXPLICIT": 0,
+      "UNCLASSIFIED": 0
+    }
+  },
+  "modules": {
+    "modules_total": 121,
+    "modules_classified": 121,
+    "modules_unclassified": 0,
+    "modules_coverage_percent": 100.0,
+    "counts": {
+      "ARCHIVE_ONLY": 2,
+      "BLOCKED_ACTION_RUNTIME": 7,
+      "CONNECTED_ADAPTER": 33,
+      "CONNECTED_CAPABILITY": 7,
+      "CONNECTED_ROUTE_HANDLER": 12,
+      "CONNECTED_RUNTIME": 9,
+      "CONNECTED_STATUS_ONLY": 10,
+      "CONNECTED_WORKBENCH_SUPPORT": 2,
+      "INTERNAL_HELPER": 39,
+      "CONNECTED_TEST_ONLY": 0,
+      "DO_NOT_BIND_EXPLICIT": 0,
+      "UNCLASSIFIED": 0
+    }
+  },
+  "functions": {
+    "functions_total": 548,
+    "functions_classified": 548,
+    "functions_unclassified": 0,
+    "functions_coverage_percent": 100.0,
+    "counts": {
+      "ARCHIVE_ONLY": 3,
+      "BLOCKED_ACTION_RUNTIME": 23,
+      "CONNECTED_ADAPTER": 175,
+      "CONNECTED_CAPABILITY": 40,
+      "CONNECTED_ROUTE_HANDLER": 113,
+      "CONNECTED_RUNTIME": 42,
+      "CONNECTED_STATUS_ONLY": 59,
+      "CONNECTED_WORKBENCH_SUPPORT": 6,
+      "INTERNAL_HELPER": 87,
+      "CONNECTED_TEST_ONLY": 0,
+      "DO_NOT_BIND_EXPLICIT": 0,
+      "UNCLASSIFIED": 0
+    }
+  },
+  "adapters": {
+    "adapters_total": 10,
+    "adapters_classified": 10,
+    "adapters_unclassified": 0,
+    "adapters_coverage_percent": 100.0,
+    "counts": {
+      "CONNECTED_CONTEXT_PACKET": 7,
+      "CONNECTED_SOURCE_RUNTIME": 2,
+      "CONNECTED_CAPABILITY": 1,
+      "CONNECTED_OS_MAP": 0,
+      "CONNECTED_READONLY_PREVIEW": 0,
+      "BLOCKED_ACTION_ADAPTER": 0,
+      "INTERNAL_ONLY": 0,
+      "ARCHIVE_ONLY": 0,
+      "DO_NOT_BIND_EXPLICIT": 0,
+      "UNCLASSIFIED": 0
+    }
+  },
+  "critical_capabilities": {
+    "capabilities_total": 20,
+    "router_templates_total": 18,
+    "source_families_connected": 8,
+    "source_families_unconnected": [],
+    "adapters_connected": 9,
+    "graphiti_client_wired": true,
+    "capability_binding_status": "P44_CRITICAL_CAPABILITY_BINDING_READY"
+  },
+  "blocked_action_counts": {
+    "blocked_action_routes": 16,
+    "blocked_action_views": 3,
+    "blocked_action_modules": 7,
+    "blocked_action_functions": 23,
+    "blocked_action_adapters": 0,
+    "blocked_action_total": 49
+  },
+  "unclassified_total": 0,
+  "coverage_categories_summary": {
+    "families": {
+      "total": 8,
+      "classified": 8,
+      "coverage_percent": 100.0
+    },
+    "routes": {
+      "total": 147,
+      "classified": 147,
+      "coverage_percent": 100.0
+    },
+    "workbench_views": {
+      "total": 13,
+      "classified": 13,
+      "coverage_percent": 100.0
+    },
+    "modules": {
+      "total": 121,
+      "classified": 121,
+      "coverage_percent": 100.0
+    },
+    "functions": {
+      "total": 548,
+      "classified": 548,
+      "coverage_percent": 100.0
+    },
+    "adapters": {
+      "total": 10,
+      "classified": 10,
+      "coverage_percent": 100.0
+    }
+  },
+  "invariant_check": {
+    "no_act": true,
+    "no_write": true,
+    "no_graphiti_write": true,
+    "no_kernel_mutation": true,
+    "kx108_only": true
+  },
+  "runtime_allowed_now": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "activation_allowed": false,
+  "p49_status": "P49_GLOBAL_RUNTIME_SURFACE_100_GATE_READY"
+}

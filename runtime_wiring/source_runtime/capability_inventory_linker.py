@@ -51,6 +51,7 @@ _CAPABILITY_MODULE_STEMS: Dict[str, List[str]] = {
     "GRAPHITI_READONLY_CONTEXT": [
         "source_adapters",
         "brody_source_context_bridge",
+        "graphiti_v20_readonly_client",  # P44: wired
     ],
     "NPL_NARRATIVE_PROVENANCE": [
         "source_adapters",
@@ -73,6 +74,25 @@ _CAPABILITY_MODULE_STEMS: Dict[str, List[str]] = {
         "source_runtime_cache",
     ],
     "ANSWER_ONLY": [],
+    # P44
+    "ATLAS_CONTEXT_LOOKUP": [
+        "source_runtime_query",
+        "brody_source_context_bridge",
+    ],
+    "EXTERNAL_SIGNALS_CONTEXT": [
+        "source_runtime_query",
+        "brody_source_context_bridge",
+    ],
+    "BRODY_CHAT_ENTRYPOINT": [
+        "routes/brody",
+        "brody_real_response_pipeline",
+        "brody_source_context_bridge",
+    ],
+    "OS_TRAD_ROUTE_CONTEXT": [
+        "os_trad_ir_reverse",
+        "os_trad_reverse_index",
+        "source_runtime_query",
+    ],
 }
 
 # ── Mapping capability → route fragments ─────────────────────────────────────
@@ -86,7 +106,7 @@ _CAPABILITY_ROUTE_FRAGMENTS: Dict[str, List[str]] = {
     "RSSI_SECURITY_CONTEXT": ["source-runtime/preview"],
     "PROOF_AUDIT_CONTEXT": ["source-runtime/preview"],
     "MEMORY_REINTEGRATION_CONTEXT": ["source-runtime/preview"],
-    "GRAPHITI_READONLY_CONTEXT": ["source-runtime/preview"],
+    "GRAPHITI_READONLY_CONTEXT": ["source-runtime/preview", "graphiti"],  # P44: graphiti routes
     "NPL_NARRATIVE_PROVENANCE": ["source-runtime/preview"],
     "PROVENANCE_TRACE": ["source-runtime/preview"],
     "SOURCE_CONTEXT": ["source-runtime/preview"],
@@ -94,6 +114,11 @@ _CAPABILITY_ROUTE_FRAGMENTS: Dict[str, List[str]] = {
     "WORKBENCH_PREVIEW": ["source-runtime/preview"],
     "ACTION_REQUEST_BLOCKED": [],
     "ANSWER_ONLY": [],
+    # P44
+    "ATLAS_CONTEXT_LOOKUP": ["source-runtime/preview"],
+    "EXTERNAL_SIGNALS_CONTEXT": ["source-runtime/preview"],
+    "BRODY_CHAT_ENTRYPOINT": ["brody/chat"],
+    "OS_TRAD_ROUTE_CONTEXT": ["os-trad/api"],
 }
 
 # ── Mapping capability → test stems ──────────────────────────────────────────
@@ -127,6 +152,25 @@ _CAPABILITY_TEST_STEMS: Dict[str, List[str]] = {
     "OS4_ENGINE_STATUS": [
         "test_source_runtime_status_p29",
     ],
+    # P44
+    "ATLAS_CONTEXT_LOOKUP": [
+        "test_source_runtime_family_discovery_ci_p42b",
+        "test_critical_capability_binding_p44",
+    ],
+    "EXTERNAL_SIGNALS_CONTEXT": [
+        "test_source_runtime_family_discovery_ci_p42b",
+        "test_critical_capability_binding_p44",
+    ],
+    "BRODY_CHAT_ENTRYPOINT": [
+        "test_critical_capability_binding_p44",
+    ],
+    "OS_TRAD_ROUTE_CONTEXT": [
+        "test_reverse_os_interlanguage_runtime_extension_p35",
+        "test_critical_capability_binding_p44",
+    ],
+    "GRAPHITI_READONLY_CONTEXT": [
+        "test_critical_capability_binding_p44",
+    ],
 }
 
 # ── Mapping capability → doc stems ───────────────────────────────────────────
@@ -147,6 +191,24 @@ _CAPABILITY_DOC_STEMS: Dict[str, List[str]] = {
     "OS4_ENGINE_STATUS": [
         "P28_SOURCE_RUNTIME_CACHE_SELECTOR_REPORT",
         "P29_WORKBENCH_SOURCE_RUNTIME_SURFACE_REPORT",
+    ],
+    # P44
+    "ATLAS_CONTEXT_LOOKUP": [
+        "P43_UNCONNECTED_RUNTIME_SURFACE_AUDIT_REPORT",
+        "P44_CRITICAL_CAPABILITY_BINDING_REPORT",
+    ],
+    "EXTERNAL_SIGNALS_CONTEXT": [
+        "P43_UNCONNECTED_RUNTIME_SURFACE_AUDIT_REPORT",
+        "P44_CRITICAL_CAPABILITY_BINDING_REPORT",
+    ],
+    "BRODY_CHAT_ENTRYPOINT": [
+        "P43_UNCONNECTED_RUNTIME_SURFACE_AUDIT_REPORT",
+        "P44_CRITICAL_CAPABILITY_BINDING_REPORT",
+    ],
+    "OS_TRAD_ROUTE_CONTEXT": [
+        "P35_REVERSE_OS_INTERLANGUAGE_RUNTIME_EXTENSION_REPORT",
+        "P43_UNCONNECTED_RUNTIME_SURFACE_AUDIT_REPORT",
+        "P44_CRITICAL_CAPABILITY_BINDING_REPORT",
     ],
 }
 

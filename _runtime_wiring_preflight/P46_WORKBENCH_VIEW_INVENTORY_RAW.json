@@ -1,0 +1,166 @@
+{
+  "inventory_status": "READY",
+  "scan_date": "2026-06-04",
+  "phase": "P46",
+  "total_views": 13,
+  "scan_root": "apps/obsidia-workbench/src/views/",
+  "views": [
+    {
+      "file": "AuditView.tsx",
+      "component": "AuditView",
+      "sidebar_label": "Audit Trail",
+      "imported_api_client": "obsidiaClient",
+      "api_functions": ["getAuditEvents"],
+      "backend_endpoints": ["GET /api/audit/events"],
+      "runtime_family": "AUDIT_TRAIL",
+      "status": "connected"
+    },
+    {
+      "file": "BlockchainView.tsx",
+      "component": "BlockchainView",
+      "sidebar_label": "Blockchain Gate",
+      "imported_api_client": null,
+      "api_functions": [],
+      "backend_endpoints": [],
+      "runtime_family": "BLOCKCHAIN_GATE",
+      "status": "mock_only",
+      "note": "static mock display — all blockchain actions BLOCKED, no API calls"
+    },
+    {
+      "file": "ChatView.tsx",
+      "component": "ChatView",
+      "sidebar_label": "Chat / Brody",
+      "imported_api_client": "obsidiaClient",
+      "api_functions": ["sendBrodyMessage (via App.tsx parent prop)"],
+      "backend_endpoints": ["POST /api/brody/chat"],
+      "runtime_family": "BRODY_CONTEXT_ENGINE",
+      "status": "connected"
+    },
+    {
+      "file": "GencoinView.tsx",
+      "component": "GencoinView",
+      "sidebar_label": "Gencoin Ledger",
+      "imported_api_client": null,
+      "api_functions": [],
+      "backend_endpoints": [],
+      "runtime_family": "GENCOIN_LEDGER",
+      "status": "mock_only",
+      "note": "MOCK_GENCOIN data only — gencoin is not a real token, LEDGER_ONLY"
+    },
+    {
+      "file": "GraphitiView.tsx",
+      "component": "GraphitiView",
+      "sidebar_label": "Graphiti V20",
+      "imported_api_client": "obsidiaClient",
+      "api_functions": [
+        "getGraphitiStatus",
+        "getGraphitiMetrics",
+        "getGraphitiReadiness",
+        "getContextPacket"
+      ],
+      "backend_endpoints": [
+        "GET /graph/v20/frozen/status",
+        "GET /graph/v20/frozen/metrics",
+        "GET /graph/v20/frozen/readiness",
+        "GET /graph/v20/frozen/context"
+      ],
+      "runtime_family": "GRAPHITI_FROZEN_READONLY",
+      "status": "connected",
+      "note": "READONLY — neo4j_write=false, graphiti_write=false"
+    },
+    {
+      "file": "MemoryView.tsx",
+      "component": "MemoryView",
+      "sidebar_label": "Memory Candidates",
+      "imported_api_client": "obsidiaClient",
+      "api_functions": ["getMemoryCandidates"],
+      "backend_endpoints": ["GET /api/memory/candidates"],
+      "runtime_family": "MEMORY_CANDIDATE",
+      "status": "connected",
+      "note": "CANDIDATE_ONLY — memory_write=false, auto_promotion_allowed=false"
+    },
+    {
+      "file": "OS3View.tsx",
+      "component": "OS3View",
+      "sidebar_label": "OS3 Formal Proof",
+      "imported_api_client": null,
+      "api_functions": [],
+      "backend_endpoints": [],
+      "runtime_family": "OS3_PROOF_SYSTEM",
+      "status": "internal_mock",
+      "note": "MOCK_OS3_TICKET — proof display only, no API, no kernel decision"
+    },
+    {
+      "file": "OSMapView.tsx",
+      "component": "OSMapView",
+      "sidebar_label": "OS Map",
+      "imported_api_client": "direct fetch",
+      "api_functions": ["POST /api/runtime-wiring/os-map/query (direct)"],
+      "backend_endpoints": ["POST /api/runtime-wiring/os-map/query"],
+      "runtime_family": "CAPABILITY_PATH_ROUTER",
+      "status": "connected",
+      "note": "P38 view — READONLY_PREVIEW_ONLY, KX108_ONLY, emits_act=false"
+    },
+    {
+      "file": "RuntimeWiringPreviewView.tsx",
+      "component": "RuntimeWiringPreviewView",
+      "sidebar_label": "Runtime Wiring Preview",
+      "imported_api_client": "direct fetch",
+      "api_functions": [
+        "GET /api/runtime-wiring/preview (direct)",
+        "GET /api/runtime-wiring/source-runtime/preview (direct)"
+      ],
+      "backend_endpoints": [
+        "GET /api/runtime-wiring/preview",
+        "GET /api/runtime-wiring/source-runtime/preview"
+      ],
+      "runtime_family": "SOURCE_RUNTIME_PREVIEW",
+      "status": "connected",
+      "note": "P11A+P29 — dry-run state, READONLY_PREVIEW_ONLY"
+    },
+    {
+      "file": "SettingsView.tsx",
+      "component": "SettingsView",
+      "sidebar_label": "Settings",
+      "imported_api_client": "obsidiaClient (config only)",
+      "api_functions": ["config (static export, no fetch)"],
+      "backend_endpoints": [],
+      "runtime_family": "WORKBENCH_CONFIG",
+      "status": "internal_config",
+      "note": "Displays VITE env config — no API calls, pure UI config display"
+    },
+    {
+      "file": "TranslationView.tsx",
+      "component": "TranslationView",
+      "sidebar_label": "OS Trad / IR / OS Reverse",
+      "imported_api_client": null,
+      "api_functions": ["runOSTradPipeline (local lib)"],
+      "backend_endpoints": [],
+      "runtime_family": "OS_TRAD_LOCAL",
+      "status": "local_lib",
+      "note": "Uses local lib/osTradPipeline.ts — no backend call, pure frontend pipeline"
+    },
+    {
+      "file": "WorldCallView.tsx",
+      "component": "WorldCallView",
+      "sidebar_label": "WorldCall / Gateway",
+      "imported_api_client": null,
+      "api_functions": [],
+      "backend_endpoints": [],
+      "runtime_family": "WORLD_CALL_GATEWAY",
+      "status": "mock_only",
+      "note": "MOCK_WORLD_CALLS, MOCK_SOVEREIGN_TICKET — DRY_RUN ONLY, no real egress"
+    },
+    {
+      "file": "X108View.tsx",
+      "component": "X108View",
+      "sidebar_label": "X-108 Governance Kernel",
+      "imported_api_client": "obsidiaClient",
+      "api_functions": ["getKernelStatus"],
+      "backend_endpoints": ["GET /health (via getBackendHealth)"],
+      "runtime_family": "GOVERNANCE_KERNEL",
+      "status": "connected",
+      "note": "Health + kernel status — CANDIDATE_ONLY, no mutation"
+    }
+  ]
+}

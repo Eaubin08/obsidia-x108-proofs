@@ -78,6 +78,30 @@ _INTENT_KEYWORDS: Dict[str, List[str]] = {
         "trace", "origine", "origin", "contexte narratif",
         "narrative layer", "narrative provenance",
     ],
+    # P44 — 5 gaps MUST_BIND_NEXT branchés
+    "ATLAS": [
+        "atlas", "cartographie", "carte atlas", "corpus map", "component map",
+        "atlas map", "atlas obsidia", "arbre atlas", "module atlas",
+        "composant atlas", "atlas component",
+    ],
+    "EXTERNAL_SIGNALS": [
+        "timeverse", "external signals", "signal temporel", "temporal signal",
+        "c459", "signaux temporels", "temps externe", "signal externe",
+        "chronologie externe", "calendar signal", "timeverse signal",
+    ],
+    "BRODY_CHAT": [
+        "brody chat", "true voice", "final answer", "brody réponse",
+        "brody response", "réponse brody", "brody answer", "brody entrypoint",
+    ],
+    "OS_TRAD_ROUTE": [
+        "os trad route", "os-trad route", "ir candidate", "os reverse project",
+        "api os-trad", "os trad translate", "translate endpoint", "ir route",
+        "os reverse route", "os-trad api", "api ir",
+    ],
+    "GRAPHITI_READONLY": [
+        "graphiti readonly", "graphiti v20", "graphiti client",
+        "readonly neo4j client", "graphiti read only", "graphiti connect",
+    ],
 }
 
 # ── Mapping intent → capabilities candidates ──────────────────────────────────
@@ -93,6 +117,12 @@ _INTENT_TO_CAPABILITIES: Dict[str, List[str]] = {
     "COMPLIANCE_AUDIT": ["PROOF_AUDIT_CONTEXT", "RSSI_SECURITY_CONTEXT"],
     "MEMORY_GRAPHITI": ["MEMORY_REINTEGRATION_CONTEXT", "GRAPHITI_READONLY_CONTEXT"],
     "NARRATIVE_NPL": ["NPL_NARRATIVE_PROVENANCE", "PROVENANCE_TRACE"],
+    # P44
+    "ATLAS": ["ATLAS_CONTEXT_LOOKUP"],
+    "EXTERNAL_SIGNALS": ["EXTERNAL_SIGNALS_CONTEXT"],
+    "BRODY_CHAT": ["BRODY_CHAT_ENTRYPOINT"],
+    "OS_TRAD_ROUTE": ["OS_TRAD_ROUTE_CONTEXT", "OS_TRAD_TRANSLATION"],
+    "GRAPHITI_READONLY": ["GRAPHITI_READONLY_CONTEXT"],
 }
 
 # ── Scoring des chemins ───────────────────────────────────────────────────────
@@ -103,12 +133,16 @@ _CAPABILITY_SCORE: Dict[str, float] = {
     "REVERSE_OS_INTERLANGUAGE": 0.93,
     "AGENT_TREE_LOOKUP": 0.88,
     "LAW_PROTOCOL_LOOKUP": 0.85,
+    "OS_TRAD_ROUTE_CONTEXT": 0.84,   # P44: routes opérationnelles spécifiques
     "OS_TRAD_TRANSLATION": 0.82,
     "RSSI_SECURITY_CONTEXT": 0.80,
-    "PROOF_AUDIT_CONTEXT": 0.78,
+    "BRODY_CHAT_ENTRYPOINT": 0.78,   # P44: entrypoint primaire
+    "PROOF_AUDIT_CONTEXT": 0.77,
     "MEMORY_REINTEGRATION_CONTEXT": 0.75,
-    "GRAPHITI_READONLY_CONTEXT": 0.73,
+    "GRAPHITI_READONLY_CONTEXT": 0.76,  # P44: boosted > MEMORY_REINTEGRATION (0.75) pour graphiti queries
+    "ATLAS_CONTEXT_LOOKUP": 0.71,    # P44: 11k entrées, advisory
     "NPL_NARRATIVE_PROVENANCE": 0.70,
+    "EXTERNAL_SIGNALS_CONTEXT": 0.67, # P44: signaux temporels advisory
     "PROVENANCE_TRACE": 0.65,
     "SOURCE_CONTEXT": 0.50,
     "WORKBENCH_PREVIEW": 0.45,
@@ -218,14 +252,14 @@ _CAPABILITY_PATH_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "reason": "Réintégration mémoire Brody — COGNITIVE_REINTEGRATION advisory.",
     },
     "GRAPHITI_READONLY_CONTEXT": {
-        "modules": ["source_runtime_query", "brody_source_context_bridge"],
+        "modules": ["source_runtime_query", "brody_source_context_bridge", "graphiti_v20_readonly_client"],
         "adapters": ["npl_to_context_packet", "cognitive_to_context_packet"],
         "routes": ["/api/runtime-wiring/source-runtime/preview"],
         "source_families": ["NARRATIVE_PROVENANCE_LAYER", "COGNITIVE_REINTEGRATION"],
         "source_subfamilies": [],
         "evidence_packs": [],
         "x108_decision": "ALLOW_CONTEXT_ONLY",
-        "reason": "Graphiti readonly — NPL advisory seulement, aucune écriture graph.",
+        "reason": "Graphiti readonly — graphiti_v20_readonly_client branché (P44). NPL advisory, aucune écriture graph.",
     },
     "NPL_NARRATIVE_PROVENANCE": {
         "modules": ["source_runtime_query", "brody_source_context_bridge"],
@@ -260,6 +294,51 @@ _CAPABILITY_PATH_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "evidence_packs": [],
         "x108_decision": "ALLOW_CONTEXT_ONLY",
         "reason": "Contexte source générique — fallback COGNITIVE_REINTEGRATION.",
+    },
+    # P44 — 5 gaps MUST_BIND_NEXT
+    "ATLAS_CONTEXT_LOOKUP": {
+        "modules": ["source_runtime_query", "brody_source_context_bridge"],
+        "adapters": ["atlas_to_context_packet"],
+        "routes": ["/api/runtime-wiring/source-runtime/preview"],
+        "source_families": ["ATLAS"],
+        "source_subfamilies": [],
+        "evidence_packs": [],
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "reason": "ATLAS corpus lookup — 11 263 entrées cartographiques, advisory readonly.",
+    },
+    "EXTERNAL_SIGNALS_CONTEXT": {
+        "modules": ["source_runtime_query", "brody_source_context_bridge"],
+        "adapters": ["external_signals_to_context_packet"],
+        "routes": ["/api/runtime-wiring/source-runtime/preview"],
+        "source_families": ["EXTERNAL_SIGNALS"],
+        "source_subfamilies": [],
+        "evidence_packs": [],
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "reason": "Signaux temporels TimeVerse / External Signals — advisory readonly, aucune prédiction comme action.",
+    },
+    "BRODY_CHAT_ENTRYPOINT": {
+        "modules": ["brody_source_context_bridge", "brody_real_response_pipeline"],
+        "adapters": [],
+        "routes": ["/api/brody/chat"],
+        "source_families": ["COGNITIVE_REINTEGRATION"],
+        "source_subfamilies": [],
+        "evidence_packs": [],
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "reason": "Entrypoint Brody Chat /api/brody/chat — pipeline réponse V1.4.12A, context routing readonly.",
+    },
+    "OS_TRAD_ROUTE_CONTEXT": {
+        "modules": ["os_trad_ir_reverse", "os_trad_reverse_index", "source_runtime_query"],
+        "adapters": ["os_trad_reverse_to_context_packet", "reverse_os_interlanguage_to_context_packet"],
+        "routes": [
+            "/api/runtime-wiring/os-trad/api/os-trad/translate",
+            "/api/runtime-wiring/os-trad/api/ir/candidate",
+            "/api/runtime-wiring/os-trad/api/os-reverse/project",
+        ],
+        "source_families": ["OS_TRAD_REVERSE_OS"],
+        "source_subfamilies": [],
+        "evidence_packs": [],
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "reason": "Routes OS Trad IR Reverse opérationnelles — translate, ir/candidate, os-reverse/project. Readonly.",
     },
     "ANSWER_ONLY": {
         "modules": [],

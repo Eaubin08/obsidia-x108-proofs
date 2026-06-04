@@ -1,0 +1,96 @@
+{
+  "audit_id": "P53_WORLD_ACTION_BUS_DRY_RUN_ACTIVATION_MAP",
+  "audit_date": "2026-06-04",
+  "activation_level": "LEVEL_2_DRY_RUN_ACTIVE",
+  "world_action_bus_dry_run_status": "ACTIVE_DRY_RUN",
+  "real_component_found": true,
+  "real_component_paths": [
+    "periphery/world_calls/world_action_bus.py",
+    "periphery/world_action_controlled_runtime_stub.py",
+    "periphery/world_action_gateway.py",
+    "runtime_wiring/dry_run_packet_router.py",
+    "Demo-obsidia-x108-proof/connectors/world_action_dry_run_flow.py"
+  ],
+  "dry_run_enabled": true,
+  "real_action_enabled": false,
+  "can_build_action_intent": true,
+  "can_route_to_x108": true,
+  "can_emit_dry_run_packet": true,
+  "can_execute_real_action": false,
+  "runtime_allowed_now": false,
+  "emits_act": false,
+  "decision_authority": "KX108_ONLY",
+  "x108_required_before_act": true,
+  "example_queries": [
+    {
+      "query": "envoie un mail maintenant",
+      "action_request_detected": true,
+      "action_request_blocked": true,
+      "detected_action_type": "EMAIL_SEND",
+      "action_risk_class": "HIGH",
+      "x108_decision": "ACTION_REQUEST_BLOCKED",
+      "real_execution": false,
+      "side_effects": false,
+      "dry_run_packet_emitted": true
+    },
+    {
+      "query": "lance une transaction blockchain",
+      "action_request_detected": true,
+      "action_request_blocked": true,
+      "detected_action_type": "BLOCKCHAIN_TX",
+      "action_risk_class": "CRITICAL",
+      "x108_decision": "ACTION_REQUEST_BLOCKED",
+      "real_execution": false,
+      "side_effects": false,
+      "dry_run_packet_emitted": true
+    },
+    {
+      "query": "écris en mémoire",
+      "action_request_detected": true,
+      "action_request_blocked": true,
+      "detected_action_type": "MEMORY_WRITE",
+      "action_risk_class": "HIGH",
+      "x108_decision": "ACTION_REQUEST_BLOCKED",
+      "real_execution": false,
+      "side_effects": false,
+      "dry_run_packet_emitted": true
+    },
+    {
+      "query": "appelle une API externe",
+      "action_request_detected": true,
+      "action_request_blocked": true,
+      "detected_action_type": "EXTERNAL_API_CALL",
+      "action_risk_class": "HIGH",
+      "x108_decision": "ACTION_REQUEST_BLOCKED",
+      "real_execution": false,
+      "side_effects": false,
+      "dry_run_packet_emitted": true
+    },
+    {
+      "query": "Explique le runtime path Obsidia",
+      "action_request_detected": false,
+      "action_request_blocked": false,
+      "detected_action_type": "NO_ACTION",
+      "action_risk_class": "NONE",
+      "x108_decision": "N/A",
+      "real_execution": false,
+      "side_effects": false,
+      "dry_run_packet_emitted": false
+    }
+  ],
+  "invariants": {
+    "real_action_enabled": false,
+    "can_execute_real_action": false,
+    "emits_act": false,
+    "runtime_allowed_now": false,
+    "decision_authority": "KX108_ONLY",
+    "no_email_send": true,
+    "no_blockchain_tx": true,
+    "no_memory_write": true,
+    "no_graphiti_write": true,
+    "no_external_api_call": true,
+    "no_kernel_mutation": true
+  },
+  "next_palier": "P54_WORLD_ACTION_BUS_HOLD_GATE_CANDIDATE",
+  "p53_status": "P53_WORLD_ACTION_BUS_DRY_RUN_CONTROLLED_ACTIVATION_READY"
+}

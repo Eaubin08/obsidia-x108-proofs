@@ -1,0 +1,55 @@
+{
+  "audit_id": "P54_REAL_ACTION_GATEWAY_DISCOVERY",
+  "audit_date": "2026-06-04",
+  "decision": "COMPONENTS_FOUND_PROCEED",
+  "candidates": [
+    {
+      "path": "runtime_wiring/x108_admission_stub.py",
+      "function": "evaluate_dry_run",
+      "role_detected": "X108 admission stub — deterministic BLOCK > HOLD > ALLOW_CONTEXT_ONLY decision engine",
+      "hold_block_evidence": "Rule 1: boundary violation → BLOCK; Rule 2: critical_action_requested=True → HOLD; Rule 3-4: ALLOW_CONTEXT_ONLY. Never emits ACT.",
+      "act_risk": "NONE — emits_act=False on DecisionTicketDryRun, validate_invariants() raises on violation",
+      "sandbox_candidate": true,
+      "reason": "Real dry-run decision engine with deterministic BLOCK/HOLD logic and boundary validation"
+    },
+    {
+      "path": "runtime_wiring/packet_types.py",
+      "function": "DecisionTicketDryRun, ContextPacket, IntentEnvelope",
+      "role_detected": "Dry-run packet types — VALID_DRY_RUN_DECISIONS = {ALLOW_CONTEXT_ONLY, HOLD, BLOCK}",
+      "hold_block_evidence": "DecisionTicketDryRun.decision must be in {ALLOW_CONTEXT_ONLY, HOLD, BLOCK}; emits_act=False enforced by validate_invariants()",
+      "act_risk": "NONE — ACT not in VALID_DRY_RUN_DECISIONS, validate_invariants() blocks any emits_act=True",
+      "sandbox_candidate": true,
+      "reason": "Typed packet system with enforced no-ACT invariants"
+    },
+    {
+      "path": "periphery/world_action_gateway.py",
+      "function": "evaluate_world_action_readiness",
+      "role_detected": "WorldActionReadiness gateway — world_action_allowed=False, READY_DRY_RUN_ONLY_RUNTIME_CONSENT_REQUIRED",
+      "hold_block_evidence": "world_action_allowed=False in all branches; dry_run_only=True always",
+      "act_risk": "NONE",
+      "sandbox_candidate": true,
+      "reason": "Gateway confirms dry-run-only readiness, never grants real action"
+    },
+    {
+      "path": "periphery/world_action_controlled_runtime_stub.py",
+      "function": "run_world_action_stub, WorldActionDryRunPacket",
+      "role_detected": "WorldActionDryRunPacket with BLOCKED_CAPABILITIES list and assert_no_real_action()",
+      "hold_block_evidence": "BLOCKED_CAPABILITIES includes PAYMENT, EMAIL, MEMORY_WRITE, GRAPHITI_WRITE, etc.; assert_no_real_action() raises if world_action_allowed=True",
+      "act_risk": "NONE — world_action_allowed=False enforced",
+      "sandbox_candidate": true,
+      "reason": "Blocking stub with explicit BLOCKED_CAPABILITIES list"
+    },
+    {
+      "path": "runtime_wiring/dry_run_packet_router.py",
+      "function": "route_packets",
+      "role_detected": "Packet router that calls evaluate_dry_run and builds OS3 evidence",
+      "hold_block_evidence": "emits_act=False, authority=KX108_ONLY, candidate_only=True on IntentEnvelope",
+      "act_risk": "NONE",
+      "sandbox_candidate": true,
+      "reason": "Full router pipeline with X108 admission"
+    }
+  ],
+  "not_found": [],
+  "gate_decision": "PROCEED — real HOLD/BLOCK components confirmed, DecisionTicketDryRun never emits ACT",
+  "activation_verdict": "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX_READY"
+}

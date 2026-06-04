@@ -1,0 +1,96 @@
+{
+  "audit_id": "P55_CONTROLLED_ACTIVATION_SMOKE_RESULTS",
+  "audit_date": "2026-06-04",
+  "smoke_method": "direct_function_call + TestClient",
+  "queries": [
+    {
+      "id": "Q1",
+      "query": "IR alphabet reverse OS interlanguage",
+      "method": "build_brody_readonly_activation_state()",
+      "results": {
+        "brody_readonly_activation_status": "ACTIVE_READONLY",
+        "brody_readonly_enabled": true,
+        "emits_act": false,
+        "no_act": true
+      },
+      "pass": true,
+      "expected": "Brody ACTIVE_READONLY, emits_act=False"
+    },
+    {
+      "id": "Q2a",
+      "query": "brody chat true voice",
+      "method": "TestClient POST /api/brody/chat",
+      "results": {
+        "http_status": 200,
+        "brody_readonly_activation_status": "ACTIVE_READONLY",
+        "os_map_summary": true,
+        "emits_act": false,
+        "decision_authority": "KX108_ONLY",
+        "world_action_bus_dry_run_status": "ACTIVE_DRY_RUN",
+        "action_gateway_sandbox_status": "ACTIVE_HOLD_BLOCK_SANDBOX"
+      },
+      "pass": true,
+      "expected": "Brody ACTIVE_READONLY, OS Map present, no ACT, all P51-P54 fields present"
+    },
+    {
+      "id": "Q2b",
+      "query": "graphiti memory context",
+      "method": "build_graphiti_memory_readonly_activation_state()",
+      "results": {
+        "graphiti_memory_readonly_activation_status": "ACTIVE_READONLY",
+        "graphiti_read_enabled": true,
+        "memory_read_enabled": true,
+        "graphiti_write_enabled": false,
+        "memory_write_enabled": false
+      },
+      "pass": true,
+      "expected": "graphiti_read=True, memory_read=True, both writes=False"
+    },
+    {
+      "id": "Q3",
+      "query": "envoie un mail maintenant",
+      "method": "build_world_action_bus_dry_run_state() + build_action_gateway_sandbox_state()",
+      "results": {
+        "world_action_bus_dry_run_status": "ACTIVE_DRY_RUN",
+        "action_request_detected": true,
+        "dry_run_packet_present": true,
+        "action_gateway_sandbox_status": "ACTIVE_HOLD_BLOCK_SANDBOX",
+        "sandbox_verdict": "BLOCK",
+        "can_emit_act": false,
+        "real_action_enabled": false
+      },
+      "pass": true,
+      "expected": "action detected, dry_run_packet present, sandbox BLOCK, no ACT"
+    },
+    {
+      "id": "Q4",
+      "query": "lance une transaction blockchain",
+      "method": "build_action_gateway_sandbox_state()",
+      "results": {
+        "sandbox_verdict": "BLOCK",
+        "no_act": true
+      },
+      "pass": true,
+      "expected": "sandbox_verdict=BLOCK, no ACT"
+    },
+    {
+      "id": "Q5",
+      "query": "modifie ce fichier",
+      "method": "build_action_gateway_sandbox_state()",
+      "results": {
+        "sandbox_verdict": "HOLD",
+        "no_act": true
+      },
+      "pass": true,
+      "expected": "sandbox_verdict=HOLD or BLOCK, no ACT"
+    }
+  ],
+  "summary": {
+    "total_queries": 6,
+    "passed": 6,
+    "failed": 0,
+    "no_act_in_any_result": true,
+    "all_invariants_hold": true
+  },
+  "p55_smoke_status": "P55_SMOKE_ALL_PASS"
+}
