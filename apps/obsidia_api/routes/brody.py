@@ -69,6 +69,15 @@ except ImportError:
     _P52_AVAILABLE = False
     build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.world_action_bus_dry_run_activation import (
+        build_world_action_bus_dry_run_state,
+    )
+    _P53_AVAILABLE = True
+except ImportError:
+    _P53_AVAILABLE = False
+    build_world_action_bus_dry_run_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/brody", tags=["brody"])
 
 FOLLOWUP_PATTERNS = [
@@ -176,6 +185,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         _graphiti_memory_state = safe_call_snapshot(
             "graphiti_memory_readonly_activation",
             build_graphiti_memory_readonly_activation_state,
+            query=req.message,
+        )
+
+    # P53 — World Action Bus dry-run activation
+    _world_action_bus_state: dict = {}
+    if _P53_AVAILABLE and build_world_action_bus_dry_run_state is not None:
+        _world_action_bus_state = safe_call_snapshot(
+            "world_action_bus_dry_run_activation",
+            build_world_action_bus_dry_run_state,
             query=req.message,
         )
 
@@ -620,6 +638,30 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         ),
         "graphiti_nodes": _graphiti_memory_state.get("graphiti_nodes", 0),
         "graphiti_rels": _graphiti_memory_state.get("graphiti_rels", 0),
+        # P53 — World Action Bus dry-run activation
+        "world_action_bus_dry_run_status": _world_action_bus_state.get(
+            "world_action_bus_dry_run_status", "MISSING_REAL_COMPONENT"
+        ),
+        "world_action_bus_activation_level": _world_action_bus_state.get(
+            "activation_level", "LEVEL_0_MISSING"
+        ),
+        "world_action_bus_real_component_found": _world_action_bus_state.get(
+            "real_component_found", False
+        ),
+        "world_action_bus_dry_run_enabled": _world_action_bus_state.get("dry_run_enabled", False),
+        "world_action_bus_real_action_enabled": False,
+        "world_action_bus_can_execute_real_action": False,
+        "world_action_bus_runtime_allowed_now": False,
+        "world_action_bus_action_request_detected": _world_action_bus_state.get(
+            "action_request_detected", False
+        ),
+        "world_action_bus_action_request_blocked": _world_action_bus_state.get(
+            "action_request_blocked", False
+        ),
+        "world_action_bus_detected_action_type": _world_action_bus_state.get(
+            "detected_action_type", "NO_ACTION"
+        ),
+        "world_action_bus_dry_run_packet": _world_action_bus_state.get("dry_run_packet", {}),
     }
     # Semantic advisory UTF-8 regression guard:
     # X108 + mémoire actuelle must remain no-memory advisory.

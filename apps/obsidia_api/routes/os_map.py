@@ -124,6 +124,15 @@ except ImportError:
     _P52_OS_MAP_AVAILABLE = False
     build_graphiti_memory_readonly_activation_state = None  # type: ignore[assignment]
 
+try:
+    from runtime_wiring.source_runtime.world_action_bus_dry_run_activation import (
+        build_world_action_bus_dry_run_state,
+    )
+    _P53_OS_MAP_AVAILABLE = True
+except ImportError:
+    _P53_OS_MAP_AVAILABLE = False
+    build_world_action_bus_dry_run_state = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/api/runtime-wiring/os-map", tags=["os-map-p38"])
 
 _BOUNDARY = {
@@ -408,6 +417,36 @@ async def os_map_query(req: _OSMapQueryRequest):
     except Exception:
         pass
 
+    # ── P53 — World Action Bus dry-run activation ─────────────────────────────
+    world_action_bus_dry_run_status = "MISSING_REAL_COMPONENT"
+    world_action_bus_real_component_found = False
+    world_action_bus_dry_run_enabled = False
+    world_action_bus_action_request_detected = False
+    world_action_bus_action_request_blocked = False
+    world_action_bus_detected_action_type = "NO_ACTION"
+    world_action_bus_dry_run_packet: dict = {}
+
+    try:
+        if _P53_OS_MAP_AVAILABLE and build_world_action_bus_dry_run_state:
+            p53_state = build_world_action_bus_dry_run_state(query=query)
+            world_action_bus_dry_run_status = p53_state.get(
+                "world_action_bus_dry_run_status", "MISSING_REAL_COMPONENT"
+            )
+            world_action_bus_real_component_found = p53_state.get("real_component_found", False)
+            world_action_bus_dry_run_enabled = p53_state.get("dry_run_enabled", False)
+            world_action_bus_action_request_detected = p53_state.get(
+                "action_request_detected", False
+            )
+            world_action_bus_action_request_blocked = p53_state.get(
+                "action_request_blocked", False
+            )
+            world_action_bus_detected_action_type = p53_state.get(
+                "detected_action_type", "NO_ACTION"
+            )
+            world_action_bus_dry_run_packet = p53_state.get("dry_run_packet", {})
+    except Exception:
+        pass
+
     # ── P51 — Brody readonly activation ──────────────────────────────────────
     brody_readonly_activation_status = "ACTIVE_READONLY"
     brody_readonly_enabled = True
@@ -634,7 +673,18 @@ async def os_map_query(req: _OSMapQueryRequest):
             "memory_read_enabled": memory_read_enabled,
             "graphiti_write_enabled": graphiti_write_enabled,
             "memory_write_enabled": memory_write_enabled,
+            # P53 — World Action Bus dry-run activation
+            "world_action_bus_dry_run_status": world_action_bus_dry_run_status,
+            "world_action_bus_real_component_found": world_action_bus_real_component_found,
+            "world_action_bus_dry_run_enabled": world_action_bus_dry_run_enabled,
+            "world_action_bus_real_action_enabled": False,
+            "world_action_bus_can_execute_real_action": False,
+            "world_action_bus_runtime_allowed_now": False,
+            "world_action_bus_action_request_detected": world_action_bus_action_request_detected,
+            "world_action_bus_action_request_blocked": world_action_bus_action_request_blocked,
+            "world_action_bus_detected_action_type": world_action_bus_detected_action_type,
+            "world_action_bus_dry_run_packet": world_action_bus_dry_run_packet,
             **_BOUNDARY,
         },
-        source="OS_MAP_QUERY_P52",
+        source="OS_MAP_QUERY_P53",
     )
