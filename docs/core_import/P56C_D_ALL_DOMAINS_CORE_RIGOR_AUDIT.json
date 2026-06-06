@@ -1,0 +1,143 @@
+{
+  "audit_id": "P56C-D_ALL_DOMAINS_CORE_RIGOR_AUDIT",
+  "status": "PASS",
+  "source_patch_authorized": false,
+  "source_patch_applied": false,
+  "expected_domains": [
+    "trading",
+    "bank",
+    "ecom",
+    "gps_defense_aviation"
+  ],
+  "invariant": "State -> Agents -> Aggregation -> MetaAgents -> GuardX108 -> CanonicalDecisionEnvelope",
+  "results": [
+    {
+      "domain": "trading",
+      "state": "TradingState",
+      "protocol_function": "run_trading_pipeline",
+      "aggregate_function": "aggregate_trading",
+      "agent_builder": "build_trading_agents",
+      "agent_file": "sigma\\domains\\trading_agents.py",
+      "status": "PASS",
+      "missing": [],
+      "checks": {
+        "state_class_exists": true,
+        "aggregate_function_exists": true,
+        "agent_builder_file_exists": true,
+        "agent_builder_function_exists": true,
+        "protocol_function_exists": true,
+        "protocol_uses_state": true,
+        "protocol_uses_aggregate": true,
+        "protocol_uses_agent_builder": true,
+        "protocol_uses_meta_agents": true,
+        "protocol_returns_guard_decide": true,
+        "protocol_mentions_canonical_envelope": true,
+        "runner_routes_domain": true,
+        "runner_constructs_state": true
+      },
+      "risk_scan": {
+        "protocol_direct_act": false,
+        "protocol_direct_write": false,
+        "runner_sigma_mutation_possible": true,
+        "runner_may_set_hold_alert": true,
+        "runner_may_set_s4": true
+      }
+    },
+    {
+      "domain": "bank",
+      "state": "BankState",
+      "protocol_function": "run_bank_pipeline",
+      "aggregate_function": "aggregate_bank",
+      "agent_builder": "build_bank_agents",
+      "agent_file": "sigma\\domains\\bank_agents.py",
+      "status": "PASS",
+      "missing": [],
+      "checks": {
+        "state_class_exists": true,
+        "aggregate_function_exists": true,
+        "agent_builder_file_exists": true,
+        "agent_builder_function_exists": true,
+        "protocol_function_exists": true,
+        "protocol_uses_state": true,
+        "protocol_uses_aggregate": true,
+        "protocol_uses_agent_builder": true,
+        "protocol_uses_meta_agents": true,
+        "protocol_returns_guard_decide": true,
+        "protocol_mentions_canonical_envelope": true,
+        "runner_routes_domain": true,
+        "runner_constructs_state": true
+      },
+      "risk_scan": {
+        "protocol_direct_act": false,
+        "protocol_direct_write": false,
+        "runner_sigma_mutation_possible": true,
+        "runner_may_set_hold_alert": true,
+        "runner_may_set_s4": true
+      }
+    },
+    {
+      "domain": "ecom",
+      "state": "EcomState",
+      "protocol_function": "run_ecom_pipeline",
+      "aggregate_function": "aggregate_ecom",
+      "agent_builder": "build_ecom_agents",
+      "agent_file": "sigma\\domains\\ecom_agents.py",
+      "status": "PASS",
+      "missing": [],
+      "checks": {
+        "state_class_exists": true,
+        "aggregate_function_exists": true,
+        "agent_builder_file_exists": true,
+        "agent_builder_function_exists": true,
+        "protocol_function_exists": true,
+        "protocol_uses_state": true,
+        "protocol_uses_aggregate": true,
+        "protocol_uses_agent_builder": true,
+        "protocol_uses_meta_agents": true,
+        "protocol_returns_guard_decide": true,
+        "protocol_mentions_canonical_envelope": true,
+        "runner_routes_domain": true,
+        "runner_constructs_state": true
+      },
+      "risk_scan": {
+        "protocol_direct_act": false,
+        "protocol_direct_write": false,
+        "runner_sigma_mutation_possible": true,
+        "runner_may_set_hold_alert": true,
+        "runner_may_set_s4": true
+      }
+    },
+    {
+      "domain": "gps_defense_aviation",
+      "state": "GpsDefenseAviationState",
+      "protocol_function": "run_gps_defense_aviation_pipeline",
+      "aggregate_function": "aggregate_gps_defense_aviation",
+      "agent_builder": "build_gps_defense_aviation_agents",
+      "agent_file": "sigma\\domains\\gps_defense_aviation_agents.py",
+      "status": "PASS",
+      "missing": [],
+      "checks": {
+        "state_class_exists": true,
+        "aggregate_function_exists": true,
+        "agent_builder_file_exists": true,
+        "agent_builder_function_exists": true,
+        "protocol_function_exists": true,
+        "protocol_uses_state": true,
+        "protocol_uses_aggregate": true,
+        "protocol_uses_agent_builder": true,
+        "protocol_uses_meta_agents": true,
+        "protocol_returns_guard_decide": true,
+        "protocol_mentions_canonical_envelope": true,
+        "runner_routes_domain": true,
+        "runner_constructs_state": true
+      },
+      "risk_scan": {
+        "protocol_direct_act": false,
+        "protocol_direct_write": false,
+        "runner_sigma_mutation_possible": true,
+        "runner_may_set_hold_alert": true,
+        "runner_may_set_s4": true
+      }
+    }
+  ]
+}
