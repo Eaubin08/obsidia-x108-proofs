@@ -1,0 +1,163 @@
+{
+  "audit_id": "P56E",
+  "date": "2026-06-06",
+  "branch": "p56a-core-proof-metric-delta-audit",
+  "current_head": "1e6d712b25f5a83663a3ff7f9c112d3e74378373",
+  "checked_commits": [
+    "1e6d712 test(p56c): verify all proof domains preserve core rigor",
+    "c503992 fix(p56d): bound sigma as post-guard veto layer",
+    "059a6db fix(p56b): align os2 gamma with os3 authority",
+    "c43bfc5 test(p56a): audit core proof metric deltas before fusion"
+  ],
+
+  "os2_gamma": {
+    "core_zip_value": 0.5,
+    "proof_value_post_p56b": 1.0,
+    "core_zip_path": "engine/obsidia_os2/metrics.py (in OBSIDIA_CORE_ONLY_FULL_MACHINERY.zip)",
+    "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os2/metrics.py",
+    "status": "RESOLVED",
+    "delta_type": "PROOF_STRENGTHENING_AFTER_REVIEW",
+    "authority_decision": "PROOF_WINS_BY_OS3_AUTHORITY",
+    "merge_action": "KEEP_PROOF",
+    "rationale": "P56B deliberately aligned OS2 gamma from 0.5 to 1.0 to match OS3/structural_core authority. This is a post-review strengthening — the proof now enforces the full asymmetry penalty across both OS layers.",
+    "formula_core_zip": "S = alpha*T + beta*H - 0.5*A  (reduced penalty)",
+    "formula_proof": "S = alpha*T + beta*H - 1.0*A  (full penalty, aligned with OS3)"
+  },
+
+  "os3_gamma": {
+    "value": 1.0,
+    "path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py",
+    "status": "CONFIRMED_UNCHANGED",
+    "formula": "S = alpha*tmean + beta*hstar - 1.0*A",
+    "theta_T": 0.7,
+    "theta_R": 0.7,
+    "theta_A": 0.6,
+    "lam": 1.0
+  },
+
+  "gamma_resolution": {
+    "status": "RESOLVED",
+    "os2_gamma": 1.0,
+    "os3_gamma": 1.0,
+    "both_layers_aligned": true,
+    "cross_layer_delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "intra_layer_delta_type": "PROOF_STRENGTHENING_AFTER_REVIEW",
+    "intra_layer_authority": "PROOF_WINS_BY_OS3_AUTHORITY"
+  },
+
+  "all_domains_core_rigor_status": {
+    "status": "PASS",
+    "source": "docs/core_import/P56C_D_ALL_DOMAINS_CORE_RIGOR_AUDIT.json",
+    "test_file": "tests/test_p56c_d_all_domains_core_rigor_audit.py",
+    "tests_passed": ["test_p56c_d_all_domains_core_rigor_audit_passes", "test_p56c_d_no_domain_protocol_direct_act_or_write"],
+    "domain_chain_verified": "State -> Agents -> Aggregation -> MetaAgents -> GuardX108 -> CanonicalDecisionEnvelope",
+    "domains_checked": ["bank", "trading", "ecom", "gps_defense_aviation"]
+  },
+
+  "sigma_post_guard_status": {
+    "status": "PASS",
+    "commit": "c503992 fix(p56d): bound sigma as post-guard veto layer",
+    "file_patched": "sigma/run_pipeline.py",
+    "markers_present": {
+      "POST_GUARD_VETO_ONLY": true,
+      "pre_sigma_market_verdict": true,
+      "pre_sigma_severity": true,
+      "sigma_authority_VETO_ONLY": true,
+      "sigma_authority_REPORT_ONLY": true
+    },
+    "invariants_confirmed": {
+      "sigma_never_authorizes": true,
+      "sigma_never_promotes_HOLD_BLOCK_to_ACT_ALLOW": true,
+      "sigma_can_only_downgrade_to_HOLD_STABILITY_ALERT": true,
+      "pre_guard_decision_preserved_in_trace": true
+    },
+    "tests_passed": [
+      "test_p56d_sigma_is_post_guard_veto_only",
+      "test_p56d_sigma_preserves_pre_sigma_decision_trace",
+      "test_p56d_sigma_fail_only_downgrades_to_hold_alert"
+    ]
+  },
+
+  "config_hash_status": {
+    "sigma_config_proof": {
+      "path": "sigma/sigma_config.json",
+      "sha256_prefix": "bd11cf7478e94bde",
+      "tau_min": 0.05,
+      "tau_max": 5.0,
+      "accel_limit": 0.6,
+      "calibration_date": "2026-03-12",
+      "calibration_method": "3-sigma_safe_ceiling"
+    },
+    "sigma_config_core_zip": {
+      "path": "agents/sigma_config.json (in ZIP)",
+      "sha256_prefix": "bd11cf7478e94bde",
+      "tau_min": 0.05,
+      "tau_max": 5.0,
+      "accel_limit": 0.6
+    },
+    "status": "EXACT_MATCH",
+    "note": "sigma_config.json is identical (SHA-256) between proof repo and core ZIP. tau_min/tau_max/accel_limit are synchronized.",
+    "agents_sigma_config": "MISSING in proof repo (sigma/ uses sigma_config.json, not agents/sigma_config.json)"
+  },
+
+  "forbidden_runtime_flags_status": {
+    "status": "PASS",
+    "scan_scope": ["sigma/", "apps/obsidia_api/", "runtime_wiring/"],
+    "scanner_false_positives_explained": {
+      "runtime_allowed_now_True_occurrences": 5,
+      "false_positive_reasons": [
+        "build_source_file_registry.py L311: string in a print() count statement — audit output, not assignment",
+        "registry_types.py L89-91: guard that RAISES REGISTRY_VIOLATION if True — a sentinel, not an activator",
+        "action_gateway_hold_block_sandbox.py L8: docstring 'NEVER runtime_allowed_now=True' — explicit prohibition",
+        "controlled_activation_matrix.py L314: dict label string describing future LEVEL_4 gate — current value is False (L440)",
+        "runtime_inventory_builder.py L36: string pattern key for scanning other files — not an assignment"
+      ],
+      "actual_effective_values": {
+        "runtime_allowed_now": false,
+        "graphiti_write": false,
+        "memory_write": false,
+        "neo4j_write": false,
+        "kernel_mutation": false,
+        "real_action": false
+      }
+    },
+    "decision_authority": "KX108_ONLY",
+    "decision_authority_confirmed_in": "sigma/contracts.py L356: 'decision_authority': 'KX108_ONLY'",
+    "emits_act": false,
+    "emits_verdict": false
+  },
+
+  "guard_thresholds_status": {
+    "status": "CONFIRMED",
+    "file": "sigma/guard.py (agents/guard.py == sigma/guard.py — EXACT_MATCH SHA 5b19a0cbbf78555e)",
+    "min_confidence_allow": 0.72,
+    "hold_confidence_floor": 0.45,
+    "max_unknowns_before_hold": 1,
+    "max_contradictions_before_block": 2
+  },
+
+  "os_layer_hashes_status": {
+    "status": "CONFIRMED",
+    "note": "All OS layers are EXACT_MATCH between core ZIP and proof repo (pre-P56B).",
+    "note_post_p56b": "OS2 metrics.py diverged intentionally (gamma 0.5 -> 1.0). Classified as PROOF_STRENGTHENING.",
+    "layers": {
+      "OS0": {"sha_prefix": "2756a768a0c95c91", "status": "EXACT_MATCH"},
+      "OS1": {"sha_prefix": "e1d85872e1b9149b", "status": "EXACT_MATCH", "min_wait_s": 108.0},
+      "OS2": {"sha_prefix_core_zip": "750f8622eaff3807", "sha_proof_post_p56b": "CHANGED", "status": "PROOF_STRENGTHENING", "gamma_core": 0.5, "gamma_proof": 1.0},
+      "OS3_structural_core": {"sha_prefix": "dce45cd70cda6694", "status": "EXACT_MATCH"},
+      "KERNEL": {"sha_prefix": "6689d271ef2b32b2", "status": "EXACT_MATCH", "theta_S": 0.25, "x108_min_wait_s": 108}
+    }
+  },
+
+  "prerequisite_tests": {
+    "test_p56b_gamma_controlled_patch.py": {"status": "PASS", "tests": 2},
+    "test_p56c_d_all_domains_core_rigor_audit.py": {"status": "PASS", "tests": 2},
+    "test_p56d_sigma_post_guard_veto.py": {"status": "PASS", "tests": 3},
+    "total_prerequisite_tests": 7,
+    "all_passed": true
+  },
+
+  "remaining_blockers": [],
+
+  "final_verdict": "P56E_POST_PATCH_METRIC_REAUDIT_PASS"
+}

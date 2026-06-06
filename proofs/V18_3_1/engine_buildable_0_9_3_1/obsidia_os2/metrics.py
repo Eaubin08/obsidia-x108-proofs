@@ -36,7 +36,7 @@ def asymmetry_weighted_degree(W: List[List[float]]) -> float:
     return sum(abs(d-mean) for d in degrees)/len(degrees)
 
 def compute_metrics_core_fixed(W_full: List[List[float]], core_nodes: List[int],
-                               alpha=1.0, beta=1.0, gamma=0.5) -> Metrics:
+                               alpha=1.0, beta=1.0, gamma=1.0) -> Metrics:
     W = [[W_full[i][j] for j in core_nodes] for i in core_nodes]
     T = triangle_mean(W)
     H = sum(sum(row) for row in W)/len(W)**2  # simplified meso proxy

@@ -200,25 +200,41 @@ def validate_bank_payload(state_data: dict) -> None:
 
 
 def apply_sigma(result_dict: dict, sigma: ObsidiaSigmaMonitor) -> dict:
+    """
+    Apply Sigma as an explicit post-Guard veto layer.
+
+    Boundary:
+      - Sigma never authorizes.
+      - Sigma never promotes HOLD/BLOCK to ACT/ALLOW.
+      - Sigma may only add evidence or downgrade to HOLD_STABILITY_ALERT.
+    """
+    pre_sigma_market_verdict = result_dict.get("market_verdict")
+    pre_sigma_severity = result_dict.get("severity", "S0")
+
     step_report = sigma.evaluate_step(
-        severity=result_dict.get("severity", "S0"),
+        severity=pre_sigma_severity,
         risks=result_dict.get("risk_flags", []),
         contras=result_dict.get("contradictions", []),
     )
     sigma_report = sigma.export_to_proofkit()
     stability = sigma_report["V18_9_sigma_stability"]["status"]
 
+    result_dict["pre_sigma_market_verdict"] = pre_sigma_market_verdict
+    result_dict["pre_sigma_severity"] = pre_sigma_severity
+    result_dict["sigma_override_policy"] = "POST_GUARD_VETO_ONLY"
+
     if stability == "FAIL":
         result_dict["market_verdict"] = "HOLD_STABILITY_ALERT"
         result_dict["severity"] = "S4"
         result_dict["sigma_override"] = True
+        result_dict["sigma_authority"] = "VETO_ONLY"
     else:
         result_dict["sigma_override"] = False
+        result_dict["sigma_authority"] = "REPORT_ONLY"
 
     result_dict["sigma_step"] = step_report
     result_dict["sigma_report"] = sigma_report["V18_9_sigma_stability"]
     return result_dict
-
 
 def envelope_to_dict(env) -> dict:
     return dataclasses.asdict(env)
