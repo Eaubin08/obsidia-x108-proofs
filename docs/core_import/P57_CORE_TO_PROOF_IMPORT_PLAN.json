@@ -1,0 +1,2808 @@
+[
+  {
+    "core_path": ".env.example",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": ".gitignore",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "ARCHITECTURE.md",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "AUDIT_GUIDE.md",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "CHALLENGE_PROTOCOL.md",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "Caddyfile",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "EXECUTION_LOG_FINAL_v120.txt",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "EXECUTION_LOG_v1.3.0.txt",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "MANIFESTS/CORE_ONLY_FULL_MACHINERY_LOC_SUMMARY.csv",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "MANIFESTS/CORE_ONLY_FULL_MACHINERY_MANIFEST_SHA256.csv",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "MANIFESTS/CORE_ONLY_FULL_MACHINERY_RULES.md",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "MANIFESTS/CORE_ONLY_FULL_MACHINERY_SUMMARY.txt",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "MANIFESTS/MISSING_CORE_ONLY_FULL_MACHINERY.txt",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "README.md",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agent_sources/OBSIDIA_TOUS_LES_AGENTS.docx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "agents/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/aggregation.py",
+    "proof_target_path": "sigma/aggregation.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      ""
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "agents/base.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/contracts.py",
+    "proof_target_path": "sigma/contracts.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      ""
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "agents/domains/bank_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/domains/ecom_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/domains/meta_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/domains/trading_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/guard.py",
+    "proof_target_path": "sigma/guard.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Exact SHA match — already present in proof.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "NO_ACTION"
+  },
+  {
+    "core_path": "agents/obsidia_sigma_v130.py",
+    "proof_target_path": "sigma/obsidia_sigma_v130.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      ""
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "agents/protocols.py",
+    "proof_target_path": "sigma/protocols.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      ""
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "agents/registry.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/run_pipeline.py",
+    "proof_target_path": "sigma/run_pipeline.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      ""
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "agents/sigma_config.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/sigma_dashboard.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/sigma_monitor.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/utils/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "agents/utils/indicators.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "app/applet/fetch.js",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "app/applet/fetch.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "automation/canonicalPipeline.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "automation/contracts.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "automation/payloadValidator.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "bootstrap.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "config/strategy.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "core/engine",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "data/banking/scenarios.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "data/ecommerce/scenarios.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "data/scenarios.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "data/strasbourg_clock/README.md",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "data/strasbourg_clock/graphs/test1_baseline_delta_day.png",
+    "proof_target_path": "tests/test1_baseline_delta_day.png",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/graphs/test2_noise_delta_day.png",
+    "proof_target_path": "tests/test2_noise_delta_day.png",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/graphs/test3_structural_error_delta_day.png",
+    "proof_target_path": "tests/test3_structural_error_delta_day.png",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/graphs/test4_hold_delta_day.png",
+    "proof_target_path": "tests/test4_hold_delta_day.png",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/manifest.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "data/strasbourg_clock/test1_baseline.csv",
+    "proof_target_path": "tests/test1_baseline.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/test2_noise.csv",
+    "proof_target_path": "tests/test2_noise.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/test3_structural_error.csv",
+    "proof_target_path": "tests/test3_structural_error.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/strasbourg_clock/test4_hold.csv",
+    "proof_target_path": "tests/test4_hold.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "data/trading/BTC_1h.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "distributed/aggregator.py",
+    "proof_target_path": "proofs/distributed/",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Distributed consensus tests — review for overlap with proof consensus.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "distributed/docker-compose.yml",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "distributed/test_consensus_inprocess.py",
+    "proof_target_path": "tests/test_consensus_inprocess.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "distributed/test_consensus_local.py",
+    "proof_target_path": "tests/test_consensus_local.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "docker/repro.Dockerfile",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "docker/run_repro.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "engine/api_server/attestation.py",
+    "proof_target_path": "tests/attestation.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "engine/api_server/audit_log.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/api_server/main.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/api_server/run_api.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "engine/api_server/run_attestation.py",
+    "proof_target_path": "tests/run_attestation.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "engine/api_server/security.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/api_server/signing.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/api_server/worm_uploader.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/bus/__init__.py",
+    "proof_target_path": "apps/obsidia_api/bus/",
+    "category": "F_NEEDS_ADAPTER",
+    "reason": "Bus layer has proof equivalent in apps/obsidia_api/bus/ — needs adapter comparison.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_bus_dry_run_only",
+      "test_no_act_emission"
+    ],
+    "merge_action": "COMPARE_AND_ADAPT"
+  },
+  {
+    "core_path": "engine/bus/message.py",
+    "proof_target_path": "apps/obsidia_api/bus/",
+    "category": "F_NEEDS_ADAPTER",
+    "reason": "Bus layer has proof equivalent in apps/obsidia_api/bus/ — needs adapter comparison.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_bus_dry_run_only",
+      "test_no_act_emission"
+    ],
+    "merge_action": "COMPARE_AND_ADAPT"
+  },
+  {
+    "core_path": "engine/bus/registry.py",
+    "proof_target_path": "apps/obsidia_api/bus/",
+    "category": "F_NEEDS_ADAPTER",
+    "reason": "Bus layer has proof equivalent in apps/obsidia_api/bus/ — needs adapter comparison.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_bus_dry_run_only",
+      "test_no_act_emission"
+    ],
+    "merge_action": "COMPARE_AND_ADAPT"
+  },
+  {
+    "core_path": "engine/bus/router.py",
+    "proof_target_path": "apps/obsidia_api/bus/",
+    "category": "F_NEEDS_ADAPTER",
+    "reason": "Bus layer has proof equivalent in apps/obsidia_api/bus/ — needs adapter comparison.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_bus_dry_run_only",
+      "test_no_act_emission"
+    ],
+    "merge_action": "COMPARE_AND_ADAPT"
+  },
+  {
+    "core_path": "engine/cli/obsidia_cli.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "API server has proof equivalent (apps/obsidia_api/) — architectural comparison needed.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_api_route_binding"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/core_full/entrypoint.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/core_full/modules/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/adapter.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/__init__.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/contract.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/demo.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/determinism.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/ir.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/sandbox.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/tests.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/tests_advanced.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os0/translate.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os1/__init__.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os1/os1.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os1/parse_input.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/obsidia_os1/x108.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/proof/__init__.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/proof/codegen.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/core_full/modules/os_trad/vendor/proof/runner.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "engine/demo/request_approved.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/demo/request_initial.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/demo/run_demo.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_kernel/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_kernel/contract.py",
+    "proof_target_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Exact SHA match — already present in proof.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "NO_ACTION"
+  },
+  {
+    "core_path": "engine/obsidia_kernel/kernel.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_os2/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_os2/metrics.py",
+    "proof_target_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os2/metrics.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Proof version was intentionally upgraded (P56B gamma patch or extension). Keep proof.",
+    "risk": "NONE",
+    "required_tests": [
+      "test_p56e_os2_proof_gamma_equals_1"
+    ],
+    "merge_action": "KEEP_PROOF"
+  },
+  {
+    "core_path": "engine/obsidia_os2_metrics.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_runtime/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_runtime/engine_final.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/obsidia_runtime/engine_runtime.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/contract.py",
+    "proof_target_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/contract.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Exact SHA match — already present in proof.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "NO_ACTION"
+  },
+  {
+    "core_path": "engine/os0/demo.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/determinism.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/ir.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/sandbox.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os0/tests.py",
+    "proof_target_path": "tests/tests.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "engine/os0/tests_advanced.py",
+    "proof_target_path": "tests/tests_advanced.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "engine/os0/translate.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os1/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os1/os1.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os1/parse_input.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os1/x108.py",
+    "proof_target_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/x108.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Exact SHA match — already present in proof.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "NO_ACTION"
+  },
+  {
+    "core_path": "engine/os3/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os3/core_split.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/os3/metrics.py",
+    "proof_target_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py",
+    "category": "C_KEEP_PROOF_VERSION",
+    "reason": "Exact SHA match — already present in proof.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "NO_ACTION"
+  },
+  {
+    "core_path": "engine/os3/svg.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/registry/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown import candidacy for layer REGISTRY.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/registry/loader.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown import candidacy for layer REGISTRY.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/unified/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/unified/orchestrator.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "engine/unified/pipeline.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Runtime engine layer — needs architectural review before import.",
+    "risk": "MEDIUM",
+    "required_tests": [
+      "test_runtime_binding",
+      "test_no_runtime_side_effects"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/EVIDENCE.md",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/STRASBOURG_CLOCK_README.md",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/manifest.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/test1_baseline.csv",
+    "proof_target_path": "tests/test1_baseline.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/test2_noise.csv",
+    "proof_target_path": "tests/test2_noise.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/test3_structural_error.csv",
+    "proof_target_path": "tests/test3_structural_error.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/test4_hold.csv",
+    "proof_target_path": "tests/test4_hold.csv",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "evidence/os4/strasbourg_clock_x108/x108_trace_report.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "examples/bank_normal.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "examples/bank_suspicious.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "examples/ecom_normal.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "examples/trading_bullish.json",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "governance/aggregation.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "governance/contracts.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "governance/guard.py",
+    "proof_target_path": "",
+    "category": "E_DO_NOT_IMPORT",
+    "reason": "Duplicate of another core path already present in proof.",
+    "risk": "REDUNDANCY",
+    "required_tests": [],
+    "merge_action": "DO_NOT_IMPORT"
+  },
+  {
+    "core_path": "governance/integrityGate.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "governance/invariants.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "governance/riskKillswitch.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "governance/x108TemporalLock.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "hashes/engine_files.sha256",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/banking/engine.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/core/invariants.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/ecommerce/safetyGate.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/execution/erc8004Builder.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/features/coherence.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/features/friction.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/features/regime.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/features/volatility.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/gates/integrityGate.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/gates/riskKillswitch.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/gates/x108TemporalLock.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "lib/simulation/simLite.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/StatusRail.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/AgentConstellationPanel.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/DecisionEnvelopeCard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/HealthMatrix.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/IncidentCard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/ProofChainView.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_components/canonical/ReplayPanel.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_ts/canonicalPipeline.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_ts/contracts.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/canonical_ts/payloadValidator.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/contexts/WorldContext.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/App_v2.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/Control.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/Future.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/Live.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/Mission.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/pages_v2/Past.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/__init__.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/aggregation.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/base.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/contracts.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/demo_run.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/domains/bank_agents.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/domains/ecom_agents.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/domains/meta_agents.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/domains/trading_agents.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/guard.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/protocols.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/registry.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/run_pipeline.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/tests/test_agents_functional.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/python_agents/utils/indicators.py",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "os4-integration/ui_components/CanonicalAgentPanel.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "package-lock.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "package.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "pnpm-lock.yaml",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "python_agents/__init__.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/aggregation.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/base.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/contracts.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/demo_run.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/domains/bank_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/domains/ecom_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/domains/meta_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/domains/trading_agents.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/guard.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/protocols.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/registry.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/run_pipeline.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "python_agents/tests/test_agents_functional.py",
+    "proof_target_path": "tests/test_agents_functional.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "python_agents/utils/indicators.py",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "requirements.txt",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "scripts/generate_hashes.py",
+    "proof_target_path": "scripts/generate_hashes.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "scripts/verify_hashes.py",
+    "proof_target_path": "scripts/verify_hashes.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "src/App.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/DomainCard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/GlobalHeader.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/ModuleHeader.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/ProtocolOverview.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/Sidebar.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/SignalsPanel.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/StrategyPanel.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/Terminal.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/components/WorkflowProgress.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/config/domains.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/config/strategy.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/index.css",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/lib/banking/engine.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/lib/banking/gemini.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/lib/core/humanAlgebra.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/lib/ecommerce/safetyGate.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/lib/utils.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/main.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/AgentRegistry.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/BankingModule.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/CapitalVault.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/Dashboard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/EcommerceModule.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/HomeDashboard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/Leaderboard.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/OS0Invariants.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/OS1Observation.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/OS2Simulation.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/OS3Governance.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/OS4Reports.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/RiskRouter.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/TradingTests.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/pages/TrustSignals.tsx",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "src/types.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/adversarial/ADVERSARIAL_REPORT_TEMPLATE.md",
+    "proof_target_path": "tests/ADVERSARIAL_REPORT_TEMPLATE.md",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/ADVERSARIAL_RESULTS.md",
+    "proof_target_path": "tests/ADVERSARIAL_RESULTS.md",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/RUN_ALL_ADVERSARIAL.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/adversarial/test_consensus_split.py",
+    "proof_target_path": "tests/test_consensus_split.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/test_merkle_collision.py",
+    "proof_target_path": "tests/test_merkle_collision.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/test_monotonic_break.py",
+    "proof_target_path": "tests/test_monotonic_break.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/test_seal_tamper.py",
+    "proof_target_path": "tests/test_seal_tamper.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/test_signature_tamper.py",
+    "proof_target_path": "tests/test_signature_tamper.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/adversarial/test_threshold_fuzz.py",
+    "proof_target_path": "tests/test_threshold_fuzz.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/canonical_components.test.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/engines.test.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/engines/bankEngine.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/engines/ecomEngine.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/engines/guardX108.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/engines/tradingEngine.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tests/sigma_stress_test.py",
+    "proof_target_path": "tests/sigma_stress_test.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/test_agents_functional.py",
+    "proof_target_path": "tests/test_agents_functional.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/test_invariants_against_engine.py",
+    "proof_target_path": "tests/test_invariants_against_engine.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tests/test_sigma_v18_9.py",
+    "proof_target_path": "tests/test_sigma_v18_9.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Core test file — review before importing. May duplicate proof tests.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "REVIEW_BEFORE_IMPORT"
+  },
+  {
+    "core_path": "tools/anchor_merkle_root.py",
+    "proof_target_path": "scripts/anchor_merkle_root.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/calibrate_sigma.py",
+    "proof_target_path": "scripts/calibrate_sigma.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/conformance/check_traces_x108.py",
+    "proof_target_path": "scripts/check_traces_x108.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/conformance/run_conformance.py",
+    "proof_target_path": "scripts/run_conformance.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/standard/verify_x108_standard.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tools/standard/x108_lean_check.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tools/standard/x108_tla_check.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tools/standard/x108_trace_check.py",
+    "proof_target_path": "scripts/x108_trace_check.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/standard/x108_vectors_check.py",
+    "proof_target_path": "scripts/x108_vectors_check.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/verify_all_phases.sh",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  },
+  {
+    "core_path": "tools/verify_chain_anchor.py",
+    "proof_target_path": "scripts/verify_chain_anchor.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tools/verify_threat_model.py",
+    "proof_target_path": "scripts/verify_threat_model.py",
+    "category": "B_IMPORT_AFTER_TEST",
+    "reason": "Tooling/script — safe to import after verification.",
+    "risk": "LOW",
+    "required_tests": [
+      "manual_run_verification"
+    ],
+    "merge_action": "IMPORT_WITH_REVIEW"
+  },
+  {
+    "core_path": "tsconfig.json",
+    "proof_target_path": "",
+    "category": "G_NEEDS_MANUAL_REVIEW",
+    "reason": "Unknown status — manual review required.",
+    "risk": "UNKNOWN",
+    "required_tests": [
+      "manual_review"
+    ],
+    "merge_action": "MANUAL_REVIEW"
+  },
+  {
+    "core_path": "types/erc8004.ts",
+    "proof_target_path": "",
+    "category": "D_KEEP_CORE_AS_REFERENCE_ONLY",
+    "reason": "Non-Python (TypeScript/UI/data/doc) or doc-only — keep as reference.",
+    "risk": "NONE",
+    "required_tests": [],
+    "merge_action": "REFERENCE_ONLY"
+  }
+]
