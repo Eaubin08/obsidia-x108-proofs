@@ -1,0 +1,830 @@
+[
+  {
+    "metric_id": "P01_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P02_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "OS3",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P03_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "OS0",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P04_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "OS1",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P05_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "KERNEL",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M001",
+    "metric_name": "AGGREGATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M002",
+    "metric_name": "ALLOW",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M003",
+    "metric_name": "BANK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M004",
+    "metric_name": "BLOCK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M005",
+    "metric_name": "CANONICAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M006",
+    "metric_name": "CANONICAL_FRAMEWORK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M007",
+    "metric_name": "CONTRADICTION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M008",
+    "metric_name": "DB_REAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M009",
+    "metric_name": "ECOM",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M010",
+    "metric_name": "GOVERNANCE",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M011",
+    "metric_name": "GPS_DEFENSE_AVIATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "DOMAIN_EXTENSION",
+    "authority_decision": "EXTENSION_ONLY",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M012",
+    "metric_name": "HOLD",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M013",
+    "metric_name": "INTERPRETATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M014",
+    "metric_name": "KERNEL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M015",
+    "metric_name": "META",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M016",
+    "metric_name": "OBSERVATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M017",
+    "metric_name": "OS4_LOCAL_FALLBACK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M018",
+    "metric_name": "PREVIEW_LOCAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M019",
+    "metric_name": "PROOF",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M020",
+    "metric_name": "PYTHON",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M021",
+    "metric_name": "S0",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M022",
+    "metric_name": "S1",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M023",
+    "metric_name": "S2",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M024",
+    "metric_name": "S3",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M025",
+    "metric_name": "S4",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M026",
+    "metric_name": "SIGMA",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M027",
+    "metric_name": "TRADING",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M028",
+    "metric_name": "WS_REAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P06_M029",
+    "metric_name": "confidence",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M030",
+    "metric_name": "decision_id",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M031",
+    "metric_name": "market_verdict",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M032",
+    "metric_name": "metrics",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M033",
+    "metric_name": "proposed_verdict",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M034",
+    "metric_name": "severity",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M035",
+    "metric_name": "vote",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P06_M036",
+    "metric_name": "x108_gate",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P07_M001",
+    "metric_name": "market_verdict",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P08_HASH_DIFF",
+    "metric_name": "<file_content_differs>",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "UNKNOWN_REQUIRES_MANUAL_REVIEW",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P09_FILE",
+    "metric_name": "<file_hash>",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P10_HASH_DIFF",
+    "metric_name": "<file_content_differs>",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "UNKNOWN_REQUIRES_MANUAL_REVIEW",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P11_HASH_DIFF",
+    "metric_name": "<file_content_differs>",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "UNKNOWN_REQUIRES_MANUAL_REVIEW",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P11b_HASH_DIFF",
+    "metric_name": "<file_content_differs>",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_DIFFERENT_ROLE",
+    "delta_type": "CORE_INTERNAL_BRIDGE_VARIANT",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M001",
+    "metric_name": "alpha",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M002",
+    "metric_name": "beta",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M003",
+    "metric_name": "gamma",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M004",
+    "metric_name": "lam",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M005",
+    "metric_name": "theta",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M006",
+    "metric_name": "theta_A",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M007",
+    "metric_name": "theta_R",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M008",
+    "metric_name": "theta_S",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P_CROSS_OS2_OS3_M009",
+    "metric_name": "theta_T",
+    "layer_scope": "OS2",
+    "semantic_equivalence": "DIFFERENT_LAYER",
+    "delta_type": "LAYER_DIFFERENCE_NOT_CONFLICT",
+    "authority_decision": "KEEP_LAYER_SEPARATED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M001",
+    "metric_name": "AGGREGATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M002",
+    "metric_name": "ALLOW",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M003",
+    "metric_name": "BANK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M004",
+    "metric_name": "BLOCK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M005",
+    "metric_name": "CANONICAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M006",
+    "metric_name": "CANONICAL_FRAMEWORK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M007",
+    "metric_name": "CONTRADICTION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M008",
+    "metric_name": "DB_REAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M009",
+    "metric_name": "ECOM",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M010",
+    "metric_name": "GOVERNANCE",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M011",
+    "metric_name": "GPS_DEFENSE_AVIATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "DOMAIN_EXTENSION",
+    "authority_decision": "EXTENSION_ONLY",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M012",
+    "metric_name": "HOLD",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M013",
+    "metric_name": "INTERPRETATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M014",
+    "metric_name": "KERNEL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M015",
+    "metric_name": "META",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M016",
+    "metric_name": "OBSERVATION",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M017",
+    "metric_name": "OS4_LOCAL_FALLBACK",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M018",
+    "metric_name": "PREVIEW_LOCAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M019",
+    "metric_name": "PROOF",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M020",
+    "metric_name": "PYTHON",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M021",
+    "metric_name": "S0",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M022",
+    "metric_name": "S1",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M023",
+    "metric_name": "S2",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M024",
+    "metric_name": "S3",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M025",
+    "metric_name": "S4",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M026",
+    "metric_name": "SIGMA",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M027",
+    "metric_name": "TRADING",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M028",
+    "metric_name": "WS_REAL",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "CORE_ONLY",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "LOW"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M029",
+    "metric_name": "confidence",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M030",
+    "metric_name": "decision_id",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M031",
+    "metric_name": "market_verdict",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M032",
+    "metric_name": "metrics",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M033",
+    "metric_name": "proposed_verdict",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "EXACT_MATCH",
+    "authority_decision": "CORE_WINS",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M034",
+    "metric_name": "severity",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M035",
+    "metric_name": "vote",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  },
+  {
+    "metric_id": "P12_GOVERNANCE_M036",
+    "metric_name": "x108_gate",
+    "layer_scope": "AGENTS_CORE",
+    "semantic_equivalence": "SAME_LAYER_SAME_ROLE",
+    "delta_type": "PROOF_ONLY",
+    "authority_decision": "KEEP_BOTH_NAMESPACED",
+    "semantic_risk": "NONE"
+  }
+]
