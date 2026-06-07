@@ -133,7 +133,9 @@ def require_neo4j():
 def neo4j_env():
     uri = os.environ.get("NEO4J_URI", "bolt://localhost:7688")
     user = os.environ.get("NEO4J_USER", "neo4j")
-    password = os.environ.get("NEO4J_PASSWORD", "admin1234") # Fallback de secours courant
+    password = os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        raise RuntimeError("NEO4J_PASSWORD_NOT_SET")
     database = os.environ.get("NEO4J_DATABASE", "neo4j")
     return uri, user, password, database
 

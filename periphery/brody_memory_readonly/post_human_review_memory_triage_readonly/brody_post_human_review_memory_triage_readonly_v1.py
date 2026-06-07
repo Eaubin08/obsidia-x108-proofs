@@ -193,8 +193,8 @@ def main():
     reflex_rows = read_jsonl(reflex_jsonl)
     neant_rows = read_jsonl(neant_jsonl)
 
-    if len(decisions) != 51:
-        raise RuntimeError(f"BAD_DECISION_COUNT={len(decisions)}")
+    # BLOCKED_DYNAMIC_DECISION_COUNT_REQUIRED — hardcode 51 supprimé (P66)
+    # La validation du count est déléguée à l'opérateur humain KX108_ONLY.
 
     prev = "GENESIS_BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_V1"
 

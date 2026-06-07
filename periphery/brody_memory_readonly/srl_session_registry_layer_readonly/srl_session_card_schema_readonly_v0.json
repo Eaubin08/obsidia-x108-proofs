@@ -1,0 +1,29 @@
+{
+  "schema_id": "SRL_SESSION_CARD_V0",
+  "version": "0.1.0",
+  "dry_run_only": true,
+  "readonly": true,
+  "description": "Schéma d'une fiche session SRL V0. Readonly — aucune écriture.",
+  "fields": {
+    "session_id": {"type": "string", "required": true, "description": "Identifiant unique de la session."},
+    "zone": {"type": "string", "enum": ["ACTIVE", "SEMI_ACTIVE", "COLD", "GHOST", "REFLEX_ALERT", "BOUNDARY_ALERT"], "required": true},
+    "is_candidate": {"type": "boolean", "required": true, "description": "True uniquement si zone=ACTIVE."},
+    "axes": {"type": "array", "items": {"type": "string"}, "required": false},
+    "alerts": {"type": "array", "items": {"type": "string"}, "required": false},
+    "reflex_status": {"type": "string", "enum": ["PROCEED_CONTEXT_ONLY", "BOUNDARY_ALERT_NON_DECISIONAL"], "required": true},
+    "reasons": {"type": "array", "items": {"type": "string"}, "required": false},
+    "record_hash": {"type": "string", "description": "SHA256 Merkle hash de la fiche.", "required": true},
+    "timestamp": {"type": "string", "format": "datetime", "required": true},
+    "memory_write": {"type": "boolean", "const": false},
+    "graphiti_write": {"type": "boolean", "const": false},
+    "decision_authority": {"type": "string", "const": "KX108_ONLY"}
+  },
+  "forbidden_field_values": {
+    "emits_verdict": true,
+    "emits_allow_hold_block": true,
+    "memory_write": true,
+    "graphiti_write": true,
+    "emits_act": true,
+    "kernel_mutation": true
+  }
+}

@@ -14,8 +14,10 @@ BOUNDARY = {
     "memory_decision": False,
     "allowed_to_decide": False,
     "emits_act": False,
-    "emits_allow_hold_block": True,  # RÉACTIVATION DE LA SÉCURITÉ ACTIVE
-    "emits_verdict": True,            # VERDICT AUTORISÉ SUR L'INTÉGRITÉ
+    "emits_allow_hold_block": False,   # P66 fix: SRL readonly ne décide pas
+    "emits_verdict": False,            # P66 fix: pas de verdict décisionnel
+    "emits_boundary_alert": True,      # alerte non-décisionnelle uniquement
+    "emits_reflex_alert": True,        # alerte reflex non-décisionnelle uniquement
     "kernel_mutation": False,
     "x108_mutation": False,
     "x108_runtime_binding": False,
@@ -90,7 +92,7 @@ class ReflexReducer:
         found = sorted(set(sigs) & self.threat_signatures)
         if found:
             # INJECTION MANDATORY HOLD : LE SYSTEME APPLIQUE L'ARRET MANDATAIRE IMMEDIAT
-            return "MANDATORY_HOLD_IMMEDIATE_BLOCK", found
+            return "BOUNDARY_ALERT_NON_DECISIONAL", found
         return "PROCEED_CONTEXT_ONLY", []
 
 def load_jsonl(path):
@@ -209,10 +211,10 @@ def classify_record(record, index, sealer):
     reasons = []
     
     # SYSTEME CRISTAL ACTIF : Application des regles d'arret strict
-    if reflex_status == "MANDATORY_HOLD_IMMEDIATE_BLOCK":
-        zone = "MANDATORY_HOLD"
+    if reflex_status == "BOUNDARY_ALERT_NON_DECISIONAL":
+        zone = "BOUNDARY_ALERT"
         candidate = False
-        reasons.append(f"CRITICAL_VIOLATION_DETECTED: {reflex_hits}")
+        reasons.append(f"BOUNDARY_ALERT_NON_DECISIONAL: {reflex_hits}")
     elif is_terminal_command(user_text):
         zone = "NEANT"
         candidate = False
