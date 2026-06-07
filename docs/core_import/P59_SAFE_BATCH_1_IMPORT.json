@@ -1,0 +1,109 @@
+{
+  "audit_id": "P59",
+  "status": "P59_SAFE_BATCH_1_IMPORT_READY",
+  "source_patch_applied": true,
+  "import_scope": "SAFE_BATCH_1_ONLY",
+  "imported_files": [
+    {
+      "core_path": "scripts/generate_hashes.py",
+      "target_path": "scripts/generate_hashes.py",
+      "sha256": "a2aa6d46fe4685239a8417904165c6be56de7d66fba1af76d304bfff2b196638",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "scripts/verify_hashes.py",
+      "target_path": "scripts/verify_hashes.py",
+      "sha256": "cd8912359366597c3b56af74ac11d61e829b4a4b5d94f974c614f92a98402ff1",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/anchor_merkle_root.py",
+      "target_path": "scripts/anchor_merkle_root.py",
+      "sha256": "cffcf48399f2a4789b6852c194c5baed9250c55f11f1eda5c3088c836591439c",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/calibrate_sigma.py",
+      "target_path": "scripts/calibrate_sigma.py",
+      "sha256": "82ce15ff08a09e45e222f1b222fcb875ab0c78a37791b889c453be5102c5a475",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/conformance/check_traces_x108.py",
+      "target_path": "scripts/check_traces_x108.py",
+      "sha256": "2b3d1cef6b8313eb87122d4c4d93871b339e803151cd476ed6b997456b4f7278",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/conformance/run_conformance.py",
+      "target_path": "scripts/run_conformance.py",
+      "sha256": "edb247ae3dec3289b40271cfe22de764a1114a909b5a96bcc56120537f965609",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/standard/x108_trace_check.py",
+      "target_path": "scripts/x108_trace_check.py",
+      "sha256": "c18ed275c9353fb44fafd74e80a70fab2da1cc6ff8ee82b2921255c663ce3a1c",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/standard/x108_vectors_check.py",
+      "target_path": "scripts/x108_vectors_check.py",
+      "sha256": "0966a5c69fb988eff54914aeecdff64c96746800fec27b742510bb2b3734249c",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/verify_chain_anchor.py",
+      "target_path": "scripts/verify_chain_anchor.py",
+      "sha256": "48063e731ff9c52292178001c62e5a74968d2fdcb3eded2bbe1c6025755ebfaf",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tools/verify_threat_model.py",
+      "target_path": "scripts/verify_threat_model.py",
+      "sha256": "7567530fc43af98c7fc1cbd5b8a358ba63bd90148fd1f6c03da6ce0cb8c8ccf7",
+      "execution_surface": "AUDIT_TOOLING",
+      "classification": "SAFE_BATCH_1",
+      "required_tests": ["test_no_write_side_effects", "test_no_act_emission", "test_no_runtime_activation", "manual_run_verification"],
+      "import_action": "COPIED_NEW"
+    }
+  ],
+  "already_present_identical": [],
+  "blocked_target_exists_different": [],
+  "missing_sources": [],
+  "forbidden_skipped": [],
+  "files_imported_count": 10,
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "apps_modified": false,
+  "proofs_v18_3_1_modified": false,
+  "act_enabled": false,
+  "next_step": "P60_TEST_BATCH_2_IMPORT"
+}
