@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Mise à jour automatique GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "obsidia-kernel-team"
+    labels:
+      - "dependencies"
+      - "security"
+
+  # Mise à jour Python (si requirements.txt racine créé)
+  # Décommenter après création de requirements.txt :
+  # - package-ecosystem: "pip"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "monthly"
+  #   reviewers:
+  #     - "obsidia-kernel-team"
