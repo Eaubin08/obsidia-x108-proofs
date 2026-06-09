@@ -1,0 +1,116 @@
+{
+  "status": "POST_P80_HARDENING_DEVIATION_REVIEW_READY",
+  "mode": "AUDIT_ONLY",
+  "branch": "post-p80-hardening-deviation-review",
+  "date": "2026-06-09",
+  "dry_run_only": true,
+  "check_forbidden_content_modified": true,
+  "gitignore_modified": true,
+  "whitelist_reviewed": true,
+  "whitelist_too_broad": false,
+  "whitelist_entries_added": [
+    {
+      "entry": "docs/security/",
+      "scope": "Tous fichiers docs/security/ avec 'secret' dans le nom",
+      "files_covered": 3,
+      "verdict": "JUSTIFIED",
+      "risk": "LOW",
+      "note": "Outil ne scanne que les noms — contenu couvert par TruffleHog/Gitleaks CI"
+    },
+    {
+      "entry": ".github/workflows/",
+      "scope": "Tous fichiers .github/workflows/ avec 'secret' dans le nom",
+      "files_covered": 1,
+      "verdict": "JUSTIFIED",
+      "risk": "LOW",
+      "note": "secret-scan.yml — aucun secret hardcodé, GITHUB_TOKEN est référence plateforme"
+    },
+    {
+      "entry": "docs/core_import/POST_P80_SECRET_ROTATION",
+      "scope": "Fragment narrow — uniquement 2 fichiers POST_P80_SECRET_ROTATION*",
+      "files_covered": 2,
+      "verdict": "SAFE",
+      "risk": "NONE",
+      "note": "Très étroit — JSON et MD post-P80 vérifiés sans valeur réelle"
+    }
+  ],
+  "deviation_findings": [
+    {
+      "id": "DEV-1",
+      "question": "Whitelist check_forbidden_content.py trop large ?",
+      "verdict": "NON_TOO_BROAD",
+      "severity": "INFO",
+      "detail": "3 entrées ajoutées — outil scanne uniquement les noms, jamais les contenus. TruffleHog/Gitleaks couvrent les contenus en CI."
+    },
+    {
+      "id": "DEV-2",
+      "question": "docs/security/ peut-il cacher un vrai secret sans être détecté ?",
+      "verdict": "RISK_CONTAINED",
+      "severity": "INFO",
+      "detail": "Scan de contenu effectué : 5 fichiers OK. WARN L58 POST_P80_SECRET_ROTATION_PLAN.md est un faux positif (placeholder REDACTED_SEE_ENV_FILE). TruffleHog/Gitleaks couvrent le contenu."
+    },
+    {
+      "id": "DEV-3",
+      "question": ".github/workflows/ peut-il cacher un vrai secret sans être détecté ?",
+      "verdict": "RISK_CONTAINED",
+      "severity": "INFO",
+      "detail": "secret-scan.yml : aucun hardcoded secret. GITHUB_TOKEN = référence plateforme. TruffleHog/Gitleaks couvrent workflows."
+    },
+    {
+      "id": "DEV-4",
+      "question": "docs/core_import/POST_P80_SECRET_ROTATION* whitelist sûre ?",
+      "verdict": "SAFE_TO_WHITELIST",
+      "severity": "INFO",
+      "detail": "Fragment étroit — 2 fichiers uniquement. Contenu vérifié : aucun pattern secret réel (connexion URI, mot de passe en clair)."
+    },
+    {
+      "id": "DEV-5",
+      "question": ".gitignore protège-t-il bien PROOFKIT_REPORT.json ?",
+      "verdict": "GITIGNORE_CONSISTENT_NOTE_ON_TRACKING_STATE",
+      "severity": "NOTE",
+      "detail": "Entrée gitignore supprimée correctement. Fichier actuellement untracked (??) non tracké par git — commentaire 'intentionnellement traqué' est aspirationnel. Aucun risque sécurité : PROOFKIT_REPORT.json = métadonnées uniquement."
+    },
+    {
+      "id": "DEV-6",
+      "question": "NEO4J_PASSWORD reste-t-il documenté comme blocker externe ?",
+      "verdict": "CONFIRMED_BLOCKER_DOCUMENTED",
+      "severity": "OK",
+      "detail": "SECRET_VALUE_REDACTED dans toutes occurrences. Chaîne P79 → P80 → post-P80 : secret_rotation_required=true, SEC-1 resolved=false."
+    },
+    {
+      "id": "DEV-7",
+      "question": "La publication reste-t-elle bloquée tant que rotation non faite ?",
+      "verdict": "PUBLICATION_STILL_BLOCKED",
+      "severity": "OK",
+      "detail": "publication_decision=STILL_BLOCKED_UNTIL_SECRET_ROTATED_EXTERNALLY cohérent sur P79→P80→post-P80→review."
+    }
+  ],
+  "max_severity_found": "NOTE",
+  "new_blockers_found": false,
+  "security_regression_found": false,
+  "secret_value_printed": false,
+  "secret_rotation_required": true,
+  "publication_decision": "STILL_BLOCKED_UNTIL_SECRET_ROTATED_EXTERNALLY",
+  "optional_recommendations": [
+    "Remplacer 'docs/security/' par des entrées de fichiers individuels dans ALLOWED_PATH_FRAGMENTS pour réduire la portée (KX108_ONLY — hors scope palier AUDIT_ONLY)",
+    "Corriger commentaire .gitignore : 'intentionnellement traqué' → 'eligible à tracking' pour refléter l'état réel du fichier"
+  ],
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "routes_modified": false,
+  "srl_modified": false,
+  "connectors_modified": false,
+  "source_packs_modified": false,
+  "proofs_modified": false,
+  "lean_proofs_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "neo4j_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "x108_merge_enabled": false,
+  "github_pushed": false,
+  "github_pr_created": false,
+  "public_release_created": false,
+  "next_step": "OPTIONAL_PUBLICATION_READINESS_RECHECK"
+}
