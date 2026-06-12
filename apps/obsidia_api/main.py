@@ -120,3 +120,5 @@ for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_ro
 @app.get("/")
 async def root():
     return {"service": "obsidia-api", "version": "V5B", "mode": "readonly_dryrun", "decision_authority": "KX108_ONLY"}
+from apps.obsidia_api.routes.runtime_freeze_readonly import router as runtime_freeze_readonly_router
+app.include_router(runtime_freeze_readonly_router)
