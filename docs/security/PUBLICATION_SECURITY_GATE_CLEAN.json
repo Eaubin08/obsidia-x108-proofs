@@ -1,0 +1,24 @@
+﻿{
+  "status": "CLEAN_PUBLICATION_SECURITY_GATE",
+  "base": "origin/main",
+  "base_commit": "6f74b62",
+  "branch": "publication-security-gate-clean",
+  "scope": "publication_security_documentation_only",
+  "pr22_status": "draft_evidence_only_do_not_merge_as_is",
+  "sec1_neo4j": "resolved_local",
+  "sec4_branch_protection": "configured_in_github_ui",
+  "local_validation": {
+    "neo4j_connectivity": "SUCCESS",
+    "proofs_verify_all": "PASS",
+    "forbidden_content": "FORBIDDEN_CONTENT_PASS"
+  },
+  "forbidden_actions": [
+    "no_git_add_dot",
+    "no_dirty_worktree_push",
+    "no_runtime_mutation",
+    "no_sigma_mutation",
+    "no_kernel_mutation",
+    "no_agents_compatibility_patch",
+    "no_legacy_test_patch"
+  ]
+}
