@@ -1,4 +1,5 @@
-"""POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+﻿"""POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+from apps.obsidia_api.brody_capabilities_intent import is_brody_capabilities_query, build_brody_capabilities_response
 import unicodedata
 from fastapi import APIRouter, Depends
 from apps.obsidia_api.auth import require_api_key
@@ -126,6 +127,89 @@ class BrodyChatRequest(BaseModel):
 
 @router.post("/chat")
 async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
+
+    # BRODY_CAPABILITIES_INTENT_PATCH
+    try:
+        _brody_text = None
+        if "message" in locals():
+            _brody_text = message
+        elif "text" in locals():
+            _brody_text = text
+        elif "payload" in locals():
+            _brody_text = getattr(payload, "message", None) or getattr(payload, "text", None)
+        elif "req" in locals():
+            _brody_text = getattr(req, "message", None) or getattr(req, "text", None)
+
+        if is_brody_capabilities_query(_brody_text):
+            return build_brody_capabilities_response(_brody_text)
+    except Exception:
+        pass
+
+    # V3 Block 2B — fastpath early-return for compact/debug requests (no LLM, no IO, KX108_ONLY)
+    _v3_preflight = None
+    if req.compact or req.debug:
+        try:
+            from apps.obsidia_api.brody_cognitive_micro_core import run_micro_core as _fp_mc_fn
+            from apps.obsidia_api.brody_balance_engine import BrodyBalanceEngine as _fp_BE
+            from apps.obsidia_api.brody_point_cloud_21d_selector import BrodyPointCloud21DSelector as _fp_SEL
+            from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard as _fp_guard_fn
+            from apps.obsidia_api.brody_context_budget import compute_context_budget as _fp_budget_fn
+            from apps.obsidia_api.brody_v3_fastpath_response import evaluate_fastpath as _fp_eval_fn
+            _fp_mc = _fp_mc_fn(req.message, session_id=req.session_id or "", language=req.language)
+            _fp_bal = _fp_BE().compute_balances(req.message, _fp_mc)
+            _fp_pc = _fp_SEL().compute_vector(req.message, _fp_mc, _fp_bal)
+            _fp_guard = _fp_guard_fn(
+                message=req.message, session_id=req.session_id or "",
+                micro_core=_fp_mc, balance_output=_fp_bal, point_cloud=_fp_pc,
+            )
+            _fp_has_mem = bool(_fp_pc.get("memory_packet_required", False))
+            _fp_budget = _fp_budget_fn(
+                active_layers=_fp_pc.get("active_layers", []),
+                point_cloud=_fp_pc, balance_output=_fp_bal,
+                graphiti_allowed=_fp_guard.get("graphiti_allowed", False),
+                is_adversarial=bool(_fp_mc.get("is_adversarial", False)),
+                domain_detected=_fp_mc.get("domain_detected"),
+                memory_explicit=_fp_has_mem,
+            )
+            _fp_result = _fp_eval_fn(
+                message=req.message, micro_core=_fp_mc,
+                balance_output=_fp_bal, point_cloud=_fp_pc,
+                graphiti_guard=_fp_guard, context_budget=_fp_budget,
+            )
+            _v3_preflight = {
+                "micro_core": _fp_mc,
+                "balance_engine": _fp_bal,
+                "point_cloud_21d": _fp_pc,
+                "graphiti_guard": _fp_guard,
+                "context_budget": _fp_budget,
+                "fastpath": _fp_result,
+                "graphiti_allowed": _fp_guard.get("graphiti_allowed", False),
+                "decision_authority": "KX108_ONLY",
+                "emits_act": False,
+                "advisory_only": True,
+                "block": "V3_BLOCK_2B",
+            }
+            if _fp_result.get("fastpath_allowed", False):
+                _fp_payload = {
+                    "response": _fp_result["response_text"],
+                    "final_answer": _fp_result["response_text"],
+                    "voice_runtime": "BRODY_V3_FASTPATH",
+                    "decision_authority": "KX108_ONLY",
+                    "emits_act": False,
+                    "advisory_only": True,
+                    "memory_write": False,
+                    "graphiti_write": False,
+                    "kernel_mutation": False,
+                    "x108_mutation": False,
+                    "no_canonical_write": True,
+                    "fastpath": True,
+                    "fastpath_type": _fp_result.get("fastpath_type"),
+                    "v3_dryrun_packet": _v3_preflight,
+                }
+                return safe_backend_response(_fp_payload, source="BRODY_V3_FASTPATH")
+        except Exception as _fp_exc:
+            _v3_preflight = {"error": str(_fp_exc), "fastpath_allowed": False, "block": "V3_BLOCK_2B"}
+
     rt = load_runtime_components()
 
     # F22B: run readonly intent guard before the pipeline so domain raccord has the right signal.
@@ -224,6 +308,9 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             query=req.message,
             limit=5,
         )
+
+    # BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
+    _source_pack_ctx = _brody_apply_organism_overlay_v2c(req.message, _source_pack_ctx)
 
     true_voice_snapshot = safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
         user_message=req.message, language=req.language,
@@ -637,6 +724,8 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "selected_evidence_packs": _source_pack_ctx.get("selected_evidence_packs", []),
         "hydration_plan": _source_pack_ctx.get("hydration_plan", {}),
         "source_file_refs": _source_pack_ctx.get("source_file_refs", []),
+        "organism_routing_v2b": _source_pack_ctx.get("organism_routing_v2b", {}),
+        "organism_routing_v2c": _source_pack_ctx.get("organism_routing_v2c", {}),
         "brody_no_act": True,
         "brody_no_write": True,
         "brody_kx108_only": True,
@@ -736,4 +825,279 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         _payload["debug_env_mode"] = True
         _payload["debug_payload_available"] = True
         _payload["debug_request_id"] = req.session_id or "debug_session"
+        # V3 Block 2B: reuse preflight if computed, else compute fresh
+        if _v3_preflight and not _v3_preflight.get("error"):
+            _pf = _v3_preflight
+            _mc = _pf.get("micro_core", {})
+            _bal = _pf.get("balance_engine", {})
+            _pc = _pf.get("point_cloud_21d", {})
+            _guard = _pf.get("graphiti_guard", {})
+            _budget = _pf.get("context_budget", {})
+            _fp_res = _pf.get("fastpath", {})
+            _payload["v3_dryrun_packet"] = {
+                "micro_core": _mc, "balance_engine": _bal,
+                "point_cloud_21d": _pc, "graphiti_guard": _guard,
+                "context_budget": _budget,
+                "fastpath": _fp_res,
+                "active_layers": _budget.get("allowed_layers", _pc.get("active_layers", [])),
+                "forbidden_layers": _pc.get("forbidden_layers", []),
+                "dropped_layers": _budget.get("dropped_layers", []),
+                "graphiti_allowed": _guard.get("graphiti_allowed", False),
+                "guard_reason": _guard.get("reason", ""),
+                "guard_flags": _guard.get("guard_flags", []),
+                "budget_bytes": _budget.get("budget_bytes", 1792),
+                "budget_estimate": _pc.get("budget_estimate", 1792),
+                "budget_scenario": _budget.get("scenario", ""),
+                "max_layers": _budget.get("max_layers", 6),
+                "fastpath_allowed": _fp_res.get("fastpath_allowed", False),
+                "fastpath_type": _fp_res.get("fastpath_type"),
+                "decision_authority": "KX108_ONLY",
+                "emits_act": False,
+                "advisory_only": True,
+                "dryrun": True,
+                "block": "V3_BLOCK_2B",
+            }
+        else:
+            try:
+                from apps.obsidia_api.brody_cognitive_micro_core import run_micro_core
+                from apps.obsidia_api.brody_balance_engine import BrodyBalanceEngine
+                from apps.obsidia_api.brody_point_cloud_21d_selector import BrodyPointCloud21DSelector
+                from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard
+                from apps.obsidia_api.brody_context_budget import compute_context_budget
+                from apps.obsidia_api.brody_v3_fastpath_response import evaluate_fastpath
+
+                _mc = run_micro_core(req.message, session_id=req.session_id or "", language=req.language)
+                _bal = BrodyBalanceEngine().compute_balances(req.message, _mc)
+                _pc = BrodyPointCloud21DSelector().compute_vector(req.message, _mc, _bal)
+                _guard = evaluate_graphiti_guard(
+                    message=req.message, session_id=req.session_id or "",
+                    micro_core=_mc, balance_output=_bal, point_cloud=_pc,
+                )
+                _has_explicit_mem = bool(_pc.get("memory_packet_required", False))
+                _budget = compute_context_budget(
+                    active_layers=_pc.get("active_layers", []),
+                    point_cloud=_pc, balance_output=_bal,
+                    graphiti_allowed=_guard.get("graphiti_allowed", False),
+                    is_adversarial=bool(_mc.get("is_adversarial", False)),
+                    domain_detected=_mc.get("domain_detected"),
+                    memory_explicit=_has_explicit_mem,
+                )
+                _fp_res = evaluate_fastpath(
+                    message=req.message, micro_core=_mc,
+                    balance_output=_bal, point_cloud=_pc,
+                    graphiti_guard=_guard, context_budget=_budget,
+                )
+                _payload["v3_dryrun_packet"] = {
+                    "micro_core": _mc, "balance_engine": _bal,
+                    "point_cloud_21d": _pc, "graphiti_guard": _guard,
+                    "context_budget": _budget,
+                    "fastpath": _fp_res,
+                    "active_layers": _budget.get("allowed_layers", _pc.get("active_layers", [])),
+                    "forbidden_layers": _pc.get("forbidden_layers", []),
+                    "dropped_layers": _budget.get("dropped_layers", []),
+                    "graphiti_allowed": _guard.get("graphiti_allowed", False),
+                    "guard_reason": _guard.get("reason", ""),
+                    "guard_flags": _guard.get("guard_flags", []),
+                    "budget_bytes": _budget.get("budget_bytes", 1792),
+                    "budget_estimate": _pc.get("budget_estimate", 1792),
+                    "budget_scenario": _budget.get("scenario", ""),
+                    "max_layers": _budget.get("max_layers", 6),
+                    "fastpath_allowed": _fp_res.get("fastpath_allowed", False),
+                    "fastpath_type": _fp_res.get("fastpath_type"),
+                    "decision_authority": "KX108_ONLY",
+                    "emits_act": False,
+                    "advisory_only": True,
+                    "dryrun": True,
+                    "block": "V3_BLOCK_2B",
+                }
+            except Exception as _v3_err:
+                _payload["v3_dryrun_packet"] = {
+                    "status": "ROUTE_INTEGRATION_DEFERRED",
+                    "error": str(_v3_err),
+                    "decision_authority": "KX108_ONLY",
+                    "emits_act": False,
+                    "advisory_only": True,
+                    "dryrun": True,
+                    "block": "V3_BLOCK_2B",
+                }
     return safe_backend_response(_payload, source=r.get("source", "REAL_BACKEND"))
+
+
+# BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
+def _brody_apply_organism_overlay_v2c(query: str, source_pack_ctx: dict) -> dict:
+    """
+    Real source-pack context organism overlay.
+
+    Applied directly after _source_pack_ctx construction and before True Voice.
+
+    Boundary:
+    - readonly only
+    - no memory write
+    - no Graphiti write
+    - no Neo4j write
+    - no kernel mutation
+    - no X108 mutation
+    - KX108_ONLY
+    """
+    ctx = dict(source_pack_ctx or {})
+    q = str(query or "").lower()
+
+    def has_any(*words: str) -> bool:
+        return any(w in q for w in words)
+
+    organ = None
+
+    if has_any("gencoin", "gen coin", "value layer", "valeur post-preuve", "shadow value"):
+        organ = {
+            "organ": "GENCOIN_ORGAN",
+            "role": "post_proof_value_layer",
+            "families": ["GENCOIN", "VALUE_LAYER", "COGNITIVE_LEDGER", "PROOF_VALUE"],
+            "refs": [
+                "brody_gencoin_shadow_value.py",
+                "brody_gencoin_cognitive_ledger.py",
+                "routes/gencoin.py",
+                "routes/blockchain.py",
+            ],
+            "title": "Organe Gencoin",
+            "summary": (
+                "Gencoin est l'organe de valeur post-preuve. Il lit la preuve, Sigma, "
+                "la thermodynamique et le ledger cognitif pour projeter une valeur non souveraine. "
+                "Il ne decide pas, ne finance rien, n'autorise rien et ne produit aucun ACT."
+            ),
+            "hierarchy": "X108 decide ; OS3 prouve ; Gencoin evalue apres preuve ; Brody explique en readonly.",
+        }
+
+    elif has_any("arbres", "arbre", "34 arbres", "tree", "trees", "atlas", "cognitif", "cognitifs"):
+        organ = {
+            "organ": "COGNITIVE_TREES_ORGAN",
+            "role": "cognitive_atlas_orientation_layer",
+            "families": ["ATLAS", "TREE_POLICY", "COGNITIVE_TREES", "34_ARBRES"],
+            "refs": [
+                "brody_tree_policy_adapter.py",
+                "brody_tree_signal_packet.py",
+                "brody_contracts_packet.py",
+                "runtime_freeze.py:F5_34_trees_runtime_signal",
+            ],
+            "title": "Organe Arbres cognitifs",
+            "summary": (
+                "Les arbres cognitifs sont l'organe de cartographie et d'orientation. "
+                "Ils classent les signaux, structurent les chemins, exposent safe / blocked / signal, "
+                "mais ne deviennent jamais souverains."
+            ),
+            "hierarchy": "X108 decide ; arbres orientent ; Atlas cartographie ; Brody rend lisible.",
+        }
+
+    elif has_any("manquant", "manquants", "missing", "gap", "readiness", "limite", "limites", "paquets"):
+        organ = {
+            "organ": "GAP_READINESS_ORGAN",
+            "role": "missing_packets_readiness_diagnostic_layer",
+            "families": ["READINESS", "GAP_MATRIX", "MISSING_PACKETS", "FREEZE_AUDIT", "OS3"],
+            "refs": [
+                "routes/graphiti.py:/readiness",
+                "routes/periphery_ops.py:/demo/runtime-readiness",
+                "routes/runtime_freeze_readonly.py",
+                "brody_cognitive_modules_adapter.py",
+                "brody_full_runtime_reconnect.py",
+            ],
+            "title": "Organe Gap / Readiness",
+            "summary": (
+                "Gap / Readiness est l'organe de diagnostic des manques. "
+                "Il signale les paquets absents, les surfaces faibles, les modules incomplets "
+                "et les prochaines etapes safe. Il ne corrige pas automatiquement."
+            ),
+            "hierarchy": "X108 tient la frontiere ; Gap/Readiness diagnostique ; operateur humain choisit la suite.",
+        }
+
+    elif has_any("preuve", "preuves", "proof", "lean", "os3", "theoreme", "th?or?me", "replay", "hash", "merkle", "audit"):
+        organ = {
+            "organ": "PROOF_OS3_LEAN_ORGAN",
+            "role": "proof_replay_theorem_audit_layer",
+            "families": ["PROOFS", "OS3", "LEAN", "AUDIT", "REPLAY"],
+            "refs": [
+                "OS3",
+                "Lean proofs",
+                "proof surface",
+                "replay/hash/audit",
+                "Merkle / receipts",
+            ],
+            "title": "Organe Proof / OS3 / Lean",
+            "summary": (
+                "Proof / OS3 / Lean est l'organe de preuve. "
+                "Il expose replay, hash, receipts, theoremes et surface d'audit. "
+                "Il qualifie et verifie ; il ne remplace pas X108."
+            ),
+            "hierarchy": "X108 decide ; OS3 prouve ; Lean formalise ; Brody explique.",
+        }
+
+    if not organ:
+        return ctx
+
+    old_summary = str(
+        ctx.get("context_summary_for_brody")
+        or ctx.get("source_pack_context_summary")
+        or ""
+    ).strip()
+
+    organ_summary = f"""[ORGANISM SOURCE PACK CONTEXT ? KX108_ONLY ? READONLY ? NO ACTION]
+Query: {query}
+Organ: {organ["organ"]}
+Role: {organ["role"]}
+Families: {", ".join(organ["families"])}
+References: {", ".join(organ["refs"])}
+
+## {organ["title"]} ({organ["families"][0]})
+Role: {organ["role"]}
+Function: {organ["summary"]}
+Hierarchy: {organ["hierarchy"]}
+Boundary: readonly only ; no ACT ; no verdict ; no memory write ; no Graphiti write ; no Neo4j write ; no kernel mutation ; no X108 mutation.
+
+## Place dans l'organisme Obsidia
+Chaque organe garde sa place :
+- X108 reste le systeme nerveux decisionnel.
+- OS3 / Proof reste la surface de preuve.
+- Graphiti / Memory reste la memoire consultable.
+- Source-pack reste la matiere documentaire.
+- Brody reste la voix consultative.
+- {organ["title"]} apporte sa fonction specialisee sans devenir souverain.
+"""
+
+    if old_summary:
+        organ_summary += "\n## Source-pack precedent conserve comme fallback readonly\n"
+        organ_summary += old_summary[:1200]
+        if len(old_summary) > 1200:
+            organ_summary += "\n...[TRUNCATED_PREVIOUS_SOURCE_PACK]"
+
+    routing_packet = {
+        "active": True,
+        "organ": organ["organ"],
+        "role": organ["role"],
+        "families": organ["families"],
+        "refs": organ["refs"],
+        "source": "BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX",
+        "decision_authority": "KX108_ONLY",
+        "readonly": True,
+        "advisory_only": True,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+    }
+
+    ctx["source_pack_context_used"] = True
+    ctx["source_pack_entries_used"] = max(int(ctx.get("source_pack_entries_used") or 0), 1)
+    ctx["source_pack_families"] = organ["families"]
+    ctx["selected_source_families"] = organ["families"]
+    ctx["selected_evidence_packs"] = organ["families"]
+    ctx["source_file_refs"] = organ["refs"]
+    ctx["source_pack_context_summary"] = organ_summary
+    ctx["context_summary_for_brody"] = organ_summary
+    ctx["organism_routing_v2b"] = routing_packet
+    ctx["organism_routing_v2c"] = routing_packet
+
+    hp = dict(ctx.get("hydration_plan") or {})
+    hp["organism_v2c"] = routing_packet
+    ctx["hydration_plan"] = hp
+
+    return ctx
+
