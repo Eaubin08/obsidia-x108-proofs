@@ -1306,4 +1306,3 @@ def _brody_source_pack_answer_v0(source_pack: dict, language: str = "fr") -> str
     )
 
     return "\n".join(lines)
-
