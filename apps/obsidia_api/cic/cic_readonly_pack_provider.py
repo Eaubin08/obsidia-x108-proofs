@@ -12,6 +12,8 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
+from apps.obsidia_api.cic.cic_receipt_pack import build_cic_receipt
+
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 _ZIP_CANONICAL = (
@@ -144,6 +146,12 @@ def build_cic_readonly_context() -> dict[str, Any]:
         p = _REPO_ROOT / src
         repo_sources_status[src] = "PRESENT" if p.exists() else "MISSING"
 
+    receipt = build_cic_receipt(
+        domain="cic_readonly_pack",
+        source_zip_sha256=zip_sha256,
+        confirmed_metric_families=_CONFIRMED_METRIC_FAMILIES,
+    )
+
     return {
         "source_zip_path": str(_ZIP_CANONICAL),
         "source_zip_sha256": zip_sha256,
@@ -163,4 +171,5 @@ def build_cic_readonly_context() -> dict[str, Any]:
         "x108_binding": False,
         "ncp_active": False,
         "scraping_active": False,
+        "cic_receipt": receipt,
     }
