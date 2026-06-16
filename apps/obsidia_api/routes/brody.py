@@ -312,6 +312,8 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     "kernel_mutation": False,
                     "x108_mutation": False,
                     "no_canonical_write": True,
+                    # BRODY_CIC_FASTPATH_CANONICAL_WRITE_V0
+                    "canonical_write": False,
                     "fastpath": True,
                     "fastpath_type": _fp_result.get("fastpath_type"),
                     "v3_dryrun_packet": _v3_preflight,
