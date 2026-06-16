@@ -180,6 +180,12 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
       topic, semantic_query, primary_query, fallback_queries,
       normalized_message, is_canonical
     """
+    # G5: scrub secret-like patterns before processing to prevent leak in query fields
+    try:
+        from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like as _sq_scrub
+        user_message = _sq_scrub(user_message)
+    except Exception:
+        pass
     normalized = _normalize_utf8(user_message)
     normalized_lower = normalized.lower()
     # Also match on accent-folded version

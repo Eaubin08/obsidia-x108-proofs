@@ -203,7 +203,13 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             _brody_text = getattr(req, "message", None) or getattr(req, "text", None)
 
         if is_brody_capabilities_query(_brody_text):
-            return build_brody_capabilities_response(_brody_text)
+            _cap_resp = build_brody_capabilities_response(_brody_text)
+            try:
+                from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cap_deep
+                _cap_resp = _cap_deep(_cap_resp)
+            except Exception:
+                pass
+            return _cap_resp
     except Exception:
         pass
 
