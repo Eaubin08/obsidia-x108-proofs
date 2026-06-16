@@ -240,6 +240,99 @@ def envelope_to_dict(env) -> dict:
     return dataclasses.asdict(env)
 
 
+def _extract_trusted_action_metadata(result_dict: dict, caller_meta: dict) -> dict:
+    """
+    Extract action metadata only from canonical/trusted pipeline output.
+    Caller payload metadata is NOT sovereign — never authorizes.
+    DECISION_AUTHORITY=KX108_ONLY  ACT=NO
+    """
+    for source_name, source in [
+        ("canonical_decision_envelope", result_dict.get("canonical_decision_envelope")),
+        ("kernel_decision", result_dict.get("kernel_decision")),
+        ("verified_action_context", result_dict.get("verified_action_context")),
+        ("trusted_action_metadata", result_dict.get("trusted_action_metadata")),
+        ("raw_engine_trusted", (result_dict.get("raw_engine") or {}).get("trusted_action_metadata")),
+    ]:
+        if isinstance(source, dict) and source:
+            return {
+                "trusted": True,
+                "source": source_name,
+                "irreversible_trusted": source.get("irreversible"),
+                "action_type_trusted": source.get("action_type"),
+                "intent_trusted": source.get("intent"),
+            }
+    return {
+        "trusted": False,
+        "source": "NONE",
+        "reason": "MISSING_TRUSTED_ACTION_METADATA",
+        "irreversible_trusted": None,
+        "action_type_trusted": None,
+        "intent_trusted": None,
+    }
+
+
+def _apply_p3t9b_rule(result_dict: dict, caller_meta: dict, meta_keys: tuple) -> dict:
+    """
+    P3T9B1 hardened: fail-safe HOLD when trusted action metadata absent.
+    Caller metadata is untrusted — never used to authorize or bypass.
+    DECISION_AUTHORITY=KX108_ONLY  ACT=NO
+    """
+    _trusted = _extract_trusted_action_metadata(result_dict, caller_meta)
+
+    _domain_trading = result_dict.get("domain") == "trading"
+    _gate_allow = result_dict.get("x108_gate") == "ALLOW"
+    _verdict_review = result_dict.get("market_verdict") == "REVIEW"
+
+    if _trusted["trusted"]:
+        _should_demote = (
+            _domain_trading
+            and _gate_allow
+            and _verdict_review
+            and _trusted.get("irreversible_trusted") is True
+            and _trusted.get("action_type_trusted") == "trade"
+            and _trusted.get("intent_trusted") == "trade_execution_review"
+        )
+        _caller_ignored = False
+        _demoted_missing = False
+        _p3t9b_rc = "IRREVERSIBLE_TRADE_REVIEW_REQUIRES_HOLD" if _should_demote else "P3T9B_NOT_APPLIED"
+    else:
+        # Fail-safe: no trusted metadata → HOLD on any trading ALLOW+REVIEW
+        # (caller cannot bypass by omitting/forging irreversible/action_type/intent)
+        _should_demote = _domain_trading and _gate_allow and _verdict_review
+        _caller_ignored = True
+        _demoted_missing = _should_demote
+        _p3t9b_rc = "P3T9B_TRUSTED_METADATA_REQUIRED" if _should_demote else "P3T9B_NOT_APPLIED"
+
+    if _should_demote:
+        result_dict["pre_p3t9b_x108_gate"] = result_dict.get("x108_gate")
+        result_dict["pre_p3t9b_reason_code"] = result_dict.get("reason_code")
+        result_dict["x108_gate"] = "HOLD"
+        result_dict["reason_code"] = _p3t9b_rc
+        result_dict["x108_reason"] = _p3t9b_rc
+        result_dict["severity"] = "S2"
+        result_dict["business_semantic_verdict"] = "HOLD_REVIEW"
+        result_dict["p3t9b_semantic_rule_applied"] = True
+        result_dict["p3t9b_semantic_transition"] = "ALLOW_TO_HOLD"
+        if not isinstance(result_dict.get("metrics"), dict):
+            result_dict["metrics"] = {}
+        _m = result_dict["metrics"].get("action_metadata")
+        if not isinstance(_m, dict):
+            _m = {}
+            result_dict["metrics"]["action_metadata"] = _m
+        _m["business_semantic_verdict"] = "HOLD_REVIEW"
+        _m["p3t9b_semantic_rule"] = _p3t9b_rc
+
+    result_dict["p3t9b_trusted_metadata_available"] = _trusted["trusted"]
+    result_dict["p3t9b_trusted_metadata_source"] = _trusted["source"]
+    result_dict["p3t9b_caller_metadata_ignored"] = _caller_ignored
+    result_dict["p3t9b_demoted_for_missing_trusted_metadata"] = _demoted_missing
+    result_dict["p3t9b_reason_code"] = _p3t9b_rc
+    result_dict["p3t9b_caller_action_meta_untrusted"] = {
+        _k: caller_meta.get(_k) for _k in meta_keys
+    }
+    return result_dict
+
+
 def main():
     if len(sys.argv) < 3:
         print(json.dumps({"error": "Usage: run_pipeline.py <domain> <json_state_or_json_file>"}), file=sys.stderr)
@@ -251,6 +344,21 @@ def main():
     except Exception as e:
         print(json.dumps({"error": f"Invalid JSON input: {e}"}), file=sys.stderr)
         sys.exit(1)
+
+    _P3T8B_META_KEYS = (
+        "irreversible", "action_type", "intent",
+        "action_scope", "can_execute_real_action", "business_semantic_verdict",
+    )
+    _p3t8b_action_meta: dict = {}
+    for _k in _P3T8B_META_KEYS:
+        if _k in state_data:
+            _p3t8b_action_meta[_k] = state_data.pop(_k)
+    for _nested_key in ("action", "action_metadata"):
+        _nested = state_data.pop(_nested_key, None)
+        if isinstance(_nested, dict):
+            for _k in _P3T8B_META_KEYS:
+                if _k in _nested and _k not in _p3t8b_action_meta:
+                    _p3t8b_action_meta[_k] = _nested[_k]
 
     sigma = ObsidiaSigmaMonitor(config_path=str(ROOT / "sigma" / "sigma_config.json"))
 
@@ -273,6 +381,17 @@ def main():
             sys.exit(1)
 
         result_dict = envelope_to_dict(result)
+        for _k in _P3T8B_META_KEYS:
+            result_dict.setdefault(_k, _p3t8b_action_meta.get(_k))
+        if isinstance(result_dict.get("metrics"), dict):
+            result_dict["metrics"].setdefault(
+                "action_metadata",
+                {_k: _p3t8b_action_meta.get(_k) for _k in _P3T8B_META_KEYS},
+            )
+        # P3T9B1_HOLD_REVIEW_RULE — hardened with canonical metadata check
+        # Safety demotion only; preserves BLOCK > HOLD > ALLOW; no Guard/consensus mutation.
+        result_dict = _apply_p3t9b_rule(result_dict, _p3t8b_action_meta, _P3T8B_META_KEYS)
+
         result_dict = apply_sigma(result_dict, sigma)
         print(json.dumps(result_dict, ensure_ascii=False))
     except (TypeError, ValueError) as e:
