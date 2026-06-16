@@ -72,6 +72,16 @@ def _gate_color(gate: Any) -> str:
 
 def _extract_runtime_summary(data: dict[str, Any]) -> dict[str, Any]:
     kd = _kernel_decision(data)
+    sigma = data.get("sigma")
+    if not isinstance(sigma, dict):
+        sigma = data.get("sigma_report")
+    if not isinstance(sigma, dict):
+        sigma = kd.get("sigma_report")
+    if not isinstance(sigma, dict):
+        raw_engine = data.get("raw_engine")
+        sigma = raw_engine.get("sigma") if isinstance(raw_engine, dict) else None
+    if not isinstance(sigma, dict):
+        sigma = {}
 
     gate = (
         kd.get("x108_gate")
