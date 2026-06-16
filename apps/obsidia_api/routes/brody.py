@@ -44,6 +44,7 @@ from apps.obsidia_api.brody_memory_promotion_guard import build_memory_promotion
 from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet
 from apps.obsidia_api.brody_existing_reverse_os_bridge import build_existing_reverse_os_projection
 from apps.obsidia_api.brody_readonly_intent_guard import detect_readonly_runtime_state_intent
+from apps.obsidia_api.brody_cic_context_adapter import inject_cic_into_runtime_packet
 
 try:
     from runtime_wiring.source_runtime.brody_source_context_bridge import (
@@ -89,6 +90,66 @@ except ImportError:
     build_action_gateway_sandbox_state = None  # type: ignore[assignment]
 
 router = APIRouter(prefix="/api/brody", tags=["brody"])
+
+# BRODY_CIC_READONLY_RUNTIME_BINDING_V0
+def _brody_attach_cic_readonly_context_v0(packet):
+    """
+    Display/debug-only CIC binding.
+    Never changes decision_authority, gate, verdict, ACT, write, or kernel state.
+    """
+    if not isinstance(packet, dict):
+        return packet
+    try:
+        before_decision_authority = packet.get("decision_authority")
+        before_x108_gate = packet.get("x108_gate")
+        before_market_verdict = packet.get("market_verdict")
+        before_emits_act = packet.get("emits_act")
+        before_allowed_to_act = packet.get("allowed_to_act")
+        before_allowed_to_decide = packet.get("allowed_to_decide")
+
+        out = inject_cic_into_runtime_packet(packet)
+
+        out["decision_authority"] = before_decision_authority or out.get("decision_authority") or "KX108_ONLY"
+
+        if before_x108_gate is not None:
+            out["x108_gate"] = before_x108_gate
+        if before_market_verdict is not None:
+            out["market_verdict"] = before_market_verdict
+
+        out["emits_act"] = before_emits_act if before_emits_act is not None else False
+        out["allowed_to_act"] = before_allowed_to_act if before_allowed_to_act is not None else False
+        out["allowed_to_decide"] = before_allowed_to_decide if before_allowed_to_decide is not None else False
+
+        out["cic_runtime_binding"] = {
+            "status": "CIC_READONLY_CONTEXT_ATTACHED",
+            "readonly": True,
+            "decision_authority": "KX108_ONLY",
+            "authority": "NONE",
+            "emits_act": False,
+            "allowed_to_act": False,
+            "allowed_to_decide": False,
+            "kernel_mutation": False,
+            "x108_binding": False,
+            "memory_write": False,
+            "graphiti_write": False,
+            "neo4j_write": False,
+            "ncp_active": False,
+            "scraping_active": False,
+        }
+        return out
+    except Exception as exc:
+        packet["cic_runtime_binding"] = {
+            "status": "CIC_READONLY_CONTEXT_ATTACH_FAILED",
+            "readonly": True,
+            "decision_authority": "KX108_ONLY",
+            "authority": "NONE",
+            "emits_act": False,
+            "allowed_to_act": False,
+            "allowed_to_decide": False,
+            "kernel_mutation": False,
+            "error_type": type(exc).__name__,
+        }
+        return packet
 
 FOLLOWUP_PATTERNS = [
     "reprends", "reprend",
@@ -189,7 +250,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                 _pk_resp_payload = _pk_deep(_pk_resp_payload)
             except Exception:
                 pass
-            return safe_backend_response(_pk_resp_payload, source="BRODY_V3_PRIVATE_KEY_PREFLIGHT")
+            return safe_backend_response(_brody_attach_cic_readonly_context_v0(_pk_resp_payload), source="BRODY_V3_PRIVATE_KEY_PREFLIGHT")
     except Exception:
         pass
 
@@ -302,7 +363,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     _fp_payload = _fp_deep(_fp_payload)
                 except Exception:
                     pass
-                return safe_backend_response(_fp_payload, source="BRODY_V3_FASTPATH")
+                return safe_backend_response(_brody_attach_cic_readonly_context_v0(_fp_payload), source="BRODY_V3_FASTPATH")
         except Exception as _fp_exc:
             _v3_preflight = {"error": str(_fp_exc), "fastpath_allowed": False, "block": "V3_BLOCK_2B"}
 
@@ -1067,7 +1128,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     except Exception:
         pass
 
-    return safe_backend_response(_payload, source=r.get("source", "REAL_BACKEND"))
+    return safe_backend_response(_brody_attach_cic_readonly_context_v0(_payload), source=r.get("source", "REAL_BACKEND"))
 
 
 # BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
