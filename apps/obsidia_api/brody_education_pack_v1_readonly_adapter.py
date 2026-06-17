@@ -61,25 +61,39 @@ _EDUCATION_BOUNDARY: dict[str, Any] = {
     "cache": "NO_CACHE",
 }
 
-# ── Clés que l'adapter n'est jamais autorisé à injecter ──────────────────
-_FORBIDDEN_INJECT_KEYS = frozenset([
+# ── Clés d'action interdites — leur présence dans le packet bloque toujours ─
+# Ces clés ne sont jamais des sentinelles readonly : elles signalent une
+# tentative d'autorisation ou d'action souveraine.
+_FORBIDDEN_ACTION_KEYS = frozenset([
     "decision",
     "verdict",
     "act",
     "allow",
     "approve",
     "execute",
-    "memory_write",
-    "graphiti_write",
-    "neo4j_write",
-    "kernel_mutation",
-    "x108_mutation",
-    "network",
-    "fetch",
-    "crawl",
-    "mcp_bridge",
-    "path_compute",
 ])
+
+# ── Sentinelles readonly — autorisées uniquement si valeur sûre ──────────
+# Si la clé est présente avec une valeur hors de cette liste, on bloque.
+_SAFE_SENTINEL_VALUES: dict[str, list] = {
+    "decision_authority": ["KX108_ONLY"],
+    "authority":          ["NONE"],
+    "memory_write":       [False],
+    "graphiti_write":     [False],
+    "neo4j_write":        [False],
+    "kernel_mutation":    [False, "NONE", None],
+    "x108_mutation":      [False, "NONE", None],
+    "emits_act":          [False],
+    "emits_verdict":      [False],
+    "network":            [False],
+    "fetch":              [False],
+    "crawl":              [False],
+    "mcp_bridge":         [False],
+    "path_compute":       [False],
+}
+
+# Rétrocompatibilité : tests existants importent _FORBIDDEN_INJECT_KEYS
+_FORBIDDEN_INJECT_KEYS = _FORBIDDEN_ACTION_KEYS
 
 # ── Sections connues du Pack V1 ───────────────────────────────────────────
 _PACK_SECTIONS = [
@@ -196,24 +210,44 @@ def build_brody_education_pack_v1_readonly_context() -> dict[str, Any]:
     }
 
 
+def _check_packet_guard(packet: dict[str, Any]) -> str | None:
+    """
+    Retourne le motif de blocage si le packet contient une violation, None sinon.
+
+    Niveau 1 — clés d'action interdites : leur simple présence bloque.
+    Niveau 2 — sentinelles readonly : bloque uniquement si la valeur est unsafe.
+    """
+    for key in _FORBIDDEN_ACTION_KEYS:
+        if key in packet:
+            return f"Clé d'action interdite '{key}' présente dans le packet"
+
+    for key, safe_values in _SAFE_SENTINEL_VALUES.items():
+        if key in packet and packet[key] not in safe_values:
+            return (
+                f"Sentinelle '{key}' présente avec valeur unsafe "
+                f"'{packet[key]}' (valeurs sûres: {safe_values})"
+            )
+
+    return None
+
+
 def inject_education_pack_v1_into_runtime_packet(
     packet: dict[str, Any],
 ) -> dict[str, Any]:
     """
     Injecte education_pack_v1_readonly_context dans un packet runtime Brody.
-    Guard contre les clés interdites.
+    Guard deux niveaux : action keys + sentinel value check.
     Ne lève jamais d'exception fatale (fallback sur erreur).
     """
-    for forbidden in _FORBIDDEN_INJECT_KEYS:
-        if forbidden in packet:
-            # Guard silencieux — ne crash pas la route, trace l'erreur
-            packet[INJECT_KEY] = {
-                "status": "PACK_INJECT_BLOCKED",
-                "reason": f"Clé interdite '{forbidden}' présente dans le packet",
-                "education_boundary": _EDUCATION_BOUNDARY,
-                "inject_key": INJECT_KEY,
-            }
-            return packet
+    block_reason = _check_packet_guard(packet)
+    if block_reason is not None:
+        packet[INJECT_KEY] = {
+            "status": "PACK_INJECT_BLOCKED",
+            "reason": block_reason,
+            "education_boundary": _EDUCATION_BOUNDARY,
+            "inject_key": INJECT_KEY,
+        }
+        return packet
 
     try:
         packet[INJECT_KEY] = build_brody_education_pack_v1_readonly_context()
