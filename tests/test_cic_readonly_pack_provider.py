@@ -96,3 +96,78 @@ def test_confirmed_metric_families_not_empty():
 def test_zip_sha256_in_context_matches_file():
     ctx = build_cic_readonly_context()
     assert ctx["source_zip_sha256"] == _sha256(_ZIP_CANONICAL)
+
+
+# ---------------------------------------------------------------------------
+# T16-T25 — NCP/Scraping binding (Phase 3)
+# ---------------------------------------------------------------------------
+
+# T16
+def test_ncp_context_present():
+    ctx = build_cic_readonly_context()
+    assert "ncp_context" in ctx
+    assert isinstance(ctx["ncp_context"], dict)
+    assert len(ctx["ncp_context"]) > 0
+
+
+# T17
+def test_ncp_context_active_false():
+    ctx = build_cic_readonly_context()
+    assert ctx["ncp_context"]["ncp_active"] is False
+
+
+# T18
+def test_ncp_context_authority_none():
+    ctx = build_cic_readonly_context()
+    assert ctx["ncp_context"]["authority"] == "NONE"
+
+
+# T19
+def test_scraping_context_present():
+    ctx = build_cic_readonly_context()
+    assert "scraping_context" in ctx
+    assert isinstance(ctx["scraping_context"], dict)
+    assert len(ctx["scraping_context"]) > 0
+
+
+# T20
+def test_scraping_context_active_false():
+    ctx = build_cic_readonly_context()
+    assert ctx["scraping_context"]["scraping_active"] is False
+
+
+# T21
+def test_scraping_context_quarantine_policy():
+    ctx = build_cic_readonly_context()
+    assert ctx["scraping_context"]["quarantine_policy"] == "WEB_SCRAPE_QUARANTINED"
+
+
+# T22 — régression top-level ncp_active
+def test_top_level_ncp_active_still_false():
+    ctx = build_cic_readonly_context()
+    assert ctx["ncp_active"] is False
+
+
+# T23 — régression top-level scraping_active
+def test_top_level_scraping_active_still_false():
+    ctx = build_cic_readonly_context()
+    assert ctx["scraping_active"] is False
+
+
+# T24
+def test_ncp_context_no_network():
+    ctx = build_cic_readonly_context()
+    ncp = ctx["ncp_context"]
+    assert ncp["network"] is False
+    assert ncp["fetch"] is False
+    assert ncp["crawl"] is False
+
+
+# T25
+def test_missing_or_inactive_updated():
+    ctx = build_cic_readonly_context()
+    moi = ctx["missing_or_inactive"]
+    assert "ncp_targeted_fetch:MISSING" not in moi
+    assert "scraping:MISSING" not in moi
+    assert any("ncp_targeted_fetch:STUB_V0" in s for s in moi)
+    assert any("scraping:STUB_V0" in s for s in moi)

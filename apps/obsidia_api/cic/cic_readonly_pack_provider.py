@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from apps.obsidia_api.cic.cic_receipt_pack import build_cic_receipt
+from apps.obsidia_api.cic.cic_ncp_readonly_stub import build_ncp_readonly_stub
+from apps.obsidia_api.cic.cic_scraping_readonly_stub import build_scraping_readonly_stub
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
@@ -54,8 +56,8 @@ _PARTIAL_METRIC_FAMILIES: list[str] = [
 _MISSING_OR_INACTIVE: list[str] = [
     "causal_capacity_formula:NEEDS_DOMAIN_CALIBRATION",
     "anomaly_formula:NEEDS_DOMAIN_CALIBRATION",
-    "ncp_targeted_fetch:MISSING",
-    "scraping:MISSING",
+    "ncp_targeted_fetch:STUB_V0_READONLY_PROVIDER_BOUND",
+    "scraping:STUB_V0_READONLY_PROVIDER_BOUND",
     "kernel_binding:MISSING",
 ]
 
@@ -152,6 +154,9 @@ def build_cic_readonly_context() -> dict[str, Any]:
         confirmed_metric_families=_CONFIRMED_METRIC_FAMILIES,
     )
 
+    ncp_context = build_ncp_readonly_stub(domain="cic_readonly_pack")
+    scraping_context = build_scraping_readonly_stub(domain="cic_readonly_pack")
+
     return {
         "source_zip_path": str(_ZIP_CANONICAL),
         "source_zip_sha256": zip_sha256,
@@ -172,4 +177,6 @@ def build_cic_readonly_context() -> dict[str, Any]:
         "ncp_active": False,
         "scraping_active": False,
         "cic_receipt": receipt,
+        "ncp_context": ncp_context,
+        "scraping_context": scraping_context,
     }
