@@ -45,6 +45,7 @@ from apps.obsidia_api.brody_operator_view_packet import build_operator_view_pack
 from apps.obsidia_api.brody_existing_reverse_os_bridge import build_existing_reverse_os_projection
 from apps.obsidia_api.brody_readonly_intent_guard import detect_readonly_runtime_state_intent
 from apps.obsidia_api.brody_cic_context_adapter import inject_cic_into_runtime_packet
+from apps.obsidia_api.brody_education_pack_v1_readonly_adapter import inject_education_pack_v1_into_runtime_packet
 
 try:
     from runtime_wiring.source_runtime.brody_source_context_bridge import (
@@ -108,6 +109,7 @@ def _brody_attach_cic_readonly_context_v0(packet):
         before_allowed_to_decide = packet.get("allowed_to_decide")
 
         out = inject_cic_into_runtime_packet(packet)
+        out = inject_education_pack_v1_into_runtime_packet(out)
 
         out["decision_authority"] = before_decision_authority or out.get("decision_authority") or "KX108_ONLY"
 
