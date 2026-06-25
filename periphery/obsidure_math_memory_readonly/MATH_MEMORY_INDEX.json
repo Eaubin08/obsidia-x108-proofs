@@ -1,0 +1,393 @@
+{
+  "source_root": "C:\\Users\\User\\Desktop\\formalisation_math",
+  "memory_role": "READONLY_PERSONAL_MATH_MEMORY_FOR_OBSIDURE",
+  "kernel_mutation": false,
+  "sealed_proofs_mutation": false,
+  "decision_authority": "KX108_ONLY",
+  "readonly": true,
+  "emits_act": false,
+  "generated_at": "2026-06-25",
+  "items": [
+    {
+      "id": "P36",
+      "name": "Quintuplet canonique",
+      "type": "structure",
+      "status": "CANONICAL_CANDIDATE",
+      "source_files": ["periphery/pepites_search_algo/P36__Quintuplet_detat_canonique_S_I_L.md"],
+      "human_definition": "(S, Φ, I, τ, L) — quintuplet d'état canonique",
+      "formal_definition_candidate": "structure DomainState where score : Float; step : Nat → Nat; input : Nat; tau : Nat; level : Nat → Float",
+      "lean_signature_candidate": "structure DomainState where\n  score : Float\n  step  : Nat → Nat\n  input : Nat\n  tau   : Nat\n  level : Nat → Float",
+      "related_domains": ["KERNEL_X108", "LEAN_TLA_PROOF", "OBSIDURE"],
+      "related_metrics": ["S", "L", "tau"],
+      "missing_dependencies": ["définition formelle de Metrics dans la sandbox — Basic.lean est scellé"],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "Statut À_PROUVER dans le registre. Structure esquissée dans P161. La sandbox périphérique utilise DomainState comme analogue."
+    },
+    {
+      "id": "P42",
+      "name": "Seuil d'admissibilité G1",
+      "type": "theorem",
+      "status": "CANONICAL_CANDIDATE",
+      "source_files": ["periphery/pepites_search_algo/P42__Seuil_G1_ACT_si_S.md"],
+      "human_definition": "G1: θ ≤ m.S → ACT — si le score est sous le seuil, déclencher l'action",
+      "formal_definition_candidate": "def admissible (score : Float) (theta : Float) : Bool := score <= theta",
+      "lean_signature_candidate": "def admissible (score : Float) (theta : Float) : Bool",
+      "related_domains": ["KERNEL_X108", "GUARD", "OBSIDURE"],
+      "related_metrics": ["S", "theta"],
+      "missing_dependencies": [],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "FORMALISÉ dans Basic.lean (scellé). La version périphérique est analogique uniquement — ne pas reproduire la preuve kernel hors du fichier scellé."
+    },
+    {
+      "id": "P88",
+      "name": "Non-contradiction",
+      "type": "theorem",
+      "status": "CANONICAL_CANDIDATE",
+      "source_files": ["periphery/pepites_search_algo/P88__Non_contradiction.md"],
+      "human_definition": "¬(A ∧ ¬A) — principe de non-contradiction logique",
+      "formal_definition_candidate": "theorem non_contradiction (A : Prop) : ¬(A ∧ ¬A) := fun ⟨ha, hna⟩ => hna ha",
+      "lean_signature_candidate": "theorem non_contradiction (A : Prop) : ¬(A ∧ ¬A)",
+      "related_domains": ["KERNEL_X108", "LEAN_TLA_PROOF", "OBSIDURE"],
+      "related_metrics": [],
+      "missing_dependencies": [],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": true,
+      "notes": "FORMALISÉ dans le registre. Prouvable en Lean 4 pur sans imports externes. Pas de dépendances manquantes."
+    },
+    {
+      "id": "P100",
+      "name": "Stabilité de Lyapunov — décroissance",
+      "type": "axiom_candidate",
+      "status": "CANONICAL_CANDIDATE",
+      "source_files": ["periphery/pepites_search_algo/P100__Stabilite_de_Lyapunov_Ls_Ls.md"],
+      "human_definition": "L(Φ(s)) ≤ L(s) — la fonction d'énergie décroît le long des trajectoires",
+      "formal_definition_candidate": "axiom lyapunov_non_growth (ds : DomainState) (s : Nat) : ds.level (ds.step s) ≤ ds.level s",
+      "lean_signature_candidate": "axiom lyapunov_non_growth (ds : DomainState) (s : Nat) : ds.level (ds.step s) ≤ ds.level s",
+      "related_domains": ["LEAN_TLA_PROOF", "OBSIDURE"],
+      "related_metrics": ["L"],
+      "missing_dependencies": ["définition concrète de L et Phi pour lever l'axiome et prouver la décroissance"],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "FORMALISÉ (définition) dans le registre. La preuve Lean concrète est bloquée sur la définition explicite de L et Phi. Couvert par HYPOTHESE_TEMPORAIRE dans la sandbox périphérique."
+    },
+    {
+      "id": "P107",
+      "name": "Stabilité Lyapunov δ-ε",
+      "type": "scaffold",
+      "status": "PROVISIONAL",
+      "source_files": ["periphery/pepites_search_algo/P107__Stabilite_Lyapunov.md"],
+      "human_definition": "∀ε>0, ∃δ>0: ‖x₀‖ < δ → ‖x(t)‖ < ε — stabilité au sens de Lyapunov",
+      "formal_definition_candidate": "axiom P107_lyapunov_delta_epsilon (ds : DomainState) (h : ∀ s, ds.level (ds.step s) ≤ ds.level s) : ∀ ε : Float, 0 < ε → ∃ δ : Float, 0 < δ ∧ ...",
+      "lean_signature_candidate": "axiom P107_lyapunov_delta_epsilon ...",
+      "related_domains": ["LEAN_TLA_PROOF"],
+      "related_metrics": ["L"],
+      "missing_dependencies": [
+        "norm : DomainState → Float — pas défini dans les sources lisibles",
+        "iterate : DomainState → Nat → Nat — pas défini dans les sources lisibles"
+      ],
+      "can_be_used_by_obsidure": false,
+      "can_be_used_for_proof": false,
+      "notes": "À_PROUVER dans le registre. Scaffold axiomatique fourni (HYPOTHESE_TEMPORAIRE). Ne peut pas être prouvé sans norm et iterate. Un scaffold Lean existe déjà dans peripheral/ avec une preuve partielle sur DomainState simplifié."
+    },
+    {
+      "id": "P161",
+      "name": "Calibration énergétique temporelle — loi finale",
+      "type": "formula",
+      "status": "PROVISIONAL",
+      "source_files": ["periphery/pepites_search_algo/P161__Calibration_energetique_temporelle_loi_finale.md"],
+      "human_definition": "Coût(A,t) = f(M(t), Rc(t), dM/dt, contexte_humain(t)) — loi de coût énergétique",
+      "formal_definition_candidate": "-- structure CanonicalState (esquisse P161)\nstructure CanonicalState where\n  S   : Float\n  Phi : Nat → Nat\n  I   : Nat\n  tau : Nat\n  L   : Nat → Float",
+      "lean_signature_candidate": "structure CanonicalState where ...",
+      "related_domains": ["LEAN_TLA_PROOF", "OBSIDURE", "KERNEL_X108"],
+      "related_metrics": ["S", "L", "tau", "Cout"],
+      "missing_dependencies": [
+        "Time : type — pas défini dans les sources lisibles",
+        "Memory : type M(t) — pas défini",
+        "Rc(t) : ressource cognitive — pas défini",
+        "dM/dt : dérivée temporelle — non formalisée"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "À_PROUVER dans le registre. La structure CanonicalState esquissée est la base de DomainState dans la sandbox. Les dépendances temporelles et de ressources bloquent la preuve complète."
+    },
+    {
+      "id": "Balance_math",
+      "name": "Balance mathématique d'Étienne",
+      "type": "operator",
+      "status": "PROVISIONAL",
+      "source_files": ["periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/extracted_text_all.md"],
+      "human_definition": "B_Etienne(n) = équilibre(grandeur(n), écart(n), ratio(n), structure(n)) — opérateur de lecture des grandeurs",
+      "formal_definition_candidate": "-- Nat → Float (valeur d'équilibre) — opérateur de recherche math",
+      "lean_signature_candidate": "def B_Etienne : Nat → Float",
+      "related_domains": ["MATH_RESEARCH", "EXPLORATORY_ENGINE"],
+      "related_metrics": ["B_Etienne"],
+      "missing_dependencies": [
+        "définition de grandeur(n)",
+        "définition de écart(n)",
+        "définition de ratio(n)",
+        "définition de structure(n)"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "IMPORTANT : cet opérateur appartient au domaine Recherche math / moteur exploratoire. Il ne doit PAS être intégré dans le décisionnel X-108."
+    },
+    {
+      "id": "PrimePartitionLab",
+      "name": "Lab partitions et nombres premiers",
+      "type": "definition",
+      "status": "PROVISIONAL",
+      "source_files": ["periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/extracted_text_all.md"],
+      "human_definition": "Part(n) = ensemble des partitions entières de n, p(n) = |Part(n)| — cardinalité des partitions",
+      "formal_definition_candidate": "def Part (n : Nat) : List (List Nat) := ...\ndef p (n : Nat) : Nat := (Part n).length",
+      "lean_signature_candidate": "def Part : Nat → List (List Nat)\ndef p : Nat → Nat",
+      "related_domains": ["MATH_RESEARCH", "PRIME_LAB"],
+      "related_metrics": ["p_n", "Part_n"],
+      "missing_dependencies": [
+        "algorithme de génération des partitions entières",
+        "preuve de terminaison de la récursion"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "Domaine recherche math. Formule claire et axiomatisable. Dépend d'un algorithme de partition non fourni dans les sources."
+    },
+    {
+      "id": "LTCU_plus",
+      "name": "LTCU+ — pont sémantique 5 couches",
+      "type": "formula",
+      "status": "DO_NOT_USE_YET",
+      "source_files": ["periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/extracted_text_all.md"],
+      "human_definition": "L_u = Σ(L_s, L_m, L_e, L_t, L_r) — somme des couches sémantiques",
+      "formal_definition_candidate": null,
+      "lean_signature_candidate": null,
+      "related_domains": ["SEMANTIC_BRIDGE"],
+      "related_metrics": ["L_u"],
+      "missing_dependencies": [
+        "définition de L_s, L_m, L_e, L_t, L_r — non détaillées",
+        "domaine d'application non précisé",
+        "relation avec le kernel X-108 non établie"
+      ],
+      "can_be_used_by_obsidure": false,
+      "can_be_used_for_proof": false,
+      "notes": "Trop peu de contexte pour axiomatiser. Ne pas utiliser tant que les 5 couches ne sont pas définies. Statut : DO_NOT_USE_YET."
+    },
+    {
+      "id": "lambda_t",
+      "name": "Calibrateur / tension temporelle-contextuelle Λ(t,S_t)",
+      "type": "function",
+      "status": "PROVISIONAL",
+      "source_files": [
+        "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/extracted_text_all.md",
+        "CONVERSATION_PARTIE_2 (2026-06-25) — formule principale Obsidia"
+      ],
+      "human_definition": "Λ(t,S_t) = tension/friction/calibration temporelle-contextuelle. Apparaît dans la formule principale : S_{t+1} = S_t + Λ(t,S_t)·Φ(S_t). Variante : λ(t) — calibrateur temporel simplifié.",
+      "formal_definition_candidate": "-- Λ : Time → State → Float (tension contextuelle)\n-- λ : Time → Float (calibrateur simplifié)\naxiom Lambda_t_St : Float → Float → Float -- HYPOTHESE_TEMPORAIRE",
+      "lean_signature_candidate": "axiom Lambda_t_St : Float → Float → Float",
+      "related_domains": ["TEMPORAL_CALIBRATION", "KERNEL_X108", "THERMO_PATH_ENGINE"],
+      "related_metrics": ["lambda_t", "Lambda_tSt", "S"],
+      "missing_dependencies": [
+        "domaine et codomaine précis de Λ non définis formellement",
+        "relation avec τ de P36 non établie",
+        "distinction λ(t) vs Λ(t,S_t) à confirmer"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "Mis à jour depuis la conversation 2026-06-25. Λ(t,S_t) est la tension dans la formule principale S_{t+1} = S_t + Λ(t,S_t)·Φ(S_t). Statut PROVISIONAL — ne pas brancher au kernel décisionnel avant calibration."
+    },
+    {
+      "id": "BALMA",
+      "name": "BALMA",
+      "type": "unknown",
+      "status": "MISSING_CONTEXT",
+      "source_files": [],
+      "human_definition": "MISSING_CONTEXT — uniquement dans des fichiers .docx illisibles (v1cano.docx, formalisermath.docx)",
+      "formal_definition_candidate": null,
+      "lean_signature_candidate": null,
+      "related_domains": [],
+      "related_metrics": [],
+      "missing_dependencies": [
+        "export en .md/.txt de v1cano.docx",
+        "export en .md/.txt de formalisermath.docx"
+      ],
+      "can_be_used_by_obsidure": false,
+      "can_be_used_for_proof": false,
+      "notes": "NE PAS INVENTER. BALMA est MISSING_CONTEXT. Cherché dans conversation partie 1 (850KB) et conversation partie 2 (9461 lignes) le 2026-06-25 — 0 résultat. Uniquement dans des .docx illisibles."
+    },
+    {
+      "id": "SYRIQ",
+      "name": "SYRIQ",
+      "type": "unknown",
+      "status": "MISSING_CONTEXT",
+      "source_files": [],
+      "human_definition": "MISSING_CONTEXT — uniquement dans des fichiers .docx illisibles",
+      "formal_definition_candidate": null,
+      "lean_signature_candidate": null,
+      "related_domains": [],
+      "related_metrics": [],
+      "missing_dependencies": [
+        "export en .md/.txt des .docx sources"
+      ],
+      "can_be_used_by_obsidure": false,
+      "can_be_used_for_proof": false,
+      "notes": "NE PAS INVENTER. SYRIQ est MISSING_CONTEXT. Cherché dans conversation partie 1 et partie 2 le 2026-06-25 — 0 résultat. Uniquement dans des .docx illisibles."
+    },
+    {
+      "id": "Formule_principale_Obsidia",
+      "name": "Formule principale Obsidia — équation d'état",
+      "type": "formula",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 3 'Formulations math importantes'"],
+      "human_definition": "S_{t+1} = S_t + Λ(t,S_t)·Φ(S_t) — équation de transition de l'état moteur. Δ_Obsidia(S_t) = Λ(t,S_t)·Φ(S_t) est le delta d'état. Variante : Δ_Obsidia(S_t) = λ(t)·Φ(S_t).",
+      "formal_definition_candidate": "-- S : State (Float dans la sandbox)\n-- Λ(t,S_t) : tension contextuelle-temporelle\n-- Φ(S_t) : transformation admissible\n-- S_{t+1} = S_t + Λ(t,S_t) * Φ(S_t)",
+      "lean_signature_candidate": null,
+      "related_domains": ["KERNEL_X108", "THERMO_PATH_ENGINE", "OBSIDURE"],
+      "related_metrics": ["S", "lambda_t", "Lambda_tSt", "Phi_St"],
+      "missing_dependencies": [
+        "définition formelle de Λ(t,S_t)",
+        "définition formelle de Φ(S_t)",
+        "type de State dans la sandbox périphérique"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL — ne pas brancher directement au kernel tant que Λ et Φ ne sont pas calibrés. Statut explicite dans la conversation : PROVISIONAL_METRICS / NEEDS_DOMAIN_CALIBRATION."
+    },
+    {
+      "id": "Phi_St",
+      "name": "Transformation admissible Φ(S_t)",
+      "type": "function",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 3"],
+      "human_definition": "Φ(S_t) = transformation appliquée à l'état S_t. Apparaît dans S_{t+1} = S_t + Λ(t,S_t)·Φ(S_t). Lié à la Φ de P36 (fonction de transition).",
+      "formal_definition_candidate": "-- Φ : State → State (ou Nat → Nat dans la sandbox)\naxiom Phi_St : Float → Float -- HYPOTHESE_TEMPORAIRE",
+      "lean_signature_candidate": null,
+      "related_domains": ["KERNEL_X108", "LEAN_TLA_PROOF", "OBSIDURE"],
+      "related_metrics": ["S", "Phi_St"],
+      "missing_dependencies": [
+        "formule explicite de Φ non fournie dans les sources",
+        "lien avec step : Nat → Nat de DomainState à confirmer"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Lié à la Φ de P36/P100 mais formule non précisée. À ne pas confondre avec la preuve de P100 : lyapunov_non_growth utilise step (Nat→Nat) comme proxy de Φ."
+    },
+    {
+      "id": "Local_update",
+      "name": "Local update — Deep Delta Learning",
+      "type": "formula",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 3"],
+      "human_definition": "X_{t+1} = X_t + β(X_t)·k(X_t) — mise à jour locale. β(X_t) = gate local / pondération. k(X_t) = direction ou vitesse locale d'ajustement.",
+      "formal_definition_candidate": "-- X : local state (Float)\n-- β : gate local\n-- k : direction locale\n-- X_{t+1} = X_t + β(X_t) * k(X_t)",
+      "lean_signature_candidate": null,
+      "related_domains": ["MATH_RESEARCH", "THERMO_PATH_ENGINE"],
+      "related_metrics": ["beta_Xt", "k_Xt"],
+      "missing_dependencies": [
+        "définition de β(X_t) — gate local",
+        "définition de k(X_t) — direction locale"
+      ],
+      "can_be_used_by_obsidure": false,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL_METRICS — à ne pas brancher directement au kernel. Usage : recherche math / moteur exploratoire."
+    },
+    {
+      "id": "Gardien_Amont",
+      "name": "Métriques du Gardien Amont — IR, CIZ, ΔTSG",
+      "type": "metrics_triple",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 3 et Section A"],
+      "human_definition": "Trois métriques de vérification pré-cognitive : IR(C) = irréversibilité du chemin. CIZ(C) = conflit structurel récurrent. ΔTSG(C) = variation de tension structurelle globale. Condition d'admission : IR(C)=0 ∧ CIZ(C)=0 ∧ ΔTSG(C)<0.",
+      "formal_definition_candidate": "-- PathContext C\n-- IR(C) : Float -- irréversibilité\n-- CIZ(C) : Float -- conflit récurrent\n-- ΔTSG(C) : Float -- variation tension structurelle\n-- ADMIT_PATH ssi IR(C)=0 ∧ CIZ(C)=0 ∧ ΔTSG(C)<0",
+      "lean_signature_candidate": "axiom IR : PathContext → Float\naxiom CIZ : PathContext → Float\naxiom DTSG : PathContext → Float",
+      "related_domains": ["KERNEL_X108", "THERMO_PATH_ENGINE", "LEAN_TLA_PROOF"],
+      "related_metrics": ["IR", "CIZ", "DTSG"],
+      "missing_dependencies": [
+        "type PathContext — non défini dans les sources",
+        "formule de mesure de IR(C)",
+        "formule de mesure de CIZ(C)",
+        "formule de mesure de ΔTSG(C)"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Ces métriques correspondent à TP-01 (Faithful Path Existence) dans FILE_DE_PREUVE.md. À ne pas confondre avec les métriques kernel scellées. Statut dans la conversation : PROVISIONAL_METRICS / NEEDS_DOMAIN_CALIBRATION."
+    },
+    {
+      "id": "PathAdmission",
+      "name": "PathAdmission — décision d'existence d'un chemin",
+      "type": "enum",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section A Gardien Amont"],
+      "human_definition": "Sortie du Gardien Amont : ADMIT_PATH / REFUSE_PATH / ESCALATE_DELIBERATION. Détermine si un chemin d'action peut exister — couche pré-cognitive, avant cognition, avant optimisation, avant décision.",
+      "formal_definition_candidate": "inductive PathAdmission where\n  | ADMIT_PATH\n  | REFUSE_PATH\n  | ESCALATE_DELIBERATION",
+      "lean_signature_candidate": "inductive PathAdmission where\n  | ADMIT_PATH\n  | REFUSE_PATH\n  | ESCALATE_DELIBERATION",
+      "related_domains": ["KERNEL_X108", "LEAN_TLA_PROOF", "THERMO_PATH_ENGINE"],
+      "related_metrics": ["IR", "CIZ", "DTSG"],
+      "missing_dependencies": [
+        "type PathContext complet",
+        "formules des 3 métriques IR/CIZ/ΔTSG"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Lié à TP-01 Faithful Path Existence. Le Gardien Amont élimine, il ne raisonne pas. Ne jamais rendre la PathAdmission souveraine — X108 reste l'autorité finale."
+    },
+    {
+      "id": "LOI_COUT_CAUSAL",
+      "name": "Loi du Coût Causal",
+      "type": "law",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 5 'Coût action/inaction'"],
+      "human_definition": "Toute information reçue modifie le champ décisionnel. Toute action produit un coût direct et différé. Toute inaction produit un coût latent. Toute temporisation consciente doit être évaluée comme une stratégie active de stabilisation. HOLD ≠ absence d'action — HOLD est une action de stabilisation temporelle.",
+      "formal_definition_candidate": "-- LOI_COUT_CAUSAL : axiome conceptuel\n-- Coût(agir) ≠ 0\n-- Coût(ne_pas_agir) ≠ 0\n-- HOLD = stratégie active de stabilisation",
+      "lean_signature_candidate": null,
+      "related_domains": ["KERNEL_X108", "THERMO_PATH_ENGINE", "OBSIDURE"],
+      "related_metrics": ["risk_score", "irreversibility_cost", "latency_cost"],
+      "missing_dependencies": [
+        "mesure formelle du Coût(agir)",
+        "mesure formelle du Coût(ne_pas_agir)",
+        "fonction de comparaison des coûts"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Cette loi justifie HOLD comme action positive et enrichit P107/P100. Ne pas axiomatiser avant d'avoir défini les métriques de coût (CostVector)."
+    },
+    {
+      "id": "Causalite_vivante",
+      "name": "Causalité vivante — boucle causale",
+      "type": "model",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 4 'Causalité vivante'"],
+      "human_definition": "Boucle : information → perception → croyance → décision → action → trace → feedback → nouvelle information. Une prédiction n'est pas extérieure au monde — elle devient une cause dans le monde (réflexivité). Toute information intégrée dans un système devient une cause latente.",
+      "formal_definition_candidate": "-- Boucle causale circulaire\n-- information → décision → action → trace → feedback → information\n-- Réflexivité : prédiction ∈ causes du monde suivant",
+      "lean_signature_candidate": null,
+      "related_domains": ["KERNEL_X108", "MATH_RESEARCH", "OBSIDURE"],
+      "related_metrics": [],
+      "missing_dependencies": [
+        "formalisation de la réflexivité causale",
+        "métrique de feedback"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Concept fondamental pour CIC et Brody. Ne pas axiomatiser directement — couche philosophique/structurante. Usage : vision, manifeste, couche symbolique, recherche future."
+    },
+    {
+      "id": "Information_cause",
+      "name": "Information = cause",
+      "type": "axiom_candidate",
+      "status": "PROVISIONAL",
+      "source_files": ["CONVERSATION_PARTIE_2 (2026-06-25) — Section 2 'Pépite racine'"],
+      "human_definition": "L'information n'est pas seulement une donnée. L'information est une cause. Toute information intégrée dans un système devient une cause latente — elle peut modifier les croyances, comportements, décisions, actions, traces et futurs possibles.",
+      "formal_definition_candidate": "-- AXIOME_CIC_V1 : READONLY, NON_DECISIONNEL\n-- information : Data → Cause\n-- cause : Cause → Delta(State)",
+      "lean_signature_candidate": null,
+      "related_domains": ["MATH_RESEARCH", "OBSIDURE", "CIC"],
+      "related_metrics": [],
+      "missing_dependencies": [
+        "type Data formalisé",
+        "type Cause formalisé",
+        "fonction de propagation causale"
+      ],
+      "can_be_used_by_obsidure": true,
+      "can_be_used_for_proof": false,
+      "notes": "PROVISIONAL. Pépite racine identifiée dans la conversation. Statut : AXIOME_CIC_V1 / READONLY / NON_DECISIONNEL / NON_PREDICTIF dans la conversation. Usage : CIC (Carte d'Identification Causale), vision projet."
+    }
+  ]
+}
