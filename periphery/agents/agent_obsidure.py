@@ -369,9 +369,23 @@ class OSTradClient:
         )
 
 
+_PYTHON_INTENT_KEYWORDS: Tuple[str, ...] = (
+    ".PY", ".JSON", ".MD",
+    "MODULE PYTHON", "PERIPHERY/MATH_CORE", "BRANCH_REGISTRY",
+    "TESTS SMOKE", "SMOKE TEST", "MATH_MEMORY_INDEX", "PERIPHERY/AGENTS",
+    "PERIPHERY/TESTS", "CREE UN MODULE", "CRÉE UN MODULE",
+    "RAPPORT MARKDOWN", "FICHIER MARKDOWN",
+)
+
+
 def _local_intent(text: str) -> str:
-    """Classifie l'intention sans IA — heuristique locale."""
+    """Classifie l'intention sans IA — heuristique locale.
+    PYTHON_PATCH_PROPOSAL est prioritaire sur CREATE_PATCH et LEAN_SANDBOX.
+    """
     t = text.upper()
+    # Route Python : priorité absolue avant Lean et CREATE générique
+    if any(k in t for k in _PYTHON_INTENT_KEYWORDS):
+        return "PYTHON_PATCH_PROPOSAL"
     if any(k in t for k in ("CRÉE", "CREATE", "GÉNÈRE", "GENERATE", "BRANCHER", "BRANCH")):
         return "CREATE_PATCH"
     if any(k in t for k in ("AUDIT", "SCAN", "VÉRIFIE", "CHECK", "INSPECTE")):
@@ -500,6 +514,23 @@ def _test_patches_conformity(
                         )[:400],
                     })
             continue
+
+        # ── Python périphérique : vérifier zone de sortie et extension ─────
+        if action == "CREATE_PYTHON_PERIPHERAL":
+            _ALLOWED_PY_EXTS = {".py", ".json", ".md"}
+            if not path.startswith("periphery/"):
+                errors.append({
+                    "type": "PYTHON_OUTPUT_OUTSIDE_PERIPHERY",
+                    "path": path,
+                    "details": f"Fichier Python hors de periphery/ : '{path}'. Route PYTHON_PATCH_PROPOSAL limitée à periphery/.",
+                })
+            elif Path(path).suffix not in _ALLOWED_PY_EXTS:
+                errors.append({
+                    "type": "PYTHON_INVALID_EXTENSION",
+                    "path": path,
+                    "details": f"Extension non autorisée : '{Path(path).suffix}'. Autorisées : .py, .json, .md.",
+                })
+            continue  # analyse statique commune appliquée ci-dessous via sandbox_path
 
         # ── Code périphérique : analyse statique ───────────────────────────
         sp = Path(patch.get("sandbox_path", ""))
@@ -980,7 +1011,7 @@ class LeanSandbox:
         lean_file.write_text(lean_content, encoding="utf-8")
         return lean_file
 
-    def run_lake_build(self, timeout: int = 60) -> Dict[str, Any]:
+    def run_lake_build(self, lean_file: Optional[Path] = None, timeout: int = 60) -> Dict[str, Any]:
         """
         Lance lake build dans la sandbox Lean.
         Ne touche JAMAIS au repo principal.
@@ -995,9 +1026,16 @@ class LeanSandbox:
                 "sandbox": str(self._root),
             }
 
-        # lakefile minimal dans la sandbox
+        # lakefile dynamique — cible explicitement le fichier généré
         lakefile = self._root / "lakefile.lean"
-        if not lakefile.exists():
+        if lean_file and lean_file.exists():
+            module_name = lean_file.stem
+            lakefile.write_text(
+                f"import Lake\nopen Lake DSL\n\npackage obsidura_sandbox\n\n"
+                f"lean_lib SandboxLib where\n  roots := #[`{module_name}]\n",
+                encoding="utf-8",
+            )
+        elif not lakefile.exists():
             lakefile.write_text(
                 'import Lake\nopen Lake DSL\npackage obsidura_sandbox\n',
                 encoding="utf-8",
@@ -1014,8 +1052,14 @@ class LeanSandbox:
                 errors="replace",
             )
             success = result.returncode == 0
+            # Ne pas pénaliser les warnings Lake (no previous manifest, etc.)
+            has_real_error = any(
+                "error:" in line.lower() or ": failed" in line.lower()
+                for line in (result.stderr or "").splitlines()
+            )
+            final_success = success and not has_real_error
             return {
-                "status": "BUILD_OK" if success else "BUILD_FAILED",
+                "status": "BUILD_SUCCESS" if final_success else "BUILD_FAILED",
                 "returncode": result.returncode,
                 "stdout": result.stdout[:1000],
                 "stderr": result.stderr[:1000],
@@ -1115,10 +1159,9 @@ class LeanMutationEngine:
         if error_trail:
             header = f"{header}\n{error_trail}"
 
-        # Injecter le contexte math scellé si disponible
-        import_line = "-- import Obsidia.Basic  (sandbox — pas de dépendance kernel)"
-        if math_ctx and math_ctx.lean_import_header:
-            import_line = math_ctx.lean_import_header
+        # Sandbox standalone — aucun import externe (Std/Mathlib requièrent réseau)
+        # omega, simp, intros, exact, rfl sont dans le core Lean 4 sans import
+        import_line = "-- Sandbox standalone (core Lean 4 — no external dependencies)"
 
         if strategy == "SEMANTIC":
             # Commutativité de l'addition — expressive, toujours vraie en Lean 4
@@ -1173,7 +1216,7 @@ class LeanMutationEngine:
 
                 {header}
 
-                theorem {thname} : (1 : Nat) + 1 = 2 := by norm_num
+                theorem {thname} : (1 : Nat) + 1 = 2 := by rfl
             """).strip()
 
 
@@ -1219,7 +1262,7 @@ def create_backup(target_paths: List[str], ts: str) -> Tuple[str, Dict[str, str]
     backup_dir = REPO_ROOT / f"_BACKUP_ORIGINALS_{ts}"
     checksums: Dict[str, str] = {}
 
-    existing = [p for p in target_paths if (REPO_ROOT / p).exists() and not _is_protected(p)]
+    existing = [p for p in target_paths if (REPO_ROOT / p).exists() and (REPO_ROOT / p).is_file() and not _is_protected(p)]
     if not existing:
         backup_dir.mkdir(parents=True, exist_ok=True)
         return str(backup_dir), checksums
@@ -1323,47 +1366,82 @@ def generate_patches(
                     "sandbox_path": "",
                 })
 
-    # ── Lean sandbox si intent = LEAN_SANDBOX ────────────────────────────
-    if intent == "LEAN_SANDBOX" or "lean" in objective.lower():
-        theorem_id = f"P{_next_peripheral_theorem_id()}"
-
-        # LeanMutationEngine décide la stratégie à partir des ErrorContext
-        # (pas de fallback trivial hardcodé — chaque tentative est différente)
-        statement = _build_lean_variant(
-            theorem_id=theorem_id,
-            objective=objective,
-            attempt=attempt,
-            error_contexts=error_contexts,
-            math_ctx=math_ctx,
+    # ── Python peripheral si intent = PYTHON_PATCH_PROPOSAL ─────────────
+    # Route active → génère des stubs .py/.json/.md dans periphery/ uniquement.
+    # Aucun fallback Lean autorisé depuis cette route.
+    if intent == "PYTHON_PATCH_PROPOSAL":
+        patches.extend(
+            _generate_python_peripheral_patches(objective, sandbox_dir, attempt)
         )
 
-        try:
-            lean_file = lean_sandbox.generate_peripheral_theorem(
-                theorem_id=theorem_id,
-                statement=statement,
-                rationale=objective[:150],
-                math_ctx=math_ctx,
-            )
-            lean_result = lean_sandbox.run_lake_build()
-            lean_result["theorem_id"]   = theorem_id
-            lean_result["lean_file"]    = str(lean_file)
-            lean_result["attempt"]      = attempt
-            lean_result["strategy_used"] = (
-                error_contexts[-1].recommended_strategy if error_contexts else "SEMANTIC"
-            )
-            patches.append({
-                "path": f"proofs/lean/peripheral/{theorem_id}.lean",
-                "action": "CREATE_LEAN_PERIPHERAL",
-                "diff_summary": (
-                    f"Théorème {theorem_id} (T{attempt}) — "
-                    f"stratégie {lean_result['strategy_used']} — sans sorry."
-                ),
-                "rationale": objective[:150],
-                "domain": "LEAN",
-                "sandbox_path": str(lean_file),
-            })
-        except ValueError as exc:
-            lean_result = {"status": "LEAN_SORRY_BLOCKED", "error": str(exc)}
+    # ── Lean sandbox si intent = LEAN_SANDBOX ────────────────────────────
+    # Guard : bloqué si la route Python est active (intent != PYTHON_PATCH_PROPOSAL).
+    if (intent == "LEAN_SANDBOX" or "lean" in objective.lower()) and intent != "PYTHON_PATCH_PROPOSAL":
+        # Priorité : ID et chemin explicites dans l'objectif > auto-incrément
+        explicit_id   = _extract_theorem_id_from_objective(objective)
+        explicit_path = _extract_target_path_from_objective(objective)
+        explicit_stmt = _extract_explicit_lean_statement(objective)
+
+        theorem_id  = explicit_id or f"P{_next_peripheral_theorem_id()}"
+        patch_path  = explicit_path or f"proofs/lean/peripheral/{theorem_id}.lean"
+
+        # Garde target_exact : si l'objectif demande un chemin hors periphery/lean_sandbox
+        # et qu'un chemin explicite est fourni, bloquer la dérive vers proofs/
+        if explicit_path and 'proofs/lean/Obsidia' in explicit_path:
+            lean_result = {
+                "status": "REFUSED_TARGET_MISMATCH",
+                "error": f"Chemin refusé : {explicit_path} pointe vers proofs/lean/Obsidia (scellé).",
+            }
+        else:
+            if explicit_stmt:
+                # L'utilisateur a fourni le statement exact — l'utiliser verbatim
+                ns = theorem_id.replace('-', '_')
+                statement = (
+                    f"-- Sandbox standalone (core Lean 4 — no external dependencies)\n\n"
+                    f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: EXPLICIT_OBJECTIVE\n"
+                    f"-- Objectif: {objective[:60]}\n\n"
+                    f"namespace Obsidia\nnamespace {ns}\n\n"
+                    f"{explicit_stmt}\n\n"
+                    f"end {ns}\nend Obsidia"
+                )
+            else:
+                # Aucun statement fourni → moteur de mutation générique
+                statement = _build_lean_variant(
+                    theorem_id=theorem_id,
+                    objective=objective,
+                    attempt=attempt,
+                    error_contexts=error_contexts,
+                    math_ctx=math_ctx,
+                )
+
+            try:
+                lean_file = lean_sandbox.generate_peripheral_theorem(
+                    theorem_id=theorem_id,
+                    statement=statement,
+                    rationale=objective[:150],
+                    math_ctx=math_ctx,
+                )
+                lean_result = lean_sandbox.run_lake_build(lean_file=lean_file)
+                lean_result["theorem_id"]    = theorem_id
+                lean_result["lean_file"]     = str(lean_file)
+                lean_result["attempt"]       = attempt
+                lean_result["strategy_used"] = (
+                    "EXPLICIT_OBJECTIVE" if explicit_stmt
+                    else (error_contexts[-1].recommended_strategy if error_contexts else "SEMANTIC")
+                )
+                patches.append({
+                    "path": patch_path,
+                    "action": "CREATE_LEAN_PERIPHERAL",
+                    "diff_summary": (
+                        f"Théorème {theorem_id} (T{attempt}) — "
+                        f"stratégie {lean_result['strategy_used']} — sans sorry."
+                    ),
+                    "rationale": objective[:150],
+                    "domain": "LEAN",
+                    "sandbox_path": str(lean_file),
+                })
+            except ValueError as exc:
+                lean_result = {"status": "LEAN_SORRY_BLOCKED", "error": str(exc)}
 
     # ── SRL organize ─────────────────────────────────────────────────────
     if intent == "SRL_ORGANIZE":
@@ -1383,8 +1461,267 @@ def generate_patches(
     return patches, lean_result
 
 
+# ===========================================================================
+# ROUTE PYTHON_PATCH_PROPOSAL — génération de stubs Python/JSON/MD périphériques
+# Zone de sortie : periphery/ uniquement. Extensions : .py, .json, .md.
+# Aucun fallback Lean depuis cette route — interdit par conception.
+# kernel_mutation=False, P107 non prouvé.
+# ===========================================================================
+
+_PYTHON_PERIPHERAL_ALLOWED_PREFIX = "periphery/"
+_PYTHON_PERIPHERAL_ALLOWED_EXTS   = {".py", ".json", ".md"}
+
+
+def _generate_python_peripheral_patches(
+    objective: str, sandbox_dir: Path, attempt: int
+) -> List[Dict[str, Any]]:
+    """Route PYTHON_PATCH_PROPOSAL — stubs Python dans periphery/ uniquement."""
+    patches: List[Dict[str, Any]] = []
+
+    # Extraire les cibles explicites .py / .json / .md de l'objectif
+    found = re.findall(r"[\w/\-\.]+\.(?:py|json|md)", objective, re.IGNORECASE)
+    targets: List[str] = []
+    for raw in found:
+        f = raw.replace("\\", "/")
+        # Placer sous periphery/ si absent
+        if not f.startswith("periphery/"):
+            f = f"periphery/math_core/{f.lstrip('/')}"
+        # Bloquer les chemins protégés
+        if _is_protected(f):
+            continue
+        ext = Path(f).suffix.lower()
+        if ext not in _PYTHON_PERIPHERAL_ALLOWED_EXTS:
+            continue
+        targets.append(f)
+
+    # Stub par défaut si aucune cible explicite
+    if not targets:
+        slug = re.sub(r"[^\w]", "_", objective[:40]).lower().strip("_")
+        targets = [f"periphery/math_core/{slug}_stub.py"]
+
+    for rel in targets:
+        out = sandbox_dir / rel
+        out.parent.mkdir(parents=True, exist_ok=True)
+        ext = Path(rel).suffix.lower()
+        if ext == ".py":
+            content = _python_peripheral_stub(rel, objective, attempt)
+        elif ext == ".json":
+            content = _json_peripheral_stub(rel, objective)
+        else:
+            content = _md_peripheral_stub(rel, objective)
+        out.write_text(content, encoding="utf-8")
+        patches.append({
+            "path": rel,
+            "action": "CREATE_PYTHON_PERIPHERAL",
+            "diff_summary": (
+                f"Module périphérique Python (T{attempt}) "
+                f"— route PYTHON_PATCH_PROPOSAL — periphery/ only."
+            ),
+            "rationale": objective[:150],
+            "domain": "PYTHON",
+            "sandbox_path": str(out),
+        })
+    return patches
+
+
+def _python_peripheral_stub(rel: str, objective: str, attempt: int) -> str:
+    """
+    Génère le contenu Python du fichier cible.
+    Si l'objectif contient des patterns IMPORT/VERIFIE/ASSERT/SMOKE,
+    génère du vrai code enrichi. Sinon, stub minimal.
+    """
+    module_name = Path(rel).stem
+    obj_up = objective.upper()
+
+    header = (
+        '"""\n'
+        f"periphery — {rel}\n"
+        f"Route     : PYTHON_PATCH_PROPOSAL (tentative {attempt})\n"
+        f"Objectif  : {objective[:120]}\n"
+        "Statut    : SANDBOX — AWAITING_HUMAN_REVIEW\n"
+        "RÈGLE     : kernel_mutation=False. Ne pas modifier proofs/, sealed, V18, kernel.\n"
+        "NOTE      : P107 (L(Phi(s))<=L(s)) est A_PROUVER — ne pas présenter comme prouvé.\n"
+        '"""\n'
+    )
+
+    # ── Détection mode enrichi ──────────────────────────────────────────
+    _ENRICHED_TRIGGERS = (
+        "IMPORTE", "IMPORT", "VERIFIE", "VERIFY", "ASSERT",
+        "SMOKE", "RETOURNE", "RETURNS", "ITEMS", "ALL_ITEMS",
+        "SIGMA", "CLASSIFY", "ALLOW", "BLOCK", "TENSION",
+    )
+    is_enriched = any(k in obj_up for k in _ENRICHED_TRIGGERS)
+
+    if not is_enriched:
+        return (
+            header
+            + "from __future__ import annotations\n"
+            + "from typing import Any, Dict\n\n\n"
+            + f"def {module_name}_init() -> Dict[str, Any]:\n"
+            + '    """Stub généré — à compléter selon MATH_MEMORY_INDEX.json."""\n'
+            + f'    return {{"module": "{module_name}", "status": "STUB", "route": "PYTHON_PATCH_PROPOSAL"}}\n'
+        )
+
+    # ── Détection des modules à importer depuis l'objectif ─────────────
+    _MODULE_PATTERNS = {
+        "math_memory_index": ("math_memory_index", ["all_items", "get_by_id", "items_usable_by_obsidure"]),
+        "phi_graph":         ("phi_graph",          ["PhiGraph", "PhiEdge"]),
+        "omega_space":       ("omega_space",         ["OmegaState", "OMEGA_0", "project_state_to_omega"]),
+        "decision_ticket":   ("decision_ticket",     ["DecisionTicket", "create_ticket"]),
+        "drift_classifier":  ("drift_classifier",    ["DriftReport", "classify_drift", "DriftClass"]),
+        "ist":               ("ist",                 ["classify_intent", "IntentFamily"]),
+        "causal_chain":      ("causal_chain",        ["CausalChain"]),
+        "obsidia_system":    ("obsidia_system",      ["ObsidiaSystem", "ObsidiaState"]),
+    }
+
+    imports_needed: List[str] = []
+    body_blocks:    List[str] = []
+
+    for key, (mod, symbols) in _MODULE_PATTERNS.items():
+        if key.upper() in obj_up or any(s.upper() in obj_up for s in symbols):
+            imports_needed.append(
+                f"from periphery.math_core.{mod} import {', '.join(symbols)}"
+            )
+
+    # ── Génération des blocs de vérification ───────────────────────────
+    obj_lo = objective.lower()
+
+    if "math_memory_index" in obj_lo or "all_items" in obj_lo or "134" in objective:
+        body_blocks.append(textwrap.dedent("""\
+            def check_math_memory_index() -> dict:
+                \"\"\"Vérifie que MATH_MEMORY_INDEX contient 134 items.\"\"\"
+                items = all_items()
+                count = len(items)
+                ok = count == 134
+                return {"check": "math_memory_index", "count": count, "expected": 134, "ok": ok}
+        """))
+
+    if "phigraph" in obj_lo or "phi_graph" in obj_lo or "sigma" in obj_lo:
+        body_blocks.append(textwrap.dedent("""\
+            def check_phi_graph() -> dict:
+                \"\"\"Vérifie que PhiGraph.sigma() ∈ (0, 1].\"\"\"
+                g = PhiGraph(nodes=["A", "B"], edges=[PhiEdge("A", "B", "support", 0.8)])
+                s = g.sigma()
+                ok = 0.0 < s <= 1.0
+                return {"check": "phi_graph_sigma", "sigma": s, "ok": ok}
+        """))
+
+    if "omegastate" in obj_lo or "omega_space" in obj_lo or "classify" in obj_lo or "allow" in obj_lo:
+        body_blocks.append(textwrap.dedent("""\
+            def check_omega_stable() -> dict:
+                \"\"\"Vérifie que OmegaState stable classifie en ALLOW.\"\"\"
+                result = OMEGA_0.classify()
+                ok = result == "ALLOW"
+                return {"check": "omega_classify_stable", "result": result, "ok": ok}
+        """))
+
+    if "drift" in obj_lo or "driftreport" in obj_lo:
+        body_blocks.append(textwrap.dedent("""\
+            def check_drift_stable() -> dict:
+                \"\"\"Vérifie que delta=0 -> STABLE -> decision autorisée.\"\"\"
+                report = DriftReport.compute([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+                ok = report.drift_class == DriftClass.STABLE and report.decision_allowed
+                return {"check": "drift_stable", "class": report.drift_class, "ok": ok}
+        """))
+
+    if "ist" in obj_lo or "intent" in obj_lo or "classify_intent" in obj_lo:
+        body_blocks.append(textwrap.dedent("""\
+            def check_ist_query() -> dict:
+                \"\"\"Vérifie que IST détecte QUERY et confidence ∈ (0,1].\"\"\"
+                token = classify_intent("Quel est le statut du système ?")
+                ok = token.family == IntentFamily.QUERY and 0.0 < token.confidence <= 1.0
+                return {"check": "ist_query", "family": token.family, "confidence": token.confidence, "ok": ok}
+        """))
+
+    if "decisionticket" in obj_lo or "decision_ticket" in obj_lo:
+        body_blocks.append(textwrap.dedent("""\
+            def check_decision_ticket() -> dict:
+                \"\"\"Vérifie que create_ticket valide si sigma>=seuil.\"\"\"
+                dt = create_ticket("TEST_ACTION", "smoke", {"state": "ok"}, sigma=0.8)
+                ok = dt.valid()
+                return {"check": "decision_ticket", "valid": ok, "ok": ok}
+        """))
+
+    # Bloc run_all toujours présent en mode enrichi
+    checks_list = []
+    if "math_memory_index" in obj_lo or "all_items" in obj_lo or "134" in objective:
+        checks_list.append("check_math_memory_index()")
+    if "phigraph" in obj_lo or "phi_graph" in obj_lo or "sigma" in obj_lo:
+        checks_list.append("check_phi_graph()")
+    if "omegastate" in obj_lo or "omega_space" in obj_lo or "classify" in obj_lo or "allow" in obj_lo:
+        checks_list.append("check_omega_stable()")
+    if "drift" in obj_lo:
+        checks_list.append("check_drift_stable()")
+    if "ist" in obj_lo or "intent" in obj_lo:
+        checks_list.append("check_ist_query()")
+    if "decisionticket" in obj_lo or "decision_ticket" in obj_lo:
+        checks_list.append("check_decision_ticket()")
+
+    if not checks_list:
+        checks_list = ["{}  # aucun check détecté — enrichir manuellement".format("{}")]
+
+    checks_str = "\n            ".join(f"results.append({c})" for c in checks_list if "enrichir" not in c)
+
+    body_blocks.append(textwrap.dedent(f"""\
+        def run_all() -> dict:
+            \"\"\"Lance tous les checks smoke — retourne un bilan PASS/FAIL.\"\"\"
+            results = []
+            {checks_str}
+            passed = sum(1 for r in results if r.get("ok"))
+            return {{
+                "module": "{module_name}",
+                "route": "PYTHON_PATCH_PROPOSAL",
+                "total": len(results),
+                "passed": passed,
+                "failed": len(results) - passed,
+                "status": "PASS" if passed == len(results) else "FAIL",
+                "results": results,
+            }}
+
+
+        if __name__ == "__main__":
+            import json as _json
+            print(_json.dumps(run_all(), indent=2, ensure_ascii=False))
+    """))
+
+    imports_block = "\n".join(imports_needed) if imports_needed else "from typing import Any, Dict"
+    body = "\n\n".join(body_blocks)
+
+    return (
+        header
+        + "from __future__ import annotations\n"
+        + "from typing import Any, Dict, List\n"
+        + (("\n" + imports_block + "\n") if imports_needed else "\n")
+        + "\n\n"
+        + body
+    )
+
+
+def _json_peripheral_stub(rel: str, objective: str) -> str:
+    import json as _json
+    return _json.dumps({
+        "generated_by": "PYTHON_PATCH_PROPOSAL",
+        "path": rel,
+        "objective": objective[:120],
+        "status": "STUB_AWAITING_HUMAN_REVIEW",
+        "kernel_mutation": False,
+        "readonly": True,
+    }, ensure_ascii=False, indent=2)
+
+
+def _md_peripheral_stub(rel: str, objective: str) -> str:
+    name = Path(rel).stem
+    return (
+        f"# {name}\n\n"
+        "**Statut :** STUB — AWAITING_HUMAN_REVIEW  \n"
+        "**Route :** PYTHON_PATCH_PROPOSAL  \n"
+        f"**Objectif :** {objective[:120]}  \n\n"
+        "_Généré par Obsidure v2.0 — kernel_mutation=False._\n"
+    )
+
+
 def _detect_domain(objective: str, os_trad: OSTradResult) -> Optional[str]:
-    txt = (objective + " " + " ".join(os_trad.alphabet_units)).upper()
+    txt = (objective + " " + " ".join(str(u) for u in os_trad.alphabet_units)).upper()
     for d in ("BANK", "TRADING", "GPS", "ECOM"):
         if d in txt:
             return d
@@ -1403,6 +1740,37 @@ def _next_peripheral_theorem_id() -> int:
     while candidate in used:
         candidate += 1
     return candidate
+
+
+def _extract_theorem_id_from_objective(objective: str) -> Optional[str]:
+    """Extrait l'ID explicite (P88, P36...) depuis l'objectif. Priorité sur l'auto-incrémenteur."""
+    m = re.search(r'\b(P\d{2,})\b', objective)
+    return m.group(1) if m else None
+
+
+def _extract_target_path_from_objective(objective: str) -> Optional[str]:
+    """
+    Extrait un chemin .lean explicite depuis l'objectif.
+    N'accepte que periphery/ ou lean_sandbox — refuse proofs/lean/Obsidia/.
+    """
+    for m in re.finditer(r'([\w/\-\.]+\.lean)', objective):
+        p = m.group(1)
+        if ('lean_sandbox' in p or p.startswith('periphery/')) and 'Obsidia/Basic' not in p:
+            return p
+    return None
+
+
+def _extract_explicit_lean_statement(objective: str) -> Optional[str]:
+    """
+    Extrait un statement Lean complet depuis l'objectif si fourni verbatim.
+    Cherche : theorem/def/lemma ... := by ... ou := fun ...
+    """
+    m = re.search(
+        r'((?:theorem|def|lemma|structure)\s+\w+[^;`]{10,}?:=\s*(?:by\s+[^\n;]+|fun\s+[^\n;]+))',
+        objective,
+        re.DOTALL,
+    )
+    return m.group(1).strip() if m else None
 
 
 # Instance module — partagée par generate_patches et phase_d_disruption
@@ -1884,6 +2252,60 @@ class AgentObsidure:
         self._log(f"  Emplacement : {proposal_dir}/")
         self._log(f"  Statut : AWAITING_HUMAN_APPROVED_WRITE")
         return proposal
+
+    # ── APPLY PROPOSAL ───────────────────────────────────────────────────
+
+    def apply_proposal(self, proposal_id: str) -> Dict[str, Any]:
+        """
+        HUMAN_APPROVED_WRITE : copie les fichiers sandbox vers leur destination finale.
+        Ne touche jamais kernel / proofs / sealed / V18.
+        Retourne un bilan {applied, skipped, errors}.
+        """
+        proposal_dir = REPO_ROOT / "_PATCH_PROPOSALS" / proposal_id
+        proposal_json = proposal_dir / "proposal.json"
+        if not proposal_json.exists():
+            raise FileNotFoundError(f"Proposal introuvable : {proposal_json}")
+
+        with proposal_json.open(encoding="utf-8") as f:
+            data = json.load(f)
+
+        applied, skipped, errors = [], [], []
+
+        for patch in data.get("patches", []):
+            rel_path   = patch.get("path", "")
+            sandbox    = patch.get("sandbox_path", "")
+            action     = patch.get("action", "")
+
+            if _is_protected(rel_path):
+                skipped.append({"path": rel_path, "reason": "PROTECTED"})
+                self._log(f"  SKIP (protégé) : {rel_path}", level="WARN")
+                continue
+
+            if not sandbox or not Path(sandbox).exists():
+                errors.append({"path": rel_path, "reason": "SANDBOX_MISSING"})
+                self._log(f"  ERREUR sandbox absent : {rel_path}", level="ERROR")
+                continue
+
+            dst = REPO_ROOT / rel_path
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(sandbox, dst)
+            applied.append(rel_path)
+            self._log(f"  APPLIQUÉ : {rel_path}")
+
+        # Mise à jour du statut dans proposal.json
+        data["human_approved"] = True
+        data["status"] = "APPLIED"
+        proposal_json.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        bilan = {
+            "proposal_id": proposal_id,
+            "applied": applied,
+            "skipped": skipped,
+            "errors": errors,
+            "status": "APPLIED" if not errors else "APPLIED_WITH_ERRORS",
+        }
+        self._log(f"\n  Bilan apply : {len(applied)} appliqué(s), {len(skipped)} ignoré(s), {len(errors)} erreur(s).")
+        return bilan
 
     # ── CYCLE COMPLET ────────────────────────────────────────────────────
 
