@@ -494,12 +494,28 @@ def _test_patches_conformity(
     """
     errors: List[Dict[str, Any]] = []
 
+    if not patches and lean_result is not None:
+        errors.append({
+            "type": "LEAN_EMPTY_PATCH_PROPOSAL",
+            "path": "",
+            "details": (
+                "Lean route produced no patch. "
+                "A stabilized Lean cycle must emit at least one CREATE_LEAN_PERIPHERAL patch."
+            ),
+        })
+        return errors
+
     for patch in patches:
         action = patch.get("action", "")
         path   = patch.get("path", "")
 
         # ── Lean : vérification du résultat lake build ─────────────────────
         if action == "CREATE_LEAN_PERIPHERAL":
+            semantic_errors = _lean_semantic_target_errors(path, patch)
+            if semantic_errors:
+                errors.extend(semantic_errors)
+                continue
+
             if lean_result:
                 status = lean_result.get("status", "")
                 # LAKE_NOT_FOUND = lake absent → on accepte (test impossible)
@@ -662,6 +678,79 @@ class SRLManager:
 
 
 # Progression des stratégies Lean — ordre d'escalade par tentative
+
+
+# ===========================================================================
+# LEAN SEMANTIC TARGET GUARD — fail-closed against generic P38 fallback
+# ===========================================================================
+
+_EXPECTED_LEAN_SYMBOLS_BY_BASENAME = {
+    "PathAdmission.lean": ("namespace PathAdmission", "structure PathState"),
+    "Consensus_Cognitif.lean": ("namespace ConsensusCognitif", "structure Vote"),
+    "PrimePartitionLab.lean": ("namespace PrimePartitionLab", "structure Partition"),
+}
+
+_GENERIC_P38_FALLBACK_MARKERS = (
+    "P38_Obsidure",
+    "Théorème périphérique P38",
+    "Théorème P38",
+    "Theorem : `P38`",
+    "n + m = m + n",
+    "namespace P38",
+)
+
+
+def _read_lean_patch_candidate_text_for_validation(patch):
+    chunks = []
+
+    for key in ("content", "lean_code", "code", "diff_summary", "rationale"):
+        value = patch.get(key)
+        if isinstance(value, str) and value:
+            chunks.append(value)
+
+    for key in ("sandbox_path", "sandbox", "file"):
+        raw = patch.get(key)
+        if not raw:
+            continue
+        try:
+            candidate = Path(raw)
+            if candidate.exists() and candidate.is_file():
+                chunks.append(candidate.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            continue
+
+    return "\n".join(chunks)
+
+
+def _lean_semantic_target_errors(path, patch):
+    basename = Path(str(path).replace("\\", "/")).name
+    candidate_text = _read_lean_patch_candidate_text_for_validation(patch)
+
+    errors = []
+
+    if any(marker in candidate_text for marker in _GENERIC_P38_FALLBACK_MARKERS):
+        errors.append({
+            "type": "LEAN_SEMANTIC_TARGET_MISMATCH",
+            "path": path,
+            "details": (
+                "Generic P38 Lean fallback detected. "
+                "A BUILD_SUCCESS fallback theorem is not accepted as semantic proof for a targeted item."
+            ),
+        })
+
+    expected = _EXPECTED_LEAN_SYMBOLS_BY_BASENAME.get(basename)
+    if expected:
+        missing = [symbol for symbol in expected if symbol not in candidate_text]
+        if missing:
+            errors.append({
+                "type": "LEAN_EXPECTED_SYMBOL_MISSING",
+                "path": path,
+                "details": f"Missing expected Lean symbols for {basename}: {missing}",
+            })
+
+    return errors
+
+
 _LEAN_STRATEGY_PROGRESSION: Tuple[str, ...] = (
     "SEMANTIC",        # T1 : s'inspire de l'objectif (Nat.add_comm)
     "NAT_ARITHMETIC",  # T2 : propriété arithmétique Nat simple
@@ -1376,7 +1465,19 @@ def generate_patches(
 
     # ── Lean sandbox si intent = LEAN_SANDBOX ────────────────────────────
     # Guard : bloqué si la route Python est active (intent != PYTHON_PATCH_PROPOSAL).
-    if (intent == "LEAN_SANDBOX" or "lean" in objective.lower()) and intent != "PYTHON_PATCH_PROPOSAL":
+    explicit_python_targets = re.findall(r"[\w/\-\.]+\.(?:py|json|md)", objective, re.IGNORECASE)
+    explicit_lean_targets = re.findall(r"[\w/\-\.]+\.lean", objective, re.IGNORECASE)
+    python_targeted_objective = bool(explicit_python_targets) and not re.search(
+        r"(?:crée|cree|create|génère|genere|generate).{0,120}\.lean",
+        objective,
+        re.IGNORECASE,
+    )
+    lean_route_requested = (
+        intent == "LEAN_SANDBOX"
+        or ("lean" in objective.lower() and bool(explicit_lean_targets) and not python_targeted_objective)
+    )
+
+    if lean_route_requested and intent != "PYTHON_PATCH_PROPOSAL":
         # Priorité : ID et chemin explicites dans l'objectif > auto-incrément
         explicit_id   = _extract_theorem_id_from_objective(objective)
         explicit_path = _extract_target_path_from_objective(objective)
@@ -2136,7 +2237,24 @@ class AgentObsidure:
             )
 
             # ── Test de conformité contre les lois du Kernel ──────────────
-            attempt_raw_errors = _test_patches_conformity(patches, lean_result, sandbox_dir)
+            lean_expected_attempt = (
+                lean_result is not None
+                or ".lean" in str(objective).lower()
+                or "lean" in str(objective).lower()
+                or any(str(getattr(ctx, "error_type", "")).startswith("LEAN_") for ctx in all_error_contexts)
+            )
+
+            if lean_expected_attempt and not patches:
+                attempt_raw_errors = [{
+                    "type": "LEAN_EMPTY_PATCH_PROPOSAL",
+                    "path": "",
+                    "details": (
+                        "Solve loop produced no patch during a Lean-expected attempt. "
+                        "A stabilized Lean cycle must emit at least one CREATE_LEAN_PERIPHERAL patch."
+                    ),
+                }]
+            else:
+                attempt_raw_errors = _test_patches_conformity(patches, lean_result, sandbox_dir)
             errors_history.append({"attempt": attempt, "errors": attempt_raw_errors})
 
             if not attempt_raw_errors:
