@@ -1508,13 +1508,14 @@ def generate_patches(
                     "path": patch_path,
                     "action": "CREATE_LEAN_PERIPHERAL",
                     "diff_summary": (
-                        f"Lean exact file {theorem_id} (T{attempt}) ? "
-                        "strat?gie EXACT_FILE_CONTENT ? sans sorry."
+                        f"Lean exact file {theorem_id} (T{attempt}) - "
+                        "strategie EXACT_FILE_CONTENT - sans sorry."
                     ),
                     "rationale": objective[:150],
                     "domain": "LEAN",
                     "sandbox_path": str(lean_file),
                 })
+                statement = exact_lean_content
             elif explicit_stmt:
                 # L'utilisateur a fourni le statement exact — l'utiliser verbatim
                 ns = theorem_id.replace('-', '_')
