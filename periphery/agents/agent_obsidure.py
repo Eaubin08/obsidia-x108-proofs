@@ -857,7 +857,18 @@ class ErrorAnalyzer:
         if violated:
             parts.append(f"MotsInterdits: {', '.join(violated[:3])}")
 
-        return " | ".join(parts)
+        evolved = " | ".join(parts)
+
+        # Réattacher le bloc EXACT s'il existait dans l'objectif original — sinon T2 retombe sur SEMANTIC/P38
+        exact_block = re.search(
+            r"(^[ \t]*LEAN_EXACT_FILE_CONTENT_BEGIN[ \t]*\n.*?\n[ \t]*LEAN_EXACT_FILE_CONTENT_END[ \t]*$)",
+            base_objective,
+            flags=re.IGNORECASE | re.DOTALL | re.MULTILINE,
+        )
+        if exact_block:
+            evolved = evolved + "\n" + exact_block.group(1)
+
+        return evolved
 
 
 # ===========================================================================
@@ -1515,56 +1526,57 @@ def generate_patches(
                     "domain": "LEAN",
                     "sandbox_path": str(lean_file),
                 })
-                statement = exact_lean_content
-            elif explicit_stmt:
-                # L'utilisateur a fourni le statement exact — l'utiliser verbatim
-                ns = theorem_id.replace('-', '_')
-                statement = (
-                    f"-- Sandbox standalone (core Lean 4 — no external dependencies)\n\n"
-                    f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: EXPLICIT_OBJECTIVE\n"
-                    f"-- Objectif: {objective[:60]}\n\n"
-                    f"namespace Obsidia\nnamespace {ns}\n\n"
-                    f"{explicit_stmt}\n\n"
-                    f"end {ns}\nend Obsidia"
-                )
+                # route EXACT_FILE_CONTENT terminée — generate_peripheral_theorem non applicable
             else:
-                # Aucun statement fourni → moteur de mutation générique
-                statement = _build_lean_variant(
-                    theorem_id=theorem_id,
-                    objective=objective,
-                    attempt=attempt,
-                    error_contexts=error_contexts,
-                    math_ctx=math_ctx,
-                )
+                if explicit_stmt:
+                    # L'utilisateur a fourni le statement exact — l'utiliser verbatim
+                    ns = theorem_id.replace('-', '_')
+                    statement = (
+                        f"-- Sandbox standalone (core Lean 4 — no external dependencies)\n\n"
+                        f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: EXPLICIT_OBJECTIVE\n"
+                        f"-- Objectif: {objective[:60]}\n\n"
+                        f"namespace Obsidia\nnamespace {ns}\n\n"
+                        f"{explicit_stmt}\n\n"
+                        f"end {ns}\nend Obsidia"
+                    )
+                else:
+                    # Aucun statement fourni → moteur de mutation générique
+                    statement = _build_lean_variant(
+                        theorem_id=theorem_id,
+                        objective=objective,
+                        attempt=attempt,
+                        error_contexts=error_contexts,
+                        math_ctx=math_ctx,
+                    )
 
-            try:
-                lean_file = lean_sandbox.generate_peripheral_theorem(
-                    theorem_id=theorem_id,
-                    statement=statement,
-                    rationale=objective[:150],
-                    math_ctx=math_ctx,
-                )
-                lean_result = lean_sandbox.run_lake_build(lean_file=lean_file)
-                lean_result["theorem_id"]    = theorem_id
-                lean_result["lean_file"]     = str(lean_file)
-                lean_result["attempt"]       = attempt
-                lean_result["strategy_used"] = (
-                    "EXPLICIT_OBJECTIVE" if explicit_stmt
-                    else (error_contexts[-1].recommended_strategy if error_contexts else "SEMANTIC")
-                )
-                patches.append({
-                    "path": patch_path,
-                    "action": "CREATE_LEAN_PERIPHERAL",
-                    "diff_summary": (
-                        f"Théorème {theorem_id} (T{attempt}) — "
-                        f"stratégie {lean_result['strategy_used']} — sans sorry."
-                    ),
-                    "rationale": objective[:150],
-                    "domain": "LEAN",
-                    "sandbox_path": str(lean_file),
-                })
-            except ValueError as exc:
-                lean_result = {"status": "LEAN_SORRY_BLOCKED", "error": str(exc)}
+                try:
+                    lean_file = lean_sandbox.generate_peripheral_theorem(
+                        theorem_id=theorem_id,
+                        statement=statement,
+                        rationale=objective[:150],
+                        math_ctx=math_ctx,
+                    )
+                    lean_result = lean_sandbox.run_lake_build(lean_file=lean_file)
+                    lean_result["theorem_id"]    = theorem_id
+                    lean_result["lean_file"]     = str(lean_file)
+                    lean_result["attempt"]       = attempt
+                    lean_result["strategy_used"] = (
+                        "EXPLICIT_OBJECTIVE" if explicit_stmt
+                        else (error_contexts[-1].recommended_strategy if error_contexts else "SEMANTIC")
+                    )
+                    patches.append({
+                        "path": patch_path,
+                        "action": "CREATE_LEAN_PERIPHERAL",
+                        "diff_summary": (
+                            f"Théorème {theorem_id} (T{attempt}) — "
+                            f"stratégie {lean_result['strategy_used']} — sans sorry."
+                        ),
+                        "rationale": objective[:150],
+                        "domain": "LEAN",
+                        "sandbox_path": str(lean_file),
+                    })
+                except ValueError as exc:
+                    lean_result = {"status": "LEAN_SORRY_BLOCKED", "error": str(exc)}
 
     # ── SRL organize ─────────────────────────────────────────────────────
     if intent == "SRL_ORGANIZE":
@@ -1885,14 +1897,17 @@ def _extract_target_path_from_objective(objective: str) -> Optional[str]:
 
 
 def _extract_exact_lean_file_content(objective: str) -> Optional[str]:
-    match = re.search(
-        r"LEAN_EXACT_FILE_CONTENT_BEGIN\s*(.*?)\s*LEAN_EXACT_FILE_CONTENT_END",
+    # Le marqueur doit être seul sur sa ligne (re.MULTILINE + ^ $).
+    # Si la phrase d'instruction le cite inline ('entre BEGIN et END'), ce regex l'ignore.
+    # En cas de blocs multiples, le dernier bloc valide gagne.
+    matches = list(re.finditer(
+        r"^[ \t]*LEAN_EXACT_FILE_CONTENT_BEGIN[ \t]*\n(.*?)\n[ \t]*LEAN_EXACT_FILE_CONTENT_END[ \t]*$",
         objective,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    if not match:
+        flags=re.IGNORECASE | re.DOTALL | re.MULTILINE,
+    ))
+    if not matches:
         return None
-    content = match.group(1).strip()
+    content = matches[-1].group(1).strip()
     if not content:
         return None
     return content + "\n"
