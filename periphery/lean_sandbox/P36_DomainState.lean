@@ -1,37 +1,63 @@
-import Std
+namespace Obsidia
+namespace P36
 
-            -- Théorème périphérique Obsidia — P36
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item P36 uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/P36_DomainState.lean ; aucun 
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure DomainState where
+  state_id : Nat
+  coherence : Nat
+  tension : Nat
+  level : Nat
+  clock : Nat
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def score_valid (d : DomainState) : Prop :=
+  d.coherence <= d.level
 
-                -- Théorème périphérique P36 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item P36 uniquement et génère une proposa
+def time_ready (d : DomainState) : Prop :=
+  d.clock <= d.level
 
-                theorem P36_Obsidure__prends_l_item_P36_uniquem_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def domain_admissible (d : DomainState) : Prop :=
+  And (score_valid d) (time_ready d)
+
+def step (d : DomainState) : DomainState :=
+  { d with clock := d.clock + 1 }
+
+def canonical_fields_reflexive (d : DomainState) : Prop :=
+  And (d.state_id = d.state_id)
+    (And (d.coherence = d.coherence)
+      (And (d.tension = d.tension)
+        (And (d.level = d.level)
+          (d.clock = d.clock))))
+
+theorem domain_admissible_intro
+    (d : DomainState)
+    (hs : score_valid d)
+    (ht : time_ready d) :
+    domain_admissible d := by
+  exact And.intro hs ht
+
+theorem score_valid_from_domain_admissible
+    (d : DomainState)
+    (h : domain_admissible d) :
+    score_valid d := by
+  exact h.left
+
+theorem time_ready_from_domain_admissible
+    (d : DomainState)
+    (h : domain_admissible d) :
+    time_ready d := by
+  exact h.right
+
+theorem step_preserves_state_id
+    (d : DomainState) :
+    (step d).state_id = d.state_id := by
+  rfl
+
+theorem canonical_quintuplet_fields_reflexive
+    (d : DomainState) :
+    canonical_fields_reflexive d := by
+  exact And.intro rfl
+    (And.intro rfl
+      (And.intro rfl
+        (And.intro rfl rfl)))
+
+end P36
+end Obsidia
