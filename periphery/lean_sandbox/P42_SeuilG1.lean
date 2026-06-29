@@ -1,37 +1,55 @@
-import Std
+namespace Obsidia
+namespace P42
 
-            -- Théorème périphérique Obsidia — P42
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item P42 uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/P42_SeuilG1.lean ; aucun autr
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure ThresholdState where
+  score : Nat
+  theta : Nat
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def admissible (score theta : Nat) : Prop :=
+  score <= theta
 
-                -- Théorème périphérique P42 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item P42 uniquement et génère une proposa
+def state_admissible (s : ThresholdState) : Prop :=
+  admissible s.score s.theta
 
-                theorem P42_Obsidure__prends_l_item_P42_uniquem_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def above_threshold (score theta : Nat) : Prop :=
+  theta < score
+
+theorem admissible_intro
+    (score theta : Nat)
+    (h : score <= theta) :
+    admissible score theta := by
+  exact h
+
+theorem state_admissible_intro
+    (s : ThresholdState)
+    (h : admissible s.score s.theta) :
+    state_admissible s := by
+  exact h
+
+theorem score_le_threshold_from_state_admissible
+    (s : ThresholdState)
+    (h : state_admissible s) :
+    s.score <= s.theta := by
+  exact h
+
+theorem not_admissible_above_threshold
+    (score theta : Nat)
+    (h : above_threshold score theta) :
+    Not (admissible score theta) := by
+  intro ha
+  exact Nat.not_lt_of_ge ha h
+
+theorem not_state_admissible_when_above_threshold
+    (s : ThresholdState)
+    (h : above_threshold s.score s.theta) :
+    Not (state_admissible s) := by
+  intro hs
+  exact not_admissible_above_threshold s.score s.theta h hs
+
+theorem threshold_reflexive_admissible
+    (theta : Nat) :
+    admissible theta theta := by
+  exact Nat.le_refl theta
+
+end P42
+end Obsidia
