@@ -1861,6 +1861,21 @@ def _extract_target_path_from_objective(objective: str) -> Optional[str]:
     return None
 
 
+
+def _extract_exact_lean_file_content(objective: str) -> Optional[str]:
+    match = re.search(
+        r"LEAN_EXACT_FILE_CONTENT_BEGIN\s*(.*?)\s*LEAN_EXACT_FILE_CONTENT_END",
+        objective,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not match:
+        return None
+    content = match.group(1).strip()
+    if not content:
+        return None
+    return content + "\n"
+
+
 def _extract_explicit_lean_statement(objective: str) -> Optional[str]:
     """
     Extrait un statement Lean complet depuis l'objectif si fourni verbatim.
