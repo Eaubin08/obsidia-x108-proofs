@@ -2466,6 +2466,17 @@ class AgentObsidure:
     def run_cycle(self, objective: str) -> PatchProposal:
         self._cycle += 1
         self._log(f"\n{'='*60}")
+        # PASTE_INTERCEPT_BEFORE_CYCLE_AVDR
+        if str(objective).strip().lower() in ("paste", "multiline", "ml"):
+            self._log("  [PASTE] Mode paste multi-ligne actif. Termine par END_OBSIDURE_OBJECTIVE.")
+            _obsidure_paste_buf = []
+            while True:
+                _obsidure_paste_line = input()
+                if _obsidure_paste_line.strip() == "END_OBSIDURE_OBJECTIVE":
+                    break
+                _obsidure_paste_buf.append(_obsidure_paste_line)
+            objective = "\n".join(_obsidure_paste_buf).strip()
+
         self._log(f"CYCLE AVDR #{self._cycle} — {objective[:70]}")
         self._log(f"{'='*60}")
         _enforce_boundaries()
