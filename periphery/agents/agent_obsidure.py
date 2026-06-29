@@ -2478,6 +2478,16 @@ class AgentObsidure:
                 except EOFError:
                     break
 
+                if objective.strip().lower() in ("paste", "multiline", "ml"):
+                    self._log("Mode paste multi-ligne actif. Termine par END_OBSIDURE_OBJECTIVE.")
+                    buf = []
+                    while True:
+                        line = input()
+                        if line.strip() == "END_OBSIDURE_OBJECTIVE":
+                            break
+                        buf.append(line)
+                    objective = "\n".join(buf).strip()
+
                 if not objective:
                     continue
                 if objective.lower() in ("quit", "exit", "q"):
