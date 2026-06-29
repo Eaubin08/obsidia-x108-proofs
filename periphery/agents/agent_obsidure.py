@@ -1494,7 +1494,28 @@ def generate_patches(
                 "error": f"Chemin refusé : {explicit_path} pointe vers proofs/lean/Obsidia (scellé).",
             }
         else:
-            if explicit_stmt:
+            exact_lean_content = _extract_exact_lean_file_content(objective)
+            if exact_lean_content:
+                lean_file = sandbox_dir / patch_path
+                lean_file.parent.mkdir(parents=True, exist_ok=True)
+                lean_file.write_text(exact_lean_content, encoding="utf-8")
+                lean_result = lean_sandbox.run_lake_build(lean_file=lean_file)
+                lean_result["theorem_id"] = theorem_id
+                lean_result["lean_file"] = str(lean_file)
+                lean_result["attempt"] = attempt
+                lean_result["strategy_used"] = "EXACT_FILE_CONTENT"
+                patches.append({
+                    "path": patch_path,
+                    "action": "CREATE_LEAN_PERIPHERAL",
+                    "diff_summary": (
+                        f"Lean exact file {theorem_id} (T{attempt}) ? "
+                        "strat?gie EXACT_FILE_CONTENT ? sans sorry."
+                    ),
+                    "rationale": objective[:150],
+                    "domain": "LEAN",
+                    "sandbox_path": str(lean_file),
+                })
+            elif explicit_stmt:
                 # L'utilisateur a fourni le statement exact — l'utiliser verbatim
                 ns = theorem_id.replace('-', '_')
                 statement = (
