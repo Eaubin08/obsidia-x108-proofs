@@ -1,8 +1,122 @@
-﻿const { spawn, exec } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const app = express();
+
+let lastAutoSealRoot = null;
+
+function pick(obj, ...keys) {
+    let cur = obj;
+    for (const key of keys) {
+        if (!cur || typeof cur !== "object") return undefined;
+        cur = cur[key];
+    }
+    return cur;
+}
+
+
+function ansi(code, text) {
+    return `\x1b[${code}m${text}\x1b[0m`;
+}
+
+function normalizeGate(gate) {
+    return String(gate || "UNKNOWN").replaceAll('"', "").toUpperCase();
+}
+
+function kernelLabel() {
+    return ansi("38;5;250", "[KERNEL]");
+}
+
+function domainOnlyLabel(domain) {
+    const d = String(domain || "").toLowerCase();
+    if (d.includes("bank")) return ansi("38;5;27", "[BANK]");
+    if (d.includes("trading")) return ansi("38;5;201", "[TRADING]");
+    if (d.includes("gps") || d.includes("aviation")) return ansi("38;5;223", "[GPS]");
+    return ansi("1;97", "[UNKNOWN]");
+}
+
+function domainLabel(domain) {
+    return `${kernelLabel()}${domainOnlyLabel(domain)}`;
+}
+
+function gateLabel(gate) {
+    const g = String(gate || "").toUpperCase();
+    if (g === "ALLOW") return ansi("38;5;208", "[ALLOW]");
+    if (g === "BLOCK") return ansi("1;31", "[BLOCK]");
+    if (g === "HOLD") return ansi("38;5;214", "[HOLD]");
+    return ansi("1;97", `[${g || "UNKNOWN"}]`);
+}
+
+function sectionLabel(section) {
+    const s = String(section || "").toUpperCase();
+    if (s === "SCORE") return ansi("38;5;220", "[SCORE]");
+    if (s === "PROOF") return ansi("38;5;51", "[PROOF]");
+    if (s === "CRYPTO") return ansi("38;5;99", "[CRYPTO]");
+    if (s === "AUTHORITY") return ansi("1;97", "[AUTHORITY]");
+    if (s === "SAVE") return ansi("1;32", "[SAVE]");
+    if (s === "BRIDGE") return ansi("38;5;197", "[BRIDGE]");
+    if (s === "TRACE") return ansi("38;5;130", "[KERNEL_TRACE]");
+    return ansi("1;97", `[${s}]`);
+}
+
+function printKernelDecisionSummary(domain, parsedResult) {
+    const verdict =
+        parsedResult.market_verdict ||
+        pick(parsedResult, "domain_sigma_envelope", "market_verdict") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "market_verdict");
+
+    const gate =
+        parsedResult.x108_gate ||
+        pick(parsedResult, "domain_sigma_envelope", "x108_gate") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "x108_gate");
+
+    const reason =
+        parsedResult.reason_code ||
+        pick(parsedResult, "domain_sigma_envelope", "reason_code") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "reason_code");
+
+    const severity =
+        parsedResult.severity ||
+        pick(parsedResult, "domain_sigma_envelope", "severity") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "severity");
+
+    const decisionId =
+        parsedResult.decision_id ||
+        pick(parsedResult, "domain_sigma_envelope", "decision_id") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "decision_id");
+
+    const traceId =
+        parsedResult.trace_id ||
+        pick(parsedResult, "domain_sigma_envelope", "trace_id") ||
+        pick(parsedResult, "data", "domain_sigma_envelope", "trace_id");
+
+    const integrity =
+        parsedResult.confidence_integrity ||
+        parsedResult.integrity ||
+        pick(parsedResult, "domain_sigma_envelope", "confidence_integrity");
+
+    const governance =
+        parsedResult.confidence_governance ||
+        parsedResult.governance ||
+        pick(parsedResult, "domain_sigma_envelope", "confidence_governance");
+
+    const readiness =
+        parsedResult.confidence_readiness ||
+        parsedResult.readiness ||
+        pick(parsedResult, "domain_sigma_envelope", "confidence_readiness");
+
+    console.log(
+        `${domainLabel(domain)} ${gateLabel(gate)} [DECISION] verdict=${verdict} reason=${reason} severity=${severity}`
+    );
+    console.log(
+        `${domainLabel(domain)} ${sectionLabel("SCORE")} integrity=${integrity} governance=${governance} readiness=${readiness}`
+    );
+    console.log(
+        `${domainLabel(domain)} ${sectionLabel("PROOF")} decision_id=${decisionId} trace_id=${traceId}`
+    );
+}
+
 app.use(express.json());
 
 app.post('/kernel/ragnarok', (req, res) => {
@@ -21,7 +135,7 @@ app.post('/kernel/ragnarok', (req, res) => {
         return res.status(500).json({ error: "Failed to write temp file", details: err.message });
     }
     
-    console.log(`\x1b[35m[BRIDGE]\x1b[0m 🚀 Routing -> Domain: ${domain}`);
+    console.log(`\x1b[38;5;197m[BRIDGE]\x1b[0m 🚀 Routing -> Domain: ${domain}`);
 
     // 2. Lancement du Kernel Python
     const py = spawn('python', ['-u', scriptPath, domain, tempFilePath], {
@@ -35,12 +149,12 @@ app.post('/kernel/ragnarok', (req, res) => {
         if (str.trim().startsWith('{')) {
             result += str;
         } else {
-            console.log(`\x1b[36m🐍 [PYTHON_INFO]:\x1b[0m ${str.trim()}`);
+            console.log(`\x1b[38;5;245m🐍 [PYTHON_INFO]:\x1b[0m ${str.trim()}`);
         }
     });
 
     py.stderr.on('data', (data) => {
-        console.error(`\x1b[33m📢 [KERNEL_TRACE]:\x1b[0m ${data.toString().trim()}`);
+        console.error(`\x1b[38;5;240m?? [KERNEL_TRACE]:\x1b[0m ${data.toString().trim()}`);
     });
 
     py.on('close', (code) => {
@@ -63,7 +177,8 @@ app.post('/kernel/ragnarok', (req, res) => {
             
             const filename = `decision_${domain}_${Date.now()}.json`;
             fs.writeFileSync(path.join(allDataDir, filename), JSON.stringify(parsedResult, null, 2));
-            console.log(`\x1b[32m💾 [SAVE]\x1b[0m ${filename}`);
+            printKernelDecisionSummary(domain, parsedResult);
+            console.log(`\x1b[1;32m💾 [SAVE]\x1b[0m ${filename}`);
 
             res.json(parsedResult);
         } catch (e) {
@@ -87,9 +202,15 @@ setInterval(() => {
         // Capture du Root Hash dans la console Python
         const rootHash = stdout.match(/ROOT HASH : (.*)/);
         if (rootHash) {
-            console.log(`🛡️ [AUTO-SEAL] Système Scellé. Root: ${rootHash[1].substring(0, 12)}...`);
+            const currentRoot = rootHash[1].trim();
+            if (currentRoot !== lastAutoSealRoot) {
+                lastAutoSealRoot = currentRoot;
+                console.log(`[AUTO-SEAL] Nouveau Root: ${currentRoot.substring(0, 12)}...`);
+            } else {
+                console.log(`[AUTO-SEAL] Root inchange: ${currentRoot.substring(0, 12)}...`);
+            }
         } else {
-            console.log("🔐 [AUTO-SEAL] Cycle complété (Pas de nouveau Root Hash détecté)");
+            console.log(`[AUTO-SEAL] Cycle complet - pas de nouveau Root Hash detecte`);
         }
     });
 }, 60000);
