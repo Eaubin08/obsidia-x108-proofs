@@ -1,36 +1,52 @@
--- ROM -- Loi de Reversion Fractale par Friction
--- Status : PROVISIONAL scaffold
--- Obsidia X-108 periphery sandbox
+-- ROM -- Resistance Operationnelle a la Mutation
+-- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
+-- SOURCE_COVERAGE: ROMStage inductive | biased_signal | layer_inversion
+--                  sigma_candidates | avdr_friction | filter_instable
+--                  double_lock | sigma_star
+--                  biased_signal_ready | inversion_ready | sigma_candidates_ready
+--                  avdr_friction_ready | double_lock_ready | sigma_star_ready
+-- NOTE: ROM = Resistance Operationnelle a la Mutation (PAS Read-Only Memory).
+--       Convergence du pipeline non prouvee formellement — PROVISIONAL.
+--       sigma* = sortie stable apres double_lock ; friction AVDR = filtre actif.
 
 namespace Obsidia
 namespace ROM
 
--- A system state subject to friction-based reversion
-structure FrictionState where
-  energy    : Nat   -- current energy level
-  friction  : Nat   -- friction coefficient proxy
-  reverted  : Bool  -- has the system reverted?
+inductive ROMStage
+  | biased_signal
+  | layer_inversion
+  | sigma_candidates
+  | avdr_friction
+  | filter_instable
+  | double_lock
+  | sigma_star
 
--- Reversion occurs when energy drops to zero
-def hasReverted (s : FrictionState) : Prop :=
-  s.energy = 0
+structure ROMState where
+  current_stage           : ROMStage
+  biased_signal_ready     : Bool
+  inversion_ready         : Bool
+  sigma_candidates_ready  : Bool
+  avdr_friction_ready     : Bool
+  double_lock_ready       : Bool
+  sigma_star_ready        : Bool
 
--- Active state: energy > 0, not reverted
-def active (s : FrictionState) : Prop :=
-  And (s.energy > 0) (s.reverted = false)
+-- Pipeline ROM complet : toutes les etapes pretes
+def rom_pipeline_complete (s : ROMState) : Prop :=
+  And (s.biased_signal_ready = true)
+  (And (s.inversion_ready = true)
+  (And (s.sigma_candidates_ready = true)
+  (And (s.avdr_friction_ready = true)
+  (And (s.double_lock_ready = true)
+       (s.sigma_star_ready = true)))))
 
--- Canonical active state
-def canonical : FrictionState :=
-  { energy := 2, friction := 1, reverted := false }
+def canonical : ROMState :=
+  { current_stage := ROMStage.sigma_star,
+    biased_signal_ready := true, inversion_ready := true,
+    sigma_candidates_ready := true, avdr_friction_ready := true,
+    double_lock_ready := true, sigma_star_ready := true }
 
-theorem canonical_active : active canonical :=
-  And.intro (Nat.succ_pos 1) rfl
-
--- After full friction dissipation, energy reaches 0
-def reverted_state : FrictionState :=
-  { energy := 0, friction := 1, reverted := true }
-
-theorem reverted_state_ok : hasReverted reverted_state := rfl
+theorem canonical_rom_complete : rom_pipeline_complete canonical :=
+  And.intro rfl (And.intro rfl (And.intro rfl (And.intro rfl (And.intro rfl rfl))))
 
 end ROM
 end Obsidia
