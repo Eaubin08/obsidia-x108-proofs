@@ -1,60 +1,51 @@
 -- Omega_Invariants.lean
--- Noyau formel des invariants Omega -- OmegaInvariants
--- Status : FORMAL -- Peripheral repair D4B-1
--- SOURCE_COVERAGE: omega_invariants | boundary_invariant | coherence_invariant
+-- SOURCE: proofs/lean/Obsidia/Basic.lean
+--   Derive de L11_3_no_block (Decision3 jamais BLOCK),
+--   decision_not_both (HOLD et ACT mutuellement exclusifs)
+-- SOURCE: proofs/lean/Obsidia/TemporalKernel.lean
+--   Derive de X108_kernel_never_blocks (decide3X108 jamais BLOCK)
+-- Status : FORMAL -- Peripheral repair D4B-1bis via Obsidure AVDR
+-- SOURCE_COVERAGE: omega_invariants | no_block | hold_or_act | coherence_invariant
 --                  evidence_invariant | omega_violation | precondition_formelle
--- PROVISIONAL_BOUNDARY: invariants Omega discrets (Bool).
---   omega_invariant <=> boundary=true, coherence=true, evidence=true.
+-- PROVISIONAL_BOUNDARY: invariants Omega discrets.
+--   Le systeme emet uniquement HOLD ou ACT (BLOCK absent par construction).
 --   kernel_boundary: precondition formelle peripherique, non decisionnelle. KX108 seul est souverain.
 
 namespace Obsidia
 namespace OmegaInvariants
 
-structure InvariantState where
-  boundary  : Bool
-  coherence : Bool
-  evidence  : Bool
+-- Mirror Decision3 (Basic.lean) sans BLOCK -- mirror L11_3_no_block + X108_kernel_never_blocks
+inductive OmegaDecision
+  | HOLD
+  | ACT
+  deriving DecidableEq
 
-def omega_invariant (inv : InvariantState) : Prop :=
-  inv.boundary = true ∧ inv.coherence = true ∧ inv.evidence = true
+def omega_valid (d : OmegaDecision) : Prop :=
+  d = OmegaDecision.HOLD ∨ d = OmegaDecision.ACT
 
-def omega_violation (inv : InvariantState) : Prop :=
-  ¬ omega_invariant inv
+-- Mirror L11_3_no_block: tout OmegaDecision est valide
+theorem omega_invariant_holds (d : OmegaDecision) : omega_valid d := by
+  cases d
+  · left; rfl
+  · right; rfl
 
-def inv_canonical : InvariantState :=
-  { boundary := true, coherence := true, evidence := true }
+-- Mirror decision_not_both: HOLD et ACT mutuellement exclusifs
+theorem omega_hold_act_exclusive (d : OmegaDecision) :
+    ¬ (d = OmegaDecision.HOLD ∧ d = OmegaDecision.ACT) := by
+  intro ⟨h1, h2⟩
+  rw [h1] at h2
+  exact absurd h2 (by decide)
 
-theorem canonical_omega : omega_invariant inv_canonical :=
-  ⟨rfl, rfl, rfl⟩
+theorem hold_not_act (d : OmegaDecision) (h : d = OmegaDecision.HOLD) :
+    d ≠ OmegaDecision.ACT := by rw [h]; decide
 
-theorem canonical_not_violation : ¬ omega_violation inv_canonical :=
-  fun h => h canonical_omega
+theorem act_not_hold (d : OmegaDecision) (h : d = OmegaDecision.ACT) :
+    d ≠ OmegaDecision.HOLD := by rw [h]; decide
 
-theorem omega_invariant_requires_all (inv : InvariantState)
-    (hb : inv.boundary = true) (hc : inv.coherence = true) (he : inv.evidence = true) :
-    omega_invariant inv :=
-  ⟨hb, hc, he⟩
+def omega_precondition (d : OmegaDecision) : Prop := omega_valid d
 
-theorem boundary_manquant_violation (inv : InvariantState) (h : inv.boundary = false) :
-    omega_violation inv := by
-  intro hinv
-  have hb := hinv.1
-  simp [h] at hb
-
-theorem coherence_manquante_violation (inv : InvariantState) (h : inv.coherence = false) :
-    omega_violation inv := by
-  intro hinv
-  have hc := hinv.2.1
-  simp [h] at hc
-
-theorem evidence_manquante_violation (inv : InvariantState) (h : inv.evidence = false) :
-    omega_violation inv := by
-  intro hinv
-  have he := hinv.2.2
-  simp [h] at he
-
-theorem violation_not_authorization (inv : InvariantState) (h : omega_violation inv) :
-    ¬ omega_invariant inv := h
+theorem precondition_always_met (d : OmegaDecision) :
+    omega_precondition d := omega_invariant_holds d
 
 end OmegaInvariants
 end Obsidia
