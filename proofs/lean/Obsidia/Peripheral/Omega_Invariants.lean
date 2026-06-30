@@ -1,37 +1,60 @@
-import Std
+-- Omega_Invariants.lean
+-- Noyau formel des invariants Omega -- OmegaInvariants
+-- Status : FORMAL -- Peripheral repair D4B-1
+-- SOURCE_COVERAGE: omega_invariants | boundary_invariant | coherence_invariant
+--                  evidence_invariant | omega_violation | precondition_formelle
+-- PROVISIONAL_BOUNDARY: invariants Omega discrets (Bool).
+--   omega_invariant <=> boundary=true, coherence=true, evidence=true.
+--   kernel_boundary: precondition formelle peripherique, non decisionnelle. KX108 seul est souverain.
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item Espace_Invariants_Omega uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/Omega_Inv
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+namespace Obsidia
+namespace OmegaInvariants
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+structure InvariantState where
+  boundary  : Bool
+  coherence : Bool
+  evidence  : Bool
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item Espace_Invariants_Omega uniquement e
+def omega_invariant (inv : InvariantState) : Prop :=
+  inv.boundary = true ∧ inv.coherence = true ∧ inv.evidence = true
 
-                theorem P38_Obsidure__prends_l_item_Espace_Inva_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def omega_violation (inv : InvariantState) : Prop :=
+  ¬ omega_invariant inv
+
+def inv_canonical : InvariantState :=
+  { boundary := true, coherence := true, evidence := true }
+
+theorem canonical_omega : omega_invariant inv_canonical :=
+  ⟨rfl, rfl, rfl⟩
+
+theorem canonical_not_violation : ¬ omega_violation inv_canonical :=
+  fun h => h canonical_omega
+
+theorem omega_invariant_requires_all (inv : InvariantState)
+    (hb : inv.boundary = true) (hc : inv.coherence = true) (he : inv.evidence = true) :
+    omega_invariant inv :=
+  ⟨hb, hc, he⟩
+
+theorem boundary_manquant_violation (inv : InvariantState) (h : inv.boundary = false) :
+    omega_violation inv := by
+  intro hinv
+  have hb := hinv.1
+  simp [h] at hb
+
+theorem coherence_manquante_violation (inv : InvariantState) (h : inv.coherence = false) :
+    omega_violation inv := by
+  intro hinv
+  have hc := hinv.2.1
+  simp [h] at hc
+
+theorem evidence_manquante_violation (inv : InvariantState) (h : inv.evidence = false) :
+    omega_violation inv := by
+  intro hinv
+  have he := hinv.2.2
+  simp [h] at he
+
+theorem violation_not_authorization (inv : InvariantState) (h : omega_violation inv) :
+    ¬ omega_invariant inv := h
+
+end OmegaInvariants
+end Obsidia

@@ -11,3 +11,5 @@ import Obsidia.Peripheral.M1_Sigma_Proprietes
 import Obsidia.Peripheral.Lyapunov_Complet_5termes
 import Obsidia.Peripheral.Gouvernance_ExAnte
 import Obsidia.Peripheral.Algorithme_Balance
+import Obsidia.Peripheral.Espace_Etat_StateCore
+import Obsidia.Peripheral.Omega_Invariants
