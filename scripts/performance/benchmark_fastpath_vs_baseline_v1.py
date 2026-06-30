@@ -363,7 +363,7 @@ def main() -> int:
         "baseline_summary": baseline_summary,
         "fastpath_summary": fastpath_summary,
         "average_latency_delta_pct": avg_latency_delta,
-        "average_internal_internal_token_delta_pct": avg_token_delta,
+        "average_internal_token_delta_pct": avg_token_delta,
         "average_module_skip_pct": avg_module_skip,
         "baseline_rows": baseline_rows,
         "fastpath_rows": fastpath_rows,
@@ -465,3 +465,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
