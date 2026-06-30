@@ -2,7 +2,7 @@
 -- Status : PROVISIONAL scaffold -- Palier 2
 -- SOURCE_COVERAGE: hallucination | norme_algorithmique | repetition
 --                  propagation_illusion | genealogie_verite_numerique
---                  inversion_par_ROM | detection_biais_source
+--                  inversion_par_ROM | inversion_ROM | detection_biais_source
 --                  journal_illusions | pipeline_reversion
 -- PROVISIONAL_BOUNDARY: modele de propagation et seuil de repetition non prouvés.
 --   Mecanisme : hallucination → contenu plausible → repetition → norme acceptee.
