@@ -2,8 +2,10 @@
 -- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
 -- SOURCE_COVERAGE: faisceau | futurs admissibles | restriction par contrainte
 --                  calibration active | admission de chemin | count restriction
+--                  trajectory
 -- NOTE: restricted_count_le prouve que la restriction reduit le faisceau,
 --       non que tous les futurs sont valides.
+--       trajectory : chemin dans le faisceau des futurs admissibles.
 
 namespace Obsidia
 namespace FaisceauFuturs
