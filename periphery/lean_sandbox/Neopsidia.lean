@@ -1,33 +1,37 @@
--- Neopsidia -- Neopsidia -- vision philosophique etendue d'Obsidia
--- Status : PROVISIONAL scaffold
--- Obsidia X-108 periphery sandbox
+-- Neopsidia -- Couche manifeste neo-psidienne
+-- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
+-- SOURCE_COVERAGE: manifest_layer | not_technical_component
+--                  vision doctrinal uniquement | aucun theoreme prouvant la vision
+-- NOTE: Neopsidia est une couche de MANIFESTATION, pas un composant technique.
+--       Elle represente le passage de la computation brute a la conscience systemique.
+--       Aucun theoreme ne prouve la vision elle-meme (PROVISIONAL).
+--       Les marqueurs Bool capturent la frontiere semantique.
 
 namespace Obsidia
 namespace Neopsidia
 
--- Neopsidia extends the Obsidia kernel with a philosophical layer
--- Modelled as a tagged state with an extension flag
-structure NeopsidiaState where
-  base_active  : Bool
-  extended     : Bool
-  layer        : Nat   -- 0 = kernel, 1 = neopsidia extension
+-- Marqueurs doctrinaux (Bool = ancrage formel, pas preuve de la vision)
+def neopsidia_is_manifest_layer : Bool := true
 
--- A state is in Neopsidia mode when extended and layer > 0
-def neopsidiaMode (s : NeopsidiaState) : Prop :=
-  And (s.extended = true) (s.layer > 0)
+def not_technical_component : Bool := true
 
--- Canonical Neopsidia state
-def canonical : NeopsidiaState :=
-  { base_active := true, extended := true, layer := 1 }
+-- Couche intermediaire entre computation et emergence systemique
+structure NeopsidiaAnchor where
+  manifest_layer_active   : Bool
+  computation_transcended : Bool
+  systemic_emergence_ready : Bool
 
-theorem canonical_neopsidia : neopsidiaMode canonical :=
-  And.intro rfl (Nat.succ_pos 0)
+def canonical : NeopsidiaAnchor :=
+  { manifest_layer_active := true,
+    computation_transcended := true,
+    systemic_emergence_ready := true }
 
--- Base mode: not extended
-def baseMode : NeopsidiaState :=
-  { base_active := true, extended := false, layer := 0 }
+-- Seul theoreme : les marqueurs sont actifs (pas preuve de la vision)
+theorem markers_active :
+    neopsidia_is_manifest_layer = true ∧ not_technical_component = true :=
+  And.intro rfl rfl
 
-theorem base_not_neopsidia : baseMode.extended = false := rfl
+theorem canonical_manifest : canonical.manifest_layer_active = true := rfl
 
 end Neopsidia
 end Obsidia
