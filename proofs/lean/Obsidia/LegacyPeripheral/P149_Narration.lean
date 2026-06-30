@@ -1,37 +1,26 @@
-import Std
+namespace Obsidia
+namespace P149Narration
 
-            -- Théorème périphérique Obsidia — P37
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P149_Narration. Prouver formellement qu'une CanonicalDecisionEnvelope ne peut être générée avec ALL
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure NarrationState where
+  all_valid : Bool
+  traceable : Bool
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def narration_valide (n : NarrationState) : Prop :=
+  n.all_valid = true ∧ n.traceable = true
 
-                -- Théorème périphérique P37 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P149_Narr
+def narration_hold (n : NarrationState) : Prop := ¬ narration_valide n
 
-                theorem P37_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def canonical_narration : NarrationState := { all_valid := true, traceable := true }
+
+theorem canonical_valide : narration_valide canonical_narration := ⟨rfl, rfl⟩
+
+theorem all_fail_hold (n : NarrationState) (h : n.all_valid = false) :
+    narration_hold n := by
+  intro hv; have ha := hv.1; simp [h] at ha
+
+theorem not_traceable_hold (n : NarrationState) (h : n.traceable = false) :
+    narration_hold n := by
+  intro hv; have ht := hv.2; simp [h] at ht
+
+end P149Narration
+end Obsidia
