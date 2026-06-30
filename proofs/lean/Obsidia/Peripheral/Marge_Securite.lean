@@ -1,37 +1,72 @@
-import Std
+namespace Obsidia
+namespace MargeSecurite
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item Marge_Securite_m uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/Marge_Securite.l
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure SecurityState where
+  energy : Nat
+  reserve : Nat
+  coherence : Nat
+  limit : Nat
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def energy_within_margin (s : SecurityState) : Prop :=
+  s.energy <= s.limit
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item Marge_Securite_m uniquement et génèr
+def reserve_within_margin (s : SecurityState) : Prop :=
+  s.reserve <= s.limit
 
-                theorem P38_Obsidure__prends_l_item_Marge_Secur_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def coherence_within_margin (s : SecurityState) : Prop :=
+  s.coherence <= s.limit
+
+def margin_safe (s : SecurityState) : Prop :=
+  And (energy_within_margin s) (And (reserve_within_margin s) (coherence_within_margin s))
+
+def boundary_state (limit : Nat) : SecurityState :=
+  { energy := limit, reserve := limit, coherence := limit, limit := limit }
+
+theorem margin_safe_intro
+    (s : SecurityState)
+    (he : energy_within_margin s)
+    (hr : reserve_within_margin s)
+    (hc : coherence_within_margin s) :
+    margin_safe s :=
+  And.intro he (And.intro hr hc)
+
+theorem energy_margin_from_safe
+    (s : SecurityState)
+    (h : margin_safe s) :
+    energy_within_margin s :=
+  h.left
+
+theorem reserve_margin_from_safe
+    (s : SecurityState)
+    (h : margin_safe s) :
+    reserve_within_margin s :=
+  h.right.left
+
+theorem coherence_margin_from_safe
+    (s : SecurityState)
+    (h : margin_safe s) :
+    coherence_within_margin s :=
+  h.right.right
+
+theorem boundary_state_energy_safe
+    (limit : Nat) :
+    energy_within_margin (boundary_state limit) :=
+  Nat.le_refl limit
+
+theorem boundary_state_reserve_safe
+    (limit : Nat) :
+    reserve_within_margin (boundary_state limit) :=
+  Nat.le_refl limit
+
+theorem boundary_state_coherence_safe
+    (limit : Nat) :
+    coherence_within_margin (boundary_state limit) :=
+  Nat.le_refl limit
+
+theorem boundary_state_margin_safe
+    (limit : Nat) :
+    margin_safe (boundary_state limit) :=
+  And.intro (Nat.le_refl limit) (And.intro (Nat.le_refl limit) (Nat.le_refl limit))
+
+end MargeSecurite
+end Obsidia

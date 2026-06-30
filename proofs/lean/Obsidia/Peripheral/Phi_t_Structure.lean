@@ -1,37 +1,77 @@
-import Std
+namespace Obsidia
+namespace PhiTStructure
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item Phi_t_Structure uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/Phi_t_Structure.l
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure PhiEdge where
+source : Nat
+target : Nat
+weight : Nat
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+structure PhiGraph where
+main_edge : PhiEdge
+stability : Nat
+coherence : Nat
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item Phi_t_Structure uniquement et génère
+def edge_source (e : PhiEdge) : Nat :=
+e.source
 
-                theorem P38_Obsidure__prends_l_item_Phi_t_Struc_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def edge_target (e : PhiEdge) : Nat :=
+e.target
+
+def edge_weight (e : PhiEdge) : Nat :=
+e.weight
+
+def graph_stability (g : PhiGraph) : Nat :=
+g.stability
+
+def graph_coherence (g : PhiGraph) : Nat :=
+g.coherence
+
+def tension (g : PhiGraph) : Nat :=
+edge_weight g.main_edge
+
+def coherent_graph (g : PhiGraph) : Prop :=
+graph_coherence g <= graph_stability g
+
+def stable_phi (g : PhiGraph) : Prop :=
+coherent_graph g
+
+theorem edge_source_reflects_field
+(e : PhiEdge) :
+edge_source e = e.source :=
+rfl
+
+theorem edge_target_reflects_field
+(e : PhiEdge) :
+edge_target e = e.target :=
+rfl
+
+theorem edge_weight_reflects_field
+(e : PhiEdge) :
+edge_weight e = e.weight :=
+rfl
+
+theorem tension_reflects_main_edge_weight
+(g : PhiGraph) :
+tension g = g.main_edge.weight :=
+rfl
+
+theorem coherent_graph_intro
+(g : PhiGraph)
+(h : graph_coherence g <= graph_stability g) :
+coherent_graph g :=
+h
+
+theorem stable_phi_intro
+(g : PhiGraph)
+(h : coherent_graph g) :
+stable_phi g :=
+h
+
+theorem coherent_graph_from_stable_phi
+(g : PhiGraph)
+(h : stable_phi g) :
+coherent_graph g :=
+h
+
+end PhiTStructure
+end Obsidia
