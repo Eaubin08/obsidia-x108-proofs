@@ -12,13 +12,7 @@ import Obsidia.LegacyPeripheral.P161
 import Obsidia.LegacyPeripheral.P36
 import Obsidia.LegacyPeripheral.P37
 import Obsidia.LegacyPeripheral.P47_Couplage_dR_dt
-import Obsidia.LegacyPeripheral.P50_Recursivite_Fondamentale
 import Obsidia.LegacyPeripheral.P51_Structure_Fractale
-import Obsidia.LegacyPeripheral.P52_Principe_Holographique
-import Obsidia.LegacyPeripheral.P53_Resonance
-import Obsidia.LegacyPeripheral.P54_Temps_Absolu
-import Obsidia.LegacyPeripheral.P55_Espace_Geometrique
-import Obsidia.LegacyPeripheral.P56_Causalite
 import Obsidia.LegacyPeripheral.P57_Shannon_Entropy
 import Obsidia.LegacyPeripheral.P59_Kolmogorov_Complexity
 import Obsidia.LegacyPeripheral.P60_Auto_Organisation

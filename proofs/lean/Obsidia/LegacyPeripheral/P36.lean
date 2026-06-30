@@ -16,5 +16,3 @@ theorem P36 (s : DomainState) : L (Phi s) <= L s := by
   split
   · simp [L]
   · omega
-
-#check P36

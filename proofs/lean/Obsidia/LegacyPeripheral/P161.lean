@@ -14,5 +14,3 @@ def GuardX108_Thermo (s : ThermoState) : Nat :=
 theorem P161_Calibration (s : ThermoState) (h : temporal_calibration s = false) : GuardX108_Thermo s = 0 := by
   unfold GuardX108_Thermo
   simp [h]
-
-#check P161_Calibration

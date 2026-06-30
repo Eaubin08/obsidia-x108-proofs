@@ -12,5 +12,3 @@ def establish_path (r : Route) : Route :=
 theorem lean_theorem_faithful_path_existence (r : Route) (h1 : r.source_verified = true) (h2 : r.target_locked = true) : (establish_path r).is_faithful = true := by
   unfold establish_path
   simp [h1, h2]
-
-#check lean_theorem_faithful_path_existence

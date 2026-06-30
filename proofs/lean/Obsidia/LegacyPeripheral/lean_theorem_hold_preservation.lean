@@ -11,5 +11,3 @@ def apply_hold_policy (s : ActionState) : ActionState :=
 theorem lean_theorem_hold_preservation (s : ActionState) (h : s.is_hold = true) : (apply_hold_policy s).can_act = false := by
   unfold apply_hold_policy
   simp [h]
-
-#check lean_theorem_hold_preservation

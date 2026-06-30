@@ -8,5 +8,3 @@ def sanitize_input (e : ExternalInput) : ExternalInput :=
 theorem lean_theorem_external_input_non_sovereignty (e : ExternalInput) : (sanitize_input e).native_authority = 0 := by
   unfold sanitize_input
   rfl
-
-#check lean_theorem_external_input_non_sovereignty

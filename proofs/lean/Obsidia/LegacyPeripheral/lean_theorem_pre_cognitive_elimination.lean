@@ -11,5 +11,3 @@ def apply_pre_cognitive_filter (s : CognitiveState) : CognitiveState :=
 theorem lean_theorem_pre_cognitive_elimination (s : CognitiveState) (h : s.deterministic_rule_found = true) : (apply_pre_cognitive_filter s).cognitive_processing_active = false := by
   unfold apply_pre_cognitive_filter
   simp [h]
-
-#check lean_theorem_pre_cognitive_elimination
