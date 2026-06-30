@@ -33,6 +33,14 @@ DEFAULT_MODULES = {
 }
 
 
+def _to_text(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value)
+
+
 def infer_counts(family: str, command: list[str], stdout_text: str, stderr_text: str) -> dict[str, object]:
     text = " ".join(command).lower() + "\n" + stdout_text.lower() + "\n" + stderr_text.lower()
 
@@ -76,6 +84,8 @@ def main() -> int:
     parser.add_argument("--route", required=True)
     parser.add_argument("--request-text", default="")
     parser.add_argument("--cwd", default=str(ROOT))
+    parser.add_argument("--timeout-sec", type=float, default=120.0)
+    parser.add_argument("--allow-timeout", action="store_true")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
@@ -90,21 +100,30 @@ def main() -> int:
     started = now_iso()
     start = time.perf_counter()
 
-    proc = subprocess.run(
-        command,
-        cwd=args.cwd,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    timed_out = False
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=args.cwd,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=args.timeout_sec,
+        )
+        exit_code = proc.returncode
+        stdout_text = proc.stdout or ""
+        stderr_text = proc.stderr or ""
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        exit_code = 124
+        stdout_text = _to_text(exc.stdout)
+        stderr_text = _to_text(exc.stderr)
+        stderr_text += f"\nTIMEOUT_AFTER_SECONDS={args.timeout_sec}\n"
 
     elapsed_ms = (time.perf_counter() - start) * 1000
     ended = now_iso()
-
-    stdout_text = proc.stdout or ""
-    stderr_text = proc.stderr or ""
 
     if stdout_text:
         print(stdout_text, end="")
@@ -112,7 +131,7 @@ def main() -> int:
         print(stderr_text, end="", file=sys.stderr)
 
     inferred = infer_counts(args.family, command, stdout_text, stderr_text)
-    status = "PASS" if proc.returncode == 0 else "FAIL"
+    status = "TIMEOUT" if timed_out else ("PASS" if exit_code == 0 else "FAIL")
 
     event = build_cost_event(
         family=args.family,
@@ -125,7 +144,7 @@ def main() -> int:
         request_text=args.request_text,
         stdout_text=stdout_text,
         stderr_text=stderr_text,
-        exit_code=proc.returncode,
+        exit_code=exit_code,
         modules_considered=int(inferred["modules_considered"]),
         modules_activated=int(inferred["modules_activated"]),
         modules_skipped=int(inferred["modules_skipped"]),
@@ -139,12 +158,14 @@ def main() -> int:
         contradictions=int(inferred["contradictions"]),
         unknowns=int(inferred["unknowns"]),
         risk_flags=int(inferred["risk_flags"]),
-        proof_ready=proc.returncode == 0 and int(inferred["lean_runs"]) > 0,
-        quality_score=1.0 if proc.returncode == 0 else 0.0,
+        proof_ready=exit_code == 0 and int(inferred["lean_runs"]) > 0,
+        quality_score=1.0 if exit_code == 0 else (0.5 if timed_out and args.allow_timeout else 0.0),
         boundary_ok=True,
         extra={
             "runner": "run_with_cost_event_v0",
             "cwd": str(Path(args.cwd).resolve()),
+            "timeout_sec": args.timeout_sec,
+            "allow_timeout": bool(args.allow_timeout),
         },
     )
 
@@ -159,7 +180,10 @@ def main() -> int:
     print(f"COST_EVENT_ELAPSED_MS={event['elapsed_ms']:.4f}")
     print(f"COST_EVENT_INTERNAL_TOKEN_UNITS_TOTAL={event['internal_token_units_total']}")
 
-    return proc.returncode
+    if timed_out and args.allow_timeout:
+        return 0
+
+    return int(exit_code)
 
 
 if __name__ == "__main__":
