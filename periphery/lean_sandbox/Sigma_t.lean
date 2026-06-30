@@ -1,38 +1,45 @@
--- Sigma_t -- Sigma(t) -- Coherence interne du moteur
--- Status : PROVISIONAL scaffold
--- Obsidia X-108 periphery sandbox
+-- Sigma_t -- Fonction Sigma temporelle (peripherique)
+-- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
+-- SOURCE_COVERAGE: threshold | warning_threshold | stop_threshold | target_threshold
+--                  alert_ready | immediate_stop
+-- NOTE: Sigma_t est une fonction peripherique d'agregation de signaux.
+--       Elle n'est PAS le kernel X-108 qui pilote ACT/HOLD.
+--       Distinction : Sigma_t surveille ; le kernel decide.
+--       stop_threshold > warning_threshold : escalade automatique.
 
 namespace Obsidia
 namespace SigmaT
 
--- Coherence state at time t
-structure CoherenceState where
-  t      : Nat
-  value  : Nat   -- coherence in [0, max_val]
-  max_val: Nat
-  stable : Bool
+structure SigmaTState where
+  threshold        : Nat
+  warning_threshold : Nat
+  stop_threshold   : Nat
+  target_threshold : Nat
+  alert_ready      : Bool
+  immediate_stop   : Bool
 
--- Coherence is bounded
-def bounded (s : CoherenceState) : Prop :=
-  s.value <= s.max_val
+-- Hiérarchie : warning < stop (escalade)
+def escalade_valid (s : SigmaTState) : Prop :=
+  s.warning_threshold < s.stop_threshold
 
--- Full coherence: value = max_val and stable
-def fullCoherence (s : CoherenceState) : Prop :=
-  And (s.value = s.max_val) (s.stable = true)
+-- Alerte active si signal au-dessus du seuil
+def alert_active (s : SigmaTState) : Prop :=
+  And (s.alert_ready = true)
+      (s.threshold <= s.warning_threshold)
 
--- Canonical: value = max_val = 1, stable
-def canonical : CoherenceState :=
-  { t := 0, value := 1, max_val := 1, stable := true }
+-- Stop immédiat si flag levé
+def stop_active (s : SigmaTState) : Prop :=
+  s.immediate_stop = true
 
-theorem canonical_bounded : bounded canonical := Nat.le_refl 1
+def canonical : SigmaTState :=
+  { threshold := 2, warning_threshold := 3, stop_threshold := 7,
+    target_threshold := 5, alert_ready := true, immediate_stop := false }
 
-theorem canonical_full_coherence : fullCoherence canonical :=
-  And.intro rfl rfl
+theorem canonical_escalade : escalade_valid canonical := by
+  simp [canonical, escalade_valid]
 
--- Coherence degrades: value decreases
-theorem degraded_bounded (s : CoherenceState) (h : s.value <= s.max_val)
-    (hd : s.value > 0) : s.value - 1 < s.max_val :=
-  Nat.lt_of_lt_of_le (Nat.sub_lt hd Nat.one_pos) h
+theorem canonical_alert : alert_active canonical := by
+  simp [canonical, alert_active]
 
 end SigmaT
 end Obsidia
