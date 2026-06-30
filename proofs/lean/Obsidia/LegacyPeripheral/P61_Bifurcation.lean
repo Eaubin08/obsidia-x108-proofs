@@ -1,37 +1,26 @@
-import Std
+namespace Obsidia
+namespace P61Bifurcation
 
-            -- Théorème périphérique Obsidia — P37
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P61_Bifurcation. Prouver formellement que si 'critical_value > threshold', la bifurcation est maîtr
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure BifurcState where
+  critical_value : Nat
+  threshold      : Nat
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def bifurcation_maitrisee (b : BifurcState) : Prop :=
+  b.critical_value ≤ b.threshold
 
-                -- Théorème périphérique P37 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P61_Bifur
+def bifurcation_active (b : BifurcState) : Prop :=
+  ¬ bifurcation_maitrisee b
 
-                theorem P37_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def canonical_bifurc : BifurcState := { critical_value := 0, threshold := 1 }
+
+theorem canonical_maitrisee : bifurcation_maitrisee canonical_bifurc := Nat.zero_le 1
+
+theorem above_threshold_active (b : BifurcState) (h : b.threshold < b.critical_value) :
+    bifurcation_active b := by
+  intro hm; exact Nat.not_le.mpr h hm
+
+theorem below_threshold_maitrisee (b : BifurcState) (h : b.critical_value ≤ b.threshold) :
+    bifurcation_maitrisee b := h
+
+end P61Bifurcation
+end Obsidia
