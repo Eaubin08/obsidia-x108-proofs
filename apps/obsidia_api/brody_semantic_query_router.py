@@ -50,6 +50,31 @@ def _fold_accents(text: str) -> str:
 
 
 # ── Canonical topic routing ──────────────────────────────────────────────────
+
+def _trigger_matches(trigger: str, normalized_lower: str, folded_lower: str) -> bool:
+    """Match route triggers without confusing ACT with words like actuel/actualité/activation."""
+    import re
+
+    trig_raw = trigger or ""
+    trig_lower = trig_raw.lower()
+    trig_folded = _fold_accents(trig_lower)
+
+    # ACT is a reserved action token. It must not match inside French words:
+    # actuel, actualité, activation, etc.
+    if trig_raw == "ACT" or trig_folded == "act":
+        return re.search(r"(?<![\wÀ-ÿ])act(?![\wÀ-ÿ])", folded_lower, flags=re.IGNORECASE) is not None
+
+    # Very short alphabetic triggers should not match inside larger words.
+    if len(trig_folded) <= 3 and trig_folded.isalpha():
+        return re.search(
+            rf"(?<![\wÀ-ÿ]){re.escape(trig_folded)}(?![\wÀ-ÿ])",
+            folded_lower,
+            flags=re.IGNORECASE,
+        ) is not None
+
+    return trig_lower in normalized_lower or trig_folded in folded_lower
+
+
 _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
     # (triggers, topic, semantic_query, primary_query, fallback_queries)
     (
@@ -137,7 +162,7 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         ["mmonde", "world", "action bus"],
     ),
     (
-        ["ou on en est", "où on en est", "etat actuel", "state actuel", "current state", "status brody", "point actuel", "recap"],
+        ["ou on en est", "où on en est", "etat actuel", "état actuel", "statut actuel", "status actuel", "state actuel", "current state", "status brody", "point actuel", "recap"],
         "CURRENT_STATE",
         "Brody Obsidia etat actuel",
         "brody",
@@ -224,7 +249,7 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
     
     # Try canonical topic routes — match on both accented and accent-folded
     for triggers, topic, query, primary, fallbacks in _TOPIC_ROUTES:
-        if any(t.lower() in normalized_lower or _fold_accents(t.lower()) in folded_lower for t in triggers):
+        if any(_trigger_matches(t, normalized_lower, folded_lower) for t in triggers):
             return {
                 "topic": topic,
                 "semantic_query": query,
