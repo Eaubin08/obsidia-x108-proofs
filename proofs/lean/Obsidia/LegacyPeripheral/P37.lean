@@ -1,37 +1,26 @@
-import Std
+namespace Obsidia
+namespace P37Domaine
 
-            -- Théorème périphérique Obsidia — P37
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P48_Structure_Cosmologique. Prouver formellement que toute entité admise dans l'univers Obsidia (is
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+structure DomainEntry where
+  admitted      : Bool
+  valid_context : Bool
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def domain_admissible (d : DomainEntry) : Prop :=
+  d.admitted = true ∧ d.valid_context = true
 
-                -- Théorème périphérique P37 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P48_Struc
+def domain_hold (d : DomainEntry) : Prop := ¬ domain_admissible d
 
-                theorem P37_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+def canonical_entry : DomainEntry := { admitted := true, valid_context := true }
+
+theorem canonical_admissible : domain_admissible canonical_entry := ⟨rfl, rfl⟩
+
+theorem not_admitted_implies_hold (d : DomainEntry) (h : d.admitted = false) :
+    domain_hold d := by
+  intro hv; have ha := hv.1; simp [h] at ha
+
+theorem invalid_context_implies_hold (d : DomainEntry) (h : d.valid_context = false) :
+    domain_hold d := by
+  intro hv; have hc := hv.2; simp [h] at hc
+
+end P37Domaine
+end Obsidia
