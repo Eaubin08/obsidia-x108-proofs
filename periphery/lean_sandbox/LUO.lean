@@ -1,39 +1,51 @@
--- LUO -- Langage Universel Oscillatoire
--- Status : PROVISIONAL scaffold
--- Obsidia X-108 periphery sandbox
+-- LUO -- Laboratoire Unitaire d'Observation
+-- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
+-- SOURCE_COVERAGE: PipelineStage inductive | wave | captor | shazam | luo
+--                  avdr | pf_infini | double_lock | stable_concept
+--                  pattern_ready | sigma_forme_ready | avdr_ready | pf_ready
+--                  double_lock_ready | sigma_star_ready
+-- NOTE: LUO est un pipeline d'observation sequentiel.
+--       sigma* = forme finale stabilisee apres double_lock.
 
 namespace Obsidia
 namespace LUO
 
--- An oscillatory token: a symbol with a frequency and phase
-structure OscToken where
-  symbol : Nat
-  freq   : Nat
-  phase  : Bool   -- true = aligned, false = inverted
+inductive PipelineStage
+  | wave
+  | captor
+  | shazam
+  | luo
+  | avdr
+  | pf_infini
+  | double_lock
+  | stable_concept
 
--- Two tokens are in resonance if same frequency
-def inResonance (a b : OscToken) : Prop :=
-  a.freq = b.freq
+structure LUOState where
+  current_stage    : PipelineStage
+  pattern_ready    : Bool
+  sigma_forme_ready : Bool
+  avdr_ready       : Bool
+  pf_ready         : Bool
+  double_lock_ready : Bool
+  sigma_star_ready  : Bool
 
--- A minimal language unit: a pair of resonant tokens
-structure LangUnit where
-  tok_a : OscToken
-  tok_b : OscToken
+-- Pipeline complet : toutes les etapes pretes
+def pipeline_complete (s : LUOState) : Prop :=
+  And (s.pattern_ready = true)
+  (And (s.sigma_forme_ready = true)
+  (And (s.avdr_ready = true)
+  (And (s.pf_ready = true)
+  (And (s.double_lock_ready = true)
+       (s.sigma_star_ready = true)))))
 
-def unitCoherent (u : LangUnit) : Prop :=
-  inResonance u.tok_a u.tok_b
+def canonical : LUOState :=
+  { current_stage := PipelineStage.stable_concept,
+    pattern_ready := true, sigma_forme_ready := true,
+    avdr_ready := true, pf_ready := true,
+    double_lock_ready := true, sigma_star_ready := true }
 
--- Canonical language unit
-def tok0 : OscToken := { symbol := 0, freq := 1, phase := true }
-def tok1 : OscToken := { symbol := 1, freq := 1, phase := true }
-
-def canonical : LangUnit := { tok_a := tok0, tok_b := tok1 }
-
-theorem canonical_coherent : unitCoherent canonical := rfl
-
--- Resonance is symmetric
-theorem resonance_symm (a b : OscToken) (h : inResonance a b) : inResonance b a :=
-  h.symm
+theorem canonical_pipeline_complete : pipeline_complete canonical :=
+  And.intro rfl (And.intro rfl (And.intro rfl (And.intro rfl (And.intro rfl rfl))))
 
 end LUO
 end Obsidia
