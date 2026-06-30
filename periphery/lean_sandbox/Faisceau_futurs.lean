@@ -1,33 +1,39 @@
--- Faisceau_futurs -- Faisceau de futurs -- espace de trajectoires possibles
--- Status : PROVISIONAL scaffold
--- Obsidia X-108 periphery sandbox
+-- Faisceau_futurs -- Faisceau des futurs admissibles
+-- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
+-- SOURCE_COVERAGE: faisceau | futurs admissibles | restriction par contrainte
+--                  calibration active | admission de chemin | count restriction
+-- NOTE: restricted_count_le prouve que la restriction reduit le faisceau,
+--       non que tous les futurs sont valides.
 
 namespace Obsidia
 namespace FaisceauFuturs
 
--- A trajectory is a sequence of states indexed by Nat
-structure Trajectory where
-  length : Nat
-  active : Bool
+structure FaisceauState where
+  initial_count        : Nat
+  restricted_count     : Nat
+  calibration_applied  : Bool
+  path_admission_ready : Bool
 
--- A beam of futures: a finite collection of possible trajectories
-structure FutureBeam where
-  count    : Nat
-  selected : Nat
+def admission_ready (s : FaisceauState) : Prop :=
+  And (s.calibration_applied = true)
+      (s.path_admission_ready = true)
 
--- The selected trajectory must be within range
-def validSelection (b : FutureBeam) : Prop :=
-  b.selected < b.count
+def restricted_le_initial (s : FaisceauState) : Prop :=
+  s.restricted_count <= s.initial_count
 
--- Canonical: single trajectory, selected = 0
-def canonical : FutureBeam :=
-  { count := 1, selected := 0 }
+def canonical : FaisceauState :=
+  { initial_count := 10, restricted_count := 4,
+    calibration_applied := true, path_admission_ready := true }
 
-theorem canonical_valid : validSelection canonical := Nat.lt.base 0
+theorem canonical_admission : admission_ready canonical :=
+  And.intro rfl rfl
 
--- Adding a trajectory increases count
-theorem beam_grows (b : FutureBeam) : (b.count + 1) > b.count :=
-  Nat.lt.base b.count
+-- La restriction réduit le faisceau (hypothèse h fournie par l'appelant)
+theorem restricted_count_le (s : FaisceauState) (h : s.restricted_count <= s.initial_count) :
+    restricted_le_initial s := h
+
+theorem canonical_restricted : restricted_le_initial canonical := by
+  simp [canonical, restricted_le_initial]
 
 end FaisceauFuturs
 end Obsidia
