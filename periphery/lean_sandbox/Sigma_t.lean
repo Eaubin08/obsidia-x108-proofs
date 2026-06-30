@@ -1,11 +1,12 @@
 -- Sigma_t -- Fonction Sigma temporelle (peripherique)
 -- Status : PROVISIONAL scaffold -- REPAIR_PALIER_1
 -- SOURCE_COVERAGE: threshold | warning_threshold | stop_threshold | target_threshold
---                  alert_ready | immediate_stop
+--                  alert_ready | immediate_stop | coherence
 -- NOTE: Sigma_t est une fonction peripherique d'agregation de signaux.
 --       Elle n'est PAS le kernel X-108 qui pilote ACT/HOLD.
 --       Distinction : Sigma_t surveille ; le kernel decide.
 --       stop_threshold > warning_threshold : escalade automatique.
+--       coherence : alignement entre threshold et target_threshold.
 
 namespace Obsidia
 namespace SigmaT
