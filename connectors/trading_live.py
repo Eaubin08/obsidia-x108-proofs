@@ -38,6 +38,17 @@ COLORS = {
 
 _LAST_DOMAIN_PACKET: dict[str, Any] = {}
 
+# TOOL_CLASS_MATRIX_V0 — DOMAIN_OBSERVER : posts data only, never decides
+BOUNDARY: dict[str, Any] = {
+    "tool_class": "DOMAIN_OBSERVER",
+    "decision_authority": "KX108_ONLY",
+    "emits_act": False,
+    "allowed_to_decide": False,
+    "posts_data_only": True,
+    "canonical_memory_write": False,
+    "kernel_mutation": False,
+}
+
 
 def _color(text: str, code: str) -> str:
     if not ANSI_ENABLED:
@@ -866,8 +877,35 @@ def send_trading_payload(
     return requests.post(url, json=build_trading_payload(symbol, history), timeout=timeout)
 
 
-def stream_to_kernel(api_base: str = DEFAULT_API_BASE):
+def stream_to_kernel(api_base: str = DEFAULT_API_BASE, once: bool = False):
     print("[TRADING][START] connector=DOMAIN_SENSOR problem=autonomous_trade_execution route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
+    _api_key = os.environ.get("OBSIDIA_API_KEY", "")
+    _headers = {"X-API-Key": _api_key} if _api_key else {}
+
+    # Mode --once : données synthétiques sans dépendance ccxt
+    if once:
+        symbol = "BTC/USDT"
+        _prices = [42000.0, 42100.0, 42050.0, 42200.0, 42150.0]
+        history = {
+            "prices": _prices,
+            "highs": [p + 80 for p in _prices],
+            "lows": [p - 80 for p in _prices],
+            "volumes": [350.0] * len(_prices),
+        }
+        try:
+            packet = build_trading_payload(symbol, history)
+            url = f"{api_base.rstrip('/')}{TRADING_ENDPOINT}"
+            _print_domain_pass("TRADING", packet, url)
+            res = requests.post(url, json=packet, headers=_headers, timeout=10)
+            if res.status_code == 200:
+                data = res.json().get("data", res.json())
+                _print_domain_readable_surface("TRADING", data)
+            else:
+                print(f"⚠️ [TRADING] API error: {res.status_code} {res.text[:250]}")
+        except Exception as e:
+            print(f"❌ [TRADING] Connection error: {e}")
+        return
+
     try:
         import ccxt
     except Exception as exc:
@@ -882,7 +920,6 @@ def stream_to_kernel(api_base: str = DEFAULT_API_BASE):
         "lows": [],
         "volumes": [],
     }
-
 
     while True:
         try:
@@ -902,7 +939,7 @@ def stream_to_kernel(api_base: str = DEFAULT_API_BASE):
                 packet = build_trading_payload(symbol, history)
                 url = f"{api_base.rstrip('/')}{TRADING_ENDPOINT}"
                 _print_domain_pass("TRADING", packet, url)
-                res = requests.post(url, json=packet, timeout=10)
+                res = requests.post(url, json=packet, headers=_headers, timeout=10)
 
                 if res.status_code == 200:
                     data = res.json().get("data", res.json())
@@ -920,4 +957,9 @@ def stream_to_kernel(api_base: str = DEFAULT_API_BASE):
 
 
 if __name__ == "__main__":
-    stream_to_kernel()
+    import argparse as _ap
+    _parser = _ap.ArgumentParser(description="Obsidia Trading Domain Connector")
+    _parser.add_argument("--once", action="store_true", help="Itération unique puis sortie (données synthétiques)")
+    _parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="URL de base de l'API")
+    _args = _parser.parse_args()
+    stream_to_kernel(api_base=_args.api_base, once=_args.once)

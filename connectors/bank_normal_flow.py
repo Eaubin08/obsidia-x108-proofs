@@ -38,6 +38,17 @@ COLORS = {
 
 _LAST_DOMAIN_PACKET: dict[str, Any] = {}
 
+# TOOL_CLASS_MATRIX_V0 — DOMAIN_OBSERVER : posts data only, never decides
+BOUNDARY: dict[str, Any] = {
+    "tool_class": "DOMAIN_OBSERVER",
+    "decision_authority": "KX108_ONLY",
+    "emits_act": False,
+    "allowed_to_decide": False,
+    "posts_data_only": True,
+    "canonical_memory_write": False,
+    "kernel_mutation": False,
+}
+
 
 def _color(text: str, code: str) -> str:
     if not ANSI_ENABLED:
@@ -863,15 +874,17 @@ def send_bank_payload(api_base: str = DEFAULT_API_BASE, timeout: int = 10):
     return requests.post(url, json=build_bank_payload(), timeout=timeout)
 
 
-def run_normal_bank(api_base: str = DEFAULT_API_BASE):
+def run_normal_bank(api_base: str = DEFAULT_API_BASE, once: bool = False):
     print("[BANK][START] connector=DOMAIN_SENSOR problem=critical_transaction route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
+    _api_key = os.environ.get("OBSIDIA_API_KEY", "")
+    _headers = {"X-API-Key": _api_key} if _api_key else {}
 
     while True:
         try:
             packet = build_bank_payload()
             url = f"{api_base.rstrip('/')}{BANK_ENDPOINT}"
             _print_domain_pass("BANK", packet, url)
-            res = requests.post(url, json=packet, timeout=10)
+            res = requests.post(url, json=packet, headers=_headers, timeout=10)
             if res.status_code == 200:
                 data = res.json().get("data", res.json())
                 _print_domain_readable_surface("BANK", data)
@@ -880,8 +893,15 @@ def run_normal_bank(api_base: str = DEFAULT_API_BASE):
         except Exception as e:
             print(f"❌ [BANK] Connection error: {e}")
 
+        if once:
+            break
         time.sleep(10)
 
 
 if __name__ == "__main__":
-    run_normal_bank()
+    import argparse as _ap
+    _parser = _ap.ArgumentParser(description="Obsidia Bank Domain Connector")
+    _parser.add_argument("--once", action="store_true", help="Itération unique puis sortie")
+    _parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="URL de base de l'API")
+    _args = _parser.parse_args()
+    run_normal_bank(api_base=_args.api_base, once=_args.once)
