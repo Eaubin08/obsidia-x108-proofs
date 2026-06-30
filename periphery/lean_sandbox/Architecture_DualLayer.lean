@@ -1,59 +1,39 @@
+-- Architecture_DualLayer -- Architecture bi-couche : couche kernel + couche peripherique
+-- Status : PROVISIONAL scaffold -- Palier 8
+-- SOURCE_COVERAGE: architecture_dual_layer | couche_kernel | couche_peripherique
+--                  separation_concerns | interface_kernel_periph | isolation_kernel
+--                  non_intrusif | audit_peripherique | flux_unidirectionnel
+-- PROVISIONAL_BOUNDARY: architecture bi-couche approchee en Bool flags.
+--   DualLayer valide <=> kernel_isole AND periph_auditee AND flux_unidirectionnel.
+--   kernel_boundary: architecture peripherique, non decisionnelle. KX108 seul est souverain.
+
 namespace Obsidia
-namespace Architecture_DualLayer
+namespace ArchitectureDualLayer
 
 structure DualLayerState where
-  core_ready : Bool
-  periphery_ready : Bool
-  bridge_only : Bool
-  kernel_authority : Bool
+  kernel_isole        : Bool
+  periph_auditee      : Bool
+  flux_unidirectionnel : Bool
+  kernel_souverain    : Bool
 
-def core_ok (s : DualLayerState) : Prop :=
-  s.core_ready = true
+def dual_layer_valide (d : DualLayerState) : Prop :=
+  And (d.kernel_isole = true) (And (d.periph_auditee = true)
+  (And (d.flux_unidirectionnel = true) (d.kernel_souverain = true)))
 
-def periphery_ok (s : DualLayerState) : Prop :=
-  s.periphery_ready = true
+def dual_layer_canonique : DualLayerState :=
+  { kernel_isole := true, periph_auditee := true,
+    flux_unidirectionnel := true, kernel_souverain := true }
 
-def bridge_only_ok (s : DualLayerState) : Prop :=
-  s.bridge_only = true
+theorem dual_layer_canonique_valide : dual_layer_valide dual_layer_canonique :=
+  And.intro rfl (And.intro rfl (And.intro rfl rfl))
 
-def kernel_authority_ok (s : DualLayerState) : Prop :=
-  s.kernel_authority = true
-
-def dual_layer_governed (s : DualLayerState) : Prop :=
-  core_ok s ∧ periphery_ok s ∧ bridge_only_ok s ∧ kernel_authority_ok s
-
-theorem dual_layer_governed_intro
-    (s : DualLayerState)
-    (hc : core_ok s)
-    (hp : periphery_ok s)
-    (hb : bridge_only_ok s)
-    (hk : kernel_authority_ok s) :
-    dual_layer_governed s :=
-  And.intro hc (And.intro hp (And.intro hb hk))
-
-theorem core_from_dual_layer_governed
-    (s : DualLayerState)
-    (h : dual_layer_governed s) :
-    core_ok s :=
+theorem kernel_isole_from_valide (d : DualLayerState) (h : dual_layer_valide d) :
+    d.kernel_isole = true :=
   h.left
 
-theorem periphery_from_dual_layer_governed
-    (s : DualLayerState)
-    (h : dual_layer_governed s) :
-    periphery_ok s :=
-  h.right.left
-
-theorem bridge_only_from_dual_layer_governed
-    (s : DualLayerState)
-    (h : dual_layer_governed s) :
-    bridge_only_ok s :=
-  h.right.right.left
-
-theorem kernel_authority_from_dual_layer_governed
-    (s : DualLayerState)
-    (h : dual_layer_governed s) :
-    kernel_authority_ok s :=
+theorem kernel_souverain_from_valide (d : DualLayerState) (h : dual_layer_valide d) :
+    d.kernel_souverain = true :=
   h.right.right.right
 
-end Architecture_DualLayer
+end ArchitectureDualLayer
 end Obsidia
