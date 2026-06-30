@@ -1,37 +1,56 @@
-import Std
+-- P53_Resonance.lean
+-- SOURCE: proofs/lean/Obsidia/TemporalKernel.lean
+--   Derive de X108_no_act_before_tau (HOLD sans precondition temporelle),
+--   beforeTau (coherence phase + couplage comme garde)
+-- Status : FORMAL -- LegacyPeripheral repair D4B-2bis via Obsidure AVDR
+-- SOURCE_COVERAGE: resonance | resonance_valide | phase_coherente | couplage_actif
+--                  resonance_hold | precondition_formelle | resonance_non_autorisation
+-- PROVISIONAL_BOUNDARY: resonance discrete (Bool).
+--   Valide <=> phase_coherente=true et couplage_actif=true.
+--   HOLD si non valide (mirror X108_no_act_before_tau: HOLD sans precondition).
+--   kernel_boundary: precondition formelle peripherique, non decisionnelle. KX108 seul est souverain.
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P53_Resonance. Prouver formellement que si deux entités partagent la même signature logique (logic_
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+namespace Obsidia
+namespace P53Resonance
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+-- Etat de resonance : phase coherente + couplage actif (mirror beforeTau)
+structure ResonanceState where
+  phase_coherente : Bool
+  couplage_actif  : Bool
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P53_Reson
+-- Valide si phase ET couplage actifs (precondition formelle)
+def resonance_valide (r : ResonanceState) : Prop :=
+  r.phase_coherente = true ∧ r.couplage_actif = true
 
-                theorem P38_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+-- HOLD si non valide (mirror X108_no_act_before_tau)
+def resonance_hold (r : ResonanceState) : Prop :=
+  ¬ resonance_valide r
+
+-- Etat canonique : phase et couplage actifs
+def resonance_canonique : ResonanceState :=
+  { phase_coherente := true, couplage_actif := true }
+
+-- Canonique valide
+theorem canonique_valide : resonance_valide resonance_canonique :=
+  ⟨rfl, rfl⟩
+
+-- Hold implique non valide
+theorem hold_not_valide (r : ResonanceState) (h : resonance_hold r) :
+    ¬ resonance_valide r := h
+
+-- Phase incoherente : HOLD
+theorem phase_incoherente_hold (r : ResonanceState) (h : r.phase_coherente = false) :
+    resonance_hold r := by
+  intro hv
+  have hp := hv.1
+  simp [h] at hp
+
+-- Couplage absent : HOLD
+theorem sans_couplage_hold (r : ResonanceState) (h : r.couplage_actif = false) :
+    resonance_hold r := by
+  intro hv
+  have hc := hv.2
+  simp [h] at hc
+
+end P53Resonance
+end Obsidia

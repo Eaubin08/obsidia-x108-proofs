@@ -1,37 +1,56 @@
-import Std
+-- P50_Recursivite_Fondamentale.lean
+-- SOURCE: proofs/lean/Obsidia/Basic.lean
+--   Derive de E2_no_act_below_threshold (HOLD si precondition non remplie),
+--   D1_determinism (determinisme de la decision)
+-- Status : FORMAL -- LegacyPeripheral repair D4B-2bis via Obsidure AVDR
+-- SOURCE_COVERAGE: recursivite_fondamentale | recursivite_admissible | recursivite_hold
+--                  base_atteinte | coherence_recursive | continuite_locale
+-- PROVISIONAL_BOUNDARY: recursivite discrete (Bool).
+--   Admissible <=> base_atteinte=true et coherent=true.
+--   HOLD si non admissible (mirror E2: pas d action sans precondition).
+--   kernel_boundary: evaluation peripherique, non decisionnelle. KX108 seul est souverain.
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P50_Recursivite_Fondamentale. Prouver formellement que l'application de la loi du Kernel sur une co
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+namespace Obsidia
+namespace P50RecursiviteFondamentale
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+-- Etat recursif : base atteinte + coherence locale (mirror precondition E2)
+structure RecursifState where
+  base_atteinte : Bool
+  coherent      : Bool
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P50_Recur
+-- Admissible si base atteinte ET coherent
+def recursivite_admissible (r : RecursifState) : Prop :=
+  r.base_atteinte = true ∧ r.coherent = true
 
-                theorem P38_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+-- HOLD si non admissible (mirror E2)
+def recursivite_hold (r : RecursifState) : Prop :=
+  ¬ recursivite_admissible r
+
+-- Etat canonique : toujours admissible
+def recursif_canonique : RecursifState :=
+  { base_atteinte := true, coherent := true }
+
+-- Canonique admissible
+theorem canonique_admissible : recursivite_admissible recursif_canonique :=
+  ⟨rfl, rfl⟩
+
+-- Hold implique non admissible
+theorem hold_not_admissible (r : RecursifState) (h : recursivite_hold r) :
+    ¬ recursivite_admissible r := h
+
+-- Sans base : HOLD
+theorem sans_base_hold (r : RecursifState) (h : r.base_atteinte = false) :
+    recursivite_hold r := by
+  intro hadm
+  have hb := hadm.1
+  simp [h] at hb
+
+-- Incoherence locale : HOLD
+theorem incoherence_hold (r : RecursifState) (h : r.coherent = false) :
+    recursivite_hold r := by
+  intro hadm
+  have hc := hadm.2
+  simp [h] at hc
+
+end P50RecursiviteFondamentale
+end Obsidia

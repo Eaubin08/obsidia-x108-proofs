@@ -19,3 +19,6 @@ import Obsidia.LegacyPeripheral.P60_Auto_Organisation
 import Obsidia.LegacyPeripheral.P61_Bifurcation
 import Obsidia.LegacyPeripheral.P62_Attracteur
 import Obsidia.LegacyPeripheral.Plan_Assaut_Final
+import Obsidia.LegacyPeripheral.P50_Recursivite_Fondamentale
+import Obsidia.LegacyPeripheral.P52_Principe_Holographique
+import Obsidia.LegacyPeripheral.P53_Resonance
