@@ -22,3 +22,6 @@ import Obsidia.LegacyPeripheral.Plan_Assaut_Final
 import Obsidia.LegacyPeripheral.P50_Recursivite_Fondamentale
 import Obsidia.LegacyPeripheral.P52_Principe_Holographique
 import Obsidia.LegacyPeripheral.P53_Resonance
+import Obsidia.LegacyPeripheral.P54_Temps_Absolu
+import Obsidia.LegacyPeripheral.P55_Espace_Geometrique
+import Obsidia.LegacyPeripheral.P56_Causalite

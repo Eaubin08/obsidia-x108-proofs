@@ -1,37 +1,19 @@
-import Std
+namespace Obsidia
+namespace P54TempsAbsolu
 
-            -- Théorème périphérique Obsidia — P38
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P54_Temps_Absolu. Prouver formellement que le temps dans Obsidia n'est pas une horloge, mais l'inté
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+def precede (t1 t2 : Nat) : Prop := t1 < t2
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+theorem temps_monotone (t1 t2 : Nat) (h : precede t1 t2) : ¬ precede t2 t1 := by
+  unfold precede at *; omega
 
-                -- Théorème périphérique P38 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: [DOMAINE:LEAN] Objectif : LEAN_CANONIQUE. Théorème P54_Temps
+theorem non_retour (t1 t2 : Nat) (h : precede t1 t2) : ¬ (t2 ≤ t1) := by
+  unfold precede at *; omega
 
-                theorem P38_DOMAINE_LEAN__Objectif___LEAN_CANO_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+theorem temps_total (t1 t2 : Nat) : precede t1 t2 ∨ t1 = t2 ∨ precede t2 t1 := by
+  unfold precede; omega
+
+theorem zero_est_origine (t : Nat) : ¬ precede t 0 := by
+  unfold precede; omega
+
+end P54TempsAbsolu
+end Obsidia
