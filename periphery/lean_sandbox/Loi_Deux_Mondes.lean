@@ -1,7 +1,7 @@
 -- Loi_Deux_Mondes -- Loi des Deux Mondes (双世律)
 -- Status : PROVISIONAL scaffold -- Palier 2
 -- SOURCE_COVERAGE: monde_reel R | monde_modele M | relation R<->M
---                  projection pi_R | projection pi_M | coherence epsilon
+--                  projection pi_R | projection pi_M | coherence_epsilon
 --                  re_synchronisation | pipeline_perception | LUO lien
 -- PROVISIONAL_BOUNDARY: metrique de coherence epsilon non prouvee.
 --   Tout concept obsidien existe simultanement dans R et M.
