@@ -2,7 +2,8 @@
 -- Status : PROVISIONAL scaffold -- Palier 2
 -- SOURCE_COVERAGE: graphe G=(V,E) | V=agents | E=routes | scoring | orchestration
 --                  capability_tag | intent_tag | context_fit | KPI_history
---                  selection argmax | agents_idle | Reseau_Phéromones lien
+--                  selection argmax | agents_idle | eligibilite | pheromones
+--                  Reseau_Phéromones lien
 -- PROVISIONAL_BOUNDARY: scoring formel et UCB non prouvés (manquent capability_tags et c).
 --   ARS est le moteur de selection et d'orchestration des agents obsidiens.
 --   Lien Reseau_Phéromones : signaux phéromonaux alimentent le scoring ARS.
