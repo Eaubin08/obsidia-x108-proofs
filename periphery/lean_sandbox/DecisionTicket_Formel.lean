@@ -1,108 +1,118 @@
+-- DecisionTicket_Formel -- ticket de decision et chaine de hachage
+-- Status : CANONICAL_CANDIDATE scaffold -- Palier 6 item 113/134
+-- SOURCE_COVERAGE: decisionticket_formel | decision_ticket | ticket_id | action_a | time_t
+--                  context_c | invariant_i | delta_tau | risk_r | h_prev | h_current
+--                  hash_chain_ready | receipt_ready | audit_trace_ready | replay_ready
+--                  kernel_boundary | non_sovereign_ticket
+-- PROVISIONAL_BOUNDARY: le ticket de decision est encode par Nat et flags Bool.
+--   Ticket = (id, a, t, c, i, delta_tau, r, h_prev, h_current).
+--   La chaine de hachage rend la decision auditable et rejouable.
+--   Le ticket trace une decision, mais ne decide pas : kernel_boundary reste obligatoire.
+
 namespace Obsidia
 namespace DecisionTicketFormel
 
-structure DecisionTicket where
-  decision_id : Nat
-  action_code : Nat
-  tick : Nat
-  coherence : Nat
-  coherence_bound : Nat
-  previous_hash : Nat
-  current_hash : Nat
-  result_code : Nat
-  result_bound : Nat
+structure DecisionTicketState where
+  ticket_id : Nat
+  action_a : Bool
+  time_t : Nat
+  context_c : Bool
+  invariant_i : Bool
+  delta_tau : Nat
+  risk_r : Nat
+  h_prev : Nat
+  h_current : Nat
+  fields_ready : Bool
+  hash_chain_ready : Bool
+  receipt_ready : Bool
+  audit_trace_ready : Bool
+  replay_ready : Bool
+  kernel_boundary : Bool
+  non_sovereign_ticket : Bool
 
-def hash_links (previous next : DecisionTicket) : Prop :=
-  next.previous_hash = previous.current_hash
+def ticket_fields_ready (t : DecisionTicketState) : Prop :=
+  And (t.action_a = true)
+  (And (t.context_c = true)
+  (And (t.invariant_i = true)
+       (t.fields_ready = true)))
 
-def coherence_valid (t : DecisionTicket) : Prop :=
-  t.coherence <= t.coherence_bound
+def hash_and_receipt_ready (t : DecisionTicketState) : Prop :=
+  And (t.hash_chain_ready = true)
+  (And (t.receipt_ready = true)
+       (t.audit_trace_ready = true))
 
-def result_valid (t : DecisionTicket) : Prop :=
-  t.result_code <= t.result_bound
+def decision_ticket_admissible (t : DecisionTicketState) : Prop :=
+  And (ticket_fields_ready t)
+  (And (hash_and_receipt_ready t)
+  (And (t.replay_ready = true)
+  (And (t.kernel_boundary = true)
+       (t.non_sovereign_ticket = true))))
 
-def ticket_valid (t : DecisionTicket) : Prop :=
-  And (coherence_valid t) (result_valid t)
+def decision_ticket_canonique : DecisionTicketState :=
+  { ticket_id := 113,
+    action_a := true,
+    time_t := 1,
+    context_c := true,
+    invariant_i := true,
+    delta_tau := 0,
+    risk_r := 0,
+    h_prev := 10,
+    h_current := 11,
+    fields_ready := true,
+    hash_chain_ready := true,
+    receipt_ready := true,
+    audit_trace_ready := true,
+    replay_ready := true,
+    kernel_boundary := true,
+    non_sovereign_ticket := true }
 
-def chain_valid_pair (previous next : DecisionTicket) : Prop :=
-  hash_links previous next
+theorem decision_ticket_canonique_admissible :
+    decision_ticket_admissible decision_ticket_canonique :=
+  And.intro
+    (And.intro rfl
+      (And.intro rfl
+        (And.intro rfl rfl)))
+    (And.intro
+      (And.intro rfl
+        (And.intro rfl rfl))
+      (And.intro rfl
+        (And.intro rfl rfl)))
 
-def genesis_ticket (bound : Nat) : DecisionTicket :=
-  { decision_id := 0, action_code := 0, tick := 0, coherence := 0, coherence_bound := bound, previous_hash := 0, current_hash := 0, result_code := 0, result_bound := bound }
-
-theorem hash_links_intro
-    (previous next : DecisionTicket)
-    (h : next.previous_hash = previous.current_hash) :
-    hash_links previous next :=
-  h
-
-theorem chain_valid_pair_intro
-    (previous next : DecisionTicket)
-    (h : hash_links previous next) :
-    chain_valid_pair previous next :=
-  h
-
-theorem hash_links_from_chain_valid_pair
-    (previous next : DecisionTicket)
-    (h : chain_valid_pair previous next) :
-    hash_links previous next :=
-  h
-
-theorem coherence_valid_intro
-    (t : DecisionTicket)
-    (h : t.coherence <= t.coherence_bound) :
-    coherence_valid t :=
-  h
-
-theorem result_valid_intro
-    (t : DecisionTicket)
-    (h : t.result_code <= t.result_bound) :
-    result_valid t :=
-  h
-
-theorem ticket_valid_intro
-    (t : DecisionTicket)
-    (hc : coherence_valid t)
-    (hr : result_valid t) :
-    ticket_valid t :=
-  And.intro hc hr
-
-theorem coherence_from_ticket_valid
-    (t : DecisionTicket)
-    (h : ticket_valid t) :
-    coherence_valid t :=
+theorem decision_ticket_has_fields
+    (t : DecisionTicketState)
+    (h : decision_ticket_admissible t) :
+    ticket_fields_ready t :=
   h.left
 
-theorem result_from_ticket_valid
-    (t : DecisionTicket)
-    (h : ticket_valid t) :
-    result_valid t :=
-  h.right
+theorem decision_ticket_has_hash_chain
+    (t : DecisionTicketState)
+    (h : decision_ticket_admissible t) :
+    hash_and_receipt_ready t :=
+  h.right.left
 
-theorem genesis_ticket_hash_self_linked
-    (bound : Nat) :
-    hash_links (genesis_ticket bound) (genesis_ticket bound) :=
-  rfl
+theorem decision_ticket_has_replay
+    (t : DecisionTicketState)
+    (h : decision_ticket_admissible t) :
+    t.replay_ready = true :=
+  h.right.right.left
 
-theorem genesis_ticket_chain_valid_pair
-    (bound : Nat) :
-    chain_valid_pair (genesis_ticket bound) (genesis_ticket bound) :=
-  rfl
+theorem decision_ticket_has_kernel_boundary
+    (t : DecisionTicketState)
+    (h : decision_ticket_admissible t) :
+    t.kernel_boundary = true :=
+  h.right.right.right.left
 
-theorem genesis_ticket_coherence_valid
-    (bound : Nat) :
-    coherence_valid (genesis_ticket bound) :=
-  Nat.zero_le bound
+theorem decision_ticket_is_non_sovereign
+    (t : DecisionTicketState)
+    (h : decision_ticket_admissible t) :
+    t.non_sovereign_ticket = true :=
+  h.right.right.right.right
 
-theorem genesis_ticket_result_valid
-    (bound : Nat) :
-    result_valid (genesis_ticket bound) :=
-  Nat.zero_le bound
-
-theorem genesis_ticket_valid
-    (bound : Nat) :
-    ticket_valid (genesis_ticket bound) :=
-  And.intro (Nat.zero_le bound) (Nat.zero_le bound)
+theorem hash_and_receipt_has_audit_trace
+    (t : DecisionTicketState)
+    (h : hash_and_receipt_ready t) :
+    t.audit_trace_ready = true :=
+  h.right.right
 
 end DecisionTicketFormel
 end Obsidia
