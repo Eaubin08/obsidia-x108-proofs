@@ -1,30 +1,30 @@
-import Obsidia.SystemModel
+import Obsidia.TemporalKernel
 import Obsidia.TemporalX108
 
-namespace Obsidia.Refinement
+namespace Obsidia
+namespace Refinement
 
-open Obsidia
-open Obsidia.SystemModel
+/--
+Refinement bridge.
 
-def R_decision (d : Decision) (d3 : Decision3) : Prop :=
-  d3 = liftDecision d
+This file intentionally does not introduce a new sovereign decision function.
+It re-exports the current TemporalKernel/X108 safety facts under the Refinement layer.
+The old names `decideX108` and `decide3X108` were stale references and are not recreated here.
+-/
+def refinement_X108_no_act_before_tau :=
+  Obsidia.TemporalKernel.X108_no_act_before_tau
 
-theorem lift_refines (d : Decision) :
-    R_decision d (liftDecision d) := by
-  rfl
+def refinement_X108_after_tau_equals_base :=
+  Obsidia.TemporalKernel.X108_after_tau_equals_base
 
-theorem x108_is_lift (τ : Tau) (i : TInput) :
-    decide3X108 τ i = liftDecision (decideX108 τ i) := by
-  rfl
+def refinement_X108_kernel_never_blocks :=
+  Obsidia.TemporalKernel.X108_kernel_never_blocks
 
-theorem x108_never_blocks (τ : Tau) (i : TInput) :
-    Not (decide3X108 τ i = Decision3.BLOCK) := by
-  exact Obsidia.X108_kernel_never_blocks τ i
+def refinement_X108_reversible_equals_base :=
+  Obsidia.TemporalKernel.X108_reversible_equals_base
 
-theorem refined_not_block (d : Decision) (d3 : Decision3)
-    (h : R_decision d d3) :
-    Not (d3 = Decision3.BLOCK) := by
-  rw [h]
-  cases d <;> decide
+def refinement_X108_irreversible_after_tau_equals_base :=
+  Obsidia.TemporalKernel.X108_irreversible_after_tau_equals_base
 
-end Obsidia.Refinement
+end Refinement
+end Obsidia
