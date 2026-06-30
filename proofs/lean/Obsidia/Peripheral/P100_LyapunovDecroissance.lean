@@ -1,37 +1,22 @@
-import Std
+namespace Obsidia
+namespace P100LyapunovDecroissance
 
-            -- Théorème périphérique Obsidia — P100
-            -- Statut : SANDBOX — AWAITING_HUMAN_REVIEW
-            -- Rationale : Obsidure: prends l’item P100 uniquement et génère une proposal dont l’unique patch crée exactement periphery/lean_sandbox/P100_LyapunovDecroissance.le
-            --
-            -- Ce fichier est dans la EPHEMERAL_CODE_SANDBOX — jamais dans proofs/V18_*.
-            -- Règle : preuves complètes obligatoires (LEAN_FORBIDDEN_INCOMPLETE).
-            -- === Contexte Mathématique Read-Only ===
--- Sources lues : server.kernel.sealed.cjs, proofs/lean/Obsidia/Basic.lean, proofs/lean/Obsidia/TemporalKernel.lean
--- Théorèmes scellés référence : decision_eq_ACT_iff, decision_eq_HOLD_iff, D1_determinism, G1_act_above_threshold, E2_no_act_below_threshold, G2_boundary_inclusive
--- Structures de référence (Basic.lean) :
---   import Std
---   namespace Obsidia
---   structure Metrics where
---     T_mean  : Rat
---     H_score : Rat
---     A_score : Rat
---     S       : Rat
---   inductive Decision
---     | HOLD
--- Logique décisionnelle kernel (read-only) :
---   app.post('/kernel/ragnarok', (req, res) => {
---   const py = spawn('python', ['-u', 'sigma/run_pipeline.py', domain, data], {
---   const filename = `decision_${safeDomain}_${Date.now()}.json`;
---   console.error(`\x1b[41m💥 [CRASH]:\x1b[0m Pipeline failed or no valid JSON.`);
---   res.status(500).json({ error: "Pipeline crash", details: result });
--- ==========================================
+def L_candidate (v c : Nat) : Nat := v + c
 
-            -- Sandbox standalone (core Lean 4 — no external dependencies)
+def L_decreasing (v1 c1 v2 c2 : Nat) : Prop :=
+  L_candidate v2 c2 ≤ L_candidate v1 c1
 
-                -- Théorème périphérique P100 | Tentative 1 | Stratégie: SEMANTIC
--- Objectif: Obsidure: prends l’item P100 uniquement et génère une propos
+theorem L_reflexive (v c : Nat) : L_decreasing v c v c :=
+  Nat.le_refl _
 
-                theorem P100_Obsidure__prends_l_item_P100_unique_t1 : ∀ (n m : Nat), n + m = m + n := by
-                  intro n m
-                  omega
+theorem L_decreasing_trans (v1 c1 v2 c2 v3 c3 : Nat)
+    (h1 : L_decreasing v1 c1 v2 c2) (h2 : L_decreasing v2 c2 v3 c3) :
+    L_decreasing v1 c1 v3 c3 :=
+  Nat.le_trans h2 h1
+
+theorem reduce_value_decreasing (v1 v2 c : Nat) (h : v2 ≤ v1) :
+    L_decreasing v1 c v2 c := by
+  unfold L_decreasing L_candidate; omega
+
+end P100LyapunovDecroissance
+end Obsidia
