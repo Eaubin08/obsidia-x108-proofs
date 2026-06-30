@@ -1,4 +1,4 @@
-﻿# Obsidia Fast Path A/B Benchmark Protocol V1
+# Obsidia Fast Path A/B Benchmark Protocol V1
 
 ## Status
 
@@ -23,7 +23,7 @@ It compares the same request set through two local paths:
 The goal is to measure:
 
 - total elapsed time;
-- estimated input/output token cost;
+- estimated internal Obsidia token/context budget;
 - number of modules considered;
 - number of modules activated;
 - number of modules skipped;
@@ -35,6 +35,13 @@ The goal is to measure:
 This benchmark does not claim GPU acceleration.
 
 It measures compute avoidance before LLM, GPU, AMD, ROCm, or Fireworks execution.
+
+Token wording boundary:
+
+- this benchmark does not measure OpenAI, Fireworks, or any third-party invoice;
+- it measures Obsidia internal token/context budget reduction;
+- V1 uses `ceil(char_count / 4)` as an explicit local proxy;
+- V2 should replace the proxy with the native Obsidia tokenizer / token ledger.
 
 ---
 
@@ -139,11 +146,11 @@ Indented JSON example:
 
 Until exact tokenizer integration exists, the benchmark uses an explicit estimate:
 
-    estimated_tokens = ceil(char_count / 4)
+    estimated_internal_token_units = ceil(char_count / 4)
 
-This must be labeled as an estimate, not exact billing.
+This must be labeled as an internal estimate, not third-party provider billing.
 
-Future V2 can add provider-specific tokenizers.
+Future V2 can replace this proxy with the native Obsidia tokenizer / token ledger.
 
 ---
 
@@ -174,7 +181,7 @@ Quality score:
 For each request, compute:
 
     latency_delta_pct = 100 * (baseline_elapsed_ms - fastpath_elapsed_ms) / baseline_elapsed_ms
-    token_delta_pct = 100 * (baseline_estimated_tokens - fastpath_estimated_tokens) / baseline_estimated_tokens
+    internal_token_delta_pct = 100 * (baseline_estimated_tokens - fastpath_estimated_tokens) / baseline_estimated_tokens
     module_skip_pct = 100 * modules_skipped / modules_considered
 
 The output report must include:
@@ -205,7 +212,7 @@ Invalid claims:
 - Obsidia is faster than AMD.
 - Obsidia is a GPU accelerator.
 - Obsidia benchmark proves production latency.
-- Obsidia benchmark proves provider billing reduction without provider tokenizers.
+- Obsidia benchmark proves third-party provider billing reduction.
 
 ---
 

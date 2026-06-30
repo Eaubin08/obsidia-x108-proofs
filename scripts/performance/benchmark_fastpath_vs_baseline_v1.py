@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import math
@@ -282,7 +282,7 @@ def compare_request(request_id: str, baseline: dict[str, Any], fastpath: dict[st
         if baseline["elapsed_ms"] > 0
         else 0.0
     )
-    token_delta_pct = (
+    internal_token_delta_pct = (
         100 * (baseline_total_tokens - fastpath_total_tokens) / baseline_total_tokens
         if baseline_total_tokens > 0
         else 0.0
@@ -298,9 +298,9 @@ def compare_request(request_id: str, baseline: dict[str, Any], fastpath: dict[st
         "baseline_elapsed_ms": baseline["elapsed_ms"],
         "fastpath_elapsed_ms": fastpath["elapsed_ms"],
         "latency_delta_pct": latency_delta_pct,
-        "baseline_estimated_total_tokens": baseline_total_tokens,
-        "fastpath_estimated_total_tokens": fastpath_total_tokens,
-        "token_delta_pct": token_delta_pct,
+        "baseline_estimated_internal_token_units": baseline_total_tokens,
+        "fastpath_estimated_internal_token_units": fastpath_total_tokens,
+        "internal_token_delta_pct": internal_token_delta_pct,
         "baseline_modules_activated": baseline["modules_activated"],
         "fastpath_modules_activated": fastpath["modules_activated"],
         "modules_skipped": fastpath["modules_skipped"],
@@ -342,7 +342,7 @@ def main() -> int:
     fastpath_summary = summarize_mode(fastpath_rows)
 
     avg_latency_delta = statistics.mean([c["latency_delta_pct"] for c in comparisons]) if comparisons else 0.0
-    avg_token_delta = statistics.mean([c["token_delta_pct"] for c in comparisons]) if comparisons else 0.0
+    avg_token_delta = statistics.mean([c["internal_token_delta_pct"] for c in comparisons]) if comparisons else 0.0
     avg_module_skip = statistics.mean([c["module_skip_pct"] for c in comparisons]) if comparisons else 0.0
 
     result = {
@@ -357,12 +357,13 @@ def main() -> int:
             "Obsidia is faster than AMD.",
             "Obsidia is a GPU accelerator.",
             "Obsidia benchmark proves production latency.",
-            "Obsidia benchmark proves exact provider billing reduction without provider tokenizers.",
+            "Obsidia benchmark proves third-party provider billing reduction.",
+            "Obsidia benchmark proves exact native token cost until the native Obsidia tokenizer is wired.",
         ],
         "baseline_summary": baseline_summary,
         "fastpath_summary": fastpath_summary,
         "average_latency_delta_pct": avg_latency_delta,
-        "average_token_delta_pct": avg_token_delta,
+        "average_internal_internal_token_delta_pct": avg_token_delta,
         "average_module_skip_pct": avg_module_skip,
         "baseline_rows": baseline_rows,
         "fastpath_rows": fastpath_rows,
@@ -384,7 +385,7 @@ def main() -> int:
     lines.append("")
     lines.append("## Claim boundary")
     lines.append("")
-    lines.append("Valid claim: Obsidia Fast Path V1 reduces local pre-compute work versus a local non-optimized baseline.")
+    lines.append("Valid claim: Obsidia Fast Path V1 reduces local pre-compute work and estimated internal token/context budget versus a local non-optimized baseline.")
     lines.append("")
     lines.append("Invalid claims:")
     for claim in result["invalid_claims"]:
@@ -398,7 +399,7 @@ def main() -> int:
     lines.append(f"| p50 latency ms | {baseline_summary['p50_latency_ms']:.4f} | {fastpath_summary['p50_latency_ms']:.4f} | - |")
     lines.append(f"| p95 latency ms | {baseline_summary['p95_latency_ms']:.4f} | {fastpath_summary['p95_latency_ms']:.4f} | - |")
     lines.append(f"| p99 latency ms | {baseline_summary['p99_latency_ms']:.4f} | {fastpath_summary['p99_latency_ms']:.4f} | - |")
-    lines.append(f"| Avg estimated total tokens | {baseline_summary['avg_estimated_total_tokens']:.2f} | {fastpath_summary['avg_estimated_total_tokens']:.2f} | {avg_token_delta:.2f}% |")
+    lines.append(f"| Avg estimated internal token units | {baseline_summary['avg_estimated_total_tokens']:.2f} | {fastpath_summary['avg_estimated_total_tokens']:.2f} | {avg_token_delta:.2f}% |")
     lines.append(f"| Avg modules activated | {baseline_summary['avg_modules_activated']:.2f} | {fastpath_summary['avg_modules_activated']:.2f} | - |")
     lines.append(f"| Avg modules skipped | {baseline_summary['avg_modules_skipped']:.2f} | {fastpath_summary['avg_modules_skipped']:.2f} | {avg_module_skip:.2f}% |")
     lines.append(f"| Cache hit ratio | {baseline_summary['cache_hit_ratio']:.2f} | {fastpath_summary['cache_hit_ratio']:.2f} | - |")
@@ -420,9 +421,9 @@ def main() -> int:
         b_ms = statistics.mean([r["baseline_elapsed_ms"] for r in rows])
         f_ms = statistics.mean([r["fastpath_elapsed_ms"] for r in rows])
         lat_delta = statistics.mean([r["latency_delta_pct"] for r in rows])
-        b_tok = statistics.mean([r["baseline_estimated_total_tokens"] for r in rows])
-        f_tok = statistics.mean([r["fastpath_estimated_total_tokens"] for r in rows])
-        tok_delta = statistics.mean([r["token_delta_pct"] for r in rows])
+        b_tok = statistics.mean([r["baseline_estimated_internal_token_units"] for r in rows])
+        f_tok = statistics.mean([r["fastpath_estimated_internal_token_units"] for r in rows])
+        tok_delta = statistics.mean([r["internal_token_delta_pct"] for r in rows])
         quality = statistics.mean([r["quality_score"] for r in rows])
         lines.append(
             f"| {request_id} | {route} | {b_ms:.4f} | {f_ms:.4f} | {lat_delta:.2f}% | "
@@ -451,7 +452,7 @@ def main() -> int:
     print(f"RESULTS_JSON={results_path}")
     print(f"SUMMARY_MD={summary_path}")
     print(f"AVG_LATENCY_DELTA_PCT={avg_latency_delta:.2f}")
-    print(f"AVG_TOKEN_DELTA_PCT={avg_token_delta:.2f}")
+    print(f"AVG_INTERNAL_TOKEN_DELTA_PCT={avg_token_delta:.2f}")
     print(f"QUALITY_PASS_RATE={fastpath_summary['quality_pass_rate']:.2f}")
     print(f"BOUNDARY_PASS_RATE={fastpath_summary['boundary_pass_rate']:.2f}")
 
