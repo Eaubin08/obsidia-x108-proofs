@@ -2,14 +2,12 @@ import Obsidia.Peripheral.P88_NonContradiction
 import Obsidia.Peripheral.P36_DomainState
 import Obsidia.Peripheral.P42_SeuilG1
 import Obsidia.Peripheral.DecisionTicket_Formel
-import Obsidia.Peripheral.Omega_Invariants
 import Obsidia.Peripheral.Quintuplet_Formel_O
 import Obsidia.Peripheral.Phi_t_Structure
-import Obsidia.Peripheral.Espace_Etat_StateCore
 import Obsidia.Peripheral.Marge_Securite
 import Obsidia.Peripheral.Cout_Canonique_P161
 import Obsidia.Peripheral.P100_LyapunovDecroissance
 import Obsidia.Peripheral.M1_Sigma_Proprietes
-import Obsidia.Peripheral.Lyapunov_5termes
+import Obsidia.Peripheral.Lyapunov_Complet_5termes
 import Obsidia.Peripheral.Gouvernance_ExAnte
 import Obsidia.Peripheral.Algorithme_Balance
