@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import math
@@ -43,6 +43,47 @@ def read_json(path: str) -> Any:
         return json.loads(p.read_text(encoding="utf-8", errors="replace"))
     except Exception:
         return None
+
+
+def request_text(method: str, url: str, timeout: float = 20.0) -> dict[str, Any]:
+    headers = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
+    req = urllib.request.Request(url=url, data=None, method=method, headers=headers)
+    started = time.perf_counter()
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read()
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            text = raw.decode("utf-8", errors="replace")
+            return {
+                "ok": 200 <= resp.status < 300,
+                "status_code": resp.status,
+                "elapsed_ms": elapsed_ms,
+                "text": text,
+                "parsed": text[:500],
+                "error": "",
+            }
+    except urllib.error.HTTPError as exc:
+        raw = exc.read()
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        text = raw.decode("utf-8", errors="replace") if raw else str(exc)
+        return {
+            "ok": False,
+            "status_code": exc.code,
+            "elapsed_ms": elapsed_ms,
+            "text": text,
+            "parsed": text[:500],
+            "error": f"HTTPError: {exc}",
+        }
+    except Exception as exc:
+        elapsed_ms = (time.perf_counter() - started) * 1000
+        return {
+            "ok": False,
+            "status_code": 0,
+            "elapsed_ms": elapsed_ms,
+            "text": "",
+            "parsed": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
 
 
 def request_json(method: str, url: str, payload: Any | None = None, timeout: float = 20.0) -> dict[str, Any]:
@@ -105,6 +146,16 @@ def compact_text(value: Any, limit: int = 5000) -> str:
     if len(text) > limit:
         return text[:limit] + "\n...TRUNCATED..."
     return text
+
+
+def percentile(values: list[float], pct: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return float(ordered[0])
+    idx = int(round((len(ordered) - 1) * pct))
+    return float(ordered[max(0, min(idx, len(ordered) - 1))])
 
 
 def count_words(text: str, words: list[str]) -> int:
@@ -281,7 +332,7 @@ def main() -> int:
     print(f"BRODY_MEMORY /graph/v20/frozen/status status={all_events[-1]['status']} ms={all_events[-1]['elapsed_ms']:.2f}")
 
     # UI if live.
-    ui_result = request_json("GET", UI, timeout=20.0)
+    ui_result = request_text("GET", UI, timeout=20.0)
     all_events.append(emit_event(
         family="RUNTIME_API",
         route="UI_WORKBENCH_5173",
@@ -372,17 +423,28 @@ def main() -> int:
     for e in all_events:
         fam = e["family"]
         route = e["route"]
-        summary["by_family"].setdefault(fam, {"total": 0, "pass": 0, "fail": 0, "elapsed_ms_total": 0.0, "internal_token_units_total": 0})
-        summary["by_route"].setdefault(route, {"total": 0, "pass": 0, "fail": 0, "elapsed_ms_total": 0.0, "internal_token_units_total": 0})
+        summary["by_family"].setdefault(fam, {"total": 0, "pass": 0, "fail": 0, "elapsed_ms_total": 0.0, "internal_token_units_total": 0, "elapsed_values": []})
+        summary["by_route"].setdefault(route, {"total": 0, "pass": 0, "fail": 0, "elapsed_ms_total": 0.0, "internal_token_units_total": 0, "elapsed_values": []})
 
         for bucket in (summary["by_family"][fam], summary["by_route"][route]):
             bucket["total"] += 1
             bucket["elapsed_ms_total"] += float(e["elapsed_ms"])
             bucket["internal_token_units_total"] += int(e["internal_token_units_total"])
+            bucket["elapsed_values"].append(float(e["elapsed_ms"]))
             if str(e["status"]).startswith("PASS"):
                 bucket["pass"] += 1
             else:
                 bucket["fail"] += 1
+
+    for bucket_group in (summary["by_family"], summary["by_route"]):
+        for data in bucket_group.values():
+            vals = data.get("elapsed_values", [])
+            total = float(data.get("elapsed_ms_total", 0.0))
+            count = int(data.get("total", 0))
+            data["elapsed_ms_avg"] = total / count if count else 0.0
+            data["elapsed_ms_p50"] = percentile(vals, 0.50)
+            data["elapsed_ms_p95"] = percentile(vals, 0.95)
+            data.pop("elapsed_values", None)
 
     (REPORT_DIR / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -396,17 +458,17 @@ def main() -> int:
     lines.append("")
     lines.append("## By route")
     lines.append("")
-    lines.append("| Route | Total | PASS | FAIL | ms total | internal token units |")
-    lines.append("|---|---:|---:|---:|---:|---:|")
+    lines.append("| Route | Total | PASS | FAIL | ms total | avg ms | p50 ms | p95 ms | internal token units |")
+    lines.append("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     for route, data in summary["by_route"].items():
-        lines.append(f"| {route} | {data['total']} | {data['pass']} | {data['fail']} | {data['elapsed_ms_total']:.2f} | {data['internal_token_units_total']} |")
+        lines.append(f"| {route} | {data['total']} | {data['pass']} | {data['fail']} | {data['elapsed_ms_total']:.2f} | {data['elapsed_ms_avg']:.2f} | {data['elapsed_ms_p50']:.2f} | {data['elapsed_ms_p95']:.2f} | {data['internal_token_units_total']} |")
     lines.append("")
     lines.append("## By family")
     lines.append("")
-    lines.append("| Family | Total | PASS | FAIL | ms total | internal token units |")
+    lines.append("| Family | Total | PASS | FAIL | ms total | avg ms | p50 ms | p95 ms | internal token units |")
     lines.append("|---|---:|---:|---:|---:|---:|")
     for fam, data in summary["by_family"].items():
-        lines.append(f"| {fam} | {data['total']} | {data['pass']} | {data['fail']} | {data['elapsed_ms_total']:.2f} | {data['internal_token_units_total']} |")
+        lines.append(f"| {fam} | {data['total']} | {data['pass']} | {data['fail']} | {data['elapsed_ms_total']:.2f} | {data['elapsed_ms_avg']:.2f} | {data['elapsed_ms_p50']:.2f} | {data['elapsed_ms_p95']:.2f} | {data['internal_token_units_total']} |")
     lines.append("")
     (REPORT_DIR / "summary.md").write_text("\n".join(lines), encoding="utf-8")
 
