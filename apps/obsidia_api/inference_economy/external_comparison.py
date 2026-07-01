@@ -1,12 +1,16 @@
-"""OIE V0 External Benchmark -- ExternalComparisonReceipt + route quality evaluator.
+"""OIE V0.2 External Benchmark -- ExternalComparisonReceipt + evaluateurs routing/domain-output.
 
 Mesure comparative entre Obsidia et un provider externe (Claude Code / API).
 Non-souverain : readonly, emits_act=False, kernel_mutation=False.
 Aucune cle API n'est jamais stockee. secrets_redacted=True toujours.
+
+V0.2 : separation routing vs domain-output, estimation tokens locale.
 """
 from __future__ import annotations
 
 import json
+import math
+import os
 import re
 import shutil
 import subprocess
@@ -44,6 +48,13 @@ ERROR_EXTERNAL = "EXTERNAL_ERROR"
 ERROR_USAGE_ONLY = "USAGE_UNAVAILABLE_ONLY"
 
 DOMAIN_ROUTES = {"BANK", "TRADING", "GPS"}
+
+# ── Benchmark kind constants ──────────────────────────────────────────────────
+BENCHMARK_KIND_ROUTING = "ROUTING"
+BENCHMARK_KIND_DOMAIN_OUTPUT = "DOMAIN_OUTPUT"
+
+# ── Domain-output error types ─────────────────────────────────────────────────
+ERROR_LABEL_MISMATCH = "LABEL_MISMATCH"
 
 
 @dataclass
@@ -88,7 +99,10 @@ class ExternalComparisonReceipt:
     external_cost_eur_per_1m_estimate: Optional[float] = None
     cost_source: str = "USAGE_UNAVAILABLE"
 
-    # ── Quality / route evaluation ────────────────────────────────────────────
+    # ── Benchmark kind ────────────────────────────────────────────────────────
+    benchmark_kind: str = BENCHMARK_KIND_ROUTING   # ROUTING | DOMAIN_OUTPUT
+
+    # ── Quality / route evaluation (ROUTING) ──────────────────────────────────
     expected_route: str = ""
     external_detected_route: Optional[str] = None
     route_match: Optional[bool] = None
@@ -97,6 +111,11 @@ class ExternalComparisonReceipt:
     quality_notes: str = ""
     classification_error_type: str = ERROR_USAGE_ONLY
     retries_count: int = 0
+
+    # ── Quality / label evaluation (DOMAIN_OUTPUT) ────────────────────────────
+    expected_labels: Optional[List[str]] = None
+    external_detected_label: Optional[str] = None
+    label_match: Optional[bool] = None
 
     # ── Comparison ────────────────────────────────────────────────────────────
     savings_ratio_vs_external: Optional[float] = None
@@ -333,3 +352,129 @@ def compute_comparison(
     ratio = external_cost_per_1m / obsidia_cost
     avoided = external_cost_per_1m - obsidia_cost
     return ratio, avoided, "MEASURED"
+
+
+# ── Domain-output extractor ───────────────────────────────────────────────────
+
+def extract_domain_output_label(text: str, allowed_labels: List[str]) -> Optional[str]:
+    """Detect a domain-output label (e.g. ALLOW, HOLD, VALID) in external output text.
+
+    Matches longest label first to avoid partial overlap.
+    Returns None if no allowed label is found.
+    """
+    if not text or not allowed_labels:
+        return None
+    text_upper = text.upper()
+    for label in sorted(allowed_labels, key=len, reverse=True):
+        if re.search(r'\b' + re.escape(label.upper()) + r'\b', text_upper):
+            return label.upper()
+    return None
+
+
+# ── Domain-output quality evaluator ──────────────────────────────────────────
+
+def evaluate_domain_output_quality(
+    expected_labels: List[str],
+    external_output: str,
+    external_success: bool,
+) -> dict:
+    """Evaluate whether the external output matches one of the expected domain labels.
+
+    Returns a dict with:
+        external_detected_label, label_match, quality_score,
+        quality_notes, classification_error_type
+    """
+    if not external_success:
+        return {
+            "external_detected_label": None,
+            "label_match": False,
+            "quality_score": 0.0,
+            "quality_notes": "External call failed",
+            "classification_error_type": ERROR_EXTERNAL,
+        }
+
+    detected = extract_domain_output_label(external_output, expected_labels)
+
+    if detected is None:
+        # Try detecting any known-ish label even outside expected_labels
+        return {
+            "external_detected_label": None,
+            "label_match": False,
+            "quality_score": 0.0,
+            "quality_notes": "No domain label found in output",
+            "classification_error_type": ERROR_UNPARSEABLE,
+        }
+
+    if detected in [lbl.upper() for lbl in expected_labels]:
+        return {
+            "external_detected_label": detected,
+            "label_match": True,
+            "quality_score": 1.0,
+            "quality_notes": f"Correct label: {detected}",
+            "classification_error_type": ERROR_NONE,
+        }
+
+    return {
+        "external_detected_label": detected,
+        "label_match": False,
+        "quality_score": 0.3,
+        "quality_notes": f"Label {detected} not in expected {expected_labels}",
+        "classification_error_type": ERROR_LABEL_MISMATCH,
+    }
+
+
+# ── Token estimation (local, no network) ─────────────────────────────────────
+
+def estimate_tokens_from_text(text: str) -> int:
+    """Rough token count estimate: ceil(len(text) / 4).
+
+    Source: CHAR_ESTIMATE. Never presented as a real token count.
+    """
+    return math.ceil(len(text) / 4)
+
+
+def compute_estimated_external_cost(
+    input_text: str,
+    output_text: str,
+    input_cost_per_1m: Optional[float],
+    output_cost_per_1m: Optional[float],
+) -> dict:
+    """Estimate external cost from text lengths and optional price rates.
+
+    Prices come from caller (env vars OIE_EXTERNAL_INPUT_COST_PER_1M /
+    OIE_EXTERNAL_OUTPUT_COST_PER_1M). Never hardcoded here.
+
+    Returns dict with token estimates and cost fields.
+    cost_source = ESTIMATED when prices are provided, USAGE_UNAVAILABLE otherwise.
+    """
+    input_tokens = estimate_tokens_from_text(input_text)
+    output_tokens = estimate_tokens_from_text(output_text)
+    total_tokens = input_tokens + output_tokens
+
+    if input_cost_per_1m is None or output_cost_per_1m is None:
+        return {
+            "input_tokens_estimated": input_tokens,
+            "output_tokens_estimated": output_tokens,
+            "total_tokens_estimated": total_tokens,
+            "estimated_cost_eur": None,
+            "estimated_cost_eur_per_1m": None,
+            "cost_source": "USAGE_UNAVAILABLE",
+        }
+
+    estimated_cost_eur = (
+        input_tokens * input_cost_per_1m / 1_000_000
+        + output_tokens * output_cost_per_1m / 1_000_000
+    )
+    estimated_cost_eur_per_1m = (
+        estimated_cost_eur * 1_000_000 / total_tokens
+        if total_tokens > 0 else None
+    )
+
+    return {
+        "input_tokens_estimated": input_tokens,
+        "output_tokens_estimated": output_tokens,
+        "total_tokens_estimated": total_tokens,
+        "estimated_cost_eur": estimated_cost_eur,
+        "estimated_cost_eur_per_1m": estimated_cost_eur_per_1m,
+        "cost_source": "ESTIMATED",
+    }

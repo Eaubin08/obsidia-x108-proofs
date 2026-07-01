@@ -33,6 +33,10 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     run_claude_cli,
     extract_route_from_output,
     evaluate_route_quality,
+    extract_domain_output_label,
+    evaluate_domain_output_quality,
+    estimate_tokens_from_text,
+    compute_estimated_external_cost,
     READONLY,
     DECISION_AUTHORITY,
     EMITS_ACT,
@@ -49,7 +53,10 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     ERROR_UNPARSEABLE,
     ERROR_EXTERNAL,
     ERROR_USAGE_ONLY,
+    ERROR_LABEL_MISMATCH,
     KNOWN_ROUTES,
+    BENCHMARK_KIND_ROUTING,
+    BENCHMARK_KIND_DOMAIN_OUTPUT,
 )
 
 
@@ -341,7 +348,7 @@ class TestTaskFamilies:
 
     def test_all_tasks_have_expected_route(self):
         mod = self._load_benchmark("fam3")
-        for t in mod.TASKS:
+        for t in mod.ROUTING_TASKS:
             assert t.get("expected_route") in KNOWN_ROUTES, \
                 f"{t['task_id']} has unknown expected_route: {t.get('expected_route')}"
 
@@ -494,3 +501,273 @@ class TestImportSafety:
             )
             mock_run.assert_not_called()
             assert r.external_network_allowed is False
+
+
+# ── V0.2 : Task list structure ────────────────────────────────────────────────
+
+class TestV02TaskLists:
+    def _load(self, name="v02_tasks"):
+        import importlib.util
+        script = Path(__file__).resolve().parents[1] / "scripts/performance/run_oie_external_claude_benchmark_v0.py"
+        spec = importlib.util.spec_from_file_location(name, script)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_routing_tasks_exists(self):
+        mod = self._load("v02_rt")
+        assert hasattr(mod, "ROUTING_TASKS")
+        assert len(mod.ROUTING_TASKS) > 0
+
+    def test_domain_output_tasks_exists(self):
+        mod = self._load("v02_dt")
+        assert hasattr(mod, "DOMAIN_OUTPUT_TASKS")
+        assert len(mod.DOMAIN_OUTPUT_TASKS) > 0
+
+    def test_tasks_union_is_superset(self):
+        mod = self._load("v02_u")
+        assert len(mod.TASKS) == len(mod.ROUTING_TASKS) + len(mod.DOMAIN_OUTPUT_TASKS)
+
+    def test_routing_tasks_have_expected_route(self):
+        mod = self._load("v02_er")
+        for t in mod.ROUTING_TASKS:
+            assert t.get("expected_route") in KNOWN_ROUTES, \
+                f"{t['task_id']} missing valid expected_route"
+
+    def test_domain_tasks_have_expected_labels(self):
+        mod = self._load("v02_el")
+        for t in mod.DOMAIN_OUTPUT_TASKS:
+            labels = t.get("expected_labels")
+            assert isinstance(labels, list) and len(labels) > 0, \
+                f"{t['task_id']} missing expected_labels"
+
+    def test_routing_tasks_have_routing_kind(self):
+        mod = self._load("v02_rk")
+        for t in mod.ROUTING_TASKS:
+            assert t.get("benchmark_kind") == BENCHMARK_KIND_ROUTING, \
+                f"{t['task_id']} should have benchmark_kind=ROUTING"
+
+    def test_domain_tasks_have_domain_kind(self):
+        mod = self._load("v02_dk")
+        for t in mod.DOMAIN_OUTPUT_TASKS:
+            assert t.get("benchmark_kind") == BENCHMARK_KIND_DOMAIN_OUTPUT, \
+                f"{t['task_id']} should have benchmark_kind=DOMAIN_OUTPUT"
+
+    def test_routing_tasks_have_no_expected_labels(self):
+        mod = self._load("v02_noel")
+        for t in mod.ROUTING_TASKS:
+            assert "expected_labels" not in t or t.get("expected_labels") is None, \
+                f"{t['task_id']} ROUTING task should not have expected_labels"
+
+    def test_domain_tasks_have_no_expected_route(self):
+        mod = self._load("v02_noer")
+        for t in mod.DOMAIN_OUTPUT_TASKS:
+            # domain tasks must not carry expected_route (routing key)
+            assert "expected_route" not in t or t.get("expected_route") in (None, ""), \
+                f"{t['task_id']} DOMAIN task should not have expected_route"
+
+    def test_smoke_task_is_routing(self):
+        mod = self._load("v02_sr")
+        smokes = [t for t in mod.ROUTING_TASKS if t.get("smoke")]
+        assert len(smokes) == 1
+        assert smokes[0]["benchmark_kind"] == BENCHMARK_KIND_ROUTING
+
+    def test_all_routing_tasks_have_prompt_with_route_list(self):
+        mod = self._load("v02_rp")
+        for t in mod.ROUTING_TASKS:
+            assert "FAST_PATH" in t["task_prompt"], \
+                f"{t['task_id']} routing prompt must include FAST_PATH in label list"
+
+
+# ── V0.2 : extract_domain_output_label ───────────────────────────────────────
+
+class TestExtractDomainOutputLabel:
+    BANK_LABELS = ["ALLOW", "HOLD", "BLOCK"]
+    TRADING_LABELS = ["VALID", "HOLD_RISK", "BLOCK"]
+
+    def test_detects_allow(self):
+        assert extract_domain_output_label("The decision is ALLOW.", self.BANK_LABELS) == "ALLOW"
+
+    def test_detects_hold(self):
+        assert extract_domain_output_label("Output: HOLD", self.BANK_LABELS) == "HOLD"
+
+    def test_detects_block(self):
+        assert extract_domain_output_label("Answer: BLOCK", self.BANK_LABELS) == "BLOCK"
+
+    def test_detects_valid(self):
+        assert extract_domain_output_label("VALID", self.TRADING_LABELS) == "VALID"
+
+    def test_detects_hold_risk(self):
+        assert extract_domain_output_label("I recommend HOLD_RISK here.", self.TRADING_LABELS) == "HOLD_RISK"
+
+    def test_returns_none_for_empty(self):
+        assert extract_domain_output_label("", self.BANK_LABELS) is None
+
+    def test_returns_none_for_no_match(self):
+        assert extract_domain_output_label("nothing useful", self.BANK_LABELS) is None
+
+    def test_case_insensitive(self):
+        assert extract_domain_output_label("allow", self.BANK_LABELS) == "ALLOW"
+
+    def test_returns_none_for_label_not_in_allowed(self):
+        assert extract_domain_output_label("VALID", self.BANK_LABELS) is None
+
+    def test_longest_label_wins(self):
+        # HOLD_RISK contains HOLD — should return HOLD_RISK when both allowed
+        labels = ["HOLD", "HOLD_RISK"]
+        assert extract_domain_output_label("HOLD_RISK", labels) == "HOLD_RISK"
+
+
+# ── V0.2 : evaluate_domain_output_quality ────────────────────────────────────
+
+class TestEvaluateDomainOutputQuality:
+    BANK_LABELS = ["ALLOW", "HOLD", "BLOCK"]
+
+    def test_label_match(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "ALLOW", True)
+        assert q["label_match"] is True
+        assert q["quality_score"] == 1.0
+        assert q["classification_error_type"] == ERROR_NONE
+        assert q["external_detected_label"] == "ALLOW"
+
+    def test_label_match_hold(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "The decision: HOLD", True)
+        assert q["label_match"] is True
+        assert q["quality_score"] == 1.0
+
+    def test_unparseable_output(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "I am not sure what to say", True)
+        assert q["label_match"] is False
+        assert q["quality_score"] == 0.0
+        assert q["classification_error_type"] == ERROR_UNPARSEABLE
+        assert q["external_detected_label"] is None
+
+    def test_external_error(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "ALLOW", False)
+        assert q["label_match"] is False
+        assert q["quality_score"] == 0.0
+        assert q["classification_error_type"] == ERROR_EXTERNAL
+        assert q["external_detected_label"] is None
+
+    def test_external_error_empty(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "", False)
+        assert q["classification_error_type"] == ERROR_EXTERNAL
+
+    def test_no_secret_in_result(self):
+        q = evaluate_domain_output_quality(self.BANK_LABELS, "ALLOW", True)
+        for key in q:
+            assert "api_key" not in key.lower()
+            assert "secret" not in key.lower()
+
+
+# ── V0.2 : estimate_tokens_from_text ─────────────────────────────────────────
+
+class TestEstimateTokens:
+    def test_empty_string(self):
+        assert estimate_tokens_from_text("") == 0
+
+    def test_four_chars(self):
+        assert estimate_tokens_from_text("abcd") == 1
+
+    def test_five_chars_rounds_up(self):
+        assert estimate_tokens_from_text("abcde") == 2
+
+    def test_longer_text(self):
+        text = "a" * 100
+        assert estimate_tokens_from_text(text) == 25
+
+    def test_uneven_rounds_up(self):
+        assert estimate_tokens_from_text("abc") == 1  # ceil(3/4) = 1
+
+    def test_result_is_int(self):
+        assert isinstance(estimate_tokens_from_text("hello world"), int)
+
+
+# ── V0.2 : compute_estimated_external_cost ───────────────────────────────────
+
+class TestComputeEstimatedExternalCost:
+    def test_usage_unavailable_without_prices(self):
+        r = compute_estimated_external_cost("hello", "world", None, None)
+        assert r["cost_source"] == "USAGE_UNAVAILABLE"
+        assert r["estimated_cost_eur"] is None
+        assert r["estimated_cost_eur_per_1m"] is None
+
+    def test_usage_unavailable_input_only(self):
+        r = compute_estimated_external_cost("hello", "world", 3.0, None)
+        assert r["cost_source"] == "USAGE_UNAVAILABLE"
+
+    def test_estimated_with_prices(self):
+        r = compute_estimated_external_cost("hello", "world", 3.0, 15.0)
+        assert r["cost_source"] == "ESTIMATED"
+        assert r["estimated_cost_eur"] is not None
+        assert r["estimated_cost_eur"] > 0
+
+    def test_token_counts_present(self):
+        r = compute_estimated_external_cost("abcd", "efgh", 3.0, 15.0)
+        assert r["input_tokens_estimated"] == 1
+        assert r["output_tokens_estimated"] == 1
+        assert r["total_tokens_estimated"] == 2
+
+    def test_estimated_cost_per_1m_present(self):
+        r = compute_estimated_external_cost("hello world", "ok", 3.0, 15.0)
+        assert r["estimated_cost_eur_per_1m"] is not None
+
+    def test_no_price_hardcoded(self):
+        import inspect
+        import apps.obsidia_api.inference_economy.external_comparison as mod
+        src = inspect.getsource(mod.compute_estimated_external_cost)
+        # Ensure no hardcoded price like 3.0, 15.0, 0.002, etc inside function body
+        assert "25000" not in src, "Do not hardcode BT_API_NORMAL in cost estimator"
+
+
+# ── V0.2 : Receipt fields ─────────────────────────────────────────────────────
+
+class TestReceiptV02Fields:
+    def test_benchmark_kind_default_routing(self):
+        r = ExternalComparisonReceipt()
+        assert r.benchmark_kind == BENCHMARK_KIND_ROUTING
+
+    def test_benchmark_kind_domain_output(self):
+        r = ExternalComparisonReceipt(benchmark_kind=BENCHMARK_KIND_DOMAIN_OUTPUT)
+        assert r.benchmark_kind == BENCHMARK_KIND_DOMAIN_OUTPUT
+
+    def test_expected_labels_default_none(self):
+        r = ExternalComparisonReceipt()
+        assert r.expected_labels is None
+
+    def test_expected_labels_set(self):
+        r = ExternalComparisonReceipt(expected_labels=["ALLOW", "HOLD", "BLOCK"])
+        assert r.expected_labels == ["ALLOW", "HOLD", "BLOCK"]
+
+    def test_external_detected_label_default_none(self):
+        r = ExternalComparisonReceipt()
+        assert r.external_detected_label is None
+
+    def test_label_match_default_none(self):
+        r = ExternalComparisonReceipt()
+        assert r.label_match is None
+
+    def test_benchmark_kind_in_json(self):
+        r = ExternalComparisonReceipt(benchmark_kind=BENCHMARK_KIND_DOMAIN_OUTPUT)
+        parsed = json.loads(r.to_json())
+        assert parsed["benchmark_kind"] == BENCHMARK_KIND_DOMAIN_OUTPUT
+
+    def test_domain_fields_in_json(self):
+        r = ExternalComparisonReceipt(
+            benchmark_kind=BENCHMARK_KIND_DOMAIN_OUTPUT,
+            expected_labels=["ALLOW", "BLOCK"],
+            external_detected_label="ALLOW",
+            label_match=True,
+        )
+        parsed = json.loads(r.to_json())
+        assert parsed["expected_labels"] == ["ALLOW", "BLOCK"]
+        assert parsed["external_detected_label"] == "ALLOW"
+        assert parsed["label_match"] is True
+
+    def test_governance_immutable_with_domain_kind(self):
+        r = ExternalComparisonReceipt(
+            benchmark_kind=BENCHMARK_KIND_DOMAIN_OUTPUT,
+            emits_act=True,
+        )
+        assert r.emits_act is False
+        assert r.benchmark_kind == BENCHMARK_KIND_DOMAIN_OUTPUT

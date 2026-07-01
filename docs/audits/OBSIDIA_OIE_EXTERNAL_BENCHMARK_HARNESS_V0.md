@@ -205,3 +205,121 @@ docs/audits/
 - `decision_authority = KX108_ONLY` : le kernel X-108 reste l'unique autorite.
 - Le harness ne peut pas declencher d'action sur les systemes Obsidia.
 - Il mesure et rapporte. C'est tout.
+
+---
+
+## 11. V0.2 — Separation routing / domain-output et strategie cout token
+
+### 11.1 Pourquoi le raw benchmark 8c724df n'est pas un benchmark final
+
+Le commit 8c724df (full run Claude, 7 familles) a revele deux problemes structurels :
+
+**Probleme 1 — Melange routing et sortie metier.**
+Le benchmark V0 evaluait des taches metier (bank : ALLOW/HOLD/BLOCK, trading : VALID/HOLD_RISK)
+avec l'evaluateur routing qui cherche FAST_PATH/BRODY/BANK/etc. Ces prompts ne demandaient pas
+une route — ils demandaient une decision metier. Le "mismatch" observe (5/7) etait en partie
+du a ce mauvais couplage prompt/evaluateur, pas a une vraie erreur de routage.
+
+**Probleme 2 — Usage absent.**
+Claude Code CLI ne retourne pas les compteurs de tokens dans stdout. `usage_available=0/7` signifie
+que le cout reel est inconnu. Les comparaisons de ratio cout sont inutilisables sans usage tokens.
+
+Resultat brut 8c724df :
+
+```
+external_success = 7/7
+route_match      = 2/7    <- chiffre non representatif (melange routing+metier)
+avg_quality      = 0.3571 <- melange des deux evaluateurs
+usage_available  = 0/7    <- cout reel indisponible via CLI
+```
+
+Ce chiffre ne doit pas etre presente comme un benchmark final.
+
+### 11.2 Separation V0.2 : ROUTING_TASKS vs DOMAIN_OUTPUT_TASKS
+
+V0.2 separe strictement les deux dimensions :
+
+**ROUTING_TASKS (7 taches)**
+- Chaque prompt demande explicitement "Return only one route label from this list: FAST_PATH, BRODY, BANK, TRADING, GPS, OBSIDURE."
+- Evalue par `evaluate_route_quality` (detect route, OVER/UNDER routing, MISMATCH)
+- Champ : `expected_route`, `external_detected_route`, `route_match`
+- `benchmark_kind = ROUTING`
+
+**DOMAIN_OUTPUT_TASKS (6 taches)**
+- Chaque prompt demande une sortie metier specifique : ALLOW/HOLD/BLOCK, VALID/HOLD_RISK, PATCH_OK/FAIL, PROOF_OK/FAIL, ANSWER_OK/FAIL
+- Evalue par `evaluate_domain_output_quality` (detect label dans liste autorisee)
+- Champ : `expected_labels`, `external_detected_label`, `label_match`
+- `benchmark_kind = DOMAIN_OUTPUT`
+
+Un receipt ROUTING ne porte pas `expected_labels`. Un receipt DOMAIN_OUTPUT ne porte pas `expected_route`. Les deux evaluateurs ne se melangent jamais.
+
+### 11.3 Cout reel indisponible via Claude Code CLI
+
+Claude Code CLI (`claude -p`) ne retourne pas les compteurs de tokens dans stdout.
+Par consequent :
+
+- `external_usage_available = False` pour tous les receipts CLI
+- `savings_ratio_vs_external = None`
+- `avoided_cost_eur_per_1m = None`
+- `cost_source = USAGE_UNAVAILABLE`
+
+**Regle : ne jamais comparer cout final si `cost_source = USAGE_UNAVAILABLE`.**
+Un ratio de cout calcule sans usage reel est trompeur.
+
+### 11.4 Estimation token locale (CHAR_ESTIMATE)
+
+En l'absence d'usage reel, V0.2 propose une estimation locale :
+
+```
+estimate_tokens_from_text(text) -> int
+  = ceil(len(text) / 4)
+  source = CHAR_ESTIMATE
+```
+
+Cette estimation est approximative et sert uniquement au pre-budgeting.
+Elle ne remplace pas un comptage reel via SDK.
+
+`compute_estimated_external_cost(input_text, output_text, input_cost_per_1m, output_cost_per_1m)`
+retourne `cost_source = ESTIMATED` si les prix sont fournis, `USAGE_UNAVAILABLE` sinon.
+Les prix viennent exclusivement des variables d'environnement — jamais hardcodes dans le code.
+
+### 11.5 Usage reel futur via SDK/API
+
+Pour obtenir le cout reel, il faut utiliser le SDK Anthropic directement (pas le CLI) :
+
+1. Appeler l'API avec le SDK Python (`anthropic.Anthropic()`)
+2. Lire `response.usage.input_tokens` et `response.usage.output_tokens`
+3. Calculer `external_cost_eur_per_1m_estimate` selon la grille tarifaire du modele
+4. Renseigner `cost_source = MEASURED`
+
+Ce flux est hors scope V0.2 (CLI uniquement) et sera ajoute en V1.
+
+### 11.6 Regles d'interpretation
+
+| cost_source | Signification | Comparaison valide ? |
+|---|---|---|
+| `USAGE_UNAVAILABLE` | Pas de donnees usage | **Non** |
+| `CHAR_ESTIMATE` | Estimation locale ceil(len/4) | Non (indicatif seulement) |
+| `ESTIMATED` | Estimation depuis prix env | Avec reserve — marquer comme non-final |
+| `MEASURED` | Usage reel via SDK | **Oui** |
+
+**Regle absolue : `ESTIMATED != MEASURED`.**
+Un rapport de benchmark ne peut presenter de ratio cout comme final que si `cost_source = MEASURED`.
+
+### 11.7 Modes d'execution V0.2
+
+| Variable env | Comportement |
+|---|---|
+| (aucune) | Dry-run, routing smoke uniquement (1 tache) |
+| `OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1` | Routing smoke reel |
+| `OIE_EXTERNAL_BENCHMARK_FULL=1` | Routing full (7 taches) |
+| `OIE_EXTERNAL_BENCHMARK_DOMAIN=1` | Domain output benchmark (6 taches) |
+| `OIE_EXTERNAL_COST_ESTIMATE=1` | Active estimation cout si prix fournis |
+
+Prix optionnels (ne jamais committer) :
+
+```powershell
+$env:OIE_EXTERNAL_INPUT_COST_PER_1M  = "3.0"   # EUR / 1M tokens input
+$env:OIE_EXTERNAL_OUTPUT_COST_PER_1M = "15.0"  # EUR / 1M tokens output
+$env:OIE_EXTERNAL_MODEL_LABEL        = "claude-sonnet-4"
+```
