@@ -473,3 +473,73 @@ def test_cs_c_lean_compiles() -> None:
         f"lake env lean C echec (rc={result.returncode}):\n"
         f"stderr: {result.stderr[:400]}"
     )
+
+
+# ===========================================================================
+# Groupe 9 — Alignement classifier : CODE_SURVEILLANCE_EXPLICIT > BOUNDARY
+# Non-regression BOUNDARY_NON_SOVEREIGNTY
+# ===========================================================================
+
+# Objectif C tel qu'utilise dans le proposal reel (contient KX108_ONLY)
+_OBJ_CS_C_KX108 = (
+    "LEAN_SANDBOX. Fichier cible : "
+    "periphery/lean_sandbox/P_ProtectedRuntimeMutation_Blocked.lean. "
+    "Theoreme cible : P_ProtectedRuntimeMutation_Blocked. "
+    "Objectif : mutation runtime/kernel protegee bloquee par surveillance code. "
+    "Termes critiques : protected infix, runtime mutation=false, kernel mutation=false, "
+    "KX108_ONLY, no memory write. "
+    "Aucun apply. Aucun commit. Aucun sorry/admit/axiom/unsafe."
+)
+
+# Objectif BOUNDARY avec KX108 — non-regression
+_OBJ_BOUNDARY_FULL = (
+    "LEAN_SANDBOX. Fichier cible : "
+    "periphery/lean_sandbox/P_ObsidureBoundary_NonDecision.lean. "
+    "Theoreme cible : P_ObsidureBoundary_NonDecision. "
+    "Termes critiques : Boundary, NonDecision, allowed_to_decide=false, "
+    "emits_act=false, kernel_mutation=false, KX108_ONLY."
+)
+
+
+def test_cs_c_kx108_classify_code_surveillance() -> None:
+    """P_ProtectedRuntimeMutation_Blocked avec KX108_ONLY doit rester CODE_SURVEILLANCE.
+
+    Regression apres OBSIDURE_CODE_SURVEILLANCE_CLASSIFIER_ALIGNMENT_V1 :
+    l'ID explicite doit prendre la priorite sur le terme generique KX108.
+    """
+    cap = _classify_lean_capability(_OBJ_CS_C_KX108)
+    assert cap["lean_capability_class"] == "CODE_SURVEILLANCE", (
+        f"Attendu CODE_SURVEILLANCE meme avec KX108_ONLY, "
+        f"obtenu {cap['lean_capability_class']}"
+    )
+    assert cap["confidence"] == "HIGH", (
+        f"Attendu HIGH, obtenu {cap['confidence']}"
+    )
+    assert cap["recommended_strategy_family"] == "CODE_SURVEILLANCE_TEMPLATE", (
+        f"Attendu CODE_SURVEILLANCE_TEMPLATE, "
+        f"obtenu {cap['recommended_strategy_family']}"
+    )
+
+
+def test_cs_c_kx108_is_code_surveillance_not_boundary() -> None:
+    """_is_code_surveillance_objective doit etre True, _is_boundary_objective False."""
+    assert _is_code_surveillance_objective(_OBJ_CS_C_KX108) is True
+    assert _is_boundary_objective(_OBJ_CS_C_KX108) is False
+
+
+def test_boundary_non_regression_with_kx108() -> None:
+    """P_ObsidureBoundary_NonDecision avec Boundary/KX108/NonDecision doit rester
+    NON_SOVEREIGNTY ou BOUNDARY avec strategie BOUNDARY_NON_SOVEREIGNTY.
+
+    Verifie que la correction CLASSIFIER_ALIGNMENT_V1 n'affaiblit pas la detection
+    des theoremes boundary existants.
+    """
+    cap = _classify_lean_capability(_OBJ_BOUNDARY_FULL)
+    assert cap["lean_capability_class"] in ("NON_SOVEREIGNTY", "BOUNDARY"), (
+        f"Attendu NON_SOVEREIGNTY ou BOUNDARY, "
+        f"obtenu {cap['lean_capability_class']}"
+    )
+    assert cap["recommended_strategy_family"] == "BOUNDARY_NON_SOVEREIGNTY", (
+        f"Attendu BOUNDARY_NON_SOVEREIGNTY, "
+        f"obtenu {cap['recommended_strategy_family']}"
+    )

@@ -2309,11 +2309,14 @@ def _classify_lean_capability(
     # Hits explicites CODE_SURVEILLANCE (nom de théorème présent verbatim)
     cs_explicit_hits = [e for e in _CODE_SURVEILLANCE_EXPLICIT_IDS if e in objective]
 
-    # Priorité : NON_SOVEREIGNTY > BOUNDARY > CODE_SURVEILLANCE_EXPLICIT >
+    # Priorité : NON_SOVEREIGNTY > CODE_SURVEILLANCE_EXPLICIT > BOUNDARY >
     #            MEMORY_INVARIANT > DOMAIN_KERNEL_INVARIANT >
     #            CODE_SURVEILLANCE_GENERAL > ARITHMETIC > PROPOSITIONAL > UNKNOWN
-    # Note : cs_explicit_hits permet aux théorèmes nommés de passer avant
-    # MEMORY_INVARIANT même si l'objectif contient "memory_write".
+    # cs_explicit_hits est évalué AVANT BOUNDARY : un théorème nommé explicitement
+    # (P_ProtectedRuntimeMutation_Blocked, etc.) ne doit pas être capturé par
+    # BOUNDARY simplement parce que l'objectif contient "KX108" ou "KX108_ONLY".
+    # NON_SOVEREIGNTY garde la priorité absolue (NonDecision/emits_act/etc. sont
+    # des marqueurs de souveraineté, jamais présents dans un objectif code surveillance).
     if ns_hits:
         lean_class = "NON_SOVEREIGNTY"
         signals += [f"ns_term:{t}" for t in ns_hits]
@@ -2324,14 +2327,6 @@ def _classify_lean_capability(
         requires_human = True
         strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
         confidence = "HIGH" if len(ns_hits) >= 2 else "MEDIUM"
-    elif bd_hits:
-        lean_class = "BOUNDARY"
-        signals += [f"bd_term:{t}" for t in bd_hits]
-        can_generate = False
-        requires_tmpl = True
-        requires_human = True
-        strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
-        confidence = "MEDIUM"
     elif cs_explicit_hits:
         lean_class = "CODE_SURVEILLANCE"
         signals += [f"cs_explicit:{e}" for e in cs_explicit_hits]
@@ -2340,6 +2335,14 @@ def _classify_lean_capability(
         requires_human = True
         strategy_family = "CODE_SURVEILLANCE_TEMPLATE"
         confidence = "HIGH"
+    elif bd_hits:
+        lean_class = "BOUNDARY"
+        signals += [f"bd_term:{t}" for t in bd_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
+        confidence = "MEDIUM"
     elif mem_hits:
         lean_class = "MEMORY_INVARIANT"
         signals += [f"mem_term:{t}" for t in mem_hits]
