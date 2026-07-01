@@ -771,6 +771,23 @@ _LEAN_STRATEGY_PROGRESSION: Tuple[str, ...] = (
     "MINIMAL_RFL",     # T5 : preuve minimaliste rfl / norm_num
 )
 
+_BOUNDARY_OBJECTIVE_TERMS: Tuple[str, ...] = (
+    "P_ObsidureBoundary_NonDecision",
+    "NonDecision",
+    "NonSovereignty",
+    "allowed_to_decide",
+    "emits_act",
+    "Boundary",
+    "KX108",
+)
+
+
+def _is_boundary_objective(objective: str) -> bool:
+    """Vrai si l'objectif cible un théorème de non-souveraineté/boundary."""
+    if "P_ObsidureBoundary_NonDecision" in objective:
+        return True
+    return sum(1 for t in _BOUNDARY_OBJECTIVE_TERMS if t in objective) >= 2
+
 
 # ===========================================================================
 # 4b.  ERROR ANALYZER — cerveau réflexif de la boucle de stabilisation
@@ -1234,12 +1251,16 @@ class LeanMutationEngine:
         La stratégie est déterminée par le dernier ErrorContext LEAN_BUILD_ERROR.
         Si aucun échec Lean précédent → SEMANTIC (premier essai sémantique).
         """
-        lean_ctxs = [c for c in error_contexts if c.error_type == "LEAN_BUILD_ERROR"]
-        if lean_ctxs:
-            strategy = lean_ctxs[-1].recommended_strategy
+        # Priorité : BOUNDARY_NON_SOVEREIGNTY pour objectifs non-souveraineté/boundary
+        if _is_boundary_objective(objective):
+            strategy = "BOUNDARY_NON_SOVEREIGNTY"
         else:
-            idx = min(attempt - 1, len(_LEAN_STRATEGY_PROGRESSION) - 1)
-            strategy = _LEAN_STRATEGY_PROGRESSION[max(0, idx)]
+            lean_ctxs = [c for c in error_contexts if c.error_type == "LEAN_BUILD_ERROR"]
+            if lean_ctxs:
+                strategy = lean_ctxs[-1].recommended_strategy
+            else:
+                idx = min(attempt - 1, len(_LEAN_STRATEGY_PROGRESSION) - 1)
+                strategy = _LEAN_STRATEGY_PROGRESSION[max(0, idx)]
 
         error_trail = self._build_error_trail(error_contexts)
         statement   = self._apply_strategy(theorem_id, objective, strategy, attempt, math_ctx, error_trail)
@@ -1333,6 +1354,45 @@ class LeanMutationEngine:
                 theorem {thname} : ∀ (p : Prop), p → p :=
                   fun _ hp => hp
             """).strip()
+
+        elif strategy == "BOUNDARY_NON_SOVEREIGNTY":
+            # Théorème de non-souveraineté propositionnelle — standalone core Lean 4
+            # Construit sans textwrap.dedent pour garantir indentation colonne 0
+            # attestation_only: True | runtime_bound: False
+            return "\n".join([
+                import_line,
+                "",
+                f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: BOUNDARY_NON_SOVEREIGNTY",
+                f"-- Objectif: {objective[:60]}",
+                "-- attestation_only: True | runtime_bound: False",
+                "",
+                "namespace Obsidia",
+                "namespace ObsidureBoundary",
+                "",
+                "structure BoundaryState where",
+                "  allowed_to_decide      : Bool",
+                "  emits_act              : Bool",
+                "  kernel_mutation        : Bool",
+                "  canonical_memory_write : Bool",
+                "  kx108_only             : Bool",
+                "",
+                "def nonSovereign (s : BoundaryState) : Prop :=",
+                "  s.allowed_to_decide = false ∧",
+                "  s.emits_act = false ∧",
+                "  s.kernel_mutation = false ∧",
+                "  s.canonical_memory_write = false ∧",
+                "  s.kx108_only = true",
+                "",
+                f"theorem {theorem_id}",
+                "    (s : BoundaryState)",
+                "    (h : nonSovereign s) :",
+                "    s.allowed_to_decide = false ∧ s.emits_act = false := by",
+                "  unfold nonSovereign at h",
+                "  exact ⟨h.1, h.2.1⟩",
+                "",
+                "end ObsidureBoundary",
+                "end Obsidia",
+            ])
 
         else:  # MINIMAL_RFL — dernier recours, jamais sorry
             return textwrap.dedent(f"""
@@ -1518,7 +1578,14 @@ def generate_patches(
         explicit_path = _extract_target_path_from_objective(objective)
         explicit_stmt = _extract_explicit_lean_statement(objective)
 
-        theorem_id  = explicit_id or f"P{_next_peripheral_theorem_id()}"
+        # Priorité : ID numérique explicite → stem path pour boundary → auto-incrémenteur
+        # Le stem du path (ex. P_ObsidureBoundary_NonDecision) évite les collisions P38
+        if explicit_id:
+            theorem_id = explicit_id
+        elif explicit_path and _is_boundary_objective(objective):
+            theorem_id = Path(explicit_path).stem
+        else:
+            theorem_id = f"P{_next_peripheral_theorem_id()}"
         patch_path  = explicit_path or f"proofs/lean/peripheral/{theorem_id}.lean"
 
         # Garde target_exact : si l'objectif demande un chemin hors periphery/lean_sandbox
@@ -1586,14 +1653,19 @@ def generate_patches(
                     lean_result["attempt"]       = attempt
                     lean_result["strategy_used"] = (
                         "EXPLICIT_OBJECTIVE" if explicit_stmt
-                        else (error_contexts[-1].recommended_strategy if error_contexts else "SEMANTIC")
+                        else (error_contexts[-1].recommended_strategy if error_contexts
+                              else ("BOUNDARY_NON_SOVEREIGNTY" if _is_boundary_objective(objective) else "SEMANTIC"))
                     )
                     patches.append({
                         "path": patch_path,
                         "action": "CREATE_LEAN_PERIPHERAL",
                         "diff_summary": (
-                            f"Théorème {theorem_id} (T{attempt}) — "
-                            f"stratégie {lean_result['strategy_used']} — sans sorry."
+                            f"Théorème {theorem_id} — stratégie BOUNDARY_NON_SOVEREIGNTY — sans sorry."
+                            if lean_result.get("strategy_used") == "BOUNDARY_NON_SOVEREIGNTY"
+                            else (
+                                f"Théorème {theorem_id} (T{attempt}) — "
+                                f"stratégie {lean_result['strategy_used']} — sans sorry."
+                            )
                         ),
                         "rationale": objective[:150],
                         "domain": "LEAN",
