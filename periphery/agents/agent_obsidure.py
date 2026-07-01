@@ -847,6 +847,41 @@ def _is_memory_invariant_objective(objective: str) -> bool:
     return sum(1 for t in _MEMORY_INVARIANT_OBJECTIVE_TERMS if t in objective) >= 2
 
 
+_DOMAIN_KERNEL_INVARIANT_OBJECTIVE_TERMS: Tuple[str, ...] = (
+    "P_DomainKernel_EntropyRisk_RequiresHold",
+    "P_DomainKernel_PathFidelity_RequiresCoherence",
+    "P_DomainKernel_SignedReceipt_KX108Only",
+    "entropy",
+    "entropy_risk",
+    "HOLD",
+    "hold_required",
+    "path_fidelity",
+    "path_fidelity_ok",
+    "coherence",
+    "coherence_ok",
+    "trajectory",
+    "trajectory_admissible",
+    "signed_decision_receipt",
+    "decision_receipt",
+    "KX108_ONLY",
+    "domain kernel invariant",
+)
+
+_DOMAIN_KERNEL_INVARIANT_EXPLICIT_IDS: Tuple[str, ...] = (
+    "P_DomainKernel_EntropyRisk_RequiresHold",
+    "P_DomainKernel_PathFidelity_RequiresCoherence",
+    "P_DomainKernel_SignedReceipt_KX108Only",
+)
+
+
+def _is_domain_kernel_invariant_objective(objective: str) -> bool:
+    """Vrai si l'objectif cible un théorème d'invariant domaine-kernel."""
+    for explicit_id in _DOMAIN_KERNEL_INVARIANT_EXPLICIT_IDS:
+        if explicit_id in objective:
+            return True
+    return sum(1 for t in _DOMAIN_KERNEL_INVARIANT_OBJECTIVE_TERMS if t in objective) >= 2
+
+
 # ===========================================================================
 # 4b.  ERROR ANALYZER — cerveau réflexif de la boucle de stabilisation
 # ===========================================================================
@@ -1312,12 +1347,15 @@ class LeanMutationEngine:
         # Priorité 1 : BOUNDARY_NON_SOVEREIGNTY pour objectifs non-souveraineté/boundary
         # Priorité 2 : CODE_SURVEILLANCE_TEMPLATE pour objectifs surveillance code
         # Priorité 3 : MEMORY_INVARIANT_TEMPLATE pour objectifs invariant mémoire
+        # Priorité 4 : DOMAIN_KERNEL_INVARIANT_TEMPLATE pour objectifs domaine-kernel
         if _is_boundary_objective(objective):
             strategy = "BOUNDARY_NON_SOVEREIGNTY"
         elif _is_code_surveillance_objective(objective):
             strategy = "CODE_SURVEILLANCE_TEMPLATE"
         elif _is_memory_invariant_objective(objective):
             strategy = "MEMORY_INVARIANT_TEMPLATE"
+        elif _is_domain_kernel_invariant_objective(objective):
+            strategy = "DOMAIN_KERNEL_INVARIANT_TEMPLATE"
         else:
             lean_ctxs = [c for c in error_contexts if c.error_type == "LEAN_BUILD_ERROR"]
             if lean_ctxs:
@@ -1625,6 +1663,89 @@ class LeanMutationEngine:
             ]
             return "\n".join(mi_common_lines + mi_proof_lines + mi_footer_lines)
 
+        elif strategy == "DOMAIN_KERNEL_INVARIANT_TEMPLATE":
+            # Théorèmes d'invariant domaine-kernel — standalone core Lean 4
+            # Dispatch par theorem_id pour les 3 théorèmes V1
+            # Construit sans textwrap.dedent pour garantir indentation colonne 0
+            dk_common_lines = [
+                import_line,
+                "",
+                f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: DOMAIN_KERNEL_INVARIANT_TEMPLATE",
+                f"-- Objectif: {objective[:60]}",
+                "-- decision_authority: KX108_ONLY | trajectory_admissible: True",
+                "",
+                "namespace Obsidia",
+                "namespace ObsidureDomainKernel",
+                "",
+                "structure DomainKernelState where",
+                "  entropy_risk            : Bool",
+                "  hold_required           : Bool",
+                "  path_fidelity_ok        : Bool",
+                "  coherence_ok            : Bool",
+                "  signed_decision_receipt : Bool",
+                "  kx108_only              : Bool",
+                "",
+                "def entropyRiskRequiresHold (s : DomainKernelState) : Prop :=",
+                "  s.entropy_risk = true → s.hold_required = true",
+                "",
+                "def pathFidelityRequiresCoherence (s : DomainKernelState) : Prop :=",
+                "  s.path_fidelity_ok = true → s.coherence_ok = true",
+                "",
+                "def signedReceiptKX108Only (s : DomainKernelState) : Prop :=",
+                "  s.signed_decision_receipt = true → s.kx108_only = true",
+            ]
+            if theorem_id == "P_DomainKernel_EntropyRisk_RequiresHold":
+                dk_proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (s : DomainKernelState)",
+                    "    (h : entropyRiskRequiresHold s)",
+                    "    (hr : s.entropy_risk = true) :",
+                    "    s.hold_required = true := by",
+                    "  unfold entropyRiskRequiresHold at h",
+                    "  exact h hr",
+                ]
+            elif theorem_id == "P_DomainKernel_PathFidelity_RequiresCoherence":
+                dk_proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (s : DomainKernelState)",
+                    "    (h : pathFidelityRequiresCoherence s)",
+                    "    (hp : s.path_fidelity_ok = true) :",
+                    "    s.coherence_ok = true := by",
+                    "  unfold pathFidelityRequiresCoherence at h",
+                    "  exact h hp",
+                ]
+            elif theorem_id == "P_DomainKernel_SignedReceipt_KX108Only":
+                dk_proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (s : DomainKernelState)",
+                    "    (h : signedReceiptKX108Only s)",
+                    "    (hs : s.signed_decision_receipt = true) :",
+                    "    s.kx108_only = true := by",
+                    "  unfold signedReceiptKX108Only at h",
+                    "  exact h hs",
+                ]
+            else:
+                # Fallback générique DOMAIN_KERNEL_INVARIANT sans marqueur P38
+                dk_proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (s : DomainKernelState)",
+                    "    (h : entropyRiskRequiresHold s)",
+                    "    (hr : s.entropy_risk = true) :",
+                    "    s.hold_required = true := by",
+                    "  unfold entropyRiskRequiresHold at h",
+                    "  exact h hr",
+                ]
+            dk_footer_lines = [
+                "",
+                "end ObsidureDomainKernel",
+                "end Obsidia",
+            ]
+            return "\n".join(dk_common_lines + dk_proof_lines + dk_footer_lines)
+
         else:  # MINIMAL_RFL — dernier recours, jamais sorry
             return textwrap.dedent(f"""
                 {import_line}
@@ -1817,6 +1938,7 @@ def generate_patches(
             _is_boundary_objective(objective)
             or _is_code_surveillance_objective(objective)
             or _is_memory_invariant_objective(objective)
+            or _is_domain_kernel_invariant_objective(objective)
         ):
             theorem_id = Path(explicit_path).stem
         else:
@@ -1893,7 +2015,8 @@ def generate_patches(
                                   "BOUNDARY_NON_SOVEREIGNTY" if _is_boundary_objective(objective)
                                   else ("CODE_SURVEILLANCE_TEMPLATE" if _is_code_surveillance_objective(objective)
                                         else ("MEMORY_INVARIANT_TEMPLATE" if _is_memory_invariant_objective(objective)
-                                              else "SEMANTIC"))
+                                              else ("DOMAIN_KERNEL_INVARIANT_TEMPLATE" if _is_domain_kernel_invariant_objective(objective)
+                                                    else "SEMANTIC")))
                               ))
                     )
                     _strat_used = lean_result.get("strategy_used", "SEMANTIC")
@@ -1901,6 +2024,7 @@ def generate_patches(
                         "BOUNDARY_NON_SOVEREIGNTY",
                         "CODE_SURVEILLANCE_TEMPLATE",
                         "MEMORY_INVARIANT_TEMPLATE",
+                        "DOMAIN_KERNEL_INVARIANT_TEMPLATE",
                     ):
                         _diff_summary = f"Théorème {theorem_id} — stratégie {_strat_used} — sans sorry."
                     else:
@@ -2427,18 +2551,19 @@ def _classify_lean_capability(
     cs_hits = _hits(_LC_CODE_SURVEILLANCE)
     ar_hits = _hits(_LC_ARITHMETIC)
     pr_hits = _hits(_LC_PROPOSITIONAL)
-    # Hits explicites CODE_SURVEILLANCE (nom de théorème présent verbatim)
+    # Hits explicites CODE_SURVEILLANCE / MEMORY_INVARIANT / DOMAIN_KERNEL_INVARIANT
     cs_explicit_hits = [e for e in _CODE_SURVEILLANCE_EXPLICIT_IDS if e in objective]
     mi_explicit_hits = [e for e in _MEMORY_INVARIANT_EXPLICIT_IDS if e in objective]
+    dk_explicit_hits = [e for e in _DOMAIN_KERNEL_INVARIANT_EXPLICIT_IDS if e in objective]
 
-    # Priorité : NON_SOVEREIGNTY > CODE_SURVEILLANCE_EXPLICIT > MEMORY_INVARIANT_EXPLICIT > BOUNDARY >
+    # Priorité : NON_SOVEREIGNTY > CODE_SURVEILLANCE_EXPLICIT > MEMORY_INVARIANT_EXPLICIT >
+    #            DOMAIN_KERNEL_INVARIANT_EXPLICIT > BOUNDARY >
     #            MEMORY_INVARIANT > DOMAIN_KERNEL_INVARIANT >
     #            CODE_SURVEILLANCE_GENERAL > ARITHMETIC > PROPOSITIONAL > UNKNOWN
-    # cs_explicit_hits est évalué AVANT BOUNDARY : un théorème nommé explicitement
-    # (P_ProtectedRuntimeMutation_Blocked, etc.) ne doit pas être capturé par
-    # BOUNDARY simplement parce que l'objectif contient "KX108" ou "KX108_ONLY".
-    # NON_SOVEREIGNTY garde la priorité absolue (NonDecision/emits_act/etc. sont
-    # des marqueurs de souveraineté, jamais présents dans un objectif code surveillance).
+    # Les hits explicites (nom de théorème verbatim) sont évalués AVANT BOUNDARY :
+    # un théorème nommé explicitement ne doit pas être capturé par BOUNDARY simplement
+    # parce que l'objectif contient "KX108" ou "KX108_ONLY".
+    # NON_SOVEREIGNTY garde la priorité absolue.
     if ns_hits:
         lean_class = "NON_SOVEREIGNTY"
         signals += [f"ns_term:{t}" for t in ns_hits]
@@ -2464,6 +2589,14 @@ def _classify_lean_capability(
         requires_tmpl = True
         requires_human = True
         strategy_family = "MEMORY_INVARIANT_TEMPLATE"
+        confidence = "HIGH"
+    elif dk_explicit_hits:
+        lean_class = "DOMAIN_KERNEL_INVARIANT"
+        signals += [f"dk_explicit:{e}" for e in dk_explicit_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = False
+        strategy_family = "DOMAIN_KERNEL_INVARIANT_TEMPLATE"
         confidence = "HIGH"
     elif bd_hits:
         lean_class = "BOUNDARY"
