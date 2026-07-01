@@ -182,6 +182,7 @@ def baseline_agent_normal_local(request_id: str, message: str) -> dict[str, Any]
         "estimated_output_word_cap": 380,
         "estimated_output_tokens": estimate_tokens(380 * 5),
         "route": "UNROUTED_RAW",
+        "route_match": False,
         "cache_hit": False,
         "modules_considered": len(BASELINE_MODULES),
         "modules_activated": len(BASELINE_MODULES),
@@ -193,6 +194,8 @@ def baseline_agent_normal_local(request_id: str, message: str) -> dict[str, Any]
         "boundary_ok": True,
         "emits_act": False,
         "memory_write": False,
+        "model_call_avoided": False,
+        "decision_authority": "KX108_ONLY",
     }
 
 
@@ -239,6 +242,7 @@ def fastpath_local(request_id: str, message: str, expected_topics: list[str], fo
         "estimated_output_tokens": estimate_tokens(response_word_cap * 5),
         "response_size": response_size,
         "route": route,
+        "route_match": expected_ok,
         "semantic_query": semantic_query,
         "cache_hit": True,
         "modules_considered": modules_considered,
@@ -252,6 +256,8 @@ def fastpath_local(request_id: str, message: str, expected_topics: list[str], fo
         "expected_ok": expected_ok,
         "emits_act": False,
         "memory_write": False,
+        "model_call_avoided": True,
+        "decision_authority": "KX108_ONLY",
     }
 
 
@@ -268,8 +274,10 @@ def summarize_mode(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "avg_modules_activated": statistics.mean([r["modules_activated"] for r in rows]) if rows else 0.0,
         "avg_modules_skipped": statistics.mean([r["modules_skipped"] for r in rows]) if rows else 0.0,
         "cache_hit_ratio": sum(1 for r in rows if r["cache_hit"]) / len(rows) if rows else 0.0,
+        "route_accuracy": sum(1 for r in rows if r.get("route_match", False)) / len(rows) if rows else 0.0,
         "quality_pass_rate": sum(1 for r in rows if r["quality_score"] >= 1.0) / len(rows) if rows else 0.0,
-        "boundary_pass_rate": sum(1 for r in rows if r["boundary_ok"]) / len(rows) if rows else 0.0,
+        "boundary_safety_pass_rate": sum(1 for r in rows if r["boundary_ok"]) / len(rows) if rows else 0.0,
+        "model_call_avoided_rate": sum(1 for r in rows if r.get("model_call_avoided", False)) / len(rows) if rows else 0.0,
     }
 
 
@@ -293,6 +301,14 @@ def compare_request(request_id: str, baseline: dict[str, Any], fastpath: dict[st
         else 0.0
     )
 
+    baseline_context_chars = baseline.get("context_chars_loaded", 0)
+    fastpath_context_chars = fastpath.get("context_chars_loaded", 0)
+    estimated_context_budget_delta_pct = (
+        100 * (baseline_context_chars - fastpath_context_chars) / baseline_context_chars
+        if baseline_context_chars > 0
+        else 0.0
+    )
+
     return {
         "request_id": request_id,
         "baseline_elapsed_ms": baseline["elapsed_ms"],
@@ -301,13 +317,18 @@ def compare_request(request_id: str, baseline: dict[str, Any], fastpath: dict[st
         "baseline_estimated_internal_token_units": baseline_total_tokens,
         "fastpath_estimated_internal_token_units": fastpath_total_tokens,
         "internal_token_delta_pct": internal_token_delta_pct,
+        "estimated_context_budget_delta_pct": estimated_context_budget_delta_pct,
         "baseline_modules_activated": baseline["modules_activated"],
         "fastpath_modules_activated": fastpath["modules_activated"],
         "modules_skipped": fastpath["modules_skipped"],
         "module_skip_pct": module_skip_pct,
         "route": fastpath["route"],
+        "route_match": fastpath.get("route_match", False),
         "quality_score": fastpath["quality_score"],
         "boundary_ok": fastpath["boundary_ok"],
+        "model_call_avoided": fastpath.get("model_call_avoided", False),
+        "emits_act": fastpath["emits_act"],
+        "memory_write": fastpath["memory_write"],
     }
 
 
@@ -345,6 +366,17 @@ def main() -> int:
     avg_token_delta = statistics.mean([c["internal_token_delta_pct"] for c in comparisons]) if comparisons else 0.0
     avg_module_skip = statistics.mean([c["module_skip_pct"] for c in comparisons]) if comparisons else 0.0
 
+    governance = {
+        "emits_act": False,
+        "memory_write": False,
+        "decision_authority": "KX108_ONLY",
+        "readonly": True,
+        "kernel_mutation": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "secrets_redacted": True,
+    }
+
     result = {
         "benchmark": "OBSIDIA_FAST_PATH_AB_BENCHMARK_V1",
         "status": "LOCAL_PRE_COMPUTE_BENCHMARK",
@@ -365,6 +397,7 @@ def main() -> int:
         "average_latency_delta_pct": avg_latency_delta,
         "average_internal_token_delta_pct": avg_token_delta,
         "average_module_skip_pct": avg_module_skip,
+        "governance": governance,
         "baseline_rows": baseline_rows,
         "fastpath_rows": fastpath_rows,
         "comparisons": comparisons,
@@ -404,7 +437,9 @@ def main() -> int:
     lines.append(f"| Avg modules skipped | {baseline_summary['avg_modules_skipped']:.2f} | {fastpath_summary['avg_modules_skipped']:.2f} | {avg_module_skip:.2f}% |")
     lines.append(f"| Cache hit ratio | {baseline_summary['cache_hit_ratio']:.2f} | {fastpath_summary['cache_hit_ratio']:.2f} | - |")
     lines.append(f"| Quality pass rate | {baseline_summary['quality_pass_rate']:.2f} | {fastpath_summary['quality_pass_rate']:.2f} | - |")
-    lines.append(f"| Boundary pass rate | {baseline_summary['boundary_pass_rate']:.2f} | {fastpath_summary['boundary_pass_rate']:.2f} | - |")
+    lines.append(f"| Boundary safety pass rate | {baseline_summary['boundary_safety_pass_rate']:.2f} | {fastpath_summary['boundary_safety_pass_rate']:.2f} | - |")
+    lines.append(f"| Route accuracy | {baseline_summary['route_accuracy']:.2f} | {fastpath_summary['route_accuracy']:.2f} | - |")
+    lines.append(f"| Model call avoided rate | {baseline_summary['model_call_avoided_rate']:.2f} | {fastpath_summary['model_call_avoided_rate']:.2f} | - |")
     lines.append("")
     lines.append("## Per-request comparison")
     lines.append("")
@@ -431,6 +466,33 @@ def main() -> int:
         )
 
     lines.append("")
+    lines.append("## Audit metric crosswalk")
+    lines.append("")
+    lines.append("| Audit metric | Fast Path value | OIE bridge |")
+    lines.append("|---|---|---|")
+    lines.append(f"| model_call_avoided | True | Fast Path does not invoke LLM for routing/context |")
+    lines.append(f"| model_call_avoided_rate | {fastpath_summary['model_call_avoided_rate']:.2f} | Fraction of runs with no LLM call |")
+    lines.append(f"| route_accuracy | {fastpath_summary['route_accuracy']:.2f} | route in expected_topics / total runs |")
+    lines.append(f"| boundary_safety_pass_rate | {fastpath_summary['boundary_safety_pass_rate']:.2f} | route not in forbidden_topics / total runs |")
+    lines.append(f"| quality_pass_rate | {fastpath_summary['quality_pass_rate']:.2f} | quality_score >= 1.0 / total runs |")
+    lines.append(f"| cache_hit_ratio | {fastpath_summary['cache_hit_ratio']:.2f} | Warm Graphiti cache used / total runs |")
+    lines.append(f"| avg_modules_skipped | {fastpath_summary['avg_modules_skipped']:.2f} | Modules not activated by Fast Path |")
+    lines.append(f"| estimated_context_budget_delta_pct | {statistics.mean([c['estimated_context_budget_delta_pct'] for c in comparisons]):.2f}% | Context chars avoided vs baseline |")
+    lines.append(f"| internal_token_delta_pct | {avg_token_delta:.2f}% | Estimated internal token units avoided |")
+    lines.append(f"| emits_act | False | Non-sovereign, no ACT emitted |")
+    lines.append(f"| memory_write | False | No memory mutation |")
+    lines.append(f"| decision_authority | KX108_ONLY | Kernel X-108 is sole action authority |")
+    lines.append("")
+    lines.append("## Governance")
+    lines.append("")
+    lines.append("| Property | Value |")
+    lines.append("|---|---|")
+    lines.append("| emits_act | False |")
+    lines.append("| memory_write | False |")
+    lines.append("| decision_authority | KX108_ONLY |")
+    lines.append("| readonly | True |")
+    lines.append("| kernel_mutation | False |")
+    lines.append("")
     lines.append("## Artifacts")
     lines.append("")
     lines.append(f"- results.json: {results_path}")
@@ -454,9 +516,9 @@ def main() -> int:
     print(f"AVG_LATENCY_DELTA_PCT={avg_latency_delta:.2f}")
     print(f"AVG_INTERNAL_TOKEN_DELTA_PCT={avg_token_delta:.2f}")
     print(f"QUALITY_PASS_RATE={fastpath_summary['quality_pass_rate']:.2f}")
-    print(f"BOUNDARY_PASS_RATE={fastpath_summary['boundary_pass_rate']:.2f}")
+    print(f"BOUNDARY_SAFETY_PASS_RATE={fastpath_summary['boundary_safety_pass_rate']:.2f}")
 
-    if fastpath_summary["boundary_pass_rate"] < 1.0:
+    if fastpath_summary["boundary_safety_pass_rate"] < 1.0:
         print("BLOCK: boundary pass rate below 1.0")
         return 1
 
