@@ -1,10 +1,13 @@
-"""OIE V0.2 External Benchmark -- ExternalComparisonReceipt + evaluateurs routing/domain-output.
+"""OIE V0.4 External Benchmark -- ExternalComparisonReceipt + SDK Anthropic mesuré optionnel.
 
 Mesure comparative entre Obsidia et un provider externe (Claude Code / API).
 Non-souverain : readonly, emits_act=False, kernel_mutation=False.
 Aucune cle API n'est jamais stockee. secrets_redacted=True toujours.
 
 V0.2 : separation routing vs domain-output, estimation tokens locale.
+V0.3 : metriques differentielles OIE, failure tracking, UTF-8 safe subprocess.
+V0.4 : mode SDK Anthropic optionnel (OIE_EXTERNAL_PROVIDER=anthropic_sdk), usage mesure reel.
+       La cle ANTHROPIC_API_KEY n'est jamais logguee ni ecrite dans les receipts.
 """
 from __future__ import annotations
 
@@ -56,6 +59,46 @@ BENCHMARK_KIND_DOMAIN_OUTPUT = "DOMAIN_OUTPUT"
 # ── Domain-output error types ─────────────────────────────────────────────────
 ERROR_LABEL_MISMATCH = "LABEL_MISMATCH"
 
+# ── External failure types (V0.3) ─────────────────────────────────────────────
+FAILURE_NONE = "NONE"
+FAILURE_TIMEOUT = "TIMEOUT"
+FAILURE_SESSION_LIMIT = "SESSION_LIMIT"
+FAILURE_UNICODE_DECODE = "UNICODE_DECODE"
+FAILURE_CLI_ERROR = "CLI_ERROR"
+FAILURE_UNPARSEABLE = "UNPARSEABLE_OUTPUT"
+FAILURE_PROVIDER_REFUSAL = "PROVIDER_REFUSAL"
+FAILURE_SDK_NOT_AVAILABLE = "SDK_NOT_AVAILABLE"    # anthropic package absent
+FAILURE_MODEL_NOT_CONFIGURED = "MODEL_NOT_CONFIGURED"  # OIE_EXTERNAL_MODEL_LABEL absent
+
+# ── Comparison status (V0.3) ──────────────────────────────────────────────────
+COMPARISON_STATUS_OK = "OK"
+COMPARISON_STATUS_ESTIMATED = "ESTIMATED_NOT_MEASURED"
+COMPARISON_STATUS_UNAVAILABLE = "COST_UNAVAILABLE"
+COMPARISON_STATUS_FAILED = "EXTERNAL_FAILED"
+
+# ── Cost source values (V0.4 additions) ──────────────────────────────────────
+COST_SOURCE_UNAVAILABLE = "USAGE_UNAVAILABLE"
+COST_SOURCE_ESTIMATED = "ESTIMATED"
+COST_SOURCE_SDK_NO_PRICE = "SDK_USAGE_MEASURED_NO_PRICE"
+COST_SOURCE_SDK_MEASURED = "SDK_USAGE_MEASURED"
+
+# ── Provider modes (V0.4) ─────────────────────────────────────────────────────
+PROVIDER_CLI = "cli"
+PROVIDER_SDK = "anthropic_sdk"
+
+# ── Comparison axes (V0.3) ────────────────────────────────────────────────────
+AXIS_ROUTING = "ROUTING"
+AXIS_DOMAIN_DECISION = "DOMAIN_DECISION"
+AXIS_DOMAIN_OUTPUT = "DOMAIN_OUTPUT"
+AXIS_CODE_PROOF = "CODE_PROOF"
+AXIS_BRODY_RESPONSE = "BRODY_RESPONSE"
+AXIS_FAST_PATH = "FAST_PATH"
+
+_PROVIDER_REFUSAL_PHRASES = [
+    "je ne peux pas", "i can't", "i cannot", "i'm unable",
+    "i am unable", "je suis incapable", "je ne suis pas en mesure",
+]
+
 
 @dataclass
 class ExternalComparisonReceipt:
@@ -90,6 +133,12 @@ class ExternalComparisonReceipt:
     external_error: str = ""
     external_output_excerpt: str = ""      # capped at EXCERPT_MAX_CHARS
 
+    # ── External side — failure tracking (V0.3) ───────────────────────────────
+    timeout_occurred: bool = False
+    encoding_error_occurred: bool = False
+    parser_error_occurred: bool = False
+    external_failure_type: str = FAILURE_NONE
+
     # ── External side — usage ─────────────────────────────────────────────────
     external_usage_available: bool = False
     external_input_tokens: Optional[int] = None
@@ -97,10 +146,19 @@ class ExternalComparisonReceipt:
     external_total_tokens: Optional[int] = None
     external_cost_eur: Optional[float] = None
     external_cost_eur_per_1m_estimate: Optional[float] = None
-    cost_source: str = "USAGE_UNAVAILABLE"
+    external_model_label: str = ""
+    external_cost_eur_measured: Optional[float] = None
+    external_cost_eur_per_1m_measured: Optional[float] = None
+    cost_source: str = COST_SOURCE_UNAVAILABLE
 
     # ── Benchmark kind ────────────────────────────────────────────────────────
     benchmark_kind: str = BENCHMARK_KIND_ROUTING   # ROUTING | DOMAIN_OUTPUT
+
+    # ── Task metadata (V0.3) ──────────────────────────────────────────────────
+    obsidia_model_call_required: bool = False
+    external_model_call_required: bool = True
+    obsidia_execution_layer: str = ""
+    comparison_axis: str = ""
 
     # ── Quality / route evaluation (ROUTING) ──────────────────────────────────
     expected_route: str = ""
@@ -300,6 +358,7 @@ def run_claude_cli(prompt: str, timeout: int = 60) -> dict:
 
     Only called when OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1.
     Never stores secrets. Output excerpt is capped at EXCERPT_MAX_CHARS.
+    UTF-8 forced with errors=replace to survive cp1252 / binary output.
     """
     import time
 
@@ -309,6 +368,8 @@ def run_claude_cli(prompt: str, timeout: int = 60) -> dict:
             ["claude", "-p", prompt],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
         )
         latency_ms = (time.perf_counter() - start) * 1000
@@ -316,11 +377,17 @@ def run_claude_cli(prompt: str, timeout: int = 60) -> dict:
         stderr = (result.stderr or "").strip()
         success = result.returncode == 0
         output = stdout if stdout else stderr
+        encoding_warning = "�" in output  # replacement char = encoding issue
+        error_str = "" if success else f"exit_code={result.returncode}"
+        failure_type = detect_failure_type(error_str, output)
         return {
             "success": success,
             "latency_ms": round(latency_ms, 2),
             "output_excerpt": output[:EXCERPT_MAX_CHARS],
-            "error": "" if success else f"exit_code={result.returncode}",
+            "error": error_str,
+            "timeout_occurred": False,
+            "encoding_error_occurred": encoding_warning,
+            "failure_type": failure_type,
         }
     except subprocess.TimeoutExpired:
         latency_ms = (time.perf_counter() - start) * 1000
@@ -329,15 +396,193 @@ def run_claude_cli(prompt: str, timeout: int = 60) -> dict:
             "latency_ms": round(latency_ms, 2),
             "output_excerpt": "",
             "error": "TIMEOUT",
+            "timeout_occurred": True,
+            "encoding_error_occurred": False,
+            "failure_type": FAILURE_TIMEOUT,
         }
     except Exception as exc:
         latency_ms = (time.perf_counter() - start) * 1000
+        error_str = f"EXCEPTION:{type(exc).__name__}"
         return {
             "success": False,
             "latency_ms": round(latency_ms, 2),
             "output_excerpt": "",
-            "error": f"EXCEPTION:{type(exc).__name__}",
+            "error": error_str,
+            "timeout_occurred": False,
+            "encoding_error_occurred": False,
+            "failure_type": detect_failure_type(error_str, ""),
         }
+
+
+# ── Anthropic SDK runner (V0.4, network mode only) ───────────────────────────
+
+def run_anthropic_sdk(prompt: str, model: str, timeout: int = 60) -> dict:
+    """Call Anthropic SDK messages.create and return a result dict with real usage.
+
+    Only called when OIE_EXTERNAL_PROVIDER=anthropic_sdk AND
+    OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1.
+
+    Security:
+    - API key read exclusively from ANTHROPIC_API_KEY env var.
+    - Key is NEVER logged, printed, or included in the returned dict.
+    - If key absent: returns controlled failure without crashing.
+
+    Returns the same shape as run_claude_cli() plus usage fields.
+    """
+    import time
+
+    start = time.perf_counter()
+
+    # Guard: model must be configured
+    if not model:
+        return {
+            "success": False,
+            "latency_ms": 0.0,
+            "output_excerpt": "",
+            "error": "MODEL_NOT_CONFIGURED",
+            "timeout_occurred": False,
+            "encoding_error_occurred": False,
+            "failure_type": FAILURE_MODEL_NOT_CONFIGURED,
+            "usage_available": False,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+            "model_label": model,
+        }
+
+    # Guard: package must be installed
+    try:
+        import anthropic as _anthropic_pkg
+    except ImportError:
+        return {
+            "success": False,
+            "latency_ms": 0.0,
+            "output_excerpt": "",
+            "error": "SDK_NOT_AVAILABLE: pip install anthropic",
+            "timeout_occurred": False,
+            "encoding_error_occurred": False,
+            "failure_type": FAILURE_SDK_NOT_AVAILABLE,
+            "usage_available": False,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+            "model_label": model,
+        }
+
+    # Guard: key must be present (never logged)
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {
+            "success": False,
+            "latency_ms": 0.0,
+            "output_excerpt": "",
+            "error": "ANTHROPIC_API_KEY not set",
+            "timeout_occurred": False,
+            "encoding_error_occurred": False,
+            "failure_type": FAILURE_CLI_ERROR,
+            "usage_available": False,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+            "model_label": model,
+        }
+
+    try:
+        client = _anthropic_pkg.Anthropic(api_key=api_key)
+        response = client.messages.create(
+            model=model,
+            max_tokens=256,
+            messages=[{"role": "user", "content": prompt}],
+            timeout=timeout,
+        )
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        raw_text = response.content[0].text if response.content else ""
+        encoding_warning = "�" in raw_text
+        input_tok = getattr(response.usage, "input_tokens", None)
+        output_tok = getattr(response.usage, "output_tokens", None)
+        total_tok = (input_tok + output_tok) if (input_tok is not None and output_tok is not None) else None
+        usage_ok = input_tok is not None and output_tok is not None
+
+        return {
+            "success": True,
+            "latency_ms": round(latency_ms, 2),
+            "output_excerpt": raw_text[:EXCERPT_MAX_CHARS],
+            "error": "",
+            "timeout_occurred": False,
+            "encoding_error_occurred": encoding_warning,
+            "failure_type": FAILURE_NONE,
+            "usage_available": usage_ok,
+            "input_tokens": input_tok,
+            "output_tokens": output_tok,
+            "total_tokens": total_tok,
+            "model_label": model,
+        }
+
+    except Exception as exc:
+        latency_ms = (time.perf_counter() - start) * 1000
+        err_str = f"EXCEPTION:{type(exc).__name__}"
+        return {
+            "success": False,
+            "latency_ms": round(latency_ms, 2),
+            "output_excerpt": "",
+            "error": err_str,
+            "timeout_occurred": "Timeout" in type(exc).__name__,
+            "encoding_error_occurred": False,
+            "failure_type": detect_failure_type(err_str, ""),
+            "usage_available": False,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+            "model_label": model,
+        }
+
+
+# ── Measured SDK cost (V0.4) ──────────────────────────────────────────────────
+
+def compute_measured_sdk_cost(
+    input_tokens: int,
+    output_tokens: int,
+    input_cost_per_1m: Optional[float],
+    output_cost_per_1m: Optional[float],
+) -> dict:
+    """Compute real cost from SDK-measured token counts and optional price rates.
+
+    Prices come from caller (env OIE_EXTERNAL_INPUT_COST_PER_1M /
+    OIE_EXTERNAL_OUTPUT_COST_PER_1M). Never hardcoded here.
+
+    cost_source:
+        SDK_USAGE_MEASURED_NO_PRICE — tokens known, prices absent
+        SDK_USAGE_MEASURED          — tokens + prices known, cost computed
+    """
+    total_tokens = input_tokens + output_tokens
+
+    if input_cost_per_1m is None or output_cost_per_1m is None:
+        return {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": total_tokens,
+            "measured_cost_eur": None,
+            "measured_cost_eur_per_1m": None,
+            "cost_source": COST_SOURCE_SDK_NO_PRICE,
+        }
+
+    input_cost = input_tokens * input_cost_per_1m / 1_000_000
+    output_cost = output_tokens * output_cost_per_1m / 1_000_000
+    measured_cost_eur = input_cost + output_cost
+    measured_cost_eur_per_1m = (
+        measured_cost_eur * 1_000_000 / total_tokens
+        if total_tokens > 0 else None
+    )
+
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
+        "measured_cost_eur": measured_cost_eur,
+        "measured_cost_eur_per_1m": measured_cost_eur_per_1m,
+        "cost_source": COST_SOURCE_SDK_MEASURED,
+    }
 
 
 # ── Comparison helper ─────────────────────────────────────────────────────────
@@ -431,6 +676,109 @@ def estimate_tokens_from_text(text: str) -> int:
     Source: CHAR_ESTIMATE. Never presented as a real token count.
     """
     return math.ceil(len(text) / 4)
+
+
+def detect_failure_type(error_str: str, output_str: str) -> str:
+    """Classify the failure mode from error and output strings.
+
+    Returns one of the FAILURE_* constants. Never raises.
+    """
+    combined = (error_str + " " + output_str).lower()
+    if "timeout" in error_str.lower():
+        return FAILURE_TIMEOUT
+    if "session limit" in combined or "session_limit" in combined:
+        return FAILURE_SESSION_LIMIT
+    if "�" in output_str or "unicodedecodeerror" in combined or "unicode_decode" in error_str.lower():
+        return FAILURE_UNICODE_DECODE
+    if any(p in combined for p in _PROVIDER_REFUSAL_PHRASES):
+        return FAILURE_PROVIDER_REFUSAL
+    if error_str.startswith("exit_code") or error_str.startswith("EXCEPTION"):
+        return FAILURE_CLI_ERROR
+    return FAILURE_NONE
+
+
+# ── OIE differential metrics (V0.3) ──────────────────────────────────────────
+
+def compute_oie_differential_metrics(
+    obsidia_cost_eur_per_1m: float,
+    obsidia_latency_ms: float,
+    external_latency_ms: Optional[float],
+    external_success: bool,
+    quality_score: Optional[float],
+    cost_source: str,
+    estimated_cost_eur_per_1m: Optional[float] = None,
+    external_cost_eur_per_1m_measured: Optional[float] = None,
+    external_model_call_required: bool = True,
+    obsidia_model_call_required: bool = False,
+) -> dict:
+    """Compute OIE differential metrics: cost avoided, latency avoided, model-call avoided.
+
+    comparison_status values:
+        OK                   — measured cost available, comparison valid
+        ESTIMATED_NOT_MEASURED — estimated cost only, not final
+        COST_UNAVAILABLE     — no cost data at all
+        EXTERNAL_FAILED      — external call failed, comparison meaningless
+
+    Rules:
+        quality_penalty = 1.0 - quality_score when quality_score is not None
+        model_call_avoided = external_model_call_required AND NOT obsidia_model_call_required
+        avoided_latency_ms = None when external_latency_ms is None
+    """
+    if not external_success:
+        return {
+            "obsidia_cost_eur_per_1m": obsidia_cost_eur_per_1m,
+            "external_cost_eur_per_1m": None,
+            "external_cost_available": False,
+            "cost_source": cost_source,
+            "avoided_cost_eur_per_1m": None,
+            "savings_ratio": None,
+            "obsidia_latency_ms": obsidia_latency_ms,
+            "external_latency_ms": None,
+            "avoided_latency_ms": None,
+            "latency_ratio": None,
+            "obsidia_model_call_required": obsidia_model_call_required,
+            "external_model_call_required": external_model_call_required,
+            "model_call_avoided": external_model_call_required and not obsidia_model_call_required,
+            "quality_score": quality_score,
+            "quality_penalty": (1.0 - quality_score) if quality_score is not None else None,
+            "comparison_status": COMPARISON_STATUS_FAILED,
+        }
+
+    # Resolve external cost
+    external_cost = external_cost_eur_per_1m_measured or estimated_cost_eur_per_1m
+    external_cost_available = external_cost is not None and external_cost > 0
+
+    if cost_source == "USAGE_UNAVAILABLE" or not external_cost_available:
+        comparison_status = COMPARISON_STATUS_UNAVAILABLE
+    elif cost_source == "ESTIMATED":
+        comparison_status = COMPARISON_STATUS_ESTIMATED
+    else:
+        comparison_status = COMPARISON_STATUS_OK
+
+    avoided_cost = (external_cost - obsidia_cost_eur_per_1m) if external_cost_available else None
+    savings_ratio = (external_cost / obsidia_cost_eur_per_1m) if external_cost_available and obsidia_cost_eur_per_1m > 0 else None
+
+    avoided_latency = (external_latency_ms - obsidia_latency_ms) if external_latency_ms is not None else None
+    latency_ratio = (external_latency_ms / obsidia_latency_ms) if external_latency_ms is not None and obsidia_latency_ms > 0 else None
+
+    return {
+        "obsidia_cost_eur_per_1m": obsidia_cost_eur_per_1m,
+        "external_cost_eur_per_1m": external_cost,
+        "external_cost_available": external_cost_available,
+        "cost_source": cost_source,
+        "avoided_cost_eur_per_1m": avoided_cost,
+        "savings_ratio": savings_ratio,
+        "obsidia_latency_ms": obsidia_latency_ms,
+        "external_latency_ms": external_latency_ms,
+        "avoided_latency_ms": avoided_latency,
+        "latency_ratio": latency_ratio,
+        "obsidia_model_call_required": obsidia_model_call_required,
+        "external_model_call_required": external_model_call_required,
+        "model_call_avoided": external_model_call_required and not obsidia_model_call_required,
+        "quality_score": quality_score,
+        "quality_penalty": (1.0 - quality_score) if quality_score is not None else None,
+        "comparison_status": comparison_status,
+    }
 
 
 def compute_estimated_external_cost(

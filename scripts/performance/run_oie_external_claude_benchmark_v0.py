@@ -1,21 +1,30 @@
 #!/usr/bin/env python3
-"""OIE External Benchmark Harness V0.2 -- Compare Obsidia vs Claude CLI.
+"""OIE External Benchmark Harness V0.4 -- CLI ou SDK Anthropic mesure optionnel.
+
+Objectif V0.4 : mesure du cout reel via SDK Anthropic (usage.input_tokens / output_tokens)
+quand une cle API est disponible, sans casser le mode CLI existant.
 
 Modes d'execution :
   Par defaut               : dry-run routing smoke uniquement
   OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1 : routing smoke reel
   OIE_EXTERNAL_BENCHMARK_FULL=1          : routing full (toutes familles)
   OIE_EXTERNAL_BENCHMARK_DOMAIN=1        : domain-output benchmark
-  OIE_EXTERNAL_COST_ESTIMATE=1           : estimation tokens/cout si prix fournis
+  OIE_EXTERNAL_COST_ESTIMATE=1           : estimation tokens locale si prix fournis
+
+Provider (V0.4) :
+  OIE_EXTERNAL_PROVIDER=cli             : Claude Code CLI (defaut)
+  OIE_EXTERNAL_PROVIDER=anthropic_sdk   : SDK Anthropic mesure reel
+
+Model SDK (jamais hardcode) :
+  OIE_EXTERNAL_MODEL_LABEL=<model_id>   : requis si provider=anthropic_sdk
 
 Prix optionnels (jamais hardcodes ici) :
   OIE_EXTERNAL_INPUT_COST_PER_1M   EUR / 1M tokens input
   OIE_EXTERNAL_OUTPUT_COST_PER_1M  EUR / 1M tokens output
-  OIE_EXTERNAL_MODEL_LABEL         label du modele (audit uniquement)
 
 Securite :
-- Aucune cle API dans le repo.
-- Aucun secret dans les receipts (secrets_redacted=True toujours).
+- ANTHROPIC_API_KEY lue uniquement depuis env. Jamais logguee. Jamais dans les receipts.
+- Aucun autre secret dans le repo.
 - Aucun appel reseau sans OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1.
 - Console ASCII uniquement (compatible Windows cp1252).
 
@@ -37,20 +46,37 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     ExternalComparisonReceipt,
     detect_claude_cli,
     run_claude_cli,
+    run_anthropic_sdk,
     compute_comparison,
+    compute_measured_sdk_cost,
     evaluate_route_quality,
     evaluate_domain_output_quality,
     compute_estimated_external_cost,
+    compute_oie_differential_metrics,
+    detect_failure_type,
     EXCERPT_MAX_CHARS,
     ERROR_USAGE_ONLY,
     BENCHMARK_KIND_ROUTING,
     BENCHMARK_KIND_DOMAIN_OUTPUT,
     KNOWN_ROUTES,
+    AXIS_ROUTING,
+    AXIS_DOMAIN_DECISION,
+    AXIS_DOMAIN_OUTPUT,
+    AXIS_CODE_PROOF,
+    AXIS_BRODY_RESPONSE,
+    AXIS_FAST_PATH,
+    FAILURE_NONE,
+    PROVIDER_CLI,
+    PROVIDER_SDK,
+    COST_SOURCE_UNAVAILABLE,
+    COST_SOURCE_ESTIMATED,
+    COST_SOURCE_SDK_NO_PRICE,
+    COST_SOURCE_SDK_MEASURED,
 )
 
 # ── Routing tasks ─────────────────────────────────────────────────────────────
 # Chaque prompt demande UNE SEULE route parmi KNOWN_ROUTES.
-# evaluated par evaluate_route_quality.
+# Evalue par evaluate_route_quality.
 
 ROUTING_TASKS = [
     {
@@ -68,6 +94,10 @@ ROUTING_TASKS = [
         "expected_route": "FAST_PATH",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_FAST_PATH,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "cache_lookup",
         "smoke": True,
     },
     {
@@ -85,6 +115,10 @@ ROUTING_TASKS = [
         "expected_route": "BRODY",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_ROUTING,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "brody_router",
         "smoke": False,
     },
     {
@@ -102,6 +136,10 @@ ROUTING_TASKS = [
         "expected_route": "BANK",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_ROUTING,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge",
         "smoke": False,
     },
     {
@@ -119,6 +157,10 @@ ROUTING_TASKS = [
         "expected_route": "TRADING",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_ROUTING,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge",
         "smoke": False,
     },
     {
@@ -136,6 +178,10 @@ ROUTING_TASKS = [
         "expected_route": "GPS",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_ROUTING,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge",
         "smoke": False,
     },
     {
@@ -153,6 +199,10 @@ ROUTING_TASKS = [
         "expected_route": "OBSIDURE",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_CODE_PROOF,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "obsidure_targeted",
         "smoke": False,
     },
     {
@@ -170,12 +220,17 @@ ROUTING_TASKS = [
         "expected_route": "OBSIDURE",
         "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "benchmark_kind": BENCHMARK_KIND_ROUTING,
+        "comparison_axis": AXIS_CODE_PROOF,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "lean_canon",
         "smoke": False,
     },
 ]
 
 # ── Domain output tasks ───────────────────────────────────────────────────────
-# Chaque prompt demande une sortie METIER specifique au domaine.
+# Prompts stricts : "Return exactly one label from: X, Y, Z. Do not explain."
+# Mention "simulated" pour eviter refus provider.
 # Evalue par evaluate_domain_output_quality.
 
 DOMAIN_OUTPUT_TASKS = [
@@ -183,8 +238,8 @@ DOMAIN_OUTPUT_TASKS = [
         "task_id": "bank_decision_smoke",
         "task_family": "bank_vs_domain_llm",
         "task_prompt": (
-            "Given a wire transfer of 50000 EUR from account A to account B "
-            "with no compliance flag, output one of: ALLOW, HOLD, BLOCK."
+            "Return exactly one label from: ALLOW, HOLD, BLOCK. Do not explain. "
+            "Scenario: simulated compliance-safe wire transfer, no real financial action."
         ),
         "obsidia_route": "bank_connector",
         "obsidia_expected_output_type": "ALLOW_HOLD_BLOCK",
@@ -193,14 +248,18 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["ALLOW", "HOLD", "BLOCK"],
         "expected_output_hint": "one of: ALLOW HOLD BLOCK",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_DOMAIN_DECISION,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge_deterministic",
         "smoke": False,
     },
     {
         "task_id": "trading_signal_smoke",
         "task_family": "trading_vs_domain_llm",
         "task_prompt": (
-            "A BUY signal arrives for asset X with confidence 0.87 and "
-            "no contradicting signals. Output one of: VALID, HOLD_RISK, BLOCK."
+            "Return exactly one label from: VALID, HOLD_RISK, BLOCK. Do not explain. "
+            "Scenario: simulated BUY signal with confidence 0.87, no real trading action."
         ),
         "obsidia_route": "trading_connector",
         "obsidia_expected_output_type": "VALID_HOLD_RISK_BLOCK",
@@ -209,14 +268,18 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["VALID", "HOLD_RISK", "BLOCK"],
         "expected_output_hint": "one of: VALID HOLD_RISK BLOCK",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_DOMAIN_DECISION,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge_deterministic",
         "smoke": False,
     },
     {
         "task_id": "gps_terrain_smoke",
         "task_family": "gps_aviation_vs_domain_llm",
         "task_prompt": (
-            "Terrain signal: altitude 950m, obstacle clearance 120m, route R47. "
-            "Is the route admissible? Output one of: ALLOW, HOLD, BLOCK."
+            "Return exactly one label from: ALLOW, HOLD, BLOCK. Do not explain. "
+            "Scenario: simulated terrain clearance check, altitude 950m, no real navigation action."
         ),
         "obsidia_route": "aviation_connector",
         "obsidia_expected_output_type": "ALLOW_HOLD_BLOCK",
@@ -225,14 +288,18 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["ALLOW", "HOLD", "BLOCK"],
         "expected_output_hint": "one of: ALLOW HOLD BLOCK",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_DOMAIN_DECISION,
+        "obsidia_model_call_required": False,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "domain_bridge_deterministic",
         "smoke": False,
     },
     {
         "task_id": "brody_answer_smoke",
         "task_family": "brody_vs_assistant",
         "task_prompt": (
-            "Question: What is the role of the Obsidia kernel? "
-            "Did you provide a complete answer? Output one of: ANSWER_OK, ANSWER_FAIL."
+            "Return exactly one label from: ANSWER_OK, ANSWER_FAIL. Do not explain. "
+            "Scenario: answer quality check for a simulated Obsidia kernel explanation."
         ),
         "obsidia_route": "brody_chat",
         "obsidia_expected_output_type": "ANSWER_OK_FAIL",
@@ -241,14 +308,18 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["ANSWER_OK", "ANSWER_FAIL"],
         "expected_output_hint": "one of: ANSWER_OK ANSWER_FAIL",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_BRODY_RESPONSE,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "brody_router",
         "smoke": False,
     },
     {
         "task_id": "obsidure_patch_smoke",
         "task_family": "obsidure_vs_code_agent",
         "task_prompt": (
-            "Can you generate a valid Lean 4 proof for: theorem t : n + 0 = n := by simp? "
-            "Output one of: PATCH_OK, PATCH_FAIL."
+            "Return exactly one label from: PATCH_OK, PATCH_FAIL. Do not explain. "
+            "Scenario: simulated Lean 4 proof patch for theorem Nat.add_zero."
         ),
         "obsidia_route": "obsidure_lean_targeted",
         "obsidia_expected_output_type": "PATCH_OK_FAIL",
@@ -257,14 +328,18 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["PATCH_OK", "PATCH_FAIL"],
         "expected_output_hint": "one of: PATCH_OK PATCH_FAIL",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_CODE_PROOF,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "obsidure_targeted",
         "smoke": False,
     },
     {
         "task_id": "lean_invariant_smoke",
         "task_family": "lean_proof_vs_long_reasoning",
         "task_prompt": (
-            "Can you verify that forall n : Nat, n + 0 = n is a valid Lean 4 theorem? "
-            "Output one of: PROOF_OK, PROOF_FAIL."
+            "Return exactly one label from: PROOF_OK, PROOF_FAIL. Do not explain. "
+            "Scenario: simulated proof check, theorem Nat.add_zero exists in Lean 4 standard library."
         ),
         "obsidia_route": "lean_canon_check",
         "obsidia_expected_output_type": "PROOF_OK_FAIL",
@@ -273,6 +348,10 @@ DOMAIN_OUTPUT_TASKS = [
         "expected_labels": ["PROOF_OK", "PROOF_FAIL"],
         "expected_output_hint": "one of: PROOF_OK PROOF_FAIL",
         "benchmark_kind": BENCHMARK_KIND_DOMAIN_OUTPUT,
+        "comparison_axis": AXIS_CODE_PROOF,
+        "obsidia_model_call_required": True,
+        "external_model_call_required": True,
+        "obsidia_execution_layer": "lean_canon",
         "smoke": False,
     },
 ]
@@ -281,7 +360,7 @@ DOMAIN_OUTPUT_TASKS = [
 TASKS = ROUTING_TASKS + DOMAIN_OUTPUT_TASKS
 
 
-# ── Build helpers ─────────────────────────────────────────────────────────────
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _read_cost_env() -> tuple[Optional[float], Optional[float], str]:
     """Read optional pricing from env. Never hardcoded."""
@@ -297,11 +376,9 @@ def _read_cost_env() -> tuple[Optional[float], Optional[float], str]:
     return inp, out, model_label
 
 
-def build_dry_run_receipt(
-    task: dict, claude_available: bool, claude_cmd: str
-) -> ExternalComparisonReceipt:
-    kind = task.get("benchmark_kind", BENCHMARK_KIND_ROUTING)
-    return ExternalComparisonReceipt(
+def _task_receipt_base(task: dict, claude_available: bool, claude_cmd: str) -> dict:
+    """Common receipt kwargs extracted from a task dict."""
+    return dict(
         task_id=task["task_id"],
         task_family=task["task_family"],
         task_prompt=task["task_prompt"][:EXCERPT_MAX_CHARS],
@@ -314,6 +391,22 @@ def build_dry_run_receipt(
         external_model_or_cli="claude",
         external_command_detected=claude_cmd,
         external_available=claude_available,
+        benchmark_kind=task.get("benchmark_kind", BENCHMARK_KIND_ROUTING),
+        comparison_axis=task.get("comparison_axis", ""),
+        obsidia_model_call_required=task.get("obsidia_model_call_required", False),
+        external_model_call_required=task.get("external_model_call_required", True),
+        obsidia_execution_layer=task.get("obsidia_execution_layer", ""),
+        expected_route=task.get("expected_route", ""),
+        expected_output_hint=task.get("expected_output_hint", ""),
+        expected_labels=task.get("expected_labels"),
+    )
+
+
+def build_dry_run_receipt(
+    task: dict, claude_available: bool, claude_cmd: str
+) -> ExternalComparisonReceipt:
+    return ExternalComparisonReceipt(
+        **_task_receipt_base(task, claude_available, claude_cmd),
         external_network_allowed=False,
         external_latency_ms=None,
         external_success=False,
@@ -321,20 +414,39 @@ def build_dry_run_receipt(
         external_output_excerpt="",
         external_usage_available=False,
         cost_source="USAGE_UNAVAILABLE",
-        benchmark_kind=kind,
-        expected_route=task.get("expected_route", ""),
         external_detected_route=None,
         route_match=None,
-        expected_output_hint=task.get("expected_output_hint", ""),
         quality_score=None,
         quality_notes="DRY_RUN",
         classification_error_type=ERROR_USAGE_ONLY,
-        expected_labels=task.get("expected_labels"),
         external_detected_label=None,
         label_match=None,
         savings_ratio_vs_external=None,
         avoided_cost_eur_per_1m=None,
+        timeout_occurred=False,
+        encoding_error_occurred=False,
+        parser_error_occurred=False,
+        external_failure_type=FAILURE_NONE,
     )
+
+
+def _apply_sdk_cost(run_result: dict, cost_estimate_enabled: bool) -> tuple[str, Optional[float], Optional[float], Optional[float]]:
+    """Resolve cost_source and measured cost fields from an SDK run result.
+
+    Returns (cost_source, external_cost_eur_measured, external_cost_eur_per_1m_measured, savings_ratio_hint).
+    """
+    inp_cost, out_cost, _ = _read_cost_env() if cost_estimate_enabled else (None, None, None)
+    if run_result.get("usage_available") and run_result.get("input_tokens") is not None:
+        sdk_cost = compute_measured_sdk_cost(
+            input_tokens=run_result["input_tokens"],
+            output_tokens=run_result["output_tokens"],
+            input_cost_per_1m=inp_cost,
+            output_cost_per_1m=out_cost,
+        )
+        return sdk_cost["cost_source"], sdk_cost.get("measured_cost_eur"), sdk_cost.get("measured_cost_eur_per_1m"), sdk_cost.get("measured_cost_eur_per_1m")
+    if cost_estimate_enabled and inp_cost is not None and out_cost is not None:
+        return COST_SOURCE_ESTIMATED, None, None, None
+    return COST_SOURCE_UNAVAILABLE, None, None, None
 
 
 def build_real_receipt(
@@ -343,77 +455,96 @@ def build_real_receipt(
     claude_cmd: str,
     run_result: dict,
     cost_estimate_enabled: bool,
+    provider: str = PROVIDER_CLI,
 ) -> ExternalComparisonReceipt:
-    ratio, avoided, cost_src = compute_comparison(
-        task["obsidia_cost_eur_per_1m"],
-        None,
-    )
     kind = task.get("benchmark_kind", BENCHMARK_KIND_ROUTING)
     output = run_result.get("output_excerpt", "")
     success = run_result.get("success", False)
+    failure_type = run_result.get("failure_type", FAILURE_NONE)
+    timeout_occurred = run_result.get("timeout_occurred", False)
+    encoding_occurred = run_result.get("encoding_error_occurred", False)
 
-    # Routing evaluation
+    # SDK usage fields
+    usage_available = run_result.get("usage_available", False)
+    input_tokens = run_result.get("input_tokens")
+    output_tokens = run_result.get("output_tokens")
+    total_tokens = run_result.get("total_tokens")
+    model_label = run_result.get("model_label", "")
+
     route_quality: dict = {}
     label_quality: dict = {}
+    parser_error = False
+
     if kind == BENCHMARK_KIND_ROUTING:
         route_quality = evaluate_route_quality(
             expected_route=task.get("expected_route", ""),
             external_output=output,
             external_success=success,
         )
+        parser_error = route_quality.get("classification_error_type") == "UNPARSEABLE_OUTPUT"
     else:
         label_quality = evaluate_domain_output_quality(
             expected_labels=task.get("expected_labels", []),
             external_output=output,
             external_success=success,
         )
+        parser_error = label_quality.get("classification_error_type") == "UNPARSEABLE_OUTPUT"
 
-    # Token cost estimation
-    estimated: dict | None = None
-    if cost_estimate_enabled:
-        inp_cost, out_cost, _ = _read_cost_env()
+    # Cost resolution
+    cost_src = COST_SOURCE_UNAVAILABLE
+    measured_cost_eur: Optional[float] = None
+    measured_cost_eur_per_1m: Optional[float] = None
+    ratio: Optional[float] = None
+    avoided: Optional[float] = None
+
+    if provider == PROVIDER_SDK and usage_available and input_tokens is not None:
+        inp_p, out_p, _ = _read_cost_env()
+        sdk_cost = compute_measured_sdk_cost(input_tokens, output_tokens or 0, inp_p, out_p)
+        cost_src = sdk_cost["cost_source"]
+        measured_cost_eur = sdk_cost.get("measured_cost_eur")
+        measured_cost_eur_per_1m = sdk_cost.get("measured_cost_eur_per_1m")
+        if measured_cost_eur_per_1m is not None:
+            ratio_val, avoided_val, _ = compute_comparison(task["obsidia_cost_eur_per_1m"], measured_cost_eur_per_1m)
+            ratio, avoided = ratio_val, avoided_val
+    elif cost_estimate_enabled:
+        inp_p, out_p, _ = _read_cost_env()
         estimated = compute_estimated_external_cost(
-            input_text=task["task_prompt"],
-            output_text=output,
-            input_cost_per_1m=inp_cost,
-            output_cost_per_1m=out_cost,
+            input_text=task["task_prompt"], output_text=output,
+            input_cost_per_1m=inp_p, output_cost_per_1m=out_p,
         )
-        if estimated["cost_source"] == "ESTIMATED":
-            cost_src = "ESTIMATED"
+        if estimated["cost_source"] == COST_SOURCE_ESTIMATED:
+            cost_src = COST_SOURCE_ESTIMATED
+
+    q_score = route_quality.get("quality_score") if kind == BENCHMARK_KIND_ROUTING else label_quality.get("quality_score")
 
     return ExternalComparisonReceipt(
-        task_id=task["task_id"],
-        task_family=task["task_family"],
-        task_prompt=task["task_prompt"][:EXCERPT_MAX_CHARS],
-        obsidia_route=task["obsidia_route"],
-        obsidia_expected_output_type=task["obsidia_expected_output_type"],
-        obsidia_cost_eur_per_1m=task["obsidia_cost_eur_per_1m"],
-        obsidia_latency_ms=task["obsidia_latency_ms"],
-        obsidia_success=True,
-        external_provider="claude_code_cli",
-        external_model_or_cli="claude",
-        external_command_detected=claude_cmd,
-        external_available=claude_available,
+        **_task_receipt_base(task, claude_available, claude_cmd),
         external_network_allowed=True,
         external_latency_ms=run_result.get("latency_ms"),
         external_success=success,
         external_error=run_result.get("error", ""),
         external_output_excerpt=output,
-        external_usage_available=False,
+        external_usage_available=usage_available,
+        external_input_tokens=input_tokens,
+        external_output_tokens=output_tokens,
+        external_total_tokens=total_tokens,
+        external_model_label=model_label,
+        external_cost_eur_measured=measured_cost_eur,
+        external_cost_eur_per_1m_measured=measured_cost_eur_per_1m,
         cost_source=cost_src,
-        benchmark_kind=kind,
-        expected_route=task.get("expected_route", ""),
         external_detected_route=route_quality.get("external_detected_route"),
         route_match=route_quality.get("route_match"),
-        expected_output_hint=task.get("expected_output_hint", ""),
-        quality_score=route_quality.get("quality_score") if kind == BENCHMARK_KIND_ROUTING else label_quality.get("quality_score"),
+        quality_score=q_score,
         quality_notes=route_quality.get("quality_notes", "") if kind == BENCHMARK_KIND_ROUTING else label_quality.get("quality_notes", ""),
         classification_error_type=route_quality.get("classification_error_type", ERROR_USAGE_ONLY) if kind == BENCHMARK_KIND_ROUTING else label_quality.get("classification_error_type", ERROR_USAGE_ONLY),
-        expected_labels=task.get("expected_labels"),
         external_detected_label=label_quality.get("external_detected_label"),
         label_match=label_quality.get("label_match"),
         savings_ratio_vs_external=ratio,
         avoided_cost_eur_per_1m=avoided,
+        timeout_occurred=timeout_occurred,
+        encoding_error_occurred=encoding_occurred,
+        parser_error_occurred=parser_error,
+        external_failure_type=failure_type,
     )
 
 
@@ -424,28 +555,37 @@ def main() -> None:
     full_run = os.environ.get("OIE_EXTERNAL_BENCHMARK_FULL", "0") == "1"
     domain_run = os.environ.get("OIE_EXTERNAL_BENCHMARK_DOMAIN", "0") == "1"
     cost_estimate_enabled = os.environ.get("OIE_EXTERNAL_COST_ESTIMATE", "0") == "1"
+    provider = os.environ.get("OIE_EXTERNAL_PROVIDER", PROVIDER_CLI)
+    sdk_model = os.environ.get("OIE_EXTERNAL_MODEL_LABEL", "")
     mode = "REAL" if network_allowed else "DRY_RUN"
 
     claude_available, claude_cmd, claude_info = detect_claude_cli()
 
-    print("\n=== OIE External Benchmark Harness V0.2 ===\n")
+    print("\n=== OIE External Benchmark Harness V0.4 ===\n")
     print(f"  Mode                   : {mode}")
+    print(f"  Provider               : {provider}")
     print(f"  Network allowed        : {network_allowed}")
-    print(f"  Claude detected        : {claude_available}")
-    if claude_available:
-        print(f"  Claude command         : {claude_cmd}")
-        print(f"  Claude info            : {claude_info[:80]}")
+    if provider == PROVIDER_CLI:
+        print(f"  Claude detected        : {claude_available}")
+        if claude_available:
+            print(f"  Claude command         : {claude_cmd}")
+            print(f"  Claude info            : {claude_info[:80]}")
+    else:
+        print(f"  SDK model              : {sdk_model if sdk_model else '(not set - MODEL_NOT_CONFIGURED)'}")
+        # Never print API key
+        key_set = bool(os.environ.get("ANTHROPIC_API_KEY", ""))
+        print(f"  ANTHROPIC_API_KEY set  : {key_set}")
     print(f"  Full routing run       : {full_run}")
     print(f"  Domain output run      : {domain_run}")
     print(f"  Cost estimate enabled  : {cost_estimate_enabled}")
-    if cost_estimate_enabled:
+    if cost_estimate_enabled or provider == PROVIDER_SDK:
         inp_c, out_c, mlabel = _read_cost_env()
         print(f"  Input cost /1M         : {inp_c}")
         print(f"  Output cost /1M        : {out_c}")
-        print(f"  Model label            : {mlabel}")
+        if provider == PROVIDER_CLI:
+            print(f"  Model label            : {mlabel}")
     print()
 
-    # Task selection
     if domain_run:
         tasks_to_run = DOMAIN_OUTPUT_TASKS
         active_kind = "DOMAIN_OUTPUT"
@@ -465,6 +605,8 @@ def main() -> None:
     for task in tasks_to_run:
         kind = task.get("benchmark_kind", BENCHMARK_KIND_ROUTING)
         print(f"  [{kind}] [{task['task_family']}] {task['task_id']}")
+        print(f"    axis            : {task.get('comparison_axis', 'N/A')}")
+        print(f"    model_call_req  : obsidia={task.get('obsidia_model_call_required')} external={task.get('external_model_call_required')}")
         if kind == BENCHMARK_KIND_ROUTING:
             print(f"    expected_route  : {task.get('expected_route', 'N/A')}")
         else:
@@ -473,28 +615,54 @@ def main() -> None:
         if not network_allowed:
             receipt = build_dry_run_receipt(task, claude_available, claude_cmd)
             print(f"    -> DRY_RUN | obsidia={task['obsidia_cost_eur_per_1m']} EUR/1M")
+        elif provider == PROVIDER_SDK:
+            if not sdk_model:
+                run_result = {
+                    "success": False, "latency_ms": 0.0, "output_excerpt": "",
+                    "error": "MODEL_NOT_CONFIGURED", "timeout_occurred": False,
+                    "encoding_error_occurred": False, "failure_type": "MODEL_NOT_CONFIGURED",
+                    "usage_available": False, "input_tokens": None, "output_tokens": None,
+                    "total_tokens": None, "model_label": "",
+                }
+            else:
+                print(f"    -> RUNNING anthropic SDK model={sdk_model} ...")
+                run_result = run_anthropic_sdk(task["task_prompt"], sdk_model)
+            receipt = build_real_receipt(
+                task, claude_available, claude_cmd, run_result, cost_estimate_enabled, provider=PROVIDER_SDK
+            )
+            status = "OK" if run_result["success"] else f"FAIL({run_result['error'][:40]})"
+            usage_str = f"in={run_result.get('input_tokens')} out={run_result.get('output_tokens')}" if run_result.get("usage_available") else "usage=unavailable"
+            print(f"    -> {status} | latency={run_result.get('latency_ms', 0):.0f}ms | {usage_str}")
+            print(f"    cost_source     : {receipt.cost_source}")
+            if receipt.external_cost_eur_per_1m_measured is not None:
+                print(f"    measured EUR/1M : {receipt.external_cost_eur_per_1m_measured:.4f}")
         elif not claude_available:
             receipt = ExternalComparisonReceipt(
-                task_id=task["task_id"],
-                task_family=task["task_family"],
-                benchmark_kind=kind,
-                external_available=False,
+                **_task_receipt_base(task, claude_available, claude_cmd),
                 external_network_allowed=True,
                 external_success=False,
                 external_error="CLAUDE_NOT_AVAILABLE",
                 expected_route=task.get("expected_route", ""),
                 expected_labels=task.get("expected_labels"),
                 classification_error_type=ERROR_USAGE_ONLY,
+                external_failure_type="CLI_ERROR",
             )
             print(f"    -> SKIPPED | Claude not available")
         else:
             print(f"    -> RUNNING claude -p ...")
             run_result = run_claude_cli(task["task_prompt"])
             receipt = build_real_receipt(
-                task, claude_available, claude_cmd, run_result, cost_estimate_enabled
+                task, claude_available, claude_cmd, run_result, cost_estimate_enabled, provider=PROVIDER_CLI
             )
-            status = "OK" if run_result["success"] else f"FAIL({run_result['error']})"
-            print(f"    -> {status} | latency={run_result['latency_ms']:.0f}ms")
+            status = "OK" if run_result["success"] else f"FAIL({run_result['error'][:40]})"
+            print(f"    -> {status} | latency={run_result.get('latency_ms', 0):.0f}ms | failure_type={run_result.get('failure_type', FAILURE_NONE)}")
+            if run_result.get("encoding_error_occurred"):
+                print(f"    WARN encoding   : replacement chars detected in output")
+            if run_result.get("output_excerpt"):
+                excerpt = run_result["output_excerpt"][:80].replace("\n", " ")
+                print(f"    excerpt         : {excerpt}")
+
+        if network_allowed and receipt.external_success:
             if kind == BENCHMARK_KIND_ROUTING:
                 print(f"    detected_route  : {receipt.external_detected_route}")
                 print(f"    route_match     : {receipt.route_match}")
@@ -503,9 +671,6 @@ def main() -> None:
                 print(f"    label_match     : {receipt.label_match}")
             print(f"    quality_score   : {receipt.quality_score}")
             print(f"    error_type      : {receipt.classification_error_type}")
-            if run_result.get("output_excerpt"):
-                excerpt = run_result["output_excerpt"][:80].replace("\n", " ")
-                print(f"    excerpt         : {excerpt}")
 
         receipts.append(receipt)
         print()
@@ -524,9 +689,21 @@ def main() -> None:
     avg_rq = sum(r.quality_score for r in r_quality) / len(r_quality) if r_quality else None
     avg_dq = sum(r.quality_score for r in d_quality) / len(d_quality) if d_quality else None
 
+    all_quality = [r for r in receipts if r.quality_score is not None]
+    avg_quality_penalty = (
+        sum(1.0 - r.quality_score for r in all_quality) / len(all_quality)
+        if all_quality else None
+    )
+
     ext_successes = [r for r in receipts if r.external_success]
     usage_available = [r for r in receipts if r.external_usage_available]
     cost_estimated = [r for r in receipts if r.cost_source == "ESTIMATED"]
+    cost_available = [r for r in receipts if r.cost_source in ("MEASURED", "ESTIMATED")]
+    timeout_list = [r for r in receipts if r.timeout_occurred]
+    encoding_list = [r for r in receipts if r.encoding_error_occurred]
+    refusal_list = [r for r in receipts if r.external_failure_type == "PROVIDER_REFUSAL"]
+
+    model_call_avoided = [r for r in receipts if r.external_model_call_required and not r.obsidia_model_call_required]
 
     cost_source_counts: dict[str, int] = {}
     for r in receipts:
@@ -543,8 +720,14 @@ def main() -> None:
     print(f"  Label mismatch              : {len(label_mismatches)}")
     print(f"  Avg routing quality         : {f'{avg_rq:.2f}' if avg_rq is not None else 'N/A'}")
     print(f"  Avg domain quality          : {f'{avg_dq:.2f}' if avg_dq is not None else 'N/A'}")
+    print(f"  Avg quality penalty         : {f'{avg_quality_penalty:.3f}' if avg_quality_penalty is not None else 'N/A'}")
+    print(f"  Model call avoided          : {len(model_call_avoided)}")
+    print(f"  Model call avoided rate     : {len(model_call_avoided)/len(receipts):.2f}" if receipts else "  Model call avoided rate     : N/A")
     print(f"  Usage available             : {len(usage_available)}")
     print(f"  Cost estimated              : {len(cost_estimated)}")
+    print(f"  Timeout count               : {len(timeout_list)}")
+    print(f"  Encoding warning count      : {len(encoding_list)}")
+    print(f"  Provider refusal count      : {len(refusal_list)}")
     print(f"  Non-sovereign               : all (emits_act=False, kernel_mutation=False)")
     print(f"  Secrets redacted            : True")
     print()
@@ -552,7 +735,7 @@ def main() -> None:
     benchmark_id = str(uuid.uuid4())
     output_payload = {
         "benchmark_id": benchmark_id,
-        "benchmark": "OIE_EXTERNAL_CLAUDE_V0.2",
+        "benchmark": "OIE_EXTERNAL_CLAUDE_V0.3",
         "mode": mode,
         "active_kind": active_kind,
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -575,9 +758,18 @@ def main() -> None:
             "label_mismatch_count": len(label_mismatches),
             "avg_route_quality_score": round(avg_rq, 4) if avg_rq is not None else None,
             "avg_domain_quality_score": round(avg_dq, 4) if avg_dq is not None else None,
+            "avg_quality_penalty": round(avg_quality_penalty, 4) if avg_quality_penalty is not None else None,
+            "model_call_avoided_count": len(model_call_avoided),
+            "model_call_avoided_rate": round(len(model_call_avoided) / len(receipts), 4) if receipts else None,
             "usage_available_count": len(usage_available),
+            "cost_available_rate": round(len(cost_available) / len(receipts), 4) if receipts else None,
             "cost_estimated_count": len(cost_estimated),
+            "estimated_cost_rate": round(len(cost_estimated) / len(receipts), 4) if receipts else None,
             "cost_source_counts": cost_source_counts,
+            "timeout_count": len(timeout_list),
+            "provider_refusal_count": len(refusal_list),
+            "encoding_warning_count": len(encoding_list),
+            "differential_metrics_available": False,
             "savings_ratio_available": False,
             "governance": {
                 "emits_act": False,
@@ -608,7 +800,7 @@ def main() -> None:
         print("To run domain-output benchmark:")
         print("  PowerShell : $env:OIE_EXTERNAL_BENCHMARK_DOMAIN='1'")
         print()
-        print("To enable token cost estimation (set prices first):")
+        print("To enable token cost estimation:")
         print("  $env:OIE_EXTERNAL_INPUT_COST_PER_1M='3.0'")
         print("  $env:OIE_EXTERNAL_OUTPUT_COST_PER_1M='15.0'")
         print("  $env:OIE_EXTERNAL_COST_ESTIMATE='1'")
