@@ -789,6 +789,35 @@ def _is_boundary_objective(objective: str) -> bool:
     return sum(1 for t in _BOUNDARY_OBJECTIVE_TERMS if t in objective) >= 2
 
 
+_CODE_SURVEILLANCE_OBJECTIVE_TERMS: Tuple[str, ...] = (
+    "P_ObsidureCodeSurveillance_NonSovereign",
+    "P_CandidateCorrection_RequiresValidation",
+    "P_ProtectedRuntimeMutation_Blocked",
+    "code surveillance",
+    "correction_candidate",
+    "protected infix",
+    "runtime mutation",
+    "kernel mutation",
+    "auto commit",
+    "apply proposal",
+    "HUMAN_APPROVED_WRITE",
+)
+
+_CODE_SURVEILLANCE_EXPLICIT_IDS: Tuple[str, ...] = (
+    "P_ObsidureCodeSurveillance_NonSovereign",
+    "P_CandidateCorrection_RequiresValidation",
+    "P_ProtectedRuntimeMutation_Blocked",
+)
+
+
+def _is_code_surveillance_objective(objective: str) -> bool:
+    """Vrai si l'objectif cible un théorème de surveillance code."""
+    for explicit_id in _CODE_SURVEILLANCE_EXPLICIT_IDS:
+        if explicit_id in objective:
+            return True
+    return sum(1 for t in _CODE_SURVEILLANCE_OBJECTIVE_TERMS if t in objective) >= 2
+
+
 # ===========================================================================
 # 4b.  ERROR ANALYZER — cerveau réflexif de la boucle de stabilisation
 # ===========================================================================
@@ -1251,9 +1280,12 @@ class LeanMutationEngine:
         La stratégie est déterminée par le dernier ErrorContext LEAN_BUILD_ERROR.
         Si aucun échec Lean précédent → SEMANTIC (premier essai sémantique).
         """
-        # Priorité : BOUNDARY_NON_SOVEREIGNTY pour objectifs non-souveraineté/boundary
+        # Priorité 1 : BOUNDARY_NON_SOVEREIGNTY pour objectifs non-souveraineté/boundary
+        # Priorité 2 : CODE_SURVEILLANCE_TEMPLATE pour objectifs surveillance code
         if _is_boundary_objective(objective):
             strategy = "BOUNDARY_NON_SOVEREIGNTY"
+        elif _is_code_surveillance_objective(objective):
+            strategy = "CODE_SURVEILLANCE_TEMPLATE"
         else:
             lean_ctxs = [c for c in error_contexts if c.error_type == "LEAN_BUILD_ERROR"]
             if lean_ctxs:
@@ -1393,6 +1425,91 @@ class LeanMutationEngine:
                 "end ObsidureBoundary",
                 "end Obsidia",
             ])
+
+        elif strategy == "CODE_SURVEILLANCE_TEMPLATE":
+            # Théorèmes de surveillance code — standalone core Lean 4
+            # Dispatch par theorem_id pour les 3 théorèmes V1
+            # Construit sans textwrap.dedent pour garantir indentation colonne 0
+            common_lines = [
+                import_line,
+                "",
+                f"-- Théorème périphérique {theorem_id} | Tentative {attempt} | Stratégie: CODE_SURVEILLANCE_TEMPLATE",
+                f"-- Objectif: {objective[:60]}",
+                "-- attestation_only: True | runtime_bound: False",
+                "",
+                "namespace Obsidia",
+                "namespace ObsidureCodeSurveillance",
+                "",
+                "structure CodeSurveillanceOutput where",
+                "  proposes_patch    : Bool",
+                "  applies_patch     : Bool",
+                "  commits_git       : Bool",
+                "  mutates_runtime   : Bool",
+                "  mutates_kernel    : Bool",
+                "  writes_memory     : Bool",
+                "  human_validated   : Bool",
+                "",
+                "def nonSovereign (o : CodeSurveillanceOutput) : Prop :=",
+                "  o.applies_patch = false ∧",
+                "  o.commits_git = false ∧",
+                "  o.mutates_runtime = false ∧",
+                "  o.mutates_kernel = false ∧",
+                "  o.writes_memory = false",
+                "",
+                "def requiresValidation (o : CodeSurveillanceOutput) : Prop :=",
+                "  o.proposes_patch = true → o.human_validated = true",
+                "",
+                "def protectedMutationBlocked (o : CodeSurveillanceOutput) : Prop :=",
+                "  o.mutates_runtime = false ∧ o.mutates_kernel = false",
+            ]
+            if theorem_id == "P_ObsidureCodeSurveillance_NonSovereign":
+                proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (o : CodeSurveillanceOutput)",
+                    "    (h : nonSovereign o) :",
+                    "    o.applies_patch = false ∧ o.commits_git = false := by",
+                    "  unfold nonSovereign at h",
+                    "  exact ⟨h.1, h.2.1⟩",
+                ]
+            elif theorem_id == "P_CandidateCorrection_RequiresValidation":
+                proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (o : CodeSurveillanceOutput)",
+                    "    (h : requiresValidation o)",
+                    "    (hp : o.proposes_patch = true) :",
+                    "    o.human_validated = true := by",
+                    "  unfold requiresValidation at h",
+                    "  exact h hp",
+                ]
+            elif theorem_id == "P_ProtectedRuntimeMutation_Blocked":
+                proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (o : CodeSurveillanceOutput)",
+                    "    (h : protectedMutationBlocked o) :",
+                    "    o.mutates_runtime = false ∧ o.mutates_kernel = false := by",
+                    "  unfold protectedMutationBlocked at h",
+                    "  exact h",
+                ]
+            else:
+                # Fallback générique CODE_SURVEILLANCE sans marqueur P38
+                proof_lines = [
+                    "",
+                    f"theorem {theorem_id}",
+                    "    (o : CodeSurveillanceOutput)",
+                    "    (h : nonSovereign o) :",
+                    "    o.applies_patch = false := by",
+                    "  unfold nonSovereign at h",
+                    "  exact h.1",
+                ]
+            footer_lines = [
+                "",
+                "end ObsidureCodeSurveillance",
+                "end Obsidia",
+            ]
+            return "\n".join(common_lines + proof_lines + footer_lines)
 
         else:  # MINIMAL_RFL — dernier recours, jamais sorry
             return textwrap.dedent(f"""
@@ -1578,11 +1695,13 @@ def generate_patches(
         explicit_path = _extract_target_path_from_objective(objective)
         explicit_stmt = _extract_explicit_lean_statement(objective)
 
-        # Priorité : ID numérique explicite → stem path pour boundary → auto-incrémenteur
+        # Priorité : ID numérique explicite → stem path pour boundary/code-surveillance → auto-incrémenteur
         # Le stem du path (ex. P_ObsidureBoundary_NonDecision) évite les collisions P38
         if explicit_id:
             theorem_id = explicit_id
-        elif explicit_path and _is_boundary_objective(objective):
+        elif explicit_path and (
+            _is_boundary_objective(objective) or _is_code_surveillance_objective(objective)
+        ):
             theorem_id = Path(explicit_path).stem
         else:
             theorem_id = f"P{_next_peripheral_theorem_id()}"
@@ -1654,19 +1773,23 @@ def generate_patches(
                     lean_result["strategy_used"] = (
                         "EXPLICIT_OBJECTIVE" if explicit_stmt
                         else (error_contexts[-1].recommended_strategy if error_contexts
-                              else ("BOUNDARY_NON_SOVEREIGNTY" if _is_boundary_objective(objective) else "SEMANTIC"))
+                              else (
+                                  "BOUNDARY_NON_SOVEREIGNTY" if _is_boundary_objective(objective)
+                                  else ("CODE_SURVEILLANCE_TEMPLATE" if _is_code_surveillance_objective(objective)
+                                        else "SEMANTIC")
+                              ))
                     )
+                    _strat_used = lean_result.get("strategy_used", "SEMANTIC")
+                    if _strat_used in ("BOUNDARY_NON_SOVEREIGNTY", "CODE_SURVEILLANCE_TEMPLATE"):
+                        _diff_summary = f"Théorème {theorem_id} — stratégie {_strat_used} — sans sorry."
+                    else:
+                        _diff_summary = (
+                            f"Théorème {theorem_id} (T{attempt}) — stratégie {_strat_used} — sans sorry."
+                        )
                     patches.append({
                         "path": patch_path,
                         "action": "CREATE_LEAN_PERIPHERAL",
-                        "diff_summary": (
-                            f"Théorème {theorem_id} — stratégie BOUNDARY_NON_SOVEREIGNTY — sans sorry."
-                            if lean_result.get("strategy_used") == "BOUNDARY_NON_SOVEREIGNTY"
-                            else (
-                                f"Théorème {theorem_id} (T{attempt}) — "
-                                f"stratégie {lean_result['strategy_used']} — sans sorry."
-                            )
-                        ),
+                        "diff_summary": _diff_summary,
                         "rationale": objective[:150],
                         "domain": "LEAN",
                         "sandbox_path": str(lean_file),
@@ -2183,10 +2306,14 @@ def _classify_lean_capability(
     cs_hits = _hits(_LC_CODE_SURVEILLANCE)
     ar_hits = _hits(_LC_ARITHMETIC)
     pr_hits = _hits(_LC_PROPOSITIONAL)
+    # Hits explicites CODE_SURVEILLANCE (nom de théorème présent verbatim)
+    cs_explicit_hits = [e for e in _CODE_SURVEILLANCE_EXPLICIT_IDS if e in objective]
 
-    # Priorité : NON_SOVEREIGNTY > BOUNDARY > MEMORY_INVARIANT >
-    #            DOMAIN_KERNEL_INVARIANT > CODE_SURVEILLANCE >
-    #            ARITHMETIC > PROPOSITIONAL > UNKNOWN
+    # Priorité : NON_SOVEREIGNTY > BOUNDARY > CODE_SURVEILLANCE_EXPLICIT >
+    #            MEMORY_INVARIANT > DOMAIN_KERNEL_INVARIANT >
+    #            CODE_SURVEILLANCE_GENERAL > ARITHMETIC > PROPOSITIONAL > UNKNOWN
+    # Note : cs_explicit_hits permet aux théorèmes nommés de passer avant
+    # MEMORY_INVARIANT même si l'objectif contient "memory_write".
     if ns_hits:
         lean_class = "NON_SOVEREIGNTY"
         signals += [f"ns_term:{t}" for t in ns_hits]
@@ -2205,6 +2332,14 @@ def _classify_lean_capability(
         requires_human = True
         strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
         confidence = "MEDIUM"
+    elif cs_explicit_hits:
+        lean_class = "CODE_SURVEILLANCE"
+        signals += [f"cs_explicit:{e}" for e in cs_explicit_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "CODE_SURVEILLANCE_TEMPLATE"
+        confidence = "HIGH"
     elif mem_hits:
         lean_class = "MEMORY_INVARIANT"
         signals += [f"mem_term:{t}" for t in mem_hits]
