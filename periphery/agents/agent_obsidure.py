@@ -55,6 +55,14 @@ except ImportError:
     _requests = None  # type: ignore
     _REQUESTS_OK = False
 
+# ── MathMemory readonly provider — fail-soft si absent ──────────────────────
+try:
+    from periphery.agents.obsidure_math_memory_provider import get_provider as _get_math_provider
+    _MATH_PROVIDER_OK = True
+except Exception:
+    _get_math_provider = None  # type: ignore
+    _MATH_PROVIDER_OK = False
+
 
 # ===========================================================================
 # 0.  FRONTIÈRES DURES — NE PAS MODIFIER À L'EXÉCUTION
@@ -272,6 +280,7 @@ class PatchProposal:
     human_approved: bool = False
     self_diagnosis: Optional[Dict[str, Any]] = None
     next_run_plan: Optional[Dict[str, Any]] = None
+    math_memory_context_pack: Optional[Dict[str, Any]] = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     receipt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -2154,6 +2163,121 @@ def _compute_next_run_plan(
     }
 
 
+_MATH_MEMORY_TRIGGER_TERMS: Tuple[str, ...] = (
+    "Boundary", "NonDecision", "NonSovereignty", "KX108",
+    "allowed_to_decide", "emits_act", "memory_write", "kernel_mutation",
+    "HOLD", "entropy", "path_fidelity", "coherence", "LEAN_SANDBOX",
+)
+
+_MATH_MEMORY_MAX_SELECTED: int = 8
+
+
+def _build_math_memory_context_pack(objective: str) -> Dict[str, Any]:
+    """
+    Construit un context pack readonly à partir de MATH_MEMORY_INDEX.
+    Lecture seule — aucune écriture, aucun acte, aucune mutation kernel.
+    Si le provider est indisponible, retourne un pack UNAVAILABLE non bloquant.
+    decision_authority=KX108_ONLY — ce pack n'influence aucune décision.
+    """
+    boundary_info: Dict[str, Any] = {
+        "readonly": True,
+        "kernel_mutation": False,
+        "emits_act": False,
+        "memory_write": False,
+    }
+
+    if not _MATH_PROVIDER_OK or _get_math_provider is None:
+        return {
+            "readonly": True,
+            "source": "periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json",
+            "provider": "ObsidureMathMemoryProvider",
+            "status": "UNAVAILABLE",
+            "total_ids_seen": 0,
+            "selected_count": 0,
+            "selected_items": [],
+            "boundary": boundary_info,
+        }
+
+    try:
+        provider = _get_math_provider()
+        all_ids = provider.list_ids()
+        boundary_from_provider = provider.explain_boundary()
+        boundary_info = {
+            "readonly": boundary_from_provider.get("readonly", True),
+            "kernel_mutation": boundary_from_provider.get("kernel_mutation", False),
+            "emits_act": boundary_from_provider.get("emits_act", False),
+            "memory_write": boundary_from_provider.get("memory_write", False),
+        }
+
+        selected: List[Dict[str, Any]] = []
+
+        # Chercher d'abord des ids exacts mentionnés dans l'objectif
+        for pid in all_ids:
+            if pid in objective:
+                item = provider.get_pepite(pid)
+                if item != "MISSING_CONTEXT" and isinstance(item, dict):
+                    selected.append({
+                        "id": pid,
+                        "status": provider.get_status(pid),
+                        "can_use_for_proof": provider.can_use_for_proof(pid),
+                        "has_lean_signature_candidate": bool(item.get("lean_signature_candidate")),
+                        "lean_signature_candidate": item.get("lean_signature_candidate"),
+                        "missing_dependencies": provider.get_missing_dependencies(pid),
+                    })
+                if len(selected) >= _MATH_MEMORY_MAX_SELECTED:
+                    break
+
+        # Si pas assez d'items exacts, sélectionner par termes déclencheurs
+        # Filtre : can_be_used_by_obsidure=True (103/134) — champ JSON réel
+        # (can_be_used_for_proof ne couvre qu'1/134 items — trop restrictif)
+        if len(selected) < _MATH_MEMORY_MAX_SELECTED:
+            has_trigger = any(t in objective for t in _MATH_MEMORY_TRIGGER_TERMS)
+            if has_trigger:
+                for pid in all_ids:
+                    if len(selected) >= _MATH_MEMORY_MAX_SELECTED:
+                        break
+                    if any(s["id"] == pid for s in selected):
+                        continue
+                    item = provider.get_pepite(pid)
+                    if item == "MISSING_CONTEXT" or not isinstance(item, dict):
+                        continue
+                    if not item.get("can_be_used_by_obsidure", False):
+                        continue
+                    if item.get("status") == "MISSING_CONTEXT":
+                        continue
+                    selected.append({
+                        "id": pid,
+                        "status": provider.get_status(pid),
+                        "can_use_for_proof": bool(item.get("can_be_used_by_obsidure", False)),
+                        "has_lean_signature_candidate": bool(item.get("lean_signature_candidate")),
+                        "lean_signature_candidate": item.get("lean_signature_candidate"),
+                        "missing_dependencies": provider.get_missing_dependencies(pid),
+                    })
+
+        return {
+            "readonly": True,
+            "source": "periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json",
+            "provider": "ObsidureMathMemoryProvider",
+            "status": "AVAILABLE",
+            "total_ids_seen": len(all_ids),
+            "selected_count": len(selected),
+            "selected_items": selected,
+            "boundary": boundary_info,
+        }
+
+    except Exception as exc:
+        return {
+            "readonly": True,
+            "source": "periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json",
+            "provider": "ObsidureMathMemoryProvider",
+            "status": f"ERROR:{type(exc).__name__}",
+            "total_ids_seen": 0,
+            "selected_count": 0,
+            "selected_items": [],
+            "boundary": boundary_info,
+        }
+
+
 def persist_proposal(proposal: PatchProposal) -> Path:
     """
     Écrit le PATCH_PROPOSAL (JSON + RECEIPT.md) dans _PATCH_PROPOSALS/<id>/.
@@ -2189,6 +2313,7 @@ def persist_proposal(proposal: PatchProposal) -> Path:
         "stabilization": asdict(proposal.stabilization) if proposal.stabilization else None,
         "self_diagnosis": proposal.self_diagnosis,
         "next_run_plan": proposal.next_run_plan,
+        "math_memory_context_pack": proposal.math_memory_context_pack,
     }
     (proposal_dir / "proposal.json").write_text(
         json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -2301,6 +2426,27 @@ def persist_proposal(proposal: PatchProposal) -> Path:
             f"- Décision opérateur requise : {'oui' if nrp.get('operator_decision_required') else 'non'}",
             f"- Type de commande suggéré : `{nrp.get('suggested_command_type', '?')}`",
             f"- Raison : {nrp.get('reason', '?')}",
+            f"",
+        ]
+    if proposal.math_memory_context_pack:
+        mmp = proposal.math_memory_context_pack
+        boundary = mmp.get("boundary", {})
+        selected = mmp.get("selected_items", [])
+        sig_count = sum(1 for s in selected if s.get("has_lean_signature_candidate"))
+        proof_count = sum(1 for s in selected if s.get("can_use_for_proof"))
+        selected_ids = [s.get("id", "?") for s in selected]
+        lines += [
+            f"## MathMemory Context Pack",
+            f"- status : `{mmp.get('status', '?')}`",
+            f"- readonly : {mmp.get('readonly', True)}",
+            f"- selected_count : {mmp.get('selected_count', 0)}",
+            f"- ids sélectionnés : {selected_ids}",
+            f"- has_lean_signature_candidate : {sig_count}/{mmp.get('selected_count', 0)}",
+            f"- can_use_for_proof : {proof_count}/{mmp.get('selected_count', 0)}",
+            f"- boundary.readonly : {boundary.get('readonly', True)}",
+            f"- boundary.kernel_mutation : {boundary.get('kernel_mutation', False)}",
+            f"- boundary.emits_act : {boundary.get('emits_act', False)}",
+            f"- boundary.memory_write : {boundary.get('memory_write', False)}",
             f"",
         ]
     lines += [
@@ -2640,6 +2786,12 @@ class AgentObsidure:
                 level="WARN",
             )
 
+        math_ctx = _build_math_memory_context_pack(objective)
+        self._log(
+            f"  MathMemory ctx : status={math_ctx['status']} selected={math_ctx['selected_count']}",
+            level="INFO" if math_ctx["status"] == "AVAILABLE" else "WARN",
+        )
+
         proposal = PatchProposal(
             proposal_id=str(uuid.uuid4()),
             objective=objective,
@@ -2654,6 +2806,7 @@ class AgentObsidure:
             kernel_path_blocked=False,
             self_diagnosis=self_diag,
             next_run_plan=next_plan,
+            math_memory_context_pack=math_ctx,
         )
         proposal_dir = persist_proposal(proposal)
         self._proposals.append(proposal)
