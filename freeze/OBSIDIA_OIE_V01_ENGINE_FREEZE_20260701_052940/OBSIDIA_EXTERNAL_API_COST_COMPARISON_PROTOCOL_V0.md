@@ -1,8 +1,8 @@
 # OBSIDIA EXTERNAL API COST COMPARISON — PROTOCOL V0
 
-**Statut :** Protocole préparatoire — aucun appel réseau, aucune clé API  
-**Date :** 2026-07-01  
-**Périmètre :** Définir le protocole de benchmark réel futur entre Obsidia et des APIs externes  
+**Statut :** Protocole préparatoire — aucun appel réseau, aucune clé API
+**Date :** 2026-07-01
+**Périmètre :** Définir le protocole de benchmark réel futur entre Obsidia et des APIs externes
 **Autorité :** Kernel X-108 (KX108_ONLY) — OIE reste non souverain
 
 ---
@@ -69,10 +69,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.1 Fast Path vs LLM simple
 
-**Tâche :** Dispatcher une requête sans raisonnement  
-**Obsidia :** Fast Path (0.0015 EUR / 1M)  
-**Externe :** EXT_LLM_SIMPLE  
-**Contrainte de sortie :** route correcte identifiée en < 5ms  
+**Tâche :** Dispatcher une requête sans raisonnement
+**Obsidia :** Fast Path (0.0015 EUR / 1M)
+**Externe :** EXT_LLM_SIMPLE
+**Contrainte de sortie :** route correcte identifiée en < 5ms
 **Baseline attendue :** BT_API_SIMPLE (5 500 EUR / 1M)
 
 ```json
@@ -88,10 +88,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.2 Brody vs assistant LLM
 
-**Tâche :** Répondre à une question conversationnelle avec contexte utilisateur  
-**Obsidia :** Brody chat (0.20 EUR / 1M)  
-**Externe :** EXT_LLM_NORMAL  
-**Contrainte de sortie :** réponse cohérente avec le contexte, non souveraine  
+**Tâche :** Répondre à une question conversationnelle avec contexte utilisateur
+**Obsidia :** Brody chat (0.20 EUR / 1M)
+**Externe :** EXT_LLM_NORMAL
+**Contrainte de sortie :** réponse cohérente avec le contexte, non souveraine
 **Baseline attendue :** BT_API_NORMAL (25 000 EUR / 1M)
 
 ```json
@@ -106,10 +106,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.3 Bank vs analyse LLM domaine
 
-**Tâche :** Décision de virement avec contraintes conformité  
-**Obsidia :** Bank connector (0.70 EUR / 1M)  
-**Externe :** EXT_DOMAIN_LLM  
-**Contrainte de sortie :** ALLOW / HOLD / BLOCK + justification auditable  
+**Tâche :** Décision de virement avec contraintes conformité
+**Obsidia :** Bank connector (0.70 EUR / 1M)
+**Externe :** EXT_DOMAIN_LLM
+**Contrainte de sortie :** ALLOW / HOLD / BLOCK + justification auditable
 **Baseline attendue :** BT_API_NORMAL (25 000 EUR / 1M)
 
 ```json
@@ -124,10 +124,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.4 Trading vs analyse LLM domaine
 
-**Tâche :** Traitement d'un signal de marché avec détection contradiction  
-**Obsidia :** Trading connector (0.84 EUR / 1M)  
-**Externe :** EXT_DOMAIN_LLM  
-**Contrainte de sortie :** signal validé ou HOLD risque + contradictions identifiées  
+**Tâche :** Traitement d'un signal de marché avec détection contradiction
+**Obsidia :** Trading connector (0.84 EUR / 1M)
+**Externe :** EXT_DOMAIN_LLM
+**Contrainte de sortie :** signal validé ou HOLD risque + contradictions identifiées
 **Baseline attendue :** BT_API_NORMAL (25 000 EUR / 1M)
 
 ```json
@@ -142,10 +142,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.5 GPS/Aviation vs analyse LLM terrain
 
-**Tâche :** Validation d'un signal terrain avec décision HOLD/BLOCK sécurité  
-**Obsidia :** Aviation connector (0.91 EUR / 1M)  
-**Externe :** EXT_DOMAIN_LLM  
-**Contrainte de sortie :** route admissible ou BLOCK sécurité + anomalies identifiées  
+**Tâche :** Validation d'un signal terrain avec décision HOLD/BLOCK sécurité
+**Obsidia :** Aviation connector (0.91 EUR / 1M)
+**Externe :** EXT_DOMAIN_LLM
+**Contrainte de sortie :** route admissible ou BLOCK sécurité + anomalies identifiées
 **Baseline attendue :** BT_API_NORMAL (25 000 EUR / 1M)
 
 ```json
@@ -160,10 +160,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.6 Obsidure vs agent code externe
 
-**Tâche :** Générer et vérifier un patch Lean ciblé  
-**Obsidia :** Obsidure Lean ciblé (23.92 EUR / 1M)  
-**Externe :** EXT_CODE_AGENT  
-**Contrainte de sortie :** patch syntaxiquement valide + preuve Lean disponible  
+**Tâche :** Générer et vérifier un patch Lean ciblé
+**Obsidia :** Obsidure Lean ciblé (23.92 EUR / 1M)
+**Externe :** EXT_CODE_AGENT
+**Contrainte de sortie :** patch syntaxiquement valide + preuve Lean disponible
 **Baseline attendue :** BT_AGENTIC (160 000 EUR / 1M)
 
 ```json
@@ -178,10 +178,10 @@ Pour chaque run des deux systèmes :
 
 ### 4.7 Lean/proof vs raisonnement LLM long
 
-**Tâche :** Vérifier un invariant formel  
-**Obsidia :** Lean canon check (13.29 EUR / 1M)  
-**Externe :** EXT_LLM_NORMAL (raisonnement long)  
-**Contrainte de sortie :** vérification formelle ou FAIL attesté  
+**Tâche :** Vérifier un invariant formel
+**Obsidia :** Lean canon check (13.29 EUR / 1M)
+**Externe :** EXT_LLM_NORMAL (raisonnement long)
+**Contrainte de sortie :** vérification formelle ou FAIL attesté
 **Baseline attendue :** BT_API_NORMAL (25 000 EUR / 1M)
 
 ```json

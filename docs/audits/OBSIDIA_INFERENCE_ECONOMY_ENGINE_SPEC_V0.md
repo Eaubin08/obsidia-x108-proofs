@@ -1,8 +1,8 @@
 # OBSIDIA INFERENCE ECONOMY ENGINE — SPEC V0.1
 
-**Statut :** Actif — OIE V0.1 (extension Domain Metrics)  
-**Commit de référence :** 73444cd (freeze audits INFERENCE_ECONOMY / DOMAIN_TOOL_ABSORPTION / STACK_LAYER_POSITIONING)  
-**Date :** 2026-07-01  
+**Statut :** Actif — OIE V0.1 (extension Domain Metrics)
+**Commit de référence :** 73444cd (freeze audits INFERENCE_ECONOMY / DOMAIN_TOOL_ABSORPTION / STACK_LAYER_POSITIONING)
+**Date :** 2026-07-01
 **Autorité :** Kernel X-108 (KX108_ONLY)
 
 ---
@@ -91,7 +91,7 @@ tests/
 ## 7. Indices de portefeuille
 
 ### OSCA — Obsidia Savings Composite Average
-Moyenne géométrique des `savings_ratio` sur l'ensemble du portefeuille.  
+Moyenne géométrique des `savings_ratio` sur l'ensemble du portefeuille.
 Capture la performance économique toutes couches confondues.
 
 ```
