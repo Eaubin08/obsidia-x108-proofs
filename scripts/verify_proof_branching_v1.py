@@ -101,7 +101,7 @@ else:
     if g1:
         # Champs racine
         checks = [
-            ("manifest_id",           "LEAN_PROOF_SURFACE_V1_20260630"),
+            ("manifest_id",           "LEAN_PROOF_SURFACE_V2_20260701"),
             ("proof_surface_version", "1.0.0"),
             ("runtime_bound",         False),
             ("decision_authority",    "KX108_ONLY"),
@@ -120,7 +120,7 @@ else:
         layers_expected = {
             "Peripheral":         15,
             "LegacyPeripheral":   27,
-            "GeneratedPeripheral": 29,
+            "GeneratedPeripheral": 39,
         }
         total_entries = 0
         for lname, expected_count in layers_expected.items():
@@ -138,8 +138,8 @@ else:
                 g1_files[e["lean_file"]] = e
 
         total_entries = len(g1_files)
-        if total_entries != 222:
-            errors.append(f"G1 total entries={total_entries} ≠ 222")
+        if total_entries != 232:
+            errors.append(f"G1 total entries={total_entries} ≠ 232")
             print(f"  FAIL total entries={total_entries}")
         else:
             print(f"  OK  total entries={total_entries}")

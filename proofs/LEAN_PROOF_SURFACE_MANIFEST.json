@@ -1,6 +1,6 @@
 {
-  "manifest_id": "LEAN_PROOF_SURFACE_V1_20260630",
-  "generated_at": "2026-06-30T18:04:39.468682+00:00",
+  "manifest_id": "LEAN_PROOF_SURFACE_V2_20260701",
+  "generated_at": "2026-07-01T18:33:46.571234+00:00",
   "proof_surface_version": "1.0.0",
   "runtime_bound": false,
   "decision_authority": "KX108_ONLY",
@@ -8,7 +8,7 @@
   "attestation_only": true,
   "lean_ok": true,
   "forbidden_ok": true,
-  "total_entries": 222,
+  "total_entries": 232,
   "layers": {
     "Peripheral": {
       "count": 15,
@@ -485,7 +485,7 @@
       ]
     },
     "GeneratedPeripheral": {
-      "count": 29,
+      "count": 39,
       "aggregator": "proofs/lean/Obsidia/GeneratedPeripheral.lean",
       "entries": [
         {
@@ -806,6 +806,116 @@
           "runtime_bound": false,
           "decision_authority": "KX108_ONLY",
           "sha256": "0c1e160fac0a153b3b463578cab11fdc1de6829876d5d8e6da7ac4e90233de87"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_ObsidureBoundary_NonDecision",
+          "item_id": "P_ObsidureBoundary_NonDecision",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_ObsidureBoundary_NonDecision.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "d1639e563db68ed33d3fdcd54c83bec04fc30b34031bb1939b58b30d0cca2599"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_ObsidureCodeSurveillance_NonSovereign",
+          "item_id": "P_ObsidureCodeSurveillance_NonSovereign",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_ObsidureCodeSurveillance_NonSovereign.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "07cf84790a132938af5d3e0a54ea0c16790a5e60eb10247cbc14352ae2f197c1"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_CandidateCorrection_RequiresValidation",
+          "item_id": "P_CandidateCorrection_RequiresValidation",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_CandidateCorrection_RequiresValidation.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "5e54228346016854bd8601db81c922f58ff8e7251e3f99e78b9f3d2655e0301e"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_ProtectedRuntimeMutation_Blocked",
+          "item_id": "P_ProtectedRuntimeMutation_Blocked",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_ProtectedRuntimeMutation_Blocked.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "d062906aa034e24e89daf60a2968fbc0ac6083193edf95664e5535cd791cd74c"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_MemoryWriteInvariant_Readonly",
+          "item_id": "P_MemoryWriteInvariant_Readonly",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_MemoryWriteInvariant_Readonly.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "7e73cac183b6ade46b627be317ab5618038584fc9afe1607d8dfcf5e2754e455"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_GraphitiReadonly_NoWrite",
+          "item_id": "P_GraphitiReadonly_NoWrite",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_GraphitiReadonly_NoWrite.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "7ace0480172d1cafd1b445a353006dfe09555d4a91fbdbf16d01e7c497621190"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_CanonicalMemoryWrite_Blocked",
+          "item_id": "P_CanonicalMemoryWrite_Blocked",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_CanonicalMemoryWrite_Blocked.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "3bbcacf0c4cf2c6401fbef6e4b60ef4b71240f67045fa91675d7495b9407f082"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_DomainKernel_EntropyRisk_RequiresHold",
+          "item_id": "P_DomainKernel_EntropyRisk_RequiresHold",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_EntropyRisk_RequiresHold.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "8d5582696fd3fc5f3e0e1fde0a5ca886341637298d72d0c829fb30b592356035"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_DomainKernel_PathFidelity_RequiresCoherence",
+          "item_id": "P_DomainKernel_PathFidelity_RequiresCoherence",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_PathFidelity_RequiresCoherence.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "015149723c594871c97153eb07fcac44f477bdb1b50eb81b88d3ae245595da5a"
+        },
+        {
+          "proof_id": "LEAN_GENERATEDPERIPHERAL_P_DomainKernel_SignedReceipt_KX108Only",
+          "item_id": "P_DomainKernel_SignedReceipt_KX108Only",
+          "lean_file": "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_SignedReceipt_KX108Only.lean",
+          "category": "GeneratedPeripheral",
+          "lean_ok": true,
+          "forbidden_ok": true,
+          "runtime_bound": false,
+          "decision_authority": "KX108_ONLY",
+          "sha256": "4e390adf55a727601f1d922866c6c431ad51148ac6cc5053a9249bb4233662bb"
         }
       ]
     },

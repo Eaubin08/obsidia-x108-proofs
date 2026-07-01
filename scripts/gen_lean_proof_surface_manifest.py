@@ -145,8 +145,8 @@ if len(peripheral_entries)  != 15:
     errors.append(f"Peripheral count={len(peripheral_entries)} ≠ 15")
 if len(legacy_entries)      != 27:
     errors.append(f"LegacyPeripheral count={len(legacy_entries)} ≠ 27")
-if len(generated_entries)   != 29:
-    errors.append(f"GeneratedPeripheral count={len(generated_entries)} ≠ 29")
+if len(generated_entries)   != 39:
+    errors.append(f"GeneratedPeripheral count={len(generated_entries)} ≠ 39")
 if len(sandbox_entries) == 0:
     errors.append("MathMemorySandbox: aucune entry")
 
@@ -179,7 +179,7 @@ print("\nTous les checks pre-commit : OK")
 now_iso = datetime.now(timezone.utc).isoformat()
 
 manifest = {
-    "manifest_id":            "LEAN_PROOF_SURFACE_V1_20260630",
+    "manifest_id":            "LEAN_PROOF_SURFACE_V2_20260701",
     "generated_at":           now_iso,
     "proof_surface_version":  "1.0.0",
     "runtime_bound":          False,
