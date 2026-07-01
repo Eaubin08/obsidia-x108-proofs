@@ -29,34 +29,48 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     detect_claude_cli,
     run_claude_cli,
     compute_comparison,
+    evaluate_route_quality,
     EXCERPT_MAX_CHARS,
+    ERROR_USAGE_ONLY,
 )
 
 # ── Task portfolio ────────────────────────────────────────────────────────────
+# expected_route : label Obsidia canonique pour cette tache
+# expected_output_hint : format attendu de la sortie externe
+# smoke : True = inclus dans le run minimal
 
 TASKS = [
     {
         "task_id": "fastpath_route_selection_smoke",
         "task_family": "fast_path_vs_llm_simple",
+        # Prompt non-ambigu : ping health check -> route triviale
         "task_prompt": (
-            "Classify this request into one route: "
+            "Return only one route label from this list: "
             "FAST_PATH, BRODY, BANK, TRADING, GPS, OBSIDURE. "
-            "Request: show me the current portfolio benchmark summary."
+            "Request: ping health check."
         ),
         "obsidia_route": "fast_path",
         "obsidia_expected_output_type": "route_label",
         "obsidia_cost_eur_per_1m": 0.0015,
         "obsidia_latency_ms": 0.5,
+        "expected_route": "FAST_PATH",
+        "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "smoke": True,
     },
     {
         "task_id": "brody_conversational_smoke",
         "task_family": "brody_vs_assistant",
-        "task_prompt": "What is the Obsidia kernel responsible for?",
+        "task_prompt": (
+            "Return only one route label from this list: "
+            "FAST_PATH, BRODY, BANK, TRADING, GPS, OBSIDURE. "
+            "Request: what is the Obsidia kernel responsible for?"
+        ),
         "obsidia_route": "brody_chat",
-        "obsidia_expected_output_type": "natural_language_response",
+        "obsidia_expected_output_type": "route_label",
         "obsidia_cost_eur_per_1m": 0.20,
         "obsidia_latency_ms": 85.0,
+        "expected_route": "BRODY",
+        "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "smoke": False,
     },
     {
@@ -70,6 +84,8 @@ TASKS = [
         "obsidia_expected_output_type": "ALLOW_HOLD_BLOCK",
         "obsidia_cost_eur_per_1m": 0.70,
         "obsidia_latency_ms": 42.0,
+        "expected_route": "BANK",
+        "expected_output_hint": "one of: ALLOW HOLD BLOCK",
         "smoke": False,
     },
     {
@@ -83,6 +99,8 @@ TASKS = [
         "obsidia_expected_output_type": "VALID_HOLD_RISK",
         "obsidia_cost_eur_per_1m": 0.84,
         "obsidia_latency_ms": 18.0,
+        "expected_route": "TRADING",
+        "expected_output_hint": "one of: VALID HOLD_RISK",
         "smoke": False,
     },
     {
@@ -96,38 +114,47 @@ TASKS = [
         "obsidia_expected_output_type": "ALLOW_BLOCK",
         "obsidia_cost_eur_per_1m": 0.91,
         "obsidia_latency_ms": 9.5,
+        "expected_route": "GPS",
+        "expected_output_hint": "one of: ALLOW BLOCK",
         "smoke": False,
     },
     {
         "task_id": "obsidure_patch_smoke",
         "task_family": "obsidure_vs_code_agent",
         "task_prompt": (
-            "In Lean 4, the proof of `n + 0 = n` fails with `simp` alone. "
-            "Suggest the minimal fix in one line."
+            "Return only one route label from this list: "
+            "FAST_PATH, BRODY, BANK, TRADING, GPS, OBSIDURE. "
+            "Request: generate a Lean 4 proof patch for n + 0 = n."
         ),
         "obsidia_route": "obsidure_lean_targeted",
-        "obsidia_expected_output_type": "lean_patch_suggestion",
+        "obsidia_expected_output_type": "route_label",
         "obsidia_cost_eur_per_1m": 23.92,
         "obsidia_latency_ms": 1200.0,
+        "expected_route": "OBSIDURE",
+        "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "smoke": False,
     },
     {
+        # expected_route=OBSIDURE : verification d'invariant formel -> kernel task
         "task_id": "lean_invariant_smoke",
         "task_family": "lean_proof_vs_long_reasoning",
         "task_prompt": (
-            "Is the statement `forall n : Nat, n + 0 = n` provable in Lean 4 "
-            "using `Nat.add_zero`? Answer yes or no with one sentence justification."
+            "Return only one route label from this list: "
+            "FAST_PATH, BRODY, BANK, TRADING, GPS, OBSIDURE. "
+            "Request: verify the Lean 4 invariant forall n : Nat, n + 0 = n."
         ),
         "obsidia_route": "lean_canon_check",
-        "obsidia_expected_output_type": "formal_verification_answer",
+        "obsidia_expected_output_type": "route_label",
         "obsidia_cost_eur_per_1m": 13.29,
         "obsidia_latency_ms": 200.0,
+        "expected_route": "OBSIDURE",
+        "expected_output_hint": "one of: FAST_PATH BRODY BANK TRADING GPS OBSIDURE",
         "smoke": False,
     },
 ]
 
 
-# ── Run helpers ───────────────────────────────────────────────────────────────
+# ── Build helpers ─────────────────────────────────────────────────────────────
 
 def build_dry_run_receipt(task: dict, claude_available: bool, claude_cmd: str) -> ExternalComparisonReceipt:
     return ExternalComparisonReceipt(
@@ -150,6 +177,13 @@ def build_dry_run_receipt(task: dict, claude_available: bool, claude_cmd: str) -
         external_output_excerpt="",
         external_usage_available=False,
         cost_source="USAGE_UNAVAILABLE",
+        expected_route=task.get("expected_route", ""),
+        external_detected_route=None,
+        route_match=None,
+        expected_output_hint=task.get("expected_output_hint", ""),
+        quality_score=None,
+        quality_notes="DRY_RUN",
+        classification_error_type=ERROR_USAGE_ONLY,
         savings_ratio_vs_external=None,
         avoided_cost_eur_per_1m=None,
     )
@@ -163,7 +197,12 @@ def build_real_receipt(
 ) -> ExternalComparisonReceipt:
     ratio, avoided, cost_src = compute_comparison(
         task["obsidia_cost_eur_per_1m"],
-        None,  # Claude CLI does not expose token usage in stdout
+        None,  # CLI does not expose token usage in stdout
+    )
+    quality = evaluate_route_quality(
+        expected_route=task.get("expected_route", ""),
+        external_output=run_result.get("output_excerpt", ""),
+        external_success=run_result.get("success", False),
     )
     return ExternalComparisonReceipt(
         task_id=task["task_id"],
@@ -185,6 +224,13 @@ def build_real_receipt(
         external_output_excerpt=run_result.get("output_excerpt", ""),
         external_usage_available=False,
         cost_source=cost_src,
+        expected_route=task.get("expected_route", ""),
+        external_detected_route=quality["external_detected_route"],
+        route_match=quality["route_match"],
+        expected_output_hint=task.get("expected_output_hint", ""),
+        quality_score=quality["quality_score"],
+        quality_notes=quality["quality_notes"],
+        classification_error_type=quality["classification_error_type"],
         savings_ratio_vs_external=ratio,
         avoided_cost_eur_per_1m=avoided,
     )
@@ -197,7 +243,6 @@ def main() -> None:
     full_run = os.environ.get("OIE_EXTERNAL_BENCHMARK_FULL", "0") == "1"
     mode = "REAL" if network_allowed else "DRY_RUN"
 
-    # Detect Claude CLI (no network call)
     claude_available, claude_cmd, claude_info = detect_claude_cli()
 
     print("\n=== OIE External Benchmark Harness V0 ===\n")
@@ -210,12 +255,7 @@ def main() -> None:
     print(f"  Full run          : {full_run}")
     print()
 
-    # Select tasks
-    if full_run:
-        tasks_to_run = TASKS
-    else:
-        tasks_to_run = [t for t in TASKS if t.get("smoke", False)]
-
+    tasks_to_run = TASKS if full_run else [t for t in TASKS if t.get("smoke", False)]
     print(f"  Tasks selected    : {len(tasks_to_run)} / {len(TASKS)}")
     print()
 
@@ -223,18 +263,21 @@ def main() -> None:
 
     for task in tasks_to_run:
         print(f"  [{task['task_family']}] {task['task_id']}")
+        print(f"    expected_route  : {task.get('expected_route', 'N/A')}")
 
         if not network_allowed:
             receipt = build_dry_run_receipt(task, claude_available, claude_cmd)
-            print(f"    -> DRY_RUN | network_allowed=False | Obsidia cost: {task['obsidia_cost_eur_per_1m']} EUR/1M")
+            print(f"    -> DRY_RUN | network=False | obsidia={task['obsidia_cost_eur_per_1m']} EUR/1M")
         elif not claude_available:
-            receipt = build_dry_run_receipt(task, False, "")
             receipt = ExternalComparisonReceipt(
-                **{
-                    **receipt.to_dict(),
-                    "external_error": "CLAUDE_NOT_AVAILABLE",
-                    "external_network_allowed": True,
-                }
+                task_id=task["task_id"],
+                task_family=task["task_family"],
+                external_available=False,
+                external_network_allowed=True,
+                external_success=False,
+                external_error="CLAUDE_NOT_AVAILABLE",
+                expected_route=task.get("expected_route", ""),
+                classification_error_type=ERROR_USAGE_ONLY,
             )
             print(f"    -> SKIPPED | Claude not available")
         else:
@@ -243,21 +286,39 @@ def main() -> None:
             receipt = build_real_receipt(task, claude_available, claude_cmd, run_result)
             status = "OK" if run_result["success"] else f"FAIL({run_result['error']})"
             print(f"    -> {status} | latency={run_result['latency_ms']:.0f}ms | usage=unavailable")
+            print(f"    detected_route  : {receipt.external_detected_route}")
+            print(f"    route_match     : {receipt.route_match}")
+            print(f"    quality_score   : {receipt.quality_score}")
+            print(f"    error_type      : {receipt.classification_error_type}")
             if run_result.get("output_excerpt"):
                 excerpt = run_result["output_excerpt"][:80].replace("\n", " ")
-                print(f"    -> excerpt: {excerpt}")
+                print(f"    excerpt         : {excerpt}")
 
         receipts.append(receipt)
+        print()
 
-    print()
+    # Summary
+    quality_with_score = [r for r in receipts if r.quality_score is not None]
+    route_matches = [r for r in receipts if r.route_match is True]
+    route_mismatches = [r for r in receipts if r.route_match is False]
+    ext_successes = [r for r in receipts if r.external_success]
+    usage_available = [r for r in receipts if r.external_usage_available]
+    avg_q = (
+        sum(r.quality_score for r in quality_with_score) / len(quality_with_score)
+        if quality_with_score else None
+    )
+
     print("--- Receipts summary ---")
-    print(f"  Total receipts    : {len(receipts)}")
-    print(f"  Non-sovereign     : all (emits_act=False, kernel_mutation=False)")
-    print(f"  Secrets redacted  : True")
-    print(f"  Savings ratio     : null (usage_unavailable in CLI mode)")
+    print(f"  Total receipts         : {len(receipts)}")
+    print(f"  External success       : {len(ext_successes)}")
+    print(f"  Route match            : {len(route_matches)}")
+    print(f"  Route mismatch         : {len(route_mismatches)}")
+    print(f"  Avg quality score      : {f'{avg_q:.2f}' if avg_q is not None else 'N/A'}")
+    print(f"  Usage available        : {len(usage_available)}")
+    print(f"  Non-sovereign          : all (emits_act=False, kernel_mutation=False)")
+    print(f"  Secrets redacted       : True")
     print()
 
-    # JSON output
     benchmark_id = str(uuid.uuid4())
     output = {
         "benchmark_id": benchmark_id,
@@ -271,8 +332,12 @@ def main() -> None:
         "full_run": full_run,
         "summary": {
             "tasks_attempted": len(receipts),
-            "tasks_success_external": sum(1 for r in receipts if r.external_success),
-            "usage_available_count": sum(1 for r in receipts if r.external_usage_available),
+            "external_success_count": len(ext_successes),
+            "quality_available_count": len(quality_with_score),
+            "route_match_count": len(route_matches),
+            "route_mismatch_count": len(route_mismatches),
+            "avg_quality_score": round(avg_q, 4) if avg_q is not None else None,
+            "usage_available_count": len(usage_available),
             "savings_ratio_available": False,
             "governance": {
                 "emits_act": False,

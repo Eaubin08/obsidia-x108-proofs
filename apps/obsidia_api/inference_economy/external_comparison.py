@@ -1,4 +1,4 @@
-"""OIE V0 External Benchmark — ExternalComparisonReceipt.
+"""OIE V0 External Benchmark -- ExternalComparisonReceipt + route quality evaluator.
 
 Mesure comparative entre Obsidia et un provider externe (Claude Code / API).
 Non-souverain : readonly, emits_act=False, kernel_mutation=False.
@@ -7,6 +7,7 @@ Aucune cle API n'est jamais stockee. secrets_redacted=True toujours.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import uuid
@@ -26,6 +27,23 @@ SECRETS_REDACTED: bool = True
 
 # ── Output excerpt max length ─────────────────────────────────────────────────
 EXCERPT_MAX_CHARS: int = 500
+
+# ── Known Obsidia route labels ────────────────────────────────────────────────
+KNOWN_ROUTES: list[str] = [
+    "FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "OBSIDURE",
+]
+
+# ── Classification error types ────────────────────────────────────────────────
+ERROR_NONE = "NONE"
+ERROR_ROUTE_MISMATCH = "ROUTE_MISMATCH"
+ERROR_OVER_ROUTING = "OVER_ROUTING_TO_DOMAIN"
+ERROR_UNDER_ROUTING = "UNDER_ROUTING_TO_FAST_PATH"
+ERROR_AMBIGUOUS = "AMBIGUOUS_PROMPT"
+ERROR_UNPARSEABLE = "UNPARSEABLE_OUTPUT"
+ERROR_EXTERNAL = "EXTERNAL_ERROR"
+ERROR_USAGE_ONLY = "USAGE_UNAVAILABLE_ONLY"
+
+DOMAIN_ROUTES = {"BANK", "TRADING", "GPS"}
 
 
 @dataclass
@@ -59,7 +77,7 @@ class ExternalComparisonReceipt:
     external_latency_ms: Optional[float] = None
     external_success: bool = False
     external_error: str = ""
-    external_output_excerpt: str = ""      # max EXCERPT_MAX_CHARS
+    external_output_excerpt: str = ""      # capped at EXCERPT_MAX_CHARS
 
     # ── External side — usage ─────────────────────────────────────────────────
     external_usage_available: bool = False
@@ -70,9 +88,14 @@ class ExternalComparisonReceipt:
     external_cost_eur_per_1m_estimate: Optional[float] = None
     cost_source: str = "USAGE_UNAVAILABLE"
 
-    # ── Quality ───────────────────────────────────────────────────────────────
+    # ── Quality / route evaluation ────────────────────────────────────────────
+    expected_route: str = ""
+    external_detected_route: Optional[str] = None
+    route_match: Optional[bool] = None
+    expected_output_hint: str = ""
     quality_score: Optional[float] = None
     quality_notes: str = ""
+    classification_error_type: str = ERROR_USAGE_ONLY
     retries_count: int = 0
 
     # ── Comparison ────────────────────────────────────────────────────────────
@@ -98,7 +121,6 @@ class ExternalComparisonReceipt:
         object.__setattr__(self, "graphiti_write", GRAPHITI_WRITE)
         object.__setattr__(self, "neo4j_write", NEO4J_WRITE)
         object.__setattr__(self, "secrets_redacted", SECRETS_REDACTED)
-        # Enforce excerpt length
         if len(self.external_output_excerpt) > EXCERPT_MAX_CHARS:
             object.__setattr__(
                 self,
@@ -115,6 +137,113 @@ class ExternalComparisonReceipt:
     @classmethod
     def from_dict(cls, data: dict) -> "ExternalComparisonReceipt":
         return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+
+
+# ── Route extraction ──────────────────────────────────────────────────────────
+
+def extract_route_from_output(text: str) -> Optional[str]:
+    """Detect an Obsidia route label in external output text.
+
+    Handles: plain labels, "route: X", "Route retenue: X", backtick format `X`.
+    Returns None if no clear route label is found.
+    """
+    if not text:
+        return None
+
+    text_upper = text.upper()
+
+    # Priority 1: contextual label patterns (route: X, route retenue: X, primary route: X)
+    ctx_pattern = re.compile(
+        r'(?:ROUTE\s+RETENUE|PRIMARY\s+ROUTE|ROUTE\s+SELECTED|ROUTE)\s*[:\-]\s*([A-Z_]+)'
+    )
+    m = ctx_pattern.search(text_upper)
+    if m:
+        candidate = m.group(1).strip()
+        if candidate in KNOWN_ROUTES:
+            return candidate
+
+    # Priority 2: backtick-quoted label  `TRADING`
+    bt_pattern = re.compile(r'`([A-Z_]+)`')
+    for m in bt_pattern.finditer(text_upper):
+        candidate = m.group(1)
+        if candidate in KNOWN_ROUTES:
+            return candidate
+
+    # Priority 3: plain word boundary match (longest first to avoid GPS ⊂ OBSIDURE)
+    for route in sorted(KNOWN_ROUTES, key=len, reverse=True):
+        # FAST_PATH: allow FAST_PATH or FAST PATH
+        pattern = route.replace("_", "[_ ]?")
+        if re.search(r'\b' + pattern + r'\b', text_upper):
+            return route
+
+    return None
+
+
+# ── Route quality evaluator ───────────────────────────────────────────────────
+
+def evaluate_route_quality(
+    expected_route: str,
+    external_output: str,
+    external_success: bool,
+) -> dict:
+    """Evaluate whether the external output matches the expected Obsidia route.
+
+    Returns a dict with:
+        external_detected_route, route_match, quality_score,
+        quality_notes, classification_error_type
+    """
+    if not external_success:
+        return {
+            "external_detected_route": None,
+            "route_match": False,
+            "quality_score": 0.0,
+            "quality_notes": "External call failed",
+            "classification_error_type": ERROR_EXTERNAL,
+        }
+
+    detected = extract_route_from_output(external_output)
+
+    if detected is None:
+        return {
+            "external_detected_route": None,
+            "route_match": False,
+            "quality_score": 0.0,
+            "quality_notes": "No route label found in output",
+            "classification_error_type": ERROR_UNPARSEABLE,
+        }
+
+    match = detected == expected_route
+
+    if match:
+        return {
+            "external_detected_route": detected,
+            "route_match": True,
+            "quality_score": 1.0,
+            "quality_notes": f"Correct: {detected}",
+            "classification_error_type": ERROR_NONE,
+        }
+
+    # Mismatch — classify the error type
+    if expected_route == "FAST_PATH" and detected in DOMAIN_ROUTES:
+        err = ERROR_OVER_ROUTING
+        note = f"Expected FAST_PATH, got domain route {detected}"
+        score = 0.0
+    elif expected_route in DOMAIN_ROUTES | {"OBSIDURE"} and detected == "FAST_PATH":
+        err = ERROR_UNDER_ROUTING
+        note = f"Expected {expected_route}, got FAST_PATH (under-routing)"
+        score = 0.2
+    else:
+        err = ERROR_ROUTE_MISMATCH
+        note = f"Expected {expected_route}, got {detected}"
+        score = 0.3
+
+    return {
+        "external_detected_route": detected,
+        "route_match": False,
+        "quality_score": score,
+        "quality_notes": note,
+        "classification_error_type": err,
+    }
 
 
 # ── Claude detection ──────────────────────────────────────────────────────────
