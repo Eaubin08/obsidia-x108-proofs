@@ -845,11 +845,23 @@ class ErrorAnalyzer:
         lean_errors = [c.lean_error_line for c in contexts if c.lean_error_line]
         violated    = [kw for c in contexts for kw in c.violated_keywords]
 
+        # Extraire les marqueurs critiques avant toute troncature — sinon T2+ perd le chemin .lean
+        # et lean_route_requested = re.findall(r"[\w/\-\.]+\.lean", objective) retourne []
+        critical_lean_targets = re.findall(r"[\w/\-\.]+\.lean", base_objective)
+        critical_theorem_names = re.findall(r"\bP_[A-Za-z_0-9]+\b", base_objective)
+        has_lean_sandbox = "LEAN_SANDBOX" in base_objective
+
         parts = [
             f"[EVOLUTION_T{attempt}]",
-            f"Base: {base_objective[:80]}",
+            f"BasePreview: {base_objective[:240]}",
             f"Directives: {'; '.join(directives)}",
         ]
+        if critical_lean_targets:
+            parts.append(f"LEAN_TARGETS: {' '.join(critical_lean_targets)}")
+        if critical_theorem_names:
+            parts.append(f"THEOREM_TARGETS: {' '.join(critical_theorem_names)}")
+        if has_lean_sandbox:
+            parts.append("LEAN_SANDBOX")
         if strategies:
             parts.append(f"StrategieLean: {strategies[0]}")
         if lean_errors:
