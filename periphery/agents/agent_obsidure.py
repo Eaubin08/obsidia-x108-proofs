@@ -270,6 +270,7 @@ class PatchProposal:
     stabilization: Optional[StabilizationResult] = None
     kernel_path_blocked: bool = False
     human_approved: bool = False
+    self_diagnosis: Optional[Dict[str, Any]] = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     receipt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -1989,6 +1990,65 @@ def _generate_srl_organize_note(objective: str, sandbox_dir: Path) -> Dict[str, 
 # 9.  PHASE R — RÉINTÉGRATION
 # ===========================================================================
 
+# Termes qui signalent un objectif domaine-spécifique nécessitant un template non-trivial
+_BOUNDARY_TERMS: Tuple[str, ...] = (
+    "Boundary", "NonDecision", "NonSovereignty",
+    "allowed_to_decide", "emits_act", "kernel_mutation",
+    "canonical_memory_write", "KX108",
+    "non-souver", "non_souver", "GOVERNANCE",
+    "SovereignOutput", "ObsidureOutput",
+)
+
+
+def _compute_lean_diagnosis(
+    objective: str,
+    stabilization: Optional[StabilizationResult],
+) -> Optional[Dict[str, Any]]:
+    """
+    Produit un auto-diagnostic structuré quand LeanMutationEngine ne peut pas générer
+    du Lean non-trivial. Déclenché uniquement sur échec LEAN + objectif domaine-spécifique.
+    N'altère aucune logique de génération — sortie informative uniquement.
+    """
+    if not stabilization or stabilization.passed:
+        return None
+
+    has_lean_target = bool(re.findall(r"[\w/\-\.]+\.lean", objective))
+    has_lean_sandbox = "LEAN_SANDBOX" in objective
+    if not (has_lean_target or has_lean_sandbox):
+        return None
+
+    sem_mismatch_count = sum(
+        1
+        for entry in stabilization.errors_history
+        for err in entry.get("errors", [])
+        if isinstance(err, dict) and err.get("type") == "LEAN_SEMANTIC_TARGET_MISMATCH"
+    )
+
+    if sem_mismatch_count == 0 and stabilization.final_status != "MAX_ATTEMPTS_REACHED":
+        return None
+
+    is_domain_specific = any(term in objective for term in _BOUNDARY_TERMS)
+
+    if is_domain_specific:
+        engine_verdict = "CANNOT_GENERATE_NON_TRIVIAL_LEAN_AUTONOMOUSLY"
+        failure_root_cause = "LEAN_ENGINE_HAS_ONLY_GENERIC_TRIVIAL_TEMPLATES"
+    else:
+        engine_verdict = "LEAN_ENGINE_EXHAUSTED_ALL_STRATEGIES"
+        failure_root_cause = "LEAN_ENGINE_HAS_ONLY_GENERIC_TRIVIAL_TEMPLATES"
+
+    return {
+        "engine_capability_verdict": engine_verdict,
+        "needs_signal": "NEEDS_HUMAN_AUTHORIZED_TEMPLATE",
+        "recommended_next_action": "OBSIDURE_LEAN_EXACT_CONTENT_AUTHORIZED_V1",
+        "recommended_or": "OBSIDURE_LEAN_BOUNDARY_TEMPLATE_ENGINE_V1",
+        "failure_root_cause": failure_root_cause,
+        "exhausted_strategies": list(_LEAN_STRATEGY_PROGRESSION),
+        "semantic_target_mismatch_count": sem_mismatch_count,
+        "p38_fallback_detected": sem_mismatch_count > 0,
+        "can_continue_autonomously": False,
+    }
+
+
 def persist_proposal(proposal: PatchProposal) -> Path:
     """
     Écrit le PATCH_PROPOSAL (JSON + RECEIPT.md) dans _PATCH_PROPOSALS/<id>/.
@@ -2022,6 +2082,7 @@ def persist_proposal(proposal: PatchProposal) -> Path:
         "session_card": asdict(proposal.session_card),
         "lean_sandbox": proposal.lean_sandbox_result,
         "stabilization": asdict(proposal.stabilization) if proposal.stabilization else None,
+        "self_diagnosis": proposal.self_diagnosis,
     }
     (proposal_dir / "proposal.json").write_text(
         json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -2097,6 +2158,29 @@ def persist_proposal(proposal: PatchProposal) -> Path:
             else:
                 lines.append(f"  - Tentative {attempt_n} : aucune violation -> PASS")
         lines.append(f"")
+    if proposal.self_diagnosis:
+        sd = proposal.self_diagnosis
+        lines += [
+            f"## Auto-diagnostic Obsidure",
+            f"- Verdict capacité moteur : `{sd.get('engine_capability_verdict', '?')}`",
+            f"- Signal NEEDS_* : `{sd.get('needs_signal', '?')}`",
+            f"- Cause racine : `{sd.get('failure_root_cause', '?')}`",
+            f"- P38 fallback détecté : {sd.get('p38_fallback_detected', False)}",
+            f"- Correspondances LEAN_SEMANTIC_TARGET_MISMATCH : {sd.get('semantic_target_mismatch_count', 0)}/5",
+            f"- Stratégies épuisées : {', '.join(sd.get('exhausted_strategies', []))}",
+            f"- Peut continuer de façon autonome : {sd.get('can_continue_autonomously', False)}",
+            f"- Action recommandée : `{sd.get('recommended_next_action', '?')}`",
+            f"- Alternative recommandée : `{sd.get('recommended_or', '?')}`",
+            f"",
+            f"### Actions interdites",
+            f"- Ne pas appliquer un patch P38 trivial comme preuve du théorème demandé",
+            f"- Ne pas considérer BUILD_SUCCESS comme validation sémantique suffisante",
+            f"- Ne pas bypasser KX108 ni transférer l'autorité décisionnelle",
+            f"- Ne pas commit automatiquement ce proposal sans revue humaine",
+            f"- Ne pas importer du code Lean dans le runtime",
+            f"- Ne pas toucher kernel / proofs / sealed / V18 / MathMemory",
+            f"",
+        ]
     lines += [
         f"## SRL SessionCard",
         f"- Tier cible : `{proposal.session_card.tier}`",
@@ -2414,6 +2498,15 @@ class AgentObsidure:
         srl_summary = self._srl.read_summary()
         self._log(f"  SRL tiers : {srl_summary['tiers']}")
 
+        self_diag = _compute_lean_diagnosis(objective, stabilization)
+        if self_diag:
+            self._log(
+                f"  Auto-diagnostic : {self_diag['engine_capability_verdict']}",
+                level="WARN",
+            )
+            self._log(f"  Needs signal    : {self_diag['needs_signal']}", level="WARN")
+            self._log(f"  Next scope      : {self_diag['recommended_next_action']}", level="WARN")
+
         proposal = PatchProposal(
             proposal_id=str(uuid.uuid4()),
             objective=objective,
@@ -2426,6 +2519,7 @@ class AgentObsidure:
             lean_sandbox_result=lean_result,
             stabilization=stabilization,
             kernel_path_blocked=False,
+            self_diagnosis=self_diag,
         )
         proposal_dir = persist_proposal(proposal)
         self._proposals.append(proposal)
