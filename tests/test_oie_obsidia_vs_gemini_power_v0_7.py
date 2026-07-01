@@ -1,4 +1,4 @@
-"""OIE V0.7 -- Tests : Obsidia vs Gemini Power Benchmark.
+﻿"""OIE V0.7 -- Tests : Obsidia vs Gemini Power Benchmark.
 
 Couvre :
 - import sans reseau

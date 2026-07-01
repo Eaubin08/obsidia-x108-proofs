@@ -1,4 +1,4 @@
-"""OIE V0.7 -- Obsidia vs Gemini Power Benchmark.
+﻿"""OIE V0.7 -- Obsidia vs Gemini Power Benchmark.
 
 Deux lanes sur les memes 7 familles de routing :
   A. OBSIDIA_LOCAL_ACTUAL  -- router deterministe / valeurs figees V0 / adapter si dispo
