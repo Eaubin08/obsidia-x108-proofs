@@ -271,6 +271,7 @@ class PatchProposal:
     kernel_path_blocked: bool = False
     human_approved: bool = False
     self_diagnosis: Optional[Dict[str, Any]] = None
+    next_run_plan: Optional[Dict[str, Any]] = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     receipt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -2049,6 +2050,110 @@ def _compute_lean_diagnosis(
     }
 
 
+_NEXT_PLAN_BOUNDARY_TERMS: Tuple[str, ...] = (
+    "Boundary", "NonDecision", "KX108", "allowed_to_decide", "emits_act",
+    "SovereignOutput", "ObsidureOutput", "non-souver", "GOVERNANCE",
+    "kernel_mutation", "canonical_memory_write",
+)
+
+
+def _compute_next_run_plan(
+    objective: str,
+    self_diagnosis: Optional[Dict[str, Any]],
+    stabilization: Optional[StabilizationResult],
+) -> Optional[Dict[str, Any]]:
+    """
+    Produit un plan de prochaine boucle AVDR non souverain.
+    Déclenché uniquement sur échec de stabilisation avec self_diagnosis présent.
+    Ne décide rien et n'émet aucun acte — informationnel uniquement.
+    decision_authority=KX108_ONLY — Obsidure propose, KX108 décide.
+    """
+    if not stabilization or stabilization.passed:
+        return None
+    if self_diagnosis is None:
+        return None
+
+    has_lean_target = bool(re.findall(r"[\w/\-\.]+\.lean", objective))
+    has_lean_sandbox = "LEAN_SANDBOX" in objective
+    is_boundary_objective = any(t in objective for t in _NEXT_PLAN_BOUNDARY_TERMS)
+
+    # Règle 4 : pas de cible .lean explicite
+    if not has_lean_target and not has_lean_sandbox:
+        missing_capability = "EXPLICIT_LEAN_TARGET_PATH"
+    # Règle 3 : objectif contient des termes Boundary/NonDecision/KX108
+    elif is_boundary_objective:
+        missing_capability = "LEAN_BOUNDARY_TEMPLATE_ENGINE"
+    # Règle 2 : cause racine = templates trivaux génériques
+    elif self_diagnosis.get("failure_root_cause") == "LEAN_ENGINE_HAS_ONLY_GENERIC_TRIVIAL_TEMPLATES":
+        missing_capability = "LEAN_SEMANTIC_TEMPLATE_ENGINE"
+    else:
+        missing_capability = "LEAN_DOMAIN_SPECIFIC_TEMPLATE"
+
+    needs_signal = self_diagnosis.get("needs_signal", "")
+
+    # Règle 1 : needs_signal == NEEDS_HUMAN_AUTHORIZED_TEMPLATE
+    # Règle 5 : context source policy pas encore câblée → recommander CONTEXT_SOURCE_POLICY_V1 en premier
+    if needs_signal == "NEEDS_HUMAN_AUTHORIZED_TEMPLATE":
+        if is_boundary_objective:
+            recommended_next_scope = "OBSIDURE_LEAN_EXACT_CONTENT_AUTHORIZED_V1"
+            alternative_next_scope = "OBSIDURE_LEAN_BOUNDARY_TEMPLATE_ENGINE_V1"
+        else:
+            recommended_next_scope = "OBSIDURE_CONTEXT_SOURCE_POLICY_V1"
+            alternative_next_scope = "OBSIDURE_LEAN_EXACT_CONTENT_AUTHORIZED_V1"
+    else:
+        recommended_next_scope = "OBSIDURE_CONTEXT_SOURCE_POLICY_V1"
+        alternative_next_scope = "OBSIDURE_MATH_CONTEXT_BRIDGE_V1"
+
+    reason_parts: List[str] = []
+    if missing_capability == "LEAN_BOUNDARY_TEMPLATE_ENGINE":
+        reason_parts.append(
+            "LeanMutationEngine ne dispose d'aucun template pour les objectifs Boundary/NonDecision."
+        )
+    elif missing_capability == "LEAN_SEMANTIC_TEMPLATE_ENGINE":
+        reason_parts.append("LeanMutationEngine produit uniquement des templates triviaux (P38).")
+    elif missing_capability == "EXPLICIT_LEAN_TARGET_PATH":
+        reason_parts.append("L'objectif ne spécifie aucun fichier .lean cible explicite.")
+    strat_count = len(self_diagnosis.get("exhausted_strategies", []))
+    if strat_count:
+        reason_parts.append(f"{strat_count} stratégies épuisées sans succès sémantique.")
+    reason = " ".join(reason_parts) or "Stabilisation échouée — diagnostic incomplet."
+
+    return {
+        "can_continue_autonomously": False,
+        "missing_capability": missing_capability,
+        "required_input": (
+            "HUMAN_AUTHORIZED_TEMPLATE_OR_ENGINE_UPGRADE"
+            if needs_signal == "NEEDS_HUMAN_AUTHORIZED_TEMPLATE"
+            else "OPERATOR_REVIEW_AND_SCOPE_DECISION"
+        ),
+        "recommended_next_scope": recommended_next_scope,
+        "alternative_next_scope": alternative_next_scope,
+        "allowed_sources_next": [
+            "MATH_MEMORY_READONLY",
+            "LEAN_SANDBOX_HISTORY",
+            "PATCH_PROPOSALS",
+            "PROOF_PACKS",
+        ],
+        "forbidden_actions_next": [
+            "APPLY_P38_TRIVIAL_PATCH",
+            "RUNTIME_MUTATION",
+            "KERNEL_MUTATION",
+            "MEMORY_WRITE",
+            "AUTO_COMMIT",
+            "BYPASS_KX108",
+            "WRITE_GRAPHITI",
+            "SOVEREIGN_DECISION",
+        ],
+        "reason": reason,
+        "operator_decision_required": True,
+        "suggested_command_type": (
+            "OBSIDURE_CLI_WITH_UPGRADED_OBJECTIVE"
+            if is_boundary_objective
+            else "OBSIDURE_CLI_WITH_CONTEXT_SOURCE_POLICY"
+        ),
+    }
+
+
 def persist_proposal(proposal: PatchProposal) -> Path:
     """
     Écrit le PATCH_PROPOSAL (JSON + RECEIPT.md) dans _PATCH_PROPOSALS/<id>/.
@@ -2083,6 +2188,7 @@ def persist_proposal(proposal: PatchProposal) -> Path:
         "lean_sandbox": proposal.lean_sandbox_result,
         "stabilization": asdict(proposal.stabilization) if proposal.stabilization else None,
         "self_diagnosis": proposal.self_diagnosis,
+        "next_run_plan": proposal.next_run_plan,
     }
     (proposal_dir / "proposal.json").write_text(
         json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -2179,6 +2285,22 @@ def persist_proposal(proposal: PatchProposal) -> Path:
             f"- Ne pas commit automatiquement ce proposal sans revue humaine",
             f"- Ne pas importer du code Lean dans le runtime",
             f"- Ne pas toucher kernel / proofs / sealed / V18 / MathMemory",
+            f"",
+        ]
+    if proposal.next_run_plan:
+        nrp = proposal.next_run_plan
+        lines += [
+            f"## Plan de continuation AVDR",
+            f"- Peut continuer seul : {'oui' if nrp.get('can_continue_autonomously') else 'non'}",
+            f"- Capacité manquante : `{nrp.get('missing_capability', '?')}`",
+            f"- Entrée requise : `{nrp.get('required_input', '?')}`",
+            f"- Prochain scope recommandé : `{nrp.get('recommended_next_scope', '?')}`",
+            f"- Alternative : `{nrp.get('alternative_next_scope', '?')}`",
+            f"- Sources autorisées pour la prochaine boucle : {nrp.get('allowed_sources_next', [])}",
+            f"- Actions interdites : {nrp.get('forbidden_actions_next', [])}",
+            f"- Décision opérateur requise : {'oui' if nrp.get('operator_decision_required') else 'non'}",
+            f"- Type de commande suggéré : `{nrp.get('suggested_command_type', '?')}`",
+            f"- Raison : {nrp.get('reason', '?')}",
             f"",
         ]
     lines += [
@@ -2507,6 +2629,17 @@ class AgentObsidure:
             self._log(f"  Needs signal    : {self_diag['needs_signal']}", level="WARN")
             self._log(f"  Next scope      : {self_diag['recommended_next_action']}", level="WARN")
 
+        next_plan = _compute_next_run_plan(objective, self_diag, stabilization)
+        if next_plan:
+            self._log(
+                f"  Plan continuation : missing={next_plan['missing_capability']}",
+                level="WARN",
+            )
+            self._log(
+                f"  Scope recommandé : {next_plan['recommended_next_scope']}",
+                level="WARN",
+            )
+
         proposal = PatchProposal(
             proposal_id=str(uuid.uuid4()),
             objective=objective,
@@ -2520,6 +2653,7 @@ class AgentObsidure:
             stabilization=stabilization,
             kernel_path_blocked=False,
             self_diagnosis=self_diag,
+            next_run_plan=next_plan,
         )
         proposal_dir = persist_proposal(proposal)
         self._proposals.append(proposal)
