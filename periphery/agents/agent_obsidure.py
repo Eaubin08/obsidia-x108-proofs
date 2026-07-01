@@ -281,6 +281,7 @@ class PatchProposal:
     self_diagnosis: Optional[Dict[str, Any]] = None
     next_run_plan: Optional[Dict[str, Any]] = None
     math_memory_context_pack: Optional[Dict[str, Any]] = None
+    lean_capability_classification: Optional[Dict[str, Any]] = None
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     receipt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -2066,10 +2067,149 @@ _NEXT_PLAN_BOUNDARY_TERMS: Tuple[str, ...] = (
 )
 
 
+# ── Lean capability classifier — constantes ─────────────────────────────────
+
+_LC_NON_SOVEREIGNTY: Tuple[str, ...] = (
+    "NonDecision", "NonSovereignty", "allowed_to_decide",
+    "emits_act", "SovereignOutput", "ObsidureOutput",
+)
+_LC_BOUNDARY: Tuple[str, ...] = ("Boundary", "KX108")
+_LC_MEMORY_INVARIANT: Tuple[str, ...] = (
+    "memory_write", "canonical_memory_write", "Graphiti",
+    "readonly", "MEMORY_READONLY",
+)
+_LC_DOMAIN_KERNEL: Tuple[str, ...] = (
+    "entropy", "HOLD", "path_fidelity", "coherence",
+    "trajectory", "signed_decision_receipt", "gardien_amont",
+)
+_LC_CODE_SURVEILLANCE: Tuple[str, ...] = (
+    "code surveillance", "correction_candidate", "protected infix",
+    "runtime mutation", "kernel mutation",
+)
+_LC_ARITHMETIC: Tuple[str, ...] = ("Nat", "arithmetic", "rfl")
+_LC_PROPOSITIONAL: Tuple[str, ...] = ("Prop", "implies", "proposition")
+
+
+def _classify_lean_capability(
+    objective: str,
+    math_memory_context_pack: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Classifie la capacité Lean requise pour l'objectif donné.
+    Lecture seule — ne génère rien, ne décide rien.
+    decision_authority=KX108_ONLY — résultat informatif uniquement.
+    """
+    signals: List[str] = []
+
+    def _hits(terms: Tuple[str, ...]) -> List[str]:
+        return [t for t in terms if t in objective]
+
+    ns_hits = _hits(_LC_NON_SOVEREIGNTY)
+    bd_hits = _hits(_LC_BOUNDARY)
+    mem_hits = _hits(_LC_MEMORY_INVARIANT)
+    dk_hits = _hits(_LC_DOMAIN_KERNEL)
+    cs_hits = _hits(_LC_CODE_SURVEILLANCE)
+    ar_hits = _hits(_LC_ARITHMETIC)
+    pr_hits = _hits(_LC_PROPOSITIONAL)
+
+    # Priorité : NON_SOVEREIGNTY > BOUNDARY > MEMORY_INVARIANT >
+    #            DOMAIN_KERNEL_INVARIANT > CODE_SURVEILLANCE >
+    #            ARITHMETIC > PROPOSITIONAL > UNKNOWN
+    if ns_hits:
+        lean_class = "NON_SOVEREIGNTY"
+        signals += [f"ns_term:{t}" for t in ns_hits]
+        if bd_hits:
+            signals += [f"bd_term:{t}" for t in bd_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
+        confidence = "HIGH" if len(ns_hits) >= 2 else "MEDIUM"
+    elif bd_hits:
+        lean_class = "BOUNDARY"
+        signals += [f"bd_term:{t}" for t in bd_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "BOUNDARY_NON_SOVEREIGNTY"
+        confidence = "MEDIUM"
+    elif mem_hits:
+        lean_class = "MEMORY_INVARIANT"
+        signals += [f"mem_term:{t}" for t in mem_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "MEMORY_READONLY_INVARIANT"
+        confidence = "HIGH" if len(mem_hits) >= 2 else "MEDIUM"
+    elif dk_hits:
+        lean_class = "DOMAIN_KERNEL_INVARIANT"
+        signals += [f"dk_term:{t}" for t in dk_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = False
+        strategy_family = "KERNEL_DOMAIN_INVARIANT"
+        confidence = "HIGH" if len(dk_hits) >= 2 else "MEDIUM"
+    elif cs_hits:
+        lean_class = "CODE_SURVEILLANCE"
+        signals += [f"cs_term:{t}" for t in cs_hits]
+        can_generate = False
+        requires_tmpl = True
+        requires_human = True
+        strategy_family = "CODE_SURVEILLANCE_TEMPLATE"
+        confidence = "MEDIUM"
+    elif ar_hits:
+        lean_class = "ARITHMETIC"
+        signals += [f"ar_term:{t}" for t in ar_hits]
+        can_generate = True
+        requires_tmpl = False
+        requires_human = False
+        strategy_family = "NAT_ARITHMETIC"
+        confidence = "HIGH" if len(ar_hits) >= 2 else "MEDIUM"
+    elif pr_hits:
+        lean_class = "PROPOSITIONAL"
+        signals += [f"pr_term:{t}" for t in pr_hits]
+        can_generate = True
+        requires_tmpl = False
+        requires_human = False
+        strategy_family = "PROPOSITIONAL"
+        confidence = "MEDIUM"
+    else:
+        lean_class = "UNKNOWN"
+        can_generate = False
+        requires_tmpl = False
+        requires_human = False
+        strategy_family = "SEMANTIC"
+        confidence = "LOW"
+
+    # Signal MathMemory readonly (PHASE 3)
+    if math_memory_context_pack:
+        selected = math_memory_context_pack.get("selected_items", [])
+        sig_items = [s for s in selected if s.get("has_lean_signature_candidate")]
+        if sig_items:
+            signals.append("MATH_MEMORY_LEAN_SIGNATURE_AVAILABLE")
+            if confidence == "LOW":
+                confidence = "MEDIUM"
+            elif confidence == "MEDIUM":
+                confidence = "HIGH"
+        if math_memory_context_pack.get("selected_count", 0) == 0:
+            signals.append("NO_MATH_MEMORY_CONTEXT_SELECTED")
+
+    return {
+        "lean_capability_class": lean_class,
+        "confidence": confidence,
+        "signals": signals,
+        "recommended_strategy_family": strategy_family,
+        "can_generate_with_current_engine": can_generate,
+        "requires_template_engine": requires_tmpl,
+        "requires_human_authorized_template": requires_human,
+    }
+
+
 def _compute_next_run_plan(
     objective: str,
     self_diagnosis: Optional[Dict[str, Any]],
     stabilization: Optional[StabilizationResult],
+    lean_cap: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """
     Produit un plan de prochaine boucle AVDR non souverain.
@@ -2100,10 +2240,26 @@ def _compute_next_run_plan(
 
     needs_signal = self_diagnosis.get("needs_signal", "")
 
+    # Affiner missing_capability via lean_capability_classification si disponible
+    if lean_cap:
+        lc = lean_cap.get("lean_capability_class", "")
+        if lc in ("NON_SOVEREIGNTY", "BOUNDARY"):
+            missing_capability = "LEAN_BOUNDARY_TEMPLATE_ENGINE"
+        elif lc == "MEMORY_INVARIANT":
+            missing_capability = "LEAN_MEMORY_INVARIANT_TEMPLATE"
+        elif lc == "DOMAIN_KERNEL_INVARIANT":
+            missing_capability = "LEAN_KERNEL_INVARIANT_TEMPLATE"
+        elif lc == "CODE_SURVEILLANCE":
+            missing_capability = "LEAN_CODE_SURVEILLANCE_TEMPLATE"
+
     # Règle 1 : needs_signal == NEEDS_HUMAN_AUTHORIZED_TEMPLATE
     # Règle 5 : context source policy pas encore câblée → recommander CONTEXT_SOURCE_POLICY_V1 en premier
     if needs_signal == "NEEDS_HUMAN_AUTHORIZED_TEMPLATE":
-        if is_boundary_objective:
+        lc_class = (lean_cap or {}).get("lean_capability_class", "")
+        if lc_class in ("NON_SOVEREIGNTY", "BOUNDARY") or is_boundary_objective:
+            recommended_next_scope = "OBSIDURE_LEAN_BOUNDARY_TEMPLATE_ENGINE_V1"
+            alternative_next_scope = "OBSIDURE_LEAN_EXACT_CONTENT_AUTHORIZED_V1"
+        elif lc_class == "MEMORY_INVARIANT":
             recommended_next_scope = "OBSIDURE_LEAN_EXACT_CONTENT_AUTHORIZED_V1"
             alternative_next_scope = "OBSIDURE_LEAN_BOUNDARY_TEMPLATE_ENGINE_V1"
         else:
@@ -2314,6 +2470,7 @@ def persist_proposal(proposal: PatchProposal) -> Path:
         "self_diagnosis": proposal.self_diagnosis,
         "next_run_plan": proposal.next_run_plan,
         "math_memory_context_pack": proposal.math_memory_context_pack,
+        "lean_capability_classification": proposal.lean_capability_classification,
     }
     (proposal_dir / "proposal.json").write_text(
         json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -2447,6 +2604,19 @@ def persist_proposal(proposal: PatchProposal) -> Path:
             f"- boundary.kernel_mutation : {boundary.get('kernel_mutation', False)}",
             f"- boundary.emits_act : {boundary.get('emits_act', False)}",
             f"- boundary.memory_write : {boundary.get('memory_write', False)}",
+            f"",
+        ]
+    if proposal.lean_capability_classification:
+        lcc = proposal.lean_capability_classification
+        lines += [
+            f"## Classification capacité Lean",
+            f"- classe : `{lcc.get('lean_capability_class', '?')}`",
+            f"- confiance : `{lcc.get('confidence', '?')}`",
+            f"- signaux détectés : {lcc.get('signals', [])}",
+            f"- stratégie recommandée : `{lcc.get('recommended_strategy_family', '?')}`",
+            f"- peut générer avec moteur actuel : {'oui' if lcc.get('can_generate_with_current_engine') else 'non'}",
+            f"- nécessite template engine : {'oui' if lcc.get('requires_template_engine') else 'non'}",
+            f"- nécessite template humain autorisé : {'oui' if lcc.get('requires_human_authorized_template') else 'non'}",
             f"",
         ]
     lines += [
@@ -2775,7 +2945,21 @@ class AgentObsidure:
             self._log(f"  Needs signal    : {self_diag['needs_signal']}", level="WARN")
             self._log(f"  Next scope      : {self_diag['recommended_next_action']}", level="WARN")
 
-        next_plan = _compute_next_run_plan(objective, self_diag, stabilization)
+        math_ctx = _build_math_memory_context_pack(objective)
+        self._log(
+            f"  MathMemory ctx : status={math_ctx['status']} selected={math_ctx['selected_count']}",
+            level="INFO" if math_ctx["status"] == "AVAILABLE" else "WARN",
+        )
+
+        lean_cap = _classify_lean_capability(objective, math_ctx)
+        self._log(
+            f"  Lean capability : class={lean_cap['lean_capability_class']}"
+            f" confidence={lean_cap['confidence']}"
+            f" can_generate={lean_cap['can_generate_with_current_engine']}",
+            level="INFO",
+        )
+
+        next_plan = _compute_next_run_plan(objective, self_diag, stabilization, lean_cap=lean_cap)
         if next_plan:
             self._log(
                 f"  Plan continuation : missing={next_plan['missing_capability']}",
@@ -2785,12 +2969,6 @@ class AgentObsidure:
                 f"  Scope recommandé : {next_plan['recommended_next_scope']}",
                 level="WARN",
             )
-
-        math_ctx = _build_math_memory_context_pack(objective)
-        self._log(
-            f"  MathMemory ctx : status={math_ctx['status']} selected={math_ctx['selected_count']}",
-            level="INFO" if math_ctx["status"] == "AVAILABLE" else "WARN",
-        )
 
         proposal = PatchProposal(
             proposal_id=str(uuid.uuid4()),
@@ -2807,6 +2985,7 @@ class AgentObsidure:
             self_diagnosis=self_diag,
             next_run_plan=next_plan,
             math_memory_context_pack=math_ctx,
+            lean_capability_classification=lean_cap,
         )
         proposal_dir = persist_proposal(proposal)
         self._proposals.append(proposal)
