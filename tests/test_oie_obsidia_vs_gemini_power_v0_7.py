@@ -2683,3 +2683,118 @@ class TestV074ClaimabilityAlignment:
         import json as _json
         data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
         assert data["answer_adequacy_read"]["answer_adequacy_claimable_avg"] == 1.0
+
+
+class TestSpeedStackRead:
+    """15 tests pour V0.7.5 — speed_stack_read dans readable_report.json et summary.md."""
+
+    def _write_reports(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return s
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── readable_report.json presence ────────────────────────────────────────
+
+    def test_readable_has_speed_stack_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "speed_stack_read" in data
+
+    def test_speed_stack_has_live_avg_speedup(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ss = data["speed_stack_read"]
+        assert "live_avg_speedup_vs_gemini" in ss
+
+    def test_speed_stack_has_governed_speed_rate(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ss = data["speed_stack_read"]
+        assert "governed_speed_rate" in ss
+
+    def test_speed_stack_has_known_path_detected_count(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ss = data["speed_stack_read"]
+        assert "known_path_detected_count" in ss
+
+    def test_speed_stack_has_inference_avoided_count(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ss = data["speed_stack_read"]
+        assert "inference_avoided_count" in ss
+
+    def test_speed_stack_has_model_call_avoided(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ss = data["speed_stack_read"]
+        assert "model_call_avoided_count" in ss
+
+    def test_speed_stack_oie_speed_indices_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        oie = data["speed_stack_read"].get("oie_speed_indices", {})
+        assert "osca_ratio" in oie
+        assert "oapi_ratio" in oie
+        assert "odpi_ratio" in oie
+
+    def test_speed_stack_dca_by_domain_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        dca = data["speed_stack_read"].get("dca_by_domain", {})
+        assert isinstance(dca, dict)
+        assert "BANK" in dca
+        assert "TRADING" in dca
+        assert "GPS" in dca
+
+    def test_speed_stack_governance_while_fast(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        gov = data["speed_stack_read"].get("governance_while_fast", {})
+        assert gov.get("decision_authority") == "KX108_ONLY"
+        assert gov.get("emits_act") is False
+        assert gov.get("memory_write") is False
+        assert gov.get("kernel_mutation") is False
+
+    def test_speed_stack_claim_guard_speed_claimable_true(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        cg = data["speed_stack_read"].get("claim_guard", {})
+        assert cg.get("speed_metrics_claimable") is True
+
+    def test_speed_stack_claim_guard_cost_not_claimable(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        cg = data["speed_stack_read"].get("claim_guard", {})
+        assert cg.get("cost_comparison_claimable") is False
+
+    def test_speed_stack_claim_guard_path_compute_not_claimable(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        cg = data["speed_stack_read"].get("claim_guard", {})
+        assert cg.get("path_compute_runtime_claimable") is False
+
+    def test_speed_stack_claim_guard_wording_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        cg = data["speed_stack_read"].get("claim_guard", {})
+        assert "Speed is measured" in (cg.get("wording_guard") or "")
+
+    # ── summary.md ───────────────────────────────────────────────────────────
+
+    def test_summary_md_has_speed_stack_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Speed Stack Read" in md
+
+    def test_summary_md_speed_stack_has_governance_block(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "KX108_ONLY" in md
+        assert "emits_act" in md

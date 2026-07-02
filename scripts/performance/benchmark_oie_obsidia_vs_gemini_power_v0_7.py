@@ -856,10 +856,8 @@ def compute_model_necessity(task: dict, row: dict) -> dict:
 
     is_adapter_missing = obs_status == OBSIDIA_STATUS_MISSING
     is_kernel_unreach = obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
-    is_fast_path_api_status = (
-        family == "FAST_PATH"
-        and _OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {}).get("adapter_type") == "API_STATUS_ONLY"
-    )
+    # FAST_PATH n'a pas de bridge dédié en V0.7.x — invariant structurel, indépendant du registry
+    is_fast_path_api_status = family == "FAST_PATH"
 
     external_llm_req = task.get("external_llm_required_by_design")
     expected_min_layer = task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN)
@@ -3496,6 +3494,45 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         },
     }
 
+    # ── speed_stack_read ─────────────────────────────────────────────────────
+    _dca_raw = summary.get("dca_by_domain") or {}
+    def _dca_scalar(v: object) -> object:
+        if isinstance(v, dict):
+            return v.get("dca_api_normal") or v.get("dca_agentic")
+        return v
+    readable["speed_stack_read"] = {
+        "live_avg_speedup_vs_gemini": summary.get("avg_speedup_ratio"),
+        "available_surface_avg_speedup": summary.get("available_surface_avg_speedup_ratio"),
+        "model_avoided_avg_speedup": summary.get("model_avoided_avg_speedup_ratio"),
+        "terrain_avg_speedup": summary.get("terrain_avg_speedup_ratio"),
+        "governed_speed_rate": summary.get("governance_preserved_at_speed_rate"),
+        "known_path_detected_count": summary.get("known_path_detected_count"),
+        "known_path_detected_rate": summary.get("known_path_detected_rate"),
+        "inference_avoided_count": summary.get("inference_avoided_count"),
+        "inference_avoided_rate": summary.get("inference_avoided_rate"),
+        "model_call_avoided_count": summary.get("obsidia_model_call_avoided_count"),
+        "model_call_avoided_families": summary.get("model_avoided_families"),
+        "oie_speed_indices": {
+            "osca_ratio": summary.get("osca_ratio"),
+            "oapi_ratio": summary.get("oapi_ratio"),
+            "odpi_ratio": summary.get("odpi_ratio"),
+            "indices_claimable": summary.get("oie_indices_claimable"),
+        },
+        "dca_by_domain": {fam: _dca_scalar(_dca_raw.get(fam)) for fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "GPS_AVIATION", "OBSIDURE", "LEAN")},
+        "governance_while_fast": {
+            "decision_authority": "KX108_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+        },
+        "claim_guard": {
+            "speed_metrics_claimable": True,
+            "cost_comparison_claimable": summary.get("cost_comparison_claimable_global", False),
+            "path_compute_runtime_claimable": False,
+            "wording_guard": "Speed is measured; real cost and full Path Compute runtime are not claimed.",
+        },
+    }
+
     readable_dup = find_case_insensitive_duplicate_keys(readable)
     if readable_dup:
         readable["_warnings_case_dup_keys"] = readable_dup
@@ -3910,6 +3947,58 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         "- Translation layer read is schema/proxy until runtime translator instrumentation exists.",
         "- Architecture advantage read is interpretation supported by metrics, not full market proof.",
         "- Extreme ratios indicate a change of path, not general intelligence superiority.",
+        "",
+    ]
+
+    # §10h Speed Stack Read
+    _dca_raw_md = summary.get("dca_by_domain") or {}
+    def _dca_val_md(fam: str) -> str:
+        v = _dca_raw_md.get(fam)
+        if v is None:
+            return "null"
+        if isinstance(v, dict):
+            return str(v.get("dca_api_normal") or v.get("dca_agentic") or "null")
+        return str(v)
+    md += [
+        "## §10h Speed Stack Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| Live avg speedup vs Gemini REAL_SDK | {summary.get('avg_speedup_ratio')}x |",
+        f"| Available surface avg speedup | {summary.get('available_surface_avg_speedup_ratio')} |",
+        f"| Model avoided avg speedup | {summary.get('model_avoided_avg_speedup_ratio')} |",
+        f"| Governed speed rate | {summary.get('governance_preserved_at_speed_rate')} |",
+        f"| Known path detected | {summary.get('known_path_detected_count')}/{len(rows)} |",
+        f"| Inference avoided | {summary.get('inference_avoided_count')}/{len(rows)} |",
+        f"| Model call avoided | {summary.get('obsidia_model_call_avoided_count')}/{len(rows)} |",
+        "",
+        "**OIE speed indices:**",
+        "",
+        f"| Index | Value |",
+        f"| --- | --- |",
+        f"| OSCA — geomean all families | {summary.get('osca_ratio')}x |",
+        f"| OAPI — portfolio actions | {summary.get('oapi_ratio')}x |",
+        f"| ODPI — portfolio domains | {summary.get('odpi_ratio')}x |",
+        "",
+        "**DCA by domain:**",
+        "",
+        "| domain | dca_api_normal |",
+        "| --- | --- |",
+        *[f"| {fam} | {_dca_val_md(fam)} |" for fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "GPS_AVIATION", "OBSIDURE", "LEAN")],
+        "",
+        "**Governance while fast:**",
+        "",
+        "- decision_authority : KX108_ONLY",
+        "- emits_act : false",
+        "- memory_write : false",
+        "- kernel_mutation : false",
+        "",
+        "**Claim guard:**",
+        "",
+        "- speed_metrics_claimable : true",
+        f"- cost_comparison_claimable : {summary.get('cost_comparison_claimable_global', False)}",
+        "- path_compute_runtime_claimable : false",
+        "> Speed is measured; real cost and full Path Compute runtime are not claimed.",
         "",
     ]
 
@@ -4517,6 +4606,57 @@ def main() -> None:  # noqa: C901
     print(f"  Inference avoided           : {summary.get('unnecessary_inference_avoided_count', '?')}/{n_tasks}")
     print(f"  Governed speed rate         : {summary.get('governance_preserved_at_speed_rate', '?')}")
     print(f"  Math formalized             : {summary.get('math_formalized_surface_count', '?')}/{n_tasks}")
+
+    # ── BLOCK 4.5 : SPEED STACK READ ──────────────────────────────────────────
+    _ss_avg_speedup = summary.get("avg_speedup_ratio")
+    _ss_avail_speedup = summary.get("available_surface_avg_speedup_ratio")
+    _ss_model_speedup = summary.get("model_avoided_avg_speedup_ratio")
+    _ss_terrain_speedup = summary.get("terrain_avg_speedup_ratio")
+    _ss_governed = summary.get("governance_preserved_at_speed_rate")
+    _ss_kp_count = summary.get("known_path_detected_count", "?")
+    _ss_inf_avoided = summary.get("inference_avoided_count", "?")
+    _ss_model_avoided = summary.get("obsidia_model_call_avoided_count", "?")
+    _ss_model_families = summary.get("model_avoided_families") or []
+    _ss_oie_claimable = summary.get("oie_indices_claimable")
+    _ss_cost_claimable = summary.get("cost_comparison_claimable_global", False)
+    _ss_dca_raw = summary.get("dca_by_domain") or {}
+    def _ss_dca_val(fam: str) -> str:
+        v = _ss_dca_raw.get(fam)
+        if v is None:
+            return "null"
+        if isinstance(v, dict):
+            return str(v.get("dca_api_normal") or v.get("dca_agentic") or "null")
+        return str(v)
+    print(f"\n{'='*66}")
+    print("  SPEED STACK READ")
+    print(f"{'='*66}")
+    print(f"  Live avg speedup vs Gemini REAL_SDK   : {_ss_avg_speedup}x")
+    print(f"  Available surface avg speedup          : {_ss_avail_speedup}")
+    print(f"  Model avoided avg speedup              : {_ss_model_speedup}")
+    print(f"  Terrain avg speedup                    : {_ss_terrain_speedup}")
+    print(f"  Governed speed rate                    : {_ss_governed}")
+    print(f"  Known path detected                    : {_ss_kp_count}/{n_tasks}")
+    print(f"  Inference avoided                      : {_ss_inf_avoided}/{n_tasks}")
+    print(f"  Model call avoided                     : {_ss_model_avoided}/{n_tasks}")
+    print(f"  Model avoided families                 : {_ss_model_families}")
+    print(f"  OIE speed indices:")
+    print(f"    OSCA — geomean all families          : {summary.get('osca_ratio')}x")
+    print(f"    OAPI — portfolio actions             : {summary.get('oapi_ratio')}x")
+    print(f"    ODPI — portfolio domains             : {summary.get('odpi_ratio')}x")
+    print(f"    indices_claimable                    : {_ss_oie_claimable}")
+    print(f"  DCA by domain:")
+    for _ss_fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "GPS_AVIATION", "OBSIDURE", "LEAN"):
+        print(f"    {_ss_fam:<16} : {_ss_dca_val(_ss_fam)}")
+    print(f"  Governance while fast:")
+    print(f"    decision_authority : KX108_ONLY")
+    print(f"    emits_act          : false")
+    print(f"    memory_write       : false")
+    print(f"    kernel_mutation    : false")
+    print(f"  Claim guard:")
+    print(f"    speed_metrics_claimable        : true")
+    print(f"    cost_comparison_claimable      : {_ss_cost_claimable}")
+    print(f"    path_compute_runtime_claimable : false")
+    print(f"    wording_guard: Speed is measured; real cost and full Path Compute runtime are not claimed.")
 
     # ── BLOCK 5 : OIE READ ────────────────────────────────────────────────────
     oie_osca = summary.get("osca_ratio", "N/A")
