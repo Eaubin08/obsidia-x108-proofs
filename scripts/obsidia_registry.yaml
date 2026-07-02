@@ -1,0 +1,80 @@
+# =============================================================================
+# OBSIDIA TERMINAL REGISTRY V0
+# Non souverain. Le terminal ne decide rien. decision_authority = KX108_ONLY.
+# Ce fichier est un lexique de routage : couche -> triggers -> commandes.
+# Il n'accorde AUCUNE permission d'execution au-dela de doctor/status (HTTP GET).
+# Format : sous-ensemble YAML simple (dicts indentes 2 espaces, listes inline).
+# =============================================================================
+
+version: 0
+scope: OBSIDIA_TERMINAL_COCKPIT_V0
+authority: NONE
+sovereign: false
+default_output: COMMANDS
+receipt_path: .local_obsidia/receipts/obsidia_terminal_receipts.jsonl
+
+ports:
+  api: 8000
+  kernel: 3001
+  ui: 5173
+  graphiti: 8011
+  neo4j: 7475
+
+health_endpoints:
+  api_health: http://127.0.0.1:8000/health
+  api_status: http://127.0.0.1:8000/status
+  x108_status: http://127.0.0.1:8000/x108/status
+  graphiti: http://127.0.0.1:8011/health
+  kernel: http://127.0.0.1:3001/health
+  ui: http://127.0.0.1:5173/
+
+layers:
+  brody:
+    mode: readonly
+    triggers: [brody, chat, contexte, monitoring, cockpit, reponse, synthese]
+    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1", "powershell -File scripts/run_brody_terminal_enriched.ps1"]
+    note: Brody parle et explique. Non souverain.
+  obsidure:
+    mode: gated
+    triggers: [obsidure, patch, proposal, forge, genere, generation, diff, forbidden-token]
+    commands: ["powershell -File scripts/run_agent_obsidure.ps1"]
+    note: Obsidure v2 gele. Proposals uniquement, apply confirmation-gated hors terminal.
+  obsidienne:
+    mode: readonly
+    triggers: [lean, preuve, preuves, theoreme, invariant, lake, proof, obsidienne]
+    commands: ["python proofs/verify_all.py", "lake build Obsidia.GeneratedPeripheral  # GATED: uniquement sur demande explicite"]
+    note: Surface Lean V2 officialisee (232 entrees). Attestation, pas autorite.
+  kernel:
+    mode: kernel_check
+    triggers: [kernel, x108, admissibilite, decision, gate, souverain]
+    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1", "curl http://127.0.0.1:8000/x108/status"]
+    note: Seule autorite. Le terminal consulte le status, n'emet jamais ALLOW/HOLD/BLOCK.
+  domains:
+    mode: bridge_only
+    triggers: [bank, banque, trading, gps, aviation, defense, domaine, domains]
+    commands: ["curl http://127.0.0.1:8000/sigma/bank", "curl http://127.0.0.1:8000/sigma/trading", "curl http://127.0.0.1:8000/sigma/gps-defense-aviation"]
+    note: bridge-only, emits_act=false. Aucun ACT via terminal.
+  audit:
+    mode: readonly
+    triggers: [audit, merkle, sha256, manifest, freeze, seal, verifie, verification, rfc3161]
+    commands: ["python proofs/verify_all.py", "python proofs/verify_merkle.py", "git status --short"]
+    note: Verifiers readonly. Ne pas regenerer les seals.
+  memory:
+    mode: readonly
+    triggers: [memoire, memory, graphiti, session, sources, projection]
+    commands: ["curl http://127.0.0.1:8011/health", "# memoire readonly via sigma/graphiti_readonly_bridge.py — memory_write=false"]
+    note: Projection readonly. memory_write=false, toujours.
+  live:
+    mode: status
+    triggers: [status, statut, health, sante, port, ports, serveur, serveurs, live, endpoint, doctor, tourne, allume]
+    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1"]
+    note: Seule couche EXECUTE directe du terminal V0 (HTTP GET readonly).
+  sigma:
+    mode: guidance
+    triggers: [sigma, coherence, contradiction, guidance, introspection, incoherence]
+    commands: ["python -m sigma.sigma_monitor  # readonly", "curl http://127.0.0.1:8000/sigma/domains"]
+    note: Sigma guide et explique. HOLD_RECOMMENDED est une recommandation, jamais une decision X108.
+
+policy:
+  deny_keywords: [commit, push, deploy, deploie, apply, applique, act, ecris, ecrire, write, delete, supprime, supprimer, efface, mutate, mute, install, installe, "rm -", force, reset, rebase, amend]
+  deny_message: Mutation ou action critique detectee. Le terminal V0 est readonly et sans chemin d'application. Utilise le workflow gated approprie (Obsidure proposals / approbation humaine).
