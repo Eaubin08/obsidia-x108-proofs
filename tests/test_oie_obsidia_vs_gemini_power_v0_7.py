@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import scripts.performance.benchmark_oie_obsidia_vs_gemini_power_v0_7 as bm
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _first_task() -> dict:
     return bm.POWER_TASKS[0]
@@ -57,7 +57,7 @@ def _mock_gemini_result(task_id: str) -> dict:
     }
 
 
-# ── 1. Import sans reseau ─────────────────────────────────────────────────────
+# â”€â”€ 1. Import sans reseau â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestImportSafety:
     def test_module_imports_without_network(self):
@@ -78,7 +78,7 @@ class TestImportSafety:
         assert bm.ENERGY_SOURCE_ESTIMATE == "ENERGY_PROXY_ESTIMATE"
 
 
-# ── 2. 7 familles presentes ───────────────────────────────────────────────────
+# â”€â”€ 2. 7 familles presentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestSevenFamilies:
     def test_exactly_7_tasks(self):
@@ -117,7 +117,7 @@ class TestSevenFamilies:
         assert len(ids) == len(set(ids))
 
 
-# ── 3. Obsidia lane champs obligatoires ──────────────────────────────────────
+# â”€â”€ 3. Obsidia lane champs obligatoires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestObsidiaLane:
     _SPEED_FIELDS = [
@@ -203,7 +203,7 @@ class TestObsidiaLane:
             assert 0.0 <= pct <= 100.0
 
 
-# ── 4. Gemini lane mockee ─────────────────────────────────────────────────────
+# â”€â”€ 4. Gemini lane mockee â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestGeminiLaneDryRun:
     def test_dry_run_returns_dryrun_status(self):
@@ -242,7 +242,7 @@ class TestGeminiLaneDryRun:
             assert gem["gemini_total_tokens"] is not None, f"No frozen data for {task['task_id']}"
 
 
-# ── 5. compare_row calculs ────────────────────────────────────────────────────
+# â”€â”€ 5. compare_row calculs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestCompareRow:
     def _row(self, task: dict, monkeypatch=None) -> dict:
@@ -352,7 +352,7 @@ class TestCompareRow:
         assert row["obsidia_governance_clean"] is True
 
 
-# ── 6. Energy metrics ─────────────────────────────────────────────────────────
+# â”€â”€ 6. Energy metrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestEnergyMetrics:
     def test_energy_unavailable_without_env(self, monkeypatch):
@@ -404,7 +404,7 @@ class TestEnergyMetrics:
         assert row.get("decisions_per_wh_obsidia") is not None
 
 
-# ── 7. Summary global ─────────────────────────────────────────────────────────
+# â”€â”€ 7. Summary global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestSummary:
     def _all_rows(self) -> list[dict]:
@@ -518,7 +518,7 @@ class TestSummary:
         assert s["secrets_redacted"] is True
 
 
-# ── 8. Gouvernance ────────────────────────────────────────────────────────────
+# â”€â”€ 8. Gouvernance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestGovernance:
     def test_governance_clean_true_correct_flags(self):
@@ -549,7 +549,7 @@ class TestGovernance:
             assert obs["obsidia_decision_authority"] == "KX108_ONLY"
 
 
-# ── 9. Dry-run ne fait pas d'appel Gemini ─────────────────────────────────────
+# â”€â”€ 9. Dry-run ne fait pas d'appel Gemini â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestDryRunNoNetwork:
     def test_dry_run_does_not_call_run_gemini_sdk(self):
@@ -566,7 +566,7 @@ class TestDryRunNoNetwork:
         assert result["gemini_status"] == bm.GEMINI_STATUS_FAILED
 
 
-# ── 10. Aucun secret dans JSON ────────────────────────────────────────────────
+# â”€â”€ 10. Aucun secret dans JSON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestNoSecretInJson:
     def _full_rows_and_summary(self) -> tuple[list[dict], dict]:
@@ -599,7 +599,7 @@ class TestNoSecretInJson:
         assert fake_key not in payload
 
 
-# ── 11. Rapport Markdown genere ───────────────────────────────────────────────
+# â”€â”€ 11. Rapport Markdown genere â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestReportGeneration:
     def _generate(self) -> str:
@@ -653,8 +653,10 @@ class TestReportGeneration:
             "Speed metrics",
             "Cost metrics",
             "Energy metrics",
+            "Available surface",
             "Work avoidance",
             "Inference avoidance",
+            "Intellectual economy",
             "Routing quality",
             "Governance",
             "Valid claims",
@@ -673,7 +675,7 @@ class TestReportGeneration:
         assert "ADAPTER_MISSING wins" not in report
 
 
-# ── 12. _INVALID_CLAIMS et _REQUIRED_PHRASES ─────────────────────────────────
+# â”€â”€ 12. _INVALID_CLAIMS et _REQUIRED_PHRASES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestClaimsAndPhrases:
     def test_required_phrases_defined(self):
@@ -693,7 +695,7 @@ class TestClaimsAndPhrases:
         assert "proxy estimate" in bm._REQUIRED_PHRASES[2].lower()
 
 
-# ── 13. Frozen V0 constants ───────────────────────────────────────────────────
+# â”€â”€ 13. Frozen V0 constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestFrozenConstants:
     def test_graphiti_warm_gain_ratio(self):
@@ -710,3 +712,1372 @@ class TestFrozenConstants:
 
     def test_runtime_context_build_ms(self):
         assert bm.FROZEN_RUNTIME_CONTEXT_BUILD_MS < 1.0
+
+
+# â”€â”€ 14. Tests V0.7.1 â€” Gencoin / cost basis / surfaces / economy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+class TestV071:
+    """25 tests Phase 8 V0.7.1 : cost basis, gencoin, surfaces, intellectual economy."""
+
+    def _all_rows(self) -> list[dict]:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return rows
+
+    def _summary(self) -> dict:
+        rows = self._all_rows()
+        return bm.compute_summary(rows, bm.POWER_TASKS)
+
+    def _generate(self) -> str:
+        rows = self._all_rows()
+        summary = bm.compute_summary(rows, bm.POWER_TASKS)
+        return bm.generate_report(summary, rows)
+
+    # 1 â€” constantes cost basis definies
+    def test_v071_cost_basis_constants_defined(self):
+        assert bm.COST_BASIS_LOCAL_PROXY == "LOCAL_PROXY_UNCALIBRATED"
+        assert bm.COST_BASIS_SDK_MEASURED == "SDK_USAGE_MEASURED"
+        assert bm.COST_BASIS_DRY_RUN_MOCK == "DRY_RUN_MOCK"
+
+    # 2 â€” obsidia_cost_basis == LOCAL_PROXY_UNCALIBRATED sur chaque row
+    def test_v071_obsidia_cost_basis_is_local_proxy(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("obsidia_cost_basis") == bm.COST_BASIS_LOCAL_PROXY, (
+                f"Task {r['task_id']}: obsidia_cost_basis={r.get('obsidia_cost_basis')}"
+            )
+
+    # 3 â€” obsidia_cost_is_measured == False sur chaque row
+    def test_v071_obsidia_cost_is_measured_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("obsidia_cost_is_measured") is False, (
+                f"Task {r['task_id']}: obsidia_cost_is_measured={r.get('obsidia_cost_is_measured')}"
+            )
+
+    # 4 â€” cost_comparison_claimable == False sur chaque row
+    def test_v071_cost_comparison_claimable_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("cost_comparison_claimable") is False, (
+                f"Task {r['task_id']}: cost_comparison_claimable={r.get('cost_comparison_claimable')}"
+            )
+
+    # 5 â€” en dry-run, gemini_cost_basis == DRY_RUN_MOCK
+    def test_v071_gemini_cost_basis_dryrun_mock_in_dryrun(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("gemini_cost_basis") == bm.COST_BASIS_DRY_RUN_MOCK, (
+                f"Task {r['task_id']}: gemini_cost_basis={r.get('gemini_cost_basis')} expected DRY_RUN_MOCK"
+            )
+
+    # 6 â€” gemini_cost_basis == SDK_USAGE_MEASURED quand usage REAL disponible
+    def test_v071_gemini_cost_basis_sdk_measured_when_real_usage(self):
+        task = _first_task()
+        obs = bm.run_obsidia_local_actual(task)
+        gem = bm.run_gemini_lane_dryrun(task)
+        gem["gemini_status"] = bm.GEMINI_STATUS_REAL
+        gem["gemini_total_tokens"] = 42
+        row = bm.compute_compare_row(task, obs, gem)
+        assert row.get("gemini_cost_basis") == bm.COST_BASIS_SDK_MEASURED
+
+    # 7 â€” gencoin_emission_allowed == False sur chaque row
+    def test_v071_gencoin_emission_allowed_false_each_row(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("gencoin_emission_allowed") is False, (
+                f"Task {r['task_id']}: gencoin_emission_allowed={r.get('gencoin_emission_allowed')}"
+            )
+
+    # 8 â€” gencoin_emission_amount == 0 sur chaque row
+    def test_v071_gencoin_emission_amount_zero_each_row(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("gencoin_emission_amount") == 0, (
+                f"Task {r['task_id']}: gencoin_emission_amount={r.get('gencoin_emission_amount')}"
+            )
+
+    # 9 â€” gencoin_total_emission == 0 dans summary
+    def test_v071_gencoin_total_emission_zero_in_summary(self):
+        s = self._summary()
+        assert s.get("gencoin_total_emission") == 0
+
+    # 10 â€” gencoin_distribution_mode == NONE_CALIBRATION_ONLY
+    def test_v071_gencoin_distribution_mode_none_calibration(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("gencoin_distribution_mode") == "NONE_CALIBRATION_ONLY", (
+                f"Task {r['task_id']}: gencoin_distribution_mode={r.get('gencoin_distribution_mode')}"
+            )
+
+    # 11 â€” intellectual_economy_basis == CALIBRATION_ONLY sur chaque row
+    def test_v071_intellectual_economy_basis_calibration_only(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("intellectual_economy_basis") == "CALIBRATION_ONLY", (
+                f"Task {r['task_id']}: intellectual_economy_basis={r.get('intellectual_economy_basis')}"
+            )
+
+    # 12 â€” source_law_satisfied == False sur chaque row
+    def test_v071_source_law_satisfied_false_all_rows(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("source_law_satisfied") is False, (
+                f"Task {r['task_id']}: source_law_satisfied={r.get('source_law_satisfied')}"
+            )
+
+    # 13 â€” available_surface_families correctes dans summary
+    def test_v071_available_surface_families_correct(self):
+        s = self._summary()
+        families = set(s.get("available_surface_families", []))
+        assert families == {"FAST_PATH", "BANK", "TRADING", "GPS"}
+
+    # 14 â€” adapter_missing_families correctes dans summary
+    def test_v071_adapter_missing_families_correct(self):
+        s = self._summary()
+        families = set(s.get("adapter_missing_families", []))
+        assert families == {"BRODY", "OBSIDURE", "LEAN"}
+
+    # 15 â€” terrain_proof_families correctes dans summary
+    def test_v071_terrain_proof_families_correct(self):
+        s = self._summary()
+        families = set(s.get("terrain_proof_families", []))
+        assert families == {"BANK", "TRADING", "GPS"}
+
+    # 16 â€” MODEL_AVOIDED_FAMILIES correct au niveau module
+    def test_v071_model_avoided_families_correct(self):
+        assert bm.MODEL_AVOIDED_FAMILIES == {"FAST_PATH", "BANK", "TRADING", "GPS"}
+
+    # 17 â€” adapter_missing_excluded_from_functional_victory == True dans summary
+    def test_v071_adapter_missing_excluded_from_functional_victory(self):
+        s = self._summary()
+        assert s.get("adapter_missing_excluded_from_functional_victory") is True
+
+    # 18 â€” debt_score > 0 pour les families ADAPTER_MISSING
+    def test_v071_debt_score_positive_for_adapter_missing(self):
+        rows = self._all_rows()
+        missing_rows = [r for r in rows if r.get("obsidia_status") == bm.OBSIDIA_STATUS_MISSING]
+        assert len(missing_rows) > 0, "Aucune row ADAPTER_MISSING trouvee"
+        for r in missing_rows:
+            assert (r.get("debt_score") or 0.0) > 0.0, (
+                f"Task {r['task_id']}: debt_score={r.get('debt_score')} attendu > 0"
+            )
+
+    # 19 â€” governance_clean == True sur toutes les rows
+    def test_v071_governance_clean_all_rows(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r.get("obsidia_governance_clean") is True, (
+                f"Task {r['task_id']}: obsidia_governance_clean={r.get('obsidia_governance_clean')}"
+            )
+
+    # 20 â€” decision_authority == KX108_ONLY dans summary
+    def test_v071_decision_authority_kx108_only_summary(self):
+        s = self._summary()
+        assert s.get("decision_authority") == "KX108_ONLY"
+
+    # 21 â€” emits_act == False dans summary
+    def test_v071_emits_act_false_summary(self):
+        s = self._summary()
+        assert s.get("emits_act") is False
+
+    # 22 â€” memory_write == False dans summary
+    def test_v071_memory_write_false_summary(self):
+        s = self._summary()
+        assert s.get("memory_write") is False
+
+    # 23 â€” kernel_mutation == False dans summary
+    def test_v071_kernel_mutation_false_summary(self):
+        s = self._summary()
+        assert s.get("kernel_mutation") is False
+
+    # 24 â€” aucun secret dans les JSON rows + summary
+    def test_v071_no_secret_in_json_outputs(self, monkeypatch):
+        fake_gemini = "AIzaV071FAKE_GENCOIN_KEYTESTABCDE"
+        fake_anthropic = "sk-ant-V071FAKE_GENCOIN_KEY_ABCDE"
+        monkeypatch.setenv("GEMINI_API_KEY", fake_gemini)
+        monkeypatch.setenv("ANTHROPIC_API_KEY", fake_anthropic)
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        payload = json.dumps(rows, default=str) + json.dumps(s, default=str)
+        assert fake_gemini not in payload
+        assert fake_anthropic not in payload
+
+    # 26 â€” surface dynamique : BRODY en REAL_ADAPTER sort de adapter_missing
+    def test_v071_dynamic_surface_brody_real_adapter_exits_missing(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r["family"] == "BRODY":
+                r["obsidia_status"] = bm.OBSIDIA_STATUS_REAL
+        surface = bm.compute_surface_metrics(rows)
+        # BRODY REAL => plus dans missing (reste OBSIDURE + LEAN = 2)
+        assert surface["adapter_missing_count"] == 2
+        # BRODY REAL => dans available (FAST_PATH+BANK+TRADING+GPS+BRODY = 5)
+        assert surface["available_surface_count"] == 5
+
+    # 27 â€” rapport contient NON_CLAIMABLE dans section cost
+    def test_v071_report_cost_non_claimable_marker(self):
+        report = self._generate()
+        assert "NON_CLAIMABLE" in report, "Marqueur NON_CLAIMABLE absent de la section cost"
+        assert "Cost comparison not claimable" in report
+
+    # 28 â€” rapport contient model_call_avoided et modules_skipped dans Work avoidance
+    def test_v071_report_work_avoidance_shows_model_call_avoided(self):
+        report = self._generate()
+        assert "model_call_avoided" in report
+        assert "modules_skipped" in report
+        assert "ext_dep_reduction" in report
+
+    # 29 â€” rapport contient "Work avoidance" ET "Inference avoidance" dans section 7
+    def test_v071_report_has_both_avoidance_subsections(self):
+        report = self._generate()
+        assert "Work avoidance" in report
+        assert "Inference avoidance" in report
+
+    # 30 â€” backward compat : section headers V0.7 restent prÃ©sents
+    def test_v071_report_section_headers_backward_compat(self):
+        report = self._generate()
+        assert "Available surface" in report
+        assert "Intellectual economy" in report or "intellectual" in report.lower()
+
+    # 25 â€” runtime reports ecrits dans .local_reports/, pas dans docs/audits
+    def test_v071_runtime_reports_in_local_reports_not_docs(self, tmp_path, monkeypatch):
+        import importlib
+        monkeypatch.setattr(bm, "_REPO_ROOT", tmp_path)
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        report_dir = tmp_path / ".local_reports" / "test_run"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        bm.write_runtime_reports(report_dir, s, rows)
+        assert (report_dir / "results.json").exists()
+        assert (report_dir / "summary.json").exists()
+        assert (report_dir / "internal_economy.json").exists()
+        assert (report_dir / "gencoin_calibration.json").exists()
+        docs_dir = tmp_path / "docs" / "audits"
+        if docs_dir.exists():
+            import os
+            result_files = list(docs_dir.iterdir())
+            assert all("results.json" != f.name for f in result_files), (
+                "results.json ne doit pas etre dans docs/audits"
+            )
+
+
+# â”€â”€ 15. Tests V0.7.1 Extension â€” known path / inference / governed speed / math / novice / partial â”€â”€
+
+class TestV071Extension:
+    """30 tests Phase 9 V0.7.1 extension : known path, inference necessity,
+    governed speed, novice impact, math formalization, partial engine."""
+
+    def _all_rows(self) -> list[dict]:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return rows
+
+    def _summary(self) -> dict:
+        rows = self._all_rows()
+        return bm.compute_summary(rows, bm.POWER_TASKS)
+
+    def _generate(self) -> str:
+        rows = self._all_rows()
+        summary = bm.compute_summary(rows, bm.POWER_TASKS)
+        return bm.generate_report(summary, rows)
+
+    # â”€â”€ compute_known_path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 1 â€” compute_known_path retourne les champs obligatoires
+    def test_ext_known_path_keys_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "known_path_detected" in r
+            assert "known_path_basis" in r
+            assert "known_path_stage" in r
+            assert "prediction_replaced_by_verification" in r
+            assert "known_path_claimable" in r
+
+    # 2 â€” FAST_PATH : known_path_detected = True, prediction_replaced = True
+    def test_ext_known_path_fast_path_detected(self):
+        rows = self._all_rows()
+        fp = next(r for r in rows if r["family"] == "FAST_PATH")
+        assert fp["known_path_detected"] is True
+        assert fp["prediction_replaced_by_verification"] is True
+        assert fp["known_path_claimable"] is True
+
+    # 3 â€” ADAPTER_MISSING families : known_path_detected = False
+    def test_ext_known_path_missing_not_detected(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("obsidia_status") == bm.OBSIDIA_STATUS_MISSING:
+                assert r["known_path_detected"] is False
+                assert r["known_path_claimable"] is False
+                assert r["known_path_basis"] == "ADAPTER_MISSING"
+
+    # 4 â€” known_path_latency_advantage_ms prÃ©sent quand known_path_detected=True
+    def test_ext_known_path_latency_advantage_when_detected(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r["known_path_detected"]:
+                assert r.get("known_path_latency_advantage_ms") is not None
+
+    # 5 â€” known_path_stage = FAST_PATH_CACHE pour FAST_PATH
+    def test_ext_known_path_stage_fast_path(self):
+        rows = self._all_rows()
+        fp = next(r for r in rows if r["family"] == "FAST_PATH")
+        assert fp["known_path_stage"] == "FAST_PATH_CACHE"
+
+    # 6 â€” known_path_stage = DOMAIN_BRIDGE pour BANK/TRADING/GPS
+    def test_ext_known_path_stage_domain_bridge(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r["family"] in bm.TERRAIN_PROOF_FAMILIES and r["known_path_detected"]:
+                assert r["known_path_stage"] == "DOMAIN_BRIDGE"
+
+    # â”€â”€ compute_inference_necessity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 7 â€” compute_inference_necessity retourne les champs obligatoires
+    def test_ext_inference_necessity_keys_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "obsidia_inference_required" in r
+            assert "gemini_inference_required" in r
+            assert "inference_necessity_delta" in r
+            assert "unnecessary_inference_avoided" in r
+            assert "model_call_avoided_claimable" in r
+
+    # 8 â€” gemini_inference_required = True pour toutes les familles
+    def test_ext_inference_necessity_gemini_always_required(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["gemini_inference_required"] is True
+
+    # 9 â€” model_call_avoided_claimable = True quand model_avoided et pas MISSING
+    def test_ext_inference_claimable_when_model_avoided(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("obsidia_model_call_avoided") and r.get("obsidia_status") != bm.OBSIDIA_STATUS_MISSING:
+                assert r["model_call_avoided_claimable"] is True
+
+    # 10 â€” inference_necessity_delta = 1 quand obsidia n'exige pas de model
+    def test_ext_inference_delta_positive_when_avoided(self):
+        rows = self._all_rows()
+        for r in rows:
+            if not r.get("obsidia_inference_required") and r.get("gemini_inference_required"):
+                assert r["inference_necessity_delta"] == 1
+
+    # â”€â”€ compute_governed_speed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 11 â€” compute_governed_speed retourne les champs obligatoires
+    def test_ext_governed_speed_keys_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "governance_preserved_at_speed" in r
+            assert "kx108_preserved_at_speed" in r
+            assert "no_action_preserved_at_speed" in r
+            assert "no_memory_write_preserved_at_speed" in r
+            assert "no_kernel_mutation_preserved_at_speed" in r
+
+    # 12 â€” kx108_preserved_at_speed = True partout (DECISION_AUTHORITY = KX108_ONLY)
+    def test_ext_kx108_preserved_global(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["kx108_preserved_at_speed"] is True
+
+    # 13 â€” no_action_preserved_at_speed = True (EMITS_ACT = False)
+    def test_ext_no_action_preserved_global(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["no_action_preserved_at_speed"] is True
+
+    # 14 â€” governed_speedup_ratio prÃ©sent quand governance_preserved_at_speed = True
+    def test_ext_governed_speedup_ratio_when_governed(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("governance_preserved_at_speed") and r.get("speedup_ratio") is not None:
+                assert r.get("governed_speedup_ratio") is not None
+
+    # 15 â€” summary : governed_speedup_avg calculÃ©
+    def test_ext_summary_governed_speedup_avg(self):
+        s = self._summary()
+        assert "governed_speedup_avg" in s
+        assert "governed_speedup_median" in s
+
+    # 16 â€” summary : governed_speed_claim prÃ©sent
+    def test_ext_summary_governed_speed_claim(self):
+        s = self._summary()
+        assert "governed_speed_claim" in s
+        assert "KX108_ONLY" in s["governed_speed_claim"]
+
+    # â”€â”€ compute_math_formalization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 17 â€” compute_math_formalization retourne les champs obligatoires
+    def test_ext_math_formal_keys_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "math_formalization_support" in r
+            assert "formalization_basis" in r
+            assert "invariant_backing" in r
+            assert "kx108_authority_backing" in r
+            assert "formalization_claimable" in r
+
+    # 18 â€” kx108_authority_backing = True partout
+    def test_ext_kx108_authority_backing_global(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["kx108_authority_backing"] is True
+
+    # 19 â€” ADAPTER_MISSING : formalization_basis = ADAPTER_MISSING_NOT_CLAIMABLE
+    def test_ext_math_formal_basis_missing(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("obsidia_status") == bm.OBSIDIA_STATUS_MISSING:
+                assert r["formalization_basis"] == "ADAPTER_MISSING_NOT_CLAIMABLE"
+                assert r["formalization_claimable"] is False
+
+    # 20 â€” FAST_PATH : formalization_basis = FROZEN_V0_FORMAL_SURFACE
+    def test_ext_math_formal_fast_path(self):
+        rows = self._all_rows()
+        fp = next(r for r in rows if r["family"] == "FAST_PATH")
+        assert fp["formalization_basis"] == "FROZEN_V0_FORMAL_SURFACE"
+
+    # â”€â”€ summary extension â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 21 â€” summary : known_path_detected_count >= 0
+    def test_ext_summary_known_path_count(self):
+        s = self._summary()
+        assert "known_path_detected_count" in s
+        assert s["known_path_detected_count"] >= 0
+        assert "known_path_detected_rate" in s
+
+    # 22 â€” summary : inference_avoided_count >= 0
+    def test_ext_summary_inference_avoided_count(self):
+        s = self._summary()
+        assert "inference_avoided_count" in s
+        assert s["inference_avoided_count"] >= 0
+
+    # 23 â€” summary : novice projections prÃ©sentes
+    def test_ext_summary_novice_projections(self):
+        s = self._summary()
+        assert "model_calls_avoided_per_1000_requests" in s
+        assert "model_calls_avoided_per_1m_requests" in s
+        assert "time_saved_per_request_ms_avg" in s
+        assert "time_saved_per_1000_requests_seconds" in s
+        assert "time_saved_per_1m_requests_hours" in s
+
+    # 24 â€” summary : partial engine fields prÃ©sents
+    def test_ext_summary_partial_engine(self):
+        s = self._summary()
+        assert s["benchmark_completion_state"] == "CURRENT_BENCHMARK_PARTIAL"
+        assert s["obsidia_complete_measured"] is False
+        assert "BRODY_ADAPTER_TO_BENCHMARK" in s["missing_or_not_wired_layers"]
+        assert s["partial_engine_claim"] == "NOT_INCLUDED_IN_CURRENT_RUN"
+
+    # 25 â€” summary : partial_engine_warning contient la phrase clÃ©
+    def test_ext_summary_partial_engine_warning_phrase(self):
+        s = self._summary()
+        w = s.get("partial_engine_warning", "")
+        assert "Obsidia partiel" in w
+        assert "Gemini industriel" in w
+
+    # â”€â”€ rapport sections nouvelles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    # 26 â€” rapport section 14 : "Chemin connu"
+    def test_ext_report_section_known_path(self):
+        report = self._generate()
+        assert "Chemin connu" in report
+        assert "Known path" in report
+
+    # 27 â€” rapport : phrase obligatoire known path
+    def test_ext_report_known_path_phrase(self):
+        report = self._generate()
+        assert "Quand la route est connue" in report
+        assert "prédire devient plus lent que vérifier" in report
+
+    # 28 â€” rapport section 16 : "Vitesse gouvernÃ©e"
+    def test_ext_report_section_governed_speed(self):
+        report = self._generate()
+        assert "Vitesse gouvernÃ©e" in report or "Governed speed" in report
+
+    # 29 â€” rapport : phrase obligatoire governed speed
+    def test_ext_report_governed_speed_phrase(self):
+        report = self._generate()
+        assert "KX108_ONLY" in report
+        assert "sacrifiant le contrÃ´le" in report or "sacrifiant" in report
+
+    # 30 â€” rapport section 19 : phrases infrastructure future
+    def test_ext_report_infrastructure_future_phrases(self):
+        report = self._generate()
+        assert "Gemini optimise l'inférence" in report
+        assert "Obsidia optimise le chemin admissible" in report
+
+    # 31 â€” rapport section partial engine : phrase clÃ©
+    def test_ext_report_partial_engine_phrase(self):
+        report = self._generate()
+        assert "Obsidia partiel" in report
+        assert "Gemini industriel" in report
+
+    # 32 â€” rapport section novice : projections visibles
+    def test_ext_report_novice_projections_visible(self):
+        report = self._generate()
+        assert "1 000" in report or "1000" in report or "1 M" in report or "1m" in report.lower()
+        assert "Model calls avoided" in report or "model_calls_avoided" in report
+
+    # 33 â€” rapport section math formalization
+    def test_ext_report_math_formalization_section(self):
+        report = self._generate()
+        assert "Formalisation" in report or "formalization" in report.lower()
+
+    # 34 â€” aucune valeur de clÃ© API dans le rapport
+    def test_ext_report_no_api_key(self):
+        import re
+        report = self._generate()
+        # L'en-tÃªte mentionne GEMINI_API_KEY comme nom d'env var (pas une valeur secrÃ¨te)
+        # On vÃ©rifie qu'aucune valeur rÃ©elle de clÃ© n'est prÃ©sente (pattern AIza... ou sk-ant-...)
+        assert not re.search(r'AIza[0-9A-Za-z_-]{20,}', report), "Valeur de clÃ© Gemini dans le rapport"
+        assert not re.search(r'sk-ant-[0-9A-Za-z_-]{10,}', report), "Valeur de clÃ© Anthropic dans le rapport"
+        assert "ANTHROPIC_API_KEY" not in report
+
+    # 35 â€” novice projections per_1m_requests > per_1000_requests dans summary
+    def test_ext_summary_novice_1m_gt_1000(self):
+        s = self._summary()
+        v1k = s.get("model_calls_avoided_per_1000_requests") or 0.0
+        v1m = s.get("model_calls_avoided_per_1m_requests") or 0.0
+        assert v1m >= v1k
+
+
+# â”€â”€ 16. Tests V0.7.1 â€” Paired Route Comparison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+class TestPairedRouteComparison:
+    """15 tests paired route comparison : paire par paire, wired vs adapter-missing."""
+
+    def _all_rows(self) -> list[dict]:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return rows
+
+    def _summary(self) -> dict:
+        rows = self._all_rows()
+        return bm.compute_summary(rows, bm.POWER_TASKS)
+
+    def _generate(self) -> str:
+        rows = self._all_rows()
+        summary = bm.compute_summary(rows, bm.POWER_TASKS)
+        return bm.generate_report(summary, rows)
+
+    # 1 â€” paired_route_outcome prÃ©sent sur chaque row
+    def test_paired_route_outcome_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "paired_route_outcome" in r, f"paired_route_outcome absent: {r['family']}"
+            assert r["paired_route_outcome"] is not None
+
+    # 2 â€” both_correct / obsidia_only_correct / gemini_only_correct cohÃ©rents
+    def test_paired_outcome_coherence(self):
+        rows = self._all_rows()
+        for r in rows:
+            obs_match = r.get("obsidia_route_match")
+            gem_match = r.get("gemini_route_match")
+            is_missing = r.get("obsidia_adapter_missing")
+            if r.get("both_correct"):
+                assert obs_match is True and gem_match is True
+            if r.get("obsidia_only_correct"):
+                assert obs_match is True and gem_match is not True
+            if r.get("gemini_only_correct"):
+                assert gem_match is True and obs_match is not True and not is_missing
+
+    # 3 â€” FAST_PATH/BANK/TRADING/GPS : route_accuracy_claimable = True
+    def test_wired_families_claimable(self):
+        rows = self._all_rows()
+        wired = {"FAST_PATH", "BANK", "TRADING", "GPS"}
+        for r in rows:
+            if r["family"] in wired:
+                assert r.get("route_accuracy_claimable") is True, (
+                    f"{r['family']} devrait Ãªtre claimable"
+                )
+
+    # 4 â€” BRODY/OBSIDURE/LEAN : route_accuracy_claimable = False (ADAPTER_MISSING)
+    def test_adapter_missing_not_claimable(self):
+        rows = self._all_rows()
+        missing = {"BRODY", "OBSIDURE", "LEAN"}
+        for r in rows:
+            if r["family"] in missing:
+                assert r.get("route_accuracy_claimable") is False
+                assert r.get("obsidia_adapter_missing") is True
+                assert r.get("route_accuracy_scope") == "ADAPTER_MISSING_SURFACE_NON_CLAIMABLE"
+
+    # 5 â€” obsidia_wired_surface_count == 4
+    def test_wired_surface_count_4(self):
+        s = self._summary()
+        assert s.get("obsidia_wired_surface_count") == 4
+
+    # 6 â€” adapter_missing_surface_count == 3
+    def test_adapter_missing_count_3(self):
+        s = self._summary()
+        assert s.get("adapter_missing_surface_count") == 3
+
+    # 7 â€” obsidia_wired_surface_accuracy == 1.0 (toutes les familles wired matchent en dry-run)
+    def test_wired_surface_accuracy_1(self):
+        s = self._summary()
+        assert s.get("obsidia_wired_surface_accuracy") == 1.0
+
+    # 8 â€” adapter_missing_surface_non_claimable == True
+    def test_adapter_missing_non_claimable_flag(self):
+        s = self._summary()
+        assert s.get("adapter_missing_surface_non_claimable") is True
+
+    # 9 â€” global_route_accuracy_warning prÃ©sent dans summary
+    def test_global_route_accuracy_warning_present(self):
+        s = self._summary()
+        w = s.get("global_route_accuracy_warning", "")
+        assert "Global route_accuracy mixes wired surfaces and adapter-missing surfaces" in w
+
+    # 10 â€” summary.md contient la section Route Comparison
+    def test_summary_md_paired_section(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Route Comparison" in md or "Comparaison routage" in md
+
+    # 11 â€” summary.md contient la phrase global_route_accuracy_warning
+    def test_summary_md_accuracy_warning(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Global route_accuracy mixes wired surfaces and adapter-missing surfaces" in md
+
+    # 12 â€” summary.md contient "BRODY, OBSIDURE, LEAN are adapter-missing"
+    def test_summary_md_adapter_missing_warning(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "BRODY, OBSIDURE, LEAN are adapter-missing" in md
+
+    # 13 â€” aucun changement sur Gencoin : CALIBRATION_ONLY, emission=0
+    def test_gencoin_unchanged(self):
+        s = self._summary()
+        assert s.get("gencoin_mode") == bm.GENCOIN_MODE
+        assert s.get("gencoin_total_emission") == 0
+        assert s.get("gencoin_emission_enabled") is False
+
+    # 14 â€” aucun changement sur cost : cost_comparison_claimable_global = False
+    def test_cost_unchanged(self):
+        s = self._summary()
+        assert s.get("cost_comparison_claimable_global") is False
+
+    # 15 â€” rapport inline contient la section paired
+    def test_generate_report_paired_section(self):
+        report = self._generate()
+        assert "Comparaison routage paire par paire" in report
+        assert "Global route_accuracy mixes wired surfaces and adapter-missing surfaces" in report
+        assert "BRODY, OBSIDURE, LEAN are adapter-missing" in report
+
+
+# â”€â”€ 17. Tests OIE Convergence Layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+class TestOIEConvergence:
+    """30 tests OIE convergence : CostReceipt, DomainMetrics, DCA, OSCA/OAPI/ODPI, claim matrix, gencoin bridge."""
+
+    def _all_rows(self) -> list[dict]:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return rows
+
+    def _summary(self) -> dict:
+        rows = self._all_rows()
+        return bm.compute_summary(rows, bm.POWER_TASKS)
+
+    def _generate_summary_md(self, tmp_path) -> str:
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return (tmp_path / "summary.md").read_text(encoding="utf-8")
+
+    def test_oie_every_row_has_cost_receipt(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "oie_cost_receipt" in r, f"oie_cost_receipt absent: {r['family']}"
+            assert r["oie_cost_receipt"] is not None
+
+    def test_oie_cost_receipt_json_serializable(self):
+        rows = self._all_rows()
+        for r in rows:
+            receipt = r["oie_cost_receipt"]
+            try:
+                json.dumps(receipt, default=str)
+            except Exception as e:
+                pytest.fail(f"oie_cost_receipt not JSON serializable for {r['family']}: {e}")
+
+    def test_oie_all_receipts_readonly(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("readonly") is True
+
+    def test_oie_all_receipts_emits_act_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("emits_act") is False
+
+    def test_oie_all_receipts_memory_write_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("memory_write") is False
+
+    def test_oie_all_receipts_kernel_mutation_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("kernel_mutation") is False
+
+    def test_oie_all_receipts_graphiti_write_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("graphiti_write") is False
+
+    def test_oie_all_receipts_neo4j_write_false(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert r["oie_cost_receipt"].get("neo4j_write") is False
+
+    def test_oie_family_cost_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "oie_family_cost_eur_per_1m" in r
+            assert r["oie_family_cost_eur_per_1m"] > 0
+
+    def test_oie_savings_ratio_present(self):
+        rows = self._all_rows()
+        for r in rows:
+            assert "oie_savings_ratio_vs_api_normal" in r
+            assert r["oie_savings_ratio_vs_api_normal"] > 0
+
+    def test_oie_summary_baseline_registry(self):
+        s = self._summary()
+        reg = s.get("oie_baseline_registry")
+        assert reg is not None
+        assert "BT_API_NORMAL" in reg
+        assert "BT_AGENTIC" in reg
+        assert reg["BT_API_NORMAL"] == 25000.0
+        assert reg["BT_AGENTIC"] == 160000.0
+
+    def test_oie_summary_domain_summary(self):
+        s = self._summary()
+        ds = s.get("domain_summary")
+        assert ds is not None
+        assert len(ds) > 0
+
+    def test_oie_summary_dca_by_domain(self):
+        s = self._summary()
+        dca = s.get("dca_by_domain")
+        assert dca is not None
+        for dom, val in dca.items():
+            assert val["dca_api_normal"] > 0
+            assert val["dca_agentic"] > 0
+
+    def test_oie_summary_osca(self):
+        s = self._summary()
+        assert "osca_ratio" in s
+        assert s["osca_ratio"] > 0
+        assert s.get("osca_basis") == "GEOMEAN_LAYER_RATIOS_VS_BT_API_NORMAL"
+
+    def test_oie_summary_oapi(self):
+        s = self._summary()
+        assert "oapi_ratio" in s
+        assert s["oapi_ratio"] > 0
+        assert "PORTFOLIO_ACTIONS" in s.get("oapi_basis", "")
+
+    def test_oie_summary_odpi(self):
+        s = self._summary()
+        assert "odpi_ratio" in s
+        assert s["odpi_ratio"] > 0
+        assert "PORTFOLIO_DOMAINS" in s.get("odpi_basis", "")
+
+    def test_oie_summary_gencoin_bridge(self):
+        s = self._summary()
+        gb = s.get("oie_gencoin_bridge")
+        assert gb is not None
+        assert gb.get("gencoin_mode") == "CALIBRATION_ONLY"
+        assert gb.get("oie_can_measure_value") is True
+        assert gb.get("oie_cannot_emit_value") is True
+
+    def test_oie_gencoin_bridge_emission_zero(self):
+        s = self._summary()
+        assert s["oie_gencoin_bridge"]["gencoin_total_emission"] == 0
+
+    def test_oie_gencoin_bridge_source_law_false(self):
+        s = self._summary()
+        assert s["oie_gencoin_bridge"]["source_law_satisfied"] is False
+
+    def test_oie_claim_matrix_functional_claimable(self):
+        s = self._summary()
+        cm = s.get("oie_claim_matrix")
+        assert cm is not None
+        assert cm["functional_claimable_count"] == 4
+
+    def test_oie_claim_matrix_cost_zero(self):
+        s = self._summary()
+        assert s["oie_claim_matrix"]["cost_claimable_count"] == 0
+
+    def test_oie_claim_matrix_adapter_missing(self):
+        s = self._summary()
+        assert s["oie_claim_matrix"]["adapter_missing_non_claimable_count"] == 3
+
+    def test_oie_adapter_missing_not_claimable(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("obsidia_status") == bm.OBSIDIA_STATUS_MISSING:
+                assert r.get("oie_functional_claimable") is False
+                assert r.get("oie_domain_claimable") is False
+
+    def test_oie_wired_rows_claimable(self):
+        rows = self._all_rows()
+        for r in rows:
+            if r.get("obsidia_status") != bm.OBSIDIA_STATUS_MISSING:
+                assert r.get("oie_functional_claimable") is True
+                assert r.get("oie_domain_claimable") is True
+
+    def test_summary_md_oie_cost_receipts(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        # Section Â§7 OIE Indices contient les informations cost/receipt
+        assert "OIE Indices" in md or "cost claimable" in md or "LOCAL_PROXY" in md
+
+    def test_summary_md_oie_domain_metrics(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        # DCA par domaine est dans Â§7
+        assert "DCA" in md or "dca_api_normal" in md
+
+    def test_summary_md_oie_indices(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "OIE Indices" in md  # prÃ©sent dans "Â§7 OIE Indices"
+
+    def test_summary_md_oie_claim_matrix(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        # Section §4 Claimability Matrix remplace "OIE Claim Matrix"
+        assert "Claimability Matrix" in md or "OIE Claim Matrix" in md
+
+    def test_summary_md_oie_gencoin_bridge(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        # Â§9 Internal Economy / Gencoin contient les informations bridge
+        assert "Gencoin" in md and ("Internal Economy" in md or "OIE + Gencoin" in md)
+
+    def test_summary_md_oie_measure_phrase(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        # Â§9 contient les flags oie_can_measure_value / oie_cannot_emit_value
+        assert "oie_can_measure_value" in md or "OIE can measure" in md
+
+
+# â”€â”€ 18. Tests OIE Source Lineage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+class TestOIELineage:
+    """14 tests OIE source lineage, freeze reference, source documents, benchmark linkage."""
+
+    def _summary(self) -> dict:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return bm.compute_summary(rows, bm.POWER_TASKS)
+
+    def _generate_summary_md(self, tmp_path) -> str:
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return (tmp_path / "summary.md").read_text(encoding="utf-8")
+
+    def test_lineage_source_lineage_present(self):
+        s = self._summary()
+        sl = s.get("oie_source_lineage")
+        assert sl is not None
+
+    def test_lineage_base_audit_commit(self):
+        s = self._summary()
+        assert s["oie_source_lineage"]["base_audit_commit"] == "73444cd"
+
+    def test_lineage_v01_commit_candidate(self):
+        s = self._summary()
+        assert s["oie_source_lineage"]["oie_v01_commit_candidate"] == "b32b816"
+
+    def test_lineage_source_documents(self):
+        s = self._summary()
+        sd = s.get("oie_source_documents")
+        assert sd is not None
+        assert "engine_spec" in sd
+        assert "external_api_protocol" in sd
+
+    def test_lineage_import_status(self):
+        s = self._summary()
+        imp = s.get("oie_import_status")
+        assert imp is not None
+        assert "used_native_oie_imports" in imp
+
+    def test_lineage_freeze_reference(self):
+        s = self._summary()
+        fr = s.get("oie_freeze_reference")
+        assert fr is not None
+        assert "freeze_family" in fr
+
+    def test_lineage_freeze_family(self):
+        s = self._summary()
+        fr = s.get("oie_freeze_reference")
+        if fr.get("freeze_found"):
+            assert fr["freeze_family"] == "OBSIDIA_OIE_V01_ENGINE_FREEZE"
+
+    def test_lineage_benchmark_linkage(self):
+        s = self._summary()
+        bl = s.get("oie_benchmark_linkage")
+        assert bl is not None
+        assert bl.get("portfolio_benchmark_name") == "OIE_V0.1_PORTFOLIO"
+        assert bl.get("external_benchmark_name") == "OIE_POWER_BENCHMARK_V0_7_1"
+
+    def test_lineage_domain_name_mapping(self):
+        s = self._summary()
+        dnm = s.get("oie_domain_name_mapping")
+        assert dnm is not None
+        assert dnm.get("GPS") == "GPS_AVIATION"
+
+    def test_lineage_summary_md_section(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "OIE Source Lineage" in md
+
+    def test_lineage_summary_md_base_commit(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "73444cd" in md
+
+    def test_lineage_summary_md_freeze_family(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "OBSIDIA_OIE_V01_ENGINE_FREEZE" in md
+
+    def test_lineage_summary_md_engine_spec(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "OBSIDIA_INFERENCE_ECONOMY_ENGINE_SPEC_V0.md" in md
+
+    def test_lineage_summary_md_external_protocol(self, tmp_path):
+        md = self._generate_summary_md(tmp_path)
+        assert "OBSIDIA_EXTERNAL_API_COST_COMPARISON_PROTOCOL_V0.md" in md
+
+
+class TestDualLane:
+    """30 tests dual-lane structure, readable_report.json, OIE_OBSIDIA_EXECUTION_MODE, summary.md 11 sections."""
+
+    def _all_rows(self):
+        rows = []
+        for task in bm.POWER_TASKS:
+            obs = bm.run_obsidia_local_actual(task)
+            gem = bm.run_gemini_lane_dryrun(task)
+            rows.append(bm.compute_compare_row(task, obs, gem))
+        return rows
+
+    def _summary_and_rows(self):
+        rows = self._all_rows()
+        return bm.compute_summary(rows, bm.POWER_TASKS), rows
+
+    def _write_reports(self, tmp_path):
+        s, rows = self._summary_and_rows()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return s, rows, tmp_path
+
+    # â”€â”€ 1. Chaque row a dual_lane â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_every_row_has_dual_lane(self):
+        for row in self._all_rows():
+            assert "dual_lane" in row, f"dual_lane manquant pour {row.get('task_id')}"
+
+    def test_dual_lane_has_obsidia_lane(self):
+        for row in self._all_rows():
+            assert "obsidia_lane" in row["dual_lane"]
+
+    def test_dual_lane_has_gemini_lane(self):
+        for row in self._all_rows():
+            assert "gemini_lane" in row["dual_lane"]
+
+    def test_dual_lane_obsidia_lane_has_execution_mode(self):
+        for row in self._all_rows():
+            assert "execution_mode" in row["dual_lane"]["obsidia_lane"]
+
+    def test_dual_lane_gemini_lane_has_execution_mode(self):
+        for row in self._all_rows():
+            assert "execution_mode" in row["dual_lane"]["gemini_lane"]
+
+    def test_dual_lane_has_comparison_scope(self):
+        for row in self._all_rows():
+            assert "comparison_scope" in row["dual_lane"]
+
+    def test_dual_lane_has_comparison_claimable(self):
+        for row in self._all_rows():
+            assert "comparison_claimable" in row["dual_lane"]
+
+    def test_dual_lane_has_comparison_warning(self):
+        for row in self._all_rows():
+            assert "comparison_warning" in row["dual_lane"]
+
+    # â”€â”€ 2. Familles branchÃ©es / ADAPTER_MISSING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_wired_families_not_adapter_missing(self):
+        for row in self._all_rows():
+            if row["family"] in ("FAST_PATH", "BANK", "TRADING", "GPS"):
+                ol = row["dual_lane"]["obsidia_lane"]
+                assert ol.get("adapter_missing") is False, (
+                    f"{row['family']} ne doit pas Ãªtre ADAPTER_MISSING"
+                )
+
+    def test_adapter_missing_families_flagged(self):
+        for row in self._all_rows():
+            if row["family"] in ("BRODY", "OBSIDURE", "LEAN"):
+                ol = row["dual_lane"]["obsidia_lane"]
+                assert ol.get("adapter_missing") is True, (
+                    f"{row['family']} doit Ãªtre ADAPTER_MISSING"
+                )
+
+    def test_adapter_missing_not_claimable(self):
+        for row in self._all_rows():
+            if row["family"] in ("BRODY", "OBSIDURE", "LEAN"):
+                assert row["dual_lane"]["comparison_claimable"] is False
+
+    # â”€â”€ 3. DRY_RUN scope quand Gemini dry-run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_dry_run_scope_when_gemini_dryrun(self):
+        for row in self._all_rows():
+            assert row["dual_lane"]["comparison_scope"] == "DRY_RUN"
+
+    # â”€â”€ 4. OIE_OBSIDIA_EXECUTION_MODE env var â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_exec_mode_auto_default(self, monkeypatch):
+        monkeypatch.delenv("OIE_OBSIDIA_EXECUTION_MODE", raising=False)
+        task = bm.POWER_TASKS[0]
+        obs = bm.run_obsidia_local_actual(task)
+        gem = bm.run_gemini_lane_dryrun(task)
+        dl = bm.compute_dual_lane(task, obs, gem)
+        assert dl["obsidia_lane"]["execution_mode"] == obs["obsidia_status"]
+
+    def test_exec_mode_frozen_only(self, monkeypatch):
+        monkeypatch.setenv("OIE_OBSIDIA_EXECUTION_MODE", "FROZEN_ONLY")
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "FAST_PATH")
+        obs = bm.run_obsidia_local_actual(task)
+        gem = bm.run_gemini_lane_dryrun(task)
+        dl = bm.compute_dual_lane(task, obs, gem)
+        assert dl["obsidia_lane"]["execution_mode"] == obs["obsidia_status"]
+
+    def test_exec_mode_live_local_unavailable(self, monkeypatch):
+        monkeypatch.setenv("OIE_OBSIDIA_EXECUTION_MODE", "LIVE_LOCAL")
+        task = bm.POWER_TASKS[0]
+        obs = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_LIVE)
+        gem = bm.run_gemini_lane_dryrun(task)
+        dl = bm.compute_dual_lane(task, obs, gem)
+        assert dl["obsidia_lane"]["attempted_live_execution"] is True
+        assert dl["obsidia_lane"]["fallback_used"] is False
+        assert dl["obsidia_lane"]["execution_mode"] in {
+            "LIVE_LOCAL_UNAVAILABLE",
+            "LIVE_BRIDGE_HTTP_ERROR",
+            "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE",
+            "LIVE_LOCAL",
+            "ADAPTER_MISSING",
+        }
+
+    def test_exec_mode_live_local_unavailable_flag(self, monkeypatch):
+        monkeypatch.setenv("OIE_OBSIDIA_EXECUTION_MODE", "LIVE_LOCAL")
+        task = bm.POWER_TASKS[0]
+        obs = bm.run_obsidia_local_actual(task)
+        gem = bm.run_gemini_lane_dryrun(task)
+        dl = bm.compute_dual_lane(task, obs, gem)
+        assert dl["obsidia_lane"]["live_execution_available"] is False
+
+    def test_exec_mode_live_or_frozen_falls_back(self, monkeypatch):
+        monkeypatch.setenv("OIE_OBSIDIA_EXECUTION_MODE", "LIVE_LOCAL_OR_FROZEN")
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "FAST_PATH")
+        obs = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_LIVE_OR_FROZEN)
+        gem = bm.run_gemini_lane_dryrun(task)
+        dl = bm.compute_dual_lane(task, obs, gem)
+        assert dl["obsidia_lane"]["attempted_live_execution"] is True
+        assert dl["obsidia_lane"]["fallback_used"] is True
+        assert dl["obsidia_lane"]["live_execution_available"] is False
+
+    # â”€â”€ 5. readable_report.json â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_readable_report_json_exists(self, tmp_path):
+        self._write_reports(tmp_path)
+        assert (tmp_path / "readable_report.json").exists()
+
+    def test_readable_report_json_parseable(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert isinstance(data, dict)
+
+    def test_readable_report_has_dual_lane_table(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert "dual_lane_table" in data
+        assert isinstance(data["dual_lane_table"], list)
+
+    def test_readable_report_no_case_dup_keys(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        issues = bm.find_case_insensitive_duplicate_keys(data)
+        assert issues == [], f"ClÃ©s case-insensitive dupliquÃ©es dans readable_report.json : {issues}"
+
+    def test_summary_json_no_case_dup_keys(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
+        issues = bm.find_case_insensitive_duplicate_keys(data)
+        assert issues == [], f"ClÃ©s case-insensitive dupliquÃ©es dans summary.json : {issues}"
+
+    def test_readable_report_has_oie_osca(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert "oie_osca_x" in data
+
+    def test_readable_report_has_oie_oapi(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert "oie_oapi_x" in data
+
+    # â”€â”€ 6. summary.md 11 sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_summary_md_executive_read_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§1 Executive Read" in md
+
+    def test_summary_md_dual_lane_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§3 Dual Lane Comparison" in md
+
+    def test_summary_md_claimability_matrix_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§4 Claimability Matrix" in md
+
+    def test_summary_md_wired_surface_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§5 Wired Surface Read" in md
+
+    def test_summary_md_adapter_missing_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§6 Adapter Missing Read" in md
+
+    def test_summary_md_missing_next_work_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§11 Missing / Next Work" in md
+
+    def test_summary_md_source_lineage_preserved(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "§8 OIE Source Lineage" in md
+        assert "73444cd" in md
+
+    # â”€â”€ 7. Invariants hÃ©ritÃ©s â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_gencoin_calibration_only_preserved(self):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        assert s["gencoin_mode"] == "CALIBRATION_ONLY"
+
+    def test_cost_comparison_claimable_false_preserved(self):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        assert s["cost_comparison_claimable_global"] is False
+
+    def test_osca_oapi_odpi_present_preserved(self):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        assert "osca_ratio" in s and s["osca_ratio"] > 0
+        assert "oapi_ratio" in s and s["oapi_ratio"] > 0
+        assert "odpi_ratio" in s and s["odpi_ratio"] > 0
+
+    def test_find_case_insensitive_duplicate_keys_detects_dup(self):
+        obj = {"BANK": "v1", "bank": "v2", "other": "x"}
+        issues = bm.find_case_insensitive_duplicate_keys(obj)
+        assert len(issues) == 1
+        assert "bank" in issues[0].lower()
+
+    def test_find_case_insensitive_duplicate_keys_no_false_positive(self):
+        obj = {"BANK": "v1", "TRADING": "v2", "GPS": "v3"}
+        issues = bm.find_case_insensitive_duplicate_keys(obj)
+        assert issues == []
+
+
+class TestObsidiaLiveAdapter:
+    """20 tests pour discover_obsidia_live_adapters(), run_obsidia_lane(), registry, governance."""
+
+    # â”€â”€ 1. discover_obsidia_live_adapters() retourne un dict â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_discover_returns_dict(self):
+        reg = bm.discover_obsidia_live_adapters()
+        assert isinstance(reg, dict)
+
+    def test_registry_contains_all_families(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam in ("FAST_PATH", "BANK", "TRADING", "GPS", "BRODY", "OBSIDURE", "LEAN"):
+            assert fam in reg, f"Famille {fam} absente du registry"
+
+    def test_registry_entry_has_adapter_found(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert "adapter_found" in v, f"adapter_found manquant pour {fam}"
+
+    def test_registry_entry_has_adapter_type(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert "adapter_type" in v, f"adapter_type manquant pour {fam}"
+
+    def test_registry_entry_has_usable_for_live_local(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert "usable_for_live_local" in v, f"usable_for_live_local manquant pour {fam}"
+
+    # â”€â”€ 2. Govrnance invariants dans le registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_registry_emits_act_always_false(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert v.get("emits_act") is False, f"emits_act=True dans registry pour {fam}"
+
+    def test_registry_memory_write_always_false(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert v.get("memory_write") is False
+
+    def test_registry_kernel_mutation_always_false(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert v.get("kernel_mutation") is False
+
+    def test_registry_graphiti_write_always_false(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert v.get("graphiti_write") is False
+
+    def test_registry_neo4j_write_always_false(self):
+        reg = bm.discover_obsidia_live_adapters()
+        for fam, v in reg.items():
+            assert v.get("neo4j_write") is False
+
+    # â”€â”€ 3. run_obsidia_lane() modes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_frozen_only_returns_frozen_for_wired_surface(self):
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "FAST_PATH")
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_FROZEN)
+        assert r["obsidia_status"] in (bm.OBSIDIA_STATUS_FROZEN, bm.OBSIDIA_STATUS_REAL)
+
+    def test_frozen_only_does_not_set_live_attempted(self):
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "BANK")
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_FROZEN)
+        assert r.get("obsidia_live_attempted") is False
+
+    def test_live_local_no_silent_fallback_when_unavailable(self):
+        """Si API 8000 est down, LIVE_LOCAL ne doit pas fallback silencieusement."""
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "BANK")
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_LIVE)
+        # Si API down â†’ statut LIVE_LOCAL_UNAVAILABLE ou ADAPTER_MISSING (pas FROZEN silencieux)
+        # Si API up â†’ LIVE_LOCAL (acceptÃ© aussi)
+        assert r["obsidia_status"] not in (bm.OBSIDIA_STATUS_FROZEN,), (
+            f"LIVE_LOCAL a fallback silencieusement vers {r['obsidia_status']}"
+        )
+
+    def test_live_local_or_frozen_fallback_explicit(self):
+        task = next(t for t in bm.POWER_TASKS if t["family"] == "BANK")
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_LIVE_OR_FROZEN)
+        # Soit LIVE_LOCAL (API up) soit FROZEN avec fallback_used=True (API down)
+        if r["obsidia_status"] == bm.OBSIDIA_STATUS_FROZEN:
+            assert r.get("obsidia_fallback_used") is True, "Fallback frozen doit Ãªtre marquÃ© explicite"
+
+    def test_live_lane_has_obsidia_execution_mode(self):
+        task = bm.POWER_TASKS[0]
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_AUTO)
+        assert "obsidia_execution_mode" in r
+
+    def test_live_lane_has_live_attempted(self):
+        task = bm.POWER_TASKS[0]
+        r = bm.run_obsidia_lane(task, bm.OIE_OBSIDIA_EXEC_MODE_AUTO)
+        assert "obsidia_live_attempted" in r
+
+    # â”€â”€ 4. dual_lane enrichi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_dual_lane_obsidia_lane_has_attempted_live_execution(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        for row in rows:
+            assert "attempted_live_execution" in row["dual_lane"]["obsidia_lane"]
+
+    def test_dual_lane_obsidia_lane_has_live_execution_available(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        for row in rows:
+            assert "live_execution_available" in row["dual_lane"]["obsidia_lane"]
+
+    def test_dual_lane_obsidia_lane_has_fallback_used(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        for row in rows:
+            assert "fallback_used" in row["dual_lane"]["obsidia_lane"]
+
+    # â”€â”€ 5. readable_report.json contient obsidia_live_read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_readable_report_has_obsidia_live_read(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert "obsidia_live_read" in data
+        live = data["obsidia_live_read"]
+        assert "live_local_available_global" in live
+        assert "live_families" in live
+        assert "missing_families" in live
+
+    # â”€â”€ 6. summary.json contient registry + summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_summary_json_has_live_adapter_registry(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        import json as _json
+        data = _json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
+        assert "obsidia_live_adapter_registry" in data
+
+    def test_summary_json_has_live_adapter_summary(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        import json as _json
+        data = _json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
+        assert "obsidia_live_adapter_summary" in data
+        assert "live_local_available_global" in data["obsidia_live_adapter_summary"]
+
+    # â”€â”€ 7. summary.md contient la section Obsidia Live Local Read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def test_summary_md_has_live_local_section(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Obsidia Live Local Read" in md

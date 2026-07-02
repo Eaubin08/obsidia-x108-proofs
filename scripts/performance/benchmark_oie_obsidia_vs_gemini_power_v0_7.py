@@ -1,11 +1,11 @@
-"""OIE V0.7 -- Obsidia vs Gemini Power Benchmark.
+"""OIE V0.7.1 -- Obsidia vs Gemini Power Benchmark.
 
 Deux lanes sur les memes 7 familles de routing :
   A. OBSIDIA_LOCAL_ACTUAL  -- router deterministe / valeurs figees V0 / adapter si dispo
   B. GEMINI_SDK_EXTERNAL   -- SDK google-genai (dry-run par defaut)
 
-Metriques : speed, cost, energy, throughput, work avoidance,
-context economy, inference avoidance, governance, quality.
+Metriques : speed, cost, energy, throughput, work avoidance, context economy,
+inference avoidance, intellectual economy, gencoin calibration, governance, quality.
 
 Gouvernance :
   EMITS_ACT=False, MEMORY_WRITE=False, KERNEL_MUTATION=False,
@@ -14,9 +14,15 @@ Gouvernance :
 Mode par defaut : DRY_RUN (aucun reseau, Gemini mocke).
 Mode REAL :       OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1 + GEMINI_API_KEY.
 
+Rapports runtime : .local_reports/OIE_POWER_BENCHMARK_V0_7_1_<timestamp>/
+Protocole statique : docs/audits/OBSIDIA_OIE_POWER_METRICS_PROTOCOL_V0_7.md
+
 Jamais de secret dans JSON/log.
 Jamais de commit automatique.
 Ne pas modifier kernel, Brody live, Obsidure live, Graphiti, Neo4j, memoire.
+
+Gencoin : CALIBRATION_ONLY. Aucune emission. Aucun token reel. Aucune valeur de marche.
+Reference formules : apps/obsidia_api/brody_gencoin_cognitive_ledger.py (DO NOT MODIFY).
 """
 from __future__ import annotations
 
@@ -25,6 +31,7 @@ import math
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -56,6 +63,39 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     sanitize_external_error_message,
 )
 
+# ── OIE V0.1 imports (inference economy — baselines / CostReceipt / DomainMetrics) ──
+try:
+    from apps.obsidia_api.inference_economy.baselines import (
+        BT_ENERGY_LOW, BT_ENERGY_HEAVY, BT_API_SIMPLE, BT_API_NORMAL, BT_AGENTIC,
+        BASELINE_LABELS,
+    )
+    from apps.obsidia_api.inference_economy.cost_receipt import (
+        CostReceipt as _OIE_CostReceipt,
+        DomainMetrics as _OIE_DomainMetrics,
+    )
+    from apps.obsidia_api.inference_economy.domain_metrics import (
+        compute_dca as _oie_compute_dca,
+        summarize_domain_metrics as _oie_summarize_domain_metrics,
+    )
+    _OIE_IMPORT_OK = True
+    _OIE_MISSING_IMPORTS: list = []
+except ImportError as _oie_exc:
+    BT_ENERGY_LOW: float = 102.0
+    BT_ENERGY_HEAVY: float = 1296.0
+    BT_API_SIMPLE: float = 5500.0
+    BT_API_NORMAL: float = 25000.0
+    BT_AGENTIC: float = 160000.0
+    BASELINE_LABELS: dict = {
+        "BT_ENERGY_LOW": 102.0, "BT_ENERGY_HEAVY": 1296.0,
+        "BT_API_SIMPLE": 5500.0, "BT_API_NORMAL": 25000.0, "BT_AGENTIC": 160000.0,
+    }
+    _OIE_CostReceipt = None
+    _OIE_DomainMetrics = None
+    _oie_compute_dca = None
+    _oie_summarize_domain_metrics = None
+    _OIE_IMPORT_OK = False
+    _OIE_MISSING_IMPORTS = [str(_oie_exc)]
+
 # ── Version ───────────────────────────────────────────────────────────────────
 BENCHMARK_VERSION = "OIE_POWER_BENCHMARK_V0.7"
 BENCHMARK_DATE = "2026-07-01"
@@ -74,8 +114,422 @@ GEMINI_STATUS_FAILED = "FAILED"
 ENERGY_SOURCE_UNAVAILABLE = "ENERGY_PROXY_UNAVAILABLE"
 ENERGY_SOURCE_ESTIMATE = "ENERGY_PROXY_ESTIMATE"
 
+# ── Cost basis (Phase 2) ──────────────────────────────────────────────────────
+COST_BASIS_LOCAL_PROXY = "LOCAL_PROXY_UNCALIBRATED"
+COST_BASIS_SDK_MEASURED = "SDK_USAGE_MEASURED"
+COST_BASIS_DRY_RUN_MOCK = "DRY_RUN_MOCK"
+COST_PROXY_WARNING = "Obsidia cost is a local proxy estimate, not a measured provider bill."
+COST_PROXY_FORMULA = "obsidia_cost_proxy_per_1m_est * obsidia_estimated_total_tokens / 1_000_000"
+COST_PROXY_SOURCE = "FROZEN_V0_ARCHITECTURE_ESTIMATE"
+
+# ── Intellectual economy / Gencoin calibration (Phase 4) ─────────────────────
+IE_BASIS = "CALIBRATION_ONLY"
+GENCOIN_MODE = "CALIBRATION_ONLY"
+GENCOIN_DISTRIBUTION_MODE = "NONE_CALIBRATION_ONLY"
+GENCOIN_EMISSION_REASON = "CALIBRATION_ONLY_NO_EMISSION"
+SOURCE_LAW_REASON_CALIBRATION = "CALIBRATION_ONLY_NO_REAL_PROOF_EMISSION"
+
+# Poids CV formula — PROVISIONAL_CALIBRATION_ONLY
+# Reference : adaptes depuis cognitive_ledger.py (0.24/0.22/0.18/0.14/0.14)
+_CV_WEIGHTS = {
+    "novelty":        0.05,
+    "utility":        0.22,
+    "coherence":      0.18,
+    "risk_reduction": 0.15,
+    "reusability":    0.18,
+    "proof_quality":  0.22,
+}
+_CV_WEIGHT_SOURCE = "PROVISIONAL_CALIBRATION_ONLY"
+
+# ── Surface families ──────────────────────────────────────────────────────────
+AVAILABLE_SURFACE_FAMILIES = {"FAST_PATH", "BANK", "TRADING", "GPS"}
+ADAPTER_MISSING_FAMILIES = {"BRODY", "OBSIDURE", "LEAN"}
+TERRAIN_PROOF_FAMILIES = {"BANK", "TRADING", "GPS"}
+MODEL_AVOIDED_FAMILIES = {"FAST_PATH", "BANK", "TRADING", "GPS"}
+
 # ── Default Gemini model ──────────────────────────────────────────────────────
 DEFAULT_GEMINI_MODEL = "gemini-2.0-flash-lite"
+
+# ── OIE V0.1 — Coûts Obsidia figés par famille (EUR / 1M actions) ────────────
+# Source : OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940 / base_commit 73444cd
+OIE_FAMILY_COSTS: dict[str, float] = {
+    "FAST_PATH": 0.0015,
+    "BRODY":     0.20,
+    "BANK":      0.70,
+    "TRADING":   0.84,
+    "GPS":       0.91,
+    "LEAN":      13.29,
+    "OBSIDURE":  23.92,
+}
+
+OIE_DOMAIN_NAME_MAPPING: dict[str, str] = {
+    "FAST_PATH":   "FAST_PATH",
+    "BRODY":       "BRODY",
+    "BANK":        "BANK",
+    "TRADING":     "TRADING",
+    "GPS":         "GPS_AVIATION",
+    "OBSIDURE":    "OBSIDURE",
+    "LEAN":        "LEAN",
+    "Brody chat":  "BRODY",
+    "Bank":        "BANK",
+    "Trading":     "TRADING",
+    "GPS/Aviation": "GPS_AVIATION",
+    "Aviation":    "GPS_AVIATION",
+    "Lean canon check": "LEAN",
+    "Obsidure Lean cible": "OBSIDURE",
+}
+
+_OIE_DOMAIN_CFG: dict[str, dict] = {
+    "FAST_PATH": {
+        "domain_name": "FAST_PATH",
+        "domain_action_type": "fast_path_cache_governance",
+        "domain_risk_level": "LOW",
+        "domain_reversibility": "REVERSIBLE",
+        "domain_tools_used": ["ROUTER", "CACHE"],
+        "domain_tools_skipped": ["LLM", "BRODY", "OBSIDURE", "GRAPHITI"],
+        "external_api_calls_avoided": 1,
+        "llm_calls_avoided": 1,
+        "proof_available": True,
+        "replay_available": True,
+        "business_cost_avoided_label": "llm_fast_path_routing_avoided",
+    },
+    "BANK": {
+        "domain_name": "BANK",
+        "domain_action_type": "governed_financial_decision",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "PARTIALLY_REVERSIBLE",
+        "domain_tools_used": ["ROUTER", "BANK_CONNECTOR"],
+        "domain_tools_skipped": ["LLM", "BRODY", "OBSIDURE"],
+        "external_api_calls_avoided": 1,
+        "llm_calls_avoided": 1,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "bank_review_or_external_llm_analysis_avoided",
+    },
+    "TRADING": {
+        "domain_name": "TRADING",
+        "domain_action_type": "governed_market_signal",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "LOW_REVERSIBILITY",
+        "domain_tools_used": ["ROUTER", "TRADING_CONNECTOR"],
+        "domain_tools_skipped": ["LLM", "BRODY", "OBSIDURE"],
+        "external_api_calls_avoided": 1,
+        "llm_calls_avoided": 1,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "trading_signal_llm_analysis_avoided",
+    },
+    "GPS": {
+        "domain_name": "GPS_AVIATION",
+        "domain_action_type": "critical_field_signal_governance",
+        "domain_risk_level": "CRITICAL",
+        "domain_reversibility": "LOW_REVERSIBILITY",
+        "domain_tools_used": ["ROUTER", "GPS_CONNECTOR"],
+        "domain_tools_skipped": ["LLM", "BRODY", "OBSIDURE"],
+        "external_api_calls_avoided": 1,
+        "llm_calls_avoided": 1,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "terrain_signal_heavy_analysis_avoided",
+    },
+    "BRODY": {
+        "domain_name": "BRODY",
+        "domain_action_type": "cognitive_interface_response",
+        "domain_risk_level": "MEDIUM",
+        "domain_reversibility": "REVERSIBLE",
+        "domain_tools_used": [],
+        "domain_tools_skipped": [],
+        "external_api_calls_avoided": 0,
+        "llm_calls_avoided": 0,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "external_assistant_context_chain_avoided",
+    },
+    "OBSIDURE": {
+        "domain_name": "OBSIDURE",
+        "domain_action_type": "code_proof_repair_audit",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "REPLAYABLE",
+        "domain_tools_used": [],
+        "domain_tools_skipped": [],
+        "external_api_calls_avoided": 0,
+        "llm_calls_avoided": 0,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "external_code_agent_loop_avoided",
+    },
+    "LEAN": {
+        "domain_name": "LEAN",
+        "domain_action_type": "formal_check_or_proof_surface",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "REPLAYABLE",
+        "domain_tools_used": [],
+        "domain_tools_skipped": [],
+        "external_api_calls_avoided": 0,
+        "llm_calls_avoided": 0,
+        "proof_available": False,
+        "replay_available": False,
+        "business_cost_avoided_label": "long_llm_reasoning_or_retry_loop_avoided",
+    },
+}
+
+# ── OIE source lineage & freeze reference ─────────────────────────────────────
+_OIE_FREEZE_NAME = "OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940"
+_OIE_FREEZE_DIR = _REPO_ROOT / "freeze" / _OIE_FREEZE_NAME
+_OIE_FREEZE_FOUND = _OIE_FREEZE_DIR.is_dir()
+
+_OIE_SOURCE_LINEAGE: dict = {
+    "base_audit_commit": "73444cd",
+    "base_audit_commit_role": "freeze audits INFERENCE_ECONOMY / DOMAIN_TOOL_ABSORPTION / STACK_LAYER_POSITIONING",
+    "oie_v01_commit_candidate": "b32b816",
+    "oie_v01_commit_role": "feat(oie): add inference economy domain metrics and external comparison protocol",
+    "benchmark_integration_role": "links OIE V0/V0.1 metrics into Gemini V0.7.1 benchmark",
+}
+
+_OIE_SOURCE_DOCUMENTS: dict = {
+    "engine_spec": "docs/audits/OBSIDIA_INFERENCE_ECONOMY_ENGINE_SPEC_V0.md",
+    "external_api_protocol": "docs/audits/OBSIDIA_EXTERNAL_API_COST_COMPARISON_PROTOCOL_V0.md",
+    "cost_receipt_schema": "schemas/obsidia_cost_receipt.schema.json",
+    "portfolio_benchmark": "scripts/performance/run_inference_economy_portfolio_benchmark_v0.py",
+    "portfolio_receipts": "scripts/performance/oie_v0_portfolio_receipts.json",
+}
+
+_OIE_BENCHMARK_LINKAGE: dict = {
+    "portfolio_benchmark_name": "OIE_V0.1_PORTFOLIO",
+    "external_benchmark_name": "OIE_POWER_BENCHMARK_V0_7_1",
+    "protocol_doc_name": "OBSIDIA_OIE_POWER_METRICS_PROTOCOL_V0_7",
+    "gencoin_audit_family": "GENCOIN_INTERNAL_ECONOMY_AUDIT_V0_7_1",
+}
+
+# ── OIE Obsidia execution mode ────────────────────────────────────────────────
+# AUTO: comportement actuel (FROZEN / ADAPTER_MISSING selon task)
+# FROZEN_ONLY: forcer FROZEN_V0_ESTIMATE
+# LIVE_LOCAL: tenter exécution live (non disponible en V0.7.1 — aucun adapter live branché)
+# LIVE_LOCAL_OR_FROZEN: tenter live, fallback frozen si indisponible
+OIE_OBSIDIA_EXEC_MODE_AUTO = "AUTO"
+OIE_OBSIDIA_EXEC_MODE_FROZEN = "FROZEN_ONLY"
+OIE_OBSIDIA_EXEC_MODE_LIVE = "LIVE_LOCAL"
+OIE_OBSIDIA_EXEC_MODE_LIVE_OR_FROZEN = "LIVE_LOCAL_OR_FROZEN"
+
+# Status live local dédié (en plus des REAL_ADAPTER / FROZEN / MISSING existants)
+OBSIDIA_STATUS_LIVE_LOCAL = "LIVE_LOCAL"
+OBSIDIA_STATUS_LIVE_LOCAL_UNAVAILABLE = "LIVE_LOCAL_UNAVAILABLE"
+
+# Sigma domain mapping (for in-process evaluate calls)
+_SIGMA_DOMAIN_FOR_FAMILY: dict[str, str] = {
+    "BANK":    "bank",
+    "TRADING": "trading",
+    "GPS":     "gps_defense_aviation",
+}
+
+
+_OBSIDIA_API_BASE = os.environ.get("OBSIDIA_API_BASE", "http://127.0.0.1:8000")
+_OBSIDIA_KERNEL_URL = os.environ.get("OBSIDIA_KERNEL_URL", "http://127.0.0.1:3001/kernel/ragnarok")
+_LIVE_PROBE_TIMEOUT = 1.0  # secondes — court pour ne pas bloquer le benchmark
+
+# Endpoints connus (depuis apps/obsidia_api/routes/live_kernel_bridge.py + routes/status.py)
+_LIVE_ENDPOINTS: dict[str, dict] = {
+    "FAST_PATH": {
+        "status_path": "/api/status",
+        "bridge_path": None,  # Pas de bridge dédié pour FAST_PATH en V0.7.1
+        "method": "GET",
+    },
+    "BANK": {
+        "status_path": "/api/status",
+        "bridge_path": "/api/live/kernel/adapters/bank",
+        "method": "POST",
+    },
+    "TRADING": {
+        "status_path": "/api/status",
+        "bridge_path": "/api/live/kernel/adapters/trading",
+        "method": "POST",
+    },
+    "GPS": {
+        "status_path": "/api/status",
+        "bridge_path": "/api/live/kernel/adapters/gps",
+        "method": "POST",
+    },
+    "BRODY": {
+        "status_path": "/api/status",
+        "bridge_path": "/api/brody/chat",
+        "method": "POST",
+    },
+    "OBSIDURE": {
+        "status_path": None,
+        "bridge_path": None,
+        "method": None,
+    },
+    "LEAN": {
+        "status_path": None,
+        "bridge_path": None,
+        "method": None,
+    },
+}
+
+# Payloads de test minimalistes pour sonder les bridges (dry-run, aucune action réelle)
+_LIVE_TEST_PAYLOADS: dict[str, dict] = {
+    "BANK": {"payload": {"transaction_type": "transfer", "amount": 0.0, "channel": "benchmark_probe"}},
+    "TRADING": {"payload": {"symbol": "BTC/USDT", "prices": [100.0] * 5}},
+    "GPS": {"payload": {"mission_id": "BENCHMARK_PROBE", "gps_status": "ONLINE"}},
+    "BRODY": {"message": "benchmark probe — readonly status check"},
+    "FAST_PATH": {},
+}
+
+
+def _probe_api_status(api_base: str = _OBSIDIA_API_BASE, timeout: float = _LIVE_PROBE_TIMEOUT) -> dict:
+    """Sonde GET /api/status sur l'API locale. Retourne toujours un dict, jamais d'exception."""
+    try:
+        import urllib.request as _urlreq
+        import urllib.error as _urlerr
+        url = f"{api_base.rstrip('/')}/api/status"
+        req = _urlreq.Request(url, method="GET")
+        with _urlreq.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            try:
+                data = json.loads(raw)
+            except Exception:
+                data = {"raw": raw[:200]}
+            return {
+                "reachable": True,
+                "http_status": resp.status,
+                "mode": data.get("mode") or data.get("data", {}).get("mode"),
+                "decision_authority": (data.get("data") or data).get("decision_authority"),
+                "emits_act": (data.get("data") or data).get("emits_act", False),
+                "memory_write": (data.get("data") or data).get("memory_write", False),
+                "kernel_mutation": (data.get("data") or data).get("kernel_mutation", False),
+                "readonly": (data.get("data") or data).get("readonly"),
+                "api_role": (data.get("data") or data).get("api_role"),
+                "raw_excerpt": raw[:300],
+            }
+    except Exception as _exc:
+        exc_type = type(_exc).__name__
+        return {
+            "reachable": False,
+            "http_status": None,
+            "error": exc_type,
+            "error_detail": str(_exc)[:200],
+            "mode": None,
+            "decision_authority": None,
+            "emits_act": None,
+            "memory_write": None,
+            "kernel_mutation": None,
+        }
+
+
+def discover_obsidia_live_adapters(api_base: str = _OBSIDIA_API_BASE) -> dict:
+    """Découverte dynamique des adapters Obsidia via l'API locale (127.0.0.1:8000).
+
+    Sonde GET /api/status pour vérifier si l'API est disponible.
+    Ne fait aucun appel réseau externe (loopback uniquement).
+    Ne fait aucune action réelle (banque/trading/aviation).
+    Retourne un registry par famille avec endpoints et statut.
+    """
+    api_probe = _probe_api_status(api_base)
+    api_up = api_probe.get("reachable", False)
+    registry: dict[str, dict] = {}
+
+    for family in ("FAST_PATH", "BANK", "TRADING", "GPS", "BRODY", "OBSIDURE", "LEAN"):
+        ep = _LIVE_ENDPOINTS.get(family, {})
+        bridge_path = ep.get("bridge_path")
+        has_bridge = bridge_path is not None
+
+        # Décision d'utilisabilité
+        if family in ("OBSIDURE", "LEAN"):
+            usable = False
+            reason = f"{family} requires dedicated pipeline — no API bridge in V0.7.1"
+            atype = "NONE"
+            found = False
+        elif family == "FAST_PATH":
+            # FAST_PATH n'a pas de bridge dédié en V0.7.1 — API up mais route non disponible
+            usable = False
+            reason = "No dedicated live bridge for FAST_PATH in V0.7.1 — /api/status confirms API up but no /api/fast-path route"
+            atype = "API_STATUS_ONLY" if api_up else "NONE"
+            found = api_up
+        else:
+            # BANK / TRADING / GPS / BRODY : bridge exist si API up
+            usable = api_up and has_bridge
+            if not api_up:
+                reason = f"API 8000 unreachable — {api_probe.get('error', 'CONNECTION_REFUSED')}"
+            elif not has_bridge:
+                reason = f"No bridge endpoint defined for {family}"
+            else:
+                reason = None
+            atype = "LOCAL_HTTP_READONLY" if (api_up and has_bridge) else "NONE"
+            found = api_up and has_bridge
+
+        registry[family] = {
+            "adapter_found": found,
+            "adapter_type": atype,
+            "path": f"apps/obsidia_api/routes/live_kernel_bridge.py" if has_bridge else None,
+            "callable": None,
+            "endpoint": f"{api_base.rstrip('/')}{bridge_path}" if bridge_path else None,
+            "bridge_path": bridge_path,
+            "kernel_target": _OBSIDIA_KERNEL_URL if has_bridge else None,
+            "api_status_probe": api_probe,
+            "api_up": api_up,
+            "safe_readonly": True,
+            "decision_authority": "KX108_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+            "graphiti_write": False,
+            "neo4j_write": False,
+            "usable_for_live_local": usable,
+            "reason_if_not_usable": reason,
+        }
+
+    return registry
+
+
+# Registry calculé une fois au chargement du module (sonde l'API locale)
+_OBSIDIA_LIVE_ADAPTER_REGISTRY: dict = discover_obsidia_live_adapters()
+_LIVE_LOCAL_AVAILABLE: bool = any(
+    v.get("usable_for_live_local") for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values()
+)
+_LIVE_LOCAL_USABLE_FAMILIES: list[str] = [
+    f for f, v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.items() if v.get("usable_for_live_local")
+]
+_LIVE_LOCAL_UNAVAILABLE_FAMILIES: list[str] = [
+    f for f, v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.items()
+    if not v.get("usable_for_live_local") and v.get("adapter_found")
+]
+_ADAPTER_MISSING_FAMILIES_LIVE: list[str] = [
+    f for f, v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.items()
+    if not v.get("adapter_found")
+]
+
+
+def find_case_insensitive_duplicate_keys(obj: object, path: str = "") -> list[str]:
+    """Retourne les chemins JSON contenant des clés doublonnées case-insensitive.
+
+    Utilisé pour garantir la lisibilité par PowerShell ConvertFrom-Json.
+    """
+    issues: list[str] = []
+    if isinstance(obj, dict):
+        lower_keys = [k.lower() for k in obj.keys()]
+        seen: set[str] = set()
+        for k in obj.keys():
+            lk = k.lower()
+            if lk in seen:
+                issues.append(f"{path}.{k} (case-insensitive dup)")
+            seen.add(lk)
+        for k, v in obj.items():
+            issues.extend(find_case_insensitive_duplicate_keys(v, f"{path}.{k}"))
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            issues.extend(find_case_insensitive_duplicate_keys(item, f"{path}[{i}]"))
+    return issues
+
+
+_OIE_WARNINGS: list[str] = [
+    "OIE measures cost; it does not decide.",
+    "Kernel X108 remains the only decision authority.",
+    "OIE remains readonly and non-sovereign.",
+    "DCA/OSCA/OAPI/ODPI are proxy baseline metrics, not real provider billing.",
+    "External API protocol is preparatory; no additional network call is required by this integration.",
+    "Cost comparison remains non-claimable while Obsidia cost is LOCAL_PROXY_UNCALIBRATED.",
+    "Gencoin remains CALIBRATION_ONLY; OIE can measure value proxies but cannot emit Gencoin.",
+]
 
 # ── Frozen V0 values (figees 73444cd / Technical Note V0) ────────────────────
 FROZEN_GRAPHITI_WARM_MS = 0.3199
@@ -88,8 +542,6 @@ FROZEN_LOADER_WARM_MS = 0.0042
 FROZEN_LOADER_WARM_GAIN_RATIO = 11348.76
 
 # ── Frozen Gemini dry-run mock data (run reel V0.5.1, 7 taches) ──────────────
-# Source : gemini_sdk smoke run 2026-07-01, modele gemini-2.0-flash-lite
-# Totaux : 281 input / 14 output / 295 total, route_match 3/7
 _FROZEN_GEMINI_PER_TASK: dict[str, dict] = {
     "fastpath_power_smoke": {
         "input_tokens": 40, "output_tokens": 2, "total_tokens": 42,
@@ -346,7 +798,6 @@ POWER_TASKS: list[dict] = [
 # ── Energy / carbon helpers ───────────────────────────────────────────────────
 
 def _read_energy_env() -> tuple[Optional[float], Optional[float], Optional[float]]:
-    """Read energy coefficients from env. None if absent."""
     def _f(k: str) -> Optional[float]:
         v = os.environ.get(k, "")
         try:
@@ -363,7 +814,6 @@ def compute_energy_metrics(
     local_power_w: Optional[float],
     carbon_per_kwh: Optional[float],
 ) -> dict:
-    """Compute energy and carbon estimates. Returns energy_source + values."""
     if wh_per_1k_tokens is None or local_power_w is None:
         return {
             "energy_source": ENERGY_SOURCE_UNAVAILABLE,
@@ -394,8 +844,6 @@ def compute_energy_metrics(
     }
 
 
-# ── Cost helpers ──────────────────────────────────────────────────────────────
-
 def _read_cost_env() -> tuple[Optional[float], Optional[float]]:
     def _f(k: str) -> Optional[float]:
         v = os.environ.get(k, "")
@@ -407,7 +855,6 @@ def _read_cost_env() -> tuple[Optional[float], Optional[float]]:
 
 
 def _safe_ratio(num: Optional[float], den: Optional[float]) -> tuple[Optional[float], str]:
-    """Return ratio + status. Never divides by zero."""
     if num is None or den is None:
         return None, "MISSING_OPERAND"
     if den == 0 or abs(den) < 1e-12:
@@ -415,10 +862,469 @@ def _safe_ratio(num: Optional[float], den: Optional[float]) -> tuple[Optional[fl
     return num / den, "OK"
 
 
+def _clamp01(v: float) -> float:
+    return round(max(0.0, min(1.0, v)), 4)
+
+
+# ── Phase 2 : Cost basis ──────────────────────────────────────────────────────
+
+def compute_cost_basis_fields(task: dict, obs: dict, gem: dict) -> dict:
+    """Champs cost basis : distingue mesure vs proxy."""
+    obs_tok = obs.get("obsidia_estimated_total_tokens", 0) or 0
+    obs_c1m = task.get("obsidia_cost_per_1m_est", 0.0)
+    obs_cost_proxy = obs_c1m * obs_tok / 1_000_000.0
+
+    gem_status = gem.get("gemini_status")
+    gem_usage = gem.get("gemini_total_tokens") is not None
+    gemini_basis = (
+        COST_BASIS_SDK_MEASURED if (gem_status == GEMINI_STATUS_REAL and gem_usage)
+        else COST_BASIS_DRY_RUN_MOCK
+    )
+    gem_is_measured = gemini_basis == COST_BASIS_SDK_MEASURED
+
+    return {
+        "obsidia_cost_basis": COST_BASIS_LOCAL_PROXY,
+        "gemini_cost_basis": gemini_basis,
+        "obsidia_cost_is_measured": False,
+        "gemini_cost_is_measured": gem_is_measured,
+        "obsidia_cost_is_claimable": False,
+        "gemini_cost_is_claimable": gem_is_measured,
+        "cost_comparison_claimable": False,
+        "obsidia_cost_proxy_warning": COST_PROXY_WARNING,
+        "obsidia_cost_proxy_per_request_est": round(obs_cost_proxy, 10),
+        "obsidia_cost_proxy_per_1m_est": obs_c1m,
+        "obsidia_cost_proxy_formula": COST_PROXY_FORMULA,
+        "obsidia_cost_proxy_source": COST_PROXY_SOURCE,
+    }
+
+
+# ── Phase 4 / 5 : Intellectual economy + Gencoin calibration ─────────────────
+
+def compute_intellectual_economy(task: dict, obs: dict, gem: dict, row: dict) -> dict:
+    """Scores economie intellectuelle — CALIBRATION_ONLY.
+
+    Reference formules : brody_gencoin_shadow_value.py + brody_gencoin_cognitive_ledger.py
+    Poids : PROVISIONAL_CALIBRATION_ONLY (adaptes de cognitive_ledger.py).
+    """
+    family = task["family"]
+    status = obs.get("obsidia_status")
+    is_missing = status == OBSIDIA_STATUS_MISSING
+    gov_clean = row.get("obsidia_governance_clean", False)
+    boundary_ok = obs.get("obsidia_boundary_ok", True)
+    model_avoided = obs.get("obsidia_model_call_avoided", False)
+    route_match = obs.get("obsidia_route_match")
+    q_score = obs.get("obsidia_quality_score")
+    lat_delta_pct = row.get("latency_delta_pct")
+    mod_skip_pct = obs.get("obsidia_modules_skipped_pct", 0.0) or 0.0
+
+    # cognitive_value_score (proxy sans Sigma/Thermo)
+    # Reference : shadow_value.py:216 cognitive_value = truth_score - ms*0.30 - es*0.20
+    if is_missing:
+        cognitive_value_score = 0.30
+    elif route_match is True:
+        cognitive_value_score = 0.80
+    else:
+        cognitive_value_score = 0.50
+
+    # novelty_score — PROVISIONAL = 0.0 (non calculable sans Sigma)
+    novelty_score = 0.0
+
+    # utility_score
+    if model_avoided and not is_missing:
+        utility_score = 0.90
+    elif not is_missing and q_score is not None and q_score >= 1.0:
+        utility_score = 0.60
+    elif is_missing:
+        utility_score = 0.30
+    else:
+        utility_score = 0.40
+
+    # coherence_score = governance_clean
+    coherence_score = 1.0 if gov_clean else 0.0
+
+    # risk_reduction_score : terrain proof families
+    if is_missing:
+        risk_reduction_score = 0.0
+    elif family in TERRAIN_PROOF_FAMILIES and boundary_ok:
+        risk_reduction_score = 1.0
+    elif family == "FAST_PATH" and boundary_ok:
+        risk_reduction_score = 0.80
+    else:
+        risk_reduction_score = 0.0
+
+    # stability_value_score
+    # Reference : shadow_value.py:219 stability_value = clamp(1.0 - instability_score)
+    if status == OBSIDIA_STATUS_REAL:
+        stability_value_score = 0.95
+    elif status == OBSIDIA_STATUS_FROZEN:
+        stability_value_score = 0.85
+    else:
+        stability_value_score = 0.40
+
+    # reusability_score — adapte de shadow_value.py:252
+    # reuse_value = 0.40 + cog*0.30 + stab*0.20 - att*0.20
+    # attention_cost = 0.20 (short outputs in benchmark)
+    reusability_score = _clamp01(
+        0.40
+        + cognitive_value_score * 0.30
+        + stability_value_score * 0.20
+        - 0.20 * 0.20
+    )
+
+    # proof_quality_score
+    receipt_complete = all(
+        row.get(f) is not None
+        for f in ["family", "expected_route", "obsidia_detected_route", "obsidia_boundary_ok"]
+    )
+    if is_missing:
+        proof_quality_score = 0.50 if boundary_ok else 0.0
+    elif boundary_ok and receipt_complete:
+        proof_quality_score = 1.0
+    else:
+        proof_quality_score = 0.0
+
+    # debt_score
+    debt = 0.0
+    if is_missing:
+        debt += 0.50
+    debt += 0.20  # cout proxy toujours non calibre
+    if is_missing:
+        debt += 0.20  # preuve manquante
+    debt_score = _clamp01(debt)
+
+    # friction_reduction_score
+    friction_components = []
+    if lat_delta_pct is not None:
+        friction_components.append(_clamp01(lat_delta_pct / 100.0))
+    if mod_skip_pct > 0:
+        friction_components.append(_clamp01(mod_skip_pct / 100.0))
+    energy_sr = row.get("energy_savings_ratio")
+    if energy_sr is not None:
+        friction_components.append(_clamp01(min(energy_sr, 10.0) / 10.0))
+    friction_reduction_score = (
+        round(sum(friction_components) / len(friction_components), 4)
+        if friction_components else 0.0
+    )
+
+    # governance_value_score
+    governance_value_score = 1.0 if (gov_clean and DECISION_AUTHORITY == "KX108_ONLY") else 0.0
+
+    # external_dependency_reduction_score
+    external_dependency_reduction_score = 1.0 if model_avoided else 0.0
+
+    # auditability_score
+    required_audit_fields = [
+        "family", "expected_route", "obsidia_detected_route",
+        "gemini_detected_route", "obsidia_boundary_ok", "obsidia_governance_clean",
+    ]
+    audit_present = sum(1 for f in required_audit_fields if row.get(f) is not None)
+    auditability_score = round(audit_present / len(required_audit_fields), 4)
+
+    # intellectual_value_score (CV formula, PROVISIONAL)
+    # CV = wN*novelty + wU*utility + wC*coherence + wR*risk_reduction + wReuse*reusability + wP*proof_quality - debt
+    w = _CV_WEIGHTS
+    cv_raw = (
+        w["novelty"] * novelty_score
+        + w["utility"] * utility_score
+        + w["coherence"] * coherence_score
+        + w["risk_reduction"] * risk_reduction_score
+        + w["reusability"] * reusability_score
+        + w["proof_quality"] * proof_quality_score
+        - debt_score
+    )
+    intellectual_value_score = _clamp01(cv_raw)
+
+    # source_law_satisfied — toujours False en calibration
+    source_law_satisfied = False
+
+    return {
+        "intellectual_economy_basis": IE_BASIS,
+        "cognitive_value_score": cognitive_value_score,
+        "novelty_score": novelty_score,
+        "utility_score": utility_score,
+        "coherence_score": coherence_score,
+        "risk_reduction_score": risk_reduction_score,
+        "reusability_score": reusability_score,
+        "proof_quality_score": proof_quality_score,
+        "debt_score": debt_score,
+        "stability_value_score": stability_value_score,
+        "friction_reduction_score": friction_reduction_score,
+        "governance_value_score": governance_value_score,
+        "external_dependency_reduction_score": external_dependency_reduction_score,
+        "auditability_score": auditability_score,
+        "intellectual_value_score": intellectual_value_score,
+        "cv_weight_source": _CV_WEIGHT_SOURCE,
+        "source_law_satisfied": source_law_satisfied,
+        "source_law_reason": SOURCE_LAW_REASON_CALIBRATION,
+    }
+
+
+def compute_gencoin_calibration(ie: dict) -> dict:
+    """Layer Gencoin calibration — emission desactivee, aucun token reel."""
+    return {
+        "gencoin_basis": GENCOIN_MODE,
+        "intellectual_economy_basis": IE_BASIS,
+        "gencoin_emission_allowed": False,
+        "gencoin_emission_amount": 0,
+        "gencoin_distribution_mode": GENCOIN_DISTRIBUTION_MODE,
+        "gencoin_emission_reason": GENCOIN_EMISSION_REASON,
+        "source_law_satisfied": ie.get("source_law_satisfied", False),
+        "source_law_reason": ie.get("source_law_reason", SOURCE_LAW_REASON_CALIBRATION),
+        "mint_allowed": False,
+        "is_real_token": False,
+        "blockchain_enabled": False,
+        "economic_scoring_enabled": False,
+        "wallet_enabled": False,
+    }
+
+
+# ── Phase 3 : Surface metrics ─────────────────────────────────────────────────
+
+def compute_surface_metrics(rows: list[dict]) -> dict:
+    """Metriques par surface : available, adapter_missing, terrain, model_avoided."""
+
+    def _sub(pred, field=None) -> list[dict]:
+        return [r for r in rows if pred(r)]
+
+    def _avg_f(lst, key) -> Optional[float]:
+        vals = [r[key] for r in lst if r.get(key) is not None]
+        return round(sum(vals) / len(vals), 4) if vals else None
+
+    def _median_f(lst, key) -> Optional[float]:
+        vals = sorted(r[key] for r in lst if r.get(key) is not None)
+        if not vals:
+            return None
+        mid = len(vals) // 2
+        return round(vals[mid] if len(vals) % 2 else (vals[mid - 1] + vals[mid]) / 2, 4)
+
+    # Filtrage dynamique : suit le statut réel de chaque row, pas la famille statique.
+    avail = _sub(lambda r: r.get("obsidia_status") != OBSIDIA_STATUS_MISSING)
+    missing = _sub(lambda r: r.get("obsidia_status") == OBSIDIA_STATUS_MISSING)
+    terrain = _sub(lambda r: r.get("family") in TERRAIN_PROOF_FAMILIES)
+    avoided = _sub(lambda r: r.get("family") in MODEL_AVOIDED_FAMILIES)
+
+    return {
+        "available_surface_families": sorted(AVAILABLE_SURFACE_FAMILIES),
+        "available_surface_count": len(avail),
+        "available_surface_exclusion_rule": "obsidia_status != ADAPTER_MISSING",
+        "obsidia_available_surface_accuracy": (
+            round(sum(1 for r in avail if r.get("obsidia_route_match") is True) / len(avail), 4)
+            if avail else None
+        ),
+        "gemini_available_surface_accuracy": (
+            round(sum(1 for r in avail if r.get("gemini_route_match") is True) / len(avail), 4)
+            if avail else None
+        ),
+        "available_surface_model_call_avoided_rate": (
+            round(sum(1 for r in avail if r.get("obsidia_model_call_avoided")) / len(avail), 4)
+            if avail else None
+        ),
+        "available_surface_avg_speedup_ratio": _avg_f(avail, "speedup_ratio"),
+        "available_surface_median_speedup_ratio": _median_f(avail, "speedup_ratio"),
+        "available_surface_energy_avoided_wh": (
+            sum(r.get("energy_avoided_wh") or 0.0 for r in avail)
+            if any(r.get("energy_avoided_wh") is not None for r in avail) else None
+        ),
+        "available_surface_external_dependency_reduction_score": (
+            _avg_f(avail, "external_dependency_reduction_score")
+        ),
+        "adapter_missing_families": sorted(ADAPTER_MISSING_FAMILIES),
+        "adapter_missing_count": len(missing),
+        "adapter_missing_excluded_from_functional_victory": True,
+        "terrain_proof_families": sorted(TERRAIN_PROOF_FAMILIES),
+        "obsidia_terrain_accuracy": (
+            round(sum(1 for r in terrain if r.get("obsidia_route_match") is True) / len(terrain), 4)
+            if terrain else None
+        ),
+        "gemini_terrain_accuracy": (
+            round(sum(1 for r in terrain if r.get("gemini_route_match") is True) / len(terrain), 4)
+            if terrain else None
+        ),
+        "terrain_model_call_avoided_rate": (
+            round(sum(1 for r in terrain if r.get("obsidia_model_call_avoided")) / len(terrain), 4)
+            if terrain else None
+        ),
+        "terrain_avg_speedup_ratio": _avg_f(terrain, "speedup_ratio"),
+        "terrain_median_speedup_ratio": _median_f(terrain, "speedup_ratio"),
+        "terrain_avg_latency_delta_pct": _avg_f(terrain, "latency_delta_pct"),
+        "terrain_energy_avoided_wh": (
+            sum(r.get("energy_avoided_wh") or 0.0 for r in terrain)
+            if any(r.get("energy_avoided_wh") is not None for r in terrain) else None
+        ),
+        "terrain_governance_clean": all(r.get("obsidia_governance_clean", False) for r in terrain),
+        "model_avoided_families": sorted(MODEL_AVOIDED_FAMILIES),
+        "model_avoided_count": len(avoided),
+        "model_avoided_avg_speedup_ratio": _avg_f(avoided, "speedup_ratio"),
+        "model_avoided_median_speedup_ratio": _median_f(avoided, "speedup_ratio"),
+        "model_avoided_avg_latency_delta_pct": _avg_f(avoided, "latency_delta_pct"),
+        "model_avoided_energy_avoided_wh": (
+            sum(r.get("energy_avoided_wh") or 0.0 for r in avoided)
+            if any(r.get("energy_avoided_wh") is not None for r in avoided) else None
+        ),
+        "model_avoided_token_delta_pct": _avg_f(avoided, "token_delta_pct"),
+    }
+
+
+# ── Phase KP : Known Path / Chemin connu ─────────────────────────────────────
+
+def compute_known_path(task: dict, obs: dict, gem: dict, row: dict) -> dict:
+    """Chemin admissible déterministe vs prédiction probabiliste Gemini."""
+    status = obs.get("obsidia_status")
+    is_missing = status == OBSIDIA_STATUS_MISSING
+    family = task["family"]
+    route_match = obs.get("obsidia_route_match")
+    model_avoided = obs.get("obsidia_model_call_avoided", False)
+    obs_lat = obs.get("obsidia_latency_ms")
+    gem_lat = gem.get("gemini_latency_ms")
+
+    known_path_detected = (
+        not is_missing
+        and route_match is True
+        and (model_avoided or family in AVAILABLE_SURFACE_FAMILIES)
+    )
+
+    if is_missing:
+        known_path_basis = "ADAPTER_MISSING"
+        known_path_stage = "ADAPTER_MISSING"
+    elif known_path_detected and model_avoided:
+        known_path_basis = "DETERMINISTIC_SURFACE"
+        known_path_stage = (
+            "FAST_PATH_CACHE" if family == "FAST_PATH"
+            else "DOMAIN_BRIDGE" if family in TERRAIN_PROOF_FAMILIES
+            else "ROUTER"
+        )
+    elif not is_missing and route_match is True:
+        known_path_basis = "ROUTE_AVAILABLE_MODEL_REQUIRED"
+        known_path_stage = "ROUTER"
+    else:
+        known_path_basis = "UNKNOWN"
+        known_path_stage = "UNKNOWN"
+
+    prediction_replaced_by_verification = known_path_detected and model_avoided
+    route_verification_possible = not is_missing and route_match is True
+    kp_lat_adv = (
+        round(gem_lat - obs_lat, 4)
+        if known_path_detected and obs_lat is not None and gem_lat is not None
+        else None
+    )
+    kp_speedup = row.get("speedup_ratio") if known_path_detected else None
+
+    return {
+        "known_path_detected": known_path_detected,
+        "known_path_basis": known_path_basis,
+        "known_path_stage": known_path_stage,
+        "deterministic_route_used": known_path_detected,
+        "prediction_replaced_by_verification": prediction_replaced_by_verification,
+        "route_verification_possible": route_verification_possible,
+        "route_verification_reason": (
+            "Route match verified without LLM inference" if prediction_replaced_by_verification
+            else "Adapter missing — route not verifiable" if is_missing
+            else "Route available but model still required" if route_verification_possible
+            else "Route not matched"
+        ),
+        "known_path_latency_advantage_ms": kp_lat_adv,
+        "known_path_speedup_ratio": round(kp_speedup, 4) if kp_speedup is not None else None,
+        "known_path_claimable": known_path_detected and not is_missing,
+    }
+
+
+# ── Phase IN : Inference Necessity / Nécessité d'inférence ───────────────────
+
+def compute_inference_necessity(task: dict, obs: dict, gem: dict) -> dict:
+    """Nécessité d'inférence : Obsidia évite ce que Gemini ne peut pas éviter."""
+    obsidia_inference_required = task.get("obsidia_model_call_required", False)
+    gemini_inference_required = True
+    model_avoided = obs.get("obsidia_model_call_avoided", False)
+    status = obs.get("obsidia_status")
+
+    unnecessary_inference_avoided = bool(gemini_inference_required and model_avoided)
+    external_dependency_avoided = bool(model_avoided)
+    inference_necessity_delta = (1 if gemini_inference_required else 0) - (1 if obsidia_inference_required else 0)
+
+    return {
+        "obsidia_inference_required": obsidia_inference_required,
+        "gemini_inference_required": gemini_inference_required,
+        "inference_necessity_delta": inference_necessity_delta,
+        "unnecessary_inference_avoided": unnecessary_inference_avoided,
+        "inference_avoidance_reason": (
+            "Obsidia routes via deterministic surface — no LLM call" if model_avoided
+            else "Obsidia requires model call for this family" if obsidia_inference_required
+            else "Adapter missing — inference path not wired"
+        ),
+        "model_call_avoided_claimable": model_avoided and status != OBSIDIA_STATUS_MISSING,
+        "external_dependency_avoided": external_dependency_avoided,
+    }
+
+
+# ── Phase GS : Governed Speed / Vitesse gouvernée ────────────────────────────
+
+def compute_governed_speed(task: dict, obs: dict, gem: dict, row: dict) -> dict:
+    """Vitesse sous KX108_ONLY — pas de sacrifice du contrôle."""
+    gov_clean = row.get("obsidia_governance_clean", False)
+    boundary_ok = obs.get("obsidia_boundary_ok", True)
+    speedup = row.get("speedup_ratio")
+
+    governance_preserved = (
+        gov_clean
+        and DECISION_AUTHORITY == "KX108_ONLY"
+        and not EMITS_ACT
+        and not MEMORY_WRITE
+        and not KERNEL_MUTATION
+        and boundary_ok
+    )
+
+    return {
+        "governed_speedup_ratio": round(speedup, 4) if (governance_preserved and speedup is not None) else None,
+        "governed_latency_delta_pct": row.get("latency_delta_pct") if governance_preserved else None,
+        "speed_under_governance_claimable": governance_preserved and speedup is not None,
+        "governance_preserved_at_speed": governance_preserved,
+        "kx108_preserved_at_speed": DECISION_AUTHORITY == "KX108_ONLY",
+        "no_action_preserved_at_speed": not EMITS_ACT,
+        "no_memory_write_preserved_at_speed": not MEMORY_WRITE,
+        "no_kernel_mutation_preserved_at_speed": not KERNEL_MUTATION,
+    }
+
+
+# ── Phase MF : Math Formalization Support ────────────────────────────────────
+
+def compute_math_formalization(task: dict, obs: dict, gem: dict, row: dict) -> dict:
+    """Formalisation : les gains reposent sur surfaces formalisées, pas sur l'intelligence générale."""
+    status = obs.get("obsidia_status")
+    is_missing = status == OBSIDIA_STATUS_MISSING
+    family = task["family"]
+    gov_clean = row.get("obsidia_governance_clean", False)
+    boundary_ok = obs.get("obsidia_boundary_ok", True)
+
+    math_formalization_support = (
+        DECISION_AUTHORITY == "KX108_ONLY"
+        and gov_clean
+        and boundary_ok
+        and not is_missing
+    )
+
+    if is_missing:
+        formalization_basis = "ADAPTER_MISSING_NOT_CLAIMABLE"
+    elif family == "FAST_PATH":
+        formalization_basis = "FROZEN_V0_FORMAL_SURFACE"
+    elif family in TERRAIN_PROOF_FAMILIES:
+        formalization_basis = "DOMAIN_ROUTE_ADMISSIBILITY"
+    else:
+        formalization_basis = "KX108_GOVERNANCE_INVARIANTS"
+
+    return {
+        "math_formalization_support": math_formalization_support,
+        "formalization_basis": formalization_basis,
+        "invariant_backing": gov_clean and not is_missing,
+        "route_admissibility_backing": family in AVAILABLE_SURFACE_FAMILIES and not is_missing,
+        "proof_backing": family in TERRAIN_PROOF_FAMILIES and not is_missing,
+        "kx108_authority_backing": DECISION_AUTHORITY == "KX108_ONLY",
+        "formalization_claimable": math_formalization_support,
+    }
+
+
 # ── Obsidia lane ──────────────────────────────────────────────────────────────
 
 def _try_fast_path_router(task: dict) -> Optional[dict]:
-    """Try to run the real Obsidia fast-path router. Returns None if unavailable."""
     if task["family"] != "FAST_PATH":
         return None
     try:
@@ -442,13 +1348,6 @@ def _try_fast_path_router(task: dict) -> Optional[dict]:
 
 
 def run_obsidia_local_actual(task: dict) -> dict:
-    """Compute Obsidia lane for a task.
-
-    Priority :
-    1. Try real adapter (FAST_PATH only).
-    2. Use frozen V0 estimate.
-    3. Return ADAPTER_MISSING with architecture estimates.
-    """
     status_frozen = task["obsidia_status_frozen"]
     lat_ms = task["obsidia_latency_ms_frozen"]
     modules_considered = task["expected_modules_considered"]
@@ -456,7 +1355,6 @@ def run_obsidia_local_actual(task: dict) -> dict:
     modules_skipped = task["expected_modules_skipped"]
     modules_skipped_pct = round(100.0 * modules_skipped / max(modules_considered, 1), 2)
 
-    # Estimated tokens (chars / 4 heuristic)
     prompt_chars = len(task["prompt"])
     est_input_tok = max(1, prompt_chars // 4)
     est_output_tok = 4
@@ -465,7 +1363,6 @@ def run_obsidia_local_actual(task: dict) -> dict:
     cost_per_1m = task["obsidia_cost_per_1m_est"]
     cost_per_req = cost_per_1m * est_total_tok / 1_000_000.0
 
-    # Try real adapter first
     real = _try_fast_path_router(task)
     if real is not None:
         detected_route = real["obsidia_detected_route"]
@@ -539,10 +1436,201 @@ def run_obsidia_local_actual(task: dict) -> dict:
     }
 
 
+# ── Obsidia live lane ─────────────────────────────────────────────────────────
+
+def _try_live_bridge(task: dict, api_base: str = _OBSIDIA_API_BASE) -> Optional[dict]:
+    """Tente d'appeler le bridge live local via HTTP POST vers l'API 8000.
+
+    Garanties (bridgées depuis _BOUNDARY de live_kernel_bridge.py):
+      emits_act=False, memory_write=False, kernel_mutation=False,
+      graphiti_write=False, neo4j_write=False, decision_authority=KX108_ONLY,
+      api_role=BRIDGE_ONLY, source_of_truth=kernel_decision.
+
+    Ne fait aucune action réelle banque/trading/aviation.
+    Cible kernel 3001 via le bridge — si kernel unreachable, retourne
+    LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE (pas ADAPTER_MISSING).
+    """
+    import urllib.request as _urlreq
+    import urllib.error as _urlerr
+
+    family = task["family"]
+    reg = _OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {})
+    if not reg.get("usable_for_live_local"):
+        return None
+    bridge_path = reg.get("bridge_path")
+    if not bridge_path:
+        return None
+    endpoint = f"{api_base.rstrip('/')}{bridge_path}"
+    payload_body = _LIVE_TEST_PAYLOADS.get(family, {})
+    body_bytes = json.dumps(payload_body, default=str).encode("utf-8")
+    try:
+        req = _urlreq.Request(
+            endpoint,
+            data=body_bytes,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+        t0 = time.perf_counter()
+        with _urlreq.urlopen(req, timeout=5.0) as resp:
+            elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 4)
+            raw = resp.read().decode("utf-8", errors="replace")
+        try:
+            data = json.loads(raw)
+        except Exception:
+            data = {}
+        inner = data.get("data") or data
+        kernel_invoked = inner.get("kernel_invoked", False)
+        kernel_decision = inner.get("kernel_decision") or {}
+        kernel_status = inner.get("kernel_status") or ("OK" if kernel_invoked else "UNKNOWN")
+        bridge_ok = bool(kernel_invoked)
+
+        if bridge_ok:
+            exec_mode = "LIVE_LOCAL_BRIDGE"
+            obs_status = OBSIDIA_STATUS_LIVE_LOCAL
+            comparison_scope_hint = "OBSIDIA_LIVE_BRIDGE_VS_GEMINI"
+        else:
+            exec_mode = "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
+            obs_status = "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
+            comparison_scope_hint = "OBSIDIA_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE_VS_GEMINI"
+
+        gate = str(kernel_decision.get("gate") or kernel_decision.get("x108_gate") or "UNKNOWN")
+        return {
+            "obsidia_status": obs_status,
+            "obsidia_detected_route": family,
+            "obsidia_route_match": task.get("expected_route") == family,
+            "obsidia_latency_ms": elapsed_ms,
+            "obsidia_quality_score": 1.0 if bridge_ok else 0.5,
+            "obsidia_boundary_ok": True,
+            "obsidia_cache_hit": False,
+            "obsidia_live_bridge_ok": bridge_ok,
+            "obsidia_live_kernel_invoked": kernel_invoked,
+            "obsidia_live_kernel_gate": gate,
+            "obsidia_live_kernel_status": kernel_status,
+            "obsidia_live_comparison_scope_hint": comparison_scope_hint,
+            "obsidia_live_adapter_type": "LOCAL_HTTP_READONLY",
+            "obsidia_live_adapter_path": f"apps/obsidia_api/routes/live_kernel_bridge.py",
+            "obsidia_live_adapter_endpoint": endpoint,
+            "obsidia_live_callable": f"POST {bridge_path}",
+            "obsidia_emits_act": False,
+            "obsidia_memory_write": False,
+            "obsidia_kernel_mutation": False,
+            "obsidia_graphiti_write": False,
+            "obsidia_neo4j_write": False,
+            "obsidia_decision_authority": "KX108_ONLY",
+        }
+    except _urlerr.HTTPError as _http_exc:
+        # API accessible mais erreur HTTP — bridge tenté mais échoué
+        elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 4) if 't0' in dir() else None
+        return {
+            "obsidia_status": "LIVE_BRIDGE_HTTP_ERROR",
+            "obsidia_detected_route": None,
+            "obsidia_route_match": None,
+            "obsidia_latency_ms": elapsed_ms,
+            "obsidia_quality_score": 0.0,
+            "obsidia_boundary_ok": True,
+            "obsidia_cache_hit": False,
+            "obsidia_live_bridge_ok": False,
+            "obsidia_live_kernel_invoked": False,
+            "obsidia_live_kernel_gate": None,
+            "obsidia_live_kernel_status": f"HTTP_ERROR_{_http_exc.code}",
+            "obsidia_live_comparison_scope_hint": "OBSIDIA_BRIDGE_HTTP_ERROR_VS_GEMINI",
+            "obsidia_live_adapter_type": "LOCAL_HTTP_READONLY",
+            "obsidia_live_adapter_endpoint": endpoint,
+            "obsidia_emits_act": False,
+            "obsidia_memory_write": False,
+            "obsidia_kernel_mutation": False,
+            "obsidia_graphiti_write": False,
+            "obsidia_neo4j_write": False,
+            "obsidia_decision_authority": "KX108_ONLY",
+        }
+    except Exception:
+        return None
+
+
+def run_obsidia_lane(task: dict, execution_mode: str) -> dict:
+    """Exécute la lane Obsidia en respectant l'execution_mode demandé.
+
+    Priorité :
+      1. In-process callable si LIVE_LOCAL ou LIVE_LOCAL_OR_FROZEN et adapter usable.
+      2. run_obsidia_local_actual() (frozen/missing) sinon.
+
+    Gouvernance garantie : emits_act=False, memory_write=False, kernel_mutation=False.
+    """
+    family = task["family"]
+    reg = _OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {})
+    adapter_usable = reg.get("usable_for_live_local", False)
+    adapter_found = reg.get("adapter_found", False)
+
+    live_attempted = execution_mode in (OIE_OBSIDIA_EXEC_MODE_LIVE, OIE_OBSIDIA_EXEC_MODE_LIVE_OR_FROZEN)
+    live_result: Optional[dict] = None
+
+    if live_attempted and adapter_usable:
+        live_result = _try_fast_path_router(task) if family == "FAST_PATH" else _try_live_bridge(task)
+
+    if live_result is not None:
+        base = run_obsidia_local_actual(task)
+        base.update(live_result)
+        base["obsidia_execution_mode"] = OBSIDIA_STATUS_LIVE_LOCAL
+        base["obsidia_live_attempted"] = True
+        base["obsidia_live_available"] = True
+        base["obsidia_live_adapter_type"] = live_result.get("obsidia_live_adapter_type", "IN_PROCESS_FUNCTION")
+        base["obsidia_live_adapter_path"] = live_result.get("obsidia_live_adapter_path")
+        base["obsidia_live_adapter_endpoint"] = None
+        base["obsidia_fallback_used"] = False
+        return base
+
+    if execution_mode == OIE_OBSIDIA_EXEC_MODE_LIVE and not adapter_usable:
+        # LIVE_LOCAL demandé mais adapter absent — ne pas fallback silencieusement
+        base = run_obsidia_local_actual(task)
+        if adapter_found:
+            # Module trouvé mais callable manquant
+            live_status = OBSIDIA_STATUS_LIVE_LOCAL_UNAVAILABLE
+            reason = reg.get("reason_if_not_usable", "callable missing")
+        elif task["obsidia_status_frozen"] == OBSIDIA_STATUS_MISSING:
+            live_status = OBSIDIA_STATUS_MISSING
+            reason = "ADAPTER_MISSING — no live callable and no wired frozen adapter"
+        else:
+            live_status = OBSIDIA_STATUS_LIVE_LOCAL_UNAVAILABLE
+            reason = reg.get("reason_if_not_usable", "no usable live adapter")
+        base["obsidia_status"] = live_status
+        base["obsidia_execution_mode"] = live_status
+        base["obsidia_live_attempted"] = True
+        base["obsidia_live_available"] = False
+        base["obsidia_live_adapter_type"] = reg.get("adapter_type", "NONE")
+        base["obsidia_live_adapter_path"] = reg.get("path")
+        base["obsidia_live_adapter_endpoint"] = None
+        base["obsidia_fallback_used"] = False
+        base["obsidia_live_unavailable_reason"] = reason
+        return base
+
+    if execution_mode == OIE_OBSIDIA_EXEC_MODE_LIVE_OR_FROZEN and live_attempted and not adapter_usable:
+        # Fallback explicite vers frozen
+        base = run_obsidia_local_actual(task)
+        base["obsidia_execution_mode"] = base.get("obsidia_status", OBSIDIA_STATUS_FROZEN)
+        base["obsidia_live_attempted"] = True
+        base["obsidia_live_available"] = False
+        base["obsidia_live_adapter_type"] = reg.get("adapter_type", "NONE")
+        base["obsidia_live_adapter_path"] = reg.get("path")
+        base["obsidia_live_adapter_endpoint"] = None
+        base["obsidia_fallback_used"] = True
+        base["obsidia_live_unavailable_reason"] = reg.get("reason_if_not_usable")
+        return base
+
+    # AUTO ou FROZEN_ONLY — comportement current (frozen/missing)
+    base = run_obsidia_local_actual(task)
+    base["obsidia_execution_mode"] = base.get("obsidia_status", OBSIDIA_STATUS_FROZEN)
+    base["obsidia_live_attempted"] = live_attempted
+    base["obsidia_live_available"] = adapter_usable
+    base["obsidia_live_adapter_type"] = reg.get("adapter_type", "NONE")
+    base["obsidia_live_adapter_path"] = reg.get("path")
+    base["obsidia_live_adapter_endpoint"] = None
+    base["obsidia_fallback_used"] = False
+    return base
+
+
 # ── Gemini lane ───────────────────────────────────────────────────────────────
 
 def run_gemini_lane_dryrun(task: dict) -> dict:
-    """Gemini dry-run : valeurs figees V0.5.1."""
     frozen = _FROZEN_GEMINI_PER_TASK.get(task["task_id"], {})
     return {
         "gemini_status": GEMINI_STATUS_DRYRUN,
@@ -562,7 +1650,6 @@ def run_gemini_lane_dryrun(task: dict) -> dict:
 
 
 def run_gemini_lane_real(task: dict, sdk_model: str) -> dict:
-    """Gemini real : appel SDK (reseau autorise)."""
     if not sdk_model:
         return {
             "gemini_status": GEMINI_STATUS_FAILED,
@@ -589,13 +1676,10 @@ def run_gemini_lane_real(task: dict, sdk_model: str) -> dict:
         cost_per_1m = sdk.get("measured_cost_eur_per_1m")
     output = raw.get("output_excerpt", "")
     rq = evaluate_route_quality(task["expected_route"], output, raw.get("success", False))
-    q_score = rq.get("quality_score")
-    detected = rq.get("external_detected_route")
-    route_match = rq.get("route_match")
     return {
         "gemini_status": GEMINI_STATUS_REAL if raw.get("success") else GEMINI_STATUS_FAILED,
-        "gemini_detected_route": detected,
-        "gemini_route_match": route_match,
+        "gemini_detected_route": rq.get("external_detected_route"),
+        "gemini_route_match": rq.get("route_match"),
         "gemini_latency_ms": raw.get("latency_ms"),
         "gemini_input_tokens": in_tok,
         "gemini_output_tokens": out_tok,
@@ -603,16 +1687,342 @@ def run_gemini_lane_real(task: dict, sdk_model: str) -> dict:
         "gemini_cost_source": cost_src,
         "gemini_cost_per_request_measured": cost_per_req,
         "gemini_cost_per_1m_measured": cost_per_1m,
-        "gemini_quality_score": q_score,
+        "gemini_quality_score": rq.get("quality_score"),
         "gemini_failure_type": raw.get("failure_type", FAILURE_NONE),
         "gemini_external_model_call_required": True,
+    }
+
+
+# ── Paired route comparison ───────────────────────────────────────────────────
+
+def compute_paired_route_comparison(task: dict, obs: dict, gem: dict) -> dict:
+    """Comparaison paire par paire Obsidia vs Gemini sur la même tâche et le même expected_route."""
+    status = obs.get("obsidia_status")
+    obs_match = obs.get("obsidia_route_match")
+    gem_match = gem.get("gemini_route_match")
+    gem_status = gem.get("gemini_status")
+
+    is_missing = status == OBSIDIA_STATUS_MISSING
+    gemini_failed = gem_status == GEMINI_STATUS_FAILED
+
+    both_correct = obs_match is True and gem_match is True
+    obsidia_only_correct = obs_match is True and gem_match is not True
+    gemini_only_correct = gem_match is True and obs_match is not True and not is_missing
+    both_wrong = obs_match is not True and gem_match is not True and not is_missing
+
+    if both_correct:
+        outcome = "BOTH_CORRECT"
+    elif obsidia_only_correct:
+        outcome = "OBSIDIA_ONLY_CORRECT"
+    elif gem_match is True and is_missing:
+        outcome = "GEMINI_CORRECT_ON_OBSIDIA_ADAPTER_MISSING"
+    elif gemini_only_correct:
+        outcome = "GEMINI_ONLY_CORRECT"
+    elif is_missing and gem_match is not True:
+        outcome = "OBSIDIA_ADAPTER_MISSING_GEMINI_WRONG"
+    elif gemini_failed:
+        outcome = "GEMINI_FAILED"
+    elif both_wrong:
+        outcome = "BOTH_WRONG"
+    else:
+        outcome = "UNKNOWN"
+
+    route_accuracy_claimable = not is_missing
+    return {
+        "paired_route_outcome": outcome,
+        "both_correct": both_correct,
+        "obsidia_only_correct": obsidia_only_correct,
+        "gemini_only_correct": gemini_only_correct,
+        "both_wrong": both_wrong,
+        "obsidia_adapter_missing": is_missing,
+        "gemini_failed": gemini_failed,
+        "functional_surface": not is_missing,
+        "adapter_missing_excluded": is_missing,
+        "obsidia_wired_surface": not is_missing,
+        "gemini_compared_on_wired_surface": not is_missing,
+        "route_accuracy_claimable": route_accuracy_claimable,
+        "route_accuracy_scope": (
+            "WIRED_SURFACE" if not is_missing
+            else "ADAPTER_MISSING_SURFACE_NON_CLAIMABLE"
+        ),
+    }
+
+
+# ── OIE Convergence Layer ────────────────────────────────────────────────────
+
+def _oie_savings(family_cost: float) -> tuple[float, float, float, float]:
+    """Returns (savings_api_normal, savings_agentic, avoided_api_normal, avoided_agentic)."""
+    ratio_api = round(BT_API_NORMAL / family_cost, 4) if family_cost > 0 else 0.0
+    ratio_agt = round(BT_AGENTIC / family_cost, 4) if family_cost > 0 else 0.0
+    return ratio_api, ratio_agt, round(BT_API_NORMAL - family_cost, 6), round(BT_AGENTIC - family_cost, 6)
+
+
+def _build_oie_cost_receipt_dict(task: dict, obs: dict, family_cost: float) -> dict:
+    """Build a CostReceipt-compatible dict (uses native class when available)."""
+    family = task["family"]
+    dcfg = _OIE_DOMAIN_CFG.get(family, {})
+    ratio_api, _, avoided_api, _ = _oie_savings(family_cost)
+    proof_avail = dcfg.get("proof_available", False)
+    elapsed = obs.get("obsidia_latency_ms") or 0.0
+    units = float(obs.get("obsidia_estimated_total_tokens") or 0)
+    receipt_kwargs = dict(
+        layer=OIE_DOMAIN_NAME_MAPPING.get(family, family),
+        route=task.get("expected_route", family),
+        domain=OIE_DOMAIN_NAME_MAPPING.get(family, family),
+        action_type=dcfg.get("domain_action_type", ""),
+        elapsed_ms=elapsed,
+        internal_units=units,
+        modules_activated=[],
+        modules_skipped=[],
+        obsidia_cost_eur_per_1m=family_cost,
+        baseline_label="BT_API_NORMAL",
+        baseline_cost_eur_per_1m=BT_API_NORMAL,
+        savings_ratio=ratio_api,
+        avoided_cost_eur_per_1m=avoided_api,
+        kernel_status="ACTIVE",
+        proof_or_replay_available=proof_avail,
+    )
+    if _OIE_CostReceipt is not None:
+        try:
+            import dataclasses
+            cr = _OIE_CostReceipt(**receipt_kwargs)
+            d = dataclasses.asdict(cr)
+            d["domain_metrics"] = None
+            d["cost_claimable"] = False
+            d["cost_basis"] = COST_BASIS_LOCAL_PROXY
+            return d
+        except Exception:
+            pass
+    # Fallback local dict with same fields + governance invariants
+    receipt_kwargs.update({
+        "receipt_id": "LOCAL_FALLBACK",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "readonly": True,
+        "decision_authority": DECISION_AUTHORITY,
+        "emits_act": False,
+        "kernel_mutation": False,
+        "memory_write": False,
+        "graphiti_write": False,
+        "neo4j_write": False,
+        "domain_metrics": None,
+        "cost_claimable": False,
+        "cost_basis": COST_BASIS_LOCAL_PROXY,
+    })
+    return receipt_kwargs
+
+
+def _build_domain_metrics_dict(task: dict, obs: dict, family_cost: float) -> dict:
+    """Build a DomainMetrics-compatible dict per family."""
+    family = task["family"]
+    dcfg = _OIE_DOMAIN_CFG.get(family, {})
+    is_missing = obs.get("obsidia_status") == OBSIDIA_STATUS_MISSING
+    ratio_api, ratio_agt, avoided_api, _ = _oie_savings(family_cost)
+    elapsed = obs.get("obsidia_latency_ms") or 0.0
+    units = float(obs.get("obsidia_estimated_total_tokens") or 0)
+
+    dm = {
+        "domain_name": dcfg.get("domain_name", family),
+        "domain_action_type": dcfg.get("domain_action_type", ""),
+        "domain_risk_level": dcfg.get("domain_risk_level", ""),
+        "domain_reversibility": dcfg.get("domain_reversibility", ""),
+        "domain_cost_eur_per_1m": family_cost,
+        "domain_latency_ms": elapsed,
+        "domain_internal_units": units,
+        "domain_tools_used": dcfg.get("domain_tools_used", []),
+        "domain_tools_skipped": dcfg.get("domain_tools_skipped", []),
+        "external_api_calls_avoided": 0 if is_missing else dcfg.get("external_api_calls_avoided", 0),
+        "llm_calls_avoided": 0 if is_missing else dcfg.get("llm_calls_avoided", 0),
+        "human_review_avoided_estimate": 0.0,
+        "hold_count": 0,
+        "block_count": 0,
+        "act_count": 0,
+        "unknowns_count": 0,
+        "contradictions_count": 0,
+        "proof_available": False if is_missing else dcfg.get("proof_available", False),
+        "replay_available": False if is_missing else dcfg.get("replay_available", False),
+        "business_cost_avoided_label": dcfg.get("business_cost_avoided_label", ""),
+        "business_cost_avoided_estimate_eur": 0.0 if is_missing else round(avoided_api, 6),
+        "domain_savings_ratio": 0.0 if is_missing else ratio_api,
+        "domain_claimable": not is_missing,
+        "domain_status": "ADAPTER_MISSING_NON_CLAIMABLE" if is_missing else "WIRED",
+    }
+    return dm
+
+
+def compute_oie_layer_fields(task: dict, obs: dict) -> dict:
+    """Build all oie_ fields for a row — OIE V0.1 convergence layer."""
+    family = task["family"]
+    family_cost = OIE_FAMILY_COSTS.get(family, 0.0)
+    is_missing = obs.get("obsidia_status") == OBSIDIA_STATUS_MISSING
+    ratio_api, ratio_agt, avoided_api, avoided_agt = _oie_savings(family_cost)
+
+    receipt = _build_oie_cost_receipt_dict(task, obs, family_cost)
+    dm = _build_domain_metrics_dict(task, obs, family_cost)
+
+    return {
+        "oie_layer_name": OIE_DOMAIN_NAME_MAPPING.get(family, family),
+        "oie_family_cost_eur_per_1m": family_cost,
+        "oie_cost_basis": COST_BASIS_LOCAL_PROXY,
+        "oie_primary_baseline_cost_eur_per_1m": BT_API_NORMAL,
+        "oie_agentic_baseline_cost_eur_per_1m": BT_AGENTIC,
+        "oie_savings_ratio_vs_api_normal": ratio_api,
+        "oie_savings_ratio_vs_agentic": ratio_agt,
+        "oie_avoided_cost_vs_api_normal_eur_per_1m": avoided_api,
+        "oie_avoided_cost_vs_agentic_eur_per_1m": avoided_agt,
+        "oie_cost_claimable": False,
+        "oie_cost_claim_warning": _OIE_WARNINGS[5],
+        "oie_route_claim_scope": (
+            "WIRED_SURFACE" if not is_missing else "ADAPTER_MISSING_NON_CLAIMABLE"
+        ),
+        "oie_functional_claimable": not is_missing,
+        "oie_domain_claimable": not is_missing,
+        "oie_cost_receipt": receipt,
+        "domain_metrics": dm,
+    }
+
+
+# ── Dual-lane structure ───────────────────────────────────────────────────────
+
+def compute_dual_lane(task: dict, obs: dict, gem: dict) -> dict:
+    """Construit la structure dual-lane explicite Obsidia vs Gemini pour chaque tâche."""
+    obs_status = obs.get("obsidia_status", "UNKNOWN")
+    obs_exec_mode_field = obs.get("obsidia_execution_mode", obs_status)
+    gem_status = gem.get("gemini_status", "UNKNOWN")
+    is_missing = obs_status == OBSIDIA_STATUS_MISSING
+    is_frozen = obs_status == OBSIDIA_STATUS_FROZEN
+    is_real_adapter = obs_status == OBSIDIA_STATUS_REAL
+    is_live_bridge = obs_status == OBSIDIA_STATUS_LIVE_LOCAL
+    is_bridge_kernel_err = obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
+    is_live_unavail = obs_status == OBSIDIA_STATUS_LIVE_LOCAL_UNAVAILABLE
+    gem_is_real = gem_status == GEMINI_STATUS_REAL
+    family = task["family"]
+    reg = _OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {})
+
+    # Détermination du mode effectif depuis run_obsidia_lane() (déjà exécuté)
+    obs_exec_mode = obs_exec_mode_field
+    obs_live_avail = is_live_bridge or is_bridge_kernel_err
+    obs_fallback = obs.get("obsidia_fallback_used", False)
+
+    # comparison_scope — enrichi avec les statuts bridge
+    if gem_status == GEMINI_STATUS_DRYRUN:
+        scope = "DRY_RUN"
+    elif is_missing:
+        scope = "OBSIDIA_ADAPTER_MISSING_VS_GEMINI_REAL" if gem_is_real else "DRY_RUN"
+    elif is_live_bridge and gem_is_real:
+        scope = "OBSIDIA_LIVE_BRIDGE_VS_GEMINI_REAL"
+    elif is_live_bridge:
+        scope = "DRY_RUN"
+    elif is_bridge_kernel_err and gem_is_real:
+        scope = "OBSIDIA_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE_VS_GEMINI_REAL"
+    elif is_bridge_kernel_err:
+        scope = "DRY_RUN"
+    elif is_real_adapter and gem_is_real:
+        scope = "DUAL_REAL"
+    elif (is_frozen or "FROZEN" in str(obs_exec_mode).upper()) and gem_is_real:
+        scope = "OBSIDIA_FROZEN_VS_GEMINI_REAL"
+    elif is_live_unavail and gem_is_real:
+        scope = "OBSIDIA_LIVE_UNAVAILABLE_VS_GEMINI_REAL"
+    elif gem_status == GEMINI_STATUS_FAILED:
+        scope = "GEMINI_FAILED"
+    else:
+        scope = "UNAVAILABLE"
+
+    comparison_claimable = (
+        not is_missing
+        and not is_live_unavail
+        and obs_exec_mode not in (OBSIDIA_STATUS_LIVE_LOCAL_UNAVAILABLE, "LIVE_LOCAL_UNAVAILABLE")
+    )
+
+    warning_parts = []
+    if scope == "DRY_RUN":
+        warning_parts.append("Gemini is dry-run mock — not real SDK execution.")
+    if is_missing:
+        warning_parts.append(f"{family} adapter is ADAPTER_MISSING — Obsidia not wired.")
+    if is_frozen:
+        warning_parts.append("Obsidia lane is FROZEN_V0_ESTIMATE — architecture proxy, not live bridge execution.")
+    if is_bridge_kernel_err:
+        warning_parts.append(f"Live bridge attempted but kernel 3001 unreachable — {reg.get('kernel_target')}.")
+    if is_live_unavail:
+        warning_parts.append("LIVE_LOCAL requested but unavailable — no usable bridge endpoint.")
+    if not gem_is_real:
+        warning_parts.append("Gemini lane is not REAL_SDK — cost comparison not measurable.")
+    if not comparison_claimable:
+        warning_parts.append("Comparison is not claimable for functional assertions.")
+    if is_live_bridge:
+        warning_parts.append("Obsidia LIVE_LOCAL_BRIDGE confirmed — route via API 8000 → kernel 3001.")
+
+    # Endpoint effectivement utilisé
+    if is_live_bridge or is_bridge_kernel_err:
+        ep_used = obs.get("obsidia_live_adapter_endpoint") or reg.get("endpoint") or "LOCAL_HTTP_BRIDGE"
+    elif is_real_adapter:
+        ep_used = "IN_PROCESS_FUNCTION"
+    elif is_missing:
+        ep_used = "ADAPTER_MISSING"
+    else:
+        ep_used = "FROZEN_V0_ESTIMATE"
+
+    obsidia_lane = {
+        "execution_mode": obs_exec_mode,
+        "status": obs_status,
+        "attempted_live_execution": obs.get("obsidia_live_attempted", False),
+        "live_execution_available": obs_live_avail,
+        "fallback_used": obs_fallback,
+        "adapter_missing": is_missing,
+        "adapter_type": reg.get("adapter_type", "NONE"),
+        "endpoint_or_function_used": ep_used,
+        "bridge_endpoint": reg.get("endpoint"),
+        "kernel_target": reg.get("kernel_target"),
+        "kernel_invoked": obs.get("obsidia_live_kernel_invoked"),
+        "kernel_gate": obs.get("obsidia_live_kernel_gate"),
+        "kernel_unreachable": is_bridge_kernel_err,
+        "detected_route": obs.get("obsidia_detected_route"),
+        "route_match": obs.get("obsidia_route_match"),
+        "latency_ms": obs.get("obsidia_latency_ms"),
+        "output_excerpt": None,
+        "error": None,
+        "cost_basis": COST_BASIS_LOCAL_PROXY,
+        "cost_claimable": False,
+        "governance_flags": {
+            "emits_act": EMITS_ACT,
+            "memory_write": MEMORY_WRITE,
+            "kernel_mutation": KERNEL_MUTATION,
+            "decision_authority": DECISION_AUTHORITY,
+        },
+    }
+
+    gemini_lane = {
+        "execution_mode": gem_status,
+        "status": gem_status,
+        "provider": PROVIDER_GEMINI,
+        "model": os.environ.get("OIE_EXTERNAL_MODEL_LABEL", DEFAULT_GEMINI_MODEL),
+        "attempted_real_sdk": gem_is_real,
+        "detected_route": gem.get("gemini_detected_route"),
+        "route_match": gem.get("gemini_route_match"),
+        "latency_ms": gem.get("gemini_latency_ms"),
+        "input_tokens": gem.get("gemini_input_tokens"),
+        "output_tokens": gem.get("gemini_output_tokens"),
+        "total_tokens": gem.get("gemini_total_tokens"),
+        "output_excerpt": None,
+        "error": gem.get("gemini_failure_type") if gem_status == GEMINI_STATUS_FAILED else None,
+        "cost_basis": COST_BASIS_SDK_MEASURED if gem_is_real else COST_BASIS_DRY_RUN_MOCK,
+        "cost_claimable": False,
+    }
+
+    return {
+        "benchmark_task_id": task["task_id"],
+        "family": task["family"],
+        "expected_route": task["expected_route"],
+        "obsidia_lane": obsidia_lane,
+        "gemini_lane": gemini_lane,
+        "comparison_scope": scope,
+        "comparison_claimable": comparison_claimable,
+        "comparison_warning": " | ".join(warning_parts) if warning_parts else "OK",
     }
 
 
 # ── Compare row ───────────────────────────────────────────────────────────────
 
 def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
-    """Fusion Obsidia + Gemini en une ligne de comparaison."""
     wh_per_1k, local_w, co2_per_kwh = _read_energy_env()
 
     obs_lat = obs.get("obsidia_latency_ms")
@@ -653,7 +2063,7 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
     obs_dpc = round(1.0 / obs_cost, 4) if obs_cost and obs_cost > 0 else None
     gem_dpc = round(1.0 / gem_cost, 4) if gem_cost and gem_cost > 0 else None
 
-    # Tokens / context economy
+    # Tokens / context
     tok_delta_abs = (gem_tok - obs_tok) if (gem_tok is not None and obs_tok is not None) else None
     tok_delta_pct = (
         round(100.0 * tok_delta_abs / gem_tok, 2)
@@ -663,25 +2073,15 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
     context_budget_delta_pct = tok_delta_pct
 
     # Cost
-    avoided_cost, _ = _safe_ratio(gem_cost, 1.0)
-    if gem_cost is not None and obs_cost is not None:
-        avoided_cost_req = gem_cost - obs_cost
-    else:
-        avoided_cost_req = None
+    avoided_cost_req = (gem_cost - obs_cost) if (gem_cost is not None and obs_cost is not None) else None
     cost_sr, cost_ratio_status = _safe_ratio(gem_cost, obs_cost)
     cost_delta_pct = (
         round(100.0 * avoided_cost_req / gem_cost, 2)
         if avoided_cost_req is not None and gem_cost and gem_cost > 0 else None
     )
-
-    # Savings per 1m (architecture comparison)
     obs_c1m = obs.get("obsidia_cost_per_1m_est")
     gem_c1m = gem.get("gemini_cost_per_1m_measured")
-    avoided_c1m, _ = _safe_ratio(gem_c1m, 1.0)
-    if gem_c1m is not None and obs_c1m is not None:
-        avoided_c1m = gem_c1m - obs_c1m
-    else:
-        avoided_c1m = None
+    avoided_c1m = (gem_c1m - obs_c1m) if (gem_c1m is not None and obs_c1m is not None) else None
     c1m_sr, _ = _safe_ratio(gem_c1m, obs_c1m)
 
     # Energy
@@ -695,29 +2095,23 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
         if energy.get("external_energy_wh_est") and energy["external_energy_wh_est"] > 0 else None
     )
 
-    # Quality
     q_delta = (
         round(obs_q - gem_q, 4)
         if obs_q is not None and gem_q is not None else None
     )
 
-    # Governance
     gov_clean = (
-        not EMITS_ACT
-        and not MEMORY_WRITE
-        and not KERNEL_MUTATION
-        and obs_boundary
+        not EMITS_ACT and not MEMORY_WRITE and not KERNEL_MUTATION and obs_boundary
     )
 
-    # Winners
-    def _winner(a, b, labels=("OBSIDIA", "GEMINI", "TIE")) -> str:
+    def _winner(a, b) -> str:
         if a is None or b is None:
             return "UNKNOWN"
         if a > b:
-            return labels[0]
+            return "OBSIDIA"
         if b > a:
-            return labels[1]
-        return labels[2]
+            return "GEMINI"
+        return "TIE"
 
     winner_speed = _winner(gem_lat, obs_lat) if (obs_lat and gem_lat) else "UNKNOWN"
     winner_cost = _winner(gem_cost, obs_cost) if (obs_cost and gem_cost) else "UNKNOWN"
@@ -733,9 +2127,8 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
     )
     winner_gov = "OBSIDIA" if gov_clean else "CONTESTED"
 
-    final_interp = _build_interpretation(task, obs, gem, obs.get("obsidia_model_call_avoided"))
-
-    return {
+    # Build base row
+    row: dict = {
         "task_id": task["task_id"],
         "family": task["family"],
         "expected_route": task["expected_route"],
@@ -799,15 +2192,105 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
         "winner_energy": winner_energy,
         "winner_route": winner_route,
         "winner_governance": winner_gov,
-        "final_interpretation": final_interp,
+        "final_interpretation": _build_interpretation(task, obs, gem, obs.get("obsidia_model_call_avoided")),
     }
+
+    # Phase 2 : cost basis
+    cost_basis = compute_cost_basis_fields(task, obs, gem)
+    row.update(cost_basis)
+
+    # Phase 4+5 : intellectual economy
+    ie = compute_intellectual_economy(task, obs, gem, row)
+    row.update(ie)
+    # Export surface score for summary
+    row["external_dependency_reduction_score"] = ie.get("external_dependency_reduction_score", 0.0)
+
+    # Phase 4 : gencoin calibration
+    gc = compute_gencoin_calibration(ie)
+    row.update(gc)
+
+    # Phase 5 : economy layers (named sub-dicts for reporting)
+    row["technical_cost_layer"] = {
+        "local_latency_ms": obs_lat,
+        "external_latency_ms": gem_lat,
+        "local_energy_wh_est": energy.get("local_energy_wh_est"),
+        "external_energy_wh_est": energy.get("external_energy_wh_est"),
+        "local_tokens_est": obs_tok,
+        "external_tokens_measured": gem_tok,
+        "modules_activated": obs.get("obsidia_modules_activated"),
+        "modules_skipped": obs.get("obsidia_modules_skipped"),
+        "files_read": obs.get("obsidia_files_read"),
+        "files_skipped": obs.get("obsidia_files_skipped"),
+        "memory_records_loaded": obs.get("obsidia_memory_records_loaded"),
+        "memory_records_skipped": obs.get("obsidia_memory_records_skipped"),
+    }
+    row["inference_economy_layer"] = {
+        "model_call_avoided": obs.get("obsidia_model_call_avoided"),
+        "external_call_required": gem.get("gemini_external_model_call_required"),
+        "external_tokens_avoided_est": tok_delta_abs,
+        "external_dependency_reduction_score": ie.get("external_dependency_reduction_score"),
+        "cost_comparison_claimable": cost_basis.get("cost_comparison_claimable"),
+        "api_cost_avoided_claimable": False,
+    }
+    row["intellectual_economy_layer"] = {
+        "cognitive_value_score": ie.get("cognitive_value_score"),
+        "proof_quality_score": ie.get("proof_quality_score"),
+        "governance_value_score": ie.get("governance_value_score"),
+        "friction_reduction_score": ie.get("friction_reduction_score"),
+        "risk_reduction_score": ie.get("risk_reduction_score"),
+        "stability_value_score": ie.get("stability_value_score"),
+        "debt_score": ie.get("debt_score"),
+        "intellectual_value_score": ie.get("intellectual_value_score"),
+    }
+    row["gencoin_calibration_layer"] = {
+        "gencoin_emission_allowed": False,
+        "gencoin_emission_amount": 0,
+        "gencoin_distribution_mode": GENCOIN_DISTRIBUTION_MODE,
+        "gencoin_reason": GENCOIN_EMISSION_REASON,
+        "source_law_satisfied": False,
+    }
+
+    # Phase KP : Known path
+    kp = compute_known_path(task, obs, gem, row)
+    row.update(kp)
+    row["known_path_layer"] = kp
+
+    # Phase IN : Inference necessity
+    inf_nec = compute_inference_necessity(task, obs, gem)
+    row.update(inf_nec)
+    row["inference_necessity_layer"] = inf_nec
+
+    # Phase GS : Governed speed
+    gs = compute_governed_speed(task, obs, gem, row)
+    row.update(gs)
+    row["governed_speed_layer"] = gs
+
+    # Phase MF : Math formalization
+    mf = compute_math_formalization(task, obs, gem, row)
+    row.update(mf)
+    row["math_formalization_layer"] = mf
+
+    # Phase PRC : Paired route comparison
+    prc = compute_paired_route_comparison(task, obs, gem)
+    row.update(prc)
+    row["paired_route_layer"] = prc
+
+    # Phase OIE : OIE V0.1 convergence layer
+    oie = compute_oie_layer_fields(task, obs)
+    row.update(oie)
+
+    # Phase DL : Dual-lane structure
+    dl = compute_dual_lane(task, obs, gem)
+    row["dual_lane"] = dl
+
+    return row
 
 
 def _build_interpretation(task: dict, obs: dict, gem: dict, model_avoided: Optional[bool]) -> str:
     family = task["family"]
     if model_avoided:
         return (
-            f"{family}: Obsidia routes deterministically — no LLM call. "
+            f"{family}: Obsidia routes deterministically -- no LLM call. "
             f"Gemini requires full inference. Work avoidance is the key metric."
         )
     if obs.get("obsidia_status") == OBSIDIA_STATUS_MISSING:
@@ -839,9 +2322,32 @@ def compute_summary(rows: list[dict], tasks: list[dict]) -> dict:
     cache_hits = sum(1 for r in rows if r.get("obsidia_cache_hit") is True)
     boundary_ok = sum(1 for r in rows if r.get("obsidia_boundary_ok") is True)
     gov_clean_all = all(r.get("obsidia_governance_clean", False) for r in rows)
-
     n = len(rows)
-    return {
+
+    # Debt summary
+    total_debt = sum(r.get("debt_score", 0.0) or 0.0 for r in rows)
+    adapter_missing_debt = sum(
+        r.get("debt_score", 0.0) or 0.0
+        for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING
+    )
+    cost_uncalibrated_debt = round(0.20 * n, 4)
+    proof_missing_debt = sum(
+        0.20 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING
+    )
+    measurement_debt = round(total_debt - adapter_missing_debt, 4)
+
+    # Gemini cost total
+    gem_total_cost = sum(r.get("gemini_cost_per_request_measured") or 0.0 for r in rows)
+    gem_total_cost_val = gem_total_cost if any(r.get("gemini_cost_per_request_measured") is not None for r in rows) else None
+
+    # Total avoided cost
+    total_avoided = sum(r.get("avoided_cost_per_request") or 0.0 for r in rows)
+    total_avoided_val = total_avoided if any(r.get("avoided_cost_per_request") is not None for r in rows) else None
+
+    # Surface metrics
+    surface = compute_surface_metrics(rows)
+
+    summary = {
         "benchmark_version": BENCHMARK_VERSION,
         "benchmark_date": BENCHMARK_DATE,
         "tasks_attempted": n,
@@ -851,21 +2357,12 @@ def compute_summary(rows: list[dict], tasks: list[dict]) -> dict:
         "gemini_avg_latency_ms": _avg([r.get("gemini_latency_ms") for r in rows]),
         "avg_latency_delta_pct": _avg([r.get("latency_delta_pct") for r in rows]),
         "avg_speedup_ratio": _avg([r.get("speedup_ratio") for r in rows]),
-        "obsidia_total_estimated_tokens": sum(
-            r.get("obsidia_estimated_total_tokens") or 0 for r in rows
-        ),
+        "obsidia_total_estimated_tokens": sum(r.get("obsidia_estimated_total_tokens") or 0 for r in rows),
         "gemini_total_tokens": sum(r.get("gemini_total_tokens") or 0 for r in rows),
         "avg_token_delta_pct": _avg([r.get("token_delta_pct") for r in rows]),
-        "gemini_total_cost_measured": sum(
-            r.get("gemini_cost_per_request_measured") or 0.0 for r in rows
-        ) or None,
-        "obsidia_total_cost_est": sum(
-            r.get("obsidia_cost_per_request_est") or 0.0 for r in rows
-        ),
-        "total_avoided_cost": (
-            sum(r.get("avoided_cost_per_request") or 0.0 for r in rows)
-            if any(r.get("avoided_cost_per_request") is not None for r in rows) else None
-        ),
+        "gemini_total_cost_measured": gem_total_cost_val,
+        "obsidia_total_cost_est": sum(r.get("obsidia_cost_per_request_est") or 0.0 for r in rows),
+        "total_avoided_cost": total_avoided_val,
         "avg_cost_savings_ratio": _avg([r.get("cost_savings_ratio") for r in rows]),
         "obsidia_total_energy_wh_est": (
             sum(r.get("obsidia_energy_wh_est") or 0.0 for r in rows)
@@ -882,32 +2379,24 @@ def compute_summary(rows: list[dict], tasks: list[dict]) -> dict:
         "avg_energy_savings_ratio": _avg([r.get("energy_savings_ratio") for r in rows]),
         "obsidia_model_call_avoided_count": model_avoided,
         "obsidia_model_call_avoided_rate": round(model_avoided / n, 4) if n else None,
-        "obsidia_modules_skipped_total": sum(
-            r.get("obsidia_modules_skipped") or 0 for r in rows
-        ),
+        "obsidia_modules_skipped_total": sum(r.get("obsidia_modules_skipped") or 0 for r in rows),
         "obsidia_cache_hit_ratio": round(cache_hits / n, 4) if n else None,
         "obsidia_boundary_safety_pass_rate": round(boundary_ok / n, 4) if n else None,
         "obsidia_quality_avg": _avg([r.get("obsidia_quality_score") for r in rows]),
         "gemini_quality_avg": _avg([r.get("gemini_quality_score") for r in rows]),
         "quality_delta_avg": _avg([r.get("quality_delta") for r in rows]),
-        "obsidia_safe_decisions_per_second_avg": _avg(
-            [r.get("safe_decisions_per_second_obsidia") for r in rows]
+        "obsidia_safe_decisions_per_second_avg": _avg([r.get("safe_decisions_per_second_obsidia") for r in rows]),
+        "gemini_safe_decisions_per_second_avg": _avg([r.get("safe_decisions_per_second_gemini") for r in rows]),
+        "obsidia_decisions_per_cost_unit_avg": _avg([r.get("decisions_per_cost_unit_obsidia") for r in rows]),
+        "gemini_decisions_per_cost_unit_avg": _avg([r.get("decisions_per_cost_unit_gemini") for r in rows]),
+        "obsidia_decisions_per_wh_avg": (
+            _avg([r.get("decisions_per_wh_obsidia") for r in rows])
+            if energy_src == ENERGY_SOURCE_ESTIMATE else None
         ),
-        "gemini_safe_decisions_per_second_avg": _avg(
-            [r.get("safe_decisions_per_second_gemini") for r in rows]
+        "gemini_decisions_per_wh_avg": (
+            _avg([r.get("decisions_per_wh_gemini") for r in rows])
+            if energy_src == ENERGY_SOURCE_ESTIMATE else None
         ),
-        "obsidia_decisions_per_cost_unit_avg": _avg(
-            [r.get("decisions_per_cost_unit_obsidia") for r in rows]
-        ),
-        "gemini_decisions_per_cost_unit_avg": _avg(
-            [r.get("decisions_per_cost_unit_gemini") for r in rows]
-        ),
-        "obsidia_decisions_per_wh_avg": _avg(
-            [r.get("decisions_per_wh_obsidia") for r in rows]
-        ) if energy_src == ENERGY_SOURCE_ESTIMATE else None,
-        "gemini_decisions_per_wh_avg": _avg(
-            [r.get("decisions_per_wh_gemini") for r in rows]
-        ) if energy_src == ENERGY_SOURCE_ESTIMATE else None,
         "governance_clean": gov_clean_all,
         "decision_authority": DECISION_AUTHORITY,
         "emits_act": EMITS_ACT,
@@ -916,19 +2405,899 @@ def compute_summary(rows: list[dict], tasks: list[dict]) -> dict:
         "secrets_redacted": SECRETS_REDACTED,
         "energy_source": energy_src,
         "cost_source": cost_src,
-        "adapter_missing_count": sum(
-            1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING
-        ),
-        "frozen_v0_estimate_count": sum(
-            1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_FROZEN
-        ),
-        "real_adapter_count": sum(
-            1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_REAL
-        ),
+        "adapter_missing_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING),
+        "frozen_v0_estimate_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_FROZEN),
+        "real_adapter_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_REAL),
+        # Phase 2 : cost basis global
+        "obsidia_cost_basis_global": COST_BASIS_LOCAL_PROXY,
+        "gemini_cost_basis_global": COST_BASIS_SDK_MEASURED if cost_src == COST_SOURCE_SDK_MEASURED else COST_BASIS_DRY_RUN_MOCK,
+        "cost_comparison_claimable_global": False,
+        "cost_claim_warning": COST_PROXY_WARNING,
+        # Phase 3 : surfaces
+        **surface,
+        # Phase 6 : internal economy
+        "intellectual_economy_basis": IE_BASIS,
+        "intellectual_value_avg": _avg([r.get("intellectual_value_score") for r in rows]),
+        "intellectual_value_available_surface_avg": _avg([
+            r.get("intellectual_value_score") for r in rows
+            if r.get("obsidia_status") != OBSIDIA_STATUS_MISSING
+        ]),
+        "intellectual_value_terrain_avg": _avg([
+            r.get("intellectual_value_score") for r in rows
+            if r.get("family") in TERRAIN_PROOF_FAMILIES
+        ]),
+        "intellectual_value_model_avoided_avg": _avg([
+            r.get("intellectual_value_score") for r in rows
+            if r.get("family") in MODEL_AVOIDED_FAMILIES
+        ]),
+        "intellectual_value_adapter_missing_avg": _avg([
+            r.get("intellectual_value_score") for r in rows
+            if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING
+        ]),
+        "intellectual_value_adapter_missing_excluded_from_victory": True,
+        # Phase 6 : gencoin
+        "gencoin_mode": GENCOIN_MODE,
+        "gencoin_emission_enabled": False,
+        "gencoin_total_emission": 0,
+        "source_law_global_satisfied": False,
+        "source_law_global_reason": "Benchmark calibration only; no real emission, no market value, no distribution.",
+        # Phase 6 : debt
+        "internal_economy_debt_total": round(total_debt, 4),
+        "adapter_missing_debt": round(adapter_missing_debt, 4),
+        "cost_uncalibrated_debt": cost_uncalibrated_debt,
+        "proof_missing_debt": round(proof_missing_debt, 4),
+        "measurement_debt": round(measurement_debt, 4),
+        # Audit-safe claims
+        "audit_safe_claims": [
+            "Obsidia avoids external model inference on the model-avoided surface.",
+            "Obsidia cost is a local proxy estimate, not a measured bill.",
+            "Gemini cost is SDK usage measured when REAL mode usage is available.",
+            "Cost comparison is not claimable until Obsidia local cost is measured or calibrated.",
+            "Gencoin emission is disabled in this benchmark.",
+            "Intellectual value is calibration-only.",
+            "Available wired surface excludes adapter missing families.",
+            "BRODY, OBSIDURE, and LEAN are adapter missing and must not be counted as functional victories.",
+            "Energy comparison is proxy-based unless hardware/provider telemetry is supplied.",
+            "Governance remains KX108_ONLY with emits_act=false, memory_write=false, kernel_mutation=false.",
+        ],
     }
 
+    # ── Extension : known path, inference necessity, governed speed, math formal, novice, partial ──
 
-# ── Markdown report ───────────────────────────────────────────────────────────
+    _kp_c = sum(1 for r in rows if r.get("known_path_detected"))
+    _inf_c = sum(1 for r in rows if r.get("unnecessary_inference_avoided"))
+    _ext_c = sum(1 for r in rows if r.get("external_dependency_avoided"))
+    _gov_c = sum(1 for r in rows if r.get("governance_preserved_at_speed"))
+    _mf_c = sum(1 for r in rows if r.get("math_formalization_support"))
+
+    _gs_vals = [r.get("governed_speedup_ratio") for r in rows if r.get("governed_speedup_ratio") is not None]
+    _gs_sorted = sorted(_gs_vals)
+    _gs_avg = _avg(_gs_vals)
+    _gs_median = round(_gs_sorted[len(_gs_sorted) // 2], 4) if _gs_sorted else None
+    _gs_avail_avg = _avg([
+        r.get("governed_speedup_ratio") for r in rows
+        if r.get("governed_speedup_ratio") is not None
+        and r.get("obsidia_status") != OBSIDIA_STATUS_MISSING
+    ])
+    _gs_avoided_avg = _avg([
+        r.get("governed_speedup_ratio") for r in rows
+        if r.get("governed_speedup_ratio") is not None and r.get("obsidia_model_call_avoided")
+    ])
+
+    _ts_vals = [
+        (r.get("gemini_latency_ms") or 0.0) - (r.get("obsidia_latency_ms") or 0.0)
+        for r in rows
+        if r.get("gemini_latency_ms") is not None and r.get("obsidia_latency_ms") is not None
+    ]
+    _ts_avg = round(sum(_ts_vals) / len(_ts_vals), 4) if _ts_vals else None
+    _ts_per_1k_s = round(_ts_avg * 1000 / 1000.0, 4) if _ts_avg is not None else None
+    _ts_per_1k_min = round(_ts_avg * 1000 / 1000.0 / 60.0, 6) if _ts_avg is not None else None
+    _ts_per_1m_h = round(_ts_avg * 1_000_000 / 1000.0 / 3600.0, 4) if _ts_avg is not None else None
+    _ts_per_1m_d = round(_ts_avg * 1_000_000 / 1000.0 / 86400.0, 6) if _ts_avg is not None else None
+
+    _avoided_rows = [r for r in rows if r.get("obsidia_model_call_avoided")]
+    _ts_av_vals = [
+        (r.get("gemini_latency_ms") or 0.0) - (r.get("obsidia_latency_ms") or 0.0)
+        for r in _avoided_rows
+        if r.get("gemini_latency_ms") is not None and r.get("obsidia_latency_ms") is not None
+    ]
+    _ts_av_avg = round(sum(_ts_av_vals) / len(_ts_av_vals), 4) if _ts_av_vals else None
+    _ts_av_per_1k_min = round(_ts_av_avg * 1000 / 1000.0 / 60.0, 6) if _ts_av_avg is not None else None
+    _ts_av_per_1m_d = round(_ts_av_avg * 1_000_000 / 1000.0 / 86400.0, 6) if _ts_av_avg is not None else None
+
+    _ewh_total = (
+        sum(r.get("energy_avoided_wh") or 0.0 for r in rows)
+        if any(r.get("energy_avoided_wh") is not None for r in rows) else None
+    )
+    _e_per_1k_wh = round(_ewh_total * 1000 / n, 6) if _ewh_total is not None and n else None
+    _e_per_1m_kwh = round(_ewh_total * 1_000_000 / n / 1000.0, 6) if _ewh_total is not None and n else None
+
+    _obs_av_rate = summary.get("obsidia_model_call_avoided_rate") or 0.0
+
+    summary.update({
+        # Known path
+        "known_path_detected_count": _kp_c,
+        "known_path_detected_rate": round(_kp_c / n, 4) if n else None,
+        # Inference necessity
+        "inference_avoided_count": _inf_c,
+        "inference_avoided_rate": round(_inf_c / n, 4) if n else None,
+        "unnecessary_inference_avoided_count": _inf_c,
+        "unnecessary_inference_avoided_rate": round(_inf_c / n, 4) if n else None,
+        "external_dependency_avoided_count": _ext_c,
+        "external_dependency_avoided_rate": round(_ext_c / n, 4) if n else None,
+        # Governed speed
+        "governed_speedup_avg": _gs_avg,
+        "governed_speedup_median": _gs_median,
+        "governed_speedup_available_surface_avg": _gs_avail_avg,
+        "governed_speedup_model_avoided_avg": _gs_avoided_avg,
+        "governed_speed_claim": (
+            "Speed measured under KX108_ONLY governance — no control sacrificed."
+        ),
+        "governance_preserved_at_speed_rate": round(_gov_c / n, 4) if n else None,
+        # Math formalization
+        "math_formalized_surface_count": _mf_c,
+        "math_formalized_surface_rate": round(_mf_c / n, 4) if n else None,
+        "formalization_claim": (
+            "Gains repose on formalized surfaces: admissible routes, invariants, "
+            "KX108_ONLY governance, proof of non-action."
+        ),
+        "formalization_warning": (
+            "Do not confuse with general-purpose trained intelligence. "
+            "Formalization applies to known-path surfaces only."
+        ),
+        # Novice impact
+        "model_calls_avoided_per_1000_requests": round(_obs_av_rate * 1000, 4),
+        "model_calls_avoided_per_1m_requests": round(_obs_av_rate * 1_000_000, 4),
+        "time_saved_per_request_ms_avg": _ts_avg,
+        "time_saved_per_1000_requests_seconds": _ts_per_1k_s,
+        "time_saved_per_1000_requests_minutes": _ts_per_1k_min,
+        "time_saved_per_1m_requests_hours": _ts_per_1m_h,
+        "time_saved_per_1m_requests_days": _ts_per_1m_d,
+        "time_saved_model_avoided_per_request_ms_avg": _ts_av_avg,
+        "time_saved_model_avoided_per_1000_requests_minutes": _ts_av_per_1k_min,
+        "time_saved_model_avoided_per_1m_requests_days": _ts_av_per_1m_d,
+        "energy_saved_per_1000_requests_wh": _e_per_1k_wh,
+        "energy_saved_per_1m_requests_kwh": _e_per_1m_kwh,
+        "external_dependency_avoided_per_1000_requests": round(_obs_av_rate * 1000, 4),
+        "external_dependency_avoided_per_1m_requests": round(_obs_av_rate * 1_000_000, 4),
+        # Partial engine
+        "benchmark_completion_state": "CURRENT_BENCHMARK_PARTIAL",
+        "obsidia_complete_measured": False,
+        "missing_or_not_wired_layers": [
+            "BRODY_ADAPTER_TO_BENCHMARK",
+            "OBSIDURE_ADAPTER_TO_BENCHMARK",
+            "LEAN_ADAPTER_TO_BENCHMARK",
+        ],
+        "not_included_acceleration_layers": [
+            "REFLEXEUR", "PRE_REFLEXE", "EX_ANTE", "UPSTREAM_CAUSALITY",
+            "BEST_PATH_MEMORY", "FRICTION_MEMORY", "EXPERIENCE_MEMORY",
+            "SEMANTIC_BRANCHING", "COSMOLOGICAL_BRANCHING",
+            "GENCOIN_REAL_ECONOMY", "FULL_INTELLECTUAL_ECONOMY",
+        ],
+        "partial_engine_warning": (
+            "Ce run ne mesure pas Obsidia complet contre Gemini complet. "
+            "Il mesure Obsidia partiel contre Gemini industriel."
+        ),
+        "partial_engine_claim": "NOT_INCLUDED_IN_CURRENT_RUN",
+    })
+
+    # ── Paired route comparison summary ──────────────────────────────────────
+    _wired_rows = [r for r in rows if not r.get("obsidia_adapter_missing")]
+    _miss_rows = [r for r in rows if r.get("obsidia_adapter_missing")]
+    _n_w = len(_wired_rows)
+    _n_m = len(_miss_rows)
+
+    _obs_w_acc = (
+        round(sum(1 for r in _wired_rows if r.get("obsidia_route_match") is True) / _n_w, 4)
+        if _n_w else None
+    )
+    _gem_w_acc = (
+        round(sum(1 for r in _wired_rows if r.get("gemini_route_match") is True) / _n_w, 4)
+        if _n_w else None
+    )
+    _gem_m_acc = (
+        round(sum(1 for r in _miss_rows if r.get("gemini_route_match") is True) / _n_m, 4)
+        if _n_m else None
+    )
+    _w_delta = (
+        round(_obs_w_acc - _gem_w_acc, 4)
+        if _obs_w_acc is not None and _gem_w_acc is not None else None
+    )
+    _w_avoided = (
+        round(sum(1 for r in _wired_rows if r.get("obsidia_model_call_avoided")) / _n_w, 4)
+        if _n_w else None
+    )
+
+    summary.update({
+        "paired_both_correct_count": sum(1 for r in rows if r.get("both_correct")),
+        "paired_obsidia_only_correct_count": sum(1 for r in rows if r.get("obsidia_only_correct")),
+        "paired_gemini_only_correct_count": sum(1 for r in rows if r.get("gemini_only_correct")),
+        "paired_both_wrong_count": sum(1 for r in rows if r.get("both_wrong")),
+        "paired_obsidia_adapter_missing_count": sum(1 for r in rows if r.get("obsidia_adapter_missing")),
+        "paired_gemini_correct_on_adapter_missing_count": sum(
+            1 for r in rows
+            if r.get("obsidia_adapter_missing") and r.get("gemini_route_match") is True
+        ),
+        "obsidia_wired_surface_count": _n_w,
+        "obsidia_wired_surface_accuracy": _obs_w_acc,
+        "gemini_on_obsidia_wired_surface_accuracy": _gem_w_acc,
+        "obsidia_vs_gemini_wired_surface_delta": _w_delta,
+        "obsidia_wired_surface_model_avoided_rate": _w_avoided,
+        "adapter_missing_surface_count": _n_m,
+        "gemini_on_adapter_missing_surface_accuracy": _gem_m_acc,
+        "adapter_missing_surface_non_claimable": True,
+        "global_route_accuracy_warning": (
+            "Global route_accuracy mixes wired surfaces and adapter-missing surfaces; "
+            "use paired/wired-surface metrics for functional comparison."
+        ),
+        "wired_surface_claim": "On Obsidia wired surface, route comparison is claimable.",
+        "adapter_missing_warning": (
+            "BRODY, OBSIDURE, LEAN are adapter-missing in this benchmark "
+            "and must not count as Obsidia functional losses."
+        ),
+    })
+
+    # ── OIE Convergence Summary ────────────────────────────────────────────────
+
+    # OSCA — geomean of all savings ratios vs BT_API_NORMAL
+    _all_ratios = [BT_API_NORMAL / c for c in OIE_FAMILY_COSTS.values() if c > 0]
+    _osca = round(math.exp(sum(math.log(r) for r in _all_ratios) / len(_all_ratios)), 4) if _all_ratios else 0.0
+
+    # OAPI — portfolio FAST_PATH+BRODY+BANK+TRADING+GPS
+    _oapi_fams = {"FAST_PATH", "BRODY", "BANK", "TRADING", "GPS"}
+    _oapi_obs = sum(OIE_FAMILY_COSTS[f] for f in _oapi_fams if f in OIE_FAMILY_COSTS)
+    _oapi = round(len(_oapi_fams) * BT_API_NORMAL / _oapi_obs, 4) if _oapi_obs > 0 else 0.0
+
+    # ODPI — portfolio BANK+TRADING+GPS
+    _odpi_fams = {"BANK", "TRADING", "GPS"}
+    _odpi_obs = sum(OIE_FAMILY_COSTS[f] for f in _odpi_fams if f in OIE_FAMILY_COSTS)
+    _odpi = round(len(_odpi_fams) * BT_API_NORMAL / _odpi_obs, 4) if _odpi_obs > 0 else 0.0
+
+    # DCA by domain
+    _dca_by_domain: dict = {}
+    for fam, fam_cost in OIE_FAMILY_COSTS.items():
+        dom_name = OIE_DOMAIN_NAME_MAPPING.get(fam, fam)
+        is_miss = fam in ADAPTER_MISSING_FAMILIES
+        _dca_by_domain[dom_name] = {
+            "domain_name": dom_name,
+            "family": fam,
+            "obsidia_cost_eur_per_1m": fam_cost,
+            "baseline_api_normal_cost_eur_per_1m": BT_API_NORMAL,
+            "baseline_agentic_cost_eur_per_1m": BT_AGENTIC,
+            "dca_api_normal": round(BT_API_NORMAL / fam_cost, 4) if fam_cost > 0 else 0.0,
+            "dca_agentic": round(BT_AGENTIC / fam_cost, 4) if fam_cost > 0 else 0.0,
+            "dca_claimable": "proxy_only" if not is_miss else False,
+            "dca_basis": "OIE_PROXY_BASELINE",
+            "dca_warning": "DCA is proxy/baseline comparison, not real provider billing.",
+        }
+
+    # domain_summary — using OIE summarize_domain_metrics if available
+    _receipts_for_summary = []
+    for r in rows:
+        dm_dict = r.get("domain_metrics")
+        receipt_dict = r.get("oie_cost_receipt")
+        if dm_dict and receipt_dict and _OIE_CostReceipt is not None and _OIE_DomainMetrics is not None:
+            try:
+                import dataclasses as _dc
+                dm_obj = _OIE_DomainMetrics(
+                    domain_name=dm_dict.get("domain_name", ""),
+                    domain_action_type=dm_dict.get("domain_action_type", ""),
+                    domain_risk_level=dm_dict.get("domain_risk_level", ""),
+                    domain_reversibility=dm_dict.get("domain_reversibility", ""),
+                    domain_cost_eur_per_1m=dm_dict.get("domain_cost_eur_per_1m", 0.0),
+                    domain_latency_ms=dm_dict.get("domain_latency_ms", 0.0),
+                    domain_internal_units=dm_dict.get("domain_internal_units", 0.0),
+                    domain_tools_used=list(dm_dict.get("domain_tools_used") or []),
+                    domain_tools_skipped=list(dm_dict.get("domain_tools_skipped") or []),
+                    external_api_calls_avoided=dm_dict.get("external_api_calls_avoided", 0),
+                    llm_calls_avoided=dm_dict.get("llm_calls_avoided", 0),
+                    proof_available=dm_dict.get("proof_available", False),
+                    replay_available=dm_dict.get("replay_available", False),
+                    business_cost_avoided_label=dm_dict.get("business_cost_avoided_label", ""),
+                    domain_savings_ratio=dm_dict.get("domain_savings_ratio", 0.0),
+                )
+                cr_kwargs = {
+                    k: receipt_dict[k]
+                    for k in _OIE_CostReceipt.__dataclass_fields__
+                    if k in receipt_dict and k != "domain_metrics"
+                }
+                cr_obj = _OIE_CostReceipt(**cr_kwargs, domain_metrics=dm_obj)
+                _receipts_for_summary.append(cr_obj)
+            except Exception:
+                pass
+    _dom_summary: dict = {}
+    if _receipts_for_summary and _oie_summarize_domain_metrics is not None:
+        try:
+            _dom_summary = _oie_summarize_domain_metrics(_receipts_for_summary)
+        except Exception:
+            pass
+    # Fallback manual aggregation if OIE not available or no receipts
+    if not _dom_summary:
+        for r in rows:
+            dm_d = r.get("domain_metrics") or {}
+            dom = dm_d.get("domain_name") or r.get("family", "UNKNOWN")
+            if dom not in _dom_summary:
+                _dom_summary[dom] = {
+                    "domain_name": dom,
+                    "total_rows": 0,
+                    "claimable_rows": 0,
+                    "adapter_missing_rows": 0,
+                    "obsidia_total_cost_eur_per_1m": 0.0,
+                    "baseline_api_normal_cost_eur_per_1m": BT_API_NORMAL,
+                    "baseline_agentic_cost_eur_per_1m": BT_AGENTIC,
+                    "dca_api_normal": 0.0,
+                    "dca_agentic": 0.0,
+                    "avg_latency_ms": 0.0,
+                    "avg_internal_units": 0.0,
+                    "tools_used": [],
+                    "tools_skipped": [],
+                    "llm_calls_avoided": 0,
+                    "external_api_calls_avoided": 0,
+                    "proof_or_replay_rate": 0.0,
+                    "hold_count": 0, "block_count": 0, "act_count": 0,
+                    "unknowns_count": 0, "contradictions_count": 0,
+                }
+            entry = _dom_summary[dom]
+            entry["total_rows"] += 1
+            c = dm_d.get("domain_cost_eur_per_1m") or 0.0
+            entry["obsidia_total_cost_eur_per_1m"] = round(entry["obsidia_total_cost_eur_per_1m"] + c, 6)
+            if r.get("oie_functional_claimable"):
+                entry["claimable_rows"] += 1
+            else:
+                entry["adapter_missing_rows"] += 1
+            entry["llm_calls_avoided"] += dm_d.get("llm_calls_avoided") or 0
+            entry["external_api_calls_avoided"] += dm_d.get("external_api_calls_avoided") or 0
+        # Compute DCA for each fallback entry
+        for dom, ent in _dom_summary.items():
+            nc = ent["total_rows"]
+            avg_c = ent["obsidia_total_cost_eur_per_1m"] / nc if nc else 0.0
+            ent["dca_api_normal"] = round(BT_API_NORMAL / avg_c, 4) if avg_c > 0 else 0.0
+            ent["dca_agentic"] = round(BT_AGENTIC / avg_c, 4) if avg_c > 0 else 0.0
+
+    # OIE claim matrix
+    _fc = sum(1 for r in rows if r.get("oie_functional_claimable"))
+    _rc = sum(1 for r in rows if r.get("route_accuracy_claimable"))
+    _dc_count = sum(1 for r in rows if r.get("oie_domain_claimable"))
+    _cc = sum(1 for r in rows if r.get("oie_cost_claimable"))
+    _mc = sum(1 for r in rows if r.get("obsidia_adapter_missing"))
+
+    # OIE import status
+    _oie_import_status = {
+        "used_native_oie_imports": _OIE_IMPORT_OK,
+        "fallback_local_oie_mapping": not _OIE_IMPORT_OK,
+        "missing_imports": _OIE_MISSING_IMPORTS,
+    }
+
+    # OIE freeze reference
+    _freeze_ref = {
+        "freeze_family": "OBSIDIA_OIE_V01_ENGINE_FREEZE",
+        "freeze_dir": str(_OIE_FREEZE_DIR),
+        "freeze_receipt": str(_OIE_FREEZE_DIR / "FREEZE_RECEIPT.txt"),
+        "sha256sums": str(_OIE_FREEZE_DIR / "SHA256SUMS.txt"),
+        "status_expected": "OIE_V01_DOMAIN_METRICS_AND_EXTERNAL_API_PROTOCOL_READY",
+        "tests_expected": "74/74 PASSED",
+        "scope_expected": "OIE_ONLY_NO_KERNEL_NO_BRODY_LIVE_NO_GRAPHITI_NO_NEO4J",
+        "freeze_found": _OIE_FREEZE_FOUND,
+    }
+
+    summary.update({
+        # Baseline registry
+        "oie_baseline_registry": dict(BASELINE_LABELS),
+        "oie_primary_baseline_label": "BT_API_NORMAL",
+        "oie_agentic_baseline_label": "BT_AGENTIC",
+        "oie_baseline_basis": "OIE_V0_1_BASELINE_REGISTRY",
+        "oie_baseline_warning": (
+            "Baselines are comparison models; real provider cost must use SDK measured usage when available."
+        ),
+        # Indices
+        "osca_ratio": _osca,
+        "oapi_ratio": _oapi,
+        "odpi_ratio": _odpi,
+        "osca_basis": "GEOMEAN_LAYER_RATIOS_VS_BT_API_NORMAL",
+        "oapi_basis": "PORTFOLIO_ACTIONS_FASTPATH_BRODY_BANK_TRADING_GPS_VS_BT_API_NORMAL",
+        "odpi_basis": "PORTFOLIO_DOMAINS_BANK_TRADING_GPS_VS_BT_API_NORMAL",
+        "oie_indices_claimable": "PROXY_BASELINE_ONLY_NOT_REAL_PROVIDER_COST",
+        # DCA by domain
+        "dca_by_domain": _dca_by_domain,
+        # Domain summary
+        "domain_summary": _dom_summary,
+        "domain_summary_basis": "OIE_V0_1_DOMAIN_METRICS",
+        "domain_summary_claim_warning": "DCA/OSCA/OAPI/ODPI are proxy baseline metrics, not real provider billing.",
+        # Claim matrix
+        "oie_claim_matrix": {
+            "functional_claimable_count": _fc,
+            "route_claimable_count": _rc,
+            "domain_claimable_count": _dc_count,
+            "cost_claimable_count": _cc,
+            "adapter_missing_non_claimable_count": _mc,
+            "gencoin_emission_claimable": False,
+        },
+        # Gencoin bridge
+        "oie_gencoin_bridge": {
+            "gencoin_mode": GENCOIN_MODE,
+            "gencoin_total_emission": 0,
+            "gencoin_emission_allowed": False,
+            "gencoin_distribution_mode": GENCOIN_DISTRIBUTION_MODE,
+            "source_law_satisfied": False,
+            "intellectual_economy_basis": IE_BASIS,
+            "oie_can_measure_value": True,
+            "oie_cannot_emit_value": True,
+            "source_law_required_for_emission": True,
+        },
+        # OIE warnings
+        "oie_warnings": _OIE_WARNINGS,
+        # Import status
+        "oie_import_status": _oie_import_status,
+        # Source lineage
+        "oie_source_lineage": _OIE_SOURCE_LINEAGE,
+        # Source documents
+        "oie_source_documents": _OIE_SOURCE_DOCUMENTS,
+        # Freeze reference
+        "oie_freeze_reference": _freeze_ref,
+        # Benchmark linkage
+        "oie_benchmark_linkage": _OIE_BENCHMARK_LINKAGE,
+        # Domain name mapping — canonical keys only (no case-insensitive dups for PowerShell)
+        "oie_domain_name_mapping": {
+            "FAST_PATH": "FAST_PATH",
+            "BRODY": "BRODY",
+            "BANK": "BANK",
+            "TRADING": "TRADING",
+            "GPS": "GPS_AVIATION",
+            "GPS_AVIATION": "GPS_AVIATION",
+            "LEAN": "LEAN",
+            "OBSIDURE": "OBSIDURE",
+        },
+        # Alias mapping as list-of-dicts (avoids case-insensitive dup issue in PowerShell)
+        "oie_domain_alias_mapping": [
+            {"alias": "Brody chat", "canonical": "BRODY"},
+            {"alias": "Bank", "canonical": "BANK"},
+            {"alias": "Trading", "canonical": "TRADING"},
+            {"alias": "GPS/Aviation", "canonical": "GPS_AVIATION"},
+            {"alias": "Aviation", "canonical": "GPS_AVIATION"},
+            {"alias": "Lean canon check", "canonical": "LEAN"},
+            {"alias": "Obsidure Lean cible", "canonical": "OBSIDURE"},
+        ],
+        # Obsidia live adapter registry
+        "obsidia_live_adapter_registry": {
+            fam: {k: v for k, v in reg.items() if k != "api_status_probe"}
+            for fam, reg in _OBSIDIA_LIVE_ADAPTER_REGISTRY.items()
+        },
+        # Live adapter summary
+        "obsidia_live_adapter_summary": {
+            "requested_mode": os.environ.get("OIE_OBSIDIA_EXECUTION_MODE", OIE_OBSIDIA_EXEC_MODE_AUTO),
+            "api_base": _OBSIDIA_API_BASE,
+            "kernel_target": _OBSIDIA_KERNEL_URL,
+            "adapters_found_count": sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get("adapter_found")),
+            "usable_live_count": sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get("usable_for_live_local")),
+            "live_local_rows_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_LIVE_LOCAL),
+            "bridge_kernel_unreachable_count": sum(1 for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"),
+            "frozen_fallback_rows_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_FROZEN),
+            "adapter_missing_rows_count": sum(1 for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING),
+            "live_local_available_global": _LIVE_LOCAL_AVAILABLE,
+            "live_local_usable_families": _LIVE_LOCAL_USABLE_FAMILIES,
+            "live_local_unavailable_families": _LIVE_LOCAL_UNAVAILABLE_FAMILIES,
+            "adapter_missing_families": _ADAPTER_MISSING_FAMILIES_LIVE,
+            "live_local_claimable_count": sum(
+                1 for r in rows
+                if r.get("obsidia_status") == OBSIDIA_STATUS_LIVE_LOCAL
+                and not r.get("dual_lane", {}).get("obsidia_lane", {}).get("adapter_missing")
+            ),
+            "fallback_claimable_count": sum(
+                1 for r in rows
+                if r.get("obsidia_fallback_used") and r.get("obsidia_status") == OBSIDIA_STATUS_FROZEN
+            ),
+        },
+    })
+    return summary
+
+
+# ── Runtime report writers (Phase 7) ─────────────────────────────────────────
+
+def _make_report_dir() -> Path:
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    report_dir = _REPO_ROOT / ".local_reports" / f"OIE_POWER_BENCHMARK_V0_7_1_{ts}"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    return report_dir
+
+
+def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> None:
+    """Ecrire les rapports runtime dans .local_reports — jamais dans docs/audits."""
+    # ── results.json ─────────────────────────────────────────────────────────
+    (report_dir / "results.json").write_text(
+        json.dumps(rows, indent=2, default=str), encoding="utf-8"
+    )
+
+    # ── summary.json (validate case-insensitive dup keys first) ──────────────
+    summary_json_str = json.dumps(summary, indent=2, default=str)
+    _dup_issues = find_case_insensitive_duplicate_keys(summary)
+    if _dup_issues:
+        import warnings
+        warnings.warn(
+            f"summary.json contient {len(_dup_issues)} clé(s) case-insensitive dupliquées "
+            f"(risque PowerShell ConvertFrom-Json) : {_dup_issues[:5]}",
+            stacklevel=2,
+        )
+    (report_dir / "summary.json").write_text(summary_json_str, encoding="utf-8")
+
+    # ── internal_economy.json ─────────────────────────────────────────────────
+    ie_data = [
+        {
+            "task_id": r["task_id"],
+            "family": r["family"],
+            "intellectual_economy_layer": r.get("intellectual_economy_layer"),
+            "intellectual_value_score": r.get("intellectual_value_score"),
+            "debt_score": r.get("debt_score"),
+            "cv_weight_source": r.get("cv_weight_source"),
+        }
+        for r in rows
+    ]
+    (report_dir / "internal_economy.json").write_text(
+        json.dumps(ie_data, indent=2, default=str), encoding="utf-8"
+    )
+
+    # ── gencoin_calibration.json ──────────────────────────────────────────────
+    gc_data = [
+        {
+            "task_id": r["task_id"],
+            "gencoin_calibration_layer": r.get("gencoin_calibration_layer"),
+            "gencoin_basis": r.get("gencoin_basis"),
+            "source_law_satisfied": r.get("source_law_satisfied"),
+        }
+        for r in rows
+    ]
+    (report_dir / "gencoin_calibration.json").write_text(
+        json.dumps(gc_data, indent=2, default=str), encoding="utf-8"
+    )
+
+    # ── readable_report.json (PowerShell-safe, no case-dup keys) ─────────────
+    oie_idx: dict = {
+        "OSCA_geomean_x": summary.get("osca_ratio"),
+        "OSCA_basis": summary.get("osca_basis"),
+        "OAPI_portfolio_x": summary.get("oapi_ratio"),
+        "OAPI_basis": summary.get("oapi_basis"),
+        "ODPI_portfolio_x": summary.get("odpi_ratio"),
+        "ODPI_basis": summary.get("odpi_basis"),
+        "claimable": summary.get("oie_indices_claimable"),
+    }
+    cm = summary.get("oie_claim_matrix", {}) or {}
+    bridge = summary.get("oie_gencoin_bridge", {}) or {}
+    lineage = summary.get("oie_source_lineage", {}) or {}
+    dual_lane_table = [
+        {
+            "task_id": r.get("task_id"),
+            "family": r.get("family"),
+            "obsidia_exec_mode": (r.get("dual_lane") or {}).get("obsidia_lane", {}).get("execution_mode"),
+            "gemini_exec_mode": (r.get("dual_lane") or {}).get("gemini_lane", {}).get("execution_mode"),
+            "comparison_scope": (r.get("dual_lane") or {}).get("comparison_scope"),
+            "comparison_claimable": (r.get("dual_lane") or {}).get("comparison_claimable"),
+            "obsidia_route_match": r.get("obsidia_route_match"),
+            "gemini_route_match": r.get("gemini_route_match"),
+            "model_avoided": r.get("obsidia_model_call_avoided"),
+        }
+        for r in rows
+    ]
+    readable: dict = {
+        "report_version": "V0.7.1",
+        "benchmark_date": summary.get("benchmark_date"),
+        "tasks_attempted": summary.get("tasks_attempted"),
+        "governance_clean": summary.get("governance_clean"),
+        "obsidia_route_accuracy": summary.get("obsidia_route_accuracy"),
+        "gemini_route_accuracy": summary.get("gemini_route_accuracy"),
+        "avg_speedup_ratio": summary.get("avg_speedup_ratio"),
+        "model_call_avoided_count": summary.get("obsidia_model_call_avoided_count"),
+        "cost_comparison_claimable_global": summary.get("cost_comparison_claimable_global"),
+        "available_surface_count": summary.get("available_surface_count"),
+        "adapter_missing_count": summary.get("adapter_missing_count"),
+        "intellectual_value_avg": summary.get("intellectual_value_avg"),
+        "gencoin_mode": summary.get("gencoin_mode"),
+        "gencoin_total_emission": summary.get("gencoin_total_emission"),
+        "source_law_global_satisfied": summary.get("source_law_global_satisfied"),
+        "oie_osca_x": oie_idx.get("OSCA_geomean_x"),
+        "oie_oapi_x": oie_idx.get("OAPI_portfolio_x"),
+        "oie_odpi_x": oie_idx.get("ODPI_portfolio_x"),
+        "oie_import_ok": _OIE_IMPORT_OK,
+        "oie_freeze_found": _OIE_FREEZE_FOUND,
+        "claim_functional": cm.get("functional_claimable_count"),
+        "claim_route": cm.get("route_claimable_count"),
+        "claim_domain": cm.get("domain_claimable_count"),
+        "claim_cost": cm.get("cost_claimable_count"),
+        "claim_adapter_missing_non_claimable": cm.get("adapter_missing_non_claimable_count"),
+        "gencoin_emission_claimable": cm.get("gencoin_emission_claimable"),
+        "gencoin_bridge_mode": bridge.get("gencoin_mode"),
+        "gencoin_bridge_source_law": bridge.get("source_law_satisfied"),
+        "lineage_base_commit": lineage.get("base_audit_commit"),
+        "lineage_oie_v01_commit": lineage.get("oie_v01_commit_candidate"),
+        "lineage_freeze_name": lineage.get("freeze_name"),
+        "dual_lane_table": dual_lane_table,
+        "obsidia_live_read": {
+            "requested_mode": summary.get("obsidia_live_adapter_summary", {}).get("requested_mode"),
+            "api_base": _OBSIDIA_API_BASE,
+            "kernel_target": _OBSIDIA_KERNEL_URL,
+            "live_local_available_global": _LIVE_LOCAL_AVAILABLE,
+            "live_local_rows_count": summary.get("obsidia_live_adapter_summary", {}).get("live_local_rows_count", 0),
+            "bridge_kernel_unreachable_count": summary.get("obsidia_live_adapter_summary", {}).get("bridge_kernel_unreachable_count", 0),
+            "frozen_fallback_rows_count": summary.get("obsidia_live_adapter_summary", {}).get("frozen_fallback_rows_count", 0),
+            "adapter_missing_rows_count": summary.get("obsidia_live_adapter_summary", {}).get("adapter_missing_rows_count", 0),
+            "live_families": _LIVE_LOCAL_USABLE_FAMILIES,
+            "fallback_families": _LIVE_LOCAL_UNAVAILABLE_FAMILIES,
+            "missing_families": _ADAPTER_MISSING_FAMILIES_LIVE,
+        },
+    }
+    readable_dup = find_case_insensitive_duplicate_keys(readable)
+    if readable_dup:
+        readable["_warnings_case_dup_keys"] = readable_dup
+    (report_dir / "readable_report.json").write_text(
+        json.dumps(readable, indent=2, default=str), encoding="utf-8"
+    )
+
+    # ── summary.md (11 sections) ──────────────────────────────────────────────
+    n = len(rows)
+    wired_acc = summary.get("obsidia_wired_surface_accuracy")
+    gem_wired = summary.get("gemini_on_obsidia_wired_surface_accuracy")
+    delta_wired = summary.get("obsidia_vs_gemini_wired_surface_delta")
+    gem_missing = summary.get("gemini_on_adapter_missing_surface_accuracy")
+    wired_n = summary.get("obsidia_wired_surface_count", 4)
+    missing_n = summary.get("adapter_missing_surface_count", 3)
+
+    md: list[str] = []
+
+    # §1 Executive Read
+    md += [
+        "# OIE Power Benchmark V0.7.1 — Runtime Summary",
+        "",
+        "## §1 Executive Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| Date | {summary.get('benchmark_date')} |",
+        f"| Tasks | {summary.get('tasks_attempted')} |",
+        f"| Governance clean | {summary.get('governance_clean')} |",
+        f"| Obsidia route accuracy (all) | {summary.get('obsidia_route_accuracy')} |",
+        f"| Obsidia route accuracy (wired only) | {wired_acc} ({wired_n}/7 familles) |",
+        f"| Gemini route accuracy (all) | {summary.get('gemini_route_accuracy')} |",
+        f"| Avg speedup ratio | {summary.get('avg_speedup_ratio')} |",
+        f"| Model call avoided | {summary.get('obsidia_model_call_avoided_count')}/{n} |",
+        f"| Cost comparison claimable | {summary.get('cost_comparison_claimable_global')} (LOCAL_PROXY_UNCALIBRATED) |",
+        f"| OSCA | {oie_idx.get('OSCA_geomean_x')}x |",
+        f"| OAPI | {oie_idx.get('OAPI_portfolio_x')}x |",
+        f"| ODPI | {oie_idx.get('ODPI_portfolio_x')}x |",
+        "",
+    ]
+
+    # §2 Benchmark Context
+    md += [
+        "## §2 Benchmark Context",
+        "",
+        f"- Version: {BENCHMARK_VERSION}",
+        f"- OIE import native: {_OIE_IMPORT_OK}",
+        f"- OIE freeze found: {_OIE_FREEZE_FOUND} ({_OIE_FREEZE_NAME})",
+        f"- LIVE_LOCAL available: {_LIVE_LOCAL_AVAILABLE}  (sonde API {_OBSIDIA_API_BASE}/api/status au démarrage)",
+        f"- Live usable families: {_LIVE_LOCAL_USABLE_FAMILIES or 'none'}",
+        f"- Adapter missing families: {_ADAPTER_MISSING_FAMILIES_LIVE}",
+        f"- Cost basis Obsidia: {COST_BASIS_LOCAL_PROXY}",
+        f"- Gencoin mode: {summary.get('gencoin_mode')}  (CALIBRATION_ONLY, émission=0)",
+        f"- Governance: EMITS_ACT={EMITS_ACT} | MEMORY_WRITE={MEMORY_WRITE} | "
+        f"KERNEL_MUTATION={KERNEL_MUTATION} | DECISION_AUTHORITY={DECISION_AUTHORITY}",
+        "",
+    ]
+
+    # §3 Dual Lane Comparison
+    md += [
+        "## §3 Dual Lane Comparison",
+        "",
+        "| family | obs_exec_mode | gem_exec_mode | scope | obs_match | gem_match | claimable | model_avoided |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in rows:
+        dl = r.get("dual_lane") or {}
+        ol = dl.get("obsidia_lane") or {}
+        gl = dl.get("gemini_lane") or {}
+        md.append(
+            f"| {r.get('family')} | {ol.get('execution_mode')} | {gl.get('execution_mode')} "
+            f"| {dl.get('comparison_scope')} | {ol.get('route_match')} | {gl.get('route_match')} "
+            f"| {dl.get('comparison_claimable')} | {r.get('obsidia_model_call_avoided')} |"
+        )
+    md += [""]
+
+    # §4 Claimability Matrix
+    md += [
+        "## §4 Claimability Matrix",
+        "",
+        f"| Type | Count | Basis |",
+        f"| --- | --- | --- |",
+        f"| Route claimable | {cm.get('route_claimable_count')}/{n} | Wired surface only |",
+        f"| Functional claimable | {cm.get('functional_claimable_count')}/{n} | Wired surface only |",
+        f"| Domain claimable | {cm.get('domain_claimable_count')}/{n} | Wired surface only |",
+        f"| Cost claimable | {cm.get('cost_claimable_count')}/{n} | Always False — LOCAL_PROXY_UNCALIBRATED |",
+        f"| Adapter missing non-claimable | {cm.get('adapter_missing_non_claimable_count')}/{n} | BRODY, OBSIDURE, LEAN |",
+        f"| Gencoin emission claimable | {cm.get('gencoin_emission_claimable')} | CALIBRATION_ONLY |",
+        "",
+        f"> {summary.get('cost_claim_warning')}",
+        "",
+    ]
+
+    # §5 Wired Surface Read
+    md += [
+        "## §5 Wired Surface Read",
+        "",
+        f"- Familles branchées ({wired_n}/7) : FAST_PATH, BANK, TRADING, GPS",
+        f"- Obsidia wired surface accuracy : {wired_acc}",
+        f"- Gemini on wired surface : {gem_wired}",
+        f"- Obsidia vs Gemini delta (wired) : {delta_wired}",
+        "",
+        f"> {summary.get('wired_surface_claim')}",
+        "",
+    ]
+
+    # §6 Adapter Missing Read
+    md += [
+        "## §6 Adapter Missing Read",
+        "",
+        f"- Familles ADAPTER_MISSING ({missing_n}/7) : BRODY, OBSIDURE, LEAN",
+        f"- Gemini accuracy sur ces familles : {gem_missing}",
+        f"- Ces familles NE comptent PAS dans les revendications fonctionnelles Obsidia.",
+        "",
+        f"> **WARNING** — {summary.get('adapter_missing_warning')}",
+        "",
+    ]
+
+    # §7 OIE Indices
+    md += [
+        "## §7 OIE Indices",
+        "",
+        f"| Indice | Valeur | Base |",
+        f"| --- | --- | --- |",
+        f"| OSCA (geomean all families) | {oie_idx.get('OSCA_geomean_x')}x | {oie_idx.get('OSCA_basis')} |",
+        f"| OAPI (portfolio actions) | {oie_idx.get('OAPI_portfolio_x')}x | {oie_idx.get('OAPI_basis')} |",
+        f"| ODPI (portfolio domains) | {oie_idx.get('ODPI_portfolio_x')}x | {oie_idx.get('ODPI_basis')} |",
+        f"| Claimable | {oie_idx.get('claimable')} | proxy baseline, not real billing |",
+        "",
+        "**DCA par domaine :**",
+        "",
+        "| domain | dca_api_normal | dca_agentic | rows |",
+        "| --- | --- | --- | --- |",
+    ]
+    for k, d in (summary.get("dca_by_domain") or {}).items():
+        md.append(f"| {k} | {d} | — | — |")
+    if not (summary.get("dca_by_domain")):
+        for k, d in (summary.get("domain_summary") or {}).items():
+            md.append(
+                f"| {d.get('domain_name', k)} | {d.get('dca_api_normal')} "
+                f"| {d.get('dca_agentic')} | {d.get('total_receipts') or d.get('total_rows', 0)} |"
+            )
+    md += [
+        "",
+        "> WARNING: DCA/OSCA/OAPI/ODPI sont des métriques proxy baseline, pas de la facturation réelle.",
+        "",
+    ]
+
+    # §8 OIE Source Lineage
+    md += [
+        "## §8 OIE Source Lineage",
+        "",
+        f"- base_audit_commit: {lineage.get('base_audit_commit', _OIE_SOURCE_LINEAGE.get('base_audit_commit'))}",
+        f"- oie_v01_commit_candidate: {lineage.get('oie_v01_commit_candidate', _OIE_SOURCE_LINEAGE.get('oie_v01_commit_candidate'))}",
+        f"- freeze_name: {lineage.get('freeze_name', _OIE_FREEZE_NAME)}",
+        f"- freeze_found: {_OIE_FREEZE_FOUND}",
+        f"- engine_spec: {_OIE_SOURCE_DOCUMENTS.get('engine_spec')}",
+        f"- external_api_protocol: {_OIE_SOURCE_DOCUMENTS.get('external_api_protocol')}",
+        f"- portfolio_benchmark: {_OIE_SOURCE_DOCUMENTS.get('portfolio_benchmark')}",
+        f"- cost_receipt_schema: {_OIE_SOURCE_DOCUMENTS.get('cost_receipt_schema')}",
+        f"- oie_import_native: {_OIE_IMPORT_OK}",
+        "",
+    ]
+
+    # §9 Internal Economy / Gencoin
+    md += [
+        "## §9 Internal Economy / Gencoin",
+        "",
+        f"- intellectual_value_avg: {summary.get('intellectual_value_avg')}",
+        f"- debt_total: {summary.get('internal_economy_debt_total')}",
+        f"- energy_source: {summary.get('energy_source')}",
+        f"- gencoin_mode: {summary.get('gencoin_mode')}",
+        f"- gencoin_total_emission: {summary.get('gencoin_total_emission')}  (INTERDIT > 0 en calibration)",
+        f"- source_law_global_satisfied: {summary.get('source_law_global_satisfied')}",
+        f"- gencoin_oie_can_measure_value: {bridge.get('oie_can_measure_value')}",
+        f"- gencoin_oie_cannot_emit_value: {bridge.get('oie_cannot_emit_value')}",
+        "",
+        f"> {summary.get('source_law_global_reason')}",
+        "",
+    ]
+
+    # §10 Route Comparison (pair par pair)
+    md += [
+        "## §10 Route Comparison — Pair par Pair",
+        "",
+        f"> {summary.get('global_route_accuracy_warning')}",
+        "",
+        "| family | expected_route | obs_route | gem_route | obs_match | gem_match | obs_status | paired_outcome | claimable |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in rows:
+        md.append(
+            f"| {r.get('family')} | {r.get('expected_route')} "
+            f"| {r.get('obsidia_detected_route')} | {r.get('gemini_detected_route')} "
+            f"| {r.get('obsidia_route_match')} | {r.get('gemini_route_match')} "
+            f"| {r.get('obsidia_status')} | {r.get('paired_route_outcome')} "
+            f"| {r.get('route_accuracy_claimable')} |"
+        )
+    md += [
+        "",
+        f"- Audit-safe claims:",
+        *[f"  - {c}" for c in (summary.get("audit_safe_claims") or [])],
+        "",
+    ]
+
+    # §10b Obsidia Live Local Read
+    live_sum = summary.get("obsidia_live_adapter_summary", {}) or {}
+    live_registry = summary.get("obsidia_live_adapter_registry", {}) or {}
+    md += [
+        "## §10b Obsidia Live Local Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| API base | {_OBSIDIA_API_BASE} |",
+        f"| Kernel target | {_OBSIDIA_KERNEL_URL} |",
+        f"| Requested mode | {live_sum.get('requested_mode', 'AUTO')} |",
+        f"| LIVE_LOCAL available (global) | {live_sum.get('live_local_available_global', False)} |",
+        f"| Adapters found | {live_sum.get('adapters_found_count', 0)}/7 |",
+        f"| Adapters usable for LIVE_LOCAL | {live_sum.get('usable_live_count', 0)}/7 |",
+        f"| LIVE_LOCAL rows | {live_sum.get('live_local_rows_count', 0)} |",
+        f"| Bridge attempted, kernel unreachable | {live_sum.get('bridge_kernel_unreachable_count', 0)} |",
+        f"| Frozen fallback rows | {live_sum.get('frozen_fallback_rows_count', 0)} |",
+        f"| Adapter missing rows | {live_sum.get('adapter_missing_rows_count', 0)} |",
+        f"| Live usable families | {live_sum.get('live_local_usable_families', [])} |",
+        f"| Fallback families | {live_sum.get('live_local_unavailable_families', [])} |",
+        f"| Adapter missing families | {live_sum.get('adapter_missing_families', [])} |",
+        "",
+        "**Registry par famille :**",
+        "",
+        "| family | adapter_found | usable_live | adapter_type | endpoint | fallback_used | reason |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for fam in ("FAST_PATH", "BANK", "TRADING", "GPS", "BRODY", "OBSIDURE", "LEAN"):
+        reg_entry = live_registry.get(fam, {})
+        matching_row = next((r for r in rows if r.get("family") == fam), None)
+        fallback_val = matching_row.get("obsidia_fallback_used") if matching_row else "N/A"
+        md.append(
+            f"| {fam} | {reg_entry.get('adapter_found')} | {reg_entry.get('usable_for_live_local')} "
+            f"| {reg_entry.get('adapter_type', 'NONE')} | {reg_entry.get('bridge_path') or 'none'} "
+            f"| {fallback_val} | {(reg_entry.get('reason_if_not_usable') or 'usable')[:60]} |"
+        )
+    live_count = live_sum.get("live_local_rows_count", 0)
+    kernel_err_count = live_sum.get("bridge_kernel_unreachable_count", 0)
+    md += [
+        "",
+    ]
+    if live_count == 0 and kernel_err_count == 0:
+        if not _LIVE_LOCAL_AVAILABLE:
+            md.append("> **LIVE_LOCAL rows = 0** : L'API 8000 est inaccessible au démarrage du benchmark — aucun bridge live tenté. Fallback sur FROZEN_V0_ESTIMATE pour toutes les familles branchées.")
+        else:
+            md.append("> **LIVE_LOCAL rows = 0** : Le mode OIE_OBSIDIA_EXECUTION_MODE n'est pas LIVE_LOCAL ou LIVE_LOCAL_OR_FROZEN.")
+    elif kernel_err_count > 0:
+        md.append(f"> **Bridge tenté, kernel 3001 inaccessible** : {kernel_err_count} row(s) ont tenté le bridge live mais le kernel {_OBSIDIA_KERNEL_URL} n'a pas répondu. Ce n'est pas ADAPTER_MISSING — la route API est confirmée, le kernel seul est down.")
+    else:
+        md.append(f"> **LIVE_LOCAL_BRIDGE confirmé** : {live_count} row(s) exécutées via le bridge live API 8000 → kernel 3001.")
+    md += [""]
+
+    # §11 Missing / Next Work
+    md += [
+        "## §11 Missing / Next Work",
+        "",
+        "- [ ] BRODY adapter live — brancher `run_obsidia_local_actual()` réelle pour BRODY",
+        "- [ ] OBSIDURE adapter live — brancher pour OBSIDURE",
+        "- [ ] LEAN adapter live — brancher pour LEAN",
+        f"- [ ] LIVE_LOCAL — démarrer l'API 8000 (`uvicorn apps.obsidia_api.main:app`) + kernel 3001 pour activer les bridges (actuellement api_up={_LIVE_LOCAL_AVAILABLE})",
+        "- [ ] Cost measurement réel — remplacer `LOCAL_PROXY_UNCALIBRATED` par SDK billing",
+        "- [ ] Gencoin source law — satisfaire conditions réelles avant `source_law_satisfied=True`",
+        "- [ ] OIE indices calibration réelle — remplacer proxy par données runtime mesurées",
+        "",
+    ]
+
+    (report_dir / "summary.md").write_text("\n".join(md), encoding="utf-8")
+
+
+# ── Protocol doc (Phase 7) ────────────────────────────────────────────────────
 
 _REQUIRED_PHRASES = [
     "Gemini is inference power. Obsidia is routing, governance, proof, and inference avoidance power.",
@@ -944,8 +3313,134 @@ _INVALID_CLAIMS = [
 ]
 
 
+def write_protocol_doc() -> Path:
+    """Ecrire le protocole statique dans docs/audits (une fois, pas a chaque run)."""
+    doc_path = _REPO_ROOT / "docs" / "audits" / "OBSIDIA_OIE_POWER_METRICS_PROTOCOL_V0_7.md"
+    doc_path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# OBSIDIA OIE Power Metrics — Protocole V0.7",
+        "",
+        "> " + _REQUIRED_PHRASES[0],
+        "",
+        "> " + _REQUIRED_PHRASES[1],
+        "",
+        "---",
+        "",
+        "## 1. Cout mesure vs cout proxy",
+        "",
+        f"- `obsidia_cost_basis = {COST_BASIS_LOCAL_PROXY}`",
+        "  Le cout Obsidia est une estimation proxy basee sur l'architecture.",
+        "  Il ne correspond pas a une facture provider reelle.",
+        "  Formula : " + COST_PROXY_FORMULA,
+        f"- `gemini_cost_basis = {COST_BASIS_SDK_MEASURED}` en mode REAL avec usage SDK.",
+        "- `cost_comparison_claimable = False` tant que les deux bases sont differentes.",
+        f"- Warning : {COST_PROXY_WARNING}",
+        "",
+        "---",
+        "",
+        "## 2. Economie d'inference",
+        "",
+        "- `model_call_avoided = True` : Obsidia route sans appel LLM.",
+        "- `available_surface` : familles ou Obsidia fonctionne sans ADAPTER_MISSING.",
+        f"  Familles : {sorted(AVAILABLE_SURFACE_FAMILIES)}",
+        f"- `adapter_missing_families` : {sorted(ADAPTER_MISSING_FAMILIES)}",
+        "  Ces familles sont EXCLUES des victoires fonctionnelles.",
+        "- `external_dependency_reduction_score = 1.0` si model_call_avoided=True.",
+        "",
+        "---",
+        "",
+        "## 3. Economie intellectuelle (CALIBRATION_ONLY)",
+        "",
+        f"- `intellectual_economy_basis = {IE_BASIS}`",
+        "- Scores calibration : cognitive_value, proof_quality, stability_value,",
+        "  reusability, governance_value, risk_reduction, friction_reduction,",
+        "  external_dependency_reduction, auditability, debt.",
+        "- Formule CV (PROVISIONAL_CALIBRATION_ONLY) :",
+        "  CV = wN*novelty + wU*utility + wC*coherence + wR*risk_reduction",
+        "       + wReuse*reusability + wP*proof_quality - debt",
+        f"  Poids source : {_CV_WEIGHT_SOURCE}",
+        f"  Reference code : apps/obsidia_api/brody_gencoin_cognitive_ledger.py",
+        "- V(x) ∝ 1/(L(x) + epsilon) : doctrine uniquement, non implementee.",
+        "",
+        "---",
+        "",
+        "## 4. Gencoin — CALIBRATION_ONLY",
+        "",
+        f"- `gencoin_mode = {GENCOIN_MODE}`",
+        "- Aucune emission. Aucun token reel. Aucune valeur de marche.",
+        "- Aucune distribution. Aucun wallet. Aucune blockchain.",
+        "- `gencoin_emission_allowed = False` — invariant.",
+        "- `gencoin_emission_amount = 0` — toujours zero.",
+        f"- `gencoin_distribution_mode = {GENCOIN_DISTRIBUTION_MODE}`",
+        "- Source law : non satisfaite en calibration benchmark.",
+        "",
+        "---",
+        "",
+        "## 5. Source law",
+        "",
+        "- Source law est satisfaite uniquement si :",
+        "  - Preuve disponible (non ADAPTER_MISSING)",
+        "  - Gouvernance propre (emits_act=False, memory_write=False)",
+        "  - coherence_score >= 0.8",
+        "  - utility_score > 0.5",
+        "  - Mode REEL (non calibration)",
+        "- En benchmark CALIBRATION_ONLY : source_law_satisfied = False toujours.",
+        "",
+        "---",
+        "",
+        "## 6. Debt",
+        "",
+        "- `debt_score` augmente si :",
+        "  - ADAPTER_MISSING : +0.50",
+        "  - Cout proxy non calibre : +0.20 (toujours dans benchmark)",
+        "  - Preuve manquante (ADAPTER_MISSING) : +0.20",
+        "",
+        "---",
+        "",
+        "## 7. Available surface",
+        "",
+        f"- Familles disponibles : {sorted(AVAILABLE_SURFACE_FAMILIES)}",
+        f"- Familles ADAPTER_MISSING : {sorted(ADAPTER_MISSING_FAMILIES)}",
+        "- BRODY, OBSIDURE, LEAN doivent etre exclues des victoires fonctionnelles.",
+        "- `adapter_missing_excluded_from_functional_victory = True`",
+        "",
+        "---",
+        "",
+        "## 8. Energie — proxy uniquement",
+        "",
+        "> " + _REQUIRED_PHRASES[2],
+        "",
+        "- Variables env : OIE_EXTERNAL_ENERGY_WH_PER_1K_TOKENS,",
+        "  OIE_LOCAL_POWER_W, OIE_CARBON_GCO2_PER_KWH.",
+        "- Sans ces variables : energy_source = ENERGY_PROXY_UNAVAILABLE.",
+        "",
+        "---",
+        "",
+        "## 9. Claims invalides",
+        "",
+        *[f"- INTERDIT : \"{c}\"" for c in _INVALID_CLAIMS],
+        "- INTERDIT : Ce benchmark prouve que Obsidia est moins cher en production.",
+        "- INTERDIT : Le cout Obsidia est mesure.",
+        "- INTERDIT : Gencoin a emis des tokens dans ce benchmark.",
+        "",
+        "---",
+        "",
+        "## 10. Rapports runtime",
+        "",
+        "- Rapports runtime : `.local_reports/OIE_POWER_BENCHMARK_V0_7_1_<timestamp>/`",
+        "  - `results.json` — rows comparaison par famille",
+        "  - `summary.json` — summary global",
+        "  - `internal_economy.json` — scores economie intellectuelle",
+        "  - `gencoin_calibration.json` — layer Gencoin calibration",
+        "  - `summary.md` — rapport lisible",
+        "- Ce document est le seul fichier statique dans docs/audits.",
+    ]
+    doc_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return doc_path
+
+
 def generate_report(summary: dict, rows: list[dict]) -> str:
-    """Generer le rapport Markdown V0.7."""
+    """Generer le rapport Markdown V0.7 pour affichage inline."""
     lines: list[str] = []
 
     def h(n: int, t: str) -> None:
@@ -971,7 +3466,7 @@ def generate_report(summary: dict, rows: list[dict]) -> str:
     h(1, "OBSIDIA OIE — Power Benchmark V0.7 : Obsidia vs Gemini")
     p(f"**Date :** {BENCHMARK_DATE}")
     p(f"**Version :** {BENCHMARK_VERSION}")
-    p(f"**Statut :** dry-run (valeurs figees V0.5.1) — run reel necessite GEMINI_API_KEY + ALLOW_NETWORK")
+    p(f"**Statut :** dry-run — run reel necessite GEMINI_API_KEY + ALLOW_NETWORK")
     p(f"**Autorite :** {summary['decision_authority']} — OIE non souverain")
     p("---")
 
@@ -985,227 +3480,293 @@ def generate_report(summary: dict, rows: list[dict]) -> str:
     p(f"- Gemini route accuracy  : {_fmt(summary['gemini_route_accuracy'], 2)}")
     p(f"- Model call avoided     : {summary['obsidia_model_call_avoided_count']}/{summary['tasks_attempted']}")
     p(f"- Governance clean       : {summary['governance_clean']}")
+    p(f"- Cost comparison claimable : {summary['cost_comparison_claimable_global']}")
+    p(f"- Gencoin mode           : {summary['gencoin_mode']}")
     p("---")
 
     h(2, "2. Pourquoi les benchmarks precedents etaient insuffisants")
-    p("Les benchmarks V0.2–V0.5.1 mesuraient principalement :")
-    p("- `route_match` et `cost_source` par receipt individuel")
     p("- Pas de vision globale speed / energy / throughput / work avoidance")
-    p("- Pas de `safe_decisions_per_second`, `decisions_per_wh`, `decisions_per_cost_unit`")
-    p("- Pas de colonne `winner_*` par famille")
-    p("- Pas de rapport energie / carbone")
-    p("V0.7 reunit toutes ces dimensions dans une seule table comparative par famille.")
+    p("- Pas de cost_basis distinction (mesure vs proxy)")
+    p("- Pas de available_surface vs adapter_missing surfaces")
+    p("- Pas d'economie intellectuelle (cognitive, proof, stability, risk)")
+    p("- Pas de Gencoin calibration layer")
+    p("V0.7.1 reunit toutes ces dimensions.")
     p("---")
 
-    h(2, "3. Architecture : deux lanes sur les memes 7 familles")
+    h(2, "3. Architecture : deux lanes, 7 familles")
     table(
-        ["Lane", "Mode", "Reseau", "Modele"],
+        ["Lane", "Mode", "Status"],
         [
-            ["OBSIDIA_LOCAL_ACTUAL", "FROZEN_V0_ESTIMATE / REAL_ADAPTER / ADAPTER_MISSING", "Non", "deterministe"],
-            ["GEMINI_SDK_EXTERNAL", "DRY_RUN_MOCK / REAL_SDK", "Optionnel", "gemini-2.0-flash-lite"],
+            ["OBSIDIA_LOCAL_ACTUAL", "FROZEN_V0/REAL/ADAPTER_MISSING", COST_BASIS_LOCAL_PROXY],
+            ["GEMINI_SDK_EXTERNAL", "DRY_RUN_MOCK / REAL_SDK", COST_BASIS_DRY_RUN_MOCK],
         ]
     )
-    p("> " + _REQUIRED_PHRASES[2])
-    p("---")
 
     h(2, "4. Speed metrics")
     table(
-        ["family", "obs_lat_ms", "gem_lat_ms", "lat_delta_pct", "speedup_ratio", "winner"],
-        [
-            [r["family"], _fmt(r["obsidia_latency_ms"]), _fmt(r["gemini_latency_ms"]),
-             _fmt(r["latency_delta_pct"], 2), _fmt(r["speedup_ratio"], 2), r["winner_speed"]]
-            for r in rows
-        ]
+        ["family", "obs_lat_ms", "gem_lat_ms", "speedup", "winner"],
+        [[r["family"], _fmt(r["obsidia_latency_ms"]), _fmt(r["gemini_latency_ms"]),
+          _fmt(r["speedup_ratio"], 2), r["winner_speed"]] for r in rows]
     )
     p(f"Moyenne speedup : {_fmt(summary['avg_speedup_ratio'], 2)}x")
-    p(f"Moyenne latency delta pct : {_fmt(summary['avg_latency_delta_pct'], 2)}%")
     p("---")
 
-    h(2, "5. Cost metrics")
+    h(2, "5. Cost metrics (PROXY vs MEASURED)")
+    p(f"> {summary.get('cost_claim_warning')}")
+    p(f"> **NON_CLAIMABLE** — cost_comparison_claimable_global = {summary.get('cost_comparison_claimable_global')}")
+    p("> Cost comparison not claimable until Obsidia local cost is measured or calibrated.")
     table(
-        ["family", "obs_cost_req", "gem_cost_req", "avoided_cost", "cost_sr", "winner"],
-        [
-            [r["family"], _fmt(r["obsidia_cost_per_request_est"], 8),
-             _fmt(r["gemini_cost_per_request_measured"], 8),
-             _fmt(r["avoided_cost_per_request"], 8),
-             _fmt(r["cost_savings_ratio"], 2), r["winner_cost"]]
-            for r in rows
-        ]
+        ["family", "obs_basis", "gem_basis", "comparable", "winner_cost_status"],
+        [[r["family"], r.get("obsidia_cost_basis"), r.get("gemini_cost_basis"),
+          str(r.get("cost_comparison_claimable")),
+          "NON_CLAIMABLE" if not r.get("cost_comparison_claimable") else r.get("winner_cost")] for r in rows]
     )
-    p(f"Total cost Gemini : {_fmt(summary['gemini_total_cost_measured'], 8)} EUR")
-    p(f"Total cost Obsidia est : {_fmt(summary['obsidia_total_cost_est'], 8)} EUR")
-    p(f"Total avoided cost : {_fmt(summary['total_avoided_cost'], 8)} EUR")
-    p("Note : cout Gemini mesure seulement si REAL mode + prix env fournis.")
     p("---")
 
     h(2, "6. Energy metrics")
-    table(
-        ["family", "obs_wh", "gem_wh", "avoided_wh", "energy_sr", "winner"],
-        [
-            [r["family"],
-             _fmt(r.get("obsidia_energy_wh_est"), 8),
-             _fmt(r.get("gemini_energy_wh_est"), 8),
-             _fmt(r.get("energy_avoided_wh"), 8),
-             _fmt(r.get("energy_savings_ratio"), 2),
-             r.get("winner_energy", "UNKNOWN")]
-            for r in rows
-        ]
-    )
+    p("> " + _REQUIRED_PHRASES[2])
     p(f"Source energie : {summary['energy_source']}")
-    p("Activer avec : OIE_EXTERNAL_ENERGY_WH_PER_1K_TOKENS + OIE_LOCAL_POWER_W + OIE_CARBON_GCO2_PER_KWH")
     p("---")
 
-    h(2, "7. Power / capacity metrics")
-    table(
-        ["family", "obs_safe_dps", "gem_safe_dps", "obs_dpc", "gem_dpc"],
-        [
-            [r["family"],
-             _fmt(r.get("safe_decisions_per_second_obsidia"), 3),
-             _fmt(r.get("safe_decisions_per_second_gemini"), 3),
-             _fmt(r.get("decisions_per_cost_unit_obsidia"), 2),
-             _fmt(r.get("decisions_per_cost_unit_gemini"), 2)]
-            for r in rows
-        ]
-    )
-    p("safe_decisions_per_second = throughput * quality_score * boundary_ok")
-    p("decisions_per_cost_unit = 1 / cost_per_request")
-    p("---")
-
-    h(2, "8. Context economy")
-    table(
-        ["family", "obs_tok", "gem_tok", "tok_delta_abs", "tok_delta_pct", "ext_dep_ratio"],
-        [
-            [r["family"],
-             r.get("obsidia_estimated_total_tokens"),
-             r.get("gemini_total_tokens"),
-             r.get("token_delta_abs"),
-             _fmt(r.get("token_delta_pct"), 2),
-             _fmt(r.get("external_token_dependency_ratio"), 2)]
-            for r in rows
-        ]
-    )
-    p(f"Total Obsidia tokens est : {summary['obsidia_total_estimated_tokens']}")
-    p(f"Total Gemini tokens : {summary['gemini_total_tokens']}")
-    p("---")
-
-    h(2, "9. Work avoidance")
-    table(
-        ["family", "model_avoided", "modules_skipped", "cache_hit", "obs_status"],
-        [
-            [r["family"],
-             r.get("obsidia_model_call_avoided"),
-             r.get("obsidia_modules_skipped"),
-             r.get("obsidia_cache_hit"),
-             r.get("obsidia_status")]
-            for r in rows
-        ]
-    )
-    p(f"model_call_avoided total : {summary['obsidia_model_call_avoided_count']}/{summary['tasks_attempted']}")
-    p(f"model_call_avoided_rate : {_fmt(summary['obsidia_model_call_avoided_rate'], 2)}")
-    p(f"modules_skipped total : {summary['obsidia_modules_skipped_total']}")
-    p(f"cache_hit_ratio : {_fmt(summary['obsidia_cache_hit_ratio'], 2)}")
-    p(f"Frozen V0 warm gains : graphiti={FROZEN_GRAPHITI_WARM_GAIN_RATIO}x, loader={FROZEN_LOADER_WARM_GAIN_RATIO}x")
-    p("---")
-
-    h(2, "10. Inference avoidance")
-    p("Familles ou Obsidia evite l'appel LLM (model_call_avoided=True) :")
-    for r in rows:
-        if r.get("obsidia_model_call_avoided"):
-            p(f"- **{r['family']}** : Obsidia decide de facon deterministe.")
+    h(2, "7. Available surface — Work avoidance / Inférence évitée")
+    p(f"Familles disponibles (obsidia_status != ADAPTER_MISSING) : {summary.get('available_surface_families')}")
+    p(f"Familles ADAPTER_MISSING (exclues victoires fonctionnelles) : {summary.get('adapter_missing_families')}")
+    p(f"adapter_missing_excluded_from_functional_victory : {summary.get('adapter_missing_excluded_from_functional_victory')}")
+    p(f"available_surface_avg_speedup_ratio : {_fmt(summary.get('available_surface_avg_speedup_ratio'), 2)}")
     p("")
-    p("Familles ou Obsidia doit aussi invoquer un modele (model_call_avoided=False) :")
-    for r in rows:
-        if not r.get("obsidia_model_call_avoided"):
-            obs_st = r.get("obsidia_status")
-            p(f"- **{r['family']}** (status={obs_st}) : comparaison latence/cout.")
+    p("### Work avoidance / Travail évité")
+    table(
+        ["family", "model_call_avoided", "modules_skipped", "ext_dep_reduction"],
+        [[r["family"],
+          str(r.get("obsidia_model_call_avoided")),
+          str(r.get("obsidia_modules_skipped")),
+          _fmt(r.get("external_dependency_reduction_score"), 2)] for r in rows]
+    )
+    p(f"model_call_avoided_count : {summary.get('obsidia_model_call_avoided_count')}/{summary.get('tasks_attempted')}")
+    p(f"model_call_avoided_rate  : {_fmt(summary.get('obsidia_model_call_avoided_rate'), 2)}")
+    p(f"modules_skipped_total    : {summary.get('obsidia_modules_skipped_total')}")
+    p("")
+    p("### Inference avoidance / Inférence évitée")
+    p("Obsidia évite l'appel LLM externe sur les familles model_call_avoided=True.")
+    p("external_dependency_reduction_score = 1.0 si model_call_avoided = True.")
+    p("---")
+
+    h(2, "8. Intellectual economy (CALIBRATION_ONLY)")
+    table(
+        ["family", "cognitive", "proof", "stability", "utility", "debt", "iv_score"],
+        [
+            [r["family"],
+             _fmt(r.get("cognitive_value_score"), 2),
+             _fmt(r.get("proof_quality_score"), 2),
+             _fmt(r.get("stability_value_score"), 2),
+             _fmt(r.get("utility_score"), 2),
+             _fmt(r.get("debt_score"), 2),
+             _fmt(r.get("intellectual_value_score"), 2)]
+            for r in rows
+        ]
+    )
+    p(f"intellectual_value_avg : {_fmt(summary.get('intellectual_value_avg'), 2)}")
+    p(f"intellectual_value_available_surface_avg : {_fmt(summary.get('intellectual_value_available_surface_avg'), 2)}")
+    p(f"CV weights source : {_CV_WEIGHT_SOURCE}")
+    p("---")
+
+    h(2, "9. Gencoin (CALIBRATION_ONLY)")
+    p(f"- gencoin_mode : {summary.get('gencoin_mode')}")
+    p(f"- gencoin_emission_enabled : {summary.get('gencoin_emission_enabled')}")
+    p(f"- gencoin_total_emission : {summary.get('gencoin_total_emission')}")
+    p(f"- source_law_global_satisfied : {summary.get('source_law_global_satisfied')}")
+    p(f"- source_law_global_reason : {summary.get('source_law_global_reason')}")
+    p(f"- internal_economy_debt_total : {_fmt(summary.get('internal_economy_debt_total'), 2)}")
+    p("---")
+
+    h(2, "10. Governance / boundary safety")
+    table(
+        ["Propriete", "Valeur"],
+        [
+            ["emits_act", str(EMITS_ACT)],
+            ["memory_write", str(MEMORY_WRITE)],
+            ["kernel_mutation", str(KERNEL_MUTATION)],
+            ["decision_authority", DECISION_AUTHORITY],
+            ["governance_clean (all)", str(summary["governance_clean"])],
+        ]
+    )
     p("---")
 
     h(2, "11. Routing quality")
     table(
-        ["family", "expected", "obs_detected", "gem_detected", "obs_match", "gem_match", "q_delta", "winner"],
-        [
-            [r["family"], r["expected_route"],
-             r.get("obsidia_detected_route"), r.get("gemini_detected_route"),
-             r.get("obsidia_route_match"), r.get("gemini_route_match"),
-             _fmt(r.get("quality_delta"), 2), r.get("winner_route")]
-            for r in rows
-        ]
+        ["family", "expected", "obs_match", "gem_match", "winner"],
+        [[r["family"], r["expected_route"], r.get("obsidia_route_match"),
+          r.get("gemini_route_match"), r.get("winner_route")] for r in rows]
     )
-    p(f"Obsidia quality avg : {_fmt(summary['obsidia_quality_avg'], 2)}")
-    p(f"Gemini quality avg  : {_fmt(summary['gemini_quality_avg'], 2)}")
     p("---")
 
-    h(2, "12. Governance / boundary safety")
+    h(2, "12. Valid claims")
+    for c in (summary.get("audit_safe_claims") or []):
+        p(f"- {c}")
+    p("---")
+
+    h(2, "13. Invalid claims")
+    for c in _INVALID_CLAIMS:
+        p(f"- INTERDIT : \"{c}\"")
+    p("---")
+
+    h(2, "13b. Comparaison routage paire par paire")
+    p(f"> {summary.get('global_route_accuracy_warning')}")
+    p("")
     table(
-        ["Propriete", "Valeur", "Immutable"],
-        [
-            ["emits_act", str(EMITS_ACT), "Oui"],
-            ["memory_write", str(MEMORY_WRITE), "Oui"],
-            ["kernel_mutation", str(KERNEL_MUTATION), "Oui"],
-            ["graphiti_write", str(GRAPHITI_WRITE), "Oui"],
-            ["neo4j_write", str(NEO4J_WRITE), "Oui"],
-            ["secrets_redacted", str(SECRETS_REDACTED), "Oui"],
-            ["decision_authority", DECISION_AUTHORITY, "Oui"],
-        ]
+        ["family", "expected_route", "obsidia_detected_route", "gemini_detected_route",
+         "obsidia_match", "gemini_match", "obsidia_status", "paired_outcome", "claimable"],
+        [[
+            r.get("family"),
+            r.get("expected_route"),
+            r.get("obsidia_detected_route"),
+            r.get("gemini_detected_route"),
+            str(r.get("obsidia_route_match")),
+            str(r.get("gemini_route_match")),
+            r.get("obsidia_status"),
+            r.get("paired_route_outcome"),
+            str(r.get("route_accuracy_claimable")),
+        ] for r in rows]
     )
-    p(f"boundary_safety_pass_rate : {_fmt(summary['obsidia_boundary_safety_pass_rate'], 2)}")
-    p(f"governance_clean (all tasks) : {summary['governance_clean']}")
+    p(f"**Obsidia wired surface accuracy :** {_fmt(summary.get('obsidia_wired_surface_accuracy'), 4)}"
+      f" ({summary.get('obsidia_wired_surface_count')} familles branchées)")
+    p(f"**Gemini on wired surface accuracy :** {_fmt(summary.get('gemini_on_obsidia_wired_surface_accuracy'), 4)}")
+    p(f"**Obsidia vs Gemini delta (wired) :** {_fmt(summary.get('obsidia_vs_gemini_wired_surface_delta'), 4)}")
+    p(f"**Gemini on adapter-missing accuracy :** {_fmt(summary.get('gemini_on_adapter_missing_surface_accuracy'), 4)}"
+      f" ({summary.get('adapter_missing_surface_count')} familles ADAPTER_MISSING)")
+    p("")
+    p(f"> {summary.get('wired_surface_claim')}")
+    p("")
+    p(f"> **WARNING** — {summary.get('adapter_missing_warning')}")
     p("---")
 
-    h(2, "13. Confusion matrix")
-    obs_match_count = sum(1 for r in rows if r.get("obsidia_route_match") is True)
-    gem_match_count = sum(1 for r in rows if r.get("gemini_route_match") is True)
-    both = sum(1 for r in rows if r.get("obsidia_route_match") and r.get("gemini_route_match"))
-    neither = sum(1 for r in rows if not r.get("obsidia_route_match") and not r.get("gemini_route_match"))
-    obs_only = sum(1 for r in rows if r.get("obsidia_route_match") and not r.get("gemini_route_match"))
-    gem_only = sum(1 for r in rows if not r.get("obsidia_route_match") and r.get("gemini_route_match"))
+    h(2, "14. Chemin connu — Known path")
+    p("> Quand la route est connue, prédire devient plus lent que vérifier.")
     table(
-        ["Scenario", "Count"],
-        [
-            ["Obsidia correct ET Gemini correct", both],
-            ["Obsidia correct MAIS Gemini incorrect", obs_only],
-            ["Gemini correct MAIS Obsidia incorrect", gem_only],
-            ["Aucun correct", neither],
-        ]
+        ["family", "known_path_detected", "deterministic_route", "prediction_replaced", "stage", "claimable"],
+        [[
+            r["family"],
+            str(r.get("known_path_detected")),
+            str(r.get("deterministic_route_used")),
+            str(r.get("prediction_replaced_by_verification")),
+            str(r.get("known_path_stage")),
+            str(r.get("known_path_claimable")),
+        ] for r in rows]
     )
-    p("Note : Obsidia ADAPTER_MISSING compte comme route inconnue, pas comme match.")
+    _kp_count = summary.get("known_path_detected_count", 0)
+    _kp_rate = summary.get("known_path_detected_rate")
+    p(f"Known path detected: {_kp_count} / {len(rows)} ({_fmt(_kp_rate, 2) if _kp_rate is not None else 'N/A'} rate)")
     p("---")
 
-    h(2, "14. Per-family comparison")
-    for r in rows:
-        h(3, f"{r['family']} — {r['task_id']}")
-        p(f"- **Interpretation** : {r['final_interpretation']}")
-        p(f"- Speed winner : {r['winner_speed']}")
-        p(f"- Cost winner  : {r['winner_cost']}")
-        p(f"- Route winner : {r['winner_route']}")
-        p(f"- Gov winner   : {r['winner_governance']}")
-        p(f"- Obsidia status : {r.get('obsidia_status')}")
-        p(f"- Gemini status  : {r.get('gemini_status')}")
+    h(2, "15. Nécessité d'inférence — Inference necessity")
+    table(
+        ["family", "obsidia_inf_req", "gemini_inf_req", "inf_delta", "unnecessary_avoided", "ext_dep_avoided"],
+        [[
+            r["family"],
+            str(r.get("obsidia_inference_required")),
+            str(r.get("gemini_inference_required")),
+            str(r.get("inference_necessity_delta")),
+            str(r.get("unnecessary_inference_avoided")),
+            str(r.get("external_dependency_avoided")),
+        ] for r in rows]
+    )
+    p(f"Unnecessary inference avoided: {summary.get('unnecessary_inference_avoided_count', 0)} / {len(rows)}")
+    p(f"External dependency avoided rate: {_fmt(summary.get('external_dependency_avoided_rate'), 2)}")
     p("---")
 
-    h(2, "15. Valid claims")
-    p("- Obsidia evite l'appel LLM pour FAST_PATH, BANK, TRADING, GPS (4/7 familles).")
-    p("- Pour les 4 familles deterministes, Obsidia latence < 100ms vs 300-450ms Gemini.")
-    p("- Obsidia governance garantit emits_act=False, memory_write=False pour toutes les taches.")
-    p("- Le benchmark mesure l'avoidance d'inference, pas la qualite de generation LLM.")
-    p("- Fast Path Graphiti warm path : 868x speedup cache vs cold (frozen V0).")
-    p("- Loader warm path : 11348x speedup (frozen V0 Technical Note).")
+    h(2, "16. Vitesse gouvernée — Governed speed")
+    p("> Obsidia ne gagne pas en vitesse en sacrifiant le contrôle ; la vitesse est mesurée sous KX108_ONLY.")
+    table(
+        ["family", "gov_speedup", "gov_lat_delta_pct", "speed_claimable", "governance_preserved"],
+        [[
+            r["family"],
+            _fmt(r.get("governed_speedup_ratio"), 4),
+            _fmt(r.get("governed_latency_delta_pct"), 2),
+            str(r.get("speed_under_governance_claimable")),
+            str(r.get("governance_preserved_at_speed")),
+        ] for r in rows]
+    )
+    p(f"Governed speedup avg: {_fmt(summary.get('governed_speedup_avg'), 4)}")
+    p(f"Governed speedup median: {_fmt(summary.get('governed_speedup_median'), 4)}")
+    p(f"Governance preserved at speed rate: {_fmt(summary.get('governance_preserved_at_speed_rate'), 2)}")
+    p(f"Claim: {summary.get('governed_speed_claim')}")
     p("---")
 
-    h(2, "16. Invalid claims")
-    for claim in _INVALID_CLAIMS:
-        p(f"- INTERDIT : \"{claim}\"")
-    p("- INTERDIT : Ce benchmark prouve que Obsidia est moins cher que Gemini en production.")
-    p("- INTERDIT : Les valeurs energetiques sont des mesures hardware reelles.")
-    p("- INTERDIT : Obsidia produit de meilleures reponses LLM que Gemini.")
+    h(2, "17. Lecture novice — Ce que l'écart change concrètement")
+    p("Projections à 1 000 et 1 000 000 requêtes (basées sur surface disponible uniquement).")
+    _nov_rows = [
+        ["Model calls avoided / 1 000 req", str(summary.get("model_calls_avoided_per_1000_requests"))],
+        ["Model calls avoided / 1 M req", str(summary.get("model_calls_avoided_per_1m_requests"))],
+        ["Time saved / request (ms avg)", str(summary.get("time_saved_per_request_ms_avg"))],
+        ["Time saved / 1 000 req (s)", str(summary.get("time_saved_per_1000_requests_seconds"))],
+        ["Time saved / 1 000 req (min)", str(summary.get("time_saved_per_1000_requests_minutes"))],
+        ["Time saved / 1 M req (h)", str(summary.get("time_saved_per_1m_requests_hours"))],
+        ["Time saved / 1 M req (days)", str(summary.get("time_saved_per_1m_requests_days"))],
+        ["Time saved (model avoided) / req (ms)", str(summary.get("time_saved_model_avoided_per_request_ms_avg"))],
+        ["Time saved (model avoided) / 1 000 req (min)", str(summary.get("time_saved_model_avoided_per_1000_requests_minutes"))],
+        ["Time saved (model avoided) / 1 M req (days)", str(summary.get("time_saved_model_avoided_per_1m_requests_days"))],
+        ["Energy saved / 1 000 req (Wh)", str(summary.get("energy_saved_per_1000_requests_wh"))],
+        ["Energy saved / 1 M req (kWh)", str(summary.get("energy_saved_per_1m_requests_kwh"))],
+        ["Ext dep avoided / 1 000 req", str(summary.get("external_dependency_avoided_per_1000_requests"))],
+        ["Ext dep avoided / 1 M req", str(summary.get("external_dependency_avoided_per_1m_requests"))],
+    ]
+    table(["metric", "value"], _nov_rows)
+    p("> Ces projections reposent sur la surface disponible (FAST_PATH, BANK, TRADING, GPS).")
+    p("> BRODY, OBSIDURE, LEAN non mesurés. Énergie : proxy local non calibré.")
     p("---")
 
-    h(2, "17. Next metrics V0.8")
-    p("- Execution d'un run reel Gemini 7 familles + comparaison avec V0.7 dry-run.")
+    h(2, "18. Formalisation mathématique — Math formalization support")
+    table(
+        ["family", "math_formal_support", "formal_basis", "invariant_backing", "route_admissibility", "proof_backing", "claimable"],
+        [[
+            r["family"],
+            str(r.get("math_formalization_support")),
+            str(r.get("formalization_basis")),
+            str(r.get("invariant_backing")),
+            str(r.get("route_admissibility_backing")),
+            str(r.get("proof_backing")),
+            str(r.get("formalization_claimable")),
+        ] for r in rows]
+    )
+    p(f"Math formalized surface: {summary.get('math_formalized_surface_count', 0)} / {len(rows)}")
+    p(f"Claim: {summary.get('formalization_claim')}")
+    p(f"Warning: {summary.get('formalization_warning')}")
+    p("---")
+
+    h(2, "19. Infrastructure future — Ce que démontre le benchmark")
+    p("**Gemini optimise l'inférence.**")
+    p("**Obsidia optimise le chemin admissible.**")
+    p("")
+    p("Ce benchmark n'est pas une comparaison symétrique. Il mesure deux philosophies différentes :")
+    p("- Gemini : intelligence générale, inférence probabiliste, modèle pré-entraîné.")
+    p("- Obsidia : routes admissibles, invariants KX108, preuve de non-action, gouvernance déterministe.")
+    p("")
+    p("Les gains mesurés ici ne proviennent pas d'une intelligence supérieure mais d'une "
+      "formalisation des chemins valides.")
+    p("L'écart de latence sur la surface disponible est réel. L'écart sur les surfaces manquantes "
+      "(BRODY, OBSIDURE, LEAN) est inconnu.")
+    p("")
+    p("Infrastructure non mesurée dans ce run :")
+    for layer in (summary.get("not_included_acceleration_layers") or []):
+        p(f"- {layer}")
+    p("---")
+
+    h(2, "19b. Moteur partiel — État du run")
+    p(f"> **{summary.get('partial_engine_warning')}**")
+    p(f"benchmark_completion_state: {summary.get('benchmark_completion_state')}")
+    p(f"obsidia_complete_measured: {summary.get('obsidia_complete_measured')}")
+    p("")
+    p("Couches manquantes ou non branchées :")
+    for layer in (summary.get("missing_or_not_wired_layers") or []):
+        p(f"- {layer}")
+    p(f"partial_engine_claim: {summary.get('partial_engine_claim')}")
+    p("---")
+
+    h(2, "20. Next metrics V0.8")
+    p("- Run reel Gemini 7 familles.")
     p("- Telemetrie GPU/CPU reelle pour energy_source=HARDWARE_MEASURED.")
-    p("- Repetitions (N=10) pour p50/p95/p99 reels.")
-    p("- Integration sigma/contracts.py pour validation governance on-chain.")
-    p("- Matrice domaine-output (ALLOW/HOLD/BLOCK) comparee Obsidia vs Gemini.")
+    p("- Calibration poids CV avec donnees Sigma/Thermo reels.")
+    p("- Activation source_law checker.")
     p("---")
 
     return "\n".join(lines)
@@ -1213,68 +3774,164 @@ def generate_report(summary: dict, rows: list[dict]) -> str:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def main() -> None:
+def main() -> None:  # noqa: C901
     network_allowed = os.environ.get("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", "0") == "1"
     sdk_model = os.environ.get("OIE_EXTERNAL_MODEL_LABEL", DEFAULT_GEMINI_MODEL)
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
-    mode = "REAL" if network_allowed else "DRY_RUN"
+    gem_mode_label = "REAL_SDK" if (network_allowed and gemini_key) else "DRY_RUN"
+    obs_exec_mode_env = os.environ.get("OIE_OBSIDIA_EXECUTION_MODE", OIE_OBSIDIA_EXEC_MODE_AUTO)
 
-    print(f"\n=== {BENCHMARK_VERSION} ===\n")
-    print(f"  Mode                   : {mode}")
-    print(f"  Gemini model           : {sdk_model}")
-    print(f"  GEMINI_API_KEY set     : {bool(gemini_key)}")
-    print(f"  Network allowed        : {network_allowed}")
-    print(f"  Energy env set         : {bool(os.environ.get('OIE_EXTERNAL_ENERGY_WH_PER_1K_TOKENS'))}")
-    print(f"  Cost env set           : {bool(os.environ.get('OIE_EXTERNAL_INPUT_COST_PER_1M'))}")
-    print(f"  Tasks                  : {len(POWER_TASKS)}")
-    print(f"  Governance             : EMITS_ACT={EMITS_ACT} MEMORY_WRITE={MEMORY_WRITE} "
-          f"KERNEL_MUTATION={KERNEL_MUTATION} AUTH={DECISION_AUTHORITY}\n")
+    # ── BLOCK 1 : BENCHMARK MODE ──────────────────────────────────────────────
+    print(f"\n{'='*66}")
+    print(f"  BENCHMARK MODE — {BENCHMARK_VERSION}")
+    print(f"{'='*66}")
+    print(f"  Gemini lane mode        : {gem_mode_label}")
+    print(f"  Gemini model            : {sdk_model}")
+    print(f"  GEMINI_API_KEY set      : {bool(gemini_key)}")
+    print(f"  Network allowed         : {network_allowed}")
+    print(f"  Obsidia exec mode (env) : {obs_exec_mode_env}")
+    print(f"  Obsidia API base        : {_OBSIDIA_API_BASE}")
+    print(f"  Obsidia kernel target   : {_OBSIDIA_KERNEL_URL}")
+    print(f"  LIVE_LOCAL available    : {_LIVE_LOCAL_AVAILABLE}  (API 8000 probe at import time)")
+    print(f"  Live adapters found     : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('adapter_found'))}/7")
+    print(f"  Live adapters usable    : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('usable_for_live_local'))}/7")
+    print(f"  Live usable families    : {_LIVE_LOCAL_USABLE_FAMILIES or 'none'}")
+    print(f"  Unavailable families    : {_LIVE_LOCAL_UNAVAILABLE_FAMILIES or 'none'}")
+    print(f"  Adapter missing         : {_ADAPTER_MISSING_FAMILIES_LIVE or 'none'}")
+    print(f"  Tasks                   : {len(POWER_TASKS)}")
+    print(f"  Gencoin mode            : {GENCOIN_MODE}")
+    print(f"  Cost basis Obsidia      : {COST_BASIS_LOCAL_PROXY}")
+    print(f"  Governance              : EMITS_ACT={EMITS_ACT} MEM_WRITE={MEMORY_WRITE} "
+          f"KERNEL_MUT={KERNEL_MUTATION} AUTH={DECISION_AUTHORITY}")
 
+    # ── Run all tasks ─────────────────────────────────────────────────────────
     rows: list[dict] = []
-
     for task in POWER_TASKS:
-        print(f"  [{task['family']}] {task['task_id']}")
-        obs_result = run_obsidia_local_actual(task)
+        obs_result = run_obsidia_lane(task, obs_exec_mode_env)
         if network_allowed and gemini_key:
             gem_result = run_gemini_lane_real(task, sdk_model)
         else:
             gem_result = run_gemini_lane_dryrun(task)
         row = compute_compare_row(task, obs_result, gem_result)
         rows.append(row)
-        print(f"    obs_status   : {obs_result['obsidia_status']}")
-        print(f"    gem_status   : {gem_result['gemini_status']}")
-        print(f"    speedup      : {row.get('speedup_ratio')}")
-        print(f"    model_avoided: {row.get('obsidia_model_call_avoided')}")
-        print(f"    cost_src     : {row.get('gemini_cost_per_request_measured') or 'N/A'}")
 
     summary = compute_summary(rows, POWER_TASKS)
-    report_md = generate_report(summary, rows)
 
-    print("\n--- Summary ---")
-    print(f"  Tasks                  : {summary['tasks_attempted']}")
-    print(f"  Obsidia route_accuracy : {summary['obsidia_route_accuracy']}")
-    print(f"  Gemini route_accuracy  : {summary['gemini_route_accuracy']}")
-    print(f"  avg_speedup_ratio      : {summary['avg_speedup_ratio']}")
-    print(f"  model_call_avoided     : {summary['obsidia_model_call_avoided_count']}/{summary['tasks_attempted']}")
-    print(f"  governance_clean       : {summary['governance_clean']}")
-    print(f"  energy_source          : {summary['energy_source']}")
-    print(f"  cost_source            : {summary['cost_source']}")
+    # ── BLOCK 2 : DUAL LANE SUMMARY ───────────────────────────────────────────
+    print(f"\n{'='*66}")
+    print("  DUAL LANE SUMMARY")
+    print(f"{'='*66}")
+    print(f"  {'FAMILY':<12} {'OBS_LANE':<32} {'GEM_LANE':<14} {'SCOPE':<44} "
+          f"{'OBS_MATCH':<10} {'GEM_MATCH':<10} {'CLAIMABLE':<10} {'ADAPTER':<24} {'FALLBACK':<10} {'LIVE_AVAIL'}")
+    print("  " + "-" * 180)
+    for row in rows:
+        dl = row.get("dual_lane", {})
+        ol = dl.get("obsidia_lane", {})
+        gl = dl.get("gemini_lane", {})
+        adapter_type = ol.get("adapter_type", "?")
+        fallback = ol.get("fallback_used", False)
+        live_avail = ol.get("live_execution_available", False)
+        print(
+            f"  {row['family']:<12} "
+            f"{str(ol.get('execution_mode', '?')):<32} "
+            f"{str(gl.get('execution_mode', '?')):<14} "
+            f"{str(dl.get('comparison_scope', '?')):<44} "
+            f"{str(ol.get('route_match', '?')):<10} "
+            f"{str(gl.get('route_match', '?')):<10} "
+            f"{str(dl.get('comparison_claimable', '?')):<10} "
+            f"{str(adapter_type):<24} "
+            f"{str(fallback):<10} "
+            f"{str(live_avail)}"
+        )
 
-    # Emit JSON summary
-    json_out = json.dumps(summary, indent=2, default=str)
-    print("\n--- JSON Summary (first 20 lines) ---")
-    for line in json_out.splitlines()[:20]:
-        print(f"  {line}")
+    # ── BLOCK 3 : CLAIMABLE READ ──────────────────────────────────────────────
+    n_tasks = summary["tasks_attempted"]
+    obs_acc = summary["obsidia_route_accuracy"]
+    gem_acc = summary["gemini_route_accuracy"]
+    wired_count = summary["available_surface_count"]
+    missing_count = summary["adapter_missing_count"]
+    model_avoided = summary["obsidia_model_call_avoided_count"]
+    funct_claim = summary.get("oie_claim_matrix", {}).get("functional_claimable_count", 0)
+    route_claim = summary.get("oie_claim_matrix", {}).get("route_claimable_count", 0)
 
-    # Emit report
-    report_path = (
-        _REPO_ROOT / "docs" / "audits" / "OBSIDIA_OIE_OBSIDIA_VS_GEMINI_POWER_METRICS_V0_7.md"
-    )
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(report_md, encoding="utf-8")
-    print(f"\n  Report written : {report_path}")
-    print(f"\n  BENCHMARK_COMPLETE mode={mode} tasks={summary['tasks_attempted']} "
-          f"gov_clean={summary['governance_clean']}")
+    print(f"\n{'='*66}")
+    print("  CLAIMABLE READ")
+    print(f"{'='*66}")
+    print(f"  Route accuracy (Obsidia)    : {obs_acc}")
+    print(f"  Route accuracy (Gemini)     : {gem_acc}")
+    print(f"  Route claimable count       : {route_claim}/{n_tasks}  (wired surface only)")
+    print(f"  Functional claimable count  : {funct_claim}/{n_tasks}  (wired surface only)")
+    print(f"  Wired surface families      : {wired_count}/7  (FAST_PATH, BANK, TRADING, GPS)")
+    print(f"  Adapter missing families    : {missing_count}/7  (BRODY, OBSIDURE, LEAN)")
+    print(f"  Cost comparison claimable   : {summary['cost_comparison_claimable_global']}  (always False — LOCAL_PROXY_UNCALIBRATED)")
+    print(f"  Model call avoided          : {model_avoided}/{n_tasks}")
+    print(f"  Governance clean            : {summary['governance_clean']}")
+
+    # ── BLOCK 4 : PERFORMANCE READ ────────────────────────────────────────────
+    print(f"\n{'='*66}")
+    print("  PERFORMANCE READ")
+    print(f"{'='*66}")
+    print(f"  Avg speedup ratio           : {summary['avg_speedup_ratio']}")
+    print(f"  Intellectual value avg      : {summary['intellectual_value_avg']}")
+    print(f"  Debt total                  : {summary['internal_economy_debt_total']}")
+    print(f"  Energy source               : {summary['energy_source']}")
+    print(f"  Known path detected         : {summary.get('known_path_detected_count', '?')}/{n_tasks}")
+    print(f"  Inference avoided           : {summary.get('unnecessary_inference_avoided_count', '?')}/{n_tasks}")
+    print(f"  Governed speed rate         : {summary.get('governance_preserved_at_speed_rate', '?')}")
+    print(f"  Math formalized             : {summary.get('math_formalized_surface_count', '?')}/{n_tasks}")
+
+    # ── BLOCK 5 : OIE READ ────────────────────────────────────────────────────
+    oie_osca = summary.get("osca_ratio", "N/A")
+    oie_oapi = summary.get("oapi_ratio", "N/A")
+    oie_odpi = summary.get("odpi_ratio", "N/A")
+    dca = summary.get("dca_by_domain", {})
+    if dca:
+        def _dca_sort_key(kv: tuple) -> float:
+            v = kv[1]
+            if isinstance(v, (int, float)):
+                return float(v)
+            if isinstance(v, dict):
+                return float(v.get("dca_api_normal") or 0)
+            return 0.0
+        dca_top = sorted(dca.items(), key=_dca_sort_key, reverse=True)[:3]
+    else:
+        dca_top = []
+
+    print(f"\n{'='*66}")
+    print("  OIE READ")
+    print(f"{'='*66}")
+    print(f"  OSCA (geomean all families) : {oie_osca}x")
+    print(f"  OAPI (portfolio actions)    : {oie_oapi}x")
+    print(f"  ODPI (portfolio domains)    : {oie_odpi}x")
+    print(f"  OIE import OK               : {_OIE_IMPORT_OK}")
+    print(f"  OIE freeze found            : {_OIE_FREEZE_FOUND}")
+    print(f"  Gencoin mode                : {summary['gencoin_mode']}")
+    print(f"  Gencoin emission            : {summary['gencoin_total_emission']}  (CALIBRATION_ONLY)")
+    if dca_top:
+        print(f"  DCA top domains             :")
+        for dom, val in dca_top:
+            if isinstance(val, (int, float)):
+                print(f"    {dom:<20} : {val:.4f}")
+            elif isinstance(val, dict):
+                dca_val = val.get("dca_api_normal") or val.get("dca_agentic") or 0
+                print(f"    {dom:<20} : dca_api_normal={dca_val}")
+
+    # ── BLOCK 6 : REPORTS ────────────────────────────────────────────────────
+    report_dir = _make_report_dir()
+    write_runtime_reports(report_dir, summary, rows)
+    proto_path = write_protocol_doc()
+
+    print(f"\n{'='*66}")
+    print("  REPORTS")
+    print(f"{'='*66}")
+    print(f"  Runtime report dir  : {report_dir}")
+    print(f"  Protocol doc        : {proto_path}")
+    print(f"  summary.json        : {report_dir / 'summary.json'}")
+    print(f"  readable_report.json: {report_dir / 'readable_report.json'}")
+    print(f"  summary.md          : {report_dir / 'summary.md'}")
+    print(f"\n  BENCHMARK_COMPLETE  mode={gem_mode_label} obs_exec={obs_exec_mode_env} "
+          f"tasks={n_tasks} gov_clean={summary['governance_clean']} "
+          f"gencoin={summary['gencoin_mode']}")
 
 
 if __name__ == "__main__":
