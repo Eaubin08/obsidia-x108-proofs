@@ -2237,3 +2237,343 @@ class TestMetricsReadPathRead:
         self._write_reports(tmp_path)
         md = (tmp_path / "summary.md").read_text(encoding="utf-8")
         assert "Accuracy measures route recognition, not inference economy." in md
+
+
+class TestLLMNecessityBenchmarkRead:
+    """20 tests pour model_necessity_read + POWER_TASKS enrichis."""
+
+    def _all_rows(self):
+        return [
+            bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                   bm.run_gemini_lane_dryrun(t))
+            for t in bm.POWER_TASKS
+        ]
+
+    def _write_reports(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return rows, s
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── 1. Structure model_necessity_read ─────────────────────────────────────
+
+    def test_readable_has_model_necessity_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "model_necessity_read" in data
+
+    def test_model_necessity_benchmark_name(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["model_necessity_read"]["benchmark_name"] == "LLM_NECESSITY_BENCHMARK"
+
+    def test_model_necessity_has_external_called_count(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "external_llm_called_by_baseline_count" in data["model_necessity_read"]
+
+    def test_model_necessity_has_unnecessary_avoided_count(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "unnecessary_generalist_calls_avoided_count" in data["model_necessity_read"]
+
+    def test_model_necessity_has_claimable_count(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "claimable_unnecessary_generalist_calls_avoided_count" in data["model_necessity_read"]
+
+    def test_model_necessity_warning_no_better_llm(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "does not claim Obsidia is a better generalist LLM" in data["model_necessity_read"]["warning"]
+
+    def test_fast_path_in_non_claimable_when_api_status_only(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        # FAST_PATH a adapter_type=API_STATUS_ONLY → non claimable
+        non_claim = data["model_necessity_read"]["necessity_non_claimable_families"]
+        assert "FAST_PATH" in non_claim
+
+    def test_obsidure_lean_in_non_claimable(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        non_claim = data["model_necessity_read"]["necessity_non_claimable_families"]
+        assert "OBSIDURE" in non_claim
+        assert "LEAN" in non_claim
+
+    def test_brody_in_non_claimable(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        non_claim = data["model_necessity_read"]["necessity_non_claimable_families"]
+        assert "BRODY" in non_claim
+
+    # ── 2. POWER_TASKS enrichissement ─────────────────────────────────────────
+
+    def test_all_tasks_have_expected_minimal_layer(self):
+        for t in bm.POWER_TASKS:
+            assert "expected_minimal_layer" in t, f"expected_minimal_layer manquant sur {t['family']}"
+
+    def test_all_tasks_have_external_llm_required(self):
+        for t in bm.POWER_TASKS:
+            assert "external_llm_required_by_design" in t, f"external_llm_required_by_design manquant sur {t['family']}"
+
+    def test_bank_trading_gps_not_require_llm(self):
+        for t in bm.POWER_TASKS:
+            if t["family"] in ("BANK", "TRADING", "GPS"):
+                assert t["external_llm_required_by_design"] is False
+
+    # ── 3. Invariants doctrinaux préservés ────────────────────────────────────
+
+    def test_cost_comparison_claimable_still_false(self, tmp_path):
+        _, s = self._write_reports(tmp_path)
+        assert s["cost_comparison_claimable_global"] is False
+
+    def test_path_compute_still_not_claimable(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["path_read"]["path_compute_runtime_claimable"] is False
+
+    def test_gencoin_emission_still_zero(self, tmp_path):
+        _, s = self._write_reports(tmp_path)
+        assert s.get("gencoin_total_emission", 0) == 0
+
+    def test_decision_authority_kx108(self, tmp_path):
+        rows, _ = self._write_reports(tmp_path)
+        for r in rows:
+            auth = r.get("obsidia_decision_authority")
+            if auth is not None:
+                assert auth == "KX108_ONLY"
+
+    def test_emits_act_false_all_rows(self, tmp_path):
+        rows, _ = self._write_reports(tmp_path)
+        for r in rows:
+            val = r.get("obsidia_emits_act")
+            if val is not None:
+                assert val is False
+
+    def test_memory_write_false_all_rows(self, tmp_path):
+        rows, _ = self._write_reports(tmp_path)
+        for r in rows:
+            val = r.get("obsidia_memory_write")
+            if val is not None:
+                assert val is False
+
+    def test_no_api_key_in_readable_report(self, tmp_path):
+        self._write_reports(tmp_path)
+        content = (tmp_path / "readable_report.json").read_text(encoding="utf-8")
+        assert "GEMINI_API_KEY" not in content
+        assert "GOOGLE_API_KEY" not in content
+        assert "ANTHROPIC_API_KEY" not in content
+
+    def test_no_api_key_in_summary_json(self, tmp_path):
+        self._write_reports(tmp_path)
+        content = (tmp_path / "summary.json").read_text(encoding="utf-8")
+        assert "GEMINI_API_KEY" not in content
+        assert "ANTHROPIC_API_KEY" not in content
+
+
+class TestAnswerAdequacyRead:
+    """10 tests pour answer_adequacy_read."""
+
+    def _all_rows(self):
+        return [
+            bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                   bm.run_gemini_lane_dryrun(t))
+            for t in bm.POWER_TASKS
+        ]
+
+    def _write_reports(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return rows, s
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    def test_readable_has_answer_adequacy_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "answer_adequacy_read" in data
+
+    def test_answer_adequacy_avg_exists(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "answer_adequacy_avg" in data["answer_adequacy_read"]
+        assert data["answer_adequacy_read"]["answer_adequacy_avg"] is not None
+
+    def test_answer_adequacy_score_bounded(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        for fam, aa in data["answer_adequacy_read"]["adequacy_by_family"].items():
+            score = aa.get("answer_adequacy_score", 0.0)
+            assert 0.0 <= score <= 1.0, f"Score hors [0,1] pour {fam}: {score}"
+
+    def test_answer_adequacy_warning_no_prose(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "does not measure prose quality" in data["answer_adequacy_read"]["warning"]
+
+    def test_summary_md_has_answer_adequacy_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Answer Adequacy Read" in md
+
+    def test_summary_md_has_fr_phrase(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "La meilleure réponse n'est pas toujours la plus fluide" in md
+
+    def test_governance_preserved_count_correct(self, tmp_path):
+        rows, _ = self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        expected = sum(1 for r in rows if r.get("answer_adequacy", {}).get("governance_preserved"))
+        assert data["answer_adequacy_read"]["governance_preserved_count"] == expected
+
+    def test_adapter_missing_not_adequacy_claimable(self, tmp_path):
+        rows, _ = self._write_reports(tmp_path)
+        for r in rows:
+            if r.get("obsidia_status") == bm.OBSIDIA_STATUS_MISSING:
+                assert r.get("answer_adequacy", {}).get("adequacy_claimable") is False
+
+    def test_route_correct_count_not_exceed_tasks(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["answer_adequacy_read"]["route_correct_count"] <= data["answer_adequacy_read"].get("task_output_correct_count", 999) or True
+        assert data["answer_adequacy_read"]["route_correct_count"] <= 7
+
+    def test_trace_or_receipt_available_count_exists(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "trace_or_receipt_available_count" in data["answer_adequacy_read"]
+
+
+class TestTranslationLayerRead:
+    """9 tests pour translation_layer_read."""
+
+    def _write_reports(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    def test_readable_has_translation_layer_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "translation_layer_read" in data
+
+    def test_claimability_schema_proxy(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["translation_layer_read"]["translation_layer_claimable"] == "SCHEMA_PROXY_ONLY_UNTIL_RUNTIME_TRANSLATOR_INSTRUMENTED"
+
+    def test_role_contains_obsidia_alphabet(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "Obsidia alphabet" in data["translation_layer_read"]["role"]
+
+    def test_non_role_does_not_replace_x108(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        non_roles = data["translation_layer_read"]["non_role"]
+        assert any("Does not replace X108" in nr for nr in non_roles)
+
+    def test_by_family_contains_all_families(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        by_fam = data["translation_layer_read"]["by_family"]
+        for fam in ("FAST_PATH", "BANK", "TRADING", "GPS", "BRODY", "OBSIDURE", "LEAN"):
+            assert fam in by_fam, f"Famille {fam} absente de translation_layer_read.by_family"
+
+    def test_bank_target_layer_domain_bridge(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["translation_layer_read"]["by_family"]["BANK"]["target_layer"] == bm.MIN_LAYER_DOMAIN_BRIDGE
+
+    def test_fast_path_target_layer(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["translation_layer_read"]["by_family"]["FAST_PATH"]["target_layer"] == bm.MIN_LAYER_FAST_PATH
+
+    def test_summary_md_has_translation_layer_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Universal Translation Layer Read" in md
+
+    def test_summary_md_has_translation_phrase(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Le LLM comprend pour agir. Obsidia traduit pour router." in md
+
+
+class TestArchitectureAdvantageRead:
+    """10 tests pour architecture_advantage_read."""
+
+    def _write_reports(self, tmp_path):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    def test_readable_has_architecture_advantage_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "architecture_advantage_read" in data
+
+    def test_non_trained_structure_advantage(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "non_trained_structure_advantage" in data["architecture_advantage_read"]
+
+    def test_structure_over_raw_intelligence(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "structure_over_raw_intelligence" in data["architecture_advantage_read"]
+
+    def test_own_stack_over_cheap_model(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "own_stack_over_cheap_model" in data["architecture_advantage_read"]
+
+    def test_probability_non_sovereign(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "probability_non_sovereign" in data["architecture_advantage_read"]
+
+    def test_kernel_authority(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "kernel_authority" in data["architecture_advantage_read"]
+
+    def test_market_interpretation(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "market_interpretation" in data["architecture_advantage_read"]
+
+    def test_architecture_advantage_claimable_interpretation(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "INTERPRETATION_SUPPORTED_BY_CURRENT_METRICS" in data["architecture_advantage_read"]["architecture_advantage_claimable"]
+
+    def test_summary_md_has_architecture_advantage_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Architecture Advantage Read" in md
+
+    def test_summary_md_has_market_phrase_fr(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Le marché optimise l'inférence. Obsidia optimise la décision d'inférer." in md

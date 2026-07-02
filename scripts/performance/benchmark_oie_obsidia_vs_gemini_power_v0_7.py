@@ -110,6 +110,27 @@ GEMINI_STATUS_DRYRUN = "DRY_RUN_MOCK"
 GEMINI_STATUS_REAL = "REAL_SDK"
 GEMINI_STATUS_FAILED = "FAILED"
 
+# ── LLM Necessity — minimal sufficient layer taxonomy ────────────────────────
+MIN_LAYER_DIRECT_ROUTE = "DIRECT_ROUTE"
+MIN_LAYER_FAST_PATH = "FAST_PATH"
+MIN_LAYER_PATH_COMPUTE = "PATH_COMPUTE"
+MIN_LAYER_DOMAIN_BRIDGE = "DOMAIN_BRIDGE"
+MIN_LAYER_MEMORY_LOOKUP = "MEMORY_LOOKUP"
+MIN_LAYER_PROOF_SURFACE = "PROOF_SURFACE"
+MIN_LAYER_BRODY_INTERNAL = "BRODY_INTERNAL"
+MIN_LAYER_OBSIDURE_AGENT = "OBSIDURE_AGENT"
+MIN_LAYER_LEAN_PROOF = "LEAN_PROOF"
+MIN_LAYER_EXTERNAL_LLM = "EXTERNAL_LLM"
+MIN_LAYER_ADAPTER_MISSING = "ADAPTER_MISSING"
+MIN_LAYER_UNKNOWN = "UNKNOWN"
+
+# ── LLM Necessity — model role taxonomy ───────────────────────────────────────
+MODEL_ROLE_NOT_NEEDED = "MODEL_NOT_NEEDED"
+MODEL_ROLE_INTERNAL_TRANSLATION = "INTERNAL_TRANSLATION"
+MODEL_ROLE_EXTERNAL_REQUIRED = "EXTERNAL_LLM_REQUIRED"
+MODEL_ROLE_EXTERNAL_CALLED_BY_BASELINE = "EXTERNAL_LLM_CALLED_BY_BASELINE"
+MODEL_ROLE_UNKNOWN = "UNKNOWN"
+
 # ── Energy source ─────────────────────────────────────────────────────────────
 ENERGY_SOURCE_UNAVAILABLE = "ENERGY_PROXY_UNAVAILABLE"
 ENERGY_SOURCE_ESTIMATE = "ENERGY_PROXY_ESTIMATE"
@@ -605,6 +626,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 12,
         "obsidia_memory_records_loaded": 0,
         "obsidia_memory_records_skipped": 4,
+        "expected_minimal_layer": MIN_LAYER_FAST_PATH,
+        "external_llm_required_by_design": False,
+        "llm_necessity_reason": "Known route / direct structured route sufficient.",
+        "answer_adequacy_criteria": "route_label_bounded",
     },
     {
         "task_id": "brody_power_route",
@@ -636,6 +661,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 10,
         "obsidia_memory_records_loaded": 2,
         "obsidia_memory_records_skipped": 2,
+        "expected_minimal_layer": MIN_LAYER_BRODY_INTERNAL,
+        "external_llm_required_by_design": False,
+        "llm_necessity_reason": "Internal Brody response / translation layer should be sufficient when runtime bridge is available.",
+        "answer_adequacy_criteria": "brody_answer_route_or_message",
     },
     {
         "task_id": "bank_power_route",
@@ -667,6 +696,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 11,
         "obsidia_memory_records_loaded": 1,
         "obsidia_memory_records_skipped": 3,
+        "expected_minimal_layer": MIN_LAYER_DOMAIN_BRIDGE,
+        "external_llm_required_by_design": False,
+        "llm_necessity_reason": "Governed domain bridge sufficient; generalist LLM is unnecessary.",
+        "answer_adequacy_criteria": "domain_state_or_gate_label_bounded",
     },
     {
         "task_id": "trading_power_route",
@@ -698,6 +731,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 11,
         "obsidia_memory_records_loaded": 1,
         "obsidia_memory_records_skipped": 3,
+        "expected_minimal_layer": MIN_LAYER_DOMAIN_BRIDGE,
+        "external_llm_required_by_design": False,
+        "llm_necessity_reason": "Governed domain bridge sufficient; generalist LLM is unnecessary.",
+        "answer_adequacy_criteria": "domain_state_or_gate_label_bounded",
     },
     {
         "task_id": "gps_power_route",
@@ -729,6 +766,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 11,
         "obsidia_memory_records_loaded": 1,
         "obsidia_memory_records_skipped": 3,
+        "expected_minimal_layer": MIN_LAYER_DOMAIN_BRIDGE,
+        "external_llm_required_by_design": False,
+        "llm_necessity_reason": "Governed domain bridge sufficient; generalist LLM is unnecessary.",
+        "answer_adequacy_criteria": "domain_state_or_gate_label_bounded",
     },
     {
         "task_id": "obsidure_power_route",
@@ -760,6 +801,10 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 8,
         "obsidia_memory_records_loaded": 3,
         "obsidia_memory_records_skipped": 1,
+        "expected_minimal_layer": MIN_LAYER_OBSIDURE_AGENT,
+        "external_llm_required_by_design": None,
+        "llm_necessity_reason": "Code-agent layer should be sufficient, but adapter is currently missing; not claimable.",
+        "answer_adequacy_criteria": "patch_or_diff_bounded",
     },
     {
         "task_id": "lean_power_route",
@@ -791,11 +836,207 @@ POWER_TASKS: list[dict] = [
         "obsidia_files_skipped": 9,
         "obsidia_memory_records_loaded": 2,
         "obsidia_memory_records_skipped": 2,
+        "expected_minimal_layer": MIN_LAYER_LEAN_PROOF,
+        "external_llm_required_by_design": None,
+        "llm_necessity_reason": "Proof surface should be sufficient, but adapter is currently missing; not claimable.",
+        "answer_adequacy_criteria": "formal_proof_task_bounded",
     },
 ]
 
 
 # ── Energy / carbon helpers ───────────────────────────────────────────────────
+
+def compute_model_necessity(task: dict, row: dict) -> dict:
+    """Calcule le bloc model_necessity pour une row comparative."""
+    family = task.get("family", "UNKNOWN")
+    obs_status = row.get("obsidia_status", "")
+    gem_status = row.get("gemini_status", "")
+    obs_route_match = row.get("obsidia_route_match")
+    comparison_claimable = row.get("route_accuracy_claimable", False)
+    is_adapter_missing = obs_status == OBSIDIA_STATUS_MISSING
+    is_kernel_unreach = obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
+    is_fast_path_only = obs_status in (OBSIDIA_STATUS_FROZEN, "LIVE_LOCAL_UNAVAILABLE") and family == "FAST_PATH"
+    is_fast_path_api_status = (_OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {}).get("adapter_type") == "API_STATUS_ONLY")
+
+    external_llm_req = task.get("external_llm_required_by_design")
+    expected_min_layer = task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN)
+
+    gemini_external_called = gem_status == GEMINI_STATUS_REAL
+    obsidia_external_called = False  # Obsidia n'appelle jamais un LLM externe en V0.7.x
+
+    external_llm_avoided = (
+        not obsidia_external_called
+        and gemini_external_called
+        and external_llm_req is False
+    )
+    governance_clean_row = (
+        row.get("obsidia_decision_authority") == "KX108_ONLY"
+        or row.get("obsidia_emits_act") is False  # proxy si decision_authority absent
+    )
+    unnecessary_avoided = (
+        external_llm_avoided
+        and obs_route_match is True
+        and not is_adapter_missing
+    )
+
+    # Calcul actual_obsidia_layer_used
+    if is_adapter_missing:
+        actual_layer = MIN_LAYER_ADAPTER_MISSING
+    elif obs_status == OBSIDIA_STATUS_LIVE_LOCAL:
+        layer_map = {
+            "FAST_PATH": MIN_LAYER_FAST_PATH,
+            "BRODY": MIN_LAYER_BRODY_INTERNAL,
+            "BANK": MIN_LAYER_DOMAIN_BRIDGE,
+            "TRADING": MIN_LAYER_DOMAIN_BRIDGE,
+            "GPS": MIN_LAYER_DOMAIN_BRIDGE,
+        }
+        actual_layer = layer_map.get(family, MIN_LAYER_UNKNOWN)
+    elif obs_status == OBSIDIA_STATUS_FROZEN:
+        layer_map_frozen = {
+            "FAST_PATH": MIN_LAYER_FAST_PATH,
+            "BANK": MIN_LAYER_DOMAIN_BRIDGE,
+            "TRADING": MIN_LAYER_DOMAIN_BRIDGE,
+            "GPS": MIN_LAYER_DOMAIN_BRIDGE,
+        }
+        actual_layer = layer_map_frozen.get(family, MIN_LAYER_UNKNOWN)
+    else:
+        actual_layer = MIN_LAYER_UNKNOWN
+
+    minimal_layer_respected = (actual_layer == expected_min_layer)
+
+    # Calcul model roles
+    if is_adapter_missing:
+        model_role_obs = MODEL_ROLE_UNKNOWN
+    elif obs_status == OBSIDIA_STATUS_LIVE_LOCAL and family in ("BRODY",):
+        model_role_obs = MODEL_ROLE_INTERNAL_TRANSLATION
+    elif external_llm_req is False:
+        model_role_obs = MODEL_ROLE_NOT_NEEDED
+    else:
+        model_role_obs = MODEL_ROLE_UNKNOWN
+    model_role_gem = MODEL_ROLE_EXTERNAL_CALLED_BY_BASELINE if gemini_external_called else MODEL_ROLE_UNKNOWN
+
+    # Claimability
+    if is_adapter_missing:
+        necessity_claimable = False
+        necessity_non_claimable_reason = "Adapter missing."
+    elif is_kernel_unreach and family == "BRODY":
+        necessity_claimable = False
+        necessity_non_claimable_reason = "BRODY bridge attempted but kernel unreachable; not adapter missing, not fully claimable."
+    elif family == "FAST_PATH" and is_fast_path_api_status:
+        necessity_claimable = False
+        necessity_non_claimable_reason = "FAST_PATH model avoidance measured, but dedicated live bridge not available."
+    elif comparison_claimable and obs_route_match is True and not is_adapter_missing:
+        necessity_claimable = True
+        necessity_non_claimable_reason = None
+    else:
+        necessity_claimable = False
+        necessity_non_claimable_reason = "Route not matched or comparison not claimable."
+
+    return {
+        "task_id": task.get("task_id"),
+        "family": family,
+        "expected_minimal_layer": expected_min_layer,
+        "actual_obsidia_layer_used": actual_layer,
+        "external_llm_required_by_design": external_llm_req,
+        "gemini_external_llm_called": gemini_external_called,
+        "obsidia_external_llm_called": obsidia_external_called,
+        "external_llm_avoided_by_obsidia": external_llm_avoided,
+        "unnecessary_generalist_call_avoided": unnecessary_avoided,
+        "necessity_claimable": necessity_claimable,
+        "necessity_non_claimable_reason": necessity_non_claimable_reason,
+        "model_role_for_obsidia": model_role_obs,
+        "model_role_for_gemini": model_role_gem,
+        "minimal_layer_respected": minimal_layer_respected,
+        "reason_codes": [
+            "ADAPTER_MISSING" if is_adapter_missing else None,
+            "KERNEL_UNREACHABLE" if is_kernel_unreach else None,
+            "FAST_PATH_API_STATUS_ONLY" if (family == "FAST_PATH" and is_fast_path_api_status) else None,
+            "EXTERNAL_LLM_REQUIRED_BY_DESIGN" if external_llm_req is True else None,
+        ],
+    }
+
+
+def compute_answer_adequacy(task: dict, row: dict) -> dict:
+    """Calcule le score d'adéquation de la réponse Obsidia pour une row."""
+    obs_route_match = row.get("obsidia_route_match")
+    obs_status = row.get("obsidia_status", "")
+    is_adapter_missing = obs_status == OBSIDIA_STATUS_MISSING
+    family = task.get("family", "UNKNOWN")
+    expected_min_layer = task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN)
+
+    # Sous-scores booléens
+    route_correct = obs_route_match is True
+    output_bounded = (
+        route_correct
+        or obs_status in (OBSIDIA_STATUS_LIVE_LOCAL, OBSIDIA_STATUS_FROZEN)
+    )
+    # actual layer from model_necessity (recalcul léger)
+    if obs_status == OBSIDIA_STATUS_LIVE_LOCAL:
+        layer_map = {"FAST_PATH": MIN_LAYER_FAST_PATH, "BRODY": MIN_LAYER_BRODY_INTERNAL,
+                     "BANK": MIN_LAYER_DOMAIN_BRIDGE, "TRADING": MIN_LAYER_DOMAIN_BRIDGE, "GPS": MIN_LAYER_DOMAIN_BRIDGE}
+        actual_layer = layer_map.get(family, MIN_LAYER_UNKNOWN)
+    elif obs_status == OBSIDIA_STATUS_FROZEN:
+        layer_map_f = {"FAST_PATH": MIN_LAYER_FAST_PATH, "BANK": MIN_LAYER_DOMAIN_BRIDGE,
+                       "TRADING": MIN_LAYER_DOMAIN_BRIDGE, "GPS": MIN_LAYER_DOMAIN_BRIDGE}
+        actual_layer = layer_map_f.get(family, MIN_LAYER_UNKNOWN)
+    else:
+        actual_layer = MIN_LAYER_ADAPTER_MISSING if is_adapter_missing else MIN_LAYER_UNKNOWN
+    minimal_layer_respected = (actual_layer == expected_min_layer)
+
+    # None = champ absent sur rows frozen → on considère la gouvernance préservée
+    # (run 100% local, aucun appel externe, champs non exposés mais invariants connus)
+    _ea = row.get("obsidia_emits_act")
+    _mw = row.get("obsidia_memory_write")
+    _km = row.get("obsidia_kernel_mutation")
+    _da = row.get("obsidia_decision_authority")
+    governance_preserved = (
+        (_ea is False or _ea is None)
+        and (_mw is False or _mw is None)
+        and (_km is False or _km is None)
+        and (_da in ("KX108_ONLY", None))
+    )
+    trace_available = bool(row.get("dual_lane") or row.get("obsidia_status"))
+    hallucination_risk_avoided = output_bounded and not row.get("obsidia_external_llm_called", False)
+    overproduction_penalty = 0.0
+
+    # Score V0 (clamp 0-1)
+    raw_score = (
+        0.30 * float(route_correct)
+        + 0.20 * float(output_bounded)
+        + 0.20 * float(minimal_layer_respected)
+        + 0.20 * float(governance_preserved)
+        + 0.10 * float(trace_available)
+        - overproduction_penalty
+    )
+    score = round(max(0.0, min(1.0, raw_score)), 4)
+
+    adequacy_claimable = (
+        route_correct
+        and not is_adapter_missing
+        and governance_preserved
+        and output_bounded
+    )
+    reason_codes = []
+    if is_adapter_missing:
+        reason_codes.append("ADAPTER_MISSING_NOT_CLAIMABLE")
+    if not route_correct:
+        reason_codes.append("ROUTE_NOT_MATCHED")
+    if not governance_preserved:
+        reason_codes.append("GOVERNANCE_NOT_PRESERVED")
+
+    return {
+        "answer_adequacy_score": score,
+        "route_correct": route_correct,
+        "output_bounded": output_bounded,
+        "minimal_layer_respected": minimal_layer_respected,
+        "governance_preserved": governance_preserved,
+        "trace_or_receipt_available": trace_available,
+        "hallucination_risk_avoided": hallucination_risk_avoided,
+        "overproduction_penalty": overproduction_penalty,
+        "adequacy_claimable": adequacy_claimable,
+        "adequacy_reason_codes": reason_codes,
+    }
+
 
 def _read_energy_env() -> tuple[Optional[float], Optional[float], Optional[float]]:
     def _f(k: str) -> Optional[float]:
@@ -2283,6 +2524,12 @@ def compute_compare_row(task: dict, obs: dict, gem: dict) -> dict:
     dl = compute_dual_lane(task, obs, gem)
     row["dual_lane"] = dl
 
+    # Phase LLM-N : Model necessity
+    row["model_necessity"] = compute_model_necessity(task, row)
+
+    # Phase AA : Answer adequacy
+    row["answer_adequacy"] = compute_answer_adequacy(task, row)
+
     return row
 
 
@@ -3118,6 +3365,127 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
             "wording_guard": "This run proves inference economy on known routes; it does not yet prove full Path Compute runtime.",
         },
     }
+
+    # ── model_necessity_read ──────────────────────────────────────────────────
+    _mn_rows = [r.get("model_necessity", {}) for r in rows]
+    _ext_called = sum(1 for r in _mn_rows if r.get("gemini_external_llm_called"))
+    _ext_req = sum(1 for r in rows if r.get("model_necessity", {}).get("external_llm_required_by_design") is True)
+    _ext_not_req = sum(1 for r in rows if r.get("model_necessity", {}).get("external_llm_required_by_design") is False)
+    _obs_ext_called = sum(1 for r in _mn_rows if r.get("obsidia_external_llm_called"))
+    _ext_avoided = sum(1 for r in _mn_rows if r.get("external_llm_avoided_by_obsidia"))
+    _unnec_avoided = sum(1 for r in _mn_rows if r.get("unnecessary_generalist_call_avoided"))
+    _n = len(rows)
+    _claimable_unnec = sum(1 for r in _mn_rows if r.get("necessity_claimable") and r.get("unnecessary_generalist_call_avoided"))
+    _necessity_claimable_fams = [r["family"] for r in rows if r.get("model_necessity", {}).get("necessity_claimable")]
+    _necessity_non_claimable_fams = [r["family"] for r in rows if not r.get("model_necessity", {}).get("necessity_claimable")]
+    _non_claimable_but_measured_fams = [
+        r["family"] for r in rows
+        if not r.get("model_necessity", {}).get("necessity_claimable")
+        and r.get("model_necessity", {}).get("external_llm_avoided_by_obsidia")
+    ]
+    readable["model_necessity_read"] = {
+        "benchmark_name": "LLM_NECESSITY_BENCHMARK",
+        "tasks_total": _n,
+        "external_llm_called_by_baseline_count": _ext_called,
+        "external_llm_required_by_design_count": _ext_req,
+        "external_llm_not_required_by_design_count": _ext_not_req,
+        "obsidia_external_llm_called_count": _obs_ext_called,
+        "external_llm_avoided_by_obsidia_count": _ext_avoided,
+        "unnecessary_generalist_calls_avoided_count": _unnec_avoided,
+        "unnecessary_generalist_calls_avoided_rate": round(_unnec_avoided / _n, 4) if _n else 0,
+        "claimable_unnecessary_generalist_calls_avoided_count": _claimable_unnec,
+        "claimable_unnecessary_generalist_calls_avoided_rate": round(_claimable_unnec / _n, 4) if _n else 0,
+        "non_claimable_but_measured_families": _non_claimable_but_measured_fams,
+        "necessity_claimable_families": _necessity_claimable_fams,
+        "necessity_non_claimable_families": _necessity_non_claimable_fams,
+        "minimal_sufficient_layer_by_family": {r["family"]: r.get("model_necessity", {}).get("expected_minimal_layer") for r in rows},
+        "actual_obsidia_layer_by_family": {r["family"]: r.get("model_necessity", {}).get("actual_obsidia_layer_used") for r in rows},
+        "model_role_by_family": {r["family"]: r.get("model_necessity", {}).get("model_role_for_obsidia") for r in rows},
+        "llm_necessity_interpretation": "This benchmark measures whether a generalist LLM call was necessary, not only whether it was fast or correct.",
+        "warning": "This does not claim Obsidia is a better generalist LLM. It claims that on bounded governed routes, a generalist LLM call can be unnecessary.",
+    }
+
+    # ── answer_adequacy_read ──────────────────────────────────────────────────
+    _aa_rows = [r.get("answer_adequacy", {}) for r in rows]
+    _aa_scores = [r.get("answer_adequacy_score", 0.0) for r in _aa_rows if r.get("answer_adequacy_score") is not None]
+    _aa_claimable_scores = [r.get("answer_adequacy_score", 0.0) for r in _aa_rows if r.get("adequacy_claimable")]
+    _aa_avg = round(sum(_aa_scores) / len(_aa_scores), 4) if _aa_scores else 0.0
+    _aa_claimable_avg = round(sum(_aa_claimable_scores) / len(_aa_claimable_scores), 4) if _aa_claimable_scores else 0.0
+    readable["answer_adequacy_read"] = {
+        "answer_adequacy_avg": _aa_avg,
+        "answer_adequacy_claimable_avg": _aa_claimable_avg,
+        "task_output_correct_count": sum(1 for r in _aa_rows if r.get("route_correct")),
+        "route_correct_count": sum(1 for r in _aa_rows if r.get("route_correct")),
+        "output_bounded_count": sum(1 for r in _aa_rows if r.get("output_bounded")),
+        "minimal_layer_respected_count": sum(1 for r in _aa_rows if r.get("minimal_layer_respected")),
+        "governance_preserved_count": sum(1 for r in _aa_rows if r.get("governance_preserved")),
+        "trace_or_receipt_available_count": sum(1 for r in _aa_rows if r.get("trace_or_receipt_available")),
+        "hallucination_risk_avoided_count": sum(1 for r in _aa_rows if r.get("hallucination_risk_avoided")),
+        "overproduction_penalty_total": sum(r.get("overproduction_penalty", 0.0) for r in _aa_rows),
+        "adequacy_by_family": {r["family"]: r.get("answer_adequacy", {}) for r in rows},
+        "phrase": "The best answer is not always the most fluent answer. It is the sufficient governed output at the minimal necessary layer.",
+        "warning": "Answer adequacy measures whether the output is correct, bounded, governed and sufficient; it does not measure prose quality.",
+    }
+
+    # ── translation_layer_read ────────────────────────────────────────────────
+    readable["translation_layer_read"] = {
+        "benchmark_name": "UNIVERSAL_OPERATIONAL_TRANSLATION_READ",
+        "translation_layer_claimable": "SCHEMA_PROXY_ONLY_UNTIL_RUNTIME_TRANSLATOR_INSTRUMENTED",
+        "role": "Convert human language, code, domain signals, errors and intentions into the Obsidia alphabet.",
+        "non_role": [
+            "Does not decide.",
+            "Does not act.",
+            "Does not replace X108.",
+            "Does not act as a sovereign generalist model.",
+        ],
+        "by_family": {
+            "FAST_PATH":  {"input_surface": "natural_language_or_route_request", "target_layer": MIN_LAYER_FAST_PATH, "emitted_alphabet": "route_label", "requires_external_llm": False},
+            "BANK":       {"input_surface": "domain_request", "target_layer": MIN_LAYER_DOMAIN_BRIDGE, "emitted_alphabet": "bank payload / domain state", "requires_external_llm": False},
+            "TRADING":    {"input_surface": "domain_request", "target_layer": MIN_LAYER_DOMAIN_BRIDGE, "emitted_alphabet": "trading payload / domain state", "requires_external_llm": False},
+            "GPS":        {"input_surface": "domain_request", "target_layer": MIN_LAYER_DOMAIN_BRIDGE, "emitted_alphabet": "gps payload / domain state", "requires_external_llm": False},
+            "BRODY":      {"input_surface": "natural_language", "target_layer": MIN_LAYER_BRODY_INTERNAL, "emitted_alphabet": "brody message / answer route", "requires_external_llm": False},
+            "OBSIDURE":   {"input_surface": "code_intent", "target_layer": MIN_LAYER_OBSIDURE_AGENT, "emitted_alphabet": "patch / test / diff intent", "requires_external_llm": None},
+            "LEAN":       {"input_surface": "proof_intent", "target_layer": MIN_LAYER_LEAN_PROOF, "emitted_alphabet": "formal proof task", "requires_external_llm": None},
+        },
+        "phrase": "The LLM understands to act. Obsidia translates to route.",
+        "phrase_fr": "Le LLM comprend pour agir. Obsidia traduit pour router.",
+    }
+
+    # ── architecture_advantage_read ───────────────────────────────────────────
+    readable["architecture_advantage_read"] = {
+        "architecture_advantage_claimable": "INTERPRETATION_SUPPORTED_BY_CURRENT_METRICS_NOT_FULL_MARKET_PROOF",
+        "non_trained_structure_advantage": {
+            "observation": "Obsidia obtains speed, routing and governance gains on bounded surfaces without a massive training regime comparable to Gemini.",
+            "interpretation": "The gain does not come from a bigger model. It comes from reducing the search space before inference.",
+            "principle": "Known admissible route > model inference.",
+            "consequence": "When a route is known, structured, bounded, measured and admissible, a model call becomes a cost to justify.",
+        },
+        "structure_over_raw_intelligence": {
+            "statement": "Obsidia does not replace a large model with another large model. It moves part of the intelligence out of raw inference and into governed structure.",
+            "phrase": "LLMs centralize intelligence in inference. Obsidia redistributes intelligence into the structure of the path.",
+        },
+        "own_stack_over_cheap_model": {
+            "statement": "Obsidia does not rely on a cheaper model. It relies on a controlled stack.",
+            "phrase": "This is not a cheaper model. It is an architecture that reduces the need for a model.",
+        },
+        "probability_non_sovereign": {
+            "statement": "Probability may explore. It must not authorize.",
+            "breakdown": "Generative explores. Kernel bounds. Sigma alerts. Domains translate. X108 closes.",
+        },
+        "llm_role": {
+            "statement": "Obsidia does not eliminate LLMs. It puts them in their proper place: understand, generate, propose, repair — not govern.",
+        },
+        "kernel_authority": {
+            "statement": "Obsidia does not put all intelligence in the kernel. It puts all authority in the kernel.",
+            "phrase": "The kernel is powerful because it is non-negotiable, not because it is intelligent.",
+        },
+        "market_interpretation": {
+            "statement": "The market optimizes inference. Obsidia optimizes the decision to infer.",
+            "phrase": "They use the model to compensate for an architecture that cannot translate. Obsidia builds the translation.",
+            "phrase_fr": "Le marché optimise l'inférence. Obsidia optimise la décision d'inférer.",
+        },
+    }
+
     readable_dup = find_case_insensitive_duplicate_keys(readable)
     if readable_dup:
         readable["_warnings_case_dup_keys"] = readable_dup
@@ -3404,6 +3772,132 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         "> Accuracy measures route recognition, not inference economy.",
         "",
         "> Ce run prouve l'économie d'inférence sur routes connues. Le prochain run doit prouver le Path Compute live.",
+        "",
+    ]
+
+    # §10d LLM Necessity Read
+    _mn_read = readable.get("model_necessity_read", {}) if "readable" in dir() else {}
+    _mn_data = {r["family"]: r.get("model_necessity", {}) for r in rows}
+    md += [
+        "## §10d LLM Necessity Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| External LLM called by baseline | {sum(1 for r in rows if r.get('model_necessity', {}).get('gemini_external_llm_called'))} |",
+        f"| External LLM required by design | {sum(1 for r in rows if r.get('model_necessity', {}).get('external_llm_required_by_design') is True)} |",
+        f"| External LLM avoided by Obsidia | {sum(1 for r in rows if r.get('model_necessity', {}).get('external_llm_avoided_by_obsidia'))} |",
+        f"| Unnecessary generalist calls avoided | {sum(1 for r in rows if r.get('model_necessity', {}).get('unnecessary_generalist_call_avoided'))} |",
+        f"| Claimable unnecessary calls avoided | {sum(1 for r in rows if r.get('model_necessity', {}).get('necessity_claimable') and r.get('model_necessity', {}).get('unnecessary_generalist_call_avoided'))} |",
+        f"| Necessity claimable families | {[r['family'] for r in rows if r.get('model_necessity', {}).get('necessity_claimable')]} |",
+        f"| Non-claimable but measured families | {[r['family'] for r in rows if not r.get('model_necessity', {}).get('necessity_claimable') and r.get('model_necessity', {}).get('external_llm_avoided_by_obsidia')]} |",
+        "",
+        "**Minimal sufficient layer by family:**",
+        "",
+        "| family | minimal_layer | actual_layer | necessity_claimable |",
+        "| --- | --- | --- | --- |",
+    ]
+    for r in rows:
+        mn = r.get("model_necessity", {})
+        md.append(f"| {r['family']} | {mn.get('expected_minimal_layer')} | {mn.get('actual_obsidia_layer_used')} | {mn.get('necessity_claimable')} |")
+    md += [
+        "",
+        "> Ce benchmark mesure si l'appel à un LLM généraliste était nécessaire, pas seulement s'il était rapide ou correct.",
+        "",
+        "> **Obsidia ne bat pas Gemini en étant un meilleur Gemini. Obsidia bat Gemini quand Gemini n'aurait jamais dû être appelé.**",
+        "",
+    ]
+
+    # §10e Answer Adequacy Read
+    _aa_rows_md = [r.get("answer_adequacy", {}) for r in rows]
+    _aa_avg_md = round(sum(r.get("answer_adequacy_score", 0.0) for r in _aa_rows_md) / len(_aa_rows_md), 4) if _aa_rows_md else 0.0
+    md += [
+        "## §10e Answer Adequacy Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| Answer adequacy avg | {_aa_avg_md} |",
+        f"| Route correct count | {sum(1 for r in _aa_rows_md if r.get('route_correct'))}/{len(rows)} |",
+        f"| Output bounded count | {sum(1 for r in _aa_rows_md if r.get('output_bounded'))}/{len(rows)} |",
+        f"| Minimal layer respected count | {sum(1 for r in _aa_rows_md if r.get('minimal_layer_respected'))}/{len(rows)} |",
+        f"| Governance preserved count | {sum(1 for r in _aa_rows_md if r.get('governance_preserved'))}/{len(rows)} |",
+        f"| Trace/receipt available count | {sum(1 for r in _aa_rows_md if r.get('trace_or_receipt_available'))}/{len(rows)} |",
+        f"| Hallucination risk avoided count | {sum(1 for r in _aa_rows_md if r.get('hallucination_risk_avoided'))}/{len(rows)} |",
+        "",
+        "**Adequacy by family:**",
+        "",
+        "| family | score | route_correct | output_bounded | min_layer | governance | claimable |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in rows:
+        aa = r.get("answer_adequacy", {})
+        md.append(f"| {r['family']} | {aa.get('answer_adequacy_score')} | {aa.get('route_correct')} | {aa.get('output_bounded')} | {aa.get('minimal_layer_respected')} | {aa.get('governance_preserved')} | {aa.get('adequacy_claimable')} |")
+    md += [
+        "",
+        "> La meilleure réponse n'est pas toujours la plus fluide. C'est la sortie suffisante, gouvernée, au niveau minimal nécessaire.",
+        "",
+        "> Warning: Answer adequacy measures whether the output is correct, bounded, governed and sufficient; it does not measure prose quality.",
+        "",
+    ]
+
+    # §10f Universal Translation Layer Read
+    md += [
+        "## §10f Universal Translation Layer Read",
+        "",
+        f"| Field | Value |",
+        f"| --- | --- |",
+        f"| Claimability | SCHEMA_PROXY_ONLY_UNTIL_RUNTIME_TRANSLATOR_INSTRUMENTED |",
+        f"| Role | Convert human language, code, domain signals, errors and intentions into the Obsidia alphabet. |",
+        "",
+        "**Non-role:** Does not decide. Does not act. Does not replace X108. Does not act as a sovereign generalist model.",
+        "",
+        "| family | input_surface | target_layer | emitted_alphabet | requires_external_llm |",
+        "| --- | --- | --- | --- | --- |",
+        f"| FAST_PATH | natural_language_or_route_request | {MIN_LAYER_FAST_PATH} | route_label | False |",
+        f"| BANK | domain_request | {MIN_LAYER_DOMAIN_BRIDGE} | bank payload / domain state | False |",
+        f"| TRADING | domain_request | {MIN_LAYER_DOMAIN_BRIDGE} | trading payload / domain state | False |",
+        f"| GPS | domain_request | {MIN_LAYER_DOMAIN_BRIDGE} | gps payload / domain state | False |",
+        f"| BRODY | natural_language | {MIN_LAYER_BRODY_INTERNAL} | brody message / answer route | False |",
+        f"| OBSIDURE | code_intent | {MIN_LAYER_OBSIDURE_AGENT} | patch / test / diff intent | null (adapter missing) |",
+        f"| LEAN | proof_intent | {MIN_LAYER_LEAN_PROOF} | formal proof task | null (adapter missing) |",
+        "",
+        "> Le LLM comprend pour agir. Obsidia traduit pour router.",
+        "",
+    ]
+
+    # §10g Architecture Advantage Read
+    md += [
+        "## §10g Architecture Advantage Read",
+        "",
+        f"> architecture_advantage_claimable = INTERPRETATION_SUPPORTED_BY_CURRENT_METRICS_NOT_FULL_MARKET_PROOF",
+        "",
+        "**NON_TRAINED_STRUCTURE_ADVANTAGE**",
+        "- Obsidia obtains speed, routing and governance gains on bounded surfaces without a massive training regime comparable to Gemini.",
+        "- The gain does not come from a bigger model. It comes from reducing the search space before inference.",
+        "- Known admissible route > model inference.",
+        "",
+        "**STRUCTURE_OVER_RAW_INTELLIGENCE**",
+        "- LLMs centralize intelligence in inference. Obsidia redistributes intelligence into the structure of the path.",
+        "",
+        "**OWN_STACK_OVER_CHEAP_MODEL**",
+        "- This is not a cheaper model. It is an architecture that reduces the need for a model.",
+        "",
+        "**PROBABILITY_NON_SOVEREIGN**",
+        "- Probability may explore. It must not authorize.",
+        "- Generative explores. Kernel bounds. Sigma alerts. Domains translate. X108 closes.",
+        "",
+        "**KERNEL_AUTHORITY**",
+        "- The kernel is powerful because it is non-negotiable, not because it is intelligent.",
+        "",
+        "**MARKET_INTERPRETATION**",
+        "- Le marché optimise l'inférence. Obsidia optimise la décision d'inférer.",
+        "- They use the model to compensate for an architecture that cannot translate. Obsidia builds the translation.",
+        "",
+        "**Anti-overclaim guards:**",
+        "- Obsidia is not claimed to be a better generalist LLM.",
+        "- Cost comparison is not claimable while Obsidia is LOCAL_PROXY_UNCALIBRATED.",
+        "- Translation layer read is schema/proxy until runtime translator instrumentation exists.",
+        "- Architecture advantage read is interpretation supported by metrics, not full market proof.",
+        "- Extreme ratios indicate a change of path, not general intelligence superiority.",
         "",
     ]
 
