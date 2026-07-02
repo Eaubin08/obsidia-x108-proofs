@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""OBSIDIA TERMINAL CLI V0 — entree unique NON SOUVERAINE.
+"""OBSIDIA TERMINAL CLI — entree unique NON SOUVERAINE.
 
 Usage:
-    python scripts/obsidia_cli.py doctor
+    python scripts/obsidia_cli.py                 # shell interactif obsidia>
+    python scripts/obsidia_cli.py doctor          # one-shot
     python scripts/obsidia_cli.py "statut du kernel"
-    python scripts/obsidia_cli.py "audit merkle"
 
-Garanties V0 (par construction, pas par option) :
+Garanties (par construction, pas par option) :
   - AUCUN subprocess : le CLI ne lance jamais de commande shell.
   - Seul EXECUTE possible : doctor/status/sigma via HTTP GET readonly.
   - Aucune ecriture hors de son receipt JSONL local non souverain.
@@ -22,6 +22,7 @@ import re
 import sys
 import unicodedata
 import urllib.request
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -129,7 +130,7 @@ def policy_check(normalized: str, registry: dict) -> str | None:
 
 
 # ----------------------------------------------------------------------------
-# Doctor : EXECUTE readonly du terminal V0 (HTTP GET, jamais de shell)
+# Doctor : EXECUTE readonly du terminal (HTTP GET, jamais de shell)
 # ----------------------------------------------------------------------------
 def run_doctor(registry: dict) -> dict:
     results = {}
@@ -212,12 +213,69 @@ def handle(raw: str, registry: dict) -> dict:
     return in_obj
 
 
+# ----------------------------------------------------------------------------
+# Shell interactif V1 — simple boucle autour de handle(). Aucun pouvoir
+# nouveau : memes sorties, memes receipts, meme policy. Le terminal ne
+# decide rien ; X108 decide.
+# ----------------------------------------------------------------------------
+_INTERNAL_EXIT = ("exit", "quit")
+_INTERNAL_HELP = ("help", "?")
+_INTERNAL_CLEAR = ("clear",)
+
+
+def print_shell_help(registry: dict) -> None:
+    """Aide 100% locale, derivee du registry deja charge. Aucun reseau."""
+    print("obsidia — terminal non souverain (decision_authority = KX108_ONLY)")
+    print("Doctrine : X108 tranche. Sigma guide. Brody explique. Obsidure construit.")
+    print("          Domains bridge-only. Memory readonly.")
+    print("Sorties possibles : EXECUTE (GET readonly) | COMMANDS | GUIDE | POLICY_DENY | STOP_UNKNOWN")
+    print("Couches routables :")
+    for layer, spec in (registry.get("layers") or {}).items():
+        triggers = ", ".join(str(t) for t in (spec.get("triggers") or [])[:4])
+        print(f"  {layer:10} [{spec.get('mode', '?')}] triggers: {triggers}, ...")
+    print("Commandes internes : help/? , clear, exit/quit. Tout le reste = IN route.")
+
+
+def interactive_shell(registry: dict) -> int:
+    session_id = uuid.uuid4().hex[:8]
+    print("obsidia terminal — non souverain, readonly. X108 decide.")
+    print(f"session {session_id} — tape 'help' pour l'aide, 'exit' pour sortir.")
+    while True:
+        try:
+            raw = input("obsidia> ")
+        except (EOFError, KeyboardInterrupt):
+            print()  # retour ligne propre
+            print("session fermee.")
+            return 0
+        line = raw.strip()
+        if not line:
+            continue
+        low = line.lower()
+        if low in _INTERNAL_EXIT:
+            print("session fermee.")
+            return 0
+        if low in _INTERNAL_HELP:
+            print_shell_help(registry)
+            continue
+        if low in _INTERNAL_CLEAR:
+            # ANSI clear uniquement — pas de cls, pas de subprocess, etat intact.
+            print("\033[2J\033[H", end="")
+            continue
+        result = handle(line, registry)
+        result["session_id"] = session_id
+        receipt_path = write_receipt(registry, result)
+        result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
 def main(argv: list[str]) -> int:
-    if not argv or argv[0] in ("-h", "--help"):
+    if argv and argv[0] in ("-h", "--help"):
         print(__doc__)
         return 0
-    raw = " ".join(argv)
     registry = load_registry(REGISTRY_PATH)
+    if not argv:
+        return interactive_shell(registry)
+    raw = " ".join(argv)
     result = handle(raw, registry)
     receipt_path = write_receipt(registry, result)
     result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
