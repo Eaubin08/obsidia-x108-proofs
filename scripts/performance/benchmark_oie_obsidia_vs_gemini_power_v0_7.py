@@ -3022,6 +3022,101 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
             "fallback_families": _LIVE_LOCAL_UNAVAILABLE_FAMILIES,
             "missing_families": _ADAPTER_MISSING_FAMILIES_LIVE,
         },
+        "metrics_read": {
+            "execution": {
+                "benchmark_version": BENCHMARK_VERSION,
+                "tasks_attempted": summary.get("tasks_attempted"),
+                "obsidia_exec_mode": (summary.get("obsidia_live_adapter_summary") or {}).get("requested_mode", OIE_OBSIDIA_EXEC_MODE_AUTO),
+                "gemini_exec_mode": summary.get("gemini_exec_mode"),
+                "obsidia_api_base": _OBSIDIA_API_BASE,
+                "obsidia_kernel_target": _OBSIDIA_KERNEL_URL,
+                "live_local_rows_count": (summary.get("obsidia_live_adapter_summary") or {}).get("live_local_rows_count", 0),
+                "bridge_kernel_unreachable_count": (summary.get("obsidia_live_adapter_summary") or {}).get("bridge_kernel_unreachable_count", 0),
+                "adapter_missing_rows_count": (summary.get("obsidia_live_adapter_summary") or {}).get("adapter_missing_rows_count", 0),
+            },
+            "routing_claims": {
+                "obsidia_route_accuracy": summary.get("obsidia_route_accuracy"),
+                "obsidia_wired_surface_accuracy": summary.get("obsidia_wired_surface_accuracy"),
+                "gemini_route_accuracy": summary.get("gemini_route_accuracy"),
+                "gemini_on_obsidia_wired_surface_accuracy": summary.get("gemini_on_obsidia_wired_surface_accuracy"),
+                "route_claimable_count": cm.get("route_claimable_count"),
+                "functional_claimable_count": cm.get("functional_claimable_count"),
+                "domain_claimable_count": cm.get("domain_claimable_count"),
+                "cost_claimable_count": cm.get("cost_claimable_count"),
+                "adapter_missing_non_claimable_count": cm.get("adapter_missing_non_claimable_count"),
+                "note": "Accuracy measures route recognition, not inference economy.",
+            },
+            "inference_economy": {
+                "inference_avoided_count": summary.get("inference_avoided_count"),
+                "inference_avoided_rate": summary.get("inference_avoided_rate"),
+                "model_avoided_count": summary.get("obsidia_model_call_avoided_count"),
+                "model_avoided_families": summary.get("model_avoided_families"),
+                "model_calls_avoided_per_1000_requests": summary.get("model_calls_avoided_per_1000_requests"),
+                "model_calls_avoided_per_1m_requests": summary.get("model_calls_avoided_per_1m_requests"),
+                "unnecessary_inference_avoided_count": summary.get("unnecessary_inference_avoided_count"),
+                "unnecessary_inference_avoided_rate": summary.get("unnecessary_inference_avoided_rate"),
+            },
+            "performance": {
+                "avg_speedup_ratio": summary.get("avg_speedup_ratio"),
+                "available_surface_avg_speedup_ratio": summary.get("available_surface_avg_speedup_ratio"),
+                "model_avoided_avg_speedup_ratio": summary.get("model_avoided_avg_speedup_ratio"),
+                "terrain_avg_speedup_ratio": summary.get("terrain_avg_speedup_ratio"),
+                "avg_latency_delta_pct": summary.get("avg_latency_delta_pct"),
+                "obsidia_avg_latency_ms": summary.get("obsidia_avg_latency_ms"),
+                "gemini_avg_latency_ms": summary.get("gemini_avg_latency_ms"),
+                "governance_preserved_at_speed_rate": summary.get("governance_preserved_at_speed_rate"),
+            },
+            "energy": {
+                "energy_source": summary.get("energy_source"),
+                "obsidia_total_energy_wh_est": summary.get("obsidia_total_energy_wh_est"),
+                "gemini_total_energy_wh_est": summary.get("gemini_total_energy_wh_est"),
+                "total_energy_avoided_wh": summary.get("total_energy_avoided_wh"),
+                "energy_saved_per_1000_requests_wh": summary.get("energy_saved_per_1000_requests_wh"),
+                "energy_saved_per_1m_requests_kwh": summary.get("energy_saved_per_1m_requests_kwh"),
+                "avg_energy_savings_ratio": summary.get("avg_energy_savings_ratio"),
+                "warning": "Energy is proxy-estimated unless hardware/provider telemetry is supplied.",
+            },
+            "tokens_cost": {
+                "cost_source": summary.get("cost_source"),
+                "obsidia_cost_basis_global": summary.get("obsidia_cost_basis_global"),
+                "gemini_cost_basis_global": summary.get("gemini_cost_basis_global"),
+                "obsidia_total_estimated_tokens": summary.get("obsidia_total_estimated_tokens"),
+                "gemini_total_tokens": summary.get("gemini_total_tokens"),
+                "obsidia_total_cost_est": summary.get("obsidia_total_cost_est"),
+                "gemini_total_cost_measured": summary.get("gemini_total_cost_measured"),
+                "total_avoided_cost": summary.get("total_avoided_cost"),
+                "cost_comparison_claimable_global": summary.get("cost_comparison_claimable_global"),
+                "warning": "Cost comparison is not claimable while Obsidia is LOCAL_PROXY_UNCALIBRATED.",
+            },
+            "oie_indices": {
+                "osca_ratio": summary.get("osca_ratio"),
+                "oapi_ratio": summary.get("oapi_ratio"),
+                "odpi_ratio": summary.get("odpi_ratio"),
+                "oie_indices_claimable": summary.get("oie_indices_claimable"),
+                "oie_primary_baseline_label": summary.get("oie_primary_baseline_label"),
+                "oie_agentic_baseline_label": summary.get("oie_agentic_baseline_label"),
+                "warning": "OIE indices are proxy baseline metrics, not real provider billing.",
+            },
+            "gencoin": {
+                "oie_gencoin_bridge": bridge,
+            },
+        },
+        "path_read": {
+            "known_path_detected_count": summary.get("known_path_detected_count"),
+            "known_path_detected_rate": summary.get("known_path_detected_rate"),
+            "model_call_avoided_by_known_path_count": summary.get("inference_avoided_count"),
+            "model_call_avoided_by_known_path_rate": summary.get("inference_avoided_rate"),
+            "model_avoided_families": summary.get("model_avoided_families"),
+            "path_compute_runtime_used": False,
+            "path_compute_runtime_claimable": False,
+            "fast_path_live_bridge_available": _OBSIDIA_LIVE_ADAPTER_REGISTRY.get("FAST_PATH", {}).get("usable_for_live_local", False),
+            "fast_path_adapter_type": _OBSIDIA_LIVE_ADAPTER_REGISTRY.get("FAST_PATH", {}).get("adapter_type", "NONE"),
+            "fast_path_reason_if_not_usable": _OBSIDIA_LIVE_ADAPTER_REGISTRY.get("FAST_PATH", {}).get("reason_if_not_usable"),
+            "live_bridge_claimable_families": [r["family"] for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_LIVE_LOCAL],
+            "bridge_attempted_kernel_unreachable_families": [r["family"] for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"],
+            "adapter_missing_families": [r["family"] for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING],
+            "wording_guard": "This run proves inference economy on known routes; it does not yet prove full Path Compute runtime.",
+        },
     }
     readable_dup = find_case_insensitive_duplicate_keys(readable)
     if readable_dup:
@@ -3279,6 +3374,38 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
     else:
         md.append(f"> **LIVE_LOCAL_BRIDGE confirmé** : {live_count} row(s) exécutées via le bridge live API 8000 → kernel 3001.")
     md += [""]
+
+    # §10c Known Path / Path Compute Read
+    _kp_count = summary.get("known_path_detected_count", 0)
+    _kp_rate = summary.get("known_path_detected_rate", 0.0)
+    _inf_avoided = summary.get("inference_avoided_count", 0)
+    _model_avoided_fams = summary.get("model_avoided_families") or []
+    _fp_reg = _OBSIDIA_LIVE_ADAPTER_REGISTRY.get("FAST_PATH", {})
+    _fp_bridge_avail = _fp_reg.get("usable_for_live_local", False)
+    _live_bridge_fams = [r["family"] for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_LIVE_LOCAL]
+    _kernel_unreach_fams = [r["family"] for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"]
+    _missing_fams = [r["family"] for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING]
+    md += [
+        "## §10c Known Path / Path Compute Read",
+        "",
+        f"| Metric | Value |",
+        f"| --- | --- |",
+        f"| Known path detected | {_kp_count}/{len(rows)} ({_kp_rate}) |",
+        f"| Model calls avoided by known path | {_inf_avoided}/{len(rows)} |",
+        f"| Model avoided families | {_model_avoided_fams} |",
+        f"| Path Compute runtime used | False |",
+        f"| Path Compute runtime claimable | False |",
+        f"| Fast path live bridge available | {_fp_bridge_avail} |",
+        f"| Fast path adapter type | {_fp_reg.get('adapter_type', 'NONE')} |",
+        f"| Live bridge claimable families | {_live_bridge_fams} |",
+        f"| Bridge attempted, kernel unreachable | {_kernel_unreach_fams} |",
+        f"| Adapter missing | {_missing_fams} |",
+        "",
+        "> Accuracy measures route recognition, not inference economy.",
+        "",
+        "> Ce run prouve l'économie d'inférence sur routes connues. Le prochain run doit prouver le Path Compute live.",
+        "",
+    ]
 
     # §11 Missing / Next Work
     md += [

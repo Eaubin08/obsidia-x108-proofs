@@ -2081,3 +2081,159 @@ class TestObsidiaLiveAdapter:
         bm.write_runtime_reports(tmp_path, s, rows)
         md = (tmp_path / "summary.md").read_text(encoding="utf-8")
         assert "Obsidia Live Local Read" in md
+
+
+class TestMetricsReadPathRead:
+    """Tests pour metrics_read et path_read dans readable_report.json + §10c dans summary.md."""
+
+    def _all_rows(self):
+        return [
+            bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                   bm.run_gemini_lane_dryrun(t))
+            for t in bm.POWER_TASKS
+        ]
+
+    def _write_reports(self, tmp_path):
+        rows = self._all_rows()
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return rows, s
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── 1. readable_report.json contient metrics_read ─────────────────────────
+
+    def test_readable_report_has_metrics_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "metrics_read" in data
+
+    def test_metrics_read_has_execution(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "execution" in data["metrics_read"]
+        assert "tasks_attempted" in data["metrics_read"]["execution"]
+
+    def test_metrics_read_routing_claims_note(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        note = data["metrics_read"]["routing_claims"]["note"]
+        assert "route recognition" in note
+
+    def test_metrics_read_cost_comparison_claimable_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["metrics_read"]["tokens_cost"]["cost_comparison_claimable_global"] is False
+
+    def test_metrics_read_energy_source_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        energy_src = data["metrics_read"]["energy"]["energy_source"]
+        assert energy_src in ("ENERGY_PROXY_ESTIMATE", "ENERGY_PROXY_UNAVAILABLE", "ENERGY_SOURCE_ESTIMATE")
+
+    def test_metrics_read_oie_indices_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        oie = data["metrics_read"]["oie_indices"]
+        assert "osca_ratio" in oie
+        assert "oapi_ratio" in oie
+        assert "odpi_ratio" in oie
+
+    def test_metrics_read_oie_indices_warning(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "proxy baseline" in data["metrics_read"]["oie_indices"]["warning"]
+
+    def test_metrics_read_energy_warning(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "proxy-estimated" in data["metrics_read"]["energy"]["warning"]
+
+    def test_metrics_read_tokens_cost_warning(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "LOCAL_PROXY_UNCALIBRATED" in data["metrics_read"]["tokens_cost"]["warning"]
+
+    def test_metrics_read_inference_economy_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        ie = data["metrics_read"]["inference_economy"]
+        assert "inference_avoided_count" in ie
+        assert "model_calls_avoided_per_1000_requests" in ie
+
+    def test_metrics_read_performance_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        perf = data["metrics_read"]["performance"]
+        assert "avg_speedup_ratio" in perf
+        assert "governance_preserved_at_speed_rate" in perf
+
+    def test_metrics_read_gencoin_bridge_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "gencoin" in data["metrics_read"]
+        assert "oie_gencoin_bridge" in data["metrics_read"]["gencoin"]
+
+    # ── 2. readable_report.json contient path_read ────────────────────────────
+
+    def test_readable_report_has_path_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "path_read" in data
+
+    def test_path_compute_runtime_used_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["path_read"]["path_compute_runtime_used"] is False
+
+    def test_path_compute_runtime_claimable_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["path_read"]["path_compute_runtime_claimable"] is False
+
+    def test_fast_path_live_bridge_available_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        # FAST_PATH n'a pas de bridge dédié en V0.7 → toujours False
+        assert data["path_read"]["fast_path_live_bridge_available"] is False
+
+    def test_path_read_model_call_avoided_equals_inference_avoided(self, tmp_path):
+        rows, s = self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["path_read"]["model_call_avoided_by_known_path_count"] == s.get("inference_avoided_count")
+
+    def test_path_read_live_bridge_claimable_families_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert isinstance(data["path_read"]["live_bridge_claimable_families"], list)
+
+    def test_path_read_adapter_missing_families_contains_obsidure_lean(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        missing = data["path_read"]["adapter_missing_families"]
+        assert "OBSIDURE" in missing
+        assert "LEAN" in missing
+
+    def test_path_read_wording_guard_present(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "inference economy" in data["path_read"]["wording_guard"]
+
+    # ── 3. summary.md §10c ────────────────────────────────────────────────────
+
+    def test_summary_md_has_known_path_section(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Known Path / Path Compute Read" in md
+
+    def test_summary_md_has_inference_economy_phrase(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Ce run prouve l'économie d'inférence sur routes connues" in md
+
+    def test_summary_md_has_accuracy_note(self, tmp_path):
+        self._write_reports(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Accuracy measures route recognition, not inference economy." in md
