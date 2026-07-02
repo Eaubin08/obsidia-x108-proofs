@@ -1,13 +1,15 @@
 # =============================================================================
-# OBSIDIA TERMINAL REGISTRY V0
+# OBSIDIA TERMINAL REGISTRY V1 — LIVE_ALIGNMENT (observation locale 2026-07-02)
 # Non souverain. Le terminal ne decide rien. decision_authority = KX108_ONLY.
 # Ce fichier est un lexique de routage : couche -> triggers -> commandes.
 # Il n'accorde AUCUNE permission d'execution au-dela de doctor/status (HTTP GET).
 # Format : sous-ensemble YAML simple (dicts indentes 2 espaces, listes inline).
+# Source de verite endpoints : observation PowerShell locale utilisateur
+# (LIVE_STACK_OBSERVATION_STATUS: PARTIAL_PASS).
 # =============================================================================
 
-version: 0
-scope: OBSIDIA_TERMINAL_COCKPIT_V0
+version: 1
+scope: OBSIDIA_TERMINAL_REGISTRY_LIVE_ALIGNMENT_V1
 authority: NONE
 sovereign: false
 default_output: COMMANDS
@@ -18,27 +20,30 @@ ports:
   kernel: 3001
   ui: 5173
   graphiti: 8011
-  neo4j: 7475
+  neo4j_browser: 7475
+  neo4j_bolt: 7688
 
+# Endpoints doctor — GET readonly confirmes par observation locale.
+# live_kernel_adapters (/api/live/kernel/adapters/{bank,trading,gps}) sont
+# POST-only : verifies via OpenAPI/documentation de routes, PAS via doctor GET.
 health_endpoints:
-  api_health: http://127.0.0.1:8000/health
-  api_status: http://127.0.0.1:8000/status
-  x108_status: http://127.0.0.1:8000/x108/status
-  graphiti: http://127.0.0.1:8011/health
-  kernel: http://127.0.0.1:3001/health
+  sigma_domains: http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains
+  sigma_evaluate: http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate
+  graphiti_frozen_status: http://127.0.0.1:8011/graph/v20/frozen/status
   ui: http://127.0.0.1:5173/
+  kernel_unconfirmed: http://127.0.0.1:3001/health
 
 layers:
   brody:
     mode: readonly
     triggers: [brody, chat, contexte, monitoring, cockpit, reponse, synthese]
     commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1", "powershell -File scripts/run_brody_terminal_enriched.ps1"]
-    note: Brody parle et explique. Non souverain.
+    note: Brody vit dans l'API 8000 via /api/brody/* (pas de serveur Brody separe). Pas d'autorite Brody distincte. Brody explique, ne decide pas.
   obsidure:
     mode: gated
     triggers: [obsidure, patch, proposal, forge, genere, generation, diff, forbidden-token]
     commands: ["powershell -File scripts/run_agent_obsidure.ps1"]
-    note: Obsidure v2 gele. Proposals uniquement, apply confirmation-gated hors terminal.
+    note: Obsidure v2 gele. Proposals uniquement, apply confirmation-gated hors terminal. launch_status=KNOWN_COMMANDS_ONLY.
   obsidienne:
     mode: readonly
     triggers: [lean, preuve, preuves, theoreme, invariant, lake, proof, obsidienne]
@@ -47,13 +52,13 @@ layers:
   kernel:
     mode: kernel_check
     triggers: [kernel, x108, admissibilite, decision, gate, souverain]
-    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1", "curl http://127.0.0.1:8000/x108/status"]
-    note: Seule autorite. Le terminal consulte le status, n'emet jamais ALLOW/HOLD/BLOCK.
+    commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1", "curl http://127.0.0.1:3001/health  # NOT_CONFIRMED en observation locale"]
+    note: Seule autorite. Le terminal consulte le status, n'emet jamais ALLOW/HOLD/BLOCK. Kernel 3001 /health non confirme lors de l'observation V0.
   domains:
     mode: bridge_only
     triggers: [bank, banque, trading, gps, aviation, defense, domaine, domains]
-    commands: ["curl http://127.0.0.1:8000/sigma/bank", "curl http://127.0.0.1:8000/sigma/trading", "curl http://127.0.0.1:8000/sigma/gps-defense-aviation"]
-    note: bridge-only, emits_act=false. Aucun ACT via terminal.
+    commands: ["curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains", "curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate"]
+    note: Domains observed - bank, trading, ecom, gps_defense_aviation. Bridge-only. decision_authority=KX108_ONLY. readonly=true. advisory_only=true. allowed_to_decide=false. emits_act=false. memory_write=false. Les live kernel adapters /api/live/kernel/adapters/{bank,trading,gps} existent mais sont POST_ONLY_ADAPTERS - jamais utilises comme health GET par doctor.
   audit:
     mode: readonly
     triggers: [audit, merkle, sha256, manifest, freeze, seal, verifie, verification, rfc3161]
@@ -62,17 +67,17 @@ layers:
   memory:
     mode: readonly
     triggers: [memoire, memory, graphiti, session, sources, projection]
-    commands: ["curl http://127.0.0.1:8011/health", "# memoire readonly via sigma/graphiti_readonly_bridge.py — memory_write=false"]
-    note: Projection readonly. memory_write=false, toujours.
+    commands: ["curl http://127.0.0.1:8011/graph/v20/frozen/status"]
+    note: Graphiti frozen readonly status, pas une autorite. live_neo4j_dependency=false peut apparaitre dans la reponse. memory_write=false, toujours.
   live:
     mode: status
     triggers: [status, statut, health, sante, port, ports, serveur, serveurs, live, endpoint, doctor, tourne, allume]
     commands: ["powershell -File scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1"]
-    note: Seule couche EXECUTE directe du terminal V0 (HTTP GET readonly).
+    note: Seule couche EXECUTE directe du terminal (HTTP GET readonly sur health_endpoints ci-dessus).
   sigma:
     mode: guidance
     triggers: [sigma, coherence, contradiction, guidance, introspection, incoherence]
-    commands: ["python -m sigma.sigma_monitor  # readonly", "curl http://127.0.0.1:8000/sigma/domains"]
+    commands: ["curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains", "curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate"]
     note: Sigma guide et explique. HOLD_RECOMMENDED est une recommandation, jamais une decision X108.
 
 policy:
