@@ -8,7 +8,7 @@ Usage:
 
 Garanties V0 (par construction, pas par option) :
   - AUCUN subprocess : le CLI ne lance jamais de commande shell.
-  - Seul EXECUTE possible : doctor/status via HTTP GET readonly (timeout 1s).
+  - Seul EXECUTE possible : doctor/status/sigma via HTTP GET readonly.
   - Aucune ecriture hors de son receipt JSONL local non souverain.
   - Pas de --apply, --commit, --deploy, --act : ces flags n'existent pas.
   - stdlib uniquement, zero import de apps/, sigma/, periphery/.
@@ -31,6 +31,11 @@ from obsidia_guidance_vocabulary import (  # noqa: E402
     GUIDANCE_ACTIONS,
     NON_SOVEREIGN_RECEIPT_DEFAULTS,
     assert_output_allowed,
+)
+from obsidia_sigma_guidance import (  # noqa: E402
+    collect_file_signals,
+    derive_guidance,
+    sigma_guidance_report,
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -74,8 +79,7 @@ def load_registry(path: Path) -> dict:
     stack = [(-1, root)]
     for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.split("#", 1)[0].rstrip() if not line.lstrip().startswith("#") else ""
-        # Ne pas couper les '#' a l'interieur de guillemets/listes : cas simple ici,
-        # les commandes contenant '#' sont entre guillemets -> re-lire brut si besoin.
+        # Les commandes contenant '#' sont entre guillemets -> garder la ligne brute.
         if '"' in line and "#" in line:
             stripped = line.rstrip()
         if not stripped.strip():
@@ -125,7 +129,7 @@ def policy_check(normalized: str, registry: dict) -> str | None:
 
 
 # ----------------------------------------------------------------------------
-# Doctor : seul EXECUTE du terminal V0 (HTTP GET readonly, jamais de shell)
+# Doctor : EXECUTE readonly du terminal V0 (HTTP GET, jamais de shell)
 # ----------------------------------------------------------------------------
 def run_doctor(registry: dict) -> dict:
     results = {}
@@ -170,32 +174,41 @@ def handle(raw: str, registry: dict) -> dict:
         "route_reason": reasons or ["aucun trigger reconnu"],
     }
 
+    file_signals = collect_file_signals()
+
     denied = policy_check(normalized, registry)
     if denied:
         in_obj.update(output=assert_output_allowed("POLICY_DENY"),
-                      guidance=assert_output_allowed("HOLD_RECOMMENDED"),
                       deny_keyword=denied,
                       message=registry.get("policy", {}).get("deny_message"),
                       commands=spec.get("commands", []))
+        in_obj.update(derive_guidance(layer, "POLICY_DENY", file_signals))
         return in_obj
 
     if layer == "unknown":
         in_obj.update(output=assert_output_allowed("STOP_UNKNOWN"),
-                      guidance=assert_output_allowed("REQUEST_CONTEXT"),
                       message="Intention non reconnue. Precise la couche visee "
                               "(brody, obsidure, obsidienne, kernel, domains, audit, memory, live, sigma).")
+        in_obj.update(derive_guidance(layer, "STOP_UNKNOWN", file_signals))
+        return in_obj
+
+    if layer == "sigma":
+        in_obj["output"] = assert_output_allowed("EXECUTE")
+        in_obj["sigma"] = sigma_guidance_report()
+        in_obj.update({k: v for k, v in in_obj["sigma"].items() if k.startswith("guidance")})
+        in_obj["commands"] = spec.get("commands", [])
         return in_obj
 
     if layer == "live" or "doctor" in normalized:
         in_obj.update(output=assert_output_allowed("EXECUTE"),
-                      guidance=assert_output_allowed("CONTINUE"),
                       doctor=run_doctor(registry))
+        in_obj.update(derive_guidance(layer, "EXECUTE", file_signals))
         return in_obj
 
     in_obj.update(output=assert_output_allowed("COMMANDS"),
-                  guidance=assert_output_allowed("CONTINUE"),
                   commands=spec.get("commands", []),
                   note=spec.get("note", ""))
+    in_obj.update(derive_guidance(layer, "COMMANDS", file_signals))
     return in_obj
 
 
