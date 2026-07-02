@@ -2577,3 +2577,109 @@ class TestArchitectureAdvantageRead:
         self._write_reports(tmp_path)
         md = (tmp_path / "summary.md").read_text(encoding="utf-8")
         assert "Le marché optimise l'inférence. Obsidia optimise la décision d'inférer." in md
+
+
+
+class TestV074ClaimabilityAlignment:
+    """Micro-tests V0.7.4: claimability alignment."""
+
+    def _task(self, family):
+        return next(t for t in bm.POWER_TASKS if t["family"] == family)
+
+    def _row(self, family, status, route=True, claimable=True):
+        return {
+            "task_id": f"{family.lower()}_v074_test",
+            "family": family,
+            "obsidia_status": status,
+            "gemini_status": bm.GEMINI_STATUS_REAL,
+            "obsidia_route_match": route,
+            "route_accuracy_claimable": claimable,
+            "obsidia_decision_authority": "KX108_ONLY",
+            "obsidia_emits_act": False,
+            "obsidia_memory_write": False,
+            "obsidia_kernel_mutation": False,
+            "dual_lane": {"present": True},
+        }
+
+    def test_fast_path_actual_layer_is_fast_path_but_not_claimable(self):
+        task = self._task("FAST_PATH")
+        row = self._row("FAST_PATH", "LIVE_LOCAL_UNAVAILABLE", route=True, claimable=False)
+        mn = bm.compute_model_necessity(task, row)
+        row["model_necessity"] = mn
+        aa = bm.compute_answer_adequacy(task, row)
+
+        assert mn["actual_obsidia_layer_used"] == bm.MIN_LAYER_FAST_PATH
+        assert mn["minimal_layer_respected"] is True
+        assert mn["necessity_claimable"] is False
+        assert "FAST_PATH_API_STATUS_ONLY" in mn["reason_codes"]
+        assert None not in mn["reason_codes"]
+        assert aa["adequacy_claimable"] is False
+        assert "dedicated live bridge not available" in aa["adequacy_non_claimable_reason"]
+
+    def test_brody_actual_layer_internal_translation_but_not_claimable(self):
+        task = self._task("BRODY")
+        row = self._row("BRODY", "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE", route=True, claimable=True)
+        mn = bm.compute_model_necessity(task, row)
+        row["model_necessity"] = mn
+        aa = bm.compute_answer_adequacy(task, row)
+
+        assert mn["actual_obsidia_layer_used"] == bm.MIN_LAYER_BRODY_INTERNAL
+        assert mn["minimal_layer_respected"] is True
+        assert mn["model_role_for_obsidia"] == bm.MODEL_ROLE_INTERNAL_TRANSLATION
+        assert mn["necessity_claimable"] is False
+        assert "KERNEL_UNREACHABLE" in mn["reason_codes"]
+        assert None not in mn["reason_codes"]
+        assert aa["adequacy_claimable"] is False
+        assert "kernel unreachable" in aa["adequacy_non_claimable_reason"]
+
+    def test_bank_trading_gps_are_adequacy_claimable_on_live_bridge(self):
+        for family in ("BANK", "TRADING", "GPS"):
+            task = self._task(family)
+            row = self._row(family, bm.OBSIDIA_STATUS_LIVE_LOCAL, route=True, claimable=True)
+            mn = bm.compute_model_necessity(task, row)
+            row["model_necessity"] = mn
+            aa = bm.compute_answer_adequacy(task, row)
+
+            assert mn["actual_obsidia_layer_used"] == bm.MIN_LAYER_DOMAIN_BRIDGE
+            assert mn["necessity_claimable"] is True
+            assert aa["adequacy_claimable"] is True
+            assert aa["answer_adequacy_score"] == 1.0
+
+    def test_adapter_missing_not_adequacy_claimable(self):
+        for family in ("OBSIDURE", "LEAN"):
+            task = self._task(family)
+            row = self._row(family, bm.OBSIDIA_STATUS_MISSING, route=False, claimable=False)
+            mn = bm.compute_model_necessity(task, row)
+            row["model_necessity"] = mn
+            aa = bm.compute_answer_adequacy(task, row)
+
+            assert mn["actual_obsidia_layer_used"] == bm.MIN_LAYER_ADAPTER_MISSING
+            assert mn["necessity_claimable"] is False
+            assert aa["adequacy_claimable"] is False
+            assert aa["adequacy_non_claimable_reason"] == "Adapter missing."
+
+    def test_summary_contains_measured_but_not_claimable_phrase(self, tmp_path):
+        rows = []
+        for t in bm.POWER_TASKS:
+            if t["family"] == "FAST_PATH":
+                status, route, claimable = "LIVE_LOCAL_UNAVAILABLE", True, False
+            elif t["family"] == "BRODY":
+                status, route, claimable = "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE", True, True
+            elif t["family"] in ("BANK", "TRADING", "GPS"):
+                status, route, claimable = bm.OBSIDIA_STATUS_LIVE_LOCAL, True, True
+            else:
+                status, route, claimable = bm.OBSIDIA_STATUS_MISSING, False, False
+
+            row = self._row(t["family"], status, route=route, claimable=claimable)
+            row["model_necessity"] = bm.compute_model_necessity(t, row)
+            row["answer_adequacy"] = bm.compute_answer_adequacy(t, row)
+            rows.append(row)
+
+        summary = bm.compute_summary(rows, bm.POWER_TASKS)
+        bm.write_runtime_reports(tmp_path, summary, rows)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "FAST_PATH et BRODY peuvent être mesurés" in md
+
+        import json as _json
+        data = _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+        assert data["answer_adequacy_read"]["answer_adequacy_claimable_avg"] == 1.0

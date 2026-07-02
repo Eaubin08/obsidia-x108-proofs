@@ -848,74 +848,72 @@ POWER_TASKS: list[dict] = [
 
 def compute_model_necessity(task: dict, row: dict) -> dict:
     """Calcule le bloc model_necessity pour une row comparative."""
-    family = task.get("family", "UNKNOWN")
+    family = task.get("family", row.get("family", "UNKNOWN"))
     obs_status = row.get("obsidia_status", "")
     gem_status = row.get("gemini_status", "")
     obs_route_match = row.get("obsidia_route_match")
     comparison_claimable = row.get("route_accuracy_claimable", False)
+
     is_adapter_missing = obs_status == OBSIDIA_STATUS_MISSING
     is_kernel_unreach = obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"
-    is_fast_path_only = obs_status in (OBSIDIA_STATUS_FROZEN, "LIVE_LOCAL_UNAVAILABLE") and family == "FAST_PATH"
-    is_fast_path_api_status = (_OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {}).get("adapter_type") == "API_STATUS_ONLY")
+    is_fast_path_api_status = (
+        family == "FAST_PATH"
+        and _OBSIDIA_LIVE_ADAPTER_REGISTRY.get(family, {}).get("adapter_type") == "API_STATUS_ONLY"
+    )
 
     external_llm_req = task.get("external_llm_required_by_design")
     expected_min_layer = task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN)
 
     gemini_external_called = gem_status == GEMINI_STATUS_REAL
-    obsidia_external_called = False  # Obsidia n'appelle jamais un LLM externe en V0.7.x
+    obsidia_external_called = False
 
     external_llm_avoided = (
         not obsidia_external_called
         and gemini_external_called
         and external_llm_req is False
     )
+
     governance_clean_row = (
-        row.get("obsidia_decision_authority") == "KX108_ONLY"
-        or row.get("obsidia_emits_act") is False  # proxy si decision_authority absent
+        row.get("obsidia_decision_authority") in ("KX108_ONLY", None)
+        and row.get("obsidia_emits_act") in (False, None)
+        and row.get("obsidia_memory_write") in (False, None)
+        and row.get("obsidia_kernel_mutation") in (False, None)
     )
+
     unnecessary_avoided = (
         external_llm_avoided
         and obs_route_match is True
+        and governance_clean_row
         and not is_adapter_missing
     )
 
-    # Calcul actual_obsidia_layer_used
     if is_adapter_missing:
         actual_layer = MIN_LAYER_ADAPTER_MISSING
-    elif obs_status == OBSIDIA_STATUS_LIVE_LOCAL:
-        layer_map = {
-            "FAST_PATH": MIN_LAYER_FAST_PATH,
-            "BRODY": MIN_LAYER_BRODY_INTERNAL,
-            "BANK": MIN_LAYER_DOMAIN_BRIDGE,
-            "TRADING": MIN_LAYER_DOMAIN_BRIDGE,
-            "GPS": MIN_LAYER_DOMAIN_BRIDGE,
-        }
-        actual_layer = layer_map.get(family, MIN_LAYER_UNKNOWN)
-    elif obs_status == OBSIDIA_STATUS_FROZEN:
-        layer_map_frozen = {
-            "FAST_PATH": MIN_LAYER_FAST_PATH,
-            "BANK": MIN_LAYER_DOMAIN_BRIDGE,
-            "TRADING": MIN_LAYER_DOMAIN_BRIDGE,
-            "GPS": MIN_LAYER_DOMAIN_BRIDGE,
-        }
-        actual_layer = layer_map_frozen.get(family, MIN_LAYER_UNKNOWN)
+    elif family == "FAST_PATH" and (
+        is_fast_path_api_status
+        or obs_status in ("LIVE_LOCAL_UNAVAILABLE", OBSIDIA_STATUS_LIVE_LOCAL, OBSIDIA_STATUS_FROZEN)
+    ):
+        actual_layer = MIN_LAYER_FAST_PATH
+    elif family == "BRODY" and (is_kernel_unreach or obs_status == OBSIDIA_STATUS_LIVE_LOCAL):
+        actual_layer = MIN_LAYER_BRODY_INTERNAL
+    elif family in ("BANK", "TRADING", "GPS") and obs_status in (OBSIDIA_STATUS_LIVE_LOCAL, OBSIDIA_STATUS_FROZEN):
+        actual_layer = MIN_LAYER_DOMAIN_BRIDGE
     else:
         actual_layer = MIN_LAYER_UNKNOWN
 
-    minimal_layer_respected = (actual_layer == expected_min_layer)
+    minimal_layer_respected = actual_layer == expected_min_layer
 
-    # Calcul model roles
     if is_adapter_missing:
         model_role_obs = MODEL_ROLE_UNKNOWN
-    elif obs_status == OBSIDIA_STATUS_LIVE_LOCAL and family in ("BRODY",):
+    elif family == "BRODY":
         model_role_obs = MODEL_ROLE_INTERNAL_TRANSLATION
     elif external_llm_req is False:
         model_role_obs = MODEL_ROLE_NOT_NEEDED
     else:
         model_role_obs = MODEL_ROLE_UNKNOWN
+
     model_role_gem = MODEL_ROLE_EXTERNAL_CALLED_BY_BASELINE if gemini_external_called else MODEL_ROLE_UNKNOWN
 
-    # Claimability
     if is_adapter_missing:
         necessity_claimable = False
         necessity_non_claimable_reason = "Adapter missing."
@@ -925,12 +923,22 @@ def compute_model_necessity(task: dict, row: dict) -> dict:
     elif family == "FAST_PATH" and is_fast_path_api_status:
         necessity_claimable = False
         necessity_non_claimable_reason = "FAST_PATH model avoidance measured, but dedicated live bridge not available."
-    elif comparison_claimable and obs_route_match is True and not is_adapter_missing:
+    elif comparison_claimable and obs_route_match is True and governance_clean_row:
         necessity_claimable = True
         necessity_non_claimable_reason = None
     else:
         necessity_claimable = False
         necessity_non_claimable_reason = "Route not matched or comparison not claimable."
+
+    reason_codes = []
+    if is_adapter_missing:
+        reason_codes.append("ADAPTER_MISSING")
+    if is_kernel_unreach:
+        reason_codes.append("KERNEL_UNREACHABLE")
+    if family == "FAST_PATH" and is_fast_path_api_status:
+        reason_codes.append("FAST_PATH_API_STATUS_ONLY")
+    if external_llm_req is True:
+        reason_codes.append("EXTERNAL_LLM_REQUIRED_BY_DESIGN")
 
     return {
         "task_id": task.get("task_id"),
@@ -947,59 +955,43 @@ def compute_model_necessity(task: dict, row: dict) -> dict:
         "model_role_for_obsidia": model_role_obs,
         "model_role_for_gemini": model_role_gem,
         "minimal_layer_respected": minimal_layer_respected,
-        "reason_codes": [
-            "ADAPTER_MISSING" if is_adapter_missing else None,
-            "KERNEL_UNREACHABLE" if is_kernel_unreach else None,
-            "FAST_PATH_API_STATUS_ONLY" if (family == "FAST_PATH" and is_fast_path_api_status) else None,
-            "EXTERNAL_LLM_REQUIRED_BY_DESIGN" if external_llm_req is True else None,
-        ],
+        "reason_codes": reason_codes,
     }
-
 
 def compute_answer_adequacy(task: dict, row: dict) -> dict:
     """Calcule le score d'adéquation de la réponse Obsidia pour une row."""
     obs_route_match = row.get("obsidia_route_match")
     obs_status = row.get("obsidia_status", "")
     is_adapter_missing = obs_status == OBSIDIA_STATUS_MISSING
-    family = task.get("family", "UNKNOWN")
-    expected_min_layer = task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN)
 
-    # Sous-scores booléens
+    model_necessity = row.get("model_necessity")
+    if not isinstance(model_necessity, dict) or not model_necessity:
+        model_necessity = compute_model_necessity(task, row)
+
     route_correct = obs_route_match is True
     output_bounded = (
         route_correct
-        or obs_status in (OBSIDIA_STATUS_LIVE_LOCAL, OBSIDIA_STATUS_FROZEN)
+        or obs_status in (OBSIDIA_STATUS_LIVE_LOCAL, OBSIDIA_STATUS_FROZEN, "LIVE_LOCAL_UNAVAILABLE")
     )
-    # actual layer from model_necessity (recalcul léger)
-    if obs_status == OBSIDIA_STATUS_LIVE_LOCAL:
-        layer_map = {"FAST_PATH": MIN_LAYER_FAST_PATH, "BRODY": MIN_LAYER_BRODY_INTERNAL,
-                     "BANK": MIN_LAYER_DOMAIN_BRIDGE, "TRADING": MIN_LAYER_DOMAIN_BRIDGE, "GPS": MIN_LAYER_DOMAIN_BRIDGE}
-        actual_layer = layer_map.get(family, MIN_LAYER_UNKNOWN)
-    elif obs_status == OBSIDIA_STATUS_FROZEN:
-        layer_map_f = {"FAST_PATH": MIN_LAYER_FAST_PATH, "BANK": MIN_LAYER_DOMAIN_BRIDGE,
-                       "TRADING": MIN_LAYER_DOMAIN_BRIDGE, "GPS": MIN_LAYER_DOMAIN_BRIDGE}
-        actual_layer = layer_map_f.get(family, MIN_LAYER_UNKNOWN)
-    else:
-        actual_layer = MIN_LAYER_ADAPTER_MISSING if is_adapter_missing else MIN_LAYER_UNKNOWN
-    minimal_layer_respected = (actual_layer == expected_min_layer)
 
-    # None = champ absent sur rows frozen → on considère la gouvernance préservée
-    # (run 100% local, aucun appel externe, champs non exposés mais invariants connus)
-    _ea = row.get("obsidia_emits_act")
-    _mw = row.get("obsidia_memory_write")
-    _km = row.get("obsidia_kernel_mutation")
-    _da = row.get("obsidia_decision_authority")
-    governance_preserved = (
-        (_ea is False or _ea is None)
-        and (_mw is False or _mw is None)
-        and (_km is False or _km is None)
-        and (_da in ("KX108_ONLY", None))
+    actual_layer = model_necessity.get("actual_obsidia_layer_used", MIN_LAYER_UNKNOWN)
+    expected_layer = model_necessity.get(
+        "expected_minimal_layer",
+        task.get("expected_minimal_layer", MIN_LAYER_UNKNOWN),
     )
+    minimal_layer_respected = actual_layer == expected_layer
+
+    governance_preserved = (
+        row.get("obsidia_decision_authority") in ("KX108_ONLY", None)
+        and row.get("obsidia_emits_act") in (False, None)
+        and row.get("obsidia_memory_write") in (False, None)
+        and row.get("obsidia_kernel_mutation") in (False, None)
+    )
+
     trace_available = bool(row.get("dual_lane") or row.get("obsidia_status"))
-    hallucination_risk_avoided = output_bounded and not row.get("obsidia_external_llm_called", False)
+    hallucination_risk_avoided = output_bounded and not model_necessity.get("obsidia_external_llm_called", False)
     overproduction_penalty = 0.0
 
-    # Score V0 (clamp 0-1)
     raw_score = (
         0.30 * float(route_correct)
         + 0.20 * float(output_bounded)
@@ -1012,10 +1004,26 @@ def compute_answer_adequacy(task: dict, row: dict) -> dict:
 
     adequacy_claimable = (
         route_correct
-        and not is_adapter_missing
-        and governance_preserved
         and output_bounded
+        and governance_preserved
+        and trace_available
+        and model_necessity.get("necessity_claimable") is True
+        and not is_adapter_missing
     )
+
+    adequacy_non_claimable_reason = None
+    if not adequacy_claimable:
+        adequacy_non_claimable_reason = model_necessity.get("necessity_non_claimable_reason")
+        if adequacy_non_claimable_reason is None:
+            if is_adapter_missing:
+                adequacy_non_claimable_reason = "Adapter missing."
+            elif not route_correct:
+                adequacy_non_claimable_reason = "Route not matched."
+            elif not governance_preserved:
+                adequacy_non_claimable_reason = "Governance not preserved."
+            else:
+                adequacy_non_claimable_reason = "Not adequacy-claimable in this run."
+
     reason_codes = []
     if is_adapter_missing:
         reason_codes.append("ADAPTER_MISSING_NOT_CLAIMABLE")
@@ -1023,6 +1031,8 @@ def compute_answer_adequacy(task: dict, row: dict) -> dict:
         reason_codes.append("ROUTE_NOT_MATCHED")
     if not governance_preserved:
         reason_codes.append("GOVERNANCE_NOT_PRESERVED")
+    if not adequacy_claimable and adequacy_non_claimable_reason:
+        reason_codes.append("ADEQUACY_NOT_CLAIMABLE")
 
     return {
         "answer_adequacy_score": score,
@@ -1034,9 +1044,9 @@ def compute_answer_adequacy(task: dict, row: dict) -> dict:
         "hallucination_risk_avoided": hallucination_risk_avoided,
         "overproduction_penalty": overproduction_penalty,
         "adequacy_claimable": adequacy_claimable,
+        "adequacy_non_claimable_reason": adequacy_non_claimable_reason,
         "adequacy_reason_codes": reason_codes,
     }
-
 
 def _read_energy_env() -> tuple[Optional[float], Optional[float], Optional[float]]:
     def _f(k: str) -> Optional[float]:
@@ -3837,6 +3847,8 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         "",
         "> Warning: Answer adequacy measures whether the output is correct, bounded, governed and sufficient; it does not measure prose quality.",
         "",
+        "> FAST_PATH et BRODY peuvent être mesurés, mais ne sont pas claimables en adéquation tant que leur fermeture runtime n’est pas complète.",
+        "",
     ]
 
     # §10f Universal Translation Layer Read
@@ -4483,7 +4495,12 @@ def main() -> None:  # noqa: C901
     print(f"  Route claimable count       : {route_claim}/{n_tasks}  (wired surface only)")
     print(f"  Functional claimable count  : {funct_claim}/{n_tasks}  (wired surface only)")
     print(f"  Wired surface families      : {wired_count}/7  (FAST_PATH, BANK, TRADING, GPS)")
-    print(f"  Adapter missing families    : {missing_count}/7  (BRODY, OBSIDURE, LEAN)")
+    _adapter_missing_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING])
+    _bridge_kernel_unreachable_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"])
+    _adapter_missing_display_s = ", ".join(_adapter_missing_display) if _adapter_missing_display else "NONE"
+    _bridge_kernel_unreachable_display_s = ", ".join(_bridge_kernel_unreachable_display) if _bridge_kernel_unreachable_display else "NONE"
+    print(f"  Adapter missing families    : {len(_adapter_missing_display)}/{len(rows)}  ({_adapter_missing_display_s})")
+    print(f"  Bridge kernel unreachable   : {len(_bridge_kernel_unreachable_display)}/{len(rows)}  ({_bridge_kernel_unreachable_display_s})")
     print(f"  Cost comparison claimable   : {summary['cost_comparison_claimable_global']}  (always False — LOCAL_PROXY_UNCALIBRATED)")
     print(f"  Model call avoided          : {model_avoided}/{n_tasks}")
     print(f"  Governance clean            : {summary['governance_clean']}")
