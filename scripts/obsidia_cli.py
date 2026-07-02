@@ -632,6 +632,248 @@ def handle_plan_command(cmd: str, arg: str, registry: dict,
 # ----------------------------------------------------------------------------
 # Shell interactif — boucle autour de handle(). Aucun pouvoir nouveau.
 # ----------------------------------------------------------------------------
+# ============================================================================
+# OBSIDIA_ANSWER_ROUTER — moteur universel de reponse gouverne par droits.
+# Tout IN libre passe ici (shell ET one-shot). Le terminal repond dans ses
+# droits ; le Plan explique la route ; l'humain applique ; X108 decide.
+# Une entree inconnue ne meurt jamais silencieusement.
+# ============================================================================
+ROUTER_COMMANDS = ("answer", "raw", "json")
+ANSWER_MODES = ("ANSWER_LOCAL", "ANSWER_LIVE_READONLY", "ANSWER_COMMANDS_ONLY",
+                "ANSWER_PLAN", "ANSWER_UNKNOWN", "ANSWER_POLICY_DENY")
+_MODE_TO_OUTPUT = {"ANSWER_LOCAL": "GUIDE", "ANSWER_LIVE_READONLY": "EXECUTE",
+                   "ANSWER_COMMANDS_ONLY": "COMMANDS", "ANSWER_PLAN": "GUIDE",
+                   "ANSWER_UNKNOWN": "STOP_UNKNOWN", "ANSWER_POLICY_DENY": "POLICY_DENY"}
+
+_KNOWLEDGE_WORDS = ("c'est quoi", "cest quoi", "c est quoi", "qu'est", "quest-ce",
+                    "explique", "resume", "definis", "definition", "comment fonctionne")
+_STATE_WORDS = ("status", "statut", " up", "down", "tourne", "allume", "sante", "health")
+_ACTION_WORDS = ("lance", "lancer", "prepare", "demarre", "execute", "run ", "build",
+                 "comment lancer")
+_META_WORDS = ("roadmap", "quels outils", "quel outil", "outils tu", "plan pour", "route pour")
+_BLOCKER_WORDS = ("bloque", "blocage", "blocker", "coince")
+_WHY_WORDS = ("pourquoi",)
+
+LOCAL_CORPUS = {
+    "sigma": {"keys": ("sigma",),
+        "sources": ["docs/specs/OBSIDIA_SIGMA_GUIDANCE_V0.md", "registry.sigma.note"],
+        "answer": ("Sigma guide sur la coherence, les contradictions et la fraicheur des "
+                   "signaux (proofkit, manifest Lean, merkle en lecture, proposals, stress). "
+                   "Sigma est non souverain : il recommande (CONTINUE ... HOLD_RECOMMENDED), "
+                   "il ne decide jamais — HOLD_RECOMMENDED n'est pas X108Gate.HOLD. "
+                   "decision_authority = KX108_ONLY.")},
+    "obsidure": {"keys": ("obsidure",),
+        "sources": ["docs/protocols/OBSIDURE_APPLY_PROTOCOL.md", "registry.obsidure.note"],
+        "answer": ("Obsidure construit, prouve et corrige via un workflow proposal-first "
+                   "gele en v2 : proposal identifie dans _PATCH_PROPOSALS/, checks Lean "
+                   "(LEAN_EXIT=0), forbidden tokens, diff, approbation humaine du scope "
+                   "exact, puis apply gated. Le terminal ne l'execute jamais : "
+                   "commands-only (scripts/run_agent_obsidure.ps1). Obsidure ne decide pas.")},
+    "freeze_terminal": {"keys": ("freeze",),
+        "sources": ["docs/specs/OBSIDIA_TERMINAL_STACK_FREEZE_V1.md"], "loader": "freeze"},
+    "plan_panel": {"keys": ("plan panel", "panneau", "active_plan", "active plan"),
+        "sources": ["docs/specs/OBSIDIA_TERMINAL_PLAN_PANEL_V1.md"],
+        "answer": ("OBSIDIA_ACTIVE_PLAN est le panneau de pilotage : pour tout IN il montre "
+                   "la roadmap 12 etapes, le routage, les capacites/organes mobilises, les "
+                   "outils techniques, le corpus, les gates (jamais lances) et la prochaine "
+                   "action humaine. Stateless, zero subprocess, non souverain.")},
+    "gates": {"keys": ("gate", "gates"),
+        "sources": ["scripts/gates/", "tests/gates/", "docs/protocols/KERNEL_BOUNDARY_CHECK_PROTOCOL.md"],
+        "answer": ("3 gates V0 : commit_scope_guard (staging = allow-list exacte), "
+                   "kernel_boundary_check (chemins proteges ni dirty ni stages), "
+                   "sigma_non_sovereignty_check (sigma_guidance reste KX108_ONLY). "
+                   "PASS/FAIL uniquement, jamais lances par le terminal, ne remplacent pas X108.")},
+    "doctrine": {"keys": ("doctrine", "souverain", "autorite", "qui decide"),
+        "sources": ["docs/protocols/OBSIDIA_OPERATOR_DOCTRINE.md", "CLAUDE.md"],
+        "answer": ("X108 tranche (seule autorite d'admissibilite). Sigma guide. Brody "
+                   "explique. Obsidure construit. Domains bridge-only. Memory readonly. "
+                   "Le terminal affiche/route/guide et n'emet jamais ALLOW/BLOCK/HOLD/ACT.")},
+    "brody": {"keys": ("brody",),
+        "sources": ["registry.brody.note", "runbook full stack (observation locale)"],
+        "answer": ("Brody explique, contextualise et synthetise. Il vit dans l'API 8000 via "
+                   "/api/brody/* (pas de serveur separe) : chat V1, enriched, raw inspector. "
+                   "Brody est non souverain — il ne decide pas. Stack : launchers "
+                   "COMMANDS_ONLY (01_START_BRODY_STACK.ps1).")},
+    # "thermo" volontairement ABSENT du corpus -> ANSWER_UNKNOWN honnete.
+}
+
+
+def _freeze_summary():
+    path = REPO_ROOT / "docs" / "specs" / "OBSIDIA_TERMINAL_STACK_FREEZE_V1.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    sections = [l[3:].strip() for l in text.splitlines() if l.startswith("## ")]
+    commits = [l.strip() for l in text.splitlines()
+               if re.match(r"^[0-9a-f]{7} ", l.strip())]
+    return ("Freeze documentaire (pas un seal, pas un manifest) figeant la ligne "
+            "terminale avant Plan Panel. Sections : " + " | ".join(sections)
+            + ". Commits references : " + " ; ".join(commits[:8]) + ".")
+
+
+def _corpus_lookup(normalized: str):
+    for topic, entry in LOCAL_CORPUS.items():
+        if any(k in normalized for k in entry["keys"]):
+            return topic, entry
+    return None, None
+
+
+def _contains(normalized: str, words) -> bool:
+    return any(w in normalized for w in words)
+
+
+def select_answer_mode(plan: dict, normalized: str, registry: dict) -> str:
+    """Regles ordonnees : la policy passe toujours en premier."""
+    if plan.get("deny_keyword"):
+        return "ANSWER_POLICY_DENY"
+    if _contains(normalized, _BLOCKER_WORDS) or _contains(normalized, _META_WORDS):
+        return "ANSWER_PLAN"
+    if plan["detected_layer"] == "sigma" and _contains(normalized, _WHY_WORDS):
+        return "ANSWER_LIVE_READONLY"
+    if _contains(normalized, _STATE_WORDS) or "doctor" in normalized:
+        return "ANSWER_LIVE_READONLY"
+    if _contains(normalized, _KNOWLEDGE_WORDS):
+        topic, _ = _corpus_lookup(normalized)
+        return "ANSWER_LOCAL" if topic else "ANSWER_UNKNOWN"
+    if _contains(normalized, _ACTION_WORDS):
+        return "ANSWER_COMMANDS_ONLY"
+    if plan["detected_layer"] == "unknown":
+        return "ANSWER_UNKNOWN"
+    return "ANSWER_PLAN"  # ambigu mais route : plan prudent, jamais d'action
+
+
+def build_local_corpus_answer(plan: dict, normalized: str):
+    topic, entry = _corpus_lookup(normalized)
+    if not entry:
+        return None, []
+    if entry.get("loader") == "freeze":
+        txt = _freeze_summary()
+        return (txt, entry["sources"]) if txt else (None, [])
+    return entry["answer"], entry["sources"]
+
+
+def build_commands_answer(plan: dict, registry: dict):
+    spec = registry.get("layers", {}).get(plan["detected_layer"], {})
+    cmds = spec.get("commands", []) or []
+    lines = ["Le terminal ne lance rien. Commandes humaines possibles :"]
+    lines += [f"  {c}" for c in cmds] if cmds else ["  aucune commande connue pour cette couche"]
+    return "\n".join(lines), cmds
+
+
+def build_unknown_answer(plan: dict, raw: str, reason: str) -> str:
+    layers = "brody, obsidure, obsidienne, kernel, domains, audit, memory, live, sigma"
+    return (f"Je ne peux pas repondre utilement : {reason}.\n"
+            f"Precise la couche visee ({layers}) ou la source a consulter.")
+
+
+def answer_router(raw: str, registry: dict) -> dict:
+    """Moteur universel. Reutilise build_active_plan(); ne lance jamais rien
+    hors HTTP GET readonly ; toute sortie passe par assert_output_allowed()."""
+    plan = build_active_plan(raw, registry)
+    normalized = plan["normalized"]
+    mode = select_answer_mode(plan, normalized, registry)
+    assert mode in ANSWER_MODES
+    layer = plan["detected_layer"]
+    corpus_used: list = []
+    limites = ["reponse limitee au corpus/droits readonly du terminal — X108 decide"]
+    reponse = ""
+    next_h = plan["next_human_action"]
+
+    if mode == "ANSWER_POLICY_DENY":
+        reponse = (f'Refus policy : mot interdit "{plan["deny_keyword"]}". '
+                   "Le terminal n'a aucun chemin d'application (pas de --apply, pas de "
+                   "commit, pas de subprocess). Workflow gated humain si la mutation est "
+                   "reellement voulue.")
+        limites.append("repondre completement exigerait une mutation [INTERDIT] — "
+                       "alternative : workflow gated humain (OBSIDURE_APPLY_PROTOCOL.md)")
+    elif mode == "ANSWER_PLAN":
+        if _contains(normalized, _BLOCKER_WORDS):
+            reponse = format_blockers_view(registry)
+            next_h = "lancer toi-meme: git status --short ; git diff --cached --name-only"
+        else:
+            reponse = ("Plan prudent :\n  couche " + layer + " | sortie prevue "
+                       + plan["output_predicted"]
+                       + "\n  organes : " + "; ".join(o.split(" [")[0] for o in plan["organes_mobilises"][:5])
+                       + "\n  mobilisables : "
+                       + ("; ".join(o.split(" [")[0] for o in plan["organes_mobilisables"][:4]) or "aucun")
+                       + '\n  Detail complet : obsidia plan "' + raw + '"')
+            if not _contains(normalized, _META_WORDS):
+                next_h = "preciser le scope de travail voulu"
+        corpus_used = plan["corpus"]
+    elif mode == "ANSWER_LIVE_READONLY":
+        if layer == "sigma" and _contains(normalized, _WHY_WORDS):
+            reponse = ("Guidance actuelle : " + plan["guidance"]
+                       + "\nRaisons reelles (signaux readonly, rien d'invente) :\n"
+                       + "\n".join("  - " + r for r in plan["guidance_reasons"]))
+            corpus_used = plan["corpus"]
+            next_h = "aucune — relire les signaux sources si doute"
+        else:
+            doc = run_doctor(registry)
+            reponse = "Etat live (HTTP GET readonly) :\n" + "\n".join(
+                f"  {k:24} {v['status']}" for k, v in doc.items())
+            corpus_used = ["registry.health_endpoints"]
+            next_h = "relancer la stack toi-meme si DOWN (launchers COMMANDS_ONLY)"
+        limites.append("lecture seule — kernel 3001 NOT_CONFIRMED tant que /health non valide")
+    elif mode == "ANSWER_LOCAL":
+        txt, sources = build_local_corpus_answer(plan, normalized)
+        if txt is None:
+            mode = "ANSWER_UNKNOWN"
+        else:
+            reponse = txt
+            corpus_used = sources
+            next_h = "aucune"
+    elif mode == "ANSWER_COMMANDS_ONLY":
+        reponse, _cmds = build_commands_answer(plan, registry)
+        corpus_used = plan["corpus"]
+        limites.append("repondre completement exigerait l'execution [INTERDIT] — "
+                       "alternative : lancer toi-meme la commande ci-dessus")
+
+    if mode == "ANSWER_UNKNOWN" and not reponse:
+        if "thermo" in normalized:
+            reponse = ("Thermo est une capacite declaree d'Obsidia (friction, cout, inertie, "
+                       "stabilite — si disponible), mais le corpus local du terminal ne "
+                       "contient pas de doc Thermo detaillee. Je n'improvise pas : "
+                       "indique la source a indexer.")
+            limites.append("repondre completement exigerait un corpus Thermo non indexe — "
+                           "alternative : fournir la doc source")
+        else:
+            reponse = build_unknown_answer(plan, raw, "IN trop vague ou sujet hors corpus local")
+        next_h = "reformuler ou fournir la source/scope"
+
+    output = assert_output_allowed(_MODE_TO_OUTPUT[mode])
+    return {
+        "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": reponse,
+        "mode_reponse": mode, "detected_layer": layer, "confidence": plan["confidence"],
+        "organes_mobilises": plan["organes_mobilises"],
+        "organes_mobilisables": plan["organes_mobilisables"],
+        "outils_utilises": plan["outils_utilises"],
+        "corpus_utilise": corpus_used or ["aucun"],
+        "limites": limites,
+        "next_human_action": next_h,
+        "output": output,
+        "guidance": plan["guidance"], "guidance_authority": "NONE",
+        "plan_status": plan["plan_status"],
+    }
+
+
+def format_obsidia_response(r: dict) -> str:
+    return "\n".join([
+        "================ OBSIDIA_RESPONSE ================", "",
+        "INPUT:", f"  {r['raw']}", "",
+        "REPONSE:", *("  " + l for l in r["reponse"].splitlines()), "",
+        "MODE DE REPONSE:", f"  {r['mode_reponse']}", "",
+        "COUCHE:", f"  {r['detected_layer']} (confiance {r['confidence']})", "",
+        "CAPACITES / ORGANES MOBILISES:", _fmt_list(r["organes_mobilises"]), "",
+        "OUTILS TECHNIQUES MOBILISES:", _fmt_list(r["outils_utilises"]), "",
+        "CORPUS UTILISE:", _fmt_list(r["corpus_utilise"]), "",
+        "LIMITES:", _fmt_list(r["limites"]), "",
+        "PROCHAINE ACTION HUMAINE:", f"  {r['next_human_action']}", "",
+        "SORTIE TERMINAL:", f"  {r['output']}", "",
+        "==================================================",
+    ])
+
+
 _INTERNAL_EXIT = ("exit", "quit")
 _INTERNAL_HELP = ("help", "?")
 _INTERNAL_CLEAR = ("clear",)
@@ -695,11 +937,30 @@ def interactive_shell(registry: dict) -> int:
                 write_receipt(registry, receipt)
             print(text)
             continue
-        result = handle(line, registry)
-        result["session_id"] = session_id
-        receipt_path = write_receipt(registry, result)
-        result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
-        print(json.dumps(result, indent=2, ensure_ascii=False))
+        first = line.split(None, 1)
+        cmd0 = first[0].lower()
+        if cmd0 in ("raw", "json") or low == "doctor":
+            target = line if low == "doctor" else (
+                first[1].strip().strip('"').strip("'") if len(first) > 1 else "")
+            if not target:
+                print('GUIDE: raw/json "<IN>"')
+                continue
+            result = handle(target, registry)
+            result["session_id"] = session_id
+            receipt_path = write_receipt(registry, result)
+            result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            continue
+        if cmd0 == "answer":
+            line = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
+            if not line:
+                print('GUIDE: answer "<IN>"')
+                continue
+        # IN libre -> moteur universel OBSIDIA_ANSWER_ROUTER
+        resp = answer_router(line, registry)
+        resp["session_id"] = session_id
+        write_receipt(registry, resp)
+        print(format_obsidia_response(resp))
 
 
 def main(argv: list[str]) -> int:
@@ -716,11 +977,28 @@ def main(argv: list[str]) -> int:
             write_receipt(registry, receipt)
         print(text)
         return 0
+    cmd0 = argv[0].lower()
     raw = " ".join(argv)
-    result = handle(raw, registry)
-    receipt_path = write_receipt(registry, result)
-    result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
+        target = raw if normalize(raw) == "doctor" else (
+            " ".join(argv[1:]).strip().strip('"').strip("'"))
+        if not target:
+            print('GUIDE: obsidia raw "<IN>"')
+            return 0
+        result = handle(target, registry)
+        receipt_path = write_receipt(registry, result)
+        result["receipt"] = str(receipt_path.relative_to(REPO_ROOT))
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0
+    if cmd0 == "answer":
+        raw = " ".join(argv[1:]).strip().strip('"').strip("'")
+        if not raw:
+            print('GUIDE: obsidia answer "<IN>"')
+            return 0
+    # IN libre -> moteur universel OBSIDIA_ANSWER_ROUTER
+    resp = answer_router(raw, registry)
+    write_receipt(registry, resp)
+    print(format_obsidia_response(resp))
     return 0
 
 
