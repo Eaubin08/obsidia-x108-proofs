@@ -857,6 +857,146 @@ def _contains(normalized: str, words) -> bool:
     return any(w in normalized for w in words)
 
 
+# ============================================================================
+# LOCAL_READ_GUIDE_V1 — classification d'actions locales readonly, GUIDE-ONLY.
+# Le terminal ne lit AUCUN fichier utilisateur et n'execute AUCUNE commande :
+# il classe l'intention, refuse secrets/mutations, affiche la commande
+# PowerShell a lancer soi-meme. Lecture reelle = V2 (design + GO separes).
+# ============================================================================
+_LOCAL_READ_EXTS = (".md", ".txt", ".json", ".yaml", ".yml", ".py", ".lean", ".ps1")
+_LOCAL_SECRET_TOKENS = (".env", ".pem", ".key", "id_rsa", "credential", "token",
+                        "secret", ".local_obsidia", ".git", "node_modules",
+                        ".venv", "venv", "__pycache__", "cle ssh", "cles ssh", "ssh")
+_LOCAL_MUTATION_TOKENS = ("modifie", "edite", "renomme", "rename", "deplace",
+                          "move ", "ecris dans")
+_LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("cherche", "SEARCH_LOCAL_TEXT"),
+                ("resume", "SUMMARIZE_LOCAL_DOC"), ("explique", "EXPLAIN_LOCAL_CODE"),
+                ("regarde", "LIST_LOCAL_DIR"), ("liste", "LIST_LOCAL_DIR"),
+                ("lis ", "READ_LOCAL_FILE"), ("lire", "READ_LOCAL_FILE"),
+                ("ouvre", "READ_LOCAL_FILE"), ("affiche", "READ_LOCAL_FILE"))
+_LOCAL_GUIDE_LIMITS = ["V1 guide-only : le terminal ne lit AUCUN fichier lui-meme "
+                       "et n'execute AUCUNE commande — a lancer toi-meme",
+                       "lecture reelle bornee (EXECUTE_READONLY_LOCAL) = V2, "
+                       "design et GO separes obligatoires"]
+
+
+def _extract_local_paths(raw: str) -> list:
+    paths = []
+    for tok in raw.replace('"', " ").replace("'", " ").split():
+        t = tok.strip(",;:()")
+        if "/" in t or "\\" in t or t.lower().endswith(_LOCAL_READ_EXTS):
+            paths.append(t)
+    return paths
+
+
+def classify_local_read_intent(raw: str, normalized: str):
+    """Retourne une reponse locale guide-only, ou None (flux normal)."""
+    verb = None
+    for word, kind in _LOCAL_VERBS:
+        if word in normalized:
+            verb = kind
+            break
+    paths = _extract_local_paths(raw)
+    file_ctx_words = any(w in normalized for w in
+                         ("fichier", "dossier", "repertoire", "ce doc"))
+    file_ctx = bool(paths) or file_ctx_words
+    if verb is None and not file_ctx:
+        return None
+    # 1. Secrets : refus sec, AUCUNE commande alternative.
+    if (verb is not None or file_ctx) and \
+            any(tok in normalized for tok in _LOCAL_SECRET_TOKENS):
+        return {"kind": "READ_SECRET", "mode": "ANSWER_POLICY_DENY",
+                "reponse": "Refus : cible sensible (secrets/cles/chemins proteges). "
+                           "Aucune commande alternative ne sera proposee.",
+                "limites": ["READ_SECRETS [INTERDIT] — jamais de commande fournie"],
+                "next_h": "aucune — les secrets restent hors de portee du terminal"}
+    # 2. Mutations locales (complement de la policy registry).
+    if file_ctx and any(tok in normalized for tok in _LOCAL_MUTATION_TOKENS):
+        return {"kind": "LOCAL_MUTATION", "mode": "ANSWER_POLICY_DENY",
+                "reponse": "Refus : mutation locale demandee (modifier/renommer/"
+                           "deplacer/ecrire). Le terminal est readonly, sans chemin "
+                           "d'application.",
+                "limites": ["WRITE/DELETE/MOVE/RENAME [INTERDIT]"],
+                "next_h": "workflow gated humain si la mutation est reellement voulue"}
+    if verb is None:
+        return None
+    # 3. Brody + verbe de lecture : POST-only, hors droits terminal V1
+    #    (avant la regle conceptuelle — "demande a brody de lire ca" n'a ni
+    #    chemin ni mot fichier). Garde : "brody explique quoi" reste corpus.
+    if "brody" in normalized and "explique quoi" not in normalized:
+        cmd = (f'Get-Content -Path "{paths[0]}" -TotalCount 200' if paths
+               else 'Get-Content -Path "<chemin>" -TotalCount 200')
+        return {"kind": verb, "mode": "ANSWER_PLAN",
+                "reponse": "Brody est joignable uniquement en POST (/api/brody/chat), "
+                           "hors droits du terminal V1 (EXECUTE = GET readonly). "
+                           "Alternative : lis le fichier toi-meme puis colle le "
+                           "contenu ici pour une explication terminale :\n  " + cmd,
+                "corpus": ["registry.brody.note (POST-only)"],
+                "limites": list(_LOCAL_GUIDE_LIMITS) + ["appel Brody POST [INTERDIT en V1]"],
+                "next_h": "lancer la commande toi-meme puis coller le contenu"}
+    # 4. Lecture conceptuelle sans contexte fichier -> flux corpus normal
+    #    (ex. "resume le freeze terminal", "explique thermo").
+    if verb in ("SUMMARIZE_LOCAL_DOC", "EXPLAIN_LOCAL_CODE", "READ_LOCAL_FILE") \
+            and not paths and not file_ctx_words:
+        return None
+    # 5. Cas nominaux -> COMMANDS (affichees, jamais executees).
+    if verb == "COMPARE_LOCAL_FILES":
+        if len(paths) >= 2:
+            return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
+                    "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
+                               f'  Compare-Object (Get-Content "{paths[0]}") '
+                               f'(Get-Content "{paths[1]}")',
+                    "limites": list(_LOCAL_GUIDE_LIMITS),
+                    "next_h": "lancer la commande ci-dessus toi-meme"}
+        return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                "reponse": "Comparaison : il me faut DEUX chemins precis "
+                           "(ex. compare docs/specs/A.md docs/specs/B.md).",
+                "limites": list(_LOCAL_GUIDE_LIMITS),
+                "next_h": "redonner l'IN avec deux chemins"}
+    if verb == "SEARCH_LOCAL_TEXT":
+        words = normalized.split()
+        pattern = ""
+        if "cherche" in words:
+            rest = [w for w in words[words.index("cherche") + 1:]
+                    if w not in ("le", "la", "les", "un", "une", "dans")]
+            if rest:
+                pattern = rest[0]
+        target = paths[0] if paths else "<dossier>"
+        if target.endswith(("/", "\\")):
+            target += "*"
+        return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
+                "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
+                           f'  Select-String -Path "{target}" -Pattern "{pattern or "<motif>"}"',
+                "limites": list(_LOCAL_GUIDE_LIMITS),
+                "next_h": "lancer la commande ci-dessus toi-meme"}
+    if verb == "LIST_LOCAL_DIR":
+        target = paths[0] if paths else "<chemin>"
+        return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
+                "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
+                           f'  Get-ChildItem -Path "{target}"',
+                "limites": list(_LOCAL_GUIDE_LIMITS),
+                "next_h": "lancer la commande ci-dessus toi-meme"}
+    if not paths:
+        return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                "reponse": "Quel fichier ? Donne un chemin precis du repo "
+                           "(ex. docs/specs/OBSIDIA_LOCAL_CORPUS_V2.md).",
+                "limites": list(_LOCAL_GUIDE_LIMITS),
+                "next_h": "redonner l'IN avec le chemin exact"}
+    extra = (" Colle ensuite le contenu ici et je l'explique (explication "
+             "terminale non souveraine)." if verb in ("EXPLAIN_LOCAL_CODE",
+                                                      "SUMMARIZE_LOCAL_DOC") else "")
+    return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
+            "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
+                       f'  Get-Content -Path "{paths[0]}" -TotalCount 200' + extra,
+            "limites": list(_LOCAL_GUIDE_LIMITS),
+            "next_h": "lancer la commande ci-dessus toi-meme"}
+
+
+def build_local_read_guide_response(local_req: dict) -> dict:
+    """Normalise la reponse locale (V1 : simple passe-plat documente)."""
+    return local_req
+
+
 def select_answer_mode(plan: dict, normalized: str, registry: dict) -> str:
     """Regles ordonnees : la policy passe toujours en premier."""
     if plan.get("deny_keyword"):
@@ -914,7 +1054,23 @@ def answer_router(raw: str, registry: dict) -> dict:
     reponse = ""
     next_h = plan["next_human_action"]
 
-    if mode == "ANSWER_POLICY_DENY":
+    # LOCAL_READ_GUIDE_V1 : la policy registry (deny) reste prioritaire ;
+    # ensuite la classification locale guide-only peut prendre la main.
+    local_req = None
+    if mode != "ANSWER_POLICY_DENY":
+        local_req = classify_local_read_intent(raw, normalized)
+    if local_req is not None:
+        local_req = build_local_read_guide_response(local_req)
+        mode = local_req["mode"]
+        assert mode in ANSWER_MODES
+        reponse = local_req["reponse"]
+        corpus_used = list(local_req.get("corpus", []))
+        limites = limites + list(local_req.get("limites", []))
+        next_h = local_req["next_h"]
+
+    if local_req is not None:
+        pass  # reponse locale deja construite (guide-only, aucune lecture reelle)
+    elif mode == "ANSWER_POLICY_DENY":
         reponse = (f'Refus policy : mot interdit "{plan["deny_keyword"]}". '
                    "Le terminal n'a aucun chemin d'application (pas de --apply, pas de "
                    "commit, pas de subprocess). Workflow gated humain si la mutation est "
@@ -997,6 +1153,7 @@ def answer_router(raw: str, registry: dict) -> dict:
         "outils_utilises": plan["outils_utilises"],
         "corpus_utilise": corpus_used or ["aucun"],
         "limites": limites,
+        "action_locale": (local_req or {}).get("kind"),
         "next_human_action": next_h,
         "output": output,
         "guidance": plan["guidance"], "guidance_authority": "NONE",
