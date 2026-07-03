@@ -397,6 +397,16 @@ GATES_KNOWN = (
 )
 
 
+def dedupe_preserve_order(items):
+    """Dedoublonnage stable, purement cosmetique (aucun droit modifie)."""
+    seen, out = set(), []
+    for i in items:
+        if i not in seen:
+            seen.add(i)
+            out.append(i)
+    return out
+
+
 def build_active_plan(raw: str, registry: dict) -> dict:
     """Construit le panneau a partir du pipeline REEL (pas de texte decoratif).
     Ne lance rien : la sortie est PREVUE, l'execution reste `obsidia \"<IN>\"`."""
@@ -481,10 +491,12 @@ def build_active_plan(raw: str, registry: dict) -> dict:
         "roadmap": roadmap,
         "organes_mobilises": organes["mobilises"],
         "organes_mobilisables": organes["mobilisables"],
-        "organes_interdits": list(organes.get("interdits", [])) + list(ORGANES_INTERDITS_TOUJOURS),
+        "organes_interdits": dedupe_preserve_order(
+            list(organes.get("interdits", [])) + list(ORGANES_INTERDITS_TOUJOURS)),
         "outils_utilises": tooling["utilises"],
         "outils_mobilisables": tooling["mobilisables"],
-        "outils_exclus": list(tooling["exclus"]) + list(FORBIDDEN_ALWAYS),
+        "outils_exclus": dedupe_preserve_order(
+            list(tooling["exclus"]) + list(FORBIDDEN_ALWAYS)),
         "corpus": tooling["corpus"],
         "scope": ["lecture seule pour cet IN — le terminal ne modifie aucun fichier",
                   "interdits permanents: apps/ sigma/ kernel/ proofs/ runtime/ manifests seals"],
@@ -874,6 +886,22 @@ def format_obsidia_response(r: dict) -> str:
     ])
 
 
+def format_obsidia_response_compact(r: dict) -> str:
+    """Vue compacte par defaut (UX V2). LIMITES et NEXT (blocs de securite)
+    restent toujours visibles ; le detail complet reste via -v/--verbose."""
+    return "\n".join([
+        "================ OBSIDIA_RESPONSE ================", "",
+        "INPUT:", f"  {r['raw']}", "",
+        "REPONSE:", *("  " + l for l in r["reponse"].splitlines()), "",
+        "MODE:", f"  {r['mode_reponse']}", "",
+        "COUCHE:", f"  {r['detected_layer']} (confiance {r['confidence']})", "",
+        "SORTIE:", f"  {r['output']}", "",
+        "LIMITES:", _fmt_list(r["limites"]), "",
+        "NEXT:", f"  {r['next_human_action']}", "",
+        "==================================================",
+    ])
+
+
 _INTERNAL_EXIT = ("exit", "quit")
 _INTERNAL_HELP = ("help", "?")
 _INTERNAL_CLEAR = ("clear",)
@@ -917,6 +945,15 @@ def interactive_shell(registry: dict) -> int:
         if not line:
             continue
         low = line.lower()
+        verbose_mode = False
+        if low.startswith(("-v ", "--verbose ", "verbose ")):
+            parts_v = line.split(None, 1)
+            line = parts_v[1] if len(parts_v) > 1 else ""
+            if not line:
+                print('GUIDE: -v "<IN>"')
+                continue
+            verbose_mode = True
+            low = line.lower()
         if low in _INTERNAL_EXIT:
             print("session fermee.")
             return 0
@@ -953,6 +990,9 @@ def interactive_shell(registry: dict) -> int:
             continue
         if cmd0 == "answer":
             line = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
+            if line.lower().startswith(("-v ", "--verbose ")):
+                verbose_mode = True
+                line = line.split(None, 1)[1] if len(line.split(None, 1)) > 1 else ""
             if not line:
                 print('GUIDE: answer "<IN>"')
                 continue
@@ -960,7 +1000,8 @@ def interactive_shell(registry: dict) -> int:
         resp = answer_router(line, registry)
         resp["session_id"] = session_id
         write_receipt(registry, resp)
-        print(format_obsidia_response(resp))
+        print(format_obsidia_response(resp) if verbose_mode
+              else format_obsidia_response_compact(resp))
 
 
 def main(argv: list[str]) -> int:
@@ -968,6 +1009,10 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    verbose_mode = False
+    if argv and argv[0] in ("-v", "--verbose"):
+        verbose_mode = True
+        argv = argv[1:]
     if not argv:
         return interactive_shell(registry)
     if argv[0].lower() in PANEL_COMMANDS:
@@ -991,14 +1036,19 @@ def main(argv: list[str]) -> int:
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
     if cmd0 == "answer":
-        raw = " ".join(argv[1:]).strip().strip('"').strip("'")
+        rest = argv[1:]
+        if rest and rest[0] in ("-v", "--verbose"):
+            verbose_mode = True
+            rest = rest[1:]
+        raw = " ".join(rest).strip().strip('"').strip("'")
         if not raw:
             print('GUIDE: obsidia answer "<IN>"')
             return 0
     # IN libre -> moteur universel OBSIDIA_ANSWER_ROUTER
     resp = answer_router(raw, registry)
     write_receipt(registry, resp)
-    print(format_obsidia_response(resp))
+    print(format_obsidia_response(resp) if verbose_mode
+          else format_obsidia_response_compact(resp))
     return 0
 
 
