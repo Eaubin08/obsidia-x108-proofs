@@ -2798,3 +2798,232 @@ class TestSpeedStackRead:
         md = (tmp_path / "summary.md").read_text(encoding="utf-8")
         assert "KX108_ONLY" in md
         assert "emits_act" in md
+
+
+class TestMetricExplainerFR:
+    """V0.7.7 — 21 tests pour _build_metric_explainer (sections françaises terminales)."""
+
+    def _rows_summary(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        return s, rows
+
+    def _explainer(self):
+        s, rows = self._rows_summary()
+        return bm._build_metric_explainer(s, rows)
+
+    def _write_reports(self, tmp_path):
+        s, rows = self._rows_summary()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return s, rows
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── Tests 1–16 : contenu terminal ──
+
+    def test_1_contains_ce_que_ce_benchmark_mesure(self):
+        assert "CE QUE CE BENCHMARK MESURE" in self._explainer()
+
+    def test_2_contains_metrique_live_avg_speedup(self):
+        assert "MÉTRIQUE : Live avg speedup" in self._explainer()
+
+    def test_3_contains_nom_simple(self):
+        assert "Nom simple" in self._explainer()
+
+    def test_4_contains_question_repondue(self):
+        assert "Question répondue" in self._explainer()
+
+    def test_5_contains_ce_quon_calcule(self):
+        assert "Ce qu'on calcule" in self._explainer()
+
+    def test_6_contains_lecture_humaine(self):
+        assert "Lecture humaine" in self._explainer()
+
+    def test_7_contains_revendicable(self):
+        assert "Revendicable" in self._explainer()
+
+    def test_8_contains_attention(self):
+        assert "Attention" in self._explainer()
+
+    def test_9_contains_lecture_par_famille(self):
+        assert "LECTURE PAR FAMILLE" in self._explainer()
+
+    def test_10_contains_bank(self):
+        assert "BANK" in self._explainer()
+
+    def test_11_contains_fast_path(self):
+        assert "FAST_PATH" in self._explainer()
+
+    def test_12_contains_niveaux_de_preuve(self):
+        assert "NIVEAUX DE PREUVE" in self._explainer()
+
+    def test_13_contains_mesure_live_reelle(self):
+        assert "Mesure live réelle" in self._explainer()
+
+    def test_14_contains_appel_modele_evite(self):
+        assert "Appel modèle évité" in self._explainer()
+
+    def test_15_contains_indices_oie_proxy(self):
+        assert "Indices OIE proxy" in self._explainer()
+
+    def test_16_contains_cout_reel_industriel_in_attention(self):
+        text = self._explainer()
+        assert "coût réel industriel" in text
+
+    # ── Tests 17–21 : clés machine et invariants ──
+
+    def test_17_readable_has_speed_stack_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "speed_stack_read" in data
+
+    def test_18_readable_has_path_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "path_read" in data
+
+    def test_19_readable_has_model_necessity_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "model_necessity_read" in data
+
+    def test_20_cost_comparison_claimable_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["speed_stack_read"]["claim_guard"]["cost_comparison_claimable"] is False
+
+    def test_21_gencoin_calibration_only_emission_zero(self, tmp_path):
+        s, rows = self._write_reports(tmp_path)
+        assert s.get("gencoin_mode") == "CALIBRATION_ONLY"
+        assert s.get("gencoin_total_emission") == 0
+
+
+class TestBeneficesParadigme:
+    """V0.7.8 — 24 tests pour _build_benefices_paradigme (bénéfices + paradigme FR)."""
+
+    def _rows_summary(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        return s, rows
+
+    def _paradigme(self):
+        s, rows = self._rows_summary()
+        return bm._build_benefices_paradigme(s, rows)
+
+    def _write_reports(self, tmp_path):
+        s, rows = self._rows_summary()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return s, rows
+
+    def _read_report(self, tmp_path):
+        import json as _json
+        return _json.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── Tests 1–19 : contenu terminal ──
+
+    def test_1_benefices_et_changement_de_paradigme(self):
+        assert "BÉNÉFICES ET CHANGEMENT DE PARADIGME" in self._paradigme()
+
+    def test_2_pourquoi_ce_chiffre_change_le_paradigme(self):
+        assert "POURQUOI CE CHIFFRE CHANGE LE PARADIGME" in self._paradigme()
+
+    def test_3_grand_modele_de_langage(self):
+        assert "grand modèle de langage" in self._paradigme()
+
+    def test_4_kit_de_developpement_logiciel(self):
+        assert "kit de développement logiciel" in self._paradigme()
+
+    def test_5_interface_de_programmation(self):
+        assert "interface de programmation" in self._paradigme()
+
+    def test_6_moyenne(self):
+        assert "moyenne" in self._paradigme()
+
+    def test_7_acceleration(self):
+        # "accélération" (minuscule) apparaît dans _build_metric_explainer — sortie humaine combinée
+        s, rows = self._rows_summary()
+        combined = bm._build_metric_explainer(s, rows) + bm._build_benefices_paradigme(s, rows)
+        assert "accélération" in combined
+
+    def test_8_precision_de_routage(self):
+        # "précision de routage" (minuscule) apparaît dans _build_metric_explainer
+        s, rows = self._rows_summary()
+        combined = bm._build_metric_explainer(s, rows) + bm._build_benefices_paradigme(s, rows)
+        assert "précision de routage" in combined
+
+    def test_9_revendicable_proprement(self):
+        # Présent dans _build_metric_explainer, vérifié aussi dans paradigme via terminologie
+        exp = bm._build_metric_explainer(*list(self._rows_summary()))
+        assert "revendicable proprement" in exp
+
+    def test_10_mesure_mais_non_revendicable(self):
+        exp = bm._build_metric_explainer(*list(self._rows_summary()))
+        assert "mesuré mais non revendicable" in exp
+
+    def test_11_connecteur_manquant(self):
+        exp = bm._build_metric_explainer(*list(self._rows_summary()))
+        assert "connecteur manquant" in exp
+
+    def test_12_kernel_inaccessible(self):
+        exp = bm._build_metric_explainer(*list(self._rows_summary()))
+        assert "kernel inaccessible" in exp
+
+    def test_13_economie_inference_obsidia(self):
+        text = self._paradigme()
+        assert "économie d'inférence Obsidia" in text
+
+    def test_14_score_global_vitesse_obsidia(self):
+        text = self._paradigme()
+        assert "Score global de vitesse Obsidia" in text
+
+    def test_15_avantage_portefeuille_actions(self):
+        text = self._paradigme()
+        assert "Avantage Obsidia sur portefeuille d'actions" in text
+
+    def test_16_avantage_portefeuille_domaines(self):
+        text = self._paradigme()
+        assert "Avantage Obsidia sur portefeuille de domaines" in text
+
+    def test_17_avantage_comparatif_par_domaine(self):
+        text = self._paradigme()
+        assert "Avantage comparatif par domaine" in text
+
+    def test_18_quand_route_connue(self):
+        assert "Quand la route est connue, prédire devient plus lent que vérifier" in self._paradigme()
+
+    def test_19_obsidia_ne_remplace_pas_gemini(self):
+        assert "Obsidia ne remplace pas Gemini partout" in self._paradigme()
+
+    # ── Tests 20–24 : clés machine et invariants ──
+
+    def test_20_readable_has_answer_adequacy_read(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert "answer_adequacy_read" in data
+
+    def test_21_cost_comparison_claimable_remains_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["speed_stack_read"]["claim_guard"]["cost_comparison_claimable"] is False
+
+    def test_22_path_compute_runtime_claimable_false(self, tmp_path):
+        self._write_reports(tmp_path)
+        data = self._read_report(tmp_path)
+        assert data["speed_stack_read"]["claim_guard"]["path_compute_runtime_claimable"] is False
+
+    def test_23_gencoin_emission_zero(self, tmp_path):
+        s, _ = self._write_reports(tmp_path)
+        assert s.get("gencoin_total_emission") == 0
+        assert s.get("gencoin_mode") == "CALIBRATION_ONLY"
+
+    def test_24_no_api_key_in_reports(self, tmp_path):
+        self._write_reports(tmp_path)
+        import json as _json
+        text = (tmp_path / "readable_report.json").read_text(encoding="utf-8")
+        assert "ANTHROPIC_API_KEY" not in text
+        assert "GEMINI_API_KEY" not in text
+        assert "GOOGLE_API_KEY" not in text
