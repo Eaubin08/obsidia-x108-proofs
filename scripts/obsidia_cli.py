@@ -667,7 +667,7 @@ _BLOCKER_WORDS = ("bloque", "blocage", "blocker", "coince")
 _WHY_WORDS = ("pourquoi",)
 
 LOCAL_CORPUS = {
-    "sigma": {"keys": ("sigma",),
+    "sigma": {"keys": ("sigma", "coherence", "contradiction", "freshness"),
         "sources": ["docs/specs/OBSIDIA_SIGMA_GUIDANCE_V0.md", "registry.sigma.note"],
         "answer": ("Sigma guide sur la coherence, les contradictions et la fraicheur des "
                    "signaux (proofkit, manifest Lean, merkle en lecture, proposals, stress). "
@@ -676,7 +676,7 @@ LOCAL_CORPUS = {
                    "decision_authority = KX108_ONLY. Sigma V18.9 est la couche de runtime "
                    "verification completant Lean 4 (correction statique) et TLA+ (modele) "
                    "dans la chaine de preuve.")},
-    "obsidure": {"keys": ("obsidure",),
+    "obsidure": {"keys": ("obsidure", "forge", "proposal patch", "generatedperipheral"),
         "sources": ["docs/protocols/OBSIDURE_APPLY_PROTOCOL.md", "registry.obsidure.note"],
         "answer": ("Obsidure construit, prouve et corrige via un workflow proposal-first "
                    "gele en v2 : proposal identifie dans _PATCH_PROPOSALS/, checks Lean "
@@ -693,7 +693,7 @@ LOCAL_CORPUS = {
                    "la roadmap 12 etapes, le routage, les capacites/organes mobilises, les "
                    "outils techniques, le corpus, les gates (jamais lances) et la prochaine "
                    "action humaine. Stateless, zero subprocess, non souverain.")},
-    "gates": {"keys": ("gate", "gates"),
+    "gates": {"keys": ("gate", "gates", "garde-fous", "commit_scope_guard"),
         "sources": ["scripts/gates/", "tests/gates/", "docs/protocols/KERNEL_BOUNDARY_CHECK_PROTOCOL.md"],
         "answer": ("3 gates V0 : commit_scope_guard (staging = allow-list exacte), "
                    "kernel_boundary_check (chemins proteges ni dirty ni stages), "
@@ -704,7 +704,7 @@ LOCAL_CORPUS = {
         "answer": ("X108 tranche (seule autorite d'admissibilite). Sigma guide. Brody "
                    "explique. Obsidure construit. Domains bridge-only. Memory readonly. "
                    "Le terminal affiche/route/guide et n'emet jamais ALLOW/BLOCK/HOLD/ACT.")},
-    "brody": {"keys": ("brody",),
+    "brody": {"keys": ("brody", "brody explique quoi", "advisory", "runtime readonly"),
         "sources": ["registry.brody.note", "runbook full stack (observation locale)"],
         "answer": ("Brody explique, contextualise et synthetise. Il vit dans l'API 8000 via "
                    "/api/brody/* (pas de serveur separe) : chat V1, enriched, raw inspector. "
@@ -713,7 +713,8 @@ LOCAL_CORPUS = {
                    "repond, response_contract force les invariants KX108_ONLY, no-decision "
                    "policy explicite. Stack : launchers COMMANDS_ONLY "
                    "(01_START_BRODY_STACK.ps1).")},
-    "kernel_x108": {"keys": ("kernel", "x108", "noyau"),
+    "kernel_x108": {"keys": ("kernel", "x108", "kx108", "kx108_only", "noyau",
+                             "le juge", "qui decide"),
         "sources": ["docs/KERNEL_OVERVIEW.md (v1.4.0)", "docs/GLOSSAIRE.md"],
         "answer": ("Le Kernel X-108 est le noyau de gouvernance deterministe d'Obsidia — "
                    "le \"juge\" qui evalue les actions avant execution selon des regles "
@@ -721,6 +722,7 @@ LOCAL_CORPUS = {
                    "(KX108_ONLY) : ALLOW/HOLD/BLOCK n'existent qu'a son niveau. Le terminal "
                    "le consulte en status readonly, ne le mute jamais.")},
     "answer_router": {"keys": ("answer router", "answer_router", "routeur",
+                               "routeur de reponse", "comment tu reponds",
                                "obsidia_response", "compact", "verbose"),
         "sources": ["docs/specs/OBSIDIA_TERMINAL_RESPONSE_ROUTER_V1.md",
                     "docs/specs/OBSIDIA_TERMINAL_UX_COMPACT_V2.md"],
@@ -729,8 +731,8 @@ LOCAL_CORPUS = {
                    "(LOCAL/LIVE_READONLY/COMMANDS_ONLY/PLAN/UNKNOWN/POLICY_DENY) -> une "
                    "des 5 sorties non souveraines. Compact par defaut, -v pour le detail, "
                    "raw/json pour l'ancien JSON. Hors corpus = pas d'improvisation.")},
-    "oie": {"keys": ("l'oie", " oie", "inference economy", "economie d'inference",
-                     "cout par action", "necessity", "adequacy"),
+    "oie": {"keys": ("oie", "inference economy", "economie d'inference",
+                     "cout par action", "cout des tokens", "necessity", "adequacy"),
         "sources": ["docs/audits/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md",
                     "docs/protocols/OIE_BENCHMARK_PROTOCOL.md"],
         "answer": ("L'OIE mesure l'economie d'inference : le constat central est "
@@ -739,14 +741,16 @@ LOCAL_CORPUS = {
                    "admissible. Benchmarks avec labels obligatoires (MEASURED/ESTIMATED/"
                    "DRY_RUN/USAGE_UNAVAILABLE/INVALID_BASELINE) ; jamais d'economies "
                    "inventees, jamais de delta sans baseline. OIE mesure, ne decide pas.")},
-    "audit_merkle": {"keys": ("merkle", "seal", "rfc3161", "manifest sha", "chaine d'audit"),
+    "audit_merkle": {"keys": ("merkle", "seal", "sceau", "scelle", "rfc3161",
+                              "sha256", "manifest sha", "chaine d'audit"),
         "sources": ["docs/AUDIT_GUIDE.md (v1.0.0)", "docs/GLOSSAIRE.md"],
         "answer": ("La chaine d'audit Obsidia permet a un auditeur externe de verifier "
                    "artefacts et demonstrations : manifests SHA256, seal Merkle, ancre "
                    "RFC3161, verifiers readonly (verify_all/verify_merkle/verify_decision). "
                    "Rien n'est regenere automatiquement — le terminal lit, l'humain "
                    "regenere explicitement.")},
-    "memory": {"keys": ("memoire", "memory", "graphiti"),
+    "memory": {"keys": ("memoire", "memory", "graphiti", "srl", "frozen status",
+                        "memoire graphiti", "memory graphiti", "memoire readonly"),
         "sources": ["docs/core_import/P66_SRL_READONLY_MEMORY_LAYER.md",
                     "docs/architecture/F70_GRAPHITI_BRODY_MEMORY_DEEP_AUDIT.md"],
         "answer": ("Memory/Graphiti est une couche de projection et contexte "
@@ -754,15 +758,29 @@ LOCAL_CORPUS = {
                    "ou exposer un etat memoire, mais ne decide pas, n'ecrit pas depuis le "
                    "terminal, et ne devient jamais souveraine. memory_write=false reste "
                    "la regle terminale.")},
-    "thermo": {"keys": ("thermo",),
-        "sources": ["docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md"],
-        "answer": ("Thermo designe ici ENERGY_THERMO_GOVERNOR_V0 : un bloc peripherique "
-                   "non souverain qui produit ou structure des signaux de "
-                   "friction/energie/stabilite exploitables par la peripherie (sortie : "
-                   "PeripheralSignalPacket). Il ne decide pas, ne mute pas le Kernel/X108, "
-                   "et ne remplace pas Sigma ni Brody. "
-                   "[confiance: MEDIUM — doc source V0 minimale]")},
-    "domains": {"keys": ("domaine", "domains", "bridge"),
+    "energy_thermo": {"keys": ("thermo", "energy_thermo", "energy thermo",
+                               "thermo governor", "gouverneur thermo", "thermo_debt",
+                               "dette thermo", "thermodynamique", "thermodynamics",
+                               "efficacite energetique", "dissipation entropie"),
+        "label": "Thermo / ENERGY_THERMO (peripherie non souveraine)",
+        "sources": ["periphery/energy_thermo.py",
+                    "periphery/agents/energy_thermo_agent.py",
+                    "apps/obsidia_api/brody_thermodynamics_signal.py (F3)",
+                    "docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md"],
+        "answer": ("Thermo designe la famille ENERGY_THERMO : run_energy_thermo mesure "
+                   "l'efficacite energetique (pin/pout), la dette thermodynamique "
+                   "(thermo_debt = couts energie/compute/attention/recuperation moins "
+                   "travail utile) et le mismatch sigma/verite. La sortie est un "
+                   "PeripheralSignalPacket avec des risques comme ENERGY_INEFFICIENT, "
+                   "THERMO_DEBT_HIGH ou SIGMA_TRUTH_MISMATCH, et des recommandations de "
+                   "gate candidates. Ces recommandations ne sont jamais des decisions : "
+                   "ENERGY_THERMO_AGENT est non souverain, et KX108 reste l'autorite "
+                   "d'admissibilite. Thermo est consomme cote Brody par Thermodynamics "
+                   "Signal F3 (dissipation, entropie, stabilite, readonly) et par F19B "
+                   "Thermo/Coherence/Time. Thermo est distinct du modele de valeur "
+                   "thermodynamique GenCoin. [confiance: HIGH]")},
+    "domains": {"keys": ("domaine", "domaines", "domains", "domain", "adapters",
+                         "f60", "bridge-only", "passerelle metier", "bank trading gps"),
         "sources": ["docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md",
                     "docs/KERNEL_OVERVIEW.md", "scripts/obsidia_registry.yaml"],
         "answer": ("Les domaines Obsidia sont des couches bridge-only vers Bank, Trading, "
@@ -770,6 +788,20 @@ LOCAL_CORPUS = {
                    "readonly, advisory_only). Ils traduisent le signal metier vers le "
                    "cadre admissible mais ne decident pas — KX108_ONLY. Les adapters live "
                    "sont POST-only, jamais appeles en GET par le doctor.")},
+    "lean_proofs": {"keys": ("lean", "preuves lean", "theoremes", "invariants",
+                             "proof surface", "manifest lean"),
+        "sources": ["proofs/LEAN_PROOF_SURFACE_MANIFEST.json", "sigma/README.md"],
+        "answer": ("Surface Lean V2 officialisee : 232 entrees, 39 theoremes "
+                   "GeneratedPeripheral, lean_decides=false, forbidden_ok=true. Lean 4 "
+                   "assure la correction statique des invariants dans la chaine de preuve "
+                   "(completee par TLA+ et Sigma V18.9). Verification commands-only "
+                   "(verify_all.py, lake build gated) — jamais lancee par le terminal.")},
+    "glossaire": {"keys": ("glossaire", "definition", "ca veut dire quoi"),
+        "sources": ["docs/GLOSSAIRE.md"],
+        "answer": ("Le glossaire canonique est docs/GLOSSAIRE.md — definitions des termes "
+                   "Obsidia (ex. Dual Obsidia : \"l'IA propose, le Juge dispose\"). "
+                   "Le terminal oriente vers le glossaire, il n'improvise pas de "
+                   "definitions.")},
 }
 
 
@@ -787,9 +819,36 @@ def _freeze_summary():
             + ". Commits references : " + " ; ".join(commits[:8]) + ".")
 
 
+# Hints de couche pour les sujets corpus sans couche registry.
+# AFFICHAGE SEULEMENT : ne change jamais le routage d'action, ne permet
+# jamais EXECUTE, ne donne aucun droit.
+SUBJECT_LAYER_HINTS = {
+    "energy_thermo": "corpus:energy_thermo",
+    "answer_router": "corpus:answer_router",
+    "oie": "corpus:oie",
+    "glossaire": "corpus:glossaire",
+    "lean_proofs": "corpus:lean_proofs",
+}
+
+_BOUNDARY_RE_CACHE: dict = {}
+
+
+def _key_match(key: str, normalized: str) -> bool:
+    """Matching anti-faux-routage : word-boundary pour les cles courtes
+    (gate ne matche pas delegate, oie ne matche pas voie)."""
+    k = key.lower()
+    if len(k) > 5:
+        return k in normalized
+    pat = _BOUNDARY_RE_CACHE.get(k)
+    if pat is None:
+        pat = re.compile(r"(?<![a-z0-9_])" + re.escape(k) + r"(?![a-z0-9_])")
+        _BOUNDARY_RE_CACHE[k] = pat
+    return pat.search(normalized) is not None
+
+
 def _corpus_lookup(normalized: str):
     for topic, entry in LOCAL_CORPUS.items():
-        if any(k in normalized for k in entry["keys"]):
+        if any(_key_match(k, normalized) for k in entry["keys"]):
             return topic, entry
     return None, None
 
@@ -912,6 +971,7 @@ def answer_router(raw: str, registry: dict) -> dict:
             reponse = entry_u["answer"]
             corpus_used = entry_u["sources"]
             next_h = "aucune"
+            mode = "ANSWER_LOCAL"  # sujet indexe servi : etiquette et sortie coherentes
         else:
             reponse = build_unknown_answer(plan, raw, "IN trop vague ou sujet hors corpus local")
             if _contains(normalized, _KNOWLEDGE_WORDS):
@@ -922,9 +982,16 @@ def answer_router(raw: str, registry: dict) -> dict:
             next_h = "reformuler ou fournir la source/scope"
 
     output = assert_output_allowed(_MODE_TO_OUTPUT[mode])
+    # Hint de couche (affichage seulement) : couche registry inconnue mais
+    # sujet corpus identifie -> etiquette honnete corpus:<sujet>.
+    display_layer = layer
+    if layer == "unknown" and mode == "ANSWER_LOCAL":
+        t_h, _e_h = _corpus_lookup(normalized)
+        if t_h:
+            display_layer = SUBJECT_LAYER_HINTS.get(t_h, "corpus:" + t_h)
     return {
         "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": reponse,
-        "mode_reponse": mode, "detected_layer": layer, "confidence": plan["confidence"],
+        "mode_reponse": mode, "detected_layer": display_layer, "confidence": plan["confidence"],
         "organes_mobilises": plan["organes_mobilises"],
         "organes_mobilisables": plan["organes_mobilisables"],
         "outils_utilises": plan["outils_utilises"],
