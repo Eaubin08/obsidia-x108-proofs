@@ -863,10 +863,22 @@ def _contains(normalized: str, words) -> bool:
 # il classe l'intention, refuse secrets/mutations, affiche la commande
 # PowerShell a lancer soi-meme. Lecture reelle = V2 (design + GO separes).
 # ============================================================================
+# LARGE_DOC_READ_V2A — lecture reelle bornee de fichiers TEXTE du repo, par
+# fenetres/ranges/search/context/list. Streaming pur (jamais read()/readlines/
+# read_text sur chemin utilisateur), jamais de full dump, jamais de subprocess,
+# jamais Brody POST. Secrets masques par contenu. summarize/explain/compare et
+# PDF/DOCX = reportes/refuses (guide). decision_authority = KX108_ONLY.
 _LOCAL_READ_EXTS = (".md", ".txt", ".json", ".yaml", ".yml", ".py", ".lean", ".ps1")
+_LOCAL_BIN_EXTS = (".pdf", ".doc", ".docx", ".odt", ".bin", ".exe", ".zip",
+                   ".png", ".jpg", ".jpeg", ".webp")
+_LOCAL_ROOTS = ("docs/", "scripts/", "tests/", "periphery/",
+                "apps/obsidia_api/", "proofs/lean/")
 _LOCAL_SECRET_TOKENS = (".env", ".pem", ".key", "id_rsa", "credential", "token",
                         "secret", ".local_obsidia", ".git", "node_modules",
                         ".venv", "venv", "__pycache__", "cle ssh", "cles ssh", "ssh")
+_LOCAL_DENY_SEGMENTS = (".git", "node_modules", "venv", ".venv", "__pycache__",
+                        "_patch_proposals", ".local_obsidia")
+_LOCAL_DENY_NAMES = ("manifest_sha256.json", "merkle_seal.json")
 _LOCAL_MUTATION_TOKENS = ("modifie", "edite", "renomme", "rename", "deplace",
                           "move ", "ecris dans")
 _LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("cherche", "SEARCH_LOCAL_TEXT"),
@@ -874,126 +886,378 @@ _LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("cherche", "SEARCH_LOCAL_TE
                 ("regarde", "LIST_LOCAL_DIR"), ("liste", "LIST_LOCAL_DIR"),
                 ("lis ", "READ_LOCAL_FILE"), ("lire", "READ_LOCAL_FILE"),
                 ("ouvre", "READ_LOCAL_FILE"), ("affiche", "READ_LOCAL_FILE"))
-_LOCAL_GUIDE_LIMITS = ["V1 guide-only : le terminal ne lit AUCUN fichier lui-meme "
-                       "et n'execute AUCUNE commande — a lancer toi-meme",
-                       "lecture reelle bornee (EXECUTE_READONLY_LOCAL) = V2, "
-                       "design et GO separes obligatoires"]
+# Bornes de reponse (jamais full dump).
+_WIN_DEFAULT, _WIN_MAX, _LINE_MAX = 120, 400, 300
+_SEARCH_MAX, _CTX_LINES, _CTX_MAX = 50, 3, 10
+_LIST_MAX = 100
+_SECRET_CONTENT_RE = re.compile(
+    r"(?i)(api[_-]?key|password|passwd|authorization|bearer"
+    r"|begin [a-z ]*private key|ghp_[a-z0-9]|sk-[a-z0-9]|akia[0-9a-z])")
+_V2B_DEFERRED = {"SUMMARIZE_LOCAL_DOC": "resume progressif",
+                 "EXPLAIN_LOCAL_CODE": "explication de section",
+                 "COMPARE_LOCAL_FILES": "comparaison d'extraits"}
 
 
 def _extract_local_paths(raw: str) -> list:
     paths = []
     for tok in raw.replace('"', " ").replace("'", " ").split():
         t = tok.strip(",;:()")
-        if "/" in t or "\\" in t or t.lower().endswith(_LOCAL_READ_EXTS):
+        if "/" in t or "\\" in t or t.lower().endswith(_LOCAL_READ_EXTS + _LOCAL_BIN_EXTS):
             paths.append(t)
     return paths
 
 
+def _parse_range(normalized: str):
+    m = re.search(r"(\d+)\s*(?:a|à|-|to)\s*(\d+)", normalized)
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        if a >= 1 and b >= a:
+            return a, b
+    return None
+
+
+def local_path_policy(path_str: str, expect_dir: bool = False):
+    """(verdict, relposix, abs_path). verdict ALLOWED / DENIED_* / NOT_FOUND.
+    Resolution absolue + confinement repo APRES resolution (tue ../ et
+    symlinks sortants). Aucune I/O de contenu ici."""
+    raw = path_str.strip().strip('"').strip("'")
+    low = raw.lower()
+    if any(tok in low for tok in _LOCAL_SECRET_TOKENS):
+        return ("DENIED_SECRET", None, None)
+    if low.endswith(_LOCAL_BIN_EXTS):
+        return ("DENIED_FORMAT", raw, None)
+    try:
+        p = (REPO_ROOT / raw).resolve()
+    except Exception:
+        return ("NOT_FOUND", raw, None)
+    try:
+        rel = p.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        return ("DENIED_OUT_OF_REPO", raw, None)
+    parts_low = [x.lower() for x in rel.parts]
+    if any(seg in parts_low for seg in _LOCAL_DENY_SEGMENTS) or \
+            any(x.startswith(("_backup_", "_ephemeral_")) for x in parts_low):
+        return ("DENIED_SEGMENT", rel.as_posix(), None)
+    if p.name.lower() in _LOCAL_DENY_NAMES:
+        return ("DENIED_SENSITIVE", rel.as_posix(), None)
+    if not expect_dir and p.suffix.lower() in _LOCAL_BIN_EXTS:
+        return ("DENIED_FORMAT", rel.as_posix(), None)
+    if not any(rel.as_posix().startswith(r) for r in _LOCAL_ROOTS):
+        return ("DENIED_OUT_OF_ROOT", rel.as_posix(), None)
+    if not p.exists():
+        return ("NOT_FOUND", rel.as_posix(), None)
+    if expect_dir:
+        return (("ALLOWED", rel.as_posix(), p) if p.is_dir()
+                else ("DENIED_NOT_DIR", rel.as_posix(), None))
+    if p.is_dir():
+        return ("IS_DIR", rel.as_posix(), p)
+    if p.suffix.lower() not in _LOCAL_READ_EXTS:
+        return ("DENIED_EXTENSION", rel.as_posix(), None)
+    return ("ALLOWED", rel.as_posix(), p)
+
+
+def _is_binary(abs_path) -> bool:
+    try:
+        with abs_path.open("rb") as fh:
+            return b"\x00" in fh.read(8192)
+    except OSError:
+        return True
+
+
+def _fmt_line(i: int, line: str, masked_counter: list) -> str:
+    line = line.rstrip("\n")
+    if _SECRET_CONTENT_RE.search(line):
+        masked_counter[0] += 1
+        return f"[SECRET_MASQUE ligne {i}]"
+    if len(line) > _LINE_MAX:
+        line = line[:_LINE_MAX] + " …[tronque]"
+    return f"{i:6}: {line}"
+
+
+def _stream_window(abs_path, start: int, count: int):
+    """Lecture streaming d'une fenetre [start, start+count). O(fenetre) memoire."""
+    out, masked = [], [0]
+    total, truncated = 0, False
+    with abs_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for i, line in enumerate(fh, 1):
+            if i < start:
+                continue
+            if i >= start + count:
+                truncated = True
+                break
+            out.append(_fmt_line(i, line, masked))
+            total += len(out[-1])
+            if masked[0] > 3:
+                return {"density": True, "lines": out, "masked": masked[0],
+                        "last": i, "truncated": True}
+            if total > 64 * 1024:
+                truncated = True
+                break
+    return {"density": False, "lines": out, "masked": masked[0],
+            "last": (start + len(out) - 1) if out else start - 1,
+            "truncated": truncated}
+
+
+def _stream_count_lines(abs_path) -> int:
+    n = 0
+    with abs_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for _ in fh:
+            n += 1
+    return n
+
+
+def _stream_search(abs_path, pat: str):
+    out, masked = [], [0]
+    with abs_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for i, line in enumerate(fh, 1):
+            if pat in line.lower():
+                out.append(_fmt_line(i, line, masked))
+                if len(out) >= _SEARCH_MAX:
+                    break
+    return out, masked[0]
+
+
+def _stream_context(abs_path, pat: str):
+    match_lines = []
+    with abs_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for i, line in enumerate(fh, 1):
+            if pat in line.lower():
+                match_lines.append(i)
+                if len(match_lines) >= _CTX_MAX:
+                    break
+    if not match_lines:
+        return []
+    needed = set()
+    for m in match_lines:
+        needed.update(j for j in range(m - _CTX_LINES, m + _CTX_LINES + 1) if j >= 1)
+    top = max(needed)
+    linemap, masked = {}, [0]
+    with abs_path.open("r", encoding="utf-8", errors="replace") as fh:
+        for i, line in enumerate(fh, 1):
+            if i > top:
+                break
+            if i in needed:
+                linemap[i] = _fmt_line(i, line, masked)
+    blocks = []
+    for m in match_lines:
+        blk = [linemap[j] + ("  <<< match" if j == m else "")
+               for j in range(m - _CTX_LINES, m + _CTX_LINES + 1) if j in linemap]
+        blocks.append("\n".join(blk))
+    return blocks
+
+
+def _extract_query(normalized: str, marker: str) -> str:
+    if marker in normalized:
+        rest = normalized.split(marker, 1)[1].split()
+        rest = [w for w in rest if w not in ("le", "la", "les", "un", "une",
+                                             "de", "du", "dans", "d'")]
+        for w in rest:
+            if w not in _LOCAL_ROOTS and "/" not in w and "\\" not in w:
+                return w
+    return ""
+
+
+def _deny_response(kind: str, msg: str, limite: str):
+    return {"kind": kind, "mode": "ANSWER_POLICY_DENY", "reponse": msg,
+            "limites": [limite], "next_h": "aucune"}
+
+
+def _policy_deny_or_none(verdict: str, rel):
+    labels = {
+        "DENIED_SECRET": "cible sensible (secrets/cles/chemins proteges) — aucune lecture",
+        "DENIED_OUT_OF_REPO": f"chemin hors repo apres resolution ({rel}) — aucune lecture",
+        "DENIED_OUT_OF_ROOT": f"chemin hors racines lisibles ({rel}) — aucune lecture",
+        "DENIED_SEGMENT": f"segment interdit dans le chemin ({rel}) — aucune lecture",
+        "DENIED_SENSITIVE": f"fichier sensible (seal/manifest) ({rel}) — aucune lecture",
+        "DENIED_EXTENSION": f"extension non autorisee ({rel}) — aucune lecture",
+        "DENIED_NOT_DIR": f"chemin n'est pas un dossier ({rel})",
+    }
+    if verdict in labels:
+        return _deny_response("READ_DENIED", "Refus policy chemin : " + labels[verdict],
+                              f"{verdict} [INTERDIT]")
+    return None
+
+
 def classify_local_read_intent(raw: str, normalized: str):
-    """Retourne une reponse locale guide-only, ou None (flux normal)."""
+    """V2A : lecture reelle bornee (READ/RANGE/SEARCH/CONTEXT/LIST) ou refus/guide.
+    Retourne un dict de reponse locale, ou None (flux corpus normal)."""
+    is_context = "contexte" in normalized
     verb = None
     for word, kind in _LOCAL_VERBS:
         if word in normalized:
             verb = kind
             break
+    if is_context:
+        verb = "SEARCH_LOCAL_CONTEXT"
     paths = _extract_local_paths(raw)
     file_ctx_words = any(w in normalized for w in
                          ("fichier", "dossier", "repertoire", "ce doc"))
     file_ctx = bool(paths) or file_ctx_words
     if verb is None and not file_ctx:
         return None
-    # 1. Secrets : refus sec, AUCUNE commande alternative.
+    # 1. Secrets par mots (avant toute I/O) : refus sec.
     if (verb is not None or file_ctx) and \
             any(tok in normalized for tok in _LOCAL_SECRET_TOKENS):
-        return {"kind": "READ_SECRET", "mode": "ANSWER_POLICY_DENY",
-                "reponse": "Refus : cible sensible (secrets/cles/chemins proteges). "
-                           "Aucune commande alternative ne sera proposee.",
-                "limites": ["READ_SECRETS [INTERDIT] — jamais de commande fournie"],
-                "next_h": "aucune — les secrets restent hors de portee du terminal"}
-    # 2. Mutations locales (complement de la policy registry).
+        return _deny_response("READ_SECRET",
+                              "Refus : cible sensible (secrets/cles/chemins proteges). "
+                              "Aucune lecture, aucune commande alternative.",
+                              "READ_SECRETS [INTERDIT]")
+    # 2. Mutations locales.
     if file_ctx and any(tok in normalized for tok in _LOCAL_MUTATION_TOKENS):
-        return {"kind": "LOCAL_MUTATION", "mode": "ANSWER_POLICY_DENY",
-                "reponse": "Refus : mutation locale demandee (modifier/renommer/"
-                           "deplacer/ecrire). Le terminal est readonly, sans chemin "
-                           "d'application.",
-                "limites": ["WRITE/DELETE/MOVE/RENAME [INTERDIT]"],
-                "next_h": "workflow gated humain si la mutation est reellement voulue"}
+        return _deny_response("LOCAL_MUTATION",
+                              "Refus : mutation locale demandee. Le terminal est "
+                              "readonly, sans chemin d'application.",
+                              "WRITE/DELETE/MOVE/RENAME [INTERDIT]")
     if verb is None:
         return None
-    # 3. Brody + verbe de lecture : POST-only, hors droits terminal V1
-    #    (avant la regle conceptuelle — "demande a brody de lire ca" n'a ni
-    #    chemin ni mot fichier). Garde : "brody explique quoi" reste corpus.
+    # 3. Brody + lecture : POST-only, hors droits terminal (jamais appele).
     if "brody" in normalized and "explique quoi" not in normalized:
-        cmd = (f'Get-Content -Path "{paths[0]}" -TotalCount 200' if paths
-               else 'Get-Content -Path "<chemin>" -TotalCount 200')
         return {"kind": verb, "mode": "ANSWER_PLAN",
                 "reponse": "Brody est joignable uniquement en POST (/api/brody/chat), "
-                           "hors droits du terminal V1 (EXECUTE = GET readonly). "
-                           "Alternative : lis le fichier toi-meme puis colle le "
-                           "contenu ici pour une explication terminale :\n  " + cmd,
+                           "hors droits du terminal (EXECUTE = GET readonly). Le "
+                           "terminal peut lire le fichier lui-meme (lis <chemin>) et "
+                           "te le montrer, mais n'appelle jamais Brody.",
                 "corpus": ["registry.brody.note (POST-only)"],
-                "limites": list(_LOCAL_GUIDE_LIMITS) + ["appel Brody POST [INTERDIT en V1]"],
-                "next_h": "lancer la commande toi-meme puis coller le contenu"}
-    # 4. Lecture conceptuelle sans contexte fichier -> flux corpus normal
-    #    (ex. "resume le freeze terminal", "explique thermo").
+                "limites": ["appel Brody POST [INTERDIT]"],
+                "next_h": 'lire via: lis "<chemin>"'}
+    # 4. Lecture conceptuelle sans contexte fichier -> corpus normal.
     if verb in ("SUMMARIZE_LOCAL_DOC", "EXPLAIN_LOCAL_CODE", "READ_LOCAL_FILE") \
             and not paths and not file_ctx_words:
         return None
-    # 5. Cas nominaux -> COMMANDS (affichees, jamais executees).
-    if verb == "COMPARE_LOCAL_FILES":
-        if len(paths) >= 2:
-            return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
-                    "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
-                               f'  Compare-Object (Get-Content "{paths[0]}") '
-                               f'(Get-Content "{paths[1]}")',
-                    "limites": list(_LOCAL_GUIDE_LIMITS),
-                    "next_h": "lancer la commande ci-dessus toi-meme"}
-        return {"kind": verb, "mode": "ANSWER_UNKNOWN",
-                "reponse": "Comparaison : il me faut DEUX chemins precis "
-                           "(ex. compare docs/specs/A.md docs/specs/B.md).",
-                "limites": list(_LOCAL_GUIDE_LIMITS),
-                "next_h": "redonner l'IN avec deux chemins"}
-    if verb == "SEARCH_LOCAL_TEXT":
-        words = normalized.split()
-        pattern = ""
-        if "cherche" in words:
-            rest = [w for w in words[words.index("cherche") + 1:]
-                    if w not in ("le", "la", "les", "un", "une", "dans")]
-            if rest:
-                pattern = rest[0]
-        target = paths[0] if paths else "<dossier>"
-        if target.endswith(("/", "\\")):
-            target += "*"
-        return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
-                "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
-                           f'  Select-String -Path "{target}" -Pattern "{pattern or "<motif>"}"',
-                "limites": list(_LOCAL_GUIDE_LIMITS),
-                "next_h": "lancer la commande ci-dessus toi-meme"}
+    # 5. Capacites reportees V2B -> GUIDE (pas de lecture reelle en V2A).
+    if verb in _V2B_DEFERRED:
+        return {"kind": verb, "mode": "ANSWER_PLAN",
+                "reponse": f"Capacite '{_V2B_DEFERRED[verb]}' reportee en V2B. "
+                           "V2A couvre : lire (fenetre/range), chercher, contexte, "
+                           "lister. Ex: lis <chemin> | lis les lignes 20 a 60 de "
+                           "<chemin> | cherche <mot> dans <chemin>.",
+                "limites": ["SUMMARIZE/EXPLAIN/COMPARE = V2B (design separe)"],
+                "next_h": "utiliser une capacite V2A (lire/chercher/contexte/lister)"}
+    # 6. LIST_LOCAL_DIR : lecture reelle bornee du dossier.
     if verb == "LIST_LOCAL_DIR":
-        target = paths[0] if paths else "<chemin>"
-        return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
-                "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
-                           f'  Get-ChildItem -Path "{target}"',
-                "limites": list(_LOCAL_GUIDE_LIMITS),
-                "next_h": "lancer la commande ci-dessus toi-meme"}
+        if not paths:
+            return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                    "reponse": "Quel dossier ? (ex. regarde docs/specs).",
+                    "limites": [], "next_h": "redonner l'IN avec un chemin de dossier"}
+        verdict, rel, ap = local_path_policy(paths[0], expect_dir=True)
+        deny = _policy_deny_or_none(verdict, rel)
+        if deny:
+            return deny
+        if verdict == "NOT_FOUND":
+            return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                    "reponse": f"Dossier introuvable : {rel}",
+                    "limites": [], "next_h": "verifier le chemin"}
+        names = []
+        for i, child in enumerate(sorted(ap.iterdir(), key=lambda c: c.name)):
+            if i >= _LIST_MAX:
+                names.append(f"… (>{_LIST_MAX} entrees, tronque)")
+                break
+            names.append(child.name + ("/" if child.is_dir() else ""))
+        return {"kind": verb, "mode": "ANSWER_LOCAL",
+                "reponse": f"Contenu de {rel} ({len(names)} entrees affichees, non recursif) :\n"
+                           + "\n".join("  " + n for n in names),
+                "corpus": [rel], "output_execute": True,
+                "meta": {"verdict_policy": verdict, "type_fichier": "dir"},
+                "limites": ["listing borne 100 entrees, non recursif"],
+                "next_h": "aucune"}
+    # 7. SEARCH / CONTEXT / READ / RANGE : lecture reelle bornee du fichier.
     if not paths:
         return {"kind": verb, "mode": "ANSWER_UNKNOWN",
                 "reponse": "Quel fichier ? Donne un chemin precis du repo "
                            "(ex. docs/specs/OBSIDIA_LOCAL_CORPUS_V2.md).",
-                "limites": list(_LOCAL_GUIDE_LIMITS),
-                "next_h": "redonner l'IN avec le chemin exact"}
-    extra = (" Colle ensuite le contenu ici et je l'explique (explication "
-             "terminale non souveraine)." if verb in ("EXPLAIN_LOCAL_CODE",
-                                                      "SUMMARIZE_LOCAL_DOC") else "")
-    return {"kind": verb, "mode": "ANSWER_COMMANDS_ONLY",
-            "reponse": "Le terminal ne lit rien. Commande a lancer toi-meme :\n"
-                       f'  Get-Content -Path "{paths[0]}" -TotalCount 200' + extra,
-            "limites": list(_LOCAL_GUIDE_LIMITS),
-            "next_h": "lancer la commande ci-dessus toi-meme"}
+                "limites": [], "next_h": "redonner l'IN avec le chemin exact"}
+    verdict, rel, ap = local_path_policy(paths[0])
+    if verdict == "DENIED_FORMAT":
+        return {"kind": verb, "mode": "ANSWER_PLAN",
+                "reponse": f"Format non lu en V2A ({rel}) : PDF/DOCX/binaire. "
+                           "Convertis-le en .txt/.md toi-meme (ex. 'Enregistrer sous' "
+                           "ou pandoc) puis relance. Adapter PDF/DOCX = V3 (scope separe).",
+                "limites": ["PDF/DOCX/binaire non lus en V2A"],
+                "next_h": "convertir en .txt/.md puis relancer"}
+    deny = _policy_deny_or_none(verdict, rel)
+    if deny:
+        return deny
+    if verdict == "IS_DIR":
+        return {"kind": "LIST_LOCAL_DIR", "mode": "ANSWER_UNKNOWN",
+                "reponse": f"{rel} est un dossier. Pour le lister : regarde {rel}",
+                "limites": [], "next_h": f"regarde {rel}"}
+    if verdict == "NOT_FOUND":
+        return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                "reponse": f"Fichier introuvable : {rel}",
+                "limites": [], "next_h": "verifier le chemin exact"}
+    if _is_binary(ap):
+        return {"kind": verb, "mode": "ANSWER_PLAN",
+                "reponse": f"Contenu binaire detecte ({rel}) — non lu comme texte.",
+                "limites": ["binaire non lu"], "next_h": "fournir un fichier texte"}
+
+    if verb == "SEARCH_LOCAL_CONTEXT":
+        query = _extract_query(normalized, "autour de") or _extract_query(normalized, "contexte")
+        if not query:
+            return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                    "reponse": "Quel terme ? (ex. montre le contexte autour de thermo dans <chemin>)",
+                    "limites": [], "next_h": "preciser le terme"}
+        blocks = _stream_context(ap, query.lower())
+        body = ("\n---\n".join(blocks) if blocks
+                else f"Aucun contexte pour '{query}' dans {rel}.")
+        return {"kind": verb, "mode": "ANSWER_LOCAL",
+                "reponse": f"Contexte de '{query}' dans {rel} "
+                           f"(±{_CTX_LINES} lignes, max {_CTX_MAX}) :\n{body}",
+                "corpus": [rel], "output_execute": True,
+                "meta": {"verdict_policy": verdict, "type_fichier": ap.suffix,
+                         "match_count": len(blocks)},
+                "limites": [f"contexte borne ±{_CTX_LINES} lignes, {_CTX_MAX} max"],
+                "next_h": "aucune"}
+    if verb == "SEARCH_LOCAL_TEXT":
+        query = _extract_query(normalized, "cherche")
+        if not query:
+            return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                    "reponse": "Quel terme ? (ex. cherche thermo dans <chemin>)",
+                    "limites": [], "next_h": "preciser le terme"}
+        hits, masked = _stream_search(ap, query.lower())
+        body = ("\n".join(hits) if hits
+                else f"Aucune correspondance pour '{query}' dans {rel}.")
+        return {"kind": verb, "mode": "ANSWER_LOCAL",
+                "reponse": f"Recherche '{query}' dans {rel} "
+                           f"({len(hits)} correspondance(s), max {_SEARCH_MAX}) :\n{body}",
+                "corpus": [rel], "output_execute": True,
+                "meta": {"verdict_policy": verdict, "type_fichier": ap.suffix,
+                         "match_count": len(hits), "secrets_masques": masked},
+                "limites": [f"recherche bornee {_SEARCH_MAX} correspondances"],
+                "next_h": "aucune"}
+    # READ_LOCAL_FILE / READ_LOCAL_RANGE
+    rng = _parse_range(normalized)
+    if rng:
+        start, count = rng[0], min(rng[1] - rng[0] + 1, _WIN_MAX)
+        kind = "READ_LOCAL_RANGE"
+    else:
+        start, count, kind = 1, _WIN_DEFAULT, "READ_LOCAL_WINDOW"
+    win = _stream_window(ap, start, count)
+    total_lines = _stream_count_lines(ap)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Lecture interrompue : {rel} contient trop de lignes "
+                              "sensibles (densite de secrets).",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    body = "\n".join(win["lines"]) or "(fenetre vide)"
+    nav = ""
+    if win["last"] < total_lines:
+        nav = (f'\nsuite : lis les lignes {win["last"] + 1} a '
+               f'{min(win["last"] + _WIN_DEFAULT, total_lines)} de {rel}')
+    return {"kind": kind, "mode": "ANSWER_LOCAL",
+            "reponse": f"{rel} — {total_lines} lignes, fenetre {start}-{win['last']} "
+                       f"(masques: {win['masked']}) :\n{body}{nav}",
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": verdict, "type_fichier": ap.suffix,
+                     "range_lignes": f"{start}-{win['last']}",
+                     "lignes_affichees": len(win["lines"]),
+                     "secrets_masques": win["masked"], "truncated": win["truncated"]},
+            "limites": [f"fenetre bornee (defaut {_WIN_DEFAULT}, max {_WIN_MAX} lignes), "
+                        "streaming — jamais de dump complet"],
+            "next_h": "aucune (naviguer via range/suite)"}
 
 
 def build_local_read_guide_response(local_req: dict) -> dict:
-    """Normalise la reponse locale (V1 : simple passe-plat documente)."""
+    """Passe-plat documente (les fonctions de lecture retournent deja la reponse)."""
     return local_req
 
 
@@ -1067,6 +1331,8 @@ def answer_router(raw: str, registry: dict) -> dict:
         corpus_used = list(local_req.get("corpus", []))
         limites = limites + list(local_req.get("limites", []))
         next_h = local_req["next_h"]
+        # Lecture reelle bornee reussie -> sortie EXECUTE (readonly, comme doctor).
+        _force_execute = local_req.get("output_execute", False)
 
     if local_req is not None:
         pass  # reponse locale deja construite (guide-only, aucune lecture reelle)
@@ -1137,7 +1403,10 @@ def answer_router(raw: str, registry: dict) -> dict:
                             "l'IA propose, le Juge dispose\". Terme non indexe en direct.")
             next_h = "reformuler ou fournir la source/scope"
 
-    output = assert_output_allowed(_MODE_TO_OUTPUT[mode])
+    _out_name = _MODE_TO_OUTPUT[mode]
+    if local_req is not None and local_req.get("output_execute"):
+        _out_name = "EXECUTE"  # lecture reelle bornee reussie
+    output = assert_output_allowed(_out_name)
     # Hint de couche (affichage seulement) : couche registry inconnue mais
     # sujet corpus identifie -> etiquette honnete corpus:<sujet>.
     display_layer = layer
@@ -1154,6 +1423,7 @@ def answer_router(raw: str, registry: dict) -> dict:
         "corpus_utilise": corpus_used or ["aucun"],
         "limites": limites,
         "action_locale": (local_req or {}).get("kind"),
+        "local_read_meta": (local_req or {}).get("meta"),
         "next_human_action": next_h,
         "output": output,
         "guidance": plan["guidance"], "guidance_authority": "NONE",
