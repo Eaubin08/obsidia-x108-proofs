@@ -699,7 +699,7 @@ LOCAL_CORPUS = {
                    "kernel_boundary_check (chemins proteges ni dirty ni stages), "
                    "sigma_non_sovereignty_check (sigma_guidance reste KX108_ONLY). "
                    "PASS/FAIL uniquement, jamais lances par le terminal, ne remplacent pas X108.")},
-    "doctrine": {"keys": ("doctrine", "souverain", "autorite", "qui decide"),
+    "doctrine": {"keys": ("doctrine", "souverain", "autorite"),
         "sources": ["docs/protocols/OBSIDIA_OPERATOR_DOCTRINE.md", "CLAUDE.md"],
         "answer": ("X108 tranche (seule autorite d'admissibilite). Sigma guide. Brody "
                    "explique. Obsidure construit. Domains bridge-only. Memory readonly. "
