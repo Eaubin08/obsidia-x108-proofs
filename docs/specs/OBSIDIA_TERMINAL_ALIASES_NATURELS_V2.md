@@ -7,6 +7,34 @@ Scope : `ALIASES_NATURELS_V2` (+ correction Thermo issue de
 n'importe quel IN libre vers le bon sujet corpus — aucun droit nouveau,
 aucune action automatique, registry et freezes intacts.
 
+## Correctif post-V2A : couche `file_read`
+
+La lecture locale V2A (READ/RANGE/SEARCH/CONTEXT/LIST) affiche désormais
+une couche documentaire `file_read:<chemin>` au lieu de la couche registry
+parasite. Cas corrigé : `contexte KX108_ONLY dans <fichier>` — le mot
+« contexte » est un trigger registry de brody, mais l'intent est une
+lecture locale : la sortie EXECUTE et la couche affichée deviennent
+`file_read:<fichier>`, jamais `brody`. Affichage seulement ; le routage
+d'action et les droits sont inchangés.
+
+## Priorité de routage (rappel)
+
+1. policy deny (mutation/action/secrets), 2. lecture locale V2A si chemin
+détecté, 3. sujet corpus indexé, 4. commandes panneau (plan/tools/...),
+5. unknown/clarification. Les alias n'ajoutent aucun raccourci vers une
+action ; ils n'améliorent que la classification/affichage.
+
+## Alias ajoutés (données uniquement)
+
+sigma : fresh signal, hold recommended. kernel_x108 : juge, autorité de
+décision. brody : brody explique, couche explication, cockpit brody.
+obsidure : agent code, proposition patch, protocole apply. memory :
+readonly memory. domains : domain bridge, bridge only. oie : nécessité llm.
+audit_merkle : receipt. lean_proofs : theorem, proof. energy_thermo :
+friction énergie stabilité (phrase exacte 3 mots ; les mots seuls restent
+rejetés). Verbe local : recherche → SEARCH_LOCAL_TEXT. Clés courtes
+protégées par word-boundary (`proof` ne matche pas « proofkit »).
+
 ## Correction Thermo (validée)
 
 Clé canonique : `energy_thermo`. Label : Thermo / ENERGY_THERMO

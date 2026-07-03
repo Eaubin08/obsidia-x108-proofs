@@ -667,7 +667,8 @@ _BLOCKER_WORDS = ("bloque", "blocage", "blocker", "coince")
 _WHY_WORDS = ("pourquoi",)
 
 LOCAL_CORPUS = {
-    "sigma": {"keys": ("sigma", "coherence", "contradiction", "freshness"),
+    "sigma": {"keys": ("sigma", "coherence", "contradiction", "freshness",
+                       "fresh signal", "hold recommended"),
         "sources": ["docs/specs/OBSIDIA_SIGMA_GUIDANCE_V0.md", "registry.sigma.note"],
         "answer": ("Sigma guide sur la coherence, les contradictions et la fraicheur des "
                    "signaux (proofkit, manifest Lean, merkle en lecture, proposals, stress). "
@@ -676,7 +677,8 @@ LOCAL_CORPUS = {
                    "decision_authority = KX108_ONLY. Sigma V18.9 est la couche de runtime "
                    "verification completant Lean 4 (correction statique) et TLA+ (modele) "
                    "dans la chaine de preuve.")},
-    "obsidure": {"keys": ("obsidure", "forge", "proposal patch", "generatedperipheral"),
+    "obsidure": {"keys": ("obsidure", "forge", "proposal patch", "generatedperipheral",
+                          "agent code", "proposition patch", "protocole apply"),
         "sources": ["docs/protocols/OBSIDURE_APPLY_PROTOCOL.md", "registry.obsidure.note"],
         "answer": ("Obsidure construit, prouve et corrige via un workflow proposal-first "
                    "gele en v2 : proposal identifie dans _PATCH_PROPOSALS/, checks Lean "
@@ -704,7 +706,8 @@ LOCAL_CORPUS = {
         "answer": ("X108 tranche (seule autorite d'admissibilite). Sigma guide. Brody "
                    "explique. Obsidure construit. Domains bridge-only. Memory readonly. "
                    "Le terminal affiche/route/guide et n'emet jamais ALLOW/BLOCK/HOLD/ACT.")},
-    "brody": {"keys": ("brody", "brody explique quoi", "advisory", "runtime readonly"),
+    "brody": {"keys": ("brody", "brody explique quoi", "brody explique", "advisory",
+                       "runtime readonly", "couche explication", "cockpit brody"),
         "sources": ["registry.brody.note", "runbook full stack (observation locale)"],
         "answer": ("Brody explique, contextualise et synthetise. Il vit dans l'API 8000 via "
                    "/api/brody/* (pas de serveur separe) : chat V1, enriched, raw inspector. "
@@ -714,7 +717,7 @@ LOCAL_CORPUS = {
                    "policy explicite. Stack : launchers COMMANDS_ONLY "
                    "(01_START_BRODY_STACK.ps1).")},
     "kernel_x108": {"keys": ("kernel", "x108", "kx108", "kx108_only", "noyau",
-                             "le juge", "qui decide"),
+                             "le juge", "juge", "qui decide", "autorite de decision"),
         "sources": ["docs/KERNEL_OVERVIEW.md (v1.4.0)", "docs/GLOSSAIRE.md"],
         "answer": ("Le Kernel X-108 est le noyau de gouvernance deterministe d'Obsidia — "
                    "le \"juge\" qui evalue les actions avant execution selon des regles "
@@ -731,7 +734,7 @@ LOCAL_CORPUS = {
                    "(LOCAL/LIVE_READONLY/COMMANDS_ONLY/PLAN/UNKNOWN/POLICY_DENY) -> une "
                    "des 5 sorties non souveraines. Compact par defaut, -v pour le detail, "
                    "raw/json pour l'ancien JSON. Hors corpus = pas d'improvisation.")},
-    "oie": {"keys": ("oie", "inference economy", "economie d'inference",
+    "oie": {"keys": ("oie", "inference economy", "economie d'inference", "necessite llm",
                      "cout par action", "cout des tokens", "necessity", "adequacy"),
         "sources": ["docs/audits/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md",
                     "docs/protocols/OIE_BENCHMARK_PROTOCOL.md"],
@@ -741,7 +744,7 @@ LOCAL_CORPUS = {
                    "admissible. Benchmarks avec labels obligatoires (MEASURED/ESTIMATED/"
                    "DRY_RUN/USAGE_UNAVAILABLE/INVALID_BASELINE) ; jamais d'economies "
                    "inventees, jamais de delta sans baseline. OIE mesure, ne decide pas.")},
-    "audit_merkle": {"keys": ("merkle", "seal", "sceau", "scelle", "rfc3161",
+    "audit_merkle": {"keys": ("merkle", "seal", "sceau", "scelle", "rfc3161", "receipt",
                               "sha256", "manifest sha", "chaine d'audit"),
         "sources": ["docs/AUDIT_GUIDE.md (v1.0.0)", "docs/GLOSSAIRE.md"],
         "answer": ("La chaine d'audit Obsidia permet a un auditeur externe de verifier "
@@ -750,6 +753,7 @@ LOCAL_CORPUS = {
                    "Rien n'est regenere automatiquement — le terminal lit, l'humain "
                    "regenere explicitement.")},
     "memory": {"keys": ("memoire", "memory", "graphiti", "srl", "frozen status",
+                        "readonly memory",
                         "memoire graphiti", "memory graphiti", "memoire readonly"),
         "sources": ["docs/core_import/P66_SRL_READONLY_MEMORY_LAYER.md",
                     "docs/architecture/F70_GRAPHITI_BRODY_MEMORY_DEEP_AUDIT.md"],
@@ -758,7 +762,8 @@ LOCAL_CORPUS = {
                    "ou exposer un etat memoire, mais ne decide pas, n'ecrit pas depuis le "
                    "terminal, et ne devient jamais souveraine. memory_write=false reste "
                    "la regle terminale.")},
-    "energy_thermo": {"keys": ("thermo", "energy_thermo", "energy thermo",
+    "energy_thermo": {"keys": ("thermo", "friction energie stabilite",
+                               "energy_thermo", "energy thermo",
                                "thermo governor", "gouverneur thermo", "thermo_debt",
                                "dette thermo", "thermodynamique", "thermodynamics",
                                "efficacite energetique", "dissipation entropie"),
@@ -779,7 +784,8 @@ LOCAL_CORPUS = {
                    "Signal F3 (dissipation, entropie, stabilite, readonly) et par F19B "
                    "Thermo/Coherence/Time. Thermo est distinct du modele de valeur "
                    "thermodynamique GenCoin. [confiance: HIGH]")},
-    "domains": {"keys": ("domaine", "domaines", "domains", "domain", "adapters",
+    "domains": {"keys": ("domaine", "domaines", "domains", "domain", "domain bridge",
+                         "bridge only", "adapters",
                          "f60", "bridge-only", "passerelle metier", "bank trading gps"),
         "sources": ["docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md",
                     "docs/KERNEL_OVERVIEW.md", "scripts/obsidia_registry.yaml"],
@@ -788,8 +794,8 @@ LOCAL_CORPUS = {
                    "readonly, advisory_only). Ils traduisent le signal metier vers le "
                    "cadre admissible mais ne decident pas — KX108_ONLY. Les adapters live "
                    "sont POST-only, jamais appeles en GET par le doctor.")},
-    "lean_proofs": {"keys": ("lean", "preuves lean", "theoremes", "invariants",
-                             "proof surface", "manifest lean"),
+    "lean_proofs": {"keys": ("lean", "preuves lean", "theoremes", "theorem", "invariants",
+                             "proof", "proof surface", "manifest lean"),
         "sources": ["proofs/LEAN_PROOF_SURFACE_MANIFEST.json", "sigma/README.md"],
         "answer": ("Surface Lean V2 officialisee : 232 entrees, 39 theoremes "
                    "GeneratedPeripheral, lean_decides=false, forbidden_ok=true. Lean 4 "
@@ -882,6 +888,7 @@ _LOCAL_DENY_NAMES = ("manifest_sha256.json", "merkle_seal.json")
 _LOCAL_MUTATION_TOKENS = ("modifie", "edite", "renomme", "rename", "deplace",
                           "move ", "ecris dans")
 _LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("cherche", "SEARCH_LOCAL_TEXT"),
+                ("recherche", "SEARCH_LOCAL_TEXT"),
                 ("resume", "SUMMARIZE_LOCAL_DOC"), ("explique", "EXPLAIN_LOCAL_CODE"),
                 ("regarde", "LIST_LOCAL_DIR"), ("liste", "LIST_LOCAL_DIR"),
                 ("lis ", "READ_LOCAL_FILE"), ("lire", "READ_LOCAL_FILE"),
@@ -1410,7 +1417,12 @@ def answer_router(raw: str, registry: dict) -> dict:
     # Hint de couche (affichage seulement) : couche registry inconnue mais
     # sujet corpus identifie -> etiquette honnete corpus:<sujet>.
     display_layer = layer
-    if layer == "unknown" and mode == "ANSWER_LOCAL":
+    # Lecture locale reelle (V2A) : couche documentaire, jamais la couche
+    # registry parasite (ex. "contexte" -> trigger brody). Affichage seulement.
+    if local_req is not None and local_req.get("output_execute"):
+        _rel = (local_req.get("corpus") or ["?"])[0]
+        display_layer = f"file_read:{_rel}"
+    elif layer == "unknown" and mode == "ANSWER_LOCAL":
         t_h, _e_h = _corpus_lookup(normalized)
         if t_h:
             display_layer = SUBJECT_LAYER_HINTS.get(t_h, "corpus:" + t_h)
