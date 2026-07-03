@@ -3112,8 +3112,10 @@ class TestHumanDashboardFR:
     def test_18_brody(self):
         assert "BRODY" in self._dash()
 
-    def test_19_kernel_inaccessible(self):
-        assert "kernel inaccessible" in self._dash()
+    def test_19_brody_status_wording(self):
+        # En DRY_RUN (défaut) → "non testé en live" ; en REAL_SDK → "kernel inaccessible"
+        out = self._dash()
+        assert "non testé en live" in out or "kernel inaccessible" in out
 
     def test_20_connecteur_manquant(self):
         assert "connecteur manquant" in self._dash()
@@ -3235,3 +3237,248 @@ class TestHumanDashboardFR:
         md_text = (tmp_path / "summary.md").read_text(encoding="utf-8")
         for key in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
             assert key not in md_text
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TestDashboardGating — V0.7.8b (30 tests)
+# Couvre : _execution_read, compact mode, wording DRY_RUN/REAL, summary.md mode-neutre
+# ─────────────────────────────────────────────────────────────────────────────
+class TestDashboardGating:
+    """V0.7.8b — 30 tests pour le gating terminal et la cohérence du dashboard."""
+
+    def _rs(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        return s, rows
+
+    def _er(self):
+        s, rows = self._rs()
+        return bm._execution_read(s, rows), s, rows
+
+    def _dash(self, **kwargs):
+        s, rows = self._rs()
+        return bm._build_human_dashboard(s, rows, **kwargs)
+
+    # ── Tests 1–5 : _execution_read retourne les bons champs ─────────────────
+
+    def test_01_execution_read_has_required_keys(self):
+        er, _, _ = self._er()
+        for key in ("gemini_real", "obsidia_live", "is_dryrun",
+                    "mode_label_fr", "speed_label_fr", "proof_label_fr"):
+            assert key in er, f"Clé manquante : {key}"
+
+    def test_02_execution_read_is_dryrun_without_network(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        er, s, rows = self._er()
+        assert er["is_dryrun"] is True
+
+    def test_03_execution_read_mode_label_dry(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        er, s, rows = self._er()
+        assert "simulation" in er["mode_label_fr"].lower() or "prévisualisation" in er["mode_label_fr"].lower()
+
+    def test_04_execution_read_speed_label_dry(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        er, s, rows = self._er()
+        assert "estimée" in er["speed_label_fr"]
+
+    def test_05_execution_read_gemini_real_false_without_key(self, monkeypatch):
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        er, s, rows = self._er()
+        assert er["gemini_real"] is False
+
+    # ── Tests 6–11 : COMPACT_FR — 7 sections, sections 4 et 8 absentes ───────
+
+    def test_06_compact_omits_trois_types_section(self):
+        out = self._dash(compact=True)
+        assert "TROIS TYPES DE CHIFFRES" not in out
+
+    def test_07_compact_omits_indices_avances_section(self):
+        out = self._dash(compact=True)
+        assert "INDICES AVANCÉS" not in out
+
+    def test_08_compact_has_analyse_simple(self):
+        assert "ANALYSE SIMPLE DU BENCHMARK" in self._dash(compact=True)
+
+    def test_09_compact_has_tableau_de_bord(self):
+        assert "TABLEAU DE BORD — OBSIDIA VS GEMINI" in self._dash(compact=True)
+
+    def test_10_compact_has_6_chiffres(self):
+        assert "LES 6 CHIFFRES À RETENIR" in self._dash(compact=True)
+
+    def test_11_compact_has_benefices(self):
+        assert "BÉNÉFICES ET CHANGEMENT DE PARADIGME" in self._dash(compact=True)
+
+    # ── Tests 12–17 : wording DRY_RUN ────────────────────────────────────────
+
+    def test_12_dryrun_gemini_line_says_non(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert "NON" in out or "dry-run" in out.lower() or "simulation" in out.lower()
+
+    def test_13_dryrun_no_hardcoded_test_reel_in_dashboard(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert "Test réel :" not in out
+
+    def test_14_dryrun_mode_label_appears_in_section2(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert er["mode_label_fr"] in out
+
+    def test_15_dryrun_brody_resultat_not_kernel_inaccessible(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        # In dry-run, BRODY should NOT claim "kernel inaccessible"
+        lines = [l for l in out.split("\n") if "BRODY" in l and ("MESURE" in l or "LIMITE" in l or "MANQUE" in l)]
+        for line in lines:
+            assert "kernel inaccessible" not in line
+
+    def test_16_dryrun_brody_says_non_teste(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert "non testé en live" in out
+
+    def test_17_dryrun_bank_says_previsualisation(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert "Prévisualisation" in out
+
+    # ── Tests 18–22 : summary.md mode-neutre ─────────────────────────────────
+
+    def test_18_summary_md_no_hardcoded_test_reel(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first300 = "\n".join(text.split("\n")[:300])
+        assert "C'est un test comparatif réel entre Obsidia en environnement local réel" not in first300
+
+    def test_19_summary_md_has_mode_execution_label(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Mode d'exécution" in text
+
+    def test_20_summary_md_speed_label_from_er(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "accélération estimée" in text or "accélération mesurée" in text
+
+    def test_21_summary_md_brody_row_mode_neutral(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        brody_lines = [l for l in text.split("\n") if "BRODY" in l and "|" in l]
+        for line in brody_lines:
+            assert "kernel inaccessible" not in line
+
+    def test_22_summary_md_bank_row_mode_neutral(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        bank_lines = [l for l in text.split("\n") if "| BANK |" in l]
+        for line in bank_lines:
+            assert "Revendicable" not in line or "Prévisualisation" in line
+
+    # ── Tests 23–26 : signature _build_human_dashboard ───────────────────────
+
+    def test_23_dashboard_accepts_no_exec_read(self):
+        s, rows = self._rs()
+        out = bm._build_human_dashboard(s, rows)
+        assert "ANALYSE SIMPLE DU BENCHMARK" in out
+
+    def test_24_dashboard_accepts_exec_read_none(self):
+        s, rows = self._rs()
+        out = bm._build_human_dashboard(s, rows, exec_read=None)
+        assert len(out) > 100
+
+    def test_25_dashboard_accepts_exec_read_dict(self):
+        s, rows = self._rs()
+        er = bm._execution_read(s, rows)
+        out = bm._build_human_dashboard(s, rows, exec_read=er)
+        assert "ANALYSE SIMPLE DU BENCHMARK" in out
+
+    def test_26_dashboard_accepts_compact_true(self):
+        s, rows = self._rs()
+        out = bm._build_human_dashboard(s, rows, compact=True)
+        assert "TABLEAU DE BORD — OBSIDIA VS GEMINI" in out
+
+    # ── Tests 27–30 : invariants et cohérence ────────────────────────────────
+
+    def test_27_full_mode_has_all_9_sections(self):
+        out = self._dash()
+        for section in (
+            "ANALYSE SIMPLE DU BENCHMARK",
+            "TABLEAU DE BORD — OBSIDIA VS GEMINI",
+            "LES 6 CHIFFRES À RETENIR",
+            "TROIS TYPES DE CHIFFRES",
+            "LECTURE PAR FAMILLE",
+            "CE QUI EST REVENDICABLE",
+            "CE QUI N'EST PAS ENCORE FERMÉ",
+            "INDICES AVANCÉS",
+            "BÉNÉFICES ET CHANGEMENT DE PARADIGME",
+        ):
+            assert section in out, f"Section manquante : {section}"
+
+    def test_28_compact_mode_has_7_sections(self):
+        out = self._dash(compact=True)
+        present = [
+            s for s in (
+                "ANALYSE SIMPLE DU BENCHMARK",
+                "TABLEAU DE BORD — OBSIDIA VS GEMINI",
+                "LES 6 CHIFFRES À RETENIR",
+                "LECTURE PAR FAMILLE",
+                "CE QUI EST REVENDICABLE",
+                "CE QUI N'EST PAS ENCORE FERMÉ",
+                "BÉNÉFICES ET CHANGEMENT DE PARADIGME",
+            )
+            if s in out
+        ]
+        assert len(present) == 7
+
+    def test_29_execution_read_proof_label_dry(self, monkeypatch):
+        monkeypatch.delenv("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", raising=False)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        er, s, rows = self._er()
+        assert "estimé" in er["proof_label_fr"] or "simulation" in er["proof_label_fr"]
+
+    def test_30_lecture_par_famille_present_compact(self):
+        out = self._dash(compact=True)
+        assert "LECTURE PAR FAMILLE" in out
+        assert "BRODY" in out
+        assert "OBSIDURE" in out

@@ -3551,7 +3551,7 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
 
     md: list[str] = []
 
-    # §0 Tableau de bord français (V0.7.8) — doit occuper les 120 premières lignes
+    # §0 Tableau de bord français (V0.7.8b) — mode-neutre, doit occuper les 120 premières lignes
     _avg_sp_md  = summary.get("avg_speedup_ratio")
     _avail_sp_md = summary.get("available_surface_avg_speedup_ratio")
     _mod_sp_md  = summary.get("model_avoided_avg_speedup_ratio")
@@ -3559,6 +3559,12 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
     _obs_rt_md  = sum(1 for r in rows if r.get("obsidia_route_match") is True)
     _gem_rt_md  = sum(1 for r in rows if r.get("gemini_route_match") is True)
     _n_md = len(rows)
+    _er_md = _execution_read(summary, rows)
+    _mode_md = _er_md["mode_label_fr"]
+    _speed_md = _er_md["speed_label_fr"]
+    _is_dry_md = _er_md["is_dryrun"]
+    _brody_md = "non testé en live / pont non confirmé" if _is_dry_md else "kernel inaccessible — pas un connecteur manquant"
+    _bank_md = "Prévisualisation" if _is_dry_md else "Revendicable"
 
     def _fn(v: object) -> str:
         if v is None:
@@ -3573,13 +3579,12 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         "",
         "## Analyse simple du benchmark",
         "",
-        "C'est un test comparatif réel entre Obsidia en environnement local réel",
-        "et Gemini appelé comme modèle externe réel via kit de développement logiciel.",
+        f"Mode d'exécution : **{_mode_md}**",
         "",
         "| Aspect | Valeur |",
         "| --- | --- |",
         "| Obsidia LIVE_LOCAL | système local avec ponts de domaines |",
-        "| Gemini REAL_SDK | appel réel au modèle Gemini |",
+        f"| Gemini | {'appel réel au modèle Gemini' if not _is_dry_md else 'simulation dry-run (aucun appel réseau)'} |",
         "| Focus | économie d'inférence (OIE) |",
         "| Question | Quand peut-on répondre sans grand modèle de langage ? |",
         "",
@@ -3590,7 +3595,7 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         f"| Obsidia route correctement | {_obs_rt_md} / {_n_md} |",
         f"| Gemini route correctement | {_gem_rt_md} / {_n_md} |",
         f"| Appels au modèle évités | {_mod_av_md} / {_n_md} |",
-        f"| Accélération moyenne réelle | {_fn(_avg_sp_md)} |",
+        f"| Accélération moyenne ({_speed_md}) | {_fn(_avg_sp_md)} |",
         f"| Accélération surfaces disponibles | {_fn(_avail_sp_md)} |",
         f"| Accélération appel modèle évité | {_fn(_mod_sp_md)} |",
         "| Gouvernance | KX108_ONLY — pas d'action réelle — pas d'écriture mémoire |",
@@ -3600,19 +3605,19 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         f"1. {_n_md} tâches testées.",
         f"2. {_obs_rt_md} / {_n_md} routes correctes (Obsidia).",
         f"3. {_mod_av_md} / {_n_md} appels au modèle évités.",
-        f"4. {_fn(_avg_sp_md)} plus rapide en moyenne réelle.",
-        f"5. {_fn(_mod_sp_md)} plus rapide quand l'appel modèle est évité.",
-        "6. 3 familles pleinement revendicables : BANK, TRADING, GPS.",
+        f"4. {_fn(_avg_sp_md)} ({_speed_md}).",
+        f"5. {_fn(_mod_sp_md)} quand l'appel modèle est évité.",
+        "6. 3 familles revendicables sur run réel : BANK, TRADING, GPS.",
         "",
         "## Lecture par famille",
         "",
         "| Famille | Statut | Modèle évité | Résultat |",
         "| --- | --- | --- | --- |",
-        "| BANK | OK | OUI | Revendicable |",
-        "| TRADING | OK | OUI | Revendicable |",
-        "| GPS | OK | OUI | Revendicable |",
+        f"| BANK | OK | OUI | {_bank_md} |",
+        f"| TRADING | OK | OUI | {_bank_md} |",
+        f"| GPS | OK | OUI | {_bank_md} |",
         "| FAST_PATH | MESURE | OUI | Pas de pont live dédié |",
-        "| BRODY | MESURE | PARTIEL | kernel inaccessible — pas un connecteur manquant |",
+        f"| BRODY | MESURE | PARTIEL | {_brody_md} |",
         "| OBSIDURE | MANQUE | NON | connecteur manquant |",
         "| LEAN | MANQUE | NON | connecteur manquant |",
         "",
@@ -4605,8 +4610,42 @@ def _fr_num(val: object, suffix: str = "x") -> str:
         return str(val)
 
 
-def _build_human_dashboard(summary: dict, rows: list) -> str:
-    """Génère le tableau de bord lisible en français — V0.7.8 (9 sections)."""
+def _execution_read(summary: dict, rows: list) -> dict:
+    """Extrait le contexte d'exécution pour le wording mode-aware — V0.7.8b."""
+    network_allowed = os.environ.get("OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK", "0") == "1"
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
+    gemini_real = network_allowed and bool(gemini_key)
+    obsidia_live = any(
+        (r.get("dual_lane") or {}).get("obsidia_lane", {}).get("execution_mode") == "LIVE_LOCAL"
+        for r in rows
+    )
+    is_dryrun = not gemini_real
+    if gemini_real and obsidia_live:
+        mode_label_fr = "Test réel"
+    elif gemini_real:
+        mode_label_fr = "Test mixte (Gemini réel, Obsidia estimé)"
+    else:
+        mode_label_fr = "Prévisualisation / simulation"
+    speed_label_fr = "accélération mesurée" if (gemini_real and obsidia_live) else "accélération estimée"
+    proof_label_fr = "prouvé sur run réel" if (gemini_real and obsidia_live) else "estimé / simulation"
+    return {
+        "gemini_real": gemini_real,
+        "obsidia_live": obsidia_live,
+        "is_dryrun": is_dryrun,
+        "mode_label_fr": mode_label_fr,
+        "speed_label_fr": speed_label_fr,
+        "proof_label_fr": proof_label_fr,
+    }
+
+
+def _build_human_dashboard(summary: dict, rows: list, exec_read: dict | None = None, compact: bool = False) -> str:
+    """Génère le tableau de bord lisible en français — V0.7.8b (9 sections, compact=7)."""
+    _er = exec_read or {}
+    _is_dryrun = _er.get("is_dryrun", True)
+    _mode_label_fr = _er.get("mode_label_fr", "Prévisualisation / simulation")
+    _speed_label_fr = _er.get("speed_label_fr", "accélération estimée")
+    _gemini_real = _er.get("gemini_real", False)
+
     n = len(rows)
     avg_sp  = summary.get("avg_speedup_ratio")
     avail_sp = summary.get("available_surface_avg_speedup_ratio")
@@ -4654,16 +4693,31 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         r = fam_rows.get(fam, {})
         obs_status = r.get("obsidia_status", "")
         if fam in ("BANK", "TRADING", "GPS"):
-            return "Revendicable"
+            return "Prévisualisation" if _is_dryrun else "Revendicable"
         if fam == "FAST_PATH":
             return "Pas de pont live dédié"
         if fam == "BRODY" or obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE":
-            return "kernel inaccessible"
+            return "non testé en live / pont non confirmé" if _is_dryrun else "kernel inaccessible"
         return "connecteur manquant"
 
     L: list = []
 
     # ── Section 1 — Analyse simple ────────────────────────────────────────────
+    _intro_ligne1 = (
+        "  C'est un test comparatif réel entre Obsidia en environnement local"
+        if not _is_dryrun else
+        "  C'est une prévisualisation de la comparaison Obsidia vs Gemini."
+    )
+    _intro_ligne2 = (
+        "  réel et Gemini appelé comme modèle externe réel."
+        if not _is_dryrun else
+        "  Gemini : simulation dry-run (aucun appel réseau réel)."
+    )
+    _gemini_lane_desc = (
+        f"  {_tag_gemini()} REAL_SDK   = appel réel au modèle Gemini via kit de"
+        if not _is_dryrun else
+        f"  {_tag_gemini()} DRY_RUN    = simulation Gemini, aucun appel réseau réel."
+    )
     L += [
         "",
         "=" * 66,
@@ -4672,11 +4726,11 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         "",
         "  1. Ce que le benchmark mesure vraiment",
         "  ─────────────────────────────────────",
-        "  C'est un test comparatif réel entre Obsidia en environnement local",
-        "  réel et Gemini appelé comme modèle externe réel.",
+        _intro_ligne1,
+        _intro_ligne2,
         "",
         f"  {_tag_obsidia()} LIVE_LOCAL = système local avec ponts de domaines.",
-        f"  {_tag_gemini()} REAL_SDK   = appel réel au modèle Gemini via kit de",
+        _gemini_lane_desc,
         "                 développement logiciel.",
         "  Focus principal = économie d'inférence (OIE).",
         "",
@@ -4697,7 +4751,7 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         "               environnement local réel avec pont de domaine.",
         "",
         f"  {_tag_limite()} FAST_PATH  : mesuré, pas encore de pont live dédié.",
-        f"  {_tag_limite()} BRODY      : mesuré, pont tenté, kernel inaccessible.",
+        f"  {_tag_limite()} BRODY      : mesuré, pont tenté, {'kernel inaccessible' if not _is_dryrun else 'non testé en live'}.",
         f"  {_tag_manque()} OBSIDURE   : connecteur manquant.",
         f"  {_tag_manque()} LEAN       : connecteur manquant.",
         f"  {_tag_garde()} DCA/OSCA/OAPI/ODPI : indicateurs indirects,"
@@ -4732,14 +4786,19 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
     ]
 
     # ── Section 2 — Tableau de bord ──────────────────────────────────────────
+    _gemini_mode_line = (
+        f"    {_tag_gemini()} Gemini  : OUI — modèle externe réel"
+        if not _is_dryrun else
+        f"    {_tag_gemini()} Gemini  : NON — simulation dry-run"
+    )
     L += [
         "=" * 66,
         "  TABLEAU DE BORD — OBSIDIA VS GEMINI",
         "=" * 66,
         "",
-        "  Test réel :",
+        f"  {_mode_label_fr} :",
         f"    {_tag_obsidia()} Obsidia : OUI — environnement local réel",
-        f"    {_tag_gemini()} Gemini  : OUI — modèle externe réel",
+        _gemini_mode_line,
         "",
         "  Score simple :",
         f"    Obsidia route correctement : {obs_route} / {n}",
@@ -4748,7 +4807,7 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         f"  Appels au modèle évités : {model_av} / {n}",
         "",
         "  Vitesse :",
-        f"    Accélération moyenne réelle                 : {_fr_num(avg_sp)}",
+        f"    {_speed_label_fr.capitalize()} moyenne               : {_fr_num(avg_sp)}",
         f"    Accélération sur surfaces disponibles       : {_fr_num(avail_sp)}",
         f"    Accélération quand l'appel modèle est évité : {_fr_num(model_sp)}",
         "",
@@ -4774,28 +4833,40 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         "",
     ]
 
-    # ── Section 4 — Trois types de chiffres ─────────────────────────────────
-    L += [
-        "=" * 66,
-        "  TROIS TYPES DE CHIFFRES — POUR NE PAS LES MÉLANGER",
-        "=" * 66,
-        "",
-        "  1. MESURE RÉELLE",
-        "     Run réel Obsidia LIVE_LOCAL vs Gemini REAL_SDK.",
-        f"     Accélération moyenne réelle : {_fr_num(avg_sp)}.",
-        f"     {_tag_ok()} Revendicable : oui, comme vitesse mesurée.",
-        "",
-        "  2. SURFACES DISPONIBLES",
-        "     Familles où Obsidia répond via les surfaces disponibles.",
-        f"     Accélération surfaces disponibles : {_fr_num(avail_sp)}.",
-        f"     {_tag_ok()} Revendicable : oui, sur le périmètre branché.",
-        "",
-        "  3. INDICATEURS INDIRECTS",
-        "     OSCA, OAPI, ODPI, DCA — potentiel et structure.",
-        "     Pas de facturation réelle.",
-        f"     {_tag_garde()} Revendicable : partiel — indicateur uniquement.",
-        "",
-    ]
+    # ── Section 4 — Trois types de chiffres (omis en compact) ──────────────
+    if not compact:
+        _mesure_label = "MESURE RÉELLE" if not _is_dryrun else "MESURE (SIMULATION)"
+        _run_desc = (
+            "     Run réel Obsidia LIVE_LOCAL vs Gemini REAL_SDK."
+            if not _is_dryrun else
+            "     Simulation — Obsidia LIVE_LOCAL vs Gemini DRY_RUN."
+        )
+        _claim_speed = (
+            f"     {_tag_ok()} Revendicable : oui, comme vitesse mesurée."
+            if not _is_dryrun else
+            f"     {_tag_mesure()} Revendicable : estimé, non mesuré sur Gemini réel."
+        )
+        L += [
+            "=" * 66,
+            "  TROIS TYPES DE CHIFFRES — POUR NE PAS LES MÉLANGER",
+            "=" * 66,
+            "",
+            f"  1. {_mesure_label}",
+            _run_desc,
+            f"     {_speed_label_fr.capitalize()} moyenne : {_fr_num(avg_sp)}.",
+            _claim_speed,
+            "",
+            "  2. SURFACES DISPONIBLES",
+            "     Familles où Obsidia répond via les surfaces disponibles.",
+            f"     Accélération surfaces disponibles : {_fr_num(avail_sp)}.",
+            f"     {_tag_ok()} Revendicable : oui, sur le périmètre branché.",
+            "",
+            "  3. INDICATEURS INDIRECTS",
+            "     OSCA, OAPI, ODPI, DCA — potentiel et structure.",
+            "     Pas de facturation réelle.",
+            f"     {_tag_garde()} Revendicable : partiel — indicateur uniquement.",
+            "",
+        ]
 
     # ── Section 5 — Lecture par famille ─────────────────────────────────────
     L += [
@@ -4850,8 +4921,12 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         "     live dédié.",
         "",
         f"  {_tag_limite()} BRODY :",
-        "     Le pont a été tenté, mais le kernel était inaccessible pendant",
-        "     le test. Ce n'est pas un connecteur manquant.",
+        ("     Le pont a été tenté, mais le kernel était inaccessible pendant"
+         if not _is_dryrun else
+         "     Pont non testé en live sur ce run (simulation). Ce n'est pas"),
+        ("     le test. Ce n'est pas un connecteur manquant."
+         if not _is_dryrun else
+         "     un connecteur manquant."),
         "",
         f"  {_tag_manque()} OBSIDURE et LEAN :",
         "     Les connecteurs sont manquants dans ce benchmark.",
@@ -4868,26 +4943,27 @@ def _build_human_dashboard(summary: dict, rows: list) -> str:
         "",
     ]
 
-    # ── Section 8 — Indices avancés ──────────────────────────────────────────
-    L += [
-        "=" * 66,
-        "  INDICES AVANCÉS — POTENTIEL D'ÉCONOMIE D'INFÉRENCE",
-        "=" * 66,
-        "",
-        f"  OSCA — Score global de vitesse Obsidia      : {_fr_num(osca)}",
-        "         Lecture : indice global, pas une facture réelle.",
-        "",
-        f"  OAPI — Avantage sur portefeuille d'actions  : {_fr_num(oapi)}",
-        "         Lecture : indice orienté actions, pas une facture réelle.",
-        "",
-        f"  ODPI — Avantage sur portefeuille de domaines: {_fr_num(odpi)}",
-        "         Lecture : indice par domaines, pas une facture réelle.",
-        "",
-        "  Avantage par domaine :",
-    ]
-    for fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS_AVIATION", "LEAN", "OBSIDURE"):
-        L.append(f"    {fam:<16} : {_dca(fam)}")
-    L.append("")
+    # ── Section 8 — Indices avancés (omis en compact) ────────────────────────
+    if not compact:
+        L += [
+            "=" * 66,
+            "  INDICES AVANCÉS — POTENTIEL D'ÉCONOMIE D'INFÉRENCE",
+            "=" * 66,
+            "",
+            f"  OSCA — Score global de vitesse Obsidia      : {_fr_num(osca)}",
+            "         Lecture : indice global, pas une facture réelle.",
+            "",
+            f"  OAPI — Avantage sur portefeuille d'actions  : {_fr_num(oapi)}",
+            "         Lecture : indice orienté actions, pas une facture réelle.",
+            "",
+            f"  ODPI — Avantage sur portefeuille de domaines: {_fr_num(odpi)}",
+            "         Lecture : indice par domaines, pas une facture réelle.",
+            "",
+            "  Avantage par domaine :",
+        ]
+        for fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS_AVIATION", "LEAN", "OBSIDURE"):
+            L.append(f"    {fam:<16} : {_dca(fam)}")
+        L.append("")
 
     # ── Section 9 — Bénéfices et paradigme ──────────────────────────────────
     L += [
@@ -5551,30 +5627,9 @@ def main() -> None:  # noqa: C901
     gem_mode_label = "REAL_SDK" if (network_allowed and gemini_key) else "DRY_RUN"
     obs_exec_mode_env = os.environ.get("OIE_OBSIDIA_EXECUTION_MODE", OIE_OBSIDIA_EXEC_MODE_AUTO)
 
-    # ── BLOCK 1 : BENCHMARK MODE ──────────────────────────────────────────────
-    print(f"\n{'='*66}")
-    print(f"  BENCHMARK MODE — {BENCHMARK_VERSION}")
-    print(f"{'='*66}")
-    print(f"  Gemini lane mode        : {gem_mode_label}")
-    print(f"  Gemini model            : {sdk_model}")
-    print(f"  GEMINI_API_KEY set      : {bool(gemini_key)}")
-    print(f"  Network allowed         : {network_allowed}")
-    print(f"  Obsidia exec mode (env) : {obs_exec_mode_env}")
-    print(f"  Obsidia API base        : {_OBSIDIA_API_BASE}")
-    print(f"  Obsidia kernel target   : {_OBSIDIA_KERNEL_URL}")
-    print(f"  LIVE_LOCAL available    : {_LIVE_LOCAL_AVAILABLE}  (API 8000 probe at import time)")
-    print(f"  Live adapters found     : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('adapter_found'))}/7")
-    print(f"  Live adapters usable    : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('usable_for_live_local'))}/7")
-    print(f"  Live usable families    : {_LIVE_LOCAL_USABLE_FAMILIES or 'none'}")
-    print(f"  Unavailable families    : {_LIVE_LOCAL_UNAVAILABLE_FAMILIES or 'none'}")
-    print(f"  Adapter missing         : {_ADAPTER_MISSING_FAMILIES_LIVE or 'none'}")
-    print(f"  Tasks                   : {len(POWER_TASKS)}")
-    print(f"  Gencoin mode            : {GENCOIN_MODE}")
-    print(f"  Cost basis Obsidia      : {COST_BASIS_LOCAL_PROXY}")
-    print(f"  Governance              : EMITS_ACT={EMITS_ACT} MEM_WRITE={MEMORY_WRITE} "
-          f"KERNEL_MUT={KERNEL_MUTATION} AUTH={DECISION_AUTHORITY}")
+    _tv = os.environ.get("OIE_TERMINAL_VIEW", "HUMAN_FR").upper()
 
-    # ── Run all tasks ─────────────────────────────────────────────────────────
+    # ── Run all tasks (toujours) ──────────────────────────────────────────────
     rows: list[dict] = []
     for task in POWER_TASKS:
         obs_result = run_obsidia_lane(task, obs_exec_mode_env)
@@ -5587,188 +5642,234 @@ def main() -> None:  # noqa: C901
 
     summary = compute_summary(rows, POWER_TASKS)
 
-    # ── BLOCK 2 : DUAL LANE SUMMARY ───────────────────────────────────────────
-    print(f"\n{'='*66}")
-    print("  DUAL LANE SUMMARY")
-    print(f"{'='*66}")
-    print(f"  {'FAMILY':<12} {'OBS_LANE':<32} {'GEM_LANE':<14} {'SCOPE':<44} "
-          f"{'OBS_MATCH':<10} {'GEM_MATCH':<10} {'CLAIMABLE':<10} {'ADAPTER':<24} {'FALLBACK':<10} {'LIVE_AVAIL'}")
-    print("  " + "-" * 180)
-    for row in rows:
-        dl = row.get("dual_lane", {})
-        ol = dl.get("obsidia_lane", {})
-        gl = dl.get("gemini_lane", {})
-        adapter_type = ol.get("adapter_type", "?")
-        fallback = ol.get("fallback_used", False)
-        live_avail = ol.get("live_execution_available", False)
-        print(
-            f"  {row['family']:<12} "
-            f"{str(ol.get('execution_mode', '?')):<32} "
-            f"{str(gl.get('execution_mode', '?')):<14} "
-            f"{str(dl.get('comparison_scope', '?')):<44} "
-            f"{str(ol.get('route_match', '?')):<10} "
-            f"{str(gl.get('route_match', '?')):<10} "
-            f"{str(dl.get('comparison_claimable', '?')):<10} "
-            f"{str(adapter_type):<24} "
-            f"{str(fallback):<10} "
-            f"{str(live_avail)}"
-        )
-
-    # ── BLOCK 3 : CLAIMABLE READ ──────────────────────────────────────────────
-    n_tasks = summary["tasks_attempted"]
-    obs_acc = summary["obsidia_route_accuracy"]
-    gem_acc = summary["gemini_route_accuracy"]
-    wired_count = summary["available_surface_count"]
-    missing_count = summary["adapter_missing_count"]
-    model_avoided = summary["obsidia_model_call_avoided_count"]
-    funct_claim = summary.get("oie_claim_matrix", {}).get("functional_claimable_count", 0)
-    route_claim = summary.get("oie_claim_matrix", {}).get("route_claimable_count", 0)
-
-    print(f"\n{'='*66}")
-    print("  CLAIMABLE READ")
-    print(f"{'='*66}")
-    print(f"  Route accuracy (Obsidia)    : {obs_acc}")
-    print(f"  Route accuracy (Gemini)     : {gem_acc}")
-    print(f"  Route claimable count       : {route_claim}/{n_tasks}  (wired surface only)")
-    print(f"  Functional claimable count  : {funct_claim}/{n_tasks}  (wired surface only)")
-    print(f"  Wired surface families      : {wired_count}/7  (FAST_PATH, BANK, TRADING, GPS)")
-    _adapter_missing_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING])
-    _bridge_kernel_unreachable_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"])
-    _adapter_missing_display_s = ", ".join(_adapter_missing_display) if _adapter_missing_display else "NONE"
-    _bridge_kernel_unreachable_display_s = ", ".join(_bridge_kernel_unreachable_display) if _bridge_kernel_unreachable_display else "NONE"
-    print(f"  Adapter missing families    : {len(_adapter_missing_display)}/{len(rows)}  ({_adapter_missing_display_s})")
-    print(f"  Bridge kernel unreachable   : {len(_bridge_kernel_unreachable_display)}/{len(rows)}  ({_bridge_kernel_unreachable_display_s})")
-    print(f"  Cost comparison claimable   : {summary['cost_comparison_claimable_global']}  (always False — LOCAL_PROXY_UNCALIBRATED)")
-    print(f"  Model call avoided          : {model_avoided}/{n_tasks}")
-    print(f"  Governance clean            : {summary['governance_clean']}")
-
-    # ── BLOCK 4 : PERFORMANCE READ ────────────────────────────────────────────
-    print(f"\n{'='*66}")
-    print("  PERFORMANCE READ")
-    print(f"{'='*66}")
-    print(f"  Avg speedup ratio           : {summary['avg_speedup_ratio']}")
-    print(f"  Intellectual value avg      : {summary['intellectual_value_avg']}")
-    print(f"  Debt total                  : {summary['internal_economy_debt_total']}")
-    print(f"  Energy source               : {summary['energy_source']}")
-    print(f"  Known path detected         : {summary.get('known_path_detected_count', '?')}/{n_tasks}")
-    print(f"  Inference avoided           : {summary.get('unnecessary_inference_avoided_count', '?')}/{n_tasks}")
-    print(f"  Governed speed rate         : {summary.get('governance_preserved_at_speed_rate', '?')}")
-    print(f"  Math formalized             : {summary.get('math_formalized_surface_count', '?')}/{n_tasks}")
-
-    # ── BLOCK 4.5 : SPEED STACK READ ──────────────────────────────────────────
-    _ss_avg_speedup = summary.get("avg_speedup_ratio")
-    _ss_avail_speedup = summary.get("available_surface_avg_speedup_ratio")
-    _ss_model_speedup = summary.get("model_avoided_avg_speedup_ratio")
-    _ss_terrain_speedup = summary.get("terrain_avg_speedup_ratio")
-    _ss_governed = summary.get("governance_preserved_at_speed_rate")
-    _ss_kp_count = summary.get("known_path_detected_count", "?")
-    _ss_inf_avoided = summary.get("inference_avoided_count", "?")
-    _ss_model_avoided = summary.get("obsidia_model_call_avoided_count", "?")
-    _ss_model_families = summary.get("model_avoided_families") or []
-    _ss_oie_claimable = summary.get("oie_indices_claimable")
-    _ss_cost_claimable = summary.get("cost_comparison_claimable_global", False)
-    _ss_dca_raw = summary.get("dca_by_domain") or {}
-    def _ss_dca_val(fam: str) -> str:
-        v = _ss_dca_raw.get(fam)
-        if v is None:
-            return "null"
-        if isinstance(v, dict):
-            return str(v.get("dca_api_normal") or v.get("dca_agentic") or "null")
-        return str(v)
-    print(f"\n{'='*66}")
-    print("  SPEED STACK READ")
-    print(f"{'='*66}")
-    print(f"  Live avg speedup vs Gemini REAL_SDK   : {_ss_avg_speedup}x")
-    print(f"  Available surface avg speedup          : {_ss_avail_speedup}")
-    print(f"  Model avoided avg speedup              : {_ss_model_speedup}")
-    print(f"  Terrain avg speedup                    : {_ss_terrain_speedup}")
-    print(f"  Governed speed rate                    : {_ss_governed}")
-    print(f"  Known path detected                    : {_ss_kp_count}/{n_tasks}")
-    print(f"  Inference avoided                      : {_ss_inf_avoided}/{n_tasks}")
-    print(f"  Model call avoided                     : {_ss_model_avoided}/{n_tasks}")
-    print(f"  Model avoided families                 : {_ss_model_families}")
-    print(f"  OIE speed indices:")
-    print(f"    OSCA — geomean all families          : {summary.get('osca_ratio')}x")
-    print(f"    OAPI — portfolio actions             : {summary.get('oapi_ratio')}x")
-    print(f"    ODPI — portfolio domains             : {summary.get('odpi_ratio')}x")
-    print(f"    indices_claimable                    : {_ss_oie_claimable}")
-    print(f"  DCA by domain:")
-    for _ss_fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "GPS_AVIATION", "OBSIDURE", "LEAN"):
-        print(f"    {_ss_fam:<16} : {_ss_dca_val(_ss_fam)}")
-    print(f"  Governance while fast:")
-    print(f"    decision_authority : KX108_ONLY")
-    print(f"    emits_act          : false")
-    print(f"    memory_write       : false")
-    print(f"    kernel_mutation    : false")
-    print(f"  Claim guard:")
-    print(f"    speed_metrics_claimable        : true")
-    print(f"    cost_comparison_claimable      : {_ss_cost_claimable}")
-    print(f"    path_compute_runtime_claimable : false")
-    print(f"    wording_guard: Speed is measured; real cost and full Path Compute runtime are not claimed.")
-
-    # ── BLOCK 5 : OIE READ ────────────────────────────────────────────────────
-    oie_osca = summary.get("osca_ratio", "N/A")
-    oie_oapi = summary.get("oapi_ratio", "N/A")
-    oie_odpi = summary.get("odpi_ratio", "N/A")
-    dca = summary.get("dca_by_domain", {})
-    if dca:
-        def _dca_sort_key(kv: tuple) -> float:
-            v = kv[1]
-            if isinstance(v, (int, float)):
-                return float(v)
-            if isinstance(v, dict):
-                return float(v.get("dca_api_normal") or 0)
-            return 0.0
-        dca_top = sorted(dca.items(), key=_dca_sort_key, reverse=True)[:3]
-    else:
-        dca_top = []
-
-    print(f"\n{'='*66}")
-    print("  OIE READ")
-    print(f"{'='*66}")
-    print(f"  OSCA (geomean all families) : {oie_osca}x")
-    print(f"  OAPI (portfolio actions)    : {oie_oapi}x")
-    print(f"  ODPI (portfolio domains)    : {oie_odpi}x")
-    print(f"  OIE import OK               : {_OIE_IMPORT_OK}")
-    print(f"  OIE freeze found            : {_OIE_FREEZE_FOUND}")
-    print(f"  Gencoin mode                : {summary['gencoin_mode']}")
-    print(f"  Gencoin emission            : {summary['gencoin_total_emission']}  (CALIBRATION_ONLY)")
-    if dca_top:
-        print(f"  DCA top domains             :")
-        for dom, val in dca_top:
-            if isinstance(val, (int, float)):
-                print(f"    {dom:<20} : {val:.4f}")
-            elif isinstance(val, dict):
-                dca_val = val.get("dca_api_normal") or val.get("dca_agentic") or 0
-                print(f"    {dom:<20} : dca_api_normal={dca_val}")
-
-    # ── BLOCK 6 : REPORTS ────────────────────────────────────────────────────
+    # ── BLOCK 6 : REPORTS — écriture fichiers (toujours) ─────────────────────
     report_dir = _make_report_dir()
     write_runtime_reports(report_dir, summary, rows)
     proto_path = write_protocol_doc()
 
-    print(f"\n{'='*66}")
-    print("  REPORTS")
-    print(f"{'='*66}")
-    print(f"  Runtime report dir  : {report_dir}")
-    print(f"  Protocol doc        : {proto_path}")
-    print(f"  summary.json        : {report_dir / 'summary.json'}")
-    print(f"  readable_report.json: {report_dir / 'readable_report.json'}")
-    print(f"  summary.md          : {report_dir / 'summary.md'}")
-    print(f"\n  BENCHMARK_COMPLETE  mode={gem_mode_label} obs_exec={obs_exec_mode_env} "
-          f"tasks={n_tasks} gov_clean={summary['governance_clean']} "
-          f"gencoin={summary['gencoin_mode']}")
+    # ── Tableau de bord humain FR (avant les blocs bruts) ────────────────────
+    if _tv in ("HUMAN_FR", "COMPACT_FR"):
+        _exec_read = _execution_read(summary, rows)
+        print(_build_human_dashboard(
+            summary, rows,
+            exec_read=_exec_read,
+            compact=(_tv == "COMPACT_FR"),
+        ))
 
-    # ── BLOCK 7 : METRIC EXPLAINER FR ─────────────────────────────────────────
-    print(_build_metric_explainer(summary, rows))
+    # ── Séparateur DÉTAILS TECHNIQUES (HUMAN_FR seulement) ───────────────────
+    if _tv == "HUMAN_FR":
+        print(f"\n{'='*66}")
+        print("  DÉTAILS TECHNIQUES")
+        print(f"{'='*66}")
 
-    # ── BLOCK 8 : BÉNÉFICES ET PARADIGME ──────────────────────────────────────
-    print(_build_benefices_paradigme(summary, rows))
+    # ── Blocs bruts — HUMAN_FR et AUDIT_RAW uniquement ───────────────────────
+    if _tv in ("HUMAN_FR", "AUDIT_RAW"):
+        n_tasks = summary["tasks_attempted"]
 
-    # ── BLOCK 9 : TABLEAU DE BORD HUMAIN FR ───────────────────────────────────
-    _terminal_view = os.environ.get("OIE_TERMINAL_VIEW", "HUMAN_FR")
-    if _terminal_view not in ("AUDIT_RAW", "JSON_ONLY"):
-        print(_build_human_dashboard(summary, rows))
+        # ── BLOCK 1 : BENCHMARK MODE ──────────────────────────────────────────
+        print(f"\n{'='*66}")
+        print(f"  BENCHMARK MODE — {BENCHMARK_VERSION}")
+        print(f"{'='*66}")
+        print(f"  Gemini lane mode        : {gem_mode_label}")
+        print(f"  Gemini model            : {sdk_model}")
+        print(f"  GEMINI_API_KEY set      : {bool(gemini_key)}")
+        print(f"  Network allowed         : {network_allowed}")
+        print(f"  Obsidia exec mode (env) : {obs_exec_mode_env}")
+        print(f"  Obsidia API base        : {_OBSIDIA_API_BASE}")
+        print(f"  Obsidia kernel target   : {_OBSIDIA_KERNEL_URL}")
+        print(f"  LIVE_LOCAL available    : {_LIVE_LOCAL_AVAILABLE}  (API 8000 probe at import time)")
+        print(f"  Live adapters found     : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('adapter_found'))}/7")
+        print(f"  Live adapters usable    : {sum(1 for v in _OBSIDIA_LIVE_ADAPTER_REGISTRY.values() if v.get('usable_for_live_local'))}/7")
+        print(f"  Live usable families    : {_LIVE_LOCAL_USABLE_FAMILIES or 'none'}")
+        print(f"  Unavailable families    : {_LIVE_LOCAL_UNAVAILABLE_FAMILIES or 'none'}")
+        print(f"  Adapter missing         : {_ADAPTER_MISSING_FAMILIES_LIVE or 'none'}")
+        print(f"  Tasks                   : {len(POWER_TASKS)}")
+        print(f"  Gencoin mode            : {GENCOIN_MODE}")
+        print(f"  Cost basis Obsidia      : {COST_BASIS_LOCAL_PROXY}")
+        print(f"  Governance              : EMITS_ACT={EMITS_ACT} MEM_WRITE={MEMORY_WRITE} "
+              f"KERNEL_MUT={KERNEL_MUTATION} AUTH={DECISION_AUTHORITY}")
+
+        # ── BLOCK 2 : DUAL LANE SUMMARY ───────────────────────────────────────
+        print(f"\n{'='*66}")
+        print("  DUAL LANE SUMMARY")
+        print(f"{'='*66}")
+        print(f"  {'FAMILY':<12} {'OBS_LANE':<32} {'GEM_LANE':<14} {'SCOPE':<44} "
+              f"{'OBS_MATCH':<10} {'GEM_MATCH':<10} {'CLAIMABLE':<10} {'ADAPTER':<24} {'FALLBACK':<10} {'LIVE_AVAIL'}")
+        print("  " + "-" * 180)
+        for row in rows:
+            dl = row.get("dual_lane", {})
+            ol = dl.get("obsidia_lane", {})
+            gl = dl.get("gemini_lane", {})
+            adapter_type = ol.get("adapter_type", "?")
+            fallback = ol.get("fallback_used", False)
+            live_avail = ol.get("live_execution_available", False)
+            print(
+                f"  {row['family']:<12} "
+                f"{str(ol.get('execution_mode', '?')):<32} "
+                f"{str(gl.get('execution_mode', '?')):<14} "
+                f"{str(dl.get('comparison_scope', '?')):<44} "
+                f"{str(ol.get('route_match', '?')):<10} "
+                f"{str(gl.get('route_match', '?')):<10} "
+                f"{str(dl.get('comparison_claimable', '?')):<10} "
+                f"{str(adapter_type):<24} "
+                f"{str(fallback):<10} "
+                f"{str(live_avail)}"
+            )
+
+        # ── BLOCK 3 : CLAIMABLE READ ──────────────────────────────────────────
+        obs_acc = summary["obsidia_route_accuracy"]
+        gem_acc = summary["gemini_route_accuracy"]
+        wired_count = summary["available_surface_count"]
+        missing_count = summary["adapter_missing_count"]
+        model_avoided = summary["obsidia_model_call_avoided_count"]
+        funct_claim = summary.get("oie_claim_matrix", {}).get("functional_claimable_count", 0)
+        route_claim = summary.get("oie_claim_matrix", {}).get("route_claimable_count", 0)
+
+        print(f"\n{'='*66}")
+        print("  CLAIMABLE READ")
+        print(f"{'='*66}")
+        print(f"  Route accuracy (Obsidia)    : {obs_acc}")
+        print(f"  Route accuracy (Gemini)     : {gem_acc}")
+        print(f"  Route claimable count       : {route_claim}/{n_tasks}  (wired surface only)")
+        print(f"  Functional claimable count  : {funct_claim}/{n_tasks}  (wired surface only)")
+        print(f"  Wired surface families      : {wired_count}/7  (FAST_PATH, BANK, TRADING, GPS)")
+        _adapter_missing_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == OBSIDIA_STATUS_MISSING])
+        _bridge_kernel_unreachable_display = sorted([r.get("family") for r in rows if r.get("obsidia_status") == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE"])
+        _adapter_missing_display_s = ", ".join(_adapter_missing_display) if _adapter_missing_display else "NONE"
+        _bridge_kernel_unreachable_display_s = ", ".join(_bridge_kernel_unreachable_display) if _bridge_kernel_unreachable_display else "NONE"
+        print(f"  Adapter missing families    : {len(_adapter_missing_display)}/{len(rows)}  ({_adapter_missing_display_s})")
+        print(f"  Bridge kernel unreachable   : {len(_bridge_kernel_unreachable_display)}/{len(rows)}  ({_bridge_kernel_unreachable_display_s})")
+        print(f"  Cost comparison claimable   : {summary['cost_comparison_claimable_global']}  (always False — LOCAL_PROXY_UNCALIBRATED)")
+        print(f"  Model call avoided          : {model_avoided}/{n_tasks}")
+        print(f"  Governance clean            : {summary['governance_clean']}")
+
+        # ── BLOCK 4 : PERFORMANCE READ ────────────────────────────────────────
+        print(f"\n{'='*66}")
+        print("  PERFORMANCE READ")
+        print(f"{'='*66}")
+        print(f"  Avg speedup ratio           : {summary['avg_speedup_ratio']}")
+        print(f"  Intellectual value avg      : {summary['intellectual_value_avg']}")
+        print(f"  Debt total                  : {summary['internal_economy_debt_total']}")
+        print(f"  Energy source               : {summary['energy_source']}")
+        print(f"  Known path detected         : {summary.get('known_path_detected_count', '?')}/{n_tasks}")
+        print(f"  Inference avoided           : {summary.get('unnecessary_inference_avoided_count', '?')}/{n_tasks}")
+        print(f"  Governed speed rate         : {summary.get('governance_preserved_at_speed_rate', '?')}")
+        print(f"  Math formalized             : {summary.get('math_formalized_surface_count', '?')}/{n_tasks}")
+
+        # ── BLOCK 4.5 : SPEED STACK READ ──────────────────────────────────────
+        _ss_avg_speedup = summary.get("avg_speedup_ratio")
+        _ss_avail_speedup = summary.get("available_surface_avg_speedup_ratio")
+        _ss_model_speedup = summary.get("model_avoided_avg_speedup_ratio")
+        _ss_terrain_speedup = summary.get("terrain_avg_speedup_ratio")
+        _ss_governed = summary.get("governance_preserved_at_speed_rate")
+        _ss_kp_count = summary.get("known_path_detected_count", "?")
+        _ss_inf_avoided = summary.get("inference_avoided_count", "?")
+        _ss_model_avoided = summary.get("obsidia_model_call_avoided_count", "?")
+        _ss_model_families = summary.get("model_avoided_families") or []
+        _ss_oie_claimable = summary.get("oie_indices_claimable")
+        _ss_cost_claimable = summary.get("cost_comparison_claimable_global", False)
+        _ss_dca_raw = summary.get("dca_by_domain") or {}
+
+        def _ss_dca_val(fam: str) -> str:
+            v = _ss_dca_raw.get(fam)
+            if v is None:
+                return "null"
+            if isinstance(v, dict):
+                return str(v.get("dca_api_normal") or v.get("dca_agentic") or "null")
+            return str(v)
+
+        print(f"\n{'='*66}")
+        print("  SPEED STACK READ")
+        print(f"{'='*66}")
+        print(f"  Live avg speedup vs Gemini REAL_SDK   : {_ss_avg_speedup}x")
+        print(f"  Available surface avg speedup          : {_ss_avail_speedup}")
+        print(f"  Model avoided avg speedup              : {_ss_model_speedup}")
+        print(f"  Terrain avg speedup                    : {_ss_terrain_speedup}")
+        print(f"  Governed speed rate                    : {_ss_governed}")
+        print(f"  Known path detected                    : {_ss_kp_count}/{n_tasks}")
+        print(f"  Inference avoided                      : {_ss_inf_avoided}/{n_tasks}")
+        print(f"  Model call avoided                     : {_ss_model_avoided}/{n_tasks}")
+        print(f"  Model avoided families                 : {_ss_model_families}")
+        print(f"  OIE speed indices:")
+        print(f"    OSCA — geomean all families          : {summary.get('osca_ratio')}x")
+        print(f"    OAPI — portfolio actions             : {summary.get('oapi_ratio')}x")
+        print(f"    ODPI — portfolio domains             : {summary.get('odpi_ratio')}x")
+        print(f"    indices_claimable                    : {_ss_oie_claimable}")
+        print(f"  DCA by domain:")
+        for _ss_fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS", "GPS_AVIATION", "OBSIDURE", "LEAN"):
+            print(f"    {_ss_fam:<16} : {_ss_dca_val(_ss_fam)}")
+        print(f"  Governance while fast:")
+        print(f"    decision_authority : KX108_ONLY")
+        print(f"    emits_act          : false")
+        print(f"    memory_write       : false")
+        print(f"    kernel_mutation    : false")
+        print(f"  Claim guard:")
+        print(f"    speed_metrics_claimable        : true")
+        print(f"    cost_comparison_claimable      : {_ss_cost_claimable}")
+        print(f"    path_compute_runtime_claimable : false")
+        print(f"    wording_guard: Speed is measured; real cost and full Path Compute runtime are not claimed.")
+
+        # ── BLOCK 5 : OIE READ ────────────────────────────────────────────────
+        oie_osca = summary.get("osca_ratio", "N/A")
+        oie_oapi = summary.get("oapi_ratio", "N/A")
+        oie_odpi = summary.get("odpi_ratio", "N/A")
+        dca = summary.get("dca_by_domain", {})
+        if dca:
+            def _dca_sort_key(kv: tuple) -> float:
+                v = kv[1]
+                if isinstance(v, (int, float)):
+                    return float(v)
+                if isinstance(v, dict):
+                    return float(v.get("dca_api_normal") or 0)
+                return 0.0
+            dca_top = sorted(dca.items(), key=_dca_sort_key, reverse=True)[:3]
+        else:
+            dca_top = []
+
+        print(f"\n{'='*66}")
+        print("  OIE READ")
+        print(f"{'='*66}")
+        print(f"  OSCA (geomean all families) : {oie_osca}x")
+        print(f"  OAPI (portfolio actions)    : {oie_oapi}x")
+        print(f"  ODPI (portfolio domains)    : {oie_odpi}x")
+        print(f"  OIE import OK               : {_OIE_IMPORT_OK}")
+        print(f"  OIE freeze found            : {_OIE_FREEZE_FOUND}")
+        print(f"  Gencoin mode                : {summary['gencoin_mode']}")
+        print(f"  Gencoin emission            : {summary['gencoin_total_emission']}  (CALIBRATION_ONLY)")
+        if dca_top:
+            print(f"  DCA top domains             :")
+            for dom, val in dca_top:
+                if isinstance(val, (int, float)):
+                    print(f"    {dom:<20} : {val:.4f}")
+                elif isinstance(val, dict):
+                    dca_val = val.get("dca_api_normal") or val.get("dca_agentic") or 0
+                    print(f"    {dom:<20} : dca_api_normal={dca_val}")
+
+        # ── BLOCK 6 : REPORTS — print (après écriture fichiers déjà faite) ────
+        print(f"\n{'='*66}")
+        print("  REPORTS")
+        print(f"{'='*66}")
+        print(f"  Runtime report dir  : {report_dir}")
+        print(f"  Protocol doc        : {proto_path}")
+        print(f"  summary.json        : {report_dir / 'summary.json'}")
+        print(f"  readable_report.json: {report_dir / 'readable_report.json'}")
+        print(f"  summary.md          : {report_dir / 'summary.md'}")
+        print(f"\n  BENCHMARK_COMPLETE  mode={gem_mode_label} obs_exec={obs_exec_mode_env} "
+              f"tasks={n_tasks} gov_clean={summary['governance_clean']} "
+              f"gencoin={summary['gencoin_mode']}")
+
+    # ── BLOCK 7 + 8 : EXPLAINER ET BÉNÉFICES (AUDIT_RAW seulement) ───────────
+    if _tv == "AUDIT_RAW":
+        print(_build_metric_explainer(summary, rows))
+        print(_build_benefices_paradigme(summary, rows))
+
+    # ── COMPACT_FR : message de complétion minimal ─────────────────────────────
+    if _tv == "COMPACT_FR":
+        print(f"\n  Rapports écrits dans : {report_dir}")
+
+    # ── JSON_ONLY : confirmation fichiers uniquement ───────────────────────────
+    if _tv == "JSON_ONLY":
+        print(f"  Reports written to: {report_dir}")
 
 
 if __name__ == "__main__":
