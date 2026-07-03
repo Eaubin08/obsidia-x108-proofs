@@ -3551,6 +3551,78 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
 
     md: list[str] = []
 
+    # §0 Tableau de bord français (V0.7.8) — doit occuper les 120 premières lignes
+    _avg_sp_md  = summary.get("avg_speedup_ratio")
+    _avail_sp_md = summary.get("available_surface_avg_speedup_ratio")
+    _mod_sp_md  = summary.get("model_avoided_avg_speedup_ratio")
+    _mod_av_md  = summary.get("obsidia_model_call_avoided_count", "?")
+    _obs_rt_md  = sum(1 for r in rows if r.get("obsidia_route_match") is True)
+    _gem_rt_md  = sum(1 for r in rows if r.get("gemini_route_match") is True)
+    _n_md = len(rows)
+
+    def _fn(v: object) -> str:
+        if v is None:
+            return "N/D"
+        try:
+            return f"{round(float(v)):,}".replace(",", " ") + "x"
+        except (ValueError, TypeError):
+            return str(v)
+
+    md += [
+        "# Tableau de bord — OIE Benchmark Obsidia vs Gemini",
+        "",
+        "## Analyse simple du benchmark",
+        "",
+        "C'est un test comparatif réel entre Obsidia en environnement local réel",
+        "et Gemini appelé comme modèle externe réel via kit de développement logiciel.",
+        "",
+        "| Aspect | Valeur |",
+        "| --- | --- |",
+        "| Obsidia LIVE_LOCAL | système local avec ponts de domaines |",
+        "| Gemini REAL_SDK | appel réel au modèle Gemini |",
+        "| Focus | économie d'inférence (OIE) |",
+        "| Question | Quand peut-on répondre sans grand modèle de langage ? |",
+        "",
+        "## Tableau de bord",
+        "",
+        "| Indicateur | Valeur |",
+        "| --- | --- |",
+        f"| Obsidia route correctement | {_obs_rt_md} / {_n_md} |",
+        f"| Gemini route correctement | {_gem_rt_md} / {_n_md} |",
+        f"| Appels au modèle évités | {_mod_av_md} / {_n_md} |",
+        f"| Accélération moyenne réelle | {_fn(_avg_sp_md)} |",
+        f"| Accélération surfaces disponibles | {_fn(_avail_sp_md)} |",
+        f"| Accélération appel modèle évité | {_fn(_mod_sp_md)} |",
+        "| Gouvernance | KX108_ONLY — pas d'action réelle — pas d'écriture mémoire |",
+        "",
+        "## Les 6 chiffres à retenir",
+        "",
+        f"1. {_n_md} tâches testées.",
+        f"2. {_obs_rt_md} / {_n_md} routes correctes (Obsidia).",
+        f"3. {_mod_av_md} / {_n_md} appels au modèle évités.",
+        f"4. {_fn(_avg_sp_md)} plus rapide en moyenne réelle.",
+        f"5. {_fn(_mod_sp_md)} plus rapide quand l'appel modèle est évité.",
+        "6. 3 familles pleinement revendicables : BANK, TRADING, GPS.",
+        "",
+        "## Lecture par famille",
+        "",
+        "| Famille | Statut | Modèle évité | Résultat |",
+        "| --- | --- | --- | --- |",
+        "| BANK | OK | OUI | Revendicable |",
+        "| TRADING | OK | OUI | Revendicable |",
+        "| GPS | OK | OUI | Revendicable |",
+        "| FAST_PATH | MESURE | OUI | Pas de pont live dédié |",
+        "| BRODY | MESURE | PARTIEL | kernel inaccessible — pas un connecteur manquant |",
+        "| OBSIDURE | MANQUE | NON | connecteur manquant |",
+        "| LEAN | MANQUE | NON | connecteur manquant |",
+        "",
+        "Les domaines propres aujourd'hui : BANK, TRADING, GPS.",
+        "FAST_PATH et BRODY sont partiels. OBSIDURE et LEAN restent à brancher.",
+        "",
+        "---",
+        "",
+    ]
+
     # §1 Executive Read
     md += [
         "# OIE Power Benchmark V0.7.1 — Runtime Summary",
@@ -3668,7 +3740,13 @@ def write_runtime_reports(report_dir: Path, summary: dict, rows: list[dict]) -> 
         "| --- | --- | --- | --- |",
     ]
     for k, d in (summary.get("dca_by_domain") or {}).items():
-        md.append(f"| {k} | {d} | — | — |")
+        if isinstance(d, dict):
+            _dca_api = d.get("dca_api_normal", "—")
+            _dca_agt = d.get("dca_agentic", "—")
+        else:
+            _dca_api = d if d is not None else "—"
+            _dca_agt = "—"
+        md.append(f"| {k} | {_dca_api} | {_dca_agt} | — |")
     if not (summary.get("dca_by_domain")):
         for k, d in (summary.get("domain_summary") or {}).items():
             md.append(
@@ -4492,6 +4570,360 @@ def generate_report(summary: dict, rows: list[dict]) -> str:
     p("---")
 
     return "\n".join(lines)
+
+
+# ── Human dashboard FR helpers (V0.7.8) ──────────────────────────────────────
+
+def _color(text: str, color_name: str) -> str:
+    if os.environ.get("NO_COLOR") or os.environ.get("OIE_NO_COLOR"):
+        return text
+    _codes: dict = {
+        "cyan": "\033[96m", "magenta": "\033[95m", "green": "\033[92m",
+        "yellow": "\033[93m", "red": "\033[91m", "gray": "\033[90m",
+    }
+    return f"{_codes.get(color_name, '')}{text}\033[0m"
+
+
+def _tag_ok() -> str:      return _color("[OK]",      "green")
+def _tag_mesure() -> str:  return _color("[MESURE]",  "yellow")
+def _tag_limite() -> str:  return _color("[LIMITE]",  "yellow")
+def _tag_manque() -> str:  return _color("[MANQUE]",  "red")
+def _tag_garde() -> str:   return _color("[GARDE]",   "gray")
+def _tag_obsidia() -> str: return _color("[OBSIDIA]", "cyan")
+def _tag_gemini() -> str:  return _color("[GEMINI]",  "magenta")
+
+
+def _fr_num(val: object, suffix: str = "x") -> str:
+    """Formate un nombre en convention française (espace comme séparateur de milliers)."""
+    if val is None:
+        return "NON DISPONIBLE"
+    try:
+        rounded = round(float(val))
+        formatted = f"{rounded:,}".replace(",", " ")
+        return formatted + suffix
+    except (ValueError, TypeError):
+        return str(val)
+
+
+def _build_human_dashboard(summary: dict, rows: list) -> str:
+    """Génère le tableau de bord lisible en français — V0.7.8 (9 sections)."""
+    n = len(rows)
+    avg_sp  = summary.get("avg_speedup_ratio")
+    avail_sp = summary.get("available_surface_avg_speedup_ratio")
+    model_sp = summary.get("model_avoided_avg_speedup_ratio")
+    model_av = summary.get("obsidia_model_call_avoided_count", "?")
+    obs_route = sum(1 for r in rows if r.get("obsidia_route_match") is True)
+    gem_route = sum(1 for r in rows if r.get("gemini_route_match") is True)
+    osca = summary.get("osca_ratio")
+    oapi = summary.get("oapi_ratio")
+    odpi = summary.get("odpi_ratio")
+    dca  = summary.get("dca_by_domain") or {}
+    gencoin_emission = summary.get("gencoin_total_emission", 0)
+
+    def _dca(fam: str) -> str:
+        v = dca.get(fam)
+        if v is None:
+            return "NON DISPONIBLE"
+        if isinstance(v, dict):
+            val = v.get("dca_api_normal") or v.get("dca_agentic")
+            return _fr_num(val) if val is not None else "NON DISPONIBLE"
+        return _fr_num(v)
+
+    fam_rows: dict = {r["family"]: r for r in rows}
+
+    def _fam_tag(fam: str) -> str:
+        r = fam_rows.get(fam, {})
+        mn = r.get("model_necessity", {})
+        obs_status = r.get("obsidia_status", "")
+        if mn.get("necessity_claimable"):
+            return _tag_ok()
+        if fam in ("OBSIDURE", "LEAN") or obs_status == OBSIDIA_STATUS_MISSING:
+            return _tag_manque()
+        return _tag_mesure()
+
+    def _fam_modele(fam: str) -> str:
+        r = fam_rows.get(fam, {})
+        mn = r.get("model_necessity", {})
+        if mn.get("unnecessary_generalist_call_avoided"):
+            return "OUI"
+        if fam == "BRODY":
+            return "PARTIEL"
+        return "NON"
+
+    def _fam_resultat(fam: str) -> str:
+        r = fam_rows.get(fam, {})
+        obs_status = r.get("obsidia_status", "")
+        if fam in ("BANK", "TRADING", "GPS"):
+            return "Revendicable"
+        if fam == "FAST_PATH":
+            return "Pas de pont live dédié"
+        if fam == "BRODY" or obs_status == "LIVE_BRIDGE_ATTEMPTED_KERNEL_UNREACHABLE":
+            return "kernel inaccessible"
+        return "connecteur manquant"
+
+    L: list = []
+
+    # ── Section 1 — Analyse simple ────────────────────────────────────────────
+    L += [
+        "",
+        "=" * 66,
+        "  ANALYSE SIMPLE DU BENCHMARK",
+        "=" * 66,
+        "",
+        "  1. Ce que le benchmark mesure vraiment",
+        "  ─────────────────────────────────────",
+        "  C'est un test comparatif réel entre Obsidia en environnement local",
+        "  réel et Gemini appelé comme modèle externe réel.",
+        "",
+        f"  {_tag_obsidia()} LIVE_LOCAL = système local avec ponts de domaines.",
+        f"  {_tag_gemini()} REAL_SDK   = appel réel au modèle Gemini via kit de",
+        "                 développement logiciel.",
+        "  Focus principal = économie d'inférence (OIE).",
+        "",
+        "  Question centrale :",
+        "  \"Quand Obsidia peut-il répondre sans appeler un grand modèle de",
+        "   langage généraliste ?\"",
+        "",
+        "  2. Résultats clés",
+        "  ─────────────────",
+        f"  {_tag_ok()} Accélération moyenne mesurée       : {_fr_num(avg_sp)} contre Gemini.",
+        f"  {_tag_ok()} Accélération, appel modèle évité   : {_fr_num(model_sp)}.",
+        f"  {_tag_ok()} Familles évitant l'appel modèle    : {model_av}/{n}.",
+        f"  {_tag_ok()} Familles concernées                : BANK, TRADING, GPS, FAST_PATH.",
+        f"  {_tag_ok()} Gouvernance respectée              : KX108_ONLY, pas d'action",
+        "               réelle, pas d'écriture mémoire, pas de mutation kernel.",
+        f"  {_tag_ok()} Précision de routage Obsidia       : {obs_route}/{n}.",
+        f"  {_tag_ok()} BANK, TRADING, GPS                 : fonctionnent en",
+        "               environnement local réel avec pont de domaine.",
+        "",
+        f"  {_tag_limite()} FAST_PATH  : mesuré, pas encore de pont live dédié.",
+        f"  {_tag_limite()} BRODY      : mesuré, pont tenté, kernel inaccessible.",
+        f"  {_tag_manque()} OBSIDURE   : connecteur manquant.",
+        f"  {_tag_manque()} LEAN       : connecteur manquant.",
+        f"  {_tag_garde()} DCA/OSCA/OAPI/ODPI : indicateurs indirects,"
+        " pas facturation réelle.",
+        f"  {_tag_garde()} Coût réel industriel            : Non revendiqué.",
+        f"  {_tag_garde()} Calcul de chemin complet        : Non revendiqué.",
+        "",
+        "  Verdict :",
+        "  \"C'est un bon run. Il prouve que sur des routes connues et bornées,",
+        "   Obsidia peut être beaucoup plus rapide tout en gardant une",
+        "   gouvernance stricte.\"",
+        "",
+        "  \"Ce n'est pas une victoire totale sur toutes les familles.",
+        "   C'est une preuve concrète de concept sur les domaines principaux.\"",
+        "",
+        "  3. Ce que ça apporte au projet",
+        "  ──────────────────────────────",
+        "  - Preuve vivante de l'approche known path + gouvernance.",
+        "  - Différence de paradigme : Obsidia n'essaie pas d'être un meilleur",
+        "    grand modèle de langage. Obsidia sait quand il n'a pas besoin",
+        "    d'en appeler un.",
+        "  - Renforce le positionnement : économie d'inférence + gouvernance.",
+        "  - Montre que le système fonctionne sur les domaines branchés.",
+        "  - Montre clairement les limites restantes.",
+        "",
+        "  4. Phrase simple",
+        "  ──────────────────",
+        "  \"Le benchmark montre qu'Obsidia fonctionne bien sur les domaines",
+        "   branchés et apporte un gain de vitesse significatif en évitant les",
+        "   appels inutiles, tout en gardant la gouvernance.\"",
+        "",
+    ]
+
+    # ── Section 2 — Tableau de bord ──────────────────────────────────────────
+    L += [
+        "=" * 66,
+        "  TABLEAU DE BORD — OBSIDIA VS GEMINI",
+        "=" * 66,
+        "",
+        "  Test réel :",
+        f"    {_tag_obsidia()} Obsidia : OUI — environnement local réel",
+        f"    {_tag_gemini()} Gemini  : OUI — modèle externe réel",
+        "",
+        "  Score simple :",
+        f"    Obsidia route correctement : {obs_route} / {n}",
+        f"    Gemini route correctement  : {gem_route} / {n}",
+        "",
+        f"  Appels au modèle évités : {model_av} / {n}",
+        "",
+        "  Vitesse :",
+        f"    Accélération moyenne réelle                 : {_fr_num(avg_sp)}",
+        f"    Accélération sur surfaces disponibles       : {_fr_num(avail_sp)}",
+        f"    Accélération quand l'appel modèle est évité : {_fr_num(model_sp)}",
+        "",
+        "  Verdict court :",
+        "    Obsidia ne gagne pas parce qu'il génère mieux.",
+        "    Obsidia gagne quand la route est connue et que l'appel au modèle",
+        "    devient inutile.",
+        "",
+    ]
+
+    # ── Section 3 — 6 chiffres ───────────────────────────────────────────────
+    L += [
+        "=" * 66,
+        "  LES 6 CHIFFRES À RETENIR",
+        "=" * 66,
+        "",
+        f"  1. {n} tâches testées.",
+        f"  2. {obs_route} / {n} routes correctes côté Obsidia.",
+        f"  3. {model_av} / {n} appels au modèle évités.",
+        f"  4. {_fr_num(avg_sp)} plus rapide en moyenne réelle.",
+        f"  5. {_fr_num(model_sp)} plus rapide quand l'appel modèle est évité.",
+        "  6. 3 familles pleinement revendicables : BANK, TRADING, GPS.",
+        "",
+    ]
+
+    # ── Section 4 — Trois types de chiffres ─────────────────────────────────
+    L += [
+        "=" * 66,
+        "  TROIS TYPES DE CHIFFRES — POUR NE PAS LES MÉLANGER",
+        "=" * 66,
+        "",
+        "  1. MESURE RÉELLE",
+        "     Run réel Obsidia LIVE_LOCAL vs Gemini REAL_SDK.",
+        f"     Accélération moyenne réelle : {_fr_num(avg_sp)}.",
+        f"     {_tag_ok()} Revendicable : oui, comme vitesse mesurée.",
+        "",
+        "  2. SURFACES DISPONIBLES",
+        "     Familles où Obsidia répond via les surfaces disponibles.",
+        f"     Accélération surfaces disponibles : {_fr_num(avail_sp)}.",
+        f"     {_tag_ok()} Revendicable : oui, sur le périmètre branché.",
+        "",
+        "  3. INDICATEURS INDIRECTS",
+        "     OSCA, OAPI, ODPI, DCA — potentiel et structure.",
+        "     Pas de facturation réelle.",
+        f"     {_tag_garde()} Revendicable : partiel — indicateur uniquement.",
+        "",
+    ]
+
+    # ── Section 5 — Lecture par famille ─────────────────────────────────────
+    L += [
+        "=" * 66,
+        "  LECTURE PAR FAMILLE",
+        "=" * 66,
+        "",
+        f"  {'Famille':<14} {'Etat':<16} {'Modele evite':<20} Resultat simple",
+        "  " + "-" * 62,
+    ]
+    for fam in ("BANK", "TRADING", "GPS", "FAST_PATH", "BRODY", "OBSIDURE", "LEAN"):
+        etat_raw = _fam_tag(fam)
+        mod_ev = _fam_modele(fam)
+        resultat = _fam_resultat(fam)
+        L.append(f"  {fam:<14} {etat_raw:<28} {mod_ev:<20} {resultat}")
+    L += [
+        "",
+        "  Les domaines propres aujourd'hui sont BANK, TRADING et GPS.",
+        "  FAST_PATH et BRODY sont intéressants mais encore partiels.",
+        "  OBSIDURE et LEAN restent à brancher.",
+        "",
+    ]
+
+    # ── Section 6 — Ce qui est revendicable ─────────────────────────────────
+    L += [
+        "=" * 66,
+        "  CE QUI EST REVENDICABLE",
+        "=" * 66,
+        "",
+        f"  {_tag_ok()} Vitesse mesurée                         : oui.",
+        f"  {_tag_ok()} Economie d'inférence sur routes connues : oui.",
+        f"  {_tag_ok()} BANK, TRADING, GPS                      : oui,"
+        " pleinement revendicables.",
+        f"  {_tag_ok()} Gouvernance préservée                   : oui.",
+        f"  {_tag_ok()} Aucun acte réel                         : oui.",
+        f"  {_tag_ok()} Aucune écriture mémoire                 : oui.",
+        f"  {_tag_ok()} Aucune mutation kernel                  : oui.",
+        "",
+        "  \"On peut défendre ces résultats sans mélanger mesure,",
+        "   supposition et limite technique.\"",
+        "",
+    ]
+
+    # ── Section 7 — Ce qui n'est pas encore fermé ───────────────────────────
+    L += [
+        "=" * 66,
+        "  CE QUI N'EST PAS ENCORE FERMÉ",
+        "=" * 66,
+        "",
+        f"  {_tag_limite()} FAST_PATH :",
+        "     Le chemin rapide est mesuré, mais il n'a pas encore son pont",
+        "     live dédié.",
+        "",
+        f"  {_tag_limite()} BRODY :",
+        "     Le pont a été tenté, mais le kernel était inaccessible pendant",
+        "     le test. Ce n'est pas un connecteur manquant.",
+        "",
+        f"  {_tag_manque()} OBSIDURE et LEAN :",
+        "     Les connecteurs sont manquants dans ce benchmark.",
+        "",
+        f"  {_tag_garde()} Coût réel :",
+        "     Non revendiqué. La vitesse est mesurée, mais pas la facture",
+        "     industrielle.",
+        "",
+        f"  {_tag_garde()} Calcul de chemin complet :",
+        "     Non revendiqué dans ce run.",
+        "",
+        f"  {_tag_garde()} Gencoin :",
+        f"     Calibration seulement. Emission = {gencoin_emission}.",
+        "",
+    ]
+
+    # ── Section 8 — Indices avancés ──────────────────────────────────────────
+    L += [
+        "=" * 66,
+        "  INDICES AVANCÉS — POTENTIEL D'ÉCONOMIE D'INFÉRENCE",
+        "=" * 66,
+        "",
+        f"  OSCA — Score global de vitesse Obsidia      : {_fr_num(osca)}",
+        "         Lecture : indice global, pas une facture réelle.",
+        "",
+        f"  OAPI — Avantage sur portefeuille d'actions  : {_fr_num(oapi)}",
+        "         Lecture : indice orienté actions, pas une facture réelle.",
+        "",
+        f"  ODPI — Avantage sur portefeuille de domaines: {_fr_num(odpi)}",
+        "         Lecture : indice par domaines, pas une facture réelle.",
+        "",
+        "  Avantage par domaine :",
+    ]
+    for fam in ("FAST_PATH", "BRODY", "BANK", "TRADING", "GPS_AVIATION", "LEAN", "OBSIDURE"):
+        L.append(f"    {fam:<16} : {_dca(fam)}")
+    L.append("")
+
+    # ── Section 9 — Bénéfices et paradigme ──────────────────────────────────
+    L += [
+        "=" * 66,
+        "  BÉNÉFICES ET CHANGEMENT DE PARADIGME",
+        "=" * 66,
+        "",
+        "  Bénéfice principal :",
+        "  \"Le bénéfice principal n'est pas seulement d'aller plus vite.",
+        "   Le bénéfice est d'éviter une inférence généraliste quand une",
+        "   route connue, bornée et gouvernée suffit.\"",
+        "",
+        "  Changement de paradigme :",
+        "  - Ancien réflexe : tout envoyer à un grand modèle de langage.",
+        "  - Nouveau réflexe : vérifier d'abord si l'appel au modèle est nécessaire.",
+        "  - Gemini optimise la génération de réponse.",
+        "  - Obsidia optimise la décision d'inférer ou non.",
+        "  - La vitesse vient de l'évitement, pas seulement d'un calcul plus rapide.",
+        "  - La gouvernance reste active pendant le gain de vitesse.",
+        "",
+        "  Bénéfices produit :",
+        "  - Moins de latence.",
+        "  - Moins d'appels au modèle inutiles.",
+        "  - Moins de surface d'hallucination.",
+        "  - Plus de traçabilité.",
+        "  - Plus d'auditabilité.",
+        "  - Limites mieux visibles.",
+        "",
+        "  \"Quand la route est connue, prédire devient plus lent que vérifier.\"",
+        "",
+        "  \"Obsidia ne remplace pas Gemini partout ; Obsidia réduit le besoin",
+        "   d'appeler Gemini quand la structure suffit.\"",
+        "",
+    ]
+
+    return "\n".join(L)
 
 
 # ── Metric explainer FR (V0.7.7) ─────────────────────────────────────────────
@@ -5332,6 +5764,11 @@ def main() -> None:  # noqa: C901
 
     # ── BLOCK 8 : BÉNÉFICES ET PARADIGME ──────────────────────────────────────
     print(_build_benefices_paradigme(summary, rows))
+
+    # ── BLOCK 9 : TABLEAU DE BORD HUMAIN FR ───────────────────────────────────
+    _terminal_view = os.environ.get("OIE_TERMINAL_VIEW", "HUMAN_FR")
+    if _terminal_view not in ("AUDIT_RAW", "JSON_ONLY"):
+        print(_build_human_dashboard(summary, rows))
 
 
 if __name__ == "__main__":

@@ -3027,3 +3027,211 @@ class TestBeneficesParadigme:
         assert "ANTHROPIC_API_KEY" not in text
         assert "GEMINI_API_KEY" not in text
         assert "GOOGLE_API_KEY" not in text
+
+
+class TestHumanDashboardFR:
+    """V0.7.8 — 41 tests pour _build_human_dashboard et summary.md."""
+
+    def _rs(self):
+        rows = [bm.compute_compare_row(t, bm.run_obsidia_lane(t, bm.OIE_OBSIDIA_EXEC_MODE_AUTO),
+                                       bm.run_gemini_lane_dryrun(t)) for t in bm.POWER_TASKS]
+        s = bm.compute_summary(rows, bm.POWER_TASKS)
+        return s, rows
+
+    def _dash(self):
+        s, rows = self._rs()
+        return bm._build_human_dashboard(s, rows)
+
+    def _write_md(self, tmp_path):
+        s, rows = self._rs()
+        bm.write_runtime_reports(tmp_path, s, rows)
+        return s, rows
+
+    def _read_report(self, tmp_path):
+        import json as _j
+        return _j.loads((tmp_path / "readable_report.json").read_text(encoding="utf-8"))
+
+    # ── Tests 1–9 : sections présentes ───────────────────────────────────────
+
+    def test_01_has_analyse_simple(self):
+        assert "ANALYSE SIMPLE DU BENCHMARK" in self._dash()
+
+    def test_02_has_tableau_de_bord(self):
+        assert "TABLEAU DE BORD — OBSIDIA VS GEMINI" in self._dash()
+
+    def test_03_has_6_chiffres(self):
+        assert "LES 6 CHIFFRES À RETENIR" in self._dash()
+
+    def test_04_has_trois_types_chiffres(self):
+        assert "TROIS TYPES DE CHIFFRES" in self._dash()
+
+    def test_05_has_lecture_par_famille(self):
+        assert "LECTURE PAR FAMILLE" in self._dash()
+
+    def test_06_has_ce_qui_est_revendicable(self):
+        assert "CE QUI EST REVENDICABLE" in self._dash()
+
+    def test_07_has_ce_qui_n_est_pas_encore_ferme(self):
+        assert "CE QUI N'EST PAS ENCORE FERMÉ" in self._dash()
+
+    def test_08_has_indices_avances(self):
+        assert "INDICES AVANCÉS" in self._dash()
+
+    def test_09_has_benefices_et_changement(self):
+        assert "BÉNÉFICES ET CHANGEMENT DE PARADIGME" in self._dash()
+
+    # ── Tests 10–24 : contenu ────────────────────────────────────────────────
+
+    def test_10_obsidia_route_correctement(self):
+        assert "Obsidia route correctement" in self._dash()
+
+    def test_11_gemini_route_correctement(self):
+        assert "Gemini route correctement" in self._dash()
+
+    def test_12_appels_au_modele_evites(self):
+        assert "appels au modèle évités" in self._dash().lower() or \
+               "appel au modèle évités" in self._dash().lower() or \
+               "Appels au modèle évités" in self._dash() or \
+               "Appel au modèle" in self._dash()
+
+    def test_13_plus_rapide_en_moyenne_reelle(self):
+        assert "plus rapide en moyenne réelle" in self._dash()
+
+    def test_14_bank(self):
+        assert "BANK" in self._dash()
+
+    def test_15_trading(self):
+        assert "TRADING" in self._dash()
+
+    def test_16_gps(self):
+        assert "GPS" in self._dash()
+
+    def test_17_fast_path(self):
+        assert "FAST_PATH" in self._dash()
+
+    def test_18_brody(self):
+        assert "BRODY" in self._dash()
+
+    def test_19_kernel_inaccessible(self):
+        assert "kernel inaccessible" in self._dash()
+
+    def test_20_connecteur_manquant(self):
+        assert "connecteur manquant" in self._dash()
+
+    def test_21_cout_reel(self):
+        assert "Coût réel" in self._dash()
+
+    def test_22_non_revendique(self):
+        assert "Non revendiqué" in self._dash()
+
+    def test_23_gencoin(self):
+        assert "Gencoin" in self._dash()
+
+    def test_24_calibration_seulement(self):
+        assert "Calibration seulement" in self._dash()
+
+    # ── Tests 25–30 : BRODY et first-200-lines ───────────────────────────────
+
+    def test_25_brody_not_grouped_as_connecteur_manquant(self):
+        text = self._dash()
+        for line in text.split("\n"):
+            if "BRODY" in line and "connecteur manquant" in line.lower():
+                assert False, f"BRODY incorrectement groupé comme connecteur manquant : {line}"
+
+    def test_26_first_200_lines_no_benchmark_mode(self):
+        first = "\n".join(self._dash().split("\n")[:200])
+        assert "BENCHMARK MODE" not in first
+
+    def test_27_first_200_lines_no_dual_lane_summary(self):
+        first = "\n".join(self._dash().split("\n")[:200])
+        assert "DUAL LANE SUMMARY" not in first
+
+    def test_28_first_200_lines_no_live_avg_speedup_raw(self):
+        first = "\n".join(self._dash().split("\n")[:200])
+        assert "Live avg speedup" not in first
+
+    def test_29_first_200_lines_no_available_surface_raw(self):
+        first = "\n".join(self._dash().split("\n")[:200])
+        assert "Available surface avg speedup" not in first
+
+    def test_30_first_200_lines_no_model_avoided_raw(self):
+        first = "\n".join(self._dash().split("\n")[:200])
+        assert "Model avoided avg speedup" not in first
+
+    # ── Tests 31–37 : summary.md ─────────────────────────────────────────────
+
+    def test_31_summary_md_starts_with_french_dashboard(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first_heading = next((l for l in md.split("\n") if l.startswith("#")), "")
+        assert "Tableau de bord" in first_heading or "Analyse simple" in first_heading
+
+    def test_32_summary_md_no_mojibake(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "Â§" not in md
+        assert "Ã©" not in md
+        assert "Ã " not in md
+
+    def test_33_summary_md_no_raw_dict(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        assert "{'domain_name'" not in md
+
+    def test_34_first_120_lines_has_analyse_simple(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first120 = "\n".join(md.split("\n")[:120])
+        assert "Analyse simple du benchmark" in first120
+
+    def test_35_first_120_lines_has_tableau_de_bord(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first120 = "\n".join(md.split("\n")[:120])
+        assert "Tableau de bord" in first120
+
+    def test_36_first_120_lines_has_6_chiffres(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first120 = "\n".join(md.split("\n")[:120])
+        assert "Les 6 chiffres à retenir" in first120
+
+    def test_37_first_120_lines_has_lecture_par_famille(self, tmp_path):
+        self._write_md(tmp_path)
+        md = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        first120 = "\n".join(md.split("\n")[:120])
+        assert "Lecture par famille" in first120
+
+    # ── Tests 38–41 : clés machine + invariants ───────────────────────────────
+
+    def test_38_machine_keys_unchanged(self, tmp_path):
+        self._write_md(tmp_path)
+        data = self._read_report(tmp_path)
+        for key in ("speed_stack_read", "path_read", "model_necessity_read", "answer_adequacy_read"):
+            assert key in data, f"Clé machine manquante : {key}"
+
+    def test_39_claim_guard_unchanged(self, tmp_path):
+        self._write_md(tmp_path)
+        data = self._read_report(tmp_path)
+        cg = data["speed_stack_read"]["claim_guard"]
+        assert cg["cost_comparison_claimable"] is False
+        assert cg["path_compute_runtime_claimable"] is False
+
+    def test_40_gencoin_calibration_emission_zero(self, tmp_path):
+        s, _ = self._write_md(tmp_path)
+        assert s.get("gencoin_mode") == "CALIBRATION_ONLY"
+        assert s.get("gencoin_total_emission") == 0
+
+    def test_41_no_api_key_in_terminal_or_reports(self, tmp_path):
+        s, rows = self._rs()
+        terminal_text = (
+            bm._build_human_dashboard(s, rows)
+            + bm._build_metric_explainer(s, rows)
+            + bm._build_benefices_paradigme(s, rows)
+        )
+        for key in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+            assert key not in terminal_text
+        bm.write_runtime_reports(tmp_path, s, rows)
+        md_text = (tmp_path / "summary.md").read_text(encoding="utf-8")
+        for key in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+            assert key not in md_text
