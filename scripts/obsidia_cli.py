@@ -673,14 +673,18 @@ LOCAL_CORPUS = {
                    "signaux (proofkit, manifest Lean, merkle en lecture, proposals, stress). "
                    "Sigma est non souverain : il recommande (CONTINUE ... HOLD_RECOMMENDED), "
                    "il ne decide jamais — HOLD_RECOMMENDED n'est pas X108Gate.HOLD. "
-                   "decision_authority = KX108_ONLY.")},
+                   "decision_authority = KX108_ONLY. Sigma V18.9 est la couche de runtime "
+                   "verification completant Lean 4 (correction statique) et TLA+ (modele) "
+                   "dans la chaine de preuve.")},
     "obsidure": {"keys": ("obsidure",),
         "sources": ["docs/protocols/OBSIDURE_APPLY_PROTOCOL.md", "registry.obsidure.note"],
         "answer": ("Obsidure construit, prouve et corrige via un workflow proposal-first "
                    "gele en v2 : proposal identifie dans _PATCH_PROPOSALS/, checks Lean "
                    "(LEAN_EXIT=0), forbidden tokens, diff, approbation humaine du scope "
                    "exact, puis apply gated. Le terminal ne l'execute jamais : "
-                   "commands-only (scripts/run_agent_obsidure.ps1). Obsidure ne decide pas.")},
+                   "commands-only (scripts/run_agent_obsidure.ps1). Obsidure ne decide pas. "
+                   "v2 gele : 4 familles generatives, 39 theoremes GeneratedPeripheral, "
+                   "surface V2 = 232 entrees.")},
     "freeze_terminal": {"keys": ("freeze",),
         "sources": ["docs/specs/OBSIDIA_TERMINAL_STACK_FREEZE_V1.md"], "loader": "freeze"},
     "plan_panel": {"keys": ("plan panel", "panneau", "active_plan", "active plan"),
@@ -704,9 +708,68 @@ LOCAL_CORPUS = {
         "sources": ["registry.brody.note", "runbook full stack (observation locale)"],
         "answer": ("Brody explique, contextualise et synthetise. Il vit dans l'API 8000 via "
                    "/api/brody/* (pas de serveur separe) : chat V1, enriched, raw inspector. "
-                   "Brody est non souverain — il ne decide pas. Stack : launchers "
-                   "COMMANDS_ONLY (01_START_BRODY_STACK.ps1).")},
-    # "thermo" volontairement ABSENT du corpus -> ANSWER_UNKNOWN honnete.
+                   "Brody est non souverain — il ne decide pas. Statut formel : module "
+                   "first-class X108 en advisory-only (docs/brody) — runtime_readonly "
+                   "repond, response_contract force les invariants KX108_ONLY, no-decision "
+                   "policy explicite. Stack : launchers COMMANDS_ONLY "
+                   "(01_START_BRODY_STACK.ps1).")},
+    "kernel_x108": {"keys": ("kernel", "x108", "noyau"),
+        "sources": ["docs/KERNEL_OVERVIEW.md (v1.4.0)", "docs/GLOSSAIRE.md"],
+        "answer": ("Le Kernel X-108 est le noyau de gouvernance deterministe d'Obsidia — "
+                   "le \"juge\" qui evalue les actions avant execution selon des regles "
+                   "mathematiques strictes et auditables. Seule autorite d'admissibilite "
+                   "(KX108_ONLY) : ALLOW/HOLD/BLOCK n'existent qu'a son niveau. Le terminal "
+                   "le consulte en status readonly, ne le mute jamais.")},
+    "answer_router": {"keys": ("answer router", "answer_router", "routeur",
+                               "obsidia_response", "compact", "verbose"),
+        "sources": ["docs/specs/OBSIDIA_TERMINAL_RESPONSE_ROUTER_V1.md",
+                    "docs/specs/OBSIDIA_TERMINAL_UX_COMPACT_V2.md"],
+        "answer": ("OBSIDIA_ANSWER_ROUTER est le moteur universel du terminal : tout IN "
+                   "libre passe par normalisation -> policy -> plan -> mode de reponse "
+                   "(LOCAL/LIVE_READONLY/COMMANDS_ONLY/PLAN/UNKNOWN/POLICY_DENY) -> une "
+                   "des 5 sorties non souveraines. Compact par defaut, -v pour le detail, "
+                   "raw/json pour l'ancien JSON. Hors corpus = pas d'improvisation.")},
+    "oie": {"keys": ("l'oie", " oie", "inference economy", "economie d'inference",
+                     "cout par action", "necessity", "adequacy"),
+        "sources": ["docs/audits/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md",
+                    "docs/protocols/OIE_BENCHMARK_PROTOCOL.md"],
+        "answer": ("L'OIE mesure l'economie d'inference : le constat central est "
+                   "qu'Obsidia ne reduit pas seulement le prix du token mais la necessite "
+                   "meme du token — la metrique principale est le cout par action "
+                   "admissible. Benchmarks avec labels obligatoires (MEASURED/ESTIMATED/"
+                   "DRY_RUN/USAGE_UNAVAILABLE/INVALID_BASELINE) ; jamais d'economies "
+                   "inventees, jamais de delta sans baseline. OIE mesure, ne decide pas.")},
+    "audit_merkle": {"keys": ("merkle", "seal", "rfc3161", "manifest sha", "chaine d'audit"),
+        "sources": ["docs/AUDIT_GUIDE.md (v1.0.0)", "docs/GLOSSAIRE.md"],
+        "answer": ("La chaine d'audit Obsidia permet a un auditeur externe de verifier "
+                   "artefacts et demonstrations : manifests SHA256, seal Merkle, ancre "
+                   "RFC3161, verifiers readonly (verify_all/verify_merkle/verify_decision). "
+                   "Rien n'est regenere automatiquement — le terminal lit, l'humain "
+                   "regenere explicitement.")},
+    "memory": {"keys": ("memoire", "memory", "graphiti"),
+        "sources": ["docs/core_import/P66_SRL_READONLY_MEMORY_LAYER.md",
+                    "docs/architecture/F70_GRAPHITI_BRODY_MEMORY_DEEP_AUDIT.md"],
+        "answer": ("Memory/Graphiti est une couche de projection et contexte "
+                   "readonly/frozen (canonisee P66 SRL). Elle peut informer, contextualiser "
+                   "ou exposer un etat memoire, mais ne decide pas, n'ecrit pas depuis le "
+                   "terminal, et ne devient jamais souveraine. memory_write=false reste "
+                   "la regle terminale.")},
+    "thermo": {"keys": ("thermo",),
+        "sources": ["docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md"],
+        "answer": ("Thermo designe ici ENERGY_THERMO_GOVERNOR_V0 : un bloc peripherique "
+                   "non souverain qui produit ou structure des signaux de "
+                   "friction/energie/stabilite exploitables par la peripherie (sortie : "
+                   "PeripheralSignalPacket). Il ne decide pas, ne mute pas le Kernel/X108, "
+                   "et ne remplace pas Sigma ni Brody. "
+                   "[confiance: MEDIUM — doc source V0 minimale]")},
+    "domains": {"keys": ("domaine", "domains", "bridge"),
+        "sources": ["docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md",
+                    "docs/KERNEL_OVERVIEW.md", "scripts/obsidia_registry.yaml"],
+        "answer": ("Les domaines Obsidia sont des couches bridge-only vers Bank, Trading, "
+                   "Ecom, GPS/Defense/Aviation (surface canonique F60 : KX108_ONLY, "
+                   "readonly, advisory_only). Ils traduisent le signal metier vers le "
+                   "cadre admissible mais ne decident pas — KX108_ONLY. Les adapters live "
+                   "sont POST-only, jamais appeles en GET par le doctor.")},
 }
 
 
@@ -842,16 +905,21 @@ def answer_router(raw: str, registry: dict) -> dict:
                        "alternative : lancer toi-meme la commande ci-dessus")
 
     if mode == "ANSWER_UNKNOWN" and not reponse:
-        if "thermo" in normalized:
-            reponse = ("Thermo est une capacite declaree d'Obsidia (friction, cout, inertie, "
-                       "stabilite — si disponible), mais le corpus local du terminal ne "
-                       "contient pas de doc Thermo detaillee. Je n'improvise pas : "
-                       "indique la source a indexer.")
-            limites.append("repondre completement exigerait un corpus Thermo non indexe — "
-                           "alternative : fournir la doc source")
+        topic_u, entry_u = _corpus_lookup(normalized)
+        if entry_u is not None and not entry_u.get("loader"):
+            # sujet indexe mais question non reconnue comme "connaissance" :
+            # servir la reponse corpus plutot que mourir en UNKNOWN.
+            reponse = entry_u["answer"]
+            corpus_used = entry_u["sources"]
+            next_h = "aucune"
         else:
             reponse = build_unknown_answer(plan, raw, "IN trop vague ou sujet hors corpus local")
-        next_h = "reformuler ou fournir la source/scope"
+            if _contains(normalized, _KNOWLEDGE_WORDS):
+                # Repli definitionnel declare (LOCAL_CORPUS_EXTENSION_V2) :
+                # orientation vers le glossaire canonique, jamais de substance inventee.
+                reponse += ("\nRepli definitionnel : docs/GLOSSAIRE.md — \"Dual Obsidia : "
+                            "l'IA propose, le Juge dispose\". Terme non indexe en direct.")
+            next_h = "reformuler ou fournir la source/scope"
 
     output = assert_output_allowed(_MODE_TO_OUTPUT[mode])
     return {
