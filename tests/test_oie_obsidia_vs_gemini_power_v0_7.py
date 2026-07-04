@@ -3094,8 +3094,10 @@ class TestHumanDashboardFR:
                "Appels au modèle évités" in self._dash() or \
                "Appel au modèle" in self._dash()
 
-    def test_13_plus_rapide_en_moyenne_reelle(self):
-        assert "plus rapide en moyenne réelle" in self._dash()
+    def test_13_speed_label_in_dashboard(self):
+        # Le label de vitesse est mode-aware (estimée en dry-run, mesurée en real)
+        out = self._dash()
+        assert "accélération estimée" in out or "accélération mesurée" in out
 
     def test_14_bank(self):
         assert "BANK" in self._dash()

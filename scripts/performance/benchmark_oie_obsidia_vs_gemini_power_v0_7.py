@@ -4676,14 +4676,15 @@ def _build_human_dashboard(summary: dict, rows: list, exec_read: dict | None = N
         obs_status = r.get("obsidia_status", "")
         if mn.get("necessity_claimable"):
             return _tag_ok()
+        if fam == "BRODY":
+            return _tag_limite()
         if fam in ("OBSIDURE", "LEAN") or obs_status == OBSIDIA_STATUS_MISSING:
             return _tag_manque()
         return _tag_mesure()
 
     def _fam_modele(fam: str) -> str:
         r = fam_rows.get(fam, {})
-        mn = r.get("model_necessity", {})
-        if mn.get("unnecessary_generalist_call_avoided"):
+        if r.get("obsidia_model_call_avoided"):
             return "OUI"
         if fam == "BRODY":
             return "PARTIEL"
@@ -4731,7 +4732,7 @@ def _build_human_dashboard(summary: dict, rows: list, exec_read: dict | None = N
         "",
         f"  {_tag_obsidia()} LIVE_LOCAL = système local avec ponts de domaines.",
         _gemini_lane_desc,
-        "                 développement logiciel.",
+        *( ["                 développement logiciel."] if not _is_dryrun else [] ),
         "  Focus principal = économie d'inférence (OIE).",
         "",
         "  Question centrale :",
@@ -4740,7 +4741,7 @@ def _build_human_dashboard(summary: dict, rows: list, exec_read: dict | None = N
         "",
         "  2. Résultats clés",
         "  ─────────────────",
-        f"  {_tag_ok()} Accélération moyenne mesurée       : {_fr_num(avg_sp)} contre Gemini.",
+        f"  {_tag_ok()} Accélération moyenne ({_speed_label_fr})  : {_fr_num(avg_sp)} contre Gemini.",
         f"  {_tag_ok()} Accélération, appel modèle évité   : {_fr_num(model_sp)}.",
         f"  {_tag_ok()} Familles évitant l'appel modèle    : {model_av}/{n}.",
         f"  {_tag_ok()} Familles concernées                : BANK, TRADING, GPS, FAST_PATH.",
@@ -4827,7 +4828,7 @@ def _build_human_dashboard(summary: dict, rows: list, exec_read: dict | None = N
         f"  1. {n} tâches testées.",
         f"  2. {obs_route} / {n} routes correctes côté Obsidia.",
         f"  3. {model_av} / {n} appels au modèle évités.",
-        f"  4. {_fr_num(avg_sp)} plus rapide en moyenne réelle.",
+        f"  4. {_fr_num(avg_sp)} ({_speed_label_fr}).",
         f"  5. {_fr_num(model_sp)} plus rapide quand l'appel modèle est évité.",
         "  6. 3 familles pleinement revendicables : BANK, TRADING, GPS.",
         "",
