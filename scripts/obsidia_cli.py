@@ -415,6 +415,240 @@ GATES_KNOWN = (
     "python -m pytest tests/gates/ -q",
 )
 
+# Sous-ensembles de gates par couche (noms de script uniquement, sans 'python' ni args).
+# Source : scripts/gates/*.py — 5 scripts au total.
+_GATES_SIGMA = ["obsidia_sigma_non_sovereignty_check.py"]
+_GATES_OBSIDURE = ["obsidia_commit_scope_guard.py",
+                   "obsidia_forbidden_write_check.py",
+                   "obsidia_lean_manifest_guard.py"]
+_GATES_KERNEL = ["obsidia_kernel_boundary_check.py"]
+_GATES_OBSIDIENNE = ["obsidia_lean_manifest_guard.py"]
+_GATES_AUDIT = ["obsidia_commit_scope_guard.py"]
+_GATES_DOMAINS = ["obsidia_kernel_boundary_check.py"]
+
+# Vocabulaire d'operations positivement autorisees dans le terminal.
+_OPS_READ = ["READ_LOCAL_WINDOW", "READ_LOCAL_DOCX"]
+_OPS_SEARCH = ["SEARCH_LOCAL_TEXT", "SEARCH_LOCAL_CONTEXT"]
+_OPS_EXTRACT = ["SUMMARIZE_LOCAL_PROGRESSIVE", "EXPLAIN_LOCAL_PROGRESSIVE",
+                "COMPARE_LOCAL_BOUNDED"]
+_OPS_DISPLAY = ["CORPUS_LOOKUP", "PLAN_DISPLAY", "CAPABILITY_DISPLAY", "COMMANDS_DISPLAY"]
+_OPS_DOCTOR = ["DOCTOR_HTTP_GET"]
+
+# Vocabulaire d'interdits communs.
+_INTERDIT_COMMON = ["EMIT_ALLOW_BLOCK_HOLD_ACT"]
+
+CAPABILITY_GRAPH_V3: dict = {
+    "sigma": {
+        "ops_allowed": _OPS_READ + _OPS_SEARCH + _OPS_DOCTOR + _OPS_DISPLAY,
+        "ops_forbidden": _INTERDIT_COMMON + ["MUTATE_SIGMA_CORE"],
+        "corpus_topics": ["sigma", "gates", "doctrine"],
+        "gates_applicable": _GATES_SIGMA,
+        "cross_concerns": ["Thermo: SIGMA_TRUTH_MISMATCH",
+                           "OIE: cout validation sigma"],
+    },
+    "obsidure": {
+        "ops_allowed": (_OPS_READ + _OPS_SEARCH + _OPS_EXTRACT
+                        + ["COMMANDS_DISPLAY", "CORPUS_LOOKUP", "PLAN_DISPLAY",
+                           "CAPABILITY_DISPLAY"]),
+        "ops_forbidden": _INTERDIT_COMMON + ["APPLY_PROPOSAL",
+                                              "EXEC_LEAN_FROM_TERMINAL"],
+        "corpus_topics": ["obsidure", "gates", "lean_proofs"],
+        "gates_applicable": _GATES_OBSIDURE,
+        "cross_concerns": ["OIE: cout par action generee",
+                           "Thermo: thermo_debt proposal"],
+    },
+    "live": {
+        "ops_allowed": _OPS_DOCTOR + _OPS_DISPLAY,
+        "ops_forbidden": _INTERDIT_COMMON + ["LAUNCH_STACK"],
+        "corpus_topics": [],
+        "gates_applicable": [],
+        "cross_concerns": [],
+    },
+    "obsidienne": {
+        "ops_allowed": (_OPS_READ + _OPS_SEARCH + _OPS_EXTRACT
+                        + ["CORPUS_LOOKUP", "PLAN_DISPLAY", "CAPABILITY_DISPLAY",
+                           "COMMANDS_DISPLAY"]),
+        "ops_forbidden": _INTERDIT_COMMON + ["EXEC_LEAN_FROM_TERMINAL"],
+        "corpus_topics": ["lean_proofs", "audit_merkle"],
+        "gates_applicable": _GATES_OBSIDIENNE,
+        "cross_concerns": ["OIE: cout proof check"],
+    },
+    "kernel": {
+        "ops_allowed": _OPS_DISPLAY + _OPS_DOCTOR,
+        "ops_forbidden": _INTERDIT_COMMON + ["MUTATE_KERNEL"],
+        "corpus_topics": ["doctrine", "kernel_x108"],
+        "gates_applicable": _GATES_KERNEL,
+        "cross_concerns": [],
+    },
+    "domains": {
+        "ops_allowed": _OPS_DOCTOR + _OPS_DISPLAY,
+        "ops_forbidden": _INTERDIT_COMMON + ["ACT_DOMAIN"],
+        "corpus_topics": ["domains"],
+        "gates_applicable": _GATES_DOMAINS,
+        "cross_concerns": [],
+    },
+    "audit": {
+        "ops_allowed": (_OPS_READ + _OPS_SEARCH + _OPS_EXTRACT
+                        + ["CORPUS_LOOKUP", "PLAN_DISPLAY", "CAPABILITY_DISPLAY",
+                           "COMMANDS_DISPLAY"]),
+        "ops_forbidden": _INTERDIT_COMMON + ["REGENERATE_SEAL",
+                                              "REGENERATE_MANIFEST"],
+        "corpus_topics": ["audit_merkle", "lean_proofs"],
+        "gates_applicable": _GATES_AUDIT,
+        "cross_concerns": ["OIE: chaine d'audit cout/action"],
+    },
+    "memory": {
+        "ops_allowed": _OPS_DOCTOR + _OPS_DISPLAY,
+        "ops_forbidden": _INTERDIT_COMMON + ["MEMORY_WRITE"],
+        "corpus_topics": ["memory"],
+        "gates_applicable": [],
+        "cross_concerns": ["Thermo: projection frozen status"],
+    },
+    "brody": {
+        "ops_allowed": (_OPS_READ + _OPS_DISPLAY),
+        "ops_forbidden": _INTERDIT_COMMON + ["BRODY_POST_FROM_TERMINAL",
+                                              "LAUNCH_STACK"],
+        "corpus_topics": ["brody", "energy_thermo"],
+        "gates_applicable": [],
+        "cross_concerns": ["Thermo: Thermodynamics Signal F3",
+                           "OIE: cout synthese"],
+    },
+    "terminal_self": {
+        "ops_allowed": ["CORPUS_LOOKUP", "CAPABILITY_DISPLAY", "PLAN_DISPLAY"],
+        "ops_forbidden": _INTERDIT_COMMON,
+        "corpus_topics": ["terminal_self", "capabilities",
+                          "terminal_function", "terminal_diagnostic"],
+        "gates_applicable": [],
+        "cross_concerns": [],
+    },
+    "unknown": {
+        "ops_allowed": [],
+        "ops_forbidden": ["tout — couche inconnue"],
+        "corpus_topics": [],
+        "gates_applicable": [],
+        "cross_concerns": [],
+    },
+}
+
+
+def _resolve_corpus_topics(topics: list) -> dict:
+    """Lecture pure LOCAL_CORPUS par liste de cles. Aucun I/O. Non souverain."""
+    result = {}
+    for t in topics:
+        if t not in LOCAL_CORPUS:
+            result[t] = "(topic absent du LOCAL_CORPUS)"
+            continue
+        entry = LOCAL_CORPUS[t]
+        if entry.get("loader") == "freeze":
+            result[t] = _freeze_summary() or "(freeze non lisible)"
+        else:
+            result[t] = entry.get("answer", "(pas de reponse corpus)")
+    return result
+
+
+def build_capability_view(raw: str, registry: dict,
+                          verbose: bool = False, plan: dict = None) -> dict:
+    """Carte statique readonly des capacites pour la couche detectee de raw.
+    Non souverain. Aucun subprocess. Aucun I/O hors corpus. decision_authority=KX108_ONLY."""
+    if plan is None:
+        plan = build_active_plan(raw, registry)
+    layer = plan["detected_layer"]
+    cap_layer = layer.split(":")[0] if ":" in layer else layer
+    cap = CAPABILITY_GRAPH_V3.get(cap_layer, CAPABILITY_GRAPH_V3["unknown"])
+    corpus_answers = _resolve_corpus_topics(cap["corpus_topics"]) if verbose else {}
+    denied = plan.get("deny_keyword")
+    return {
+        "panel": "OBSIDIA_CAPABILITY_VIEW",
+        "raw": raw,
+        "detected_layer": layer,
+        "confidence": plan["confidence"],
+        "ops_allowed": cap["ops_allowed"],
+        "ops_forbidden": cap["ops_forbidden"],
+        "corpus_topics": cap["corpus_topics"],
+        "corpus_answers": corpus_answers,
+        "gates_applicable": cap["gates_applicable"],
+        "cross_concerns": cap["cross_concerns"],
+        "organes_mobilises": plan["organes_mobilises"],
+        "organes_interdits": plan["organes_interdits"],
+        "next_human_action": plan["next_human_action"],
+        "deny_keyword": denied,
+        "output": "POLICY_DENY" if denied else "GUIDE",
+    }
+
+
+def format_capability_view(view: dict, verbose: bool = False) -> str:
+    """Formate la capability view. Compact : 1 ligne/section. Verbose : listes deployees."""
+    if view.get("deny_keyword"):
+        return (f"POLICY_DENY : mot interdit \"{view['deny_keyword']}\". "
+                "Aucune capability accessible avant levee de la policy.")
+    hdr = (f"CAPABILITY_VIEW — couche: {view['detected_layer']} "
+           f"| confiance: {view['confidence']}")
+    def _join(lst, max_n=None):
+        items = lst[:max_n] if max_n else lst
+        return " · ".join(items) if items else "aucune"
+    if not verbose:
+        return "\n".join([
+            hdr,
+            "OPS AUTORISEES  : " + _join(view["ops_allowed"]),
+            "OPS INTERDITES  : " + _join(view["ops_forbidden"], 4),
+            "CORPUS TOPICS   : " + (_join(view["corpus_topics"]) if view["corpus_topics"]
+                                    else "aucun"),
+            "GATES           : " + (_join(view["gates_applicable"]) if view["gates_applicable"]
+                                    else "aucun specifique"),
+            "CROSS-CONCERNS  : " + (_join(view["cross_concerns"]) if view["cross_concerns"]
+                                    else "aucun"),
+            "NEXT            : " + view["next_human_action"],
+        ])
+    # Verbose
+    lines = [hdr, ""]
+    lines += ["OPS AUTORISEES :"]
+    lines += (["  - " + o for o in view["ops_allowed"]] if view["ops_allowed"]
+              else ["  - aucune"])
+    lines += ["", "OPS INTERDITES :"]
+    lines += (["  - " + o for o in view["ops_forbidden"]] if view["ops_forbidden"]
+              else ["  - aucune"])
+    lines += ["", "CORPUS TOPICS :"]
+    lines += (["  - " + t for t in view["corpus_topics"]] if view["corpus_topics"]
+              else ["  - aucun"])
+    if view.get("corpus_answers"):
+        lines.append("")
+        lines.append("CORPUS ANSWERS :")
+        for t, ans in view["corpus_answers"].items():
+            lines.append(f"  [{t}]")
+            for ln in str(ans).splitlines():
+                lines.append("    " + ln)
+    lines += ["", "GATES APPLICABLES :"]
+    lines += (["  - " + g for g in view["gates_applicable"]] if view["gates_applicable"]
+              else ["  - aucun specifique"])
+    lines += ["", "CROSS-CONCERNS :"]
+    lines += (["  - " + c for c in view["cross_concerns"]] if view["cross_concerns"]
+              else ["  - aucun"])
+    lines += ["", "ORGANES MOBILISES :"]
+    lines += (["  - " + o for o in view["organes_mobilises"]] if view["organes_mobilises"]
+              else ["  - aucun"])
+    lines += ["", "NEXT ACTION HUMAINE :", "  " + view["next_human_action"]]
+    return "\n".join(lines)
+
+
+def _parse_capabilities_input(raw: str):
+    """Detecte le prefixe 'capabilities' dans raw.
+    Retourne (inner_in, verbose) ou (None, False)."""
+    norm = raw.strip()
+    if norm.lower().startswith("obsidia "):
+        norm = norm[8:].strip()
+    if not norm.lower().startswith("capabilities"):
+        return None, False
+    rest = norm[len("capabilities"):].strip()
+    verbose = False
+    if rest.startswith("-v ") or rest.startswith("-v"):
+        verbose = True
+        rest = rest[2:].strip()
+    elif rest.startswith("--verbose ") or rest.startswith("--verbose"):
+        verbose = True
+        rest = rest[9:].strip()
+    inner = rest.strip().strip('"').strip("'")
+    return (inner if inner else "terminal_self"), verbose
+
 
 def dedupe_preserve_order(items):
     """Dedoublonnage stable, purement cosmetique (aucun droit modifie)."""
@@ -424,6 +658,17 @@ def dedupe_preserve_order(items):
             seen.add(i)
             out.append(i)
     return out
+
+
+def _build_capability_summary(layer: str, raw: str) -> dict:
+    """Extrait un resume compact du graph (max 5 ops + 3 cross-concerns). Aucun I/O."""
+    cap_layer = layer.split(":")[0] if ":" in layer else layer
+    cap = CAPABILITY_GRAPH_V3.get(cap_layer, CAPABILITY_GRAPH_V3["unknown"])
+    return {
+        "ops_allowed": cap["ops_allowed"][:5],
+        "cross_concerns": cap["cross_concerns"][:3],
+        "hint": f'detail : obsidia capabilities "{raw}"',
+    }
 
 
 def build_active_plan(raw: str, registry: dict) -> dict:
@@ -527,6 +772,7 @@ def build_active_plan(raw: str, registry: dict) -> dict:
         "guidance_authority": "NONE",
         "next_human_action": nxt,
         "plan_status": status,
+        "capability_summary": _build_capability_summary(layer, raw),
     }
 
 
@@ -552,6 +798,9 @@ def format_active_plan(plan: dict) -> str:
         "", "OUTILS TECHNIQUES MOBILISABLES:", _fmt_list(plan["outils_mobilisables"]),
         "", "OUTILS TECHNIQUES INTERDITS / NON UTILISES:", _fmt_list(plan["outils_exclus"]),
         "", "CORPUS PERTINENT:", _fmt_list(plan["corpus"]),
+        "", "CAPABILITY SUMMARY:",
+        "  ops autorisees : " + " · ".join(plan["capability_summary"]["ops_allowed"]) if plan["capability_summary"]["ops_allowed"] else "  ops autorisees : aucune",
+        "  cross-concerns : " + (" · ".join(plan["capability_summary"]["cross_concerns"]) if plan["capability_summary"]["cross_concerns"] else "aucun") + "  |  " + plan["capability_summary"]["hint"],
         "", "SCOPE:", _fmt_list(plan["scope"]),
         "", "GATES (jamais lances par le terminal):", _fmt_list(plan["gates"]),
         "", "BLOCKERS:", _fmt_list(plan["blockers"]),
@@ -1988,6 +2237,55 @@ def build_unknown_answer(plan: dict, raw: str, reason: str) -> str:
 def answer_router(raw: str, registry: dict) -> dict:
     """Moteur universel. Reutilise build_active_plan(); ne lance jamais rien
     hors HTTP GET readonly ; toute sortie passe par assert_output_allowed()."""
+    # Branche capabilities — detection prefixe avant calcul du plan principal.
+    # policy_check reste prioritaire : build_active_plan l'execute en interne.
+    _cap_inner, _cap_verbose = _parse_capabilities_input(raw)
+    if _cap_inner is not None:
+        cap_plan = build_active_plan(_cap_inner, registry)
+        if cap_plan.get("deny_keyword"):
+            denied = cap_plan["deny_keyword"]
+            _deny_rep = (f'Refus policy : mot interdit "{denied}". '
+                         "Le terminal n'a aucun chemin d'application (pas de "
+                         "--apply, pas de commit, pas de subprocess). Workflow "
+                         "gated humain si la mutation est reellement voulue.")
+            return {
+                "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": _deny_rep,
+                "mode_reponse": "ANSWER_POLICY_DENY",
+                "detected_layer": cap_plan["detected_layer"],
+                "confidence": cap_plan["confidence"],
+                "organes_mobilises": cap_plan["organes_mobilises"],
+                "organes_mobilisables": cap_plan["organes_mobilisables"],
+                "outils_utilises": cap_plan["outils_utilises"],
+                "corpus_utilise": ["aucun — policy deny"],
+                "limites": ["POLICY_DENY — capabilities non accessibles"],
+                "action_locale": None, "local_read_meta": None,
+                "next_human_action": ("workflow gated humain "
+                                      "(docs/protocols/OBSIDURE_APPLY_PROTOCOL.md)"),
+                "output": assert_output_allowed("POLICY_DENY"),
+                "guidance": cap_plan["guidance"], "guidance_authority": "NONE",
+                "plan_status": cap_plan["plan_status"],
+            }
+        cap_view = build_capability_view(_cap_inner, registry,
+                                         verbose=_cap_verbose, plan=cap_plan)
+        cap_rep = format_capability_view(cap_view, verbose=_cap_verbose)
+        return {
+            "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": cap_rep,
+            "mode_reponse": "ANSWER_LOCAL",
+            "detected_layer": cap_view["detected_layer"],
+            "confidence": cap_view["confidence"],
+            "organes_mobilises": cap_view["organes_mobilises"],
+            "organes_mobilisables": cap_plan["organes_mobilisables"],
+            "outils_utilises": cap_plan["outils_utilises"],
+            "corpus_utilise": cap_view["corpus_topics"] or ["aucun"],
+            "limites": ["reponse limitee au corpus/droits readonly — X108 decide"],
+            "action_locale": "CAPABILITY_DISPLAY",
+            "local_read_meta": None,
+            "next_human_action": cap_view["next_human_action"],
+            "output": assert_output_allowed("GUIDE"),
+            "guidance": cap_plan["guidance"], "guidance_authority": "NONE",
+            "plan_status": cap_plan["plan_status"],
+        }
+
     plan = build_active_plan(raw, registry)
     normalized = plan["normalized"]
     mode = select_answer_mode(plan, normalized, registry)
