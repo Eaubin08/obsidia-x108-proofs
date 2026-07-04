@@ -887,12 +887,24 @@ _LOCAL_DENY_SEGMENTS = (".git", "node_modules", "venv", ".venv", "__pycache__",
 _LOCAL_DENY_NAMES = ("manifest_sha256.json", "merkle_seal.json")
 _LOCAL_MUTATION_TOKENS = ("modifie", "edite", "renomme", "rename", "deplace",
                           "move ", "ecris dans")
-_LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("cherche", "SEARCH_LOCAL_TEXT"),
-                ("recherche", "SEARCH_LOCAL_TEXT"),
-                ("resume", "SUMMARIZE_LOCAL_DOC"), ("explique", "EXPLAIN_LOCAL_CODE"),
-                ("regarde", "LIST_LOCAL_DIR"), ("liste", "LIST_LOCAL_DIR"),
+_LOCAL_VERBS = (("compare", "COMPARE_LOCAL_FILES"), ("difference", "COMPARE_LOCAL_FILES"),
+                ("ecart", "COMPARE_LOCAL_FILES"),
+                ("cherche", "SEARCH_LOCAL_TEXT"), ("recherche", "SEARCH_LOCAL_TEXT"),
+                ("trouve", "SEARCH_LOCAL_TEXT"), ("localise", "SEARCH_LOCAL_TEXT"),
+                ("resume", "SUMMARIZE_LOCAL_DOC"), ("synthetise", "SUMMARIZE_LOCAL_DOC"),
+                ("essentiel", "SUMMARIZE_LOCAL_DOC"),
+                ("explique", "EXPLAIN_LOCAL_CODE"), ("detaille", "EXPLAIN_LOCAL_CODE"),
+                ("clarifie", "EXPLAIN_LOCAL_CODE"),
+                ("liste", "LIST_LOCAL_DIR"),
                 ("lis ", "READ_LOCAL_FILE"), ("lire", "READ_LOCAL_FILE"),
-                ("ouvre", "READ_LOCAL_FILE"), ("affiche", "READ_LOCAL_FILE"))
+                ("ouvre", "READ_LOCAL_FILE"), ("affiche", "READ_LOCAL_FILE"),
+                ("regarde", "READ_LOCAL_FILE"), ("montre", "READ_LOCAL_FILE"),
+                ("parcours", "READ_LOCAL_FILE"), ("jette un oeil", "READ_LOCAL_FILE"))
+# Paraphrases NL de recherche sans verbe explicite ("ou ca parle de X").
+_SEARCH_NL_MARKERS = ("parle de", "ou parle", "passage sur", "a quel endroit")
+# Intent "suite/prochaine etape" -> ANSWER_PLAN (aucune action).
+_NEXT_WORDS = ("quoi faire", "que faire", "dois faire", "la suite", "suite logique",
+               "prochaine etape", "prepare la suite", "quelle est la suite")
 # Bornes de reponse (jamais full dump).
 _WIN_DEFAULT, _WIN_MAX, _LINE_MAX = 120, 400, 300
 _SEARCH_MAX, _CTX_LINES, _CTX_MAX = 50, 3, 10
@@ -1096,6 +1108,9 @@ def classify_local_read_intent(raw: str, normalized: str):
             break
     if is_context:
         verb = "SEARCH_LOCAL_CONTEXT"
+    # Paraphrase NL de recherche sans verbe explicite ("ou ca parle de X dans <f>").
+    if verb is None and any(mk in normalized for mk in _SEARCH_NL_MARKERS):
+        verb = "SEARCH_LOCAL_TEXT"
     paths = _extract_local_paths(raw)
     file_ctx_words = any(w in normalized for w in
                          ("fichier", "dossier", "repertoire", "ce doc"))
@@ -1134,11 +1149,11 @@ def classify_local_read_intent(raw: str, normalized: str):
     # 5. Capacites reportees V2B -> GUIDE (pas de lecture reelle en V2A).
     if verb in _V2B_DEFERRED:
         return {"kind": verb, "mode": "ANSWER_PLAN",
-                "reponse": f"Capacite '{_V2B_DEFERRED[verb]}' reportee en V2B. "
-                           "V2A couvre : lire (fenetre/range), chercher, contexte, "
-                           "lister. Ex: lis <chemin> | lis les lignes 20 a 60 de "
-                           "<chemin> | cherche <mot> dans <chemin>.",
-                "limites": ["SUMMARIZE/EXPLAIN/COMPARE = V2B (design separe)"],
+                "reponse": f"V2B_REQUIRED : capacite '{_V2B_DEFERRED[verb]}' reconnue mais "
+                           "non appliquee (design V2B separe). V2A couvre deja : lire "
+                           "(fenetre/range), chercher, contexte, lister. Ex: lis <chemin> "
+                           "| lis les lignes 20 a 60 de <chemin> | cherche <mot> dans <chemin>.",
+                "limites": ["SUMMARIZE/EXPLAIN/COMPARE = V2B_REQUIRED (non applique)"],
                 "next_h": "utiliser une capacite V2A (lire/chercher/contexte/lister)"}
     # 6. LIST_LOCAL_DIR : lecture reelle bornee du dossier.
     if verb == "LIST_LOCAL_DIR":
@@ -1185,9 +1200,20 @@ def classify_local_read_intent(raw: str, normalized: str):
     if deny:
         return deny
     if verdict == "IS_DIR":
-        return {"kind": "LIST_LOCAL_DIR", "mode": "ANSWER_UNKNOWN",
-                "reponse": f"{rel} est un dossier. Pour le lister : regarde {rel}",
-                "limites": [], "next_h": f"regarde {rel}"}
+        # "regarde/montre <dossier>" -> listing reel borne (au lieu d'un renvoi).
+        names = []
+        for i, child in enumerate(sorted(ap.iterdir(), key=lambda c: c.name)):
+            if i >= _LIST_MAX:
+                names.append(f"… (>{_LIST_MAX} entrees, tronque)")
+                break
+            names.append(child.name + ("/" if child.is_dir() else ""))
+        return {"kind": "LIST_LOCAL_DIR", "mode": "ANSWER_LOCAL",
+                "reponse": f"Contenu de {rel} ({len(names)} entrees affichees, non recursif) :\n"
+                           + "\n".join("  " + n for n in names),
+                "corpus": [rel], "output_execute": True,
+                "meta": {"verdict_policy": verdict, "type_fichier": "dir"},
+                "limites": ["listing borne 100 entrees, non recursif"],
+                "next_h": "aucune"}
     if verdict == "NOT_FOUND":
         return {"kind": verb, "mode": "ANSWER_UNKNOWN",
                 "reponse": f"Fichier introuvable : {rel}",
@@ -1215,7 +1241,12 @@ def classify_local_read_intent(raw: str, normalized: str):
                 "limites": [f"contexte borne ±{_CTX_LINES} lignes, {_CTX_MAX} max"],
                 "next_h": "aucune"}
     if verb == "SEARCH_LOCAL_TEXT":
-        query = _extract_query(normalized, "cherche")
+        query = ""
+        for mk in ("parle de", "cherche", "recherche", "trouve", "localise",
+                   "passage sur", "a quel endroit"):
+            query = _extract_query(normalized, mk)
+            if query:
+                break
         if not query:
             return {"kind": verb, "mode": "ANSWER_UNKNOWN",
                     "reponse": "Quel terme ? (ex. cherche thermo dans <chemin>)",
@@ -1272,7 +1303,8 @@ def select_answer_mode(plan: dict, normalized: str, registry: dict) -> str:
     """Regles ordonnees : la policy passe toujours en premier."""
     if plan.get("deny_keyword"):
         return "ANSWER_POLICY_DENY"
-    if _contains(normalized, _BLOCKER_WORDS) or _contains(normalized, _META_WORDS):
+    if _contains(normalized, _BLOCKER_WORDS) or _contains(normalized, _META_WORDS) \
+            or _contains(normalized, _NEXT_WORDS):
         return "ANSWER_PLAN"
     if plan["detected_layer"] == "sigma" and _contains(normalized, _WHY_WORDS):
         return "ANSWER_LIVE_READONLY"
