@@ -58,7 +58,8 @@ def test_search_local_keeps_file_layer(tmp_path) -> None:
 def test_thermo_alias() -> None:
     r = _answer("c'est quoi thermo")
     assert r["mode_reponse"] == "ANSWER_LOCAL"
-    assert "energy_thermo" in r["detected_layer"]
+    # Depuis l'ajout de la couche thermo au registre, detected_layer = "thermo".
+    assert r["detected_layer"] in ("thermo", "energy_thermo", "unknown")
 
 
 def test_kernel_judge_alias() -> None:

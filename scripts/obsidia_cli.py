@@ -25,8 +25,10 @@ from __future__ import annotations
 import difflib
 import json
 import re
+import socket
 import sys
 import unicodedata
+import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
@@ -149,6 +151,118 @@ def run_doctor(registry: dict) -> dict:
             results[name] = {"url": url, "status": "DOWN", "fallback": "COMMAND_FALLBACK",
                              "detail": type(exc).__name__}
     return results
+
+
+def _runtime_http_get_status(url: str, timeout: float = 1.0) -> dict:
+    """GET readonly uniquement. HTTP 2xx/3xx = UP. Toute exception = DOWN/UNKNOWN.
+    Aucun POST. Aucun subprocess. Non souverain."""
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            code = resp.status
+            return {"status": "UP", "code": code} if 200 <= code < 400 \
+                else {"status": "DOWN", "code": code}
+    except urllib.error.URLError as exc:
+        return {"status": "DOWN", "detail": type(exc).__name__}
+    except OSError as exc:
+        return {"status": "DOWN", "detail": type(exc).__name__}
+    except Exception as exc:
+        return {"status": "UNKNOWN", "detail": type(exc).__name__}
+
+
+def _runtime_socket_status(host: str, port: int, timeout: float = 1.0) -> dict:
+    """Sonde socket. connect_ex 0 = UP, sinon DOWN. Aucun subprocess."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(timeout)
+            rc = s.connect_ex((host, port))
+            return {"status": "UP" if rc == 0 else "DOWN", "rc": rc}
+    except Exception as exc:
+        return {"status": "UNKNOWN", "detail": type(exc).__name__}
+
+
+def _runtime_local_status(checks: dict) -> dict:
+    """Verifie l'existence de chemins locaux. Aucun parsing de contenu. Aucun I/O."""
+    result = {}
+    for key, spec in checks.items():
+        all_ok = all((REPO_ROOT / p).exists() for p in spec["paths"])
+        result[key] = {"label": spec["label"], "status": "OK" if all_ok else "MISSING"}
+    return result
+
+
+def _compute_terminal_state(network: dict, local: dict) -> str:
+    """Regle READY/DEGRADED/BLOCKED. Conservative : BLOCKED uniquement si
+    fichiers critiques manquants. READY si API 8000 UP + corpus OK."""
+    if not (REPO_ROOT / "scripts" / "obsidia_cli.py").exists():
+        return "BLOCKED"
+    corpus_ok = local.get("corpus", {}).get("status") == "OK"
+    gates_ok = local.get("gates", {}).get("status") == "OK"
+    api_up = any(
+        network.get(k, {}).get("status") == "UP"
+        for k in ("api_health", "api_readiness", "api_status")
+    )
+    sigma_up = any(
+        network.get(k, {}).get("status") == "UP"
+        for k in ("sigma_domains", "sigma_evaluate")
+    )
+    if api_up and (sigma_up or gates_ok) and corpus_ok:
+        return "READY"
+    return "DEGRADED"
+
+
+def build_runtime_service_map_v1() -> dict:
+    """Carte readonly des services Obsidia. Aucun subprocess. Aucun POST.
+    Aucun lancement de serveur. decision_authority = KX108_ONLY."""
+    network: dict = {}
+    for key, spec in RUNTIME_SERVICE_MAP_V1.items():
+        kind = spec["kind"]
+        if kind == "http_get":
+            r = _runtime_http_get_status(spec["url"], spec.get("timeout", 1.0))
+        elif kind == "socket":
+            r = _runtime_socket_status(spec["host"], spec["port"],
+                                        spec.get("timeout", 1.0))
+        else:
+            r = {"status": "UNKNOWN", "detail": f"kind inconnu: {kind}"}
+        if spec.get("not_confirmed") and r.get("status") == "DOWN":
+            r["status"] = "NOT_CONFIRMED"
+        r["label"] = spec["label"]
+        r["required"] = spec.get("required", False)
+        network[key] = r
+    local = _runtime_local_status(_RUNTIME_LOCAL_CHECKS)
+    terminal_state = _compute_terminal_state(network, local)
+    return {
+        "panel": "OBSIDIA_RUNTIME_STATUS",
+        "network": network,
+        "local": local,
+        "terminal_state": terminal_state,
+    }
+
+
+def format_runtime_service_map_v1(result: dict) -> str:
+    """Formate la carte runtime. 1 ligne par service. Non souverain. Aucun droit."""
+    lines = ["OBSIDIA RUNTIME STATUS", ""]
+    for key, data in result["network"].items():
+        label = data.get("label", key.upper())
+        status = data.get("status", "UNKNOWN")
+        note = " (observation locale : non confirme)" \
+            if data.get("not_confirmed") and status in ("DOWN", "NOT_CONFIRMED") else ""
+        lines.append(f"  {label:<26}: {status}{note}")
+    lines.append("")
+    lines.append("  # Ressources locales (existence)")
+    for key, data in result["local"].items():
+        label = data.get("label", key.upper())
+        status = data.get("status", "MISSING")
+        lines.append(f"  {label:<26}: {status}")
+    lines.append("")
+    state = result["terminal_state"]
+    notes = {
+        "READY": "(organes critiques accessibles)",
+        "DEGRADED": "(API ou services optionnels indisponibles — terminal operable en local)",
+        "BLOCKED": "(fichiers critiques manquants — terminal non operable)",
+    }
+    lines.append(f"  {'TERMINAL':<26}: {state}  {notes.get(state, '')}")
+    lines.append("")
+    lines.append("  [lecture seule — aucun service lance — X108 reste autorite]")
+    return "\n".join(lines)
 
 
 # ----------------------------------------------------------------------------
@@ -313,6 +427,24 @@ PLAN_ORGANES: dict = {
         "mobilisables": [],
         "interdits": ["mutation Kernel/Sigma/X108 [INTERDIT]",
                       "emission ALLOW/BLOCK/HOLD/ACT [INTERDIT]"]},
+    "gates": {
+        "mobilises": _ORGANES_BASE + ["Gates: lecture scripts/gates/ [MOBILISE, READONLY]"],
+        "mobilisables": ["Obsidure: workflow gated post-gate [MOBILISABLE]",
+                         "Audit/Merkle: verification seal [MOBILISABLE]"],
+        "interdits": ["execution automatique des gates par le terminal [INTERDIT]",
+                      "decision final sur gate pass/fail [INTERDIT — X108]"]},
+    "oie": {
+        "mobilises": _ORGANES_BASE + ["OIE: lecture receipts local [MOBILISE, READONLY]"],
+        "mobilisables": ["Brody: explication economie inference [MOBILISABLE]",
+                         "Thermo: friction/cost si disponible [MOBILISABLE]"],
+        "interdits": ["lancement benchmark en prod depuis le terminal [INTERDIT]",
+                      "COST_REAL reclamation sans preuve [INTERDIT]"]},
+    "thermo": {
+        "mobilises": _ORGANES_BASE + ["LOCAL_CORPUS energy_thermo [MOBILISE, READONLY]"],
+        "mobilisables": ["Sigma: guidance coherence/verite [MOBILISABLE]",
+                         "Brody: explication friction [MOBILISABLE]"],
+        "interdits": ["decision thermo [INTERDIT]",
+                      "mutation sigma via thermo [INTERDIT]"]},
     "unknown": {
         "mobilises": ["Terminal: affichage non souverain [MOBILISE]",
                       "OS Langage Uni: normalisation (echec de structuration) [MOBILISE]",
@@ -399,6 +531,30 @@ PLAN_TOOLING: dict = {
                    "CLAUDE.md (doctrines, interdits, couche routing)"],
         "exclus": ["mutation code [OUTIL_INTERDIT]",
                    "emission ALLOW/BLOCK/HOLD/ACT [OUTIL_INTERDIT]"],
+    },
+    "gates": {
+        "utilises": _BASE_USED + ["collect_file_signals gates [OUTIL_UTILISE, READONLY]"],
+        "mobilisables": ["python scripts/gates/*.py [OUTIL_COMMANDS_ONLY — jamais auto]"],
+        "corpus": ["scripts/gates/ (5 gates V0)", "tests/gates/ (pytest -q readonly)"],
+        "exclus": ["auto-execution des gates [OUTIL_INTERDIT]",
+                   "decision pass/fail gate [OUTIL_INTERDIT — X108]"],
+    },
+    "oie": {
+        "utilises": _BASE_USED,
+        "mobilisables": ["scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run [OUTIL_COMMANDS_ONLY]",
+                         "cat oie_external_claude_benchmark_v0_receipts.json [OUTIL_READONLY]"],
+        "corpus": ["scripts/performance/oie_external_claude_benchmark_v0_receipts.json (lecture)",
+                   "LOCAL_CORPUS oie"],
+        "exclus": ["lancement benchmark en prod [OUTIL_INTERDIT]",
+                   "COST_REAL reclamation sans preuve [OUTIL_INTERDIT]"],
+    },
+    "thermo": {
+        "utilises": _BASE_USED + ["LOCAL_CORPUS energy_thermo [OUTIL_UTILISE, READONLY]"],
+        "mobilisables": ["Sigma monitoring [OUTIL_READONLY]"],
+        "corpus": ["LOCAL_CORPUS energy_thermo",
+                   "docs/protocols/ thermo si present"],
+        "exclus": ["decision thermo [OUTIL_INTERDIT]",
+                   "mutation sigma [OUTIL_INTERDIT]"],
     },
     "unknown": {
         "utilises": ["registry [OUTIL_UTILISE — echec routage]", "receipt local [OUTIL_UTILISE]"],
@@ -521,12 +677,126 @@ CAPABILITY_GRAPH_V3: dict = {
         "gates_applicable": [],
         "cross_concerns": [],
     },
+    "gates": {
+        "ops_allowed": ["READ_LOCAL_WINDOW", "CORPUS_LOOKUP", "PLAN_DISPLAY",
+                        "COMMANDS_DISPLAY"],
+        "ops_forbidden": _INTERDIT_COMMON + ["AUTO_EXECUTE_GATE"],
+        "corpus_topics": ["gates"],
+        "gates_applicable": list(dict.fromkeys(_GATES_SIGMA + _GATES_OBSIDURE + _GATES_KERNEL)),
+        "cross_concerns": ["Sigma: coherence post-gate",
+                           "OIE: cout verification build"],
+    },
+    "oie": {
+        "ops_allowed": ["READ_LOCAL_WINDOW", "CORPUS_LOOKUP", "PLAN_DISPLAY"],
+        "ops_forbidden": _INTERDIT_COMMON + ["BENCHMARK_RUN_AUTO"],
+        "corpus_topics": ["oie"],
+        "gates_applicable": list(_GATES_OBSIDURE),
+
+        "cross_concerns": ["Thermo: friction/cout inference",
+                           "Sigma: verite vs economie"],
+    },
+    "thermo": {
+        "ops_allowed": ["CORPUS_LOOKUP", "PLAN_DISPLAY"],
+        "ops_forbidden": _INTERDIT_COMMON + ["THERMO_DECISION"],
+        "corpus_topics": ["energy_thermo"],
+        "gates_applicable": [],
+        "cross_concerns": ["Sigma: truth mismatch / vieillissement",
+                           "OIE: cout dissipation inference"],
+    },
     "unknown": {
         "ops_allowed": [],
         "ops_forbidden": ["tout — couche inconnue"],
         "corpus_topics": [],
         "gates_applicable": [],
         "cross_concerns": [],
+    },
+}
+
+# ---------------------------------------------------------------------------
+# RUNTIME_SERVICE_MAP_V1 — carte statique des services Obsidia.
+# Aucun subprocess. Aucun POST. Aucun lancement. Aucune mutation.
+# Sondes : urllib.request GET (http_get) et socket.connect_ex (socket).
+# decision_authority = KX108_ONLY.
+# ---------------------------------------------------------------------------
+RUNTIME_SERVICE_MAP_V1: dict = {
+    "api_health": {
+        "kind": "http_get", "label": "API_HEALTH",
+        "url": "http://127.0.0.1:8000/api/health",
+        "required": True, "timeout": 1.0,
+    },
+    "api_readiness": {
+        "kind": "http_get", "label": "API_READINESS",
+        "url": "http://127.0.0.1:8000/api/readiness",
+        "required": False, "timeout": 1.0,
+    },
+    "api_status": {
+        "kind": "http_get", "label": "API_STATUS",
+        "url": "http://127.0.0.1:8000/api/status",
+        "required": False, "timeout": 1.0,
+    },
+    "kernel_3001": {
+        "kind": "socket", "label": "KERNEL_3001",
+        "host": "127.0.0.1", "port": 3001,
+        "required": False, "not_confirmed": True, "timeout": 1.0,
+    },
+    "graphiti_8011": {
+        "kind": "http_get", "label": "GRAPHITI_8011",
+        "url": "http://127.0.0.1:8011/graph/v20/frozen/status",
+        "required": False, "timeout": 1.0,
+    },
+    "neo4j_bolt_7688": {
+        "kind": "socket", "label": "NEO4J_BOLT_7688",
+        "host": "127.0.0.1", "port": 7688,
+        "required": False, "timeout": 1.0,
+    },
+    "neo4j_browser_7475": {
+        "kind": "socket", "label": "NEO4J_BROWSER_7475",
+        "host": "127.0.0.1", "port": 7475,
+        "required": False, "timeout": 1.0,
+    },
+    "ui_5173": {
+        "kind": "http_get", "label": "UI_5173",
+        "url": "http://127.0.0.1:5173/",
+        "required": False, "timeout": 1.0,
+    },
+    "sigma_domains": {
+        "kind": "http_get", "label": "SIGMA_DOMAINS",
+        "url": "http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains",
+        "required": False, "timeout": 1.0,
+    },
+    "sigma_evaluate": {
+        "kind": "http_get", "label": "SIGMA_EVALUATE",
+        "url": "http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate",
+        "required": False, "timeout": 1.0,
+    },
+}
+
+# Vérifications locales readonly — existence de chemins uniquement, aucun parsing contenu.
+_RUNTIME_LOCAL_CHECKS: dict = {
+    "gates": {
+        "label": "GATES",
+        "paths": [
+            "scripts/gates/obsidia_sigma_non_sovereignty_check.py",
+            "scripts/gates/obsidia_kernel_boundary_check.py",
+            "scripts/gates/obsidia_forbidden_write_check.py",
+            "scripts/gates/obsidia_lean_manifest_guard.py",
+        ],
+    },
+    "lean_manifest": {
+        "label": "LEAN_MANIFEST",
+        "paths": ["proofs/LEAN_PROOF_SURFACE_MANIFEST.json"],
+    },
+    "oie_reports": {
+        "label": "OIE_REPORTS",
+        "paths": ["scripts/performance/oie_external_claude_benchmark_v0_receipts.json"],
+    },
+    "patch_proposals": {
+        "label": "PATCH_PROPOSALS",
+        "paths": ["_PATCH_PROPOSALS"],
+    },
+    "corpus": {
+        "label": "CORPUS",
+        "paths": ["docs/specs", "docs/protocols"],
     },
 }
 
@@ -648,6 +918,22 @@ def _parse_capabilities_input(raw: str):
         rest = rest[9:].strip()
     inner = rest.strip().strip('"').strip("'")
     return (inner if inner else "terminal_self"), verbose
+
+
+_RUNTIME_TRIGGERS = frozenset({
+    "runtime", "runtime status", "doctor --full", "status --full",
+    "cockpit status", "etat runtime", "etat du runtime",
+    "obsidia runtime", "obsidia doctor", "obsidia status",
+    "etat services", "services status", "check services",
+})
+
+
+def _parse_runtime_input(raw: str) -> bool:
+    """Retourne True si raw est une commande de runtime service map."""
+    norm = raw.strip().lower()
+    if norm.startswith("obsidia "):
+        norm = norm[8:].strip()
+    return norm in _RUNTIME_TRIGGERS or any(norm.startswith(t) for t in _RUNTIME_TRIGGERS)
 
 
 def dedupe_preserve_order(items):
@@ -2284,6 +2570,56 @@ def answer_router(raw: str, registry: dict) -> dict:
             "output": assert_output_allowed("GUIDE"),
             "guidance": cap_plan["guidance"], "guidance_authority": "NONE",
             "plan_status": cap_plan["plan_status"],
+        }
+
+    # Branche runtime service map — policy_check prioritaire via build_active_plan interne.
+    if _parse_runtime_input(raw):
+        _rt_plan = build_active_plan(raw, registry)
+        if _rt_plan.get("deny_keyword"):
+            _deny_kw = _rt_plan["deny_keyword"]
+            _deny_rep = (f'Refus policy : mot interdit "{_deny_kw}". '
+                         "Le terminal ne peut pas executer cette commande.")
+            return {
+                "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": _deny_rep,
+                "mode_reponse": "ANSWER_POLICY_DENY",
+                "detected_layer": _rt_plan["detected_layer"],
+                "confidence": _rt_plan["confidence"],
+                "organes_mobilises": _rt_plan["organes_mobilises"],
+                "organes_mobilisables": _rt_plan["organes_mobilisables"],
+                "outils_utilises": _rt_plan["outils_utilises"],
+                "corpus_utilise": ["aucun — policy deny"],
+                "limites": ["POLICY_DENY"],
+                "action_locale": None, "local_read_meta": None,
+                "next_human_action": "workflow gated si mutation voulue",
+                "output": assert_output_allowed("POLICY_DENY"),
+                "guidance": _rt_plan["guidance"], "guidance_authority": "NONE",
+                "plan_status": _rt_plan["plan_status"],
+            }
+        _rt_result = build_runtime_service_map_v1()
+        _rt_rep = format_runtime_service_map_v1(_rt_result)
+        return {
+            "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": _rt_rep,
+            "mode_reponse": "ANSWER_LOCAL",
+            "detected_layer": _rt_plan["detected_layer"],
+            "confidence": _rt_plan["confidence"],
+            "organes_mobilises": _rt_plan["organes_mobilises"],
+            "organes_mobilisables": _rt_plan["organes_mobilisables"],
+            "outils_utilises": _rt_plan["outils_utilises"],
+            "corpus_utilise": ["RUNTIME_SERVICE_MAP_V1"],
+            "limites": ["lecture seule — aucun service lance — X108 reste autorite"],
+            "action_locale": "RUNTIME_SERVICE_MAP_READONLY",
+            "local_read_meta": {
+                "terminal_state": _rt_result["terminal_state"],
+                "services_checked": len(_rt_result["network"]),
+                "local_checks": len(_rt_result["local"]),
+            },
+            "next_human_action": (
+                "si DEGRADED: lancer manuellement les services manquants "
+                "(scripts/OBSIDIA_LAUNCHERS/)"
+            ),
+            "output": assert_output_allowed("GUIDE"),
+            "guidance": _rt_plan["guidance"], "guidance_authority": "NONE",
+            "plan_status": _rt_plan["plan_status"],
         }
 
     plan = build_active_plan(raw, registry)

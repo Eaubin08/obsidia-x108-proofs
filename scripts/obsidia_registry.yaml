@@ -79,6 +79,26 @@ layers:
     triggers: [sigma, coherence, contradiction, guidance, introspection, incoherence]
     commands: ["curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/domains", "curl http://127.0.0.1:8000/api/periphery/monitoring/sigma/evaluate"]
     note: Sigma guide et explique. HOLD_RECOMMENDED est une recommandation, jamais une decision X108.
+  terminal_self:
+    mode: readonly
+    triggers: [qui es tu, tu es quoi, que peux tu faire, quelles sont tes capacites, quelles sont tes capacites, capaciter, comment fonctionne terminal, comment fonctionne le terminal, terminal comment il fonctionne, probleme actuel terminal, problemes actuels terminal, ameliorer le terminal, organes disponibles, branche, terminal self, terminal routing, terminal capabilities]
+    commands: []
+    note: Couche reflexive du terminal. Repond aux questions d identite, de capacite et de diagnostic. Aucune autorite. Non souverain. decision_authority=KX108_ONLY.
+  gates:
+    mode: readonly
+    triggers: [gates, gate, garde-fous, commit_scope_guard, kernel_boundary, sigma_non_sovereignty, lean_manifest_guard, forbidden_write, build safety, checks securite, protection build]
+    commands: ["python scripts/gates/obsidia_commit_scope_guard.py --allow <fichiers>", "python scripts/gates/obsidia_kernel_boundary_check.py --staged-only", "python scripts/gates/obsidia_sigma_non_sovereignty_check.py", "python scripts/gates/obsidia_lean_manifest_guard.py", "python -m pytest tests/gates/ -q"]
+    note: Gates de build safety Obsidia. Protegent le repo sans remplacer X108. Lecture status uniquement depuis le terminal. output=GUIDE ou COMMANDS. Non souverain. decision_authority=KX108_ONLY. no_auto_execution=true.
+  oie:
+    mode: readonly
+    triggers: [oie, inference economy, economie inference, modele evite, benchmark, latency avoided, token cost, cout token, token avoided, receipts oie, oie benchmark, inference benchmark]
+    commands: ["python scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run", "cat scripts/performance/oie_external_claude_benchmark_v0_receipts.json"]
+    note: OIE mesure l economie d inference Obsidia. COST_REAL=NOT_CLAIMED sauf preuve. Pas de lancement benchmark auto depuis le terminal. output=GUIDE ou READONLY. Non souverain. decision_authority=KX108_ONLY.
+  thermo:
+    mode: readonly
+    triggers: [thermo, energy, energie, thermo debt, dette thermo, friction energie, energy thermo, sigma truth mismatch, dissipation, cout energetique, energy_thermo]
+    commands: []
+    note: Thermo mesure la friction energie/stabilite et la dette sigma (vérité vs coherence). Aucune decision. output=GUIDE. Non souverain. decision_authority=KX108_ONLY. no_decision=true.
 
 policy:
   deny_keywords: [commit, push, deploy, deploie, apply, applique, act, ecris, ecrire, write, delete, supprime, supprimer, efface, mutate, mute, install, installe, "rm -", force, reset, rebase, amend]

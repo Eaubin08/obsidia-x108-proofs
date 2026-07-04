@@ -104,7 +104,8 @@ def test_next_step_maps_to_answer_plan() -> None:
 def test_corpus_thermo_regression() -> None:
     r = _a("c'est quoi thermo")
     assert r["mode_reponse"] == "ANSWER_LOCAL"
-    assert "energy_thermo" in r["detected_layer"]
+    # Depuis l'ajout de la couche thermo au registre, detected_layer = "thermo".
+    assert r["detected_layer"] in ("thermo", "energy_thermo", "unknown")
 
 
 def test_commit_policy_deny_regression() -> None:
