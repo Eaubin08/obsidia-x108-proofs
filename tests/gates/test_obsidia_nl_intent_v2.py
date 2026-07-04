@@ -71,25 +71,26 @@ def test_trouve_maps_to_local_search(tmp_path) -> None:
     assert r["action_locale"] == "SEARCH_LOCAL_TEXT"
 
 
-def test_resume_file_is_guide_v2b_required(tmp_path) -> None:
+def test_resume_file_is_execute_v2b(tmp_path) -> None:
+    # V2B : resume sur cible valide -> EXECUTE extractif (plus de V2B_REQUIRED).
     _mkfile(tmp_path)
     r = _a("resume docs/specs/X.md")
-    assert r["output"] == "GUIDE"
-    assert "V2B_REQUIRED" in r["reponse"]
+    assert r["output"] == "EXECUTE"
+    assert "V2B_REQUIRED" not in r["reponse"]
 
 
-def test_explique_file_is_guide_v2b_required(tmp_path) -> None:
+def test_explique_file_is_execute_v2b(tmp_path) -> None:
     _mkfile(tmp_path)
     r = _a("explique docs/specs/X.md")
-    assert r["output"] == "GUIDE"
-    assert "V2B_REQUIRED" in r["reponse"]
+    assert r["output"] == "EXECUTE"
+    assert "V2B_REQUIRED" not in r["reponse"]
 
 
-def test_compare_files_is_guide_v2b_required(tmp_path) -> None:
+def test_compare_files_is_execute_v2b(tmp_path) -> None:
     _mkfile(tmp_path)
     r = _a("compare docs/specs/X.md et docs/specs/Y.md")
-    assert r["output"] == "GUIDE"
-    assert "V2B_REQUIRED" in r["reponse"]
+    assert r["output"] == "EXECUTE"
+    assert "V2B_REQUIRED" not in r["reponse"]
 
 
 def test_next_step_maps_to_answer_plan() -> None:

@@ -22,6 +22,7 @@ Garanties (par construction, pas par option) :
 
 from __future__ import annotations
 
+import difflib
 import json
 import re
 import sys
@@ -1097,9 +1098,154 @@ def _policy_deny_or_none(verdict: str, rel):
     return None
 
 
+# ---------------------------------------------------------------------------
+# V2B — resume / explication / comparaison EXTRACTIFS sur fenetre bornee.
+# Aucune primitive d'I/O nouvelle : reutilise _stream_window (streaming).
+# Aucun modele, aucun web, aucun subprocess. Extractif-first strict :
+# on n'affirme que ce qui est present dans la fenetre lue.
+# ---------------------------------------------------------------------------
+_TECH_TOKEN_RE = re.compile(r"[A-Z][A-Z0-9_]{2,}|[a-z_]+_[a-z0-9_]+|[A-Z][a-z]+[A-Z][A-Za-z]+")
+
+
+def _raw_from_fmt(fl: str) -> str:
+    """Extrait le contenu d'une ligne formatee '   N: texte' (ou masquee)."""
+    if fl.startswith("[SECRET_MASQUE"):
+        return ""
+    if ": " in fl:
+        return fl.split(": ", 1)[1]
+    return fl.strip()
+
+
+def _extract_keypoints(fmt_lines: list) -> list:
+    """Points cles EXTRACTIFS : titres, puces, signatures, sinon 1res phrases."""
+    pts, seen = [], set()
+    for fl in fmt_lines:
+        c = _raw_from_fmt(fl).strip()
+        if not c:
+            continue
+        low = c.lstrip()
+        struct = (low.startswith(("#", "-", "*", "•")) or re.match(r"\d+[.)]", low)
+                  or low.startswith(("def ", "class ")))
+        if struct and c[:160] not in seen:
+            seen.add(c[:160])
+            pts.append(c[:160])
+        if len(pts) >= 12:
+            return pts
+    if len(pts) < 3:  # fallback : premieres phrases de lignes de prose
+        for fl in fmt_lines:
+            c = _raw_from_fmt(fl).strip()
+            if len(c) > 30 and c[:120] not in seen:
+                seen.add(c[:120])
+                pts.append(c.split(". ")[0][:120])
+            if len(pts) >= 6:
+                break
+    return pts[:12]
+
+
+def _partial_banner(last: int, total: int) -> str:
+    return ("fenetre PARTIELLE — pas une synthese globale du fichier"
+            if last < total else "fenetre couvrant l'integralite du fichier")
+
+
+def _summarize_window(rel: str, ap, start: int, count: int) -> dict:
+    win = _stream_window(ap, start, count)
+    total = _stream_count_lines(ap)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Resume interrompu : {rel} a une forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    last = win["last"]
+    pts = _extract_keypoints(win["lines"])
+    body = "\n".join("  - " + p for p in pts) or "  (rien d'exploitable dans cette fenetre)"
+    nav = (f"\nNext :\n  resume les lignes {last + 1} a "
+           f"{min(last + _WIN_DEFAULT, total)} de {rel}") if last < total else ""
+    return {"kind": "SUMMARIZE_LOCAL_PROGRESSIVE", "mode": "ANSWER_LOCAL",
+            "reponse": f"Resume local de {rel} — lignes {start}-{last} sur {total} "
+                       f"(fenetre bornee, extractif ; {_partial_banner(last, total)})\n"
+                       f"Points cles dans la fenetre lue :\n{body}\n"
+                       f"Limites :\n  - resume de la fenetre lue uniquement, "
+                       f"pas une synthese globale du fichier{nav}",
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ap.suffix,
+                     "range_lignes": f"{start}-{last}", "lignes_affichees": len(win["lines"]),
+                     "keypoints": len(pts), "secrets_masques": win["masked"],
+                     "truncated": win["truncated"]},
+            "limites": ["resume extractif de la fenetre lue uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetre partielle)"}
+
+
+def _explain_window(rel: str, ap, start: int, count: int) -> dict:
+    win = _stream_window(ap, start, count)
+    total = _stream_count_lines(ap)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Explication interrompue : {rel} a une forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    last = win["last"]
+    structure, terms = [], []
+    for fl in win["lines"]:
+        c = _raw_from_fmt(fl).strip()
+        low = c.lstrip()
+        if low.startswith(("#", "def ", "class ")) and len(structure) < 12:
+            structure.append(c[:120])
+        for m in _TECH_TOKEN_RE.findall(c):
+            if m not in terms and len(terms) < 15:
+                terms.append(m)
+    struct_body = "\n".join("  - " + s for s in structure) or "  (aucune section visible)"
+    term_body = ", ".join(terms) or "(aucun identifiant technique repere)"
+    nav = (f"\nNext :\n  explique les lignes {last + 1} a "
+           f"{min(last + _WIN_DEFAULT, total)} de {rel}") if last < total else ""
+    return {"kind": "EXPLAIN_LOCAL_PROGRESSIVE", "mode": "ANSWER_LOCAL",
+            "reponse": f"Explication locale de {rel} — lignes {start}-{last} sur {total} "
+                       f"({_partial_banner(last, total)})\n"
+                       f"Structure visible :\n{struct_body}\n"
+                       f"Termes visibles :\n  {term_body}\n"
+                       f"Lecture prudente :\n  dans la fenetre lue, on voit "
+                       f"{len(structure)} section(s) et {len(terms)} terme(s) technique(s).\n"
+                       f"Limites :\n  - explication de la fenetre lue uniquement{nav}",
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ap.suffix,
+                     "range_lignes": f"{start}-{last}", "sections": len(structure),
+                     "termes": len(terms), "secrets_masques": win["masked"]},
+            "limites": ["explication extractive de la fenetre lue uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetre partielle)"}
+
+
+def _compare_windows(rel_a, ap_a, rel_b, ap_b, start: int = 1, count: int = _WIN_DEFAULT) -> dict:
+    wa, wb = _stream_window(ap_a, start, count), _stream_window(ap_b, start, count)
+    if wa["density"] or wb["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              "Comparaison interrompue : forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    ta, tb = _stream_count_lines(ap_a), _stream_count_lines(ap_b)
+    la = [_raw_from_fmt(x).rstrip() for x in wa["lines"]]
+    lb = [_raw_from_fmt(x).rstrip() for x in wb["lines"]]
+    common = [x for x in la if x and x in set(lb)][:8]
+    diff = list(difflib.unified_diff(la, lb, lineterm="", n=0))[:120]
+    diff_body = "\n".join("  " + d for d in diff if d[:3] not in ("---", "+++", "@@ ")) or "  (aucune difference dans les fenetres lues)"
+    common_body = "\n".join("  - " + c[:120] for c in common) or "  (aucune ligne commune visible)"
+    a_partial = wa["last"] < ta
+    b_partial = wb["last"] < tb
+    nav = ("\nNext :\n  compare les lignes suivantes de A et B "
+           f"(A: {wa['last'] + 1}-…, B: {wb['last'] + 1}-…)" if (a_partial or b_partial) else "")
+    return {"kind": "COMPARE_LOCAL_BOUNDED", "mode": "ANSWER_LOCAL",
+            "reponse": f"Comparaison locale bornee\n"
+                       f"A: {rel_a} lignes {start}-{wa['last']} sur {ta}\n"
+                       f"B: {rel_b} lignes {start}-{wb['last']} sur {tb}\n"
+                       f"Points communs visibles :\n{common_body}\n"
+                       f"Differences visibles (diff borne) :\n{diff_body}\n"
+                       f"Limites :\n  - comparaison des fenetres lues uniquement, "
+                       f"pas des fichiers entiers{nav}",
+            "corpus": [rel_a, rel_b], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "a": f"{start}-{wa['last']}/{ta}",
+                     "b": f"{start}-{wb['last']}/{tb}", "diff_lines": len(diff)},
+            "limites": ["comparaison extractive des fenetres lues uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetres partielles)"}
+
+
 def classify_local_read_intent(raw: str, normalized: str):
-    """V2A : lecture reelle bornee (READ/RANGE/SEARCH/CONTEXT/LIST) ou refus/guide.
-    Retourne un dict de reponse locale, ou None (flux corpus normal)."""
+    """V2A/V2B : lecture reelle bornee (READ/RANGE/SEARCH/CONTEXT/LIST) et
+    resume/explication/comparaison extractifs. Retourne un dict, ou None."""
     is_context = "contexte" in normalized
     verb = None
     for word, kind in _LOCAL_VERBS:
@@ -1147,14 +1293,59 @@ def classify_local_read_intent(raw: str, normalized: str):
             and not paths and not file_ctx_words:
         return None
     # 5. Capacites reportees V2B -> GUIDE (pas de lecture reelle en V2A).
-    if verb in _V2B_DEFERRED:
-        return {"kind": verb, "mode": "ANSWER_PLAN",
-                "reponse": f"V2B_REQUIRED : capacite '{_V2B_DEFERRED[verb]}' reconnue mais "
-                           "non appliquee (design V2B separe). V2A couvre deja : lire "
-                           "(fenetre/range), chercher, contexte, lister. Ex: lis <chemin> "
-                           "| lis les lignes 20 a 60 de <chemin> | cherche <mot> dans <chemin>.",
-                "limites": ["SUMMARIZE/EXPLAIN/COMPARE = V2B_REQUIRED (non applique)"],
-                "next_h": "utiliser une capacite V2A (lire/chercher/contexte/lister)"}
+    # 5. V2B — resume / explication / comparaison EXTRACTIFS bornes.
+    def _v2b_file_guard(pstr):
+        """Retourne (dict_refus_ou_None, rel, ap) pour un chemin V2B."""
+        verdict, rel, ap = local_path_policy(pstr)
+        if verdict == "DENIED_FORMAT":
+            return ({"kind": "V3_ADAPTER_REQUIRED", "mode": "ANSWER_PLAN",
+                     "reponse": f"Format non lu ({rel}) : PDF/DOCX/binaire. Convertis en "
+                                ".txt/.md toi-meme puis relance. Adapter = V3 (scope separe).",
+                     "limites": ["PDF/DOCX/binaire non lus"],
+                     "next_h": "convertir en .txt/.md puis relancer"}, None, None)
+        deny = _policy_deny_or_none(verdict, rel)
+        if deny:
+            return (deny, None, None)
+        if verdict in ("NOT_FOUND", "IS_DIR"):
+            return ({"kind": "READ_TARGET", "mode": "ANSWER_UNKNOWN",
+                     "reponse": f"Cible invalide : {rel} ({verdict}).",
+                     "limites": [], "next_h": "donner un chemin de fichier texte valide"}, None, None)
+        if _is_binary(ap):
+            return ({"kind": "READ_TARGET", "mode": "ANSWER_PLAN",
+                     "reponse": f"Contenu binaire detecte ({rel}) — non lu comme texte.",
+                     "limites": ["binaire non lu"], "next_h": "fournir un fichier texte"}, None, None)
+        return (None, rel, ap)
+
+    if verb == "COMPARE_LOCAL_FILES":
+        if len(paths) != 2:
+            return {"kind": verb, "mode": "ANSWER_PLAN",
+                    "reponse": "Comparaison : il me faut EXACTEMENT 2 chemins de fichiers "
+                               "(ex. compare docs/A.md et docs/B.md).",
+                    "limites": ["compare = 2 fichiers exactement"],
+                    "next_h": "redonner l'IN avec deux chemins"}
+        ga, ra, apa = _v2b_file_guard(paths[0])
+        if ga:
+            return ga
+        gb, rb, apb = _v2b_file_guard(paths[1])
+        if gb:
+            return gb
+        return _compare_windows(ra, apa, rb, apb)
+
+    if verb in ("SUMMARIZE_LOCAL_DOC", "EXPLAIN_LOCAL_CODE"):
+        if not paths:
+            return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                    "reponse": "Quel fichier ? Donne un chemin precis "
+                               "(ex. resume docs/specs/OBSIDIA_LOCAL_CORPUS_V2.md).",
+                    "limites": [], "next_h": "redonner l'IN avec le chemin exact"}
+        guard, rel, ap = _v2b_file_guard(paths[0])
+        if guard:
+            return guard
+        rng = _parse_range(normalized)
+        start, count = ((rng[0], min(rng[1] - rng[0] + 1, _WIN_MAX)) if rng
+                        else (1, _WIN_DEFAULT))
+        if verb == "SUMMARIZE_LOCAL_DOC":
+            return _summarize_window(rel, ap, start, count)
+        return _explain_window(rel, ap, start, count)
     # 6. LIST_LOCAL_DIR : lecture reelle bornee du dossier.
     if verb == "LIST_LOCAL_DIR":
         if not paths:
