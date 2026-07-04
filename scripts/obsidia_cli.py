@@ -126,9 +126,12 @@ def score_layers(normalized: str, registry: dict) -> tuple[str, float, list[str]
 
 
 def policy_check(normalized: str, registry: dict) -> str | None:
+    """Verifie les deny_keywords avec word-boundary (via _key_match).
+    Correction V1 : k in normalized (substring brut) causait de faux positifs
+    sur 'act' -> 'actuelle', 'action', 'impact', 'transaction', etc."""
     for kw in registry.get("policy", {}).get("deny_keywords", []) or []:
         k = str(kw).lower().strip()
-        if k and k in normalized:
+        if k and _key_match(k, normalized):
             return k
     return None
 
@@ -305,6 +308,11 @@ PLAN_ORGANES: dict = {
         "mobilisables": ["Memory/Graphiti: lecture readonly [MOBILISABLE]",
                          "Sigma: guidance [MOBILISABLE]"],
         "interdits": []},
+    "terminal_self": {
+        "mobilises": _ORGANES_BASE + ["LOCAL_CORPUS terminal_self [MOBILISE, READONLY]"],
+        "mobilisables": [],
+        "interdits": ["mutation Kernel/Sigma/X108 [INTERDIT]",
+                      "emission ALLOW/BLOCK/HOLD/ACT [INTERDIT]"]},
     "unknown": {
         "mobilises": ["Terminal: affichage non souverain [MOBILISE]",
                       "OS Langage Uni: normalisation (echec de structuration) [MOBILISE]",
@@ -381,6 +389,16 @@ PLAN_TOOLING: dict = {
                          "/api/brody/* (POST, hors doctor) [OUTIL_NON_NECESSAIRE en plan]"],
         "corpus": ["registry.brody (Brody = API 8000, non souverain)"],
         "exclus": ["lancement stack par le terminal [OUTIL_INTERDIT]"],
+    },
+    "terminal_self": {
+        "utilises": _BASE_USED + ["LOCAL_CORPUS terminal_self [OUTIL_UTILISE, READONLY]"],
+        "mobilisables": [],
+        "corpus": ["scripts/obsidia_cli.py (LOCAL_CORPUS terminal_self, capabilities, "
+                   "terminal_function, terminal_diagnostic)",
+                   "scripts/obsidia_registry.yaml (couches, triggers, policy)",
+                   "CLAUDE.md (doctrines, interdits, couche routing)"],
+        "exclus": ["mutation code [OUTIL_INTERDIT]",
+                   "emission ALLOW/BLOCK/HOLD/ACT [OUTIL_INTERDIT]"],
     },
     "unknown": {
         "utilises": ["registry [OUTIL_UTILISE — echec routage]", "receipt local [OUTIL_UTILISE]"],
@@ -659,7 +677,10 @@ _MODE_TO_OUTPUT = {"ANSWER_LOCAL": "GUIDE", "ANSWER_LIVE_READONLY": "EXECUTE",
                    "ANSWER_UNKNOWN": "STOP_UNKNOWN", "ANSWER_POLICY_DENY": "POLICY_DENY"}
 
 _KNOWLEDGE_WORDS = ("c'est quoi", "cest quoi", "c est quoi", "qu'est", "quest-ce",
-                    "explique", "resume", "definis", "definition", "comment fonctionne")
+                    "explique", "resume", "definis", "definition", "comment fonctionne",
+                    "peux tu", "peut tu", "qui es", "que peux", "quelles sont tes",
+                    "que fais tu", "a quoi tu sers", "tu peux", "tu es quoi",
+                    "comment tu fonctionne", "tes capacites", "terminal self")
 _STATE_WORDS = ("status", "statut", " up", "down", "tourne", "allume", "sante", "health")
 _ACTION_WORDS = ("lance", "lancer", "prepare", "demarre", "execute", "run ", "build",
                  "comment lancer")
@@ -679,7 +700,8 @@ LOCAL_CORPUS = {
                    "verification completant Lean 4 (correction statique) et TLA+ (modele) "
                    "dans la chaine de preuve.")},
     "obsidure": {"keys": ("obsidure", "forge", "proposal patch", "generatedperipheral",
-                          "agent code", "proposition patch", "protocole apply"),
+                          "agent code", "proposition patch", "protocole apply",
+                          "peux tu coder", "peut tu coder", "coder"),
         "sources": ["docs/protocols/OBSIDURE_APPLY_PROTOCOL.md", "registry.obsidure.note"],
         "answer": ("Obsidure construit, prouve et corrige via un workflow proposal-first "
                    "gele en v2 : proposal identifie dans _PATCH_PROPOSALS/, checks Lean "
@@ -809,6 +831,64 @@ LOCAL_CORPUS = {
                    "Obsidia (ex. Dual Obsidia : \"l'IA propose, le Juge dispose\"). "
                    "Le terminal oriente vers le glossaire, il n'improvise pas de "
                    "definitions.")},
+    "terminal_self": {"keys": ("qui es tu", "tu es quoi", "qu est ce que tu es",
+                               "terminal self", "a quoi tu sers", "que fais tu",
+                               "tu es quoi comme outil", "c est quoi le terminal"),
+        "sources": ["CLAUDE.md", "scripts/obsidia_registry.yaml", "scripts/obsidia_cli.py"],
+        "answer": ("Terminal Obsidia non souverain — point d'entree / routeur IN. "
+                   "Il recoit les intentions, les normalise, les route vers la couche "
+                   "registree (brody, obsidure, obsidienne, kernel, domains, audit, "
+                   "memory, live, sigma, terminal_self) et retourne une reponse bornee. "
+                   "Il n'emet jamais ALLOW/BLOCK/HOLD/ACT. "
+                   "Il ne lance aucun processus, ne mutate rien, n'ecrit pas en memoire. "
+                   "X108 reste la seule autorite d'admissibilite. "
+                   "decision_authority = KX108_ONLY. readonly par defaut.")},
+    "capabilities": {"keys": ("que peux tu faire", "quelles sont tes capacites",
+                               "tes capacites", "capacites du terminal",
+                               "peux tu", "peut tu", "tu peux"),
+        "sources": ["CLAUDE.md", "scripts/obsidia_registry.yaml"],
+        "answer": ("Capacites V0 du terminal : "
+                   "(1) Router vers 10 couches : brody, obsidure, obsidienne, kernel, "
+                   "domains, audit, memory, live, sigma, terminal_self ; "
+                   "(2) Lire des fichiers repo en mode fenetre bornee (txt, md, py, yaml, "
+                   "json, docx) — readonly, jamais de dump complet ; "
+                   "(3) Afficher les commandes d'une couche (COMMANDS) sans les executer ; "
+                   "(4) Interroger le corpus local (topics : sigma, obsidure, brody, "
+                   "lean_proofs, gates, doctrine, etc.) ; "
+                   "(5) Health-checks HTTP GET readonly (couche live/doctor) ; "
+                   "(6) Construire le plan actif 12 etapes (build_active_plan). "
+                   "NON CAPABLE : appliquer, committer, deployer, ecrire en memoire, "
+                   "decider, emettre ALLOW/HOLD/BLOCK/ACT.")},
+    "terminal_function": {"keys": ("comment fonctionne le terminal", "comment tu fonctionne",
+                                    "comment fonctionne terminal", "comment il fonctionne",
+                                    "comment ca marche", "architecture terminal"),
+        "sources": ["scripts/obsidia_cli.py", "scripts/obsidia_registry.yaml"],
+        "answer": ("Fonctionnement V0 du terminal : "
+                   "1. Normalisation brute (lower, accents) ; "
+                   "2. policy_check (deny_keywords word-boundary) — STOP si match ; "
+                   "3. detect_layer (triggers registry par couche, word-boundary sur cles courtes) ; "
+                   "4. build_active_plan (plan 12 etapes avec organes, outils, corpus, gates) ; "
+                   "5. select_answer_mode (LOCAL / LIVE_READONLY / COMMANDS / PLAN / UNKNOWN) ; "
+                   "6. Routing : LOCAL_CORPUS lookup | doctor HTTP GET | commandes | plan | "
+                   "lecture fichier bornee (V2A/V2B/V3) ; "
+                   "7. assert_output_allowed (verification sortie) ; "
+                   "8. append_receipt (JSONL local non souverain). "
+                   "Aucun subprocess. Aucune ecriture. Aucune URL externe.")},
+    "terminal_diagnostic": {"keys": ("probleme actuel terminal", "problemes actuels terminal",
+                                      "ameliorer le terminal", "organes disponibles",
+                                      "branche", "terminal routing", "terminal capabilities",
+                                      "lacunes terminal", "manque terminal"),
+        "sources": ["scripts/obsidia_cli.py", "scripts/obsidia_registry.yaml",
+                    ".claude/context/CURRENT_FOCUS.md"],
+        "answer": ("Diagnostic terminal V0 — lacunes connues (branche feat/path-brody-r02) : "
+                   "(1) policy_check corrige (word-boundary via _key_match — fix A2) ; "
+                   "(2) terminal_self route ajoutee (fix A3) ; "
+                   "(3) LOCAL_CORPUS auto-reflexif — presente (fix A4) ; "
+                   "(4) obsidure/coder routing — present (fix A4) ; "
+                   "Lacunes restantes : select_answer_mode ne distingue pas terminal_self "
+                   "explicitement ; PLAN_ORGANES/PLAN_TOOLING terminal_self en cours ; "
+                   "build_unknown_answer minimaliste ; Phase B (Capability Graph V3) non "
+                   "demarree. Sources : TERMINAL_ROUTING_FIXES_V1 Phase A1.")},
 }
 
 
@@ -1851,6 +1931,8 @@ def select_answer_mode(plan: dict, normalized: str, registry: dict) -> str:
     if _contains(normalized, _BLOCKER_WORDS) or _contains(normalized, _META_WORDS) \
             or _contains(normalized, _NEXT_WORDS):
         return "ANSWER_PLAN"
+    if plan["detected_layer"] == "terminal_self":
+        return "ANSWER_LOCAL"
     if plan["detected_layer"] == "sigma" and _contains(normalized, _WHY_WORDS):
         return "ANSWER_LIVE_READONLY"
     if _contains(normalized, _STATE_WORDS) or "doctor" in normalized:
@@ -1884,9 +1966,23 @@ def build_commands_answer(plan: dict, registry: dict):
 
 
 def build_unknown_answer(plan: dict, raw: str, reason: str) -> str:
-    layers = "brody, obsidure, obsidienne, kernel, domains, audit, memory, live, sigma"
-    return (f"Je ne peux pas repondre utilement : {reason}.\n"
-            f"Precise la couche visee ({layers}) ou la source a consulter.")
+    layers = ("brody, obsidure, obsidienne, kernel, domains, audit, "
+              "memory, live, sigma, terminal_self")
+    examples = (
+        "  - 'qui es tu' → terminal_self\n"
+        "  - 'status sigma' → live\n"
+        "  - 'explique sigma/contracts.py' → lecture locale\n"
+        "  - 'propose un patch obsidure' → obsidure\n"
+        "  - 'verifie lean' → obsidienne\n"
+        "  - 'plan pour migrer bank' → domains"
+    )
+    candidates = plan.get("layer_candidates", [])
+    hint = ""
+    if candidates:
+        hint = f"\nCouches proches detectees : {', '.join(candidates)}."
+    return (f"Je ne peux pas repondre utilement : {reason}.{hint}\n"
+            f"Couches disponibles : {layers}.\n"
+            f"Exemples de formulations reconnues :\n{examples}")
 
 
 def answer_router(raw: str, registry: dict) -> dict:
