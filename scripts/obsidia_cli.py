@@ -910,6 +910,7 @@ _NEXT_WORDS = ("quoi faire", "que faire", "dois faire", "la suite", "suite logiq
 _WIN_DEFAULT, _WIN_MAX, _LINE_MAX = 120, 400, 300
 _SEARCH_MAX, _CTX_LINES, _CTX_MAX = 50, 3, 10
 _LIST_MAX = 100
+_DOCX_SIZE_CAP = 10 * 1024 * 1024  # 10 Mo — DOCX_ADAPTER_V3
 _SECRET_CONTENT_RE = re.compile(
     r"(?i)(api[_-]?key|password|passwd|authorization|bearer"
     r"|begin [a-z ]*private key|ghp_[a-z0-9]|sk-[a-z0-9]|akia[0-9a-z])")
@@ -1064,6 +1065,95 @@ def _stream_context(abs_path, pat: str):
                for j in range(m - _CTX_LINES, m + _CTX_LINES + 1) if j in linemap]
         blocks.append("\n".join(blk))
     return blocks
+
+
+# ---------------------------------------------------------------------------
+# DOCX_ADAPTER_V3 — extraction stdlib-only : zipfile + xml.etree.ElementTree.
+# Texte brut uniquement. Paragraphes traites comme lignes. Memes bornes V2.
+# Aucun subprocess, aucun extractall, aucune dependance externe, zero I/O disque.
+# ---------------------------------------------------------------------------
+def _extract_docx_lines(abs_path) -> tuple:
+    """(erreur_guide|None, lignes|None). stdlib : zipfile + xml.etree.ElementTree."""
+    import zipfile  # noqa: PLC0415
+    import xml.etree.ElementTree as ET  # noqa: PLC0415
+    try:
+        if abs_path.stat().st_size > _DOCX_SIZE_CAP:
+            return ("DOCX trop volumineux (>10 Mo) — non extrait. "
+                    "Convertis en .txt/.md puis relance.", None)
+        with zipfile.ZipFile(abs_path, "r") as zf:
+            with zf.open("word/document.xml") as f:
+                tree = ET.parse(f)
+    except zipfile.BadZipFile:
+        return ("DOCX illisible (ZIP corrompu). Convertis en .txt/.md puis relance.", None)
+    except KeyError:
+        return ("DOCX non standard (word/document.xml absent). "
+                "Convertis en .txt/.md puis relance.", None)
+    except ET.ParseError:
+        return ("DOCX XML illisible (ParseError). Convertis en .txt/.md puis relance.", None)
+    except OSError as exc:
+        return (f"Erreur lecture DOCX ({type(exc).__name__}). "
+                "Convertis en .txt/.md puis relance.", None)
+    _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    lines = []
+    for para in tree.getroot().iter(f"{{{_W}}}p"):
+        text = "".join(t.text or "" for t in para.iter(f"{{{_W}}}t")).strip()
+        if text:
+            lines.append(text)
+    if not lines:
+        return ("Aucun texte extractible dans ce DOCX (0 paragraphe). "
+                "Convertis en .txt/.md puis relance.", None)
+    return (None, lines)
+
+
+def _docx_window(lines: list, start: int, count: int) -> dict:
+    """Fenetre bornee sur liste paragraphes DOCX — meme schema que _stream_window."""
+    out, masked = [], [0]
+    truncated = False
+    for i, line in enumerate(lines, 1):
+        if i < start:
+            continue
+        if i >= start + count:
+            truncated = True
+            break
+        out.append(_fmt_line(i, line, masked))
+        if masked[0] > 3:
+            return {"density": True, "lines": out, "masked": masked[0],
+                    "last": i, "truncated": True}
+    return {"density": False, "lines": out, "masked": masked[0],
+            "last": (start + len(out) - 1) if out else start - 1,
+            "truncated": truncated}
+
+
+def _try_docx_adapter(pstr: str) -> tuple:
+    """Confinement repo + extraction DOCX V3 sans modifier local_path_policy.
+    Retourne (erreur|None, lignes|None, rel_posix|None)."""
+    raw = pstr.strip().strip('"').strip("'")
+    low = raw.lower()
+    if any(tok in low for tok in _LOCAL_SECRET_TOKENS):
+        return ("Refus : cible sensible (secrets/cles proteges). Aucune lecture.", None, None)
+    try:
+        p = (REPO_ROOT / raw).resolve()
+    except Exception:
+        return ("Chemin DOCX invalide.", None, None)
+    try:
+        rel = p.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        return (f"Chemin DOCX hors repo ({raw}). Aucune lecture.", None, None)
+    rel_posix = rel.as_posix()
+    parts_low = [x.lower() for x in rel.parts]
+    if any(seg in parts_low for seg in _LOCAL_DENY_SEGMENTS) or \
+            any(x.startswith(("_backup_", "_ephemeral_")) for x in parts_low):
+        return (f"Segment interdit dans le chemin DOCX ({rel_posix}). Aucune lecture.", None, None)
+    if p.name.lower() in _LOCAL_DENY_NAMES:
+        return (f"Fichier sensible ({rel_posix}). Aucune lecture.", None, None)
+    if not any(rel_posix.startswith(r) for r in _LOCAL_ROOTS):
+        return (f"Chemin DOCX hors racines lisibles ({rel_posix}). Aucune lecture.", None, None)
+    if not p.exists() or not p.is_file():
+        return (f"Fichier DOCX introuvable : {rel_posix}", None, None)
+    err, lines = _extract_docx_lines(p)
+    if err:
+        return (err, None, None)
+    return (None, lines, rel_posix)
 
 
 def _extract_query(normalized: str, marker: str) -> str:
@@ -1243,6 +1333,200 @@ def _compare_windows(rel_a, ap_a, rel_b, ap_b, start: int = 1, count: int = _WIN
             "next_h": "aucune (naviguer via Next si fenetres partielles)"}
 
 
+# ---------------------------------------------------------------------------
+# DOCX_ADAPTER_V3 — operations sur paragraphes extraits (meme logique V2B).
+# ---------------------------------------------------------------------------
+_DOCX_LIMITES_BASE = ["extraction DOCX : texte brut uniquement "
+                      "(images/tableaux/headers/footers/objets embarques exclus)"]
+_DOCX_BANNER = ("Extraction DOCX : texte brut uniquement "
+                "(images/tableaux/headers/footers/objets embarques exclus)")
+
+
+def _summarize_docx_lines(rel: str, lines: list, start: int, count: int) -> dict:
+    total = len(lines)
+    win = _docx_window(lines, start, count)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Resume interrompu : {rel} forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    last = win["last"]
+    pts = _extract_keypoints(win["lines"])
+    body = "\n".join("  - " + p for p in pts) or "  (rien d'exploitable dans cette fenetre)"
+    nav = (f"\nNext :\n  resume les paragraphes {last + 1} a "
+           f"{min(last + _WIN_DEFAULT, total)} de {rel}") if last < total else ""
+    return {"kind": "SUMMARIZE_LOCAL_PROGRESSIVE", "mode": "ANSWER_LOCAL",
+            "reponse": (f"Resume local de {rel} — paragraphes {start}-{last} sur {total} "
+                        f"(fenetre bornee, extractif ; {_partial_banner(last, total)})\n"
+                        f"{_DOCX_BANNER}\n"
+                        f"Points cles dans la fenetre lue :\n{body}\n"
+                        f"Limites :\n  - images/tableaux/headers/footers/objets embarques exclus\n"
+                        f"  - resume de la fenetre lue uniquement{nav}"),
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                     "format": "docx_extracted_text_only",
+                     "range_lignes": f"{start}-{last}", "lignes_affichees": len(win["lines"]),
+                     "keypoints": len(pts), "secrets_masques": win["masked"],
+                     "truncated": win["truncated"]},
+            "limites": _DOCX_LIMITES_BASE + ["resume extractif de la fenetre lue uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetre partielle)"}
+
+
+def _explain_docx_lines(rel: str, lines: list, start: int, count: int) -> dict:
+    total = len(lines)
+    win = _docx_window(lines, start, count)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Explication interrompue : {rel} forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    last = win["last"]
+    structure, terms = [], []
+    for fl in win["lines"]:
+        c = _raw_from_fmt(fl).strip()
+        low_c = c.lstrip()
+        if low_c.startswith(("#", "def ", "class ")) and len(structure) < 12:
+            structure.append(c[:120])
+        for m in _TECH_TOKEN_RE.findall(c):
+            if m not in terms and len(terms) < 15:
+                terms.append(m)
+    struct_body = "\n".join("  - " + s for s in structure) or "  (aucune section visible)"
+    term_body = ", ".join(terms) or "(aucun identifiant technique repere)"
+    nav = (f"\nNext :\n  explique les paragraphes {last + 1} a "
+           f"{min(last + _WIN_DEFAULT, total)} de {rel}") if last < total else ""
+    return {"kind": "EXPLAIN_LOCAL_PROGRESSIVE", "mode": "ANSWER_LOCAL",
+            "reponse": (f"Explication locale de {rel} — paragraphes {start}-{last} sur {total} "
+                        f"({_partial_banner(last, total)})\n"
+                        f"{_DOCX_BANNER}\n"
+                        f"Structure visible :\n{struct_body}\n"
+                        f"Termes visibles :\n  {term_body}\n"
+                        f"Lecture prudente :\n  dans la fenetre lue, on voit "
+                        f"{len(structure)} section(s) et {len(terms)} terme(s) technique(s).\n"
+                        f"Limites :\n  - images/tableaux/headers/footers/objets embarques exclus\n"
+                        f"  - explication de la fenetre lue uniquement{nav}"),
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                     "format": "docx_extracted_text_only",
+                     "range_lignes": f"{start}-{last}", "sections": len(structure),
+                     "termes": len(terms), "secrets_masques": win["masked"]},
+            "limites": _DOCX_LIMITES_BASE + ["explication extractive de la fenetre lue uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetre partielle)"}
+
+
+def _compare_docx_lines(rel_a: str, lines_a: list, rel_b: str, lines_b: list,
+                        start: int = 1, count: int = _WIN_DEFAULT) -> dict:
+    wa = _docx_window(lines_a, start, count)
+    wb = _docx_window(lines_b, start, count)
+    if wa["density"] or wb["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              "Comparaison interrompue : forte densite de secrets.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    ta, tb = len(lines_a), len(lines_b)
+    la = [_raw_from_fmt(x).rstrip() for x in wa["lines"]]
+    lb = [_raw_from_fmt(x).rstrip() for x in wb["lines"]]
+    common = [x for x in la if x and x in set(lb)][:8]
+    diff = list(difflib.unified_diff(la, lb, lineterm="", n=0))[:120]
+    diff_body = ("\n".join("  " + d for d in diff if d[:3] not in ("---", "+++", "@@ "))
+                 or "  (aucune difference dans les fenetres lues)")
+    common_body = "\n".join("  - " + c[:120] for c in common) or "  (aucune ligne commune visible)"
+    a_partial, b_partial = wa["last"] < ta, wb["last"] < tb
+    nav = ("\nNext :\n  compare les paragraphes suivants "
+           f"(A: {wa['last'] + 1}-…, B: {wb['last'] + 1}-…)") if (a_partial or b_partial) else ""
+    return {"kind": "COMPARE_LOCAL_BOUNDED", "mode": "ANSWER_LOCAL",
+            "reponse": (f"Comparaison locale bornee\n"
+                        f"A: {rel_a} paragraphes {start}-{wa['last']} sur {ta}\n"
+                        f"B: {rel_b} paragraphes {start}-{wb['last']} sur {tb}\n"
+                        f"{_DOCX_BANNER}\n"
+                        f"Points communs visibles :\n{common_body}\n"
+                        f"Differences visibles (diff borne) :\n{diff_body}\n"
+                        f"Limites :\n  - images/tableaux/objets embarques exclus\n"
+                        f"  - comparaison des fenetres lues uniquement{nav}"),
+            "corpus": [rel_a, rel_b], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "format": "docx_extracted_text_only",
+                     "a": f"{start}-{wa['last']}/{ta}", "b": f"{start}-{wb['last']}/{tb}",
+                     "diff_lines": len(diff)},
+            "limites": _DOCX_LIMITES_BASE + ["comparaison extractive des fenetres lues uniquement"],
+            "next_h": "aucune (naviguer via Next si fenetres partielles)"}
+
+
+def _read_docx_window(rel: str, lines: list, start: int, count: int, kind: str) -> dict:
+    total = len(lines)
+    win = _docx_window(lines, start, count)
+    if win["density"]:
+        return _deny_response("READ_DENIED_SECRET_DENSITY",
+                              f"Lecture interrompue : {rel} contient trop de lignes sensibles.",
+                              "DENIED_SECRET_DENSITY [INTERDIT]")
+    body = "\n".join(win["lines"]) or "(fenetre vide)"
+    nav = ""
+    if win["last"] < total:
+        nav = (f"\nsuite : lis les paragraphes {win['last'] + 1} a "
+               f"{min(win['last'] + _WIN_DEFAULT, total)} de {rel}")
+    return {"kind": kind, "mode": "ANSWER_LOCAL",
+            "reponse": (f"{rel} — {total} paragraphes, fenetre {start}-{win['last']} "
+                        f"(masques: {win['masked']})\n"
+                        f"{_DOCX_BANNER}\n"
+                        f"{body}{nav}"),
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                     "format": "docx_extracted_text_only",
+                     "range_lignes": f"{start}-{win['last']}",
+                     "lignes_affichees": len(win["lines"]),
+                     "secrets_masques": win["masked"], "truncated": win["truncated"]},
+            "limites": _DOCX_LIMITES_BASE + [
+                f"fenetre bornee (defaut {_WIN_DEFAULT}, max {_WIN_MAX} paragraphes)"],
+            "next_h": "aucune (naviguer via suite si fenetre partielle)"}
+
+
+def _search_docx_lines(rel: str, lines: list, query: str) -> dict:
+    hits, masked = [], [0]
+    for i, line in enumerate(lines, 1):
+        if query in line.lower():
+            hits.append(_fmt_line(i, line, masked))
+            if len(hits) >= _SEARCH_MAX:
+                break
+    body = "\n".join(hits) if hits else f"Aucune correspondance pour '{query}' dans {rel}."
+    return {"kind": "SEARCH_LOCAL_TEXT", "mode": "ANSWER_LOCAL",
+            "reponse": (f"Recherche '{query}' dans {rel} "
+                        f"({len(hits)} correspondance(s), max {_SEARCH_MAX})\n"
+                        f"{_DOCX_BANNER}\n{body}"),
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                     "format": "docx_extracted_text_only",
+                     "match_count": len(hits), "secrets_masques": masked[0]},
+            "limites": _DOCX_LIMITES_BASE + [f"recherche bornee {_SEARCH_MAX} correspondances"],
+            "next_h": "aucune"}
+
+
+def _context_docx_lines(rel: str, lines: list, query: str) -> dict:
+    match_idxs = [i for i, ln in enumerate(lines, 1) if query in ln.lower()][:_CTX_MAX]
+    if not match_idxs:
+        return {"kind": "SEARCH_LOCAL_CONTEXT", "mode": "ANSWER_LOCAL",
+                "reponse": (f"Aucun contexte pour '{query}' dans {rel}.\n{_DOCX_BANNER}"),
+                "corpus": [rel], "output_execute": True,
+                "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                         "format": "docx_extracted_text_only", "match_count": 0},
+                "limites": _DOCX_LIMITES_BASE,
+                "next_h": "aucune"}
+    masked = [0]
+    blocks = []
+    for m in match_idxs:
+        blk = []
+        for j in range(max(1, m - _CTX_LINES), min(len(lines), m + _CTX_LINES) + 1):
+            fmt = _fmt_line(j, lines[j - 1], masked)
+            blk.append(fmt + ("  <<< match" if j == m else ""))
+        blocks.append("\n".join(blk))
+    body = "\n---\n".join(blocks)
+    return {"kind": "SEARCH_LOCAL_CONTEXT", "mode": "ANSWER_LOCAL",
+            "reponse": (f"Contexte de '{query}' dans {rel} "
+                        f"(±{_CTX_LINES} paragraphes, max {_CTX_MAX})\n"
+                        f"{_DOCX_BANNER}\n{body}"),
+            "corpus": [rel], "output_execute": True,
+            "meta": {"verdict_policy": "ALLOWED", "type_fichier": ".docx",
+                     "format": "docx_extracted_text_only",
+                     "match_count": len(match_idxs)},
+            "limites": _DOCX_LIMITES_BASE + [
+                f"contexte borne ±{_CTX_LINES} paragraphes, {_CTX_MAX} max"],
+            "next_h": "aucune"}
+
+
 def classify_local_read_intent(raw: str, normalized: str):
     """V2A/V2B : lecture reelle bornee (READ/RANGE/SEARCH/CONTEXT/LIST) et
     resume/explication/comparaison extractifs. Retourne un dict, ou None."""
@@ -1298,10 +1582,11 @@ def classify_local_read_intent(raw: str, normalized: str):
         """Retourne (dict_refus_ou_None, rel, ap) pour un chemin V2B."""
         verdict, rel, ap = local_path_policy(pstr)
         if verdict == "DENIED_FORMAT":
-            return ({"kind": "V3_ADAPTER_REQUIRED", "mode": "ANSWER_PLAN",
-                     "reponse": f"Format non lu ({rel}) : PDF/DOCX/binaire. Convertis en "
-                                ".txt/.md toi-meme puis relance. Adapter = V3 (scope separe).",
-                     "limites": ["PDF/DOCX/binaire non lus"],
+            return ({"kind": "PDF_NOT_SUPPORTED", "mode": "ANSWER_PLAN",
+                     "reponse": f"Format non lu ({rel}) : PDF non pris en charge "
+                                "(stdlib insuffisante ; adapter PDF = scope V3b separe). "
+                                "Convertis en .txt/.md puis relance.",
+                     "limites": ["PDF/binaire non lus"],
                      "next_h": "convertir en .txt/.md puis relancer"}, None, None)
         deny = _policy_deny_or_none(verdict, rel)
         if deny:
@@ -1323,6 +1608,29 @@ def classify_local_read_intent(raw: str, normalized: str):
                                "(ex. compare docs/A.md et docs/B.md).",
                     "limites": ["compare = 2 fichiers exactement"],
                     "next_h": "redonner l'IN avec deux chemins"}
+        _a_docx = paths[0].lower().endswith(".docx")
+        _b_docx = paths[1].lower().endswith(".docx")
+        if _a_docx or _b_docx:
+            if not (_a_docx and _b_docx):
+                return {"kind": verb, "mode": "ANSWER_PLAN",
+                        "reponse": "Comparaison mixte DOCX/texte non supportee en V3 — "
+                                   "convertis le DOCX en .txt/.md puis relance.",
+                        "limites": ["comparaison DOCX/texte non supportee en V3"],
+                        "next_h": "convertir le DOCX en .txt/.md puis relancer"}
+            err_a, lines_a, rel_a = _try_docx_adapter(paths[0])
+            if err_a:
+                return {"kind": "DOCX_ADAPTER_ERROR", "mode": "ANSWER_PLAN",
+                        "reponse": err_a, "limites": ["DOCX A non lu"],
+                        "next_h": "convertir en .txt/.md puis relancer"}
+            err_b, lines_b, rel_b = _try_docx_adapter(paths[1])
+            if err_b:
+                return {"kind": "DOCX_ADAPTER_ERROR", "mode": "ANSWER_PLAN",
+                        "reponse": err_b, "limites": ["DOCX B non lu"],
+                        "next_h": "convertir en .txt/.md puis relancer"}
+            rng = _parse_range(normalized)
+            start, count = ((rng[0], min(rng[1] - rng[0] + 1, _WIN_MAX)) if rng
+                            else (1, _WIN_DEFAULT))
+            return _compare_docx_lines(rel_a, lines_a, rel_b, lines_b, start, count)
         ga, ra, apa = _v2b_file_guard(paths[0])
         if ga:
             return ga
@@ -1337,6 +1645,18 @@ def classify_local_read_intent(raw: str, normalized: str):
                     "reponse": "Quel fichier ? Donne un chemin precis "
                                "(ex. resume docs/specs/OBSIDIA_LOCAL_CORPUS_V2.md).",
                     "limites": [], "next_h": "redonner l'IN avec le chemin exact"}
+        if paths[0].lower().endswith(".docx"):
+            err, lines, rel = _try_docx_adapter(paths[0])
+            if err:
+                return {"kind": "DOCX_ADAPTER_ERROR", "mode": "ANSWER_PLAN",
+                        "reponse": err, "limites": ["DOCX non lu"],
+                        "next_h": "convertir en .txt/.md puis relancer"}
+            rng = _parse_range(normalized)
+            start, count = ((rng[0], min(rng[1] - rng[0] + 1, _WIN_MAX)) if rng
+                            else (1, _WIN_DEFAULT))
+            return (_summarize_docx_lines(rel, lines, start, count)
+                    if verb == "SUMMARIZE_LOCAL_DOC"
+                    else _explain_docx_lines(rel, lines, start, count))
         guard, rel, ap = _v2b_file_guard(paths[0])
         if guard:
             return guard
@@ -1379,13 +1699,47 @@ def classify_local_read_intent(raw: str, normalized: str):
                 "reponse": "Quel fichier ? Donne un chemin precis du repo "
                            "(ex. docs/specs/OBSIDIA_LOCAL_CORPUS_V2.md).",
                 "limites": [], "next_h": "redonner l'IN avec le chemin exact"}
+    # V3 DOCX adapter — READ/RANGE/SEARCH/CONTEXT
+    if paths[0].lower().endswith(".docx"):
+        err, lines, rel = _try_docx_adapter(paths[0])
+        if err:
+            return {"kind": "DOCX_ADAPTER_ERROR", "mode": "ANSWER_PLAN",
+                    "reponse": err, "limites": ["DOCX non lu"],
+                    "next_h": "convertir en .txt/.md puis relancer"}
+        if verb == "SEARCH_LOCAL_CONTEXT":
+            query = (_extract_query(normalized, "autour de")
+                     or _extract_query(normalized, "contexte"))
+            if not query:
+                return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                        "reponse": "Quel terme ? "
+                                   "(ex. montre le contexte autour de thermo dans <chemin>)",
+                        "limites": [], "next_h": "preciser le terme"}
+            return _context_docx_lines(rel, lines, query.lower())
+        if verb == "SEARCH_LOCAL_TEXT":
+            query = ""
+            for mk in ("parle de", "cherche", "recherche", "trouve", "localise",
+                       "passage sur", "a quel endroit"):
+                query = _extract_query(normalized, mk)
+                if query:
+                    break
+            if not query:
+                return {"kind": verb, "mode": "ANSWER_UNKNOWN",
+                        "reponse": "Quel terme ? (ex. cherche thermo dans <chemin>)",
+                        "limites": [], "next_h": "preciser le terme"}
+            return _search_docx_lines(rel, lines, query.lower())
+        rng = _parse_range(normalized)
+        if rng:
+            start, count, kind = rng[0], min(rng[1] - rng[0] + 1, _WIN_MAX), "READ_LOCAL_RANGE"
+        else:
+            start, count, kind = 1, _WIN_DEFAULT, "READ_LOCAL_WINDOW"
+        return _read_docx_window(rel, lines, start, count, kind)
     verdict, rel, ap = local_path_policy(paths[0])
     if verdict == "DENIED_FORMAT":
         return {"kind": verb, "mode": "ANSWER_PLAN",
-                "reponse": f"Format non lu en V2A ({rel}) : PDF/DOCX/binaire. "
-                           "Convertis-le en .txt/.md toi-meme (ex. 'Enregistrer sous' "
-                           "ou pandoc) puis relance. Adapter PDF/DOCX = V3 (scope separe).",
-                "limites": ["PDF/DOCX/binaire non lus en V2A"],
+                "reponse": f"Format non lu en V2A ({rel}) : PDF non pris en charge "
+                           "(stdlib insuffisante ; adapter PDF = scope V3b separe). "
+                           "Convertis en .txt/.md puis relance.",
+                "limites": ["PDF/binaire non lus en V2A"],
                 "next_h": "convertir en .txt/.md puis relancer"}
     deny = _policy_deny_or_none(verdict, rel)
     if deny:

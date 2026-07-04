@@ -124,12 +124,37 @@ def test_secret_still_policy_deny(tmp_path) -> None:
         assert r["output"] == "POLICY_DENY"
 
 
-def test_pdf_docx_still_guide_v3_required(tmp_path) -> None:
+def test_pdf_still_guide_after_docx_adapter_v3(tmp_path) -> None:
+    """V3 implemente DOCX ; PDF reste GUIDE (stdlib insuffisante)."""
     root = _mkroot(tmp_path)
     (root / "docs" / "f.pdf").write_bytes(b"%PDF-1.4 fake")
     r = _a("resume docs/f.pdf")
     assert r["output"] == "GUIDE"
-    assert "V3" in r["reponse"]
+    assert "V3b" in r["reponse"] or "scope" in r["reponse"].lower()
+
+
+def test_docx_valid_now_execute_after_v3(tmp_path) -> None:
+    """Apres DOCX_ADAPTER_V3, un DOCX valide retourne EXECUTE (plus GUIDE)."""
+    import zipfile
+    import xml.etree.ElementTree as ET
+    root = _mkroot(tmp_path)
+    docx_path = root / "docs" / "demo.docx"
+    _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    ET.register_namespace("w", _W)
+    root_el = ET.Element(f"{{{_W}}}document")
+    body = ET.SubElement(root_el, f"{{{_W}}}body")
+    for txt in ("Introduction", "Section A : contexte", "Section B : resultats"):
+        p = ET.SubElement(body, f"{{{_W}}}p")
+        r_el = ET.SubElement(p, f"{{{_W}}}r")
+        t = ET.SubElement(r_el, f"{{{_W}}}t")
+        t.text = txt
+    xml_bytes = ET.tostring(root_el, encoding="unicode").encode("utf-8")
+    with zipfile.ZipFile(docx_path, "w") as zf:
+        zf.writestr("word/document.xml", xml_bytes)
+    r = _a("resume docs/demo.docx")
+    assert r["output"] == "EXECUTE"
+    assert r["action_locale"] == "SUMMARIZE_LOCAL_PROGRESSIVE"
+    assert "fenetre" in r["reponse"].lower() or "paragraphes" in r["reponse"].lower()
 
 
 def test_no_subprocess_static_guard() -> None:
