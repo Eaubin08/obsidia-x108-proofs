@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""OIE External Benchmark Harness V0.4 -- CLI ou SDK Anthropic mesure optionnel.
+"""OIE External Benchmark Harness V0.5 -- CLI, SDK Anthropic, SDK Gemini.
 
-Objectif V0.4 : mesure du cout reel via SDK Anthropic (usage.input_tokens / output_tokens)
-quand une cle API est disponible, sans casser le mode CLI existant.
+Objectif V0.5 : ajouter provider Gemini SDK (google-genai) pour mesure cout reel
+quand Anthropic n'est pas accessible (credit / compte). Mode CLI inchange.
 
 Modes d'execution :
   Par defaut               : dry-run routing smoke uniquement
@@ -11,12 +11,14 @@ Modes d'execution :
   OIE_EXTERNAL_BENCHMARK_DOMAIN=1        : domain-output benchmark
   OIE_EXTERNAL_COST_ESTIMATE=1           : estimation tokens locale si prix fournis
 
-Provider (V0.4) :
+Provider :
   OIE_EXTERNAL_PROVIDER=cli             : Claude Code CLI (defaut)
-  OIE_EXTERNAL_PROVIDER=anthropic_sdk   : SDK Anthropic mesure reel
+  OIE_EXTERNAL_PROVIDER=anthropic_sdk   : SDK Anthropic mesure reel (V0.4)
+  OIE_EXTERNAL_PROVIDER=gemini_sdk      : SDK Gemini mesure reel (V0.5)
 
 Model SDK (jamais hardcode) :
-  OIE_EXTERNAL_MODEL_LABEL=<model_id>   : requis si provider=anthropic_sdk
+  OIE_EXTERNAL_MODEL_LABEL=<model_id>   : requis si provider != cli
+    Exemples : claude-haiku-4-5-20251001, gemini-2.0-flash-lite
 
 Prix optionnels (jamais hardcodes ici) :
   OIE_EXTERNAL_INPUT_COST_PER_1M   EUR / 1M tokens input
@@ -24,6 +26,7 @@ Prix optionnels (jamais hardcodes ici) :
 
 Securite :
 - ANTHROPIC_API_KEY lue uniquement depuis env. Jamais logguee. Jamais dans les receipts.
+- GEMINI_API_KEY / GOOGLE_API_KEY lues uniquement depuis env. Jamais logguees.
 - Aucun autre secret dans le repo.
 - Aucun appel reseau sans OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1.
 - Console ASCII uniquement (compatible Windows cp1252).
@@ -47,6 +50,7 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     detect_claude_cli,
     run_claude_cli,
     run_anthropic_sdk,
+    run_gemini_sdk,
     compute_comparison,
     compute_measured_sdk_cost,
     evaluate_route_quality,
@@ -68,6 +72,7 @@ from apps.obsidia_api.inference_economy.external_comparison import (
     FAILURE_NONE,
     PROVIDER_CLI,
     PROVIDER_SDK,
+    PROVIDER_GEMINI,
     COST_SOURCE_UNAVAILABLE,
     COST_SOURCE_ESTIMATED,
     COST_SOURCE_SDK_NO_PRICE,
@@ -497,7 +502,9 @@ def build_real_receipt(
     ratio: Optional[float] = None
     avoided: Optional[float] = None
 
-    if provider == PROVIDER_SDK and usage_available and input_tokens is not None:
+    if provider in (PROVIDER_SDK, PROVIDER_GEMINI) and usage_available and input_tokens is not None:
+        # SDK path (Anthropic ou Gemini) : tokens réels => compute_measured_sdk_cost
+        # Ne dépend PAS de OIE_EXTERNAL_COST_ESTIMATE (réservé à l'estimation texte/CLI)
         inp_p, out_p, _ = _read_cost_env()
         sdk_cost = compute_measured_sdk_cost(input_tokens, output_tokens or 0, inp_p, out_p)
         cost_src = sdk_cost["cost_source"]
@@ -570,6 +577,11 @@ def main() -> None:
         if claude_available:
             print(f"  Claude command         : {claude_cmd}")
             print(f"  Claude info            : {claude_info[:80]}")
+    elif provider == PROVIDER_GEMINI:
+        print(f"  SDK model              : {sdk_model if sdk_model else '(not set - GEMINI_MODEL_NOT_CONFIGURED)'}")
+        # Never print key values
+        print(f"  GEMINI_API_KEY set     : {bool(os.environ.get('GEMINI_API_KEY', ''))}")
+        print(f"  GOOGLE_API_KEY set     : {bool(os.environ.get('GOOGLE_API_KEY', ''))}")
     else:
         print(f"  SDK model              : {sdk_model if sdk_model else '(not set - MODEL_NOT_CONFIGURED)'}")
         # Never print API key
@@ -629,6 +641,27 @@ def main() -> None:
                 run_result = run_anthropic_sdk(task["task_prompt"], sdk_model)
             receipt = build_real_receipt(
                 task, claude_available, claude_cmd, run_result, cost_estimate_enabled, provider=PROVIDER_SDK
+            )
+            status = "OK" if run_result["success"] else f"FAIL({run_result['error'][:40]})"
+            usage_str = f"in={run_result.get('input_tokens')} out={run_result.get('output_tokens')}" if run_result.get("usage_available") else "usage=unavailable"
+            print(f"    -> {status} | latency={run_result.get('latency_ms', 0):.0f}ms | {usage_str}")
+            print(f"    cost_source     : {receipt.cost_source}")
+            if receipt.external_cost_eur_per_1m_measured is not None:
+                print(f"    measured EUR/1M : {receipt.external_cost_eur_per_1m_measured:.4f}")
+        elif provider == PROVIDER_GEMINI:
+            if not sdk_model:
+                run_result = {
+                    "success": False, "latency_ms": 0.0, "output_excerpt": "",
+                    "error": "GEMINI_MODEL_NOT_CONFIGURED", "timeout_occurred": False,
+                    "encoding_error_occurred": False, "failure_type": "GEMINI_MODEL_NOT_CONFIGURED",
+                    "usage_available": False, "input_tokens": None, "output_tokens": None,
+                    "total_tokens": None, "model_label": "",
+                }
+            else:
+                print(f"    -> RUNNING gemini SDK model={sdk_model} ...")
+                run_result = run_gemini_sdk(task["task_prompt"], sdk_model)
+            receipt = build_real_receipt(
+                task, claude_available, claude_cmd, run_result, cost_estimate_enabled, provider=PROVIDER_GEMINI
             )
             status = "OK" if run_result["success"] else f"FAIL({run_result['error'][:40]})"
             usage_str = f"in={run_result.get('input_tokens')} out={run_result.get('output_tokens')}" if run_result.get("usage_available") else "usage=unavailable"
@@ -709,6 +742,25 @@ def main() -> None:
     for r in receipts:
         cost_source_counts[r.cost_source] = cost_source_counts.get(r.cost_source, 0) + 1
 
+    # Full routing compact table (printed when running full or domain run)
+    if (full_run or domain_run) and receipts:
+        print("--- Per-task compact table ---")
+        hdr = f"{'task_id':<38} {'exp_route':<14} {'det_route':<14} {'match':<6} {'lat_ms':>8} {'in_tok':>7} {'out_tok':>8} {'tot_tok':>8} {'cost_src':<24} {'qual':>5} {'savings':>10}"
+        print(hdr)
+        print("-" * len(hdr))
+        for r in receipts:
+            exp = getattr(r, "expected_route", "") or ""
+            det = getattr(r, "external_detected_route", "") or getattr(r, "external_detected_label", "") or ""
+            match_s = str(r.route_match if r.benchmark_kind == BENCHMARK_KIND_ROUTING else r.label_match)
+            lat = f"{r.external_latency_ms:.1f}" if r.external_latency_ms is not None else "N/A"
+            in_t = str(r.external_input_tokens) if r.external_input_tokens is not None else "-"
+            out_t = str(r.external_output_tokens) if r.external_output_tokens is not None else "-"
+            tot_t = str(r.external_total_tokens) if r.external_total_tokens is not None else "-"
+            qual = f"{r.quality_score:.2f}" if r.quality_score is not None else "N/A"
+            sav = f"{r.savings_ratio_vs_external:.1f}x" if r.savings_ratio_vs_external is not None else "N/A"
+            print(f"{r.task_id:<38} {exp:<14} {det:<14} {match_s:<6} {lat:>8} {in_t:>7} {out_t:>8} {tot_t:>8} {r.cost_source:<24} {qual:>5} {sav:>10}")
+        print()
+
     print("--- Receipts summary ---")
     print(f"  Total receipts              : {len(receipts)}")
     print(f"  Routing tasks               : {len(routing_receipts)}")
@@ -735,7 +787,7 @@ def main() -> None:
     benchmark_id = str(uuid.uuid4())
     output_payload = {
         "benchmark_id": benchmark_id,
-        "benchmark": "OIE_EXTERNAL_CLAUDE_V0.3",
+        "benchmark": "OIE_EXTERNAL_BENCHMARK_V0.5",
         "mode": mode,
         "active_kind": active_kind,
         "timestamp": datetime.now(timezone.utc).isoformat(),

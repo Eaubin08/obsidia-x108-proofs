@@ -316,7 +316,135 @@ Avec les prix, il produit `cost_source = SDK_USAGE_MEASURED` et `external_cost_e
 
 ---
 
-## 11. Conclusion
+## 11. V0.5 — Provider Gemini SDK
+
+### Pourquoi V0.5 existe
+
+V0.4 a introduit le provider SDK Anthropic. En pratique, l'acces peut etre bloque
+par un manque de credit ou une configuration compte. Gemini API propose un free tier
+accessible sans credit prepaye — utile pour valider le harness avec des tokens reels.
+
+V0.5 ajoute `OIE_EXTERNAL_PROVIDER=gemini_sdk` via le package Python `google-genai`.
+Les modes CLI et Anthropic SDK sont inchanges.
+
+### Modele recommande
+
+```
+gemini-2.0-flash-lite
+```
+
+Choix : le modele le plus economique de la famille Gemini 2.0.
+Adapte aux taches courtes du benchmark (un label, une route).
+
+### Activation
+
+```powershell
+$env:OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK = "1"
+$env:OIE_EXTERNAL_PROVIDER                = "gemini_sdk"
+$env:OIE_EXTERNAL_MODEL_LABEL             = "gemini-2.0-flash-lite"
+$env:GEMINI_API_KEY                       = "<cle_non_committée>"
+# Optionnel — pour cost_source = SDK_USAGE_MEASURED :
+$env:OIE_EXTERNAL_INPUT_COST_PER_1M       = "0.036"   # EUR / 1M tokens input
+$env:OIE_EXTERNAL_OUTPUT_COST_PER_1M      = "0.144"   # EUR / 1M tokens output
+python scripts/performance/run_oie_external_claude_benchmark_v0.py
+```
+
+`GOOGLE_API_KEY` est aussi accepte comme fallback si `GEMINI_API_KEY` est absent.
+
+### Usage tokens Gemini
+
+Le SDK `google-genai` expose les tokens via :
+
+```python
+interaction.usage.total_input_tokens
+interaction.usage.total_output_tokens
+interaction.usage.total_tokens
+```
+
+Ces champs alimentent `compute_measured_sdk_cost()` — meme fonction que pour Anthropic.
+Si les tokens sont disponibles sans prix : `cost_source = SDK_USAGE_MEASURED_NO_PRICE`.
+Si tokens + prix fournis : `cost_source = SDK_USAGE_MEASURED`.
+
+### Regles de securite (inchangees et etendues)
+
+- `GEMINI_API_KEY` et `GOOGLE_API_KEY` lues uniquement depuis env, jamais logguees.
+- Les messages d'erreur sont passes dans `sanitize_external_error_message()` avant tout log.
+- Patterns masques : `AIza...` (Google), `sk-ant-...` (Anthropic), valeurs d'env litterales.
+- `secrets_redacted = True` reste immutable dans chaque receipt.
+- La console affiche uniquement `GEMINI_API_KEY set: True/False` — jamais la valeur.
+
+### Failure types Gemini (V0.5)
+
+| Failure type | Cause |
+|---|---|
+| `GEMINI_SDK_NOT_AVAILABLE` | Package `google-genai` non installe |
+| `GEMINI_MODEL_NOT_CONFIGURED` | `OIE_EXTERNAL_MODEL_LABEL` absent |
+| `GEMINI_AUTH_ERROR` | Cle absente (`GEMINI_API_KEY` et `GOOGLE_API_KEY` absentes) |
+| `GEMINI_API_ERROR` | Exception pendant l'appel API |
+| `TIMEOUT` | Delai depasse |
+
+### Statut V0.5
+
+- Implementation : completee (external_comparison.py, run_oie_external_claude_benchmark_v0.py).
+- Tests : 22 nouveaux tests V0.5 (TestV05GeminiConstants, TestSanitizeExternalErrorMessage, TestRunGeminiSdk, TestComputeMeasuredSdkCostGemini, TestV05ProviderDispatch).
+- Run reel : non effectue (necessite package google-genai et cle API).
+- Commit : non effectue (politique no-auto-commit).
+
+---
+
+## 12. V0.5.1 — Correction cost_source Gemini + rapport full routing
+
+### Bug corrige
+
+`build_real_receipt` verifiait `provider == PROVIDER_SDK` pour decider d'appeler
+`compute_measured_sdk_cost()`. Cela excluait `PROVIDER_GEMINI` : quand Gemini
+retournait des tokens reels, le chemin tombait dans `elif cost_estimate_enabled`,
+qui requiert `OIE_EXTERNAL_COST_ESTIMATE=1`. Resultat : `cost_source = USAGE_UNAVAILABLE`
+meme avec des tokens reels.
+
+**Correction** : condition changee en `provider in (PROVIDER_SDK, PROVIDER_GEMINI)`.
+
+Les deux providers SDK appellent maintenant `compute_measured_sdk_cost()` des que
+`usage_available = True` et `input_tokens is not None`, independamment de
+`OIE_EXTERNAL_COST_ESTIMATE` (flag reserve au chemin CLI / estimation texte).
+
+### Impact
+
+| Scenario | Avant V0.5.1 | Apres V0.5.1 |
+|---|---|---|
+| Gemini + tokens + prix env | `USAGE_UNAVAILABLE` | `SDK_USAGE_MEASURED` |
+| Gemini + tokens sans prix | `USAGE_UNAVAILABLE` | `SDK_USAGE_MEASURED_NO_PRICE` |
+| Gemini + cost_estimate=False | `USAGE_UNAVAILABLE` | `SDK_USAGE_MEASURED` si prix |
+| Anthropic SDK | inchange | inchange |
+| CLI dry-run | inchange | inchange |
+
+### Rapport full routing
+
+Nouveau document : `docs/audits/OBSIDIA_OIE_GEMINI_FULL_ROUTING_BENCHMARK_V0_5_1.md`
+
+Contient :
+- Protocole run 7 familles routing avec Gemini
+- Tables A–H : summary, per-family, cost/tokens, latency, route quality, OIE differential, governance, valid/invalid claims
+- Smoke observe (1 tache) : `route_match=True`, `usage_available=True`, `quality_score=1.0`
+- Templates a remplir lors du run reel
+
+### Positionnement
+
+> Obsidia is not compared as a larger model. Obsidia is compared as an inference-avoidance and governance layer.
+
+### Statut V0.5.1
+
+- Bug cost_source corrige dans `run_oie_external_claude_benchmark_v0.py` (ligne 505).
+- Table compact per-task ajoutee avant `--- Receipts summary ---`.
+- Label benchmark mis a jour : `OIE_EXTERNAL_BENCHMARK_V0.5`.
+- Tests : 12 nouveaux tests V0.5.1 (`TestV051GeminiCostFix`).
+- Rapport full routing cree : `docs/audits/OBSIDIA_OIE_GEMINI_FULL_ROUTING_BENCHMARK_V0_5_1.md`.
+- Run reel : non effectue (necessite GEMINI_API_KEY + ALLOW_NETWORK).
+- Commit : non effectue (politique no-auto-commit).
+
+---
+
+## 13. Conclusion
 
 Le benchmark OIE externe ne teste pas si Claude est un bon routeur.
 

@@ -1,10 +1,38 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+
+def safe_write_stdout(text: str) -> None:
+    if not text:
+        return
+    try:
+        sys.stdout.write(text)
+        sys.stdout.flush()
+    except UnicodeEncodeError:
+        sys.stdout.buffer.write(text.encode("utf-8", errors="replace"))
+        sys.stdout.buffer.flush()
+
+
+def safe_write_stderr(text: str) -> None:
+    if not text:
+        return
+    try:
+        sys.stderr.write(text)
+        sys.stderr.flush()
+    except UnicodeEncodeError:
+        sys.stderr.buffer.write(text.encode("utf-8", errors="replace"))
+        sys.stderr.buffer.flush()
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -126,9 +154,9 @@ def main() -> int:
     ended = now_iso()
 
     if stdout_text:
-        print(stdout_text, end="")
+        safe_write_stdout(stdout_text)
     if stderr_text:
-        print(stderr_text, end="", file=sys.stderr)
+        safe_write_stderr(stderr_text)
 
     inferred = infer_counts(args.family, command, stdout_text, stderr_text)
     status = "TIMEOUT" if timed_out else ("PASS" if exit_code == 0 else "FAIL")
