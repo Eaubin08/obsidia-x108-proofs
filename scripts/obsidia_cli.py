@@ -3121,6 +3121,242 @@ def build_reverse_router_response(raw: str, registry: dict) -> dict:
 # ─── FIN TERMINAL REVERSE ROUTER V1 ──────────────────────────────────────────
 
 
+# ─── TERMINAL BRODY BRIDGE V1 ────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_BRODY_BRIDGE_V1
+# Bridge consultatif vers /api/brody/chat. Aucun subprocess. Aucune mutation.
+# Brody explique. Brody ne decide pas. X108 reste autorite finale.
+
+_BRODY_BRIDGE_EXACT = frozenset({
+    "brody",
+    "brody chat",
+    "brody status",
+    "brody explique",
+    "brody explique le contexte",
+    "explique moi obsidia",
+    "explique obsidia",
+    "explique le contexte",
+    "explique moi le contexte",
+})
+
+_BRODY_BRIDGE_WORDS = frozenset({
+    "brody",
+})
+
+
+def detect_brody_bridge_query(raw: str, normalized: str | None = None) -> bool:
+    """Detecte une demande Brody explicite et bornee."""
+    n = normalized if normalized is not None else normalize(raw)
+    if not n:
+        return False
+    compact = n.strip()
+    if compact in _BRODY_BRIDGE_EXACT:
+        return True
+    words = set(re.findall(r"[a-z0-9]+", compact))
+    if words & _BRODY_BRIDGE_WORDS:
+        return True
+    return False
+
+
+def _brody_bridge_endpoint(registry: dict | None = None) -> str:
+    """Resolut l'endpoint Brody local depuis le registry si possible."""
+    registry = registry or {}
+    explicit = registry.get("brody_bridge_endpoint")
+    if explicit:
+        return str(explicit).rstrip("/")
+    health = (registry.get("health_endpoints") or {}).get("api_health")
+    if isinstance(health, str) and "/api/health" in health:
+        return health.split("/api/health", 1)[0].rstrip("/") + "/api/brody/chat"
+    return "http://127.0.0.1:8000/api/brody/chat"
+
+
+def build_brody_bridge_payload(raw: str, registry: dict | None = None) -> dict:
+    """Payload compatible BrodyChatRequest. Flags mutatifs toujours false."""
+    return {
+        "message": raw,
+        "language": "fr",
+        "session_id": "obsidia-terminal",
+        "allow_provider": False,
+        "allow_memory_candidate": False,
+        "allow_manual_apply": False,
+        "compact": True,
+        "debug": False,
+    }
+
+
+def _brody_post_json(endpoint: str, payload: dict, timeout: float = 2.0) -> dict:
+    """POST local advisory vers Brody. Aucun subprocess. Aucune mutation."""
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        endpoint,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+            try:
+                parsed = json.loads(body)
+            except Exception:
+                parsed = {"raw": body[:2000]}
+            return {
+                "status": "UP",
+                "http_status": getattr(resp, "status", 200),
+                "body": parsed,
+                "endpoint": endpoint,
+            }
+    except urllib.error.HTTPError as exc:
+        try:
+            body = exc.read().decode("utf-8", errors="replace")[:1000]
+        except Exception:
+            body = ""
+        return {
+            "status": "DOWN",
+            "http_status": exc.code,
+            "error_type": type(exc).__name__,
+            "error": body,
+            "endpoint": endpoint,
+        }
+    except Exception as exc:
+        return {
+            "status": "DOWN",
+            "http_status": 0,
+            "error_type": type(exc).__name__,
+            "error": str(exc)[:1000],
+            "endpoint": endpoint,
+        }
+
+
+def extract_brody_bridge_answer(data: dict) -> tuple[str, str]:
+    """Extrait final_answer > response_md > response > raw."""
+    if not isinstance(data, dict):
+        return ("Brody indisponible: reponse non JSON.", "invalid")
+    for key in ("final_answer", "response_md", "response"):
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return (value.strip(), key)
+    try:
+        return (json.dumps(data, ensure_ascii=False, indent=2)[:2000], "raw_json")
+    except Exception:
+        return ("Brody indisponible: reponse illisible.", "invalid")
+
+
+def _brody_local_fallback_answer(raw: str, registry: dict, reason: dict) -> str:
+    """Fallback local si API Brody down. Ne lance rien."""
+    normalized = normalize(raw)
+    try:
+        plan = build_active_plan(raw, registry)
+        local = build_local_corpus_answer(plan, normalized)
+        if isinstance(local, dict):
+            for key in ("answer", "reponse", "direct"):
+                value = local.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+        if isinstance(local, str) and local.strip():
+            return local.strip()
+    except Exception:
+        pass
+
+    detail = reason.get("error_type") or reason.get("http_status") or "UNKNOWN"
+    return (
+        "Brody API indisponible. Fallback terminal local actif.\n\n"
+        "Brody vit dans l'API 8000 via /api/brody/chat. "
+        "Le terminal peut préparer la demande, mais ne lance aucun serveur et ne mute rien.\n\n"
+        f"Raison: {detail}"
+    )
+
+
+def build_brody_bridge_response(raw: str, registry: dict) -> dict:
+    """Construit la reponse Brody Bridge V1 en surfaces separees."""
+    endpoint = _brody_bridge_endpoint(registry)
+    payload = build_brody_bridge_payload(raw, registry)
+    result = _brody_post_json(endpoint, payload)
+
+    if result.get("status") == "UP" and isinstance(result.get("body"), dict):
+        answer, answer_source = extract_brody_bridge_answer(result["body"])
+        brody_status = "UP"
+        source = "api_brody_chat"
+        fallback = False
+    else:
+        answer = _brody_local_fallback_answer(raw, registry, result)
+        answer_source = "local_fallback"
+        brody_status = "DOWN"
+        source = "terminal_fallback"
+        fallback = True
+
+    return {
+        "panel": "OBSIDIA_RESPONSE",
+        "raw": raw,
+        "reponse": answer,
+        "main_answer": {
+            "direct": answer,
+            "summary": "",
+            "next": ["status brody", "brody explique le contexte", "traduit ma demande en langage uni"],
+        },
+        "etat_technique": {
+            "brody_bridge": "used",
+            "brody_status": brody_status,
+            "endpoint": endpoint,
+            "http_status": result.get("http_status"),
+            "answer_source": answer_source,
+            "source": source,
+            "fallback": fallback,
+            "mutation": "none",
+            "subprocess": "none",
+            "memory_write": False,
+        },
+        "outils_panel": {
+            "brody_bridge": "used",
+            "method": "POST",
+            "route": "/api/brody/chat",
+            "mutation": "none",
+            "subprocess": "none",
+            "memory_write": "forbidden",
+            "decision": "forbidden",
+        },
+        "proof_panel": {
+            "source": source,
+            "authority": "NONE",
+            "decision_authority": "KX108_ONLY",
+            "brody_decides": False,
+            "emits_act": False,
+            "mutation": "none",
+        },
+        "next_suggestions": ["status brody", "brody explique le contexte", "traduit ma demande en langage uni"],
+        "mode_reponse": "ANSWER_BRODY" if not fallback else "ANSWER_LOCAL",
+        "detected_layer": "brody",
+        "confidence": 0.85 if not fallback else 0.55,
+        "organes_mobilises": ["Brody Bridge", "Terminal", "API 8000"] if not fallback else ["Brody Bridge", "Terminal", "Fallback local"],
+        "organes_mobilisables": ["Reverse Router", "OS Langage Uni", "Status"],
+        "outils_utilises": ["urllib.request POST /api/brody/chat"] if not fallback else ["terminal local fallback"],
+        "corpus_utilise": [source],
+        "limites": [
+            "Brody consultatif seulement",
+            "aucune decision souveraine",
+            "aucune ecriture memoire",
+            "aucun subprocess",
+            "X108 reste autorite finale",
+        ],
+        "action_locale": "BRODY_BRIDGE_LOCAL",
+        "local_read_meta": {
+            "brody_bridge": {
+                "endpoint": endpoint,
+                "status": brody_status,
+                "answer_source": answer_source,
+                "fallback": fallback,
+            }
+        },
+        "next_human_action": "lire la reponse Brody ou verifier status brody",
+        "output": assert_output_allowed("GUIDE"),
+        "guidance": [],
+        "guidance_authority": "NONE",
+        "plan_status": "OK",
+    }
+
+
+# ─── FIN TERMINAL BRODY BRIDGE V1 ────────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -3653,6 +3889,10 @@ def answer_router(raw: str, registry: dict) -> dict:
     # Branche OS Langage Uni — demande explicite de traduction IR.
     if detect_unified_ir_query(raw, normalize(raw)):
         return build_unified_ir_response(raw, registry)
+
+    # Branche Brody Bridge — POST local advisory, fallback terminal si API down.
+    if detect_brody_bridge_query(raw, normalize(raw)):
+        return build_brody_bridge_response(raw, registry)
 
     # Branche Reverse Router — reprise locale bornee.
     if detect_reverse_router_query(raw, normalize(raw)):
