@@ -4287,7 +4287,7 @@ def compose_core_surfaces_v1(response: dict, raw: str = "", registry: dict | Non
         out["etat_technique"]["mutation"] = "forbidden"
         out["proof_panel"]["mutation"] = "forbidden"
 
-    return out
+    return attach_dynamic_panels_v1(out)
 
 
 # ─── FIN CORE SURFACE COMPOSER V1 ────────────────────────────────────────────
@@ -4827,6 +4827,88 @@ def render_two_pane_layout(
     return "\n".join(parts)
 
 
+# ─── DYNAMIC PANELS AFTER CORE V1 ────────────────────────────────────────────
+# OBSIDIA_TERMINAL_DYNAMIC_PANELS_AFTER_CORE_V1
+# Choix dynamique du panneau droit apres normalisation core surfaces.
+# Ne route pas. Ne decide pas. Ne mute rien.
+
+_DYNAMIC_PANELS_VERSION = "DYNAMIC_PANELS_AFTER_CORE_V1"
+
+_DYNAMIC_PANEL_LAYER_DEFAULTS = {
+    "brody": "STATUS",
+    "obsidure": "TOOLS",
+    "reverse": "PLAN",
+    "policy": "TOOLS",
+    "terminal": "STATUS",
+    "terminal_self": "STATUS",
+    "obsidienne": "PROOF",
+    "corpus:lean_proofs": "PROOF",
+    "audit": "PROOF",
+    "gates": "TOOLS",
+    "sigma": "PROOF",
+    "kernel": "STATUS",
+    "domains": "STATUS",
+    "memory": "STATUS",
+    "oie": "STATUS",
+    "live": "STATUS",
+    "unknown": "PLAN",
+}
+
+
+def choose_dynamic_right_tab_v1(response: dict) -> str:
+    """Choisit l'onglet droit utile sans changer la reponse."""
+    if not isinstance(response, dict):
+        return "PLAN"
+
+    layer = str(response.get("detected_layer") or "unknown")
+    mode = str(response.get("mode_reponse") or "")
+    output = str(response.get("output") or "")
+    raw = str(response.get("raw") or "").lower()
+
+    if output == "POLICY_DENY" or mode in ("POLICY_DENY", "ANSWER_POLICY_DENY"):
+        return "TOOLS"
+
+    if mode == "ANSWER_STATUS":
+        return "STATUS"
+
+    if layer == "obsidure":
+        if "proof" in raw or "receipt" in raw:
+            return "PROOF"
+        return "TOOLS"
+
+    if layer == "brody":
+        if "proof" in raw:
+            return "PROOF"
+        return "STATUS"
+
+    return _DYNAMIC_PANEL_LAYER_DEFAULTS.get(layer, "PLAN")
+
+
+def attach_dynamic_panels_v1(response: dict) -> dict:
+    """Attache meta panneau droit. Pure, sans mutation externe."""
+    if not isinstance(response, dict):
+        return response
+    tab = choose_dynamic_right_tab_v1(response)
+    response["dynamic_right_tab"] = tab
+    response["dynamic_panels"] = {
+        "version": _DYNAMIC_PANELS_VERSION,
+        "selected": tab,
+        "available": ["PLAN", "STATUS", "TOOLS", "PROOF"],
+        "manual_override": ["/plan", "/status", "/tools", "/proof"],
+        "mutation": "none",
+        "subprocess": "none",
+        "decision_authority": "KX108_ONLY",
+    }
+    etat = response.get("etat_technique")
+    if isinstance(etat, dict):
+        etat.setdefault("dynamic_right_tab", tab)
+        etat.setdefault("dynamic_panels", _DYNAMIC_PANELS_VERSION)
+    return response
+
+
+# ─── FIN DYNAMIC PANELS AFTER CORE V1 ────────────────────────────────────────
+
+
 def extract_main_answer_panel(response: dict, max_lines: int = 60) -> list[str]:
     """Extract main (left) panel content from response dict. Pure.
     V2: utilise main_answer si present, sinon filtre défensif sur reponse.
@@ -5138,10 +5220,7 @@ def interactive_tui_shell(registry: dict) -> int:
         last_plan = build_active_plan(line, registry)
         current_layer = resp.get("detected_layer", "?")
         # Auto-tab : ANSWER_STATUS -> STATUS, sinon PLAN
-        if resp.get("mode_reponse") == "ANSWER_STATUS":
-            active_right_tab = "STATUS"
-        else:
-            active_right_tab = "PLAN"
+        active_right_tab = choose_dynamic_right_tab_v1(resp)
         main_lines = extract_main_answer_panel(resp)
         plan_lines = extract_plan_panel(resp, active_right_tab)
 
