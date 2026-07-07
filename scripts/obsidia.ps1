@@ -398,9 +398,9 @@ function Show-ObsidiaCockpitHelp {
 # SHELL INTERACTIF - Entre dans obsidia> (sans argument = shell interactif CLI)
 # =============================================================================
 function Enter-ObsidiaInteractiveShell {
-    Write-Step "SHELL" "Entree dans le terminal interactif Obsidia..."
+    Write-Step "SHELL" "Entree dans le terminal interactif Obsidia (TUI layout)..."
     Write-INFO "Tapez 'exit' ou Ctrl+C pour quitter. Retour PowerShell apres exit."
-    python "$X108\scripts\obsidia_cli.py"
+    python "$X108\scripts\obsidia_cli.py" --tui
 }
 
 # =============================================================================

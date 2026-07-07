@@ -83,27 +83,31 @@ def test_02_enter_interactive_shell_function_exists():
     assert "function Enter-ObsidiaInteractiveShell" in src
 
 
-def test_03_enter_interactive_shell_calls_cli_no_args():
-    """Enter-ObsidiaInteractiveShell doit appeler python obsidia_cli.py SANS argument."""
+def test_03_enter_interactive_shell_calls_cli_no_in_args():
+    """Enter-ObsidiaInteractiveShell doit appeler python obsidia_cli.py sans IN argument.
+    --tui est permis (flag de mode, pas un IN argument).
+    @args est interdit (passerait tous les arguments du PS1 en IN).
+    """
     src = _src()
     body = _extract_function(src, "Enter-ObsidiaInteractiveShell")
     assert body, "Corps de Enter-ObsidiaInteractiveShell introuvable"
-    # La ligne doit contenir python + obsidia_cli.py et ne pas passer @args
     lines = [l.strip() for l in body.splitlines() if "obsidia_cli.py" in l]
     assert lines, "Aucune ligne avec obsidia_cli.py dans Enter-ObsidiaInteractiveShell"
     cli_line = lines[0]
     assert "obsidia_cli.py" in cli_line
-    # Ne doit pas passer @args (serait cli + arguments)
+    # @args interdit (passerait tous les args PS1 comme IN libres)
     assert "@args" not in cli_line, (
-        "Enter-ObsidiaInteractiveShell ne doit pas passer @args - c'est le shell sans argument"
+        "Enter-ObsidiaInteractiveShell ne doit pas passer @args"
     )
-    # Ne doit pas passer de chaine argument apres le chemin
-    # accepte : python "...obsidia_cli.py"  ou python '...obsidia_cli.py'
-    # interdit : python "...obsidia_cli.py" "runtime"  etc.
+    # Seuls les flags de mode autorises : "" ou "--tui" ou "--plain"
     m = re.search(r'python\s+["\'].*obsidia_cli\.py["\'](.*)$', cli_line)
     if m:
         trailing = m.group(1).strip()
-        assert trailing == "", f"Enter-ObsidiaInteractiveShell passe des args supplementaires : '{trailing}'"
+        allowed_flags = ("", "--tui", "--plain")
+        assert trailing in allowed_flags, (
+            f"Enter-ObsidiaInteractiveShell passe des args non autorises : '{trailing}'. "
+            f"Autorises : {allowed_flags}"
+        )
 
 
 def test_04_no_args_branch_calls_enter_interactive_shell():
