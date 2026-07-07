@@ -1,34 +1,39 @@
 # =============================================================================
-# OBSIDIA COCKPIT V1 - Point d'entrée unique du projet Obsidia X-108.
+# OBSIDIA COCKPIT V1.1 - Point d'entree unique du projet Obsidia X-108.
 #
 # Usage :
-#   obsidia                     → lance la stack complète + cockpit
-#   obsidia start               → idem
-#   obsidia runtime             → status runtime uniquement (pas de lancement)
-#   obsidia status --full       → idem
-#   obsidia doctor --full       → idem
-#   obsidia cockpit status      → idem
-#   obsidia "<IN>"              → route l'IN via le terminal CLI Python
-#   obsidia --print-start-plan  → affiche le plan de boot sans lancer
+#   obsidia                     -> lance ou reutilise la stack + entre dans obsidia>
+#   obsidia start               -> idem
+#   obsidia restart             -> stop force + reboot + entre dans obsidia>
+#   obsidia stop                -> stoppe les processus Obsidia (pas de shell)
+#   obsidia open                -> ouvre les navigateurs UI/Graphiti/Neo4j
+#   obsidia runtime             -> status runtime uniquement (pas de lancement)
+#   obsidia status --full       -> idem
+#   obsidia doctor --full       -> idem
+#   obsidia cockpit status      -> idem
+#   obsidia "<IN>"              -> route l'IN via le terminal CLI Python
+#   obsidia --print-start-plan  -> affiche le plan de boot sans lancer
 #
 # Doctrine :
-#   Terminal non souverain. X108 reste l'autorité finale.
+#   Terminal non souverain. X108 reste l'autorite finale.
 #   Ce script PEUT lancer les serveurs car c'est une commande humaine explicite.
 #   obsidia_cli.py ne lance JAMAIS de subprocess.
 #   decision_authority = KX108_ONLY
-#   Brody Enriched preferred → -Base http://127.0.0.1:8000 (pas 8012)
+#   Brody Enriched preferred -> -Base http://127.0.0.1:8000 (pas 8012)
+#   Brody terminals = optionnels (non lances par defaut) - 'obsidia open' pour navigateurs
+#   NEEDS_BACKGROUND_LOGGING_NEXT : logs services en fenetres visibles pour ce lot
 # =============================================================================
 
 $ErrorActionPreference = "Continue"
 
-# ─── Chemins canoniques ────────────────────────────────────────────────────
+# --- Chemins canoniques -------------------------------------------------------
 $ROOT    = "C:\Users\User\Desktop\obsidia-engine-proof-core"
 $X108    = "$ROOT\obsidia-x108-proofs_REMOTE_A5F21C6B"
 $RT      = "$X108\runtime_terrain_bank_trading_gps"
 $SHELL   = "$ROOT\obsidiashell-main"
 $UI_DIR  = "$X108\apps\obsidia-workbench"
 
-# ─── URLs canoniques ───────────────────────────────────────────────────────
+# --- URLs canoniques ----------------------------------------------------------
 $API             = "http://127.0.0.1:8000"
 $KERNEL_URL      = "http://127.0.0.1:3001/kernel/ragnarok"
 $GRAPH           = "http://127.0.0.1:8011"
@@ -38,7 +43,7 @@ $NEO4J_BOLT      = "bolt://127.0.0.1:7688"
 $GRAPH_WORKBENCH = "$GRAPH/graph/v20/frozen/workbench"
 $GRAPH_DOCS      = "$GRAPH/docs"
 
-# ─── Ports canoniques ──────────────────────────────────────────────────────
+# --- Ports canoniques ---------------------------------------------------------
 # 3001 Kernel Ragnarok | 8000 API Obsidia/Brody | 8011 Graphiti | 5173 UI
 # 7475 Neo4j Browser | 7688 Neo4j Bolt  (NE PAS tuer Neo4j par defaut)
 # NOTE : 8012 = legacy non canonique - ne pas utiliser comme port principal
@@ -75,6 +80,18 @@ function Write-WARN {
 function Write-INFO {
     param([string]$Msg)
     Write-Host "       $Msg" -ForegroundColor Gray
+}
+
+# =============================================================================
+# TEST STACK - Verifie si la stack est deja UP (ne lance rien)
+# =============================================================================
+function Test-ObsidiaStackRunning {
+    try {
+        Invoke-RestMethod "$API/api/health" -TimeoutSec 5 | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
 }
 
 # =============================================================================
@@ -267,6 +284,8 @@ function Start-DomainConnectors {
 # =============================================================================
 # BRODY TERMINALS - Chat / Enriched (preferred) / Raw Inspector
 # Brody Enriched = version preferee - DOIT utiliser -Base $API (8000, pas 8012)
+# NOTE : non lances par defaut dans le boot. Brody reste accessible via API 8000
+#        et via le terminal obsidia>. Fenetres Brody optionnelles future.
 # =============================================================================
 function Start-BrodyTerminals {
     Write-Step "BRODY" "Terminaux Brody (Chat / Enriched / Raw Inspector)..."
@@ -310,6 +329,7 @@ function Start-BrodyTerminals {
 
 # =============================================================================
 # NAVIGATEURS - UI / Graphiti / Neo4j
+# Appele uniquement via 'obsidia open' - pas dans le boot par defaut.
 # =============================================================================
 function Open-ObsidiaBrowsers {
     Write-Step "BROWSER" "Ouverture des navigateurs Obsidia..."
@@ -354,18 +374,33 @@ function Invoke-ObsidiaRuntimeStatus {
 # =============================================================================
 function Show-ObsidiaCockpitHelp {
     Write-Host ""
-    Write-Host "  --- COCKPIT OBSIDIA - COMMANDES RAPIDES -----------------------" -ForegroundColor Cyan
-    Write-Host "  IN libre   : obsidia `"...<votre demande>...`""
-    Write-Host "  Runtime    : obsidia runtime"
-    Write-Host "  Brody      : obsidia `"capabilities brody`""
-    Write-Host "  Obsidure   : obsidia `"peux tu coder`""
-    Write-Host "  Sigma      : obsidia `"sigma coherence`""
-    Write-Host "  OIE        : obsidia `"oie benchmark`""
-    Write-Host "  Lean       : obsidia `"preuves lean`""
-    Write-Host "  Domains    : obsidia `"domains bank trading gps`""
+    Write-Host "  --- COCKPIT OBSIDIA V1.1 - COMMANDES RAPIDES ------------------" -ForegroundColor Cyan
+    Write-Host "  Terminal  : (vous etes dans obsidia> - tapez directement)"
+    Write-Host "  IN libre  : <votre demande>"
+    Write-Host "  Runtime   : runtime"
+    Write-Host "  Brody     : capabilities brody"
+    Write-Host "  Obsidure  : peux tu coder"
+    Write-Host "  Sigma     : sigma coherence"
+    Write-Host "  OIE       : oie benchmark"
+    Write-Host "  Lean      : preuves lean"
+    Write-Host "  Domains   : domains bank trading gps"
+    Write-Host "  Aide      : help"
+    Write-Host "  Quitter   : exit"
+    Write-Host ""
+    Write-Host "  Depuis PowerShell : obsidia open  -> navigateurs"
+    Write-Host "  Depuis PowerShell : obsidia stop  -> arrete la stack"
     Write-Host ""
     Write-Host "  decision_authority = KX108_ONLY | terminal non souverain" -ForegroundColor DarkGray
     Write-Host ""
+}
+
+# =============================================================================
+# SHELL INTERACTIF - Entre dans obsidia> (sans argument = shell interactif CLI)
+# =============================================================================
+function Enter-ObsidiaInteractiveShell {
+    Write-Step "SHELL" "Entree dans le terminal interactif Obsidia..."
+    Write-INFO "Tapez 'exit' ou Ctrl+C pour quitter. Retour PowerShell apres exit."
+    python "$X108\scripts\obsidia_cli.py"
 }
 
 # =============================================================================
@@ -375,8 +410,10 @@ function Print-StartPlan {
     Write-ObsidiaHeader "PLAN DE BOOT (--print-start-plan)"
     Write-Host "  ATTENTION : affichage du plan uniquement - aucun service lance."
     Write-Host ""
-    Write-Host "  SERVICES LANCES PAR 'obsidia' :" -ForegroundColor Cyan
+    Write-Host "  COMPORTEMENT 'obsidia' / 'obsidia start' :" -ForegroundColor Cyan
     Write-Host "  ---------------------------------------------------------------"
+    Write-Host "  A  Test-ObsidiaStackRunning -> si UP : boot skip, entre dans obsidia>"
+    Write-Host "  B  Si DOWN : lance les services core suivants :"
     $plan = @(
         "01  docker start deploy-neo4j-1            ports 7475/7688  Neo4j Docker",
         "02  node server.kernel.sealed.cjs           port  3001       Kernel Ragnarok (X108 autorite)",
@@ -390,14 +427,23 @@ function Print-StartPlan {
         "10  python connectors\bank_normal_flow.py                    Bank connector",
         "11  python connectors\trading_live.py                        Trading connector",
         "12  python connectors\aviation_robo.py                       GPS/Aviation connector",
-        "13  run_brody_terminal_chat.ps1 `"$API`"                    Brody V1 Chat",
-        "14  run_brody_terminal_enriched.ps1 -Base $API              Brody Enriched (PREFERRED, 8000)",
-        "15  run_brody_terminal.ps1 -Base `$API -SessionId raw        Brody Raw Inspector",
-        "16  Start-Process : UI / Graphiti Workbench / Graphiti Docs / Neo4j Browser",
-        "17  netstat check final",
-        "18  python scripts\obsidia_cli.py 'runtime'                 Carte runtime finale"
+        "13  python scripts\obsidia_cli.py 'runtime'                  Carte runtime (lecture seule)",
+        "14  python scripts\obsidia_cli.py           (sans arg)       Enter-ObsidiaInteractiveShell -> obsidia>"
     )
     foreach ($s in $plan) { Write-Host "  $s" }
+    Write-Host ""
+    Write-Host "  NON LANCES PAR DEFAUT (optionnels) :" -ForegroundColor DarkGray
+    Write-Host "  -  run_brody_terminal_*.ps1  (Brody accessible via API 8000 et obsidia>)"
+    Write-Host "  -  navigateurs  (utiliser 'obsidia open')"
+    Write-Host ""
+    Write-Host "  COMPORTEMENT 'obsidia restart' :" -ForegroundColor Cyan
+    Write-Host "  Stop-OldObsidiaProcesses + Clear-ObsidiaPorts + boot complet + obsidia>"
+    Write-Host ""
+    Write-Host "  COMPORTEMENT 'obsidia stop' :" -ForegroundColor Cyan
+    Write-Host "  Stop-OldObsidiaProcesses + Clear-ObsidiaPorts"
+    Write-Host ""
+    Write-Host "  COMPORTEMENT 'obsidia open' :" -ForegroundColor Cyan
+    Write-Host "  Open-ObsidiaBrowsers (UI / Graphiti / Neo4j)"
     Write-Host ""
     Write-Host "  AUTORITE : decision_authority = KX108_ONLY" -ForegroundColor Yellow
     Write-Host "  LEGACY   : 8012 = non canonique" -ForegroundColor Yellow
@@ -407,11 +453,28 @@ function Print-StartPlan {
 
 # =============================================================================
 # FULL STACK BOOT
+# Si -ForceRestart : kill + clear ports avant de lancer
+# Sinon : verifie si stack UP, skip si deja active
+# NOTE : Brody terminals et navigateurs NON lances par defaut
 # =============================================================================
 function Start-ObsidiaFullStack {
-    Write-ObsidiaHeader "COCKPIT BOOT - FULL STACK"
-    Stop-OldObsidiaProcesses
-    Clear-ObsidiaPorts
+    param([switch]$ForceRestart)
+
+    if ($ForceRestart) {
+        Write-ObsidiaHeader "COCKPIT RESTART - FORCE"
+        Stop-OldObsidiaProcesses
+        Clear-ObsidiaPorts
+    } else {
+        if (Test-ObsidiaStackRunning) {
+            Write-ObsidiaHeader "COCKPIT - STACK DEJA ACTIVE"
+            Write-OK "Stack deja active - boot skip (API 8000 repond)"
+            Write-INFO "Pour forcer un restart : obsidia restart"
+            Write-INFO "Pour arreter la stack  : obsidia stop"
+            return
+        }
+        Write-ObsidiaHeader "COCKPIT BOOT - FULL STACK"
+    }
+
     Start-Neo4jIfAvailable
     Start-KernelRagnarok
     Start-ObsidiaApiBrody
@@ -419,8 +482,12 @@ function Start-ObsidiaFullStack {
     Start-Graphiti
     Start-WorkbenchUi
     Start-DomainConnectors
-    Start-BrodyTerminals
-    Open-ObsidiaBrowsers
+    # NOTE: Brody terminals non lances par defaut.
+    # Brody reste accessible via API 8000 et via le terminal obsidia>.
+    # Brody Enriched preferred - -Base http://127.0.0.1:8000 (pas 8012).
+    # Pour lancer les fenetres Brody manuellement : Start-BrodyTerminals
+    # NOTE: Navigateurs non ouverts par defaut.
+    # Pour ouvrir les navigateurs : obsidia open
     Show-FinalPortsAndProcesses
 }
 
@@ -430,13 +497,34 @@ function Start-ObsidiaFullStack {
 $_first = if ($args.Count -gt 0) { $args[0].ToLower().Trim() } else { "" }
 
 if ($args.Count -eq 0 -or $_first -eq "start") {
-    # Boot complet + status runtime + aide cockpit
+    # Boot conditionnel (skip si UP) + runtime + aide + shell interactif
     Start-ObsidiaFullStack
     Invoke-ObsidiaRuntimeStatus
     Show-ObsidiaCockpitHelp
+    Enter-ObsidiaInteractiveShell
+
+} elseif ($_first -eq "restart") {
+    # Force stop + reboot complet + runtime + aide + shell interactif
+    Start-ObsidiaFullStack -ForceRestart
+    Invoke-ObsidiaRuntimeStatus
+    Show-ObsidiaCockpitHelp
+    Enter-ObsidiaInteractiveShell
+
+} elseif ($_first -eq "stop") {
+    # Stop uniquement - pas de shell
+    Write-ObsidiaHeader "COCKPIT STOP"
+    Stop-OldObsidiaProcesses
+    Clear-ObsidiaPorts
+    Write-OK "Stack Obsidia arretee."
+
+} elseif ($_first -eq "open") {
+    # Navigateurs uniquement
+    Open-ObsidiaBrowsers
+
 } elseif ($_first -eq "--print-start-plan") {
     # Plan uniquement - ne lance rien
     Print-StartPlan
+
 } else {
     # runtime / status / doctor / cockpit + tous les IN libres -> CLI Python
     python "$X108\scripts\obsidia_cli.py" @args
