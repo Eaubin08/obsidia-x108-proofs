@@ -1197,7 +1197,7 @@ def build_gate_plan_v1(
         ],
         "TERMINAL_CLI": common_required + [
             "python -m pytest tests/gates/ -q",
-            "forbidden-pattern check: subprocess/os.system/shell=True/Start-Process interdits dans le terminal",
+            "forbidden-pattern check: external process-spawn APIs interdits dans le terminal",
             "smoke: python scripts/obsidia_cli.py plan \"<IN>\"",
             "smoke: python scripts/obsidia_cli.py route \"<IN>\"",
             "smoke: python scripts/obsidia_cli.py tools \"<IN>\"",
@@ -1270,7 +1270,7 @@ def build_gate_plan_v1(
         ],
         "TERMINAL_CLI": [
             "subprocess automatique",
-            "os.system/shell=True",
+            "external process-spawn APIs",
             "git add .",
             "commit/push automatique",
             "mutation kernel/X108",
