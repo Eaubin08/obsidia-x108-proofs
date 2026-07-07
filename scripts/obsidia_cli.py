@@ -4098,6 +4098,381 @@ def format_obsidure_bridge_v1(state: dict, raw: str) -> str:
     return "\n".join(lines)
 
 
+# ─── OBSIDURE PROPOSAL READER V2 ─────────────────────────────────────────────
+# OBSIDURE_PROPOSAL_READER_V2
+# Lecteur readonly des proposals. Jamais d'exécution. COMMANDS_ONLY.
+# decision_authority=KX108_ONLY, auto_execution=False.
+
+_PROPOSAL_READER_VERSION = "OBSIDURE_PROPOSAL_READER_V2"
+_PROPOSAL_READER_FORBIDDEN = ["apply", "commit", "push", "deploy"]
+
+_SAFE_ID_RE = re.compile(r'^[A-Za-z0-9_.\-]{1,128}$')
+_UNSAFE_ID_CHARS = frozenset(('..',  '/', '\\', ':', '*', '?'))
+
+
+def _obsidure_proposals_root_v2() -> "Path":
+    return REPO_ROOT / "_PATCH_PROPOSALS"
+
+
+def _safe_obsidure_proposal_id_v2(raw: str) -> str:
+    """Retourne l'ID nettoyé ou '' si invalide."""
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    for bad in ('..', '/', '\\', ':', '*', '?'):
+        if bad in s:
+            return ""
+    if not _SAFE_ID_RE.match(s):
+        return ""
+    return s
+
+
+def list_obsidure_proposals_v2(limit: int = 20) -> dict:
+    """Inventaire readonly des proposals — lecture seule, jamais d'écriture."""
+    root = _obsidure_proposals_root_v2()
+    base: dict = {
+        "version": _PROPOSAL_READER_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "root": str(root),
+    }
+    if not root.exists():
+        return {**base, "count": 0, "items": [], "status": "NO_PROPOSALS_DIR"}
+
+    try:
+        entries = sorted(
+            root.iterdir(),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+    except Exception as exc:
+        return {**base, "count": 0, "items": [], "status": f"READ_ERROR:{type(exc).__name__}"}
+
+    items = []
+    for entry in entries[:limit]:
+        has_json = (entry / "proposal.json").exists() if entry.is_dir() else entry.suffix == ".json"
+        has_receipt = (entry / "RECEIPT.md").exists() if entry.is_dir() else False
+        try:
+            mtime = entry.stat().st_mtime
+            import datetime
+            modified_at = datetime.datetime.utcfromtimestamp(mtime).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except Exception:
+            modified_at = ""
+        items.append({
+            "proposal_id": entry.name,
+            "path": str(entry.relative_to(REPO_ROOT)),
+            "has_json": has_json,
+            "has_receipt": has_receipt,
+            "modified_at": modified_at,
+        })
+
+    return {**base, "count": len(list(root.iterdir())), "items": items, "status": "OK"}
+
+
+def read_obsidure_proposal_v2(proposal_id: str) -> dict:
+    """Lit une proposal par ID en lecture seule. Jamais d'exécution."""
+    base: dict = {
+        "version": _PROPOSAL_READER_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+    }
+    safe_id = _safe_obsidure_proposal_id_v2(proposal_id)
+    if not safe_id:
+        return {**base, "found": False, "proposal_id": str(proposal_id)[:64],
+                "reason": "INVALID_PROPOSAL_ID"}
+
+    root = _obsidure_proposals_root_v2()
+    if not root.exists():
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "NO_PROPOSALS_DIR"}
+
+    proposal_path = root / safe_id
+    if not proposal_path.exists():
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "NOT_FOUND"}
+
+    # Garantir qu'on reste dans _PATCH_PROPOSALS/
+    try:
+        proposal_path.resolve().relative_to(root.resolve())
+    except ValueError:
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "INVALID_PROPOSAL_ID"}
+
+    json_files: list[str] = []
+    data: dict = {}
+    if proposal_path.is_dir():
+        pj = proposal_path / "proposal.json"
+        if pj.exists():
+            data = _obsidure_safe_json(pj)
+            json_files.append("proposal.json")
+        for f in proposal_path.glob("*.json"):
+            if f.name not in ("proposal.json",):
+                json_files.append(f.name)
+    elif proposal_path.suffix == ".json":
+        data = _obsidure_safe_json(proposal_path)
+        json_files.append(proposal_path.name)
+
+    receipt_path = proposal_path / "RECEIPT.md" if proposal_path.is_dir() else None
+    receipt_preview: list[str] = []
+    if receipt_path and receipt_path.exists():
+        receipt_preview = _obsidure_read_receipt_preview(receipt_path, max_lines=12)
+
+    summary = (
+        data.get("objective") or data.get("goal") or data.get("title")
+        or data.get("summary") or data.get("request") or ""
+    )
+    scope_files = _obsidure_extract_files(data)
+    commands_in_proposal = data.get("commands") or data.get("run_commands") or []
+    if not isinstance(commands_in_proposal, list):
+        commands_in_proposal = []
+    checks_in_proposal = data.get("checks") or data.get("recommended_checks") or []
+    if not isinstance(checks_in_proposal, list):
+        checks_in_proposal = []
+
+    missing: list[str] = []
+    if not summary:
+        missing.append("summary/objective")
+    if not scope_files:
+        missing.append("scope files")
+    if not json_files:
+        missing.append("proposal.json")
+
+    diff_cmds = build_obsidure_proposal_diff_commands_v2({
+        "proposal_id": safe_id,
+        "scope_files": scope_files,
+    })
+
+    return {
+        **base,
+        "found": True,
+        "proposal_id": safe_id,
+        "proposal_path": str(proposal_path.relative_to(REPO_ROOT)),
+        "json_files": json_files,
+        "receipt_path": str((receipt_path).relative_to(REPO_ROOT)) if receipt_path and receipt_path.exists() else None,
+        "summary": str(summary)[:400],
+        "scope_files": scope_files,
+        "recommended_human_checks": list(checks_in_proposal)[:10],
+        "diff_commands": diff_cmds,
+        "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+        "missing": missing,
+        "receipt_preview": receipt_preview,
+    }
+
+
+def build_obsidure_proposal_diff_commands_v2(proposal: dict) -> list[str]:
+    """Produit des commandes humaines COMMANDS_ONLY. Jamais exécutées."""
+    pid = str(proposal.get("proposal_id", "<proposal_id>"))[:64]
+    files = list(proposal.get("scope_files", []))[:10]
+
+    lines = [
+        "COMMANDS_ONLY",
+        "WAITING_FOR_HUMAN",
+        "",
+        f"# Proposal : {pid}",
+        "",
+        "# Vérification syntaxe CLI :",
+        "python -m py_compile scripts/obsidia_cli.py",
+        "",
+        "# Tests gates readonly :",
+        "python -m pytest tests/gates/ -q",
+        "",
+        "# Dry-run Obsidure :",
+        f"python scripts/obsidure_cli.py --objective \"<objectif>\" --dry-run",
+        "",
+        "# Apply uniquement après validation humaine :",
+        f"scripts/apply_proposal.ps1 -ProposalId \"{pid}\" -DryRun",
+        f"# scripts/apply_proposal.ps1 -ProposalId \"{pid}\" -ConfirmApply  # humain uniquement",
+    ]
+    if files:
+        lines += ["", "# Diff fichiers scope (humain) :"]
+        for f in files:
+            safe_f = str(f).replace("\\", "/")
+            lines.append(f"git diff -- {safe_f}")
+            lines.append(f"git diff --cached -- {safe_f}")
+
+    lines += [
+        "",
+        "# Interdits :",
+        "# apply automatique : INTERDIT",
+        "# commit automatique : INTERDIT",
+        "# push automatique : INTERDIT",
+        "# deploy automatique : INTERDIT",
+    ]
+    return lines
+
+
+def build_obsidure_proposal_reader_response_v2(raw: str, registry: dict) -> dict:
+    """Route la commande proposal list/read/diff vers les bonnes fonctions."""
+    parts = raw.strip().split(None, 2)
+    sub = parts[1].lower() if len(parts) > 1 else "list"
+    arg = parts[2].strip() if len(parts) > 2 else ""
+
+    if sub in ("read", "lire", "show", "view"):
+        data = read_obsidure_proposal_v2(arg)
+        text = format_obsidure_proposal_reader_v2(data)
+    elif sub in ("diff", "diffview", "commands"):
+        safe_id = _safe_obsidure_proposal_id_v2(arg)
+        if not safe_id:
+            data = {
+                "version": _PROPOSAL_READER_VERSION,
+                "mode": "READONLY",
+                "decision_authority": "KX108_ONLY",
+                "auto_execution": False,
+                "found": False,
+                "reason": "INVALID_PROPOSAL_ID",
+                "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+            }
+            text = format_obsidure_proposal_reader_v2(data)
+        else:
+            diff_cmds = build_obsidure_proposal_diff_commands_v2({"proposal_id": safe_id})
+            lines = [
+                f"OBSIDURE_PROPOSAL_READER_V2 — diff commands",
+                f"mode=READONLY",
+                f"auto_execution=False",
+                f"decision_authority=KX108_ONLY",
+                "",
+                f"proposal_id: {safe_id}",
+                "",
+            ] + diff_cmds
+            text = "\n".join(lines)
+            data = {
+                "version": _PROPOSAL_READER_VERSION, "mode": "READONLY",
+                "decision_authority": "KX108_ONLY", "auto_execution": False,
+                "found": True, "proposal_id": safe_id,
+                "diff_commands": diff_cmds,
+                "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+            }
+    else:
+        data = list_obsidure_proposals_v2(limit=20)
+        text = format_obsidure_proposal_reader_v2(data)
+
+    return {
+        "panel": "OBSIDURE_PROPOSAL_READER_V2",
+        "raw": raw,
+        "reponse": text,
+        "main_answer": {"direct": text, "summary": "", "next": []},
+        "etat_technique": {
+            "version": _PROPOSAL_READER_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "subprocess": "none",
+            "mutation": "none",
+        },
+        "outils_panel": {
+            "proposal_list": "proposal list",
+            "proposal_read": "proposal read <id>",
+            "proposal_diff": "proposal diff <id>",
+            "apply": "forbidden",
+            "commit": "forbidden",
+            "push": "forbidden",
+        },
+        "mode_reponse": "ANSWER_LOCAL",
+        "detected_layer": "obsidure",
+        "confidence": 0.92,
+        "output": "COMMANDS",
+        "plan_status": "OK",
+        "next_human_action": "proposal list | proposal read <id> | proposal diff <id>",
+        "next_suggestions": ["proposal list", "proposal read <id>"],
+        "limites": ["lecture seule", "jamais apply automatique", "KX108 decide"],
+    }
+
+
+def format_obsidure_proposal_reader_v2(data: dict) -> str:
+    """Format texte readonly pour le terminal."""
+    version = data.get("version", _PROPOSAL_READER_VERSION)
+    mode = data.get("mode", "READONLY")
+    authority = data.get("decision_authority", "KX108_ONLY")
+    auto_exec = data.get("auto_execution", False)
+
+    lines = [
+        f"{version}",
+        f"mode={mode}",
+        f"auto_execution={auto_exec}",
+        f"decision_authority={authority}",
+        "",
+    ]
+
+    # Listing
+    if "items" in data:
+        count = data.get("count", 0)
+        status = data.get("status", "?")
+        lines += [f"status={status}", f"proposals_count={count}", ""]
+        items = data.get("items") or []
+        if items:
+            lines.append("proposals :")
+            for it in items[:20]:
+                pid = it.get("proposal_id", "?")
+                has_json = "JSON" if it.get("has_json") else "-"
+                has_receipt = "RECEIPT" if it.get("has_receipt") else "-"
+                mtime = (it.get("modified_at") or "")[:16]
+                lines.append(f"  {pid:<48} [{has_json}] [{has_receipt}] {mtime}")
+            lines += [
+                "",
+                "Pour lire une proposal :",
+                "  python scripts/obsidia_cli.py proposal read <proposal_id>",
+                "  python scripts/obsidia_cli.py proposal diff <proposal_id>",
+            ]
+        else:
+            lines.append("(aucune proposal trouvée)")
+        lines += ["", "forbidden: apply commit push deploy"]
+        return "\n".join(lines)
+
+    # Erreur / not found
+    if not data.get("found", True):
+        reason = data.get("reason", "NOT_FOUND")
+        pid = data.get("proposal_id", "?")
+        lines += [
+            f"found=False",
+            f"reason={reason}",
+            f"proposal_id={pid}",
+            "",
+            "forbidden: apply commit push deploy",
+        ]
+        return "\n".join(lines)
+
+    # Read d'une proposal
+    lines += [
+        f"found=True",
+        f"proposal_id={data.get('proposal_id', '?')}",
+        f"proposal_path={data.get('proposal_path', '?')}",
+        "",
+    ]
+    summary = data.get("summary", "")
+    if summary:
+        lines += [f"summary: {summary[:200]}", ""]
+    scope = data.get("scope_files") or []
+    if scope:
+        lines.append("scope_files:")
+        for f in scope[:10]:
+            lines.append(f"  {f}")
+        lines.append("")
+    receipt = data.get("receipt_preview") or []
+    if receipt:
+        lines.append("receipt_preview:")
+        for ln in receipt[:8]:
+            lines.append(f"  {ln}")
+        lines.append("")
+    checks = data.get("recommended_human_checks") or []
+    if checks:
+        lines.append("recommended_human_checks:")
+        for c in checks[:5]:
+            lines.append(f"  - {c}")
+        lines.append("")
+    missing = data.get("missing") or []
+    if missing:
+        lines += [f"missing: {', '.join(missing)}", ""]
+    lines += [
+        "diff_commands: python scripts/obsidia_cli.py proposal diff <id>",
+        "",
+        "forbidden: apply commit push deploy",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN OBSIDURE PROPOSAL READER V2 ─────────────────────────────────────────
+
+
 def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
     """Construit la reponse Obsidure Bridge V1 en surfaces separees."""
     state = collect_obsidure_bridge_state_v1(limit=5)
@@ -4144,6 +4519,10 @@ def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
             "commit": "forbidden",
             "push": "forbidden",
             "subprocess": "none",
+            "OBSIDURE_PROPOSAL_READER_V2": "available",
+            "proposal_list_cmd": "python scripts/obsidia_cli.py proposal list",
+            "proposal_read_cmd": "python scripts/obsidia_cli.py proposal read <id>",
+            "proposal_diff_cmd": "python scripts/obsidia_cli.py proposal diff <id>",
         },
         "proof_panel": {
             "source": "_PATCH_PROPOSALS",
@@ -6586,6 +6965,13 @@ def main(argv: list[str]) -> int:
     if argv and argv[0].lower() in ("operator", "task", "task-card", "obsidure-task"):
         raw_operator = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(format_obsidure_operator_task_card_v1(raw_operator))
+        return 0
+    if argv and argv[0].lower() in ("proposal", "proposals", "obsidure-proposal", "obsidure-proposals"):
+        sub = argv[1].lower() if len(argv) > 1 else "list"
+        arg = " ".join(argv[2:]).strip().strip('"').strip("'") if len(argv) > 2 else ""
+        raw_proposal = f"proposal {sub} {arg}".strip()
+        resp = build_obsidure_proposal_reader_response_v2(raw_proposal, registry)
+        print(resp["reponse"])
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
