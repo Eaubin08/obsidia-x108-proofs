@@ -5491,8 +5491,8 @@ def attach_dynamic_panels_v1(response: dict) -> dict:
     response["dynamic_panels"] = {
         "version": _DYNAMIC_PANELS_VERSION,
         "selected": tab,
-        "available": ["PLAN", "STATUS", "TOOLS", "PROOF"],
-        "manual_override": ["/plan", "/status", "/tools", "/proof"],
+        "available": ["PLAN", "STATUS", "TOOLS", "PROOF", "GATES"],
+        "manual_override": ["/plan", "/status", "/tools", "/proof", "/gates"],
         "mutation": "none",
         "subprocess": "none",
         "decision_authority": "KX108_ONLY",
@@ -5571,13 +5571,15 @@ def extract_main_answer_panel(response: dict, max_lines: int = 60) -> list[str]:
 
 def extract_plan_panel(response: dict, active_tab: str = "PLAN") -> list[str]:
     """Extract right panel content from response dict. Pure.
-    active_tab: PLAN (défaut) | STATUS | TOOLS | PROOF"""
+    active_tab: PLAN (défaut) | STATUS | TOOLS | PROOF | GATES"""
     if active_tab == "STATUS":
         return extract_status_panel(response)
     if active_tab == "TOOLS":
         return extract_tools_panel(response)
     if active_tab == "PROOF":
         return extract_proof_panel(response)
+    if active_tab == "GATES":
+        return extract_gates_panel(response)
 
     # Onglet PLAN (défaut)
     layer = response.get("detected_layer", "?")
@@ -5623,7 +5625,7 @@ def extract_plan_panel(response: dict, active_tab: str = "PLAN") -> list[str]:
 
 
 _SUITE_WORDS = frozenset({"suite", "continue", "suivant", "next"})
-_TAB_COMMANDS = {"/plan": "PLAN", "/status": "STATUS", "/tools": "TOOLS", "/proof": "PROOF"}
+_TAB_COMMANDS = {"/plan": "PLAN", "/status": "STATUS", "/tools": "TOOLS", "/proof": "PROOF", "/gates": "GATES"}
 
 
 def interactive_tui_shell(registry: dict) -> int:
@@ -5659,7 +5661,7 @@ def interactive_tui_shell(registry: dict) -> int:
         "X108 = autorite", "readonly",
         "no_auto_act", "no_subprocess",
         "", "=== ONGLETS ===", "",
-        "/plan /status", "/tools /proof",
+        "/plan /status", "/tools /proof", "/gates",
     ]
 
     main_lines: list[str] = list(_welcome_main)
@@ -5693,7 +5695,7 @@ def interactive_tui_shell(registry: dict) -> int:
         )
         composer_hint = (
             " /help  /plain  /runtime  "
-            "/plan  /status  /tools  /proof  /clear  exit"
+            "/plan  /status  /tools  /proof  /gates  /clear  exit"
         )
 
         screen = render_two_pane_layout(
@@ -5728,13 +5730,14 @@ def interactive_tui_shell(registry: dict) -> int:
                 trgs = ", ".join(str(t) for t in (spec.get("triggers") or [])[:3])
                 help_lines.append(f"  {ln}: {trgs}...")
             help_lines += [
-                "", "Commandes :", "  /help  /plan  /status  /tools  /proof",
+                "", "Commandes :", "  /help  /plan  /status  /tools  /proof  /gates",
                 "  /plain  /runtime  /clear  exit",
                 "", "Onglets droite :",
                 "  /plan    — routage et plan actif",
                 "  /status  — etat technique (services, couche)",
                 "  /tools   — outils autorises/interdits",
                 "  /proof   — etat preuves/corpus",
+                "  /gates   — gate planner advisory (NONE_GATE_PLANNER_IS_ADVISORY_ONLY)",
             ]
             main_lines = help_lines
             plan_lines = ["=== PLAN ===", "", "mode: GUIDE", "out: HELP",
@@ -5784,16 +5787,18 @@ def interactive_tui_shell(registry: dict) -> int:
                     "  /status  etat technique",
                     "  /tools   outils autorises/interdits",
                     "  /proof   etat preuves/corpus",
+                    "  /gates   gate planner advisory",
                 ]
             else:
                 main_lines = [
                     "J'ai besoin de preciser quelle suite :",
-                    "plan, status, tools ou proof.",
+                    "plan, status, tools, proof ou gates.",
                     "",
                     "-> /plan",
                     "-> /status",
                     "-> /tools",
                     "-> /proof",
+                    "-> /gates",
                 ]
             continue
 

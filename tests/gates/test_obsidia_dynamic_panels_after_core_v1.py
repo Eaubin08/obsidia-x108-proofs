@@ -68,7 +68,7 @@ def test_attach_dynamic_panels_metadata():
     })
     assert response["dynamic_right_tab"] == "STATUS"
     assert response["dynamic_panels"]["version"] == "DYNAMIC_PANELS_AFTER_CORE_V1"
-    assert response["dynamic_panels"]["available"] == ["PLAN", "STATUS", "TOOLS", "PROOF"]
+    assert response["dynamic_panels"]["available"] == ["PLAN", "STATUS", "TOOLS", "PROOF", "GATES"]
     assert response["dynamic_panels"]["subprocess"] == "none"
     assert response["dynamic_panels"]["decision_authority"] == "KX108_ONLY"
     assert response["etat_technique"]["dynamic_right_tab"] == "STATUS"
