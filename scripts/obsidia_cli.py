@@ -2829,6 +2829,298 @@ def build_unified_ir_response(raw: str, registry: dict) -> dict:
 # ─── FIN OS LANGAGE UNI / UNIFIED INPUT IR V1 ────────────────────────────────
 
 
+# ─── TERMINAL REVERSE ROUTER V1 ──────────────────────────────────────────────
+# OBSIDIA_TERMINAL_REVERSE_ROUTER_V1
+# Reprise locale bornee. Aucun subprocess. Aucune mutation. Aucune autorite.
+
+_REVERSE_ROUTER_WORDS = frozenset({
+    "suite", "continue", "continuer", "reprendre", "reprends",
+    "next", "suivant", "suivante",
+})
+
+_REVERSE_ROUTER_PHRASES = (
+    "reprendre le plan",
+    "reprends le plan",
+    "on continue",
+    "on reprend",
+    "la suite",
+    "suite du plan",
+    "continue le plan",
+)
+
+_REVERSE_DEFAULT_NEXT = (
+    "status",
+    "brody explique le contexte",
+    "obsidure status",
+    "traduit ma demande en langage uni",
+)
+
+
+def detect_reverse_router_query(raw: str, normalized: str | None = None) -> bool:
+    """Detecte une demande de reprise locale bornee.
+
+    Important:
+    - "suite" seul = reverse router
+    - "c'est quoi la suite" = question/plan normal
+    - "prepare la suite sans modifier" = plan normal
+
+    Le reverse router doit reprendre un contexte, pas voler les intents NL.
+    """
+    n = normalized if normalized is not None else normalize(raw)
+    if not n:
+        return False
+
+    compact = n.strip()
+    words = set(re.findall(r"[a-z0-9]+", compact))
+
+    exact_commands = {
+        "suite",
+        "continue",
+        "continuer",
+        "reprendre",
+        "reprends",
+        "next",
+        "suivant",
+        "suivante",
+        "on continue",
+        "on reprend",
+        "reprendre le plan",
+        "reprends le plan",
+        "continue le plan",
+        "suite du plan",
+    }
+    if compact in exact_commands:
+        return True
+
+    # Formes imperatives courtes uniquement.
+    # Evite de capturer les questions naturelles:
+    # "c'est quoi la suite", "prepare la suite sans modifier", etc.
+    if len(words) <= 3 and words & _REVERSE_ROUTER_WORDS:
+        blocked_question_words = {"quoi", "que", "quelle", "comment", "pourquoi", "prepare", "preparer"}
+        if not (words & blocked_question_words):
+            return True
+
+    return False
+
+
+def _reverse_receipt_path(registry: dict | None = None) -> Path:
+    registry = registry or {}
+    rel = registry.get("receipt_path") or ".local_obsidia/receipts/obsidia_terminal_receipts.jsonl"
+    return REPO_ROOT / rel
+
+
+def _reverse_pick_value(obj, keys: tuple[str, ...], depth: int = 0):
+    """Cherche une valeur dans un dict JSON sans supposer la forme exacte du receipt."""
+    if depth > 4:
+        return None
+    if isinstance(obj, dict):
+        for key in keys:
+            value = obj.get(key)
+            if value not in (None, "", [], {}):
+                return value
+        for value in obj.values():
+            found = _reverse_pick_value(value, keys, depth + 1)
+            if found not in (None, "", [], {}):
+                return found
+    elif isinstance(obj, list):
+        for value in obj:
+            found = _reverse_pick_value(value, keys, depth + 1)
+            if found not in (None, "", [], {}):
+                return found
+    return None
+
+
+def _reverse_last_receipt(registry: dict | None = None) -> dict | None:
+    """Lit le dernier receipt local exploitable. Lecture seule."""
+    path = _reverse_receipt_path(registry)
+    if not path.exists():
+        return None
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()[-80:]
+    except Exception:
+        return None
+    for line in reversed(lines):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except Exception:
+            continue
+        if record.get("action_locale") == "REVERSE_ROUTER_LOCAL":
+            continue
+        return record
+    return None
+
+
+def _reverse_next_for_layer(layer: str | None) -> list[str]:
+    layer = (layer or "unknown").lower()
+    if "obsidure" in layer:
+        return ["obsidure status", "obsidure latest", "obsidure gates", "traduit ma demande en langage uni"]
+    if "brody" in layer:
+        return ["brody explique le contexte", "status brody", "traduit ma demande en langage uni"]
+    if "lean" in layer or "obsidienne" in layer:
+        return ["status lean", "brody explique le contexte", "traduit ma demande en langage uni"]
+    if "terminal" in layer or "ir" in layer:
+        return ["traduit ma demande en langage uni", "status", "brody explique le contexte"]
+    if "live" in layer or "kernel" in layer:
+        return ["status", "kernel status", "brody explique le contexte"]
+    return list(_REVERSE_DEFAULT_NEXT)
+
+
+def build_reverse_context_v1(raw: str, registry: dict | None = None) -> dict:
+    """Construit un contexte reverse local, borne et non souverain."""
+    registry = registry or {}
+    normalized = normalize(raw)
+    record = _reverse_last_receipt(registry)
+
+    if not record:
+        return {
+            "reverse_status": "NO_CONTEXT",
+            "raw": raw,
+            "normalized": normalized,
+            "previous_layer": None,
+            "previous_mode": None,
+            "previous_output": None,
+            "source": "local_receipt:none",
+            "confidence": 0.20,
+            "next": list(_REVERSE_DEFAULT_NEXT),
+            "limits": [
+                "aucun contexte precedent exploitable",
+                "reverse local seulement",
+                "ne decide pas",
+            ],
+        }
+
+    previous_layer = _reverse_pick_value(
+        record,
+        ("detected_layer", "target_layer", "layer", "previous_layer"),
+    )
+    previous_mode = _reverse_pick_value(
+        record,
+        ("mode_reponse", "mode", "action_type", "intent_type"),
+    )
+    previous_output = _reverse_pick_value(
+        record,
+        ("output", "plan_status", "status"),
+    )
+
+    if previous_layer:
+        reverse_status = "CONTEXT_FOUND"
+        confidence = 0.65
+    else:
+        reverse_status = "CONTEXT_PARTIAL"
+        confidence = 0.40
+
+    return {
+        "reverse_status": reverse_status,
+        "raw": raw,
+        "normalized": normalized,
+        "previous_layer": previous_layer or "unknown",
+        "previous_mode": previous_mode or "unknown",
+        "previous_output": previous_output or "unknown",
+        "source": "local_receipt:last",
+        "confidence": confidence,
+        "next": _reverse_next_for_layer(str(previous_layer or "unknown")),
+        "limits": [
+            "contexte local non souverain",
+            "aucune execution",
+            "aucune mutation",
+            "X108 reste autorite finale",
+        ],
+    }
+
+
+def format_reverse_router_v1(context: dict) -> str:
+    """Format humain du Reverse Router V1."""
+    lines = ["Reverse Router V1", ""]
+
+    if context.get("reverse_status") == "NO_CONTEXT":
+        lines.append("Aucun contexte precedent exploitable.")
+    elif context.get("reverse_status") == "CONTEXT_PARTIAL":
+        lines.append("Contexte precedent partiel detecte.")
+    else:
+        lines.append("Contexte precedent detecte.")
+
+    previous_layer = context.get("previous_layer")
+    previous_mode = context.get("previous_mode")
+    previous_output = context.get("previous_output")
+
+    if previous_layer:
+        lines.append(f"previous_layer : {previous_layer}")
+    if previous_mode:
+        lines.append(f"previous_mode  : {previous_mode}")
+    if previous_output:
+        lines.append(f"previous_output: {previous_output}")
+
+    lines += ["", "Suites possibles :"]
+    for item in context.get("next", []):
+        lines.append(f"- {item}")
+
+    lines += [
+        "",
+        "Lecture seule. Aucune mutation. Aucune decision souveraine.",
+    ]
+    return "\n".join(lines)
+
+
+def build_reverse_router_response(raw: str, registry: dict) -> dict:
+    """Construit la reponse Reverse Router V1 en surfaces separees."""
+    context = build_reverse_context_v1(raw, registry)
+    human = format_reverse_router_v1(context)
+
+    return {
+        "panel": "OBSIDIA_RESPONSE",
+        "raw": raw,
+        "reponse": human,
+        "main_answer": {
+            "direct": human,
+            "summary": "",
+            "next": context.get("next", []),
+        },
+        "etat_technique": {
+            "reverse_status": context.get("reverse_status"),
+            "previous_layer": context.get("previous_layer"),
+            "previous_mode": context.get("previous_mode"),
+            "previous_output": context.get("previous_output"),
+            "confidence": context.get("confidence"),
+            "source": context.get("source"),
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "outils_panel": {
+            "reverse_router": "used",
+            "mutation": "none",
+            "subprocess": "none",
+            "network": "none",
+        },
+        "proof_panel": {
+            "source": "local",
+            "authority": "NONE",
+            "decision_authority": "KX108_ONLY",
+            "mutation": "none",
+        },
+        "next_suggestions": context.get("next", []),
+        "mode_reponse": "ANSWER_LOCAL",
+        "detected_layer": "reverse",
+        "confidence": context.get("confidence", 0.20),
+        "organes_mobilises": ["Reverse Router", "Terminal", "Local Receipt"],
+        "organes_mobilisables": ["Brody", "Obsidure", "OS Langage Uni", "Status"],
+        "outils_utilises": ["build_reverse_context_v1"],
+        "corpus_utilise": [context.get("source", "local")],
+        "limites": context.get("limits", []),
+        "action_locale": "REVERSE_ROUTER_LOCAL",
+        "local_read_meta": {"reverse_context": context},
+        "next_human_action": "choisir une suite proposee",
+        "output": assert_output_allowed("GUIDE"),
+        "guidance": [],
+        "guidance_authority": "NONE",
+        "plan_status": "OK",
+    }
+
+
+# ─── FIN TERMINAL REVERSE ROUTER V1 ──────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -3361,6 +3653,10 @@ def answer_router(raw: str, registry: dict) -> dict:
     # Branche OS Langage Uni — demande explicite de traduction IR.
     if detect_unified_ir_query(raw, normalize(raw)):
         return build_unified_ir_response(raw, registry)
+
+    # Branche Reverse Router — reprise locale bornee.
+    if detect_reverse_router_query(raw, normalize(raw)):
+        return build_reverse_router_response(raw, registry)
 
     plan = build_active_plan(raw, registry)
     normalized = plan["normalized"]
