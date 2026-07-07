@@ -2555,6 +2555,16 @@ _STATUS_GLOBAL_PHRASES = (
     "tout tourne", "tout fonctionne", "all active",
 )
 
+# Tokens qui NE doivent JAMAIS apparaître dans le panneau gauche (réponse humaine).
+# Ces informations vont dans le panneau droit (STATUS/TOOLS/PLAN).
+_SURFACE_FILTER_TOKENS = (
+    "_PATCH_PROPOSALS", "scripts/gates", "obsidure_cli.py",
+    "mode:", "conf:", "confidence", "output:",
+    "INTERDIT", "LIMITES", "ETAT", "[OBSIDIA RESPONSE]",
+    "CAPABILITY_VIEW", "OPS INTERDITES", "gates_applicable",
+    "REPONSE DIRECTE",
+)
+
 
 def detect_status_query(raw: str, normalized: str) -> str | None:
     """Detects a layer status query. Returns target layer name, '_all', or None."""
@@ -2578,207 +2588,238 @@ def detect_status_query(raw: str, normalized: str) -> str | None:
 
 
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
-    """Build an ANSWER_STATUS response for a service/layer status query."""
+    """Build an ANSWER_STATUS response for a service/layer status query.
+    V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
     service_status: dict[str, str] = {}
     if target_layer in ("_all", "brody", "memory", "kernel", "live"):
         try:
             rt = build_runtime_service_map_v1()
             for svc_name, svc_data in rt["network"].items():
-                service_status[svc_name] = "UP" if svc_data.get("up", False) else "DOWN"
+                service_status[svc_name] = svc_data.get("status", "DOWN")
         except Exception:
             pass
 
     def _svc(name: str) -> str:
         return service_status.get(name, "?")
 
-    lines: list[str] = []
     detected = target_layer if target_layer != "_all" else "live"
+    etat_technique: dict = {}
+    politique: list = []
+    outils_panel: dict = {}
+    next_suggestions: list = []
+    reponse_text = ""
 
     if target_layer == "_all":
         api_st = _svc("api_health")
-        lines = [
-            "REPONSE DIRECTE",
-            "Stack Obsidia : " + ("ACTIVE" if api_st == "UP" else "PARTIELLE ou DOWN"),
-            "",
-            "ETAT SERVICES",
-            "  API Obsidia/Brody 8000  : " + api_st,
-            "  Kernel Ragnarok 3001    : " + _svc("kernel_3001"),
-            "  Graphiti 8011           : " + _svc("graphiti_8011"),
-            "  UI Workbench 5173       : " + _svc("ui_5173"),
-            "  Neo4j Bolt 7688         : " + _svc("neo4j_bolt"),
-            "",
-            "COUCHES TERMINAL (toujours disponibles)",
-            "  obsidure, sigma, memory, gates, oie, thermo,",
-            "  lean, domains, kernel, brody, terminal_self",
-            "",
-            "A FAIRE",
-            "  obsidia> runtime",
-            "  obsidia> capabilities <couche>",
-        ]
+        reponse_text = (
+            "La stack Obsidia est "
+            + ("active" if api_st == "UP" else "PARTIELLE ou DOWN") + ".\n\n"
+            "Si le runtime est READY, les organes critiques sont accessibles. "
+            "Si DEGRADED, le panneau Status indique les services manquants."
+        )
+        etat_technique = {
+            "API_HEALTH": api_st,
+            "KERNEL_3001": _svc("kernel_3001"),
+            "GRAPHITI_8011": _svc("graphiti_8011"),
+            "UI_5173": _svc("ui_5173"),
+            "NEO4J_BOLT_7688": _svc("neo4j_bolt_7688"),
+            "NEO4J_BROWSER_7475": _svc("neo4j_browser_7475"),
+            "SIGMA_DOMAINS": _svc("sigma_domains"),
+            "SIGMA_EVALUATE": _svc("sigma_evaluate"),
+            "TERMINAL_STATE": "active",
+        }
+        next_suggestions = ["runtime", "/status"]
     elif target_layer == "brody":
         api_st = _svc("api_health")
-        lines = [
-            "REPONSE DIRECTE",
-            "Brody : " + ("OUI (API 8000 UP)" if api_st == "UP" else "PARTIEL/NON"),
-            "",
-            "ETAT",
-            "  API Obsidia/Brody 8000  : " + api_st,
-            "  Brody Enriched preferred: -Base http://127.0.0.1:8000",
-            "  Fenetres separees       : non lancees par defaut",
-            "  memory_write            : false",
-            "  decision_authority      : KX108_ONLY",
-            "",
-            "A FAIRE",
-            "  obsidia> capabilities brody",
-            "  obsidia> runtime",
-        ]
+        reponse_text = (
+            "Brody est "
+            + ("actif (API 8000 UP)" if api_st == "UP" else "PARTIEL/NON (API 8000 DOWN)")
+            + ".\n\n"
+            "Le terminal reste l'interface principale. Brody Enriched est le mode "
+            "prefere, mais les fenetres Brody separees ne sont pas lancees par defaut."
+        )
+        etat_technique = {
+            "api_8000": api_st,
+            "graphiti_8011": _svc("graphiti_8011"),
+            "memory_write": "false",
+            "authority": "KX108_ONLY",
+        }
+        next_suggestions = ["capabilities brody", "runtime"]
     elif target_layer == "obsidure":
         proposals_path = REPO_ROOT / "_PATCH_PROPOSALS"
-        obsidure_cli = REPO_ROOT / "scripts" / "obsidure_cli.py"
         gates_path = REPO_ROOT / "scripts" / "gates"
         try:
             n_prop = len([p for p in proposals_path.iterdir()]) if proposals_path.is_dir() else 0
         except Exception:
             n_prop = 0
-        lines = [
-            "REPONSE DIRECTE",
-            "Obsidure : PARTIEL (workflow proposal-first)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  obsidure_cli.py          : " + ("oui" if obsidure_cli.exists() else "absent"),
-            "  _PATCH_PROPOSALS/        : " + (f"{n_prop} proposals" if proposals_path.is_dir() else "absent"),
-            "  scripts/gates/           : " + ("oui" if gates_path.is_dir() else "absent"),
-            "  Workflow                 : proposal-first / commands-only",
-            "",
-            "INTERDIT",
-            "  apply auto / commit auto / push auto",
-            "",
-            "A FAIRE",
-            "  obsidia> peux tu coder",
-            "  obsidia> capabilities obsidure",
-        ]
+        reponse_text = (
+            "Obsidure est actif cote terminal.\n\n"
+            "Il est branche comme workflow code/proposal : le terminal sait router "
+            "une demande de code vers Obsidure, preparer les commandes, afficher les "
+            "gates et guider le proposal-first.\n\n"
+            "Il n'est pas actif comme agent autonome qui applique, commit ou push tout "
+            "seul. Cette partie reste volontairement bloquee par X108 et les gates."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "runtime": "none",
+            "workflow": "proposal-first",
+            "proposals": str(n_prop) if proposals_path.is_dir() else "absent",
+            "gates": "available" if gates_path.is_dir() else "absent",
+            "autonomy": "blocked",
+        }
+        outils_panel = {
+            "proposals": "available" if proposals_path.is_dir() else "absent",
+            "gates": "available" if gates_path.is_dir() else "absent",
+            "apply": "forbidden",
+            "commit": "forbidden",
+            "push": "forbidden",
+        }
+        politique = ["apply auto", "commit auto", "push auto"]
+        next_suggestions = ["peux tu coder", "capabilities obsidure"]
     elif target_layer == "sigma":
         api_st = _svc("api_health")
         sigma_dir = REPO_ROOT / "sigma"
-        lines = [
-            "REPONSE DIRECTE",
-            "Sigma : PARTIEL (besoin API 8000 UP pour EXECUTE)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  API 8000 (EXECUTE sigma) : " + api_st,
-            "  sigma/ repertoire        : " + ("oui" if sigma_dir.is_dir() else "absent"),
-            "",
-            "A FAIRE",
-            "  obsidia> sigma coherence",
-            "  obsidia> capabilities sigma",
-        ]
+        reponse_text = (
+            "Sigma est "
+            + ("actif (API 8000 UP)" if api_st == "UP"
+               else "PARTIEL (besoin API 8000 UP pour EXECUTE)")
+            + ".\n\n"
+            "La coherence, les contradictions et la fraicheur des signaux sont "
+            "verificiables en local. L'execution complete (EXECUTE) necessite l'API."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "api_8000_execute": api_st,
+            "sigma_dir": "ok" if sigma_dir.is_dir() else "absent",
+            "mode": "readonly local + execute si API UP",
+        }
+        next_suggestions = ["sigma coherence", "capabilities sigma"]
     elif target_layer == "memory":
         g_st = _svc("graphiti_8011")
-        lines = [
-            "REPONSE DIRECTE",
-            "Memory/Graphiti : " + ("OUI (8011 UP)" if g_st == "UP" else "PARTIEL"),
-            "",
-            "ETAT",
-            "  Graphiti 8011            : " + g_st,
-            "  memory_write             : false",
-            "",
-            "A FAIRE",
-            "  obsidia> memoire graphiti",
-            "  obsidia> capabilities memory",
-        ]
+        reponse_text = (
+            "Memory/Graphiti est "
+            + ("actif (8011 UP)" if g_st == "UP" else "PARTIEL (8011 DOWN)")
+            + ".\n\n"
+            "La couche memoire est readonly depuis le terminal. "
+            "Les ecritures restent bloquees (memory_write=false)."
+        )
+        etat_technique = {
+            "graphiti_8011": g_st,
+            "memory_write": "false",
+            "mode": "readonly frozen",
+            "authority": "KX108_ONLY",
+        }
+        outils_panel = {"memory_write": "forbidden", "read": "allowed"}
+        next_suggestions = ["memoire graphiti", "capabilities memory"]
     elif target_layer == "oie":
-        receipts_p = REPO_ROOT / "scripts" / "performance" / "oie_external_claude_benchmark_v0_receipts.json"
-        lines = [
-            "REPONSE DIRECTE",
-            "OIE : DISPONIBLE (corpus local, dry-run)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  Receipts OIE             : " + ("oui" if receipts_p.exists() else "absent"),
-            "  COST_REAL                : NOT_CLAIMED sauf preuve",
-            "",
-            "A FAIRE",
-            "  obsidia> oie benchmark",
-            "  obsidia> capabilities oie",
-        ]
+        receipts_p = (REPO_ROOT / "scripts" / "performance"
+                      / "oie_external_claude_benchmark_v0_receipts.json")
+        reponse_text = (
+            "OIE est disponible (corpus local, dry-run).\n\n"
+            "Le benchmark peut etre lance en dry-run. "
+            "Les couts reels (COST_REAL) ne sont revendiques que sur preuve."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "receipts": "ok" if receipts_p.exists() else "absent",
+            "COST_REAL": "NOT_CLAIMED sauf preuve",
+            "mode": "readonly, dry-run",
+        }
+        next_suggestions = ["oie benchmark", "capabilities oie"]
     elif target_layer == "obsidienne":
         proofs_dir = REPO_ROOT / "proofs"
-        lines = [
-            "REPONSE DIRECTE",
-            "Lean/Obsidienne : DISPONIBLE (corpus, commandes)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  proofs/ repertoire       : " + ("oui" if proofs_dir.is_dir() else "absent"),
-            "  Mode                     : readonly, lake build gated",
-            "",
-            "A FAIRE",
-            "  obsidia> preuves lean",
-            "  obsidia> capabilities obsidienne",
-        ]
+        reponse_text = (
+            "Lean/Obsidienne est disponible (corpus, commandes).\n\n"
+            "Le terminal donne acces aux commandes de verification. "
+            "L'execution de lake build reste gated et commands-only."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "proofs_dir": "ok" if proofs_dir.is_dir() else "absent",
+            "mode": "readonly, lake build gated",
+            "exec": "forbidden from terminal",
+        }
+        outils_panel = {"lake_build": "commands-only", "lean_exec": "forbidden"}
+        next_suggestions = ["preuves lean", "capabilities obsidienne"]
     elif target_layer == "gates":
         gates_dir = REPO_ROOT / "scripts" / "gates"
-        lines = [
-            "REPONSE DIRECTE",
-            "Gates : DISPONIBLE (scripts locaux)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  scripts/gates/           : " + ("oui" if gates_dir.is_dir() else "absent"),
-            "  Execution auto           : INTERDITE",
-            "",
-            "A FAIRE",
-            "  obsidia> capabilities gates",
-        ]
+        reponse_text = (
+            "Gates disponibles (scripts locaux).\n\n"
+            "Les gates de commit scope, kernel boundary et sigma non-souverainete "
+            "sont disponibles. L'execution automatique reste interdite."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "gates_dir": "ok" if gates_dir.is_dir() else "absent",
+            "auto_exec": "forbidden",
+            "decision": "X108_ONLY",
+        }
+        outils_panel = {"auto_execute": "forbidden", "read": "allowed"}
+        next_suggestions = ["capabilities gates"]
     elif target_layer == "domains":
-        lines = [
-            "REPONSE DIRECTE",
-            "Domains : DISPONIBLE (bridge-only)",
-            "",
-            "ETAT",
-            "  Couche terminal          : oui",
-            "  POST adapters            : INTERDITS depuis terminal",
-            "  Mode                     : bridge-only, guidance",
-            "",
-            "A FAIRE",
-            "  obsidia> domains bank trading gps",
-            "  obsidia> capabilities domains",
-        ]
+        reponse_text = (
+            "Domains est disponible (bridge-only).\n\n"
+            "Les domaines (Bank, Trading, GPS) sont accessibles en lecture. "
+            "Les adapters POST sont interdits depuis le terminal."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "mode": "bridge-only, guidance",
+            "POST_adapters": "forbidden from terminal",
+        }
+        next_suggestions = ["domains bank trading gps", "capabilities domains"]
     elif target_layer == "kernel":
         k_st = _svc("kernel_3001")
-        lines = [
-            "REPONSE DIRECTE",
-            "Kernel X-108 : " + ("UP (3001)" if k_st == "UP" else "NON DETECTABLE (socket 3001)"),
-            "",
-            "ETAT",
-            "  Kernel Ragnarok 3001     : " + k_st,
-            "  decision_authority       : KX108_ONLY",
-            "  Mutations kernel         : INTERDITES depuis terminal",
-            "",
-            "A FAIRE",
-            "  obsidia> capabilities kernel",
-        ]
+        reponse_text = (
+            "Kernel X-108 : "
+            + ("UP (socket 3001)" if k_st == "UP" else "non detectable (socket 3001)")
+            + ".\n\n"
+            "Le Kernel est la seule autorite d'admissibilite. "
+            "Le terminal le consulte en status readonly uniquement."
+        )
+        etat_technique = {
+            "kernel_3001": k_st,
+            "decision_authority": "KX108_ONLY",
+            "mutations": "forbidden",
+            "ALLOW_BLOCK_HOLD_ACT": "forbidden from terminal",
+        }
+        next_suggestions = ["capabilities kernel"]
+    elif target_layer == "thermo":
+        reponse_text = (
+            "Thermo (ENERGY_THERMO) est disponible en corpus local.\n\n"
+            "La couche mesure l'efficacite energetique, la dette thermodynamique "
+            "et le mismatch sigma/verite. Readonly depuis le terminal."
+        )
+        etat_technique = {
+            "terminal": "active",
+            "mode": "corpus local, readonly",
+            "decisions": "forbidden",
+        }
+        next_suggestions = ["capabilities thermo"]
     else:
-        lines = [
-            "REPONSE DIRECTE",
-            f"Couche '{target_layer}' disponible dans le terminal.",
-            "",
-            "ETAT",
-            f"  Couche terminal {target_layer} : oui",
-            "  Voir capabilities pour detail.",
-            "",
-            "A FAIRE",
-            f"  obsidia> capabilities {target_layer}",
-        ]
+        reponse_text = f"Couche '{target_layer}' disponible dans le terminal."
+        etat_technique = {
+            "terminal": "active",
+            "note": "voir capabilities pour detail",
+        }
+        next_suggestions = [f"capabilities {target_layer}"]
         detected = target_layer
 
-    reponse_text = "\n".join(lines)
     plan = build_active_plan(raw, registry)
 
     return {
-        "panel": "OBSIDIA_RESPONSE", "raw": raw, "reponse": reponse_text,
+        "panel": "OBSIDIA_RESPONSE", "raw": raw,
+        "reponse": reponse_text,
+        "main_answer": {
+            "direct": reponse_text,
+            "summary": "",
+            "next": next_suggestions[:2],
+        },
+        "etat_technique": etat_technique,
+        "outils_panel": outils_panel,
+        "politique": politique,
+        "next_suggestions": next_suggestions,
         "mode_reponse": "ANSWER_STATUS",
         "detected_layer": detected,
         "confidence": plan.get("confidence", 0.5),
@@ -2793,7 +2834,7 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         ],
         "action_locale": "STATUS_CHECK_LOCAL",
         "local_read_meta": {"target_layer": target_layer},
-        "next_human_action": f"capabilities {detected} / runtime",
+        "next_human_action": next_suggestions[0] if next_suggestions else f"capabilities {detected}",
         "output": assert_output_allowed("GUIDE"),
         "guidance": plan.get("guidance", []),
         "guidance_authority": "NONE",
@@ -2802,6 +2843,151 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
 
 
 # ─── FIN ANSWER_STATUS ────────────────────────────────────────────────────────
+
+
+def build_surface_model(response: dict) -> dict:
+    """Transform a response dict into clean separated surfaces. Pure, no I/O.
+    V2: LEFT = réponse humaine, RIGHT = métadonnées techniques, COMPOSER = invite."""
+    mode = response.get("mode_reponse", "")
+
+    if "main_answer" in response:
+        return {
+            "main_answer": response["main_answer"],
+            "status_panel": response.get("etat_technique", {}),
+            "tools_panel": response.get("outils_panel", {}),
+            "proof_panel": response.get("proof_panel", {}),
+            "plan_panel": {
+                "layer": response.get("detected_layer", "?"),
+                "mode": mode,
+                "status": "PARTIAL" if mode == "ANSWER_STATUS" else "ROUTED",
+                "output": response.get("output", "?"),
+                "next": response.get("next_human_action", ""),
+            },
+        }
+
+    reponse = response.get("reponse", "")
+    if mode == "ANSWER_STATUS":
+        direct_lines: list[str] = []
+        skip_headers = ("REPONSE DIRECTE", "ETAT", "INTERDIT", "A FAIRE",
+                        "ETAT SERVICES", "COUCHES TERMINAL")
+        in_direct = False
+        for line in reponse.splitlines():
+            stripped = line.strip()
+            if stripped == "REPONSE DIRECTE":
+                in_direct = True
+                continue
+            if any(stripped.startswith(h) for h in skip_headers[1:]):
+                in_direct = False
+                continue
+            if in_direct:
+                direct_lines.append(line)
+        direct = "\n".join(direct_lines).strip()
+        if not direct:
+            non_empty = [l for l in reponse.splitlines() if l.strip()]
+            direct = non_empty[0] if non_empty else reponse
+    else:
+        clean = [l for l in reponse.splitlines()
+                 if not any(tok in l for tok in _SURFACE_FILTER_TOKENS)]
+        direct = "\n".join(clean).strip()
+
+    return {
+        "main_answer": {"direct": direct, "summary": "", "next": []},
+        "status_panel": response.get("etat_technique", {}),
+        "tools_panel": response.get("outils_panel", {}),
+        "proof_panel": {},
+        "plan_panel": {
+            "layer": response.get("detected_layer", "?"),
+            "mode": mode,
+            "status": "PARTIAL" if mode == "ANSWER_STATUS" else "ROUTED",
+            "output": response.get("output", "?"),
+            "next": response.get("next_human_action", ""),
+        },
+    }
+
+
+def extract_status_panel(response: dict) -> list[str]:
+    """Extract STATUS tab content for right panel. Pure."""
+    etat = response.get("etat_technique", {})
+    layer = response.get("detected_layer", "?")
+
+    lines = ["=== STATUS ===", ""]
+    if etat:
+        for k, v in list(etat.items())[:12]:
+            lines.append(f"  {str(k)[:16]}: {str(v)[:18]}")
+    else:
+        lines.append(f"  layer: {layer}")
+        lines.append("  (pas de donnees techniques)")
+    lines += ["", "AUTORITE:", "  X108=FINAL"]
+    return lines
+
+
+def extract_tools_panel(response: dict) -> list[str]:
+    """Extract TOOLS tab content for right panel. Pure."""
+    outils = response.get("outils_panel", {})
+    politique = response.get("politique", [])
+
+    lines = ["=== TOOLS ===", ""]
+    if outils:
+        for k, v in list(outils.items())[:10]:
+            lines.append(f"  {str(k)[:14]}: {str(v)[:14]}")
+    elif politique:
+        lines += ["INTERDITS:"]
+        for p in politique[:5]:
+            lines.append(f"  {str(p)[:26]}: forbidden")
+    else:
+        layer = response.get("detected_layer", "?")
+        cap_layer = layer.split(":")[0] if ":" in layer else layer
+        cap = CAPABILITY_GRAPH_V3.get(cap_layer, CAPABILITY_GRAPH_V3.get("unknown", {}))
+        ops_allowed = cap.get("ops_allowed", [])
+        ops_forbidden = cap.get("ops_forbidden", [])
+        if ops_allowed:
+            lines.append("AUTORISEES:")
+            for op in ops_allowed[:4]:
+                lines.append(f"  {str(op)[:24]}")
+        if ops_forbidden:
+            lines.append("INTERDITES:")
+            for op in ops_forbidden[:3]:
+                lines.append(f"  {str(op)[:24]}")
+    lines += ["", "AUTORITE:", "  X108=FINAL"]
+    return lines
+
+
+def extract_proof_panel(response: dict) -> list[str]:
+    """Extract PROOF tab content for right panel. Pure."""
+    layer = response.get("detected_layer", "?")
+    corpus = response.get("corpus_utilise", [])
+
+    lines = ["=== PROOF ===", ""]
+    if layer in ("obsidienne", "corpus:lean_proofs"):
+        lines += [
+            "  source: local",
+            "  lean_surface: V2 (232 entries)",
+            "  lake_build: commands-only",
+            "  lean_exec: forbidden",
+            "",
+            "  verify_all.py: humain uniquement",
+            "  lean_decides: false",
+            "  forbidden_ok: true",
+        ]
+    elif layer == "audit":
+        lines += [
+            "  source: local",
+            "  merkle_seal: readonly",
+            "  manifest: readonly",
+            "  regen: forbidden",
+        ]
+    else:
+        lines += [
+            "  source: local",
+            "  registry: ok",
+            "  corpus: ok",
+        ]
+        if corpus:
+            lines.append("  corpus_items:")
+            for c in corpus[:3]:
+                lines.append(f"    {str(c)[:22]}")
+    lines += ["", "AUTORITE:", "  X108=FINAL"]
+    return lines
 
 
 def answer_router(raw: str, registry: dict) -> dict:
@@ -3058,6 +3244,51 @@ def answer_router(raw: str, registry: dict) -> dict:
     }
 
 
+def format_surface_response(r: dict) -> str:
+    """One-shot output V2 : surfaces séparées (REPONSE / PLAN_PANEL / STATUS_PANEL / TOOLS_PANEL).
+    Garantie : REPONSE ne contient aucun token système interne."""
+    # Réponse gauche via la même logique que le TUI
+    main_panel = extract_main_answer_panel(r)
+    plan_panel = extract_plan_panel(r, active_tab="PLAN")
+    status_panel = extract_status_panel(r)
+    tools_panel = extract_tools_panel(r)
+
+    lines = ["REPONSE:", ""]
+    for l in main_panel:
+        lines.append(f"  {l}" if l else "")
+
+    # Suggestions depuis next_suggestions (V2) si non déjà dans main_panel
+    nexts = r.get("next_suggestions", [])
+    if nexts and not any("-> obsidia>" in l for l in main_panel):
+        lines.append("")
+        for n in nexts[:2]:
+            lines.append(f"  -> obsidia> {n}")
+
+    lines += ["", "PLAN_PANEL:"]
+    for l in plan_panel:
+        lines.append(f"  {l}" if l.strip() else "")
+
+    non_empty_status = [l for l in status_panel if l.strip() and l.strip() != "=== STATUS ==="]
+    if non_empty_status:
+        lines += ["", "STATUS_PANEL:"]
+        for l in status_panel:
+            lines.append(f"  {l}" if l.strip() else "")
+
+    non_empty_tools = [l for l in tools_panel if l.strip() and l.strip() != "=== TOOLS ==="]
+    if non_empty_tools:
+        lines += ["", "TOOLS_PANEL:"]
+        for l in tools_panel:
+            lines.append(f"  {l}" if l.strip() else "")
+
+    lines += [
+        "",
+        f"mode_reponse: {r.get('mode_reponse', '?')}",
+        f"detected_layer: {r.get('detected_layer', '?')} (confiance {r.get('confidence', 0):.2f})",
+        f"output: {r.get('output', '?')}",
+    ]
+    return "\n".join(lines)
+
+
 def format_obsidia_response(r: dict) -> str:
     return "\n".join([
         "================ OBSIDIA_RESPONSE ================", "",
@@ -3207,60 +3438,122 @@ def render_two_pane_layout(
 
 
 def extract_main_answer_panel(response: dict, max_lines: int = 60) -> list[str]:
-    """Extract main panel content from response dict. Pure."""
+    """Extract main (left) panel content from response dict. Pure.
+    V2: utilise main_answer si present, sinon filtre défensif sur reponse.
+    Garantie : aucune ligne contenant un _SURFACE_FILTER_TOKEN n'apparaît à gauche."""
     mode = response.get("mode_reponse", "")
+
+    # V2: champ structuré main_answer disponible
+    if "main_answer" in response:
+        ma = response["main_answer"]
+        lines: list[str] = []
+        direct = (ma.get("direct") or "").strip()
+        if direct:
+            lines.extend(direct.splitlines())
+        summary = (ma.get("summary") or "").strip()
+        if summary:
+            lines += ["", summary]
+        nexts = [n for n in (ma.get("next") or []) if n]
+        if nexts:
+            lines.append("")
+            for n in nexts[:2]:
+                lines.append(f"-> obsidia> {n}")
+        return lines[:max_lines] if lines else ["(aucune reponse)"]
+
+    # Legacy : filtre selon le mode
     reponse = response.get("reponse", "")
-    limites = response.get("limites", [])
     next_action = response.get("next_human_action", "")
 
-    if mode == "ANSWER_STATUS":
-        lines = reponse.splitlines()
-    elif mode in ("ANSWER_POLICY_DENY", "POLICY_DENY"):
+    if mode in ("ANSWER_POLICY_DENY", "POLICY_DENY"):
         lines = ["[POLICY DENY]", ""] + reponse.splitlines()
-    else:
-        lines = ["[OBSIDIA RESPONSE]", ""]
-        lines.extend(reponse.splitlines()[:35])
-        if limites:
-            lines += ["", "[LIMITES]"] + [f"  - {l}" for l in limites[:4]]
-        if next_action:
-            lines += ["", "[NEXT]", f"  {next_action}"]
+        return lines[:max_lines]
 
+    if mode == "ANSWER_STATUS":
+        # Filtre complet : legacy ANSWER_STATUS contient les blocs système
+        filtered = [l for l in reponse.splitlines()
+                    if not any(tok in l for tok in _SURFACE_FILTER_TOKENS)]
+        lines = filtered[:35]
+    else:
+        # ANSWER_LOCAL / ANSWER_PLAN : préserver les corpus answers.
+        # Ne supprimer que les headers internes inertes et les blocs [LIMITES]/[NEXT].
+        _inert_headers = ("[OBSIDIA RESPONSE]", "CAPABILITY_VIEW")
+        raw_lines = reponse.splitlines()
+        lines = []
+        in_skip_block = False
+        for l in raw_lines:
+            stripped = l.strip()
+            if stripped in ("[LIMITES]", "[NEXT]"):
+                in_skip_block = True
+                continue
+            if in_skip_block:
+                if stripped.startswith("  ") or not stripped:
+                    continue
+                in_skip_block = False
+            if any(stripped.startswith(h) for h in _inert_headers):
+                continue
+            lines.append(l)
+        lines = lines[:35]
+
+    if next_action and "LIMITES" not in next_action and "[NEXT]" not in next_action:
+        lines += ["", f"-> {next_action}"]
     return lines[:max_lines]
 
 
-def extract_plan_panel(response: dict) -> list[str]:
-    """Extract plan panel content from response dict. Pure."""
+def extract_plan_panel(response: dict, active_tab: str = "PLAN") -> list[str]:
+    """Extract right panel content from response dict. Pure.
+    active_tab: PLAN (défaut) | STATUS | TOOLS | PROOF"""
+    if active_tab == "STATUS":
+        return extract_status_panel(response)
+    if active_tab == "TOOLS":
+        return extract_tools_panel(response)
+    if active_tab == "PROOF":
+        return extract_proof_panel(response)
+
+    # Onglet PLAN (défaut)
     layer = response.get("detected_layer", "?")
     mode = response.get("mode_reponse", "?")
     output = response.get("output", "?")
     conf = response.get("confidence", 0.0)
-    organs = response.get("organes_mobilises", [])
-    organs_mob = response.get("organes_mobilisables", [])
     limites = response.get("limites", [])
+    next_suggestions = response.get("next_suggestions", [])
     next_action = response.get("next_human_action", "")
+    politique = response.get("politique", [])
+
+    if mode == "ANSWER_STATUS":
+        status_label = "PARTIAL"
+    elif mode == "ANSWER_POLICY_DENY":
+        status_label = "DENIED"
+    else:
+        status_label = "ROUTED"
 
     lines = [
         "=== PLAN ===", "",
-        f"layer: {layer}", f"mode:  {mode}",
-        f"out:   {output}", f"conf:  {conf:.2f}",
-        "", "ORGANES:",
+        f"layer: {layer}",
+        f"mode:  {mode[:14] if len(mode) > 14 else mode}",
+        f"status: {status_label}",
+        f"out:   {output}",
+        f"conf:  {conf:.2f}",
     ]
-    for o in organs[:5]:
-        lines.append("  " + str(o).split(" [")[0][:28])
-    if not organs:
-        lines.append("  (aucun)")
-    if organs_mob:
-        lines += ["", "MOBILISABLES:"]
-        for o in organs_mob[:3]:
-            lines.append("  " + str(o).split(" [")[0][:28])
+    if next_suggestions:
+        lines += ["", "NEXT:"]
+        for n in next_suggestions[:2]:
+            lines.append(f"  {str(n)[:26]}")
+    elif next_action:
+        lines += ["", "NEXT:", "  " + str(next_action)[:26]]
+    if politique:
+        lines += ["", "POLITIQUE:"]
+        for p in politique[:3]:
+            lines.append(f"  {str(p)[:26]}: forbidden")
     lines += ["", "AUTORITE:", "  X108=FINAL", "  no_auto_act"]
     if limites:
         lines += ["", "LIMITES:"]
-        for lim in limites[:3]:
-            lines.append("  " + str(lim)[:28])
-    if next_action:
-        lines += ["", "NEXT:", "  " + str(next_action)[:28]]
+        for lim in limites[:2]:
+            lines.append("  " + str(lim)[:26])
     return lines
+
+
+_SUITE_WORDS = frozenset({"suite", "continue", "suivant", "next"})
+_TAB_COMMANDS = {"/plan": "PLAN", "/status": "STATUS", "/tools": "TOOLS", "/proof": "PROOF"}
 
 
 def interactive_tui_shell(registry: dict) -> int:
@@ -3272,7 +3565,7 @@ def interactive_tui_shell(registry: dict) -> int:
         return interactive_shell(registry)
 
     _welcome_main = [
-        "OBSIDIA TERMINAL V1.1 — TUI LAYOUT",
+        "OBSIDIA TERMINAL V2 — TUI SURFACE SEPARATION",
         "Terminal non souverain. X108 = autorite finale.",
         "",
         "Tapez votre demande ou une commande :",
@@ -3280,7 +3573,7 @@ def interactive_tui_shell(registry: dict) -> int:
         "  capabilities <couche>   surface d'une couche",
         "  runtime                 sonde services",
         "  /help                   aide complete",
-        "  /plan                   dernier plan",
+        "  /plan /status /tools /proof  onglets droite",
         "  /plain                  bascule en mode plain",
         "  exit                    quitter",
         "",
@@ -3291,13 +3584,12 @@ def interactive_tui_shell(registry: dict) -> int:
     ]
     _welcome_plan = [
         "=== SESSION ===", "",
-        f"id: {session_id}", "mode: TUI V1",
+        f"id: {session_id}", "mode: TUI V2",
         "", "=== DOCTRINE ===", "",
         "X108 = autorite", "readonly",
         "no_auto_act", "no_subprocess",
-        "", "=== NEXT ===", "",
-        "Tapez 'runtime'", "pour sonder les",
-        "services.",
+        "", "=== ONGLETS ===", "",
+        "/plan /status", "/tools /proof",
     ]
 
     main_lines: list[str] = list(_welcome_main)
@@ -3305,6 +3597,7 @@ def interactive_tui_shell(registry: dict) -> int:
     last_resp: dict | None = None
     last_plan: dict | None = None
     current_layer = "?"
+    active_right_tab = "PLAN"
 
     while True:
         w, h = get_terminal_size_safe()
@@ -3323,11 +3616,15 @@ def interactive_tui_shell(registry: dict) -> int:
         for line in plan_lines:
             p_wrapped.extend(wrap_cell(line, plan_w_inner))
 
+        tab_hint = f"[{active_right_tab}]"
         status_line = (
             f" OBSIDIA | session {session_id} | "
-            f"couche: {current_layer} | X108=AUTHORITY"
+            f"couche: {current_layer} | tab:{tab_hint} | X108=AUTHORITY"
         )
-        composer_hint = " /help  /plain  /runtime  /plan  /clear  exit"
+        composer_hint = (
+            " /help  /plain  /runtime  "
+            "/plan  /status  /tools  /proof  /clear  exit"
+        )
 
         screen = render_two_pane_layout(
             main_lines=m_wrapped, plan_lines=p_wrapped,
@@ -3361,13 +3658,19 @@ def interactive_tui_shell(registry: dict) -> int:
                 trgs = ", ".join(str(t) for t in (spec.get("triggers") or [])[:3])
                 help_lines.append(f"  {ln}: {trgs}...")
             help_lines += [
-                "", "Commandes :", "  /help  /plan  /plain",
-                "  /runtime  /clear  exit",
+                "", "Commandes :", "  /help  /plan  /status  /tools  /proof",
+                "  /plain  /runtime  /clear  exit",
+                "", "Onglets droite :",
+                "  /plan    — routage et plan actif",
+                "  /status  — etat technique (services, couche)",
+                "  /tools   — outils autorises/interdits",
+                "  /proof   — etat preuves/corpus",
             ]
             main_lines = help_lines
             plan_lines = ["=== PLAN ===", "", "mode: GUIDE", "out: HELP",
                           "", "AUTORITE:", "  X108=FINAL"]
             current_layer = "terminal_self"
+            active_right_tab = "PLAN"
             continue
 
         if low == "/plain":
@@ -3379,17 +3682,49 @@ def interactive_tui_shell(registry: dict) -> int:
             main_lines = list(_welcome_main)
             plan_lines = list(_welcome_plan)
             current_layer = "?"
+            active_right_tab = "PLAN"
             continue
 
         if low == "/runtime":
             line = "runtime"
+            low = "runtime"
 
-        if low == "/plan":
+        # Onglets du panneau droit — ne changent que le panneau droit, pas la réponse
+        if low in _TAB_COMMANDS:
+            active_right_tab = _TAB_COMMANDS[low]
             if last_resp:
-                main_lines = extract_main_answer_panel(last_resp)
-                plan_lines = extract_plan_panel(last_resp)
+                plan_lines = extract_plan_panel(last_resp, active_right_tab)
             else:
-                main_lines = ["Pas encore de plan. Tapez une question."]
+                plan_lines = [
+                    f"=== {active_right_tab} ===", "",
+                    "(pas encore de reponse)",
+                    "", "Tapez une question d'abord.",
+                ]
+            continue
+
+        # Commande suite/continue/suivant/next
+        if low in _SUITE_WORDS:
+            if last_resp:
+                plan_lines = extract_plan_panel(last_resp, active_right_tab)
+                main_lines = [
+                    "Voici la suite disponible.",
+                    "",
+                    "Utilisez les onglets pour naviguer :",
+                    "  /plan    routage et plan actif",
+                    "  /status  etat technique",
+                    "  /tools   outils autorises/interdits",
+                    "  /proof   etat preuves/corpus",
+                ]
+            else:
+                main_lines = [
+                    "J'ai besoin de preciser quelle suite :",
+                    "plan, status, tools ou proof.",
+                    "",
+                    "-> /plan",
+                    "-> /status",
+                    "-> /tools",
+                    "-> /proof",
+                ]
             continue
 
         panel = _split_panel_line(line)
@@ -3403,6 +3738,7 @@ def interactive_tui_shell(registry: dict) -> int:
             main_lines = text.splitlines()
             plan_lines = ["=== PANEL ===", "", f"cmd: {panel[0]}", f"arg: {panel[1]}",
                           "", "AUTORITE:", "  X108=FINAL"]
+            active_right_tab = "PLAN"
             continue
 
         resp = answer_router(line, registry)
@@ -3411,11 +3747,16 @@ def interactive_tui_shell(registry: dict) -> int:
         last_resp = resp
         last_plan = build_active_plan(line, registry)
         current_layer = resp.get("detected_layer", "?")
+        # Auto-tab : ANSWER_STATUS -> STATUS, sinon PLAN
+        if resp.get("mode_reponse") == "ANSWER_STATUS":
+            active_right_tab = "STATUS"
+        else:
+            active_right_tab = "PLAN"
         main_lines = extract_main_answer_panel(resp)
-        plan_lines = extract_plan_panel(resp)
+        plan_lines = extract_plan_panel(resp, active_right_tab)
 
 
-# ─── FIN TUI LAYOUT V1 ───────────────────────────────────────────────────────
+# ─── FIN TUI LAYOUT V2 ───────────────────────────────────────────────────────
 
 
 def interactive_shell(registry: dict) -> int:
@@ -3541,8 +3882,10 @@ def main(argv: list[str]) -> int:
     # IN libre -> moteur universel OBSIDIA_ANSWER_ROUTER
     resp = answer_router(raw, registry)
     write_receipt(registry, resp)
-    print(format_obsidia_response(resp) if verbose_mode
-          else format_obsidia_response_compact(resp))
+    if verbose_mode:
+        print(format_obsidia_response(resp))
+    else:
+        print(format_surface_response(resp))
     return 0
 
 

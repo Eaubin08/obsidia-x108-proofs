@@ -214,9 +214,15 @@ def test_16_obsidure_est_actif_returns_answer_status() -> None:
     )
 
 
-def test_17_obsidure_actif_has_reponse_directe() -> None:
+def test_17_obsidure_actif_has_human_answer() -> None:
+    """V2 : reponse contient le texte humain (plus de header REPONSE DIRECTE).
+    Motif du changement : surfaces separees — REPONSE DIRECTE etait un header interne."""
     r = _a("obsidure est actif ?")
-    assert "REPONSE DIRECTE" in r["reponse"]
+    # La reponse doit contenir le texte humain (pas les metadonnees systeme)
+    assert "Obsidure" in r["reponse"]
+    assert "_PATCH_PROPOSALS" not in r["reponse"]
+    assert "INTERDIT" not in r["reponse"]
+    assert "ETAT" not in r["reponse"]
 
 
 def test_18_brody_est_actif_returns_answer_status() -> None:
@@ -362,16 +368,28 @@ def test_37_fallback_plain_if_terminal_too_small() -> None:
     )
 
 
-def test_38_extract_main_panel_has_reponse_directe_for_status() -> None:
-    """extract_main_answer_panel preserves REPONSE DIRECTE for ANSWER_STATUS."""
+def test_38_extract_main_panel_uses_main_answer_field() -> None:
+    """V2 : extract_main_answer_panel utilise main_answer.direct si present.
+    Motif : surfaces separees — REPONSE DIRECTE etait un header interne, plus dans LEFT."""
     resp = {
         "mode_reponse": "ANSWER_STATUS",
-        "reponse": "REPONSE DIRECTE\ntest\n\nETAT\nok",
+        "reponse": "Obsidure est actif cote terminal.",
+        "main_answer": {
+            "direct": "Obsidure est actif cote terminal.",
+            "summary": "",
+            "next": ["peux tu coder", "capabilities obsidure"],
+        },
         "limites": [],
-        "next_human_action": "",
+        "next_human_action": "peux tu coder",
     }
     lines = cli.extract_main_answer_panel(resp)
-    assert "REPONSE DIRECTE" in lines or any("REPONSE DIRECTE" in l for l in lines)
+    combined = "\n".join(lines)
+    # La reponse humaine doit etre presente
+    assert "Obsidure" in combined
+    # Les headers internes NE doivent PAS etre presents
+    assert "REPONSE DIRECTE" not in combined
+    assert "ETAT" not in combined
+    assert "INTERDIT" not in combined
 
 
 def test_39_extract_plan_panel_shows_layer_mode_output() -> None:
