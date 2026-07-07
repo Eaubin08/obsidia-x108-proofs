@@ -17,6 +17,7 @@ param(
     [string]$Domain     = "",
     [int]   $MaxCycles  = 0,
     [string]$Api        = "http://127.0.0.1:8000",
+    [string]$Apply      = "",
     [switch]$DryRun,
     [switch]$Quiet
 )
@@ -46,6 +47,7 @@ if (-not $PythonCmd) {
 # ── Construction des arguments CLI ────────────────────────────────────────
 $Args = @("$RepoRoot\scripts\obsidure_cli.py")
 
+if ($Apply)     { $Args += "--apply";      $Args += $Apply     }
 if ($Objective) { $Args += "--objective"; $Args += $Objective }
 if ($Domain)    { $Args += "--domain";    $Args += $Domain    }
 if ($MaxCycles -gt 0) { $Args += "--max-cycles"; $Args += "$MaxCycles" }
