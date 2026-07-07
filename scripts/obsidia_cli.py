@@ -3814,6 +3814,18 @@ def build_brody_bridge_response(raw: str, registry: dict) -> dict:
             "subprocess": "none",
             "memory_write": "forbidden",
             "decision": "forbidden",
+            "BRODY_MEMORY_VISIBILITY_V1": "available",
+            "memory_status_cmd": "python scripts/obsidia_cli.py status brody memory",
+        },
+        "memory_visibility": {
+            "version": "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1",
+            "mode": "READONLY",
+            "memory_write": False,
+            "available_commands": [
+                "status brody memory",
+                "brody memory status",
+            ],
+            "auto_execution": False,
         },
         "proof_panel": {
             "source": source,
@@ -4882,6 +4894,234 @@ def format_sigma_oie_status_v1(data: dict) -> str:
 # ─── FIN SIGMA/OIE STATUS PANEL V1 ───────────────────────────────────────────
 
 
+# ─── BRODY MEMORY VISIBILITY V1 ──────────────────────────────────────────────
+# OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1
+# Visibilite readonly de Brody Memory dans le terminal.
+# Aucune ecriture memoire. Aucune mutation Graphiti. Aucune souverainete Brody.
+# memory_write=False. auto_execution=False. decision_authority=KX108_ONLY.
+
+_BRODY_MEMORY_VISIBILITY_VERSION = "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1"
+_BRODY_MEMORY_READONLY_ROOT = "periphery/brody_memory_readonly"
+_BRODY_MEMORY_README = "README_BOUNDARY.md"
+_BRODY_MEMORY_MANIFEST = "TRANSPLANT_MANIFEST.json"
+_BRODY_MEMORY_GRAPHITI_DIR = "graphiti_bridge_readonly"
+_BRODY_MEMORY_AUTHORITY_DIR = "memory_layer_authority_model_readonly"
+
+
+def collect_brody_memory_visibility_v1(limit: int = 20) -> dict:
+    """Lecture readonly de periphery/brody_memory_readonly/. Aucune ecriture."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT
+    base: dict = {
+        "version": _BRODY_MEMORY_VISIBILITY_VERSION,
+        "layer": "BRODY_MEMORY",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "memory_write": False,
+        "sovereign": False,
+        "root": _BRODY_MEMORY_READONLY_ROOT,
+        "root_exists": False,
+        "file_count_sample": 0,
+        "dir_count_sample": 0,
+        "has_readme_boundary": False,
+        "has_transplant_manifest": False,
+        "manifest_preview": {},
+        "readme_preview": [],
+        "status": "MISSING",
+        "commands_only": [
+            "python scripts/obsidia_cli.py status brody memory",
+            "python scripts/obsidia_cli.py brody memory status",
+        ],
+    }
+    if not root.exists():
+        return base
+    base["root_exists"] = True
+    try:
+        entries = list(root.iterdir())
+        dirs = [e for e in entries if e.is_dir()]
+        files = [e for e in entries if e.is_file()]
+        base["dir_count_sample"] = min(len(dirs), limit)
+        base["file_count_sample"] = min(len(files), limit)
+    except Exception:
+        base["status"] = "READ_ERROR"
+        return base
+    readme_p = root / _BRODY_MEMORY_README
+    base["has_readme_boundary"] = readme_p.exists()
+    if readme_p.exists():
+        try:
+            lines = readme_p.read_text(encoding="utf-8-sig").splitlines()
+            base["readme_preview"] = [l.rstrip() for l in lines[:8] if l.strip()]
+        except Exception:
+            base["readme_preview"] = ["READ_ERROR"]
+    manifest_p = root / _BRODY_MEMORY_MANIFEST
+    base["has_transplant_manifest"] = manifest_p.exists()
+    if manifest_p.exists():
+        try:
+            import json as _json
+            raw_txt = manifest_p.read_text(encoding="utf-8-sig")
+            manifest_data = _json.loads(raw_txt)
+            safe_keys = ("status", "date", "readonly", "memory_authority",
+                         "memory_decision", "allowed_to_decide", "emits_act")
+            base["manifest_preview"] = {k: manifest_data[k] for k in safe_keys if k in manifest_data}
+        except Exception:
+            base["manifest_preview"] = {"error": "READ_ERROR"}
+    if base["has_readme_boundary"] or base["has_transplant_manifest"]:
+        base["status"] = "OK"
+    else:
+        base["status"] = "PARTIAL"
+    return base
+
+
+def collect_brody_graphiti_guard_visibility_v1() -> dict:
+    """Detection readonly des indices Graphiti guard. Aucune ecriture."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT / _BRODY_MEMORY_GRAPHITI_DIR
+    base: dict = {
+        "layer": "GRAPHITI_GUARD",
+        "mode": "READONLY",
+        "auto_execution": False,
+        "memory_write": False,
+        "status": "MISSING",
+        "sources": [],
+        "commands_only": [
+            "python scripts/obsidia_cli.py graphiti guard status",
+        ],
+    }
+    if not root.exists():
+        return base
+    try:
+        sources = [e.name for e in root.iterdir() if not e.name.startswith("__")]
+        base["sources"] = sources[:8]
+        base["status"] = "OK" if sources else "PARTIAL"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def collect_brody_rights_visibility_v1() -> dict:
+    """Detection readonly de la rights authority matrix. Aucune execution d'autorite."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT / _BRODY_MEMORY_AUTHORITY_DIR
+    base: dict = {
+        "layer": "BRODY_RIGHTS_AUTHORITY_MATRIX",
+        "mode": "READONLY",
+        "auto_execution": False,
+        "sovereign": False,
+        "status": "MISSING",
+        "sources": [],
+        "preview": [],
+    }
+    if not root.exists():
+        return base
+    try:
+        sources = [e.name for e in root.iterdir() if not e.name.startswith("__")]
+        base["sources"] = sources[:6]
+        manifest_p = root / "MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json"
+        if manifest_p.exists():
+            import json as _json
+            txt = manifest_p.read_text(encoding="utf-8-sig")
+            d = _json.loads(txt)
+            safe_keys = ("name", "version", "status", "source_total_records")
+            base["preview"] = [f"{k}={d[k]}" for k in safe_keys if k in d]
+        base["status"] = "OK" if sources else "PARTIAL"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def build_brody_memory_visibility_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal BRODY_MEMORY_VISIBILITY_V1. Pure, readonly."""
+    mem = collect_brody_memory_visibility_v1()
+    graphiti = collect_brody_graphiti_guard_visibility_v1()
+    rights = collect_brody_rights_visibility_v1()
+    reponse_text = (
+        f"Brody Memory readonly ({mem.get('status', '?')}).\n\n"
+        f"  root_exists={mem.get('root_exists')} | "
+        f"dirs={mem.get('dir_count_sample')} | "
+        f"readme_boundary={mem.get('has_readme_boundary')} | "
+        f"transplant_manifest={mem.get('has_transplant_manifest')}\n\n"
+        "Aucune ecriture memoire. Aucune mutation Graphiti. "
+        "advisory only — decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "BRODY_MEMORY_VISIBILITY_V1",
+        "detected_layer": "brody",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _BRODY_MEMORY_VISIBILITY_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "memory_write": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sovereign": False,
+        },
+        "brody_memory": mem,
+        "graphiti_guard": graphiti,
+        "rights_matrix": rights,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["status brody memory", "brody memory status", "graphiti guard status"],
+        },
+        "outils_panel": {
+            "BRODY_MEMORY_VISIBILITY_V1": "available",
+            "status_cmd": "python scripts/obsidia_cli.py status brody memory",
+            "brody_cmd": "python scripts/obsidia_cli.py brody memory status",
+            "memory_write": "forbidden",
+            "graph_mutation": "forbidden",
+            "auto_execution": False,
+        },
+        "next_suggestions": ["status brody memory", "brody memory status", "graphiti guard status"],
+    }
+
+
+def format_brody_memory_visibility_v1(data: dict) -> str:
+    """Formate la reponse BRODY_MEMORY_VISIBILITY_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    mem = data.get("brody_memory", {})
+    graphiti = data.get("graphiti_guard", {})
+    rights = data.get("rights_matrix", {})
+    lines = [
+        _BRODY_MEMORY_VISIBILITY_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"memory_write={etat.get('memory_write', False)}",
+        f"sovereign={etat.get('sovereign', False)}",
+        "",
+        "BRODY_MEMORY:",
+        f"  status={mem.get('status', '?')}",
+        f"  root_exists={mem.get('root_exists', False)}",
+        f"  has_readme_boundary={mem.get('has_readme_boundary', False)}",
+        f"  has_transplant_manifest={mem.get('has_transplant_manifest', False)}",
+        f"  dir_count_sample={mem.get('dir_count_sample', 0)}",
+        f"  file_count_sample={mem.get('file_count_sample', 0)}",
+        "",
+        "GRAPHITI_GUARD:",
+        f"  status={graphiti.get('status', '?')}",
+        "  mode=READONLY",
+        "",
+        "RIGHTS_MATRIX:",
+        f"  status={rights.get('status', '?')}",
+        "  mode=READONLY",
+        "",
+        "COMMANDS_ONLY:",
+        "  python scripts/obsidia_cli.py status brody memory",
+        "  python scripts/obsidia_cli.py brody memory status",
+        "  python scripts/obsidia_cli.py graphiti guard status",
+        "",
+        "FORBIDDEN:",
+        "  no memory write",
+        "  no graph mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN BRODY MEMORY VISIBILITY V1 ──────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -5268,6 +5508,16 @@ def extract_tools_panel(response: dict) -> list[str]:
             lines.append("INTERDITES:")
             for op in ops_forbidden[:3]:
                 lines.append(f"  {str(op)[:24]}")
+    layer = response.get("detected_layer", "?")
+    if layer == "brody":
+        lines += [
+            "",
+            "BRODY_MEMORY_VISIBILITY_V1:",
+            "  - python scripts/obsidia_cli.py status brody memory",
+            "  - python scripts/obsidia_cli.py brody memory status",
+            "  - readonly only",
+            "  - memory_write=False",
+        ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
 
@@ -7337,6 +7587,38 @@ def main(argv: list[str]) -> int:
         resp = build_status_response("status oie", "oie", registry)
         data = build_sigma_oie_status_response_v1(resp, registry)
         print(format_sigma_oie_status_v1(data))
+        return 0
+    # Brody memory visibility: status brody memory / brody memory status / memory brody status
+    # Supporte aussi la forme guillemets : "status brody memory" (single-arg multi-word)
+    _brody_argv = argv if len(argv) >= 3 else (argv[0].split() if len(argv) == 1 else argv)
+    _brody_mem_aliases = (
+        len(_brody_argv) >= 3
+        and (
+            (_brody_argv[0].lower() == "status"
+             and _brody_argv[1].lower() == "brody"
+             and _brody_argv[2].lower() == "memory")
+            or (_brody_argv[0].lower() == "brody"
+                and _brody_argv[1].lower() == "memory"
+                and _brody_argv[2].lower() == "status")
+            or (_brody_argv[0].lower() == "memory"
+                and _brody_argv[1].lower() == "brody"
+                and _brody_argv[2].lower() == "status")
+        )
+    )
+    if _brody_mem_aliases:
+        raw_brody = " ".join(_brody_argv)
+        resp_brody = build_brody_memory_visibility_response_v1(raw_brody, registry)
+        print(format_brody_memory_visibility_v1(resp_brody))
+        return 0
+    # graphiti guard status (formes 3-args et single-arg)
+    _graphiti_argv = _brody_argv
+    if (len(_graphiti_argv) >= 3
+            and _graphiti_argv[0].lower() == "graphiti"
+            and _graphiti_argv[1].lower() in ("guard", "guards")
+            and _graphiti_argv[2].lower() == "status"):
+        raw_graphiti = " ".join(_graphiti_argv)
+        resp_g = build_brody_memory_visibility_response_v1(raw_graphiti, registry)
+        print(format_brody_memory_visibility_v1(resp_g))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
