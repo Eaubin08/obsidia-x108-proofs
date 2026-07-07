@@ -3357,6 +3357,331 @@ def build_brody_bridge_response(raw: str, registry: dict) -> dict:
 # ─── FIN TERMINAL BRODY BRIDGE V1 ────────────────────────────────────────────
 
 
+# ─── TERMINAL OBSIDURE BRIDGE V1 ─────────────────────────────────────────────
+# OBSIDIA_TERMINAL_OBSIDURE_BRIDGE_V1
+# Bridge readonly vers _PATCH_PROPOSALS et gates. Aucun subprocess. Aucune mutation.
+# Obsidure propose. Le terminal lit. L'humain applique. X108 reste autorite finale.
+
+_OBSIDURE_BRIDGE_WORDS = frozenset({
+    "obsidure", "coder", "code", "patch", "proposal", "proposals",
+    "correction", "corrige", "fix", "bug",
+})
+
+_OBSIDURE_BRIDGE_EXACT = frozenset({
+    "obsidure",
+    "obsidure status",
+    "obsidure latest",
+    "obsidure gates",
+    "peux tu coder",
+    "peux-tu coder",
+    "code une correction",
+    "coder une correction",
+})
+
+
+def detect_obsidure_bridge_query(raw: str, normalized: str | None = None) -> bool:
+    """Detecte une demande Obsidure explicite ou code-request bornee."""
+    n = normalized if normalized is not None else normalize(raw)
+    if not n:
+        return False
+    compact = n.strip()
+    if compact in _OBSIDURE_BRIDGE_EXACT:
+        return True
+    words = set(re.findall(r"[a-z0-9]+", compact))
+    if "obsidure" in words:
+        return True
+    if words & {"coder", "code", "patch", "correction", "corrige", "fix", "bug"}:
+        blocked_question_words = {"pourquoi", "comment", "explique", "definition"}
+        return not bool(words & blocked_question_words)
+    return False
+
+
+def _obsidure_proposals_root() -> Path:
+    return REPO_ROOT / "_PATCH_PROPOSALS"
+
+
+def _obsidure_safe_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception as exc:
+        return {"_json_error": type(exc).__name__}
+
+
+def _obsidure_extract_files(data: dict) -> list[str]:
+    """Extrait une liste de fichiers sans supposer un schéma unique."""
+    candidates = []
+    for key in ("files", "files_touched", "touched_files", "target_paths", "paths"):
+        value = data.get(key)
+        if isinstance(value, list):
+            candidates.extend(str(x) for x in value)
+        elif isinstance(value, str):
+            candidates.append(value)
+
+    patches = data.get("patches")
+    if isinstance(patches, list):
+        for patch in patches:
+            if isinstance(patch, dict):
+                for key in ("path", "file", "target", "target_path"):
+                    value = patch.get(key)
+                    if value:
+                        candidates.append(str(value))
+
+    deduped = []
+    seen = set()
+    for item in candidates:
+        item = str(item).strip()
+        if item and item not in seen:
+            seen.add(item)
+            deduped.append(item)
+    return deduped[:20]
+
+
+def _obsidure_read_receipt_preview(path: Path, max_lines: int = 16) -> list[str]:
+    if not path.exists():
+        return []
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception:
+        return []
+    clean = []
+    for line in lines:
+        s = line.rstrip()
+        if s:
+            clean.append(s[:240])
+        if len(clean) >= max_lines:
+            break
+    return clean
+
+
+def collect_obsidure_bridge_state_v1(limit: int = 5) -> dict:
+    """Inventaire readonly des proposals Obsidure."""
+    root = _obsidure_proposals_root()
+    if not root.exists():
+        return {
+            "status": "NO_PROPOSALS_DIR",
+            "root": str(root.relative_to(REPO_ROOT)) if root.is_absolute() else str(root),
+            "proposal_count": 0,
+            "latest": None,
+            "recent": [],
+        }
+
+    dirs = [p for p in root.iterdir() if p.is_dir()]
+    items = []
+
+    for d in dirs:
+        pj = d / "proposal.json"
+        receipt = d / "RECEIPT.md"
+        data = _obsidure_safe_json(pj) if pj.exists() else {}
+
+        created = (
+            data.get("created_at")
+            or data.get("timestamp")
+            or data.get("ts")
+            or data.get("created")
+            or ""
+        )
+        status = (
+            data.get("status")
+            or data.get("proposal_status")
+            or data.get("final_status")
+            or "UNKNOWN"
+        )
+        objective = (
+            data.get("objective")
+            or data.get("goal")
+            or data.get("title")
+            or data.get("request")
+            or ""
+        )
+
+        items.append({
+            "id": d.name,
+            "created_at": str(created),
+            "status": str(status),
+            "objective": str(objective)[:300],
+            "proposal_json": pj.exists(),
+            "receipt_md": receipt.exists(),
+            "files": _obsidure_extract_files(data),
+            "receipt_preview": _obsidure_read_receipt_preview(receipt, max_lines=10),
+        })
+
+    def sort_key(item: dict):
+        return (item.get("created_at") or "", item.get("id") or "")
+
+    recent = sorted(items, key=sort_key)[-limit:]
+    latest = recent[-1] if recent else None
+
+    return {
+        "status": "OK",
+        "root": "_PATCH_PROPOSALS",
+        "proposal_count": len(dirs),
+        "latest": latest,
+        "recent": recent,
+    }
+
+
+def build_obsidure_gates_v1() -> list[str]:
+    """Gates applicables en commands-only. Le terminal ne les execute jamais."""
+    gates = []
+    try:
+        for name in _GATES_OBSIDURE:
+            gates.append(f"scripts/gates/{name}")
+    except Exception:
+        gates = [
+            "scripts/gates/obsidia_commit_scope_guard.py",
+            "scripts/gates/obsidia_forbidden_write_check.py",
+            "scripts/gates/obsidia_kernel_boundary_check.py",
+        ]
+    gates.append("python -m pytest tests/gates/ -q")
+    return gates
+
+
+def _obsidure_intent_kind(raw: str) -> str:
+    n = normalize(raw)
+    if "latest" in n or "dernier" in n or "derniere" in n:
+        return "latest"
+    if "gate" in n or "gates" in n:
+        return "gates"
+    if "status" in n or "statut" in n or n.strip() == "obsidure":
+        return "status"
+    return "prepare"
+
+
+def format_obsidure_bridge_v1(state: dict, raw: str) -> str:
+    """Format humain Obsidure Bridge V1."""
+    kind = _obsidure_intent_kind(raw)
+    latest = state.get("latest") or {}
+
+    lines = ["Obsidure Bridge V1", ""]
+
+    if state.get("status") != "OK":
+        lines += [
+            "_PATCH_PROPOSALS introuvable.",
+            "Obsidure non lisible depuis le terminal local.",
+        ]
+    else:
+        lines.append(f"proposals_count : {state.get('proposal_count', 0)}")
+        if latest:
+            lines.append(f"latest_id       : {latest.get('id')}")
+            lines.append(f"latest_created  : {latest.get('created_at') or 'unknown'}")
+            lines.append(f"latest_status   : {latest.get('status') or 'UNKNOWN'}")
+            if latest.get("files"):
+                lines.append("latest_files    : " + ", ".join(latest.get("files", [])[:6]))
+
+    if kind == "latest" and latest:
+        preview = latest.get("receipt_preview") or []
+        if preview:
+            lines += ["", "Receipt preview :"]
+            for line in preview[:10]:
+                lines.append(f"- {line}")
+
+    if kind == "gates":
+        lines += ["", "Gates commands-only :"]
+        for gate in build_obsidure_gates_v1():
+            lines.append(f"- {gate}")
+
+    if kind == "prepare":
+        lines += [
+            "",
+            "Préparation Obsidure :",
+            "- formuler l'objectif exact",
+            "- confirmer le scope fichiers",
+            "- générer proposal uniquement",
+            "- appliquer seulement après validation humaine",
+        ]
+
+    lines += [
+        "",
+        "Interdits maintenus : no auto apply, no auto commit, no auto push, no subprocess.",
+    ]
+    return "\n".join(lines)
+
+
+def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
+    """Construit la reponse Obsidure Bridge V1 en surfaces separees."""
+    state = collect_obsidure_bridge_state_v1(limit=5)
+    gates = build_obsidure_gates_v1()
+    human = format_obsidure_bridge_v1(state, raw)
+    latest = state.get("latest") or {}
+
+    next_items = [
+        "obsidure latest",
+        "obsidure gates",
+        "traduit ma demande en langage uni",
+    ]
+
+    return {
+        "panel": "OBSIDIA_RESPONSE",
+        "raw": raw,
+        "reponse": human,
+        "main_answer": {
+            "direct": human,
+            "summary": "",
+            "next": next_items,
+        },
+        "etat_technique": {
+            "obsidure_bridge": "used",
+            "obsidure_status": state.get("status"),
+            "proposal_count": state.get("proposal_count", 0),
+            "latest_id": latest.get("id"),
+            "latest_status": latest.get("status"),
+            "latest_created_at": latest.get("created_at"),
+            "root": state.get("root"),
+            "mutation": "none",
+            "subprocess": "none",
+            "apply": "forbidden",
+            "commit": "forbidden",
+            "push": "forbidden",
+        },
+        "outils_panel": {
+            "obsidure_bridge": "used",
+            "read": "_PATCH_PROPOSALS",
+            "proposal_json": "readonly",
+            "receipt_md": "readonly",
+            "gates": "commands-only",
+            "apply": "forbidden",
+            "commit": "forbidden",
+            "push": "forbidden",
+            "subprocess": "none",
+        },
+        "proof_panel": {
+            "source": "_PATCH_PROPOSALS",
+            "authority": "NONE",
+            "decision_authority": "KX108_ONLY",
+            "proposal_count": state.get("proposal_count", 0),
+            "latest_status": latest.get("status"),
+            "gates": gates,
+            "mutation": "none",
+        },
+        "next_suggestions": next_items,
+        "mode_reponse": "ANSWER_LOCAL",
+        "detected_layer": "obsidure",
+        "confidence": 0.86 if state.get("status") == "OK" else 0.45,
+        "organes_mobilises": ["Obsidure Bridge", "Terminal", "_PATCH_PROPOSALS"],
+        "organes_mobilisables": ["OS Langage Uni", "Reverse Router", "Gates"],
+        "outils_utilises": ["collect_obsidure_bridge_state_v1"],
+        "corpus_utilise": ["_PATCH_PROPOSALS", "scripts/gates"],
+        "limites": [
+            "lecture seule",
+            "proposal-first uniquement",
+            "aucune application automatique",
+            "aucun commit automatique",
+            "aucun push automatique",
+            "X108 reste autorite finale",
+        ],
+        "action_locale": "OBSIDURE_BRIDGE_LOCAL",
+        "local_read_meta": {"obsidure_state": state},
+        "next_human_action": "choisir latest/gates ou preciser le scope de proposal",
+        "output": assert_output_allowed("GUIDE"),
+        "guidance": [],
+        "guidance_authority": "NONE",
+        "plan_status": "OK",
+    }
+
+
+# ─── FIN TERMINAL OBSIDURE BRIDGE V1 ─────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -3761,6 +4086,75 @@ def extract_proof_panel(response: dict) -> list[str]:
 
 
 def answer_router(raw: str, registry: dict) -> dict:
+    # Pre-garde mutation globale — doit passer avant IR/Reverse/Brody/Obsidure.
+    # Les bridges peuvent guider, jamais absorber commit/apply/push/deploy/delete.
+    normalized_for_policy = normalize(raw)
+    denied = policy_check(normalized_for_policy, registry)
+
+    # Fallback dur si registry minimal en test ou absent.
+    # Les mots mutatifs restent deny même sans policy.deny_keywords.
+    if not denied:
+        mutation_words = set(re.findall(r"[a-z0-9]+", normalized_for_policy))
+        for hard_kw in ("commit", "push", "apply", "deploy", "delete", "supprime"):
+            if hard_kw in mutation_words:
+                denied = hard_kw
+                break
+
+    if denied:
+        return {
+            "panel": "OBSIDIA_RESPONSE",
+            "raw": raw,
+            "reponse": registry.get("policy", {}).get(
+                "deny_message",
+                "Action refusee par politique terminal: mutation interdite."
+            ),
+            "main_answer": {
+                "direct": registry.get("policy", {}).get(
+                    "deny_message",
+                    "Action refusee par politique terminal: mutation interdite."
+                ),
+                "summary": "",
+                "next": ["reformuler en demande readonly", "demander un plan commands-only"],
+            },
+            "etat_technique": {
+                "policy": "deny",
+                "deny_keyword": denied,
+                "mutation": "forbidden",
+                "subprocess": "none",
+                "decision_authority": "KX108_ONLY",
+            },
+            "outils_panel": {
+                "apply": "forbidden",
+                "commit": "forbidden",
+                "push": "forbidden",
+                "deploy": "forbidden",
+                "delete": "forbidden",
+                "subprocess": "none",
+            },
+            "proof_panel": {
+                "source": "policy_check",
+                "authority": "NONE",
+                "decision_authority": "KX108_ONLY",
+                "mutation": "forbidden",
+            },
+            "next_suggestions": ["reformuler en readonly", "demander un plan"],
+            "mode_reponse": "POLICY_DENY",
+            "detected_layer": "policy",
+            "confidence": 1.0,
+            "organes_mobilises": ["Terminal Policy", "X108 Boundary"],
+            "organes_mobilisables": [],
+            "outils_utilises": ["policy_check"],
+            "corpus_utilise": ["registry.policy"],
+            "limites": ["mutation interdite depuis le terminal"],
+            "action_locale": "POLICY_DENY_LOCAL",
+            "local_read_meta": {"deny_keyword": denied},
+            "next_human_action": "reformuler sans mutation",
+            "output": assert_output_allowed("POLICY_DENY"),
+            "guidance": [],
+            "guidance_authority": "NONE",
+            "plan_status": "DENIED",
+        }
+
     """Moteur universel. Reutilise build_active_plan(); ne lance jamais rien
     hors HTTP GET readonly ; toute sortie passe par assert_output_allowed()."""
     # Branche capabilities — detection prefixe avant calcul du plan principal.
@@ -3889,6 +4283,10 @@ def answer_router(raw: str, registry: dict) -> dict:
     # Branche OS Langage Uni — demande explicite de traduction IR.
     if detect_unified_ir_query(raw, normalize(raw)):
         return build_unified_ir_response(raw, registry)
+
+    # Branche Obsidure Bridge — proposals/gates readonly.
+    if detect_obsidure_bridge_query(raw, normalize(raw)):
+        return build_obsidure_bridge_response(raw, registry)
 
     # Branche Brody Bridge — POST local advisory, fallback terminal si API down.
     if detect_brody_bridge_query(raw, normalize(raw)):
