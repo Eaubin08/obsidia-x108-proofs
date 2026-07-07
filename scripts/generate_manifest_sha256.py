@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -137,6 +138,31 @@ def compute_file_sha256(path: Path) -> str:
     return sha.hexdigest()
 
 
+def iter_tracked_files(root_dir: Path) -> list[Path]:
+    """
+    Retourne la liste des fichiers trackés par Git sous root_dir.
+
+    PATCH V3 — Remplace rglob("*") par git ls-files pour garantir
+    que le manifest ne contient que des fichiers commités/trackés.
+    Git est la seule source d'autorité : les dossiers locaux, gitignorés
+    ou non-trackés sont exclus automatiquement.
+    """
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=root_dir,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    paths: list[Path] = []
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        rel = raw.decode("utf-8", errors="strict")
+        paths.append(root_dir / rel)
+    return paths
+
+
 def generate_manifest(root_dir: Path) -> dict[str, Any]:
     """
     Génère le manifest SHA256 de tous les fichiers couverts sous root_dir.
@@ -147,7 +173,7 @@ def generate_manifest(root_dir: Path) -> dict[str, Any]:
     file_hashes: dict[str, str] = {}
     skipped: list[str] = []
 
-    for path in sorted(root_dir.rglob("*")):
+    for path in sorted(iter_tracked_files(root_dir)):
         if not path.is_file():
             continue
         relative = path.relative_to(root_dir)
