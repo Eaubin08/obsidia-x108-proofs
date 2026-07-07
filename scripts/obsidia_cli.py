@@ -5122,6 +5122,248 @@ def format_brody_memory_visibility_v1(data: dict) -> str:
 # ─── FIN BRODY MEMORY VISIBILITY V1 ──────────────────────────────────────────
 
 
+# ─── DOMAIN BRIDGE READONLY V1 ───────────────────────────────────────────────
+# OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1
+# Visibilite readonly des domain bridges Bank / Trading / GPS-Defense-Aviation.
+# Aucune transaction. Aucun trade. Aucun ordre GPS/aviation/defense.
+# api_role=BRIDGE_ONLY. emits_act=False. memory_write=False. auto_execution=False.
+
+_DOMAIN_BRIDGE_VERSION = "OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1"
+
+_DOMAIN_BRIDGE_ALIASES = {
+    "bank": "BANK", "banque": "BANK", "banking": "BANK",
+    "trading": "TRADING", "market": "TRADING",
+    "gps": "GPS_DEFENSE_AVIATION", "gnss": "GPS_DEFENSE_AVIATION",
+    "defense": "GPS_DEFENSE_AVIATION", "defence": "GPS_DEFENSE_AVIATION",
+    "aviation": "GPS_DEFENSE_AVIATION", "robo": "GPS_DEFENSE_AVIATION",
+    "domains": "ALL", "domaines": "ALL", "all": "ALL",
+}
+
+_DOMAIN_BRIDGE_SOURCES = {
+    "BANK": {
+        "files": ("connectors/bank_normal_flow.py",),
+        "route_markers": ("adapters/bank",),
+        "receipt_key": "bank",
+    },
+    "TRADING": {
+        "files": ("connectors/trading_live.py",),
+        "route_markers": ("adapters/trading",),
+        "receipt_key": "trading",
+    },
+    "GPS_DEFENSE_AVIATION": {
+        "files": ("connectors/aviation_robo.py",),
+        "route_markers": ("adapters/gps",),
+        "receipt_key": "aviation",
+    },
+}
+_DOMAIN_BRIDGE_ROUTES_FILE = "apps/obsidia_api/routes/live_kernel_bridge.py"
+_DOMAIN_BRIDGE_RECEIPTS_FILE = "scripts/performance/oie_v0_portfolio_receipts.json"
+
+_DOMAIN_BRIDGE_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py status domains",
+    "python scripts/obsidia_cli.py status bank",
+    "python scripts/obsidia_cli.py status trading",
+    "python scripts/obsidia_cli.py status gps",
+]
+
+
+def _normalize_domain_bridge_name_v1(raw: str) -> str:
+    """Normalise un nom de domaine vers BANK|TRADING|GPS_DEFENSE_AVIATION|ALL|''."""
+    s = str(raw or "").strip().lower()
+    if not s:
+        return ""
+    if s.upper() in _DOMAIN_BRIDGE_SOURCES:
+        return s.upper()
+    if s in _DOMAIN_BRIDGE_ALIASES:
+        return _DOMAIN_BRIDGE_ALIASES[s]
+    tokens = [t for t in re.split(r"[\s\-_]+", s) if t]
+    hits = {_DOMAIN_BRIDGE_ALIASES[w] for w in tokens if w in _DOMAIN_BRIDGE_ALIASES}
+    hits.discard("ALL")
+    if len(hits) == 1:
+        return hits.pop()
+    if len(hits) > 1:
+        return "ALL"
+    return ""
+
+
+def collect_domain_bridge_readonly_v1(domain: str, registry: dict | None = None) -> dict:
+    """Visibilite readonly d'un domain bridge. Presence de fichiers uniquement.
+    Aucun import d'adapter. Aucun POST. Aucune action domaine."""
+    normalized = _normalize_domain_bridge_name_v1(domain)
+    base: dict = {
+        "version": _DOMAIN_BRIDGE_VERSION,
+        "domain": normalized or str(domain or "?").strip().upper()[:32],
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "api_role": "BRIDGE_ONLY",
+        "emits_act": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "sovereign": False,
+        "status": "MISSING",
+        "sources": [],
+        "adapters": [],
+        "routes": [],
+        "receipts": [],
+        "runtime": {
+            "probe": "not_run_from_domain_panel",
+            "note": "statut live via status live (readonly)",
+        },
+        "labels": {"bridge": "MISSING", "runtime": "PROVISIONAL", "receipts": "MISSING"},
+        "commands_only": list(_DOMAIN_BRIDGE_COMMANDS_ONLY),
+    }
+    spec = _DOMAIN_BRIDGE_SOURCES.get(normalized)
+    if spec is None:
+        return base
+    try:
+        adapters = [p for p in spec["files"] if (REPO_ROOT / p).exists()][:10]
+        routes: list[str] = []
+        routes_p = REPO_ROOT / _DOMAIN_BRIDGE_ROUTES_FILE
+        if routes_p.exists():
+            routes_src = routes_p.read_text(encoding="utf-8", errors="replace")
+            for marker in spec["route_markers"]:
+                if marker in routes_src:
+                    routes.append(f"/api/live/kernel/{marker}")
+        receipts: list[str] = []
+        receipts_p = REPO_ROOT / _DOMAIN_BRIDGE_RECEIPTS_FILE
+        if receipts_p.exists():
+            import json as _json
+            try:
+                rdata = _json.loads(receipts_p.read_text(encoding="utf-8-sig"))
+                summary = rdata.get("domain_summary") or {}
+                if spec["receipt_key"] in summary:
+                    receipts.append(f"oie_v0_portfolio:{spec['receipt_key']}")
+            except Exception:
+                pass
+        base["adapters"] = adapters
+        base["routes"] = routes[:10]
+        base["receipts"] = receipts[:10]
+        base["sources"] = (adapters + routes + receipts)[:10]
+        base["labels"]["bridge"] = "MEASURED" if (adapters or routes) else "MISSING"
+        base["labels"]["receipts"] = "MEASURED" if receipts else "MISSING"
+        if adapters and routes:
+            base["status"] = "OK"
+        elif adapters or routes or receipts:
+            base["status"] = "PARTIAL"
+        else:
+            base["status"] = "MISSING"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def collect_all_domain_bridges_readonly_v1(registry: dict | None = None) -> dict:
+    """Visibilite readonly des trois domain bridges. Aucune action domaine."""
+    return {
+        "version": _DOMAIN_BRIDGE_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "api_role": "BRIDGE_ONLY",
+        "emits_act": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "domains": {
+            name: collect_domain_bridge_readonly_v1(name.lower(), registry)
+            for name in ("BANK", "TRADING", "GPS_DEFENSE_AVIATION")
+        },
+    }
+
+
+def build_domain_bridge_status_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal DOMAIN_BRIDGE_READONLY_V1. Pure, readonly."""
+    requested = _normalize_domain_bridge_name_v1(raw) or "ALL"
+    bridges = collect_all_domain_bridges_readonly_v1(registry)
+    statuses = {k: v.get("status", "?") for k, v in bridges["domains"].items()}
+    reponse_text = (
+        f"Domain bridges readonly (requested={requested}).\n\n"
+        + " | ".join(f"{k}={v}" for k, v in statuses.items())
+        + "\n\nLes domaines restent BRIDGE_ONLY. Aucune transaction, aucun trade, "
+        "aucun ordre GPS/aviation/defense depuis le terminal. "
+        "decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "DOMAIN_BRIDGE_READONLY_V1",
+        "detected_layer": "domain",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _DOMAIN_BRIDGE_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sovereign": False,
+            "requested_domain": requested,
+        },
+        "domain_bridge": bridges,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["status domains", "status bank", "status trading"],
+        },
+        "outils_panel": {
+            "DOMAIN_BRIDGE_READONLY_V1": "available",
+            "domains_cmd": "python scripts/obsidia_cli.py status domains",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "domain_action": "forbidden",
+            "POST_adapters": "forbidden from terminal",
+        },
+        "next_suggestions": ["status domains", "status bank", "status trading", "status gps"],
+    }
+
+
+def format_domain_bridge_status_v1(data: dict) -> str:
+    """Formate la reponse DOMAIN_BRIDGE_READONLY_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    bridges = (data.get("domain_bridge") or {}).get("domains", {})
+    lines = [
+        _DOMAIN_BRIDGE_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"api_role={etat.get('api_role', 'BRIDGE_ONLY')}",
+        f"emits_act={etat.get('emits_act', False)}",
+        f"memory_write={etat.get('memory_write', False)}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"requested={etat.get('requested_domain', 'ALL')}",
+    ]
+    for name in ("BANK", "TRADING", "GPS_DEFENSE_AVIATION"):
+        d = bridges.get(name, {})
+        labels = d.get("labels", {})
+        sources = d.get("sources", [])
+        lines += [
+            "",
+            f"{name}:",
+            f"  status={d.get('status', 'MISSING')}",
+            f"  bridge_label={labels.get('bridge', 'MISSING')}",
+            f"  runtime_label={labels.get('runtime', 'PROVISIONAL')}",
+            f"  receipts_label={labels.get('receipts', 'MISSING')}",
+            f"  sources={', '.join(str(s) for s in sources[:4]) if sources else 'none'}",
+        ]
+    lines += [
+        "",
+        "COMMANDS_ONLY:",
+    ]
+    lines += [f"  {c}" for c in _DOMAIN_BRIDGE_COMMANDS_ONLY]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no financial transaction",
+        "  no trading order",
+        "  no gps aviation defense action",
+        "  no memory write",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN DOMAIN BRIDGE READONLY V1 ───────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -5318,17 +5560,32 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         outils_panel = {"auto_execute": "forbidden", "read": "allowed"}
         next_suggestions = ["capabilities gates"]
     elif target_layer == "domains":
+        _dom_bridges = collect_all_domain_bridges_readonly_v1(registry)
+        _dom_statuses = {k: v.get("status", "?") for k, v in _dom_bridges["domains"].items()}
         reponse_text = (
             "Domains est disponible (bridge-only).\n\n"
+            + " | ".join(f"{k}={v}" for k, v in _dom_statuses.items()) + "\n\n"
             "Les domaines (Bank, Trading, GPS) sont accessibles en lecture. "
             "Les adapters POST sont interdits depuis le terminal."
         )
         etat_technique = {
+            "version": _DOMAIN_BRIDGE_VERSION,
             "terminal": "active",
-            "mode": "bridge-only, guidance",
+            "mode": "READONLY",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "auto_execution": False,
+            "decision_authority": "KX108_ONLY",
             "POST_adapters": "forbidden from terminal",
         }
-        next_suggestions = ["domains bank trading gps", "capabilities domains"]
+        outils_panel = {
+            "DOMAIN_BRIDGE_READONLY_V1": "available",
+            "domains_cmd": "python scripts/obsidia_cli.py status domains",
+            "api_role": "BRIDGE_ONLY",
+            "domain_action": "forbidden",
+        }
+        next_suggestions = ["status domains", "status bank", "capabilities domains"]
     elif target_layer == "kernel":
         k_st = _svc("kernel_3001")
         reponse_text = (
@@ -5517,6 +5774,18 @@ def extract_tools_panel(response: dict) -> list[str]:
             "  - python scripts/obsidia_cli.py brody memory status",
             "  - readonly only",
             "  - memory_write=False",
+        ]
+    if layer in ("domain", "domains"):
+        lines += [
+            "",
+            "DOMAIN_BRIDGE_READONLY_V1:",
+            "  - python scripts/obsidia_cli.py status domains",
+            "  - python scripts/obsidia_cli.py status bank",
+            "  - python scripts/obsidia_cli.py status trading",
+            "  - python scripts/obsidia_cli.py status gps",
+            "  - readonly only",
+            "  - api_role=BRIDGE_ONLY",
+            "  - emits_act=False",
         ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
@@ -7619,6 +7888,15 @@ def main(argv: list[str]) -> int:
         raw_graphiti = " ".join(_graphiti_argv)
         resp_g = build_brody_memory_visibility_response_v1(raw_graphiti, registry)
         print(format_brody_memory_visibility_v1(resp_g))
+        return 0
+    # Domain bridge readonly : status domains|bank|trading|gps / domain <x> status /
+    # "bank domain status" / "gps aviation status" (formes multi-args et guillemets)
+    _dom_words = {w.lower().strip('"').strip("'") for w in _brody_argv}
+    _dom_hits = _dom_words & (set(_DOMAIN_BRIDGE_ALIASES) - {"all"})
+    if _dom_hits and (_dom_words & {"status", "etat", "domain", "domains", "domaines"}):
+        raw_domain = " ".join(_brody_argv)
+        resp_dom = build_domain_bridge_status_response_v1(raw_domain, registry)
+        print(format_domain_bridge_status_v1(resp_dom))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
