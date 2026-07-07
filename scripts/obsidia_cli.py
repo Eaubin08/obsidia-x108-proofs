@@ -5364,6 +5364,181 @@ def format_domain_bridge_status_v1(data: dict) -> str:
 # ─── FIN DOMAIN BRIDGE READONLY V1 ───────────────────────────────────────────
 
 
+# ─── LEAN PROOF PANEL V1 ─────────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1
+# Inventaire readonly des proofs Lean. Aucune execution Lean/Lake automatique.
+# Les commandes de verification sont proposees en COMMANDS_ONLY / WAITING_FOR_HUMAN.
+# proof_write=False. auto_execution=False. decision_authority=KX108_ONLY.
+
+_LEAN_PROOF_PANEL_VERSION = "OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1"
+_LEAN_PROOF_ROOT = "proofs/lean"
+_LEAN_PROOF_MODULE_DIR = "Obsidia"
+
+_LEAN_PROOF_COMMANDS_ONLY = [
+    "lake build",
+    "lake env lean proofs/lean/Obsidia.lean",
+    "python -m pytest tests/gates/ -q",
+]
+
+
+def collect_lean_proof_inventory_v1(limit: int = 80) -> dict:
+    """Inventaire readonly de proofs/lean/. Presence + noms de fichiers uniquement.
+    Aucune execution Lean. Aucune execution Lake. Aucune mutation de proof."""
+    root = REPO_ROOT / _LEAN_PROOF_ROOT
+    base: dict = {
+        "version": _LEAN_PROOF_PANEL_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "proof_write": False,
+        "subprocess": "none",
+        "mutation": "none",
+        "root_exists": False,
+        "lean_root": _LEAN_PROOF_ROOT,
+        "has_lakefile": False,
+        "has_lake_manifest": False,
+        "has_lean_toolchain": False,
+        "lean_file_count_sample": 0,
+        "modules_sample": [],
+        "families": [],
+        "status": "MISSING",
+        "labels": {"inventory": "MISSING", "proof_check": "COMMANDS_ONLY"},
+        "commands_only": list(_LEAN_PROOF_COMMANDS_ONLY),
+    }
+    if not root.exists():
+        return base
+    base["root_exists"] = True
+    try:
+        base["has_lakefile"] = (root / "lakefile.lean").exists()
+        base["has_lake_manifest"] = (root / "lake-manifest.json").exists()
+        base["has_lean_toolchain"] = (root / "lean-toolchain").exists()
+        lean_files = []
+        for i, p in enumerate(root.rglob("*.lean")):
+            if i >= max(limit, 1) * 4:
+                break
+            lean_files.append(p)
+        base["lean_file_count_sample"] = len(lean_files)
+        module_dir = root / _LEAN_PROOF_MODULE_DIR
+        modules: list[str] = []
+        families: list[str] = []
+        if module_dir.is_dir():
+            entries = sorted(module_dir.iterdir(), key=lambda e: e.name)
+            modules = [e.stem for e in entries if e.is_file() and e.suffix == ".lean"][:limit]
+            families = [e.name for e in entries if e.is_dir() and not e.name.startswith("__")][:limit]
+            prefix_counts: dict[str, int] = {}
+            for m in modules:
+                match = re.match(r"^[A-Z][a-z]+", m)
+                if match:
+                    prefix_counts[match.group(0)] = prefix_counts.get(match.group(0), 0) + 1
+            for prefix, count in sorted(prefix_counts.items()):
+                if count >= 2 and prefix not in families:
+                    families.append(prefix)
+        base["modules_sample"] = modules[:limit]
+        base["families"] = families[:limit]
+        if lean_files and base["has_lakefile"] and base["has_lake_manifest"]:
+            base["status"] = "OK"
+            base["labels"]["inventory"] = "MEASURED"
+        elif lean_files:
+            base["status"] = "PARTIAL"
+            base["labels"]["inventory"] = "PROVISIONAL"
+        else:
+            base["status"] = "MISSING"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def build_lean_proof_panel_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal LEAN_PROOF_PANEL_V1. Pure, readonly."""
+    inventory = collect_lean_proof_inventory_v1()
+    reponse_text = (
+        f"Proofs Lean readonly (status={inventory.get('status', '?')}).\n\n"
+        f"  lean_root={inventory.get('lean_root')} | "
+        f"fichiers={inventory.get('lean_file_count_sample')} | "
+        f"lakefile={inventory.get('has_lakefile')} | "
+        f"manifest={inventory.get('has_lake_manifest')}\n\n"
+        "Aucune execution Lean automatique. La verification (lake build) reste "
+        "humaine — COMMANDS_ONLY. decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "LEAN_PROOF_PANEL_V1",
+        "detected_layer": "proof",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _LEAN_PROOF_PANEL_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "proof_write": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "proof_inventory": inventory,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["proof status", "lean status", "status proof"],
+        },
+        "outils_panel": {
+            "LEAN_PROOF_PANEL_V1": "available",
+            "proof_status_cmd": "python scripts/obsidia_cli.py proof status",
+            "lean_status_cmd": "python scripts/obsidia_cli.py lean status",
+            "lake_build": "COMMANDS_ONLY, humain",
+            "lean_exec": "forbidden from terminal",
+            "proof_write": "forbidden",
+        },
+        "next_suggestions": ["proof status", "lean status", "status proof"],
+    }
+
+
+def format_lean_proof_panel_v1(data: dict) -> str:
+    """Formate la reponse LEAN_PROOF_PANEL_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    inv = data.get("proof_inventory", {})
+    lines = [
+        _LEAN_PROOF_PANEL_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"proof_write={etat.get('proof_write', False)}",
+        "",
+        "LEAN:",
+        f"  status={inv.get('status', 'MISSING')}",
+        f"  lean_root={inv.get('lean_root', _LEAN_PROOF_ROOT)}",
+        f"  has_lakefile={inv.get('has_lakefile', False)}",
+        f"  has_lake_manifest={inv.get('has_lake_manifest', False)}",
+        f"  has_lean_toolchain={inv.get('has_lean_toolchain', False)}",
+        f"  lean_file_count_sample={inv.get('lean_file_count_sample', 0)}",
+        f"  inventory_label={(inv.get('labels') or {}).get('inventory', 'MISSING')}",
+        "",
+        "MODULES:",
+    ]
+    modules = inv.get("modules_sample") or []
+    lines += [f"  {m}" for m in modules[:12]] if modules else ["  none"]
+    lines += ["", "FAMILIES:"]
+    families = inv.get("families") or []
+    lines += [f"  {f}" for f in families[:12]] if families else ["  none"]
+    lines += [
+        "",
+        "COMMANDS_ONLY:",
+        "WAITING_FOR_HUMAN:",
+    ]
+    lines += [f"  {c}" for c in (inv.get("commands_only") or _LEAN_PROOF_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no automatic lean execution",
+        "  no proof mutation",
+        "  no commit",
+        "  no push",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN LEAN PROOF PANEL V1 ─────────────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -5787,6 +5962,15 @@ def extract_tools_panel(response: dict) -> list[str]:
             "  - api_role=BRIDGE_ONLY",
             "  - emits_act=False",
         ]
+    if layer in ("proof", "obsidienne"):
+        lines += [
+            "",
+            "LEAN_PROOF_PANEL_V1:",
+            "  - python scripts/obsidia_cli.py proof status",
+            "  - python scripts/obsidia_cli.py lean status",
+            "  - COMMANDS_ONLY",
+            "  - proof_write=False",
+        ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
 
@@ -5797,7 +5981,7 @@ def extract_proof_panel(response: dict) -> list[str]:
     corpus = response.get("corpus_utilise", [])
 
     lines = ["=== PROOF ===", ""]
-    if layer in ("obsidienne", "corpus:lean_proofs"):
+    if layer in ("obsidienne", "corpus:lean_proofs", "proof"):
         lines += [
             "  source: local",
             "  lean_surface: V2 (232 entries)",
@@ -5807,6 +5991,12 @@ def extract_proof_panel(response: dict) -> list[str]:
             "  verify_all.py: humain uniquement",
             "  lean_decides: false",
             "  forbidden_ok: true",
+            "",
+            "  OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1:",
+            "    mode: READONLY",
+            "    proof_check: COMMANDS_ONLY",
+            "    auto_execution=False",
+            "    proof_write=False",
         ]
     elif layer == "audit":
         lines += [
@@ -7897,6 +8087,15 @@ def main(argv: list[str]) -> int:
         raw_domain = " ".join(_brody_argv)
         resp_dom = build_domain_bridge_status_response_v1(raw_domain, registry)
         print(format_domain_bridge_status_v1(resp_dom))
+        return 0
+    # Lean proof panel readonly : proof status / lean status / status proof /
+    # status lean / proof commands / lean commands / "check lean proofs"
+    _lean_hits = _dom_words & {"proof", "proofs", "lean", "preuves"}
+    _lean_triggers = _dom_words & {"status", "etat", "commands", "check", "verifie"}
+    if _lean_hits and _lean_triggers:
+        raw_lean = " ".join(_brody_argv)
+        resp_lean = build_lean_proof_panel_response_v1(raw_lean, registry)
+        print(format_lean_proof_panel_v1(resp_lean))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
