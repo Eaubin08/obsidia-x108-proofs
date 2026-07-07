@@ -4561,6 +4561,326 @@ def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
 
 # ─── FIN TERMINAL OBSIDURE BRIDGE V1 ─────────────────────────────────────────
 
+# ─── OBSIDIA TERMINAL SIGMA/OIE STATUS PANEL V1 ──────────────────────────────
+# OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1
+# Lecture readonly des états Sigma et OIE. Jamais d'exécution.
+# decision_authority=KX108_ONLY, auto_execution=False, sovereign=False.
+
+_SIGMA_OIE_VERSION = "OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1"
+
+_OIE_RECEIPT_PATHS = (
+    "scripts/performance/oie_external_claude_benchmark_v0_receipts.json",
+    "scripts/performance/oie_v0_portfolio_receipts.json",
+)
+
+_OIE_LABEL_MAP = {
+    "REAL": "MEASURED",
+    "DRY_RUN": "ESTIMATED",
+    "PROVISIONAL": "PROVISIONAL",
+    "ESTIMATED": "ESTIMATED",
+    "MEASURED": "MEASURED",
+}
+
+
+def _oie_label_from_mode(mode: str) -> str:
+    return _OIE_LABEL_MAP.get(str(mode).upper(), "PROVISIONAL")
+
+
+def collect_sigma_status_v1(registry: dict | None = None) -> dict:
+    """Lit l'état Sigma en readonly via sigma_guidance_report. Jamais d'exécution."""
+    base: dict = {
+        "version": _SIGMA_OIE_VERSION,
+        "layer": "SIGMA",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "sovereign": False,
+    }
+    try:
+        report = sigma_guidance_report()
+    except Exception as exc:
+        return {
+            **base,
+            "status": "READ_ERROR",
+            "error": type(exc).__name__,
+            "sources": [],
+            "runtime_services": [],
+            "labels": {"sigma_status": "MISSING"},
+            "commands_only": [
+                "python scripts/obsidia_cli.py status sigma",
+                "python scripts/obsidia_cli.py capabilities sigma",
+            ],
+        }
+
+    guidance = report.get("guidance", "UNKNOWN")
+    reasons = list(report.get("guidance_reasons") or [])
+    file_signals = report.get("file_signals") or {}
+    live_signals = report.get("live_signals") or {}
+
+    live_base = live_signals.get("base", "?")
+    live_domains = live_signals.get("domains", "?")
+    live_evaluate = live_signals.get("evaluate", "?")
+
+    if guidance in ("CONTINUE", "CONTINUE_LIGHT"):
+        sigma_label = "MEASURED"
+        sigma_status = "OK"
+    elif guidance in ("HOLD_RECOMMENDED", "HOLD"):
+        sigma_label = "PROVISIONAL"
+        sigma_status = "HOLD_RECOMMENDED"
+    elif guidance == "RELAUNCH_LAYER":
+        sigma_label = "ESTIMATED"
+        sigma_status = "RELAUNCH_RECOMMENDED"
+    else:
+        sigma_label = "PROVISIONAL"
+        sigma_status = str(guidance)
+
+    fs_keys = [f"{k}={v.get('status', '?') if isinstance(v, dict) else str(v)[:20]}"
+               for k, v in file_signals.items() if k != "source"]
+
+    return {
+        **base,
+        "status": sigma_status,
+        "guidance": guidance,
+        "guidance_reasons": reasons[:3],
+        "sources": fs_keys[:6],
+        "runtime_services": {
+            "live_base": str(live_base)[:40],
+            "live_domains": str(live_domains)[:40],
+            "live_evaluate": str(live_evaluate)[:40],
+        },
+        "labels": {"sigma_status": sigma_label},
+        "guidance_authority": str(report.get("guidance_authority", "NONE"))[:40],
+        "note": str(report.get("guidance_note", ""))[:120],
+        "commands_only": [
+            "python scripts/obsidia_cli.py status sigma",
+            "python scripts/obsidia_cli.py capabilities sigma",
+            "# Sigma ne décide pas — no sovereign decision",
+        ],
+    }
+
+
+def collect_oie_reports_v1(limit: int = 5) -> dict:
+    """Lit les receipts OIE en readonly. Jamais d'exécution de benchmark."""
+    base: dict = {
+        "version": _SIGMA_OIE_VERSION,
+        "layer": "OIE",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "sovereign": False,
+    }
+    items: list = []
+    for rel_path in _OIE_RECEIPT_PATHS:
+        p = REPO_ROOT / rel_path
+        if not p.exists():
+            continue
+        try:
+            raw_text = p.read_text(encoding="utf-8", errors="replace")
+            data = json.loads(raw_text)
+        except Exception as exc:
+            items.append({
+                "path": rel_path,
+                "label": "MISSING",
+                "preview": f"READ_ERROR:{type(exc).__name__}",
+            })
+            continue
+
+        mode = ""
+        preview = ""
+        if isinstance(data, dict):
+            mode = str(data.get("mode") or data.get("benchmark") or "UNKNOWN")
+            bk = data.get("benchmark") or data.get("benchmark_id") or ""
+            ts = str(data.get("timestamp") or "")[:16]
+            n_tasks = data.get("tasks_run", "?")
+            indices = data.get("indices") or {}
+            idx_str = ", ".join(f"{k}={v}" for k, v in list(indices.items())[:3]) if isinstance(indices, dict) else ""
+            preview = f"benchmark={bk} ts={ts} tasks={n_tasks}"
+            if idx_str:
+                preview += f" indices=[{idx_str}]"
+        elif isinstance(data, list):
+            mode = "MEASURED"
+            preview = f"list({len(data)} items)"
+
+        label = _oie_label_from_mode(mode)
+        items.append({
+            "path": rel_path,
+            "label": label,
+            "preview": preview[:200],
+        })
+        if len(items) >= limit:
+            break
+
+    if not items:
+        return {
+            **base,
+            "status": "MISSING",
+            "reports_found": 0,
+            "items": [],
+            "commands_only": [
+                "python scripts/obsidia_cli.py status oie",
+                "python scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run  # humain uniquement",
+                "# OIE ne s'évalue jamais automatiquement",
+            ],
+        }
+
+    labels_seen = list({it["label"] for it in items})
+    return {
+        **base,
+        "status": "OK",
+        "reports_found": len(items),
+        "items": items,
+        "labels_found": labels_seen,
+        "commands_only": [
+            "python scripts/obsidia_cli.py status oie",
+            "python scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run  # humain uniquement",
+            "# OIE ne s'évalue jamais automatiquement depuis le terminal",
+        ],
+    }
+
+
+def build_sigma_oie_status_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la réponse Sigma/OIE status en surfaces séparées."""
+    sigma = collect_sigma_status_v1(registry)
+    oie = collect_oie_reports_v1()
+
+    sigma_label = (sigma.get("labels") or {}).get("sigma_status", "MISSING")
+    oie_status = oie.get("status", "MISSING")
+    oie_count = oie.get("reports_found", 0)
+
+    human_lines = [
+        "Sigma et OIE sont disponibles en lecture depuis le terminal.",
+        "",
+        f"Sigma guidance : {sigma.get('guidance', 'UNKNOWN')} (label={sigma_label})",
+        "Sigma ne décide pas — advisory only.",
+        "",
+        f"OIE receipts : {oie_count} rapport(s) trouvé(s) — {oie_status}",
+        "OIE ne s'évalue jamais automatiquement depuis le terminal.",
+    ]
+    human_text = "\n".join(human_lines)
+
+    return {
+        "panel": "SIGMA_OIE_STATUS_PANEL_V1",
+        "raw": raw,
+        "reponse": human_text,
+        "main_answer": {
+            "direct": human_text,
+            "summary": "",
+            "next": ["status sigma", "status oie"],
+        },
+        "etat_technique": {
+            "version": _SIGMA_OIE_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "sovereign": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sigma_status": sigma.get("status"),
+            "sigma_label": sigma_label,
+            "oie_status": oie_status,
+            "oie_reports_found": oie_count,
+        },
+        "outils_panel": {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "sigma_cmd": "python scripts/obsidia_cli.py status sigma",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "reports": "readonly only",
+            "evaluate": "forbidden from terminal",
+            "mutation": "forbidden",
+            "deploy": "forbidden",
+        },
+        "sigma_status": sigma,
+        "oie_status": oie,
+        "next_suggestions": ["status sigma", "status oie", "capabilities sigma"],
+        "mode_reponse": "ANSWER_STATUS",
+        "detected_layer": "sigma",
+        "confidence": 0.88,
+        "output": "COMMANDS",
+        "plan_status": "OK",
+        "next_human_action": "status sigma | status oie",
+        "limites": [
+            "lecture seule",
+            "no sovereign decision",
+            "no auto evaluate",
+            "no auto deploy",
+            "KX108 décide",
+        ],
+    }
+
+
+def format_sigma_oie_status_v1(data: dict) -> str:
+    """Format texte terminal pour Sigma/OIE status."""
+    sigma = data.get("sigma_status") or {}
+    oie = data.get("oie_status") or {}
+
+    etat = data.get("etat_technique") or {}
+    version = etat.get("version", _SIGMA_OIE_VERSION)
+    mode = etat.get("mode", "READONLY")
+    authority = etat.get("decision_authority", "KX108_ONLY")
+    auto_exec = etat.get("auto_execution", False)
+
+    lines = [
+        version,
+        f"mode={mode}",
+        f"decision_authority={authority}",
+        f"auto_execution={auto_exec}",
+        "",
+        "SIGMA:",
+        f"  status={sigma.get('status', 'UNKNOWN')}",
+        f"  guidance={sigma.get('guidance', '?')}",
+        f"  label={( sigma.get('labels') or {}).get('sigma_status', 'MISSING')}",
+        f"  sovereign=False",
+    ]
+    reasons = sigma.get("guidance_reasons") or []
+    if reasons:
+        lines.append("  reasons:")
+        for r in reasons[:2]:
+            lines.append(f"    - {str(r)[:80]}")
+    note = sigma.get("note", "")
+    if note:
+        lines.append(f"  note: {note[:80]}")
+
+    lines += [
+        "",
+        "OIE:",
+        f"  status={oie.get('status', 'MISSING')}",
+        f"  reports_found={oie.get('reports_found', 0)}",
+    ]
+    items = oie.get("items") or []
+    if items:
+        lines.append("  reports:")
+        for it in items[:3]:
+            lbl = it.get("label", "?")
+            path = it.get("path", "?")
+            preview = it.get("preview", "")[:60]
+            lines.append(f"    [{lbl}] {path}")
+            if preview:
+                lines.append(f"      {preview}")
+    labels_found = oie.get("labels_found") or []
+    if labels_found:
+        lines.append(f"  labels_found={', '.join(labels_found)}")
+
+    sigma_cmds = sigma.get("commands_only") or []
+    oie_cmds = oie.get("commands_only") or []
+    all_cmds = list(dict.fromkeys(sigma_cmds + oie_cmds))
+
+    lines += ["", "COMMANDS_ONLY:"]
+    for cmd in all_cmds[:6]:
+        lines.append(f"  {cmd}")
+
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no auto evaluation",
+        "  no mutation",
+        "  no deploy",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN SIGMA/OIE STATUS PANEL V1 ───────────────────────────────────────────
+
 
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
@@ -4653,23 +4973,35 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         politique = ["apply auto", "commit auto", "push auto"]
         next_suggestions = ["peux tu coder", "capabilities obsidure"]
     elif target_layer == "sigma":
+        _sigma_st = collect_sigma_status_v1(registry)
+        _sigma_label = (_sigma_st.get("labels") or {}).get("sigma_status", "PROVISIONAL")
         api_st = _svc("api_health")
         sigma_dir = REPO_ROOT / "sigma"
         reponse_text = (
-            "Sigma est "
-            + ("actif (API 8000 UP)" if api_st == "UP"
-               else "PARTIEL (besoin API 8000 UP pour EXECUTE)")
-            + ".\n\n"
+            "Sigma est disponible en local (guidance="
+            + str(_sigma_st.get("guidance", "?")) + ", label=" + _sigma_label + ").\n\n"
             "La coherence, les contradictions et la fraicheur des signaux sont "
-            "verificiables en local. L'execution complete (EXECUTE) necessite l'API."
+            "verifiables en local. Sigma ne décide pas — advisory only."
         )
         etat_technique = {
+            "version": _SIGMA_OIE_VERSION,
             "terminal": "active",
             "api_8000_execute": api_st,
             "sigma_dir": "ok" if sigma_dir.is_dir() else "absent",
-            "mode": "readonly local + execute si API UP",
+            "sigma_guidance": _sigma_st.get("guidance", "?"),
+            "sigma_label": _sigma_label,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "sovereign": False,
         }
-        next_suggestions = ["sigma coherence", "capabilities sigma"]
+        outils_panel = {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "sigma_cmd": "python scripts/obsidia_cli.py status sigma",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "evaluate": "forbidden from terminal",
+        }
+        next_suggestions = ["status oie", "capabilities sigma"]
     elif target_layer == "memory":
         g_st = _svc("graphiti_8011")
         reponse_text = (
@@ -4688,20 +5020,33 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         outils_panel = {"memory_write": "forbidden", "read": "allowed"}
         next_suggestions = ["memoire graphiti", "capabilities memory"]
     elif target_layer == "oie":
-        receipts_p = (REPO_ROOT / "scripts" / "performance"
-                      / "oie_external_claude_benchmark_v0_receipts.json")
+        _oie_st = collect_oie_reports_v1()
+        _oie_count = _oie_st.get("reports_found", 0)
+        _oie_labels = _oie_st.get("labels_found") or []
         reponse_text = (
-            "OIE est disponible (corpus local, dry-run).\n\n"
-            "Le benchmark peut etre lance en dry-run. "
-            "Les couts reels (COST_REAL) ne sont revendiques que sur preuve."
+            f"OIE est disponible ({_oie_count} rapport(s) trouvé(s)).\n\n"
+            "Le benchmark peut etre lance en dry-run (humain uniquement). "
+            "Les couts reels (COST_REAL) ne sont revendiques que sur preuve. "
+            "Labels: " + (", ".join(_oie_labels) if _oie_labels else "MISSING") + "."
         )
         etat_technique = {
+            "version": _SIGMA_OIE_VERSION,
             "terminal": "active",
-            "receipts": "ok" if receipts_p.exists() else "absent",
+            "oie_status": _oie_st.get("status"),
+            "reports_found": _oie_count,
+            "labels_found": _oie_labels,
             "COST_REAL": "NOT_CLAIMED sauf preuve",
-            "mode": "readonly, dry-run",
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
         }
-        next_suggestions = ["oie benchmark", "capabilities oie"]
+        outils_panel = {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "benchmark": "commands-only, humain",
+            "evaluate": "forbidden from terminal",
+        }
+        next_suggestions = ["status sigma", "capabilities oie"]
     elif target_layer == "obsidienne":
         proofs_dir = REPO_ROOT / "proofs"
         reponse_text = (
@@ -6972,6 +7317,26 @@ def main(argv: list[str]) -> int:
         raw_proposal = f"proposal {sub} {arg}".strip()
         resp = build_obsidure_proposal_reader_response_v2(raw_proposal, registry)
         print(resp["reponse"])
+        return 0
+    if argv and argv[0].lower() in ("sigma",) and len(argv) > 1 and argv[1].lower() == "status":
+        resp = build_status_response("sigma status", "sigma", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() in ("oie",) and len(argv) > 1 and argv[1].lower() == "status":
+        resp = build_status_response("oie status", "oie", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() == "status" and len(argv) > 1 and argv[1].lower() == "sigma":
+        resp = build_status_response("status sigma", "sigma", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() == "status" and len(argv) > 1 and argv[1].lower() == "oie":
+        resp = build_status_response("status oie", "oie", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
