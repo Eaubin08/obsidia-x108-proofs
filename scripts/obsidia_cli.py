@@ -46,6 +46,12 @@ from obsidia_sigma_guidance import (  # noqa: E402
     derive_guidance,
     sigma_guidance_report,
 )
+from obsidia_law_registry_v1 import (  # noqa: E402
+    OBSIDIA_TERMINAL_LAW_REGISTRY_VERSION,
+    format_terminal_law_registry_v1,
+    get_terminal_law_panel_v1,
+    get_terminal_law_registry_v1,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).resolve().parent / "obsidia_registry.yaml"
@@ -5971,6 +5977,15 @@ def extract_tools_panel(response: dict) -> list[str]:
             "  - COMMANDS_ONLY",
             "  - proof_write=False",
         ]
+    if layer == "law":
+        lines += [
+            "",
+            "TERMINAL_LAW_REGISTRY_V1:",
+            "  - python scripts/obsidia_cli.py law status",
+            "  - python scripts/obsidia_cli.py laws",
+            "  - readonly",
+            "  - registry_authority=NONE",
+        ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
 
@@ -8096,6 +8111,15 @@ def main(argv: list[str]) -> int:
         raw_lean = " ".join(_brody_argv)
         resp_lean = build_lean_proof_panel_response_v1(raw_lean, registry)
         print(format_lean_proof_panel_v1(resp_lean))
+        return 0
+    # Law registry readonly : law status / laws / registry laws / status laws /
+    # "show terminal laws" — registre descriptif, registry_authority=NONE
+    _law_hits = _dom_words & {"law", "laws", "lois", "loi"}
+    _law_triggers = _dom_words & {"status", "etat", "registry", "registre",
+                                  "show", "terminal", "laws", "lois"}
+    if _law_hits and _law_triggers:
+        resp_law = get_terminal_law_panel_v1()
+        print(format_terminal_law_registry_v1(resp_law))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
