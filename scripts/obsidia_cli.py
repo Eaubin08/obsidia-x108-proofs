@@ -957,7 +957,7 @@ def _build_capability_summary(layer: str, raw: str) -> dict:
     }
 
 
-def build_active_plan(raw: str, registry: dict) -> dict:
+def _build_active_plan_core_before_gate_planner_v1(raw: str, registry: dict) -> dict:
     """Construit le panneau a partir du pipeline REEL (pas de texte decoratif).
     Ne lance rien : la sortie est PREVUE, l'execution reste `obsidia \"<IN>\"`."""
     normalized = normalize(raw)
@@ -1063,9 +1063,333 @@ def build_active_plan(raw: str, registry: dict) -> dict:
     }
 
 
+def build_active_plan(raw: str, registry: dict) -> dict:
+    plan = _build_active_plan_core_before_gate_planner_v1(raw, registry)
+    resolved = plan.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    plan["input_skill_resolution"] = resolved
+    plan["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", plan.get("detected_layer", "")),
+        kind=resolved.get("resolved_kind", plan.get("plan_status", "")),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer=plan.get("detected_layer", ""),
+        output_predicted=plan.get("output_predicted", ""),
+    )
+    return plan
+
+
+
 def _fmt_list(items: list, indent: str = "  - ") -> str:
     return "\n".join(indent + str(i) for i in items) if items else indent + "aucun"
 
+
+
+# ─── TERMINAL GATE PLANNER V1 ────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_GATE_PLANNER_V1
+# Planner consultatif uniquement : propose les checks/gates, n'exécute rien.
+
+def _gate_contains_v1(items, *needles) -> bool:
+    blob = " ".join(str(x).lower() for x in (items or []))
+    return any(str(n).lower() in blob for n in needles)
+
+
+def _gate_family_from_route_v1(
+    route: str = "",
+    kind: str = "",
+    domain: str = "",
+    detected_layer: str = "",
+    selected_skills: list | None = None,
+    selected_protocols: list | None = None,
+    output_predicted: str = "",
+) -> str:
+    route_u = str(route or "").upper()
+    kind_u = str(kind or "").upper()
+    domain_u = str(domain or "").upper()
+    layer_l = str(detected_layer or "").lower()
+    output_u = str(output_predicted or "").upper()
+    selected_skills = selected_skills or []
+    selected_protocols = selected_protocols or []
+
+    if output_u == "POLICY_DENY":
+        return "POLICY_DENIED"
+
+    if (
+        domain_u == "LEAN"
+        or "LEAN" in route_u
+        or "LEAN" in kind_u
+        or _gate_contains_v1(selected_skills, "proof-sentinel", "lean")
+    ):
+        return "LEAN_PROOF"
+
+    if (
+        route_u == "OBSIDURE"
+        or "PROPOSAL" in kind_u
+        or layer_l == "obsidure"
+    ):
+        return "OBSIDURE_PROPOSAL"
+
+    if (
+        domain_u == "SRL"
+        or "MEMORY" in route_u
+        or "SRL" in route_u
+        or layer_l in ("brody", "memory")
+    ):
+        return "MEMORY_BRODY"
+
+    if (
+        layer_l in ("sigma", "oie", "domains", "domain")
+        or domain_u in ("BANK", "TRADING", "GPS")
+        or "DOMAIN_SUPPORT" in route_u
+    ):
+        return "SIGMA_OIE_DOMAINS"
+
+    if (
+        layer_l in ("terminal", "terminal_self")
+        or route_u == "READONLY_WIRING"
+        or "WIRING" in kind_u
+        or _gate_contains_v1(selected_skills, "terminal-builder")
+    ):
+        return "TERMINAL_CLI"
+
+    return "TERMINAL_CLI"
+
+
+def build_gate_plan_v1(
+    route: str = "",
+    kind: str = "",
+    domain: str = "",
+    selected_skills: list | None = None,
+    selected_protocols: list | None = None,
+    detected_layer: str = "",
+    output_predicted: str = "",
+) -> dict:
+    selected_skills = list(selected_skills or [])
+    selected_protocols = list(selected_protocols or [])
+
+    family = _gate_family_from_route_v1(
+        route=route,
+        kind=kind,
+        domain=domain,
+        detected_layer=detected_layer,
+        selected_skills=selected_skills,
+        selected_protocols=selected_protocols,
+        output_predicted=output_predicted,
+    )
+
+    common_required = [
+        "python -m py_compile scripts/obsidia_cli.py",
+        "python scripts/gates/obsidia_forbidden_write_check.py --help  # COMMANDS_ONLY, humain",
+        "python scripts/gates/obsidia_kernel_boundary_check.py --help  # COMMANDS_ONLY, humain",
+    ]
+
+    required_by_family = {
+        "LEAN_PROOF": common_required + [
+            "python scripts/gates/obsidia_lean_manifest_guard.py --help  # COMMANDS_ONLY, humain",
+            "python scripts/gates/obsidia_commit_scope_guard.py --help  # scope proofs/lean à confirmer humainement",
+            "forbidden-token check: aucun sorry/admit/axiom non autorisé dans le scope Lean",
+        ],
+        "OBSIDURE_PROPOSAL": common_required + [
+            "proposal receipt check: _PATCH_PROPOSALS/<id>/RECEIPT.md en lecture seule",
+            "diff review: git diff -- <scope exact>  # humain",
+            "forbidden-token check: apply/commit/push/deploy interdits sans approbation humaine",
+            "dry-run apply protocol only: scripts/apply_proposal.ps1 -ProposalId <id> -DryRun",
+        ],
+        "TERMINAL_CLI": common_required + [
+            "python -m pytest tests/gates/ -q",
+            "forbidden-pattern check: subprocess/os.system/shell=True/Start-Process interdits dans le terminal",
+            "smoke: python scripts/obsidia_cli.py plan \"<IN>\"",
+            "smoke: python scripts/obsidia_cli.py route \"<IN>\"",
+            "smoke: python scripts/obsidia_cli.py tools \"<IN>\"",
+        ],
+        "MEMORY_BRODY": [
+            "readonly check: memory_write=false",
+            "non-sovereignty check: Brody ne décide pas",
+            "no-write check: aucun write mémoire depuis terminal",
+            "bridge check: API/Brody consultatif uniquement",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "sigma advisory-only check",
+            "domain bridge-only check",
+            "no ALLOW/BLOCK/HOLD/ACT emission outside KX108",
+            "OIE/benchmark label check: MEASURED/ESTIMATED/PROVISIONAL explicites",
+        ],
+        "POLICY_DENIED": [
+            "policy denied check: aucune commande mutante proposée",
+            "human reformulation required",
+            "commit/push/apply/deploy forbidden",
+        ],
+    }
+
+    recommended_by_family = {
+        "LEAN_PROOF": [
+            "Push-Location proofs/lean ; lake build Obsidia.Peripheral ; Pop-Location  # humain uniquement",
+            "python -m pytest tests/gates/test_obsidia_lean_manifest_guard.py -q",
+            "python scripts/obsidure_cli.py --objective \"<objectif Lean>\" --domain LEAN --dry-run",
+        ],
+        "OBSIDURE_PROPOSAL": [
+            "python scripts/obsidure_cli.py --objective \"<objectif>\" --dry-run",
+            "Get-ChildItem _PATCH_PROPOSALS -Recurse | Select-Object -First 80",
+            "git diff -- <scope exact validé humainement>",
+            "scripts/apply_proposal.ps1 -ProposalId <id> -DryRun",
+        ],
+        "TERMINAL_CLI": [
+            "python -m pytest tests/gates/test_obsidia_terminal_gate_planner_v1.py -q",
+            "python scripts/obsidia_cli.py \"<IN>\"",
+            "python scripts/obsidia_cli.py operator \"<IN>\"",
+        ],
+        "MEMORY_BRODY": [
+            "python scripts/obsidia_cli.py status brody",
+            "python scripts/obsidia_cli.py status memory",
+            "vérifier manuellement response_contract: memory_write=false, decision_authority=KX108_ONLY",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "python scripts/obsidia_cli.py status sigma",
+            "python scripts/obsidia_cli.py capabilities sigma",
+            "vérifier manuellement: advisory-only, bridge-only, no sovereign decision",
+        ],
+        "POLICY_DENIED": [
+            "reformuler sans mutation directe",
+            "utiliser workflow proposal-first / dry-run / validation humaine",
+        ],
+    }
+
+    forbidden_by_family = {
+        "LEAN_PROOF": [
+            "lake build automatique depuis le terminal",
+            "mutation proofs/ sans scope humain",
+            "apply automatique de preuve",
+            "emission ALLOW/BLOCK/HOLD/ACT",
+        ],
+        "OBSIDURE_PROPOSAL": [
+            "apply automatique",
+            "commit automatique",
+            "push automatique",
+            "deploy automatique",
+            "mutation kernel/X108",
+        ],
+        "TERMINAL_CLI": [
+            "subprocess automatique",
+            "os.system/shell=True",
+            "git add .",
+            "commit/push automatique",
+            "mutation kernel/X108",
+        ],
+        "MEMORY_BRODY": [
+            "memory write",
+            "Brody décisionnaire",
+            "POST mutatif non approuvé",
+            "sovereignty escalation",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "Sigma décisionnaire",
+            "domain ACT direct",
+            "ALLOW/BLOCK/HOLD/ACT hors KX108",
+            "benchmark claim sans label",
+        ],
+        "POLICY_DENIED": [
+            "apply",
+            "commit",
+            "push",
+            "deploy",
+            "delete",
+            "mutation kernel/X108",
+        ],
+    }
+
+    mode_by_family = {
+        "MEMORY_BRODY": "READONLY_CHECKS",
+        "SIGMA_OIE_DOMAINS": "READONLY_CHECKS",
+        "POLICY_DENIED": "POLICY_ONLY",
+    }
+
+    return {
+        "version": "OBSIDIA_TERMINAL_GATE_PLANNER_V1",
+        "mode": mode_by_family.get(family, "COMMANDS_ONLY_NO_EXECUTION"),
+        "authority": "NONE_GATE_PLANNER_IS_ADVISORY_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+        "emits_verdict": False,
+        "kernel_mutation": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "route": str(route or "UNKNOWN"),
+        "kind": str(kind or "UNKNOWN"),
+        "domain": str(domain or "AUTO"),
+        "detected_layer": str(detected_layer or "unknown"),
+        "output_predicted": str(output_predicted or "UNKNOWN"),
+        "selected_skills": selected_skills,
+        "selected_protocols": selected_protocols,
+        "gate_family": family,
+        "required_checks": list(required_by_family.get(family, common_required)),
+        "recommended_commands": list(recommended_by_family.get(family, recommended_by_family["TERMINAL_CLI"])),
+        "forbidden_actions": list(forbidden_by_family.get(family, forbidden_by_family["TERMINAL_CLI"])),
+        "policy": [
+            "gate planner is advisory only",
+            "no background execution",
+            "no subprocess",
+            "no auto apply",
+            "no auto commit",
+            "no auto push",
+            "human executes all commands",
+            "X108 = final authority",
+        ],
+    }
+
+
+def _format_gate_plan_lines_v1(gate_plan: dict, header: str = "GATE_PLAN", limit: int = 6) -> list[str]:
+    gp = gate_plan or {}
+    lines = [
+        f"{header}:",
+        f"  version={gp.get('version', 'UNKNOWN')}",
+        f"  mode={gp.get('mode', 'UNKNOWN')}",
+        f"  family={gp.get('gate_family', 'UNKNOWN')}",
+        f"  authority={gp.get('authority', 'NONE_GATE_PLANNER_IS_ADVISORY_ONLY')}",
+        f"  decision_authority={gp.get('decision_authority', 'KX108_ONLY')}",
+        f"  auto_execution={gp.get('auto_execution', False)}",
+        f"  emits_act={gp.get('emits_act', False)}",
+        "  required_checks:",
+    ]
+    checks = list(gp.get("required_checks") or [])
+    lines.extend(f"    - {x}" for x in checks[:limit])
+    if not checks:
+        lines.append("    - none")
+
+    lines.append("  recommended_commands:")
+    cmds = list(gp.get("recommended_commands") or [])
+    lines.extend(f"    - {x}" for x in cmds[:limit])
+    if not cmds:
+        lines.append("    - none")
+
+    lines.append("  forbidden_actions:")
+    forbidden = list(gp.get("forbidden_actions") or [])
+    lines.extend(f"    - {x}" for x in forbidden[:limit])
+    if not forbidden:
+        lines.append("    - none")
+
+    return lines
+
+
+def format_gate_plan_view_v1(gate_plan: dict) -> str:
+    return "\n".join(_format_gate_plan_lines_v1(gate_plan, header="OBSIDIA_GATE_PLAN"))
+
+
+def extract_gates_panel(response: dict) -> list[str]:
+    response = response or {}
+    gate_plan = response.get("gate_plan")
+    if not gate_plan:
+        gate_plan = (response.get("input_skill_resolution") or {}).get("gate_plan")
+    if not gate_plan:
+        return [
+            "GATE_PLAN:",
+            "  version=OBSIDIA_TERMINAL_GATE_PLANNER_V1",
+            "  mode=COMMANDS_ONLY_NO_EXECUTION",
+            "  family=FALLBACK_GLOBAL_GATES",
+            "  authority=NONE_GATE_PLANNER_IS_ADVISORY_ONLY",
+            "  required_checks:",
+            *[f"    - {g}" for g in list(GATES_KNOWN)[:8]],
+        ]
+    return _format_gate_plan_lines_v1(gate_plan)
 
 
 # OBSIDIA_ACTIVE_PLAN_SKILL_RESOLUTION_V1
@@ -1114,7 +1438,7 @@ def _active_plan_skill_resolution_lines_v1(plan: dict) -> list[str]:
     return lines
 
 
-def format_active_plan(plan: dict) -> str:
+def _format_active_plan_core_before_gate_planner_v1(plan: dict) -> str:
     lines = [
         "================ OBSIDIA_ACTIVE_PLAN ================",
         "", "INPUT:", f"  {plan['raw']}",
@@ -1149,7 +1473,15 @@ def format_active_plan(plan: dict) -> str:
     return "\n".join(lines)
 
 
-def format_route_view(plan: dict) -> str:
+def format_active_plan(plan: dict) -> str:
+    text = _format_active_plan_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(plan.get("gate_plan"), header="GATE_PLAN"))
+
+
+
+def _format_route_view_core_before_gate_planner_v1(plan: dict) -> str:
     lines = [
         "---- OBSIDIA_ACTIVE_PLAN / ROUTE ----",
         f"ROADMAP (resume): IN -> normalize -> {plan['detected_layer']} -> {plan['output_predicted']}",
@@ -1163,7 +1495,24 @@ def format_route_view(plan: dict) -> str:
     return "\n".join(lines)
 
 
-def format_tools_view(plan: dict) -> str:
+def format_route_view(plan: dict) -> str:
+    text = _format_route_view_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    gp = plan.get("gate_plan") or {}
+    lines = [
+        "",
+        "GATE_PLAN:",
+        f"  family={gp.get('gate_family', 'UNKNOWN')}",
+        f"  mode={gp.get('mode', 'UNKNOWN')}",
+        f"  authority={gp.get('authority', 'NONE_GATE_PLANNER_IS_ADVISORY_ONLY')}",
+        f"  auto_execution={gp.get('auto_execution', False)}",
+    ]
+    return text + "\n" + "\n".join(lines)
+
+
+
+def _format_tools_view_core_before_gate_planner_v1(plan: dict) -> str:
     return "\n".join([
         "---- OBSIDIA_ACTIVE_PLAN / TOOLS ----",
         f"COUCHE: {plan['detected_layer']} | SORTIE PREVUE: {plan['output_predicted']}",
@@ -1181,6 +1530,14 @@ def format_tools_view(plan: dict) -> str:
         "     OUTILS/CORPUS EXCLUS:", _fmt_list(plan["outils_exclus"], "     - "),
         f"PLAN_STATUS: {plan['plan_status']}",
     ])
+
+
+def format_tools_view(plan: dict) -> str:
+    text = _format_tools_view_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(plan.get("gate_plan"), header="GATE_PLAN"))
+
 
 
 def format_blockers_view(registry: dict) -> str:
@@ -1212,7 +1569,7 @@ def format_gates_view() -> str:
     return "\n".join(lines)
 
 
-def handle_plan_command(cmd: str, arg: str, registry: dict,
+def _handle_plan_command_core_before_gate_planner_v1(cmd: str, arg: str, registry: dict,
                         last_plan: dict | None = None) -> tuple[str, dict | None, dict | None]:
     """Retourne (texte, receipt_payload_ou_None, plan_ou_None)."""
     cmd = cmd.lower()
@@ -1247,6 +1604,27 @@ def handle_plan_command(cmd: str, arg: str, registry: dict,
         return (f"PROCHAINE ACTION HUMAINE (dernier IN) :\n  {last_plan['next_human_action']}"
                 + f"\nPLAN_STATUS: {last_plan['plan_status']}", None, last_plan)
     return "commande panneau inconnue", None, None
+
+
+def handle_plan_command(cmd: str, arg: str, registry: dict, last_plan: dict | None = None) -> tuple[str, dict | None, dict | None]:
+    if str(cmd).lower() == "gates" and arg:
+        plan = build_active_plan(arg, registry)
+        receipt = {
+            "view": "gates",
+            "panel": "ACTIVE_PLAN",
+            "raw": arg,
+            "detected_layer": plan.get("detected_layer"),
+            "output_predicted": plan.get("output_predicted"),
+            "gate_plan": plan.get("gate_plan"),
+            "plan_status": plan.get("plan_status"),
+        }
+        return format_gate_plan_view_v1(plan.get("gate_plan")), receipt, plan
+
+    text, receipt, plan = _handle_plan_command_core_before_gate_planner_v1(cmd, arg, registry, last_plan)
+    if receipt is not None and plan is not None and "gate_plan" in plan:
+        receipt["gate_plan"] = plan["gate_plan"]
+    return text, receipt, plan
+
 
 
 # ----------------------------------------------------------------------------
@@ -4766,9 +5144,39 @@ def attach_runtime_input_skill_resolution_v1(response: dict, raw: str) -> dict:
     return out
 
 
-def answer_router(raw: str, registry: dict) -> dict:
+def _answer_router_core_before_gate_planner_v1(raw: str, registry: dict) -> dict:
     core = _answer_router_core_before_skill_resolution_v1(raw, registry)
     return attach_runtime_input_skill_resolution_v1(core, raw)
+
+
+def answer_router(raw: str, registry: dict) -> dict:
+    response = _answer_router_core_before_gate_planner_v1(raw, registry)
+    resolved = response.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    response["input_skill_resolution"] = resolved
+    response["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", response.get("detected_layer", "")),
+        kind=resolved.get("resolved_kind", response.get("plan_status", "")),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer=response.get("detected_layer", ""),
+        output_predicted=response.get("output", response.get("mode_reponse", "")),
+    )
+
+    etat = dict(response.get("etat_technique") or {})
+    etat.setdefault("gate_planner", response["gate_plan"]["version"])
+    etat.setdefault("gate_family", response["gate_plan"]["gate_family"])
+    etat.setdefault("gate_planner_mode", response["gate_plan"]["mode"])
+    etat.setdefault("gate_planner_authority", response["gate_plan"]["authority"])
+    response["etat_technique"] = etat
+
+    outils = dict(response.get("outils_panel") or {})
+    outils.setdefault("gate_planner", "commands_only_no_execution")
+    outils.setdefault("gate_family", response["gate_plan"]["gate_family"])
+    response["outils_panel"] = outils
+
+    return response
+
 
 
 def _format_surface_response_core_before_runtime_skill_resolution_v1(r: dict) -> str:
@@ -4817,7 +5225,7 @@ def _format_surface_response_core_before_runtime_skill_resolution_v1(r: dict) ->
 
 
 # OBSIDIA_TERMINAL_RUNTIME_INPUT_RESOLVER_V1_DISPLAY_FULL
-def format_surface_response(r: dict) -> str:
+def _format_surface_response_core_before_gate_planner_v1(r: dict) -> str:
     text = _format_surface_response_core_before_runtime_skill_resolution_v1(r)
     resolved = (r or {}).get("input_skill_resolution") or {}
     if not resolved:
@@ -4856,6 +5264,17 @@ def format_surface_response(r: dict) -> str:
         lines.append("    - none")
 
     return text + "\n" + "\n".join(lines)
+
+
+def format_surface_response(r: dict) -> str:
+    text = _format_surface_response_core_before_gate_planner_v1(r)
+    gate_plan = (r or {}).get("gate_plan")
+    if not gate_plan:
+        return text
+    if "GATES_PANEL:" in text:
+        return text
+    return text + "\n\nGATES_PANEL:\n" + "\n".join(_format_gate_plan_lines_v1(gate_plan, header="GATE_PLAN"))
+
 
 
 def format_obsidia_response(r: dict) -> str:
@@ -5776,7 +6195,7 @@ def _skill_resolver_protocol_paths_v1(domain: str | None, kind: str, raw: str = 
             seen.add(path)
     return out
 
-def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
+def _resolve_terminal_input_with_skills_core_before_gate_planner_v1(raw: str) -> dict:
     objective = (raw or "").strip()
     domain = _operator_domain_v1(objective)
     kind = _operator_kind_v1(objective)
@@ -5817,6 +6236,22 @@ def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
             "no ALLOW/BLOCK/HOLD/ACT emission",
         ],
     }
+
+
+def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
+    resolved = _resolve_terminal_input_with_skills_core_before_gate_planner_v1(raw)
+    if "gate_plan" not in resolved:
+        resolved["gate_plan"] = build_gate_plan_v1(
+            route=resolved.get("resolved_route", ""),
+            kind=resolved.get("resolved_kind", ""),
+            domain=resolved.get("resolved_domain", "AUTO"),
+            selected_skills=resolved.get("selected_skills", []),
+            selected_protocols=resolved.get("selected_protocols", []),
+            detected_layer=str(resolved.get("resolved_domain", "unknown")).lower(),
+            output_predicted="COMMANDS",
+        )
+    return resolved
+
 
 def format_terminal_skill_inventory_v1(raw_filter: str = "") -> str:
     needle = normalize(raw_filter).lower().strip()
@@ -5864,7 +6299,7 @@ def format_terminal_skill_inventory_v1(raw_filter: str = "") -> str:
     ]
     return "\n".join(lines)
 
-def format_terminal_input_resolution_v1(raw: str) -> str:
+def _format_terminal_input_resolution_core_before_gate_planner_v1(raw: str) -> str:
     resolved = resolve_terminal_input_with_skills_v1(raw)
     lines = [
         "================ OBSIDIA TERMINAL INPUT RESOLUTION ================",
@@ -5899,6 +6334,15 @@ def format_terminal_input_resolution_v1(raw: str) -> str:
         "================================================================",
     ]
     return "\n".join(lines)
+
+
+def format_terminal_input_resolution_v1(raw: str) -> str:
+    text = _format_terminal_input_resolution_core_before_gate_planner_v1(raw)
+    resolved = resolve_terminal_input_with_skills_v1(raw)
+    if "GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(resolved.get("gate_plan"), header="GATE_PLAN"))
+
 
 # OBSIDIA_TERMINAL_OPERATOR_OBJECTIVE_PREFIX_SKILL_HINTS_V1
 def _operator_enriched_objective_v1(objective: str, domain: str | None, kind: str) -> str:
@@ -5940,7 +6384,7 @@ def _operator_skill_hints_v1(domain: str | None, kind: str, raw: str = "") -> li
 def _operator_protocol_hints_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
     return _skill_resolver_protocol_paths_v1(domain, kind, raw)
 
-def build_obsidure_operator_task_card_v1(raw: str) -> dict:
+def _build_obsidure_operator_task_card_core_before_gate_planner_v1(raw: str) -> dict:
     objective = (raw or "").strip() or "préparer une task card Obsidure"
     domain = _operator_domain_v1(objective)
     kind = _operator_kind_v1(objective)
@@ -5997,7 +6441,25 @@ def build_obsidure_operator_task_card_v1(raw: str) -> dict:
         "next_human_action": "lancer la commande DRY_RUN si tu veux préparer un proposal Obsidure",
     }
 
-def format_obsidure_operator_task_card_v1(raw: str) -> str:
+
+def build_obsidure_operator_task_card_v1(raw: str) -> dict:
+    card = _build_obsidure_operator_task_card_core_before_gate_planner_v1(raw)
+    resolved = card.get("input_resolution") or card.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    card["input_resolution"] = resolved
+    card["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", "OBSIDURE"),
+        kind=resolved.get("resolved_kind", "PROPOSAL_PREP"),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer="obsidure",
+        output_predicted="COMMANDS",
+    )
+    card["gates"] = list(card["gate_plan"].get("required_checks") or [])
+    return card
+
+
+def _format_obsidure_operator_task_card_core_before_gate_planner_v1(raw: str) -> str:
     card = build_obsidure_operator_task_card_v1(raw)
     lines = [
         "================ OBSIDIA OPERATOR TASK CARD ================",
@@ -6054,6 +6516,53 @@ def format_obsidure_operator_task_card_v1(raw: str) -> str:
         "============================================================",
     ]
     return "\n".join(lines)
+
+
+def format_obsidure_operator_task_card_v1(card: dict) -> str:
+    # OBSIDIA_TERMINAL_GATE_PLANNER_V1_OPERATOR_FORMAT_COMPAT
+    # Backward compatible: legacy callers pass raw str; new tests may pass a card dict.
+    raw_or_card = card
+
+    if isinstance(raw_or_card, dict):
+        card_obj = raw_or_card
+        raw = (
+            card_obj.get("objective")
+            or card_obj.get("raw")
+            or card_obj.get("input")
+            or card_obj.get("enriched_objective")
+            or "préparer une task card Obsidure"
+        )
+        text = _format_obsidure_operator_task_card_core_before_gate_planner_v1(str(raw))
+        gate_plan = card_obj.get("gate_plan")
+        if not gate_plan:
+            resolved = (
+                card_obj.get("input_resolution")
+                or card_obj.get("input_skill_resolution")
+                or resolve_terminal_input_with_skills_v1(str(raw))
+            )
+            gate_plan = build_gate_plan_v1(
+                route=resolved.get("resolved_route", "OBSIDURE"),
+                kind=resolved.get("resolved_kind", "PROPOSAL_PREP"),
+                domain=resolved.get("resolved_domain", "AUTO"),
+                selected_skills=resolved.get("selected_skills", []),
+                selected_protocols=resolved.get("selected_protocols", []),
+                detected_layer="obsidure",
+                output_predicted="COMMANDS",
+            )
+    else:
+        raw = str(raw_or_card)
+        text = _format_obsidure_operator_task_card_core_before_gate_planner_v1(raw)
+        card_obj = build_obsidure_operator_task_card_v1(raw)
+        gate_plan = card_obj.get("gate_plan")
+
+    if "GATE_PLAN:" in text:
+        return text
+
+    return text + "\n\n" + "\n".join(
+        _format_gate_plan_lines_v1(gate_plan, header="GATE_PLAN")
+    )
+
+
 
 
 def main(argv: list[str]) -> int:
