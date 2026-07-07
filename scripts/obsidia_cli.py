@@ -2587,6 +2587,248 @@ def detect_status_query(raw: str, normalized: str) -> str | None:
     return "_all"
 
 
+# ─── OS LANGAGE UNI / UNIFIED INPUT IR V1 ────────────────────────────────────
+# OBSIDIA_TERMINAL_OS_LANGAGE_UNI_IR_V1
+# Pure local IR. No subprocess, no mutation, no network required.
+
+_IR_CODE_WORDS = frozenset({
+    "code", "coder", "patch", "correction", "corrige", "fix", "bug",
+    "implemente", "implementation", "proposal", "propose", "fichier",
+})
+_IR_STATUS_WORDS = frozenset({
+    "actif", "active", "status", "etat", "up", "ready", "fonctionne",
+    "tourne", "disponible", "branche", "connecte",
+})
+_IR_PLAN_WORDS = frozenset({
+    "suite", "continue", "suivant", "next", "reprendre", "plan",
+    "reverse", "inverse", "reconstruire", "clarifie", "clarifier",
+})
+_IR_AUDIT_WORDS = frozenset({
+    "audit", "diagnostic", "coherence", "sigma", "preuves", "preuve",
+    "lean", "theoreme", "theoremes", "oie", "benchmark",
+})
+_IR_DENY_WORDS = frozenset({
+    "commit", "push", "apply", "deploy", "delete", "supprime",
+    "secret", "token", "password", "key",
+})
+
+
+def detect_unified_ir_query(raw: str, normalized: str | None = None) -> bool:
+    """Detect explicit request to show OS Langage Uni / UnifiedInputIR."""
+    n = normalized if normalized is not None else normalize(raw)
+    phrases = (
+        "langage uni", "os langage", "unified ir", "input ir",
+        "traduit ma demande", "traduire ma demande",
+        "normalise ma demande", "normaliser ma demande",
+        "montre ir", "affiche ir",
+    )
+    return any(p in n for p in phrases)
+
+
+def _ir_words(normalized: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", normalized))
+
+
+def _ir_target_from_words(words: set[str], normalized: str) -> str:
+    """Resolve target layer for UnifiedInputIR without executing anything."""
+    status_target = detect_status_query(normalized, normalized)
+    if status_target == "_all":
+        return "live"
+    if status_target:
+        if status_target == "obsidienne":
+            return "lean"
+        if status_target == "terminal_self":
+            return "terminal"
+        return status_target
+
+    layer_keywords = (
+        ("obsidure", {"obsidure", "code", "coder", "patch", "correction", "proposal"}),
+        ("brody", {"brody", "explique", "contexte", "reformule", "synthese"}),
+        ("reverse", {"reverse", "inverse", "suite", "continue", "reprendre", "plan"}),
+        ("sigma", {"sigma", "coherence", "contradiction"}),
+        ("oie", {"oie", "benchmark", "cout", "token"}),
+        ("lean", {"lean", "preuve", "preuves", "theoreme", "theoremes"}),
+        ("domains", {"domains", "domain", "bank", "banque", "trading", "gps", "aviation"}),
+        ("kernel", {"kernel", "x108", "kx108", "ragnarok"}),
+        ("terminal", {"terminal", "langage", "uni", "ir"}),
+    )
+    for layer, kws in layer_keywords:
+        if words & kws:
+            return layer
+    return "unknown"
+
+
+def normalize_unified_input(raw: str, registry: dict | None = None) -> dict:
+    """Build UnifiedInputIR V1 from a free-form user input.
+
+    This is a pure terminal-side translation layer:
+    - no subprocess
+    - no server launch
+    - no mutation
+    - no authority decision
+    """
+    normalized = normalize(raw)
+    words = _ir_words(normalized)
+
+    target_layer = _ir_target_from_words(words, normalized)
+
+    is_status = bool(words & _IR_STATUS_WORDS) or detect_status_query(raw, normalized) is not None
+    is_code = bool(words & _IR_CODE_WORDS) or target_layer == "obsidure"
+    is_plan = bool(words & _IR_PLAN_WORDS) or target_layer == "reverse"
+    is_audit = bool(words & _IR_AUDIT_WORDS) or target_layer in {"sigma", "lean", "oie"}
+    is_deny = bool(words & _IR_DENY_WORDS)
+
+    if is_deny:
+        intent_type = "unknown"
+        action_type = "deny"
+        risk_level = "high"
+    elif is_status:
+        intent_type = "status"
+        action_type = "status"
+        risk_level = "low"
+    elif is_code:
+        intent_type = "code_request"
+        action_type = "commands"
+        risk_level = "medium"
+    elif is_plan:
+        intent_type = "plan"
+        action_type = "guide"
+        risk_level = "low"
+    elif is_audit:
+        intent_type = "audit"
+        action_type = "read"
+        risk_level = "medium"
+    elif any(w in words for w in {"explique", "pourquoi", "comment", "quoi", "contexte", "resume"}):
+        intent_type = "question"
+        action_type = "answer"
+        risk_level = "low"
+        if target_layer == "unknown":
+            target_layer = "brody"
+    elif detect_unified_ir_query(raw, normalized):
+        intent_type = "question"
+        action_type = "answer"
+        risk_level = "low"
+        target_layer = "terminal"
+    else:
+        intent_type = "unknown"
+        action_type = "guide"
+        risk_level = "low"
+
+    needs = {
+        "brody": target_layer == "brody" or intent_type == "question",
+        "obsidure": target_layer == "obsidure" or intent_type == "code_request",
+        "reverse": target_layer == "reverse" or intent_type == "plan" or intent_type == "unknown",
+        "x108_gate": action_type in {"commands", "deny"} or risk_level in {"medium", "high"},
+        "proof": target_layer in {"lean", "sigma", "oie"} or intent_type == "audit",
+    }
+
+    constraints = [
+        "terminal_non_souverain",
+        "decision_authority=KX108_ONLY",
+        "no_auto_apply",
+        "no_auto_commit",
+        "no_auto_push",
+    ]
+
+    missing: list[str] = []
+    if intent_type == "code_request" and not any(w in words for w in {"fichier", "scope", "test", "gate"}):
+        missing.append("scope_fichier_ou_objectif_precis")
+    if intent_type == "unknown":
+        missing.append("intention_cible")
+    if target_layer == "unknown":
+        missing.append("target_layer")
+
+    return {
+        "raw": raw,
+        "normalized": normalized,
+        "intent_type": intent_type,
+        "target_layer": target_layer,
+        "action_type": action_type,
+        "risk_level": risk_level,
+        "needs": needs,
+        "constraints": constraints,
+        "missing": missing,
+    }
+
+
+def format_unified_ir(ir: dict) -> str:
+    """Human-readable UnifiedInputIR."""
+    needs = ir.get("needs", {})
+    active_needs = [k for k, v in needs.items() if v]
+    lines = [
+        "OS Langage Uni — UnifiedInputIR",
+        "",
+        f"intent_type : {ir.get('intent_type')}",
+        f"target_layer: {ir.get('target_layer')}",
+        f"action_type : {ir.get('action_type')}",
+        f"risk_level  : {ir.get('risk_level')}",
+        "",
+        "needs      : " + (", ".join(active_needs) if active_needs else "none"),
+    ]
+    missing = ir.get("missing") or []
+    if missing:
+        lines += ["", "missing    : " + ", ".join(str(x) for x in missing)]
+    return "\n".join(lines)
+
+
+def build_unified_ir_response(raw: str, registry: dict) -> dict:
+    """Build a response showing the UnifiedInputIR in separated surfaces."""
+    ir = normalize_unified_input(raw, registry)
+    human = format_unified_ir(ir)
+    return {
+        "panel": "OBSIDIA_RESPONSE",
+        "raw": raw,
+        "reponse": human,
+        "main_answer": {
+            "direct": human,
+            "summary": "",
+            "next": ["brody explique le contexte", "peux tu coder"],
+        },
+        "etat_technique": {
+            "normalized": ir["normalized"],
+            "intent_type": ir["intent_type"],
+            "target_layer": ir["target_layer"],
+            "action_type": ir["action_type"],
+            "risk_level": ir["risk_level"],
+        },
+        "outils_panel": {
+            "brody": "needed" if ir["needs"]["brody"] else "not_needed",
+            "obsidure": "needed" if ir["needs"]["obsidure"] else "not_needed",
+            "reverse": "needed" if ir["needs"]["reverse"] else "not_needed",
+            "proof": "needed" if ir["needs"]["proof"] else "not_needed",
+            "x108_gate": "needed" if ir["needs"]["x108_gate"] else "not_needed",
+        },
+        "proof_panel": {
+            "source": "local",
+            "ir": "computed",
+            "mutation": "none",
+        },
+        "next_suggestions": ["brody explique le contexte", "peux tu coder"],
+        "mode_reponse": "ANSWER_LOCAL",
+        "detected_layer": "terminal",
+        "confidence": 0.80,
+        "organes_mobilises": ["OS Langage Uni", "Terminal", "Registry"],
+        "organes_mobilisables": ["Brody", "Obsidure", "Reverse", "X108 Gate"],
+        "outils_utilises": ["normalize_unified_input"],
+        "corpus_utilise": ["unified_ir:v1"],
+        "limites": [
+            "IR local heuristique",
+            "ne decide pas",
+            "X108 reste autorite finale",
+        ],
+        "action_locale": "UNIFIED_IR_LOCAL",
+        "local_read_meta": {"ir": ir},
+        "next_human_action": "choisir brody / obsidure / reverse selon l'IR",
+        "output": assert_output_allowed("GUIDE"),
+        "guidance": [],
+        "guidance_authority": "NONE",
+        "plan_status": "OK",
+    }
+
+
+# ─── FIN OS LANGAGE UNI / UNIFIED INPUT IR V1 ────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -3115,6 +3357,10 @@ def answer_router(raw: str, registry: dict) -> dict:
                 "plan_status": _st_plan["plan_status"],
             }
         return build_status_response(raw, _st_target, registry)
+
+    # Branche OS Langage Uni — demande explicite de traduction IR.
+    if detect_unified_ir_query(raw, normalize(raw)):
+        return build_unified_ir_response(raw, registry)
 
     plan = build_active_plan(raw, registry)
     normalized = plan["normalized"]
