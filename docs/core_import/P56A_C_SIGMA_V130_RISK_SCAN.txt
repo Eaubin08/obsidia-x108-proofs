@@ -1,0 +1,239 @@
+﻿
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:16:    monitor = 
+ObsidiaSigmaMonitor()
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:17:    
+monitor.evaluate_step(severity, risks, contras)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:18:    report = 
+monitor.export_to_proofkit()
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:19:"""
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:20:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:21:import json
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:22:import os
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:23:import time
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:24:import hashlib
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:25:from pathlib import Path
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:26:from typing import List, 
+Dict, Any, Optional
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:27:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:28:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:29:SEVERITY_MAP = {"S0": 
+0.0, "S1": 0.25, "S2": 0.5, "S3": 0.75, "S4": 1.0}
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:30:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:31:# Valeurs par défaut 
+v1.4.0 (utilisées si sigma_config.json absent)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:36:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:37:def 
+_load_sigma_config(config_path: str = "agents/sigma_config.json") -> Dict[str, Any]:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:38:    """
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:39:    Charge la 
+configuration Sigma depuis un fichier JSON externe.
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:41:    """
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:42:    p = Path(config_path)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:43:    if p.exists():
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:44:        try:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:45:            with open(p, 
+"r") as f:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:46:                return 
+json.load(f)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:47:        except 
+(json.JSONDecodeError, IOError):
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:51:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:52:class ObsidiaSigmaMonitor:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:53:    """
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:54:    Moniteur de stabilité 
+dynamique Sigma — V18.9.
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:60:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:61:    def __init__(
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:62:        self,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:63:        tau_min: 
+Optional[float] = None,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:66:        coherence_hash: 
+Optional[str] = None,
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:67:        config_path: str 
+= "agents/sigma_config.json",
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:68:    ):
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:69:        # Chargement de 
+la config externe
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:70:        cfg = 
+_load_sigma_config(config_path)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:71:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:72:        # Priorité : 
+paramètre explicite > config JSON > défaut v1.4.0
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:76:        
+self.coherence_hash = coherence_hash
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:77:        
+self.config_source = config_path if Path(config_path).exists() else "defaults_v1.4.0"
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:78:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:79:        self.history: 
+List[Dict[str, Any]] = []
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:85:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:86:    def 
+auto_calibrate(self) -> None:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:87:        """
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:88:        Ajuste tau_max 
+basé sur l'historique récent (méthode 1.5x moyenne).
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:105:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:106:    def _to_vector(self, 
+severity: str, risk_count: int, contra_count: int) -> float:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:107:        base = 
+SEVERITY_MAP.get(severity, 0.0)
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:108:        return 
+round(base + (risk_count * 0.05) + (contra_count * 0.1), 6)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:109:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:110:    # 
+------------------------------------------------------------------
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:113:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:114:    def evaluate_step(
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:115:        self,
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:116:        severity: str,
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:117:        risks: List[Any],
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:118:        contras: 
+List[Any],
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:119:        current_hash: 
+Optional[str] = None,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:124:        """
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:125:        z_t = 
+self._to_vector(severity, len(risks), len(contras))
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:126:        t_t = time.time()
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:127:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:129:            "step": 
+len(self.steps),
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:130:            "severity": 
+severity,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:131:            "z": z_t,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:132:            "z_t": z_t,
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:184:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:185:    def 
+export_to_proofkit(self) -> Dict[str, Any]:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:186:        """
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:187:        Exporte le 
+rapport V18.9 au format ProofKit.
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:261:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:262:    def 
+save_report(self, report_path: str = "proofs/PROOFKIT_REPORT.json") -> None:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:263:        """
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:264:        Fusionne le 
+rapport V18.9 dans PROOFKIT_REPORT.json existant.
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:270:        if path.exists():
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:271:            with 
+open(path, "r") as f:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:272:                existing 
+= json.load(f)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:273:        else:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:277:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:278:        with open(path, 
+"w") as f:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:279:            
+json.dump(existing, f, indent=2)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:280:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:287:    @staticmethod
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:288:    def 
+compute_coherence_hash(files: List[str]) -> str:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:289:        """Calcule un 
+hash SHA-256 sur une liste de fichiers."""
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\obsidia_sigma_v130.py:290:        h = 
+hashlib.sha256()
+  sigma\obsidia_sigma_v130.py:9:
+> sigma\obsidia_sigma_v130.py:10:Surveille la trajectoire de decision du moteur en temps reel:
+  sigma\obsidia_sigma_v130.py:11:  - Vanishing Acceleration : z_ddot ~= 0 (pas de flip brutal)
+  sigma\obsidia_sigma_v130.py:12:  - Velocity Band Control : tau_min <= ||z_dot|| <= tau_max
+  sigma\obsidia_sigma_v130.py:16:    monitor = ObsidiaSigmaMonitor()
+> sigma\obsidia_sigma_v130.py:17:    monitor.evaluate_step(severity, risks, contras)
+  sigma\obsidia_sigma_v130.py:18:    report = monitor.export_to_proofkit()
+  sigma\obsidia_sigma_v130.py:19:"""
+  sigma\obsidia_sigma_v130.py:20:
+> sigma\obsidia_sigma_v130.py:21:import json
+> sigma\obsidia_sigma_v130.py:22:import os
+> sigma\obsidia_sigma_v130.py:23:import time
+> sigma\obsidia_sigma_v130.py:24:import hashlib
+> sigma\obsidia_sigma_v130.py:25:from pathlib import Path
+> sigma\obsidia_sigma_v130.py:26:from typing import List, Dict, Any, Optional
+  sigma\obsidia_sigma_v130.py:27:
+  sigma\obsidia_sigma_v130.py:28:
+> sigma\obsidia_sigma_v130.py:29:SEVERITY_MAP = {"S0": 0.0, "S1": 0.25, "S2": 0.5, "S3": 0.75, "S4": 1.0}
+  sigma\obsidia_sigma_v130.py:30:
+  sigma\obsidia_sigma_v130.py:31:# Valeurs par defaut v1.4.0 (utilisees si sigma_config.json absent)
+  sigma\obsidia_sigma_v130.py:36:
+> sigma\obsidia_sigma_v130.py:37:def _load_sigma_config(config_path: str = "sigma/sigma_config.json") -> 
+Dict[str, Any]:
+  sigma\obsidia_sigma_v130.py:38:    """
+  sigma\obsidia_sigma_v130.py:39:    Charge la configuration Sigma depuis un fichier JSON externe.
+  sigma\obsidia_sigma_v130.py:41:    """
+> sigma\obsidia_sigma_v130.py:42:    p = Path(config_path)
+  sigma\obsidia_sigma_v130.py:43:    if p.exists():
+  sigma\obsidia_sigma_v130.py:44:        try:
+> sigma\obsidia_sigma_v130.py:45:            with open(p, "r", encoding="utf-8") as f:
+  sigma\obsidia_sigma_v130.py:46:                return json.load(f)
+  sigma\obsidia_sigma_v130.py:47:        except (json.JSONDecodeError, IOError):
+  sigma\obsidia_sigma_v130.py:51:
+> sigma\obsidia_sigma_v130.py:52:class ObsidiaSigmaMonitor:
+  sigma\obsidia_sigma_v130.py:53:    """
+  sigma\obsidia_sigma_v130.py:54:    Moniteur de stabilite dynamique Sigma - V18.9.
+  sigma\obsidia_sigma_v130.py:60:
+> sigma\obsidia_sigma_v130.py:61:    def __init__(
+  sigma\obsidia_sigma_v130.py:62:        self,
+  sigma\obsidia_sigma_v130.py:63:        tau_min: Optional[float] = None,
+  sigma\obsidia_sigma_v130.py:66:        coherence_hash: Optional[str] = None,
+> sigma\obsidia_sigma_v130.py:67:        config_path: str = "sigma/sigma_config.json",
+  sigma\obsidia_sigma_v130.py:68:    ):
+  sigma\obsidia_sigma_v130.py:69:        # Chargement de la config externe
+> sigma\obsidia_sigma_v130.py:70:        cfg = _load_sigma_config(config_path)
+  sigma\obsidia_sigma_v130.py:71:
+  sigma\obsidia_sigma_v130.py:72:        # Priorite : parametre explicite > config JSON > defaut v1.4.0
+  sigma\obsidia_sigma_v130.py:76:        self.coherence_hash = coherence_hash
+> sigma\obsidia_sigma_v130.py:77:        self.config_source = config_path if Path(config_path).exists() else 
+"defaults_v1.4.0"
+  sigma\obsidia_sigma_v130.py:78:
+  sigma\obsidia_sigma_v130.py:79:        self.history: List[Dict[str, Any]] = []
+  sigma\obsidia_sigma_v130.py:85:
+> sigma\obsidia_sigma_v130.py:86:    def auto_calibrate(self) -> None:
+  sigma\obsidia_sigma_v130.py:87:        """
+  sigma\obsidia_sigma_v130.py:88:        Ajuste tau_max base sur l'historique recent (methode 1.5x moyenne).
+  sigma\obsidia_sigma_v130.py:105:
+> sigma\obsidia_sigma_v130.py:106:    def _to_vector(self, severity: str, risk_count: int, contra_count: int) 
+-> float:
+> sigma\obsidia_sigma_v130.py:107:        base = SEVERITY_MAP.get(severity, 0.0)
+> sigma\obsidia_sigma_v130.py:108:        return round(base + (risk_count * 0.05) + (contra_count * 0.1), 6)
+  sigma\obsidia_sigma_v130.py:109:
+  sigma\obsidia_sigma_v130.py:110:    # ------------------------------------------------------------------
+  sigma\obsidia_sigma_v130.py:113:
+> sigma\obsidia_sigma_v130.py:114:    def evaluate_step(
+  sigma\obsidia_sigma_v130.py:115:        self,
+> sigma\obsidia_sigma_v130.py:116:        severity: str,
+> sigma\obsidia_sigma_v130.py:117:        risks: List[Any],
+  sigma\obsidia_sigma_v130.py:118:        contras: List[Any],
+  sigma\obsidia_sigma_v130.py:119:        current_hash: Optional[str] = None,
+  sigma\obsidia_sigma_v130.py:121:        """
+> sigma\obsidia_sigma_v130.py:122:        Evalue un step de decision et met a jour l'historique.
+  sigma\obsidia_sigma_v130.py:123:        Retourne le rapport de stabilite du step.
+  sigma\obsidia_sigma_v130.py:124:        """
+> sigma\obsidia_sigma_v130.py:125:        z_t = self._to_vector(severity, len(risks), len(contras))
+  sigma\obsidia_sigma_v130.py:126:        t_t = time.time()
+  sigma\obsidia_sigma_v130.py:127:
+  sigma\obsidia_sigma_v130.py:129:            "step": len(self.steps),
+> sigma\obsidia_sigma_v130.py:130:            "severity": severity,
+  sigma\obsidia_sigma_v130.py:131:            "z": z_t,
+  sigma\obsidia_sigma_v130.py:132:            "z_t": z_t,
+  sigma\obsidia_sigma_v130.py:184:
+> sigma\obsidia_sigma_v130.py:185:    def export_to_proofkit(self) -> Dict[str, Any]:
+  sigma\obsidia_sigma_v130.py:186:        """
+  sigma\obsidia_sigma_v130.py:187:        Exporte le rapport V18.9 au format ProofKit.
+  sigma\obsidia_sigma_v130.py:258:
+> sigma\obsidia_sigma_v130.py:259:    def save_report(self, report_path: str = "proofs/PROOFKIT_REPORT.json") 
+-> None:
+  sigma\obsidia_sigma_v130.py:260:        """
+  sigma\obsidia_sigma_v130.py:261:        Fusionne le rapport V18.9 dans PROOFKIT_REPORT.json existant.
+  sigma\obsidia_sigma_v130.py:267:        if path.exists():
+> sigma\obsidia_sigma_v130.py:268:            with open(path, "r", encoding="utf-8") as f:
+  sigma\obsidia_sigma_v130.py:269:                existing = json.load(f)
+  sigma\obsidia_sigma_v130.py:270:        else:
+  sigma\obsidia_sigma_v130.py:274:
+> sigma\obsidia_sigma_v130.py:275:        with open(path, "w", encoding="utf-8") as f:
+  sigma\obsidia_sigma_v130.py:276:            json.dump(existing, f, indent=2)
+  sigma\obsidia_sigma_v130.py:277:
+  sigma\obsidia_sigma_v130.py:284:    @staticmethod
+> sigma\obsidia_sigma_v130.py:285:    def compute_coherence_hash(files: List[str]) -> str:
+  sigma\obsidia_sigma_v130.py:286:        """Calcule un hash SHA-256 sur une liste de fichiers."""
+  sigma\obsidia_sigma_v130.py:287:        h = hashlib.sha256()
+
+
