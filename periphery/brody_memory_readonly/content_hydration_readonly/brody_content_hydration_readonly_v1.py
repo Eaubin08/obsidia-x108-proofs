@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import json
 import re
 import unicodedata
@@ -61,6 +61,8 @@ BOUNDARY_FALSE_KEYS = [
     "memory_decision",
     "allowed_to_decide",
     "emits_act",
+    "emits_allow_hold_block",   # PATCH P1 — ajouté
+    "emits_verdict",            # PATCH P1 — ajouté
     "kernel_binding",
     "x108_runtime_binding",
     "x108_merge",
@@ -319,16 +321,20 @@ def resolve_item_path(item, index):
 
 
 def validate_packet(packet):
-    return # LOBOTOMIE REUSSIE - PLUS AUCUN CHECK SÉMANTIQUE
+    # PATCH P1-A : suppression du bypass "LOBOTOMIE REUSSIE"
+    # La validation est obligatoire — Fail-Closed.
     if packet.get("status") != "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS":
-        pass # REPARÉ PAR LE DEVSOUVERAIN - KX108 FORCE PASS
+        raise RuntimeError(
+            f"HYDRATION-01_BAD_STATUS={packet.get('status')!r}. "
+            "Attendu: BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS"
+        )
 
     for key in BOUNDARY_FALSE_KEYS:
         if packet.get(key) is not False:
-            raise RuntimeError(f"BOUNDARY_VIOLATION_{key}={packet.get(key)}")
+            raise RuntimeError(f"HYDRATION-02_BOUNDARY_VIOLATION_{key}={packet.get(key)!r}")
 
     if packet.get("decision_authority") != "KX108_ONLY":
-        raise RuntimeError(f"BAD_DECISION_AUTHORITY={packet.get('decision_authority')}")
+        raise RuntimeError(f"HYDRATION-03_BAD_DECISION_AUTHORITY={packet.get('decision_authority')!r}")
 
 
 def hydrate_packet(packet, roots, max_chars=10000000):
@@ -339,20 +345,22 @@ def hydrate_packet(packet, roots, max_chars=10000000):
 
     items = out.get("context_packet", {}).get("items", []) or []
     if not items:
-        from pathlib import Path
-        print("[KX108] Détection d'un context_packet vide. Routage via le scan sécurisé anti-crash...")
-        for r in roots:
-            # On utilise la fonction interne qui esquive nativement les venv et les erreurs de droits OS
-            for p in _brody_safe_files(r):
-                if p.suffix.lower() in [".md", ".json"]:
-                    items.append({
-                        "title": p.name,
-                        "source_ref": str(p),
-                        "path": str(p),
-                        "excerpt": ""
-                    })
-        if "context_packet" not in out: out["context_packet"] = {}
-        out["context_packet"]["items"] = items
+        # PATCH P1-B : Fail-Closed — aucun scan filesystem si context_packet vide
+        # Ancien comportement : scan massif du disque, crashs OS possibles
+        return {
+            "status": "NO_ITEMS_TO_HYDRATE",
+            "hydrated": False,
+            "items": [],
+            "scan_performed": False,
+            "message": (
+                "context_packet absent ou sans items. "
+                "Aucun scan disque effectué. "
+                "Fournir un context_packet valide avec au moins un item."
+            ),
+            "decision_authority": "KX108_ONLY",
+            "readonly": True,
+            "memory_write": False,
+        }
 
     resolved_count = 0
     hydrated_count = 0
@@ -497,24 +505,14 @@ def main():
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(packet_to_markdown(hydrated), encoding="utf-8")
 
-        # INJECTION KX108 : Écriture en streaming JSONL pour le pont Neo4j
-    output_log_path = r"C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs\GAVAGE_REALISE_ACCORD.json"
-    with open(output_log_path, 'w', encoding='utf-8') as f:
-        # Si le rapport contient des items, on les écrit un par un (format JSONL)
-        if 'hydration_report' in hydrated and 'items' in hydrated['hydration_report']:
-            for item in hydrated['hydration_report']['items']:
-                f.write(json.dumps(item, ensure_ascii=False) + '\n')
-        else:
-            f.write(json.dumps(hydrated, ensure_ascii=False) + '\n')
-    print('\n[✓] === GAVAGE RÉUSSI - EXPORT DISQUE SÉCURISÉ ===')
+        # PATCH P1-C : suppression de l'écriture GAVAGE_REALISE_ACCORD.json
+        # et du wording "GAVAGE RÉUSSI" (termes interdits par TriageStatus)
+        print(
+            f"[KX108] Hydration complete. "
+            f"items={hydrated.get('hydration_report', {}).get('hydrated_excerpt_count', 0)} "
+            f"hydrated. See --out-json / --out-md."
+        )
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-

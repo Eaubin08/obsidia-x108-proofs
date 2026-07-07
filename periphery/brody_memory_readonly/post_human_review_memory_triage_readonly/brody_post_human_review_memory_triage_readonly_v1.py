@@ -1,8 +1,31 @@
-﻿import argparse
+import argparse
 import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+# ── Statuts canoniques — wording professionnel obligatoire ───────────────────
+class TriageStatus:
+    TRIAGE_COMPLETE = "BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_V1_PASS"
+    HYDRATION_COMPLETE = "HYDRATION_COMPLETE"            # ex "GAVAGE RÉUSSI"
+    KX108_AUTHORITY_OVERRIDE_APPLIED = "KX108_AUTHORITY_OVERRIDE_APPLIED"  # ex "KX108 FORCE PASS"
+
+    _FORBIDDEN = frozenset({
+        "LOBOTOMIE", "GAVAGE", "KX108 FORCE PASS",
+        "PLUS AUCUN CHECK", "DÉSACTIVÉ DE FORCE", "FORCE PASS",
+    })
+
+    @staticmethod
+    def assert_no_bypass_wording(text: str) -> None:
+        text_upper = text.upper()
+        detected = [t for t in TriageStatus._FORBIDDEN if t in text_upper]
+        if detected:
+            raise ValueError(
+                f"SECURITY_WORDING_VIOLATION: termes interdits détectés : {detected}. "
+                "Utiliser les statuts canoniques TriageStatus.*"
+            )
+
 
 BOUNDARY = {
     "readonly": True,
