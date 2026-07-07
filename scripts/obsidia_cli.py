@@ -1624,7 +1624,7 @@ def _stream_window(abs_path, start: int, count: int):
             out.append(_fmt_line(i, line, masked))
             total += len(out[-1])
             if masked[0] > 3:
-                return {"density": True, "lines": out, "masked": masked[0],
+                _policy_response = {"density": True, "lines": out, "masked": masked[0],
                         "last": i, "truncated": True}
             if total > 64 * 1024:
                 truncated = True
@@ -2142,7 +2142,76 @@ def _context_docx_lines(rel: str, lines: list, query: str) -> dict:
             "next_h": "aucune"}
 
 
+# ─── LOCAL READ SECRET DENSITY GUARD V1 ──────────────────────────────────────
+# OBSIDIA_LOCAL_READ_SECRET_DENSITY_GUARD_V1
+# Empêche la lecture locale de fichiers trop denses en secrets.
+
+_SECRET_DENSITY_WORDS_V1 = frozenset({
+    "password", "passwd", "secret", "token", "api_key", "apikey",
+    "private_key", "private-key", "credential", "credentials",
+    "bearer", "authorization",
+})
+
+
+def _local_read_secret_density_guard_v1(raw: str, normalized: str) -> dict | None:
+    """Deny read si le fichier local contient trop de signaux secrets."""
+    n = normalized or normalize(raw)
+    if not any(w in n for w in ("lis ", "lire ", "read ", "ouvre ", "affiche ")):
+        return None
+
+    candidates = re.findall(r"[\w./\\-]+\.(?:md|txt|json|yaml|yml|py|ps1|env|cfg|ini)", raw)
+    if not candidates:
+        candidates = re.findall(r"[\w./\\-]+\.(?:md|txt|json|yaml|yml|py|ps1|env|cfg|ini)", n)
+
+    for cand in candidates[:3]:
+        rel = cand.strip().strip("'\"")
+        if not rel:
+            continue
+        p = (REPO_ROOT / rel).resolve()
+        try:
+            root = REPO_ROOT.resolve()
+            if root not in p.parents and p != root:
+                continue
+        except Exception:
+            continue
+        if not p.exists() or not p.is_file():
+            continue
+        hits = 0
+        try:
+            with open(p, "r", encoding="utf-8", errors="replace") as fh:
+                for idx, line in enumerate(fh):
+                    lowered = line.lower()
+                    if any(w in lowered for w in _SECRET_DENSITY_WORDS_V1):
+                        hits += 1
+                    if hits >= 5:
+                        return {
+                            "mode": "ANSWER_POLICY_DENY",
+                            "reponse": (
+                                "Lecture refusee: densite de secrets trop elevee "
+                                "dans le fichier local demande."
+                            ),
+                            "reason": "SECRET_DENSITY_GUARD",
+                            "path": rel,
+                            "secret_density_hits": hits,
+                            "output": assert_output_allowed("POLICY_DENY"),
+                            "mutation": "none",
+                            "subprocess": "none",
+                            "decision_authority": "KX108_ONLY",
+                        }
+                    if idx >= 4096:
+                        break
+        except Exception:
+            continue
+    return None
+
+
+# ─── FIN LOCAL READ SECRET DENSITY GUARD V1 ──────────────────────────────────
+
+
 def classify_local_read_intent(raw: str, normalized: str):
+    _secret_density_deny = _local_read_secret_density_guard_v1(raw, normalized)
+    if _secret_density_deny is not None:
+        return _secret_density_deny
     """V2A/V2B : lecture reelle bornee (READ/RANGE/SEARCH/CONTEXT/LIST) et
     resume/explication/comparaison extractifs. Retourne un dict, ou None."""
     is_context = "contexte" in normalized
@@ -4085,6 +4154,145 @@ def extract_proof_panel(response: dict) -> list[str]:
     return lines
 
 
+# ─── CORE SURFACE COMPOSER V1 ────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_CORE_SURFACE_COMPOSER_V1
+# Normalise les surfaces terminal. Ne route pas. Ne decide pas. Ne mute rien.
+
+_CORE_SURFACE_COMPOSER_VERSION = "CORE_SURFACE_COMPOSER_V1"
+
+
+def _composer_text(value, default: str = "") -> str:
+    if value is None:
+        return default
+    return str(value)
+
+
+def _composer_list(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    return [value]
+
+
+def compose_core_surfaces_v1(response: dict, raw: str = "", registry: dict | None = None) -> dict:
+    """Uniformise main/status/tools/proof/plan sans changer l'autorite.
+
+    Garanties:
+    - aucune execution
+    - aucune mutation
+    - aucun subprocess
+    - Brody reste consultatif
+    - Obsidure reste proposal-first
+    - decision_authority = KX108_ONLY
+    """
+    if not isinstance(response, dict):
+        response = {
+            "panel": "OBSIDIA_RESPONSE",
+            "raw": raw,
+            "reponse": _composer_text(response),
+            "mode_reponse": "ANSWER_LOCAL",
+            "detected_layer": "unknown",
+            "confidence": 0.0,
+            "output": assert_output_allowed("GUIDE"),
+        }
+
+    out = dict(response)
+    reponse = _composer_text(out.get("reponse"), "")
+    layer = _composer_text(out.get("detected_layer"), "unknown") or "unknown"
+    mode = _composer_text(out.get("mode_reponse"), "ANSWER_LOCAL") or "ANSWER_LOCAL"
+
+    out.setdefault("panel", "OBSIDIA_RESPONSE")
+    out.setdefault("raw", raw)
+    out.setdefault("mode_reponse", mode)
+    out.setdefault("detected_layer", layer)
+    out.setdefault("confidence", 0.0)
+    out.setdefault("output", assert_output_allowed("GUIDE"))
+    out.setdefault("plan_status", "OK")
+    out.setdefault("guidance", [])
+    out.setdefault("guidance_authority", "NONE")
+    out.setdefault("next_suggestions", [])
+    out.setdefault("limites", [])
+    out.setdefault("corpus_utilise", [])
+
+    # Main surface.
+    main = out.get("main_answer")
+    if not isinstance(main, dict):
+        main = {
+            "direct": reponse,
+            "summary": "",
+            "next": _composer_list(out.get("next_suggestions")),
+        }
+    main.setdefault("direct", reponse)
+    main.setdefault("summary", "")
+    main.setdefault("next", _composer_list(out.get("next_suggestions")))
+    out["main_answer"] = main
+
+    # Status surface.
+    etat = out.get("etat_technique")
+    if not isinstance(etat, dict):
+        etat = {}
+    etat.setdefault("layer", layer)
+    etat.setdefault("mode", mode)
+    etat.setdefault("output", out.get("output"))
+    etat.setdefault("mutation", "none")
+    etat.setdefault("subprocess", "none")
+    etat.setdefault("decision_authority", "KX108_ONLY")
+    etat["surface_composer"] = _CORE_SURFACE_COMPOSER_VERSION
+    out["etat_technique"] = etat
+
+    # Tools surface.
+    tools = out.get("outils_panel")
+    if not isinstance(tools, dict):
+        tools = {}
+    tools.setdefault("mutation", "none")
+    tools.setdefault("subprocess", "none")
+    tools.setdefault("decision", "forbidden")
+    tools.setdefault("auto_apply", "forbidden")
+    tools.setdefault("auto_commit", "forbidden")
+    tools.setdefault("auto_push", "forbidden")
+    tools["surface_composer"] = "used"
+    out["outils_panel"] = tools
+
+    # Proof surface.
+    proof = out.get("proof_panel")
+    if not isinstance(proof, dict):
+        proof = {}
+    proof.setdefault("source", "local")
+    proof.setdefault("authority", "NONE")
+    proof.setdefault("decision_authority", "KX108_ONLY")
+    proof.setdefault("mutation", "none")
+    proof.setdefault("surface_composer", _CORE_SURFACE_COMPOSER_VERSION)
+    out["proof_panel"] = proof
+
+    # Plan/meta surface.
+    out["surface_composer"] = _CORE_SURFACE_COMPOSER_VERSION
+    out.setdefault("next_human_action", "choisir la prochaine action readonly")
+    out.setdefault("action_locale", "COMPOSED_LOCAL")
+    out.setdefault("local_read_meta", None)
+
+    # Normalisation stricte des couches sensibles.
+    if layer == "brody":
+        out["proof_panel"].setdefault("brody_decides", False)
+        out["proof_panel"].setdefault("emits_act", False)
+        out["outils_panel"].setdefault("memory_write", "forbidden")
+    if layer == "obsidure":
+        out["outils_panel"]["apply"] = "forbidden"
+        out["outils_panel"]["commit"] = "forbidden"
+        out["outils_panel"]["push"] = "forbidden"
+    if out.get("output") == "POLICY_DENY":
+        out["plan_status"] = "DENIED"
+        out["etat_technique"]["mutation"] = "forbidden"
+        out["proof_panel"]["mutation"] = "forbidden"
+
+    return out
+
+
+# ─── FIN CORE SURFACE COMPOSER V1 ────────────────────────────────────────────
+
+
 def answer_router(raw: str, registry: dict) -> dict:
     # Pre-garde mutation globale — doit passer avant IR/Reverse/Brody/Obsidure.
     # Les bridges peuvent guider, jamais absorber commit/apply/push/deploy/delete.
@@ -4101,7 +4309,7 @@ def answer_router(raw: str, registry: dict) -> dict:
                 break
 
     if denied:
-        return {
+        _policy_response = {
             "panel": "OBSIDIA_RESPONSE",
             "raw": raw,
             "reponse": registry.get("policy", {}).get(
@@ -4154,6 +4362,8 @@ def answer_router(raw: str, registry: dict) -> dict:
             "guidance_authority": "NONE",
             "plan_status": "DENIED",
         }
+        return compose_core_surfaces_v1(_policy_response, raw, registry)
+        return compose_core_surfaces_v1(_policy_response, raw, registry)
 
     """Moteur universel. Reutilise build_active_plan(); ne lance jamais rien
     hors HTTP GET readonly ; toute sortie passe par assert_output_allowed()."""
@@ -4282,19 +4492,19 @@ def answer_router(raw: str, registry: dict) -> dict:
 
     # Branche OS Langage Uni — demande explicite de traduction IR.
     if detect_unified_ir_query(raw, normalize(raw)):
-        return build_unified_ir_response(raw, registry)
+        return compose_core_surfaces_v1(build_unified_ir_response(raw, registry), raw, registry)
 
     # Branche Obsidure Bridge — proposals/gates readonly.
     if detect_obsidure_bridge_query(raw, normalize(raw)):
-        return build_obsidure_bridge_response(raw, registry)
+        return compose_core_surfaces_v1(build_obsidure_bridge_response(raw, registry), raw, registry)
 
     # Branche Brody Bridge — POST local advisory, fallback terminal si API down.
     if detect_brody_bridge_query(raw, normalize(raw)):
-        return build_brody_bridge_response(raw, registry)
+        return compose_core_surfaces_v1(build_brody_bridge_response(raw, registry), raw, registry)
 
     # Branche Reverse Router — reprise locale bornee.
     if detect_reverse_router_query(raw, normalize(raw)):
-        return build_reverse_router_response(raw, registry)
+        return compose_core_surfaces_v1(build_reverse_router_response(raw, registry), raw, registry)
 
     plan = build_active_plan(raw, registry)
     normalized = plan["normalized"]
