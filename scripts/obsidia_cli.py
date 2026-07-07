@@ -5376,6 +5376,351 @@ def _operator_quote_ps_v1(value: str) -> str:
     return '"' + value.replace("`", "``").replace('"', '`"') + '"'
 
 
+
+
+# ─── TERMINAL INPUT SKILL RESOLVER V1 READONLY ───────────────────────────────
+# OBSIDIA_TERMINAL_INPUT_SKILL_RESOLVER_V1_READONLY
+# Les skills/protocoles servent à résoudre le IN comme organes consultatifs.
+# Ils ne sont jamais souverains : aucun apply, aucun subprocess, aucun ACT.
+
+def _skill_resolver_repo_root_v1():
+    from pathlib import Path as _Path
+    return _Path(__file__).resolve().parent.parent
+
+def _skill_resolver_roots_v1() -> list[str]:
+    return [
+        ".claude/skills",
+        ".agents/skills",
+        "docs/protocols",
+        "docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md",
+    ]
+
+def _skill_resolver_rel_v1(path) -> str:
+    root = _skill_resolver_repo_root_v1()
+    try:
+        return path.resolve().relative_to(root).as_posix()
+    except Exception:
+        return str(path).replace("\\", "/")
+
+def _skill_resolver_read_text_v1(path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")[:6000]
+    except Exception:
+        return ""
+
+def _skill_resolver_inventory_v1() -> list[dict]:
+    root = _skill_resolver_repo_root_v1()
+    items: list[dict] = []
+
+    for rel_root in (".claude/skills", ".agents/skills"):
+        base = root / rel_root
+        if not base.exists():
+            continue
+        for skill_file in sorted(base.glob("*/SKILL.md")):
+            items.append({
+                "category": "skill",
+                "name": skill_file.parent.name,
+                "path": _skill_resolver_rel_v1(skill_file),
+                "root": rel_root,
+                "profile_text": _skill_resolver_read_text_v1(skill_file),
+            })
+
+    proto_root = root / "docs/protocols"
+    if proto_root.exists():
+        for proto_file in sorted(proto_root.glob("*.md")):
+            items.append({
+                "category": "protocol",
+                "name": proto_file.stem,
+                "path": _skill_resolver_rel_v1(proto_file),
+                "root": "docs/protocols",
+                "profile_text": _skill_resolver_read_text_v1(proto_file),
+            })
+
+    manual = root / "docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md"
+    if manual.exists():
+        items.append({
+            "category": "protocol",
+            "name": "OBSIDIA_AGENT_OBSIDURE_MANUAL_V1",
+            "path": _skill_resolver_rel_v1(manual),
+            "root": "docs/runtime",
+            "profile_text": _skill_resolver_read_text_v1(manual),
+        })
+
+    return items
+
+def _skill_resolver_words_v1(raw: str) -> set[str]:
+    return set(re.findall(r"[a-zA-ZÀ-ÿ0-9_+-]+", normalize(raw).lower()))
+
+def _skill_resolver_pick_by_names_v1(names: list[str], category: str) -> list[str]:
+    inventory = _skill_resolver_inventory_v1()
+    out: list[str] = []
+    seen: set[str] = set()
+
+    for wanted in names:
+        wanted_l = wanted.lower()
+        matches = [
+            item for item in inventory
+            if item["category"] == category
+            and (
+                item["name"].lower() == wanted_l
+                or wanted_l in item["path"].lower()
+            )
+        ]
+        matches.sort(key=lambda item: (
+            0 if item["path"].startswith(".claude/skills/") else 1,
+            item["path"],
+        ))
+        for item in matches:
+            path = item["path"]
+            if path not in seen:
+                out.append(path)
+                seen.add(path)
+                break
+
+    return out
+
+def _skill_resolver_score_inventory_v1(raw: str, category: str) -> list[str]:
+    words = _skill_resolver_words_v1(raw)
+    if not words:
+        return []
+
+    scored: list[tuple[int, str]] = []
+    for item in _skill_resolver_inventory_v1():
+        if item["category"] != category:
+            continue
+
+        hay = normalize(
+            item["name"] + " " + item["path"] + " " + item.get("profile_text", "")
+        ).lower()
+
+        score = 0
+        for word in words:
+            if len(word) < 3:
+                continue
+            if word in hay:
+                score += 1
+
+        # pondérations de routage organique
+        name = item["name"].lower()
+        if "lean" in words or "preuve" in words or "theoreme" in words or "théorème" in words:
+            if name in ("proof-sentinel", "freeze-guardian"):
+                score += 4
+            if "kernel_boundary" in item["path"].lower():
+                score += 3
+
+        if "branche" in words or "connecte" in words or "relie" in words or "wiring" in words:
+            if name in ("module-mapper", "graph-calibrator-obsidia", "terminal-builder"):
+                score += 4
+
+        if "terminal" in words:
+            if name in ("terminal-builder", "agent-router-obsidia"):
+                score += 4
+
+        if "sigma" in words:
+            if name == "sigma-surgeon" or "SIGMA" in item["path"]:
+                score += 4
+
+        if "memory" in words or "mémoire" in words or "srl" in words:
+            if name in ("context-keeper", "wiki-brain-bridge"):
+                score += 4
+
+        if score > 0:
+            scored.append((score, item["path"]))
+
+    scored.sort(key=lambda x: (-x[0], x[1]))
+    out: list[str] = []
+    seen: set[str] = set()
+    for _, path in scored:
+        if path not in seen:
+            out.append(path)
+            seen.add(path)
+        if len(out) >= 8:
+            break
+
+    return out
+
+def _skill_resolver_skill_paths_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
+    names = [
+        "agent-router-obsidia",
+        "read-only-inspector",
+        "terminal-builder",
+    ]
+
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        names += ["proof-sentinel", "freeze-guardian"]
+
+    if kind == "READONLY_WIRING_PREP":
+        names += ["module-mapper", "graph-calibrator-obsidia", "freeze-guardian"]
+
+    if domain == "SRL":
+        names += ["context-keeper", "wiki-brain-bridge"]
+
+    if domain in ("BANK", "TRADING", "GPS") or kind == "PYTHON_PATCH_PROPOSAL_PREP":
+        names += ["sigma-surgeon", "token-guard"]
+
+    base = _skill_resolver_pick_by_names_v1(names, "skill")
+    dynamic = _skill_resolver_score_inventory_v1(raw, "skill")
+
+    out: list[str] = []
+    seen: set[str] = set()
+    for path in [*base, *dynamic]:
+        if path not in seen:
+            out.append(path)
+            seen.add(path)
+    return out
+
+def _skill_resolver_protocol_paths_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
+    names = [
+        "OBSIDURE_APPLY_PROTOCOL",
+        "OBSIDIA_OPERATOR_DOCTRINE",
+        "OBSIDIA_VERIFICATION_LOOP_PROTOCOL",
+        "OBSIDIA_AGENT_OBSIDURE_MANUAL_V1",
+    ]
+
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        names += ["KERNEL_BOUNDARY_CHECK_PROTOCOL"]
+
+    if kind == "READONLY_WIRING_PREP":
+        names += ["KERNEL_BOUNDARY_CHECK_PROTOCOL", "SIGMA_GUIDANCE_V0_APPLY_PROTOCOL"]
+
+    if domain in ("BANK", "TRADING", "GPS"):
+        names += ["OBSIDIA_PREMORTEM_PROTOCOL", "SIGMA_GUIDANCE_V0_APPLY_PROTOCOL"]
+
+    base = _skill_resolver_pick_by_names_v1(names, "protocol")
+    dynamic = _skill_resolver_score_inventory_v1(raw, "protocol")
+
+    out: list[str] = []
+    seen: set[str] = set()
+    for path in [*base, *dynamic]:
+        if path not in seen:
+            out.append(path)
+            seen.add(path)
+    return out
+
+def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
+    objective = (raw or "").strip()
+    domain = _operator_domain_v1(objective)
+    kind = _operator_kind_v1(objective)
+
+    skill_paths = _skill_resolver_skill_paths_v1(domain, kind, objective)
+    protocol_paths = _skill_resolver_protocol_paths_v1(domain, kind, objective)
+
+    route = "OBSIDURE"
+    if kind == "READONLY_WIRING_PREP":
+        route = "READONLY_WIRING"
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        route = "LEAN_SANDBOX_OBSIDURE"
+    if domain in ("BANK", "TRADING", "GPS"):
+        route = f"{domain}_DOMAIN_SUPPORT"
+    if domain == "SRL":
+        route = "MEMORY_SRL_SUPPORT"
+
+    return {
+        "version": "OBSIDIA_TERMINAL_INPUT_SKILL_RESOLVER_V1_READONLY",
+        "mode": "READONLY_BACKGROUND_SUPPORT_NO_AUTHORITY",
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+        "kernel_mutation": False,
+        "memory_write": False,
+        "input": objective,
+        "resolved_route": route,
+        "resolved_kind": kind,
+        "resolved_domain": domain or "AUTO",
+        "selected_skills": skill_paths,
+        "selected_protocols": protocol_paths,
+        "policy": [
+            "skills are advisory organs only",
+            "no background execution",
+            "no subprocess",
+            "no apply",
+            "no commit",
+            "no push",
+            "no ALLOW/BLOCK/HOLD/ACT emission",
+        ],
+    }
+
+def format_terminal_skill_inventory_v1(raw_filter: str = "") -> str:
+    needle = normalize(raw_filter).lower().strip()
+    inventory = _skill_resolver_inventory_v1()
+
+    if needle:
+        inventory = [
+            item for item in inventory
+            if needle in item["name"].lower() or needle in item["path"].lower()
+        ]
+
+    lines = [
+        "================ OBSIDIA TERMINAL SKILL RESOLVER ================",
+        "",
+        "VERSION: OBSIDIA_TERMINAL_INPUT_SKILL_RESOLVER_V1_READONLY",
+        "MODE: READONLY_BACKGROUND_SUPPORT_NO_AUTHORITY",
+        "DECISION_AUTHORITY: KX108_ONLY",
+        "EMITS_ACT: False",
+        "KERNEL_MUTATION: False",
+        "MEMORY_WRITE: False",
+        "",
+        "ROOTS:",
+    ]
+    lines.extend(f"  - {root}" for root in _skill_resolver_roots_v1())
+    lines += ["", "INVENTORY:"]
+
+    if inventory:
+        for item in inventory:
+            lines.append(f"  - [{item['category']}] {item['path']}")
+    else:
+        lines.append("  - Aucun skill/protocole trouvé pour ce filtre.")
+
+    lines += [
+        "",
+        "POLICY:",
+        "  - advisory organs only",
+        "  - no background execution",
+        "  - no process launch",
+        "  - no apply",
+        "  - no commit",
+        "  - no push",
+        "  - no kernel/X108 mutation",
+        "",
+        "===============================================================",
+    ]
+    return "\n".join(lines)
+
+def format_terminal_input_resolution_v1(raw: str) -> str:
+    resolved = resolve_terminal_input_with_skills_v1(raw)
+    lines = [
+        "================ OBSIDIA TERMINAL INPUT RESOLUTION ================",
+        "",
+        f"VERSION: {resolved['version']}",
+        f"MODE: {resolved['mode']}",
+        f"DECISION_AUTHORITY: {resolved['decision_authority']}",
+        "",
+        "BOUNDARY:",
+        f"  emits_act={resolved['emits_act']}",
+        f"  kernel_mutation={resolved['kernel_mutation']}",
+        f"  memory_write={resolved['memory_write']}",
+        "",
+        "IN:",
+        f"  {resolved['input']}",
+        "",
+        "RESOLUTION:",
+        f"  route={resolved['resolved_route']}",
+        f"  kind={resolved['resolved_kind']}",
+        f"  domain={resolved['resolved_domain']}",
+        "",
+        "SKILLS CONSULTES EN READONLY:",
+    ]
+    lines.extend(f"  - {x}" for x in resolved["selected_skills"])
+    lines += ["", "PROTOCOLES CONSULTES EN READONLY:"]
+    lines.extend(f"  - {x}" for x in resolved["selected_protocols"])
+    lines += ["", "POLICY:"]
+    lines.extend(f"  - {x}" for x in resolved["policy"])
+    lines += [
+        "",
+        "PLAN_STATUS: ADVISORY_ONLY_WAITING_FOR_HUMAN",
+        "================================================================",
+    ]
+    return "\n".join(lines)
+
 # OBSIDIA_TERMINAL_OPERATOR_OBJECTIVE_PREFIX_SKILL_HINTS_V1
 def _operator_enriched_objective_v1(objective: str, domain: str | None, kind: str) -> str:
     base = (objective or "").strip() or "préparer une task card Obsidure"
@@ -5410,42 +5755,11 @@ def _operator_enriched_objective_v1(objective: str, domain: str | None, kind: st
         "Demande utilisateur : " + base
     )
 
-def _operator_skill_hints_v1(domain: str | None, kind: str) -> list[str]:
-    hints = [
-        ".claude/skills/agent-router-obsidia/SKILL.md",
-        ".claude/skills/read-only-inspector/SKILL.md",
-        ".claude/skills/terminal-builder/SKILL.md",
-    ]
-    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
-        hints += [
-            ".claude/skills/proof-sentinel/SKILL.md",
-            ".claude/skills/freeze-guardian/SKILL.md",
-        ]
-    if kind == "READONLY_WIRING_PREP":
-        hints += [
-            ".claude/skills/module-mapper/SKILL.md",
-            ".agents/skills/source-command-focus/SKILL.md",
-        ]
-    if kind == "PYTHON_PATCH_PROPOSAL_PREP":
-        hints += [
-            ".claude/skills/module-mapper/SKILL.md",
-            ".claude/skills/token-guard/SKILL.md",
-        ]
-    return hints
+def _operator_skill_hints_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
+    return _skill_resolver_skill_paths_v1(domain, kind, raw)
 
-def _operator_protocol_hints_v1(domain: str | None, kind: str) -> list[str]:
-    hints = [
-        "docs/protocols/OBSIDURE_APPLY_PROTOCOL.md",
-        "docs/protocols/OBSIDIA_OPERATOR_DOCTRINE.md",
-        "docs/protocols/OBSIDIA_VERIFICATION_LOOP_PROTOCOL.md",
-        "docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md",
-    ]
-    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
-        hints.append("docs/protocols/KERNEL_BOUNDARY_CHECK_PROTOCOL.md")
-    if kind == "READONLY_WIRING_PREP":
-        hints.append("docs/runtime/OBSIDIA_F18B_EXISTING_REVERSE_OS_IR_READONLY_WIRING_REPORT_20260528_030305.md")
-    return hints
-
+def _operator_protocol_hints_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
+    return _skill_resolver_protocol_paths_v1(domain, kind, raw)
 
 def build_obsidure_operator_task_card_v1(raw: str) -> dict:
     objective = (raw or "").strip() or "préparer une task card Obsidure"
@@ -5479,8 +5793,9 @@ def build_obsidure_operator_task_card_v1(raw: str) -> dict:
         "domain": domain or "AUTO",
         "objective": objective,
         "enriched_objective": enriched_objective,
-        "skill_hints": _operator_skill_hints_v1(domain, kind),
-        "protocol_hints": _operator_protocol_hints_v1(domain, kind),
+        "input_resolution": resolve_terminal_input_with_skills_v1(objective),
+        "skill_hints": _operator_skill_hints_v1(domain, kind, objective),
+        "protocol_hints": _operator_protocol_hints_v1(domain, kind, objective),
         "obsidure_dry_run_command": " ".join([*cmd, "--dry-run"]),
         "obsidure_proposal_command": " ".join(cmd),
         "candidate_scope": _operator_scope_v1(domain, kind),
@@ -5529,6 +5844,12 @@ def format_obsidure_operator_task_card_v1(raw: str) -> str:
         f"  kind={card['kind']}",
         f"  domain={card['domain']}",
         "",
+        "INPUT_RESOLUTION_BY_SKILLS:",
+        f"  resolver={card['input_resolution']['version']}",
+        f"  mode={card['input_resolution']['mode']}",
+        f"  route={card['input_resolution']['resolved_route']}",
+        "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        "",
         "COMMANDS PROPOSEES — NON EXECUTEES PAR LE TERMINAL:",
         f"  DRY_RUN:  {card['obsidure_dry_run_command']}",
         f"  PROPOSAL: {card['obsidure_proposal_command']}",
@@ -5561,6 +5882,14 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    if argv and argv[0].lower() in ("skills", "skill", "skill-resolver", "skill-inventory", "protocols"):
+        raw_filter = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(format_terminal_skill_inventory_v1(raw_filter))
+        return 0
+    if argv and argv[0].lower() in ("resolve", "resolver", "input-resolve", "skill-resolve"):
+        raw_input = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(format_terminal_input_resolution_v1(raw_input))
+        return 0
     if argv and argv[0].lower() in ("operator", "task", "task-card", "obsidure-task"):
         raw_operator = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(format_obsidure_operator_task_card_v1(raw_operator))
