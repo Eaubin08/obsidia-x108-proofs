@@ -5303,11 +5303,268 @@ def interactive_shell(registry: dict) -> int:
               else format_obsidia_response_compact(resp))
 
 
+
+# ─── TERMINAL OPERATOR TASK CARD V1 SAFE ─────────────────────────────────────
+# OBSIDIA_TERMINAL_OPERATOR_TASK_CARD_V1_SAFE
+# Produit une carte opérateur Obsidure. Affichage uniquement.
+# Pas de lancement de processus, pas d'apply, pas de commit, pas de push.
+
+_OPERATOR_CODE_WORDS_V1 = frozenset({
+    "code", "coder", "patch", "corrige", "correction", "fix", "implemente",
+    "implémente", "branche", "connecte", "relie", "outil", "tools", "skill",
+    "skills", "proposal", "propose",
+})
+
+_OPERATOR_LEAN_WORDS_V1 = frozenset({
+    "lean", "preuve", "preuves", "theoreme", "théorème", "theoremes",
+    "théorèmes", "proof", "proposition", "lemma", "peripheral",
+    "périphérique",
+})
+
+_OPERATOR_DOMAIN_WORDS_V1 = {
+    "LEAN": _OPERATOR_LEAN_WORDS_V1,
+    "BANK": frozenset({"bank", "banque", "bancaire", "paiement", "fraude"}),
+    "TRADING": frozenset({"trading", "bourse", "market", "flashcrash", "ordre"}),
+    "GPS": frozenset({"gps", "gnss", "aviation", "robo", "spoofing", "terrain"}),
+    "ECOM": frozenset({"ecom", "ecommerce", "shop", "boutique", "produit"}),
+    "SRL": frozenset({"srl", "session", "history", "historique", "memoire", "mémoire"}),
+}
+
+def _operator_words_v1(raw: str) -> set[str]:
+    return set(re.findall(r"[a-zA-ZÀ-ÿ0-9_+-]+", normalize(raw).lower()))
+
+def _operator_domain_v1(raw: str) -> str | None:
+    words = _operator_words_v1(raw)
+    for domain, keys in _OPERATOR_DOMAIN_WORDS_V1.items():
+        if words & keys:
+            return domain
+    return None
+
+def _operator_kind_v1(raw: str) -> str:
+    words = _operator_words_v1(raw)
+    if words & _OPERATOR_LEAN_WORDS_V1:
+        return "LEAN_SANDBOX_PREP"
+    if {"branche", "connecte", "relie"} & words:
+        return "READONLY_WIRING_PREP"
+    if words & _OPERATOR_CODE_WORDS_V1:
+        return "PYTHON_PATCH_PROPOSAL_PREP"
+    return "OBSIDURE_PROPOSAL_PREP"
+
+def _operator_scope_v1(domain: str | None, kind: str) -> list[str]:
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        return [
+            "periphery/lean_sandbox/",
+            "proofs/lean/Obsidia/Peripheral/        # cible seulement après validation humaine",
+            "proofs/lean/Obsidia/GeneratedPeripheral/ # cible seulement après proposal validé",
+            "_PATCH_PROPOSALS/<id>/",
+        ]
+    if kind == "READONLY_WIRING_PREP":
+        return [
+            "scripts/obsidia_cli.py",
+            "scripts/obsidia_registry.yaml",
+            "scripts/obsidure_cli.py",
+            "periphery/agents/agent_obsidure.py",
+            "_PATCH_PROPOSALS/<id>/",
+        ]
+    return [
+        "scripts/obsidure_cli.py",
+        "periphery/agents/agent_obsidure.py",
+        "_PATCH_PROPOSALS/<id>/",
+    ]
+
+def _operator_quote_ps_v1(value: str) -> str:
+    return '"' + value.replace("`", "``").replace('"', '`"') + '"'
+
+
+# OBSIDIA_TERMINAL_OPERATOR_OBJECTIVE_PREFIX_SKILL_HINTS_V1
+def _operator_enriched_objective_v1(objective: str, domain: str | None, kind: str) -> str:
+    base = (objective or "").strip() or "préparer une task card Obsidure"
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        return (
+            "Objectif : LEAN_SANDBOX. "
+            "Créer/adapter un théorème périphérique Obsidia en sandbox uniquement. "
+            "Ne pas toucher le kernel X108. Ne pas modifier server.kernel.sealed. "
+            "Sortie attendue : proposal/dry-run HUMAN_APPROVED_WRITE. "
+            "Demande utilisateur : " + base
+        )
+    if kind == "READONLY_WIRING_PREP":
+        return (
+            "Objectif : READONLY_WIRING_PREP. "
+            "Auditer ou préparer un branchement readonly entre couches Obsidia. "
+            "Aucun apply automatique. Aucun commit. Aucun push. "
+            "Sortie attendue : proposal commands-only HUMAN_APPROVED_WRITE. "
+            "Demande utilisateur : " + base
+        )
+    if kind == "PYTHON_PATCH_PROPOSAL_PREP":
+        return (
+            "Objectif : PYTHON_PATCH_PROPOSAL. "
+            "Préparer un patch périphérique Python/JSON/MD limité au scope autorisé. "
+            "Aucun kernel mutation. Aucun apply automatique. "
+            "Sortie attendue : proposal HUMAN_APPROVED_WRITE. "
+            "Demande utilisateur : " + base
+        )
+    return (
+        "Objectif : OBSIDURE_PROPOSAL_PREP. "
+        "Analyser la demande et préparer uniquement une proposition bornée. "
+        "Aucune mutation automatique. "
+        "Demande utilisateur : " + base
+    )
+
+def _operator_skill_hints_v1(domain: str | None, kind: str) -> list[str]:
+    hints = [
+        ".claude/skills/agent-router-obsidia/SKILL.md",
+        ".claude/skills/read-only-inspector/SKILL.md",
+        ".claude/skills/terminal-builder/SKILL.md",
+    ]
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        hints += [
+            ".claude/skills/proof-sentinel/SKILL.md",
+            ".claude/skills/freeze-guardian/SKILL.md",
+        ]
+    if kind == "READONLY_WIRING_PREP":
+        hints += [
+            ".claude/skills/module-mapper/SKILL.md",
+            ".agents/skills/source-command-focus/SKILL.md",
+        ]
+    if kind == "PYTHON_PATCH_PROPOSAL_PREP":
+        hints += [
+            ".claude/skills/module-mapper/SKILL.md",
+            ".claude/skills/token-guard/SKILL.md",
+        ]
+    return hints
+
+def _operator_protocol_hints_v1(domain: str | None, kind: str) -> list[str]:
+    hints = [
+        "docs/protocols/OBSIDURE_APPLY_PROTOCOL.md",
+        "docs/protocols/OBSIDIA_OPERATOR_DOCTRINE.md",
+        "docs/protocols/OBSIDIA_VERIFICATION_LOOP_PROTOCOL.md",
+        "docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md",
+    ]
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        hints.append("docs/protocols/KERNEL_BOUNDARY_CHECK_PROTOCOL.md")
+    if kind == "READONLY_WIRING_PREP":
+        hints.append("docs/runtime/OBSIDIA_F18B_EXISTING_REVERSE_OS_IR_READONLY_WIRING_REPORT_20260528_030305.md")
+    return hints
+
+
+def build_obsidure_operator_task_card_v1(raw: str) -> dict:
+    objective = (raw or "").strip() or "préparer une task card Obsidure"
+    domain = _operator_domain_v1(objective)
+    kind = _operator_kind_v1(objective)
+    enriched_objective = _operator_enriched_objective_v1(objective, domain, kind)
+    task_id = "op_" + uuid.uuid5(uuid.NAMESPACE_URL, "obsidia-operator|" + enriched_objective).hex[:12]
+
+    cmd = ["python", "scripts/obsidure_cli.py", "--objective", _operator_quote_ps_v1(enriched_objective)]
+    if domain:
+        cmd.extend(["--domain", domain])
+
+    tests = [
+        "python -m py_compile scripts/obsidia_cli.py scripts/obsidure_cli.py periphery/agents/agent_obsidure.py",
+        "python -m pytest tests/gates/test_obsidia_obsidure_bridge_v1.py -q",
+        "python -m pytest tests/gates/test_obsidia_operator_task_card_v1.py -q",
+    ]
+    if domain == "LEAN" or kind == "LEAN_SANDBOX_PREP":
+        tests.append("Push-Location proofs/lean ; lake build Obsidia.Peripheral ; Pop-Location")
+
+    return {
+        "task_card_id": task_id,
+        "version": "OBSIDIA_TERMINAL_OPERATOR_TASK_CARD_V1_SAFE",
+        "mode": "COMMANDS_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+        "memory_write": False,
+        "kernel_mutation": False,
+        "x108_mutation": False,
+        "kind": kind,
+        "domain": domain or "AUTO",
+        "objective": objective,
+        "enriched_objective": enriched_objective,
+        "skill_hints": _operator_skill_hints_v1(domain, kind),
+        "protocol_hints": _operator_protocol_hints_v1(domain, kind),
+        "obsidure_dry_run_command": " ".join([*cmd, "--dry-run"]),
+        "obsidure_proposal_command": " ".join(cmd),
+        "candidate_scope": _operator_scope_v1(domain, kind),
+        "gates": [
+            "python scripts/gates/obsidia_commit_scope_guard.py --allow <fichiers_du_scope>",
+            "python scripts/gates/obsidia_kernel_boundary_check.py --staged-only",
+            "python scripts/gates/obsidia_sigma_non_sovereignty_check.py",
+            "python scripts/gates/obsidia_lean_manifest_guard.py",
+            "python -m pytest tests/gates/ -q",
+        ],
+        "tests": tests,
+        "forbidden": [
+            "no process launch from terminal",
+            "no automatic apply",
+            "no automatic commit",
+            "no automatic push",
+            "no kernel/X108 mutation",
+            "no memory write",
+        ],
+        "next_human_action": "lancer la commande DRY_RUN si tu veux préparer un proposal Obsidure",
+    }
+
+def format_obsidure_operator_task_card_v1(raw: str) -> str:
+    card = build_obsidure_operator_task_card_v1(raw)
+    lines = [
+        "================ OBSIDIA OPERATOR TASK CARD ================",
+        "",
+        f"VERSION: {card['version']}",
+        f"TASK_ID: {card['task_card_id']}",
+        f"MODE: {card['mode']}",
+        f"DECISION_AUTHORITY: {card['decision_authority']}",
+        "",
+        "BOUNDARY:",
+        f"  emits_act={card['emits_act']}",
+        f"  memory_write={card['memory_write']}",
+        f"  kernel_mutation={card['kernel_mutation']}",
+        f"  x108_mutation={card['x108_mutation']}",
+        "",
+        "OBJECTIVE:",
+        f"  {card['objective']}",
+        "",
+        "OBJECTIVE ENRICHI POUR OBSIDURE:",
+        f"  {card['enriched_objective']}",
+        "",
+        "CLASSIFICATION:",
+        f"  kind={card['kind']}",
+        f"  domain={card['domain']}",
+        "",
+        "COMMANDS PROPOSEES — NON EXECUTEES PAR LE TERMINAL:",
+        f"  DRY_RUN:  {card['obsidure_dry_run_command']}",
+        f"  PROPOSAL: {card['obsidure_proposal_command']}",
+        "",
+        "SCOPE CANDIDAT — A CONFIRMER HUMAINEMENT:",
+    ]
+    lines.extend(f"  - {x}" for x in card["candidate_scope"])
+    lines += ["", "SKILLS MOBILISABLES:"]
+    lines.extend(f"  - {x}" for x in card["skill_hints"])
+    lines += ["", "PROTOCOLES MOBILISABLES:"]
+    lines.extend(f"  - {x}" for x in card["protocol_hints"])
+    lines += ["", "GATES:"]
+    lines.extend(f"  - {x}" for x in card["gates"])
+    lines += ["", "TESTS CIBLES:"]
+    lines.extend(f"  - {x}" for x in card["tests"])
+    lines += ["", "INTERDITS:"]
+    lines.extend(f"  - {x}" for x in card["forbidden"])
+    lines += [
+        "",
+        f"NEXT_HUMAN_ACTION: {card['next_human_action']}",
+        "",
+        "PLAN_STATUS: WAITING_FOR_HUMAN",
+        "============================================================",
+    ]
+    return "\n".join(lines)
+
+
 def main(argv: list[str]) -> int:
     if argv and argv[0] in ("-h", "--help"):
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    if argv and argv[0].lower() in ("operator", "task", "task-card", "obsidure-task"):
+        raw_operator = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(format_obsidure_operator_task_card_v1(raw_operator))
+        return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
         return interactive_tui_shell(registry)
