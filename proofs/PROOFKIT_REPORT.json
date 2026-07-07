@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-06-24T18:08:02.152696+00:00",
+  "checks": {
+    "V18_3_1_seal_verify": {
+      "pass": true,
+      "stdout": "PASS\n"
+    },
+    "V18_3_1_root_hash_verify": {
+      "pass": true,
+      "stdout": "PASS\n"
+    },
+    "V18_7_checker_run": {
+      "pass": true,
+      "stdout": "OK written C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\proofs\\V18_7\\results\\results_v18_7.json\n"
+    },
+    "V18_7_invariants": {
+      "pass": true
+    },
+    "V18_8_checker_run": {
+      "pass": true,
+      "stdout": "OK\n"
+    },
+    "V18_8_invariants": {
+      "pass": true
+    }
+  },
+  "overall": "PASS"
+}
