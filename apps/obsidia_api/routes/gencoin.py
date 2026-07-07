@@ -1,7 +1,13 @@
 """Gencoin routes — readonly shadow packet view + live empty ledger registry."""
+import logging
+import traceback
+
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from apps.obsidia_api.runtime_loader import load_runtime_components
 from apps.obsidia_api.safe_response import safe_backend_response
+
+_logger = logging.getLogger("obsidia.api.gencoin")
 
 router = APIRouter(prefix="/api/gencoin", tags=["gencoin"])
 
@@ -36,8 +42,19 @@ async def gencoin_ledger():
                     "is_real_token": False,
                 })
             source = "REAL_BACKEND" if entries else "LIVE_EMPTY_REGISTRY"
-        except Exception:
-            pass
+        except Exception as exc:
+            # PATCH P1 — Fail-Closed : erreur backend → 503, pas de retour silencieux
+            _logger.error("BACKEND_ERROR [/api/gencoin]: %s\n%s", exc, traceback.format_exc())
+            return JSONResponse(status_code=503, content={
+                "status": "MODULE_ERROR",
+                "module_error": True,
+                "error_type": type(exc).__name__,
+                "source": "MODULE_ERROR",
+                "route": "/api/gencoin",
+                "decision_authority": "KX108_ONLY",
+                "readonly": True,
+                "emits_act": False,
+            })
     return safe_backend_response({
         "entries": entries,
         "total": len(entries),

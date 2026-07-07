@@ -103,6 +103,16 @@ def safe_backend_response(
     # Non-sovereignty metadata (always fresh)
     merged["source"] = source
     merged["timestamp"] = datetime.now(timezone.utc).isoformat()
+    # PATCH P1 — suppression des clés de trace interne avant exposition client
+    # NOTE : final_answer est intentionnellement exclu — c'est la réponse utilisateur légitime.
+    # Seules les clés de débogage interne non-destinées au client sont supprimées ici.
+    _INTERNAL_TRACE_KEYS: frozenset[str] = frozenset({
+        "internal_trace",   # trace interne de débogage
+        "system_prompt",    # prompt système (non destiné au client)
+        "raw_prompt",       # prompt brut (non destiné au client)
+    })
+    for _sk in _INTERNAL_TRACE_KEYS:
+        merged.pop(_sk, None)
     # F47.2 — sanitize user-facing text fields
     for field in ("response", "response_text"):
         if field in merged and isinstance(merged[field], str):

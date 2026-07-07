@@ -1,6 +1,6 @@
-"""OIE V0.4 External Benchmark -- ExternalComparisonReceipt + SDK Anthropic mesuré optionnel.
+"""OIE V0.5 External Benchmark -- ExternalComparisonReceipt + providers SDK mesures.
 
-Mesure comparative entre Obsidia et un provider externe (Claude Code / API).
+Mesure comparative entre Obsidia et un provider externe (Claude Code / API / Gemini).
 Non-souverain : readonly, emits_act=False, kernel_mutation=False.
 Aucune cle API n'est jamais stockee. secrets_redacted=True toujours.
 
@@ -8,6 +8,8 @@ V0.2 : separation routing vs domain-output, estimation tokens locale.
 V0.3 : metriques differentielles OIE, failure tracking, UTF-8 safe subprocess.
 V0.4 : mode SDK Anthropic optionnel (OIE_EXTERNAL_PROVIDER=anthropic_sdk), usage mesure reel.
        La cle ANTHROPIC_API_KEY n'est jamais logguee ni ecrite dans les receipts.
+V0.5 : mode SDK Gemini optionnel (OIE_EXTERNAL_PROVIDER=gemini_sdk), usage mesure reel.
+       Les cles GEMINI_API_KEY / GOOGLE_API_KEY ne sont jamais logguees ni dans les receipts.
 """
 from __future__ import annotations
 
@@ -69,6 +71,10 @@ FAILURE_UNPARSEABLE = "UNPARSEABLE_OUTPUT"
 FAILURE_PROVIDER_REFUSAL = "PROVIDER_REFUSAL"
 FAILURE_SDK_NOT_AVAILABLE = "SDK_NOT_AVAILABLE"    # anthropic package absent
 FAILURE_MODEL_NOT_CONFIGURED = "MODEL_NOT_CONFIGURED"  # OIE_EXTERNAL_MODEL_LABEL absent
+FAILURE_GEMINI_SDK_NOT_AVAILABLE = "GEMINI_SDK_NOT_AVAILABLE"  # google-genai absent
+FAILURE_GEMINI_API_ERROR = "GEMINI_API_ERROR"          # erreur API Gemini
+FAILURE_GEMINI_AUTH_ERROR = "GEMINI_AUTH_ERROR"        # cle absente ou invalide
+FAILURE_GEMINI_MODEL_NOT_CONFIGURED = "GEMINI_MODEL_NOT_CONFIGURED"  # modele absent
 
 # ── Comparison status (V0.3) ──────────────────────────────────────────────────
 COMPARISON_STATUS_OK = "OK"
@@ -82,9 +88,10 @@ COST_SOURCE_ESTIMATED = "ESTIMATED"
 COST_SOURCE_SDK_NO_PRICE = "SDK_USAGE_MEASURED_NO_PRICE"
 COST_SOURCE_SDK_MEASURED = "SDK_USAGE_MEASURED"
 
-# ── Provider modes (V0.4) ─────────────────────────────────────────────────────
+# ── Provider modes (V0.4 / V0.5) ─────────────────────────────────────────────
 PROVIDER_CLI = "cli"
 PROVIDER_SDK = "anthropic_sdk"
+PROVIDER_GEMINI = "gemini_sdk"
 
 # ── Comparison axes (V0.3) ────────────────────────────────────────────────────
 AXIS_ROUTING = "ROUTING"
@@ -530,6 +537,150 @@ def run_anthropic_sdk(prompt: str, model: str, timeout: int = 60) -> dict:
             "timeout_occurred": "Timeout" in type(exc).__name__,
             "encoding_error_occurred": False,
             "failure_type": detect_failure_type(err_str, ""),
+            "usage_available": False,
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None,
+            "model_label": model,
+        }
+
+
+# ── Secret sanitization (V0.5) ───────────────────────────────────────────────
+
+_SECRET_PATTERNS = [
+    re.compile(r'AIza[0-9A-Za-z_\-]{35}', re.IGNORECASE),  # Google/Gemini API key pattern
+    re.compile(r'sk-ant-[0-9A-Za-z_\-]{20,}', re.IGNORECASE),  # Anthropic key pattern
+]
+
+def sanitize_external_error_message(msg: str) -> str:
+    """Mask any API key patterns that could appear in error strings.
+
+    Masks: AIza... (Google/Gemini), sk-ant-... (Anthropic).
+    Also masks runtime values of GEMINI_API_KEY and GOOGLE_API_KEY from env.
+    Never raises. Returns sanitized string.
+    """
+    if not msg:
+        return msg
+    result = msg
+    for pattern in _SECRET_PATTERNS:
+        result = pattern.sub("[REDACTED]", result)
+    # Also mask literal env values if accidentally present
+    for env_var in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "ANTHROPIC_API_KEY"):
+        val = os.environ.get(env_var, "")
+        if val and len(val) > 8 and val in result:
+            result = result.replace(val, "[REDACTED]")
+    return result
+
+
+# ── Gemini SDK runner (V0.5, network mode only) ───────────────────────────────
+
+def run_gemini_sdk(prompt: str, model: str, timeout: int = 60) -> dict:
+    """Call Gemini API via google-genai SDK and return a result dict with real usage.
+
+    Only called when OIE_EXTERNAL_PROVIDER=gemini_sdk AND
+    OIE_EXTERNAL_BENCHMARK_ALLOW_NETWORK=1.
+
+    Security:
+    - API key read exclusively from GEMINI_API_KEY or GOOGLE_API_KEY env vars.
+    - Key is NEVER logged, printed, or included in the returned dict.
+    - Error messages are sanitized via sanitize_external_error_message().
+    - If key absent: returns controlled failure without crashing.
+
+    Returns the same shape as run_anthropic_sdk().
+    """
+    import time
+
+    start = time.perf_counter()
+
+    _fail_shape: dict = {
+        "success": False,
+        "latency_ms": 0.0,
+        "output_excerpt": "",
+        "error": "",
+        "timeout_occurred": False,
+        "encoding_error_occurred": False,
+        "failure_type": FAILURE_NONE,
+        "usage_available": False,
+        "input_tokens": None,
+        "output_tokens": None,
+        "total_tokens": None,
+        "model_label": model,
+    }
+
+    # Guard: model must be configured
+    if not model:
+        return {**_fail_shape, "error": "GEMINI_MODEL_NOT_CONFIGURED", "failure_type": FAILURE_GEMINI_MODEL_NOT_CONFIGURED}
+
+    # Guard: package must be installed
+    try:
+        from google import genai as _genai_pkg
+    except ImportError:
+        return {**_fail_shape, "error": "GEMINI_SDK_NOT_AVAILABLE: pip install google-genai", "failure_type": FAILURE_GEMINI_SDK_NOT_AVAILABLE}
+
+    # Guard: key must be present (never logged)
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
+    if not api_key:
+        return {**_fail_shape, "error": "GEMINI_API_KEY or GOOGLE_API_KEY not set", "failure_type": FAILURE_GEMINI_AUTH_ERROR}
+
+    try:
+        client = _genai_pkg.Client(api_key=api_key)
+        interaction = client.interactions.create(
+            model=model,
+            input=prompt,
+        )
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        # Extract output text — primary field, fallback via steps
+        raw_text = ""
+        if hasattr(interaction, "output_text") and interaction.output_text:
+            raw_text = interaction.output_text
+        elif hasattr(interaction, "steps"):
+            for step in (interaction.steps or []):
+                candidate = getattr(step, "output_text", None) or getattr(step, "text", None) or ""
+                if candidate:
+                    raw_text = candidate
+                    break
+
+        encoding_warning = "?" in raw_text and "�" in raw_text
+
+        # Extract usage tokens
+        usage = getattr(interaction, "usage", None)
+        input_tok = getattr(usage, "total_input_tokens", None) if usage else None
+        output_tok = getattr(usage, "total_output_tokens", None) if usage else None
+        total_tok = getattr(usage, "total_tokens", None) if usage else None
+        if total_tok is None and input_tok is not None and output_tok is not None:
+            total_tok = input_tok + output_tok
+        usage_ok = input_tok is not None and output_tok is not None
+
+        return {
+            "success": True,
+            "latency_ms": round(latency_ms, 2),
+            "output_excerpt": raw_text[:EXCERPT_MAX_CHARS],
+            "error": "",
+            "timeout_occurred": False,
+            "encoding_error_occurred": encoding_warning,
+            "failure_type": FAILURE_NONE,
+            "usage_available": usage_ok,
+            "input_tokens": input_tok,
+            "output_tokens": output_tok,
+            "total_tokens": total_tok,
+            "model_label": model,
+        }
+
+    except Exception as exc:
+        latency_ms = (time.perf_counter() - start) * 1000
+        raw_err = f"EXCEPTION:{type(exc).__name__}:{exc}"
+        err_str = sanitize_external_error_message(raw_err)
+        timeout_hit = "Timeout" in type(exc).__name__ or "timeout" in str(exc).lower()
+        failure = FAILURE_TIMEOUT if timeout_hit else FAILURE_GEMINI_API_ERROR
+        return {
+            "success": False,
+            "latency_ms": round(latency_ms, 2),
+            "output_excerpt": "",
+            "error": err_str,
+            "timeout_occurred": timeout_hit,
+            "encoding_error_occurred": False,
+            "failure_type": failure,
             "usage_available": False,
             "input_tokens": None,
             "output_tokens": None,

@@ -143,6 +143,20 @@ def run_brody_real_response_pipeline(
         except: pass
 
     neo4j_packet = None
+    # V3 Block 2 — graphiti guard: block generic/adversarial prompts before Graphiti call
+    _graphiti_guard_status: dict = {}
+    try:
+        from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard as _eval_guard
+        _graphiti_guard_status = _eval_guard(
+            message=message,
+            session_id=session_id,
+        )
+        if not _graphiti_guard_status.get("graphiti_allowed", False):
+            graphiti_live = False
+    except Exception:
+        pass  # guard unavailable — existing graphiti_live logic applies
+    r["graphiti_guard_status"] = _graphiti_guard_status
+
     if _CONTEXT_QUERY and graphiti_live:
         try: neo4j_packet = _CONTEXT_QUERY.query_neo4j(memory_query, limit)
         except: graphiti_live = False
