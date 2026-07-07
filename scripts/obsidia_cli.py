@@ -4293,7 +4293,7 @@ def compose_core_surfaces_v1(response: dict, raw: str = "", registry: dict | Non
 # ─── FIN CORE SURFACE COMPOSER V1 ────────────────────────────────────────────
 
 
-def answer_router(raw: str, registry: dict) -> dict:
+def _answer_router_core_before_skill_resolution_v1(raw: str, registry: dict) -> dict:
     # Pre-garde mutation globale — doit passer avant IR/Reverse/Brody/Obsidure.
     # Les bridges peuvent guider, jamais absorber commit/apply/push/deploy/delete.
     normalized_for_policy = normalize(raw)
@@ -4634,7 +4634,90 @@ def answer_router(raw: str, registry: dict) -> dict:
     }
 
 
-def format_surface_response(r: dict) -> str:
+
+# ─── TERMINAL RUNTIME INPUT RESOLVER V1 ──────────────────────────────────────
+# OBSIDIA_TERMINAL_RUNTIME_INPUT_RESOLVER_V1
+# Tout IN libre routé par answer_router() reçoit une résolution skills readonly.
+# Les skills restent organes consultatifs : aucune autorité, aucun subprocess.
+
+def attach_runtime_input_skill_resolution_v1(response: dict, raw: str) -> dict:
+    out = dict(response or {})
+
+    try:
+        resolved = resolve_terminal_input_with_skills_v1(raw)
+    except Exception as exc:
+        resolved = {
+            "version": "OBSIDIA_TERMINAL_INPUT_SKILL_RESOLVER_V1_READONLY",
+            "mode": "READONLY_BACKGROUND_SUPPORT_NO_AUTHORITY",
+            "decision_authority": "KX108_ONLY",
+            "emits_act": False,
+            "kernel_mutation": False,
+            "memory_write": False,
+            "input": raw,
+            "resolved_route": "UNAVAILABLE",
+            "resolved_kind": "UNAVAILABLE",
+            "resolved_domain": "AUTO",
+            "selected_skills": [],
+            "selected_protocols": [],
+            "resolver_error": type(exc).__name__,
+            "policy": [
+                "skills are advisory organs only",
+                "no background execution",
+                "no subprocess",
+                "no apply",
+                "no commit",
+                "no push",
+                "no ALLOW/BLOCK/HOLD/ACT emission",
+            ],
+        }
+
+    out["input_skill_resolution"] = resolved
+
+    etat = dict(out.get("etat_technique") or {})
+    etat.setdefault("skill_resolver", resolved.get("version"))
+    etat.setdefault("skill_resolver_mode", resolved.get("mode"))
+    etat.setdefault("skill_resolver_route", resolved.get("resolved_route"))
+    etat.setdefault("skill_resolver_kind", resolved.get("resolved_kind"))
+    etat.setdefault("skill_resolver_domain", resolved.get("resolved_domain"))
+    etat.setdefault("skill_resolver_authority", "NONE")
+    etat.setdefault("skill_resolver_exec", "forbidden")
+    out["etat_technique"] = etat
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    outils = dict(out.get("outils_panel") or {})
+    outils.setdefault("input_skill_resolver", "readonly_advisory")
+    outils.setdefault("skills_readonly", " | ".join(skills[:5]) if skills else "none")
+    outils.setdefault("protocols_readonly", " | ".join(protocols[:5]) if protocols else "none")
+    outils.setdefault("skill_policy", "advisory_only_no_subprocess_no_apply_no_act")
+    out["outils_panel"] = outils
+
+    limites = list(out.get("limites") or [])
+    if "skills advisory-only; no authority; no subprocess" not in limites:
+        limites.append("skills advisory-only; no authority; no subprocess")
+    out["limites"] = limites
+
+    corpus = list(out.get("corpus_utilise") or [])
+    for path in skills[:3]:
+        ref = "skill:" + path
+        if ref not in corpus:
+            corpus.append(ref)
+    for path in protocols[:3]:
+        ref = "protocol:" + path
+        if ref not in corpus:
+            corpus.append(ref)
+    out["corpus_utilise"] = corpus or ["skill_resolver:readonly"]
+
+    return out
+
+
+def answer_router(raw: str, registry: dict) -> dict:
+    core = _answer_router_core_before_skill_resolution_v1(raw, registry)
+    return attach_runtime_input_skill_resolution_v1(core, raw)
+
+
+def _format_surface_response_core_before_runtime_skill_resolution_v1(r: dict) -> str:
     """One-shot output V2 : surfaces séparées (REPONSE / PLAN_PANEL / STATUS_PANEL / TOOLS_PANEL).
     Garantie : REPONSE ne contient aucun token système interne."""
     # Réponse gauche via la même logique que le TUI
@@ -4677,6 +4760,48 @@ def format_surface_response(r: dict) -> str:
         f"output: {r.get('output', '?')}",
     ]
     return "\n".join(lines)
+
+
+# OBSIDIA_TERMINAL_RUNTIME_INPUT_RESOLVER_V1_DISPLAY_FULL
+def format_surface_response(r: dict) -> str:
+    text = _format_surface_response_core_before_runtime_skill_resolution_v1(r)
+    resolved = (r or {}).get("input_skill_resolution") or {}
+    if not resolved:
+        return text
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    lines = [
+        "",
+        "INPUT_SKILL_RESOLUTION:",
+        f"  resolver={resolved.get('version', 'UNKNOWN')}",
+        f"  mode={resolved.get('mode', 'UNKNOWN')}",
+        f"  route={resolved.get('resolved_route', 'UNKNOWN')}",
+        f"  kind={resolved.get('resolved_kind', 'UNKNOWN')}",
+        f"  domain={resolved.get('resolved_domain', 'AUTO')}",
+        "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        "  input_skill_resolver=readonly_advisory",
+        "  subprocess=forbidden",
+        "  apply=forbidden",
+        "  commit=forbidden",
+        "  push=forbidden",
+        "  act_emission=forbidden",
+        "  selected_skills:",
+    ]
+
+    if skills:
+        lines.extend(f"    - {x}" for x in skills[:6])
+    else:
+        lines.append("    - none")
+
+    lines.append("  selected_protocols:")
+    if protocols:
+        lines.extend(f"    - {x}" for x in protocols[:6])
+    else:
+        lines.append("    - none")
+
+    return text + "\n" + "\n".join(lines)
 
 
 def format_obsidia_response(r: dict) -> str:
