@@ -1059,11 +1059,59 @@ def build_active_plan(raw: str, registry: dict) -> dict:
         "next_human_action": nxt,
         "plan_status": status,
         "capability_summary": _build_capability_summary(layer, raw),
+        "input_skill_resolution": resolve_terminal_input_with_skills_v1(raw),
     }
 
 
 def _fmt_list(items: list, indent: str = "  - ") -> str:
     return "\n".join(indent + str(i) for i in items) if items else indent + "aucun"
+
+
+
+# OBSIDIA_ACTIVE_PLAN_SKILL_RESOLUTION_V1
+def _active_plan_skill_resolution_lines_v1(plan: dict) -> list[str]:
+    resolved = (plan or {}).get("input_skill_resolution") or {}
+    if not resolved:
+        return [
+            "",
+            "INPUT_SKILL_RESOLUTION:",
+            "  resolver=UNAVAILABLE",
+            "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        ]
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    lines = [
+        "",
+        "INPUT_SKILL_RESOLUTION:",
+        f"  resolver={resolved.get('version', 'UNKNOWN')}",
+        f"  mode={resolved.get('mode', 'UNKNOWN')}",
+        f"  route={resolved.get('resolved_route', 'UNKNOWN')}",
+        f"  kind={resolved.get('resolved_kind', 'UNKNOWN')}",
+        f"  domain={resolved.get('resolved_domain', 'AUTO')}",
+        "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        "  input_skill_resolver=readonly_advisory",
+        "  subprocess=forbidden",
+        "  apply=forbidden",
+        "  commit=forbidden",
+        "  push=forbidden",
+        "  act_emission=forbidden",
+        "  skills_consultes_readonly:",
+    ]
+
+    if skills:
+        lines.extend(f"    - {x}" for x in skills[:6])
+    else:
+        lines.append("    - none")
+
+    lines.append("  protocoles_consultes_readonly:")
+    if protocols:
+        lines.extend(f"    - {x}" for x in protocols[:6])
+    else:
+        lines.append("    - none")
+
+    return lines
 
 
 def format_active_plan(plan: dict) -> str:
@@ -1076,6 +1124,7 @@ def format_active_plan(plan: dict) -> str:
     ]
     if plan.get("deny_keyword"):
         lines.append(f"  - policy: mot interdit \"{plan['deny_keyword']}\" -> POLICY_DENY")
+    lines.extend(_active_plan_skill_resolution_lines_v1(plan))
     lines += [
         "", "CAPACITES / ORGANES MOBILISES:", _fmt_list(plan["organes_mobilises"]),
         "", "CAPACITES / ORGANES MOBILISABLES:", _fmt_list(plan["organes_mobilisables"]),
@@ -1109,6 +1158,7 @@ def format_route_view(plan: dict) -> str:
     ]
     if plan.get("deny_keyword"):
         lines.append(f"  - policy: mot interdit \"{plan['deny_keyword']}\" -> POLICY_DENY")
+    lines.extend(_active_plan_skill_resolution_lines_v1(plan))
     lines += [f"PLAN_STATUS: {plan['plan_status']}"]
     return "\n".join(lines)
 
@@ -1122,6 +1172,10 @@ def format_tools_view(plan: dict) -> str:
         "     CAPACITES/ORGANES MOBILISABLES:", _fmt_list(plan["organes_mobilisables"], "     - "),
         "     OUTILS TECHNIQUES MOBILISES:", _fmt_list(plan["outils_utilises"], "     - "),
         "  8. CORPUS UTILISE / MOBILISABLE:", _fmt_list(plan["corpus"], "     - "),
+        "     SKILLS CONSULTATIFS READONLY:",
+        _fmt_list((plan.get("input_skill_resolution") or {}).get("selected_skills", []), "     - "),
+        "     PROTOCOLES CONSULTATIFS READONLY:",
+        _fmt_list((plan.get("input_skill_resolution") or {}).get("selected_protocols", []), "     - "),
         "     OUTILS TECHNIQUES MOBILISABLES:", _fmt_list(plan["outils_mobilisables"], "     - "),
         "  9. CAPACITES/ORGANES INTERDITS:", _fmt_list(plan["organes_interdits"], "     - "),
         "     OUTILS/CORPUS EXCLUS:", _fmt_list(plan["outils_exclus"], "     - "),
@@ -1175,7 +1229,7 @@ def handle_plan_command(cmd: str, arg: str, registry: dict,
                     "roadmap", "organes_mobilises", "organes_mobilisables",
                     "organes_interdits", "output_predicted", "guidance",
                     "guidance_reasons", "guidance_authority",
-                    "next_human_action", "plan_status")}
+                    "next_human_action", "plan_status", "input_skill_resolution")}
         receipt["view"] = cmd
         return text, receipt, plan
     if cmd == "blockers":
