@@ -1,0 +1,206 @@
+﻿cic_metric_mapping_v0:
+  status: AUDIT_DERIVED_DRAFT
+  source_file: 04_high_value_cic_sources.txt
+  high_value_matches: 2142
+
+  repo_confirmed:
+    guard_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - ALLOW
+        - HOLD
+        - BLOCK
+        - REVIEW
+        - ACT
+        - REJECT
+        - decision
+        - decision_authority
+        - human_gate
+        - required_human_gate
+      cic_targets:
+        - guard/causal_flow_gate.py
+        - guard/decision_policy.py
+        - guard/allow_policy.py
+        - guard/hold_policy.py
+        - guard/block_policy.py
+        - guard/review_policy.py
+        - registries/decision_policy.yaml
+        - schemas/causal_flow_gate.schema.json
+
+    timing_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - x108
+        - elapsed_s
+        - min_wait_s
+        - tau
+        - X108_TIME_LOCK
+        - timestamp
+        - delay
+      cic_targets:
+        - scoring/timing_metrics.py
+        - invariants/temporal_invariants.py
+        - schemas/temporal_context_map.schema.json
+
+    reversibility_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - irreversible
+        - reversible
+        - HOLD before tau
+        - no irreversible ACT before temporal gate
+      cic_targets:
+        - scoring/reversibility_metrics.py
+        - invariants/reversibility_checks.py
+        - registries/reversibility_policy.yaml
+        - schemas/reversibility_policy.schema.json
+
+    proof_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - proof
+        - verify
+        - verification
+        - sha256
+        - hash_chain
+        - artifacts_hash
+        - attestation_hash
+        - audit_chain
+      cic_targets:
+        - scoring/proof_metrics.py
+        - receipts/hash_receipt.py
+        - receipts/receipt_builder.py
+        - schemas/causal_trace_receipt.schema.json
+
+    trace_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - trace_id
+        - audit_path
+        - audit_log
+        - append_audit
+        - replay
+        - receipt
+      cic_targets:
+        - scoring/trace_metrics.py
+        - receipts/replay_engine.py
+        - memory/receipt_index.yaml
+
+    context_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - AgentVote
+        - DomainAggregate
+        - domain
+        - state
+        - confidence
+        - unknowns
+        - risk_flags
+        - severity_hint
+        - evidence_refs
+      cic_targets:
+        - scoring/context_metrics.py
+        - schemas/domain_case.schema.json
+        - memory/domain_case_memory.yaml
+
+    score_threshold_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - confidence
+        - risk
+        - risk_max
+        - buy_score
+        - sell_score
+        - hold_score
+        - authorize_score
+        - analyze_score
+        - block_score
+        - pay_score
+        - wait_score
+        - refuse_score
+        - trajectory_valid_score
+        - recalc_score
+        - degraded_score
+        - abort_score
+        - truth_score
+        - sigma_score
+        - mismatch_gap
+      cic_targets:
+        - scoring/score_engine.py
+        - scoring/weighting.py
+        - scoring/real_coherence_score.py
+        - registries/harmonic_profiles.yaml
+        - registries/domain_thresholds.yaml
+
+    missing_data_metrics:
+      status: REPO_CONFIRMED
+      evidence:
+        - unknowns
+        - GPS_MISSING
+        - INERTIAL_MISSING
+        - RADIO_MISSING
+        - TIME_SKEW_ACTIVE
+        - TEMPORAL_ALIGNMENT_UNCERTAIN
+        - POWER_STATE_UNCERTAIN
+        - ATTESTATION_NOT_READY
+      cic_targets:
+        - scoring/missing_data_metrics.py
+        - missing_data/missing_data_policy.py
+        - registries/missing_data_policy.yaml
+
+  partial:
+    source_metrics:
+      status: PARTIAL
+      reason: source and evidence references exist, but causal source registry is not yet complete.
+
+    capacity_metrics:
+      status: PARTIAL
+      reason: limits and risk thresholds exist, but causal capacity model is not yet implemented.
+
+    resource_metrics:
+      status: PARTIAL
+      reason: resources appear in contracts and schemas, but critical resource causality is not yet formalized.
+
+    behavior_metrics:
+      status: PARTIAL
+      reason: risk_flags and history-like structures exist, but behavioral baselines are not yet complete.
+
+    path_metrics:
+      status: PARTIAL
+      reason: audit_path and trace path exist, but causal path reconstruction is not yet complete.
+
+    projection_metrics:
+      status: PARTIAL
+      reason: simulation and stress logic exist, but CIC projection policy is not yet finalized.
+
+    memory_metrics:
+      status: PARTIAL
+      reason: state and store exist, but causal memory is not yet fully specified.
+
+  not_found:
+    causal_capacity_formula:
+      status: NEEDS_DOMAIN_CALIBRATION
+      expected: "flux observé <= capacité causale plausible"
+
+    anomaly_formula:
+      status: NEEDS_DOMAIN_CALIBRATION
+      expected: "anomalie = flux observé - capacité causale plausible"
+
+    ncp_targeted_fetch:
+      status: MISSING
+      rule: NCP stays inactive until later phase.
+
+    scraping:
+      status: MISSING
+      rule: Scraping must stay inactive.
+
+    kernel_binding:
+      status: MISSING
+      rule: CIC must not bind to kernel now.
+
+  central_rules:
+    - Invariant > Reversibilité > Score > Projection
+    - A score cannot authorize what an invariant forbids.
+    - Critical missing data on irreversible action triggers HOLD / BLOCK / REVIEW.
+    - Memory is not sovereign.
+    - Projection is not prediction.
