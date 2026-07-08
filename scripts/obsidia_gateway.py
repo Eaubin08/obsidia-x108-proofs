@@ -192,6 +192,60 @@ def call_kernel_bridge(domain: str) -> dict | None:
         return None
 
 
+def run_obsidure_proposal(objective: str) -> dict | None:
+    """Cycle AVDR reel de l'agent Obsidure — PROPOSAL-ONLY.
+
+    Genere un PatchProposal dans _PATCH_PROPOSALS/<id>/ avec statut
+    AWAITING_HUMAN_APPROVED_WRITE. Aucune application, aucun commit :
+    l'agent propose, l'humain (et KX108) decident.
+    """
+    if not BRODY_POST_ALLOWED:
+        return None
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "periphery" / "agents"))
+        from agent_obsidure import AgentObsidure
+        agent = AgentObsidure(api_base=BRODY_BASE, verbose=False)
+        prop = agent.run_cycle(objective)
+        return {"proposal_id": prop.proposal_id,
+                "receipt": f"_PATCH_PROPOSALS/{prop.proposal_id}/RECEIPT.md"}
+    except Exception:
+        return None
+
+
+# --- Boucle ecriture memoire (sas d'intake, jamais canonique) ---------------
+INTAKE_OUTBOX = REPO_ROOT / "_MEMORY_INTAKE_OUTBOX"
+
+
+def memory_outbox_flush(exchanges: list[dict]) -> Path | None:
+    """Depose le paquet de session dans le sas d'intake.
+
+    Le paquet est de la matiere brute NON canonique : ton pipeline existant
+    (session_presave_buffer -> auto_triage -> validation humaine) reste le
+    seul chemin vers la memoire. memory_write=False respecte : rien n'entre
+    dans MATH_MEMORY_INDEX ni le ledger sans promotion operateur.
+    """
+    if not exchanges:
+        return None
+    try:
+        INTAKE_OUTBOX.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        packet = {
+            "kind": "GATEWAY_SESSION_PACKET",
+            "status": "RAW_NON_CANONICAL",
+            "decision_authority": "KX108_ONLY",
+            "memory_write": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "exchange_count": len(exchanges),
+            "exchanges": exchanges,
+        }
+        out = INTAKE_OUTBOX / f"gateway_session_{ts}.json"
+        out.write_text(json.dumps(packet, ensure_ascii=False, indent=1),
+                       encoding="utf-8")
+        return out
+    except OSError:
+        return None
+
+
 def call_claude(raw: str, decision: dict) -> str:
     exe = shutil.which("claude") or shutil.which("claude.cmd")
     if not exe:
@@ -252,7 +306,19 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
             remote = call_brody(raw) if brody_alive() else None
             answer = remote or ("[brody structural]\n"
                                 + brody_stub.answer(d["ir"], d["topic"])["text"])
-    elif route in ("brody", "obsidure_route_only", "lean_route_only"):
+    elif route == "obsidure_route_only":
+        prop = run_obsidure_proposal(raw)
+        if prop:
+            route = "obsidure_proposal"
+            answer = ("[obsidure PROPOSAL-ONLY, 0 token distant] "
+                      f"proposal_id={prop['proposal_id']} "
+                      "status=AWAITING_HUMAN_APPROVED_WRITE\n"
+                      f"A lire et approuver : {prop['receipt']}")
+        else:
+            answer = ("[obsidure structural] agent indisponible — "
+                      "lance la stack ('obsidia') puis reessaie, ou utilise "
+                      "l'agent en direct : python periphery/agents/agent_obsidure.py")
+    elif route in ("brody", "lean_route_only"):
         hit = semantic_search(raw, SEMANTIC_ENTRIES) if route == "brody" else None
         if hit:
             route = "semantic_memory_hit"
@@ -306,6 +372,7 @@ def main() -> int:
 
     print("OBSIDIA GATEWAY — terminal fusionne (router -> memory -> brody -> claude)")
     print("Commandes : 'metrics' compteurs session, 'exit' quitter.\n")
+    exchanges: list[dict] = []
     while True:
         try:
             raw = input("obsidia> ").strip()
@@ -323,8 +390,15 @@ def main() -> int:
             print(f"  appels LLM evites : {avoided}/{total} ({rate:.0f}%) | "
                   f"appels payants : {counters['llm_calls']}")
             continue
-        print(handle(raw, memory_index, counters))
+        answer = handle(raw, memory_index, counters)
+        exchanges.append({"in": raw[:400], "out": answer[:400],
+                          "ts": datetime.now(timezone.utc).isoformat()})
+        print(answer)
         print()
+    packet = memory_outbox_flush(exchanges)
+    if packet:
+        print(f"[memoire] paquet de session depose (sas intake, non canonique) : "
+              f"{packet.relative_to(REPO_ROOT)}")
     return 0
 
 
