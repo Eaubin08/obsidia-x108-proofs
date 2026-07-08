@@ -43,9 +43,19 @@ def words(text: str) -> set[str]:
 
 
 # Table des 34 arbres, mots-cles normalises une seule fois.
+# Fusion : canon MMONDE (jamais modifie) + extension operateur editable.
+EXTENSION_PATH = REPO_ROOT / "registries" / "tree_keywords_extension.json"
 TREE_KEYWORDS: dict[int, set[str]] = {
     idx: {normalize(k) for k in kws} for idx, kws in KEYWORDS.items()
 }
+try:
+    _ext = json.loads(EXTENSION_PATH.read_text(encoding="utf-8"))
+    for _idx, _kws in _ext.items():
+        if _idx.isdigit() and isinstance(_kws, list):
+            TREE_KEYWORDS.setdefault(int(_idx), set()).update(
+                normalize(k) for k in _kws)
+except (OSError, json.JSONDecodeError):
+    pass  # extension absente ou invalide : le canon seul suffit
 
 
 def dominant_trees(text: str) -> dict[str, int]:

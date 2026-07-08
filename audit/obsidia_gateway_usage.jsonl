@@ -14,3 +14,5 @@
 {"tool": "obsidia_memory_search", "request_preview": "stabilite de lyapunov decroissance", "model_call_avoided": true, "ts": "2026-07-08T15:53:59.704326+00:00", "source": "OBSIDIA_MCP_SERVER_V1", "decision_authority": "KX108_ONLY"}
 {"tool": "obsidia_route", "request_preview": "git push force", "model_call_avoided": true, "ts": "2026-07-08T15:53:59.705884+00:00", "source": "OBSIDIA_MCP_SERVER_V1", "decision_authority": "KX108_ONLY"}
 {"tool": "obsidia_shazam", "request_preview": "optimiser la memoire et le flux du graphe", "model_call_avoided": true, "ts": "2026-07-08T15:53:59.706547+00:00", "source": "OBSIDIA_MCP_SERVER_V1", "decision_authority": "KX108_ONLY"}
+{"request_preview": "explique moi le contexte de la derniere decision", "route": "brody", "level": 1, "model_call_avoided": true, "ts": "2026-07-08T16:01:53.371943+00:00", "source": "OBSIDIA_GATEWAY_V1", "decision_authority": "KX108_ONLY"}
+{"request_preview": "explique le quintuplet canonique", "route": "semantic_memory_hit", "level": 1, "model_call_avoided": true, "ts": "2026-07-08T16:02:43.381072+00:00", "source": "OBSIDIA_GATEWAY_V1", "decision_authority": "KX108_ONLY"}

@@ -1,0 +1,12 @@
+{
+  "_doc": "Extension operateur des dictionnaires des 34 arbres MMONDE. Cle = index d'arbre (0-33, cf. 05_SHAZAM_COGNITIF/shazam_cognitif.py). Les mots sont normalises (accents plies) a l'import. Le module MMONDE canonique n'est jamais modifie — cette extension est fusionnee par l'exporteur. Editable a la main ; relancer scripts/export_gateway_memory_index.py apres modification.",
+  "0": ["biologie", "animal", "organisme", "vivant"],
+  "16": ["abeille", "fourmi", "essaim", "ruche", "colonie", "swarm", "stigmergie"],
+  "22": ["chronologie", "timeline", "continuum", "epoch"],
+  "23": ["memoire", "ledger", "presave", "triage", "rangement", "intake"],
+  "29": ["cosmos", "univers", "galaxie", "etoile", "monde", "mmonde"],
+  "30": ["flux", "stream", "pipeline", "cascade", "gateway"],
+  "31": ["nuage", "points", "graphe", "connexion", "similarite", "projection"],
+  "32": ["optimisation", "optimiser", "optimise", "inference", "economie", "token"],
+  "33": ["stabilite", "freeze", "gel", "seal", "merkle", "canonique"]
+}

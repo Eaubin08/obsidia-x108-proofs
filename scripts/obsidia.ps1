@@ -528,8 +528,11 @@ if ($args.Count -eq 0 -or $_first -eq "start") {
 } elseif ($_first -eq "chat") {
     # Gateway fusionne : router pre-inference -> memory -> brody -> claude -p
     # Level 0/2 repondus localement (0 token). Escalade LLM uniquement si necessaire.
-    # POST Brody opt-in : $env:OBSIDIA_GATEWAY_ALLOW_BRODY_POST = "1"
+    # POST Brody active ici : 'obsidia chat' est un lanceur humain explicite
+    # (meme statut doctrinal que les launchers PowerShell Brody).
     Write-ObsidiaHeader "GATEWAY CHAT - COURT-CIRCUIT PRE-INFERENCE"
+    $env:OBSIDIA_GATEWAY_ALLOW_BRODY_POST = "1"
+    $env:OBSIDIA_BRODY_BASE = $API
     $rest = if ($args.Count -gt 1) { $args[1..($args.Count - 1)] } else { @() }
     python "$X108\scripts\obsidia_gateway.py" @rest
 
