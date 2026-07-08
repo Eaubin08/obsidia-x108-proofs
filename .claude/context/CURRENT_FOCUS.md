@@ -68,6 +68,22 @@ Choose next mission from `docs/roadmap/NOT_YET_IMPLEMENTED_AFTER_V2.md`:
 - next: fin P0 (docker + run live) puis P1 etape 1 (import Shazam)
 - blocked on: FIREWORKS_API_KEY (B1/B11) — a fournir par l'operateur
 
+## 2026-07-08 build-integral-complet
+- branch: feat/path-brody-r02-thermo-mcp-closure (x108) + main (router)
+- did: TOUT le plan livre. Cascade complete active (router->memoire par
+  sens->Brody live->kernel X108 reel->Obsidure AVDR reel->claude cadre),
+  hooks UserPromptSubmit+PreToolUse, serveur MCP (.mcp.json cree), doctrine
+  memoire espace-temps (strates RAW->CANON, frise FRISE_TIMELINE + frise
+  humaine V0), promotion SRL CANONICAL (acte operateur), guards 15 statues
+  CONCEPT_ONLY, pluriels arbres. B1 CLOS : run live MEASURED fige + tag
+  submission/live-baseline-measured-20260708 (76% tokens saved, 0/8 vs 1/8
+  violations). ~10 commits, backup tags pre-wiring-full-20260708.
+- next: operateur — redemarrer session Claude Code (approuver MCP obsidia,
+  hooks PreToolUse actifs), settings.json l.93 claude-sonnet-5, soumission
+  hackathon. Chantiers futurs : indexer corpus docs au Level 2, remplir
+  guards reels, de-stub Brody generatif, OIE V0.3 continue.
+- blocked on: nothing
+
 ---
 
 ## Update protocol
