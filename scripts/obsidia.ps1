@@ -525,6 +525,14 @@ if ($args.Count -eq 0 -or $_first -eq "start") {
     # Plan uniquement - ne lance rien
     Print-StartPlan
 
+} elseif ($_first -eq "chat") {
+    # Gateway fusionne : router pre-inference -> memory -> brody -> claude -p
+    # Level 0/2 repondus localement (0 token). Escalade LLM uniquement si necessaire.
+    # POST Brody opt-in : $env:OBSIDIA_GATEWAY_ALLOW_BRODY_POST = "1"
+    Write-ObsidiaHeader "GATEWAY CHAT - COURT-CIRCUIT PRE-INFERENCE"
+    $rest = if ($args.Count -gt 1) { $args[1..($args.Count - 1)] } else { @() }
+    python "$X108\scripts\obsidia_gateway.py" @rest
+
 } else {
     # runtime / status / doctor / cockpit + tous les IN libres -> CLI Python
     python "$X108\scripts\obsidia_cli.py" @args

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import os
 import re
 import socket
 import sys
@@ -283,9 +284,56 @@ def write_receipt(registry: dict, payload: dict) -> Path:
 # ----------------------------------------------------------------------------
 # Pipeline IN (INTACT — le panneau Plan l'enveloppe, ne le remplace pas)
 # ----------------------------------------------------------------------------
+# ============================================================================
+# PRE-INFERENCE ROUTER BRIDGE — obsidia-router (deterministe, 0 token)
+# Import only : aucun subprocess, aucun POST (doctrine obsidia_cli respectee).
+# ADVISORY_ONLY : le verdict enrichit l'IN, decision_authority = KX108_ONLY.
+# Fail-open : router absent ou casse => le terminal fonctionne comme avant.
+# ============================================================================
+_ROUTER_ROOT = os.environ.get("OBSIDIA_ROUTER_ROOT",
+                              r"C:\Users\User\Desktop\obsidia-router")
+
+
+def router_preinference(raw: str) -> dict | None:
+    try:
+        if _ROUTER_ROOT not in sys.path:
+            sys.path.insert(0, _ROUTER_ROOT)
+        from app.router.decision import decide
+        d = decide(raw, memory_index={})
+        ir, gate = d.get("ir", {}), d.get("gate", {})
+        verdict = {
+            "intent": ir.get("intent_type"),
+            "target_layer": ir.get("target_layer"),
+            "gate": gate.get("verdict"),
+            "gate_reason": gate.get("reason"),
+            "level": d.get("level"),
+            "route": d.get("route"),
+            "model_call_avoided": d.get("route") != "fireworks",
+        }
+        try:
+            log_path = Path(__file__).resolve().parents[1] / "audit" / "obsidia_gateway_usage.jsonl"
+            entry = dict(verdict, request_preview=raw[:120],
+                         ts=datetime.now(timezone.utc).isoformat(),
+                         source="OBSIDIA_CLI_PREINFERENCE_V1",
+                         decision_authority="KX108_ONLY")
+            with log_path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        except OSError:
+            pass
+        return verdict
+    except Exception:
+        return None
+
+
 def handle(raw: str, registry: dict) -> dict:
     normalized = normalize(raw)
     layer, confidence, reasons = score_layers(normalized, registry)
+    pre = router_preinference(raw)
+    if pre:
+        reasons = list(reasons or [])
+        reasons.append(
+            f"router: gate={pre['gate']} level={pre['level']} "
+            f"route={pre['route']} (0 token, deterministe)")
     spec = registry.get("layers", {}).get(layer, {})
     in_obj = {
         "raw": raw,
@@ -295,6 +343,8 @@ def handle(raw: str, registry: dict) -> dict:
         "mode": spec.get("mode", "unknown"),
         "route_reason": reasons or ["aucun trigger reconnu"],
     }
+    if pre:
+        in_obj["pre_inference"] = pre
 
     file_signals = collect_file_signals()
 

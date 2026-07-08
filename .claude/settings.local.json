@@ -38,7 +38,38 @@
       "Bash(npm --prefix apps/obsidia-workbench run build)",
       "Bash(xargs grep -l \"FastAPI\\\\|APIRouter\\\\|app = \")",
       "Bash(echo \"exit $?\")",
-      "Bash(echo \"EXIT $?\")"
+      "Bash(echo \"EXIT $?\")",
+      "Skill(focus)",
+      "Bash(netstat -ano)",
+      "Bash(ls periphery/adapters/)",
+      "Bash(head -10 periphery/adapters/bank_adapter.py)",
+      "Skill(code-review)",
+      "WebSearch",
+      "WebFetch(domain:korben.info)",
+      "Bash(cd /c/Users/User/Desktop/obsidia-router && python -m pytest tests/ -q 2>&1 | tail -15)",
+      "Bash(git -C /c/Users/User/Desktop/obsidia-router status --short)",
+      "Bash(cd /c/Users/User/Desktop/obsidia-router && python -m pytest tests/ -q 2>&1 | tail -1 && python benchmarks/run_benchmark.py 2>&1 | tail -4)",
+      "Bash(FIREWORKS_API_KEY=bad_key python benchmarks/run_benchmark.py)",
+      "Bash(cd /c/Users/User/Desktop/obsidia-router && python -m pytest tests/ -q 2>&1 | tail -1)",
+      "Bash(cd /c/Users/User/Desktop/obsidia-router && python -m pytest tests/ -q 2>&1 | tail -1 && python benchmarks/run_benchmark.py 2>&1 | tail -6 && python benchmarks/run_benchmark.py --live-baseline 2>&1 | tail -7)",
+      "Bash(git log *)",
+      "Bash(FIREWORKS_API_KEY= python benchmarks/run_benchmark.py --live-baseline)",
+      "Read(//c/Users/User/Desktop/obsidia-router/**)",
+      "Bash(sed -n '/Governance table/,/## Reading/p' results/REPORT.md)",
+      "Bash(cd /c/Users/User/Desktop/obsidia-router && python -m pytest tests/test_dynamic_invariants.py -q 2>&1 | tail -15)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/.claude/hooks/obsidia_router_prompt_hook.py\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
