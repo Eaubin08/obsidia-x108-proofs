@@ -43,6 +43,17 @@ def main() -> int:
         d = decide(prompt, memory_index={}, model_ladder=["local-only"])
         ir, gate = d.get("ir", {}), d.get("gate", {})
 
+        # Etat partage avec le garde PreToolUse (mesure de derive mecanique).
+        try:
+            state = {"intent": ir.get("intent_type"),
+                     "layer": ir.get("target_layer"),
+                     "gate": gate.get("verdict"),
+                     "route": d.get("route")}
+            (Path(__file__).parent / ".last_router_verdict.json").write_text(
+                json.dumps(state), encoding="utf-8")
+        except OSError:
+            pass
+
         lines = [
             "[OBSIDIA-ROUTER] Verdict pre-inference deterministe (ADVISORY_ONLY, KX108_ONLY):",
             f"  intent={ir.get('intent_type')} layer={ir.get('target_layer')} "

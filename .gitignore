@@ -297,3 +297,4 @@ OBSIDIA_CANONICAL_COMPONENT_CORPUS_MAP_*.csv
 # This rule covers the same directories at any depth (Lean build iterations).
 **/_EPHEMERAL_CODE_SANDBOX_*/
 **/_EPHEMERAL_CODE_SANDBOX_*/*.log
+.claude/hooks/.last_router_verdict.json

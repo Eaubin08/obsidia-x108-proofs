@@ -60,6 +60,18 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/.claude/hooks/obsidia_pretooluse_guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [

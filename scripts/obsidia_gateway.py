@@ -136,6 +136,62 @@ def call_brody(raw: str) -> str | None:
         return None
 
 
+def call_os_trad(raw: str) -> dict | None:
+    """Traduction structurelle OS trad (read-only, REAL_BACKEND).
+
+    Enrichit l'IR : langue detectee, alphabet_units, risk_flags.
+    Jamais d'execution — conforme doctrine obsidure proposal-only.
+    """
+    if not BRODY_POST_ALLOWED:
+        return None
+    try:
+        req = urllib.request.Request(
+            BRODY_BASE + "/api/os-trad/translate",
+            data=json.dumps({"text": raw}).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST")
+        with urllib.request.urlopen(req, timeout=5) as res:
+            return json.loads(res.read().decode("utf-8"))
+    except Exception:
+        return None
+
+
+_DOMAIN_WORDS = {
+    "bank": {"bank", "banque", "bancaire", "virement"},
+    "trading": {"trading", "trade", "marche", "ordre"},
+    "gps": {"gps", "aviation", "altitude", "trajectoire"},
+}
+
+
+def detect_domain(raw: str) -> str | None:
+    try:
+        from export_gateway_memory_index import words
+        ws = words(raw)
+    except ImportError:
+        ws = set(raw.lower().split())
+    for dom, kws in _DOMAIN_WORDS.items():
+        if ws & kws:
+            return dom
+    return None
+
+
+def call_kernel_bridge(domain: str) -> dict | None:
+    """Verdict kernel X108 reel via le pont existant /api/live/kernel
+    (BRIDGE_ONLY — l'API transporte, le kernel 3001 decide)."""
+    if not BRODY_POST_ALLOWED:
+        return None
+    try:
+        req = urllib.request.Request(
+            f"{BRODY_BASE}/api/live/kernel/adapters/{domain}",
+            data=json.dumps({"payload": {}}).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST")
+        with urllib.request.urlopen(req, timeout=30) as res:
+            return json.loads(res.read().decode("utf-8"))
+    except Exception:
+        return None
+
+
 def call_claude(raw: str, decision: dict) -> str:
     exe = shutil.which("claude") or shutil.which("claude.cmd")
     if not exe:
@@ -181,7 +237,22 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
                  f"layer={d['ir'].get('target_layer')} — {d['reason']}"
     elif route == "memory_hit":
         answer = f"[memoire, 0 token]\n{d['memory_entry']}"
-    elif route in ("brody", "obsidure_route_only", "lean_route_only", "domain_bridge"):
+    elif route == "domain_bridge":
+        # Autorite reelle : verdict kernel X108 via le pont existant.
+        dom = detect_domain(raw)
+        kb = call_kernel_bridge(dom) if dom else None
+        if kb and not kb.get("kernel_error"):
+            route = "kernel_bridge"
+            kd = kb.get("kernel_decision") or kb
+            verdict = kd.get("verdict") or kd.get("decision") or "voir payload"
+            answer = (f"[kernel X108 via bridge, 0 token distant] domaine={dom} "
+                      f"verdict={verdict}\n"
+                      + json.dumps(kd, ensure_ascii=False)[:500])
+        else:
+            remote = call_brody(raw) if brody_alive() else None
+            answer = remote or ("[brody structural]\n"
+                                + brody_stub.answer(d["ir"], d["topic"])["text"])
+    elif route in ("brody", "obsidure_route_only", "lean_route_only"):
         hit = semantic_search(raw, SEMANTIC_ENTRIES) if route == "brody" else None
         if hit:
             route = "semantic_memory_hit"
@@ -198,8 +269,19 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
             answer = (f"[memoire semantique, 0 token] {hit['entry']['name']} "
                       f"(score {hit['score']})\n{hit['entry']['answer']}")
         else:
-            llm_called = True
-            answer = call_claude(raw, d)
+            # Enrichissement OS trad avant escalade : risk_flags = pause.
+            tr = call_os_trad(raw)
+            flags = (tr or {}).get("risk_flags") or []
+            if flags:
+                route = "os_trad_risk_hold"
+                answer = (f"HOLD — OS trad a leve des risk_flags: {flags}. "
+                          "Rien n'a ete envoye au LLM. Validation humaine requise.")
+            else:
+                if tr:
+                    d["os_trad"] = {"language": tr.get("detected_language"),
+                                    "units": len(tr.get("alphabet_units", []))}
+                llm_called = True
+                answer = call_claude(raw, d)
 
     if not llm_called:
         counters["llm_calls_avoided"] += 1
