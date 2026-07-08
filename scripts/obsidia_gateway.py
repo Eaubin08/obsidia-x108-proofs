@@ -216,31 +216,77 @@ def run_obsidure_proposal(objective: str) -> dict | None:
 INTAKE_OUTBOX = REPO_ROOT / "_MEMORY_INTAKE_OUTBOX"
 
 
-def memory_outbox_flush(exchanges: list[dict]) -> Path | None:
-    """Depose le paquet de session dans le sas d'intake.
+# Doctrine memoire (source : 01_SOURCES/extracted_text_all.md, MMONDE) :
+#   strates  : RAW -> EXTRACTED -> ATLAS -> CANON (jamais fusionnees)
+#   statuts  : BRUT / A_VALIDER / VALIDE_PAR_ETIENNE / FREEZE / CONFLIT
+#   couches  : kernel / memoire / vision / terrain / preuve / frise / agent
+#   IDs      : MEM-YYYY-XXXX ; arbres temporels 22/23/24 (Temps/Memoire/Histoire)
+#   Rien ne devient canonique sans validation explicite de l'operateur.
+_ROUTE_TO_COUCHE = {
+    "kernel_bridge": "kernel", "domain_bridge": "terrain",
+    "lean_route_only": "preuve", "obsidure_proposal": "agent",
+    "semantic_memory_hit": "memoire", "memory_hit": "memoire",
+}
 
-    Le paquet est de la matiere brute NON canonique : ton pipeline existant
-    (session_presave_buffer -> auto_triage -> validation humaine) reste le
-    seul chemin vers la memoire. memory_write=False respecte : rien n'entre
-    dans MATH_MEMORY_INDEX ni le ledger sans promotion operateur.
+
+def memory_outbox_flush(exchanges: list[dict]) -> Path | None:
+    """Depose le paquet de session dans le sas d'intake, au format doctrine.
+
+    Chaque echange devient un enregistrement MEM-* (statut BRUT, strate RAW,
+    couche proposee, arbres actives) + un Event de frise chronologique
+    (modele Mmonde 03 : id/label/date/narrative). Le tri automatique PROPOSE,
+    la promotion vers ATLAS/CANON reste operateur. memory_write=False.
     """
     if not exchanges:
         return None
     try:
+        try:
+            from export_gateway_memory_index import dominant_trees
+        except ImportError:
+            def dominant_trees(_):  # type: ignore
+                return {}
         INTAKE_OUTBOX.mkdir(parents=True, exist_ok=True)
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        now = datetime.now(timezone.utc)
+        ts = now.strftime("%Y%m%dT%H%M%SZ")
+        records, frise_events = [], []
+        for i, ex in enumerate(exchanges, 1):
+            trees = dominant_trees(ex.get("in", "") + " " + ex.get("out", ""))
+            mem_id = f"MEM-{now.year}-{ts[4:8]}{i:03d}"
+            records.append({
+                "id": mem_id,
+                "fragment_source": ex.get("in", ""),
+                "type": "recit",
+                "couche": _ROUTE_TO_COUCHE.get(ex.get("route", ""), "memoire"),
+                "statut": "BRUT",
+                "destination_memoire": "RAW",
+                "arbres_actives": trees,
+                "reponse": ex.get("out", ""),
+                "ts": ex.get("ts"),
+            })
+            frise_events.append({
+                "id": mem_id, "label": ex.get("in", "")[:60],
+                "date": ex.get("ts"), "narrative": ex.get("out", "")[:200],
+                "non_decision": True,
+            })
         packet = {
             "kind": "GATEWAY_SESSION_PACKET",
+            "doctrine": "STRATES_RAW_EXTRACTED_ATLAS_CANON_V1",
             "status": "RAW_NON_CANONICAL",
+            "statut_global": "BRUT",
             "decision_authority": "KX108_ONLY",
             "memory_write": False,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "promotion_requires": "VALIDATION_EXPLICITE_OPERATEUR",
+            "created_at": now.isoformat(),
             "exchange_count": len(exchanges),
-            "exchanges": exchanges,
+            "records": records,
         }
         out = INTAKE_OUTBOX / f"gateway_session_{ts}.json"
         out.write_text(json.dumps(packet, ensure_ascii=False, indent=1),
                        encoding="utf-8")
+        # Frise chronologique cumulative (Event Mmonde, append-only).
+        with (INTAKE_OUTBOX / "FRISE_TIMELINE.jsonl").open("a", encoding="utf-8") as f:
+            for ev in frise_events:
+                f.write(json.dumps(ev, ensure_ascii=False) + "\n")
         return out
     except OSError:
         return None
@@ -356,6 +402,7 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
 
     audit_log({"request_preview": raw[:120], "route": route, "level": level,
                "model_call_avoided": not llm_called})
+    counters["last_route"] = route
     return answer
 
 
@@ -384,14 +431,15 @@ def main() -> int:
         if raw.lower() in ("exit", "quit"):
             break
         if raw.lower() == "metrics":
-            total = sum(counters.values())
             avoided = counters["llm_calls_avoided"]
+            total = avoided + counters["llm_calls"]
             rate = (avoided / total * 100) if total else 0.0
             print(f"  appels LLM evites : {avoided}/{total} ({rate:.0f}%) | "
                   f"appels payants : {counters['llm_calls']}")
             continue
         answer = handle(raw, memory_index, counters)
         exchanges.append({"in": raw[:400], "out": answer[:400],
+                          "route": counters.get("last_route"),
                           "ts": datetime.now(timezone.utc).isoformat()})
         print(answer)
         print()
