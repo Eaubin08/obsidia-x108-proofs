@@ -5741,6 +5741,216 @@ def format_skill_resolver_cleanup_v2(data: dict) -> str:
 # ─── FIN SKILL RESOLVER V2 CLEANUP ───────────────────────────────────────────
 
 
+# ─── TUI UNIFICATION V2 ──────────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_TUI_UNIFICATION_V2
+# Surface unifiee du cockpit terminal : tabs + aliases + commandes.
+# Le TUI affiche. Il ne decide pas. tui_authority=NONE.
+
+_TUI_UNIFICATION_VERSION = "OBSIDIA_TERMINAL_TUI_UNIFICATION_V2"
+
+_TUI_UNIFICATION_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py tui status",
+    "python scripts/obsidia_cli.py law status",
+    "python scripts/obsidia_cli.py skill resolver status",
+]
+
+# Aliases TUI vers panneaux directs (affichage readonly dans le panneau gauche).
+_TUI_PANEL_ALIASES_V2 = {
+    "/laws": "LAWS",
+    "/skills": "SKILLS",
+    "/domains": "DOMAINS",
+    "/brody": "BRODY",
+    "/obsidure": "OBSIDURE",
+    "/sigma": "SIGMA_OIE",
+    "/oie": "SIGMA_OIE",
+}
+
+
+def get_terminal_tui_command_surface_v2() -> dict:
+    """Surface unifiee des tabs/aliases du cockpit terminal. Pure, readonly."""
+    def _tab(label: str, command: str, panel: str) -> dict:
+        return {
+            "label": label,
+            "status": "AVAILABLE",
+            "command": command,
+            "readonly": True,
+            "authority": "NONE",
+            "panel": panel,
+        }
+    return {
+        "version": _TUI_UNIFICATION_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "tui_authority": "NONE",
+        "auto_execution": False,
+        "mutation": "none",
+        "subprocess": "none",
+        "tabs": {
+            "CORE": _tab("Routage et plan actif", "/plan", "OBSIDIA_ACTIVE_PLAN"),
+            "GATES": _tab("Gate planner advisory", "/gates",
+                          "OBSIDIA_TERMINAL_GATE_PLANNER_V1"),
+            "TOOLS": _tab("Outils autorises/interdits", "/tools", "TOOLS_PANEL"),
+            "STATUS": _tab("Etat technique", "/status", "STATUS_PANEL"),
+            "PROOF": _tab("Preuves Lean readonly", "proof status",
+                          "OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1"),
+            "LAWS": _tab("Lois terminales", "law status",
+                         "OBSIDIA_TERMINAL_LAW_REGISTRY_V1"),
+            "SKILLS": _tab("Skill resolver cleanup", "skill resolver status",
+                           "OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP"),
+            "DOMAINS": _tab("Domain bridges readonly", "status domains",
+                            "OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1"),
+            "BRODY": _tab("Brody memory visibility", "status brody memory",
+                          "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1"),
+            "OBSIDURE": _tab("Proposal reader readonly", "proposal list",
+                             "OBSIDURE_PROPOSAL_READER_V2"),
+            "SIGMA_OIE": _tab("Sigma/OIE status readonly", "status sigma",
+                              "OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1"),
+        },
+        "aliases": {
+            "/gates": "GATES",
+            "/tools": "TOOLS",
+            "/status": "STATUS",
+            "/proof": "PROOF",
+            "/laws": "LAWS",
+            "/skills": "SKILLS",
+            "/domains": "DOMAINS",
+            "/brody": "BRODY",
+            "/obsidure": "OBSIDURE",
+            "/sigma": "SIGMA_OIE",
+            "/oie": "SIGMA_OIE",
+        },
+        "commands_only": list(_TUI_UNIFICATION_COMMANDS_ONLY),
+    }
+
+
+def format_terminal_tui_help_v2(surface: dict) -> str:
+    """Aide compacte du cockpit : aliases -> tab -> commande CLI. Pure."""
+    tabs = surface.get("tabs", {})
+    aliases = surface.get("aliases", {})
+    lines = [
+        _TUI_UNIFICATION_VERSION,
+        "mode=READONLY",
+        "tui_authority=NONE",
+        "auto_execution=False",
+        "",
+        "ALIASES:",
+    ]
+    for alias, tab_name in aliases.items():
+        cmd = (tabs.get(tab_name) or {}).get("command", "?")
+        lines.append(f"  {alias:<10} -> {tab_name:<10} ({cmd})")
+    lines += [
+        "",
+        "AUTRES:",
+        "  /help    aide complete",
+        "  /suite   suite disponible",
+        "  /plain   mode texte brut",
+        "  exit     quitter",
+        "",
+        "COMMANDS_ONLY:",
+    ]
+    lines += [f"  {c}" for c in (surface.get("commands_only")
+                                 or _TUI_UNIFICATION_COMMANDS_ONLY)]
+    return "\n".join(lines)
+
+
+def build_terminal_tui_unification_response_v2(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal TUI_UNIFICATION_V2. Pure, readonly."""
+    surface = get_terminal_tui_command_surface_v2()
+    tab_count = len(surface.get("tabs", {}))
+    reponse_text = (
+        f"Cockpit terminal unifie ({tab_count} tabs).\n\n"
+        "Le TUI affiche les panneaux readonly. Il ne decide rien — "
+        "tui_authority=NONE, decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "TUI_UNIFICATION_V2",
+        "detected_layer": "tui",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _TUI_UNIFICATION_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "tui_authority": "NONE",
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "tui_surface": surface,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["tui help", "law status", "skill resolver status"],
+        },
+        "outils_panel": {
+            "TUI_UNIFICATION_V2": "available",
+            "tui_status_cmd": "python scripts/obsidia_cli.py tui status",
+            "tui_help_cmd": "python scripts/obsidia_cli.py tui help",
+            "tui_authority": "NONE",
+            "mutation": "none",
+        },
+        "next_suggestions": ["tui help", "law status", "skill resolver status"],
+    }
+
+
+def format_terminal_tui_unification_v2(data: dict) -> str:
+    """Formate la reponse TUI_UNIFICATION_V2 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    surface = data.get("tui_surface", {})
+    lines = [
+        _TUI_UNIFICATION_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"tui_authority={etat.get('tui_authority', 'NONE')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        "",
+        "TABS:",
+    ]
+    tabs = surface.get("tabs", {})
+    lines += [f"  {name}" for name in tabs] if tabs else ["  none"]
+    lines += ["", "ALIASES:"]
+    aliases = surface.get("aliases", {})
+    lines += [f"  {alias} -> {tab}" for alias, tab in aliases.items()] \
+        if aliases else ["  none"]
+    lines += ["", "COMMANDS_ONLY:"]
+    lines += [f"  {c}" for c in (surface.get("commands_only")
+                                 or _TUI_UNIFICATION_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no tui authority",
+        "  no automatic action",
+        "  no mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+def _tui_alias_panel_text_v2(alias: str, registry: dict) -> str:
+    """Texte readonly du panneau vise par un alias TUI direct. Aucune mutation."""
+    if alias == "/laws":
+        return format_terminal_law_registry_v1(get_terminal_law_panel_v1())
+    if alias == "/skills":
+        return format_skill_resolver_cleanup_v2(
+            build_skill_resolver_cleanup_response_v2("skills status", registry))
+    if alias == "/domains":
+        return format_domain_bridge_status_v1(
+            build_domain_bridge_status_response_v1("status domains", registry))
+    if alias == "/brody":
+        return format_brody_memory_visibility_v1(
+            build_brody_memory_visibility_response_v1("status brody memory", registry))
+    if alias == "/obsidure":
+        return build_obsidure_proposal_reader_response_v2("proposal list", registry)["reponse"]
+    if alias in ("/sigma", "/oie"):
+        layer = "sigma" if alias == "/sigma" else "oie"
+        resp = build_status_response(f"status {layer}", layer, registry)
+        return format_sigma_oie_status_v1(build_sigma_oie_status_response_v1(resp, registry))
+    return ""
+
+
+# ─── FIN TUI UNIFICATION V2 ──────────────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -6190,6 +6400,15 @@ def extract_tools_panel(response: dict) -> list[str]:
             "  - python scripts/obsidia_cli.py skills status",
             "  - readonly",
             "  - resolver_authority=NONE",
+        ]
+    if layer == "tui":
+        lines += [
+            "",
+            "TUI_UNIFICATION_V2:",
+            "  - python scripts/obsidia_cli.py tui status",
+            "  - python scripts/obsidia_cli.py tui help",
+            "  - readonly",
+            "  - tui_authority=NONE",
         ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
@@ -7391,6 +7610,13 @@ def interactive_tui_shell(registry: dict) -> int:
                 "  /tools   — outils autorises/interdits",
                 "  /proof   — etat preuves/corpus",
                 "  /gates   — gate planner advisory (NONE_GATE_PLANNER_IS_ADVISORY_ONLY)",
+                "", "Panneaux directs (gauche) :",
+                "  /laws     — lois terminales readonly",
+                "  /skills   — skill resolver cleanup",
+                "  /domains  — domain bridges readonly",
+                "  /brody    — brody memory visibility",
+                "  /obsidure — proposal reader readonly",
+                "  /sigma /oie — sigma/oie status readonly",
             ]
             main_lines = help_lines
             plan_lines = ["=== PLAN ===", "", "mode: GUIDE", "out: HELP",
@@ -7426,6 +7652,15 @@ def interactive_tui_shell(registry: dict) -> int:
                     "(pas encore de reponse)",
                     "", "Tapez une question d'abord.",
                 ]
+            continue
+
+        # Aliases panneaux directs — affichage readonly dans le panneau gauche
+        if low in _TUI_PANEL_ALIASES_V2:
+            alias_text = _tui_alias_panel_text_v2(low, registry)
+            main_lines = alias_text.splitlines() if alias_text else [
+                f"Panneau {low} indisponible.",
+            ]
+            current_layer = _TUI_PANEL_ALIASES_V2[low].lower()
             continue
 
         # Commande suite/continue/suivant/next
@@ -8338,6 +8573,18 @@ def main(argv: list[str]) -> int:
     if _law_hits and _law_triggers:
         resp_law = get_terminal_law_panel_v1()
         print(format_terminal_law_registry_v1(resp_law))
+        return 0
+    # TUI unification readonly : tui status / tui help / cockpit status /
+    # "terminal cockpit status" — tui_authority=NONE
+    _tui_hits = _dom_words & {"tui", "cockpit"}
+    _tui_triggers = _dom_words & {"status", "etat", "help", "aide", "terminal"}
+    if _tui_hits and _tui_triggers:
+        if "help" in _dom_words or "aide" in _dom_words:
+            print(format_terminal_tui_help_v2(get_terminal_tui_command_surface_v2()))
+            return 0
+        resp_tui = build_terminal_tui_unification_response_v2(
+            " ".join(_brody_argv), registry)
+        print(format_terminal_tui_unification_v2(resp_tui))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
