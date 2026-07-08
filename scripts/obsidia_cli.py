@@ -5545,6 +5545,202 @@ def format_lean_proof_panel_v1(data: dict) -> str:
 # ─── FIN LEAN PROOF PANEL V1 ─────────────────────────────────────────────────
 
 
+# ─── SKILL RESOLVER V2 CLEANUP ───────────────────────────────────────────────
+# OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP
+# Classification readonly des skills : USED / ROUTED / VISIBLE_PANEL /
+# INVENTORIED_ONLY / DEFERRED / HIDDEN_FROM_TUI / UNKNOWN.
+# Le resolver decrit. Il n'active rien. resolver_authority=NONE.
+
+_SKILL_RESOLVER_CLEANUP_VERSION = "OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP"
+_SKILL_RESOLVER_SKILLS_DIR = ".claude/skills"
+
+_SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py skill resolver status",
+    "python scripts/obsidia_cli.py skills status",
+    "python scripts/obsidia_cli.py law status",
+]
+
+# Panneaux terminaux reellement branches (router + panel + status + tests gates).
+_SKILL_RESOLVER_CORE_SKILLS = {
+    "brody": {
+        "surface": ["router", "panel", "status", "memory_visibility"],
+        "notes": ["BRODY_BRIDGE_V1 + BRODY_MEMORY_VISIBILITY_V1"],
+    },
+    "obsidure": {
+        "surface": ["router", "panel", "proposal_reader", "operator_card"],
+        "notes": ["OBSIDURE_BRIDGE_V1 + OBSIDURE_PROPOSAL_READER_V2"],
+    },
+    "sigma": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["SIGMA_OIE_STATUS_PANEL_V1, advisory only"],
+    },
+    "oie": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["SIGMA_OIE_STATUS_PANEL_V1, report only"],
+    },
+    "domains": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["DOMAIN_BRIDGE_READONLY_V1, bridge only"],
+    },
+    "lean_proof": {
+        "surface": ["router", "panel", "status", "proof_tab"],
+        "notes": ["LEAN_PROOF_PANEL_V1, commands only"],
+    },
+    "law_registry": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["TERMINAL_LAW_REGISTRY_V1, registry_authority=NONE"],
+    },
+}
+
+# Skills presents dans .claude/skills/ mais non branches dans le router/TUI.
+# Classes, pas supprimes. Activation = decision humaine future.
+_SKILL_RESOLVER_DEFERRED_SKILLS = {
+    "graph-calibrator": {
+        "skill_dir": "graph-calibrator-obsidia",
+        "notes": ["present dans .claude/skills/, non branche au router"],
+    },
+    "module-mapper": {
+        "skill_dir": "module-mapper",
+        "notes": ["present dans .claude/skills/, non branche au router"],
+    },
+    "wiki-brain-bridge": {
+        "skill_dir": "wiki-brain-bridge",
+        "notes": ["policy file, non branche, pas d'auto-install"],
+    },
+}
+
+
+def collect_skill_resolver_cleanup_v2(registry: dict | None = None) -> dict:
+    """Classification readonly des skills. Presence de dossiers uniquement.
+    Aucun import de skill. Aucune execution. Aucune activation automatique."""
+    skills: dict = {}
+    for name, spec in _SKILL_RESOLVER_CORE_SKILLS.items():
+        skills[name] = {
+            "status": "USED",
+            "surface": list(spec["surface"]),
+            "notes": list(spec["notes"]),
+        }
+    skills_root = REPO_ROOT / _SKILL_RESOLVER_SKILLS_DIR
+    for name, spec in _SKILL_RESOLVER_DEFERRED_SKILLS.items():
+        try:
+            present = (skills_root / spec["skill_dir"]).is_dir()
+        except Exception:
+            present = False
+        skills[name] = {
+            "status": "INVENTORIED_ONLY" if present else "MISSING",
+            "surface": [],
+            "decision": "DEFERRED",
+            "skill_dir": f"{_SKILL_RESOLVER_SKILLS_DIR}/{spec['skill_dir']}",
+            "notes": list(spec["notes"]),
+        }
+    summary = {
+        "used": sum(1 for s in skills.values() if s["status"] == "USED"),
+        "inventoried_only": sum(1 for s in skills.values()
+                                if s["status"] == "INVENTORIED_ONLY"),
+        "deferred": sum(1 for s in skills.values()
+                        if s.get("decision") == "DEFERRED"),
+        "unknown": sum(1 for s in skills.values() if s["status"] == "UNKNOWN"),
+    }
+    return {
+        "version": _SKILL_RESOLVER_CLEANUP_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "resolver_authority": "NONE",
+        "auto_execution": False,
+        "mutation": "none",
+        "subprocess": "none",
+        "skills": skills,
+        "summary": summary,
+        "commands_only": list(_SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY),
+    }
+
+
+def build_skill_resolver_cleanup_response_v2(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal SKILL_RESOLVER_V2_CLEANUP. Pure, readonly."""
+    resolver = collect_skill_resolver_cleanup_v2(registry)
+    summary = resolver.get("summary", {})
+    reponse_text = (
+        f"Skill Resolver cleanup readonly ({summary.get('used', 0)} used, "
+        f"{summary.get('inventoried_only', 0)} inventoried-only, "
+        f"{summary.get('deferred', 0)} deferred).\n\n"
+        "Le resolver classe les skills, il n'active rien — "
+        "resolver_authority=NONE, decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "SKILL_RESOLVER_V2_CLEANUP",
+        "detected_layer": "skill_resolver",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _SKILL_RESOLVER_CLEANUP_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "resolver_authority": "NONE",
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "skill_resolver": resolver,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["skill resolver status", "skills status", "law status"],
+        },
+        "outils_panel": {
+            "SKILL_RESOLVER_V2_CLEANUP": "available",
+            "resolver_cmd": "python scripts/obsidia_cli.py skill resolver status",
+            "skills_cmd": "python scripts/obsidia_cli.py skills status",
+            "resolver_authority": "NONE",
+            "skill_execution": "forbidden",
+        },
+        "next_suggestions": ["skill resolver status", "skills status", "law status"],
+    }
+
+
+def format_skill_resolver_cleanup_v2(data: dict) -> str:
+    """Formate la reponse SKILL_RESOLVER_V2_CLEANUP pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    resolver = data.get("skill_resolver", {})
+    skills = resolver.get("skills", {})
+    lines = [
+        _SKILL_RESOLVER_CLEANUP_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"resolver_authority={etat.get('resolver_authority', 'NONE')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        "",
+        "USED:",
+    ]
+    used = [n for n, s in skills.items() if s.get("status") == "USED"]
+    lines += [f"  {n}" for n in used] if used else ["  none"]
+    lines += ["", "INVENTORIED_ONLY:"]
+    inventoried = [n for n, s in skills.items()
+                   if s.get("status") == "INVENTORIED_ONLY"]
+    lines += [f"  {n}" for n in inventoried] if inventoried else ["  none"]
+    lines += ["", "DEFERRED:"]
+    deferred = [n for n, s in skills.items() if s.get("decision") == "DEFERRED"]
+    lines += [f"  {n}" for n in deferred] if deferred else ["  none"]
+    missing = [n for n, s in skills.items() if s.get("status") == "MISSING"]
+    if missing:
+        lines += ["", "MISSING:"]
+        lines += [f"  {n}" for n in missing]
+    lines += ["", "COMMANDS_ONLY:"]
+    lines += [f"  {c}" for c in (resolver.get("commands_only")
+                                 or _SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no resolver authority",
+        "  no automatic skill execution",
+        "  no mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN SKILL RESOLVER V2 CLEANUP ───────────────────────────────────────────
+
+
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
     """Build an ANSWER_STATUS response for a service/layer status query.
     V2: surfaces séparées. reponse = texte humain. etat_technique = panneau droit."""
@@ -5985,6 +6181,15 @@ def extract_tools_panel(response: dict) -> list[str]:
             "  - python scripts/obsidia_cli.py laws",
             "  - readonly",
             "  - registry_authority=NONE",
+        ]
+    if layer == "skill_resolver":
+        lines += [
+            "",
+            "SKILL_RESOLVER_V2_CLEANUP:",
+            "  - python scripts/obsidia_cli.py skill resolver status",
+            "  - python scripts/obsidia_cli.py skills status",
+            "  - readonly",
+            "  - resolver_authority=NONE",
         ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
@@ -8023,6 +8228,19 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    # Skill resolver cleanup readonly : skill resolver status / skills status /
+    # resolver skills / status skills / "show skills status" — resolver_authority=NONE
+    _src_argv = argv[0].split() if len(argv) == 1 else argv
+    _src_words = {w.lower().strip('"').strip("'") for w in _src_argv}
+    _src_hit = _src_words & {"skill", "skills", "resolver"}
+    _src_trigger = (
+        "status" in _src_words or "etat" in _src_words or "show" in _src_words
+        or ("resolver" in _src_words and "skills" in _src_words)
+    )
+    if _src_hit and _src_trigger:
+        resp_src = build_skill_resolver_cleanup_response_v2(" ".join(_src_argv), registry)
+        print(format_skill_resolver_cleanup_v2(resp_src))
+        return 0
     if argv and argv[0].lower() in ("skills", "skill", "skill-resolver", "skill-inventory", "protocols"):
         raw_filter = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(format_terminal_skill_inventory_v1(raw_filter))
