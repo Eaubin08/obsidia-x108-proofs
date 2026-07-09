@@ -418,7 +418,8 @@ def main() -> int:
         return 0
 
     print("OBSIDIA GATEWAY — terminal fusionne (router -> memory -> brody -> claude)")
-    print("Commandes : 'metrics' compteurs session, 'exit' quitter.\n")
+    print("Commandes : 'metrics' compteurs | 'paste' bloc multi-lignes (fin: END) | "
+          "'file <chemin>' prompt depuis fichier | 'exit' quitter.\n")
     exchanges: list[dict] = []
     while True:
         try:
@@ -430,6 +431,33 @@ def main() -> int:
             continue
         if raw.lower() in ("exit", "quit"):
             break
+        if raw.lower() in ("paste", "ml", "multiline"):
+            # Bloc multi-lignes : colle ton prompt structure, termine par END
+            # seul sur sa ligne. Tout le bloc part comme UNE requete.
+            print("  [paste] Colle ton bloc. Termine par une ligne 'END'.")
+            buf: list[str] = []
+            while True:
+                try:
+                    line = input()
+                except (EOFError, KeyboardInterrupt):
+                    break
+                if line.strip() == "END":
+                    break
+                buf.append(line)
+            raw = "\n".join(buf).strip()
+            if not raw:
+                continue
+        elif raw.lower().startswith("file "):
+            # Prompt depuis un fichier (audits structures, briefs longs).
+            fpath = Path(raw[5:].strip().strip('"'))
+            try:
+                raw = fpath.read_text(encoding="utf-8").strip()
+                print(f"  [file] {fpath} charge ({len(raw)} caracteres).")
+            except OSError as exc:
+                print(f"  [file] illisible : {exc}")
+                continue
+            if not raw:
+                continue
         if raw.lower() == "metrics":
             avoided = counters["llm_calls_avoided"]
             total = avoided + counters["llm_calls"]
