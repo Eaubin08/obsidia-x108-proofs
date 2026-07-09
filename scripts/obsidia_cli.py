@@ -47,6 +47,12 @@ from obsidia_sigma_guidance import (  # noqa: E402
     derive_guidance,
     sigma_guidance_report,
 )
+from obsidia_law_registry_v1 import (  # noqa: E402
+    OBSIDIA_TERMINAL_LAW_REGISTRY_VERSION,
+    format_terminal_law_registry_v1,
+    get_terminal_law_panel_v1,
+    get_terminal_law_registry_v1,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).resolve().parent / "obsidia_registry.yaml"
@@ -1007,7 +1013,7 @@ def _build_capability_summary(layer: str, raw: str) -> dict:
     }
 
 
-def build_active_plan(raw: str, registry: dict) -> dict:
+def _build_active_plan_core_before_gate_planner_v1(raw: str, registry: dict) -> dict:
     """Construit le panneau a partir du pipeline REEL (pas de texte decoratif).
     Ne lance rien : la sortie est PREVUE, l'execution reste `obsidia \"<IN>\"`."""
     normalized = normalize(raw)
@@ -1109,14 +1115,386 @@ def build_active_plan(raw: str, registry: dict) -> dict:
         "next_human_action": nxt,
         "plan_status": status,
         "capability_summary": _build_capability_summary(layer, raw),
+        "input_skill_resolution": resolve_terminal_input_with_skills_v1(raw),
     }
+
+
+def build_active_plan(raw: str, registry: dict) -> dict:
+    plan = _build_active_plan_core_before_gate_planner_v1(raw, registry)
+    resolved = plan.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    plan["input_skill_resolution"] = resolved
+    plan["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", plan.get("detected_layer", "")),
+        kind=resolved.get("resolved_kind", plan.get("plan_status", "")),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer=plan.get("detected_layer", ""),
+        output_predicted=plan.get("output_predicted", ""),
+    )
+    return plan
+
 
 
 def _fmt_list(items: list, indent: str = "  - ") -> str:
     return "\n".join(indent + str(i) for i in items) if items else indent + "aucun"
 
 
-def format_active_plan(plan: dict) -> str:
+
+# ─── TERMINAL GATE PLANNER V1 ────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_GATE_PLANNER_V1
+# Planner consultatif uniquement : propose les checks/gates, n'exécute rien.
+
+def _gate_contains_v1(items, *needles) -> bool:
+    blob = " ".join(str(x).lower() for x in (items or []))
+    return any(str(n).lower() in blob for n in needles)
+
+
+def _gate_family_from_route_v1(
+    route: str = "",
+    kind: str = "",
+    domain: str = "",
+    detected_layer: str = "",
+    selected_skills: list | None = None,
+    selected_protocols: list | None = None,
+    output_predicted: str = "",
+) -> str:
+    route_u = str(route or "").upper()
+    kind_u = str(kind or "").upper()
+    domain_u = str(domain or "").upper()
+    layer_l = str(detected_layer or "").lower()
+    output_u = str(output_predicted or "").upper()
+    selected_skills = selected_skills or []
+    selected_protocols = selected_protocols or []
+
+    if output_u == "POLICY_DENY":
+        return "POLICY_DENIED"
+
+    if (
+        domain_u == "LEAN"
+        or "LEAN" in route_u
+        or "LEAN" in kind_u
+        or _gate_contains_v1(selected_skills, "proof-sentinel", "lean")
+    ):
+        return "LEAN_PROOF"
+
+    if (
+        route_u == "OBSIDURE"
+        or "PROPOSAL" in kind_u
+        or layer_l == "obsidure"
+    ):
+        return "OBSIDURE_PROPOSAL"
+
+    if (
+        domain_u == "SRL"
+        or "MEMORY" in route_u
+        or "SRL" in route_u
+        or layer_l in ("brody", "memory")
+    ):
+        return "MEMORY_BRODY"
+
+    if (
+        layer_l in ("sigma", "oie", "domains", "domain")
+        or domain_u in ("BANK", "TRADING", "GPS")
+        or "DOMAIN_SUPPORT" in route_u
+    ):
+        return "SIGMA_OIE_DOMAINS"
+
+    if (
+        layer_l in ("terminal", "terminal_self")
+        or route_u == "READONLY_WIRING"
+        or "WIRING" in kind_u
+        or _gate_contains_v1(selected_skills, "terminal-builder")
+    ):
+        return "TERMINAL_CLI"
+
+    return "TERMINAL_CLI"
+
+
+def build_gate_plan_v1(
+    route: str = "",
+    kind: str = "",
+    domain: str = "",
+    selected_skills: list | None = None,
+    selected_protocols: list | None = None,
+    detected_layer: str = "",
+    output_predicted: str = "",
+) -> dict:
+    selected_skills = list(selected_skills or [])
+    selected_protocols = list(selected_protocols or [])
+
+    family = _gate_family_from_route_v1(
+        route=route,
+        kind=kind,
+        domain=domain,
+        detected_layer=detected_layer,
+        selected_skills=selected_skills,
+        selected_protocols=selected_protocols,
+        output_predicted=output_predicted,
+    )
+
+    common_required = [
+        "python -m py_compile scripts/obsidia_cli.py",
+        "python scripts/gates/obsidia_forbidden_write_check.py --help  # COMMANDS_ONLY, humain",
+        "python scripts/gates/obsidia_kernel_boundary_check.py --help  # COMMANDS_ONLY, humain",
+    ]
+
+    required_by_family = {
+        "LEAN_PROOF": common_required + [
+            "python scripts/gates/obsidia_lean_manifest_guard.py --help  # COMMANDS_ONLY, humain",
+            "python scripts/gates/obsidia_commit_scope_guard.py --help  # scope proofs/lean à confirmer humainement",
+            "forbidden-token check: aucun sorry/admit/axiom non autorisé dans le scope Lean",
+        ],
+        "OBSIDURE_PROPOSAL": common_required + [
+            "proposal receipt check: _PATCH_PROPOSALS/<id>/RECEIPT.md en lecture seule",
+            "diff review: git diff -- <scope exact>  # humain",
+            "forbidden-token check: apply/commit/push/deploy interdits sans approbation humaine",
+            "dry-run apply protocol only: scripts/apply_proposal.ps1 -ProposalId <id> -DryRun",
+        ],
+        "TERMINAL_CLI": common_required + [
+            "python -m pytest tests/gates/ -q",
+            "forbidden-pattern check: external process-spawn APIs interdits dans le terminal",
+            "smoke: python scripts/obsidia_cli.py plan \"<IN>\"",
+            "smoke: python scripts/obsidia_cli.py route \"<IN>\"",
+            "smoke: python scripts/obsidia_cli.py tools \"<IN>\"",
+        ],
+        "MEMORY_BRODY": [
+            "readonly check: memory_write=false",
+            "non-sovereignty check: Brody ne décide pas",
+            "no-write check: aucun write mémoire depuis terminal",
+            "bridge check: API/Brody consultatif uniquement",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "sigma advisory-only check",
+            "domain bridge-only check",
+            "no ALLOW/BLOCK/HOLD/ACT emission outside KX108",
+            "OIE/benchmark label check: MEASURED/ESTIMATED/PROVISIONAL explicites",
+        ],
+        "POLICY_DENIED": [
+            "policy denied check: aucune commande mutante proposée",
+            "human reformulation required",
+            "commit/push/apply/deploy forbidden",
+        ],
+    }
+
+    recommended_by_family = {
+        "LEAN_PROOF": [
+            "Push-Location proofs/lean ; lake build Obsidia.Peripheral ; Pop-Location  # humain uniquement",
+            "python -m pytest tests/gates/test_obsidia_lean_manifest_guard.py -q",
+            "python scripts/obsidure_cli.py --objective \"<objectif Lean>\" --domain LEAN --dry-run",
+        ],
+        "OBSIDURE_PROPOSAL": [
+            "python scripts/obsidure_cli.py --objective \"<objectif>\" --dry-run",
+            "Get-ChildItem _PATCH_PROPOSALS -Recurse | Select-Object -First 80",
+            "git diff -- <scope exact validé humainement>",
+            "scripts/apply_proposal.ps1 -ProposalId <id> -DryRun",
+        ],
+        "TERMINAL_CLI": [
+            "python -m pytest tests/gates/test_obsidia_terminal_gate_planner_v1.py -q",
+            "python scripts/obsidia_cli.py \"<IN>\"",
+            "python scripts/obsidia_cli.py operator \"<IN>\"",
+        ],
+        "MEMORY_BRODY": [
+            "python scripts/obsidia_cli.py status brody",
+            "python scripts/obsidia_cli.py status memory",
+            "vérifier manuellement response_contract: memory_write=false, decision_authority=KX108_ONLY",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "python scripts/obsidia_cli.py status sigma",
+            "python scripts/obsidia_cli.py capabilities sigma",
+            "vérifier manuellement: advisory-only, bridge-only, no sovereign decision",
+        ],
+        "POLICY_DENIED": [
+            "reformuler sans mutation directe",
+            "utiliser workflow proposal-first / dry-run / validation humaine",
+        ],
+    }
+
+    forbidden_by_family = {
+        "LEAN_PROOF": [
+            "lake build automatique depuis le terminal",
+            "mutation proofs/ sans scope humain",
+            "apply automatique de preuve",
+            "emission ALLOW/BLOCK/HOLD/ACT",
+        ],
+        "OBSIDURE_PROPOSAL": [
+            "apply automatique",
+            "commit automatique",
+            "push automatique",
+            "deploy automatique",
+            "mutation kernel/X108",
+        ],
+        "TERMINAL_CLI": [
+            "subprocess automatique",
+            "external process-spawn APIs",
+            "git add .",
+            "commit/push automatique",
+            "mutation kernel/X108",
+        ],
+        "MEMORY_BRODY": [
+            "memory write",
+            "Brody décisionnaire",
+            "POST mutatif non approuvé",
+            "sovereignty escalation",
+        ],
+        "SIGMA_OIE_DOMAINS": [
+            "Sigma décisionnaire",
+            "domain ACT direct",
+            "ALLOW/BLOCK/HOLD/ACT hors KX108",
+            "benchmark claim sans label",
+        ],
+        "POLICY_DENIED": [
+            "apply",
+            "commit",
+            "push",
+            "deploy",
+            "delete",
+            "mutation kernel/X108",
+        ],
+    }
+
+    mode_by_family = {
+        "MEMORY_BRODY": "READONLY_CHECKS",
+        "SIGMA_OIE_DOMAINS": "READONLY_CHECKS",
+        "POLICY_DENIED": "POLICY_ONLY",
+    }
+
+    return {
+        "version": "OBSIDIA_TERMINAL_GATE_PLANNER_V1",
+        "mode": mode_by_family.get(family, "COMMANDS_ONLY_NO_EXECUTION"),
+        "authority": "NONE_GATE_PLANNER_IS_ADVISORY_ONLY",
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+        "emits_verdict": False,
+        "kernel_mutation": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "route": str(route or "UNKNOWN"),
+        "kind": str(kind or "UNKNOWN"),
+        "domain": str(domain or "AUTO"),
+        "detected_layer": str(detected_layer or "unknown"),
+        "output_predicted": str(output_predicted or "UNKNOWN"),
+        "selected_skills": selected_skills,
+        "selected_protocols": selected_protocols,
+        "gate_family": family,
+        "required_checks": list(required_by_family.get(family, common_required)),
+        "recommended_commands": list(recommended_by_family.get(family, recommended_by_family["TERMINAL_CLI"])),
+        "forbidden_actions": list(forbidden_by_family.get(family, forbidden_by_family["TERMINAL_CLI"])),
+        "policy": [
+            "gate planner is advisory only",
+            "no background execution",
+            "no subprocess",
+            "no auto apply",
+            "no auto commit",
+            "no auto push",
+            "human executes all commands",
+            "X108 = final authority",
+        ],
+    }
+
+
+def _format_gate_plan_lines_v1(gate_plan: dict, header: str = "GATE_PLAN", limit: int = 6) -> list[str]:
+    gp = gate_plan or {}
+    lines = [
+        f"{header}:",
+        f"  version={gp.get('version', 'UNKNOWN')}",
+        f"  mode={gp.get('mode', 'UNKNOWN')}",
+        f"  family={gp.get('gate_family', 'UNKNOWN')}",
+        f"  authority={gp.get('authority', 'NONE_GATE_PLANNER_IS_ADVISORY_ONLY')}",
+        f"  decision_authority={gp.get('decision_authority', 'KX108_ONLY')}",
+        f"  auto_execution={gp.get('auto_execution', False)}",
+        f"  emits_act={gp.get('emits_act', False)}",
+        "  required_checks:",
+    ]
+    checks = list(gp.get("required_checks") or [])
+    lines.extend(f"    - {x}" for x in checks[:limit])
+    if not checks:
+        lines.append("    - none")
+
+    lines.append("  recommended_commands:")
+    cmds = list(gp.get("recommended_commands") or [])
+    lines.extend(f"    - {x}" for x in cmds[:limit])
+    if not cmds:
+        lines.append("    - none")
+
+    lines.append("  forbidden_actions:")
+    forbidden = list(gp.get("forbidden_actions") or [])
+    lines.extend(f"    - {x}" for x in forbidden[:limit])
+    if not forbidden:
+        lines.append("    - none")
+
+    return lines
+
+
+def format_gate_plan_view_v1(gate_plan: dict) -> str:
+    return "\n".join(_format_gate_plan_lines_v1(gate_plan, header="OBSIDIA_GATE_PLAN"))
+
+
+def extract_gates_panel(response: dict) -> list[str]:
+    response = response or {}
+    gate_plan = response.get("gate_plan")
+    if not gate_plan:
+        gate_plan = (response.get("input_skill_resolution") or {}).get("gate_plan")
+    if not gate_plan:
+        return [
+            "GATE_PLAN:",
+            "  version=OBSIDIA_TERMINAL_GATE_PLANNER_V1",
+            "  mode=COMMANDS_ONLY_NO_EXECUTION",
+            "  family=FALLBACK_GLOBAL_GATES",
+            "  authority=NONE_GATE_PLANNER_IS_ADVISORY_ONLY",
+            "  required_checks:",
+            *[f"    - {g}" for g in list(GATES_KNOWN)[:8]],
+        ]
+    return _format_gate_plan_lines_v1(gate_plan)
+
+
+# OBSIDIA_ACTIVE_PLAN_SKILL_RESOLUTION_V1
+def _active_plan_skill_resolution_lines_v1(plan: dict) -> list[str]:
+    resolved = (plan or {}).get("input_skill_resolution") or {}
+    if not resolved:
+        return [
+            "",
+            "INPUT_SKILL_RESOLUTION:",
+            "  resolver=UNAVAILABLE",
+            "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        ]
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    lines = [
+        "",
+        "INPUT_SKILL_RESOLUTION:",
+        f"  resolver={resolved.get('version', 'UNKNOWN')}",
+        f"  mode={resolved.get('mode', 'UNKNOWN')}",
+        f"  route={resolved.get('resolved_route', 'UNKNOWN')}",
+        f"  kind={resolved.get('resolved_kind', 'UNKNOWN')}",
+        f"  domain={resolved.get('resolved_domain', 'AUTO')}",
+        "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        "  input_skill_resolver=readonly_advisory",
+        "  subprocess=forbidden",
+        "  apply=forbidden",
+        "  commit=forbidden",
+        "  push=forbidden",
+        "  act_emission=forbidden",
+        "  skills_consultes_readonly:",
+    ]
+
+    if skills:
+        lines.extend(f"    - {x}" for x in skills[:6])
+    else:
+        lines.append("    - none")
+
+    lines.append("  protocoles_consultes_readonly:")
+    if protocols:
+        lines.extend(f"    - {x}" for x in protocols[:6])
+    else:
+        lines.append("    - none")
+
+    return lines
+
+
+def _format_active_plan_core_before_gate_planner_v1(plan: dict) -> str:
     lines = [
         "================ OBSIDIA_ACTIVE_PLAN ================",
         "", "INPUT:", f"  {plan['raw']}",
@@ -1126,6 +1504,7 @@ def format_active_plan(plan: dict) -> str:
     ]
     if plan.get("deny_keyword"):
         lines.append(f"  - policy: mot interdit \"{plan['deny_keyword']}\" -> POLICY_DENY")
+    lines.extend(_active_plan_skill_resolution_lines_v1(plan))
     lines += [
         "", "CAPACITES / ORGANES MOBILISES:", _fmt_list(plan["organes_mobilises"]),
         "", "CAPACITES / ORGANES MOBILISABLES:", _fmt_list(plan["organes_mobilisables"]),
@@ -1150,7 +1529,15 @@ def format_active_plan(plan: dict) -> str:
     return "\n".join(lines)
 
 
-def format_route_view(plan: dict) -> str:
+def format_active_plan(plan: dict) -> str:
+    text = _format_active_plan_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(plan.get("gate_plan"), header="GATE_PLAN"))
+
+
+
+def _format_route_view_core_before_gate_planner_v1(plan: dict) -> str:
     lines = [
         "---- OBSIDIA_ACTIVE_PLAN / ROUTE ----",
         f"ROADMAP (resume): IN -> normalize -> {plan['detected_layer']} -> {plan['output_predicted']}",
@@ -1159,11 +1546,29 @@ def format_route_view(plan: dict) -> str:
     ]
     if plan.get("deny_keyword"):
         lines.append(f"  - policy: mot interdit \"{plan['deny_keyword']}\" -> POLICY_DENY")
+    lines.extend(_active_plan_skill_resolution_lines_v1(plan))
     lines += [f"PLAN_STATUS: {plan['plan_status']}"]
     return "\n".join(lines)
 
 
-def format_tools_view(plan: dict) -> str:
+def format_route_view(plan: dict) -> str:
+    text = _format_route_view_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    gp = plan.get("gate_plan") or {}
+    lines = [
+        "",
+        "GATE_PLAN:",
+        f"  family={gp.get('gate_family', 'UNKNOWN')}",
+        f"  mode={gp.get('mode', 'UNKNOWN')}",
+        f"  authority={gp.get('authority', 'NONE_GATE_PLANNER_IS_ADVISORY_ONLY')}",
+        f"  auto_execution={gp.get('auto_execution', False)}",
+    ]
+    return text + "\n" + "\n".join(lines)
+
+
+
+def _format_tools_view_core_before_gate_planner_v1(plan: dict) -> str:
     return "\n".join([
         "---- OBSIDIA_ACTIVE_PLAN / TOOLS ----",
         f"COUCHE: {plan['detected_layer']} | SORTIE PREVUE: {plan['output_predicted']}",
@@ -1172,11 +1577,23 @@ def format_tools_view(plan: dict) -> str:
         "     CAPACITES/ORGANES MOBILISABLES:", _fmt_list(plan["organes_mobilisables"], "     - "),
         "     OUTILS TECHNIQUES MOBILISES:", _fmt_list(plan["outils_utilises"], "     - "),
         "  8. CORPUS UTILISE / MOBILISABLE:", _fmt_list(plan["corpus"], "     - "),
+        "     SKILLS CONSULTATIFS READONLY:",
+        _fmt_list((plan.get("input_skill_resolution") or {}).get("selected_skills", []), "     - "),
+        "     PROTOCOLES CONSULTATIFS READONLY:",
+        _fmt_list((plan.get("input_skill_resolution") or {}).get("selected_protocols", []), "     - "),
         "     OUTILS TECHNIQUES MOBILISABLES:", _fmt_list(plan["outils_mobilisables"], "     - "),
         "  9. CAPACITES/ORGANES INTERDITS:", _fmt_list(plan["organes_interdits"], "     - "),
         "     OUTILS/CORPUS EXCLUS:", _fmt_list(plan["outils_exclus"], "     - "),
         f"PLAN_STATUS: {plan['plan_status']}",
     ])
+
+
+def format_tools_view(plan: dict) -> str:
+    text = _format_tools_view_core_before_gate_planner_v1(plan)
+    if "GATE_PLAN:" in text or "OBSIDIA_GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(plan.get("gate_plan"), header="GATE_PLAN"))
+
 
 
 def format_blockers_view(registry: dict) -> str:
@@ -1208,7 +1625,7 @@ def format_gates_view() -> str:
     return "\n".join(lines)
 
 
-def handle_plan_command(cmd: str, arg: str, registry: dict,
+def _handle_plan_command_core_before_gate_planner_v1(cmd: str, arg: str, registry: dict,
                         last_plan: dict | None = None) -> tuple[str, dict | None, dict | None]:
     """Retourne (texte, receipt_payload_ou_None, plan_ou_None)."""
     cmd = cmd.lower()
@@ -1225,7 +1642,7 @@ def handle_plan_command(cmd: str, arg: str, registry: dict,
                     "roadmap", "organes_mobilises", "organes_mobilisables",
                     "organes_interdits", "output_predicted", "guidance",
                     "guidance_reasons", "guidance_authority",
-                    "next_human_action", "plan_status")}
+                    "next_human_action", "plan_status", "input_skill_resolution")}
         receipt["view"] = cmd
         return text, receipt, plan
     if cmd == "blockers":
@@ -1243,6 +1660,27 @@ def handle_plan_command(cmd: str, arg: str, registry: dict,
         return (f"PROCHAINE ACTION HUMAINE (dernier IN) :\n  {last_plan['next_human_action']}"
                 + f"\nPLAN_STATUS: {last_plan['plan_status']}", None, last_plan)
     return "commande panneau inconnue", None, None
+
+
+def handle_plan_command(cmd: str, arg: str, registry: dict, last_plan: dict | None = None) -> tuple[str, dict | None, dict | None]:
+    if str(cmd).lower() == "gates" and arg:
+        plan = build_active_plan(arg, registry)
+        receipt = {
+            "view": "gates",
+            "panel": "ACTIVE_PLAN",
+            "raw": arg,
+            "detected_layer": plan.get("detected_layer"),
+            "output_predicted": plan.get("output_predicted"),
+            "gate_plan": plan.get("gate_plan"),
+            "plan_status": plan.get("plan_status"),
+        }
+        return format_gate_plan_view_v1(plan.get("gate_plan")), receipt, plan
+
+    text, receipt, plan = _handle_plan_command_core_before_gate_planner_v1(cmd, arg, registry, last_plan)
+    if receipt is not None and plan is not None and "gate_plan" in plan:
+        receipt["gate_plan"] = plan["gate_plan"]
+    return text, receipt, plan
+
 
 
 # ----------------------------------------------------------------------------
@@ -3432,6 +3870,18 @@ def build_brody_bridge_response(raw: str, registry: dict) -> dict:
             "subprocess": "none",
             "memory_write": "forbidden",
             "decision": "forbidden",
+            "BRODY_MEMORY_VISIBILITY_V1": "available",
+            "memory_status_cmd": "python scripts/obsidia_cli.py status brody memory",
+        },
+        "memory_visibility": {
+            "version": "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1",
+            "mode": "READONLY",
+            "memory_write": False,
+            "available_commands": [
+                "status brody memory",
+                "brody memory status",
+            ],
+            "auto_execution": False,
         },
         "proof_panel": {
             "source": source,
@@ -3716,6 +4166,381 @@ def format_obsidure_bridge_v1(state: dict, raw: str) -> str:
     return "\n".join(lines)
 
 
+# ─── OBSIDURE PROPOSAL READER V2 ─────────────────────────────────────────────
+# OBSIDURE_PROPOSAL_READER_V2
+# Lecteur readonly des proposals. Jamais d'exécution. COMMANDS_ONLY.
+# decision_authority=KX108_ONLY, auto_execution=False.
+
+_PROPOSAL_READER_VERSION = "OBSIDURE_PROPOSAL_READER_V2"
+_PROPOSAL_READER_FORBIDDEN = ["apply", "commit", "push", "deploy"]
+
+_SAFE_ID_RE = re.compile(r'^[A-Za-z0-9_.\-]{1,128}$')
+_UNSAFE_ID_CHARS = frozenset(('..',  '/', '\\', ':', '*', '?'))
+
+
+def _obsidure_proposals_root_v2() -> "Path":
+    return REPO_ROOT / "_PATCH_PROPOSALS"
+
+
+def _safe_obsidure_proposal_id_v2(raw: str) -> str:
+    """Retourne l'ID nettoyé ou '' si invalide."""
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    for bad in ('..', '/', '\\', ':', '*', '?'):
+        if bad in s:
+            return ""
+    if not _SAFE_ID_RE.match(s):
+        return ""
+    return s
+
+
+def list_obsidure_proposals_v2(limit: int = 20) -> dict:
+    """Inventaire readonly des proposals — lecture seule, jamais d'écriture."""
+    root = _obsidure_proposals_root_v2()
+    base: dict = {
+        "version": _PROPOSAL_READER_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "root": str(root),
+    }
+    if not root.exists():
+        return {**base, "count": 0, "items": [], "status": "NO_PROPOSALS_DIR"}
+
+    try:
+        entries = sorted(
+            root.iterdir(),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+    except Exception as exc:
+        return {**base, "count": 0, "items": [], "status": f"READ_ERROR:{type(exc).__name__}"}
+
+    items = []
+    for entry in entries[:limit]:
+        has_json = (entry / "proposal.json").exists() if entry.is_dir() else entry.suffix == ".json"
+        has_receipt = (entry / "RECEIPT.md").exists() if entry.is_dir() else False
+        try:
+            mtime = entry.stat().st_mtime
+            import datetime
+            modified_at = datetime.datetime.utcfromtimestamp(mtime).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except Exception:
+            modified_at = ""
+        items.append({
+            "proposal_id": entry.name,
+            "path": str(entry.relative_to(REPO_ROOT)),
+            "has_json": has_json,
+            "has_receipt": has_receipt,
+            "modified_at": modified_at,
+        })
+
+    return {**base, "count": len(list(root.iterdir())), "items": items, "status": "OK"}
+
+
+def read_obsidure_proposal_v2(proposal_id: str) -> dict:
+    """Lit une proposal par ID en lecture seule. Jamais d'exécution."""
+    base: dict = {
+        "version": _PROPOSAL_READER_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+    }
+    safe_id = _safe_obsidure_proposal_id_v2(proposal_id)
+    if not safe_id:
+        return {**base, "found": False, "proposal_id": str(proposal_id)[:64],
+                "reason": "INVALID_PROPOSAL_ID"}
+
+    root = _obsidure_proposals_root_v2()
+    if not root.exists():
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "NO_PROPOSALS_DIR"}
+
+    proposal_path = root / safe_id
+    if not proposal_path.exists():
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "NOT_FOUND"}
+
+    # Garantir qu'on reste dans _PATCH_PROPOSALS/
+    try:
+        proposal_path.resolve().relative_to(root.resolve())
+    except ValueError:
+        return {**base, "found": False, "proposal_id": safe_id, "reason": "INVALID_PROPOSAL_ID"}
+
+    json_files: list[str] = []
+    data: dict = {}
+    if proposal_path.is_dir():
+        pj = proposal_path / "proposal.json"
+        if pj.exists():
+            data = _obsidure_safe_json(pj)
+            json_files.append("proposal.json")
+        for f in proposal_path.glob("*.json"):
+            if f.name not in ("proposal.json",):
+                json_files.append(f.name)
+    elif proposal_path.suffix == ".json":
+        data = _obsidure_safe_json(proposal_path)
+        json_files.append(proposal_path.name)
+
+    receipt_path = proposal_path / "RECEIPT.md" if proposal_path.is_dir() else None
+    receipt_preview: list[str] = []
+    if receipt_path and receipt_path.exists():
+        receipt_preview = _obsidure_read_receipt_preview(receipt_path, max_lines=12)
+
+    summary = (
+        data.get("objective") or data.get("goal") or data.get("title")
+        or data.get("summary") or data.get("request") or ""
+    )
+    scope_files = _obsidure_extract_files(data)
+    commands_in_proposal = data.get("commands") or data.get("run_commands") or []
+    if not isinstance(commands_in_proposal, list):
+        commands_in_proposal = []
+    checks_in_proposal = data.get("checks") or data.get("recommended_checks") or []
+    if not isinstance(checks_in_proposal, list):
+        checks_in_proposal = []
+
+    missing: list[str] = []
+    if not summary:
+        missing.append("summary/objective")
+    if not scope_files:
+        missing.append("scope files")
+    if not json_files:
+        missing.append("proposal.json")
+
+    diff_cmds = build_obsidure_proposal_diff_commands_v2({
+        "proposal_id": safe_id,
+        "scope_files": scope_files,
+    })
+
+    return {
+        **base,
+        "found": True,
+        "proposal_id": safe_id,
+        "proposal_path": str(proposal_path.relative_to(REPO_ROOT)),
+        "json_files": json_files,
+        "receipt_path": str((receipt_path).relative_to(REPO_ROOT)) if receipt_path and receipt_path.exists() else None,
+        "summary": str(summary)[:400],
+        "scope_files": scope_files,
+        "recommended_human_checks": list(checks_in_proposal)[:10],
+        "diff_commands": diff_cmds,
+        "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+        "missing": missing,
+        "receipt_preview": receipt_preview,
+    }
+
+
+def build_obsidure_proposal_diff_commands_v2(proposal: dict) -> list[str]:
+    """Produit des commandes humaines COMMANDS_ONLY. Jamais exécutées."""
+    pid = str(proposal.get("proposal_id", "<proposal_id>"))[:64]
+    files = list(proposal.get("scope_files", []))[:10]
+
+    lines = [
+        "COMMANDS_ONLY",
+        "WAITING_FOR_HUMAN",
+        "",
+        f"# Proposal : {pid}",
+        "",
+        "# Vérification syntaxe CLI :",
+        "python -m py_compile scripts/obsidia_cli.py",
+        "",
+        "# Tests gates readonly :",
+        "python -m pytest tests/gates/ -q",
+        "",
+        "# Dry-run Obsidure :",
+        f"python scripts/obsidure_cli.py --objective \"<objectif>\" --dry-run",
+        "",
+        "# Apply uniquement après validation humaine :",
+        f"scripts/apply_proposal.ps1 -ProposalId \"{pid}\" -DryRun",
+        f"# scripts/apply_proposal.ps1 -ProposalId \"{pid}\" -ConfirmApply  # humain uniquement",
+    ]
+    if files:
+        lines += ["", "# Diff fichiers scope (humain) :"]
+        for f in files:
+            safe_f = str(f).replace("\\", "/")
+            lines.append(f"git diff -- {safe_f}")
+            lines.append(f"git diff --cached -- {safe_f}")
+
+    lines += [
+        "",
+        "# Interdits :",
+        "# apply automatique : INTERDIT",
+        "# commit automatique : INTERDIT",
+        "# push automatique : INTERDIT",
+        "# deploy automatique : INTERDIT",
+    ]
+    return lines
+
+
+def build_obsidure_proposal_reader_response_v2(raw: str, registry: dict) -> dict:
+    """Route la commande proposal list/read/diff vers les bonnes fonctions."""
+    parts = raw.strip().split(None, 2)
+    sub = parts[1].lower() if len(parts) > 1 else "list"
+    arg = parts[2].strip() if len(parts) > 2 else ""
+
+    if sub in ("read", "lire", "show", "view"):
+        data = read_obsidure_proposal_v2(arg)
+        text = format_obsidure_proposal_reader_v2(data)
+    elif sub in ("diff", "diffview", "commands"):
+        safe_id = _safe_obsidure_proposal_id_v2(arg)
+        if not safe_id:
+            data = {
+                "version": _PROPOSAL_READER_VERSION,
+                "mode": "READONLY",
+                "decision_authority": "KX108_ONLY",
+                "auto_execution": False,
+                "found": False,
+                "reason": "INVALID_PROPOSAL_ID",
+                "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+            }
+            text = format_obsidure_proposal_reader_v2(data)
+        else:
+            diff_cmds = build_obsidure_proposal_diff_commands_v2({"proposal_id": safe_id})
+            lines = [
+                f"OBSIDURE_PROPOSAL_READER_V2 — diff commands",
+                f"mode=READONLY",
+                f"auto_execution=False",
+                f"decision_authority=KX108_ONLY",
+                "",
+                f"proposal_id: {safe_id}",
+                "",
+            ] + diff_cmds
+            text = "\n".join(lines)
+            data = {
+                "version": _PROPOSAL_READER_VERSION, "mode": "READONLY",
+                "decision_authority": "KX108_ONLY", "auto_execution": False,
+                "found": True, "proposal_id": safe_id,
+                "diff_commands": diff_cmds,
+                "forbidden_actions": list(_PROPOSAL_READER_FORBIDDEN),
+            }
+    else:
+        data = list_obsidure_proposals_v2(limit=20)
+        text = format_obsidure_proposal_reader_v2(data)
+
+    return {
+        "panel": "OBSIDURE_PROPOSAL_READER_V2",
+        "raw": raw,
+        "reponse": text,
+        "main_answer": {"direct": text, "summary": "", "next": []},
+        "etat_technique": {
+            "version": _PROPOSAL_READER_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "subprocess": "none",
+            "mutation": "none",
+        },
+        "outils_panel": {
+            "proposal_list": "proposal list",
+            "proposal_read": "proposal read <id>",
+            "proposal_diff": "proposal diff <id>",
+            "apply": "forbidden",
+            "commit": "forbidden",
+            "push": "forbidden",
+        },
+        "mode_reponse": "ANSWER_LOCAL",
+        "detected_layer": "obsidure",
+        "confidence": 0.92,
+        "output": "COMMANDS",
+        "plan_status": "OK",
+        "next_human_action": "proposal list | proposal read <id> | proposal diff <id>",
+        "next_suggestions": ["proposal list", "proposal read <id>"],
+        "limites": ["lecture seule", "jamais apply automatique", "KX108 decide"],
+    }
+
+
+def format_obsidure_proposal_reader_v2(data: dict) -> str:
+    """Format texte readonly pour le terminal."""
+    version = data.get("version", _PROPOSAL_READER_VERSION)
+    mode = data.get("mode", "READONLY")
+    authority = data.get("decision_authority", "KX108_ONLY")
+    auto_exec = data.get("auto_execution", False)
+
+    lines = [
+        f"{version}",
+        f"mode={mode}",
+        f"auto_execution={auto_exec}",
+        f"decision_authority={authority}",
+        "",
+    ]
+
+    # Listing
+    if "items" in data:
+        count = data.get("count", 0)
+        status = data.get("status", "?")
+        lines += [f"status={status}", f"proposals_count={count}", ""]
+        items = data.get("items") or []
+        if items:
+            lines.append("proposals :")
+            for it in items[:20]:
+                pid = it.get("proposal_id", "?")
+                has_json = "JSON" if it.get("has_json") else "-"
+                has_receipt = "RECEIPT" if it.get("has_receipt") else "-"
+                mtime = (it.get("modified_at") or "")[:16]
+                lines.append(f"  {pid:<48} [{has_json}] [{has_receipt}] {mtime}")
+            lines += [
+                "",
+                "Pour lire une proposal :",
+                "  python scripts/obsidia_cli.py proposal read <proposal_id>",
+                "  python scripts/obsidia_cli.py proposal diff <proposal_id>",
+            ]
+        else:
+            lines.append("(aucune proposal trouvée)")
+        lines += ["", "forbidden: apply commit push deploy"]
+        return "\n".join(lines)
+
+    # Erreur / not found
+    if not data.get("found", True):
+        reason = data.get("reason", "NOT_FOUND")
+        pid = data.get("proposal_id", "?")
+        lines += [
+            f"found=False",
+            f"reason={reason}",
+            f"proposal_id={pid}",
+            "",
+            "forbidden: apply commit push deploy",
+        ]
+        return "\n".join(lines)
+
+    # Read d'une proposal
+    lines += [
+        f"found=True",
+        f"proposal_id={data.get('proposal_id', '?')}",
+        f"proposal_path={data.get('proposal_path', '?')}",
+        "",
+    ]
+    summary = data.get("summary", "")
+    if summary:
+        lines += [f"summary: {summary[:200]}", ""]
+    scope = data.get("scope_files") or []
+    if scope:
+        lines.append("scope_files:")
+        for f in scope[:10]:
+            lines.append(f"  {f}")
+        lines.append("")
+    receipt = data.get("receipt_preview") or []
+    if receipt:
+        lines.append("receipt_preview:")
+        for ln in receipt[:8]:
+            lines.append(f"  {ln}")
+        lines.append("")
+    checks = data.get("recommended_human_checks") or []
+    if checks:
+        lines.append("recommended_human_checks:")
+        for c in checks[:5]:
+            lines.append(f"  - {c}")
+        lines.append("")
+    missing = data.get("missing") or []
+    if missing:
+        lines += [f"missing: {', '.join(missing)}", ""]
+    lines += [
+        "diff_commands: python scripts/obsidia_cli.py proposal diff <id>",
+        "",
+        "forbidden: apply commit push deploy",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN OBSIDURE PROPOSAL READER V2 ─────────────────────────────────────────
+
+
 def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
     """Construit la reponse Obsidure Bridge V1 en surfaces separees."""
     state = collect_obsidure_bridge_state_v1(limit=5)
@@ -3762,6 +4587,10 @@ def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
             "commit": "forbidden",
             "push": "forbidden",
             "subprocess": "none",
+            "OBSIDURE_PROPOSAL_READER_V2": "available",
+            "proposal_list_cmd": "python scripts/obsidia_cli.py proposal list",
+            "proposal_read_cmd": "python scripts/obsidia_cli.py proposal read <id>",
+            "proposal_diff_cmd": "python scripts/obsidia_cli.py proposal diff <id>",
         },
         "proof_panel": {
             "source": "_PATCH_PROPOSALS",
@@ -3799,6 +4628,1377 @@ def build_obsidure_bridge_response(raw: str, registry: dict) -> dict:
 
 
 # ─── FIN TERMINAL OBSIDURE BRIDGE V1 ─────────────────────────────────────────
+
+# ─── OBSIDIA TERMINAL SIGMA/OIE STATUS PANEL V1 ──────────────────────────────
+# OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1
+# Lecture readonly des états Sigma et OIE. Jamais d'exécution.
+# decision_authority=KX108_ONLY, auto_execution=False, sovereign=False.
+
+_SIGMA_OIE_VERSION = "OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1"
+
+_OIE_RECEIPT_PATHS = (
+    "scripts/performance/oie_external_claude_benchmark_v0_receipts.json",
+    "scripts/performance/oie_v0_portfolio_receipts.json",
+)
+
+_OIE_LABEL_MAP = {
+    "REAL": "MEASURED",
+    "DRY_RUN": "ESTIMATED",
+    "PROVISIONAL": "PROVISIONAL",
+    "ESTIMATED": "ESTIMATED",
+    "MEASURED": "MEASURED",
+}
+
+
+def _oie_label_from_mode(mode: str) -> str:
+    return _OIE_LABEL_MAP.get(str(mode).upper(), "PROVISIONAL")
+
+
+def collect_sigma_status_v1(registry: dict | None = None) -> dict:
+    """Lit l'état Sigma en readonly via sigma_guidance_report. Jamais d'exécution."""
+    base: dict = {
+        "version": _SIGMA_OIE_VERSION,
+        "layer": "SIGMA",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "sovereign": False,
+    }
+    try:
+        report = sigma_guidance_report()
+    except Exception as exc:
+        return {
+            **base,
+            "status": "READ_ERROR",
+            "error": type(exc).__name__,
+            "sources": [],
+            "runtime_services": [],
+            "labels": {"sigma_status": "MISSING"},
+            "commands_only": [
+                "python scripts/obsidia_cli.py status sigma",
+                "python scripts/obsidia_cli.py capabilities sigma",
+            ],
+        }
+
+    guidance = report.get("guidance", "UNKNOWN")
+    reasons = list(report.get("guidance_reasons") or [])
+    file_signals = report.get("file_signals") or {}
+    live_signals = report.get("live_signals") or {}
+
+    live_base = live_signals.get("base", "?")
+    live_domains = live_signals.get("domains", "?")
+    live_evaluate = live_signals.get("evaluate", "?")
+
+    if guidance in ("CONTINUE", "CONTINUE_LIGHT"):
+        sigma_label = "MEASURED"
+        sigma_status = "OK"
+    elif guidance in ("HOLD_RECOMMENDED", "HOLD"):
+        sigma_label = "PROVISIONAL"
+        sigma_status = "HOLD_RECOMMENDED"
+    elif guidance == "RELAUNCH_LAYER":
+        sigma_label = "ESTIMATED"
+        sigma_status = "RELAUNCH_RECOMMENDED"
+    else:
+        sigma_label = "PROVISIONAL"
+        sigma_status = str(guidance)
+
+    fs_keys = [f"{k}={v.get('status', '?') if isinstance(v, dict) else str(v)[:20]}"
+               for k, v in file_signals.items() if k != "source"]
+
+    return {
+        **base,
+        "status": sigma_status,
+        "guidance": guidance,
+        "guidance_reasons": reasons[:3],
+        "sources": fs_keys[:6],
+        "runtime_services": {
+            "live_base": str(live_base)[:40],
+            "live_domains": str(live_domains)[:40],
+            "live_evaluate": str(live_evaluate)[:40],
+        },
+        "labels": {"sigma_status": sigma_label},
+        "guidance_authority": str(report.get("guidance_authority", "NONE"))[:40],
+        "note": str(report.get("guidance_note", ""))[:120],
+        "commands_only": [
+            "python scripts/obsidia_cli.py status sigma",
+            "python scripts/obsidia_cli.py capabilities sigma",
+            "# Sigma ne décide pas — no sovereign decision",
+        ],
+    }
+
+
+def collect_oie_reports_v1(limit: int = 5) -> dict:
+    """Lit les receipts OIE en readonly. Jamais d'exécution de benchmark."""
+    base: dict = {
+        "version": _SIGMA_OIE_VERSION,
+        "layer": "OIE",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "sovereign": False,
+    }
+    items: list = []
+    for rel_path in _OIE_RECEIPT_PATHS:
+        p = REPO_ROOT / rel_path
+        if not p.exists():
+            continue
+        try:
+            raw_text = p.read_text(encoding="utf-8", errors="replace")
+            data = json.loads(raw_text)
+        except Exception as exc:
+            items.append({
+                "path": rel_path,
+                "label": "MISSING",
+                "preview": f"READ_ERROR:{type(exc).__name__}",
+            })
+            continue
+
+        mode = ""
+        preview = ""
+        if isinstance(data, dict):
+            mode = str(data.get("mode") or data.get("benchmark") or "UNKNOWN")
+            bk = data.get("benchmark") or data.get("benchmark_id") or ""
+            ts = str(data.get("timestamp") or "")[:16]
+            n_tasks = data.get("tasks_run", "?")
+            indices = data.get("indices") or {}
+            idx_str = ", ".join(f"{k}={v}" for k, v in list(indices.items())[:3]) if isinstance(indices, dict) else ""
+            preview = f"benchmark={bk} ts={ts} tasks={n_tasks}"
+            if idx_str:
+                preview += f" indices=[{idx_str}]"
+        elif isinstance(data, list):
+            mode = "MEASURED"
+            preview = f"list({len(data)} items)"
+
+        label = _oie_label_from_mode(mode)
+        items.append({
+            "path": rel_path,
+            "label": label,
+            "preview": preview[:200],
+        })
+        if len(items) >= limit:
+            break
+
+    if not items:
+        return {
+            **base,
+            "status": "MISSING",
+            "reports_found": 0,
+            "items": [],
+            "commands_only": [
+                "python scripts/obsidia_cli.py status oie",
+                "python scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run  # humain uniquement",
+                "# OIE ne s'évalue jamais automatiquement",
+            ],
+        }
+
+    labels_seen = list({it["label"] for it in items})
+    return {
+        **base,
+        "status": "OK",
+        "reports_found": len(items),
+        "items": items,
+        "labels_found": labels_seen,
+        "commands_only": [
+            "python scripts/obsidia_cli.py status oie",
+            "python scripts/performance/run_oie_external_claude_benchmark_v0.py --dry-run  # humain uniquement",
+            "# OIE ne s'évalue jamais automatiquement depuis le terminal",
+        ],
+    }
+
+
+def build_sigma_oie_status_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la réponse Sigma/OIE status en surfaces séparées."""
+    sigma = collect_sigma_status_v1(registry)
+    oie = collect_oie_reports_v1()
+
+    sigma_label = (sigma.get("labels") or {}).get("sigma_status", "MISSING")
+    oie_status = oie.get("status", "MISSING")
+    oie_count = oie.get("reports_found", 0)
+
+    human_lines = [
+        "Sigma et OIE sont disponibles en lecture depuis le terminal.",
+        "",
+        f"Sigma guidance : {sigma.get('guidance', 'UNKNOWN')} (label={sigma_label})",
+        "Sigma ne décide pas — advisory only.",
+        "",
+        f"OIE receipts : {oie_count} rapport(s) trouvé(s) — {oie_status}",
+        "OIE ne s'évalue jamais automatiquement depuis le terminal.",
+    ]
+    human_text = "\n".join(human_lines)
+
+    return {
+        "panel": "SIGMA_OIE_STATUS_PANEL_V1",
+        "raw": raw,
+        "reponse": human_text,
+        "main_answer": {
+            "direct": human_text,
+            "summary": "",
+            "next": ["status sigma", "status oie"],
+        },
+        "etat_technique": {
+            "version": _SIGMA_OIE_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "sovereign": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sigma_status": sigma.get("status"),
+            "sigma_label": sigma_label,
+            "oie_status": oie_status,
+            "oie_reports_found": oie_count,
+        },
+        "outils_panel": {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "sigma_cmd": "python scripts/obsidia_cli.py status sigma",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "reports": "readonly only",
+            "evaluate": "forbidden from terminal",
+            "mutation": "forbidden",
+            "deploy": "forbidden",
+        },
+        "sigma_status": sigma,
+        "oie_status": oie,
+        "next_suggestions": ["status sigma", "status oie", "capabilities sigma"],
+        "mode_reponse": "ANSWER_STATUS",
+        "detected_layer": "sigma",
+        "confidence": 0.88,
+        "output": "COMMANDS",
+        "plan_status": "OK",
+        "next_human_action": "status sigma | status oie",
+        "limites": [
+            "lecture seule",
+            "no sovereign decision",
+            "no auto evaluate",
+            "no auto deploy",
+            "KX108 décide",
+        ],
+    }
+
+
+def format_sigma_oie_status_v1(data: dict) -> str:
+    """Format texte terminal pour Sigma/OIE status."""
+    sigma = data.get("sigma_status") or {}
+    oie = data.get("oie_status") or {}
+
+    etat = data.get("etat_technique") or {}
+    version = etat.get("version", _SIGMA_OIE_VERSION)
+    mode = etat.get("mode", "READONLY")
+    authority = etat.get("decision_authority", "KX108_ONLY")
+    auto_exec = etat.get("auto_execution", False)
+
+    lines = [
+        version,
+        f"mode={mode}",
+        f"decision_authority={authority}",
+        f"auto_execution={auto_exec}",
+        "",
+        "SIGMA:",
+        f"  status={sigma.get('status', 'UNKNOWN')}",
+        f"  guidance={sigma.get('guidance', '?')}",
+        f"  label={( sigma.get('labels') or {}).get('sigma_status', 'MISSING')}",
+        f"  sovereign=False",
+    ]
+    reasons = sigma.get("guidance_reasons") or []
+    if reasons:
+        lines.append("  reasons:")
+        for r in reasons[:2]:
+            lines.append(f"    - {str(r)[:80]}")
+    note = sigma.get("note", "")
+    if note:
+        lines.append(f"  note: {note[:80]}")
+
+    lines += [
+        "",
+        "OIE:",
+        f"  status={oie.get('status', 'MISSING')}",
+        f"  reports_found={oie.get('reports_found', 0)}",
+    ]
+    items = oie.get("items") or []
+    if items:
+        lines.append("  reports:")
+        for it in items[:3]:
+            lbl = it.get("label", "?")
+            path = it.get("path", "?")
+            preview = it.get("preview", "")[:60]
+            lines.append(f"    [{lbl}] {path}")
+            if preview:
+                lines.append(f"      {preview}")
+    labels_found = oie.get("labels_found") or []
+    if labels_found:
+        lines.append(f"  labels_found={', '.join(labels_found)}")
+
+    sigma_cmds = sigma.get("commands_only") or []
+    oie_cmds = oie.get("commands_only") or []
+    all_cmds = list(dict.fromkeys(sigma_cmds + oie_cmds))
+
+    lines += ["", "COMMANDS_ONLY:"]
+    for cmd in all_cmds[:6]:
+        lines.append(f"  {cmd}")
+
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no auto evaluation",
+        "  no mutation",
+        "  no deploy",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN SIGMA/OIE STATUS PANEL V1 ───────────────────────────────────────────
+
+
+# ─── BRODY MEMORY VISIBILITY V1 ──────────────────────────────────────────────
+# OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1
+# Visibilite readonly de Brody Memory dans le terminal.
+# Aucune ecriture memoire. Aucune mutation Graphiti. Aucune souverainete Brody.
+# memory_write=False. auto_execution=False. decision_authority=KX108_ONLY.
+
+_BRODY_MEMORY_VISIBILITY_VERSION = "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1"
+_BRODY_MEMORY_READONLY_ROOT = "periphery/brody_memory_readonly"
+_BRODY_MEMORY_README = "README_BOUNDARY.md"
+_BRODY_MEMORY_MANIFEST = "TRANSPLANT_MANIFEST.json"
+_BRODY_MEMORY_GRAPHITI_DIR = "graphiti_bridge_readonly"
+_BRODY_MEMORY_AUTHORITY_DIR = "memory_layer_authority_model_readonly"
+
+
+def collect_brody_memory_visibility_v1(limit: int = 20) -> dict:
+    """Lecture readonly de periphery/brody_memory_readonly/. Aucune ecriture."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT
+    base: dict = {
+        "version": _BRODY_MEMORY_VISIBILITY_VERSION,
+        "layer": "BRODY_MEMORY",
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "memory_write": False,
+        "sovereign": False,
+        "root": _BRODY_MEMORY_READONLY_ROOT,
+        "root_exists": False,
+        "file_count_sample": 0,
+        "dir_count_sample": 0,
+        "has_readme_boundary": False,
+        "has_transplant_manifest": False,
+        "manifest_preview": {},
+        "readme_preview": [],
+        "status": "MISSING",
+        "commands_only": [
+            "python scripts/obsidia_cli.py status brody memory",
+            "python scripts/obsidia_cli.py brody memory status",
+        ],
+    }
+    if not root.exists():
+        return base
+    base["root_exists"] = True
+    try:
+        entries = list(root.iterdir())
+        dirs = [e for e in entries if e.is_dir()]
+        files = [e for e in entries if e.is_file()]
+        base["dir_count_sample"] = min(len(dirs), limit)
+        base["file_count_sample"] = min(len(files), limit)
+    except Exception:
+        base["status"] = "READ_ERROR"
+        return base
+    readme_p = root / _BRODY_MEMORY_README
+    base["has_readme_boundary"] = readme_p.exists()
+    if readme_p.exists():
+        try:
+            lines = readme_p.read_text(encoding="utf-8-sig").splitlines()
+            base["readme_preview"] = [l.rstrip() for l in lines[:8] if l.strip()]
+        except Exception:
+            base["readme_preview"] = ["READ_ERROR"]
+    manifest_p = root / _BRODY_MEMORY_MANIFEST
+    base["has_transplant_manifest"] = manifest_p.exists()
+    if manifest_p.exists():
+        try:
+            import json as _json
+            raw_txt = manifest_p.read_text(encoding="utf-8-sig")
+            manifest_data = _json.loads(raw_txt)
+            safe_keys = ("status", "date", "readonly", "memory_authority",
+                         "memory_decision", "allowed_to_decide", "emits_act")
+            base["manifest_preview"] = {k: manifest_data[k] for k in safe_keys if k in manifest_data}
+        except Exception:
+            base["manifest_preview"] = {"error": "READ_ERROR"}
+    if base["has_readme_boundary"] or base["has_transplant_manifest"]:
+        base["status"] = "OK"
+    else:
+        base["status"] = "PARTIAL"
+    return base
+
+
+def collect_brody_graphiti_guard_visibility_v1() -> dict:
+    """Detection readonly des indices Graphiti guard. Aucune ecriture."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT / _BRODY_MEMORY_GRAPHITI_DIR
+    base: dict = {
+        "layer": "GRAPHITI_GUARD",
+        "mode": "READONLY",
+        "auto_execution": False,
+        "memory_write": False,
+        "status": "MISSING",
+        "sources": [],
+        "commands_only": [
+            "python scripts/obsidia_cli.py graphiti guard status",
+        ],
+    }
+    if not root.exists():
+        return base
+    try:
+        sources = [e.name for e in root.iterdir() if not e.name.startswith("__")]
+        base["sources"] = sources[:8]
+        base["status"] = "OK" if sources else "PARTIAL"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def collect_brody_rights_visibility_v1() -> dict:
+    """Detection readonly de la rights authority matrix. Aucune execution d'autorite."""
+    root = REPO_ROOT / _BRODY_MEMORY_READONLY_ROOT / _BRODY_MEMORY_AUTHORITY_DIR
+    base: dict = {
+        "layer": "BRODY_RIGHTS_AUTHORITY_MATRIX",
+        "mode": "READONLY",
+        "auto_execution": False,
+        "sovereign": False,
+        "status": "MISSING",
+        "sources": [],
+        "preview": [],
+    }
+    if not root.exists():
+        return base
+    try:
+        sources = [e.name for e in root.iterdir() if not e.name.startswith("__")]
+        base["sources"] = sources[:6]
+        manifest_p = root / "MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json"
+        if manifest_p.exists():
+            import json as _json
+            txt = manifest_p.read_text(encoding="utf-8-sig")
+            d = _json.loads(txt)
+            safe_keys = ("name", "version", "status", "source_total_records")
+            base["preview"] = [f"{k}={d[k]}" for k in safe_keys if k in d]
+        base["status"] = "OK" if sources else "PARTIAL"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def build_brody_memory_visibility_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal BRODY_MEMORY_VISIBILITY_V1. Pure, readonly."""
+    mem = collect_brody_memory_visibility_v1()
+    graphiti = collect_brody_graphiti_guard_visibility_v1()
+    rights = collect_brody_rights_visibility_v1()
+    reponse_text = (
+        f"Brody Memory readonly ({mem.get('status', '?')}).\n\n"
+        f"  root_exists={mem.get('root_exists')} | "
+        f"dirs={mem.get('dir_count_sample')} | "
+        f"readme_boundary={mem.get('has_readme_boundary')} | "
+        f"transplant_manifest={mem.get('has_transplant_manifest')}\n\n"
+        "Aucune ecriture memoire. Aucune mutation Graphiti. "
+        "advisory only — decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "BRODY_MEMORY_VISIBILITY_V1",
+        "detected_layer": "brody",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _BRODY_MEMORY_VISIBILITY_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "memory_write": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sovereign": False,
+        },
+        "brody_memory": mem,
+        "graphiti_guard": graphiti,
+        "rights_matrix": rights,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["status brody memory", "brody memory status", "graphiti guard status"],
+        },
+        "outils_panel": {
+            "BRODY_MEMORY_VISIBILITY_V1": "available",
+            "status_cmd": "python scripts/obsidia_cli.py status brody memory",
+            "brody_cmd": "python scripts/obsidia_cli.py brody memory status",
+            "memory_write": "forbidden",
+            "graph_mutation": "forbidden",
+            "auto_execution": False,
+        },
+        "next_suggestions": ["status brody memory", "brody memory status", "graphiti guard status"],
+    }
+
+
+def format_brody_memory_visibility_v1(data: dict) -> str:
+    """Formate la reponse BRODY_MEMORY_VISIBILITY_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    mem = data.get("brody_memory", {})
+    graphiti = data.get("graphiti_guard", {})
+    rights = data.get("rights_matrix", {})
+    lines = [
+        _BRODY_MEMORY_VISIBILITY_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"memory_write={etat.get('memory_write', False)}",
+        f"sovereign={etat.get('sovereign', False)}",
+        "",
+        "BRODY_MEMORY:",
+        f"  status={mem.get('status', '?')}",
+        f"  root_exists={mem.get('root_exists', False)}",
+        f"  has_readme_boundary={mem.get('has_readme_boundary', False)}",
+        f"  has_transplant_manifest={mem.get('has_transplant_manifest', False)}",
+        f"  dir_count_sample={mem.get('dir_count_sample', 0)}",
+        f"  file_count_sample={mem.get('file_count_sample', 0)}",
+        "",
+        "GRAPHITI_GUARD:",
+        f"  status={graphiti.get('status', '?')}",
+        "  mode=READONLY",
+        "",
+        "RIGHTS_MATRIX:",
+        f"  status={rights.get('status', '?')}",
+        "  mode=READONLY",
+        "",
+        "COMMANDS_ONLY:",
+        "  python scripts/obsidia_cli.py status brody memory",
+        "  python scripts/obsidia_cli.py brody memory status",
+        "  python scripts/obsidia_cli.py graphiti guard status",
+        "",
+        "FORBIDDEN:",
+        "  no memory write",
+        "  no graph mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN BRODY MEMORY VISIBILITY V1 ──────────────────────────────────────────
+
+
+# ─── DOMAIN BRIDGE READONLY V1 ───────────────────────────────────────────────
+# OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1
+# Visibilite readonly des domain bridges Bank / Trading / GPS-Defense-Aviation.
+# Aucune transaction. Aucun trade. Aucun ordre GPS/aviation/defense.
+# api_role=BRIDGE_ONLY. emits_act=False. memory_write=False. auto_execution=False.
+
+_DOMAIN_BRIDGE_VERSION = "OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1"
+
+_DOMAIN_BRIDGE_ALIASES = {
+    "bank": "BANK", "banque": "BANK", "banking": "BANK",
+    "trading": "TRADING", "market": "TRADING",
+    "gps": "GPS_DEFENSE_AVIATION", "gnss": "GPS_DEFENSE_AVIATION",
+    "defense": "GPS_DEFENSE_AVIATION", "defence": "GPS_DEFENSE_AVIATION",
+    "aviation": "GPS_DEFENSE_AVIATION", "robo": "GPS_DEFENSE_AVIATION",
+    "domains": "ALL", "domaines": "ALL", "all": "ALL",
+}
+
+_DOMAIN_BRIDGE_SOURCES = {
+    "BANK": {
+        "files": ("connectors/bank_normal_flow.py",),
+        "route_markers": ("adapters/bank",),
+        "receipt_key": "bank",
+    },
+    "TRADING": {
+        "files": ("connectors/trading_live.py",),
+        "route_markers": ("adapters/trading",),
+        "receipt_key": "trading",
+    },
+    "GPS_DEFENSE_AVIATION": {
+        "files": ("connectors/aviation_robo.py",),
+        "route_markers": ("adapters/gps",),
+        "receipt_key": "aviation",
+    },
+}
+_DOMAIN_BRIDGE_ROUTES_FILE = "apps/obsidia_api/routes/live_kernel_bridge.py"
+_DOMAIN_BRIDGE_RECEIPTS_FILE = "scripts/performance/oie_v0_portfolio_receipts.json"
+
+_DOMAIN_BRIDGE_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py status domains",
+    "python scripts/obsidia_cli.py status bank",
+    "python scripts/obsidia_cli.py status trading",
+    "python scripts/obsidia_cli.py status gps",
+]
+
+
+def _normalize_domain_bridge_name_v1(raw: str) -> str:
+    """Normalise un nom de domaine vers BANK|TRADING|GPS_DEFENSE_AVIATION|ALL|''."""
+    s = str(raw or "").strip().lower()
+    if not s:
+        return ""
+    if s.upper() in _DOMAIN_BRIDGE_SOURCES:
+        return s.upper()
+    if s in _DOMAIN_BRIDGE_ALIASES:
+        return _DOMAIN_BRIDGE_ALIASES[s]
+    tokens = [t for t in re.split(r"[\s\-_]+", s) if t]
+    hits = {_DOMAIN_BRIDGE_ALIASES[w] for w in tokens if w in _DOMAIN_BRIDGE_ALIASES}
+    hits.discard("ALL")
+    if len(hits) == 1:
+        return hits.pop()
+    if len(hits) > 1:
+        return "ALL"
+    return ""
+
+
+def collect_domain_bridge_readonly_v1(domain: str, registry: dict | None = None) -> dict:
+    """Visibilite readonly d'un domain bridge. Presence de fichiers uniquement.
+    Aucun import d'adapter. Aucun POST. Aucune action domaine."""
+    normalized = _normalize_domain_bridge_name_v1(domain)
+    base: dict = {
+        "version": _DOMAIN_BRIDGE_VERSION,
+        "domain": normalized or str(domain or "?").strip().upper()[:32],
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "api_role": "BRIDGE_ONLY",
+        "emits_act": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "sovereign": False,
+        "status": "MISSING",
+        "sources": [],
+        "adapters": [],
+        "routes": [],
+        "receipts": [],
+        "runtime": {
+            "probe": "not_run_from_domain_panel",
+            "note": "statut live via status live (readonly)",
+        },
+        "labels": {"bridge": "MISSING", "runtime": "PROVISIONAL", "receipts": "MISSING"},
+        "commands_only": list(_DOMAIN_BRIDGE_COMMANDS_ONLY),
+    }
+    spec = _DOMAIN_BRIDGE_SOURCES.get(normalized)
+    if spec is None:
+        return base
+    try:
+        adapters = [p for p in spec["files"] if (REPO_ROOT / p).exists()][:10]
+        routes: list[str] = []
+        routes_p = REPO_ROOT / _DOMAIN_BRIDGE_ROUTES_FILE
+        if routes_p.exists():
+            routes_src = routes_p.read_text(encoding="utf-8", errors="replace")
+            for marker in spec["route_markers"]:
+                if marker in routes_src:
+                    routes.append(f"/api/live/kernel/{marker}")
+        receipts: list[str] = []
+        receipts_p = REPO_ROOT / _DOMAIN_BRIDGE_RECEIPTS_FILE
+        if receipts_p.exists():
+            import json as _json
+            try:
+                rdata = _json.loads(receipts_p.read_text(encoding="utf-8-sig"))
+                summary = rdata.get("domain_summary") or {}
+                if spec["receipt_key"] in summary:
+                    receipts.append(f"oie_v0_portfolio:{spec['receipt_key']}")
+            except Exception:
+                pass
+        base["adapters"] = adapters
+        base["routes"] = routes[:10]
+        base["receipts"] = receipts[:10]
+        base["sources"] = (adapters + routes + receipts)[:10]
+        base["labels"]["bridge"] = "MEASURED" if (adapters or routes) else "MISSING"
+        base["labels"]["receipts"] = "MEASURED" if receipts else "MISSING"
+        if adapters and routes:
+            base["status"] = "OK"
+        elif adapters or routes or receipts:
+            base["status"] = "PARTIAL"
+        else:
+            base["status"] = "MISSING"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def collect_all_domain_bridges_readonly_v1(registry: dict | None = None) -> dict:
+    """Visibilite readonly des trois domain bridges. Aucune action domaine."""
+    return {
+        "version": _DOMAIN_BRIDGE_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "api_role": "BRIDGE_ONLY",
+        "emits_act": False,
+        "memory_write": False,
+        "auto_execution": False,
+        "domains": {
+            name: collect_domain_bridge_readonly_v1(name.lower(), registry)
+            for name in ("BANK", "TRADING", "GPS_DEFENSE_AVIATION")
+        },
+    }
+
+
+def build_domain_bridge_status_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal DOMAIN_BRIDGE_READONLY_V1. Pure, readonly."""
+    requested = _normalize_domain_bridge_name_v1(raw) or "ALL"
+    bridges = collect_all_domain_bridges_readonly_v1(registry)
+    statuses = {k: v.get("status", "?") for k, v in bridges["domains"].items()}
+    reponse_text = (
+        f"Domain bridges readonly (requested={requested}).\n\n"
+        + " | ".join(f"{k}={v}" for k, v in statuses.items())
+        + "\n\nLes domaines restent BRIDGE_ONLY. Aucune transaction, aucun trade, "
+        "aucun ordre GPS/aviation/defense depuis le terminal. "
+        "decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "DOMAIN_BRIDGE_READONLY_V1",
+        "detected_layer": "domain",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _DOMAIN_BRIDGE_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+            "sovereign": False,
+            "requested_domain": requested,
+        },
+        "domain_bridge": bridges,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["status domains", "status bank", "status trading"],
+        },
+        "outils_panel": {
+            "DOMAIN_BRIDGE_READONLY_V1": "available",
+            "domains_cmd": "python scripts/obsidia_cli.py status domains",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "domain_action": "forbidden",
+            "POST_adapters": "forbidden from terminal",
+        },
+        "next_suggestions": ["status domains", "status bank", "status trading", "status gps"],
+    }
+
+
+def format_domain_bridge_status_v1(data: dict) -> str:
+    """Formate la reponse DOMAIN_BRIDGE_READONLY_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    bridges = (data.get("domain_bridge") or {}).get("domains", {})
+    lines = [
+        _DOMAIN_BRIDGE_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"api_role={etat.get('api_role', 'BRIDGE_ONLY')}",
+        f"emits_act={etat.get('emits_act', False)}",
+        f"memory_write={etat.get('memory_write', False)}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"requested={etat.get('requested_domain', 'ALL')}",
+    ]
+    for name in ("BANK", "TRADING", "GPS_DEFENSE_AVIATION"):
+        d = bridges.get(name, {})
+        labels = d.get("labels", {})
+        sources = d.get("sources", [])
+        lines += [
+            "",
+            f"{name}:",
+            f"  status={d.get('status', 'MISSING')}",
+            f"  bridge_label={labels.get('bridge', 'MISSING')}",
+            f"  runtime_label={labels.get('runtime', 'PROVISIONAL')}",
+            f"  receipts_label={labels.get('receipts', 'MISSING')}",
+            f"  sources={', '.join(str(s) for s in sources[:4]) if sources else 'none'}",
+        ]
+    lines += [
+        "",
+        "COMMANDS_ONLY:",
+    ]
+    lines += [f"  {c}" for c in _DOMAIN_BRIDGE_COMMANDS_ONLY]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no financial transaction",
+        "  no trading order",
+        "  no gps aviation defense action",
+        "  no memory write",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN DOMAIN BRIDGE READONLY V1 ───────────────────────────────────────────
+
+
+# ─── LEAN PROOF PANEL V1 ─────────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1
+# Inventaire readonly des proofs Lean. Aucune execution Lean/Lake automatique.
+# Les commandes de verification sont proposees en COMMANDS_ONLY / WAITING_FOR_HUMAN.
+# proof_write=False. auto_execution=False. decision_authority=KX108_ONLY.
+
+_LEAN_PROOF_PANEL_VERSION = "OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1"
+_LEAN_PROOF_ROOT = "proofs/lean"
+_LEAN_PROOF_MODULE_DIR = "Obsidia"
+
+_LEAN_PROOF_COMMANDS_ONLY = [
+    "lake build",
+    "lake env lean proofs/lean/Obsidia.lean",
+    "python -m pytest tests/gates/ -q",
+]
+
+
+def collect_lean_proof_inventory_v1(limit: int = 80) -> dict:
+    """Inventaire readonly de proofs/lean/. Presence + noms de fichiers uniquement.
+    Aucune execution Lean. Aucune execution Lake. Aucune mutation de proof."""
+    root = REPO_ROOT / _LEAN_PROOF_ROOT
+    base: dict = {
+        "version": _LEAN_PROOF_PANEL_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "auto_execution": False,
+        "proof_write": False,
+        "subprocess": "none",
+        "mutation": "none",
+        "root_exists": False,
+        "lean_root": _LEAN_PROOF_ROOT,
+        "has_lakefile": False,
+        "has_lake_manifest": False,
+        "has_lean_toolchain": False,
+        "lean_file_count_sample": 0,
+        "modules_sample": [],
+        "families": [],
+        "status": "MISSING",
+        "labels": {"inventory": "MISSING", "proof_check": "COMMANDS_ONLY"},
+        "commands_only": list(_LEAN_PROOF_COMMANDS_ONLY),
+    }
+    if not root.exists():
+        return base
+    base["root_exists"] = True
+    try:
+        base["has_lakefile"] = (root / "lakefile.lean").exists()
+        base["has_lake_manifest"] = (root / "lake-manifest.json").exists()
+        base["has_lean_toolchain"] = (root / "lean-toolchain").exists()
+        lean_files = []
+        for i, p in enumerate(root.rglob("*.lean")):
+            if i >= max(limit, 1) * 4:
+                break
+            lean_files.append(p)
+        base["lean_file_count_sample"] = len(lean_files)
+        module_dir = root / _LEAN_PROOF_MODULE_DIR
+        modules: list[str] = []
+        families: list[str] = []
+        if module_dir.is_dir():
+            entries = sorted(module_dir.iterdir(), key=lambda e: e.name)
+            modules = [e.stem for e in entries if e.is_file() and e.suffix == ".lean"][:limit]
+            families = [e.name for e in entries if e.is_dir() and not e.name.startswith("__")][:limit]
+            prefix_counts: dict[str, int] = {}
+            for m in modules:
+                match = re.match(r"^[A-Z][a-z]+", m)
+                if match:
+                    prefix_counts[match.group(0)] = prefix_counts.get(match.group(0), 0) + 1
+            for prefix, count in sorted(prefix_counts.items()):
+                if count >= 2 and prefix not in families:
+                    families.append(prefix)
+        base["modules_sample"] = modules[:limit]
+        base["families"] = families[:limit]
+        if lean_files and base["has_lakefile"] and base["has_lake_manifest"]:
+            base["status"] = "OK"
+            base["labels"]["inventory"] = "MEASURED"
+        elif lean_files:
+            base["status"] = "PARTIAL"
+            base["labels"]["inventory"] = "PROVISIONAL"
+        else:
+            base["status"] = "MISSING"
+    except Exception:
+        base["status"] = "READ_ERROR"
+    return base
+
+
+def build_lean_proof_panel_response_v1(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal LEAN_PROOF_PANEL_V1. Pure, readonly."""
+    inventory = collect_lean_proof_inventory_v1()
+    reponse_text = (
+        f"Proofs Lean readonly (status={inventory.get('status', '?')}).\n\n"
+        f"  lean_root={inventory.get('lean_root')} | "
+        f"fichiers={inventory.get('lean_file_count_sample')} | "
+        f"lakefile={inventory.get('has_lakefile')} | "
+        f"manifest={inventory.get('has_lake_manifest')}\n\n"
+        "Aucune execution Lean automatique. La verification (lake build) reste "
+        "humaine — COMMANDS_ONLY. decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "LEAN_PROOF_PANEL_V1",
+        "detected_layer": "proof",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _LEAN_PROOF_PANEL_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "proof_write": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "proof_inventory": inventory,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["proof status", "lean status", "status proof"],
+        },
+        "outils_panel": {
+            "LEAN_PROOF_PANEL_V1": "available",
+            "proof_status_cmd": "python scripts/obsidia_cli.py proof status",
+            "lean_status_cmd": "python scripts/obsidia_cli.py lean status",
+            "lake_build": "COMMANDS_ONLY, humain",
+            "lean_exec": "forbidden from terminal",
+            "proof_write": "forbidden",
+        },
+        "next_suggestions": ["proof status", "lean status", "status proof"],
+    }
+
+
+def format_lean_proof_panel_v1(data: dict) -> str:
+    """Formate la reponse LEAN_PROOF_PANEL_V1 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    inv = data.get("proof_inventory", {})
+    lines = [
+        _LEAN_PROOF_PANEL_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        f"proof_write={etat.get('proof_write', False)}",
+        "",
+        "LEAN:",
+        f"  status={inv.get('status', 'MISSING')}",
+        f"  lean_root={inv.get('lean_root', _LEAN_PROOF_ROOT)}",
+        f"  has_lakefile={inv.get('has_lakefile', False)}",
+        f"  has_lake_manifest={inv.get('has_lake_manifest', False)}",
+        f"  has_lean_toolchain={inv.get('has_lean_toolchain', False)}",
+        f"  lean_file_count_sample={inv.get('lean_file_count_sample', 0)}",
+        f"  inventory_label={(inv.get('labels') or {}).get('inventory', 'MISSING')}",
+        "",
+        "MODULES:",
+    ]
+    modules = inv.get("modules_sample") or []
+    lines += [f"  {m}" for m in modules[:12]] if modules else ["  none"]
+    lines += ["", "FAMILIES:"]
+    families = inv.get("families") or []
+    lines += [f"  {f}" for f in families[:12]] if families else ["  none"]
+    lines += [
+        "",
+        "COMMANDS_ONLY:",
+        "WAITING_FOR_HUMAN:",
+    ]
+    lines += [f"  {c}" for c in (inv.get("commands_only") or _LEAN_PROOF_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no automatic lean execution",
+        "  no proof mutation",
+        "  no commit",
+        "  no push",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN LEAN PROOF PANEL V1 ─────────────────────────────────────────────────
+
+
+# ─── SKILL RESOLVER V2 CLEANUP ───────────────────────────────────────────────
+# OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP
+# Classification readonly des skills : USED / ROUTED / VISIBLE_PANEL /
+# INVENTORIED_ONLY / DEFERRED / HIDDEN_FROM_TUI / UNKNOWN.
+# Le resolver decrit. Il n'active rien. resolver_authority=NONE.
+
+_SKILL_RESOLVER_CLEANUP_VERSION = "OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP"
+_SKILL_RESOLVER_SKILLS_DIR = ".claude/skills"
+
+_SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py skill resolver status",
+    "python scripts/obsidia_cli.py skills status",
+    "python scripts/obsidia_cli.py law status",
+]
+
+# Panneaux terminaux reellement branches (router + panel + status + tests gates).
+_SKILL_RESOLVER_CORE_SKILLS = {
+    "brody": {
+        "surface": ["router", "panel", "status", "memory_visibility"],
+        "notes": ["BRODY_BRIDGE_V1 + BRODY_MEMORY_VISIBILITY_V1"],
+    },
+    "obsidure": {
+        "surface": ["router", "panel", "proposal_reader", "operator_card"],
+        "notes": ["OBSIDURE_BRIDGE_V1 + OBSIDURE_PROPOSAL_READER_V2"],
+    },
+    "sigma": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["SIGMA_OIE_STATUS_PANEL_V1, advisory only"],
+    },
+    "oie": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["SIGMA_OIE_STATUS_PANEL_V1, report only"],
+    },
+    "domains": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["DOMAIN_BRIDGE_READONLY_V1, bridge only"],
+    },
+    "lean_proof": {
+        "surface": ["router", "panel", "status", "proof_tab"],
+        "notes": ["LEAN_PROOF_PANEL_V1, commands only"],
+    },
+    "law_registry": {
+        "surface": ["router", "panel", "status"],
+        "notes": ["TERMINAL_LAW_REGISTRY_V1, registry_authority=NONE"],
+    },
+}
+
+# Skills presents dans .claude/skills/ mais non branches dans le router/TUI.
+# Classes, pas supprimes. Activation = decision humaine future.
+_SKILL_RESOLVER_DEFERRED_SKILLS = {
+    "graph-calibrator": {
+        "skill_dir": "graph-calibrator-obsidia",
+        "notes": ["present dans .claude/skills/, non branche au router"],
+    },
+    "module-mapper": {
+        "skill_dir": "module-mapper",
+        "notes": ["present dans .claude/skills/, non branche au router"],
+    },
+    "wiki-brain-bridge": {
+        "skill_dir": "wiki-brain-bridge",
+        "notes": ["policy file, non branche, pas d'auto-install"],
+    },
+}
+
+
+def collect_skill_resolver_cleanup_v2(registry: dict | None = None) -> dict:
+    """Classification readonly des skills. Presence de dossiers uniquement.
+    Aucun import de skill. Aucune execution. Aucune activation automatique."""
+    skills: dict = {}
+    for name, spec in _SKILL_RESOLVER_CORE_SKILLS.items():
+        skills[name] = {
+            "status": "USED",
+            "surface": list(spec["surface"]),
+            "notes": list(spec["notes"]),
+        }
+    skills_root = REPO_ROOT / _SKILL_RESOLVER_SKILLS_DIR
+    for name, spec in _SKILL_RESOLVER_DEFERRED_SKILLS.items():
+        try:
+            present = (skills_root / spec["skill_dir"]).is_dir()
+        except Exception:
+            present = False
+        skills[name] = {
+            "status": "INVENTORIED_ONLY" if present else "MISSING",
+            "surface": [],
+            "decision": "DEFERRED",
+            "skill_dir": f"{_SKILL_RESOLVER_SKILLS_DIR}/{spec['skill_dir']}",
+            "notes": list(spec["notes"]),
+        }
+    summary = {
+        "used": sum(1 for s in skills.values() if s["status"] == "USED"),
+        "inventoried_only": sum(1 for s in skills.values()
+                                if s["status"] == "INVENTORIED_ONLY"),
+        "deferred": sum(1 for s in skills.values()
+                        if s.get("decision") == "DEFERRED"),
+        "unknown": sum(1 for s in skills.values() if s["status"] == "UNKNOWN"),
+    }
+    return {
+        "version": _SKILL_RESOLVER_CLEANUP_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "resolver_authority": "NONE",
+        "auto_execution": False,
+        "mutation": "none",
+        "subprocess": "none",
+        "skills": skills,
+        "summary": summary,
+        "commands_only": list(_SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY),
+    }
+
+
+def build_skill_resolver_cleanup_response_v2(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal SKILL_RESOLVER_V2_CLEANUP. Pure, readonly."""
+    resolver = collect_skill_resolver_cleanup_v2(registry)
+    summary = resolver.get("summary", {})
+    reponse_text = (
+        f"Skill Resolver cleanup readonly ({summary.get('used', 0)} used, "
+        f"{summary.get('inventoried_only', 0)} inventoried-only, "
+        f"{summary.get('deferred', 0)} deferred).\n\n"
+        "Le resolver classe les skills, il n'active rien — "
+        "resolver_authority=NONE, decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "SKILL_RESOLVER_V2_CLEANUP",
+        "detected_layer": "skill_resolver",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _SKILL_RESOLVER_CLEANUP_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "resolver_authority": "NONE",
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "skill_resolver": resolver,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["skill resolver status", "skills status", "law status"],
+        },
+        "outils_panel": {
+            "SKILL_RESOLVER_V2_CLEANUP": "available",
+            "resolver_cmd": "python scripts/obsidia_cli.py skill resolver status",
+            "skills_cmd": "python scripts/obsidia_cli.py skills status",
+            "resolver_authority": "NONE",
+            "skill_execution": "forbidden",
+        },
+        "next_suggestions": ["skill resolver status", "skills status", "law status"],
+    }
+
+
+def format_skill_resolver_cleanup_v2(data: dict) -> str:
+    """Formate la reponse SKILL_RESOLVER_V2_CLEANUP pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    resolver = data.get("skill_resolver", {})
+    skills = resolver.get("skills", {})
+    lines = [
+        _SKILL_RESOLVER_CLEANUP_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"resolver_authority={etat.get('resolver_authority', 'NONE')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        "",
+        "USED:",
+    ]
+    used = [n for n, s in skills.items() if s.get("status") == "USED"]
+    lines += [f"  {n}" for n in used] if used else ["  none"]
+    lines += ["", "INVENTORIED_ONLY:"]
+    inventoried = [n for n, s in skills.items()
+                   if s.get("status") == "INVENTORIED_ONLY"]
+    lines += [f"  {n}" for n in inventoried] if inventoried else ["  none"]
+    lines += ["", "DEFERRED:"]
+    deferred = [n for n, s in skills.items() if s.get("decision") == "DEFERRED"]
+    lines += [f"  {n}" for n in deferred] if deferred else ["  none"]
+    missing = [n for n, s in skills.items() if s.get("status") == "MISSING"]
+    if missing:
+        lines += ["", "MISSING:"]
+        lines += [f"  {n}" for n in missing]
+    lines += ["", "COMMANDS_ONLY:"]
+    lines += [f"  {c}" for c in (resolver.get("commands_only")
+                                 or _SKILL_RESOLVER_CLEANUP_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no resolver authority",
+        "  no automatic skill execution",
+        "  no mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+# ─── FIN SKILL RESOLVER V2 CLEANUP ───────────────────────────────────────────
+
+
+# ─── TUI UNIFICATION V2 ──────────────────────────────────────────────────────
+# OBSIDIA_TERMINAL_TUI_UNIFICATION_V2
+# Surface unifiee du cockpit terminal : tabs + aliases + commandes.
+# Le TUI affiche. Il ne decide pas. tui_authority=NONE.
+
+_TUI_UNIFICATION_VERSION = "OBSIDIA_TERMINAL_TUI_UNIFICATION_V2"
+
+_TUI_UNIFICATION_COMMANDS_ONLY = [
+    "python scripts/obsidia_cli.py tui status",
+    "python scripts/obsidia_cli.py law status",
+    "python scripts/obsidia_cli.py skill resolver status",
+]
+
+# Aliases TUI vers panneaux directs (affichage readonly dans le panneau gauche).
+_TUI_PANEL_ALIASES_V2 = {
+    "/laws": "LAWS",
+    "/skills": "SKILLS",
+    "/domains": "DOMAINS",
+    "/brody": "BRODY",
+    "/obsidure": "OBSIDURE",
+    "/sigma": "SIGMA_OIE",
+    "/oie": "SIGMA_OIE",
+}
+
+
+def get_terminal_tui_command_surface_v2() -> dict:
+    """Surface unifiee des tabs/aliases du cockpit terminal. Pure, readonly."""
+    def _tab(label: str, command: str, panel: str) -> dict:
+        return {
+            "label": label,
+            "status": "AVAILABLE",
+            "command": command,
+            "readonly": True,
+            "authority": "NONE",
+            "panel": panel,
+        }
+    return {
+        "version": _TUI_UNIFICATION_VERSION,
+        "mode": "READONLY",
+        "decision_authority": "KX108_ONLY",
+        "tui_authority": "NONE",
+        "auto_execution": False,
+        "mutation": "none",
+        "subprocess": "none",
+        "tabs": {
+            "CORE": _tab("Routage et plan actif", "/plan", "OBSIDIA_ACTIVE_PLAN"),
+            "GATES": _tab("Gate planner advisory", "/gates",
+                          "OBSIDIA_TERMINAL_GATE_PLANNER_V1"),
+            "TOOLS": _tab("Outils autorises/interdits", "/tools", "TOOLS_PANEL"),
+            "STATUS": _tab("Etat technique", "/status", "STATUS_PANEL"),
+            "PROOF": _tab("Preuves Lean readonly", "proof status",
+                          "OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1"),
+            "LAWS": _tab("Lois terminales", "law status",
+                         "OBSIDIA_TERMINAL_LAW_REGISTRY_V1"),
+            "SKILLS": _tab("Skill resolver cleanup", "skill resolver status",
+                           "OBSIDIA_TERMINAL_SKILL_RESOLVER_V2_CLEANUP"),
+            "DOMAINS": _tab("Domain bridges readonly", "status domains",
+                            "OBSIDIA_TERMINAL_DOMAIN_BRIDGE_READONLY_V1"),
+            "BRODY": _tab("Brody memory visibility", "status brody memory",
+                          "OBSIDIA_TERMINAL_BRODY_MEMORY_VISIBILITY_V1"),
+            "OBSIDURE": _tab("Proposal reader readonly", "proposal list",
+                             "OBSIDURE_PROPOSAL_READER_V2"),
+            "SIGMA_OIE": _tab("Sigma/OIE status readonly", "status sigma",
+                              "OBSIDIA_TERMINAL_SIGMA_OIE_STATUS_PANEL_V1"),
+        },
+        "aliases": {
+            "/gates": "GATES",
+            "/tools": "TOOLS",
+            "/status": "STATUS",
+            "/proof": "PROOF",
+            "/laws": "LAWS",
+            "/skills": "SKILLS",
+            "/domains": "DOMAINS",
+            "/brody": "BRODY",
+            "/obsidure": "OBSIDURE",
+            "/sigma": "SIGMA_OIE",
+            "/oie": "SIGMA_OIE",
+        },
+        "commands_only": list(_TUI_UNIFICATION_COMMANDS_ONLY),
+    }
+
+
+def format_terminal_tui_help_v2(surface: dict) -> str:
+    """Aide compacte du cockpit : aliases -> tab -> commande CLI. Pure."""
+    tabs = surface.get("tabs", {})
+    aliases = surface.get("aliases", {})
+    lines = [
+        _TUI_UNIFICATION_VERSION,
+        "mode=READONLY",
+        "tui_authority=NONE",
+        "auto_execution=False",
+        "",
+        "ALIASES:",
+    ]
+    for alias, tab_name in aliases.items():
+        cmd = (tabs.get(tab_name) or {}).get("command", "?")
+        lines.append(f"  {alias:<10} -> {tab_name:<10} ({cmd})")
+    lines += [
+        "",
+        "AUTRES:",
+        "  /help    aide complete",
+        "  /suite   suite disponible",
+        "  /plain   mode texte brut",
+        "  exit     quitter",
+        "",
+        "COMMANDS_ONLY:",
+    ]
+    lines += [f"  {c}" for c in (surface.get("commands_only")
+                                 or _TUI_UNIFICATION_COMMANDS_ONLY)]
+    return "\n".join(lines)
+
+
+def build_terminal_tui_unification_response_v2(raw: str, registry: dict) -> dict:
+    """Construit la reponse terminal TUI_UNIFICATION_V2. Pure, readonly."""
+    surface = get_terminal_tui_command_surface_v2()
+    tab_count = len(surface.get("tabs", {}))
+    reponse_text = (
+        f"Cockpit terminal unifie ({tab_count} tabs).\n\n"
+        "Le TUI affiche les panneaux readonly. Il ne decide rien — "
+        "tui_authority=NONE, decision_authority=KX108_ONLY."
+    )
+    return {
+        "panel": "TUI_UNIFICATION_V2",
+        "detected_layer": "tui",
+        "mode_reponse": "ANSWER_STATUS",
+        "output": "COMMANDS",
+        "reponse": reponse_text,
+        "etat_technique": {
+            "version": _TUI_UNIFICATION_VERSION,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "tui_authority": "NONE",
+            "auto_execution": False,
+            "mutation": "none",
+            "subprocess": "none",
+        },
+        "tui_surface": surface,
+        "main_answer": {
+            "direct": reponse_text,
+            "next": ["tui help", "law status", "skill resolver status"],
+        },
+        "outils_panel": {
+            "TUI_UNIFICATION_V2": "available",
+            "tui_status_cmd": "python scripts/obsidia_cli.py tui status",
+            "tui_help_cmd": "python scripts/obsidia_cli.py tui help",
+            "tui_authority": "NONE",
+            "mutation": "none",
+        },
+        "next_suggestions": ["tui help", "law status", "skill resolver status"],
+    }
+
+
+def format_terminal_tui_unification_v2(data: dict) -> str:
+    """Formate la reponse TUI_UNIFICATION_V2 pour affichage terminal."""
+    etat = data.get("etat_technique", {})
+    surface = data.get("tui_surface", {})
+    lines = [
+        _TUI_UNIFICATION_VERSION,
+        f"mode={etat.get('mode', 'READONLY')}",
+        f"decision_authority={etat.get('decision_authority', 'KX108_ONLY')}",
+        f"tui_authority={etat.get('tui_authority', 'NONE')}",
+        f"auto_execution={etat.get('auto_execution', False)}",
+        "",
+        "TABS:",
+    ]
+    tabs = surface.get("tabs", {})
+    lines += [f"  {name}" for name in tabs] if tabs else ["  none"]
+    lines += ["", "ALIASES:"]
+    aliases = surface.get("aliases", {})
+    lines += [f"  {alias} -> {tab}" for alias, tab in aliases.items()] \
+        if aliases else ["  none"]
+    lines += ["", "COMMANDS_ONLY:"]
+    lines += [f"  {c}" for c in (surface.get("commands_only")
+                                 or _TUI_UNIFICATION_COMMANDS_ONLY)]
+    lines += [
+        "",
+        "FORBIDDEN:",
+        "  no tui authority",
+        "  no automatic action",
+        "  no mutation",
+        "  no sovereign decision",
+    ]
+    return "\n".join(lines)
+
+
+def _tui_alias_panel_text_v2(alias: str, registry: dict) -> str:
+    """Texte readonly du panneau vise par un alias TUI direct. Aucune mutation."""
+    if alias == "/laws":
+        return format_terminal_law_registry_v1(get_terminal_law_panel_v1())
+    if alias == "/skills":
+        return format_skill_resolver_cleanup_v2(
+            build_skill_resolver_cleanup_response_v2("skills status", registry))
+    if alias == "/domains":
+        return format_domain_bridge_status_v1(
+            build_domain_bridge_status_response_v1("status domains", registry))
+    if alias == "/brody":
+        return format_brody_memory_visibility_v1(
+            build_brody_memory_visibility_response_v1("status brody memory", registry))
+    if alias == "/obsidure":
+        return build_obsidure_proposal_reader_response_v2("proposal list", registry)["reponse"]
+    if alias in ("/sigma", "/oie"):
+        layer = "sigma" if alias == "/sigma" else "oie"
+        resp = build_status_response(f"status {layer}", layer, registry)
+        return format_sigma_oie_status_v1(build_sigma_oie_status_response_v1(resp, registry))
+    return ""
+
+
+# ─── FIN TUI UNIFICATION V2 ──────────────────────────────────────────────────
 
 
 def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
@@ -3892,23 +6092,35 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         politique = ["apply auto", "commit auto", "push auto"]
         next_suggestions = ["peux tu coder", "capabilities obsidure"]
     elif target_layer == "sigma":
+        _sigma_st = collect_sigma_status_v1(registry)
+        _sigma_label = (_sigma_st.get("labels") or {}).get("sigma_status", "PROVISIONAL")
         api_st = _svc("api_health")
         sigma_dir = REPO_ROOT / "sigma"
         reponse_text = (
-            "Sigma est "
-            + ("actif (API 8000 UP)" if api_st == "UP"
-               else "PARTIEL (besoin API 8000 UP pour EXECUTE)")
-            + ".\n\n"
+            "Sigma est disponible en local (guidance="
+            + str(_sigma_st.get("guidance", "?")) + ", label=" + _sigma_label + ").\n\n"
             "La coherence, les contradictions et la fraicheur des signaux sont "
-            "verificiables en local. L'execution complete (EXECUTE) necessite l'API."
+            "verifiables en local. Sigma ne décide pas — advisory only."
         )
         etat_technique = {
+            "version": _SIGMA_OIE_VERSION,
             "terminal": "active",
             "api_8000_execute": api_st,
             "sigma_dir": "ok" if sigma_dir.is_dir() else "absent",
-            "mode": "readonly local + execute si API UP",
+            "sigma_guidance": _sigma_st.get("guidance", "?"),
+            "sigma_label": _sigma_label,
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
+            "sovereign": False,
         }
-        next_suggestions = ["sigma coherence", "capabilities sigma"]
+        outils_panel = {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "sigma_cmd": "python scripts/obsidia_cli.py status sigma",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "evaluate": "forbidden from terminal",
+        }
+        next_suggestions = ["status oie", "capabilities sigma"]
     elif target_layer == "memory":
         g_st = _svc("graphiti_8011")
         reponse_text = (
@@ -3927,20 +6139,33 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         outils_panel = {"memory_write": "forbidden", "read": "allowed"}
         next_suggestions = ["memoire graphiti", "capabilities memory"]
     elif target_layer == "oie":
-        receipts_p = (REPO_ROOT / "scripts" / "performance"
-                      / "oie_external_claude_benchmark_v0_receipts.json")
+        _oie_st = collect_oie_reports_v1()
+        _oie_count = _oie_st.get("reports_found", 0)
+        _oie_labels = _oie_st.get("labels_found") or []
         reponse_text = (
-            "OIE est disponible (corpus local, dry-run).\n\n"
-            "Le benchmark peut etre lance en dry-run. "
-            "Les couts reels (COST_REAL) ne sont revendiques que sur preuve."
+            f"OIE est disponible ({_oie_count} rapport(s) trouvé(s)).\n\n"
+            "Le benchmark peut etre lance en dry-run (humain uniquement). "
+            "Les couts reels (COST_REAL) ne sont revendiques que sur preuve. "
+            "Labels: " + (", ".join(_oie_labels) if _oie_labels else "MISSING") + "."
         )
         etat_technique = {
+            "version": _SIGMA_OIE_VERSION,
             "terminal": "active",
-            "receipts": "ok" if receipts_p.exists() else "absent",
+            "oie_status": _oie_st.get("status"),
+            "reports_found": _oie_count,
+            "labels_found": _oie_labels,
             "COST_REAL": "NOT_CLAIMED sauf preuve",
-            "mode": "readonly, dry-run",
+            "mode": "READONLY",
+            "decision_authority": "KX108_ONLY",
+            "auto_execution": False,
         }
-        next_suggestions = ["oie benchmark", "capabilities oie"]
+        outils_panel = {
+            "SIGMA_OIE_STATUS_PANEL_V1": "available",
+            "oie_cmd": "python scripts/obsidia_cli.py status oie",
+            "benchmark": "commands-only, humain",
+            "evaluate": "forbidden from terminal",
+        }
+        next_suggestions = ["status sigma", "capabilities oie"]
     elif target_layer == "obsidienne":
         proofs_dir = REPO_ROOT / "proofs"
         reponse_text = (
@@ -3972,17 +6197,32 @@ def build_status_response(raw: str, target_layer: str, registry: dict) -> dict:
         outils_panel = {"auto_execute": "forbidden", "read": "allowed"}
         next_suggestions = ["capabilities gates"]
     elif target_layer == "domains":
+        _dom_bridges = collect_all_domain_bridges_readonly_v1(registry)
+        _dom_statuses = {k: v.get("status", "?") for k, v in _dom_bridges["domains"].items()}
         reponse_text = (
             "Domains est disponible (bridge-only).\n\n"
+            + " | ".join(f"{k}={v}" for k, v in _dom_statuses.items()) + "\n\n"
             "Les domaines (Bank, Trading, GPS) sont accessibles en lecture. "
             "Les adapters POST sont interdits depuis le terminal."
         )
         etat_technique = {
+            "version": _DOMAIN_BRIDGE_VERSION,
             "terminal": "active",
-            "mode": "bridge-only, guidance",
+            "mode": "READONLY",
+            "api_role": "BRIDGE_ONLY",
+            "emits_act": False,
+            "memory_write": False,
+            "auto_execution": False,
+            "decision_authority": "KX108_ONLY",
             "POST_adapters": "forbidden from terminal",
         }
-        next_suggestions = ["domains bank trading gps", "capabilities domains"]
+        outils_panel = {
+            "DOMAIN_BRIDGE_READONLY_V1": "available",
+            "domains_cmd": "python scripts/obsidia_cli.py status domains",
+            "api_role": "BRIDGE_ONLY",
+            "domain_action": "forbidden",
+        }
+        next_suggestions = ["status domains", "status bank", "capabilities domains"]
     elif target_layer == "kernel":
         k_st = _svc("kernel_3001")
         reponse_text = (
@@ -4162,6 +6402,64 @@ def extract_tools_panel(response: dict) -> list[str]:
             lines.append("INTERDITES:")
             for op in ops_forbidden[:3]:
                 lines.append(f"  {str(op)[:24]}")
+    layer = response.get("detected_layer", "?")
+    if layer == "brody":
+        lines += [
+            "",
+            "BRODY_MEMORY_VISIBILITY_V1:",
+            "  - python scripts/obsidia_cli.py status brody memory",
+            "  - python scripts/obsidia_cli.py brody memory status",
+            "  - readonly only",
+            "  - memory_write=False",
+        ]
+    if layer in ("domain", "domains"):
+        lines += [
+            "",
+            "DOMAIN_BRIDGE_READONLY_V1:",
+            "  - python scripts/obsidia_cli.py status domains",
+            "  - python scripts/obsidia_cli.py status bank",
+            "  - python scripts/obsidia_cli.py status trading",
+            "  - python scripts/obsidia_cli.py status gps",
+            "  - readonly only",
+            "  - api_role=BRIDGE_ONLY",
+            "  - emits_act=False",
+        ]
+    if layer in ("proof", "obsidienne"):
+        lines += [
+            "",
+            "LEAN_PROOF_PANEL_V1:",
+            "  - python scripts/obsidia_cli.py proof status",
+            "  - python scripts/obsidia_cli.py lean status",
+            "  - COMMANDS_ONLY",
+            "  - proof_write=False",
+        ]
+    if layer == "law":
+        lines += [
+            "",
+            "TERMINAL_LAW_REGISTRY_V1:",
+            "  - python scripts/obsidia_cli.py law status",
+            "  - python scripts/obsidia_cli.py laws",
+            "  - readonly",
+            "  - registry_authority=NONE",
+        ]
+    if layer == "skill_resolver":
+        lines += [
+            "",
+            "SKILL_RESOLVER_V2_CLEANUP:",
+            "  - python scripts/obsidia_cli.py skill resolver status",
+            "  - python scripts/obsidia_cli.py skills status",
+            "  - readonly",
+            "  - resolver_authority=NONE",
+        ]
+    if layer == "tui":
+        lines += [
+            "",
+            "TUI_UNIFICATION_V2:",
+            "  - python scripts/obsidia_cli.py tui status",
+            "  - python scripts/obsidia_cli.py tui help",
+            "  - readonly",
+            "  - tui_authority=NONE",
+        ]
     lines += ["", "AUTORITE:", "  X108=FINAL"]
     return lines
 
@@ -4172,7 +6470,7 @@ def extract_proof_panel(response: dict) -> list[str]:
     corpus = response.get("corpus_utilise", [])
 
     lines = ["=== PROOF ===", ""]
-    if layer in ("obsidienne", "corpus:lean_proofs"):
+    if layer in ("obsidienne", "corpus:lean_proofs", "proof"):
         lines += [
             "  source: local",
             "  lean_surface: V2 (232 entries)",
@@ -4182,6 +6480,12 @@ def extract_proof_panel(response: dict) -> list[str]:
             "  verify_all.py: humain uniquement",
             "  lean_decides: false",
             "  forbidden_ok: true",
+            "",
+            "  OBSIDIA_TERMINAL_LEAN_PROOF_PANEL_V1:",
+            "    mode: READONLY",
+            "    proof_check: COMMANDS_ONLY",
+            "    auto_execution=False",
+            "    proof_write=False",
         ]
     elif layer == "audit":
         lines += [
@@ -4343,7 +6647,7 @@ def compose_core_surfaces_v1(response: dict, raw: str = "", registry: dict | Non
 # ─── FIN CORE SURFACE COMPOSER V1 ────────────────────────────────────────────
 
 
-def answer_router(raw: str, registry: dict) -> dict:
+def _answer_router_core_before_skill_resolution_v1(raw: str, registry: dict) -> dict:
     # Pre-garde mutation globale — doit passer avant IR/Reverse/Brody/Obsidure.
     # Les bridges peuvent guider, jamais absorber commit/apply/push/deploy/delete.
     normalized_for_policy = normalize(raw)
@@ -4684,7 +6988,120 @@ def answer_router(raw: str, registry: dict) -> dict:
     }
 
 
-def format_surface_response(r: dict) -> str:
+
+# ─── TERMINAL RUNTIME INPUT RESOLVER V1 ──────────────────────────────────────
+# OBSIDIA_TERMINAL_RUNTIME_INPUT_RESOLVER_V1
+# Tout IN libre routé par answer_router() reçoit une résolution skills readonly.
+# Les skills restent organes consultatifs : aucune autorité, aucun subprocess.
+
+def attach_runtime_input_skill_resolution_v1(response: dict, raw: str) -> dict:
+    out = dict(response or {})
+
+    try:
+        resolved = resolve_terminal_input_with_skills_v1(raw)
+    except Exception as exc:
+        resolved = {
+            "version": "OBSIDIA_TERMINAL_INPUT_SKILL_RESOLVER_V1_READONLY",
+            "mode": "READONLY_BACKGROUND_SUPPORT_NO_AUTHORITY",
+            "decision_authority": "KX108_ONLY",
+            "emits_act": False,
+            "kernel_mutation": False,
+            "memory_write": False,
+            "input": raw,
+            "resolved_route": "UNAVAILABLE",
+            "resolved_kind": "UNAVAILABLE",
+            "resolved_domain": "AUTO",
+            "selected_skills": [],
+            "selected_protocols": [],
+            "resolver_error": type(exc).__name__,
+            "policy": [
+                "skills are advisory organs only",
+                "no background execution",
+                "no subprocess",
+                "no apply",
+                "no commit",
+                "no push",
+                "no ALLOW/BLOCK/HOLD/ACT emission",
+            ],
+        }
+
+    out["input_skill_resolution"] = resolved
+
+    etat = dict(out.get("etat_technique") or {})
+    etat.setdefault("skill_resolver", resolved.get("version"))
+    etat.setdefault("skill_resolver_mode", resolved.get("mode"))
+    etat.setdefault("skill_resolver_route", resolved.get("resolved_route"))
+    etat.setdefault("skill_resolver_kind", resolved.get("resolved_kind"))
+    etat.setdefault("skill_resolver_domain", resolved.get("resolved_domain"))
+    etat.setdefault("skill_resolver_authority", "NONE")
+    etat.setdefault("skill_resolver_exec", "forbidden")
+    out["etat_technique"] = etat
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    outils = dict(out.get("outils_panel") or {})
+    outils.setdefault("input_skill_resolver", "readonly_advisory")
+    outils.setdefault("skills_readonly", " | ".join(skills[:5]) if skills else "none")
+    outils.setdefault("protocols_readonly", " | ".join(protocols[:5]) if protocols else "none")
+    outils.setdefault("skill_policy", "advisory_only_no_subprocess_no_apply_no_act")
+    out["outils_panel"] = outils
+
+    limites = list(out.get("limites") or [])
+    if "skills advisory-only; no authority; no subprocess" not in limites:
+        limites.append("skills advisory-only; no authority; no subprocess")
+    out["limites"] = limites
+
+    corpus = list(out.get("corpus_utilise") or [])
+    for path in skills[:3]:
+        ref = "skill:" + path
+        if ref not in corpus:
+            corpus.append(ref)
+    for path in protocols[:3]:
+        ref = "protocol:" + path
+        if ref not in corpus:
+            corpus.append(ref)
+    out["corpus_utilise"] = corpus or ["skill_resolver:readonly"]
+
+    return out
+
+
+def _answer_router_core_before_gate_planner_v1(raw: str, registry: dict) -> dict:
+    core = _answer_router_core_before_skill_resolution_v1(raw, registry)
+    return attach_runtime_input_skill_resolution_v1(core, raw)
+
+
+def answer_router(raw: str, registry: dict) -> dict:
+    response = _answer_router_core_before_gate_planner_v1(raw, registry)
+    resolved = response.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    response["input_skill_resolution"] = resolved
+    response["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", response.get("detected_layer", "")),
+        kind=resolved.get("resolved_kind", response.get("plan_status", "")),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer=response.get("detected_layer", ""),
+        output_predicted=response.get("output", response.get("mode_reponse", "")),
+    )
+
+    etat = dict(response.get("etat_technique") or {})
+    etat.setdefault("gate_planner", response["gate_plan"]["version"])
+    etat.setdefault("gate_family", response["gate_plan"]["gate_family"])
+    etat.setdefault("gate_planner_mode", response["gate_plan"]["mode"])
+    etat.setdefault("gate_planner_authority", response["gate_plan"]["authority"])
+    response["etat_technique"] = etat
+
+    outils = dict(response.get("outils_panel") or {})
+    outils.setdefault("gate_planner", "commands_only_no_execution")
+    outils.setdefault("gate_family", response["gate_plan"]["gate_family"])
+    response["outils_panel"] = outils
+
+    return response
+
+
+
+def _format_surface_response_core_before_runtime_skill_resolution_v1(r: dict) -> str:
     """One-shot output V2 : surfaces séparées (REPONSE / PLAN_PANEL / STATUS_PANEL / TOOLS_PANEL).
     Garantie : REPONSE ne contient aucun token système interne."""
     # Réponse gauche via la même logique que le TUI
@@ -4727,6 +7144,59 @@ def format_surface_response(r: dict) -> str:
         f"output: {r.get('output', '?')}",
     ]
     return "\n".join(lines)
+
+
+# OBSIDIA_TERMINAL_RUNTIME_INPUT_RESOLVER_V1_DISPLAY_FULL
+def _format_surface_response_core_before_gate_planner_v1(r: dict) -> str:
+    text = _format_surface_response_core_before_runtime_skill_resolution_v1(r)
+    resolved = (r or {}).get("input_skill_resolution") or {}
+    if not resolved:
+        return text
+
+    skills = list(resolved.get("selected_skills") or [])
+    protocols = list(resolved.get("selected_protocols") or [])
+
+    lines = [
+        "",
+        "INPUT_SKILL_RESOLUTION:",
+        f"  resolver={resolved.get('version', 'UNKNOWN')}",
+        f"  mode={resolved.get('mode', 'UNKNOWN')}",
+        f"  route={resolved.get('resolved_route', 'UNKNOWN')}",
+        f"  kind={resolved.get('resolved_kind', 'UNKNOWN')}",
+        f"  domain={resolved.get('resolved_domain', 'AUTO')}",
+        "  authority=NONE_SKILLS_ARE_ADVISORY_ONLY",
+        "  input_skill_resolver=readonly_advisory",
+        "  subprocess=forbidden",
+        "  apply=forbidden",
+        "  commit=forbidden",
+        "  push=forbidden",
+        "  act_emission=forbidden",
+        "  selected_skills:",
+    ]
+
+    if skills:
+        lines.extend(f"    - {x}" for x in skills[:6])
+    else:
+        lines.append("    - none")
+
+    lines.append("  selected_protocols:")
+    if protocols:
+        lines.extend(f"    - {x}" for x in protocols[:6])
+    else:
+        lines.append("    - none")
+
+    return text + "\n" + "\n".join(lines)
+
+
+def format_surface_response(r: dict) -> str:
+    text = _format_surface_response_core_before_gate_planner_v1(r)
+    gate_plan = (r or {}).get("gate_plan")
+    if not gate_plan:
+        return text
+    if "GATES_PANEL:" in text:
+        return text
+    return text + "\n\nGATES_PANEL:\n" + "\n".join(_format_gate_plan_lines_v1(gate_plan, header="GATE_PLAN"))
+
 
 
 def format_obsidia_response(r: dict) -> str:
@@ -4943,8 +7413,8 @@ def attach_dynamic_panels_v1(response: dict) -> dict:
     response["dynamic_panels"] = {
         "version": _DYNAMIC_PANELS_VERSION,
         "selected": tab,
-        "available": ["PLAN", "STATUS", "TOOLS", "PROOF"],
-        "manual_override": ["/plan", "/status", "/tools", "/proof"],
+        "available": ["PLAN", "STATUS", "TOOLS", "PROOF", "GATES"],
+        "manual_override": ["/plan", "/status", "/tools", "/proof", "/gates"],
         "mutation": "none",
         "subprocess": "none",
         "decision_authority": "KX108_ONLY",
@@ -5023,13 +7493,15 @@ def extract_main_answer_panel(response: dict, max_lines: int = 60) -> list[str]:
 
 def extract_plan_panel(response: dict, active_tab: str = "PLAN") -> list[str]:
     """Extract right panel content from response dict. Pure.
-    active_tab: PLAN (défaut) | STATUS | TOOLS | PROOF"""
+    active_tab: PLAN (défaut) | STATUS | TOOLS | PROOF | GATES"""
     if active_tab == "STATUS":
         return extract_status_panel(response)
     if active_tab == "TOOLS":
         return extract_tools_panel(response)
     if active_tab == "PROOF":
         return extract_proof_panel(response)
+    if active_tab == "GATES":
+        return extract_gates_panel(response)
 
     # Onglet PLAN (défaut)
     layer = response.get("detected_layer", "?")
@@ -5075,7 +7547,7 @@ def extract_plan_panel(response: dict, active_tab: str = "PLAN") -> list[str]:
 
 
 _SUITE_WORDS = frozenset({"suite", "continue", "suivant", "next"})
-_TAB_COMMANDS = {"/plan": "PLAN", "/status": "STATUS", "/tools": "TOOLS", "/proof": "PROOF"}
+_TAB_COMMANDS = {"/plan": "PLAN", "/status": "STATUS", "/tools": "TOOLS", "/proof": "PROOF", "/gates": "GATES"}
 
 
 def interactive_tui_shell(registry: dict) -> int:
@@ -5111,7 +7583,7 @@ def interactive_tui_shell(registry: dict) -> int:
         "X108 = autorite", "readonly",
         "no_auto_act", "no_subprocess",
         "", "=== ONGLETS ===", "",
-        "/plan /status", "/tools /proof",
+        "/plan /status", "/tools /proof", "/gates",
     ]
 
     main_lines: list[str] = list(_welcome_main)
@@ -5145,7 +7617,7 @@ def interactive_tui_shell(registry: dict) -> int:
         )
         composer_hint = (
             " /help  /plain  /runtime  "
-            "/plan  /status  /tools  /proof  /clear  exit"
+            "/plan  /status  /tools  /proof  /gates  /clear  exit"
         )
 
         screen = render_two_pane_layout(
@@ -5180,13 +7652,21 @@ def interactive_tui_shell(registry: dict) -> int:
                 trgs = ", ".join(str(t) for t in (spec.get("triggers") or [])[:3])
                 help_lines.append(f"  {ln}: {trgs}...")
             help_lines += [
-                "", "Commandes :", "  /help  /plan  /status  /tools  /proof",
+                "", "Commandes :", "  /help  /plan  /status  /tools  /proof  /gates",
                 "  /plain  /runtime  /clear  exit",
                 "", "Onglets droite :",
                 "  /plan    — routage et plan actif",
                 "  /status  — etat technique (services, couche)",
                 "  /tools   — outils autorises/interdits",
                 "  /proof   — etat preuves/corpus",
+                "  /gates   — gate planner advisory (NONE_GATE_PLANNER_IS_ADVISORY_ONLY)",
+                "", "Panneaux directs (gauche) :",
+                "  /laws     — lois terminales readonly",
+                "  /skills   — skill resolver cleanup",
+                "  /domains  — domain bridges readonly",
+                "  /brody    — brody memory visibility",
+                "  /obsidure — proposal reader readonly",
+                "  /sigma /oie — sigma/oie status readonly",
             ]
             main_lines = help_lines
             plan_lines = ["=== PLAN ===", "", "mode: GUIDE", "out: HELP",
@@ -5224,6 +7704,15 @@ def interactive_tui_shell(registry: dict) -> int:
                 ]
             continue
 
+        # Aliases panneaux directs — affichage readonly dans le panneau gauche
+        if low in _TUI_PANEL_ALIASES_V2:
+            alias_text = _tui_alias_panel_text_v2(low, registry)
+            main_lines = alias_text.splitlines() if alias_text else [
+                f"Panneau {low} indisponible.",
+            ]
+            current_layer = _TUI_PANEL_ALIASES_V2[low].lower()
+            continue
+
         # Commande suite/continue/suivant/next
         if low in _SUITE_WORDS:
             if last_resp:
@@ -5236,16 +7725,18 @@ def interactive_tui_shell(registry: dict) -> int:
                     "  /status  etat technique",
                     "  /tools   outils autorises/interdits",
                     "  /proof   etat preuves/corpus",
+                    "  /gates   gate planner advisory",
                 ]
             else:
                 main_lines = [
                     "J'ai besoin de preciser quelle suite :",
-                    "plan, status, tools ou proof.",
+                    "plan, status, tools, proof ou gates.",
                     "",
                     "-> /plan",
                     "-> /status",
                     "-> /tools",
                     "-> /proof",
+                    "-> /gates",
                 ]
             continue
 
@@ -5647,7 +8138,7 @@ def _skill_resolver_protocol_paths_v1(domain: str | None, kind: str, raw: str = 
             seen.add(path)
     return out
 
-def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
+def _resolve_terminal_input_with_skills_core_before_gate_planner_v1(raw: str) -> dict:
     objective = (raw or "").strip()
     domain = _operator_domain_v1(objective)
     kind = _operator_kind_v1(objective)
@@ -5688,6 +8179,22 @@ def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
             "no ALLOW/BLOCK/HOLD/ACT emission",
         ],
     }
+
+
+def resolve_terminal_input_with_skills_v1(raw: str) -> dict:
+    resolved = _resolve_terminal_input_with_skills_core_before_gate_planner_v1(raw)
+    if "gate_plan" not in resolved:
+        resolved["gate_plan"] = build_gate_plan_v1(
+            route=resolved.get("resolved_route", ""),
+            kind=resolved.get("resolved_kind", ""),
+            domain=resolved.get("resolved_domain", "AUTO"),
+            selected_skills=resolved.get("selected_skills", []),
+            selected_protocols=resolved.get("selected_protocols", []),
+            detected_layer=str(resolved.get("resolved_domain", "unknown")).lower(),
+            output_predicted="COMMANDS",
+        )
+    return resolved
+
 
 def format_terminal_skill_inventory_v1(raw_filter: str = "") -> str:
     needle = normalize(raw_filter).lower().strip()
@@ -5735,7 +8242,7 @@ def format_terminal_skill_inventory_v1(raw_filter: str = "") -> str:
     ]
     return "\n".join(lines)
 
-def format_terminal_input_resolution_v1(raw: str) -> str:
+def _format_terminal_input_resolution_core_before_gate_planner_v1(raw: str) -> str:
     resolved = resolve_terminal_input_with_skills_v1(raw)
     lines = [
         "================ OBSIDIA TERMINAL INPUT RESOLUTION ================",
@@ -5770,6 +8277,15 @@ def format_terminal_input_resolution_v1(raw: str) -> str:
         "================================================================",
     ]
     return "\n".join(lines)
+
+
+def format_terminal_input_resolution_v1(raw: str) -> str:
+    text = _format_terminal_input_resolution_core_before_gate_planner_v1(raw)
+    resolved = resolve_terminal_input_with_skills_v1(raw)
+    if "GATE_PLAN:" in text:
+        return text
+    return text + "\n" + "\n".join(_format_gate_plan_lines_v1(resolved.get("gate_plan"), header="GATE_PLAN"))
+
 
 # OBSIDIA_TERMINAL_OPERATOR_OBJECTIVE_PREFIX_SKILL_HINTS_V1
 def _operator_enriched_objective_v1(objective: str, domain: str | None, kind: str) -> str:
@@ -5811,7 +8327,7 @@ def _operator_skill_hints_v1(domain: str | None, kind: str, raw: str = "") -> li
 def _operator_protocol_hints_v1(domain: str | None, kind: str, raw: str = "") -> list[str]:
     return _skill_resolver_protocol_paths_v1(domain, kind, raw)
 
-def build_obsidure_operator_task_card_v1(raw: str) -> dict:
+def _build_obsidure_operator_task_card_core_before_gate_planner_v1(raw: str) -> dict:
     objective = (raw or "").strip() or "préparer une task card Obsidure"
     domain = _operator_domain_v1(objective)
     kind = _operator_kind_v1(objective)
@@ -5868,7 +8384,25 @@ def build_obsidure_operator_task_card_v1(raw: str) -> dict:
         "next_human_action": "lancer la commande DRY_RUN si tu veux préparer un proposal Obsidure",
     }
 
-def format_obsidure_operator_task_card_v1(raw: str) -> str:
+
+def build_obsidure_operator_task_card_v1(raw: str) -> dict:
+    card = _build_obsidure_operator_task_card_core_before_gate_planner_v1(raw)
+    resolved = card.get("input_resolution") or card.get("input_skill_resolution") or resolve_terminal_input_with_skills_v1(raw)
+    card["input_resolution"] = resolved
+    card["gate_plan"] = build_gate_plan_v1(
+        route=resolved.get("resolved_route", "OBSIDURE"),
+        kind=resolved.get("resolved_kind", "PROPOSAL_PREP"),
+        domain=resolved.get("resolved_domain", "AUTO"),
+        selected_skills=resolved.get("selected_skills", []),
+        selected_protocols=resolved.get("selected_protocols", []),
+        detected_layer="obsidure",
+        output_predicted="COMMANDS",
+    )
+    card["gates"] = list(card["gate_plan"].get("required_checks") or [])
+    return card
+
+
+def _format_obsidure_operator_task_card_core_before_gate_planner_v1(raw: str) -> str:
     card = build_obsidure_operator_task_card_v1(raw)
     lines = [
         "================ OBSIDIA OPERATOR TASK CARD ================",
@@ -5927,11 +8461,71 @@ def format_obsidure_operator_task_card_v1(raw: str) -> str:
     return "\n".join(lines)
 
 
+def format_obsidure_operator_task_card_v1(card: dict) -> str:
+    # OBSIDIA_TERMINAL_GATE_PLANNER_V1_OPERATOR_FORMAT_COMPAT
+    # Backward compatible: legacy callers pass raw str; new tests may pass a card dict.
+    raw_or_card = card
+
+    if isinstance(raw_or_card, dict):
+        card_obj = raw_or_card
+        raw = (
+            card_obj.get("objective")
+            or card_obj.get("raw")
+            or card_obj.get("input")
+            or card_obj.get("enriched_objective")
+            or "préparer une task card Obsidure"
+        )
+        text = _format_obsidure_operator_task_card_core_before_gate_planner_v1(str(raw))
+        gate_plan = card_obj.get("gate_plan")
+        if not gate_plan:
+            resolved = (
+                card_obj.get("input_resolution")
+                or card_obj.get("input_skill_resolution")
+                or resolve_terminal_input_with_skills_v1(str(raw))
+            )
+            gate_plan = build_gate_plan_v1(
+                route=resolved.get("resolved_route", "OBSIDURE"),
+                kind=resolved.get("resolved_kind", "PROPOSAL_PREP"),
+                domain=resolved.get("resolved_domain", "AUTO"),
+                selected_skills=resolved.get("selected_skills", []),
+                selected_protocols=resolved.get("selected_protocols", []),
+                detected_layer="obsidure",
+                output_predicted="COMMANDS",
+            )
+    else:
+        raw = str(raw_or_card)
+        text = _format_obsidure_operator_task_card_core_before_gate_planner_v1(raw)
+        card_obj = build_obsidure_operator_task_card_v1(raw)
+        gate_plan = card_obj.get("gate_plan")
+
+    if "GATE_PLAN:" in text:
+        return text
+
+    return text + "\n\n" + "\n".join(
+        _format_gate_plan_lines_v1(gate_plan, header="GATE_PLAN")
+    )
+
+
+
+
 def main(argv: list[str]) -> int:
     if argv and argv[0] in ("-h", "--help"):
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    # Skill resolver cleanup readonly : skill resolver status / skills status /
+    # resolver skills / status skills / "show skills status" — resolver_authority=NONE
+    _src_argv = argv[0].split() if len(argv) == 1 else argv
+    _src_words = {w.lower().strip('"').strip("'") for w in _src_argv}
+    _src_hit = _src_words & {"skill", "skills", "resolver"}
+    _src_trigger = (
+        "status" in _src_words or "etat" in _src_words or "show" in _src_words
+        or ("resolver" in _src_words and "skills" in _src_words)
+    )
+    if _src_hit and _src_trigger:
+        resp_src = build_skill_resolver_cleanup_response_v2(" ".join(_src_argv), registry)
+        print(format_skill_resolver_cleanup_v2(resp_src))
+        return 0
     if argv and argv[0].lower() in ("skills", "skill", "skill-resolver", "skill-inventory", "protocols"):
         raw_filter = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(format_terminal_skill_inventory_v1(raw_filter))
@@ -5943,6 +8537,104 @@ def main(argv: list[str]) -> int:
     if argv and argv[0].lower() in ("operator", "task", "task-card", "obsidure-task"):
         raw_operator = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(format_obsidure_operator_task_card_v1(raw_operator))
+        return 0
+    if argv and argv[0].lower() in ("proposal", "proposals", "obsidure-proposal", "obsidure-proposals"):
+        sub = argv[1].lower() if len(argv) > 1 else "list"
+        arg = " ".join(argv[2:]).strip().strip('"').strip("'") if len(argv) > 2 else ""
+        raw_proposal = f"proposal {sub} {arg}".strip()
+        resp = build_obsidure_proposal_reader_response_v2(raw_proposal, registry)
+        print(resp["reponse"])
+        return 0
+    if argv and argv[0].lower() in ("sigma",) and len(argv) > 1 and argv[1].lower() == "status":
+        resp = build_status_response("sigma status", "sigma", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() in ("oie",) and len(argv) > 1 and argv[1].lower() == "status":
+        resp = build_status_response("oie status", "oie", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() == "status" and len(argv) > 1 and argv[1].lower() == "sigma":
+        resp = build_status_response("status sigma", "sigma", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    if argv and argv[0].lower() == "status" and len(argv) > 1 and argv[1].lower() == "oie":
+        resp = build_status_response("status oie", "oie", registry)
+        data = build_sigma_oie_status_response_v1(resp, registry)
+        print(format_sigma_oie_status_v1(data))
+        return 0
+    # Brody memory visibility: status brody memory / brody memory status / memory brody status
+    # Supporte aussi la forme guillemets : "status brody memory" (single-arg multi-word)
+    _brody_argv = argv if len(argv) >= 3 else (argv[0].split() if len(argv) == 1 else argv)
+    _brody_mem_aliases = (
+        len(_brody_argv) >= 3
+        and (
+            (_brody_argv[0].lower() == "status"
+             and _brody_argv[1].lower() == "brody"
+             and _brody_argv[2].lower() == "memory")
+            or (_brody_argv[0].lower() == "brody"
+                and _brody_argv[1].lower() == "memory"
+                and _brody_argv[2].lower() == "status")
+            or (_brody_argv[0].lower() == "memory"
+                and _brody_argv[1].lower() == "brody"
+                and _brody_argv[2].lower() == "status")
+        )
+    )
+    if _brody_mem_aliases:
+        raw_brody = " ".join(_brody_argv)
+        resp_brody = build_brody_memory_visibility_response_v1(raw_brody, registry)
+        print(format_brody_memory_visibility_v1(resp_brody))
+        return 0
+    # graphiti guard status (formes 3-args et single-arg)
+    _graphiti_argv = _brody_argv
+    if (len(_graphiti_argv) >= 3
+            and _graphiti_argv[0].lower() == "graphiti"
+            and _graphiti_argv[1].lower() in ("guard", "guards")
+            and _graphiti_argv[2].lower() == "status"):
+        raw_graphiti = " ".join(_graphiti_argv)
+        resp_g = build_brody_memory_visibility_response_v1(raw_graphiti, registry)
+        print(format_brody_memory_visibility_v1(resp_g))
+        return 0
+    # Domain bridge readonly : status domains|bank|trading|gps / domain <x> status /
+    # "bank domain status" / "gps aviation status" (formes multi-args et guillemets)
+    _dom_words = {w.lower().strip('"').strip("'") for w in _brody_argv}
+    _dom_hits = _dom_words & (set(_DOMAIN_BRIDGE_ALIASES) - {"all"})
+    if _dom_hits and (_dom_words & {"status", "etat", "domain", "domains", "domaines"}):
+        raw_domain = " ".join(_brody_argv)
+        resp_dom = build_domain_bridge_status_response_v1(raw_domain, registry)
+        print(format_domain_bridge_status_v1(resp_dom))
+        return 0
+    # Lean proof panel readonly : proof status / lean status / status proof /
+    # status lean / proof commands / lean commands / "check lean proofs"
+    _lean_hits = _dom_words & {"proof", "proofs", "lean", "preuves"}
+    _lean_triggers = _dom_words & {"status", "etat", "commands", "check", "verifie"}
+    if _lean_hits and _lean_triggers:
+        raw_lean = " ".join(_brody_argv)
+        resp_lean = build_lean_proof_panel_response_v1(raw_lean, registry)
+        print(format_lean_proof_panel_v1(resp_lean))
+        return 0
+    # Law registry readonly : law status / laws / registry laws / status laws /
+    # "show terminal laws" — registre descriptif, registry_authority=NONE
+    _law_hits = _dom_words & {"law", "laws", "lois", "loi"}
+    _law_triggers = _dom_words & {"status", "etat", "registry", "registre",
+                                  "show", "terminal", "laws", "lois"}
+    if _law_hits and _law_triggers:
+        resp_law = get_terminal_law_panel_v1()
+        print(format_terminal_law_registry_v1(resp_law))
+        return 0
+    # TUI unification readonly : tui status / tui help / cockpit status /
+    # "terminal cockpit status" — tui_authority=NONE
+    _tui_hits = _dom_words & {"tui", "cockpit"}
+    _tui_triggers = _dom_words & {"status", "etat", "help", "aide", "terminal"}
+    if _tui_hits and _tui_triggers:
+        if "help" in _dom_words or "aide" in _dom_words:
+            print(format_terminal_tui_help_v2(get_terminal_tui_command_surface_v2()))
+            return 0
+        resp_tui = build_terminal_tui_unification_response_v2(
+            " ".join(_brody_argv), registry)
+        print(format_terminal_tui_unification_v2(resp_tui))
         return 0
     # Mode flags : --tui (layout deux panneaux) | --plain (shell texte brut)
     if argv and argv[0] == "--tui":
