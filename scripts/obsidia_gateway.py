@@ -202,12 +202,33 @@ def run_obsidure_proposal(objective: str) -> dict | None:
     if not BRODY_POST_ALLOWED:
         return None
     try:
+        # Racine du repo AVANT periphery/agents : le MathMemoryProvider
+        # s'importe en package (periphery.agents...) — sinon fail-soft
+        # UNAVAILABLE et Obsidure raisonne sans ses 103 entrees canoniques.
+        sys.path.insert(0, str(REPO_ROOT))
         sys.path.insert(0, str(REPO_ROOT / "periphery" / "agents"))
         from agent_obsidure import AgentObsidure
         agent = AgentObsidure(api_base=BRODY_BASE, verbose=False)
         prop = agent.run_cycle(objective)
-        return {"proposal_id": prop.proposal_id,
-                "receipt": f"_PATCH_PROPOSALS/{prop.proposal_id}/RECEIPT.md"}
+        result = {"proposal_id": prop.proposal_id,
+                  "receipt": f"_PATCH_PROPOSALS/{prop.proposal_id}/RECEIPT.md"}
+        # Boucle retour memoire : la proposition entre dans le sas d'intake
+        # (strate RAW, statut BRUT) — la promotion reste operateur.
+        try:
+            INTAKE_OUTBOX.mkdir(parents=True, exist_ok=True)
+            packet = {
+                "kind": "OBSIDURE_PATCH_PROPOSAL",
+                "statut": "BRUT", "destination_memoire": "RAW",
+                "decision_authority": "KX108_ONLY", "memory_write": False,
+                "proposal_id": prop.proposal_id, "objective": objective[:400],
+                "ts": datetime.now(timezone.utc).isoformat(),
+            }
+            out = INTAKE_OUTBOX / f"obsidure_proposal_{prop.proposal_id[:8]}.json"
+            out.write_text(json.dumps(packet, ensure_ascii=False, indent=1),
+                           encoding="utf-8")
+        except OSError:
+            pass
+        return result
     except Exception:
         return None
 
@@ -381,6 +402,23 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
             answer = (f"[memoire semantique, 0 token] {hit['entry']['name']} "
                       f"(score {hit['score']})\n{hit['entry']['answer']}")
         else:
+            # OBSIDURE FULL (stack privee) : le code passe par le cycle AVDR
+            # reel — patch genere + teste en sandbox, memoire canonique
+            # branchee, proposal-only. Claude reste le fallback.
+            if d["ir"].get("intent_type") == "code_request":
+                prop = run_obsidure_proposal(raw)
+                if prop:
+                    route = "obsidure_proposal"
+                    answer = ("[obsidure FULL, 0 token distant] cycle AVDR "
+                              f"complet — proposal_id={prop['proposal_id']} "
+                              "status=AWAITING_HUMAN_APPROVED_WRITE\n"
+                              f"A lire et approuver : {prop['receipt']}")
+                    if not llm_called:
+                        counters["llm_calls_avoided"] += 1
+                    counters["last_route"] = route
+                    audit_log({"request_preview": raw[:120], "route": route,
+                               "level": 1, "model_call_avoided": True})
+                    return answer
             # Enrichissement OS trad avant escalade : risk_flags = pause.
             tr = call_os_trad(raw)
             flags = (tr or {}).get("risk_flags") or []
