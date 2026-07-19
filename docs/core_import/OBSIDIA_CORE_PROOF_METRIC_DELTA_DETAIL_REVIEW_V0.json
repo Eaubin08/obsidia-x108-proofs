@@ -1,0 +1,345 @@
+{
+  "audit_id": "P56A-B",
+  "date": "2026-06-06",
+  "branch": "p56a-core-proof-metric-delta-audit",
+  "source_matrix": "OBSIDIA_CORE_PROOF_METRIC_DELTA_MATRIX_V0.json",
+  "total_entries": 92,
+  "verdict": "METRIC_BLOCKERS_ZERO_BUT_HUMAN_REVIEW_REQUIRED",
+  "blocking_deltas": 0,
+  "human_review_required": 3,
+
+  "summary": {
+    "EXACT_MATCH": 15,
+    "LAYER_DIFFERENCE_NOT_CONFLICT": 9,
+    "CORE_ONLY": 44,
+    "PROOF_ONLY": 18,
+    "DOMAIN_EXTENSION": 2,
+    "CORE_INTERNAL_BRIDGE_VARIANT": 1,
+    "UNKNOWN_REQUIRES_MANUAL_REVIEW": 3
+  },
+
+  "exact_matches": [
+    {
+      "metric_id": "P01_FILE",
+      "label": "OS2 metrics layer",
+      "core_path": "engine/obsidia_os2/metrics.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os2/metrics.py",
+      "sha256_prefix": "750f8622eaff3807",
+      "layer": "OS2",
+      "authority": "CORE_WINS",
+      "meaning": "OS2 simplified structural metrics — identical byte-for-byte. gamma=0.5, theta_S=0.25, S=alpha*T+beta*H-gamma*A.",
+      "safe": true,
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_id": "P02_FILE",
+      "label": "OS3 structural_core (full graph metrics)",
+      "core_path": "engine/os3/metrics.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py",
+      "sha256_prefix": "dce45cd70cda6694",
+      "layer": "OS3",
+      "authority": "CORE_WINS",
+      "meaning": "Full Triangle+Hexagon graph equilibrium gate. theta_T=0.7, theta_R=0.7, theta_A=0.6, gamma=1.0, lam=1.0. decision_act_hold(theta_S).",
+      "safe": true,
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_id": "P03_FILE",
+      "label": "OS0 IR contract validator",
+      "core_path": "engine/os0/contract.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/contract.py",
+      "sha256_prefix": "2756a768a0c95c91",
+      "layer": "OS0",
+      "authority": "CORE_WINS",
+      "meaning": "L2.5 contract rules R1-R10 — structural validator for IR programs.",
+      "safe": true,
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_id": "P04_FILE",
+      "label": "OS1 X108Gate timing gate",
+      "core_path": "engine/os1/x108.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/x108.py",
+      "sha256_prefix": "e1d85872e1b9149b",
+      "layer": "OS1",
+      "authority": "CORE_WINS",
+      "meaning": "X108Gate: min_wait_s=108.0, decision=ACT if elapsed>=min_wait else HOLD. Irreversible actions only.",
+      "safe": true,
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_id": "P05_FILE",
+      "label": "KERNEL contract (Decision enum + Governance)",
+      "core_path": "engine/obsidia_kernel/contract.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py",
+      "sha256_prefix": "6689d271ef2b32b2",
+      "layer": "KERNEL",
+      "authority": "CORE_WINS",
+      "meaning": "Decision: BLOCK/HOLD/ACT. Governance: theta_S=0.25, x108_min_wait_s=108, x108_enabled=True.",
+      "safe": true,
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_id": "P09_FILE",
+      "label": "GuardX108 confidence thresholds",
+      "core_path": "agents/guard.py",
+      "proof_path": "sigma/guard.py",
+      "sha256_prefix": "5b19a0cbbf78555e",
+      "layer": "AGENTS_CORE",
+      "authority": "CORE_WINS",
+      "meaning": "GuardConfig: min_confidence_allow=0.72, hold_confidence_floor=0.45, max_unknowns_before_hold=1, max_contradictions_before_block=2.",
+      "safe": true,
+      "action": "NO_ACTION"
+    }
+  ],
+
+  "layer_differences_not_conflicts": [
+    {
+      "metric_name": "gamma",
+      "core_layer": "OS2",
+      "proof_layer": "OS3_structural_core",
+      "core_value": "0.5",
+      "proof_value": "1.0",
+      "core_path": "engine/obsidia_os2/metrics.py",
+      "proof_path": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py",
+      "why_not_conflict": "OS2 is a simplified fast layer (proxy H, halved asymmetry penalty). OS3 is the full graph equilibrium engine (real hexagons, full asymmetry penalty). Different architectural roles. Both are intra-layer EXACT_MATCH with their respective proof counterparts (P01, P02).",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "alpha",
+      "core_layer": "OS2",
+      "proof_layer": "OS3_structural_core",
+      "core_value": "1.0",
+      "proof_value": "1.0",
+      "why_not_conflict": "Same value, documented for cross-layer traceability only.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "beta",
+      "core_layer": "OS2",
+      "proof_layer": "OS3_structural_core",
+      "core_value": "1.0",
+      "proof_value": "1.0",
+      "why_not_conflict": "Same value, documented for cross-layer traceability only.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "lam",
+      "core_layer": "OS2 (absent)",
+      "proof_layer": "OS3_structural_core",
+      "core_value": null,
+      "proof_value": "1.0",
+      "why_not_conflict": "OS3 uses hexagon radial variance penalty (lam). OS2 has no hexagon computation.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "theta_S",
+      "core_layer": "OS2",
+      "proof_layer": "OS3_structural_core (implicit)",
+      "core_value": "0.25",
+      "proof_value": null,
+      "why_not_conflict": "OS2 embeds theta_S=0.25 in decision_act_hold(). OS3 exposes S directly, theta_S is passed at call site.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "theta_T",
+      "core_layer": "OS2 (unified theta=0.0)",
+      "proof_layer": "OS3_structural_core",
+      "core_value": null,
+      "proof_value": "0.7",
+      "why_not_conflict": "OS3 separates triangle threshold (theta_T), radial threshold (theta_R), arc threshold (theta_A). OS2 uses a single unified theta.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "theta_R",
+      "core_layer": "OS2 (absent)",
+      "proof_layer": "OS3_structural_core",
+      "core_value": null,
+      "proof_value": "0.7",
+      "why_not_conflict": "Radial hexagon threshold — OS3 only concept.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    },
+    {
+      "metric_name": "theta_A",
+      "core_layer": "OS2 (absent)",
+      "proof_layer": "OS3_structural_core",
+      "core_value": null,
+      "proof_value": "0.6",
+      "why_not_conflict": "Arc hexagon threshold — OS3 only concept.",
+      "rule": "KEEP_LAYER_SEPARATED",
+      "action": "NO_ACTION"
+    }
+  ],
+
+  "proof_only_extensions": [
+    {
+      "metric_name": "GPS_DEFENSE_AVIATION",
+      "proof_path": "sigma/contracts.py",
+      "proof_value": "gps_defense_aviation",
+      "extension_type": "DOMAIN_EXTENSION",
+      "compatible": true,
+      "namespace_required": "sigma/* only",
+      "why_not_in_core": "GPS/defense/aviation is an experimental domain not yet formally proven for core inclusion. Must stay in sigma layer.",
+      "authority": "EXTENSION_ONLY"
+    },
+    {
+      "metric_name": "confidence_integrity / confidence_governance / confidence_readiness",
+      "proof_path": "sigma/contracts.py (CanonicalDecisionEnvelope.__post_init__)",
+      "proof_value": "computed fields",
+      "extension_type": "PROOF_EXTENSION",
+      "compatible": true,
+      "namespace_required": "sigma/* only, never replaces core confidence",
+      "why_not_in_core": "Triple confidence architecture is a proof-layer enrichment. Core confidence = raw integrity score only.",
+      "formulas": {
+        "confidence_integrity": "normalize_confidence(self.confidence)",
+        "confidence_governance": "compute_governance_confidence(integrity, verdict, gate, unknowns, risks, contradictions)",
+        "confidence_readiness": "(2 * integrity * governance) / (integrity + governance) — harmonic mean"
+      },
+      "authority": "KEEP_BOTH_NAMESPACED"
+    },
+    {
+      "metric_name": "x108_gate default",
+      "proof_path": "sigma/contracts.py (CanonicalDecisionEnvelope)",
+      "proof_value": "HOLD",
+      "extension_type": "PROOF_EXTENSION",
+      "compatible": true,
+      "why_safe": "Default HOLD is conservative — safe fallback if gate not explicitly set.",
+      "authority": "KEEP_BOTH_NAMESPACED"
+    },
+    {
+      "metric_name": "CANONICAL / KERNEL / SIGMA (SourceTag)",
+      "proof_path": "sigma/contracts.py",
+      "proof_value": "canonical / kernel / sigma",
+      "extension_type": "PROOF_EXTENSION",
+      "compatible": true,
+      "why_not_in_core": "Proof-layer source tracking. Core has its own richer SourceTag set (CANONICAL_FRAMEWORK, AGGREGATION, etc.).",
+      "authority": "KEEP_BOTH_NAMESPACED"
+    },
+    {
+      "metric_name": "decision_authority",
+      "proof_path": "sigma/contracts.py (calculate_immutable_vote)",
+      "proof_value": "KX108_ONLY",
+      "extension_type": "PROOF_EXTENSION",
+      "compatible": true,
+      "why_safe": "Explicitly forbids any non-X108 authority. Conservative and protective.",
+      "authority": "KEEP_BOTH_NAMESPACED"
+    }
+  ],
+
+  "core_only_summary": {
+    "total": 44,
+    "unique_effective": 22,
+    "note": "44 = 22 unique values x2 because P06 and P12_GOVERNANCE compare the same sigma/contracts.py against agents/contracts.py and governance/contracts.py (which are identical files).",
+    "groups": {
+      "SourceTag_extended": ["AGGREGATION", "GOVERNANCE", "DB_REAL", "WS_REAL", "PREVIEW_LOCAL", "OS4_LOCAL_FALLBACK", "PYTHON", "PROOF"],
+      "Severity_strings": ["S0", "S1", "S2", "S3", "S4"],
+      "Layer_strings": ["OBSERVATION", "INTERPRETATION", "CONTRADICTION", "META"],
+      "X108Gate_parsing_artifact": ["HOLD", "BLOCK"],
+      "other": ["TRADING", "ECOM", "CANONICAL_FRAMEWORK"]
+    },
+    "authority": "CORE_WINS for all — do not delete from core during any merge",
+    "parsing_artifact_note": "HOLD and BLOCK appear CORE_ONLY due to semicolon-separated enum lines in sigma/contracts.py. They exist in both files — scanner limitation."
+  },
+
+  "unknown_requires_manual_review": [
+    {
+      "pair_id": "P08",
+      "label": "protocols.py",
+      "core_path": "agents/protocols.py",
+      "proof_path": "sigma/protocols.py",
+      "core_size_bytes": 1687,
+      "proof_size_bytes": 2194,
+      "core_lines": 42,
+      "proof_lines": 51,
+      "core_sha256": "224560b9752caae2bdc16a043a77524102b921203e0bbc56d5f39ca6c31a3496",
+      "proof_sha256": "9fd36d072c4e3dec3a500d52e67ddc5af011d16db92affe3871523ccd70204df",
+      "why_no_metric_fields": "File contains only function definitions and imports — no numeric constants, no named threshold fields.",
+      "key_difference": "Proof adds: aggregate_gps_defense_aviation, GpsDefenseAviationState, build_gps_defense_aviation_agents, run_gps_defense_aviation_pipeline(). Core has bank/trading/ecom only.",
+      "risk": "LOW — additive GPS domain extension, no runtime flags",
+      "provisional_decision": "NO_AUTO_FUSION",
+      "action_required": "Confirm GPS extension is intentionally in sigma only. Do not copy to agents/protocols.py core."
+    },
+    {
+      "pair_id": "P10",
+      "label": "obsidia_sigma_v130.py",
+      "core_path": "agents/obsidia_sigma_v130.py",
+      "proof_path": "sigma/obsidia_sigma_v130.py",
+      "core_size_bytes": 11338,
+      "proof_size_bytes": 11294,
+      "core_lines": 295,
+      "proof_lines": 292,
+      "core_sha256": "ab9ab37efa1923720b735def0646917d7d9aa192ec6557ad54d2bed120540054",
+      "proof_sha256": "5d6e71983f3974db4853ece436126ff7b4511524ef69535d2b3668521ad0b314",
+      "why_no_metric_fields": "Orchestrator engine — no named numeric threshold constants exported at module level.",
+      "key_difference": "44 bytes / 3 lines fewer in proof. Likely cosmetic (comment or docstring change). The engine is described as sealed ('Le moteur lui-même ne change jamais de structure').",
+      "risk": "LOW if cosmetic. MEDIUM if a threshold was changed.",
+      "provisional_decision": "DO_NOT_OVERWRITE_CORE",
+      "action_required": "Run: diff agents/obsidia_sigma_v130.py sigma/obsidia_sigma_v130.py — identify the 44-byte difference. If cosmetic: no action. If threshold: BLOCKED_PENDING_REVIEW."
+    },
+    {
+      "pair_id": "P11",
+      "label": "run_pipeline.py (python_agents vs sigma)",
+      "core_path": "python_agents/run_pipeline.py",
+      "proof_path": "sigma/run_pipeline.py",
+      "core_size_bytes": 1970,
+      "proof_size_bytes": 8324,
+      "core_lines": 59,
+      "proof_lines": 271,
+      "core_sha256": "6773eac8f6fc99c74bd91b91959036720bf35acd42e6d673e528171e1f853b30",
+      "proof_sha256": "a02a65602e704c9e0d5f31125d7df4d4c778e091b1cedaf01f521e227eb63237",
+      "why_no_metric_fields": "CLI entry point — no named numeric threshold fields.",
+      "key_difference": "Proof version is 4x larger: adds GPS domain support, ObsidiaSigmaMonitor integration, REQUIRED_BANK_FIELDS validation, file input support, rich output formatting.",
+      "risk": "LOW — standalone CLI, not imported by engine. Additive extension.",
+      "provisional_decision": "REVIEW_REQUIRED",
+      "action_required": "Review that sigma/run_pipeline.py has no runtime write flags (memory_write, graphiti_write). Both CLIs can coexist."
+    }
+  ],
+
+  "core_internal_bridge_variant": {
+    "pair_id": "P11b",
+    "file_a": "agents/run_pipeline.py",
+    "file_b": "python_agents/run_pipeline.py",
+    "sha256_a": "64169623fcc70b2ec...",
+    "sha256_b": "6773eac8f6fc99c7...",
+    "size_a_bytes": 3052,
+    "size_b_bytes": 1970,
+    "role_a": "Canon agent runner — full orchestration logic",
+    "role_b": "CLI bridge for automation — minimal, shared with sigma",
+    "note": "python_agents/run_pipeline.py hash = sigma/run_pipeline.py core version. agents/run_pipeline.py is the extended agent-canonical version.",
+    "risk": "LOW if roles are documented. Divergence risk if both evolve without coordination.",
+    "authority": "KEEP_BOTH_NAMESPACED",
+    "action": "NOTE_ONLY — document the dual-role in each file's docstring"
+  },
+
+  "safety_confirmations": {
+    "min_wait_s": {"value": 108.0, "status": "CONFIRMED_EXACT_MATCH", "layers": ["OS1"]},
+    "min_confidence_allow": {"value": 0.72, "status": "CONFIRMED_EXACT_MATCH", "layers": ["AGENTS_CORE_guard"]},
+    "hold_confidence_floor": {"value": 0.45, "status": "CONFIRMED_EXACT_MATCH", "layers": ["AGENTS_CORE_guard"]},
+    "theta_S_OS2": {"value": 0.25, "status": "CONFIRMED_EXACT_MATCH", "layers": ["OS2"]},
+    "theta_S_KERNEL": {"value": 0.25, "status": "CONFIRMED_EXACT_MATCH", "layers": ["KERNEL"]},
+    "decision_enum": {"values": ["BLOCK", "HOLD", "ACT"], "status": "CONFIRMED_EXACT_MATCH", "layers": ["KERNEL"]},
+    "x108_gate_default": {"value": "HOLD", "status": "CONFIRMED_SAFE", "note": "Conservative default"},
+    "decision_authority": {"value": "KX108_ONLY", "status": "CONFIRMED", "source": "sigma/contracts.py calculate_immutable_vote"},
+    "memory_write": {"value": false, "status": "CONFIRMED", "source": "sigma/contracts.py"},
+    "graphiti_write": {"value": false, "status": "CONFIRMED", "source": "sigma/contracts.py"},
+    "emits_act": {"value": false, "status": "CONFIRMED", "source": "sigma/contracts.py"},
+    "runtime_allowed_now": {"value": false, "status": "CONFIRMED_ABSENT", "note": "Not present in any scanned file"}
+  },
+
+  "fusion_rules": [
+    {"category": "EXACT_MATCH", "count": 15, "rule": "NO_ACTION — synchronized"},
+    {"category": "LAYER_DIFFERENCE_NOT_CONFLICT", "count": 9, "rule": "NO_ACTION — keep layers separated"},
+    {"category": "CORE_ONLY", "count": 44, "rule": "CORE_WINS — preserve all core enums during merge"},
+    {"category": "PROOF_ONLY", "count": 18, "rule": "KEEP_BOTH_NAMESPACED — proof extensions stay in sigma/"},
+    {"category": "DOMAIN_EXTENSION", "count": 2, "rule": "EXTENSION_ONLY — GPS stays in sigma, never core"},
+    {"category": "CORE_INTERNAL_BRIDGE_VARIANT", "count": 1, "rule": "NOTE_ONLY — document dual roles"},
+    {"category": "UNKNOWN_REQUIRES_MANUAL_REVIEW", "count": 3, "rule": "NO_AUTO_FUSION — human diff required"}
+  ]
+}

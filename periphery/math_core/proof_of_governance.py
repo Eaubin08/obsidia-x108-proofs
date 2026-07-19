@@ -27,12 +27,21 @@ class ProofOfGovernanceResult:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "action_id": self.action_id,
-            "pog_valid": self.pog_valid,
+            "action_id":           self.action_id,
+            "pog_valid":           self.pog_valid,
             "theta_maps_to_omega": self.theta_maps_to_omega,
-            "lyapunov_stable": self.lyapunov_stable,
-            "ticket_valid": self.ticket_valid,
-            "reason": self.reason,
+            "lyapunov_stable":     self.lyapunov_stable,
+            "ticket_valid":        self.ticket_valid,
+            "reason":              self.reason,
+            # ── Proof surface audit refs (attestation-only) ──────────────
+            "lean_proof_surface_ref":  "LEAN_PROOF_SURFACE_V1_20260630",
+            "proof_surface_manifest":  "proofs/LEAN_PROOF_SURFACE_MANIFEST.json",
+            "math_memory_closure_map": "periphery/obsidure_math_memory_readonly/MATH_MEMORY_LEAN_CLOSURE_MAP.json",
+            "domain_proof_pack":       "proofs/domain_packs/bank_proof_pack.json",
+            "runtime_bound":           False,
+            "decision_authority":      "KX108_ONLY",
+            "lean_decides":            False,
+            "attestation_only":        True,
         }
 
 

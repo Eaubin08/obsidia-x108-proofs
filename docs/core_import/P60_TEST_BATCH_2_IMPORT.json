@@ -1,0 +1,295 @@
+{
+  "audit_id": "P60",
+  "status": "P60_TEST_BATCH_2_IMPORT_READY",
+  "source_patch_applied": true,
+  "import_scope": "TEST_BATCH_2_ONLY",
+  "imported_files": [
+    {
+      "core_path": "tests/adversarial/test_consensus_split.py",
+      "target_path": "tests/test_consensus_split.py",
+      "sha256": "aaaffb7409f61f2512d8d951eacc8b4d423eb881731c070123e468f8e5920152",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/test_merkle_collision.py",
+      "target_path": "tests/test_merkle_collision.py",
+      "sha256": "6d9c46cd5555e1d67964885b8ea1cd69680e802e6211c78856fddc2d1ead8450",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/test_monotonic_break.py",
+      "target_path": "tests/test_monotonic_break.py",
+      "sha256": "0947b93c03f37fc36bb965204d5ebdf447f3d3078574433ceca1051bfaea8777",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/test_seal_tamper.py",
+      "target_path": "tests/test_seal_tamper.py",
+      "sha256": "b5dbd8693a9e91a35b4db83b444084ac39ff89c4ad4d1d55f212c6d247d6e0c7",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/test_signature_tamper.py",
+      "target_path": "tests/test_signature_tamper.py",
+      "sha256": "42814e667a1063ff07bea14cfe695892d6403adb17a2c39d518070d78a56f547",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/test_threshold_fuzz.py",
+      "target_path": "tests/test_threshold_fuzz.py",
+      "sha256": "54c25b742dd19a7f0cf8ce3b4045fc026a8ac55ddc9dc7f098dfa4fcbe4ad4a6",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/ADVERSARIAL_REPORT_TEMPLATE.md",
+      "target_path": "tests/ADVERSARIAL_REPORT_TEMPLATE.md",
+      "sha256": "80f3220481147669557b9dfc34d3ba7e48ada47a4f2a966120c55d4947d0a41a",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/adversarial/ADVERSARIAL_RESULTS.md",
+      "target_path": "tests/ADVERSARIAL_RESULTS.md",
+      "sha256": "5ccab13f03354351f0452ccfbaf1b1eb8e0b3d6a78109c9c4873c35a6bd140c2",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/test_invariants_against_engine.py",
+      "target_path": "tests/test_invariants_against_engine.py",
+      "sha256": "57d0d94835fe939882a11826f98400d335ea448c17d9bbd5aeb184b183ff8a47",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/sigma_stress_test.py",
+      "target_path": "tests/sigma_stress_test.py",
+      "sha256": "e68125608fdc908ee11b1bb1584620ee0639695d205bac904dc20ecd5a9a62de",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/test_sigma_v18_9.py",
+      "target_path": "tests/test_sigma_v18_9.py",
+      "sha256": "305c63776c0ca6f72a0edde71a1803e977050c08d144d42d6fc3e804651ffe38",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "tests/test_agents_functional.py",
+      "target_path": "tests/test_agents_functional.py",
+      "sha256": "c96d90017909917978aee901ee8a66d12be3510348dfa46a1475e0c148133b00",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "distributed/test_consensus_inprocess.py",
+      "target_path": "tests/test_consensus_inprocess.py",
+      "sha256": "633df2dfa2ae9d03b3e8a4c8242e657f2fbeaf7a57d8deab55845f1b416de326",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "distributed/test_consensus_local.py",
+      "target_path": "tests/test_consensus_local.py",
+      "sha256": "80c057f299c5bb4615ef7f73914f0d926d2d4d8b3ad69748aa1bf5f33e0e5fc0",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "distributed/aggregator.py",
+      "target_path": "proofs/distributed/aggregator.py",
+      "sha256": "3ee870e90c659a30ac291cecbd1a3c6ce77bf5b5aaa517fd9aca6413ba6ef2b9",
+      "execution_surface": "PROOF_SIGMA",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "engine/api_server/attestation.py",
+      "target_path": "tests/attestation.py",
+      "sha256": "1e5257e9be90ccebbfb3036ebae91a82c5257438038ba9f407fecac8de1e26d8",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "engine/api_server/run_attestation.py",
+      "target_path": "tests/run_attestation.py",
+      "sha256": "4af615566d20fb027485341a10e8e270092dda45bf2c646d697e6b4d8d1cf4ba",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "engine/os0/tests.py",
+      "target_path": "tests/tests.py",
+      "sha256": "2b92ec33847ba82d147f6375c5247ca793589c8917e7be906e5670f006271c53",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "engine/os0/tests_advanced.py",
+      "target_path": "tests/tests_advanced.py",
+      "sha256": "22424c7ca22d8d8a2f3d2e3b42f6661c0419e32533663804bc6a8921d7fbfd3f",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["test_no_mutation", "test_no_runtime_side_effects", "manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/graphs/test1_baseline_delta_day.png",
+      "target_path": "tests/test1_baseline_delta_day.png",
+      "sha256": "fdf07fc81c6652ce06a77a110aa776b8b7c6109ba55d159a67e5c42529924ecc",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/graphs/test2_noise_delta_day.png",
+      "target_path": "tests/test2_noise_delta_day.png",
+      "sha256": "ccdd4f0e04a16095298bbb4c5bbedb920dd2967499c094a2c6cf77abdc2be34b",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/graphs/test3_structural_error_delta_day.png",
+      "target_path": "tests/test3_structural_error_delta_day.png",
+      "sha256": "1abe419c4e60390c787a2342a442f8d1b3a214a7f646042e4398fa2151e970ed",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/graphs/test4_hold_delta_day.png",
+      "target_path": "tests/test4_hold_delta_day.png",
+      "sha256": "ba95d12fb2eb283880f3d5efa7f0ea9718b5a9f1d7e2ed7b74ee6f856d9ef555",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/test1_baseline.csv",
+      "target_path": "tests/test1_baseline.csv",
+      "sha256": "6ebdd781806c4ed82ec57b32431d325ddf722cf120c8adc6f7ec75c2985008fd",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/test2_noise.csv",
+      "target_path": "tests/test2_noise.csv",
+      "sha256": "92df9cdd27e3c2924081cb3518a4492eb7f352162eaa6fb4316556e7441c33ca",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/test3_structural_error.csv",
+      "target_path": "tests/test3_structural_error.csv",
+      "sha256": "3f4f451490e15e15edf0934225ae21f38b94fa031455df37a0c3b01e448a11e3",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    },
+    {
+      "core_path": "data/strasbourg_clock/test4_hold.csv",
+      "target_path": "tests/test4_hold.csv",
+      "sha256": "65e635c3410418fc2fadaae9ac21a84b87fd95b1fbfa125e3ea5a1f86506a3fa",
+      "execution_surface": "TEST_ONLY",
+      "classification": "TEST_BATCH_2",
+      "required_tests": ["manual_review"],
+      "import_action": "COPIED_NEW"
+    }
+  ],
+  "already_present_identical": [
+    {
+      "core_path": "evidence/os4/strasbourg_clock_x108/test1_baseline.csv",
+      "target_path": "tests/test1_baseline.csv",
+      "sha256": "6ebdd781806c4ed82ec57b32431d325ddf722cf120c8adc6f7ec75c2985008fd",
+      "reason": "SHA identique au fichier déjà importé depuis data/strasbourg_clock/"
+    },
+    {
+      "core_path": "evidence/os4/strasbourg_clock_x108/test2_noise.csv",
+      "target_path": "tests/test2_noise.csv",
+      "sha256": "92df9cdd27e3c2924081cb3518a4492eb7f352162eaa6fb4316556e7441c33ca",
+      "reason": "SHA identique au fichier déjà importé depuis data/strasbourg_clock/"
+    },
+    {
+      "core_path": "evidence/os4/strasbourg_clock_x108/test3_structural_error.csv",
+      "target_path": "tests/test3_structural_error.csv",
+      "sha256": "3f4f451490e15e15edf0934225ae21f38b94fa031455df37a0c3b01e448a11e3",
+      "reason": "SHA identique au fichier déjà importé depuis data/strasbourg_clock/"
+    },
+    {
+      "core_path": "evidence/os4/strasbourg_clock_x108/test4_hold.csv",
+      "target_path": "tests/test4_hold.csv",
+      "sha256": "65e635c3410418fc2fadaae9ac21a84b87fd95b1fbfa125e3ea5a1f86506a3fa",
+      "reason": "SHA identique au fichier déjà importé depuis data/strasbourg_clock/"
+    }
+  ],
+  "blocked_target_exists_different": [
+    {
+      "core_path": "python_agents/tests/test_agents_functional.py",
+      "target_path": "tests/test_agents_functional.py",
+      "source_sha256": "3e6bc88bc654447ab9a2ce0039db8ec15787aa6f2be00451174de795bfe37ba3",
+      "existing_sha256": "c96d90017909917978aee901ee8a66d12be3510348dfa46a1475e0c148133b00",
+      "reason": "SHA source différent du fichier déjà importé depuis tests/test_agents_functional.py — non écrasé"
+    }
+  ],
+  "missing_sources": [],
+  "forbidden_skipped": [],
+  "files_imported_count": 27,
+  "runtime_modified": false,
+  "sigma_runtime_modified": false,
+  "apps_modified": false,
+  "proofs_v18_3_1_modified": false,
+  "act_enabled": false,
+  "next_step": "P61_BUS_ADAPTER_BATCH"
+}

@@ -1,0 +1,556 @@
+{
+  "benchmark": "OIE_V0.1_PORTFOLIO",
+  "baseline": "BT_API_NORMAL",
+  "indices": {
+    "OSCA": 38241.6195,
+    "OAPI": 47143.1265,
+    "ODPI": 30612.2449
+  },
+  "dca_by_domain": {
+    "Bank": {
+      "domain": "bank",
+      "obsidia_cost_eur_per_1m": 0.7,
+      "DCA_API_NORMAL": 35714.29,
+      "DCA_AGENTIC": 228571.43
+    },
+    "Trading": {
+      "domain": "trading",
+      "obsidia_cost_eur_per_1m": 0.84,
+      "DCA_API_NORMAL": 29761.9,
+      "DCA_AGENTIC": 190476.19
+    },
+    "GPS/Aviation": {
+      "domain": "aviation",
+      "obsidia_cost_eur_per_1m": 0.91,
+      "DCA_API_NORMAL": 27472.53,
+      "DCA_AGENTIC": 175824.18
+    },
+    "Brody chat": {
+      "domain": "brody",
+      "obsidia_cost_eur_per_1m": 0.2,
+      "DCA_API_NORMAL": 125000.0,
+      "DCA_AGENTIC": 800000.0
+    },
+    "Obsidure Lean cible": {
+      "domain": "obsidure",
+      "obsidia_cost_eur_per_1m": 23.92,
+      "DCA_API_NORMAL": 1045.15,
+      "DCA_AGENTIC": 6688.96
+    }
+  },
+  "domain_summary": {
+    "brody": {
+      "domain_name": "brody",
+      "total_receipts": 1,
+      "obsidia_total_cost_eur_per_1m": 0.2,
+      "obsidia_avg_cost_eur_per_1m": 0.2,
+      "baseline_api_normal_cost_eur_per_1m": 25000.0,
+      "baseline_agentic_cost_eur_per_1m": 160000.0,
+      "dca_api_normal": 125000.0,
+      "dca_agentic": 800000.0,
+      "avg_latency_ms": 85.0,
+      "avg_internal_units": 1.2,
+      "tools_used": [
+        "brody_chat",
+        "router"
+      ],
+      "tools_skipped": [
+        "lean_checker",
+        "sigma"
+      ],
+      "llm_calls_avoided": 1,
+      "external_api_calls_avoided": 1,
+      "proof_or_replay_rate": 0.0,
+      "hold_count": 0,
+      "block_count": 0,
+      "act_count": 0,
+      "unknowns_count": 0,
+      "contradictions_count": 0
+    },
+    "bank": {
+      "domain_name": "bank",
+      "total_receipts": 1,
+      "obsidia_total_cost_eur_per_1m": 0.7,
+      "obsidia_avg_cost_eur_per_1m": 0.7,
+      "baseline_api_normal_cost_eur_per_1m": 25000.0,
+      "baseline_agentic_cost_eur_per_1m": 160000.0,
+      "dca_api_normal": 35714.2857,
+      "dca_agentic": 228571.4286,
+      "avg_latency_ms": 42.0,
+      "avg_internal_units": 2.1,
+      "tools_used": [
+        "bank_connector",
+        "router",
+        "sigma"
+      ],
+      "tools_skipped": [
+        "lean_checker",
+        "obsidure"
+      ],
+      "llm_calls_avoided": 2,
+      "external_api_calls_avoided": 3,
+      "proof_or_replay_rate": 1.0,
+      "hold_count": 12,
+      "block_count": 3,
+      "act_count": 0,
+      "unknowns_count": 1,
+      "contradictions_count": 0
+    },
+    "trading": {
+      "domain_name": "trading",
+      "total_receipts": 1,
+      "obsidia_total_cost_eur_per_1m": 0.84,
+      "obsidia_avg_cost_eur_per_1m": 0.84,
+      "baseline_api_normal_cost_eur_per_1m": 25000.0,
+      "baseline_agentic_cost_eur_per_1m": 160000.0,
+      "dca_api_normal": 29761.9048,
+      "dca_agentic": 190476.1905,
+      "avg_latency_ms": 18.0,
+      "avg_internal_units": 1.8,
+      "tools_used": [
+        "router",
+        "sigma",
+        "trading_connector"
+      ],
+      "tools_skipped": [
+        "lean_checker",
+        "obsidure"
+      ],
+      "llm_calls_avoided": 2,
+      "external_api_calls_avoided": 4,
+      "proof_or_replay_rate": 1.0,
+      "hold_count": 8,
+      "block_count": 5,
+      "act_count": 0,
+      "unknowns_count": 2,
+      "contradictions_count": 1
+    },
+    "aviation": {
+      "domain_name": "aviation",
+      "total_receipts": 1,
+      "obsidia_total_cost_eur_per_1m": 0.91,
+      "obsidia_avg_cost_eur_per_1m": 0.91,
+      "baseline_api_normal_cost_eur_per_1m": 25000.0,
+      "baseline_agentic_cost_eur_per_1m": 160000.0,
+      "dca_api_normal": 27472.5275,
+      "dca_agentic": 175824.1758,
+      "avg_latency_ms": 9.5,
+      "avg_internal_units": 1.5,
+      "tools_used": [
+        "aviation_connector",
+        "router",
+        "sigma"
+      ],
+      "tools_skipped": [
+        "lean_checker",
+        "obsidure"
+      ],
+      "llm_calls_avoided": 3,
+      "external_api_calls_avoided": 5,
+      "proof_or_replay_rate": 1.0,
+      "hold_count": 4,
+      "block_count": 7,
+      "act_count": 0,
+      "unknowns_count": 0,
+      "contradictions_count": 2
+    },
+    "obsidure": {
+      "domain_name": "obsidure",
+      "total_receipts": 1,
+      "obsidia_total_cost_eur_per_1m": 23.92,
+      "obsidia_avg_cost_eur_per_1m": 23.92,
+      "baseline_api_normal_cost_eur_per_1m": 25000.0,
+      "baseline_agentic_cost_eur_per_1m": 160000.0,
+      "dca_api_normal": 1045.1505,
+      "dca_agentic": 6688.9632,
+      "avg_latency_ms": 1200.0,
+      "avg_internal_units": 8.0,
+      "tools_used": [
+        "lean_checker",
+        "obsidure",
+        "router"
+      ],
+      "tools_skipped": [],
+      "llm_calls_avoided": 5,
+      "external_api_calls_avoided": 2,
+      "proof_or_replay_rate": 1.0,
+      "hold_count": 0,
+      "block_count": 0,
+      "act_count": 0,
+      "unknowns_count": 1,
+      "contradictions_count": 0
+    }
+  },
+  "receipts": [
+    {
+      "receipt_id": "d265640b-9f4a-4054-a180-efc8b40e598c",
+      "timestamp": "2026-07-01T03:29:41.810134+00:00",
+      "layer": "FAST_PATH",
+      "route": "fast_path",
+      "domain": "core",
+      "action_type": "fast_dispatch",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "router"
+      ],
+      "modules_skipped": [
+        "brody",
+        "lean_checker"
+      ],
+      "obsidia_cost_eur_per_1m": 0.0015,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 16666666.666666666,
+      "avoided_cost_eur_per_1m": 24999.9985,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": null
+    },
+    {
+      "receipt_id": "f35ddb7b-64fb-4dd2-b15f-b7b75bfe1a9b",
+      "timestamp": "2026-07-01T03:29:41.810164+00:00",
+      "layer": "AGENTIC",
+      "route": "brody_chat",
+      "domain": "chat",
+      "action_type": "conversational",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "brody",
+        "router"
+      ],
+      "modules_skipped": [
+        "lean_checker"
+      ],
+      "obsidia_cost_eur_per_1m": 0.2,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 125000.0,
+      "avoided_cost_eur_per_1m": 24999.8,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": false,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": {
+        "domain_name": "brody",
+        "domain_action_type": "conversational",
+        "domain_risk_level": "LOW",
+        "domain_reversibility": "HIGH",
+        "domain_cost_eur_per_1m": 0.2,
+        "domain_latency_ms": 85.0,
+        "domain_internal_units": 1.2,
+        "domain_tools_used": [
+          "brody_chat",
+          "router"
+        ],
+        "domain_tools_skipped": [
+          "lean_checker",
+          "sigma"
+        ],
+        "external_api_calls_avoided": 1,
+        "llm_calls_avoided": 1,
+        "human_review_avoided_estimate": 0.0,
+        "hold_count": 0,
+        "block_count": 0,
+        "act_count": 0,
+        "unknowns_count": 0,
+        "contradictions_count": 0,
+        "proof_available": false,
+        "replay_available": false,
+        "business_cost_avoided_label": "assistant_llm_api",
+        "business_cost_avoided_estimate_eur": 24999.8,
+        "domain_savings_ratio": 125000.0
+      }
+    },
+    {
+      "receipt_id": "432ff028-6f35-481e-bfa8-c9dd971dc6fd",
+      "timestamp": "2026-07-01T03:29:41.810176+00:00",
+      "layer": "CONNECTORS",
+      "route": "bank_connector",
+      "domain": "bank",
+      "action_type": "domain_query",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "bank_connector",
+        "sigma",
+        "router"
+      ],
+      "modules_skipped": [
+        "lean_checker"
+      ],
+      "obsidia_cost_eur_per_1m": 0.7,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 35714.28571428572,
+      "avoided_cost_eur_per_1m": 24999.3,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": {
+        "domain_name": "bank",
+        "domain_action_type": "virement_decision",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "LOW",
+        "domain_cost_eur_per_1m": 0.7,
+        "domain_latency_ms": 42.0,
+        "domain_internal_units": 2.1,
+        "domain_tools_used": [
+          "bank_connector",
+          "sigma",
+          "router"
+        ],
+        "domain_tools_skipped": [
+          "lean_checker",
+          "obsidure"
+        ],
+        "external_api_calls_avoided": 3,
+        "llm_calls_avoided": 2,
+        "human_review_avoided_estimate": 0.15,
+        "hold_count": 12,
+        "block_count": 3,
+        "act_count": 0,
+        "unknowns_count": 1,
+        "contradictions_count": 0,
+        "proof_available": true,
+        "replay_available": true,
+        "business_cost_avoided_label": "bank_llm_domain_analysis",
+        "business_cost_avoided_estimate_eur": 24999.3,
+        "domain_savings_ratio": 35714.28571428572
+      }
+    },
+    {
+      "receipt_id": "1bddbf79-70e0-4f2a-a126-156459c3e26c",
+      "timestamp": "2026-07-01T03:29:41.810183+00:00",
+      "layer": "CONNECTORS",
+      "route": "trading_connector",
+      "domain": "trading",
+      "action_type": "domain_query",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "trading_connector",
+        "sigma",
+        "router"
+      ],
+      "modules_skipped": [
+        "lean_checker"
+      ],
+      "obsidia_cost_eur_per_1m": 0.84,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 29761.904761904763,
+      "avoided_cost_eur_per_1m": 24999.16,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": {
+        "domain_name": "trading",
+        "domain_action_type": "signal_processing",
+        "domain_risk_level": "HIGH",
+        "domain_reversibility": "NONE",
+        "domain_cost_eur_per_1m": 0.84,
+        "domain_latency_ms": 18.0,
+        "domain_internal_units": 1.8,
+        "domain_tools_used": [
+          "trading_connector",
+          "sigma",
+          "router"
+        ],
+        "domain_tools_skipped": [
+          "lean_checker",
+          "obsidure"
+        ],
+        "external_api_calls_avoided": 4,
+        "llm_calls_avoided": 2,
+        "human_review_avoided_estimate": 0.05,
+        "hold_count": 8,
+        "block_count": 5,
+        "act_count": 0,
+        "unknowns_count": 2,
+        "contradictions_count": 1,
+        "proof_available": true,
+        "replay_available": true,
+        "business_cost_avoided_label": "trading_llm_domain_analysis",
+        "business_cost_avoided_estimate_eur": 24999.16,
+        "domain_savings_ratio": 29761.904761904763
+      }
+    },
+    {
+      "receipt_id": "9028038b-5328-497f-b9a8-1cc58c400d11",
+      "timestamp": "2026-07-01T03:29:41.810189+00:00",
+      "layer": "CONNECTORS",
+      "route": "aviation_connector",
+      "domain": "aviation",
+      "action_type": "domain_query",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "aviation_connector",
+        "sigma",
+        "router"
+      ],
+      "modules_skipped": [
+        "lean_checker"
+      ],
+      "obsidia_cost_eur_per_1m": 0.91,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 27472.527472527472,
+      "avoided_cost_eur_per_1m": 24999.09,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": {
+        "domain_name": "aviation",
+        "domain_action_type": "terrain_signal",
+        "domain_risk_level": "CRITICAL",
+        "domain_reversibility": "NONE",
+        "domain_cost_eur_per_1m": 0.91,
+        "domain_latency_ms": 9.5,
+        "domain_internal_units": 1.5,
+        "domain_tools_used": [
+          "aviation_connector",
+          "sigma",
+          "router"
+        ],
+        "domain_tools_skipped": [
+          "lean_checker",
+          "obsidure"
+        ],
+        "external_api_calls_avoided": 5,
+        "llm_calls_avoided": 3,
+        "human_review_avoided_estimate": 0.02,
+        "hold_count": 4,
+        "block_count": 7,
+        "act_count": 0,
+        "unknowns_count": 0,
+        "contradictions_count": 2,
+        "proof_available": true,
+        "replay_available": true,
+        "business_cost_avoided_label": "gps_llm_terrain_analysis",
+        "business_cost_avoided_estimate_eur": 24999.09,
+        "domain_savings_ratio": 27472.527472527472
+      }
+    },
+    {
+      "receipt_id": "615fc8ff-7ed7-4d74-8f5d-e1d464810b38",
+      "timestamp": "2026-07-01T03:29:41.810201+00:00",
+      "layer": "KERNEL",
+      "route": "lean_canon_check",
+      "domain": "proof",
+      "action_type": "proof_verification",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "lean_checker",
+        "router"
+      ],
+      "modules_skipped": [],
+      "obsidia_cost_eur_per_1m": 13.29,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 1881.1136192626036,
+      "avoided_cost_eur_per_1m": 24986.71,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": null
+    },
+    {
+      "receipt_id": "bee3c7d0-e3f7-42fa-a631-88c6c767eba2",
+      "timestamp": "2026-07-01T03:29:41.810207+00:00",
+      "layer": "KERNEL",
+      "route": "obsidure_lean_targeted",
+      "domain": "obsidure",
+      "action_type": "targeted_proof",
+      "elapsed_ms": 0.0,
+      "internal_units": 0.0,
+      "modules_activated": [
+        "lean_checker",
+        "obsidure",
+        "router"
+      ],
+      "modules_skipped": [],
+      "obsidia_cost_eur_per_1m": 23.92,
+      "baseline_label": "BT_API_NORMAL",
+      "baseline_cost_eur_per_1m": 25000.0,
+      "savings_ratio": 1045.1505016722408,
+      "avoided_cost_eur_per_1m": 24976.08,
+      "kernel_status": "ACTIVE",
+      "proof_or_replay_available": true,
+      "readonly": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "kernel_mutation": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "domain_metrics": {
+        "domain_name": "obsidure",
+        "domain_action_type": "lean_patch",
+        "domain_risk_level": "MEDIUM",
+        "domain_reversibility": "MEDIUM",
+        "domain_cost_eur_per_1m": 23.92,
+        "domain_latency_ms": 1200.0,
+        "domain_internal_units": 8.0,
+        "domain_tools_used": [
+          "lean_checker",
+          "obsidure",
+          "router"
+        ],
+        "domain_tools_skipped": [],
+        "external_api_calls_avoided": 2,
+        "llm_calls_avoided": 5,
+        "human_review_avoided_estimate": 0.3,
+        "hold_count": 0,
+        "block_count": 0,
+        "act_count": 0,
+        "unknowns_count": 1,
+        "contradictions_count": 0,
+        "proof_available": true,
+        "replay_available": true,
+        "business_cost_avoided_label": "external_code_agent",
+        "business_cost_avoided_estimate_eur": 24976.08,
+        "domain_savings_ratio": 1045.1505016722408
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_doc": "Extension operateur des dictionnaires des 34 arbres MMONDE. Cle = index d'arbre (0-33, cf. 05_SHAZAM_COGNITIF/shazam_cognitif.py). Les mots sont normalises (accents plies) a l'import. Le module MMONDE canonique n'est jamais modifie — cette extension est fusionnee par l'exporteur. Editable a la main ; relancer scripts/export_gateway_memory_index.py apres modification.",
+  "0": ["biologie", "animal", "animaux", "organisme", "organismes", "vivant", "vivants"],
+  "16": ["abeille", "abeilles", "fourmi", "fourmis", "essaim", "essaims", "ruche", "ruches", "colonie", "colonies", "swarm", "stigmergie"],
+  "22": ["chronologie", "chronologique", "timeline", "frise", "frises", "continuum", "epoch", "epoque", "epoques"],
+  "23": ["memoire", "memoires", "ledger", "presave", "triage", "rangement", "intake", "souvenirs"],
+  "24": ["histoire", "historique", "evenement", "evenements", "humaine"],
+  "29": ["cosmos", "univers", "galaxie", "galaxies", "etoile", "etoiles", "monde", "mondes", "mmonde"],
+  "30": ["flux", "stream", "streams", "pipeline", "pipelines", "cascade", "cascades", "gateway"],
+  "31": ["nuage", "nuages", "points", "point", "graphe", "graphes", "connexion", "connexions", "similarite", "projection", "projections"],
+  "32": ["optimisation", "optimisations", "optimiser", "optimise", "optimisee", "inference", "inferences", "economie", "token", "tokens"],
+  "33": ["stabilite", "freeze", "freezes", "gel", "seal", "seals", "merkle", "canonique", "canoniques"]
+}

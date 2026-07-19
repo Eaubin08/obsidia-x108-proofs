@@ -63,4 +63,5 @@ def test_f23a4_8_connectors_do_not_reference_dead_endpoint():
     ]:
         text = pathlib.Path(file).read_text(encoding="utf-8-sig")
         assert "localhost:3001/kernel/ragnarok" not in text
-        assert "/api/periphery/monitoring/adapters/" in text
+        # Endpoint migré en SRL V2 : /api/periphery/monitoring/adapters/ → /api/live/kernel/adapters/
+        assert "/api/live/kernel/adapters/" in text or "/api/periphery/monitoring/adapters/" in text

@@ -533,6 +533,16 @@ def build_true_brody_answer(
     if not voice_source:
         voice_source = "FREEZE_METRICS_AND_MATRIX"
 
+    # BRODY_SOURCE_PACK_FINAL_ANSWER_BINDING_REPAIR_V0
+    try:
+        _sp_material_answer = _brody_source_pack_answer_v0(source_pack_context or {}, language)
+        _sp_current_answer = "".join(answer_parts)
+        if _sp_material_answer and _brody_source_pack_should_override_v0(_sp_current_answer):
+            answer_parts = [_sp_material_answer]
+            voice_source = voice_source or "SOURCE_PACK_MATERIAL_BINDING_V0"
+    except Exception:
+        pass
+
     final_answer = "".join(answer_parts)
 
     # ── Sanitize: strip forbidden sovereign tokens (periphery/brody) ────
@@ -919,6 +929,90 @@ def _clean_title(title: str) -> str:
     return t
 
 
+
+# BRODY_SOURCE_PACK_FINAL_ANSWER_BINDING_REPAIR_V0
+def _brody_source_pack_answer_v0(source_pack: dict, language: str = "fr") -> str:
+    """
+    Readonly fallback binder:
+    if source_pack_context_summary/context_summary_for_brody exists,
+    expose it in final_answer instead of returning generic weak fallbacks.
+    """
+    if not isinstance(source_pack, dict):
+        return ""
+
+    used = bool(source_pack.get("source_pack_context_used"))
+    entries = int(source_pack.get("source_pack_entries_used") or 0)
+    summary = str(
+        source_pack.get("context_summary_for_brody")
+        or source_pack.get("source_pack_context_summary")
+        or ""
+    ).strip()
+
+    if not used or entries <= 0 or len(summary) < 80:
+        return ""
+
+    families = source_pack.get("source_pack_families") or []
+    if isinstance(families, str):
+        families = [families]
+    families_txt = ", ".join(str(x) for x in families if x) or "non specifie"
+
+    refs = source_pack.get("source_file_refs") or []
+    if isinstance(refs, str):
+        refs = [refs]
+    refs_txt = ", ".join(str(x) for x in refs if x) or families_txt
+
+    titles = []
+    for line in summary.splitlines():
+        clean = line.strip()
+        if clean.startswith("## "):
+            title = clean[3:].strip()
+            if title and title not in titles:
+                titles.append(title)
+
+    titles_txt = ""
+    if titles:
+        titles_txt = "\n".join(f"- {t}" for t in titles[:8])
+
+    excerpt = summary
+    if len(excerpt) > 1800:
+        excerpt = excerpt[:1800].rstrip() + "\n...[TRUNCATED_READONLY_EXCERPT]"
+
+    header = (
+        "Matiere source-pack disponible et rattachee a cette reponse.\n\n"
+        f"- Familles : {families_txt}\n"
+        f"- Entrees hydratees : {entries}\n"
+        f"- References source : {refs_txt}\n"
+    )
+
+    if titles_txt:
+        header += f"\nElements hydrates :\n{titles_txt}\n"
+
+    return (
+        header
+        + "\nExtrait readonly du source-pack :\n"
+        + excerpt
+        + "\n\nFrontiere : KX108_ONLY. Contexte readonly. No ACT. No verdict. No memory write."
+    )
+
+
+def _brody_source_pack_should_override_v0(current_answer: str) -> bool:
+    text = (current_answer or "").lower()
+    weak_markers = (
+        "demande ouverte",
+        "requ?te non classifi?e",
+        "requete non classifiee",
+        "aucune correspondance",
+        "materiel textuel complet n'est pas attach",
+        "mat?riel textuel complet n'est pas attach",
+        "selected_items/material_quality",
+    )
+    if any(m in text for m in weak_markers):
+        return True
+    if len(text.strip()) < 220:
+        return True
+    return False
+
+
 # Common uppercase tokens that are NOT Obsidia-specific identifiers
 _COMMON_CAPS_EXCLUDE = frozenset({
     "BRODY", "TRUE", "FALSE", "NULL", "NONE", "FROM", "WITH", "THIS", "THAT",
@@ -1015,3 +1109,200 @@ def _detect_explicit_identifier(text: str) -> str:
         if w not in _COMMON_CAPS_EXCLUDE:
             return w
     return ""
+
+
+# BRODY_SOURCE_PACK_SYNTHESIS_V1
+# Overrides the V0 raw-dump binder with a clean readonly synthesis.
+def _brody_source_pack_answer_v0(source_pack: dict, language: str = "fr") -> str:
+    """
+    V1 synthesis layer.
+
+    Keeps V0 binding semantics:
+    - source_pack_context_used must be true
+    - entries must be hydrated
+    - readonly only
+    - KX108_ONLY
+
+    Changes V0 output:
+    - no raw YAML dump
+    - no packet field dump
+    - no placeholder spam
+    - produces a concise Brody-readable synthesis
+    """
+    if not isinstance(source_pack, dict):
+        return ""
+
+    used = bool(source_pack.get("source_pack_context_used"))
+    entries = int(source_pack.get("source_pack_entries_used") or 0)
+    summary = str(
+        source_pack.get("context_summary_for_brody")
+        or source_pack.get("source_pack_context_summary")
+        or ""
+    ).strip()
+
+    if not used or entries <= 0 or len(summary) < 80:
+        return ""
+
+    families = source_pack.get("source_pack_families") or []
+    if isinstance(families, str):
+        families = [families]
+    families = [str(x) for x in families if x]
+    families_txt = ", ".join(families) if families else "non specifie"
+
+    refs = source_pack.get("source_file_refs") or []
+    if isinstance(refs, str):
+        refs = [refs]
+    refs = [str(x) for x in refs if x]
+    refs_txt = ", ".join(refs[:6]) if refs else families_txt
+
+    query = ""
+    for line in summary.splitlines():
+        if line.strip().lower().startswith("query:"):
+            query = line.split(":", 1)[1].strip()
+            break
+
+    blocks = []
+    current = None
+
+    for line in summary.splitlines():
+        clean = line.strip()
+        if clean.startswith("## "):
+            if current:
+                blocks.append(current)
+            title = clean[3:].strip()
+            current = {"title": title, "lines": []}
+        elif current is not None:
+            current["lines"].append(line.rstrip())
+
+    if current:
+        blocks.append(current)
+
+    def _is_noise(line: str) -> bool:
+        low = line.strip().lower()
+        if not low:
+            return True
+        noise_prefixes = (
+            "packet_id:",
+            "fields:",
+            "memory_id:",
+            "essence:",
+            "source:",
+            "context:",
+            "links:",
+            "errors:",
+            "feedback:",
+            "trace:",
+            "readonly:",
+            "decision_authority:",
+            "[source pack context",
+            "families:",
+            "entries hydrated:",
+            "query:",
+        )
+        if any(low.startswith(p) for p in noise_prefixes):
+            return True
+        if low in ("placeholder.", "rapport (placeholder).", "string", "list"):
+            return True
+        return False
+
+    clean_items = []
+    weak_items = []
+
+    for b in blocks[:8]:
+        title = str(b.get("title") or "").strip()
+        raw_lines = [x.strip() for x in b.get("lines", []) if x.strip()]
+        useful = [x for x in raw_lines if not _is_noise(x)]
+
+        joined = " ".join(useful).strip()
+        is_placeholder = (
+            "placeholder" in joined.lower()
+            or len(joined) < 40
+        )
+
+        if is_placeholder:
+            weak_items.append(title)
+        else:
+            if len(joined) > 420:
+                joined = joined[:420].rstrip() + "..."
+            clean_items.append((title, joined))
+
+    qlow = query.lower()
+
+    # Intent-aware short synthesis.
+    angle = ""
+    if "memoire" in qlow or "m?moire" in qlow or "brody" in qlow:
+        angle = (
+            "Lecture : Brody dispose bien d'une couche memoire consultable en readonly. "
+            "La matiere remontee decrit surtout des paquets de memoire, de provenance narrative "
+            "et de validation non souveraine. Le point important n'est pas que Brody decide : "
+            "il transforme une matiere indexee en contexte lisible, sous frontiere KX108_ONLY."
+        )
+    elif "preuve" in qlow or "proof" in qlow:
+        angle = (
+            "Lecture : l'organe Proof / OS3 / Lean est actif. "
+            "La reponse provient maintenant de la couche PROOF_OS3_LEAN_ORGAN : "
+            "preuves, replay, hash, audit, receipts, OS3 et formalisation Lean. "
+            "Cet organe prouve et qualifie, mais ne remplace pas X108."
+        )
+    elif "gencoin" in qlow:
+        angle = (
+            "Lecture : l'organe Gencoin est actif. "
+            "La reponse provient maintenant de la couche GENCOIN_ORGAN : "
+            "valeur post-preuve, ledger cognitif, shadow value et proof_value. "
+            "Cet organe reste consultatif, non souverain, sous frontiere KX108_ONLY."
+        )
+    elif "arbre" in qlow or "arbres" in qlow:
+        angle = (
+            "Lecture : l'organe Arbres cognitifs est actif. "
+            "La reponse provient maintenant de la couche COGNITIVE_TREES_ORGAN : "
+            "atlas, tree policy, signaux d'orientation et cartographie 34 arbres. "
+            "Cet organe oriente et classe, mais ne decide pas."
+        )
+    elif "limite" in qlow or "manquant" in qlow or "paquet" in qlow:
+        angle = (
+            "Lecture : l'organe Gap / Readiness est actif. "
+            "La reponse provient maintenant de la couche GAP_READINESS_ORGAN : "
+            "paquets manquants, readiness, surfaces faibles, freeze audit et diagnostic safe. "
+            "Cet organe signale les manques, sans corriger automatiquement."
+        )
+    else:
+        angle = (
+            "Lecture : Brody a bien rattache une matiere source-pack, mais la requete reste large. "
+            "La reponse doit donc rester consultative : identifier les familles, extraire ce qui est exploitable, "
+            "et signaler les limites du materiel source."
+        )
+
+    lines = []
+    lines.append("Synthese readonly depuis source-pack.")
+    lines.append("")
+    lines.append(f"- Requete : {query or 'non specifiee'}")
+    lines.append(f"- Familles consultees : {families_txt}")
+    lines.append(f"- Entrees hydratees : {entries}")
+    lines.append(f"- References source : {refs_txt}")
+    lines.append("")
+    lines.append(angle)
+
+    if clean_items:
+        lines.append("")
+        lines.append("Matiere exploitable :")
+        for title, body in clean_items[:4]:
+            lines.append(f"- {title} : {body}")
+    else:
+        lines.append("")
+        lines.append(
+            "Matiere exploitable : faible. Les documents rattaches existent, "
+            "mais contiennent surtout de la structure, des schemas, ou du placeholder."
+        )
+
+    if weak_items:
+        lines.append("")
+        lines.append("Sources faibles ou a densifier :")
+        for title in weak_items[:5]:
+            lines.append(f"- {title}")
+
+    lines.append("")
+    lines.append(
+        "Frontiere : KX108_ONLY. Contexte readonly. Pas d'action, pas de verdict, pas d'ecriture memoire."
+    )
+
+    return "\n".join(lines)

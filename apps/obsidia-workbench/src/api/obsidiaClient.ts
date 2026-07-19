@@ -78,7 +78,7 @@ export async function sendBrodyMessage(
   const lang = language || 'fr'
   if (!USE_MOCK) {
     try {
-      const res = await fetch(`${ENGINE_BASE}/api/brody/chat`, {
+      const res = await fetch(`/api/brody/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, language: lang, session_id: sessionId, mode: 'readonly' }),
@@ -296,7 +296,7 @@ export type OSReverseSupportRequest = {
 }
 
 async function postSupportRoute(path: string, body: Record<string, unknown>) {
-  const res = await fetch(`${ENGINE_BASE}${path}`, {
+  const res = await fetch(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     body: JSON.stringify(body),

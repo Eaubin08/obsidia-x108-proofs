@@ -35,7 +35,7 @@ component_type, module_family, pepite_family, domain_family, status, action
 | APPS_WORKBENCH | INTERFACE | ACTIVE_UI | KEEP_RUNTIME |
 | BRODY_MEMORY_READONLY | MEMORY_RUNTIME | — | — |
 | BUS_LAYER | RUNTIME | ACTIVE_READONLY | KEEP_RUNTIME |
-| CORE_AUTHORITY | CORE | ACTIVE_SPEC_RUNTIME | KEEP_CANON |
+| CORE_AUTHORITY | CORE | ACTIVE_SPEC_RUNTIME | KEEP_CORE_OR_OFFICIAL_REVIEW |
 | ... | ... | ... | ... |
 
 Le fichier couvre les composants principaux du repo : workbench UI, mémoire Brody, bus, autorité X108, et autres.

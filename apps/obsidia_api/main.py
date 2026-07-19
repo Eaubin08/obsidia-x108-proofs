@@ -85,6 +85,51 @@ class _RateLimitMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(_RateLimitMiddleware, rpm=int(os.getenv("RATE_LIMIT_RPM", "60")))
 
+# ── API Key middleware (PATCH P0) ────────────────────────────────────────────
+_PUBLIC_ROUTES: frozenset[str] = frozenset({"/api/health", "/api/status", "/api/readiness", "/"})
+_EXPECTED_API_KEY = os.environ.get("OBSIDIA_API_KEY", "")
+
+
+class _ApiKeyMiddleware(BaseHTTPMiddleware):
+    """
+    Fail-Closed API key guard.
+    - Si OBSIDIA_API_KEY non défini → 503 (mauvaise configuration, pas 200).
+    - Si clé manquante ou incorrecte → 401.
+    - Routes publiques exemptées : /api/health, /api/status, /api/readiness, /.
+    """
+
+    async def dispatch(self, request: _Req, call_next):
+        if request.url.path in _PUBLIC_ROUTES:
+            return await call_next(request)
+        if not _EXPECTED_API_KEY:
+            # Dev mode : aucune clé configurée → passage sans auth (tests + local)
+            # Prod mode : clé obligatoire → 503 misconfiguration
+            if _IS_PROD:
+                return _JSONResp(
+                    {
+                        "error": "api_key_not_configured",
+                        "message": "OBSIDIA_API_KEY non défini — configuration serveur invalide.",
+                        "decision_authority": "KX108_ONLY",
+                        "readonly": True,
+                    },
+                    status_code=503,
+                )
+            return await call_next(request)
+        provided = request.headers.get("X-API-Key", "")
+        if provided != _EXPECTED_API_KEY:
+            return _JSONResp(
+                {
+                    "error": "unauthorized",
+                    "decision_authority": "KX108_ONLY",
+                    "readonly": True,
+                },
+                status_code=401,
+            )
+        return await call_next(request)
+
+
+app.add_middleware(_ApiKeyMiddleware)
+
 # Import all route modules
 from apps.obsidia_api.routes.status import router as status_router
 from apps.obsidia_api.routes.brody import router as brody_router
@@ -106,6 +151,7 @@ from apps.obsidia_api.routes.bus import router as bus_router
 from apps.obsidia_api.routes.sigma_monitoring import router as sigma_monitoring_router
 from apps.obsidia_api.routes.runtime_wiring_preview import router as runtime_wiring_preview_router
 from apps.obsidia_api.routes.source_runtime_status import router as source_runtime_status_router
+from apps.obsidia_api.routes.live_kernel_bridge import router as live_kernel_bridge_router
 from apps.obsidia_api.routes.os_map import router as os_map_router
 
 for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
@@ -113,6 +159,7 @@ for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_ro
            os3_router, worldcalls_router, blockchain_router, audit_router,
            periphery_ops_router, brody_monitoring_router, runtime_freeze_router, bus_router,
            sigma_monitoring_router, runtime_wiring_preview_router, source_runtime_status_router,
+           live_kernel_bridge_router,
            os_map_router]:
     app.include_router(r)
 
@@ -120,3 +167,6 @@ for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_ro
 @app.get("/")
 async def root():
     return {"service": "obsidia-api", "version": "V5B", "mode": "readonly_dryrun", "decision_authority": "KX108_ONLY"}
+
+from apps.obsidia_api.routes.runtime_freeze_readonly import router as runtime_freeze_readonly_router
+app.include_router(runtime_freeze_readonly_router)

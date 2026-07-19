@@ -1,0 +1,28 @@
+{
+  "schema_id": "SRL_CONTEXT_RELOAD_PACK_V0",
+  "version": "0.1.0",
+  "dry_run_only": true,
+  "readonly": true,
+  "description": "Schéma d'un context reload pack SRL V0. Readonly — aucune écriture.",
+  "fields": {
+    "pack_id": {"type": "string", "required": true},
+    "session_id": {"type": "string", "required": true},
+    "reload_zone": {"type": "string", "enum": ["ACTIVE", "COLD", "GHOST"], "required": true},
+    "context_summary": {"type": "string", "required": true},
+    "axes": {"type": "array", "items": {"type": "string"}, "required": false},
+    "source_hashes": {"type": "array", "items": {"type": "string"}, "required": false},
+    "deep_recall_used": {"type": "boolean", "required": true},
+    "pack_hash": {"type": "string", "description": "SHA256 Merkle hash du pack.", "required": true},
+    "created_at": {"type": "string", "format": "datetime", "required": true},
+    "memory_write": {"type": "boolean", "const": false},
+    "graphiti_write": {"type": "boolean", "const": false},
+    "decision_authority": {"type": "string", "const": "KX108_ONLY"}
+  },
+  "srl_metrics_produced": [
+    "SRL_CONTEXT_RELOAD_PACK_CREATED",
+    "SRL_RELOAD_ACTIVE_COUNT",
+    "SRL_RELOAD_COLD_COUNT",
+    "SRL_RELOAD_GHOST_COUNT",
+    "SRL_DEEP_RECALL_USED"
+  ]
+}

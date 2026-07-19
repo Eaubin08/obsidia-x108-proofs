@@ -94,7 +94,8 @@ def test_memory_candidate_auto_triage_runs():
     triage = snap["auto_triage"]
     assert triage["enabled"] is True
     assert triage["memory_intake"] is False
-    assert triage["zone"] in ("CRISTAL", "TRANSITION", "NEANT")
+    # SRL Taxonomy V2: CRISTAL→ACTIVE, TRANSITION→SEMI_ACTIVE, NEANT→GHOST_SIDE_TABLE
+    assert triage["zone"] in ("ACTIVE", "SEMI_ACTIVE", "GHOST_SIDE_TABLE", "BOUNDARY_ALERT_NON_DECISIONAL")
 
 
 def test_memory_candidate_next_steps_contain_presave():

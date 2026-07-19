@@ -496,4 +496,30 @@ class TradingState(UniversalBase):
 
 @dataclass
 class EcomState(UniversalBase):
+    # Champs V2 du domaine e-commerce (SRL Taxonomy V2)
     session_id: str = "debug-session"
+    traffic_quality: float = 0.0
+    basket_intent_score: float = 0.0
+    stock_ok: bool = True
+    margin_rate: float = 0.0
+    roas: float = 0.0
+    conversion_readiness: float = 0.0
+    fulfillment_risk: float = 0.0
+    customer_trust: float = 0.0
+    intent_conflict_score: float = 0.0
+    checkout_friction_score: float = 0.0
+    merchant_policy_score: float = 0.0
+    basket_value: float = 0.0
+    ad_spend: float = 0.0
+    order_value: float = 0.0
+    x108_compliance_rate: float = 1.0
+
+    def __post_init__(self):
+        for field_info in fields(self):
+            val = getattr(self, field_info.name)
+            if field_info.type is float:
+                try: setattr(self, field_info.name, float(val))
+                except: setattr(self, field_info.name, 0.0)
+            elif field_info.type is int:
+                try: setattr(self, field_info.name, int(val))
+                except: setattr(self, field_info.name, 0)

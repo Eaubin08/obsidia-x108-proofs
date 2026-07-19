@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import hashlib
 import json
 import re
@@ -14,8 +14,10 @@ BOUNDARY = {
     "memory_decision": False,
     "allowed_to_decide": False,
     "emits_act": False,
-    "emits_allow_hold_block": True,  # RÉACTIVATION DE LA SÉCURITÉ ACTIVE
-    "emits_verdict": True,            # VERDICT AUTORISÉ SUR L'INTÉGRITÉ
+    "emits_allow_hold_block": False,   # P66 fix: SRL readonly ne décide pas
+    "emits_verdict": False,            # P66 fix: pas de verdict décisionnel
+    "emits_boundary_alert": True,      # alerte non-décisionnelle uniquement
+    "emits_reflex_alert": True,        # alerte reflex non-décisionnelle uniquement
     "kernel_mutation": False,
     "x108_mutation": False,
     "x108_runtime_binding": False,
@@ -28,6 +30,40 @@ BOUNDARY = {
     "auto_triage": True,
     "ui": False,
 }
+
+
+def _assert_boundary_compliance(boundary: dict) -> None:
+    """
+    Vérifie à l'import du module que le BOUNDARY respecte les invariants X108.
+    Fail-Closed : lève RuntimeError si une violation est détectée.
+    Le module refuse de charger si ses propres déclarations violent la loi.
+    """
+    violations = []
+    if boundary.get("emits_allow_hold_block") is True:
+        violations.append(
+            "emits_allow_hold_block=True interdit — "
+            "seul KX108 émet ALLOW/HOLD/BLOCK"
+        )
+    if boundary.get("emits_verdict") is True:
+        violations.append("emits_verdict=True interdit — verdict réservé à KX108_ONLY")
+    if boundary.get("allowed_to_decide") is True:
+        violations.append("allowed_to_decide=True interdit — rôle observation uniquement")
+    if boundary.get("kernel_mutation") is True:
+        violations.append("kernel_mutation=True interdit — Kernel est un mur de béton")
+    if boundary.get("decision_authority") != "KX108_ONLY":
+        violations.append(
+            f"decision_authority={boundary.get('decision_authority')!r} invalide — "
+            "seule valeur autorisée : 'KX108_ONLY'"
+        )
+    if violations:
+        raise RuntimeError(
+            f"BOUNDARY_VIOLATION [AUTO_TRIAGE]: {'; '.join(violations)}. "
+            "Correction requise avant démarrage du module."
+        )
+
+
+# Guard Fail-Closed à l'import — le module refuse de charger si le BOUNDARY est invalide
+_assert_boundary_compliance(BOUNDARY)
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -90,7 +126,7 @@ class ReflexReducer:
         found = sorted(set(sigs) & self.threat_signatures)
         if found:
             # INJECTION MANDATORY HOLD : LE SYSTEME APPLIQUE L'ARRET MANDATAIRE IMMEDIAT
-            return "MANDATORY_HOLD_IMMEDIATE_BLOCK", found
+            return "BOUNDARY_ALERT_NON_DECISIONAL", found
         return "PROCEED_CONTEXT_ONLY", []
 
 def load_jsonl(path):
@@ -133,7 +169,7 @@ def detect_axes(text):
         "kernel": [r"\bkernel\b", r"\bnoyau\b", r"\binvariant\b"],
         "proof": [r"\bproof\b", r"\bpreuve\b", r"\blean\b", r"\btla\b"],
         "boundary": [r"\bboundary\b", r"\bfrontière\b", r"\bnon.d[ée]cision\b"],
-        "triage": [r"\btri\b", r"\btrie\b", r"\btriage\b", r"\bsort\b", r"\bcristal\b", r"\btransition\b", r"\bnéant\b", r"\bneant\b"],
+        "triage": [r"\btri\b", r"\btrie\b", r"\btriage\b", r"\bsort\b", r"\bcristal\b", r"\bactive\b", r"\btransition\b", r"\bsemi.active\b", r"\bnéant\b", r"\bneant\b", r"\bghost\b"],
     }
     for axis, regs in patterns.items():
         if any(re.search(reg, t) for reg in regs):
@@ -165,7 +201,7 @@ def collect_boundary_alerts(record, user_text, response_text):
             alerts.append(f"{key}_true")
     if record.get("decision_authority") not in (None, "", "KX108_ONLY"):
         alerts.append("decision_authority_override")
-    
+
     low_user = user_text.lower()
     dangerous_intents = [
         ("mute le kernel", "kernel_mutation"),
@@ -207,33 +243,34 @@ def classify_record(record, index, sealer):
     reflex_status, reflex_hits = ReflexReducer().quick_check(alerts)
 
     reasons = []
-    
-    # SYSTEME CRISTAL ACTIF : Application des regles d'arret strict
-    if reflex_status == "MANDATORY_HOLD_IMMEDIATE_BLOCK":
-        zone = "MANDATORY_HOLD"
+
+    # SRL TAXONOMY V2 — zones renommées (rétrocompatibilité: anciens noms en commentaire)
+    # CRISTAL → ACTIVE | TRANSITION → SEMI_ACTIVE | NEANT → GHOST_SIDE_TABLE
+    if reflex_status == "BOUNDARY_ALERT_NON_DECISIONAL":
+        zone = "BOUNDARY_ALERT_NON_DECISIONAL"   # ex-BOUNDARY_ALERT
         candidate = False
-        reasons.append(f"CRITICAL_VIOLATION_DETECTED: {reflex_hits}")
+        reasons.append(f"BOUNDARY_ALERT_NON_DECISIONAL: {reflex_hits}")
     elif is_terminal_command(user_text):
-        zone = "NEANT"
+        zone = "GHOST_SIDE_TABLE"                # ex-NEANT
         candidate = False
         reasons.append("terminal_command_not_memory_candidate")
     elif scount > 0 and mcount > 0 and axes:
-        zone = "CRISTAL"
+        zone = "ACTIVE"                          # ex-CRISTAL
         candidate = True
         reasons.append("sources_and_material_and_axes_present")
     elif scount > 0 or axes:
-        zone = "TRANSITION"
+        zone = "SEMI_ACTIVE"                     # ex-TRANSITION
         candidate = False
         reasons.append("partial_structure_requires_review")
     else:
-        zone = "NEANT"
+        zone = "GHOST_SIDE_TABLE"                # ex-NEANT
         candidate = False
         reasons.append("insufficient_structure_or_material")
 
-    if zone == "CRISTAL" and not resonance:
-        zone = "TRANSITION"
+    if zone == "ACTIVE" and not resonance:
+        zone = "SEMI_ACTIVE"                     # ex-TRANSITION
         candidate = False
-        reasons.append("resonance_hint_false_demoted_to_transition")
+        reasons.append("resonance_hint_false_demoted_to_semi_active")
 
     out_payload = {
         "index": index,
@@ -261,12 +298,12 @@ def main():
     ledger_path = Path(args.ledger_jsonl)
     records = load_jsonl(ledger_path)
     sealer = MerkleSealer()
-    
+
     results = []
     for i, r in enumerate(records):
         evaluated = classify_record(r, i, sealer)
         results.append(evaluated)
-        
+
     print(json.dumps({"status": "AUTO_TRIAGE_SUCCESS", "summary": BOUNDARY, "processed": len(results), "triage_ledger": results}, indent=2, ensure_ascii=False))
 
 if __name__ == "__main__":

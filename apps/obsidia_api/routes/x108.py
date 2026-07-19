@@ -217,9 +217,14 @@ async def x108_memory_candidates_append(payload: MemoryCandidateAppendPayload):
         content=payload.content,
     )
     append_memory_candidate(candidate)
+    # PATCH P0 — déclaration honnête des écritures réelles (local audit, pas mémoire canonique)
     return safe_backend_response({
         **candidate.to_dict(),
         **_BOUNDARY,
+        "canonical_memory_write": False,   # Vrai — kernel non modifié
+        "local_audit_write": True,         # Déclaré — écriture ledger local
+        "filesystem_write": True,          # Déclaré — opération FS réelle
+        "audit_target": "_local_audits/memory_candidate_ledger.jsonl",
     }, source="REAL_BACKEND")
 
 

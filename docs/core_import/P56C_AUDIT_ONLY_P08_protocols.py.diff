@@ -1,0 +1,28 @@
+--- C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\_tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\agents\protocols.py
++++ C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\sigma\protocols.py
+@@ -1,10 +1,11 @@
+ from __future__ import annotations
+ 
+-from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading
+-from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState
++from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading, aggregate_gps_defense_aviation
++from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState, GpsDefenseAviationState
+ from .domains.bank_agents import build_bank_agents
+ from .domains.ecom_agents import build_ecom_agents
+ from .domains.meta_agents import build_meta_agents
++from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents
+ from .domains.trading_agents import build_trading_agents
+ from .guard import GuardX108
+ from .registry import build_agent_registry as _build_registry
+@@ -40,3 +41,11 @@
+     aggregate = aggregate_ecom([a.evaluate(state) for a in build_ecom_agents()])
+     aggregate = _apply_meta_agents(aggregate)
+     return GuardX108().decide(aggregate)
++
++def run_gps_defense_aviation_pipeline(state: GpsDefenseAviationState) -> CanonicalDecisionEnvelope:
++    aggregate = aggregate_gps_defense_aviation(
++        [a.evaluate(state) for a in build_gps_defense_aviation_agents()]
++    )
++    aggregate = _apply_meta_agents(aggregate)
++    return GuardX108().decide(aggregate)
++
