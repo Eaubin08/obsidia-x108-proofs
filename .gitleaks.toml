@@ -1,0 +1,10 @@
+title = "Obsidia Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated integrity manifest containing SHA-256 file hashes"
+paths = [
+  '''^MANIFEST_SHA256\.json$'''
+]
