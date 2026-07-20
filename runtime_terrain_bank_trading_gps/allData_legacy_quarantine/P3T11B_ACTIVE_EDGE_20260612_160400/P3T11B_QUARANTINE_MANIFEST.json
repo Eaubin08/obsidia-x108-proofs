@@ -1,0 +1,54 @@
+{
+  "task": "P3T11B_ACTIVE_EDGE_QUARANTINE",
+  "mode": "MOVE_EDGE_CASES_ONLY",
+  "patch": false,
+  "commit": false,
+  "freeze": false,
+  "targets": [
+    "decision_gps_defense_aviation_1781272491816.json",
+    "decision_trading_1781272492337.json"
+  ],
+  "moved_count": 2,
+  "missing_targets": [],
+  "quarantine_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\runtime_terrain_bank_trading_gps\\allData_legacy_quarantine\\P3T11B_ACTIVE_EDGE_20260612_160400",
+  "hash_preserved_all": true,
+  "manifest": [
+    {
+      "file": "decision_gps_defense_aviation_1781272491816.json",
+      "from": "runtime_terrain_bank_trading_gps\\allData\\decision_gps_defense_aviation_1781272491816.json",
+      "to": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\runtime_terrain_bank_trading_gps\\allData_legacy_quarantine\\P3T11B_ACTIVE_EDGE_20260612_160400\\decision_gps_defense_aviation_1781272491816.json",
+      "sha256_before": "C2AC2B40C19E6A86CDDD61B904EE84D3BE5111AD4053EFC24809F4757BC81D3D",
+      "sha256_after": "C2AC2B40C19E6A86CDDD61B904EE84D3BE5111AD4053EFC24809F4757BC81D3D",
+      "hash_preserved": true,
+      "length": 8605,
+      "mtime_iso": "2026-06-12T15:54:51.816957",
+      "domain": "gps_defense_aviation",
+      "x108_gate": "HOLD",
+      "market_verdict": "RECALC_TRAJECTORY",
+      "severity": "S2",
+      "irreversible": null,
+      "action_type": null,
+      "intent": null,
+      "reason": "ACTIVE_EDGE_MISSING_ACTION_FIELDS_QUARANTINE"
+    },
+    {
+      "file": "decision_trading_1781272492337.json",
+      "from": "runtime_terrain_bank_trading_gps\\allData\\decision_trading_1781272492337.json",
+      "to": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\runtime_terrain_bank_trading_gps\\allData_legacy_quarantine\\P3T11B_ACTIVE_EDGE_20260612_160400\\decision_trading_1781272492337.json",
+      "sha256_before": "7BBA84AE09097BB91EE9D5DCE021C8443834FEB09753343E4B6E46B1FE97DA65",
+      "sha256_after": "7BBA84AE09097BB91EE9D5DCE021C8443834FEB09753343E4B6E46B1FE97DA65",
+      "hash_preserved": true,
+      "length": 13452,
+      "mtime_iso": "2026-06-12T15:54:52.338311",
+      "domain": "trading",
+      "x108_gate": "ALLOW",
+      "market_verdict": "REVIEW",
+      "severity": "S1",
+      "irreversible": null,
+      "action_type": null,
+      "intent": null,
+      "reason": "ACTIVE_EDGE_MISSING_ACTION_FIELDS_QUARANTINE"
+    }
+  ],
+  "decision": "P3T11B_ACTIVE_EDGE_QUARANTINE_OK"
+}

@@ -1,0 +1,1078 @@
+# RÉPONSE 4/5 — OBSIDIA_BRANCHABLE_ATLAS_FULL_V0_7_FINAL_PASS(2).zip
+
+## Rôle du zip
+
+```text id="tq3m1e"
+Branchable Atlas
+=
+territoire branchable d’Obsidia
+```
+
+Ce pack est le plus volumineux :
+
+```text id="vdb1gx"
+1738 fichiers
+1241 markdown
+453 JSON
+18 Python
+7 TXT
+```
+
+Structure interne réelle :
+
+```text id="pazrs7"
+root interne :
+OBSIDIA_BRANCHABLE_ATLAS_FULL_V0_5_DEEP_FINAL_AUDIT/
+
+contenu principal :
+- docs/world_protocol_atlas/          878 fichiers
+- docs/full_doc_extraction/           714 fichiers
+- docs/obsidia_cards/                  38 fichiers
+- periphery/world_protocol_atlas/      28 fichiers
+- .runtime_freezes/                    24 fichiers
+- registry/                             7 fichiers
+- docs/metadata/                        6 fichiers
+- docs/runtime/                         3 fichiers
+- tests/                                4 fichiers
+```
+
+Statut global :
+
+```text id="und0py"
+ATLAS = TERRITORY / MAP / CONTEXT / CANDIDATE / SCENARIO
+
+NO_ACT
+NO_DECISION
+NO_VERDICT_FINAL
+NO_RUNTIME_AUTHORITY
+READONLY_BY_DEFAULT
+KX108_ONLY
+```
+
+Phrase freeze :
+
+```text id="h2tqq8"
+Atlas cartographie les mondes possibles.
+X-108 décide si un passage vers le réel est admissible.
+```
+
+---
+
+# Arbo cible
+
+```text id="clakx3"
+atlas/
+├── branchable_worlds/
+│   ├── protocols/
+│   ├── agents/
+│   ├── actors/
+│   ├── modules/
+│   ├── open_source_projects/
+│   ├── cards/
+│   └── extraction/
+│
+├── registry/
+│   ├── full_branchable_registry.json
+│   ├── protocol_registry.json
+│   ├── agent_registry.json
+│   ├── module_registry.json
+│   ├── actor_registry.json
+│   ├── open_source_project_registry.json
+│   └── todo_data_missing.json
+│
+├── adapters/
+│   ├── graphiti_atlas_adapter.py
+│   ├── brody_atlas_context_adapter.py
+│   ├── atlas_to_context_packet.py
+│   ├── atlas_to_npl_mapper.py
+│   └── atlas_readonly_boundary.py
+│
+├── proof/
+│   ├── freezes/
+│   ├── manifests/
+│   ├── audit_reports/
+│   └── test_outputs/
+│
+└── tests/
+    ├── test_atlas_readonly.py
+    ├── test_atlas_no_act.py
+    ├── test_atlas_context_packet.py
+    └── test_atlas_registry_integrity.py
+```
+
+Branchements externes :
+
+```text id="xpfm13"
+Graphiti
+→ stocker / afficher atlas comme mémoire de territoire
+
+Brody
+→ utiliser atlas comme contexte de réponse
+
+NPL
+→ lire la provenance narrative / culturelle des mondes
+
+Cognitive Reintegration
+→ relier agents, protocoles, cartes, modules
+
+OS3 / RSSI
+→ prouver que l’Atlas reste readonly
+
+X-108
+→ uniquement si un scénario devient intention d’action
+```
+
+---
+
+# Ordre d’implémentation du zip
+
+```text id="lcmfaj"
+1. Nettoyer import : exclure .pytest_cache et __pycache__
+2. Importer preuves root / manifests / audits
+3. Importer registries JSON
+4. Importer periphery/world_protocol_atlas en readonly
+5. Importer protocols / agents / actors / modules / projects
+6. Importer cartes Obsidia
+7. Importer full_doc_extraction comme source brute / archive
+8. Brancher Graphiti readonly
+9. Brancher Brody context
+10. Brancher NPL / Cognitive / Education plus tard
+11. Ajouter tests NO_ACT / NO_DECISION / READONLY
+```
+
+---
+
+# 0. À NE PAS importer comme source canon
+
+```text id="m28wpw"
+.pytest_cache/
+__pycache__/
+*.pyc
+```
+
+Action :
+
+```text id="z30kj9"
+EXCLUDE_FROM_CANON
+KEEP_ONLY_IF_ARCHIVE_RAW_NEEDED
+NO_RUNTIME_IMPORT
+```
+
+Pourquoi :
+
+```text id="z56un7"
+Cache local, pas artefact Obsidia.
+```
+
+---
+
+# 1. Root audits / manifests / preuves
+
+Tous ces fichiers vont dans :
+
+```text id="i0dhai"
+atlas/proof/audit_reports/
+atlas/proof/manifests/
+atlas/proof/test_outputs/
+```
+
+| Fichier                            | Cible                               | Action                    |
+| ---------------------------------- | ----------------------------------- | ------------------------- |
+| `README.md`                        | `atlas/README.md`                   | Présentation canon        |
+| `NO_REPO_MUTATION_NOTICE.md`       | `atlas/proof/`                      | Preuve no mutation        |
+| `FILE_INDEX_COMPLETE.md`           | `atlas/proof/`                      | Index source              |
+| `FINAL_PASS_AUDIT_V0_7.md/json`    | `atlas/proof/audit_reports/`        | Audit final canon         |
+| `FINAL_PASS_AUDIT_V0_6.md/json`    | `atlas/proof/audit_reports/legacy/` | Audit précédent           |
+| `DEEP_FINAL_AUDIT_V0_5.md/json`    | `atlas/proof/audit_reports/legacy/` | Audit profond             |
+| `COMPLETION_AUDIT_V0_3.md/json`    | `atlas/proof/audit_reports/legacy/` | Audit complétion          |
+| `FINAL_NO_MISSING_CHECK_V0_3.json` | `atlas/proof/audit_reports/legacy/` | Check no missing          |
+| `FINAL_SELF_CHECK_V0_5.json`       | `atlas/proof/audit_reports/legacy/` | Self-check                |
+| `GAP_REPORT_V0_TO_V0_1.md`         | `atlas/proof/audit_reports/`        | Rapport gap               |
+| `VERIFICATION_REPORT_V0_1.md/json` | `atlas/proof/audit_reports/`        | Vérification V0.1         |
+| `MANIFEST_SHA256_ALL_FILES*.json`  | `atlas/proof/manifests/`            | Manifests toutes versions |
+| `TEST_OUTPUT*.txt`                 | `atlas/proof/test_outputs/`         | Sorties tests             |
+
+Règle :
+
+```text id="4dmdcz"
+V0_7 = canon courant.
+V0_6 / V0_5 / V0_3 / V0_1 = historique audit.
+```
+
+---
+
+# 2. Runtime freezes
+
+Source :
+
+```text id="v0yv5m"
+.runtime_freezes/
+├── WORLD_PROTOCOL_ATLAS_FULL_V0/
+├── WORLD_PROTOCOL_ATLAS_FULL_V0_1_EXHAUSTIVE/
+└── WORLD_PROTOCOL_ATLAS_V0/
+```
+
+Cible :
+
+```text id="ohefzf"
+atlas/proof/freezes/
+```
+
+## WORLD_PROTOCOL_ATLAS_FULL_V0
+
+| Fichier                             | Cible                                               | Action                   |
+| ----------------------------------- | --------------------------------------------------- | ------------------------ |
+| `MANIFEST_SHA256.json`              | `atlas/proof/freezes/WORLD_PROTOCOL_ATLAS_FULL_V0/` | Manifest freeze          |
+| `audit_report.json`                 | idem                                                | Audit freeze             |
+| `context_packets_snapshot.json`     | idem                                                | Snapshot context packets |
+| `graphiti_nodes_snapshot.json`      | idem                                                | Snapshot graphiti nodes  |
+| `registry_snapshot.json`            | idem                                                | Snapshot registry        |
+| `scenario_candidates_snapshot.json` | idem                                                | Snapshot scénarios       |
+
+## WORLD_PROTOCOL_ATLAS_FULL_V0_1_EXHAUSTIVE
+
+| Fichier                                                   | Action                  |
+| --------------------------------------------------------- | ----------------------- |
+| `ALL_TABLES_RAW.json`                                     | Source exhaustive brute |
+| `AUTO_AGENT_CANDIDATES_RAW.json`                          | Candidats agents        |
+| `AUTO_CARDS_CANDIDATES.json`                              | Candidats cartes        |
+| `AUTO_MODULE_HEADING_CANDIDATES.json`                     | Candidats modules       |
+| `AUTO_PROTOCOL_CANDIDATES_RAW.json`                       | Candidats protocoles    |
+| `CARD_REGISTRY_V0_1.json`                                 | Registry cartes         |
+| `GAP_REPORT_V0_TO_V0_1.md`                                | Gap V0→V0.1             |
+| `MANIFEST_SHA256.json`                                    | Manifest                |
+| `OBSIDIA_WORLD_PROTOCOL_ATLAS_V0_1_EXHAUSTIVE_AUDIT.json` | Audit exhaustif         |
+| `TEST_OUTPUT_V0_1.txt`                                    | Test output             |
+| `VERIFICATION_REPORT_V0_1.md/json`                        | Vérification            |
+
+## WORLD_PROTOCOL_ATLAS_V0
+
+Même rôle que FULL_V0, mais à garder comme legacy snapshot.
+
+Boundary :
+
+```text id="h86n9v"
+Les freezes sont preuves.
+Ils ne sont pas runtime actif.
+```
+
+---
+
+# 3. Registries
+
+Source :
+
+```text id="j6ydw3"
+registry/
+├── TODO_DATA_MISSING.json
+├── agent_registry.json
+├── external_actor_registry.json
+├── full_branchable_registry.json
+├── module_registry.json
+├── open_source_project_registry.json
+└── protocol_registry.json
+```
+
+Cible :
+
+```text id="69pzok"
+atlas/registry/
+```
+
+Plan :
+
+| Fichier                             | Rôle                   | Branchement                                     |
+| ----------------------------------- | ---------------------- | ----------------------------------------------- |
+| `full_branchable_registry.json`     | Table centrale atlas   | `registry/master_registry.yaml` plus tard       |
+| `protocol_registry.json`            | Protocoles branchables | `atlas/branchable_worlds/protocols/`            |
+| `agent_registry.json`               | Agents/candidats       | `atlas/branchable_worlds/agents/`               |
+| `external_actor_registry.json`      | Acteurs externes       | `atlas/branchable_worlds/actors/`               |
+| `module_registry.json`              | Modules monde          | `atlas/branchable_worlds/modules/`              |
+| `open_source_project_registry.json` | Projets open source    | `atlas/branchable_worlds/open_source_projects/` |
+| `TODO_DATA_MISSING.json`            | Dettes / trous         | `atlas/proof/gaps/`                             |
+
+Action après import :
+
+```text id="59zkp9"
+Créer :
+atlas/registry/atlas_registry_loader.py
+atlas/registry/atlas_registry_validator.py
+```
+
+Tests :
+
+```text id="vmo88m"
+- registry JSON parse OK
+- chaque item pointe vers un fichier existant si possible
+- aucun item n’émet décision
+- missing data devient gap, pas erreur silencieuse
+```
+
+---
+
+# 4. Periphery runtime readonly
+
+Source :
+
+```text id="w95ov1"
+periphery/world_protocol_atlas/
+```
+
+Fichiers `.py` à garder :
+
+```text id="61yjtm"
+__init__.py
+a_modules_registry.py
+agent_candidates.py
+atlas_types.py
+b_organisms_registry.py
+cards_registry.py
+context_adapter.py
+freeze_manifest.py
+generated_data.py
+graphiti_candidates.py
+module_registry.py
+protocol_candidates.py
+raw_extraction_registry.py
+readonly_boundary.py
+scenario_candidates.py
+```
+
+Cible :
+
+```text id="3fs88h"
+atlas/adapters/source_periphery/
+```
+
+Puis version consolidée à créer :
+
+```text id="zcs0dm"
+atlas/adapters/
+├── atlas_registry_loader.py
+├── atlas_context_adapter.py
+├── atlas_graphiti_exporter.py
+├── atlas_brody_context_adapter.py
+├── atlas_scenario_candidate_builder.py
+├── atlas_readonly_boundary.py
+└── atlas_metrics.py
+```
+
+Boundary par fichier :
+
+| Fichier                                             | Statut | Rôle                                      |
+| --------------------------------------------------- | ------ | ----------------------------------------- |
+| `readonly_boundary.py`                              | P1     | Loi readonly atlas                        |
+| `context_adapter.py`                                | P1     | Convertir atlas → context packet          |
+| `graphiti_candidates.py`                            | P1     | Préparer nœuds Graphiti, pas write direct |
+| `scenario_candidates.py`                            | P1     | Candidats scénario, pas action            |
+| `protocol_candidates.py`                            | P2     | Candidats protocoles                      |
+| `agent_candidates.py`                               | P2     | Candidats agents, non souverains          |
+| `cards_registry.py`                                 | P2     | Cartes Obsidia                            |
+| `module_registry.py`                                | P2     | Modules monde                             |
+| `raw_extraction_registry.py`                        | P3     | Sources brutes                            |
+| `freeze_manifest.py`                                | P2     | Lire manifest                             |
+| `generated_data.py`                                 | P3     | Données générées                          |
+| `atlas_types.py`                                    | P1     | Types partagés                            |
+| `a_modules_registry.py` / `b_organisms_registry.py` | P3     | Legacy/source maps                        |
+
+Tests obligatoires :
+
+```text id="cxm1lu"
+test_atlas_periphery_readonly.py
+test_atlas_no_act.py
+test_atlas_no_decision_fields.py
+test_atlas_graphiti_candidates_no_write.py
+test_atlas_scenario_candidates_no_execution.py
+```
+
+---
+
+# 5. Docs runtime
+
+Source :
+
+```text id="3m5iq1"
+docs/runtime/
+├── OBSIDIA_WORLD_PROTOCOL_ATLAS_V0_1_EXHAUSTIVE_AUDIT.json
+├── OBSIDIA_WORLD_PROTOCOL_ATLAS_V0_AUDIT.json
+└── OBSIDIA_WORLD_PROTOCOL_ATLAS_V0_FREEZE_REPORT.md
+```
+
+Cible :
+
+```text id="lx84ql"
+atlas/proof/runtime/
+```
+
+Rôle :
+
+```text id="3qja0r"
+Preuve runtime du pack atlas.
+Non exécutable.
+Non souverain.
+```
+
+---
+
+# 6. Docs metadata
+
+Source :
+
+```text id="gjgku6"
+docs/metadata/
+├── FILE_METRICS_FILL_REPORT_V0_2.md
+├── FILE_METRICS_REGISTRY_V0_2.json
+├── INLINE_METRICS_VERIFICATION_V0_2.json
+├── SPECIFIC_METRICS_FILL_REPORT_V0_4.md
+├── SPECIFIC_METRICS_REGISTRY_V0_4.json
+└── SPECIFIC_METRICS_VERIFICATION_V0_4.json
+```
+
+Cible :
+
+```text id="qqvzmy"
+atlas/proof/metadata/
+atlas/metrics/
+```
+
+Action :
+
+```text id="gdglp1"
+- rapports .md → atlas/proof/metadata/
+- registries .json → atlas/metrics/
+- verification .json → atlas/proof/metadata/
+```
+
+À brancher ensuite dans :
+
+```text id="ne5ypd"
+OS3 metrics dashboard
+atlas completeness report
+implementation ledger
+```
+
+---
+
+# 7. World Protocol Atlas — cœur du pack
+
+Source :
+
+```text id="v7wb1u"
+docs/world_protocol_atlas/
+├── protocols/              376 fichiers
+├── agents/                 370 fichiers
+├── actors/                  41 fichiers
+├── modules/                 41 fichiers
+└── open_source_projects/    39 fichiers
+```
+
+Cible :
+
+```text id="u2fdmh"
+atlas/branchable_worlds/
+├── protocols/
+├── agents/
+├── actors/
+├── modules/
+└── open_source_projects/
+```
+
+## 7.1 Protocols — 376 fichiers
+
+Chaque protocole existe souvent en paire :
+
+```text id="g194n9"
+<protocol>.md
+<protocol>.json
+```
+
+Règle d’import :
+
+```text id="3ptdpt"
+.md   → doc lisible / contexte humain
+.json → packet structuré / registry / Graphiti candidate
+```
+
+Branchement :
+
+```text id="3nukr9"
+Protocol file
+→ AtlasProtocolPacket
+→ Graphiti node candidate
+→ Brody context
+→ NPL optional
+→ X-108 uniquement si protocole devient action candidate
+```
+
+Statut :
+
+```text id="w52og4"
+PROTOCOL = MAP / CONTEXT / CANDIDATE
+NO_ACT
+NO_DECISION
+```
+
+Tests :
+
+```text id="3ou5vn"
+- chaque protocole JSON valide
+- chaque protocole a boundary
+- aucun protocole n’émet ALLOW/HOLD/BLOCK
+- protocole externe = compatibility bridge only
+```
+
+---
+
+## 7.2 Agents — 370 fichiers
+
+Même logique :
+
+```text id="ksgmbn"
+<agent>.md
+<agent>.json
+```
+
+Branchement :
+
+```text id="j7zo4a"
+Agent spec
+→ AgentProfilePacket
+→ Cognitive Reintegration agents
+→ Brody context
+→ Graphiti node
+```
+
+Boundary stricte :
+
+```text id="0tuzk0"
+Atlas Agent ≠ runnable agent
+Atlas Agent ≠ sovereign agent
+Atlas Agent = profile / candidate / context
+```
+
+Champs à imposer si absents :
+
+```yaml id="cpnkwn"
+decision_authority: KX108_ONLY
+advisory_only: true
+emits_act: false
+emits_verdict: false
+runtime_status: SPEC_ONLY
+```
+
+---
+
+## 7.3 Actors — 41 fichiers
+
+Exemples présents :
+
+```text id="61mo6m"
+OPENAI
+ANTHROPIC
+GOOGLE
+MISTRAL
+META
+NVIDIA
+MICROSOFT
+HUGGINGFACE
+PERPLEXITY
+XAI
+RUNWAY
+STABILITY
+...
+```
+
+Cible :
+
+```text id="so0khc"
+atlas/branchable_worlds/actors/
+```
+
+Rôle :
+
+```text id="gnjg57"
+Cartographie des acteurs externes IA / tech.
+```
+
+Boundary :
+
+```text id="qbtr9s"
+Actor profile = contexte stratégique.
+Pas de dépendance runtime.
+Pas de vérité actuelle garantie.
+```
+
+Note importante :
+
+```text id="mgy7jv"
+Comme les acteurs externes changent vite,
+ces fiches doivent être marquées :
+STALE_POSSIBLE
+REQUIRES_WEB_REFRESH_BEFORE_PUBLIC_CLAIM
+```
+
+---
+
+## 7.4 Modules — 41 fichiers
+
+Catégories réelles :
+
+```text id="w69tno"
+concept_modules/
+open_source_orgs/
+world_domains/
+```
+
+Cible :
+
+```text id="b3cr3d"
+atlas/branchable_worlds/modules/
+```
+
+Rôle :
+
+```text id="en3w9t"
+Modules civilisationnels / domaines monde / organisations open source.
+```
+
+Branchement :
+
+```text id="xq79qa"
+Module
+→ WorldDomainPacket
+→ Graphiti Atlas
+→ NPL
+→ Education / Research / Demo
+```
+
+Boundary :
+
+```text id="pn78wu"
+Module = territoire sémantique.
+Pas action.
+Pas verdict.
+```
+
+---
+
+## 7.5 Open source projects — 39 fichiers
+
+Exemples :
+
+```text id="f79t13"
+LangChain
+LangGraph
+CrewAI
+AutoGen
+vLLM
+Ray
+Llama Guard
+DeepChem
+BrainPy
+NeuroML
+NEST Simulator
+SkyPilot
+Composio
+...
+```
+
+Cible :
+
+```text id="swt17k"
+atlas/branchable_worlds/open_source_projects/
+```
+
+Rôle :
+
+```text id="apihzy"
+Radar intégration / inspiration / compatibilité.
+```
+
+Boundary :
+
+```text id="5obq3x"
+Open source project card = radar.
+Pas dépendance installée.
+Pas appel externe.
+Pas runtime binding sans audit.
+```
+
+Avant tout branchement réel :
+
+```text id="l8ou2p"
+WEB_REFRESH_REQUIRED
+LICENSE_CHECK_REQUIRED
+SECURITY_REVIEW_REQUIRED
+X108_ADMISSION_IF_TOOL_CALL
+```
+
+---
+
+# 8. Obsidia Cards
+
+Source :
+
+```text id="535y67"
+docs/obsidia_cards/cards/
+```
+
+38 fichiers = 19 cartes en `.md` + `.json`.
+
+Familles :
+
+```text id="jmltd2"
+CARD_FOUND_*     → cartes fondatrices
+CARD_COG_*       → cartes cognitives
+CARD_PHILO_*     → cartes philosophiques
+CARD_BONUS_*     → cartes bonus système
+CARD_MISSION_*   → mission évolution / conscience
+```
+
+Cible :
+
+```text id="6wqabq"
+atlas/branchable_worlds/cards/
+```
+
+Branchement :
+
+```text id="9kz2o7"
+Cards
+→ Brody context
+→ Graphiti node
+→ Education explanation
+→ Public narrative
+```
+
+Boundary :
+
+```text id="t88lm5"
+Carte = représentation.
+Pas preuve runtime.
+Pas décision.
+```
+
+Cartes à relier directement au Cognitive pack :
+
+```text id="co3esp"
+CARD_FOUND_001_hierarchie_des_agents
+→ cognition/agents/
+
+CARD_FOUND_002_memoire_d_un_agent
+→ cognition/memory/
+
+CARD_FOUND_003_anatomie_agent_master
+→ cognition/agents/
+
+CARD_COG_001_portes_monde_exterieur
+→ cognition/portals/
+
+CARD_COG_002_boucles_de_raisonnement
+→ cognition/cognitive_loops/
+
+CARD_PHILO_001_archetypes_symbolique
+→ cognition/archetypes/
+
+CARD_BONUS_004_noeuds_cognitifs
+→ cognition/nodes/
+
+CARD_BONUS_005_topologie_neuronale
+→ cognition/topology/
+```
+
+---
+
+# 9. Full doc extraction
+
+Source :
+
+```text id="j9ljgg"
+docs/full_doc_extraction/
+├── FULL_DOC_TEXT_RAW.txt
+├── ALL_TABLES_RAW.md/json
+├── AUTO_AGENT_CANDIDATES_RAW.md/json
+├── AUTO_CARDS_CANDIDATES.md/json
+├── AUTO_MODULE_HEADING_CANDIDATES.md/json
+├── AUTO_PROTOCOL_CANDIDATES_RAW.md/json
+└── tables/DOCX_TABLE_0001.md → DOCX_TABLE_0703.md
+```
+
+Cible :
+
+```text id="w9lne6"
+atlas/branchable_worlds/extraction/
+```
+
+Rôle :
+
+```text id="qdxg90"
+Source brute d’extraction.
+Archive de provenance.
+Pas couche runtime.
+```
+
+Plan d’intégration :
+
+```text id="byb668"
+FULL_DOC_TEXT_RAW.txt
+→ source brute principale
+
+AUTO_*_CANDIDATES
+→ candidats déjà extraits
+
+ALL_TABLES_RAW
+→ tables consolidées
+
+tables/DOCX_TABLE_0001.md → DOCX_TABLE_0703.md
+→ archive brute, non runtime
+```
+
+Action :
+
+```text id="rps1ao"
+IMPORT_AS_RAW_ARCHIVE
+NO_RUNTIME
+NO_DECISION
+USED_FOR_TRACEABILITY
+```
+
+À ne pas faire :
+
+```text id="6m1aky"
+Ne pas charger les 703 tables en mémoire runtime.
+Ne pas exposer tout en UI.
+Ne pas considérer chaque table comme spec validée.
+```
+
+---
+
+# 10. Patch snippet
+
+Source :
+
+```text id="ni74gz"
+patches/periphery_ops_world_atlas_routes_SNIPPET_NOT_APPLIED.py
+```
+
+Cible :
+
+```text id="rrtyeb"
+atlas/patches/
+```
+
+Action :
+
+```text id="gy6hxv"
+DO_NOT_APPLY_DIRECTLY
+REVIEW_MANUALLY
+CONVERT_TO_SAFE_ROUTE_PATCH_IF_NEEDED
+```
+
+Pourquoi :
+
+```text id="n5m22x"
+Le nom indique explicitement SNIPPET_NOT_APPLIED.
+Donc preuve / proposition, pas patch actif.
+```
+
+---
+
+# 11. Tests source
+
+Source :
+
+```text id="uhhdky"
+tests/test_v0_1_exhaustive_layer.py
+tests/test_world_protocol_atlas_readonly.py
+```
+
+Cible :
+
+```text id="dxbj4x"
+tests/atlas/
+```
+
+À compléter avec :
+
+```text id="6m8y76"
+test_atlas_no_act.py
+test_atlas_no_decision.py
+test_atlas_no_verdict.py
+test_atlas_graphiti_candidates_no_write.py
+test_atlas_context_packet_schema.py
+test_atlas_registry_integrity.py
+test_atlas_raw_extraction_not_runtime.py
+test_atlas_external_actor_requires_refresh.py
+```
+
+---
+
+# Flux cible Atlas
+
+```text id="6lcplt"
+Atlas file
+↓
+AtlasRegistry
+↓
+AtlasPacket
+↓
+Graphiti candidate node
+↓
+Brody context
+↓
+NPL / Cognitive optional enrichment
+↓
+ScenarioCandidate if useful
+↓
+X-108 only if scenario becomes action intent
+```
+
+Exemple :
+
+```text id="811hme"
+OPENAI actor card
+→ ActorProfilePacket
+→ Graphiti node
+→ Brody context
+→ no runtime dependency
+
+LangGraph open source project
+→ OpenSourceRadarPacket
+→ possible integration candidate
+→ license/security check required
+→ X-108 if tool-call/install/action later
+```
+
+---
+
+# Packets à créer pour brancher l’Atlas
+
+```text id="zph0y2"
+packages/shared/packets/atlas/
+├── atlas_protocol_packet.schema.json
+├── atlas_agent_profile_packet.schema.json
+├── atlas_actor_profile_packet.schema.json
+├── atlas_module_packet.schema.json
+├── atlas_open_source_project_packet.schema.json
+├── atlas_card_packet.schema.json
+├── atlas_scenario_candidate_packet.schema.json
+└── atlas_graphiti_node_candidate.schema.json
+```
+
+Champs minimum :
+
+```json id="8vsyhg"
+{
+  "id": "",
+  "source_file": "",
+  "source_pack": "OBSIDIA_BRANCHABLE_ATLAS_FULL_V0_7_FINAL_PASS",
+  "category": "protocol|agent|actor|module|project|card|raw_extraction",
+  "status": "SPEC_ONLY|CONTEXT_ONLY|CANDIDATE",
+  "readonly": true,
+  "advisory_only": true,
+  "emits_act": false,
+  "emits_verdict": false,
+  "decision_authority": "KX108_ONLY",
+  "graphiti_candidate": true,
+  "requires_refresh": false,
+  "requires_security_review": false
+}
+```
+
+---
+
+# Ce que ce zip ajoute réellement
+
+```text id="3yff6r"
+1. Territoire monde / protocoles
+2. Radar open source
+3. Cartographie acteurs IA externes
+4. Candidats agents/protocoles
+5. Modules civilisationnels
+6. Cartes Obsidia historiques
+7. Extraction brute documentée
+8. Graphiti candidates
+9. Scenario candidates
+10. Registry branchable
+11. Preuves / freezes / audits
+```
+
+---
+
+# Position dans l’ordre global
+
+```text id="erhg6g"
+Priorité :
+P2
+
+À brancher :
+après X-108 contracts + OS3 RSSI
+idéalement après Graphiti/Brody readonly
+avant la verticale éducation complète
+```
+
+Ordre recommandé :
+
+```text id="jqhgm3"
+1. Authority contracts
+2. RSSI / OS3
+3. External Signals
+4. Graphiti / Brody readonly
+5. Atlas readonly
+6. Cognitive Reintegration
+7. NPL
+8. Education
+9. Benchmarks
+```
+
+Mais si tu veux vite montrer la profondeur civilisationnelle :
+
+```text id="vliqgj"
+Atlas peut passer avant Cognitive,
+à condition de rester 100 % readonly.
+```
+
+---
+
+# Ce qu’il ne faut surtout pas faire
+
+```text id="bemcdo"
+Ne pas importer .pytest_cache / __pycache__ / pyc.
+
+Ne pas transformer les agents Atlas en agents exécutables.
+
+Ne pas brancher les open source projects comme dépendances runtime.
+
+Ne pas écrire dans Graphiti directement depuis l’Atlas.
+
+Ne pas considérer les acteurs externes comme info fraîche sans refresh.
+
+Ne pas utiliser les scenarios candidates comme décisions.
+
+Ne pas charger les 703 tables brutes en runtime.
+
+Ne pas appliquer le patch snippet sans revue.
+```
+
+---
+
+# Boundary freeze
+
+```text id="x8r75i"
+Branchable Atlas est le territoire d’Obsidia.
+
+Il cartographie des protocoles, agents, acteurs, modules,
+projets open source, cartes et scénarios.
+
+Il nourrit Graphiti, Brody, NPL, Cognitive Reintegration et Education.
+
+Il ne décide pas.
+Il n’agit pas.
+Il ne branche aucun outil externe seul.
+Il ne donne aucun droit de passage.
+
+Tout scénario issu de l’Atlas devient seulement un candidat.
+Tout candidat qui touche le réel passe par X-108.
+```
+
+Je continue ensuite avec **RÉPONSE 5/5 — OBSIDIA_RSSI_RGPD_ISO_READINESS_PACK_V2**.

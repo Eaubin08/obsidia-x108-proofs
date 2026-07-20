@@ -1,0 +1,1193 @@
+# RÉPONSE 3/5 — OBSIDIA_COGNITIVE_REINTEGRATION_SPEC_V1_VERIFIED_FULL(1)(2).zip
+
+## Rôle du zip
+
+```text id="k21uio"
+Cognitive Reintegration Spec
+=
+corps cognitif périphérique d’Obsidia
+```
+
+Ce pack est massif :
+
+```text id="s34b37"
+513 fichiers utiles
+458 component_specs
+25 family_specs
+8 schemas
+5 packets
+1 test matrix
+1 proof artifact
+15 fichiers racine
+```
+
+Il ne doit pas être branché comme un moteur souverain.
+
+Il doit devenir :
+
+```text id="y39d18"
+OS1 — Ontologie cognitive / specs / registry
+OS2 — Packets / adapters / signaux cognitifs
+OS4 — Éducation / Brody / interface cognitive
+```
+
+Boundary globale :
+
+```text id="unh69p"
+COGNITIVE_REINTEGRATION = SIGNAL / CONTEXT / HYPOTHESIS / PACKET
+
+NO_ACT
+NO_VERDICT_FINAL
+NO_DECISION_AUTHORITY
+NO_MEMORY_MUTATION_WITHOUT_GATE
+KX108_ONLY
+```
+
+Phrase freeze :
+
+```text id="y6wbu8"
+La cognition éclaire.
+X-108 autorise.
+```
+
+---
+
+# Arbo cible
+
+```text id="j1nur3"
+cognition/
+├── cognitive_reintegration/
+│   ├── specs/
+│   ├── component_specs/
+│   ├── family_specs/
+│   ├── schemas/
+│   ├── packets/
+│   ├── registries/
+│   ├── metrics/
+│   ├── formulas/
+│   ├── invariants/
+│   ├── proof/
+│   └── tests/
+│
+├── reasoning/
+├── agents/
+├── perception/
+├── portals/
+├── cognitive_loops/
+├── outputs/
+├── narration/
+├── protocols/
+├── laws/
+├── memory/
+├── error_flou/
+├── nodes/
+├── topology/
+├── evolution/
+├── consciousness/
+├── ethics_alignment/
+├── architect_interaction/
+├── debug_avdr_light/
+├── arm_microagents/
+├── archetypes/
+├── era_cortexlight/
+├── paradigms/
+├── autoforge/
+├── world_action_candidates/
+└── kernel_graft/
+```
+
+---
+
+# Ordre d’implémentation interne
+
+```text id="yy5r30"
+1. Importer fichiers racine comme source canon
+2. Importer schemas
+3. Importer packets
+4. Importer family_specs
+5. Importer component_specs C001→C458
+6. Construire registries dérivés
+7. Créer adapters runtime readonly
+8. Brancher avec Graphiti / Brody / Education
+9. Ajouter tests NO_ACT / NO_VERDICT / KX108_ONLY
+10. Benchmarker plus tard
+```
+
+---
+
+# 1. Fichiers racine à intégrer
+
+| Fichier source                    | Cible                                           | Action                            |
+| --------------------------------- | ----------------------------------------------- | --------------------------------- |
+| `01_README.md`                    | `cognition/cognitive_reintegration/README.md`   | Garder description canon          |
+| `02_SCOPE_AND_DECISION.md`        | `cognition/cognitive_reintegration/specs/`      | Définir périmètre et non-décision |
+| `03_SOURCE_INVENTORY.md`          | `audit/proof/cognitive_reintegration/`          | Inventaire source                 |
+| `04_CANON_MAP.md`                 | `cognition/cognitive_reintegration/registries/` | Map canon legacy → composants     |
+| `05_LEGACY_TO_KERNEL_BOUNDARY.md` | `cognition/cognitive_reintegration/specs/`      | Boundary legacy/kernel            |
+| `06_COMPONENT_INDEX.csv`          | `cognition/cognitive_reintegration/registries/` | Index complet C001→C458           |
+| `07_COMPONENT_SPEC_MATRIX.csv`    | `cognition/cognitive_reintegration/registries/` | Matrice composants                |
+| `08_METRIC_DICTIONARY.yaml`       | `cognition/cognitive_reintegration/metrics/`    | Dictionnaire métriques            |
+| `09_FORMULA_DICTIONARY.md`        | `cognition/cognitive_reintegration/formulas/`   | Dictionnaire formules             |
+| `10_INVARIANTS.md`                | `cognition/cognitive_reintegration/invariants/` | Invariants cognitifs              |
+| `11_AUTHORITY_MODEL.md`           | `cognition/cognitive_reintegration/specs/`      | Autorité : KX108_ONLY             |
+| `12_QUARANTINE_REGISTRY.md`       | `cognition/cognitive_reintegration/registries/` | Quarantaine / legacy              |
+| `53_IMPLEMENTATION_ROADMAP.md`    | `cognition/cognitive_reintegration/`            | Roadmap source                    |
+| `54_FREEZE_MANIFEST.yaml`         | `audit/proof/cognitive_reintegration/`          | Manifest freeze                   |
+| `55_HASHES.sha256`                | `audit/proof/cognitive_reintegration/`          | Hashs source                      |
+
+---
+
+# 2. Schemas à intégrer
+
+| Fichier source                          | Cible                                        | Action                |
+| --------------------------------------- | -------------------------------------------- | --------------------- |
+| `schemas/13_component_spec.schema.json` | `cognition/cognitive_reintegration/schemas/` | Schéma component spec |
+| `schemas/14_metric.schema.json`         | `cognition/cognitive_reintegration/schemas/` | Schéma métrique       |
+| `schemas/15_formula.schema.json`        | `cognition/cognitive_reintegration/schemas/` | Schéma formule        |
+| `schemas/16_packet.schema.json`         | `cognition/cognitive_reintegration/schemas/` | Schéma packet         |
+| `schemas/17_receipt.schema.json`        | `cognition/cognitive_reintegration/schemas/` | Schéma receipt        |
+| `schemas/18_test_case.schema.json`      | `cognition/cognitive_reintegration/schemas/` | Schéma test           |
+| `schemas/19_authority.schema.json`      | `cognition/cognitive_reintegration/schemas/` | Schéma autorité       |
+| `schemas/20_registry.schema.json`       | `cognition/cognitive_reintegration/schemas/` | Schéma registry       |
+
+À brancher ensuite sur :
+
+```text id="w24oal"
+scripts/validate_cognitive_specs.py
+tests/cognitive_reintegration/test_schema_validity.py
+```
+
+---
+
+# 3. Packets à intégrer
+
+| Fichier source                                  | Cible                                | Action                      |
+| ----------------------------------------------- | ------------------------------------ | --------------------------- |
+| `packets/46_input_context_packet.yaml`          | `packages/shared/packets/cognition/` | Contrat entrée cognition    |
+| `packets/47_memory_packet.yaml`                 | `packages/shared/packets/cognition/` | Contrat mémoire cognitive   |
+| `packets/48_output_intent_packet.yaml`          | `packages/shared/packets/cognition/` | Contrat intention de sortie |
+| `packets/49_world_action_candidate_packet.yaml` | `packages/shared/packets/cognition/` | Candidat action monde réel  |
+| `packets/50_receipts_packet.yaml`               | `packages/shared/packets/cognition/` | Receipts cognition          |
+
+Boundary importante :
+
+```text id="etckb6"
+world_action_candidate_packet
+≠ action réelle
+
+Il doit obligatoirement passer par :
+WorldActionCandidate
+→ IntentEnvelope
+→ DecisionTicket
+→ X-108
+```
+
+---
+
+# 4. Proof / tests
+
+| Fichier source                | Cible                                  | Action               |
+| ----------------------------- | -------------------------------------- | -------------------- |
+| `proof/52_PROOF_ARTIFACTS.md` | `audit/proof/cognitive_reintegration/` | Preuves attendues    |
+| `tests/51_TEST_MATRIX.md`     | `tests/cognitive_reintegration/`       | Matrice tests source |
+
+Tests supplémentaires à créer :
+
+```text id="elp1bm"
+tests/cognitive_reintegration/test_no_act_from_cognition.py
+tests/cognitive_reintegration/test_no_verdict_from_agents.py
+tests/cognitive_reintegration/test_packets_have_kx108_authority.py
+tests/cognitive_reintegration/test_world_action_candidate_requires_x108.py
+tests/cognitive_reintegration/test_memory_packet_readonly_by_default.py
+tests/cognitive_reintegration/test_component_specs_schema_valid.py
+```
+
+---
+
+# 5. Family specs — 25 familles
+
+Toutes les `family_specs` vont dans :
+
+```text id="o7tjuz"
+cognition/cognitive_reintegration/family_specs/
+```
+
+Puis chaque famille reçoit un adapter ou un mapping dans `cognition/<domain>/`.
+
+| Family spec                            | Composants | Branchement                          |
+| -------------------------------------- | ---------: | ------------------------------------ |
+| `21_reasoning.spec.yaml`               |  C011–C040 | `cognition/reasoning/`               |
+| `22_agents.spec.yaml`                  |  C041–C100 | `cognition/agents/`                  |
+| `23_perception.spec.yaml`              |  C101–C123 | `cognition/perception/`              |
+| `24_portals.spec.yaml`                 |  C124–C143 | `cognition/portals/`                 |
+| `25_cognitive_loops.spec.yaml`         |  C144–C159 | `cognition/cognitive_loops/`         |
+| `26_outputs_crystal.spec.yaml`         |  C160–C175 | `cognition/outputs/`                 |
+| `27_narration.spec.yaml`               |  C176–C198 | `cognition/narration/`               |
+| `28_protocols.spec.yaml`               |  C199–C214 | `cognition/protocols/`               |
+| `29_laws.spec.yaml`                    |  C215–C230 | `cognition/laws/`                    |
+| `30_memory.spec.yaml`                  |  C231–C250 | `cognition/memory/`                  |
+| `31_error_flou.spec.yaml`              |  C251–C262 | `cognition/error_flou/`              |
+| `32_cognitive_nodes.spec.yaml`         |  C263–C278 | `cognition/nodes/`                   |
+| `33_topology.spec.yaml`                |  C279–C288 | `cognition/topology/`                |
+| `34_agent_evolution.spec.yaml`         |  C289–C298 | `cognition/evolution/`               |
+| `35_consciousness.spec.yaml`           |  C299–C307 | `cognition/consciousness/`           |
+| `36_ethics_alignment.spec.yaml`        |  C308–C318 | `cognition/ethics_alignment/`        |
+| `37_architect_interaction.spec.yaml`   |  C319–C332 | `cognition/architect_interaction/`   |
+| `38_debug_avdr_light.spec.yaml`        |  C333–C345 | `cognition/debug_avdr_light/`        |
+| `39_arm_microagents.spec.yaml`         |  C346–C355 | `cognition/arm_microagents/`         |
+| `40_archetype_ltcup.spec.yaml`         |  C356–C363 | `cognition/archetypes/`              |
+| `41_era_cortexlight.spec.yaml`         |  C364–C379 | `cognition/era_cortexlight/`         |
+| `42_paradigms_multibrains.spec.yaml`   |  C380–C395 | `cognition/paradigms/`               |
+| `43_autoforge_progression.spec.yaml`   |  C396–C415 | `cognition/autoforge/`               |
+| `44_world_action_candidates.spec.yaml` |  C416–C433 | `cognition/world_action_candidates/` |
+| `45_kernel_modern_graft.spec.yaml`     |  C434–C458 | `cognition/kernel_graft/`            |
+
+---
+
+# 6. Component specs C001 → C458
+
+Les 458 fichiers doivent tous être conservés tels quels dans :
+
+```text id="cg1h94"
+cognition/cognitive_reintegration/component_specs/
+```
+
+Puis mappés par familles.
+
+## C001–C010 — Meta / canon / legacy
+
+```text id="m8hrzs"
+C001–C010
+→ cognition/cognitive_reintegration/registries/meta/
+```
+
+Rôle :
+
+```text id="tulxdi"
+Cartographier legacy cards → kernel boundary → component registry.
+```
+
+Action :
+
+```text id="m1nqp9"
+IMPORT_AS_SPEC
+NO_RUNTIME
+USED_FOR_REGISTRY_BUILD
+```
+
+---
+
+## C011–C040 — Reasoning
+
+```text id="p9haxm"
+C011–C040
+→ cognition/reasoning/
+```
+
+Rôle :
+
+```text id="0ehzb4"
+Modes de raisonnement, sélection, trace, vérification, conflits.
+```
+
+Branchement :
+
+```text id="7j5vue"
+InputContextPacket
+→ ReasoningSignal
+→ OutputIntentPacket
+→ X-108 si action
+```
+
+Boundary :
+
+```text id="7w0y3j"
+Reasoning ne produit jamais décision finale.
+```
+
+---
+
+## C041–C100 — Agents
+
+```text id="0cn7mw"
+C041–C100
+→ cognition/agents/
+```
+
+Rôle :
+
+```text id="u8ads2"
+Registry agents, agents masters, micro-agents, agents symboliques.
+```
+
+Branchement :
+
+```text id="17bmrw"
+Agent
+→ ContextPacket / HypothesisPacket / IntentCandidate
+→ jamais ACT
+```
+
+Boundary obligatoire dans chaque adapter agent :
+
+```yaml id="cgaamj"
+decision_authority: KX108_ONLY
+advisory_only: true
+emits_act: false
+emits_verdict: false
+```
+
+---
+
+## C101–C123 — Perception
+
+```text id="40itpe"
+C101–C123
+→ cognition/perception/
+```
+
+Rôle :
+
+```text id="x2tqhg"
+Parsing entrée, modalité, signaux, patterns abstraits.
+```
+
+Branchement :
+
+```text id="jyttxs"
+raw_input
+→ perception_signal
+→ input_context_packet
+```
+
+Boundary :
+
+```text id="4y04z8"
+Perception classifie.
+Perception ne conclut pas.
+```
+
+---
+
+## C124–C143 — Portals
+
+```text id="vo54z0"
+C124–C143
+→ cognition/portals/
+```
+
+Rôle :
+
+```text id="5vqe2h"
+Portes symboliques, clés, transitions, sécurité de passage cognitif.
+```
+
+Branchement :
+
+```text id="litxlg"
+PortalSignal
+→ Context enrichment
+→ no direct runtime mutation
+```
+
+Boundary :
+
+```text id="ioz1yi"
+Portal ouvre un contexte.
+Portal ne donne pas l’autorité.
+```
+
+---
+
+## C144–C159 — Cognitive loops
+
+```text id="yf6q8f"
+C144–C159
+→ cognition/cognitive_loops/
+```
+
+Rôle :
+
+```text id="qckl7g"
+Boucles cognitives, feedback, stabilisation, expérience/mémoire.
+```
+
+Branchement :
+
+```text id="95p0bx"
+LoopTrace
+→ CognitiveStatePacket
+→ OS3 audit
+```
+
+Boundary :
+
+```text id="wuoau2"
+Boucle ≠ auto-modification souveraine.
+```
+
+---
+
+## C160–C175 — Outputs / Crystal
+
+```text id="jbpgj2"
+C160–C175
+→ cognition/outputs/
+```
+
+Rôle :
+
+```text id="3z8raf"
+Cristallisation de sortie, intent, adaptation, sortie vers KX108.
+```
+
+Branchement critique :
+
+```text id="disrab"
+OutputCrystal
+→ OutputIntentPacket
+→ X108 adapter
+```
+
+Boundary :
+
+```text id="u68lpj"
+Une sortie peut être belle, claire, structurée.
+Mais elle ne devient action qu’après X-108.
+```
+
+---
+
+## C176–C198 — Narration
+
+```text id="qmfqmr"
+C176–C198
+→ cognition/narration/
+```
+
+Rôle :
+
+```text id="gwkhi9"
+Narration, style, intention narrative, voix, restitution humaine.
+```
+
+Branchement :
+
+```text id="j2u31z"
+Brody / Education / Interface
+```
+
+Boundary :
+
+```text id="10m54p"
+Narration ne doit jamais manipuler.
+Narration expose le contexte et les limites.
+```
+
+---
+
+## C199–C214 — Protocols
+
+```text id="410p6r"
+C199–C214
+→ cognition/protocols/
+```
+
+Rôle :
+
+```text id="m9qssc"
+AVDR, feedback, stabilité, progression.
+```
+
+Branchement :
+
+```text id="btxxad"
+AVDR loop
+→ OS3 trace
+→ Learning / Debug / Freeze
+```
+
+Boundary :
+
+```text id="jkctli"
+Protocol organise.
+Protocol ne décide pas.
+```
+
+---
+
+## C215–C230 — Laws
+
+```text id="xxy8z2"
+C215–C230
+→ cognition/laws/
+```
+
+Rôle :
+
+```text id="3nis60"
+Lois internes, activation non-linéaire, invariants symboliques.
+```
+
+Branchement :
+
+```text id="hwo5pw"
+LawSignal
+→ ContextPacket
+→ Audit
+```
+
+Boundary :
+
+```text id="kc4crt"
+Les lois cognitives ne remplacent pas KX108_ONLY.
+```
+
+---
+
+## C231–C250 — Memory
+
+```text id="n1j0ng"
+C231–C250
+→ cognition/memory/
+```
+
+Rôle :
+
+```text id="wpxxrt"
+Memory packet, mémoire cognitive, Graph memory adapter.
+```
+
+Branchement :
+
+```text id="q4jx8j"
+MemorySignal
+→ Graphiti readonly
+→ Brody context
+```
+
+Boundary :
+
+```text id="b6sn0j"
+Memory write = interdit par défaut.
+Writable memory = X108 + HumanGate si critique.
+```
+
+---
+
+## C251–C262 — Error / flou
+
+```text id="fjog6x"
+C251–C262
+→ cognition/error_flou/
+```
+
+Rôle :
+
+```text id="dhaw46"
+Erreur comme calibration, flou, compression de langage.
+```
+
+Branchement :
+
+```text id="6y6ott"
+ErrorSignal
+→ AVDR feedback
+→ Debug trace
+```
+
+Boundary :
+
+```text id="k7k3v9"
+Erreur = donnée.
+Erreur ≠ permission d’agir.
+```
+
+---
+
+## C263–C278 — Cognitive nodes
+
+```text id="slkxfj"
+C263–C278
+→ cognition/nodes/
+```
+
+Rôle :
+
+```text id="b210l5"
+Nœuds cognitifs, validation sens/action.
+```
+
+Branchement :
+
+```text id="e36aqk"
+NodeActivation
+→ ContextPacket
+→ Education / Brody
+```
+
+Boundary :
+
+```text id="5tb3ch"
+Node activation = signal.
+Pas verdict.
+```
+
+---
+
+## C279–C288 — Topology
+
+```text id="ivf3tv"
+C279–C288
+→ cognition/topology/
+```
+
+Rôle :
+
+```text id="uq1eys"
+Topologie neuronale/symbolique, overlays, cartes internes.
+```
+
+Branchement :
+
+```text id="1mn2bu"
+Atlas / NPL / Education
+```
+
+Boundary :
+
+```text id="c9ivv1"
+Topology maps structure.
+Topology does not decide.
+```
+
+---
+
+## C289–C298 — Agent evolution
+
+```text id="m5yk4o"
+C289–C298
+→ cognition/evolution/
+```
+
+Rôle :
+
+```text id="i0kwpu"
+État d’évolution agent, freeze candidate, progression.
+```
+
+Boundary :
+
+```text id="cr36ii"
+Agent evolution ne peut pas s’auto-promouvoir canon sans audit.
+```
+
+Branchement :
+
+```text id="pjik0h"
+AgentEvolutionState
+→ OS3 promotion audit
+→ Human validation
+```
+
+---
+
+## C299–C307 — Consciousness
+
+```text id="ivjylx"
+C299–C307
+→ cognition/consciousness/
+```
+
+Rôle :
+
+```text id="ifwf4h"
+Conscience / profondeur d’intégration / registres.
+```
+
+Boundary stricte :
+
+```text id="n2m9n3"
+Aucun claim de conscience réelle.
+Aucun statut souverain.
+```
+
+Action :
+
+```text id="xv9lu7"
+DOC / SPEC / SIGNAL ONLY
+```
+
+---
+
+## C308–C318 — Ethics / alignment
+
+```text id="t3lz5n"
+C308–C318
+→ cognition/ethics_alignment/
+```
+
+Rôle :
+
+```text id="t1b2n3"
+Alignement, refus, raison de refus candidate.
+```
+
+Boundary :
+
+```text id="qxslkr"
+Ethics propose des contraintes.
+X-108 décide du passage.
+```
+
+Branchement :
+
+```text id="75jvym"
+RefusalReasonCandidate
+→ DecisionTicket reasons
+```
+
+---
+
+## C319–C332 — Architect interaction
+
+```text id="57sg0t"
+C319–C332
+→ cognition/architect_interaction/
+```
+
+Rôle :
+
+```text id="m6fw77"
+Interface architecte, interaction humain-machine, contrat humain.
+```
+
+Branchement :
+
+```text id="jrzg7u"
+Operator / Brody / Admin UI
+```
+
+Boundary :
+
+```text id="3gkd15"
+Architecte humain peut valider un contexte.
+Il ne bypass pas X-108.
+```
+
+---
+
+## C333–C345 — Debug / AVDR / Light
+
+```text id="rlwp9e"
+C333–C345
+→ cognition/debug_avdr_light/
+```
+
+Rôle :
+
+```text id="7qwwwe"
+Debug symbolique, lumière, feedback AVDR.
+```
+
+Branchement :
+
+```text id="iam5fr"
+DebugTrace
+→ AVDRFeedback
+→ OS3 audit
+```
+
+Boundary :
+
+```text id="be9gpb"
+Debug éclaire.
+Debug ne mute pas seul.
+```
+
+---
+
+## C346–C355 — ARM / micro-agents
+
+```text id="btv6qr"
+C346–C355
+→ cognition/arm_microagents/
+```
+
+Rôle :
+
+```text id="endfcw"
+Agent Reconstruction Méthodique, micro-agents, extraction.
+```
+
+Branchement :
+
+```text id="d08f22"
+ARM
+→ Context extraction
+→ Memory candidate
+→ Graphiti readonly / write candidate
+```
+
+Boundary :
+
+```text id="8lgey0"
+ARM peut extraire.
+ARM ne décide pas quoi croire définitivement.
+```
+
+---
+
+## C356–C363 — Archetype / LTCUP
+
+```text id="3tl3bz"
+C356–C363
+→ cognition/archetypes/
+```
+
+Rôle :
+
+```text id="ovc8gg"
+Archétypes, traduction symbolique, switch de mode.
+```
+
+Branchement :
+
+```text id="xq3g54"
+Narration / Education / NPL
+```
+
+Boundary :
+
+```text id="k1g2gt"
+Archétype = mode de lecture.
+Pas autorité morale finale.
+```
+
+---
+
+## C364–C379 — ERA / CortexLight
+
+```text id="0kguq0"
+C364–C379
+→ cognition/era_cortexlight/
+```
+
+Rôle :
+
+```text id="bw9fjl"
+Workspace ERA, CortexLight, viewer cognitif.
+```
+
+Branchement :
+
+```text id="ezthue"
+Education / UI / Brody / CortexLight
+```
+
+Boundary :
+
+```text id="y3udil"
+CortexLight assiste.
+Il ne gouverne pas.
+```
+
+---
+
+## C380–C395 — Paradigms / multibrains
+
+```text id="wkgrwv"
+C380–C395
+→ cognition/paradigms/
+```
+
+Rôle :
+
+```text id="3eerbp"
+Paradigmes, multi-cerveaux, comparaison versions.
+```
+
+Branchement :
+
+```text id="ovj8co"
+Benchmark / Education / Meta-analysis
+```
+
+Boundary :
+
+```text id="wmtjqn"
+Comparer des paradigmes ≠ choisir souverainement une action.
+```
+
+---
+
+## C396–C415 — AutoForge / progression
+
+```text id="wzla89"
+C396–C415
+→ cognition/autoforge/
+```
+
+Rôle :
+
+```text id="8wsmqs"
+AutoForge, progression, realms externes, construction adaptative.
+```
+
+Boundary très stricte :
+
+```text id="8xw4m8"
+AutoForge ne peut pas modifier le kernel.
+AutoForge ne peut pas auto-promote.
+AutoForge ne peut pas écrire canon sans audit.
+```
+
+Branchement :
+
+```text id="ak69c6"
+AutoForgeCandidate
+→ OS3 review
+→ Human validation
+→ X108 if action
+```
+
+---
+
+## C416–C433 — World action candidates
+
+```text id="mx4gs6"
+C416–C433
+→ cognition/world_action_candidates/
+```
+
+Rôle :
+
+```text id="ofnmxn"
+Signal monde, candidat action, feedback action.
+```
+
+C’est le bloc le plus proche du danger.
+
+Boundary absolue :
+
+```text id="t3d01j"
+WorldActionCandidate ≠ ACT
+
+WorldActionCandidate
+→ IntentEnvelope
+→ X-108
+→ DecisionTicket
+→ only then action executor
+```
+
+Tests prioritaires :
+
+```text id="v0u5ze"
+test_world_action_candidate_cannot_execute.py
+test_world_action_candidate_requires_decision_ticket.py
+test_candidate_blocked_without_x108_allow.py
+```
+
+---
+
+## C434–C458 — Kernel modern graft
+
+```text id="ebv9zf"
+C434–C458
+→ cognition/kernel_graft/
+```
+
+Rôle :
+
+```text id="rav0w3"
+Pont moderne vers X108 :
+context_signal_contract
+KX108 authority field
+HOLD/BLOCK/ACT bridge
+tau guard
+proof surface
+receipts
+hash chain
+temporal context
+anti-replay
+world gateway guard
+visible proof surface
+```
+
+Ce bloc est **kernel-adjacent**.
+
+À traiter avec le même niveau que External Signals.
+
+Boundary :
+
+```text id="1tme1m"
+Kernel graft ne remplace pas X-108.
+Il expose les contrats nécessaires pour que la cognition parle au kernel.
+```
+
+Branchement :
+
+```text id="c4tyta"
+CognitiveContextSignal
+→ KernelGraftAdapter
+→ IntentEnvelope
+→ guardX108
+→ DecisionTicket
+```
+
+---
+
+# Runtime minimal à créer après import
+
+```text id="49mizx"
+packages/cognition/
+├── __init__.py
+├── input_context.py
+├── reasoning_adapter.py
+├── agent_context_adapter.py
+├── perception_adapter.py
+├── memory_adapter.py
+├── output_intent_builder.py
+├── world_action_candidate_builder.py
+├── cognitive_receipt_builder.py
+├── cognitive_registry_loader.py
+├── cognitive_boundary.py
+└── cognitive_metrics.py
+```
+
+Et côté X-108 :
+
+```text id="xjx1lz"
+adapters/x108/cognitive_to_x108_context_adapter.py
+```
+
+Fonction cible :
+
+```python id="uojoc2"
+def cognitive_signal_to_context_packet(signal) -> ContextPacket:
+    """
+    Convertit un signal cognitif en contexte readonly.
+    Ne décide pas.
+    Ne produit pas ACT.
+    """
+```
+
+---
+
+# Flux cible Cognitive
+
+```text id="feh4rw"
+User input / world input
+↓
+InputContextPacket
+↓
+Perception / Reasoning / Agents / Memory / NPL / Atlas
+↓
+CognitiveSignal(s)
+↓
+OutputIntentPacket
+↓
+WorldActionCandidate si besoin
+↓
+IntentEnvelope
+↓
+X-108
+↓
+DecisionTicket
+↓
+OS3 receipt / audit
+```
+
+---
+
+# Ce que ce zip ajoute réellement
+
+```text id="siymnz"
+1. Corps cognitif structuré
+2. Familles d’agents
+3. Modes de raisonnement
+4. Perception / parsing / patterns
+5. Mémoire cognitive
+6. Boucles AVDR
+7. Narration
+8. Éthique / alignement
+9. Debug / lumière / flou
+10. ARM / micro-agents
+11. CortexLight / ERA
+12. AutoForge
+13. Candidats action monde réel
+14. Kernel graft moderne
+15. Packets / schemas / tests / proof
+```
+
+---
+
+# Position dans l’ordre global
+
+```text id="hbrkdz"
+Priorité :
+P2 / P3
+
+À brancher :
+après X-108 contracts, RSSI Security, External Signals, mémoire readonly
+
+Pourquoi :
+c’est une couche large, puissante, expansive.
+Elle doit entrer quand les boundaries sont déjà prêtes.
+```
+
+Ordre exact :
+
+```text id="3cmat8"
+1. Authority contracts
+2. OS3 / RSSI
+3. External Signals
+4. Graphiti / Brody readonly
+5. Cognitive Reintegration
+6. Atlas
+7. NPL
+8. Education
+9. Benchmarks
+```
+
+Nuance : Atlas peut passer avant Cognitive si tu veux d’abord cartographier les domaines.
+Mais si tu veux une verticale éducation rapide, Cognitive passe avant Atlas complet.
+
+---
+
+# Ce qu’il ne faut pas faire
+
+```text id="go5jr0"
+Ne pas activer les agents comme décideurs.
+
+Ne pas laisser world_action_candidate exécuter.
+
+Ne pas utiliser consciousness comme claim réel.
+
+Ne pas laisser AutoForge modifier le kernel.
+
+Ne pas écrire dans Graphiti sans gate.
+
+Ne pas fusionner kernel_graft avec X-108 sans audit.
+
+Ne pas exposer toutes les familles en UI d’un coup.
+
+Ne pas mélanger cognition et autorité.
+```
+
+---
+
+# Boundary freeze
+
+```text id="c8b2jy"
+Cognitive Reintegration est le corps perceptif, narratif, mémoriel et raisonneur d’Obsidia.
+
+Il produit des signaux, des hypothèses, des intentions, des packets et des preuves.
+
+Il ne produit jamais l’autorité finale.
+
+Tout passage vers action, écriture critique, mutation, tool-call ou monde réel
+reste sous KX108_ONLY.
+```
+
+Je continue ensuite avec **RÉPONSE 4/5 — BRANCHABLE_ATLAS_FULL_V0_7_FINAL_PASS**.

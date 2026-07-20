@@ -1,0 +1,14 @@
+﻿import pathlib
+
+p = pathlib.Path('periphery/agents/agent_obsidure.py')
+c = p.read_text(encoding='utf-8')
+
+old_line = '" ".join(os_trad.alphabet_units)'
+new_line = '" ".join(str(u) for u in os_trad.alphabet_units)'
+
+if old_line in c:
+    c = c.replace(old_line, new_line)
+    p.write_text(c, encoding='utf-8')
+    print("✅ Typage des alphabet_units réparé. Le dictionnaire est neutralisé.")
+else:
+    print("⚠️ Motif introuvable ou déjà patché.")

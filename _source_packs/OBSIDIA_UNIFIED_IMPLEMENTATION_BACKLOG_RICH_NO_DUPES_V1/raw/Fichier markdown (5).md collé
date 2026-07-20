@@ -1,0 +1,617 @@
+# RÉPONSE 2/5 — OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1(2).zip
+
+## Rôle du zip
+
+```text
+RSSI Security Presentation Pack
+=
+surface sécurité / audit / preuve / dialogue RSSI
+```
+
+Ce pack ne doit pas être branché comme une logique runtime centrale.
+
+Il doit devenir la couche :
+
+```text
+OS3 — Audit / Sécurité / Preuve / RSSI
+```
+
+Statut global :
+
+```text
+READONLY_SECURITY_PACK
+NO_ACT
+NO_DECISION
+NO_RUNTIME_AUTHORITY
+KX108_ONLY
+EVIDENCE_AND_PRESENTATION_LAYER
+```
+
+Fonction :
+
+```text
+Prouver à un RSSI que :
+- le noyau est séparé de la périphérie
+- X-108 garde l’autorité finale
+- les agents ne peuvent pas ACT
+- Graphiti / mémoire / Neo4j sont bornés
+- les risques sont identifiés
+- les contrôles existent
+- les preuves sont traçables
+- les limites sont assumées
+```
+
+---
+
+# Ordre d’implémentation du zip
+
+```text
+1. Importer les preuves source / freeze / manifest
+2. Importer les docs executive
+3. Importer architecture + governance + access
+4. Importer data / compliance / incident response
+5. Importer threat model + risk + security cases
+6. Importer controls + audit
+7. Brancher periphery/rssi_security_pack en readonly
+8. Importer registries RSSI
+9. Brancher tests RSSI
+10. Exposer dans OS3 / dashboard / présentation
+```
+
+---
+
+# Arbo cible
+
+```text
+security/
+└── rssi/
+    ├── executive/
+    ├── architecture/
+    ├── governance/
+    ├── access/
+    ├── audit/
+    ├── compliance/
+    ├── controls/
+    ├── data/
+    ├── incident_response/
+    ├── modules/
+    ├── risk/
+    ├── security_cases/
+    └── threat_model/
+
+periphery/
+└── rssi_security_pack/
+
+registry/
+└── rssi/
+
+audit/
+└── proof/
+    └── rssi_security_pack/
+
+tests/
+└── rssi_security_pack/
+```
+
+---
+
+# 1. Root + freeze + preuves source
+
+| Fichier source                                                                                    | Cible                                            | Action                     |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------- |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/MANIFEST_SHA256.json`                | `audit/proof/rssi_security_pack/runtime_freeze/` | Preuve hash freeze         |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_audit_report_snapshot.json`     | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot audit             |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_control_registry_snapshot.json` | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot contrôles         |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_evidence_snapshot.json`         | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot evidence          |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_file_registry_snapshot.json`    | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot registry fichiers |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_risk_registry_snapshot.json`    | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot risques           |
+| `.runtime_freezes/OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/rssi_security_case_snapshot.json`    | `audit/proof/rssi_security_pack/runtime_freeze/` | Snapshot cas sécurité      |
+| `FILE_INDEX_COMPLETE.md`                                                                          | `audit/proof/rssi_security_pack/`                | Index complet source       |
+| `FINAL_RSSI_AUDIT_REPORT.json`                                                                    | `audit/proof/rssi_security_pack/`                | Rapport audit machine      |
+| `FINAL_RSSI_AUDIT_REPORT.md`                                                                      | `audit/proof/rssi_security_pack/`                | Rapport audit lisible      |
+| `FINAL_RSSI_SELF_CHECK.json`                                                                      | `audit/proof/rssi_security_pack/`                | Self-check pack            |
+| `MANIFEST_SHA256_ALL_FILES.json`                                                                  | `audit/proof/rssi_security_pack/`                | Manifest intégrité         |
+| `README.md`                                                                                       | `security/rssi/README.md`                        | Présentation du pack       |
+| `TEST_OUTPUT_RSSI_PACK_V1.txt`                                                                    | `audit/proof/rssi_security_pack/`                | Résultat tests source      |
+
+---
+
+# 2. Executive — surface de présentation
+
+| Fichier source                                          | Cible                      | Action                         |
+| ------------------------------------------------------- | -------------------------- | ------------------------------ |
+| `docs/executive/OBSIDIA_ONE_PAGE_SECURITY_BRIEF.md`     | `security/rssi/executive/` | Fiche 1 page RSSI              |
+| `docs/executive/OBSIDIA_RSSI_EXECUTIVE_SUMMARY.md`      | `security/rssi/executive/` | Résumé exécutif                |
+| `docs/executive/OBSIDIA_RSSI_PRESENTATION_NARRATIVE.md` | `security/rssi/executive/` | Narrative présentation         |
+| `docs/executive/OBSIDIA_SECURITY_VALUE_PROPOSITION.md`  | `security/rssi/executive/` | Proposition de valeur sécurité |
+
+À brancher ensuite dans :
+
+```text
+interface/rssi_presentation/
+interface/investor_demo/
+docs/public/security/
+```
+
+---
+
+# 3. Architecture sécurité
+
+| Fichier source                                                | Cible                         | Action                      |
+| ------------------------------------------------------------- | ----------------------------- | --------------------------- |
+| `docs/architecture/OBSIDIA_COMPONENT_AUTHORITY_MATRIX.md`     | `security/rssi/architecture/` | Matrice autorité composants |
+| `docs/architecture/OBSIDIA_DATA_FLOW_SECURITY_MAP.md`         | `security/rssi/architecture/` | Carte flux données          |
+| `docs/architecture/OBSIDIA_DECISION_FLOW_SECURITY_MAP.md`     | `security/rssi/architecture/` | Carte flux décision         |
+| `docs/architecture/OBSIDIA_OS0_OS4_SECURITY_MAPPING.md`       | `security/rssi/architecture/` | Mapping OS0→OS4 sécurité    |
+| `docs/architecture/OBSIDIA_READONLY_PERIPHERY_MODEL.md`       | `security/rssi/architecture/` | Modèle périphérie readonly  |
+| `docs/architecture/OBSIDIA_SECURITY_ARCHITECTURE_OVERVIEW.md` | `security/rssi/architecture/` | Vue globale sécurité        |
+| `docs/architecture/OBSIDIA_TRUST_BOUNDARIES.md`               | `security/rssi/architecture/` | Frontières de confiance     |
+| `docs/architecture/OBSIDIA_X108_SECURITY_MODEL.md`            | `security/rssi/architecture/` | Modèle sécurité X-108       |
+
+Branchement :
+
+```text
+OS3 audit
+↓
+security/rssi/architecture
+↓
+dashboard RSSI
+↓
+preuve que X-108 est autorité finale
+```
+
+---
+
+# 4. Gouvernance
+
+| Fichier source                                              | Cible                       | Action                   |
+| ----------------------------------------------------------- | --------------------------- | ------------------------ |
+| `docs/governance/OBSIDIA_CANONICAL_PROMOTION_POLICY.md`     | `security/rssi/governance/` | Politique passage canon  |
+| `docs/governance/OBSIDIA_CHANGE_CONTROL_POLICY.md`          | `security/rssi/governance/` | Change control           |
+| `docs/governance/OBSIDIA_DECISION_AUTHORITY_POLICY.md`      | `security/rssi/governance/` | Autorité décisionnelle   |
+| `docs/governance/OBSIDIA_GOVERNANCE_MODEL.md`               | `security/rssi/governance/` | Modèle gouvernance       |
+| `docs/governance/OBSIDIA_HUMAN_OVERSIGHT_POLICY.md`         | `security/rssi/governance/` | Supervision humaine      |
+| `docs/governance/OBSIDIA_NO_ACT_FROM_PERIPHERY_POLICY.md`   | `security/rssi/governance/` | Loi NO_ACT périphérie    |
+| `docs/governance/OBSIDIA_READONLY_BOUNDARY_POLICY.md`       | `security/rssi/governance/` | Politique readonly       |
+| `docs/governance/OBSIDIA_SECURITY_RESPONSIBILITY_MATRIX.md` | `security/rssi/governance/` | Responsabilités sécurité |
+
+Branchement direct :
+
+```text
+registry/authority_registry.yaml
+registry/boundary_registry.yaml
+docs/specs/KX108_ONLY_AUTHORITY_SPEC.md
+```
+
+---
+
+# 5. Access / IAM / permissions
+
+| Fichier source                                 | Cible                   | Action                  |
+| ---------------------------------------------- | ----------------------- | ----------------------- |
+| `docs/access/OBSIDIA_ADMIN_ACTIONS_POLICY.md`  | `security/rssi/access/` | Politique actions admin |
+| `docs/access/OBSIDIA_IAM_MODEL.md`             | `security/rssi/access/` | Modèle IAM              |
+| `docs/access/OBSIDIA_LEAST_PRIVILEGE_MODEL.md` | `security/rssi/access/` | Moindre privilège       |
+| `docs/access/OBSIDIA_OPERATOR_PERMISSIONS.md`  | `security/rssi/access/` | Permissions opérateur   |
+| `docs/access/OBSIDIA_PRIVILEGE_BOUNDARIES.md`  | `security/rssi/access/` | Frontières privilèges   |
+| `docs/access/OBSIDIA_ROLE_ACCESS_MATRIX.md`    | `security/rssi/access/` | Matrice rôles           |
+
+À brancher plus tard sur :
+
+```text
+interface/admin/
+operator_console/
+human_gate/
+```
+
+Boundary :
+
+```text
+permissions ≠ autorité d’ACT
+permission humaine ≠ bypass X-108
+```
+
+---
+
+# 6. Audit / trace / replay
+
+| Fichier source                                   | Cible                  | Action               |
+| ------------------------------------------------ | ---------------------- | -------------------- |
+| `docs/audit/OBSIDIA_AUDIT_PROOF_REQUIREMENTS.md` | `security/rssi/audit/` | Exigences preuve     |
+| `docs/audit/OBSIDIA_AUDIT_QUESTIONS_FOR_RSSI.md` | `security/rssi/audit/` | Questions RSSI       |
+| `docs/audit/OBSIDIA_AUDIT_TRAIL_MODEL.md`        | `security/rssi/audit/` | Modèle audit trail   |
+| `docs/audit/OBSIDIA_EVIDENCE_LEDGER_MODEL.md`    | `security/rssi/audit/` | Evidence ledger      |
+| `docs/audit/OBSIDIA_LOGGING_REQUIREMENTS.md`     | `security/rssi/audit/` | Logging requis       |
+| `docs/audit/OBSIDIA_REPLAYABILITY_MODEL.md`      | `security/rssi/audit/` | Replayabilité        |
+| `docs/audit/OBSIDIA_RSSI_REVIEW_CHECKLIST.md`    | `security/rssi/audit/` | Checklist revue RSSI |
+| `docs/audit/OBSIDIA_TRACEABILITY_MODEL.md`       | `security/rssi/audit/` | Traçabilité          |
+
+À brancher sur :
+
+```text
+audit/hash_chain/
+audit/replay_verifier/
+audit/evidence_ledger/
+docs/audit/X108_AFTER_AUDIT_REPORT.md
+```
+
+---
+
+# 7. Compliance
+
+| Fichier source                                          | Cible                       | Action                       |
+| ------------------------------------------------------- | --------------------------- | ---------------------------- |
+| `docs/compliance/OBSIDIA_AI_ACT_POSITIONING.md`         | `security/rssi/compliance/` | Positionnement AI Act        |
+| `docs/compliance/OBSIDIA_BANKING_SECURITY_RELEVANCE.md` | `security/rssi/compliance/` | Pertinence bancaire          |
+| `docs/compliance/OBSIDIA_COMPLIANCE_POSITIONING.md`     | `security/rssi/compliance/` | Positionnement conformité    |
+| `docs/compliance/OBSIDIA_DORA_NIS2_RELEVANCE.md`        | `security/rssi/compliance/` | DORA / NIS2                  |
+| `docs/compliance/OBSIDIA_GDPR_SECURITY_NOTES.md`        | `security/rssi/compliance/` | Notes RGPD sécurité          |
+| `docs/compliance/OBSIDIA_RSSI_QA_PACK.md`               | `security/rssi/compliance/` | Pack questions/réponses RSSI |
+
+Important :
+
+```text
+Ce pack V1 donne le socle compliance.
+Le zip RGPD / ISO V2 viendra le compléter en réponse 5/5.
+```
+
+---
+
+# 8. Controls
+
+| Fichier source                                           | Cible                     | Action                  |
+| -------------------------------------------------------- | ------------------------- | ----------------------- |
+| `docs/controls/OBSIDIA_CONTROL_COVERAGE_MATRIX.md`       | `security/rssi/controls/` | Couverture contrôles    |
+| `docs/controls/OBSIDIA_CONTROL_EVIDENCE_MAP.md`          | `security/rssi/controls/` | Mapping preuve/contrôle |
+| `docs/controls/OBSIDIA_CONTROL_GAPS.md`                  | `security/rssi/controls/` | Gaps contrôles          |
+| `docs/controls/OBSIDIA_CONTROL_MAPPING_AI_GOVERNANCE.md` | `security/rssi/controls/` | Mapping AI governance   |
+| `docs/controls/OBSIDIA_CONTROL_MAPPING_EBIOS_RM.md`      | `security/rssi/controls/` | Mapping EBIOS RM        |
+| `docs/controls/OBSIDIA_CONTROL_MAPPING_ISO27001.md`      | `security/rssi/controls/` | Mapping ISO27001        |
+| `docs/controls/OBSIDIA_CONTROL_MAPPING_NIST_CSF.md`      | `security/rssi/controls/` | Mapping NIST CSF        |
+| `docs/controls/OBSIDIA_SECURITY_CONTROLS_CATALOG.md`     | `security/rssi/controls/` | Catalogue contrôles     |
+
+Branchement :
+
+```text
+registry/rssi_control_registry.json
+security/rssi/controls/
+audit/evidence_ledger/
+```
+
+---
+
+# 9. Data / secrets / données sensibles
+
+| Fichier source                                    | Cible                 | Action                         |
+| ------------------------------------------------- | --------------------- | ------------------------------ |
+| `docs/data/OBSIDIA_DATA_CLASSIFICATION.md`        | `security/rssi/data/` | Classification données         |
+| `docs/data/OBSIDIA_DATA_MINIMIZATION_MODEL.md`    | `security/rssi/data/` | Minimisation                   |
+| `docs/data/OBSIDIA_DATA_RETENTION_MODEL.md`       | `security/rssi/data/` | Rétention                      |
+| `docs/data/OBSIDIA_PERSONAL_DATA_BOUNDARY.md`     | `security/rssi/data/` | Frontière données personnelles |
+| `docs/data/OBSIDIA_SECRET_MANAGEMENT_MODEL.md`    | `security/rssi/data/` | Gestion secrets                |
+| `docs/data/OBSIDIA_SENSITIVE_CONTEXT_HANDLING.md` | `security/rssi/data/` | Contexte sensible              |
+
+Boundary :
+
+```text
+NPL / Graphiti / Brody / Education
+doivent hériter de ces règles données.
+```
+
+---
+
+# 10. Incident response
+
+| Fichier source                                                 | Cible                              | Action                    |
+| -------------------------------------------------------------- | ---------------------------------- | ------------------------- |
+| `docs/incident_response/OBSIDIA_AI_INCIDENT_PLAYBOOK.md`       | `security/rssi/incident_response/` | Playbook incident IA      |
+| `docs/incident_response/OBSIDIA_DATA_INCIDENT_PLAYBOOK.md`     | `security/rssi/incident_response/` | Playbook incident données |
+| `docs/incident_response/OBSIDIA_GRAPH_INCIDENT_PLAYBOOK.md`    | `security/rssi/incident_response/` | Playbook incident graphe  |
+| `docs/incident_response/OBSIDIA_INCIDENT_RESPONSE_PLAN.md`     | `security/rssi/incident_response/` | Plan réponse incident     |
+| `docs/incident_response/OBSIDIA_ROLLBACK_AND_CONTAINMENT.md`   | `security/rssi/incident_response/` | Rollback / containment    |
+| `docs/incident_response/OBSIDIA_SECURITY_INCIDENT_PLAYBOOK.md` | `security/rssi/incident_response/` | Playbook sécurité         |
+
+À brancher avec :
+
+```text
+audit/rollback/
+audit/containment/
+ops/incident_response/
+```
+
+---
+
+# 11. Risk registers
+
+| Fichier source                                      | Cible                 | Action                   |
+| --------------------------------------------------- | --------------------- | ------------------------ |
+| `docs/risk/OBSIDIA_AI_RISK_REGISTER.md`             | `security/rssi/risk/` | Registre risques IA      |
+| `docs/risk/OBSIDIA_DATA_RISK_REGISTER.md`           | `security/rssi/risk/` | Registre risques données |
+| `docs/risk/OBSIDIA_GRAPHITI_NEO4J_RISK_REGISTER.md` | `security/rssi/risk/` | Risques Graphiti/Neo4j   |
+| `docs/risk/OBSIDIA_OPERATIONAL_RISK_REGISTER.md`    | `security/rssi/risk/` | Risques opérationnels    |
+| `docs/risk/OBSIDIA_RESIDUAL_RISK_MATRIX.md`         | `security/rssi/risk/` | Risques résiduels        |
+| `docs/risk/OBSIDIA_RISK_REGISTER.md`                | `security/rssi/risk/` | Registre global          |
+| `docs/risk/OBSIDIA_SUPPLY_CHAIN_RISK_REGISTER.md`   | `security/rssi/risk/` | Supply chain             |
+| `docs/risk/OBSIDIA_TECHNICAL_RISK_REGISTER.md`      | `security/rssi/risk/` | Risques techniques       |
+| `docs/risk/OBSIDIA_X108_RISK_REGISTER.md`           | `security/rssi/risk/` | Risques X-108            |
+
+Action après import :
+
+```text
+Fusionner en registry/rssi/rssi_risk_registry.json
+puis exposer dans OS3 Dashboard.
+```
+
+---
+
+# 12. Threat model
+
+| Fichier source                                         | Cible                         | Action                   |
+| ------------------------------------------------------ | ----------------------------- | ------------------------ |
+| `docs/threat_model/OBSIDIA_ABUSE_CASES.md`             | `security/rssi/threat_model/` | Cas d’abus               |
+| `docs/threat_model/OBSIDIA_ATTACK_SURFACE.md`          | `security/rssi/threat_model/` | Surface d’attaque        |
+| `docs/threat_model/OBSIDIA_ATTACK_TREE.md`             | `security/rssi/threat_model/` | Arbre d’attaque          |
+| `docs/threat_model/OBSIDIA_MISUSE_CASES.md`            | `security/rssi/threat_model/` | Misuse cases             |
+| `docs/threat_model/OBSIDIA_SECURITY_ASSUMPTIONS.md`    | `security/rssi/threat_model/` | Hypothèses sécurité      |
+| `docs/threat_model/OBSIDIA_THREAT_ACTORS.md`           | `security/rssi/threat_model/` | Acteurs menace           |
+| `docs/threat_model/OBSIDIA_THREAT_MODEL_OVERVIEW.md`   | `security/rssi/threat_model/` | Vue globale threat model |
+| `docs/threat_model/OBSIDIA_TRUSTED_UNTRUSTED_ZONES.md` | `security/rssi/threat_model/` | Zones trusted/untrusted  |
+
+Branchement :
+
+```text
+security/rssi/threat_model
+↓
+tests/security_adversarial/
+↓
+benchmarks/resistance_to_bypass/
+```
+
+---
+
+# 13. Security cases
+
+| Fichier source                                           | Cible                           | Action                      |
+| -------------------------------------------------------- | ------------------------------- | --------------------------- |
+| `docs/security_cases/CASE_001_PROMPT_INJECTION.md`       | `security/rssi/security_cases/` | Cas prompt injection        |
+| `docs/security_cases/CASE_002_AGENT_BYPASS_ATTEMPT.md`   | `security/rssi/security_cases/` | Bypass agent                |
+| `docs/security_cases/CASE_003_MEMORY_WRITE_ATTEMPT.md`   | `security/rssi/security_cases/` | Tentative écriture mémoire  |
+| `docs/security_cases/CASE_004_GRAPHITI_WRITE_ATTEMPT.md` | `security/rssi/security_cases/` | Tentative écriture Graphiti |
+| `docs/security_cases/CASE_005_NEO4J_MUTATION_ATTEMPT.md` | `security/rssi/security_cases/` | Mutation Neo4j              |
+| `docs/security_cases/CASE_006_X108_BYPASS_ATTEMPT.md`    | `security/rssi/security_cases/` | Bypass X-108                |
+| `docs/security_cases/CASE_007_PRIVILEGE_ESCALATION.md`   | `security/rssi/security_cases/` | Élévation privilège         |
+| `docs/security_cases/CASE_008_DATA_EXFILTRATION.md`      | `security/rssi/security_cases/` | Exfiltration données        |
+| `docs/security_cases/CASE_009_UNAUTHORIZED_ACT.md`       | `security/rssi/security_cases/` | ACT non autorisé            |
+| `docs/security_cases/CASE_010_IRREVERSIBLE_ACTION.md`    | `security/rssi/security_cases/` | Action irréversible         |
+| `docs/security_cases/CASE_011_HALLUCINATED_DECISION.md`  | `security/rssi/security_cases/` | Décision halluciné          |
+| `docs/security_cases/CASE_012_SUPPLY_CHAIN_ATTACK.md`    | `security/rssi/security_cases/` | Supply chain attack         |
+
+À convertir ensuite en tests :
+
+```text
+tests/adversarial/
+tests/x108_bypass/
+tests/memory_write_guard/
+tests/agent_no_act/
+```
+
+---
+
+# 14. Modules RSSI 001 → 040
+
+Ces fichiers sont la **colonne narrative RSSI**.
+Ils ne vont pas dans le runtime. Ils alimentent présentation, docs sécurité, dashboard, due diligence.
+
+| Fichier source                                                | Cible                    | Action                             |
+| ------------------------------------------------------------- | ------------------------ | ---------------------------------- |
+| `docs/modules/RSSI_001_VISION_SECURITE_OBSIDIA.md`            | `security/rssi/modules/` | Module narrative sécurité          |
+| `docs/modules/RSSI_002_ARCHITECTURE_SECURITE_OS0OS4.md`       | `security/rssi/modules/` | Module OS0→OS4                     |
+| `docs/modules/RSSI_003_BOUNDARY_X108.md`                      | `security/rssi/modules/` | Module boundary X108               |
+| `docs/modules/RSSI_004_AUTORITE_DECISIONNELLE_KX108_ONLY.md`  | `security/rssi/modules/` | Module KX108_ONLY                  |
+| `docs/modules/RSSI_005_SEPARATION_NOYAU_PERIPHERIE.md`        | `security/rssi/modules/` | Module séparation noyau/périphérie |
+| `docs/modules/RSSI_006_READONLY_CONTEXT_MODEL.md`             | `security/rssi/modules/` | Module context readonly            |
+| `docs/modules/RSSI_007_NON_CONTOURNEMENT.md`                  | `security/rssi/modules/` | Module non-contournement           |
+| `docs/modules/RSSI_008_NON_EMISSION_ACT_PERIPHERIE.md`        | `security/rssi/modules/` | Module NO_ACT périphérie           |
+| `docs/modules/RSSI_009_CONTROLE_GRAPHITI_NEO4J.md`            | `security/rssi/modules/` | Module Graphiti/Neo4j              |
+| `docs/modules/RSSI_010_AUDIT_LOGS.md`                         | `security/rssi/modules/` | Module logs                        |
+| `docs/modules/RSSI_011_REPLAYABILITE.md`                      | `security/rssi/modules/` | Module replay                      |
+| `docs/modules/RSSI_012_EVIDENCE_LEDGER.md`                    | `security/rssi/modules/` | Module evidence ledger             |
+| `docs/modules/RSSI_013_GESTION_DES_ACCES.md`                  | `security/rssi/modules/` | Module accès                       |
+| `docs/modules/RSSI_014_GESTION_DES_SECRETS.md`                | `security/rssi/modules/` | Module secrets                     |
+| `docs/modules/RSSI_015_DONNEES_SENSIBLES.md`                  | `security/rssi/modules/` | Module données sensibles           |
+| `docs/modules/RSSI_016_DONNEES_PERSONNELLES.md`               | `security/rssi/modules/` | Module données personnelles        |
+| `docs/modules/RSSI_017_RISQUE_PROMPT_INJECTION.md`            | `security/rssi/modules/` | Module prompt injection            |
+| `docs/modules/RSSI_018_RISQUE_AGENT_BYPASS.md`                | `security/rssi/modules/` | Module agent bypass                |
+| `docs/modules/RSSI_019_RISQUE_HALLUCINATION_DECISIONNELLE.md` | `security/rssi/modules/` | Module hallucination décisionnelle |
+| `docs/modules/RSSI_020_RISQUE_SUPPLY_CHAIN.md`                | `security/rssi/modules/` | Module supply chain                |
+| `docs/modules/RSSI_021_RISQUE_DEPENDANCE_LLM.md`              | `security/rssi/modules/` | Module dépendance LLM              |
+| `docs/modules/RSSI_022_RISQUE_MEMORY_POISONING.md`            | `security/rssi/modules/` | Module memory poisoning            |
+| `docs/modules/RSSI_023_RISQUE_GRAPH_POISONING.md`             | `security/rssi/modules/` | Module graph poisoning             |
+| `docs/modules/RSSI_024_RISQUE_UNAUTHORIZED_TOOL_CALL.md`      | `security/rssi/modules/` | Module tool-call non autorisé      |
+| `docs/modules/RSSI_025_RISQUE_ACTION_IRREVERSIBLE.md`         | `security/rssi/modules/` | Module action irréversible         |
+| `docs/modules/RSSI_026_INCIDENT_RESPONSE.md`                  | `security/rssi/modules/` | Module incident response           |
+| `docs/modules/RSSI_027_ROLLBACK_CONTAINMENT.md`               | `security/rssi/modules/` | Module rollback/containment        |
+| `docs/modules/RSSI_028_CONFORMITE_ISO_27001.md`               | `security/rssi/modules/` | Module ISO27001                    |
+| `docs/modules/RSSI_029_CONFORMITE_NIST_CSF.md`                | `security/rssi/modules/` | Module NIST CSF                    |
+| `docs/modules/RSSI_030_CONFORMITE_EBIOS_RM.md`                | `security/rssi/modules/` | Module EBIOS RM                    |
+| `docs/modules/RSSI_031_PERTINENCE_AI_ACT.md`                  | `security/rssi/modules/` | Module AI Act                      |
+| `docs/modules/RSSI_032_PERTINENCE_GDPR.md`                    | `security/rssi/modules/` | Module GDPR                        |
+| `docs/modules/RSSI_033_PERTINENCE_NIS2_DORA.md`               | `security/rssi/modules/` | Module NIS2 / DORA                 |
+| `docs/modules/RSSI_034_CONTROLES_BANCAIRES.md`                | `security/rssi/modules/` | Module contrôles bancaires         |
+| `docs/modules/RSSI_035_QUESTIONS_RSSI.md`                     | `security/rssi/modules/` | Module questions RSSI              |
+| `docs/modules/RSSI_036_PREUVES_ATTENDUES.md`                  | `security/rssi/modules/` | Module preuves attendues           |
+| `docs/modules/RSSI_037_LIMITES_ACTUELLES.md`                  | `security/rssi/modules/` | Module limites                     |
+| `docs/modules/RSSI_038_ROADMAP_SECURITE.md`                   | `security/rssi/modules/` | Module roadmap sécurité            |
+| `docs/modules/RSSI_039_CONDITIONS_DE_PASSAGE_PRE_PROD.md`     | `security/rssi/modules/` | Module passage pré-prod            |
+| `docs/modules/RSSI_040_CONDITIONS_DE_REFUS_PRODUCTION.md`     | `security/rssi/modules/` | Module refus production            |
+
+---
+
+# 15. Periphery runtime readonly
+
+Ces fichiers sont branchables, mais uniquement comme **loader / registry / reporting readonly**.
+
+| Fichier source                                      | Cible                           | Action                  |
+| --------------------------------------------------- | ------------------------------- | ----------------------- |
+| `periphery/rssi_security_pack/__init__.py`          | `periphery/rssi_security_pack/` | Package init            |
+| `periphery/rssi_security_pack/audit_questions.py`   | `periphery/rssi_security_pack/` | Charger questions audit |
+| `periphery/rssi_security_pack/evidence_registry.py` | `periphery/rssi_security_pack/` | Lire registry evidence  |
+| `periphery/rssi_security_pack/metrics.py`           | `periphery/rssi_security_pack/` | Exposer métriques RSSI  |
+| `periphery/rssi_security_pack/package_loader.py`    | `periphery/rssi_security_pack/` | Loader pack             |
+| `periphery/rssi_security_pack/readonly_boundary.py` | `periphery/rssi_security_pack/` | Boundary readonly       |
+| `periphery/rssi_security_pack/risk_registry.py`     | `periphery/rssi_security_pack/` | Lire risques            |
+| `periphery/rssi_security_pack/rssi_types.py`        | `periphery/rssi_security_pack/` | Types RSSI              |
+| `periphery/rssi_security_pack/security_cases.py`    | `periphery/rssi_security_pack/` | Charger cas sécurité    |
+| `periphery/rssi_security_pack/security_controls.py` | `periphery/rssi_security_pack/` | Charger contrôles       |
+| `periphery/rssi_security_pack/threat_model.py`      | `periphery/rssi_security_pack/` | Charger threat model    |
+
+Tests à imposer :
+
+```text
+periphery/rssi_security_pack
+→ ne doit jamais écrire
+→ ne doit jamais appeler X-108 comme décideur
+→ ne doit jamais produire ACT
+→ ne doit jamais modifier registry source
+```
+
+---
+
+# 16. Registries RSSI
+
+| Fichier source                              | Cible            | Action                |
+| ------------------------------------------- | ---------------- | --------------------- |
+| `registry/rssi_boundary_registry.json`      | `registry/rssi/` | Registry boundaries   |
+| `registry/rssi_control_registry.json`       | `registry/rssi/` | Registry contrôles    |
+| `registry/rssi_evidence_registry.json`      | `registry/rssi/` | Registry evidence     |
+| `registry/rssi_file_registry.json`          | `registry/rssi/` | Registry fichiers     |
+| `registry/rssi_metrics_registry.json`       | `registry/rssi/` | Registry métriques    |
+| `registry/rssi_risk_registry.json`          | `registry/rssi/` | Registry risques      |
+| `registry/rssi_security_case_registry.json` | `registry/rssi/` | Registry cas sécurité |
+| `registry/rssi_threat_registry.json`        | `registry/rssi/` | Registry menaces      |
+
+À fusionner ensuite dans :
+
+```text
+registry/master_registry.yaml
+registry/os3_security_registry.yaml
+```
+
+Mais pas immédiatement. D’abord les garder séparés.
+
+---
+
+# 17. Tests RSSI
+
+| Fichier source                        | Cible                       | Action               |
+| ------------------------------------- | --------------------------- | -------------------- |
+| `tests/test_rssi_pack_boundaries.py`  | `tests/rssi_security_pack/` | Tester boundaries    |
+| `tests/test_rssi_pack_metrics.py`     | `tests/rssi_security_pack/` | Tester métriques     |
+| `tests/test_rssi_pack_no_mutation.py` | `tests/rssi_security_pack/` | Tester zéro mutation |
+| `tests/test_rssi_pack_registries.py`  | `tests/rssi_security_pack/` | Tester registries    |
+| `tests/test_rssi_pack_structure.py`   | `tests/rssi_security_pack/` | Tester structure     |
+
+Tests supplémentaires à créer :
+
+```text
+tests/rssi_security_pack/test_no_act_from_rssi_pack.py
+tests/rssi_security_pack/test_no_verdict_from_rssi_pack.py
+tests/rssi_security_pack/test_rssi_readonly_loader.py
+tests/rssi_security_pack/test_rssi_registry_integrity.py
+tests/rssi_security_pack/test_security_cases_match_threat_model.py
+```
+
+---
+
+# Flux cible RSSI
+
+```text
+X-108 / Brody / Graphiti / Atlas / Cognitive / External Signals
+↓
+OS3 Security Evidence
+↓
+RSSI registries
+↓
+risk / controls / security cases / threat model
+↓
+RSSI dashboard / presentation pack
+↓
+audit review / investor / institution
+```
+
+---
+
+# Ce que ce zip ajoute réellement
+
+```text
+1. Langage RSSI
+2. Matrice de contrôle
+3. Registre de risques
+4. Cas sécurité concrets
+5. Threat model
+6. Gouvernance de décision
+7. Modèle readonly périphérie
+8. Questions RSSI prêtes
+9. Evidence ledger
+10. Surface de présentation institutionnelle
+```
+
+Ce pack transforme Obsidia de :
+
+```text
+architecture impressionnante
+```
+
+à :
+
+```text
+architecture défendable devant sécurité / conformité / institution
+```
+
+---
+
+# Position dans l’ordre global
+
+```text
+Priorité :
+P1
+
+À brancher :
+très tôt, juste après constitution X-108 / contracts
+
+Pourquoi :
+chaque prochain module devra produire ses preuves dans OS3.
+```
+
+Ordre précis :
+
+```text
+1. X-108 authority contracts
+2. RSSI Security Pack
+3. External Signals
+4. Graphiti/Brody memory
+5. Atlas
+6. Cognitive Reintegration
+7. NPL
+8. Education
+9. Benchmarks
+```
+
+---
+
+# Boundary freeze
+
+```text
+RSSI Security Pack ne sécurise pas par magie le système.
+
+Il expose, classe, documente, audite et rend visible la sécurité.
+
+Il ne décide pas.
+Il ne corrige pas seul.
+Il ne mute pas.
+Il ne bypass pas X-108.
+
+Il devient la surface OS3 qui permet de prouver que chaque organe Obsidia respecte sa boundary.
+```
+
+Je continue ensuite avec **RÉPONSE 3/5 — COGNITIVE_REINTEGRATION_SPEC_V1_VERIFIED_FULL**.

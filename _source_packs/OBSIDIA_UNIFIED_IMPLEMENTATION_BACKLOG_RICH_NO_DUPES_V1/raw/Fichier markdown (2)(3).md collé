@@ -1,0 +1,1096 @@
+# RÉPONSE 5/5 — OBSIDIA_RSSI_RGPD_ISO_READINESS_PACK_V2(1).zip
+
+## Rôle du zip
+
+```text
+RSSI RGPD ISO Readiness Pack V2
+=
+couche conformité / pré-audit / due diligence / passage institutionnel
+```
+
+Ce pack est différent du RSSI Security Presentation Pack.
+
+Le RSSI Security Pack sert à expliquer la sécurité.
+
+Le RGPD / ISO Readiness Pack sert à préparer Obsidia à être regardé par :
+
+```text
+RSSI
+DPO
+juriste
+auditeur ISO
+incubateur deeptech
+grand compte
+institution
+partenaire bancaire
+client B2B sensible
+```
+
+Le rapport de vérification fourni indique un résultat strict PASS : aucun fichier vide, aucun fichier trop court, aucun champ métrique/boundary/status manquant sur les fichiers contrôlés. 
+
+Boundary globale :
+
+```text
+COMPLIANCE_READINESS_ONLY
+NO_ACT
+NO_DECISION
+NO_RUNTIME_AUTHORITY
+NO_LEGAL_CLAIM_FINAL
+KX108_ONLY
+EVIDENCE_AND_READINESS_LAYER
+```
+
+Phrase freeze :
+
+```text
+RGPD / ISO ne donne pas l’autorité au système.
+RGPD / ISO prépare la preuve que le système peut être audité.
+```
+
+---
+
+# Arbo cible
+
+```text
+compliance/
+├── rgpd/
+├── iso27001/
+├── ai_act/
+├── dora_nis2/
+├── data_governance/
+├── legal/
+├── deployment/
+├── audit_readiness/
+└── compliance_registry/
+
+security/
+├── rssi/
+├── devsecops/
+├── supply_chain/
+├── ai_security/
+└── production_hardening/
+
+audit/
+├── external_audit/
+├── pentest/
+├── remediation/
+├── evidence/
+├── replay_samples/
+└── incident_simulations/
+```
+
+Branchement Obsidia :
+
+```text
+OS3 — Audit / Compliance / Evidence / Risk / Controls
+OS4 — Présentation RSSI / DPO / institution / client
+```
+
+---
+
+# Règle de fusion avec le RSSI Security Pack
+
+Comme ce pack contient aussi une partie RSSI déjà proche du pack précédent :
+
+```text
+docs/
+registry/
+periphery/rssi_security_pack/
+tests/test_rssi_pack_*.py
+.runtime_freezes/
+```
+
+il ne faut pas les dupliquer bêtement.
+
+Règle :
+
+```text
+RSSI Security Pack V1
+→ socle narratif sécurité
+
+RGPD ISO Readiness V2
+→ extension compliance / production / audit externe
+```
+
+Donc si un fichier existe déjà :
+
+```text
+1. garder la version la plus riche
+2. sinon garder V2 comme extension compliance
+3. tracer la collision dans MERGE_LEDGER
+4. ne jamais écraser sans diff
+```
+
+---
+
+# Ordre d’implémentation du zip
+
+```text
+1. Importer root + manifests + rapports comme preuves
+2. Fusionner docs RSSI avec pack sécurité V1
+3. Importer iso27001/
+4. Importer rgpd/
+5. Importer data_governance/
+6. Importer ai_security/
+7. Importer security/devsecops/supply_chain/
+8. Importer deployment/
+9. Importer legal/
+10. Importer audit externe / pentest / remediation
+11. Fusionner registries
+12. Brancher tests compliance/readiness
+13. Exposer dashboard OS3 readiness
+```
+
+---
+
+# 1. Root / preuves / validation
+
+| Fichier source                   | Cible                             | Action                        |
+| -------------------------------- | --------------------------------- | ----------------------------- |
+| `README.md`                      | `compliance/README.md`            | Présentation canon compliance |
+| `FILE_INDEX_COMPLETE.md`         | `audit/proof/rgpd_iso_readiness/` | Index source                  |
+| `MANIFEST_SHA256_ALL_FILES.json` | `audit/proof/rgpd_iso_readiness/` | Manifest hash                 |
+| `FINAL_RSSI_AUDIT_REPORT.md`     | `audit/proof/rgpd_iso_readiness/` | Rapport lisible               |
+| `FINAL_RSSI_AUDIT_REPORT.json`   | `audit/proof/rgpd_iso_readiness/` | Rapport machine               |
+| `FINAL_RSSI_SELF_CHECK.json`     | `audit/proof/rgpd_iso_readiness/` | Self-check                    |
+| `TEST_OUTPUT_RSSI_PACK_V1.txt`   | `audit/proof/rgpd_iso_readiness/` | Test output legacy            |
+| `TEST_OUTPUT_RSSI_PACK_V2.txt`   | `audit/proof/rgpd_iso_readiness/` | Test output V2                |
+
+Action après import :
+
+```text
+Créer :
+audit/proof/rgpd_iso_readiness/READINESS_SOURCE_LEDGER.md
+```
+
+But :
+
+```text
+prouver d’où vient chaque bloc compliance.
+```
+
+---
+
+# 2. Runtime freezes
+
+Source :
+
+```text
+.runtime_freezes/
+├── OBSIDIA_RSSI_SECURITY_PRESENTATION_PACK_V1/
+└── OBSIDIA_RSSI_RGPD_ISO_READINESS_PACK_V2/
+```
+
+Cible :
+
+```text
+audit/proof/runtime_freezes/
+├── rssi_security_pack_v1/
+└── rgpd_iso_readiness_v2/
+```
+
+Fichiers à intégrer :
+
+```text
+MANIFEST_SHA256.json
+rssi_file_registry_snapshot.json
+rssi_control_registry_snapshot.json
+rssi_risk_registry_snapshot.json
+rssi_security_case_snapshot.json
+rssi_evidence_snapshot.json
+rssi_audit_report_snapshot.json
+```
+
+Action :
+
+```text
+IMPORT_AS_FREEZE_EVIDENCE
+NO_RUNTIME
+NO_DECISION
+```
+
+Rôle :
+
+```text
+Preuve de l’état du pack au moment du freeze.
+```
+
+---
+
+# 3. ISO 27001
+
+Source :
+
+```text
+iso27001/
+```
+
+Cible :
+
+```text
+compliance/iso27001/
+```
+
+| Fichier                         | Action                                                 |
+| ------------------------------- | ------------------------------------------------------ |
+| `ISMS_SCOPE.md`                 | Définir le périmètre du système de management sécurité |
+| `SECURITY_POLICY.md`            | Politique sécurité générale                            |
+| `RISK_REGISTER.md`              | Registre risques ISO                                   |
+| `RISK_TREATMENT_PLAN.md`        | Plan de traitement des risques                         |
+| `STATEMENT_OF_APPLICABILITY.md` | Déclaration d’applicabilité                            |
+| `ACCESS_CONTROL_POLICY.md`      | Politique contrôle accès                               |
+| `INCIDENT_RESPONSE_PLAN.md`     | Plan réponse incident                                  |
+| `BUSINESS_CONTINUITY_PLAN.md`   | Continuité activité                                    |
+| `BACKUP_RESTORE_POLICY.md`      | Sauvegarde / restauration                              |
+| `SUPPLIER_SECURITY_POLICY.md`   | Sécurité fournisseurs                                  |
+| `LOGGING_MONITORING_POLICY.md`  | Logs / monitoring                                      |
+| `CHANGE_MANAGEMENT_POLICY.md`   | Gestion changement                                     |
+| `SECURITY_TRAINING_RECORD.md`   | Registre formation sécurité                            |
+
+Branchement Obsidia :
+
+```text
+compliance/iso27001/
+↓
+security/rssi/controls/
+↓
+audit/evidence/
+↓
+OS3 readiness dashboard
+```
+
+Boundary :
+
+```text
+ISO27001_READY ≠ ISO27001_CERTIFIED
+```
+
+Très important :
+
+```text
+Ne jamais dire “certifié ISO”.
+Dire “readiness ISO / pré-structuration ISO / audit-ready”.
+```
+
+---
+
+# 4. RGPD
+
+Source :
+
+```text
+rgpd/
+```
+
+Cible :
+
+```text
+compliance/rgpd/
+```
+
+| Fichier                                    | Action                               |
+| ------------------------------------------ | ------------------------------------ |
+| `DATA_PROCESSING_REGISTER.md`              | Registre traitements                 |
+| `DATA_MAP.md`                              | Carte des données                    |
+| `PURPOSES_AND_LEGAL_BASES.md`              | Finalités / bases légales            |
+| `DPIA_SCREENING.md`                        | Screening AIPD                       |
+| `DPIA_FULL_TEMPLATE.md`                    | Template AIPD complet                |
+| `DATA_RETENTION_POLICY.md`                 | Politique rétention                  |
+| `DATA_MINIMIZATION_POLICY.md`              | Politique minimisation               |
+| `DATA_SUBJECT_RIGHTS_PROCEDURE.md`         | Procédure droits personnes           |
+| `PRIVACY_BY_DESIGN_NOTE.md`                | Privacy by design                    |
+| `TRAINING_VS_PRODUCTION_SEPARATION.md`     | Séparation entraînement / production |
+| `PERSONAL_DATA_CLASSIFICATION.md`          | Classification données personnelles  |
+| `PSEUDONYMIZATION_AND_REDACTION_POLICY.md` | Pseudonymisation / redaction         |
+| `DPA_TEMPLATE.md`                          | Template DPA                         |
+| `PRIVACY_NOTICE_TEMPLATE.md`               | Notice confidentialité               |
+
+Branchement critique avec Obsidia :
+
+```text
+Graphiti
+Brody
+NPL
+Education
+Cognitive Reintegration
+Logs
+Context packets
+Memory packets
+```
+
+Tous doivent hériter de :
+
+```text
+data_minimization
+retention_policy
+personal_data_boundary
+right_to_delete
+export_procedure
+training_vs_production_separation
+```
+
+Boundary :
+
+```text
+NPL / Brody / Graphiti peuvent manipuler du contexte humain.
+Donc RGPD doit être branché avant toute démo éducation réelle avec données personnelles.
+```
+
+---
+
+# 5. Data governance
+
+Source :
+
+```text
+data_governance/
+```
+
+Cible :
+
+```text
+compliance/data_governance/
+```
+
+| Fichier                         | Action                     |
+| ------------------------------- | -------------------------- |
+| `MEMORY_DATA_CLASSIFICATION.md` | Classification mémoire     |
+| `GRAPHITI_DATA_MAP.md`          | Carte données Graphiti     |
+| `BRODY_MEMORY_DATA_MAP.md`      | Carte mémoire Brody        |
+| `VECTOR_DB_POLICY.md`           | Politique base vectorielle |
+| `LOG_DATA_CLASSIFICATION.md`    | Classification logs        |
+| `RETENTION_BY_DATA_TYPE.md`     | Rétention par type         |
+| `DELETION_PROCEDURE.md`         | Procédure suppression      |
+| `EXPORT_PROCEDURE.md`           | Procédure export           |
+| `CLIENT_DATA_ISOLATION.md`      | Isolation données client   |
+| `TENANT_ISOLATION_MODEL.md`     | Modèle multi-tenant        |
+
+Branchement direct :
+
+```text
+memory/graphiti/
+memory/brody/
+memory/vector/
+audit/logs/
+education/student_context/
+```
+
+Tests à créer :
+
+```text
+test_memory_data_classification_exists.py
+test_graphiti_data_map_exists.py
+test_brody_memory_data_map_exists.py
+test_retention_policy_by_data_type.py
+test_deletion_export_procedure_present.py
+test_tenant_isolation_declared.py
+```
+
+Boundary :
+
+```text
+Mémoire ≠ droit infini de conservation.
+Mémoire ≠ propriété souveraine du système.
+```
+
+---
+
+# 6. AI Security
+
+Source :
+
+```text
+ai_security/
+```
+
+Cible :
+
+```text
+security/ai_security/
+```
+
+| Fichier                              | Action                      |
+| ------------------------------------ | --------------------------- |
+| `PROMPT_INJECTION_TESTS.md`          | Tests injection directe     |
+| `INDIRECT_PROMPT_INJECTION_TESTS.md` | Tests injection indirecte   |
+| `DATA_EXFILTRATION_TESTS.md`         | Tests exfiltration          |
+| `TOOL_ABUSE_TESTS.md`                | Tests abus tool-call        |
+| `MODEL_RISK_REGISTER.md`             | Registre risques modèle     |
+| `HUMAN_CONTROL_POLICY.md`            | Contrôle humain             |
+| `OUTPUT_FILTERING_POLICY.md`         | Filtrage sortie             |
+| `INPUT_FILTERING_POLICY.md`          | Filtrage entrée             |
+| `AGENT_ACTION_LIMITS.md`             | Limites actions agents      |
+| `CRITICAL_ACTION_CATALOG.md`         | Catalogue actions critiques |
+| `RED_TEAM_REPORT.md`                 | Rapport red team            |
+
+Branchement direct avec X-108 :
+
+```text
+AI Security tests
+↓
+Agent Action Limits
+↓
+Critical Action Catalog
+↓
+IntentEnvelope
+↓
+X-108
+```
+
+Boundary :
+
+```text
+Agent action limit ≠ décision finale.
+Il définit la limite.
+X-108 tranche le passage.
+```
+
+À convertir ensuite en tests exécutables :
+
+```text
+tests/ai_security/test_prompt_injection_guard.py
+tests/ai_security/test_indirect_prompt_injection_guard.py
+tests/ai_security/test_tool_abuse_requires_x108.py
+tests/ai_security/test_critical_action_catalog_requires_decision_ticket.py
+tests/ai_security/test_agent_action_limits_no_bypass.py
+```
+
+---
+
+# 7. Security / DevSecOps / Supply chain
+
+Source :
+
+```text
+security/
+```
+
+Cible :
+
+```text
+security/devsecops/
+```
+
+| Fichier                         | Action                     |
+| ------------------------------- | -------------------------- |
+| `DEPENDENCY_AUDIT.md`           | Audit dépendances          |
+| `SUPPLY_CHAIN_RISK_REGISTER.md` | Risques supply chain       |
+| `SECRET_SCAN_POLICY.md`         | Politique scan secrets     |
+| `SAST_REPORT.md`                | Rapport SAST               |
+| `DAST_REPORT.md`                | Rapport DAST               |
+| `CONTAINER_SCAN_REPORT.md`      | Scan conteneurs            |
+| `CODE_SIGNING_POLICY.md`        | Signature code             |
+| `CI_CD_SECURITY.md`             | Sécurité CI/CD             |
+| `BRANCH_PROTECTION_POLICY.md`   | Protection branches        |
+| `SBOM.json`                     | Software Bill of Materials |
+
+Branchement :
+
+```text
+repo hardening
+CI/CD
+release freeze
+audit evidence
+production readiness
+```
+
+Boundary :
+
+```text
+SBOM / SAST / DAST sont des preuves.
+Ils ne garantissent pas sécurité absolue.
+```
+
+Tests / checks :
+
+```text
+secret scan
+dependency audit
+branch protection expected
+SBOM parse valid
+container scan artifact present
+```
+
+---
+
+# 8. RSSI production readiness
+
+Source :
+
+```text
+rssi/
+```
+
+Cible :
+
+```text
+security/rssi/production_readiness/
+```
+
+| Fichier                              | Action                      |
+| ------------------------------------ | --------------------------- |
+| `RSSI_READINESS_MATRIX.md`           | Matrice readiness RSSI      |
+| `SECURITY_ARCHITECTURE.md`           | Architecture sécurité       |
+| `THREAT_MODEL.md`                    | Threat model synthèse       |
+| `ATTACK_SURFACE.md`                  | Surface d’attaque           |
+| `DATA_FLOW_DIAGRAM.md`               | Diagramme flux données      |
+| `TRUST_BOUNDARIES.md`                | Frontières confiance        |
+| `IAM_RBAC_MODEL.md`                  | IAM/RBAC                    |
+| `SECRETS_MANAGEMENT.md`              | Secrets                     |
+| `ENCRYPTION_POLICY.md`               | Chiffrement                 |
+| `NETWORK_SEGMENTATION.md`            | Segmentation réseau         |
+| `SIEM_LOGGING_EXPORT.md`             | Export SIEM                 |
+| `SECURITY_OPERATIONS_RUNBOOK.md`     | Runbook opérations sécurité |
+| `PENTEST_REPORT_TEMPLATE.md`         | Template pentest            |
+| `HARDENING_GUIDE.md`                 | Guide hardening             |
+| `PRODUCTION_DEPLOYMENT_CHECKLIST.md` | Checklist prod              |
+
+Rôle :
+
+```text
+Transformer Obsidia en dossier présentable avant pré-prod.
+```
+
+Boundary :
+
+```text
+Production readiness ≠ production.
+```
+
+Statut cible :
+
+```text
+PREPROD_REVIEW_READY
+NOT_PRODUCTION_BOUND
+```
+
+---
+
+# 9. Deployment / souveraineté / hébergement
+
+Source :
+
+```text
+deployment/
+```
+
+Cible :
+
+```text
+compliance/deployment/
+```
+
+| Fichier                         | Action                         |
+| ------------------------------- | ------------------------------ |
+| `EU_HOSTING_OPTIONS.md`         | Options hébergement UE         |
+| `ON_PREM_DEPLOYMENT_GUIDE.md`   | Guide on-prem                  |
+| `SOVEREIGN_CLOUD_DEPLOYMENT.md` | Déploiement cloud souverain    |
+| `SECNUMCLOUD_TARGET_NOTE.md`    | Note cible SecNumCloud         |
+| `DATA_RESIDENCY_STATEMENT.md`   | Résidence données              |
+| `SUBPROCESSORS_LIST.md`         | Sous-traitants                 |
+| `INFRA_SECURITY_BASELINE.md`    | Baseline infra                 |
+| `BACKUP_LOCATION_POLICY.md`     | Politique localisation backups |
+
+Branchement :
+
+```text
+deployment options
+↓
+client data residency
+↓
+RGPD / DPO
+↓
+RSSI preprod review
+```
+
+Boundary :
+
+```text
+SecNumCloud target note ≠ SecNumCloud certified.
+EU hosting option ≠ automatic compliance.
+```
+
+---
+
+# 10. Legal
+
+Source :
+
+```text
+legal/
+```
+
+Cible :
+
+```text
+compliance/legal/
+```
+
+| Fichier                           | Action                        |
+| --------------------------------- | ----------------------------- |
+| `DPA_TEMPLATE.md`                 | Template DPA                  |
+| `SUBPROCESSOR_LIST.md`            | Liste sous-traitants          |
+| `SLA_TEMPLATE.md`                 | Template SLA                  |
+| `SECURITY_APPENDIX.md`            | Annexe sécurité               |
+| `ACCEPTABLE_USE_POLICY.md`        | Politique usage acceptable    |
+| `DATA_PROCESSING_TERMS.md`        | Conditions traitement données |
+| `CONFIDENTIALITY_CLAUSE.md`       | Clause confidentialité        |
+| `INCIDENT_NOTIFICATION_CLAUSE.md` | Clause notification incident  |
+
+Boundary :
+
+```text
+Templates juridiques ≠ avis juridique final.
+Review avocat / DPO requise avant signature.
+```
+
+Branchement :
+
+```text
+client onboarding
+B2B contract pack
+institutional due diligence
+```
+
+---
+
+# 11. Audit externe / pentest / remédiation
+
+Source :
+
+```text
+audit/
+```
+
+Cible :
+
+```text
+audit/external_audit/
+```
+
+| Fichier                         | Action                      |
+| ------------------------------- | --------------------------- |
+| `EXTERNAL_AUDIT_SCOPE.md`       | Périmètre audit externe     |
+| `PENTEST_SCOPE.md`              | Périmètre pentest           |
+| `PENTEST_RESULTS.md`            | Résultats pentest           |
+| `REMEDIATION_TRACKER.md`        | Suivi remédiation           |
+| `SECURITY_EVIDENCE_INDEX.md`    | Index preuves sécurité      |
+| `CONTROL_EVIDENCE_MATRIX.md`    | Matrice contrôle/preuve     |
+| `AUDIT_LOG_SAMPLE.md`           | Exemple log audit           |
+| `REPLAY_PROOF_SAMPLE.md`        | Exemple preuve replay       |
+| `INCIDENT_SIMULATION_REPORT.md` | Rapport simulation incident |
+
+Branchement :
+
+```text
+OS3 Evidence
+↓
+External Audit
+↓
+Remediation Tracker
+↓
+Release Gate
+```
+
+Boundary :
+
+```text
+Audit scope prépare l’audit.
+Il ne remplace pas l’audit indépendant.
+```
+
+---
+
+# 12. Registries
+
+Source :
+
+```text
+registry/
+```
+
+Cible :
+
+```text
+registry/rssi_compliance/
+```
+
+| Fichier                            | Action                |
+| ---------------------------------- | --------------------- |
+| `rssi_file_registry.json`          | Registry fichiers     |
+| `rssi_control_registry.json`       | Registry contrôles    |
+| `rssi_risk_registry.json`          | Registry risques      |
+| `rssi_security_case_registry.json` | Registry cas sécurité |
+| `rssi_threat_registry.json`        | Registry menaces      |
+| `rssi_evidence_registry.json`      | Registry preuves      |
+| `rssi_boundary_registry.json`      | Registry boundaries   |
+| `rssi_metrics_registry.json`       | Registry métriques    |
+
+À faire après import :
+
+```text
+registry/rssi_compliance/
+↓
+merge vers
+registry/os3_security_registry.yaml
+registry/compliance_registry.yaml
+registry/master_registry.yaml
+```
+
+Mais seulement après validation.
+
+Tests :
+
+```text
+test_rssi_compliance_registries_parse.py
+test_rssi_compliance_registry_no_missing_ids.py
+test_evidence_registry_points_to_existing_files.py
+test_boundary_registry_contains_kx108_only.py
+```
+
+---
+
+# 13. Periphery RSSI pack
+
+Source :
+
+```text
+periphery/rssi_security_pack/
+```
+
+Cible :
+
+```text
+periphery/rssi_security_pack/
+```
+
+Fichiers :
+
+```text
+__init__.py
+rssi_types.py
+readonly_boundary.py
+security_controls.py
+risk_registry.py
+threat_model.py
+evidence_registry.py
+audit_questions.py
+security_cases.py
+metrics.py
+package_loader.py
+```
+
+Action :
+
+```text
+MERGE_WITH_EXISTING_RSSI_PERIPHERY
+KEEP_READONLY
+NO_MUTATION
+NO_ACT
+```
+
+Ce bloc peut devenir un petit loader OS3 :
+
+```text
+load_rssi_controls()
+load_rssi_risks()
+load_rssi_evidence()
+load_rssi_security_cases()
+load_rssi_metrics()
+```
+
+Interdits :
+
+```text
+pas de write
+pas de decision
+pas de verdict final
+pas de correction automatique
+```
+
+---
+
+# 14. Tests
+
+Source :
+
+```text
+tests/
+```
+
+Cible :
+
+```text
+tests/rssi_compliance/
+```
+
+| Fichier                                | Action          |
+| -------------------------------------- | --------------- |
+| `test_rssi_pack_structure.py`          | Structure RSSI  |
+| `test_rssi_pack_boundaries.py`         | Boundaries      |
+| `test_rssi_pack_metrics.py`            | Métriques       |
+| `test_rssi_pack_registries.py`         | Registries      |
+| `test_rssi_pack_no_mutation.py`        | No mutation     |
+| `test_iso27001_pack.py`                | ISO pack        |
+| `test_rgpd_pack.py`                    | RGPD pack       |
+| `test_deployment_pack.py`              | Deployment pack |
+| `test_devsecops_pack.py`               | DevSecOps pack  |
+| `test_legal_pack.py`                   | Legal pack      |
+| `test_audit_external_pack.py`          | Audit externe   |
+| `test_all_files_have_strict_blocks.py` | Strict blocks   |
+
+Tests supplémentaires à créer :
+
+```text
+test_compliance_no_certification_claim.py
+test_rgpd_no_personal_data_without_classification.py
+test_memory_requires_data_governance_policy.py
+test_ai_security_critical_action_requires_x108.py
+test_legal_templates_marked_review_required.py
+test_deployment_options_not_prod_by_default.py
+test_audit_artifacts_readonly.py
+```
+
+---
+
+# Flux cible RGPD / ISO
+
+```text
+Obsidia module
+↓
+OS3 security registry
+↓
+data classification
+↓
+risk register
+↓
+control mapping
+↓
+evidence index
+↓
+readiness matrix
+↓
+external audit / DPO / RSSI review
+```
+
+Pour mémoire / éducation :
+
+```text
+Student / user context
+↓
+Personal data classification
+↓
+retention policy
+↓
+Graphiti/Brody/NPL boundary
+↓
+export/delete procedure
+↓
+audit trace
+```
+
+Pour action critique :
+
+```text
+Agent / tool-call / memory write candidate
+↓
+Critical Action Catalog
+↓
+AI Security policy
+↓
+IntentEnvelope
+↓
+X-108
+↓
+DecisionTicket
+↓
+audit evidence
+```
+
+---
+
+# Ce que ce zip ajoute réellement
+
+```text
+1. Readiness ISO27001
+2. Readiness RGPD
+3. Data governance mémoire / Graphiti / Brody
+4. AI security test doctrine
+5. DevSecOps / supply chain / SBOM
+6. Legal templates B2B
+7. Deployment souverain / UE / on-prem
+8. Audit externe / pentest / remediation
+9. Production readiness RSSI
+10. Evidence matrix compliance
+```
+
+Ce pack est celui qui transforme Obsidia de :
+
+```text
+système deeptech impressionnant
+```
+
+à :
+
+```text
+système pré-auditable, vendable, défendable en B2B sensible
+```
+
+---
+
+# Position dans l’ordre global
+
+```text
+Priorité :
+P1 / P2
+```
+
+À brancher très tôt côté OS3, mais pas tout exposer publiquement.
+
+Ordre recommandé :
+
+```text
+1. X-108 Authority Contracts
+2. RSSI Security Pack
+3. RGPD ISO Readiness Pack
+4. External Signals
+5. Graphiti / Brody readonly
+6. Atlas
+7. Cognitive Reintegration
+8. NPL
+9. Education
+10. Benchmarks
+11. Public demo
+```
+
+Pourquoi RGPD/ISO avant éducation :
+
+```text
+La verticale éducation manipule potentiellement :
+- données personnelles
+- traces d’apprentissage
+- blocages cognitifs
+- contexte humain
+- mémoire utilisateur
+
+Donc la gouvernance data doit être en place avant test réel.
+```
+
+---
+
+# Ce qu’il ne faut surtout pas faire
+
+```text
+Ne pas dire “certifié ISO”.
+Ne pas dire “conforme RGPD” sans revue DPO/juridique.
+Ne pas brancher Graphiti writable avant data governance.
+Ne pas utiliser données utilisateurs réelles sans registre traitement.
+Ne pas exposer logs sensibles en démo.
+Ne pas confondre readiness et conformité finale.
+Ne pas mettre les legal templates en production sans revue.
+Ne pas considérer pentest template comme pentest réel.
+Ne pas brancher des sous-traitants sans registre.
+```
+
+---
+
+# Dashboard OS3 à créer après import
+
+```text
+interface/os3_compliance_dashboard/
+├── readiness_matrix_view.py
+├── rgpd_data_map_view.py
+├── iso27001_controls_view.py
+├── ai_security_risk_view.py
+├── evidence_matrix_view.py
+├── remediation_tracker_view.py
+└── production_gate_view.py
+```
+
+Statuts affichés :
+
+```text
+X108_AUTHORITY_LOCKED
+RSSI_SECURITY_PACK_IMPORTED
+RGPD_READINESS_IMPORTED
+ISO27001_READINESS_IMPORTED
+DATA_GOVERNANCE_IMPORTED
+AI_SECURITY_TESTS_IMPORTED
+PRODUCTION_STATUS=NOT_PRODUCTION
+CERTIFICATION_STATUS=NOT_CERTIFIED
+EXTERNAL_AUDIT_STATUS=NOT_YET_PERFORMED
+```
+
+---
+
+# Boundary freeze
+
+```text
+RGPD ISO Readiness Pack V2 est la couche de pré-audit institutionnel d’Obsidia.
+
+Il structure les preuves, les risques, les contrôles,
+les données, les déploiements, les responsabilités,
+les templates juridiques, les tests IA sécurité
+et les conditions de passage pré-production.
+
+Il ne certifie pas.
+Il ne décide pas.
+Il ne rend pas conforme par déclaration.
+Il prépare Obsidia à être audité.
+
+Toute action, écriture critique, tool-call, mutation mémoire
+ou passage monde réel reste sous KX108_ONLY.
+```
+
+---
+
+# Synthèse des 5 zips
+
+```text
+1. External Signals
+→ temps, anti-replay, receipts, tool-call borné
+
+2. RSSI Security Presentation
+→ sécurité, audit, risques, contrôles, posture RSSI
+
+3. Cognitive Reintegration
+→ corps cognitif, agents, raisonnement, mémoire, packets
+
+4. Branchable Atlas
+→ territoire, cartes, protocoles, acteurs, scénarios
+
+5. RGPD ISO Readiness
+→ conformité, data governance, audit externe, pré-prod
+```
+
+Ordre canon final :
+
+```text
+X-108 Authority
+→ OS3 RSSI
+→ RGPD ISO
+→ External Signals
+→ Graphiti/Brody
+→ Atlas
+→ Cognitive Reintegration
+→ NPL
+→ Education
+→ Benchmarks
+→ Public Demo
+```
+
+Phrase finale :
+
+```text
+Ces packs ne doivent pas être “installés”.
+Ils doivent être constitutionnalisés.
+
+Chaque fichier doit recevoir :
+sa couche,
+son rôle,
+son statut,
+sa boundary,
+sa métrique,
+son audit,
+et son droit exact de ne jamais dépasser X-108.
+```

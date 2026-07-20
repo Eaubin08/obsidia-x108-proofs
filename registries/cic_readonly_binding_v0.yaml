@@ -1,0 +1,65 @@
+# CIC Readonly Binding Manifest V0
+# SCOPE: READONLY_BINDING_PREP
+# DECISION_AUTHORITY: KX108_ONLY
+# STATUS: LOCAL_FREEZE_READONLY
+# COMMIT/FREEZE/PUSH: NO
+
+cic_readonly_binding_v0:
+
+  zip_canonical_path: >-
+    .local_exports/CAUSAL_IDENTITY_STRUCTURE_PACK_CIC_ONLY_REPAIRED_METRICS_V0_20260613_020551.zip
+
+  zip_sha256: 037E1696A0643683ACC9B48DA209EB25CA0BB06916F0A56D2BB57E78A7C61115
+
+  status: LOCAL_FREEZE_READONLY
+
+  binding_type: READONLY_CONTEXT_PROVIDER
+
+  provider_module: apps.obsidia_api.cic.cic_readonly_pack_provider
+  provider_function: build_cic_readonly_context
+  context_key: cic_readonly_context
+
+  allowed_consumers:
+    - brody
+    - bank
+    - trading
+    - gps_defense_aviation
+
+  forbidden:
+    - kernel_mutation
+    - x108_binding
+    - act
+    - decision_authority
+    - ncp_activation
+    - scraping_activation
+    - world_connection_activation
+    - memory_write
+
+  central_rule:
+    priority: "Invariant > Reversibilite > Score > Projection"
+
+  authority_rules:
+    - "A score cannot authorize what an invariant forbids."
+    - "X108 remains the only decision authority."
+    - "Critical missing data on irreversible action triggers HOLD / BLOCK / REVIEW — not ACT."
+    - "Memory is not sovereign."
+    - "Projection is not prediction."
+
+  repo_sources:
+    - registries/cic_metric_mapping_v0.yaml
+    - docs/METRICS_STATUS_POLICY.md
+    - reports/CAUSAL_IDENTITY_REPO_METRICS_AUDIT.md
+    - reports/CIC_HIGH_VALUE_SOURCES_20260613_013837.txt
+    - reports/CAUSAL_IDENTITY_FINAL_PACK_REPORT.md
+
+  ecom_policy: ECOM_NOT_FOUND
+
+  constraints:
+    readonly: true
+    emits_act: false
+    kernel_mutation: false
+    x108_binding: false
+    ncp_active: false
+    scraping_active: false
+    decision_authority: KX108_ONLY
+    authority: NONE

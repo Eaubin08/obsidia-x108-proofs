@@ -1,0 +1,568 @@
+{
+  "audit_id": "SRL_SESSION_REGISTRY_LAYER_AUDIT_V0",
+  "timestamp": "2026-06-25T03:41:44.436048+00:00",
+  "repo_root": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B",
+  "memory_root": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\periphery\\brody_memory_readonly",
+  "readonly": true,
+  "advisory_only": true,
+  "decision_authority": "KX108_ONLY",
+  "emits_act": false,
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false,
+  "kernel_mutation": false,
+  "x108_mutation": false,
+  "files_scanned": 492,
+  "foundation_components": {
+    "ledger": {
+      "present": true,
+      "hits": [
+        "periphery\\brody_memory_readonly\\TRANSPLANT_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\brody_auto_triage_memory_intake_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\BRODY_API_BRIDGE_RUNTIME_AUTHORIZATION_LEDGER_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\run_brody_api_bridge_runtime_authorization_ledger_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\api_endpoints\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\reports\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\reports\\api_fix_report.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\run_brody_api_memory_operator_replay_api_fix_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_V2_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_canon.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_x108.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\counts.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\evidence.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\manifest.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\metrics.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\readiness.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_brody.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_x108.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\status.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\reports\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\reports\\api_fix_v2_report.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\run_brody_api_memory_operator_replay_api_fix_v2_readonly.ps1",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_CLEAN_CLOSE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\run_brody_api_memory_operator_replay_clean_close_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\api_endpoints\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\operator_receipts\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\operator_receipts\\operator_receipt_git_status_example.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\api_memory_operator_replay_report.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\command_gate_replay_report.json",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\run_brody_api_memory_operator_replay_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\smoke_brody_api_memory_operator_replay_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\BRODY_HUMAN_OUTPUT_RECEIPT_VALIDATOR_CLEAN_CLOSE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\run_brody_human_output_receipt_validator_clean_close_readonly_v1.ps1"
+      ],
+      "hit_count": 128
+    },
+    "presave_buffer": {
+      "present": true,
+      "hits": [
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\brody_auto_triage_memory_intake_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\brody_candidate_export_for_graphiti_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\brody_graphiti_candidate_import_dry_run_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\brody_graphiti_candidate_review_gate_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\brody_graphiti_import_apply_guarded_manual_only_v1.py",
+        "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\brody_memory_pipeline_freeze_v2_readonly.py",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\brody_post_human_review_memory_triage_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\BRODY_PROJECT_INTAKE_CAPTURE_BUFFER_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\brody_project_intake_capture_buffer_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\run_brody_project_intake_capture_buffer_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\brody_session_close_decision_apply_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\BRODY_SESSION_PRESAVE_BUFFER_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\brody_session_presave_buffer_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\run_brody_session_presave_buffer_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\srl_session_registry_layer_readonly\\srl_component_matrix_readonly_v0.py"
+      ],
+      "hit_count": 25
+    },
+    "auto_triage": {
+      "present": true,
+      "hits": [
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\brody_auto_triage_memory_intake_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\run_brody_auto_triage_memory_intake_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\BRODY_CANDIDATE_EXPORT_FOR_GRAPHITI_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\brody_candidate_export_for_graphiti_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\run_brody_candidate_export_for_graphiti_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\content_hydration_readonly\\brody_content_hydration_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\brody_graphiti_candidate_import_dry_run_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\BRODY_GRAPHITI_CANDIDATE_PREP_FROM_POST_HUMAN_TRIAGE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\run_brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\brody_graphiti_candidate_review_gate_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\brody_graphiti_import_apply_guarded_manual_only_v1.py",
+        "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\memory_pipeline_freeze_report_readonly\\brody_memory_pipeline_freeze_report_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\brody_memory_pipeline_freeze_v2_readonly.py",
+        "periphery\\brody_memory_readonly\\memory_pipeline_v2_close_report_readonly\\brody_memory_pipeline_v2_close_report_readonly.py",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\brody_post_human_review_memory_triage_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\run_brody_post_human_review_memory_triage_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\BRODY_PROJECT_INTAKE_CAPTURE_BUFFER_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\brody_project_intake_capture_buffer_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\brody_session_close_decision_apply_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\BRODY_SESSION_CLOSE_HUMAN_VALIDATION_GATE_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\__init__.py",
+        "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\brody_session_close_human_validation_gate_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\run_brody_session_close_human_validation_gate_readonly_v1.ps1",
+        "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\BRODY_SESSION_MEMORY_LEDGER_READONLY_MANIFEST.json",
+        "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\brody_session_memory_ledger_readonly_v2.py",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\README_BOUNDARY.md",
+        "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\brody_session_presave_buffer_readonly_v1.py",
+        "periphery\\brody_memory_readonly\\srl_session_registry_layer_readonly\\srl_component_matrix_readonly_v0.py"
+      ],
+      "hit_count": 45
+    }
+  },
+  "missing_foundations": [],
+  "forbidden_findings": [],
+  "status": "PASS",
+  "notes": [
+    "Readonly audit only.",
+    "No memory, graphiti, neo4j, kernel or x108 mutation performed.",
+    "WARN means foundation component naming may differ or is absent.",
+    "FAIL means a forbidden mutation/authority pattern was detected."
+  ],
+  "srl_inventory": [
+    {
+      "name": "__pycache__",
+      "srl_status": "COLD"
+    },
+    {
+      "name": "auto_triage_memory_intake_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "brody_agent_readonly_session_test_packet",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_authorization_packet_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_authorized_runtime_precheck_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_build_epoch_open_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_candidate_components_inventory_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_candidate_drift_guard_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_contract_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_disabled_runtime_skeleton_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_dry_run_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_external_access_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_live_drift_guard_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_provider_policy_matrix_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_provider_registry_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_readiness_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_runtime_activation_gate_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_runtime_authorization_ledger_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "brody_api_bridge_runtime_stub_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_memory_operator_replay_api_fix_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_memory_operator_replay_api_fix_v2_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_memory_operator_replay_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_api_memory_operator_replay_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_human_command_packet_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_human_command_packet_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_human_output_receipt_validator_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_human_output_receipt_validator_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_local_command_gate_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_local_command_gate_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_local_command_gate_readonly_repair",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_local_command_gate_readonly_repair_v2",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_local_command_gate_readonly_repair_v3",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_memory_context_operator_interaction_test_readonly_freeze_v1",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_native_terminal_detector_patch_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_native_terminal_session_test_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_control_loop_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_control_loop_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_execution_line_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_execution_protocol_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_execution_receipt_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_execution_receipt_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_final_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_handoff_line_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_handoff_line_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_io_loop_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_io_loop_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_output_validation_line_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_output_validation_line_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_supervised_handoff_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_operator_supervised_handoff_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_runtime_freeze_v1_4_12a_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_current_state_baseline_freeze_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_native_runbook_clean_close_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_native_runbook_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_native_runbook_readonly_repair",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_native_runbook_readonly_repair_v2",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_native_runbook_readonly_repair_v3",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_only_build_mode_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "brody_x108_proof_state_freeze_v1",
+      "srl_status": "COLD"
+    },
+    {
+      "name": "candidate_export_for_graphiti_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "content_hydration_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "context_packet_consumer_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "context_packet_query_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "evidence",
+      "srl_status": "COLD"
+    },
+    {
+      "name": "graphiti_bridge_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_candidate_import_dry_run_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_candidate_prep_from_post_human_triage_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "graphiti_candidate_review_gate_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_import_apply_guarded_manual_only",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_import_dry_run_from_post_human_prep_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_review_decision_apply_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "graphiti_review_gate_from_post_human_dry_run_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "local_response_engine_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_layer_authority_model_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_pipeline_freeze_report_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_pipeline_freeze_v2_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_pipeline_v2_close_report_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_readonly_micro_smoke",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_replay_query_regression_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "memory_scheduler_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "neo4j_brody_guide_bridge_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "pointers",
+      "srl_status": "COLD"
+    },
+    {
+      "name": "post_graphiti_apply_verify_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "post_graphiti_replay_query_regression_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "post_human_review_memory_triage_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "project_intake_capture_buffer_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "readonly_session_test",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "session_close_decision_apply_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "session_close_human_validation_gate_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "session_memory_ledger_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "session_presave_buffer_readonly",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "session_reopen_loop_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "session_trace_ledger",
+      "srl_status": "ACTIVE"
+    },
+    {
+      "name": "srl_session_registry_layer_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "taxonomy_mapper_34_8_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "terminal_structural_dialogue_readonly",
+      "srl_status": "SEMI_ACTIVE"
+    },
+    {
+      "name": "world_source_intake",
+      "srl_status": "COLD"
+    }
+  ],
+  "srl_dirs_count": 98,
+  "verdict": "FOUNDATION_PRESENT_NOT_CANONICAL",
+  "verdict_explanation": "Les fondations SRL (session_presave_buffer, ledger, auto_triage) sont présentes et les invariants souverains (memory_write=False, decision_authority=KX108_ONLY, kernel_mutation=False) sont respectés. Cependant, aucun module n'a encore reçu le statut CANONICAL. Validation opérateur requise avant toute promotion canonique.",
+  "kernel_rule": {
+    "decision_authority": "KX108_ONLY",
+    "kernel_mutation": false,
+    "fail_closed": true,
+    "readonly": true
+  }
+}
