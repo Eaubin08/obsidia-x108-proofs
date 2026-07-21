@@ -9,10 +9,14 @@ Aucun serveur reel requis. Inspection statique + --print-start-plan uniquement.
 
 from __future__ import annotations
 
+import os
 import py_compile
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CLI_DIR = _REPO_ROOT / "scripts"
@@ -23,6 +27,46 @@ import obsidia_cli as cli  # noqa: E402
 
 _REG = cli.load_registry(cli.REGISTRY_PATH)
 _PS1_SRC = _PS1.read_text(encoding="utf-8")
+
+
+def _powershell_executable() -> str:
+    """Resolve Windows PowerShell or PowerShell Core."""
+    candidates = (
+        ("powershell", "pwsh")
+        if os.name == "nt"
+        else ("pwsh",)
+    )
+
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+
+        if resolved:
+            return resolved
+
+    pytest.skip(
+        "PowerShell unavailable: expected powershell "
+        "on Windows or pwsh on POSIX"
+    )
+
+
+def _powershell_command(
+    script,
+    *arguments: str,
+) -> list[str]:
+    command = [_powershell_executable()]
+
+    if os.name == "nt":
+        command.extend(
+            ["-ExecutionPolicy", "Bypass"]
+        )
+
+    command.extend(
+        ["-NoProfile", "-File", str(script)]
+    )
+
+    command.extend(arguments)
+
+    return command
 
 
 def _a(q: str) -> dict:
@@ -128,8 +172,7 @@ def test_free_in_transmitted_to_cli() -> None:
 def test_print_start_plan_does_not_launch() -> None:
     """--print-start-plan doit afficher le plan sans lancer de services reels."""
     result = subprocess.run(
-        ["powershell", "-ExecutionPolicy", "Bypass",
-         "-File", str(_PS1), "--print-start-plan"],
+        _powershell_command(_PS1, "--print-start-plan"),
         capture_output=True, text=True, timeout=30
     )
     out = result.stdout + result.stderr

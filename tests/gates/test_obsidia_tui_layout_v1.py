@@ -8,9 +8,13 @@ Aucun serveur, aucun subprocess, analyse statique + appels de fonctions pures.
 
 from __future__ import annotations
 
+import os
 import py_compile
+import shutil
 import sys
 from pathlib import Path
+
+import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CLI_DIR = _REPO_ROOT / "scripts"
@@ -24,6 +28,46 @@ _REG = cli.load_registry(cli.REGISTRY_PATH)
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
+def _powershell_executable() -> str:
+    """Resolve Windows PowerShell or PowerShell Core."""
+    candidates = (
+        ("powershell", "pwsh")
+        if os.name == "nt"
+        else ("pwsh",)
+    )
+
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+
+        if resolved:
+            return resolved
+
+    pytest.skip(
+        "PowerShell unavailable: expected powershell "
+        "on Windows or pwsh on POSIX"
+    )
+
+
+def _powershell_command(
+    script,
+    *arguments: str,
+) -> list[str]:
+    command = [_powershell_executable()]
+
+    if os.name == "nt":
+        command.extend(
+            ["-ExecutionPolicy", "Bypass"]
+        )
+
+    command.extend(
+        ["-NoProfile", "-File", str(script)]
+    )
+
+    command.extend(arguments)
+
+    return command
+
 
 def _a(q: str) -> dict:
     return cli.answer_router(q, _REG)
@@ -426,7 +470,7 @@ def test_42_ps1_still_has_print_start_plan() -> None:
     """--print-start-plan doit rester fonctionnel apres modification PS1."""
     import subprocess
     result = subprocess.run(
-        ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(_PS1), "--print-start-plan"],
+        _powershell_command(_PS1, "--print-start-plan"),
         capture_output=True, text=True, timeout=30
     )
     assert result.returncode == 0
