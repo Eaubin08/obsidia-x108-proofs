@@ -76,6 +76,7 @@ obj/
 allData/
 MonProjet/allData/
 decision_*.json
+!runtime_contracts/schemas/decision_ticket.schema.json
 *_results.tmp
 
 # Python / test cache

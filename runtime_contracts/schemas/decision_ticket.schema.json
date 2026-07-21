@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obsidia/runtime_contracts/decision_ticket.schema.json",
+  "title": "DecisionTicket",
+  "description": "Seule sortie décisionnelle admissible de X-108. ALLOW/HOLD/BLOCK produits uniquement par KX108. Boundary: X108_GATEWAY_REQUIRED / FAIL_CLOSED.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ticket_id", "intent_envelope_ref", "decision", "decision_priority",
+    "reason_codes", "x108_gate_status", "tau_status", "irreversibility_status",
+    "timestamp_or_tick", "hash_or_seal_ref",
+    "input_hash", "output_hash", "trace_hash", "merkle_root",
+    "replay_status", "context_packet_refs", "source_status_summary"
+  ],
+  "properties": {
+    "ticket_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifiant unique. Inclus dans la chaîne de hash."
+    },
+    "intent_envelope_ref": {
+      "type": "string",
+      "description": "UUID de l'IntentEnvelope source."
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "HOLD", "BLOCK"],
+      "description": "Décision X-108. Seuls ces 3 valeurs. Priorité: BLOCK > HOLD > ALLOW."
+    },
+    "decision_priority": {
+      "type": "string",
+      "const": "BLOCK > HOLD > ALLOW",
+      "description": "Invariant aggregate4_fail_closed — immuable."
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Codes structurés expliquant la décision. Auditable."
+    },
+    "x108_gate_status": {
+      "type": "string",
+      "enum": ["X108_EVALUATED", "X108_PENDING", "X108_FAIL_CLOSED"],
+      "description": "Statut du gateway X-108."
+    },
+    "tau_status": {
+      "type": "string",
+      "enum": ["TAU_ELAPSED", "TAU_PENDING", "TAU_NOT_APPLICABLE"],
+      "description": "Statut gate temporelle. X108_no_act_before_tau — TAU_PENDING + IRREVERSIBLE → HOLD."
+    },
+    "irreversibility_status": {
+      "type": "string",
+      "enum": ["REVERSIBLE", "PARTIALLY_REVERSIBLE", "IRREVERSIBLE"]
+    },
+    "evidence_ticket_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "UUIDs des OS3EvidenceTickets. Obligatoire pour CRITICAL."
+    },
+    "replay_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Références replays vérifiés. P17_AuditGrowth."
+    },
+    "timestamp_or_tick": {
+      "type": "string",
+      "description": "Contexte temporel de la décision. Anti-replay C463."
+    },
+    "hash_or_seal_ref": {
+      "type": "string",
+      "description": "Hash sha256 ou seal merkle du ticket. P13_Immutability."
+    },
+    "input_hash": {
+      "type": "string",
+      "description": "sha256(action_candidate). OS3ProofTicket pattern."
+    },
+    "output_hash": {
+      "type": "string",
+      "description": "sha256(envelope)."
+    },
+    "trace_hash": {
+      "type": "string",
+      "description": "sha256({input+output+packet})."
+    },
+    "merkle_root": {
+      "type": "string",
+      "description": "sha256([input_hash, output_hash, trace_hash]). merkleRoot_change_if_leaf_change."
+    },
+    "replay_status": {
+      "type": "string",
+      "enum": ["NOT_RUN", "PASS", "FAIL", "PENDING"],
+      "default": "NOT_RUN"
+    },
+    "context_packet_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs des ContextPackets qui ont informé X-108."
+    },
+    "source_status_summary": {
+      "type": "object",
+      "description": "Résumé des source_status des inputs. Traçabilité claim-scope.",
+      "additionalProperties": { "type": "string" }
+    },
+    "authority": {
+      "type": "string",
+      "enum": ["KX108_ONLY"],
+      "description": "Toujours KX108_ONLY."
+    },
+    "runtime_status": {
+      "type": "string",
+      "enum": [
+        "SPEC_ONLY", "CONTRACT_SKELETON_ONLY", "CONTRACT_READY",
+        "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY", "FORBIDDEN_RUNTIME"
+      ],
+      "default": "CONTRACT_SKELETON_ONLY"
+    }
+  }
+}
