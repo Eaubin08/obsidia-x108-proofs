@@ -301,3 +301,4 @@ OBSIDIA_CANONICAL_COMPONENT_CORPUS_MAP_*.csv
 .claude/hooks/.last_router_verdict.json
 _MEMORY_INTAKE_OUTBOX/
 _PATCH_PROPOSALS/
+.claude/settings.local.json
