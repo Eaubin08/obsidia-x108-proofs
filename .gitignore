@@ -302,3 +302,4 @@ OBSIDIA_CANONICAL_COMPONENT_CORPUS_MAP_*.csv
 _MEMORY_INTAKE_OUTBOX/
 _PATCH_PROPOSALS/
 .claude/settings.local.json
+_local_archives/patch_alphabet.py.applied_20260625
