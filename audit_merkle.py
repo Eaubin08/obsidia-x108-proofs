@@ -33,19 +33,19 @@ def run_audit():
         return
 
     files = sorted([os.path.join(path, f) for f in os.listdir(path) if f.endswith('.json')])
-
+    
     if not files:
         print("INFO: No JSON proofs found in allData.")
         return
 
     print(f"AUDIT: Processing {len(files)} proof files...")
     file_hashes = [get_file_hash(f) for f in files]
-
+    
     root_hash = build_merkle_root(file_hashes)
-
+    
     # Generation de la date actuelle (Format: 2026-04-27 15:30:00)
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    
     # Generation du sceau final
     seal = {
         "status": "INTEGRITY_VERIFIED",
@@ -55,10 +55,10 @@ def run_audit():
         "first_proof": os.path.basename(files[0]),
         "last_proof": os.path.basename(files[-1])
     }
-
+    
     with open("merkle_seal.json", "w") as f:
         json.dump(seal, f, indent=4)
-
+    
     print("\n--- SEALING COMPLETE ---")
     print(f"ROOT HASH : {root_hash}")
     print(f"AUDIT DATE: {now_str}")
