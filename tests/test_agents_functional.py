@@ -53,24 +53,29 @@ def make_bank_state():
 
 
 def make_ecom_state():
-    return EcomState(
-        session_id="sess-1",
-        traffic_quality=0.8,
-        basket_intent_score=0.76,
-        stock_ok=True,
-        margin_rate=0.22,
-        roas=2.4,
-        conversion_readiness=0.77,
-        fulfillment_risk=0.22,
-        customer_trust=0.85,
-        intent_conflict_score=0.1,
-        checkout_friction_score=0.2,
-        merchant_policy_score=0.9,
-        basket_value=140,
-        ad_spend=20,
-        order_value=140,
-        x108_compliance_rate=0.95,
-    )
+    # EcomState n'expose que session_id dans son constructeur dataclass;
+    # les attributs métier se posent après construction (patron identique à
+    # tests/integration/test_sigma_bridge_ecom.py).
+    state = EcomState(session_id="sess-1")
+    for key, value in {
+        "traffic_quality": 0.8,
+        "basket_intent_score": 0.76,
+        "stock_ok": True,
+        "margin_rate": 0.22,
+        "roas": 2.4,
+        "conversion_readiness": 0.77,
+        "fulfillment_risk": 0.22,
+        "customer_trust": 0.85,
+        "intent_conflict_score": 0.1,
+        "checkout_friction_score": 0.2,
+        "merchant_policy_score": 0.9,
+        "basket_value": 140,
+        "ad_spend": 20,
+        "order_value": 140,
+        "x108_compliance_rate": 0.95,
+    }.items():
+        setattr(state, key, value)
+    return state
 
 
 def test_registry_builds_all_domains():
