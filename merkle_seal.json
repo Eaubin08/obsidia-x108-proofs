@@ -1,1 +1,8 @@
-﻿{"root":"1bc96a52bdbcc4d0538c3bf2","count":8007,"last_seal":"2026-04-28T11:35:22","status":"FINAL_SCELLÉ_RAGNAROK"}
+{
+    "status": "INTEGRITY_VERIFIED",
+    "audit_date": "2026-07-07 12:12:34",
+    "total_proofs_count": 2,
+    "merkle_root": "b8a69ce98ee86f3871ef2f75a50bf8acb138865adfaba77009bb6e57e569d6b2",
+    "first_proof": "decision_bank_1780995571691.json",
+    "last_proof": "decision_bank_1780995941797.json"
+}

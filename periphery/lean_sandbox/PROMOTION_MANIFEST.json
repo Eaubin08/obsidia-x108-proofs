@@ -1,0 +1,992 @@
+{
+  "metadata": {
+    "generated_at": "2026-06-30",
+    "generated_by": "Claude Sonnet 4.6 — audit session read-only + APPLY manifest",
+    "source_audit": "periphery/lean_sandbox/ + proofs/lean/ — audit complet 2026-06-30",
+    "strategy": "Ne pas promouvoir les 134 directement. Nettoyer LOT B d'abord. Aggregator separé GeneratedPeripheral.lean. Aucune prétention runtime-bound.",
+    "branch": "feat/path-brody-r02-thermo-mcp-closure",
+    "progress_lean_sandbox": "134/134 items MATH_MEMORY_INDEX validés via workflow Obsidure",
+    "sandbox_files_count": 120,
+    "runtime_bound": false,
+    "promotion_direct_134": false,
+    "kernel_boundary": "KX108 seul est souverain. Lean = couche formelle offline uniquement.",
+    "lean_role": "preuves formelles offline — audit, scaffold, mémoire mathématique. Aucun import par le runtime Python/FastAPI/GuardX108."
+  },
+
+  "lot_a_already_promoted_clean": {
+    "description": "Fichiers déjà dans proofs/lean/, importés par Peripheral.lean ou LegacyPeripheral.lean, aucun token interdit (sorry/admit/axiom/P38_/#check/#eval).",
+    "count": 16,
+    "files": [
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Gouvernance_ExAnte.lean",
+        "aggregator": "Obsidia/Peripheral.lean",
+        "flags": "clean",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/P100_LyapunovDecroissance.lean",
+        "aggregator": "Obsidia/Peripheral.lean",
+        "flags": "clean",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/P36_DomainState.lean",
+        "aggregator": "Obsidia/Peripheral.lean",
+        "flags": "clean",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/P42_SeuilG1.lean",
+        "aggregator": "Obsidia/Peripheral.lean",
+        "flags": "clean",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P107_Lyapunov_scaffold.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P149_Narration.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P155_Metaphore_Analogie.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P37.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P47_Couplage_dR_dt.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P51_Structure_Fractale.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P57_Shannon_Entropy.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P59_Kolmogorov_Complexity.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P60_Auto_Organisation.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P61_Bifurcation.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P62_Attracteur.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "import Std uniquement",
+        "verdict": "ALREADY_PROMOTED_AND_IMPORTED"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/Plan_Assaut_Final.lean",
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "flags": "aucun token interdit detecté — contenu non audité en détail (7537 octets)",
+        "verdict": "UNKNOWN_NEEDS_REVIEW"
+      }
+    ]
+  },
+
+  "lot_b_promoted_contaminated": {
+    "description": "Fichiers déjà dans proofs/lean/ et importés par un aggregator, mais contenant P38_ / sorry / admit / #check. Ne pas ajouter de nouveaux imports avant nettoyage complet de ce lot.",
+    "count": 26,
+    "blocker": "Ces 26 fichiers sont actuellement actifs dans le build. Toute promotion sandbox est bloquée tant qu'ils ne sont pas nettoyés ou désimportés.",
+    "files": [
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Cout_Canonique_P161.lean",
+        "contamination": ["sorry", "admit"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/P88_NonContradiction.lean",
+        "contamination": ["sorry", "admit"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Algorithme_Balance.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/DecisionTicket_Formel.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Espace_Etat_StateCore.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "La version sandbox correspondante contient aussi P38_ — nettoyage requis avant remplacement"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Lyapunov_5termes.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "La version sandbox correspondante contient aussi P38_ — remplacer par Lyapunov_Complet_5termes.lean (LOT C C2)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/M1_Sigma_Proprietes.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Marge_Securite.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Omega_Invariants.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "La version sandbox correspondante contient aussi P38_ — désimporter de Peripheral.lean en attendant nettoyage"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Phi_t_Structure.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par Phi_t_Structure_Formelle.lean sandbox (LOT C C2) ou version sandbox propre"
+      },
+      {
+        "path": "proofs/lean/Obsidia/Peripheral/Quintuplet_Formel_O.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/Peripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par la version sandbox propre (LOT C C1)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_external_input_non_sovereignty.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter de LegacyPeripheral.lean"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_faithful_path_existence.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_hold_preservation.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_memory_non_sovereignty.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_order_error_prevention.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_pre_cognitive_elimination.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_stability_before_action.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Retirer #check ou désimporter"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P161.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par P161_CalibrationEnergetique.lean sandbox (LOT C C2)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P36.lean",
+        "contamination": ["#check"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Remplacer par P36_DomainState.lean (déjà dans Peripheral, LOT A)"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P50_Recursivite_Fondamentale.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean — pas de version sandbox disponible"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P52_Principe_Holographique.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean — pas de version sandbox disponible"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P53_Resonance.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P54_Temps_Absolu.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P55_Espace_Geometrique.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean"
+      },
+      {
+        "path": "proofs/lean/Obsidia/LegacyPeripheral/P56_Causalite.lean",
+        "contamination": ["P38_"],
+        "aggregator": "Obsidia/LegacyPeripheral.lean",
+        "verdict": "BROKEN",
+        "action_required": "Désimporter de LegacyPeripheral.lean"
+      }
+    ]
+  },
+
+  "lot_c_candidates_for_promotion": {
+    "description": "Fichiers dans periphery/lean_sandbox/ : lean OK, aucun token interdit, SOURCE_COVERAGE + PROVISIONAL_BOUNDARY + kernel_boundary présents, namespace Obsidia, au moins un theorem. Pas doublon d'un LOT A propre. Candidats à promotion dans proofs/lean/Obsidia/GeneratedPeripheral/.",
+    "count": 38,
+    "target_aggregator": "proofs/lean/Obsidia/GeneratedPeripheral.lean",
+    "prerequisite": "Nettoyage LOT B obligatoire avant import dans aggregator officiel.",
+    "subgroups": {
+      "C1_lot_b_replacements": {
+        "description": "Versions sandbox propres remplaçant les 11 Peripheral contaminés (P38_ ou sorry/admit).",
+        "count": 8
+      },
+      "C2_new_or_better": {
+        "description": "Nouvelles versions ou versions améliorées non présentes proprement dans proofs/lean/.",
+        "count": 7
+      },
+      "C3_palier_7_8": {
+        "description": "Items palier 7-8, structurellement riches, formalisation gouvernance/sigma/cognitif.",
+        "count": 20
+      },
+      "C4_palier_5_6_structural": {
+        "description": "Items palier 5-6 à haute teneur structurelle (conservation, variationnel).",
+        "count": 3
+      }
+    },
+    "files": [
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/Algorithme_Balance.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Algorithme_Balance.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Algorithme_Balance.lean",
+        "reason": "Remplace la version Peripheral contaminée P38_. Version sandbox sans token interdit.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/Cout_Canonique_P161.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Cout_Canonique_P161.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Cout_Canonique_P161.lean",
+        "reason": "Remplace la version Peripheral avec sorry+admit. Version sandbox propre.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/DecisionTicket_Formel.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/DecisionTicket_Formel.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/DecisionTicket_Formel.lean",
+        "reason": "Remplace la version Peripheral P38_.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/M1_Sigma_Proprietes.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/M1_Sigma_Proprietes.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/M1_Sigma_Proprietes.lean",
+        "reason": "Remplace la version Peripheral P38_.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/Marge_Securite.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Marge_Securite.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Marge_Securite.lean",
+        "reason": "Remplace la version Peripheral P38_.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/P88_NonContradiction.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/P88_NonContradiction.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/P88_NonContradiction.lean",
+        "reason": "Remplace la version Peripheral avec sorry+admit.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/Phi_t_Structure.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Phi_t_Structure.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Phi_t_Structure.lean",
+        "reason": "Remplace la version Peripheral P38_.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C1",
+        "source_path": "periphery/lean_sandbox/Quintuplet_Formel_O.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Quintuplet_Formel_O.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Quintuplet_Formel_O.lean",
+        "reason": "Remplace la version Peripheral P38_.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/P107_LyapunovDeltaEpsilon.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/P107_LyapunovDeltaEpsilon.lean",
+        "replaces": "proofs/lean/Obsidia/LegacyPeripheral/P107_Lyapunov_scaffold.lean",
+        "reason": "Version δ-ε explicite, supérieure au scaffold Lyapunov existant en LegacyPeripheral.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/P161_CalibrationEnergetique.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/P161_CalibrationEnergetique.lean",
+        "replaces": "proofs/lean/Obsidia/LegacyPeripheral/P161.lean",
+        "reason": "Remplace P161.lean qui contient #check. Version propre et explicite.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/Sigma_Cannot_Authorize.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Sigma_Cannot_Authorize.lean",
+        "replaces": null,
+        "reason": "Théorème de non-souveraineté Sigma — absent de tous les aggregators actuels. Critique pour la gouvernance formelle.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": false,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/Phi_t_Structure_Formelle.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Phi_t_Structure_Formelle.lean",
+        "replaces": null,
+        "reason": "Version formelle de Phi_t_Structure, distincte et plus complète. Non présente dans proofs/lean/.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/M1_Sigma_Proprietes_Formelles.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/M1_Sigma_Proprietes_Formelles.lean",
+        "replaces": null,
+        "reason": "Version formelle de M1_Sigma_Proprietes, distincte et plus explicite. Non présente dans proofs/lean/.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/Lyapunov_Complet_5termes.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Lyapunov_Complet_5termes.lean",
+        "replaces": "proofs/lean/Obsidia/Peripheral/Lyapunov_5termes.lean",
+        "reason": "Remplace Lyapunov_5termes.lean (Peripheral, P38_). Version complète 5 termes sans contamination.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C2",
+        "source_path": "periphery/lean_sandbox/Lyapunov_Candidate_L_Basic.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Lyapunov_Candidate_L_Basic.lean",
+        "replaces": null,
+        "reason": "Fonction candidate Lyapunov L_basic — absent des aggregators actuels.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Espace_Invariants_Omega.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Espace_Invariants_Omega.lean",
+        "replaces": null,
+        "reason": "Item 115 palier 7 — espace des invariants Omega. Structurellement riche.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Architecture_L_Theta_Omega.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Architecture_L_Theta_Omega.lean",
+        "replaces": null,
+        "reason": "Item 116 palier 7 — architecture L/Theta/Omega.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Renormalisation_Theories.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Renormalisation_Theories.lean",
+        "replaces": null,
+        "reason": "Item 117 palier 7 — flot de renormalisation des théories.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Geometrie_Theories.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Geometrie_Theories.lean",
+        "replaces": null,
+        "reason": "Item 118 palier 7 — géométrie des théories.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Stratification_Gouvernee.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Stratification_Gouvernee.lean",
+        "replaces": null,
+        "reason": "Item 119 palier 7 — stratification gouvernée.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Flux_Dissipatif_Gouverne.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Flux_Dissipatif_Gouverne.lean",
+        "replaces": null,
+        "reason": "Item 120 palier 7 — flux dissipatif gouverné.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Conservation_Informationnelle_Formelle.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Conservation_Informationnelle_Formelle.lean",
+        "replaces": null,
+        "reason": "Item 121 palier 7 — conservation informationnelle formelle.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Bassins_Attraction_Theories.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Bassins_Attraction_Theories.lean",
+        "replaces": null,
+        "reason": "Item 122 palier 7 — bassins d'attraction des théories.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Spectre_Points_Fixes.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Spectre_Points_Fixes.lean",
+        "replaces": null,
+        "reason": "Item 123 palier 7 — spectre des points fixes.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/IST_Indice_Stabilite_Trajectoire.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/IST_Indice_Stabilite_Trajectoire.lean",
+        "replaces": null,
+        "reason": "Item 124 palier 7 — indice IST de stabilité de trajectoire.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Maturite_Cognitive_Metriques.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Maturite_Cognitive_Metriques.lean",
+        "replaces": null,
+        "reason": "Item 125 palier 8 — métriques de maturité cognitive.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Valeur_Cognitive_Vc.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Valeur_Cognitive_Vc.lean",
+        "replaces": null,
+        "reason": "Item 126 palier 8 — valeur cognitive Vc.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Dette_Cognitive_Dc.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Dette_Cognitive_Dc.lean",
+        "replaces": null,
+        "reason": "Item 127 palier 8 — dette cognitive Dc.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Economie_Interne_Cognitive.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Economie_Interne_Cognitive.lean",
+        "replaces": null,
+        "reason": "Item 128 palier 8 — économie interne cognitive.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Proof_of_Governance_Formel.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Proof_of_Governance_Formel.lean",
+        "replaces": null,
+        "reason": "Item 129 palier 8 — preuve formelle de gouvernance. Trace auditée, non-souveraineté IA.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Fractalite_OS0_OS4.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Fractalite_OS0_OS4.lean",
+        "replaces": null,
+        "reason": "Item 131 palier 8 — fractalité OS0→OS4.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Machine_Decouverte_Lois.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Machine_Decouverte_Lois.lean",
+        "replaces": null,
+        "reason": "Item 132 palier 8 — machine de découverte de lois émergentes.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Architecture_DualLayer.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Architecture_DualLayer.lean",
+        "replaces": null,
+        "reason": "Item 133 palier 8 — architecture dual-layer kernel/périphérique.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Consensus_Cognitif_Multi.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Consensus_Cognitif_Multi.lean",
+        "replaces": null,
+        "reason": "Item 134 palier 8 — consensus cognitif multi-agents.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C3",
+        "source_path": "periphery/lean_sandbox/Theoremes_Stabilite_Formels.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Theoremes_Stabilite_Formels.lean",
+        "replaces": null,
+        "reason": "Item 112 palier 6 — théorèmes de stabilité formels Lyapunov.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C4",
+        "source_path": "periphery/lean_sandbox/Conservation_Informationnelle_Basic.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Conservation_Informationnelle_Basic.lean",
+        "replaces": null,
+        "reason": "Item 108 palier 6 — conservation informationnelle basic.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C4",
+        "source_path": "periphery/lean_sandbox/Principe_Variationnel_J_pi_Basic.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Principe_Variationnel_J_pi_Basic.lean",
+        "replaces": null,
+        "reason": "Item 109 palier 6 — principe variationnel J/pi basic.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      },
+      {
+        "subgroup": "C4",
+        "source_path": "periphery/lean_sandbox/Cadre_Variationnel_Complet.lean",
+        "target_candidate_path": "proofs/lean/Obsidia/GeneratedPeripheral/Cadre_Variationnel_Complet.lean",
+        "replaces": null,
+        "reason": "Item 114 palier 6 — cadre variationnel complet.",
+        "lean_ok": true,
+        "forbidden_clean": true,
+        "has_source_coverage": true,
+        "recommended_action": "PROMOTE_AFTER_LOT_B_CLEANUP"
+      }
+    ]
+  },
+
+  "lot_d_keep_as_formal_memory": {
+    "description": "Fichiers sandbox propres (lean OK, aucun token interdit) mais non prioritaires pour promotion : trop scaffold, conceptuels-philosophiques, doublons de LOT A, chantiers WIP, ou non indexés.",
+    "count": 77,
+    "verdict": "SANDBOX_FORMAL_MEMORY",
+    "subgroups": {
+      "D1_duplicates_of_lot_a": {
+        "description": "Fichiers sandbox dont la version proofs/lean/ est déjà propre (LOT A). Redondants.",
+        "files": [
+          "periphery/lean_sandbox/Gouvernance_ExAnte.lean",
+          "periphery/lean_sandbox/P100_LyapunovDecroissance.lean",
+          "periphery/lean_sandbox/P36_DomainState.lean",
+          "periphery/lean_sandbox/P42_SeuilG1.lean"
+        ]
+      },
+      "D2_chantiers_wip": {
+        "description": "Nommés explicitement comme chantiers WIP ou non indexés.",
+        "files": [
+          "periphery/lean_sandbox/Chantier_M1_Sigma.lean",
+          "periphery/lean_sandbox/Chantier_M1_Sigma_t.lean",
+          "periphery/lean_sandbox/Chantier_M2_Phi.lean",
+          "periphery/lean_sandbox/Chantier_M2_Phi_t.lean",
+          "periphery/lean_sandbox/Chantier_M3_Domaine.lean",
+          "periphery/lean_sandbox/Chantier_M3_Domaine_Admissible.lean",
+          "periphery/lean_sandbox/Chantier_M4_P161.lean",
+          "periphery/lean_sandbox/Chantier_M5_Table_Theoremes.lean"
+        ]
+      },
+      "D3_non_indexed_extras": {
+        "description": "Présents en sandbox mais sans correspondance exacte dans MATH_MEMORY_INDEX.",
+        "files": [
+          "periphery/lean_sandbox/Consensus_Cognitif.lean",
+          "periphery/lean_sandbox/Lambda_t.lean",
+          "periphery/lean_sandbox/Lyapunov_L_Basic.lean",
+          "periphery/lean_sandbox/Systeme_Dynamique.lean"
+        ]
+      },
+      "D4_conceptual_scaffolds": {
+        "description": "Items MATH_MEMORY_INDEX paliers 1-4, sémantiquement riches mais formellement minces ou conceptuels-philosophiques. Leur rôle est la mémoire formelle offline Obsidure, pas le kernel Lean.",
+        "files": [
+          "periphery/lean_sandbox/ADN_energetique.lean",
+          "periphery/lean_sandbox/ARS.lean",
+          "periphery/lean_sandbox/AVDR.lean",
+          "periphery/lean_sandbox/AVDR_Light.lean",
+          "periphery/lean_sandbox/Agents_Types_Obsidia.lean",
+          "periphery/lean_sandbox/Balance_Fractale_Universelle.lean",
+          "periphery/lean_sandbox/Balance_math.lean",
+          "periphery/lean_sandbox/Calibration_Chaotique_Symbiotique.lean",
+          "periphery/lean_sandbox/Carte_Resonance.lean",
+          "periphery/lean_sandbox/Causalite_vivante.lean",
+          "periphery/lean_sandbox/Chaine_Causale_Complete.lean",
+          "periphery/lean_sandbox/Clio_Network.lean",
+          "periphery/lean_sandbox/Coherence_phase.lean",
+          "periphery/lean_sandbox/CreativeKernel.lean",
+          "periphery/lean_sandbox/Critic_Trio.lean",
+          "periphery/lean_sandbox/Cycle_Obsidia.lean",
+          "periphery/lean_sandbox/Derive_Typologie_D1_D2_D3.lean",
+          "periphery/lean_sandbox/Double_Cerveau.lean",
+          "periphery/lean_sandbox/Dynamique_Sigma.lean",
+          "periphery/lean_sandbox/Effet_Mandela_Numerique.lean",
+          "periphery/lean_sandbox/Espace_Etat_Obsidia.lean",
+          "periphery/lean_sandbox/Faisceau_futurs.lean",
+          "periphery/lean_sandbox/Fonction_Objectif_J.lean",
+          "periphery/lean_sandbox/Formule_principale_Obsidia.lean",
+          "periphery/lean_sandbox/Gardien_Amont.lean",
+          "periphery/lean_sandbox/Grimoire_Intentions.lean",
+          "periphery/lean_sandbox/Holo_Conscience.lean",
+          "periphery/lean_sandbox/Information_cause.lean",
+          "periphery/lean_sandbox/Journal_des_Illusions.lean",
+          "periphery/lean_sandbox/LERU.lean",
+          "periphery/lean_sandbox/LEVU.lean",
+          "periphery/lean_sandbox/LOCVN.lean",
+          "periphery/lean_sandbox/LOEG.lean",
+          "periphery/lean_sandbox/LOI_COUT_CAUSAL.lean",
+          "periphery/lean_sandbox/LUO.lean",
+          "periphery/lean_sandbox/Lean_Pack_P161.lean",
+          "periphery/lean_sandbox/Local_update.lean",
+          "periphery/lean_sandbox/Loi_Deux_Mondes.lean",
+          "periphery/lean_sandbox/Loi_Traitement_Implicite.lean",
+          "periphery/lean_sandbox/M_obs_t.lean",
+          "periphery/lean_sandbox/Marge_Securite_m.lean",
+          "periphery/lean_sandbox/Memoire_404.lean",
+          "periphery/lean_sandbox/Memoire_Alignement.lean",
+          "periphery/lean_sandbox/Mode_JSA.lean",
+          "periphery/lean_sandbox/Neopsidia.lean",
+          "periphery/lean_sandbox/OBAN.lean",
+          "periphery/lean_sandbox/PF_infini.lean",
+          "periphery/lean_sandbox/PatchMixer.lean",
+          "periphery/lean_sandbox/Phi_St.lean",
+          "periphery/lean_sandbox/Pipeline_Reversion.lean",
+          "periphery/lean_sandbox/PrimePartitionLab.lean",
+          "periphery/lean_sandbox/RC_AK.lean",
+          "periphery/lean_sandbox/ROM.lean",
+          "periphery/lean_sandbox/Retro_Rationalite.lean",
+          "periphery/lean_sandbox/Rythme_Decisionnel.lean",
+          "periphery/lean_sandbox/Sigma_t.lean",
+          "periphery/lean_sandbox/Silencieur_Semantique.lean",
+          "periphery/lean_sandbox/Systeme_Dynamique_S_Phi_V.lean",
+          "periphery/lean_sandbox/Topologie_Cognitive_Interne.lean",
+          "periphery/lean_sandbox/X_Polymorphique.lean",
+          "periphery/lean_sandbox/X_palindromique.lean"
+        ]
+      }
+    }
+  },
+
+  "lot_e_memory_readonly_only": {
+    "description": "Items dans MATH_MEMORY_INDEX sans fichier Lean fiable dans lean_sandbox/ (pas de correspondance exacte d'ID). Statut MEMORY_READONLY_ONLY. Les 7 premiers sont couverts par des fichiers à noms légèrement différents (voir mapping_note).",
+    "count": 35,
+    "items": [
+      { "id": "P36", "nom": "Quintuplet canonique", "mapping_note": "Couvert par P36_DomainState.lean (LOT A)" },
+      { "id": "P42", "nom": "Seuil admissibilite G1", "mapping_note": "Couvert par P42_SeuilG1.lean (LOT A)" },
+      { "id": "P88", "nom": "Non-contradiction", "mapping_note": "Couvert par P88_NonContradiction.lean (LOT C C1)" },
+      { "id": "P100", "nom": "Stabilite Lyapunov decroissance", "mapping_note": "Couvert par P100_LyapunovDecroissance.lean (LOT A)" },
+      { "id": "P107", "nom": "Stabilite Lyapunov delta-epsilon", "mapping_note": "Couvert par P107_LyapunovDeltaEpsilon.lean (LOT C C2)" },
+      { "id": "P161", "nom": "Calibration energetique temporelle", "mapping_note": "Couvert par P161_CalibrationEnergetique.lean (LOT C C2)" },
+      { "id": "lambda_t", "nom": "Calibrateur Lambda(t,S_t)", "mapping_note": "Couvert approximativement par Lambda_t.lean (LOT D D3)" },
+      { "id": "BALMA", "nom": "BALMA", "mapping_note": "Pas de fichier Lean" },
+      { "id": "SYRIQ", "nom": "SYRIQ", "mapping_note": "Pas de fichier Lean" },
+      { "id": "LTCU_plus", "nom": "LTCU+ 5 couches", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Sigma_star", "nom": "Sigma*", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Double_verrou", "nom": "Double verrou", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Shazam_fractal", "nom": "Shazam fractal", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Capteurs_Onde_Limite", "nom": "Capteurs onde limite", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Loi_Acceleration_Maitrisee", "nom": "Loi acceleration maitrisee", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Loi_Reciprocite", "nom": "Loi reciprocite", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Memoire_Fractale", "nom": "Memoire fractale", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Pipeline_Perception", "nom": "Pipeline perception", "mapping_note": "Pas de fichier Lean" },
+      { "id": "ACP", "nom": "ACP", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Boucle_Etincelle", "nom": "Boucle etincelle", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Balance_Exponentielle", "nom": "Balance exponentielle", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Bio_Frugalite_Obsidienne", "nom": "Bio-frugalite obsidienne", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Paradoxe_Obsidia", "nom": "Paradoxe Obsidia", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Loi_Action_Avant_Motivation", "nom": "Loi action avant motivation", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Reseau_Pheromones", "nom": "Reseau pheromones", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Nuage_Fractal", "nom": "Nuage fractal", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Gardien_2_Sentinelle", "nom": "Gardien 2 Sentinelle", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Protocole_Petri", "nom": "Protocole Petri", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Hypnagogie", "nom": "Hypnagogie", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Neant_Actif", "nom": "Neant actif", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Hasard_Generatif", "nom": "Hasard generatif", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Mode_Reflexe", "nom": "Mode reflexe", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Simulation_Mentale", "nom": "Simulation mentale", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Loi_Friction_Constructive", "nom": "Loi friction constructive", "mapping_note": "Pas de fichier Lean" },
+      { "id": "Langage_Total_Obsidien", "nom": "Langage total obsidien", "mapping_note": "Pas de fichier Lean" }
+    ]
+  },
+
+  "excluded_files": {
+    "description": "Fichiers à ne JAMAIS importer dans un aggregator en l'etat. Contamines (admit/P38_) ou categoriquement exclus.",
+    "count": 5,
+    "files": [
+      {
+        "path": "periphery/lean_sandbox/PathAdmission.lean",
+        "reason": "admit present",
+        "verdict": "BROKEN",
+        "action": "Réécrire completement avant toute promotion"
+      },
+      {
+        "path": "periphery/lean_sandbox/Proof_of_Governance.lean",
+        "reason": "admit present — doublon sale de Proof_of_Governance_Formel.lean (LOT C propre)",
+        "verdict": "BROKEN",
+        "action": "Utiliser Proof_of_Governance_Formel.lean a la place"
+      },
+      {
+        "path": "periphery/lean_sandbox/Espace_Etat_StateCore.lean",
+        "reason": "P38_ herite depuis import kernel",
+        "verdict": "BROKEN",
+        "action": "Nettoyer P38_ avant promotion — ne pas importer en l'etat"
+      },
+      {
+        "path": "periphery/lean_sandbox/Lyapunov_5termes.lean",
+        "reason": "P38_ herite depuis import kernel",
+        "verdict": "BROKEN",
+        "action": "Utiliser Lyapunov_Complet_5termes.lean (LOT C C2) a la place"
+      },
+      {
+        "path": "periphery/lean_sandbox/Omega_Invariants.lean",
+        "reason": "P38_ herite depuis import kernel",
+        "verdict": "BROKEN",
+        "action": "Nettoyer P38_ avant promotion — desimporter de Peripheral.lean (LOT B)"
+      }
+    ]
+  },
+
+  "promotion_order": {
+    "description": "Ordre strictement sequentiel. Chaque etape requiert validation humaine avant la suivante.",
+    "steps": [
+      {
+        "step": 1,
+        "label": "MANIFEST cree",
+        "status": "DONE",
+        "action": "Ce fichier PROMOTION_MANIFEST.json",
+        "files_touched": ["periphery/lean_sandbox/PROMOTION_MANIFEST.json"],
+        "commit": "non — attente validation humaine"
+      },
+      {
+        "step": 2,
+        "label": "Nettoyage LOT B",
+        "status": "PENDING_HUMAN_APPROVAL",
+        "action": "Corriger ou desimporter les 26 fichiers contamines dans proofs/lean/Obsidia/Peripheral/ et LegacyPeripheral/. Retirer sorry/admit et P38_ des fichiers Peripheral. Retirer #check des 7 lean_theorem_*.lean et P161/P36 LegacyPeripheral. Desimporter P50/P52-P56 (LegacyPeripheral P38_) s'ils n'ont pas de version sandbox propre.",
+        "files_touched": ["proofs/lean/Obsidia/Peripheral/*.lean (11)", "proofs/lean/Obsidia/LegacyPeripheral/*.lean (15)"],
+        "prerequisite": "Validation humaine sur ce manifest"
+      },
+      {
+        "step": 3,
+        "label": "Creer GeneratedPeripheral.lean",
+        "status": "PENDING_STEP_2",
+        "action": "Creer proofs/lean/Obsidia/GeneratedPeripheral/ (dossier) et proofs/lean/Obsidia/GeneratedPeripheral.lean (aggregator) important uniquement les 38 fichiers LOT C.",
+        "files_touched": ["proofs/lean/Obsidia/GeneratedPeripheral.lean", "proofs/lean/Obsidia/GeneratedPeripheral/*.lean (38 copies)"],
+        "prerequisite": "Etape 2 validee + build Lean propre sur LOT A"
+      },
+      {
+        "step": 4,
+        "label": "Brancher aggregator dans chaine officielle",
+        "status": "PENDING_STEP_3",
+        "action": "Ajouter import Obsidia.GeneratedPeripheral dans proofs/lean/Obsidia/Main.lean uniquement apres verification que lake build passe proprement sur LOT A + LOT C.",
+        "files_touched": ["proofs/lean/Obsidia/Main.lean"],
+        "prerequisite": "Etape 3 validee + lake build ZERO erreur"
+      }
+    ]
+  },
+
+  "hard_rules": {
+    "no_direct_promotion_of_134": true,
+    "no_runtime_bound_claim": true,
+    "no_kernel_modification": true,
+    "no_basic_lean_touch": true,
+    "no_temporal_kernel_touch": true,
+    "no_git_add_dot": true,
+    "no_auto_commit": true,
+    "no_touch_server_kernel_sealed_cjs": true,
+    "no_touch_MATH_MEMORY_INDEX": true,
+    "no_touch_merkle_seal": true,
+    "no_touch_rfc3161": true,
+    "promotion_requires_human_approval_per_step": true,
+    "lean_ok_required_before_any_import": true,
+    "forbidden_tokens": ["sorry", "admit", "axiom", "P38_", "#check", "#eval", "n + m = m + n"]
+  }
+}

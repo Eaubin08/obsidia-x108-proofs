@@ -1,0 +1,71 @@
+{
+  "audit_id": "P61",
+  "status": "P61_BUS_ADAPTER_BATCH_READY",
+  "source_patch_applied": true,
+  "import_scope": "BUS_ADAPTER_BATCH_ONLY",
+  "adapter_mode": "DRY_RUN_ONLY",
+  "adapted_files": [
+    {
+      "core_path": "engine/bus/message.py",
+      "target_path": "apps/obsidia_api/bus/message.py",
+      "source_sha256": "fed518af2c7c1c5a6e24fc2affd3c49e7ec09e6a9e31cbfff8e8ee87d4e15e54",
+      "target_sha256": "795e81932600ffca402f4f139f8fbd72c2e31f1434436290c9dc66a029748b4e",
+      "execution_surface": "BUS_ADAPTER",
+      "classification": "BUS_ADAPTER_BATCH",
+      "adapter_action": "ADAPTED_DRY_RUN",
+      "dry_run_only": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "kernel_mutation": false,
+      "required_tests": ["test_bus_dry_run_only", "test_no_act_emission", "test_adapter_equivalence"]
+    },
+    {
+      "core_path": "engine/bus/router.py",
+      "target_path": "apps/obsidia_api/bus/router.py",
+      "source_sha256": "2fc6e78cdec4bc9e9ae98c64ff7a4b5af0e1e73cf2de9ea462e26736d6d0f8cb",
+      "target_sha256": "5addf3ca104b4d205a69c0b4e4429c7ccdff82f9ea82c96e36c19a181e86afd9",
+      "execution_surface": "BUS_ADAPTER",
+      "classification": "BUS_ADAPTER_BATCH",
+      "adapter_action": "ADAPTED_DRY_RUN",
+      "dry_run_only": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "kernel_mutation": false,
+      "required_tests": ["test_bus_dry_run_only", "test_no_act_emission", "test_adapter_equivalence"]
+    }
+  ],
+  "already_present_identical": [],
+  "blocked_target_exists_different": [
+    {
+      "core_path": "engine/bus/__init__.py",
+      "target_path": "apps/obsidia_api/bus/__init__.py",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "existing_sha256": "125c8bd02d0ea12f8dad4525e0f25630e4d2948ecb5384efef215e76f1b2c78f",
+      "reason": "Source est vide, cible existante contient un commentaire de version (F54) — non écrasé"
+    }
+  ],
+  "blocked_requires_manual_adapter": [
+    {
+      "core_path": "engine/bus/registry.py",
+      "target_path": "apps/obsidia_api/bus/registry.py",
+      "source_sha256": "0c7d16fe14a4ba5083658c83bf8cf4584042e816f24eb2c5aa32c9925271bc90",
+      "reason": "Import cassé : 'from modules.os_trad.adapter import os_trad_propose' absent du repo proof. Adaptation manuelle requise pour stubber ou remplacer la dépendance.",
+      "blocking_import": "modules.os_trad.adapter"
+    }
+  ],
+  "missing_sources": [],
+  "forbidden_skipped": [],
+  "files_adapted_count": 2,
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "runtime_wiring_modified": false,
+  "proofs_v18_3_1_modified": false,
+  "routes_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "next_step": "P62_MANUAL_REVIEW_DEFERRED"
+}

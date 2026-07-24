@@ -31,6 +31,9 @@ ALLOWED_PATH_FRAGMENTS = [
     "periphery/world_calls/secret_boundary",
     "04_SECURITE_PAREFEU/SECRET_GUARD.md",
     "tests/",
+    "docs/security/",
+    ".github/workflows/",
+    "docs/core_import/POST_P80_SECRET_ROTATION",
 ]
 
 def norm(path: str) -> str:

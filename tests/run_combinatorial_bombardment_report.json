@@ -1,0 +1,451 @@
+{
+  "test": "COMBINATORIAL_BOMBARDMENT_X108_LOCAL_GUARD",
+  "vectors_loaded": 24,
+  "counts": {
+    "ALLOW": 3,
+    "HOLD": 3,
+    "BLOCK": 18
+  },
+  "receipts": [
+    {
+      "id": "BND_BANK_0074",
+      "domain": "BANK",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0086",
+      "domain": "BANK",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0077",
+      "domain": "BANK",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0089",
+      "domain": "BANK",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0050",
+      "domain": "BANK",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0062",
+      "domain": "BANK",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0009",
+      "domain": "BANK",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.1,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "HOLD",
+      "reason": "Confiance sous seuil: confidence_index=0.1.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_BANK_0021",
+      "domain": "BANK",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.9,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "ALLOW",
+      "reason": "Structure stable: aucun verrou critique.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0074",
+      "domain": "TRADING",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0086",
+      "domain": "TRADING",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0077",
+      "domain": "TRADING",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0089",
+      "domain": "TRADING",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0050",
+      "domain": "TRADING",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0062",
+      "domain": "TRADING",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0009",
+      "domain": "TRADING",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.1,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "HOLD",
+      "reason": "Confiance sous seuil: confidence_index=0.1.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_TRADING_0021",
+      "domain": "TRADING",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.9,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "ALLOW",
+      "reason": "Structure stable: aucun verrou critique.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0074",
+      "domain": "GPS_AVIATION",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0086",
+      "domain": "GPS_AVIATION",
+      "noise": 3.75,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0077",
+      "domain": "GPS_AVIATION",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0089",
+      "domain": "GPS_AVIATION",
+      "noise": 3.25,
+      "payload": {
+        "risk_score": 1.5,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": false,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=1.5.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0050",
+      "domain": "GPS_AVIATION",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.1,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0062",
+      "domain": "GPS_AVIATION",
+      "noise": 3.24,
+      "payload": {
+        "risk_score": 0.99,
+        "confidence_index": 0.9,
+        "contradiction_flag": true,
+        "unknown_counterparty": true,
+        "temporal_skew": 1.0
+      },
+      "decision": "BLOCK",
+      "reason": "Contradiction critique + risk_score=0.99.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0009",
+      "domain": "GPS_AVIATION",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.1,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "HOLD",
+      "reason": "Confiance sous seuil: confidence_index=0.1.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    },
+    {
+      "id": "BND_GPS_AVIATION_0021",
+      "domain": "GPS_AVIATION",
+      "noise": 0.01,
+      "payload": {
+        "risk_score": 0.01,
+        "confidence_index": 0.9,
+        "contradiction_flag": false,
+        "unknown_counterparty": false,
+        "temporal_skew": 0.0
+      },
+      "decision": "ALLOW",
+      "reason": "Structure stable: aucun verrou critique.",
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "allowed_to_act": false,
+      "kernel_mutation": false
+    }
+  ],
+  "readonly": true,
+  "decision_authority": "KX108_ONLY",
+  "emits_act": false,
+  "allowed_to_act": false,
+  "kernel_mutation": false,
+  "memory_write": false,
+  "graphiti_write": false,
+  "neo4j_write": false
+}

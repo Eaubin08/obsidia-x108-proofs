@@ -87,6 +87,19 @@ def build_temporal_context_snapshot(
         "proof_refs": [
             "proofs/lean/Obsidia/TemporalX108_3Layers.lean",
         ],
+        # ── Proof surface audit refs (attestation-only, runtime_bound=false) ──
+        "proof_surface_manifest":  "proofs/LEAN_PROOF_SURFACE_MANIFEST.json",
+        "math_memory_closure_map": "periphery/obsidure_math_memory_readonly/MATH_MEMORY_LEAN_CLOSURE_MAP.json",
+        "domain_proof_packs": [
+            "proofs/domain_packs/bank_proof_pack.json",
+            "proofs/domain_packs/trading_proof_pack.json",
+            "proofs/domain_packs/gps_aviation_proof_pack.json",
+        ],
+        "proof_surface_version": "1.0.0",
+        "proof_refs_attached":   True,
+        "runtime_bound":         False,
+        "lean_decides":          False,
+        "attestation_only":      True,
     }
 
     # Determine overall status

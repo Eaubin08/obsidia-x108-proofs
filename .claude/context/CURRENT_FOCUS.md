@@ -50,6 +50,40 @@ Choose next mission from `docs/roadmap/NOT_YET_IMPLEMENTED_AFTER_V2.md`:
 - next: choose next technical mission from NOT_YET_IMPLEMENTED_AFTER_V2.md
 - blocked on: nothing
 
+## 2026-07-08 gateway-fusion + plan-build-integral
+- branch: feat/path-brody-r02-thermo-mcp-closure
+- did: hook UserPromptSubmit (router->Claude Code) + pont pre-inference dans
+  obsidia_cli.handle() + gateway `obsidia chat` (cascade L0/L2/brody/claude -p)
+  + audit log MEASURED `audit/obsidia_gateway_usage.jsonl`. Router hackathon :
+  fix route brody (unified_ir.py, 542 tests OK), .gitignore blinde (.local_*).
+- plan build integral (4 phases): P0 hackathon (B1 run live MEASURED avec
+  FIREWORKS_API_KEY, B11 catalogue modeles, Docker froid); P1 memoire par sens
+  (fix import Shazam 05_SHAZAM, exporteur gateway_memory_index depuis ledger +
+  MATH_MEMORY_INDEX ACTIVE, brancher Shazam+similarity_search 13_NUAGE au L2);
+  P2 calibration chat (invariants drift/DecisionTicket dans prompt L3, traca
+  M.A.P. -> audit bus, fix ANTHROPIC_MODEL settings.json, suppr patch_alphabet);
+  P3 MCP (auditer 09_MCP_BRIDGE_OBSIDIA_IR AVANT d'ecrire, promotion SRL par
+  operateur, de-stub Brody, benchmark OIE V0.3 MEASURED). Vigilance: 07_BDF,
+  08_HEXAFLUX, 15_GUARDS vs gates router, test_cosmos_friction_eml.
+- next: fin P0 (docker + run live) puis P1 etape 1 (import Shazam)
+- blocked on: FIREWORKS_API_KEY (B1/B11) — a fournir par l'operateur
+
+## 2026-07-08 build-integral-complet
+- branch: feat/path-brody-r02-thermo-mcp-closure (x108) + main (router)
+- did: TOUT le plan livre. Cascade complete active (router->memoire par
+  sens->Brody live->kernel X108 reel->Obsidure AVDR reel->claude cadre),
+  hooks UserPromptSubmit+PreToolUse, serveur MCP (.mcp.json cree), doctrine
+  memoire espace-temps (strates RAW->CANON, frise FRISE_TIMELINE + frise
+  humaine V0), promotion SRL CANONICAL (acte operateur), guards 15 statues
+  CONCEPT_ONLY, pluriels arbres. B1 CLOS : run live MEASURED fige + tag
+  submission/live-baseline-measured-20260708 (76% tokens saved, 0/8 vs 1/8
+  violations). ~10 commits, backup tags pre-wiring-full-20260708.
+- next: operateur — redemarrer session Claude Code (approuver MCP obsidia,
+  hooks PreToolUse actifs), settings.json l.93 claude-sonnet-5, soumission
+  hackathon. Chantiers futurs : indexer corpus docs au Level 2, remplir
+  guards reels, de-stub Brody generatif, OIE V0.3 continue.
+- blocked on: nothing
+
 ---
 
 ## Update protocol

@@ -1,0 +1,305 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "obsidia/srl/session_card/v1",
+  "title": "SRL_SESSION_CARD",
+  "description": "Fiche canonique de fin de session Obsidia X108. Capture les 4 zones mémoires strictes et les invariants de gouvernance.",
+  "type": "object",
+  "required": [
+    "session_id",
+    "schema_version",
+    "decision_authority",
+    "entry_context",
+    "exit_point",
+    "decisions",
+    "pepites",
+    "frictions",
+    "memory_zones"
+  ],
+  "additionalProperties": false,
+  "properties": {
+
+    "session_id": {
+      "type": "string",
+      "description": "Identifiant unique de session. Format : ISO8601_YYYYMMDD_HHMMSS.",
+      "pattern": "^[A-Z0-9_\\-]{8,64}$",
+      "examples": ["SESSION_20260622_143000_X108"]
+    },
+
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version du schéma SRL_SESSION_CARD."
+    },
+
+    "decision_authority": {
+      "type": "string",
+      "const": "KX108_ONLY",
+      "description": "Invariant souverain. La périphérie ne décide pas."
+    },
+
+    "readonly": {
+      "type": "boolean",
+      "const": true,
+      "description": "La fiche est en lecture seule une fois scellée."
+    },
+
+    "memory_write": {
+      "type": "boolean",
+      "const": false,
+      "description": "La fiche ne déclenche pas d'écriture mémoire canonique."
+    },
+
+    "entry_context": {
+      "type": "object",
+      "description": "État du système à l'ouverture de la session.",
+      "required": ["timestamp_open", "active_missions", "srl_state_at_open"],
+      "additionalProperties": false,
+      "properties": {
+        "timestamp_open": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage ISO 8601 d'ouverture de session."
+        },
+        "active_missions": {
+          "type": "array",
+          "description": "Missions actives héritées de la session précédente.",
+          "items": { "type": "string" }
+        },
+        "srl_state_at_open": {
+          "type": "string",
+          "enum": ["ACTIVE", "SEMI_ACTIVE", "COLD", "GHOST", "REFLEX_ALERT"],
+          "description": "État SRL au moment de l'ouverture."
+        },
+        "inherited_blocks": {
+          "type": "array",
+          "description": "Blocs mémoire hérités de la session précédente.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "exit_point": {
+      "type": "object",
+      "description": "État du système à la fermeture de la session.",
+      "required": ["timestamp_close", "srl_state_at_close", "closure_reason"],
+      "additionalProperties": false,
+      "properties": {
+        "timestamp_close": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage ISO 8601 de fermeture de session."
+        },
+        "srl_state_at_close": {
+          "type": "string",
+          "enum": ["ACTIVE", "SEMI_ACTIVE", "COLD", "GHOST", "REFLEX_ALERT"],
+          "description": "État SRL au moment de la fermeture."
+        },
+        "closure_reason": {
+          "type": "string",
+          "enum": [
+            "MISSION_COMPLETE",
+            "USER_INTERRUPT",
+            "CONTEXT_LIMIT",
+            "SECURITY_HALT",
+            "TIMEOUT"
+          ],
+          "description": "Raison de la clôture de session."
+        },
+        "open_missions_at_close": {
+          "type": "array",
+          "description": "Missions non terminées à transmettre à la session suivante.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "decisions": {
+      "type": "array",
+      "description": "Décisions X108 prises durant la session. Source d'autorité : KX108_ONLY.",
+      "items": {
+        "type": "object",
+        "required": ["decision_id", "verdict", "timestamp", "authority"],
+        "additionalProperties": false,
+        "properties": {
+          "decision_id": { "type": "string" },
+          "verdict": {
+            "type": "string",
+            "enum": ["ALLOW", "HOLD", "BLOCK"],
+            "description": "Verdict X108. Invariant : BLOCK > HOLD > ALLOW."
+          },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "authority": { "type": "string", "const": "KX108_ONLY" },
+          "rationale": { "type": "string" },
+          "signed_receipt_ref": { "type": "string" }
+        }
+      }
+    },
+
+    "pepites": {
+      "type": "array",
+      "description": "Pépites conceptuelles identifiées durant la session.",
+      "items": {
+        "type": "object",
+        "required": ["pepite_id", "content", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "pepite_id": { "type": "string" },
+          "content": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW_TO_ADD",
+              "ALREADY_CAPTURED",
+              "CONCEPT_ONLY",
+              "NEEDS_USER_DECISION"
+            ]
+          },
+          "target_file": { "type": "string" },
+          "source_ref": { "type": "string" }
+        }
+      }
+    },
+
+    "frictions": {
+      "type": "array",
+      "description": "Frictions, blocages et anomalies rencontrés durant la session.",
+      "items": {
+        "type": "object",
+        "required": ["friction_id", "type", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "friction_id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SECURITY_VIOLATION",
+              "CONTEXT_LIMIT",
+              "MISSING_SOURCE",
+              "DECISION_PENDING",
+              "TECHNICAL_DEBT",
+              "AUDIT_GAP"
+            ]
+          },
+          "description": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3"]
+          },
+          "resolved": { "type": "boolean" },
+          "resolution_note": { "type": "string" }
+        }
+      }
+    },
+
+    "memory_zones": {
+      "type": "object",
+      "description": "4 zones mémoires strictes du SRL. Chaque zone a une sémantique précise et une durée de vie différente.",
+      "required": [
+        "active_blocks",
+        "semi_active_blocks",
+        "cold_fragments",
+        "ghost_fragments"
+      ],
+      "additionalProperties": false,
+      "properties": {
+
+        "active_blocks": {
+          "type": "array",
+          "description": "ACTIVE — Blocs mémoire vivants, en cours d'utilisation. Priorité maximale. Correspondent à l'état SRL ACTIVE.",
+          "items": {
+            "type": "object",
+            "required": ["block_id", "content_summary", "last_accessed"],
+            "additionalProperties": false,
+            "properties": {
+              "block_id": { "type": "string" },
+              "content_summary": { "type": "string" },
+              "last_accessed": { "type": "string", "format": "date-time" },
+              "mission_ref": { "type": "string" },
+              "ttl_sessions": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Durée de vie en nombre de sessions avant dégradation."
+              }
+            }
+          }
+        },
+
+        "semi_active_blocks": {
+          "type": "array",
+          "description": "SEMI_ACTIVE — Blocs en attente de réactivation. Accessibles mais non prioritaires. Correspondent à l'état SRL SEMI_ACTIVE.",
+          "items": {
+            "type": "object",
+            "required": ["block_id", "content_summary", "dormant_since"],
+            "additionalProperties": false,
+            "properties": {
+              "block_id": { "type": "string" },
+              "content_summary": { "type": "string" },
+              "dormant_since": { "type": "string", "format": "date-time" },
+              "reactivation_trigger": { "type": "string" },
+              "decay_risk": {
+                "type": "string",
+                "enum": ["LOW", "MEDIUM", "HIGH"]
+              }
+            }
+          }
+        },
+
+        "cold_fragments": {
+          "type": "array",
+          "description": "COLD — Fragments en sommeil profond. Conservés mais non chargés activement. Correspondent à l'état SRL COLD.",
+          "items": {
+            "type": "object",
+            "required": ["fragment_id", "content_hash", "archived_at"],
+            "additionalProperties": false,
+            "properties": {
+              "fragment_id": { "type": "string" },
+              "content_hash": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$",
+                "description": "Hash SHA256 du contenu archivé."
+              },
+              "content_summary": { "type": "string" },
+              "archived_at": { "type": "string", "format": "date-time" },
+              "retrieval_cost": {
+                "type": "string",
+                "enum": ["LOW", "MEDIUM", "HIGH"],
+                "description": "Coût estimé de réactivation."
+              }
+            }
+          }
+        },
+
+        "ghost_fragments": {
+          "type": "array",
+          "description": "GHOST_SIDE_TABLE — Fragments spectraux. Présence symbolique uniquement. Contenu non récupérable sans source externe. Correspondent à l'état SRL GHOST.",
+          "items": {
+            "type": "object",
+            "required": ["ghost_id", "symbolic_hash", "last_known_context"],
+            "additionalProperties": false,
+            "properties": {
+              "ghost_id": { "type": "string" },
+              "symbolic_hash": {
+                "type": "string",
+                "description": "Hash symbolique de présence — prouve l'existence passée sans révéler le contenu.",
+                "pattern": "^ghost:[a-zA-Z0-9_\\-]{8,64}$"
+              },
+              "last_known_context": {
+                "type": "string",
+                "description": "Dernier contexte connu, formulé sans révéler le contenu sensible."
+              },
+              "ghost_since": { "type": "string", "format": "date-time" },
+              "recovery_possible": {
+                "type": "boolean",
+                "description": "True uniquement si une source externe peut reconstituer le fragment."
+              },
+              "recovery_source_ref": {
+                "type": "string",
+                "description": "Référence à la source externe de récupération, si applicable."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

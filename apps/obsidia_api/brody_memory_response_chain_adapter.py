@@ -25,12 +25,21 @@ from __future__ import annotations
 import importlib.util
 import os
 import socket
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 # Module-level cache so the JSONL index is only read once per process
 _GRAPHITI_INDEX_CACHE: dict[str, list[dict]] = {}
+
+# Graphiti V20 frozen HTTP fallback bounds.
+# A closed sidecar must never impose a per-query HTTP timeout cascade.
+_GRAPHITI_HTTP_HOST = "127.0.0.1"
+_GRAPHITI_HTTP_PORT = 8011
+_GRAPHITI_HTTP_PROBE_TIMEOUT_SECONDS = 0.20
+_GRAPHITI_HTTP_REQUEST_TIMEOUT_SECONDS = 1.00
+_GRAPHITI_HTTP_LADDER_BUDGET_SECONDS = 2.00
 
 # ── Hard-coded boundary ──────────────────────────────────────────────────────
 MEMORY_CHAIN_BOUNDARY: dict[str, Any] = {
@@ -316,8 +325,25 @@ def _normalize_graphiti_http_item(raw: dict[str, Any], rank: int, query: str, so
     }
 
 
-def _query_graphiti_frozen_http_once(query: str, limit: int = 8) -> list[dict]:
-    """Read-only fallback against ObsidiaShell Graphiti V20 frozen HTTP endpoints."""
+def _graphiti_v20_frozen_http_available() -> bool:
+    """Fast TCP probe before entering the readonly HTTP fallback ladder."""
+    try:
+        with socket.create_connection(
+            (_GRAPHITI_HTTP_HOST, _GRAPHITI_HTTP_PORT),
+            timeout=_GRAPHITI_HTTP_PROBE_TIMEOUT_SECONDS,
+        ):
+            return True
+    except OSError:
+        return False
+
+
+def _query_graphiti_frozen_http_once(
+    query: str,
+    limit: int = 8,
+    *,
+    deadline: float | None = None,
+) -> list[dict]:
+    """Read-only Graphiti request bounded by a shared ladder deadline."""
     import json as _json
     import urllib.parse as _parse
     import urllib.request as _request
@@ -327,19 +353,63 @@ def _query_graphiti_frozen_http_once(query: str, limit: int = 8) -> list[dict]:
 
     encoded = _parse.quote(query)
     endpoints = [
-        ("GRAPHITI_V20_FROZEN_CONTEXT_HTTP", f"http://127.0.0.1:8011/graph/v20/frozen/context?q={encoded}&limit={limit}"),
-        ("GRAPHITI_V20_FROZEN_SEARCH_HTTP", f"http://127.0.0.1:8011/graph/v20/frozen/search?q={encoded}&limit={limit}"),
+        (
+            "GRAPHITI_V20_FROZEN_CONTEXT_HTTP",
+            f"http://{_GRAPHITI_HTTP_HOST}:{_GRAPHITI_HTTP_PORT}/graph/v20/frozen/context?q={encoded}&limit={limit}",
+        ),
+        (
+            "GRAPHITI_V20_FROZEN_SEARCH_HTTP",
+            f"http://{_GRAPHITI_HTTP_HOST}:{_GRAPHITI_HTTP_PORT}/graph/v20/frozen/search?q={encoded}&limit={limit}",
+        ),
     ]
 
     for source, url in endpoints:
+        remaining = (
+            None
+            if deadline is None
+            else deadline - time.monotonic()
+        )
+
+        if remaining is not None and remaining <= 0:
+            break
+
+        request_timeout = _GRAPHITI_HTTP_REQUEST_TIMEOUT_SECONDS
+
+        if remaining is not None:
+            request_timeout = min(
+                request_timeout,
+                remaining,
+            )
+
+        if request_timeout <= 0:
+            break
+
         try:
-            with _request.urlopen(url, timeout=5) as resp:
-                data = _json.loads(resp.read().decode("utf-8", errors="replace"))
+            with _request.urlopen(
+                url,
+                timeout=max(0.05, request_timeout),
+            ) as resp:
+                data = _json.loads(
+                    resp.read().decode(
+                        "utf-8",
+                        errors="replace",
+                    )
+                )
+
             raw_items = _extract_graphiti_http_list(data)
+
             if raw_items:
                 return [
-                    _normalize_graphiti_http_item(raw, idx, query=query, source=source)
-                    for idx, raw in enumerate(raw_items[:limit], 1)
+                    _normalize_graphiti_http_item(
+                        raw,
+                        idx,
+                        query=query,
+                        source=source,
+                    )
+                    for idx, raw in enumerate(
+                        raw_items[:limit],
+                        1,
+                    )
                 ]
         except Exception:
             continue
@@ -347,23 +417,93 @@ def _query_graphiti_frozen_http_once(query: str, limit: int = 8) -> list[dict]:
     return []
 
 
-def _query_graphiti_frozen_http_ladder(queries: list[str], limit: int = 8) -> tuple[list[dict], str | None, list[dict]]:
+def _query_graphiti_frozen_http_ladder(
+    queries: list[str],
+    limit: int = 8,
+) -> tuple[list[dict], str | None, list[dict]]:
     attempted: list[dict] = []
     seen: set[str] = set()
+    unique_queries: list[str] = []
 
-    for q in queries:
-        q = (q or "").strip()
+    for raw_query in queries:
+        q = (raw_query or "").strip()
+
         if not q:
             continue
+
         key = q.lower()
+
         if key in seen:
             continue
-        seen.add(key)
 
-        items = _query_graphiti_frozen_http_once(q, limit=limit)
-        attempted.append({"query": q, "results_count": len(items), "source": "GRAPHITI_V20_FROZEN_HTTP"})
+        seen.add(key)
+        unique_queries.append(q)
+
+    if not unique_queries:
+        return [], None, attempted
+
+    if not _graphiti_v20_frozen_http_available():
+        attempted.extend(
+            {
+                "query": q,
+                "results_count": 0,
+                "source": "GRAPHITI_V20_FROZEN_HTTP",
+                "status": "SIDECAR_UNAVAILABLE_FAST_PROBE",
+            }
+            for q in unique_queries
+        )
+
+        return [], None, attempted
+
+    deadline = (
+        time.monotonic()
+        + _GRAPHITI_HTTP_LADDER_BUDGET_SECONDS
+    )
+
+    for q in unique_queries:
+        if time.monotonic() >= deadline:
+            attempted.append(
+                {
+                    "query": q,
+                    "results_count": 0,
+                    "source": "GRAPHITI_V20_FROZEN_HTTP",
+                    "status": "HTTP_BUDGET_EXHAUSTED",
+                }
+            )
+            break
+
+        items = _query_graphiti_frozen_http_once(
+            q,
+            limit=limit,
+            deadline=deadline,
+        )
+
+        attempted.append(
+            {
+                "query": q,
+                "results_count": len(items),
+                "source": "GRAPHITI_V20_FROZEN_HTTP",
+                "status": (
+                    "RESULTS"
+                    if items
+                    else "NO_RESULTS"
+                ),
+            }
+        )
+
         if items:
             return items, q, attempted
+
+        if time.monotonic() >= deadline:
+            attempted.append(
+                {
+                    "query": None,
+                    "results_count": 0,
+                    "source": "GRAPHITI_V20_FROZEN_HTTP",
+                    "status": "HTTP_BUDGET_EXHAUSTED",
+                }
+            )
+            break
 
     return [], None, attempted
 

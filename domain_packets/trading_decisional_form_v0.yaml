@@ -1,0 +1,69 @@
+# domain_packets/trading_decisional_form_v0.yaml
+# P3-08 — V3.2.2 COMPLETION
+# Formulaire décisionnel du domaine TRADING.
+# STATUT : REVIEW_REQUIRED — à valider par l'opérateur avant activation.
+
+domain: "trading"
+version: "v0"
+integration_phase: "P3"
+kernel_endpoint: "http://127.0.0.1:3001/kernel/ragnarok"
+gate_file: "domains/trading/trading_x108_gate.py"
+
+metadata:
+  description: "Gouvernance des opérations de trading via Kernel X-108"
+  domain_type: "FINANCIAL_MARKETS"
+  regulation: ["MIFID_II", "EMIR", "MAR", "DODD_FRANK"]
+  created_by: "V3_2_2_COMPLETION"
+
+entities:
+  - "Order"
+  - "Position"
+  - "Instrument"
+  - "Portfolio"
+  - "Counterparty"
+  - "MarketData"
+
+risk_classes:
+  - "REGULATORY_MARKET_ABUSE"
+  - "REGULATORY_INSIDER"
+  - "LIMIT_VIOLATION"
+  - "MARKET_RISK"
+  - "OPERATIONAL_RISK"
+
+flow_types:
+  - "BUY"
+  - "SELL"
+  - "LIMIT_ORDER"
+  - "MARKET_ORDER"
+  - "CANCEL"
+  - "POSITION_CHECK"
+  - "RISK_SCAN"
+  - "MARGIN_CALL"
+
+ir_mapping:
+  t_mean_source_field: "risk_score"
+  h_score_source_field: "confidence_index"
+  a_score_source_field: "audit_score"
+  default_threshold_s: 0.6
+
+gate:
+  class: "TradingX108Gate"
+  calls_kernel: true
+  decides_alone: false
+  fail_closed: true
+  default_verdict_on_error: "HOLD"
+
+sigma_agent:
+  planned: true
+  file: "sigma/domains/trading_domain_agent.py"
+  emits_verdict: false
+
+nuisances:
+  file: "domains/trading/nuisance_registry.py"
+  count: 5
+
+kernel_rule:
+  decision_authority: KX108_ONLY
+  kernel_mutation: false
+  fail_closed: true
+  mur_de_beton: true

@@ -224,6 +224,15 @@ def build_existing_reverse_os_projection(
         reverse_flow=reverse_flow,
     )
 
+    # G5: scrub secret-like patterns in user message before tokenizing alphabet_units
+    try:
+        from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like as _ros_scrub
+        def _g5_scrub_msg(s: str) -> str:
+            return _ros_scrub(s)
+    except Exception:
+        def _g5_scrub_msg(s: str) -> str:  # type: ignore[misc]
+            return s
+
     return {
         "status": "EXISTING_REVERSE_OS_READONLY_BRIDGE_PASS",
         "source": "BRODY_EXISTING_REVERSE_OS_BRIDGE_V1",
@@ -243,7 +252,7 @@ def build_existing_reverse_os_projection(
                     "readonly": True,
                     "decision_authority": "KX108_ONLY",
                 }
-                for idx, token in enumerate((user_message or "").split())
+                for idx, token in enumerate(_g5_scrub_msg(user_message or "").split())
             ],
             "alphabet_units_count": len((user_message or "").split()),
             "os_reverse_projection": projection,

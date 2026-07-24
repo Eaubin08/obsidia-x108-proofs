@@ -153,7 +153,7 @@ export default function App() {
           language: supportLang,
           ir_candidate: irSupport.ir_candidate as Record<string, unknown> ?? {},
           audience: 'operator',
-          format: 'ui',
+          format: 'terminal',
           tree_context: osTradSupport.tree_context as Record<string, unknown> ?? {},
           graphiti_context: osTradSupport.graphiti_context as Record<string, unknown> ?? {},
           session_id: activeSessionId,
@@ -165,6 +165,29 @@ export default function App() {
           ir_candidate: irSupport,
           os_reverse: osReverseSupport,
         }
+        const osReverseProjection = (osReverseSupport as Record<string, unknown>).projection as Record<string, unknown> | undefined
+        const projectionField = (name: string) => String(osReverseProjection?.[name] ?? '-')
+
+        const enrichedTerminalBlock = [
+          '',
+          '---',
+          'BRODY TERMINAL — TRANSVERSE STACK',
+          'readonly / no ACT / no write',
+          'OBSIDIA_TERMINAL_VIEW_V1',
+          '',
+          '[OS REVERSE PROJECTION]',
+          'response_mode=' + projectionField('response_mode'),
+          'summary=' + projectionField('summary'),
+          'next_safe_step=' + projectionField('next_safe_step'),
+          'boundary_notice=' + projectionField('boundary_notice'),
+          '',
+          'ENRICHED VERDICT',
+          '/api/brody/chat remains primary.',
+          'Support routes provide separate evidence.',
+          'No ACT. No verdict. No memory write. No kernel mutation. No X108 mutation.',
+        ].join('\n')
+
+        responseText = (responseText + '\n' + enrichedTerminalBlock).trim()
 
         if (backendPayload) {
           backendPayload = {

@@ -4,4 +4,6 @@ Get-Process -Name "chrome", "msedge" -ErrorAction SilentlyContinue | ForEach-Obj
 
 Write-Host "[X108-SYSTEM] Priorités CPU réalignées. Démarrage de l'Intake V1..." -ForegroundColor Green
 
-# (Le code d'appel du script d'auto-triage s'insérera ici au prochain bloc)
+# TODO: AUTO_TRIAGE_RUNNER_INCOMPLETE
+# Ce runner ne lance pas encore le script Python brody_auto_triage_memory_intake_readonly_v1.py.
+# Statut : BLOCKED — ne pas ajouter d'exécution automatique sans validation KX108_ONLY.

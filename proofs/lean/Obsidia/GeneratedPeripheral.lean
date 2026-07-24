@@ -1,0 +1,47 @@
+-- GeneratedPeripheral.lean
+-- Aggregator formel Obsidia — couche GeneratedPeripheral
+-- Statut : FORMAL_LAYER — non-runtime. Offline uniquement.
+-- KX108 est le seul kernel souverain. Ces preuves sont formelles offline.
+-- Contient 29 modules valides depuis periphery/lean_sandbox/
+-- Ne pas importer dans le runtime Python/FastAPI/GuardX108.
+-- Generated: 2026-06-30 via workflow Obsidure (C1)
+
+import Obsidia.GeneratedPeripheral.P107_LyapunovDeltaEpsilon
+import Obsidia.GeneratedPeripheral.P161_CalibrationEnergetique
+import Obsidia.GeneratedPeripheral.Phi_t_Structure_Formelle
+import Obsidia.GeneratedPeripheral.M1_Sigma_Proprietes_Formelles
+import Obsidia.GeneratedPeripheral.Sigma_Cannot_Authorize
+import Obsidia.GeneratedPeripheral.Lyapunov_Candidate_L_Basic
+import Obsidia.GeneratedPeripheral.Espace_Invariants_Omega
+import Obsidia.GeneratedPeripheral.Architecture_L_Theta_Omega
+import Obsidia.GeneratedPeripheral.Renormalisation_Theories
+import Obsidia.GeneratedPeripheral.Geometrie_Theories
+import Obsidia.GeneratedPeripheral.Stratification_Gouvernee
+import Obsidia.GeneratedPeripheral.Flux_Dissipatif_Gouverne
+import Obsidia.GeneratedPeripheral.Conservation_Informationnelle_Formelle
+import Obsidia.GeneratedPeripheral.Bassins_Attraction_Theories
+import Obsidia.GeneratedPeripheral.Spectre_Points_Fixes
+import Obsidia.GeneratedPeripheral.IST_Indice_Stabilite_Trajectoire
+import Obsidia.GeneratedPeripheral.Maturite_Cognitive_Metriques
+import Obsidia.GeneratedPeripheral.Valeur_Cognitive_Vc
+import Obsidia.GeneratedPeripheral.Dette_Cognitive_Dc
+import Obsidia.GeneratedPeripheral.Economie_Interne_Cognitive
+import Obsidia.GeneratedPeripheral.Proof_of_Governance_Formel
+import Obsidia.GeneratedPeripheral.Fractalite_OS0_OS4
+import Obsidia.GeneratedPeripheral.Machine_Decouverte_Lois
+import Obsidia.GeneratedPeripheral.Architecture_DualLayer
+import Obsidia.GeneratedPeripheral.Consensus_Cognitif_Multi
+import Obsidia.GeneratedPeripheral.Theoremes_Stabilite_Formels
+import Obsidia.GeneratedPeripheral.Conservation_Informationnelle_Basic
+import Obsidia.GeneratedPeripheral.Principe_Variationnel_J_pi_Basic
+import Obsidia.GeneratedPeripheral.Cadre_Variationnel_Complet
+import Obsidia.GeneratedPeripheral.P_ObsidureBoundary_NonDecision
+import Obsidia.GeneratedPeripheral.P_ObsidureCodeSurveillance_NonSovereign
+import Obsidia.GeneratedPeripheral.P_CandidateCorrection_RequiresValidation
+import Obsidia.GeneratedPeripheral.P_ProtectedRuntimeMutation_Blocked
+import Obsidia.GeneratedPeripheral.P_MemoryWriteInvariant_Readonly
+import Obsidia.GeneratedPeripheral.P_GraphitiReadonly_NoWrite
+import Obsidia.GeneratedPeripheral.P_CanonicalMemoryWrite_Blocked
+import Obsidia.GeneratedPeripheral.P_DomainKernel_EntropyRisk_RequiresHold
+import Obsidia.GeneratedPeripheral.P_DomainKernel_PathFidelity_RequiresCoherence
+import Obsidia.GeneratedPeripheral.P_DomainKernel_SignedReceipt_KX108Only

@@ -1,0 +1,16 @@
+# OIE V0 — Big Tech baseline costs (EUR / 1M actions)
+# Source: OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0 (frozen at commit 73444cd)
+
+BT_ENERGY_LOW: float = 102.0
+BT_ENERGY_HEAVY: float = 1296.0
+BT_API_SIMPLE: float = 5500.0
+BT_API_NORMAL: float = 25000.0
+BT_AGENTIC: float = 160000.0
+
+BASELINE_LABELS: dict[str, float] = {
+    "BT_ENERGY_LOW": BT_ENERGY_LOW,
+    "BT_ENERGY_HEAVY": BT_ENERGY_HEAVY,
+    "BT_API_SIMPLE": BT_API_SIMPLE,
+    "BT_API_NORMAL": BT_API_NORMAL,
+    "BT_AGENTIC": BT_AGENTIC,
+}

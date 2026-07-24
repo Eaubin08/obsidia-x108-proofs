@@ -1,0 +1,31 @@
+# CODEOWNERS — Obsidia X-108 Proofs
+# Toute modification des zones protégées requiert review obligatoire.
+# Configurer via GitHub Settings > Branches > Branch protection rules :
+#   > Require review from Code Owners
+
+# Zones critiques kernel / sécurité
+sigma/                          @obsidia-kernel-team
+runtime_wiring/                 @obsidia-kernel-team
+connectors/                     @obsidia-kernel-team
+apps/obsidia_api/               @obsidia-api-team
+
+# Preuves formelles — toute modification bloque CI
+proofs/lean/                    @obsidia-proof-team
+proofs/tla/                     @obsidia-proof-team
+proofs/merkle_root.json         @obsidia-proof-team
+proofs/rfc3161_anchor.json      @obsidia-proof-team
+proofs/verify_all.py            @obsidia-proof-team
+
+# Specs critiques
+specs/00_SCOPE_DISCIPLINE/      @obsidia-proof-team
+specs/01_X108_AUTHORITY/        @obsidia-proof-team
+specs/_invariant_graph/         @obsidia-proof-team
+
+# CI / sécurité GitHub
+.github/workflows/              @obsidia-kernel-team
+.github/CODEOWNERS              @obsidia-kernel-team
+.github/dependabot.yml          @obsidia-kernel-team
+SECURITY.md                     @obsidia-kernel-team
+
+# Docs core import (audit trail)
+docs/core_import/               @obsidia-proof-team

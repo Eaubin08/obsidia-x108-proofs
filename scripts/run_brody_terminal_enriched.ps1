@@ -11,12 +11,40 @@ function Post-Json {
   )
 
   $json = $Body | ConvertTo-Json -Depth 40
+  $url = "$Base$EndpointPath"
 
-  return Invoke-RestMethod "$Base$EndpointPath" `
-    -Method POST `
-    -ContentType "application/json; charset=utf-8" `
-    -Body $json `
-    -TimeoutSec 60
+  $req = [System.Net.HttpWebRequest]::Create($url)
+  $req.Method = "POST"
+  $req.ContentType = "application/json; charset=utf-8"
+  $req.Accept = "application/json"
+
+  $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+  $req.ContentLength = $bytes.Length
+
+  $stream = $req.GetRequestStream()
+  $stream.Write($bytes, 0, $bytes.Length)
+  $stream.Close()
+
+  try {
+    $res = $req.GetResponse()
+    $rs = $res.GetResponseStream()
+    $ms = New-Object System.IO.MemoryStream
+    $rs.CopyTo($ms)
+    $raw = $ms.ToArray()
+    $text = [System.Text.Encoding]::UTF8.GetString($raw)
+    return $text | ConvertFrom-Json
+  } catch [System.Net.WebException] {
+    $err = $_.Exception
+    if ($err.Response) {
+      $ers = $err.Response.GetResponseStream()
+      $ems = New-Object System.IO.MemoryStream
+      $ers.CopyTo($ems)
+      $eraw = $ems.ToArray()
+      $etext = [System.Text.Encoding]::UTF8.GetString($eraw)
+      throw "HTTP_ERROR_UTF8: $etext"
+    }
+    throw
+  }
 }
 
 function Get-Answer {
