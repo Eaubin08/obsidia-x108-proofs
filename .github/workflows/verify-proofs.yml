@@ -13,7 +13,7 @@ jobs:
   verify-python-strict:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v6
         with:
@@ -76,7 +76,7 @@ jobs:
   verify-lean:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install elan
         run: |
@@ -95,7 +95,7 @@ jobs:
   verify-sigma-and-qa:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v6
         with:
@@ -161,7 +161,7 @@ jobs:
     env:
       TLA_VERSION: "v1.7.4"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
