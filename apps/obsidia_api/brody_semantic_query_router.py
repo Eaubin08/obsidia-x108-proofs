@@ -231,7 +231,7 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
             "is_canonical": True,
             "route": "COMPOUND_MATCH",
         }
-    
+
     # NEXT_STEPS: must have future-oriented word AND continuation word
     next_words = ["prepare", "prochaine", "prepare", "ensuite", "next", "apres", "etape", "quoi", "suite"]
     next_count = sum(1 for w in next_words if w in folded_lower)
@@ -246,7 +246,7 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
             "is_canonical": True,
             "route": "COMPOUND_MATCH",
         }
-    
+
     # Try canonical topic routes — match on both accented and accent-folded
     for triggers, topic, query, primary, fallbacks in _TOPIC_ROUTES:
         if any(_trigger_matches(t, normalized_lower, folded_lower) for t in triggers):

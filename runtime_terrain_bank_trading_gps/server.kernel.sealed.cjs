@@ -123,10 +123,10 @@ app.post('/kernel/ragnarok', (req, res) => {
     const sigmaDir = path.join(__dirname, '..', 'sigma');
     const scriptPath = path.join(sigmaDir, 'run_pipeline.py');
     const tempFilePath = path.join(__dirname, 'input_temp.json');
-    
+
     // --- CHIRURGIE DYNAMIQUE ---
     const domain = req.body.domain || "gps_defense_aviation";
-    const dataToProcess = req.body.state || req.body; 
+    const dataToProcess = req.body.state || req.body;
 
     // 1. Écriture du fichier temporaire
     try {
@@ -134,7 +134,7 @@ app.post('/kernel/ragnarok', (req, res) => {
     } catch (err) {
         return res.status(500).json({ error: "Failed to write temp file", details: err.message });
     }
-    
+
     console.log(`\x1b[38;5;197m[BRIDGE]\x1b[0m 🚀 Routing -> Domain: ${domain}`);
 
     // 2. Lancement du Kernel Python
@@ -170,11 +170,11 @@ app.post('/kernel/ragnarok', (req, res) => {
 
         try {
             const parsedResult = JSON.parse(result);
-            
+
             // --- PERSISTENCE DES PREUVES ---
             const allDataDir = path.join(__dirname, 'allData');
             if (!fs.existsSync(allDataDir)) fs.mkdirSync(allDataDir);
-            
+
             const filename = `decision_${domain}_${Date.now()}.json`;
             fs.writeFileSync(path.join(allDataDir, filename), JSON.stringify(parsedResult, null, 2));
             printKernelDecisionSummary(domain, parsedResult);
@@ -192,7 +192,7 @@ app.post('/kernel/ragnarok', (req, res) => {
 // Note : On utilise ../ car audit_merkle.py est à la racine du projet
 setInterval(() => {
     console.log("🔐 [AUTO-SEAL] Pulsation Merkle en cours...");
-    
+
     const auditMerklePath = path.join(__dirname, '..', 'audit_merkle.py');
     exec(`python "${auditMerklePath}"`, { cwd: path.join(__dirname, '..') }, (error, stdout, stderr) => {
         if (error) {
