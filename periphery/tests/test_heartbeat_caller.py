@@ -21,9 +21,11 @@ import pytest
 from periphery.session_lock.heartbeat_lock_manager import (
     ControlRequest,
     FailureCode,
+    HandoffAction,
     HeartbeatConfig,
     HeartbeatLockManager,
     HeartbeatRuntimeState,
+    OperationResult,
 )
 from periphery.session_lock.heartbeat_caller import (
     CallerPhase,
@@ -376,3 +378,148 @@ def test_t20_part_a_unchanged(tmp_path):
     assert changed == "", (
         f"PART_A modifiée depuis 69b8985 : {changed}"
     )
+
+
+# ── T21 : handoff canonique RESUME_WAIT ──────────────────────────────────────
+
+def test_t21_canonical_handoff_resume_wait(tmp_path):
+    """tick() retourne le handoff canonique RESUME_WAIT via HandoffAction."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    caller.bootstrap()
+    clock.advance(3)
+    r = caller.tick()
+    assert r.ok is True
+    assert r.handoff == HandoffAction.RESUME_WAIT.value
+    assert r.handoff == "RESUME_WAIT"
+    assert caller.phase is CallerPhase.TICKING
+
+
+# ── T22 : handoff canonique CONSUME_CONTROL ──────────────────────────────────
+
+def test_t22_canonical_handoff_consume_control(tmp_path):
+    """tick() retourne CONSUME_CONTROL via HandoffAction après request_stop."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    caller.bootstrap()
+    caller.request_stop()
+    r = caller.tick()
+    assert r.ok is True
+    assert r.handoff == HandoffAction.CONSUME_CONTROL.value
+    assert r.handoff == "CONSUME_CONTROL"
+    assert caller.phase is CallerPhase.CONTROL_REQUESTED
+
+
+# ── T23 : handoff inconnu → fail-closed ──────────────────────────────────────
+
+def test_t23_unknown_handoff_fail_closed(tmp_path, monkeypatch):
+    """Un handoff non reconnu dans tick() produit un résultat fail-closed."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    caller.bootstrap()
+
+    # Injecter un handoff inconnu dans la réponse de heartbeat_tick
+    def fake_tick():
+        return OperationResult.success(
+            "injected unknown handoff",
+            heartbeat_at=clock.now,
+            handoff_action="UNKNOWN_HANDOFF_VALUE",
+        )
+
+    monkeypatch.setattr(mgr, "heartbeat_tick", fake_tick)
+    r = caller.tick()
+    assert r.ok is False
+    assert caller.phase is CallerPhase.FAULTED
+    # Le caller ne continue pas silencieusement comme RESUME_WAIT
+    assert r.handoff == "UNKNOWN_HANDOFF_VALUE"
+
+
+# ── T24 : tick échoué + release réussi → séquence reste en échec ─────────────
+
+def test_t24_tick_failure_release_success_sequence_fails(tmp_path, monkeypatch):
+    """Échec de tick suivi d'un release réussi : CallerResult.ok reste False."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+
+    # Injecter un échec de tick — bootstrap reste nominal
+    def fake_tick_fail():
+        return OperationResult.failure(
+            FailureCode.HEARTBEAT_LOCK_IDENTITY_MISMATCH,
+            "injected tick failure for T24",
+        )
+
+    monkeypatch.setattr(mgr, "heartbeat_tick", fake_tick_fail)
+    r = caller.run_bounded(max_steps=3)
+    # Séquence en échec, même si le release a réussi après le tick raté
+    assert r.ok is False
+    assert r.sequence_ok is False
+    assert r.first_failure is not None
+    assert r.first_failure.code is FailureCode.HEARTBEAT_LOCK_IDENTITY_MISMATCH
+    # Le cleanup_ok reflète l'état réel du release (True si release nominal)
+    assert r.cleanup_ok is True
+    assert caller.released is True
+
+
+# ── T25 : consume_control échoué → commit_termination non appelé ─────────────
+
+def test_t25_consume_control_failure_no_commit_termination(tmp_path):
+    """consume_and_terminate() : si consume_control échoue, terminated=False."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    caller.bootstrap()
+    # Pas de request_stop → consume_control échoue (aucune requête pendante)
+    r = caller.consume_and_terminate()
+    assert r.ok is False
+    assert caller.terminated is False
+    assert caller.phase is CallerPhase.FAULTED
+    assert r.part_a_result.code is FailureCode.HEARTBEAT_RUNTIME_CONTROL_CONSUMPTION_STATE_INVALID
+
+
+# ── T26 : commit_termination échoué → erreur conservée même si release réussit
+
+def test_t26_commit_termination_failure_preserved(tmp_path, monkeypatch):
+    """Échec de commit_termination : erreur conservée, terminated=False."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    caller.bootstrap()
+    caller.request_stop()
+    caller.tick()  # → CONSUME_CONTROL, phase=CONTROL_REQUESTED
+
+    # Patcher commit_termination pour simuler un échec
+    def fake_commit():
+        return OperationResult.failure(
+            FailureCode.HEARTBEAT_RUNTIME_TERMINATION_STATE_INVALID,
+            "injected commit_termination failure",
+        )
+
+    monkeypatch.setattr(mgr, "commit_termination", fake_commit)
+    r = caller.consume_and_terminate()
+    assert r.ok is False
+    assert caller.terminated is False
+    assert caller.phase is CallerPhase.FAULTED
+    # La release ultérieure ne doit pas masquer cette erreur
+    r_release = caller.release()
+    # release peut réussir ou non selon l'état PART_A — ce n'est pas l'objet du test
+    assert caller.terminated is False  # inchangé
+
+
+# ── T27 : succès nominal complet de run_bounded ──────────────────────────────
+
+def test_t27_run_bounded_nominal_success(tmp_path):
+    """run_bounded nominal : ok=True, sequence_ok=True, cleanup_ok=True."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+    r = caller.run_bounded(max_steps=2)
+    assert r.ok is True
+    assert r.sequence_ok is True
+    assert r.cleanup_ok is True
+    assert r.first_failure is None
+    assert caller.released is True
+    assert caller.steps_executed <= 2

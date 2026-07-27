@@ -26,6 +26,7 @@ from typing import Optional
 
 from periphery.session_lock.heartbeat_lock_manager import (
     ControlRequest,
+    HandoffAction,
     HeartbeatLockManager,
     HeartbeatRuntimeState,
     OperationResult,
@@ -48,15 +49,20 @@ class CallerResult:
     """Résultat immuable d'une opération bornée du caller.
 
     Champs :
-    - ok            : opération réussie
+    - ok            : opération réussie (séquence entière + cleanup pour run_bounded)
     - phase         : phase du caller au moment du résultat
-    - part_a_result : OperationResult retourné par PART_A
+    - part_a_result : OperationResult retourné par PART_A (ou première erreur)
     - runtime_state : état runtime observé après l'opération
     - handoff       : valeur de handoff_action si applicable, sinon None
-    - steps_executed: nombre de ticks/étapes exécutés dans cette invocation
+    - steps_executed: nombre de ticks réussis dans cette invocation
     - terminated    : True si commit_termination() a réussi
     - released      : True si release_session() a réussi
     - detail        : description lisible de la phase/résultat
+
+    Champs run_bounded (None pour les appels d'opération unique) :
+    - sequence_ok   : True si aucune erreur avant le cleanup (ticks + termination)
+    - cleanup_ok    : True si release_session() a réussi
+    - first_failure : OperationResult de la première opération en échec
     """
     ok: bool
     phase: CallerPhase
@@ -67,6 +73,9 @@ class CallerResult:
     terminated: bool
     released: bool
     detail: str
+    sequence_ok: Optional[bool] = None
+    cleanup_ok: Optional[bool] = None
+    first_failure: Optional[OperationResult] = None
 
     ISOLATED_UNWIRED: str = field(
         default="PART_B_REV01_ISOLATED_UNWIRED",
@@ -150,16 +159,29 @@ class SynchronousHeartbeatCaller:
         Retourne le résultat sans dormir. L'appelant est responsable de
         toute temporisation entre deux ticks.
 
+        Handoffs possibles :
+        - CONSUME_CONTROL : phase passe à CONTROL_REQUESTED ;
+        - RESUME_WAIT     : retour immédiat, phase reste TICKING ;
+        - absent ou inconnu : résultat fail-closed (ok=False, FAULTED).
+
         Si le handoff est CONSUME_CONTROL, l'appelant doit appeler
         consume_and_terminate() avant le prochain tick ou release().
         """
         result = self._mgr.heartbeat_tick()
         if result.ok:
             self._steps += 1
-            handoff = result.payload.get("handoff_action")
-            if handoff == "CONSUME_CONTROL":
+            raw_handoff = result.payload.get("handoff_action")
+            try:
+                action = HandoffAction(raw_handoff)
+            except (ValueError, TypeError):
+                # handoff absent ou inconnu — fail-closed, aucune continuation
+                self._phase = CallerPhase.FAULTED
+                return self._make_result(result, handoff=raw_handoff, ok_override=False)
+            handoff: Optional[str] = action.value
+            if action is HandoffAction.CONSUME_CONTROL:
                 self._phase = CallerPhase.CONTROL_REQUESTED
             else:
+                # RESUME_WAIT
                 self._phase = CallerPhase.TICKING
         else:
             self._phase = CallerPhase.FAULTED
@@ -180,6 +202,7 @@ class SynchronousHeartbeatCaller:
         Doit être appelée uniquement après un tick ayant retourné
         handoff_action == CONSUME_CONTROL.
 
+        Si consume_control() échoue, commit_termination() n'est pas appelé.
         Aucune mutation hors de la séquence autorisée par PART_A.
         """
         consume = self._mgr.consume_control()
@@ -228,6 +251,13 @@ class SynchronousHeartbeatCaller:
         - un handoff CONSUME_CONTROL est reçu (consume + terminate exécutés) ;
         - une opération PART_A échoue.
 
+        Sémantique du résultat :
+        - ok=False si la séquence a rencontré une erreur OU si le cleanup
+          (release) a échoué ;
+        - sequence_ok distingue les erreurs de séquence de celles du cleanup ;
+        - first_failure conserve la première OperationResult en échec ;
+        - le succès du release ne masque jamais une erreur de séquence.
+
         Aucun sleep, aucun thread, aucun while True.
         L'appelant est responsable de toute temporisation entre les ticks.
         """
@@ -238,26 +268,29 @@ class SynchronousHeartbeatCaller:
         if not r.ok:
             return r
 
+        first_error: Optional[CallerResult] = None
+
         if control_request is not None:
             r = self._request_control(control_request)
             if not r.ok:
-                return r
+                first_error = r
 
-        last_result: CallerResult = r
-        for _ in range(max_steps):
-            r = self.tick()
-            last_result = r
-            if not r.ok:
-                break
-            if r.handoff == "CONSUME_CONTROL":
-                r = self.consume_and_terminate()
-                last_result = r
-                break
+        if first_error is None:
+            for _ in range(max_steps):
+                r = self.tick()
+                if not r.ok:
+                    first_error = r
+                    break
+                if r.handoff == HandoffAction.CONSUME_CONTROL.value:
+                    r = self.consume_and_terminate()
+                    if not r.ok:
+                        first_error = r
+                    break
 
-        r = self.release()
-        return self._make_result(
-            r.part_a_result,
-            handoff=r.handoff,
+        release_r = self.release()
+        return self._make_bounded_result(
+            first_error=first_error,
+            release_result=release_r,
         )
 
     # ------------------------------------------------------------------
@@ -274,9 +307,11 @@ class SynchronousHeartbeatCaller:
         self,
         part_a_result: OperationResult,
         handoff: Optional[str],
+        ok_override: Optional[bool] = None,
     ) -> CallerResult:
+        ok = ok_override if ok_override is not None else part_a_result.ok
         return CallerResult(
-            ok=part_a_result.ok,
+            ok=ok,
             phase=self._phase,
             part_a_result=part_a_result,
             runtime_state=self._mgr.runtime_state,
@@ -285,4 +320,48 @@ class SynchronousHeartbeatCaller:
             terminated=self._terminated,
             released=self._released,
             detail=f"PART_B_REV01_ISOLATED_UNWIRED | phase={self._phase.value}",
+        )
+
+    def _make_bounded_result(
+        self,
+        first_error: Optional[CallerResult],
+        release_result: CallerResult,
+    ) -> CallerResult:
+        """Construit le CallerResult final de run_bounded.
+
+        Si une erreur de séquence est présente, elle devient le résultat
+        principal (ok=False) même si le cleanup a réussi.
+        """
+        cleanup_ok = release_result.ok
+        if first_error is not None:
+            return CallerResult(
+                ok=False,
+                phase=self._phase,
+                part_a_result=first_error.part_a_result,
+                runtime_state=self._mgr.runtime_state,
+                handoff=None,
+                steps_executed=self._steps,
+                terminated=self._terminated,
+                released=self._released,
+                detail=(
+                    f"PART_B_REV01_ISOLATED_UNWIRED | phase={self._phase.value}"
+                    " | SEQUENCE_FAILED"
+                ),
+                sequence_ok=False,
+                cleanup_ok=cleanup_ok,
+                first_failure=first_error.part_a_result,
+            )
+        return CallerResult(
+            ok=cleanup_ok,
+            phase=self._phase,
+            part_a_result=release_result.part_a_result,
+            runtime_state=self._mgr.runtime_state,
+            handoff=release_result.handoff,
+            steps_executed=self._steps,
+            terminated=self._terminated,
+            released=self._released,
+            detail=f"PART_B_REV01_ISOLATED_UNWIRED | phase={self._phase.value}",
+            sequence_ok=True,
+            cleanup_ok=cleanup_ok,
+            first_failure=None,
         )
