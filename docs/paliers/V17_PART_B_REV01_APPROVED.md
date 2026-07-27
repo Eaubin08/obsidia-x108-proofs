@@ -1,21 +1,35 @@
 # V17 PART_B — Heartbeat Caller & Activation
 
 ```
-STATUS:        APPROVED_AND_CLOSED
-REVISION:      PART_B_REV01
-PALIER:        PALIER_PROPOSAL_GUARD_RECLAIM_FIX_V17 PART_B
-DATE_DRAFT:    2026-07-27
-DATE_APPROVED: 2026-07-27
-AUTHOR_DRAFT:  draft inféré — aucune approbation humaine
-APPROVAL:      Opérateur humain — mandat V17_PART_B_REV01_HUMAN_APPROVAL
-BASE_SHA:      69b8985ab21eb678ab7ed507e67c5c41e3441eaa (feat/v17-part-a-session-lock)
-PREDECESSOR:   docs/paliers/V17_PART_B_REV01_DRAFT.md (commit 92b2315)
+REVISION:                   PART_B_REV01
+PALIER:                     PALIER_PROPOSAL_GUARD_RECLAIM_FIX_V17 PART_B
+CALLER_SUBSCOPE_STATUS:     APPROVED_AND_CLOSED
+TOTAL_PART_B_STATUS:        PARTIAL_OPEN
+APPROVED_SCOPE:             HEARTBEAT_CALLER_AND_BOUNDED_ACTIVATION_ONLY
+NOT_CLOSED_BY_THIS_REVISION:
+  - real stale lock reclaim execution
+  - SECTION_14 mutation steps PART_B through PART_H
+  - GF-R01 corrected artifact approval
+  - HUMAN_APPROVED_CORRECTED_GF_R01_SHA256
+  - production activation
+  - terminal/runtime wiring
+  - KX108 integration
+  - historical sections 15 through 22 provenance
+  - PART_B_REV02 versus PART_C allocation
+DATE_DRAFT:      2026-07-27
+DATE_APPROVED:   2026-07-27
+SCOPE_NORMALIZED: 2026-07-27
+AUTHOR_DRAFT:    draft inféré — aucune approbation humaine
+APPROVAL:        Opérateur humain — mandat V17_PART_B_REV01_HUMAN_APPROVAL
+BASE_SHA:        69b8985ab21eb678ab7ed507e67c5c41e3441eaa (feat/v17-part-a-session-lock)
+PREDECESSOR:     docs/paliers/V17_PART_B_REV01_DRAFT.md (commit 92b2315)
 ```
 
-> **Ce document est la spécification normative approuvée de V17 PART_B_REV01.**
+> **Ce document est la spécification normative approuvée du sous-périmètre caller de V17 PART_B_REV01.**
 > Il remplace le draft `V17_PART_B_REV01_DRAFT.md` (commit `92b2315`).
 > Les décisions DECISION_A à DECISION_J ont été approuvées par l'opérateur humain.
-> La fermeture porte uniquement sur le périmètre minimal isolé défini ci-dessous.
+> La fermeture porte uniquement sur le sous-périmètre caller (heartbeat caller & bounded activation).
+> Le sous-périmètre caller de PART_B_REV01 est fermé ; la totalité de PART_B reste `PARTIAL_OPEN`.
 > Les éléments marqués `INFERENCE_FOR_REVIEW` dans le draft et compatibles avec les
 > décisions approuvées sont promus `APPROVED_INFERENCE`. Les décisions H, I, J
 > restent non résolues pour les valeurs de production.
@@ -26,7 +40,7 @@ PREDECESSOR:   docs/paliers/V17_PART_B_REV01_DRAFT.md (commit 92b2315)
 
 > Section normative. Les décisions ci-dessous ont été explicitement approuvées
 > par l'opérateur humain dans le mandat `V17_PART_B_REV01_HUMAN_APPROVAL`.
-> Elles constituent la clôture formelle de ce palier.
+> Elles constituent la clôture formelle du sous-périmètre caller de PART_B_REV01.
 
 ### DECISION_A — APPROVED_WITH_BOUNDED_CORRECTIONS
 
@@ -178,16 +192,19 @@ HORS PERIMETRE — PART_B_REV01
 | Base normative | `PART_A_REV10` (APPROVED_AND_CLOSED, SHA `69b8985`) |
 | Précédent palier | V17 PART_A (APPROVED_AND_CLOSED) |
 | Palier suivant | V17 PART_C (indéterminé — voir §25) |
-| Statut | **APPROVED_AND_CLOSED** |
+| Statut caller REV01 | **APPROVED_AND_CLOSED** |
+| Statut total PART_B | **PARTIAL_OPEN** |
 
 ---
 
 ## 2. Statut
 
 ```
-APPROVED_AND_CLOSED
+CALLER_SUBSCOPE_STATUS: APPROVED_AND_CLOSED
+TOTAL_PART_B_STATUS:    PARTIAL_OPEN
 
-Ce document est la spécification normative de V17 PART_B_REV01.
+Ce document est la spécification normative du sous-périmètre caller de V17 PART_B_REV01.
+Il ne constitue pas la clôture de toute la PART_B du palier.
 
 Il est produit à partir de :
   - deux mentions structurantes dans le code PART_A (lignes 13 et 131 de
@@ -199,10 +216,12 @@ Il est produit à partir de :
 Les décisions DECISION_A à DECISION_J ont été approuvées par l'opérateur
 humain le 2026-07-27 via le mandat V17_PART_B_REV01_HUMAN_APPROVAL.
 
-Périmètre fermé : implémentation minimale isolée uniquement.
+Périmètre fermé : sous-périmètre caller uniquement (heartbeat caller & bounded activation).
 Aucun document de spécification PART_B autonome antérieur n'a été retrouvé
 dans le dépôt, l'historique git ou les archives locales
 (audit V17_PART_B_SPEC_NOT_FOUND, 2026-07-26).
+Audit de provenance : V17_PART_B_HISTORICAL_PROVENANCE_RECONCILIATION (2026-07-27) :
+  verdict PROVENANCE_PARTIAL — responsabilités du reclaim et de GF-R01 restent ouvertes.
 ```
 
 ---
@@ -601,6 +620,10 @@ def execute_reclaim(self, *_args, **_kwargs) -> OperationResult:
 
 **`REAL_RECLAIM_EXECUTION_AUTHORIZED = False` est maintenu pour tout V17.**
 
+**`MUST_REMAIN_FALSE_UNDER_PART_B_REV01` — cette constante ne peut être modifiée
+ni contournée dans aucune implémentation issue de PART_B_REV01. Toute lève de
+cette interdiction requiert un mandat humain distinct avec une nouvelle spécification.**
+
 ---
 
 ## 20. Périmètre des fichiers PART_B_REV01
@@ -710,6 +733,64 @@ une nouvelle approbation humaine dédiées.
 
 ---
 
+## 26. Scope provenance correction
+
+PART_B_REV01 est la première tranche approuvée de V17 PART_B au sein du
+`PALIER_PROPOSAL_GUARD_RECLAIM_FIX_V17`. Elle couvre uniquement le caller
+heartbeat synchrone isolé défini dans le sous-périmètre
+`HEARTBEAT_CALLER_AND_BOUNDED_ACTIVATION_ONLY`.
+
+Elle ne clôt pas toute la PART_B du palier. L'audit de provenance
+`V17_PART_B_HISTORICAL_PROVENANCE_RECONCILIATION` (2026-07-27) a établi :
+
+- Les lignes 13 et 131 de `heartbeat_lock_manager.py` (commit `69b8985`) attribuent
+  à PART_B une double responsabilité : (1) la boucle caller heartbeat et (2) le reclaim
+  réel (SECTION_14 PART_B..H avec mutation).
+- La présente révision couvre uniquement la responsabilité (1).
+- La responsabilité (2) reste non autorisée et non implémentée.
+- La provenance historique des sections 15–22 n'a pu être vérifiée dans aucun
+  fichier versionné ou archive locale, mais la numérotation des sections dans le
+  code PART_A (SECTION_12, 13, 14) est cohérente avec un plan où PART_B débute
+  à la section 15.
+
+**Aucun comportement approuvé dans REV01 ne doit être élargi par inférence.**
+Toute extension du périmètre requiert un mandat humain distinct.
+
+---
+
+## 27. Remaining PART_B responsibilities
+
+### CONFIRMED_OPEN
+
+```
+CONFIRMED_OPEN:
+
+- real reclaim remains structurally forbidden
+    (REAL_RECLAIM_EXECUTION_AUTHORIZED = False — MUST_REMAIN_FALSE_UNDER_PART_B_REV01)
+- GF-R01 hash remains unresolved
+    (DECISION_J: HUMAN_HASH_UNRESOLVED — aucun hash approuvé ou calculé)
+- no mutation implementation exists for SECTION_14 PART_B..H
+    (execute_reclaim() retourne toujours RECLAIM_REAL_EXECUTION_NOT_AUTHORIZED)
+```
+
+### PROVENANCE_UNRESOLVED
+
+```
+PROVENANCE_UNRESOLVED:
+
+- exact historical content of sections 15–22
+    (aucun fichier source retrouvé — non vérifiable depuis les archives disponibles)
+- exact relation to sections 23–30
+    (aucun fichier source retrouvé — PART_C non définie)
+- whether the remaining work is PART_B_REV02 or PART_C
+    (décision non prise — requiert un mandat humain distinct)
+```
+
+PART_B_REV02 et PART_C sont deux alternatives non décidées. Aucune des deux
+n'est autorisée à être inférée ou commencée depuis ce document.
+
+---
+
 ## Annexe A — Sources primaires
 
 | Source | Chemin | Commit |
@@ -736,4 +817,4 @@ Mandat d'approbation : `V17_PART_B_REV01_HUMAN_APPROVAL` (2026-07-27).
 
 ---
 
-*Fin du document V17_PART_B_REV01_APPROVED — STATUS: APPROVED_AND_CLOSED*
+*Fin du document V17_PART_B_REV01_APPROVED — CALLER_SUBSCOPE_STATUS: APPROVED_AND_CLOSED — TOTAL_PART_B_STATUS: PARTIAL_OPEN*
