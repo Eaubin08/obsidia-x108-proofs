@@ -435,6 +435,9 @@ def test_t23_unknown_handoff_fail_closed(tmp_path, monkeypatch):
     assert caller.phase is CallerPhase.FAULTED
     # Le caller ne continue pas silencieusement comme RESUME_WAIT
     assert r.handoff == "UNKNOWN_HANDOFF_VALUE"
+    # PART_A tick a réussi (ok=True côté PART_A) — le compteur reflète cela
+    assert caller.steps_executed == 1
+    assert r.part_a_result.ok is True
 
 
 # ── T24 : tick échoué + release réussi → séquence reste en échec ─────────────
@@ -523,3 +526,31 @@ def test_t27_run_bounded_nominal_success(tmp_path):
     assert r.first_failure is None
     assert caller.released is True
     assert caller.steps_executed <= 2
+
+
+# ── T28 : commit_termination échoué → sequence_ok=False via run_bounded ──────
+
+def test_t28_run_bounded_commit_termination_failure_sequence_ok_false(tmp_path, monkeypatch):
+    """run_bounded : commit_termination failure -> sequence_ok=False, first_failure préservé."""
+    clock = FakeClock()
+    mgr = _make_enabled_mgr(tmp_path, clock)
+    caller = SynchronousHeartbeatCaller(mgr)
+
+    # Patcher commit_termination pour forcer un échec dans la séquence run_bounded
+    def fake_commit():
+        return OperationResult.failure(
+            FailureCode.HEARTBEAT_RUNTIME_TERMINATION_STATE_INVALID,
+            "injected commit_termination failure for T28",
+        )
+
+    monkeypatch.setattr(mgr, "commit_termination", fake_commit)
+    # run_bounded avec STOP : bootstrap -> request_stop -> tick (CONSUME_CONTROL)
+    # -> consume_and_terminate (commit échoue) -> release
+    r = caller.run_bounded(max_steps=3, control_request=ControlRequest.STOP)
+    assert r.ok is False
+    assert r.sequence_ok is False
+    assert r.first_failure is not None
+    assert r.first_failure.code is FailureCode.HEARTBEAT_RUNTIME_TERMINATION_STATE_INVALID
+    # Le cleanup_ok reflète l'état réel du release (non masquant)
+    assert r.cleanup_ok is not None
+    assert caller.terminated is False

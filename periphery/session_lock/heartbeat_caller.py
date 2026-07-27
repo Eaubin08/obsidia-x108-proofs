@@ -256,7 +256,10 @@ class SynchronousHeartbeatCaller:
           (release) a échoué ;
         - sequence_ok distingue les erreurs de séquence de celles du cleanup ;
         - first_failure conserve la première OperationResult en échec ;
-        - le succès du release ne masque jamais une erreur de séquence.
+        - le succès du release ne masque jamais une erreur de séquence ;
+        - si le bootstrap échoue, la méthode retourne immédiatement sans
+          tenter de release : sequence_ok=None, cleanup_ok=None (jamais
+          démarré, distinct de sequence_ok=False = démarré puis échoué).
 
         Aucun sleep, aucun thread, aucun while True.
         L'appelant est responsable de toute temporisation entre les ticks.
