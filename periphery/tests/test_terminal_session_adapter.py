@@ -5,7 +5,8 @@ Fixture de configuration :
     La valeur 1.0 est : TEST_FIXTURE_ONLY_NOT_PRODUCTION
 
 Couvre 24 scénarios conformément à la spécification normative
-docs/paliers/TERMINAL_SESSION_ADAPTER_V0_APPROVED.md.
+docs/paliers/TERMINAL_SESSION_ADAPTER_V0_APPROVED.md,
+plus les corrections REV01 (MINOR-1 à MINOR-7, TEST_GAP-1, TEST_GAP-3, TEST_GAP-4).
 """
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import ast
 import json
 import subprocess
 from pathlib import Path
+from types import MappingProxyType
 from typing import Optional
 
 import pytest
@@ -56,7 +58,7 @@ _FORBIDDEN_IMPORTS = frozenset({
     "scripts", "apps", "sigma", "kernel", "lean",
     "obsidure", "brody", "subprocess", "threading",
     "asyncio", "multiprocessing", "socket", "requests",
-    "httpx",
+    "httpx", "shutil", "importlib",
 })
 
 _FORBIDDEN_URLLIB_MODULES = frozenset({"urllib.request"})
@@ -483,6 +485,8 @@ def test_no_mutation_outside_tmp_path(tmp_path):
 
 # ---------------------------------------------------------------------------
 # Test 19 : aucun appel aux méthodes de reclaim (AST)
+#           + aucune référence exécutable à REAL_RECLAIM_EXECUTION_AUTHORIZED
+#           + aucun getattr visant les méthodes interdites
 # ---------------------------------------------------------------------------
 
 def test_no_reclaim_methods_called():
@@ -499,10 +503,24 @@ def test_no_reclaim_methods_called():
                 assert func.id not in _FORBIDDEN_CALLS, (
                     f"appel interdit détecté dans l'adaptateur : {func.id}"
                 )
+            # Vérifier getattr(obj, "méthode_interdite")
+            if isinstance(func, ast.Name) and func.id == "getattr":
+                if len(node.args) >= 2:
+                    second = node.args[1]
+                    if isinstance(second, ast.Constant) and isinstance(second.value, str):
+                        assert second.value not in _FORBIDDEN_CALLS, (
+                            f"getattr avec méthode reclaim interdite : {second.value}"
+                        )
+        # Vérifier l'absence de référence exécutable à REAL_RECLAIM_EXECUTION_AUTHORIZED
+        if isinstance(node, ast.Name):
+            assert node.id != "REAL_RECLAIM_EXECUTION_AUTHORIZED", (
+                "référence exécutable à REAL_RECLAIM_EXECUTION_AUTHORIZED détectée"
+            )
 
 
 # ---------------------------------------------------------------------------
 # Test 20 : aucun import interdit (AST)
+#           inclut shutil et importlib (REV01)
 # ---------------------------------------------------------------------------
 
 def test_no_forbidden_imports():
@@ -528,34 +546,44 @@ def test_no_forbidden_imports():
 
 
 # ---------------------------------------------------------------------------
-# Test 21 : déterminisme — mêmes entrées → résultats identiques
+# Test 21 : déterminisme logique — LOGICAL_OUTCOME_DETERMINISM
+#           Prouve l'identité des champs indépendants de l'horloge.
+#           Ne compare pas les timestamps ni les chemins (lock_path distincts).
 # ---------------------------------------------------------------------------
 
-def test_determinism(tmp_path):
+def test_determinism_logical_outcome():
     adapter = TerminalSessionAdapter()
-    lock_a = tmp_path / "lock_a.json"
-    lock_b = tmp_path / "lock_b.json"
+    import tempfile, os as _os
+    with tempfile.TemporaryDirectory() as td:
+        lock_a = Path(td) / "lock_a.json"
+        lock_b = Path(td) / "lock_b.json"
 
-    r_a = adapter.simulate_bounded_session(
-        lock_path=lock_a,
-        session_id="TEST_SESSION_DET",
-        heartbeat_config=_TEST_CONFIG,
-        max_steps=2,
-    )
-    r_b = adapter.simulate_bounded_session(
-        lock_path=lock_b,
-        session_id="TEST_SESSION_DET",
-        heartbeat_config=_TEST_CONFIG,
-        max_steps=2,
-    )
+        r_a = adapter.simulate_bounded_session(
+            lock_path=lock_a,
+            session_id="TEST_SESSION_DET",
+            heartbeat_config=_TEST_CONFIG,
+            max_steps=2,
+        )
+        r_b = adapter.simulate_bounded_session(
+            lock_path=lock_b,
+            session_id="TEST_SESSION_DET",
+            heartbeat_config=_TEST_CONFIG,
+            max_steps=2,
+        )
 
     assert r_a.ok == r_b.ok
     assert r_a.sequence_ok == r_b.sequence_ok
     assert r_a.cleanup_ok == r_b.cleanup_ok
+    assert r_a.adapter_code == r_b.adapter_code
     assert r_a.caller_result is not None
     assert r_b.caller_result is not None
     assert r_a.caller_result.steps_executed == r_b.caller_result.steps_executed
     assert r_a.caller_result.released == r_b.caller_result.released
+    assert r_a.caller_result.terminated == r_b.caller_result.terminated
+    # first_failure : les deux doivent être None ou les deux non-None
+    assert (r_a.first_failure is None) == (r_b.first_failure is None)
+    if r_a.first_failure is not None and r_b.first_failure is not None:
+        assert r_a.first_failure.failure_code == r_b.first_failure.failure_code
 
 
 # ---------------------------------------------------------------------------
@@ -599,3 +627,356 @@ def test_caller_byte_identical():
         assert current == expected, (
             f"Caller modifié : {f}\n  attendu  : {expected}\n  obtenu   : {current}"
         )
+
+
+# ===========================================================================
+# Tests REV01 — corrections MINOR-1 à MINOR-7, TEST_GAP-1, TEST_GAP-3, TEST_GAP-4
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# MINOR-1 + MINOR-5 : inspect_lock et simulate — types de path invalides
+# ---------------------------------------------------------------------------
+
+class _BadPathLike:
+    """os.PathLike dont __fspath__ lève TypeError."""
+    def __fspath__(self):
+        raise TypeError("fspath forced failure")
+
+
+@pytest.mark.parametrize("bad_path", [
+    None,
+    42,
+    [],
+    _BadPathLike(),
+    "",
+])
+def test_inspect_invalid_path_types(bad_path):
+    """inspect_lock rejette tout type de path invalide sans lever TypeError."""
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(bad_path)
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.INPUT_INVALID
+    assert r.lock_record is None
+    assert r.caller_result is None
+    assert r.operation == AdapterOperation.INSPECT_LOCK
+
+
+@pytest.mark.parametrize("bad_path", [
+    None,
+    42,
+    [],
+    _BadPathLike(),
+    "",
+])
+def test_simulate_invalid_path_types(bad_path):
+    """simulate_bounded_session rejette tout type de path invalide sans lever TypeError."""
+    adapter = TerminalSessionAdapter()
+    r = adapter.simulate_bounded_session(
+        lock_path=bad_path,
+        session_id="TEST",
+        heartbeat_config=_TEST_CONFIG,
+        max_steps=1,
+    )
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.INPUT_INVALID
+    assert r.caller_result is None
+    assert r.operation == AdapterOperation.SIMULATE_BOUNDED_SESSION
+
+
+# ---------------------------------------------------------------------------
+# MINOR-2 : lock_version — type strict requis
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("lock_version", [None, 2, ""])
+def test_inspect_lock_version_invalid(tmp_path, lock_version):
+    """lock_version non-str ou vide → LOCK_SCHEMA_INVALID."""
+    record = {
+        "session_id": "TEST",
+        "lock_version": lock_version,
+        "created_at": 1000.0,
+        "heartbeat_at": 1000.0,
+    }
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_bytes(json.dumps(record).encode())
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.LOCK_SCHEMA_INVALID
+    assert r.lock_record is None
+    assert lock_file.exists()  # pas de mutation
+
+
+# ---------------------------------------------------------------------------
+# MINOR-3 : booléens interdits comme timestamps
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("field,value", [
+    ("created_at", True),
+    ("heartbeat_at", False),
+])
+def test_inspect_timestamp_bool_rejected(tmp_path, field, value):
+    """Booléen comme timestamp → LOCK_SCHEMA_INVALID (bool est sous-classe de int)."""
+    record = {
+        "session_id": "TEST",
+        "lock_version": "V2",
+        "created_at": 1000.0,
+        "heartbeat_at": 1000.0,
+    }
+    record[field] = value
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_bytes(json.dumps(record).encode())
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.LOCK_SCHEMA_INVALID
+    assert r.lock_record is None
+
+
+# ---------------------------------------------------------------------------
+# MINOR-3 (math.isfinite) : NaN et Inf interdits comme timestamps
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("field,value", [
+    ("created_at", float("nan")),
+    ("heartbeat_at", float("inf")),
+    ("heartbeat_at", float("-inf")),
+])
+def test_inspect_timestamp_nonfinite_rejected(tmp_path, field, value):
+    """NaN ou Inf comme timestamp → LOCK_SCHEMA_INVALID (math.isfinite)."""
+    record = {
+        "session_id": "TEST",
+        "lock_version": "V2",
+        "created_at": 1000.0,
+        "heartbeat_at": 1000.0,
+    }
+    record[field] = value
+    lock_file = tmp_path / "lock.json"
+    # allow_nan=True : Python json accepte NaN/Inf en lecture (constantes étendues)
+    lock_file.write_bytes(json.dumps(record, allow_nan=True).encode())
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.LOCK_SCHEMA_INVALID
+    assert r.lock_record is None
+
+
+# ---------------------------------------------------------------------------
+# TEST_GAP-1 + MINOR-4 : immutabilité profonde de lock_record
+# ---------------------------------------------------------------------------
+
+def test_lock_record_immutability_level1(tmp_path):
+    """Mutation de premier niveau du lock_record → TypeError (MappingProxyType)."""
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_bytes(_make_valid_lock("TEST_IMMUT"))
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is True
+    with pytest.raises(TypeError):
+        r.lock_record["session_id"] = "MUTATED"  # type: ignore[index]
+
+
+def test_lock_record_immutability_nested_dict(tmp_path):
+    """Mutation d'un dictionnaire imbriqué dans lock_record → TypeError."""
+    record = {
+        "session_id": "TEST",
+        "lock_version": "V2",
+        "created_at": 1000.0,
+        "heartbeat_at": 1000.0,
+        "extra": {"key": "value"},
+    }
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_bytes(json.dumps(record).encode())
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is True
+    assert isinstance(r.lock_record["extra"], MappingProxyType)
+    with pytest.raises(TypeError):
+        r.lock_record["extra"]["key"] = "MUTATED"  # type: ignore[index]
+
+
+def test_lock_record_immutability_nested_list(tmp_path):
+    """Une liste imbriquée dans lock_record est convertie en tuple immuable."""
+    record = {
+        "session_id": "TEST",
+        "lock_version": "V2",
+        "created_at": 1000.0,
+        "heartbeat_at": 1000.0,
+        "tags": ["a", "b"],
+    }
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_bytes(json.dumps(record).encode())
+    adapter = TerminalSessionAdapter()
+    r = adapter.inspect_lock(lock_file)
+    assert r.ok is True
+    assert isinstance(r.lock_record["tags"], tuple)
+    with pytest.raises(TypeError):
+        r.lock_record["tags"][0] = "MUTATED"  # type: ignore[index]
+
+
+# ---------------------------------------------------------------------------
+# MINOR-6 : preuve que le manager n'est pas construit pour une config invalide
+# ---------------------------------------------------------------------------
+
+def test_simulate_config_invalid_no_manager_constructed(tmp_path, monkeypatch):
+    """HeartbeatLockManager n'est pas construit quand la config est invalide."""
+    manager_init_calls: list[int] = []
+    original_init = HeartbeatLockManager.__init__
+
+    def _tracking_init(self, *args, **kwargs):  # type: ignore[override]
+        manager_init_calls.append(1)
+        return original_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(HeartbeatLockManager, "__init__", _tracking_init)
+
+    adapter = TerminalSessionAdapter()
+    lock_file = tmp_path / "lock.json"
+
+    invalid_configs = [
+        HeartbeatConfig(enabled=False),
+        HeartbeatConfig(enabled=True, heartbeat_interval_seconds=None),
+        HeartbeatConfig(enabled=True, heartbeat_interval_seconds=0),
+        HeartbeatConfig(enabled=True, heartbeat_interval_seconds=-1.0),
+    ]
+    for cfg in invalid_configs:
+        r = adapter.simulate_bounded_session(
+            lock_path=lock_file,
+            session_id="TEST",
+            heartbeat_config=cfg,
+            max_steps=1,
+        )
+        assert r.ok is False, f"attendu ok=False pour config {cfg}"
+        assert r.adapter_code == AdapterCode.INPUT_INVALID
+
+    assert manager_init_calls == [], (
+        f"HeartbeatLockManager construit {len(manager_init_calls)} fois "
+        "malgré les configs invalides"
+    )
+
+
+# ---------------------------------------------------------------------------
+# MINOR-7 : intervalles invalides — NaN, Inf, 0, négatif, booléen
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("interval", [
+    None,
+    True,           # bool interdit (sous-classe de int)
+    0,
+    -1.0,
+    float("nan"),
+    float("inf"),
+    float("-inf"),
+])
+def test_simulate_config_invalid_interval_variants(tmp_path, interval):
+    """heartbeat_interval_seconds invalide → INPUT_INVALID, aucun lock créé."""
+    config = HeartbeatConfig(enabled=True, heartbeat_interval_seconds=interval)
+    adapter = TerminalSessionAdapter()
+    lock_file = tmp_path / "lock.json"
+    r = adapter.simulate_bounded_session(
+        lock_path=lock_file,
+        session_id="TEST",
+        heartbeat_config=config,
+        max_steps=1,
+    )
+    assert r.ok is False
+    assert r.adapter_code == AdapterCode.INPUT_INVALID
+    assert r.caller_result is None
+    assert not lock_file.exists()
+
+
+# ---------------------------------------------------------------------------
+# TEST_GAP-3 : absence statique d'accès à l'environnement et au FS (AST)
+# ---------------------------------------------------------------------------
+
+_FORBIDDEN_OS_ATTR_ACCESSES = frozenset({
+    "getenv", "environ", "system", "popen", "remove", "unlink",
+})
+
+_FORBIDDEN_DELETION_METHOD_CALLS = frozenset({"unlink", "remove"})
+
+
+def test_no_env_access_ast():
+    """Prouve statiquement l'absence d'accès à l'env, au FS ou à l'injection de code.
+
+    Vérifie :
+    - os.getenv, os.environ, os.system, os.popen
+    - os.remove, os.unlink
+    - tout appel à .unlink() ou .remove()
+    - tout appel à __import__(...)
+    """
+    source = _ADAPTER_MODULE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    for node in ast.walk(tree):
+        # Interdire os.<attr> sensibles
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "os"
+            and node.attr in _FORBIDDEN_OS_ATTR_ACCESSES
+        ):
+            pytest.fail(f"accès os interdit détecté : os.{node.attr}")
+
+        if isinstance(node, ast.Call):
+            func = node.func
+            # Interdire __import__(...)
+            if isinstance(func, ast.Name) and func.id == "__import__":
+                pytest.fail("appel __import__ détecté dans l'adaptateur")
+            # Interdire les méthodes de suppression de fichier
+            if (
+                isinstance(func, ast.Attribute)
+                and func.attr in _FORBIDDEN_DELETION_METHOD_CALLS
+            ):
+                pytest.fail(
+                    f"méthode de suppression interdite détectée : .{func.attr}()"
+                )
+
+
+# ---------------------------------------------------------------------------
+# TEST_GAP-4 : absence statique d'accès Git (AST) — STATIC_NO_GIT_ACCESS_PROOF
+# ---------------------------------------------------------------------------
+
+_GIT_FORBIDDEN_TOP_IMPORTS = frozenset({"git", "subprocess"})
+_FORBIDDEN_SHELL_OS_ATTRS = frozenset({"system", "popen"})
+
+
+def test_no_git_access_ast():
+    """Prouve statiquement qu'aucun accès Git n'est possible.
+
+    STATIC_NO_GIT_ACCESS_PROOF :
+    - aucun import git / subprocess ;
+    - aucun appel os.system / os.popen ;
+    - aucun appel __import__ permettant un import dynamique de git.
+    """
+    source = _ADAPTER_MODULE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                top = alias.name.split(".")[0].lower()
+                assert top not in _GIT_FORBIDDEN_TOP_IMPORTS, (
+                    f"import git/subprocess détecté : {alias.name}"
+                )
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                top = node.module.split(".")[0].lower()
+                assert top not in _GIT_FORBIDDEN_TOP_IMPORTS, (
+                    f"import git/subprocess détecté : {node.module}"
+                )
+
+        # Vérifier os.system et os.popen
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "os"
+            and node.attr in _FORBIDDEN_SHELL_OS_ATTRS
+        ):
+            pytest.fail(f"accès shell interdit : os.{node.attr}")
+
+        # Vérifier __import__ dynamique
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "__import__"
+        ):
+            pytest.fail("appel __import__ détecté — vecteur d'import dynamique git")

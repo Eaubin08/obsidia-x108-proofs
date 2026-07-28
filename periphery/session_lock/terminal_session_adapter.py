@@ -30,6 +30,7 @@ No network. No subprocess. No ACT. DECISION_AUTHORITY=KX108_ONLY.
 from __future__ import annotations
 
 import json
+import math
 import os
 from dataclasses import dataclass
 from enum import Enum
@@ -106,6 +107,54 @@ class TerminalSessionAdapterResult:
     adapter_code: AdapterCode
 
 
+# ---------------------------------------------------------------------------
+# Helpers privés
+# ---------------------------------------------------------------------------
+
+def _coerce_lock_path(
+    value: object,
+) -> "tuple[Path, None] | tuple[None, str]":
+    """Convertit lock_path en Path, fail-closed pour tout type invalide.
+
+    Retourne (Path, None) en cas de succès, (None, message_erreur) sinon.
+    N'accepte que str ou os.PathLike retournant str.
+    Ne résout aucun symlink, ne crée aucun fichier, ne rend aucun chemin absolu.
+    """
+    if isinstance(value, str):
+        if not value:
+            return None, "lock_path vide"
+        return Path(value), None
+    if isinstance(value, os.PathLike):
+        try:
+            s = os.fspath(value)
+        except TypeError as exc:
+            return None, f"lock_path non convertible : {exc}"
+        if not isinstance(s, str):
+            return None, "lock_path.__fspath__ doit retourner str"
+        if not s:
+            return None, "lock_path vide"
+        return Path(s), None
+    return None, (
+        f"lock_path doit être str ou os.PathLike, reçu : {type(value).__name__}"
+    )
+
+
+def _deep_freeze_json(value: object) -> object:
+    """Gèle récursivement une valeur JSON en structures immuables.
+
+    dict  → MappingProxyType (clés et valeurs gelées récursivement)
+    list  → tuple (éléments gelés récursivement)
+    other → inchangé (scalaires JSON : str, int, float, bool, None)
+    """
+    if isinstance(value, dict):
+        return MappingProxyType(
+            {k: _deep_freeze_json(v) for k, v in value.items()}
+        )
+    if isinstance(value, list):
+        return tuple(_deep_freeze_json(item) for item in value)
+    return value
+
+
 class TerminalSessionAdapter:
     """Adaptateur interne borné — TERMINAL_SESSION_ADAPTER_V0.
 
@@ -135,8 +184,8 @@ class TerminalSessionAdapter:
         - aucun appel à classify_lock, prepare_reclaim_proposal ou execute_reclaim ;
         - mutation_scope: NONE.
         """
-        path = Path(lock_path)
-        path_str = str(path)
+        path_obj, path_err = _coerce_lock_path(lock_path)
+        path_str = str(path_obj) if path_obj is not None else ""
 
         def _fail(code: AdapterCode, detail: str) -> TerminalSessionAdapterResult:
             return TerminalSessionAdapterResult(
@@ -161,14 +210,17 @@ class TerminalSessionAdapter:
                 adapter_code=code,
             )
 
-        if not path.exists():
+        if path_obj is None:
+            return _fail(AdapterCode.INPUT_INVALID, path_err)
+
+        if not path_obj.exists():
             return _fail(AdapterCode.LOCK_NOT_FOUND, f"absent : {path_str}")
 
-        if not path.is_file():
+        if not path_obj.is_file():
             return _fail(AdapterCode.LOCK_NOT_FILE, f"non fichier : {path_str}")
 
         try:
-            raw = path.read_bytes()
+            raw = path_obj.read_bytes()
         except OSError as exc:
             return _fail(AdapterCode.LOCK_READ_FAILED, f"lecture échouée : {exc}")
 
@@ -191,11 +243,21 @@ class TerminalSessionAdapter:
         if not isinstance(sid, str) or not sid:
             return _fail(AdapterCode.LOCK_SCHEMA_INVALID, "session_id invalide")
 
+        lv = data.get("lock_version")
+        if not isinstance(lv, str) or not lv:
+            return _fail(AdapterCode.LOCK_SCHEMA_INVALID, "lock_version invalide")
+
         for num_f in ("created_at", "heartbeat_at"):
-            if not isinstance(data.get(num_f), (int, float)):
+            val = data.get(num_f)
+            if isinstance(val, bool) or not isinstance(val, (int, float)):
                 return _fail(
                     AdapterCode.LOCK_SCHEMA_INVALID,
-                    f"{num_f} non numérique",
+                    f"{num_f} doit être int ou float non booléen",
+                )
+            if not math.isfinite(val):
+                return _fail(
+                    AdapterCode.LOCK_SCHEMA_INVALID,
+                    f"{num_f} doit être fini (reçu : {val})",
                 )
 
         return TerminalSessionAdapterResult(
@@ -215,7 +277,7 @@ class TerminalSessionAdapter:
             isolated=_ISOLATED,
             wired=_WIRED,
             mutation_scope="NONE",
-            lock_record=MappingProxyType(dict(data)),
+            lock_record=_deep_freeze_json(data),
             detail="INSPECT_OK",
             adapter_code=AdapterCode.OK,
         )
@@ -238,10 +300,10 @@ class TerminalSessionAdapter:
         Toutes les valeurs sont injectées explicitement.
         Aucune valeur de production inventée.
         N'appelle jamais classify_lock, prepare_reclaim_proposal ou execute_reclaim.
-        mutation_scope: TEMP_LOCK_ONLY si la session démarre, NONE si validation échoue.
+        mutation_scope: TEMP_LOCK_ONLY représente le périmètre de mutation autorisé.
         """
-        raw_path = lock_path if isinstance(lock_path, str) else os.fspath(lock_path)
-        path_str = str(Path(raw_path)) if raw_path else ""
+        path_obj, path_err = _coerce_lock_path(lock_path)
+        path_str = str(path_obj) if path_obj is not None else ""
 
         def _input_fail(detail: str) -> TerminalSessionAdapterResult:
             return TerminalSessionAdapterResult(
@@ -266,14 +328,28 @@ class TerminalSessionAdapter:
                 adapter_code=AdapterCode.INPUT_INVALID,
             )
 
-        if not raw_path:
-            return _input_fail("lock_path vide ou invalide")
+        if path_obj is None:
+            return _input_fail(path_err)
 
         if not isinstance(session_id, str) or not session_id:
             return _input_fail("session_id doit être une chaîne non vide")
 
         if not isinstance(heartbeat_config, HeartbeatConfig):
             return _input_fail("heartbeat_config doit être HeartbeatConfig")
+
+        # Validation de la config avant toute construction du manager
+        if heartbeat_config.enabled is not True:
+            return _input_fail("heartbeat_config.enabled doit être True")
+
+        interval = heartbeat_config.heartbeat_interval_seconds
+        if isinstance(interval, bool) or not isinstance(interval, (int, float)):
+            return _input_fail(
+                "heartbeat_interval_seconds doit être int ou float non booléen"
+            )
+        if interval <= 0 or not math.isfinite(interval):
+            return _input_fail(
+                "heartbeat_interval_seconds doit être strictement positif et fini"
+            )
 
         if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps <= 0:
             return _input_fail("max_steps doit être un entier strictement positif")
@@ -285,7 +361,7 @@ class TerminalSessionAdapter:
 
         manager = HeartbeatLockManager(
             config=heartbeat_config,
-            lock_path=Path(raw_path),
+            lock_path=path_obj,
             session_id=session_id,
         )
         caller = SynchronousHeartbeatCaller(manager)
