@@ -20,9 +20,10 @@ class DominantTreeResult:
     dominant_count: int
     context_signal_only: bool = True
     dominant_is_authority: bool = False
+    compiled_provenance: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d: dict[str, Any] = {
             "vector_id": self.vector_id,
             "theta": self.theta,
             "dominant_ids": self.dominant_ids,
@@ -31,6 +32,9 @@ class DominantTreeResult:
             "context_signal_only": self.context_signal_only,
             "dominant_is_authority": self.dominant_is_authority,
         }
+        if self.compiled_provenance:
+            d["compiled_provenance"] = self.compiled_provenance
+        return d
 
 
 def find_dominant_trees(
@@ -39,9 +43,12 @@ def find_dominant_trees(
 ) -> DominantTreeResult:
     dominant_ids = [i for i, a in enumerate(vector.activations) if a >= theta]
     dominant_names = []
+    compiled_provenance: dict[int, str] = {}
     for i in dominant_ids:
         tree = get_tree_by_id(i)
         dominant_names.append(tree.name if tree else f"TREE_{i}")
+        if tree and tree.compilation_status is not None:
+            compiled_provenance[i] = tree.compilation_status
 
     return DominantTreeResult(
         vector_id=vector.vector_id,
@@ -51,4 +58,5 @@ def find_dominant_trees(
         dominant_count=len(dominant_ids),
         context_signal_only=True,
         dominant_is_authority=False,
+        compiled_provenance=compiled_provenance,
     )
