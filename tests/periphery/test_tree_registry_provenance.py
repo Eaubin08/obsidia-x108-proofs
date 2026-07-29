@@ -1,6 +1,7 @@
 """
-Provenance tests — ARBRES_34 semantic compilation pilot, batch 1.
-ROW_IDs: 4, 5, 6, 7, 8, 12, 13, 14, 15, 16
+Provenance tests — ARBRES_34 semantic compilation.
+Batch 1 — ROW_IDs: 4, 5, 6, 7, 8, 12, 13, 14, 15, 16
+Batch 2 — ROW_IDs: 17, 18, 22, 29, 32, 34
 Model A: provenance fields embedded in tree_registry.py (TreeEntry).
 Audit: 4353_CURRENT_REPOSITORY_BRANCHING_RECONCILIATION_REV2D
 """
@@ -16,6 +17,10 @@ from periphery.cognitive_trees.tree_registry import (
 )
 
 FIRST_BATCH_ROW_IDS = [4, 5, 6, 7, 8, 12, 13, 14, 15, 16]
+SECOND_BATCH_ROW_IDS = [17, 18, 22, 29, 32, 34]
+ALL_COMPILED_ROW_IDS = FIRST_BATCH_ROW_IDS + SECOND_BATCH_ROW_IDS
+BRODY_ONLY_ROW_IDS = [i for i in range(1, 35) if i not in ALL_COMPILED_ROW_IDS]
+
 EXPECTED_SOURCE_PACK = "MMONDE_OS_TRAD_34_ARBRES"
 EXPECTED_PROVENANCE = "SOURCE_PROVENANCE_DOCUMENTED"
 EXPECTED_STATUS = "DOCUMENTED_TREE_ACTIVATION_COMPILED"
@@ -23,6 +28,11 @@ EXPECTED_STATUS = "DOCUMENTED_TREE_ACTIVATION_COMPILED"
 _BATCH_CODE = {
     4: "ARBRE_04", 5: "ARBRE_05", 6: "ARBRE_06", 7: "ARBRE_07", 8: "ARBRE_08",
     12: "ARBRE_12", 13: "ARBRE_13", 14: "ARBRE_14", 15: "ARBRE_15", 16: "ARBRE_16",
+}
+
+_BATCH2_CODE = {
+    17: "ARBRE_17", 18: "ARBRE_18", 22: "ARBRE_22",
+    29: "ARBRE_29", 32: "ARBRE_32", 34: "ARBRE_34",
 }
 
 
@@ -332,12 +342,11 @@ def test_first_batch_provenance_compiled():
 
 # ── Test supplémentaire B ───────────────────────────────────────────────────────
 def test_non_batch_arbres_have_no_provenance():
-    """Les 24 arbres hors lot ne sont pas marqués comme compilés (absence de régression)."""
-    non_batch = [i for i in range(1, 35) if i not in FIRST_BATCH_ROW_IDS]
-    for tid in non_batch:
+    """Les 18 arbres BRODY_ONLY_INTENTIONAL ne sont pas marqués comme compilés."""
+    for tid in BRODY_ONLY_ROW_IDS:
         entry = get_tree_provenance(tid)
         assert entry is None, (
-            f"TREE_ID {tid} (hors lot) retourne une provenance inattendue"
+            f"TREE_ID {tid} (BRODY_ONLY) retourne une provenance inattendue"
         )
 
 
@@ -531,8 +540,8 @@ def test_non_compiled_trees_absent_from_compiled_provenance():
     from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
     from periphery.cognitive_trees.dominant_trees import find_dominant_trees
 
-    # Activer uniquement les dimensions correspondant aux arbres NON compilés
-    # Arbres non compilés : TREE_IDs 1,2,3,9,10,11,17..34 → dimensions 0,1,2,8,9,10,16..33
+    # Activer uniquement des dimensions correspondant aux arbres NON compilés (BRODY_ONLY)
+    # TREE_IDs 1,2,3,9,10,11 → dimensions 0,1,2,8,9,10
     non_compiled_dims = [0, 1, 2, 8, 9, 10]  # TREE_IDs 1,2,3,9,10,11
     activations = [0.0] * 34
     for d in non_compiled_dims:
@@ -582,4 +591,463 @@ def test_dominant_trees_no_kernel_import():
     for pat in forbidden_modules:
         assert pat not in import_block, (
             f"Import kernel interdit dans dominant_trees.py : {pat!r}"
+        )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Bloc batch 2 — ARBRES_34 ROW_IDs {17, 18, 22, 29, 32, 34}
+# Source : ART31 DESTINATION_LAYER=TREE_ACTIVATION + ART39 SHA=407f74...
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── BT1 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_row_ids_present():
+    """Les six ROW_IDs du batch 2 sont présents dans le registre de provenance."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None, f"ROW_ID {rid} absent du registre de provenance (batch 2)"
+
+
+# ── BT2 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_tree_id_correspondence_exact():
+    """La correspondance ROW_ID / ARBRE_CODE est exacte pour les six arbres du batch 2."""
+    for tree_id, expected_code in _BATCH2_CODE.items():
+        entry = get_tree_by_id(tree_id)
+        assert entry is not None, f"TREE_ID {tree_id} absent du registre"
+        assert expected_code in entry.name, (
+            f"TREE_ID {tree_id}: nom attendu contenant {expected_code!r}, obtenu {entry.name!r}"
+        )
+
+
+# ── BT3 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_activation_dimension_equals_tree_id_minus_one():
+    """activation_dimension == tree_id - 1 pour chaque arbre du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.activation_dimension == rid - 1, (
+            f"TREE_ID {rid}: activation_dimension={entry.activation_dimension}, attendu {rid - 1}"
+        )
+
+
+# ── BT4 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_source_pack_exact():
+    """source_pack est MMONDE_OS_TRAD_34_ARBRES pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.source_pack == EXPECTED_SOURCE_PACK, (
+            f"TREE_ID {rid}: source_pack={entry.source_pack!r}"
+        )
+
+
+# ── BT5 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_source_provenance_exact():
+    """source_provenance est SOURCE_PROVENANCE_DOCUMENTED pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.source_provenance == EXPECTED_PROVENANCE, (
+            f"TREE_ID {rid}: source_provenance={entry.source_provenance!r}"
+        )
+
+
+# ── BT6 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_compilation_status_exact():
+    """compilation_status est DOCUMENTED_TREE_ACTIVATION_COMPILED pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.compilation_status == EXPECTED_STATUS, (
+            f"TREE_ID {rid}: compilation_status={entry.compilation_status!r}"
+        )
+
+
+# ── BT7 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_readonly_is_true():
+    """readonly est True pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.readonly is True, f"TREE_ID {rid}: readonly doit être True"
+
+
+# ── BT8 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_emits_act_is_false():
+    """emits_act est False pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.emits_act is False, f"TREE_ID {rid}: emits_act doit être False"
+
+
+# ── BT9 ────────────────────────────────────────────────────────────────────────
+def test_second_batch_can_decide_is_false():
+    """can_decide est False pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.can_decide is False, f"TREE_ID {rid}: can_decide doit être False"
+
+
+# ── BT10 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_authority_non_sovereign():
+    """authority est NON_SOVEREIGN pour tous les arbres du batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.authority == "NON_SOVEREIGN", (
+            f"TREE_ID {rid}: authority={entry.authority!r}"
+        )
+
+
+# ── BT11 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_no_memory_writes():
+    """memory_write, graphiti_write et neo4j_write sont tous False pour le batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.memory_write is False, f"TREE_ID {rid}: memory_write doit être False"
+        assert entry.graphiti_write is False, f"TREE_ID {rid}: graphiti_write doit être False"
+        assert entry.neo4j_write is False, f"TREE_ID {rid}: neo4j_write doit être False"
+
+
+# ── BT12 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_source_reference_present():
+    """source_reference est présent et contient la chaîne documentaire pour le batch 2."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.source_reference is not None, f"TREE_ID {rid}: source_reference est None"
+        assert len(entry.source_reference) > 0, f"TREE_ID {rid}: source_reference est vide"
+        assert "ART01_LEDGER" in entry.source_reference, (
+            f"TREE_ID {rid}: ART01_LEDGER absent de source_reference"
+        )
+        assert "ART39_SHA=" in entry.source_reference, (
+            f"TREE_ID {rid}: ART39_SHA absent de source_reference"
+        )
+
+
+# ── BT13 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_activation_dimensions_unique_and_in_range():
+    """Les dimensions d'activation du batch 2 sont uniques, dans [0,33], et disjointes du batch 1."""
+    dims_b2 = [get_tree_provenance(rid).activation_dimension for rid in SECOND_BATCH_ROW_IDS]
+    assert all(0 <= d <= 33 for d in dims_b2), f"Dimension hors plage [0,33] : {dims_b2}"
+    assert len(dims_b2) == len(set(dims_b2)), f"Dimensions non uniques dans batch 2 : {dims_b2}"
+    dims_b1 = [get_tree_provenance(rid).activation_dimension for rid in FIRST_BATCH_ROW_IDS]
+    overlap = set(dims_b2) & set(dims_b1)
+    assert not overlap, f"Dimensions batch 2 chevauchent batch 1 : {overlap}"
+
+
+# ── BT14 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_source_row_id_matches_tree_id():
+    """source_row_id == str(tree_id) pour chaque arbre du batch 2 (ROW_ID = TREE_ID)."""
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.source_row_id == str(rid), (
+            f"TREE_ID {rid}: source_row_id={entry.source_row_id!r}, attendu {str(rid)!r}"
+        )
+
+
+# ── BT15 ───────────────────────────────────────────────────────────────────────
+def test_total_compiled_count_is_sixteen():
+    """Après les deux lots, exactement 16 arbres ont une compilation_status non-None."""
+    all_trees = get_all_trees()
+    compiled = [t for t in all_trees if t.compilation_status is not None]
+    assert len(compiled) == 16, (
+        f"Attendu 16 arbres compilés, obtenu {len(compiled)}: "
+        f"{[t.id for t in compiled]}"
+    )
+
+
+# ── BT16 ───────────────────────────────────────────────────────────────────────
+def test_brody_only_intentional_remain_uncompiled():
+    """Les 18 arbres BRODY_ONLY_INTENTIONAL restent sans compilation_status."""
+    assert len(BRODY_ONLY_ROW_IDS) == 18, (
+        f"Attendu 18 BRODY_ONLY, calculé {len(BRODY_ONLY_ROW_IDS)}: {BRODY_ONLY_ROW_IDS}"
+    )
+    for tid in BRODY_ONLY_ROW_IDS:
+        entry = get_tree_provenance(tid)
+        assert entry is None, (
+            f"TREE_ID {tid} (BRODY_ONLY) ne devrait pas avoir de provenance compilée"
+        )
+
+
+# ── BT17 ───────────────────────────────────────────────────────────────────────
+def test_arbre_17_domain_and_mapping():
+    """ARBRE_17 : domain=SOCIAL, activation_dimension=16, source_row_id='17'."""
+    entry = get_tree_provenance(17)
+    assert entry is not None
+    assert entry.domain == "SOCIAL", f"ARBRE_17: domain={entry.domain!r}, attendu SOCIAL"
+    assert entry.activation_dimension == 16, (
+        f"ARBRE_17: activation_dimension={entry.activation_dimension}, attendu 16"
+    )
+    assert entry.source_row_id == "17"
+    assert "ARBRE_17" in entry.name
+
+
+# ── BT18 ───────────────────────────────────────────────────────────────────────
+def test_arbre_18_domain_and_mapping():
+    """ARBRE_18 : domain=SOCIAL, activation_dimension=17, source_row_id='18'."""
+    entry = get_tree_provenance(18)
+    assert entry is not None
+    assert entry.domain == "SOCIAL", f"ARBRE_18: domain={entry.domain!r}, attendu SOCIAL"
+    assert entry.activation_dimension == 17, (
+        f"ARBRE_18: activation_dimension={entry.activation_dimension}, attendu 17"
+    )
+    assert entry.source_row_id == "18"
+    assert "ARBRE_18" in entry.name
+
+
+# ── BT19 ───────────────────────────────────────────────────────────────────────
+def test_arbre_22_domain_and_mapping():
+    """ARBRE_22 : domain=PLANNING, activation_dimension=21, source_row_id='22'."""
+    entry = get_tree_provenance(22)
+    assert entry is not None
+    assert entry.domain == "PLANNING", f"ARBRE_22: domain={entry.domain!r}, attendu PLANNING"
+    assert entry.activation_dimension == 21, (
+        f"ARBRE_22: activation_dimension={entry.activation_dimension}, attendu 21"
+    )
+    assert entry.source_row_id == "22"
+    assert "ARBRE_22" in entry.name
+
+
+# ── BT20 ───────────────────────────────────────────────────────────────────────
+def test_arbre_29_domain_and_mapping():
+    """ARBRE_29 : domain=GOVERNANCE, activation_dimension=28, source_row_id='29'."""
+    entry = get_tree_provenance(29)
+    assert entry is not None
+    assert entry.domain == "GOVERNANCE", f"ARBRE_29: domain={entry.domain!r}, attendu GOVERNANCE"
+    assert entry.activation_dimension == 28, (
+        f"ARBRE_29: activation_dimension={entry.activation_dimension}, attendu 28"
+    )
+    assert entry.source_row_id == "29"
+    assert "ARBRE_29" in entry.name
+
+
+# ── BT21 ───────────────────────────────────────────────────────────────────────
+def test_arbre_32_domain_and_mapping():
+    """ARBRE_32 : domain=INFRASTRUCTURE, activation_dimension=31, source_row_id='32'."""
+    entry = get_tree_provenance(32)
+    assert entry is not None
+    assert entry.domain == "INFRASTRUCTURE", (
+        f"ARBRE_32: domain={entry.domain!r}, attendu INFRASTRUCTURE"
+    )
+    assert entry.activation_dimension == 31, (
+        f"ARBRE_32: activation_dimension={entry.activation_dimension}, attendu 31"
+    )
+    assert entry.source_row_id == "32"
+    assert "ARBRE_32" in entry.name
+
+
+# ── BT22 ───────────────────────────────────────────────────────────────────────
+def test_arbre_34_domain_and_mapping():
+    """ARBRE_34 : domain=INFRASTRUCTURE, activation_dimension=33, source_row_id='34'."""
+    entry = get_tree_provenance(34)
+    assert entry is not None
+    assert entry.domain == "INFRASTRUCTURE", (
+        f"ARBRE_34: domain={entry.domain!r}, attendu INFRASTRUCTURE"
+    )
+    assert entry.activation_dimension == 33, (
+        f"ARBRE_34: activation_dimension={entry.activation_dimension}, attendu 33"
+    )
+    assert entry.source_row_id == "34"
+    assert "ARBRE_34" in entry.name
+
+
+# ── BT23 ───────────────────────────────────────────────────────────────────────
+def test_combined_vector_batch1_batch2_non_compiled_simultaneously():
+    """Vecteur mixte : batch1 + batch2 + non-compilés actifs simultanément.
+
+    Activations :
+      dim 3  → TREE_ID 4  (batch 1, compilé)
+      dim 11 → TREE_ID 12 (batch 1, compilé)
+      dim 16 → TREE_ID 17 (batch 2, compilé)
+      dim 21 → TREE_ID 22 (batch 2, compilé)
+      dim 33 → TREE_ID 34 (batch 2, compilé)
+      dim 0  → TREE_ID 1  (BRODY, non compilé)
+      dim 8  → TREE_ID 9  (BRODY, non compilé)
+
+    compiled_provenance doit contenir exactement les 5 TREE_IDs compilés.
+    Les TREE_IDs 1 et 9 (non compilés) ne doivent pas y apparaître.
+    """
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    # Batch 1 compilés
+    activations[3] = 0.9   # dim 3  → TREE_ID 4
+    activations[11] = 0.9  # dim 11 → TREE_ID 12
+    # Batch 2 compilés
+    activations[16] = 0.9  # dim 16 → TREE_ID 17
+    activations[21] = 0.9  # dim 21 → TREE_ID 22
+    activations[33] = 0.9  # dim 33 → TREE_ID 34
+    # BRODY (non compilés)
+    activations[0] = 0.9   # dim 0  → TREE_ID 1
+    activations[8] = 0.9   # dim 8  → TREE_ID 9
+
+    vector = build_activation_vector("test_combined_b1_b2_nc", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.dominant_count == 7
+    assert set(result.dominant_ids) == {0, 3, 8, 11, 16, 21, 33}
+    assert set(result.dominant_tree_ids) == {1, 4, 9, 12, 17, 22, 34}
+
+    # Seuls les 5 compilés dans compiled_provenance
+    assert set(result.compiled_provenance.keys()) == {4, 12, 17, 22, 34}, (
+        f"compiled_provenance keys attendu {{4,12,17,22,34}}, obtenu "
+        f"{set(result.compiled_provenance.keys())}"
+    )
+    # Non-compilés absents
+    assert 1 not in result.compiled_provenance, "TREE_ID 1 (BRODY) ne doit pas être dans compiled_provenance"
+    assert 9 not in result.compiled_provenance, "TREE_ID 9 (BRODY) ne doit pas être dans compiled_provenance"
+
+    # Vérification croisée batch 2
+    assert result.compiled_provenance[17]["tree_id"] == 17
+    assert result.compiled_provenance[17]["activation_dimension"] == 16
+    assert result.compiled_provenance[17]["source_row_id"] == "17"
+    assert result.compiled_provenance[17]["authority"] == "NON_SOVEREIGN"
+    assert result.compiled_provenance[22]["tree_id"] == 22
+    assert result.compiled_provenance[22]["activation_dimension"] == 21
+    assert result.compiled_provenance[34]["tree_id"] == 34
+    assert result.compiled_provenance[34]["activation_dimension"] == 33
+
+    assert result.dominant_is_authority is False
+    assert result.context_signal_only is True
+
+
+# ── BT24 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_compiled_provenance_via_find_dominant():
+    """Les six arbres du batch 2 apparaissent dans compiled_provenance via find_dominant_trees."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    # Activer les 6 dimensions batch 2 : 16, 17, 21, 28, 31, 33
+    batch2_dims = [16, 17, 21, 28, 31, 33]
+    activations = [0.0] * 34
+    for d in batch2_dims:
+        activations[d] = 0.9
+    vector = build_activation_vector("test_batch2_all_dominant", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert set(result.dominant_tree_ids) == {17, 18, 22, 29, 32, 34}
+    assert set(result.dominant_ids) == set(batch2_dims)
+    assert set(result.compiled_provenance.keys()) == {17, 18, 22, 29, 32, 34}
+
+    for tree_id, dim in zip([17, 18, 22, 29, 32, 34], batch2_dims):
+        prov = result.compiled_provenance[tree_id]
+        assert prov["tree_id"] == tree_id
+        assert prov["activation_dimension"] == dim, (
+            f"TREE_ID {tree_id}: activation_dimension attendu {dim}, obtenu {prov['activation_dimension']}"
+        )
+        assert prov["compilation_status"] == EXPECTED_STATUS
+        assert prov["source_row_id"] == str(tree_id)
+        assert prov["authority"] == "NON_SOVEREIGN"
+        assert prov["emits_act"] is False
+        assert prov["can_decide"] is False
+
+
+# ── BT25 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_full_provenance_schema_via_dominant():
+    """compiled_provenance contient les 14 champs requis pour un arbre du batch 2."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    activations[28] = 0.9  # dim 28 → TREE_ID 29 (ARBRE_29, batch 2)
+    vector = build_activation_vector("test_b2_full_schema", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert 29 in result.compiled_provenance
+    p = result.compiled_provenance[29]
+
+    required_keys = {
+        "tree_id", "activation_dimension", "source_row_id", "source_pack",
+        "source_provenance", "source_reference", "compilation_status",
+        "authority", "readonly", "emits_act", "can_decide",
+        "memory_write", "graphiti_write", "neo4j_write",
+    }
+    missing = required_keys - set(p.keys())
+    assert not missing, f"Champs manquants (ARBRE_29) dans compiled_provenance : {missing}"
+
+    assert p["tree_id"] == 29
+    assert p["activation_dimension"] == 28
+    assert p["source_row_id"] == "29"
+    assert p["source_pack"] == EXPECTED_SOURCE_PACK
+    assert p["source_provenance"] == EXPECTED_PROVENANCE
+    assert p["source_reference"] is not None
+    assert "ART01_LEDGER" in p["source_reference"]
+    assert "ART39_SHA=" in p["source_reference"]
+    assert p["compilation_status"] == EXPECTED_STATUS
+    assert p["authority"] == "NON_SOVEREIGN"
+    assert p["readonly"] is True
+    assert p["emits_act"] is False
+    assert p["can_decide"] is False
+    assert p["memory_write"] is False
+    assert p["graphiti_write"] is False
+    assert p["neo4j_write"] is False
+
+
+# ── BT26 ───────────────────────────────────────────────────────────────────────
+def test_second_batch_returned_object_does_not_mutate_registry():
+    """Mutater un TreeEntry batch 2 retourné ne modifie pas le registre canonique."""
+    entry = get_tree_provenance(17)
+    assert entry is not None
+    original_status = entry.compilation_status
+    original_dim = entry.activation_dimension
+
+    entry.compilation_status = "MUTATED_BY_TEST"
+    entry.activation_dimension = 999
+
+    entry2 = get_tree_provenance(17)
+    assert entry2 is not None
+    assert entry2.compilation_status == original_status, (
+        f"Le registre a été muté (ARBRE_17) : compilation_status={entry2.compilation_status!r}"
+    )
+    assert entry2.activation_dimension == original_dim, (
+        f"Le registre a été muté (ARBRE_17) : activation_dimension={entry2.activation_dimension!r}"
+    )
+    tree_dict = next(t for t in _TREES if t["id"] == 17)
+    assert tree_dict.get("compilation_status") == original_status
+
+
+# ── BT27 ───────────────────────────────────────────────────────────────────────
+def test_all_sixteen_compiled_arbres_have_full_schema():
+    """Les 16 arbres compilés (batch 1 + batch 2) ont tous le schéma de provenance complet."""
+    required_provenance_fields = {
+        "source_row_id", "source_pack", "source_provenance", "source_reference",
+        "compilation_status", "activation_dimension",
+    }
+    for rid in ALL_COMPILED_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None, f"TREE_ID {rid} manquant dans le registre"
+        assert entry.compilation_status == EXPECTED_STATUS, (
+            f"TREE_ID {rid}: compilation_status={entry.compilation_status!r}"
+        )
+        assert entry.source_pack == EXPECTED_SOURCE_PACK, (
+            f"TREE_ID {rid}: source_pack={entry.source_pack!r}"
+        )
+        assert entry.activation_dimension == rid - 1, (
+            f"TREE_ID {rid}: activation_dimension={entry.activation_dimension}, attendu {rid - 1}"
+        )
+        assert entry.source_row_id == str(rid), (
+            f"TREE_ID {rid}: source_row_id={entry.source_row_id!r}"
+        )
+        assert entry.authority == "NON_SOVEREIGN"
+        assert entry.emits_act is False
+        assert entry.can_decide is False
+        assert entry.memory_write is False
+
+
+# ── BT28 ───────────────────────────────────────────────────────────────────────
+def test_batch2_source_reference_identical_to_batch1():
+    """source_reference est identique entre batch 1 et batch 2 (même chaîne documentaire ART01/ART31/ART39)."""
+    ref_b1 = get_tree_provenance(4).source_reference
+    for rid in SECOND_BATCH_ROW_IDS:
+        entry = get_tree_provenance(rid)
+        assert entry is not None
+        assert entry.source_reference == ref_b1, (
+            f"TREE_ID {rid}: source_reference diffère du batch 1\n"
+            f"  batch1:  {ref_b1!r}\n"
+            f"  batch2:  {entry.source_reference!r}"
         )

@@ -3,7 +3,7 @@ Cognitive Tree Registry — 34 canonical cognitive trees.
 TreeSpace = R^34, a_i ∈ [0,1].
 Output is context signal only. Never a decision.
 Restored from Freeze Candidate Matrix - Canonical Version.
-Semantic compilation pilot — ARBRES_34 batch 1 (ROW_IDs 4-8, 12-16).
+Semantic compilation — ARBRES_34 batch 1 (ROW_IDs 4-8, 12-16) and batch 2 (ROW_IDs 17-18, 22, 29, 32, 34).
 Source: 4353_CURRENT_REPOSITORY_BRANCHING_RECONCILIATION_REV2D
 """
 from __future__ import annotations
@@ -62,24 +62,24 @@ _TREES: list[dict] = [
     {"id": 14, "name": "ARBRE_14__Arbre_de_la_Philosophie",     "domain": "EPISTEMICS",       **_prov(tree_id=14, source_row_id=14)},
     {"id": 15, "name": "ARBRE_15__Arbre_de_la_Spiritualite",    "domain": "EPISTEMICS",       **_prov(tree_id=15, source_row_id=15)},
     {"id": 16, "name": "ARBRE_16__Arbre_de_la_Relation",        "domain": "SOCIAL",           **_prov(tree_id=16, source_row_id=16)},
-    {"id": 17, "name": "ARBRE_17__Arbre_du_Collectif",          "domain": "SOCIAL"},
-    {"id": 18, "name": "ARBRE_18__Arbre_de_la_Transmission",    "domain": "SOCIAL"},
+    {"id": 17, "name": "ARBRE_17__Arbre_du_Collectif",          "domain": "SOCIAL",          **_prov(tree_id=17, source_row_id=17)},
+    {"id": 18, "name": "ARBRE_18__Arbre_de_la_Transmission",    "domain": "SOCIAL",          **_prov(tree_id=18, source_row_id=18)},
     {"id": 19, "name": "ARBRE_19__Arbre_de_la_Culture",         "domain": "SOCIAL"},
     {"id": 20, "name": "ARBRE_20__Arbre_de_l_Action",           "domain": "PLANNING"},
     {"id": 21, "name": "ARBRE_21__Arbre_de_la_Creation",        "domain": "PLANNING"},
-    {"id": 22, "name": "ARBRE_22__Arbre_de_la_Transformation",  "domain": "PLANNING"},
+    {"id": 22, "name": "ARBRE_22__Arbre_de_la_Transformation",  "domain": "PLANNING",        **_prov(tree_id=22, source_row_id=22)},
     {"id": 23, "name": "ARBRE_23__Arbre_du_Temps",              "domain": "TEMPORAL"},
     {"id": 24, "name": "ARBRE_24__Arbre_de_la_Memoire",         "domain": "TEMPORAL"},
     {"id": 25, "name": "ARBRE_25__Arbre_de_l_Histoire",         "domain": "TEMPORAL"},
     {"id": 26, "name": "ARBRE_26__Arbre_de_la_Coherence",       "domain": "GOVERNANCE"},
     {"id": 27, "name": "ARBRE_27__Arbre_de_la_Verite",          "domain": "GOVERNANCE"},
     {"id": 28, "name": "ARBRE_28__Arbre_de_la_Valeur",          "domain": "GOVERNANCE"},
-    {"id": 29, "name": "ARBRE_29__Arbre_de_la_Finalite",        "domain": "GOVERNANCE"},
+    {"id": 29, "name": "ARBRE_29__Arbre_de_la_Finalite",        "domain": "GOVERNANCE",      **_prov(tree_id=29, source_row_id=29)},
     {"id": 30, "name": "ARBRE_30__Arbre_Cognitif_Global",       "domain": "META"},
     {"id": 31, "name": "ARBRE_31__Arbre_des_Flux",              "domain": "INFRASTRUCTURE"},
-    {"id": 32, "name": "ARBRE_32__Arbre_des_Connexions",        "domain": "INFRASTRUCTURE"},
+    {"id": 32, "name": "ARBRE_32__Arbre_des_Connexions",        "domain": "INFRASTRUCTURE",  **_prov(tree_id=32, source_row_id=32)},
     {"id": 33, "name": "ARBRE_33__Arbre_de_l_Optimisation",     "domain": "INFRASTRUCTURE"},
-    {"id": 34, "name": "ARBRE_34__Arbre_de_la_Stabilite",       "domain": "INFRASTRUCTURE"},
+    {"id": 34, "name": "ARBRE_34__Arbre_de_la_Stabilite",       "domain": "INFRASTRUCTURE",  **_prov(tree_id=34, source_row_id=34)},
 ]
 
 
