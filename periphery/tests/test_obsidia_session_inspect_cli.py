@@ -779,10 +779,166 @@ def test_ps_diff_limited_to_session_inspect():
         "terminal_session_inspect_v0", "lock_mutation", "real_execution",
         "reclaim", "forbidden", "decision_authority", "wired", "kx108",
         "remaining", "psscriptroot", "exit", "lastexitcode", "if", "args",
-        "count", "tolower", "trim", "eq", "#", "",
+        "count", "ceq", "#", "",
     }
     unexpected = [
         l for l in added_lines
         if l and not any(kw in l.lower() for kw in allowed_keywords)
     ]
     assert unexpected == [], f"Lignes ajoutées inattendues dans obsidia.ps1 : {unexpected}"
+
+
+# ============================================================
+# T56-T59 : _try_emit — canal stdout défaillant
+# ============================================================
+
+class _BrokenStdout:
+    """Canal stdout simulant une défaillance dès la première écriture."""
+    def write(self, s: str) -> None:
+        raise BrokenPipeError("simulated broken pipe")
+
+    def flush(self) -> None:
+        raise BrokenPipeError("simulated broken pipe")
+
+
+class _FlushFailStdout:
+    """Canal stdout dont write réussit mais flush lève."""
+    def __init__(self) -> None:
+        self.written: list[str] = []
+
+    def write(self, s: str) -> None:
+        self.written.append(s)
+
+    def flush(self) -> None:
+        raise OSError("simulated flush failure")
+
+
+def test_t56_broken_pipe_on_invalid_invocation_returns_1(monkeypatch):
+    """Invocation invalide + stdout cassé → exit 1 sans exception échappée, stderr vide."""
+    cli = _load_cli()
+    buf_err = io.StringIO()
+    monkeypatch.setattr(cli.sys, "stdout", _BrokenStdout())
+    monkeypatch.setattr(cli.sys, "stderr", buf_err)
+
+    code = cli.main([])
+    assert code == 1, f"attendu 1 (broken pipe), got {code}"
+    assert buf_err.getvalue() == ""
+
+
+def test_t57_broken_pipe_after_adapter_success_returns_1(tmp_path, monkeypatch):
+    """Adapter ok + stdout cassé au moment de l'émission → exit 1, adapter appelé une fois."""
+    cli = _load_cli()
+    lock = tmp_path / "lock.json"
+    _make_valid_lock(lock)
+
+    call_count: list[int] = []
+    orig = cli.TerminalSessionAdapter
+
+    class _SpyAdapter:
+        def inspect_lock(self, path: str):
+            call_count.append(1)
+            return orig().inspect_lock(path)
+
+    buf_err = io.StringIO()
+    monkeypatch.setattr(cli, "TerminalSessionAdapter", _SpyAdapter)
+    monkeypatch.setattr(cli.sys, "stdout", _BrokenStdout())
+    monkeypatch.setattr(cli.sys, "stderr", buf_err)
+
+    code = cli.main(["--lock-path", str(lock)])
+    assert code == 1, f"attendu 1 (broken pipe), got {code}"
+    assert len(call_count) == 1, "adapter doit être appelé exactement une fois"
+    assert buf_err.getvalue() == ""
+
+
+def test_t58_os_error_during_internal_error_emit_returns_1(tmp_path, monkeypatch):
+    """Exception adapter + stdout cassé pour l'émission INTERNAL_ERROR → exit 1 sans exception."""
+    cli = _load_cli()
+    lock = tmp_path / "lock.json"
+    _make_valid_lock(lock)
+
+    class _FailAdapter:
+        def inspect_lock(self, path: str):
+            raise RuntimeError("injected adapter failure")
+
+    buf_err = io.StringIO()
+    monkeypatch.setattr(cli, "TerminalSessionAdapter", _FailAdapter)
+    monkeypatch.setattr(cli.sys, "stdout", _BrokenStdout())
+    monkeypatch.setattr(cli.sys, "stderr", buf_err)
+
+    code = cli.main(["--lock-path", str(lock)])
+    assert code == 1, f"attendu 1 (broken pipe sur INTERNAL_ERROR), got {code}"
+    assert buf_err.getvalue() == ""
+
+
+def test_t59_flush_failure_returns_1(tmp_path, monkeypatch):
+    """write réussit mais flush lève → exit 1 sans exception échappée, stderr vide."""
+    cli = _load_cli()
+    lock = tmp_path / "lock.json"
+    _make_valid_lock(lock)
+
+    flush_fail = _FlushFailStdout()
+    buf_err = io.StringIO()
+    monkeypatch.setattr(cli.sys, "stdout", flush_fail)
+    monkeypatch.setattr(cli.sys, "stderr", buf_err)
+
+    code = cli.main(["--lock-path", str(lock)])
+    assert code == 1, f"attendu 1 (flush failure), got {code}"
+    assert buf_err.getvalue() == ""
+
+
+# ============================================================
+# T60-T62 : routage PS exact — correction B
+# ============================================================
+
+def _ps_route_block() -> str:
+    """Extrait le bloc ROUTE SESSION INSPECT (commentaire + if) de obsidia.ps1."""
+    lines = _PS.read_text(encoding="utf-8").splitlines()
+    start = next(i for i, l in enumerate(lines) if "ROUTE SESSION INSPECT" in l)
+    # Le bloc se termine à la prochaine section majeure
+    end = next(
+        i for i, l in enumerate(lines[start + 1:], start + 1)
+        if "POINT D'ENTREE PRINCIPAL" in l or "POINT D" in l and "ENTREE" in l
+    )
+    return "\n".join(lines[start:end])
+
+
+def test_t60_ps_route_uses_ceq_not_tolower_trim():
+    """La route PS utilise -ceq et ne contient plus .ToLower() ni .Trim()."""
+    block = _ps_route_block()
+    assert '-ceq "session"' in block, "Route manque -ceq \"session\""
+    assert '-ceq "inspect"' in block, "Route manque -ceq \"inspect\""
+    assert ".ToLower()" not in block, ".ToLower() encore présent dans la route"
+    assert ".Trim()" not in block, ".Trim() encore présent dans la route"
+
+
+@pytest.mark.skipif(not _PS_AVAILABLE, reason="PowerShell non disponible")
+def test_t61_ps_uppercase_session_inspect_not_routed(tmp_path):
+    """SESSION INSPECT (majuscules) ne déclenche pas la route session inspect."""
+    lock = tmp_path / "lock.json"
+    _make_valid_lock(lock)
+    # Lecture en bytes pour éviter les erreurs d'encodage du fallthrough PS
+    r = subprocess.run(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(_PS),
+         "SESSION", "INSPECT", "--lock-path", str(lock)],
+        capture_output=True, timeout=30,
+    )
+    is_session_inspect = (
+        b'"command"' in r.stdout and b'"obsidia session inspect"' in r.stdout
+    )
+    assert not is_session_inspect, "Route SESSION INSPECT déclenchée alors qu'elle est interdite"
+
+
+@pytest.mark.skipif(not _PS_AVAILABLE, reason="PowerShell non disponible")
+def test_t62_ps_mixedcase_session_inspect_not_routed(tmp_path):
+    """Session Inspect (casse mixte) ne déclenche pas la route session inspect."""
+    lock = tmp_path / "lock.json"
+    _make_valid_lock(lock)
+    r = subprocess.run(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(_PS),
+         "Session", "Inspect", "--lock-path", str(lock)],
+        capture_output=True, timeout=30,
+    )
+    is_session_inspect = (
+        b'"command"' in r.stdout and b'"obsidia session inspect"' in r.stdout
+    )
+    assert not is_session_inspect, "Route Session Inspect déclenchée alors qu'elle est interdite"

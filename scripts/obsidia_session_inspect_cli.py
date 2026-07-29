@@ -14,10 +14,10 @@ Usage:
     python scripts/obsidia_session_inspect_cli.py --lock-path "<chemin>"
 
 Codes de retour :
-    0  inspection réussie (result.ok=true)
-    1  erreur interne inattendue encapsulée
-    2  invocation invalide
-    3  inspection exécutée mais result.ok=false
+    0  inspection réussie (result.ok=true), émission réussie
+    1  erreur interne, ou canal stdout défaillant (OUTPUT_CHANNEL_FAILURE_FAIL_CLOSED)
+    2  invocation invalide, émission réussie
+    3  inspection exécutée mais result.ok=false, émission réussie
 
 Invariants :
     - aucun subprocess, thread, asyncio, réseau, signal handler ;
@@ -136,13 +136,20 @@ def _internal_error_envelope(lock_path: object) -> dict:
 
 # ---------------------------------------------------------------------------
 # Émission JSON déterministe (stdout uniquement, stderr vide)
+# OUTPUT_CHANNEL_FAILURE_FAIL_CLOSED : quand stdout est fermé ou défaillant,
+# il est impossible de garantir un JSON sur stdout. L'exigence se réduit à :
+# aucune exception échappée, aucun traceback, stderr vide, code retour 1.
 # ---------------------------------------------------------------------------
-def _emit(envelope: dict) -> None:
-    sys.stdout.write(
-        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        + "\n"
-    )
-    sys.stdout.flush()
+def _try_emit(envelope: dict) -> bool:
+    try:
+        payload = json.dumps(
+            envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+        sys.stdout.write(payload + "\n")
+        sys.stdout.flush()
+        return True
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -197,14 +204,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     # --- Parsing ---
     lock_path, parse_err = _parse(argv_list)
     if parse_err is not None:
-        _emit(_invocation_invalid_envelope(None))
-        return 2
+        emitted = _try_emit(_invocation_invalid_envelope(None))
+        return 2 if emitted else 1
 
     # --- Inspection (opération unique) ---
     try:
         result = TerminalSessionAdapter().inspect_lock(lock_path)
     except Exception:
-        _emit(_internal_error_envelope(lock_path))
+        _try_emit(_internal_error_envelope(lock_path))  # OUTPUT_CHANNEL_FAILURE_FAIL_CLOSED
         return 1
 
     # --- Construction et émission de l'envelope ---
@@ -212,20 +219,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         lock_record_json = (
             _to_json(result.lock_record) if result.lock_record is not None else None
         )
-        _emit(
-            _envelope(
-                ok=result.ok,
-                adapter_code=result.adapter_code.value,
-                lock_path=lock_path,
-                session_id=result.session_id,
-                lock_record=lock_record_json,
-                detail=result.detail,
-            )
+        envelope = _envelope(
+            ok=result.ok,
+            adapter_code=result.adapter_code.value,
+            lock_path=lock_path,
+            session_id=result.session_id,
+            lock_record=lock_record_json,
+            detail=result.detail,
         )
     except Exception:
-        _emit(_internal_error_envelope(lock_path))
+        _try_emit(_internal_error_envelope(lock_path))  # OUTPUT_CHANNEL_FAILURE_FAIL_CLOSED
         return 1
 
+    emitted = _try_emit(envelope)
+    if not emitted:
+        return 1
     return 0 if result.ok else 3
 
 

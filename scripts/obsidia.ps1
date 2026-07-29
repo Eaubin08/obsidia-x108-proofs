@@ -498,8 +498,8 @@ function Start-ObsidiaFullStack {
 # decision_authority = KX108_ONLY | wired = true (raccordement CLI uniquement)
 # =============================================================================
 if ($args.Count -ge 2 -and
-    $args[0].ToLower().Trim() -eq "session" -and
-    $args[1].ToLower().Trim() -eq "inspect") {
+    $args[0] -ceq "session" -and
+    $args[1] -ceq "inspect") {
     $remainingArgs = if ($args.Count -gt 2) { $args[2..($args.Count - 1)] } else { @() }
     python "$PSScriptRoot\obsidia_session_inspect_cli.py" @remainingArgs
     exit $LASTEXITCODE
