@@ -188,30 +188,83 @@ def test_source_reference_present():
 
 # ── Test 17 ────────────────────────────────────────────────────────────────────
 def test_consumer_connection_proved():
-    """find_dominant_trees expose la provenance des arbres compilés via compiled_provenance.
+    """find_dominant_trees expose la provenance complète via compiled_provenance.
 
-    Chaîne réelle : ROW_ID → métadonnées tree_registry → get_tree_by_id → find_dominant_trees
-    → DominantTreeResult.compiled_provenance → résultat observable.
-    Index 4 dans le vecteur d'activation → get_tree_by_id(4) → ARBRE_04 (compilé).
+    Contrat d'indexation canonique : activation_dimension = tree_id - 1
+    → tree_id = activation_dimension + 1
+
+    Chaîne correcte :
+      dimension 3 (activations[3]) → tree_id 4 → ARBRE_04 (compilé, dim=3)
+      dimension 4 (activations[4]) → tree_id 5 → ARBRE_05 (compilé, dim=4)
+
+    compiled_provenance est keyed par TREE_ID (pas par dimension).
+    dominant_ids conserve les dimensions 0-based (contrat historique).
+    dominant_tree_ids expose les TREE_IDs canoniques 1..34.
     """
     from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
     from periphery.cognitive_trees.dominant_trees import find_dominant_trees
 
     activations = [0.0] * 34
-    activations[4] = 0.9  # index 4 → get_tree_by_id(4) → ARBRE_04 compilé
-    activations[5] = 0.9  # index 5 → get_tree_by_id(5) → ARBRE_05 compilé
-    vector = build_activation_vector("test_consumer_proof", activations)
+    activations[3] = 0.9  # dimension 3 → tree_id 4 → ARBRE_04 compilé
+    activations[4] = 0.9  # dimension 4 → tree_id 5 → ARBRE_05 compilé
+    vector = build_activation_vector("test_consumer_proof_v2", activations)
     result = find_dominant_trees(vector, theta=0.5)
 
-    assert 4 in result.dominant_ids, "ARBRE_04 (index 4) doit être dominant"
+    # dominant_ids = dimensions (contrat historique 0-based)
+    assert set(result.dominant_ids) == {3, 4}, (
+        f"dominant_ids attendu {{3, 4}}, obtenu {set(result.dominant_ids)}"
+    )
+    # dominant_tree_ids = TREE_IDs canoniques
+    assert set(result.dominant_tree_ids) == {4, 5}, (
+        f"dominant_tree_ids attendu {{4, 5}}, obtenu {set(result.dominant_tree_ids)}"
+    )
+    assert result.dominant_count == 2
+
+    # compiled_provenance keyed par TREE_ID
     assert 4 in result.compiled_provenance, (
-        "compiled_provenance doit contenir l'index 4 (ARBRE_04 compilé)"
+        "TREE_ID 4 (ARBRE_04, dim 3) doit être dans compiled_provenance"
     )
-    assert result.compiled_provenance[4] == EXPECTED_STATUS, (
-        f"compiled_provenance[4]={result.compiled_provenance[4]!r}"
+    assert 5 in result.compiled_provenance, (
+        "TREE_ID 5 (ARBRE_05, dim 4) doit être dans compiled_provenance"
     )
-    assert 5 in result.compiled_provenance
-    assert result.compiled_provenance[5] == EXPECTED_STATUS
+
+    prov4 = result.compiled_provenance[4]
+    assert prov4["tree_id"] == 4
+    assert prov4["activation_dimension"] == 3, (
+        f"activation_dimension de ARBRE_04 doit être 3, obtenu {prov4['activation_dimension']}"
+    )
+    assert prov4["compilation_status"] == EXPECTED_STATUS
+    assert prov4["source_row_id"] == "4"
+    assert prov4["source_pack"] == EXPECTED_SOURCE_PACK
+    assert prov4["source_provenance"] == EXPECTED_PROVENANCE
+    assert prov4["source_reference"] is not None
+    assert "ART01_LEDGER" in prov4["source_reference"]
+    assert "ART39_SHA=" in prov4["source_reference"]
+    assert prov4["authority"] == "NON_SOVEREIGN"
+    assert prov4["readonly"] is True
+    assert prov4["emits_act"] is False
+    assert prov4["can_decide"] is False
+    assert prov4["memory_write"] is False
+    assert prov4["graphiti_write"] is False
+    assert prov4["neo4j_write"] is False
+
+    prov5 = result.compiled_provenance[5]
+    assert prov5["tree_id"] == 5
+    assert prov5["activation_dimension"] == 4, (
+        f"activation_dimension de ARBRE_05 doit être 4, obtenu {prov5['activation_dimension']}"
+    )
+    assert prov5["compilation_status"] == EXPECTED_STATUS
+
+    # dominant_names correspondent aux TREE_IDs canoniques
+    idx3 = result.dominant_ids.index(3)
+    idx4 = result.dominant_ids.index(4)
+    assert "ARBRE_04" in result.dominant_names[idx3], (
+        f"dim 3 → ARBRE_04 attendu dans dominant_names, obtenu {result.dominant_names[idx3]!r}"
+    )
+    assert "ARBRE_05" in result.dominant_names[idx4], (
+        f"dim 4 → ARBRE_05 attendu dans dominant_names, obtenu {result.dominant_names[idx4]!r}"
+    )
+
     assert result.dominant_is_authority is False
     assert result.context_signal_only is True
 
@@ -308,3 +361,225 @@ def test_to_dict_minimal_for_non_compiled():
     assert entry is not None
     d = entry.to_dict()
     assert set(d.keys()) == {"id", "name", "domain"}
+
+
+# ── Bloc index mapping ──────────────────────────────────────────────────────────
+
+def test_activation_index_contract_canonical():
+    """Contrat d'indexation : activation_dimension d → TREE_ID d+1, pour d in 0..33.
+
+    Vérifie la bijection complète des 34 dimensions vers TREE_IDs 1..34.
+    TREE_ID 34 est atteignable. TREE_ID 0 n'existe pas.
+    """
+    # TREE_ID 0 n'existe pas dans le registre canonique
+    assert get_tree_by_id(0) is None, "TREE_ID 0 ne doit pas exister"
+
+    # TREE_ID 34 doit être atteignable (dimension 33)
+    assert get_tree_by_id(34) is not None, "TREE_ID 34 (dimension 33) doit exister"
+    assert get_tree_by_id(34).id == 34
+
+    # Bijection complète : chaque dimension 0..33 produit un TREE_ID 1..34 valide
+    tree_ids_produced = []
+    for dim in range(34):
+        tree_id = dim + 1
+        tree = get_tree_by_id(tree_id)
+        assert tree is not None, f"TREE_ID {tree_id} (dimension {dim}) absent"
+        assert tree.id == tree_id
+        tree_ids_produced.append(tree_id)
+
+    # Bijection : 34 TREE_IDs uniques couvrant exactement 1..34
+    assert sorted(tree_ids_produced) == list(range(1, 35))
+
+    # Cas spécifiques requis
+    assert get_tree_by_id(1).id == 1    # dimension 0 → TREE_ID 1
+    assert get_tree_by_id(4).id == 4    # dimension 3 → TREE_ID 4
+    assert get_tree_by_id(5).id == 5    # dimension 4 → TREE_ID 5
+    assert get_tree_by_id(34).id == 34  # dimension 33 → TREE_ID 34
+
+    # activation_dimension correctement enregistré dans les arbres compilés
+    entry4 = get_tree_by_id(4)
+    assert entry4.activation_dimension == 3, (
+        f"ARBRE_04: activation_dimension attendu 3, obtenu {entry4.activation_dimension}"
+    )
+    entry5 = get_tree_by_id(5)
+    assert entry5.activation_dimension == 4, (
+        f"ARBRE_05: activation_dimension attendu 4, obtenu {entry5.activation_dimension}"
+    )
+
+
+def test_tree_34_reachable_via_find_dominant():
+    """TREE_ID 34 (dimension 33) est atteignable via find_dominant_trees."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    activations[33] = 0.9  # dimension 33 → tree_id 34 → ARBRE_34
+    vector = build_activation_vector("test_tree34_reach", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.dominant_ids == [33], f"dominant_ids attendu [33], obtenu {result.dominant_ids}"
+    assert result.dominant_tree_ids == [34], (
+        f"dominant_tree_ids attendu [34], obtenu {result.dominant_tree_ids}"
+    )
+    assert "ARBRE_34" in result.dominant_names[0], (
+        f"dominant_names[0] doit contenir ARBRE_34, obtenu {result.dominant_names[0]!r}"
+    )
+    assert result.dominant_count == 1
+
+
+def test_no_tree_id_zero_lookup():
+    """La dimension 0 ne produit jamais une recherche de TREE_ID 0 dans find_dominant_trees."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    activations[0] = 0.9  # dimension 0 → tree_id 1 → ARBRE_01 (NOT tree_id 0)
+    vector = build_activation_vector("test_dim0_no_zero", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.dominant_ids == [0]       # dimension 0 est dominant
+    assert result.dominant_tree_ids == [1]  # TREE_ID 1, pas 0
+    assert 0 not in result.dominant_tree_ids, "TREE_ID 0 ne doit jamais apparaître"
+    assert "ARBRE_01" in result.dominant_names[0], (
+        f"dominant_names[0] doit contenir ARBRE_01, obtenu {result.dominant_names[0]!r}"
+    )
+
+
+def test_dimension_tree_id_bijection_via_dominant():
+    """Les 34 dimensions 0..33 produisent exactement les TREE_IDs 1..34 dans dominant_tree_ids."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [1.0] * 34  # toutes les dimensions dominantes
+    vector = build_activation_vector("test_full_bijection", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.dominant_ids == list(range(34))           # dimensions 0..33
+    assert result.dominant_tree_ids == list(range(1, 35))   # TREE_IDs 1..34
+    assert result.dominant_count == 34
+    assert 0 not in result.dominant_tree_ids
+    assert 34 in result.dominant_tree_ids
+
+
+def test_activation_dimension_four_gives_arbre05_not_arbre04():
+    """La dimension 4 (activations[4]) produit ARBRE_05, pas ARBRE_04.
+
+    Prouve que l'off-by-one est corrigé :
+    dim 4 → tree_id 5 → ARBRE_05 (compilation_status compilé)
+    dim 3 → tree_id 4 → ARBRE_04 (compilation_status compilé)
+    """
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    # Seule dimension 4 active
+    activations = [0.0] * 34
+    activations[4] = 0.9
+    vector = build_activation_vector("test_dim4_arbre05", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.dominant_ids == [4]
+    assert result.dominant_tree_ids == [5]
+    assert "ARBRE_05" in result.dominant_names[0], (
+        f"dim 4 doit donner ARBRE_05, obtenu {result.dominant_names[0]!r}"
+    )
+    # compiled_provenance keyed par TREE_ID 5, pas 4
+    assert 5 in result.compiled_provenance
+    assert 4 not in result.compiled_provenance, (
+        "dim 4 ne doit PAS produire une clé 4 dans compiled_provenance (ce serait ARBRE_04)"
+    )
+    assert result.compiled_provenance[5]["tree_id"] == 5
+    assert result.compiled_provenance[5]["activation_dimension"] == 4
+
+
+def test_compiled_provenance_full_schema_via_dominant():
+    """compiled_provenance contient tous les champs requis : tree_id, activation_dimension,
+    source_row_id, source_pack, source_reference, authority, readonly, emits_act, etc."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    activations[3] = 0.9  # dim 3 → tree_id 4 → ARBRE_04 compilé
+    vector = build_activation_vector("test_full_prov_schema", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert 4 in result.compiled_provenance
+    p = result.compiled_provenance[4]
+
+    required_keys = {
+        "tree_id", "activation_dimension", "source_row_id", "source_pack",
+        "source_provenance", "source_reference", "compilation_status",
+        "authority", "readonly", "emits_act", "can_decide",
+        "memory_write", "graphiti_write", "neo4j_write",
+    }
+    missing = required_keys - set(p.keys())
+    assert not missing, f"Champs manquants dans compiled_provenance : {missing}"
+
+    # Valeurs de sécurité
+    assert p["authority"] == "NON_SOVEREIGN"
+    assert p["readonly"] is True
+    assert p["emits_act"] is False
+    assert p["can_decide"] is False
+    assert p["memory_write"] is False
+    assert p["graphiti_write"] is False
+    assert p["neo4j_write"] is False
+    assert p["source_row_id"] == "4"
+    assert p["source_pack"] == EXPECTED_SOURCE_PACK
+
+
+def test_non_compiled_trees_absent_from_compiled_provenance():
+    """Les arbres non compilés n'ont aucune entrée dans compiled_provenance."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    # Activer uniquement les dimensions correspondant aux arbres NON compilés
+    # Arbres non compilés : TREE_IDs 1,2,3,9,10,11,17..34 → dimensions 0,1,2,8,9,10,16..33
+    non_compiled_dims = [0, 1, 2, 8, 9, 10]  # TREE_IDs 1,2,3,9,10,11
+    activations = [0.0] * 34
+    for d in non_compiled_dims:
+        activations[d] = 0.9
+    vector = build_activation_vector("test_non_compiled_prov", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+
+    assert result.compiled_provenance == {}, (
+        f"compiled_provenance doit être vide pour les arbres non compilés, "
+        f"obtenu : {list(result.compiled_provenance.keys())}"
+    )
+
+
+def test_to_dict_historical_format_preserved():
+    """to_dict() conserve exactement les clés historiques obligatoires."""
+    from periphery.cognitive_trees.tree_activation_vector import build_activation_vector
+    from periphery.cognitive_trees.dominant_trees import find_dominant_trees
+
+    activations = [0.0] * 34
+    activations[2] = 0.9  # dim 2 → tree_id 3 → ARBRE_03 (non compilé)
+    vector = build_activation_vector("test_hist_keys", activations)
+    result = find_dominant_trees(vector, theta=0.5)
+    d = result.to_dict()
+
+    required_keys = {
+        "vector_id", "theta", "dominant_ids", "dominant_names",
+        "dominant_count", "context_signal_only", "dominant_is_authority",
+    }
+    assert required_keys.issubset(d.keys()), (
+        f"Clés historiques manquantes : {required_keys - d.keys()}"
+    )
+    # dominant_ids reste les dimensions
+    assert d["dominant_ids"] == [2]
+
+
+def test_dominant_trees_no_kernel_import():
+    """Aucun import kernel/proofs/seal/formal n'est introduit dans dominant_trees.py."""
+    import periphery.cognitive_trees.dominant_trees as dom_module
+
+    source = inspect.getsource(dom_module)
+    import_lines = [
+        ln.strip() for ln in source.splitlines()
+        if ln.strip().startswith(("import ", "from "))
+    ]
+    import_block = "\n".join(import_lines).lower()
+    forbidden_modules = ["proofs", "kernel", "formal.tla", "seal", "rfc3161", "_v18"]
+    for pat in forbidden_modules:
+        assert pat not in import_block, (
+            f"Import kernel interdit dans dominant_trees.py : {pat!r}"
+        )
