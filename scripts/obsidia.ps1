@@ -506,6 +506,21 @@ if ($args.Count -ge 2 -and
 }
 
 # =============================================================================
+# ROUTE SESSION SIMULATE — TERMINAL_SESSION_SIMULATE_V0
+# Commande publique bornée. Mutation lock temporaire uniquement.
+# TEMP_LOCK_ONLY | PERSISTENT_LOCK: FORBIDDEN | REAL_EXECUTION: FORBIDDEN
+# OBSIDURE_WIRING: FORBIDDEN | BRODY_WIRING: FORBIDDEN | RECLAIM: FORBIDDEN
+# decision_authority = KX108_ONLY | wired = true (raccordement CLI uniquement)
+# =============================================================================
+if ($args.Count -ge 2 -and
+    $args[0] -ceq "session" -and
+    $args[1] -ceq "simulate") {
+    $remainingArgs = if ($args.Count -gt 2) { $args[2..($args.Count - 1)] } else { @() }
+    python -B "$PSScriptRoot\obsidia_session_simulate_cli.py" @remainingArgs
+    exit $LASTEXITCODE
+}
+
+# =============================================================================
 # POINT D'ENTREE PRINCIPAL
 # =============================================================================
 $_first = if ($args.Count -gt 0) { $args[0].ToLower().Trim() } else { "" }
