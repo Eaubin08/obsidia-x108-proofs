@@ -333,3 +333,208 @@ def test_030_separation_python_vs_agents52():
     assert not overlap, f"Overlap between Python agents and agents52: {overlap}"
     assert py_result["count"] == 14
     assert a52_result["count"] == 52
+
+
+# ── agent-run rejection tests (Phase REPAIR) ─────────────────────────────────
+# §8 mandatory criteria — 15 tests (test_031 through test_045)
+# AGENTS52_CONFIG_NOT_EXECUTABLE → HTTP 422
+# UNKNOWN_OPERATIONAL_AGENT → HTTP 404
+# Valid Python operational agent → behaviour unchanged (no 500)
+
+def _agent_run_client():
+    from fastapi.testclient import TestClient
+    from apps.obsidia_api.main import app
+    return TestClient(app, raise_server_exceptions=False)
+
+
+_AGENT_RUN_ACTION = {
+    "action_id": "test-repair-031",
+    "domain": "test",
+    "actor_id": "test_suite",
+    "intent": "inspect",
+}
+
+
+def test_031_secret_guard_returns_422():
+    """SECRET_GUARD (agents52) on agent-run returns HTTP 422."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "SECRET_GUARD", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text}"
+
+
+def test_032_secret_guard_detail_deterministic():
+    """SECRET_GUARD rejection detail is AGENTS52_CONFIG_NOT_EXECUTABLE:SECRET_GUARD."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "SECRET_GUARD", "action": _AGENT_RUN_ACTION},
+    )
+    assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text, f"Detail missing: {r.text}"
+    assert "SECRET_GUARD" in r.text, f"Agent id missing from detail: {r.text}"
+
+
+def test_033_security_firewall_architect_returns_422():
+    """SECURITY_FIREWALL_ARCHITECT (agents52, batch001) on agent-run returns HTTP 422."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "SECURITY_FIREWALL_ARCHITECT", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text}"
+    assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text
+
+
+def test_034_policy_firewall_agent_returns_422():
+    """POLICY_FIREWALL_AGENT (agents52, batch001) on agent-run returns HTTP 422."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "POLICY_FIREWALL_AGENT", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text}"
+    assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text
+
+
+def test_035_runtime_attestation_agent_returns_422():
+    """RUNTIME_ATTESTATION_AGENT (agents52, batch001) on agent-run returns HTTP 422."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "RUNTIME_ATTESTATION_AGENT", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text}"
+    assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text
+
+
+def test_036_supply_chain_guard_returns_422():
+    """SUPPLY_CHAIN_GUARD (agents52, batch001) on agent-run returns HTTP 422."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "SUPPLY_CHAIN_GUARD", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 422, f"Expected 422, got {r.status_code}: {r.text}"
+    assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text
+
+
+def test_037_agents52_never_500():
+    """No agents52 batch001 ID ever returns HTTP 500 on agent-run."""
+    client = _agent_run_client()
+    batch001_ids = [
+        "SECURITY_FIREWALL_ARCHITECT",
+        "POLICY_FIREWALL_AGENT",
+        "RUNTIME_ATTESTATION_AGENT",
+        "SUPPLY_CHAIN_GUARD",
+        "SECRET_GUARD",
+    ]
+    for agent_id in batch001_ids:
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        assert r.status_code != 500, (
+            f"{agent_id}: agent-run must never return 500, got {r.status_code}: {r.text}"
+        )
+
+
+def test_038_unknown_id_returns_404():
+    """Completely unknown agent_id on agent-run returns HTTP 404."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "NONEXISTENT_AGENT_XYZ_999", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code == 404, f"Expected 404, got {r.status_code}: {r.text}"
+
+
+def test_039_unknown_id_detail_deterministic():
+    """Unknown agent_id rejection detail is UNKNOWN_OPERATIONAL_AGENT:<id>."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "NONEXISTENT_AGENT_XYZ_999", "action": _AGENT_RUN_ACTION},
+    )
+    assert "UNKNOWN_OPERATIONAL_AGENT" in r.text, f"Detail missing: {r.text}"
+
+
+def test_040_unknown_id_never_500():
+    """Completely unknown agent_id never returns HTTP 500 (no unhandled KeyError)."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "GHOST_AGENT_000", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code != 500, f"Unknown agent must not return 500, got {r.text}"
+    assert r.status_code == 404
+
+
+def test_041_agents52_rejection_not_404():
+    """agents52 IDs return 422 (not 404) — they exist as configs, are not unknown."""
+    client = _agent_run_client()
+    r = client.post(
+        "/api/periphery/governance/agent-run",
+        json={"agent_id": "SECRET_GUARD", "action": _AGENT_RUN_ACTION},
+    )
+    assert r.status_code != 404, (
+        f"agents52 IDs must not return 404 (they are known configs): {r.text}"
+    )
+    assert r.status_code == 422
+
+
+def test_042_readonly_config_routes_unaffected():
+    """GET /governance/agents-52 and GET /governance/agent-config still return 200."""
+    client = _agent_run_client()
+    r_list = client.get("/api/periphery/governance/agents-52")
+    assert r_list.status_code == 200, f"agents-52 list broken: {r_list.text}"
+    r_detail = client.get("/api/periphery/governance/agent-config/SECRET_GUARD")
+    assert r_detail.status_code == 200, f"agent-config detail broken: {r_detail.text}"
+
+
+def test_043_list_agents_route_unaffected():
+    """GET /governance/agents still returns 14 Python operational agents."""
+    client = _agent_run_client()
+    r = client.get("/api/periphery/governance/agents")
+    assert r.status_code == 200
+    body = r.json()
+    assert body.get("count") == 14
+    assert len(body.get("agents", [])) == 14
+
+
+def test_044_all_52_agents52_ids_rejected():
+    """All 52 agents52 IDs return 422 on agent-run (full population check)."""
+    from periphery.agents_obsidia_config_registry import list_agent_configs
+    client = _agent_run_client()
+    all_ids = list_agent_configs()
+    assert len(all_ids) == 52
+    failures = []
+    for agent_id in all_ids:
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        if r.status_code != 422:
+            failures.append(f"{agent_id}: got {r.status_code}")
+    assert not failures, (
+        f"Agents52 IDs that did not return 422 ({len(failures)}/{len(all_ids)}): {failures}"
+    )
+
+
+def test_045_no_raw_exception_in_rejection_response():
+    """Rejection responses contain no Python traceback or raw exception class names."""
+    client = _agent_run_client()
+    for agent_id, expected_status in [
+        ("SECRET_GUARD", 422),
+        ("NONEXISTENT_XYZ_000", 404),
+    ]:
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        assert r.status_code == expected_status
+        body = r.text
+        assert "Traceback" not in body, f"{agent_id}: traceback leaked in response"
+        assert "KeyError" not in body, f"{agent_id}: KeyError leaked in response"
+        assert "Exception" not in body, f"{agent_id}: raw Exception class in response"

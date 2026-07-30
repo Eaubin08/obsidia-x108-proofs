@@ -535,6 +535,17 @@ async def periphery_list_agents():
 
 @router.post("/governance/agent-run")
 async def periphery_agent_run(body: AgentRunPayload):
+    # Resolution order (§6): operational → agents52 → unknown. No dispatch before classification.
+    if body.agent_id not in set(list_agents()):
+        if body.agent_id in set(list_agent52_configs()):
+            raise HTTPException(
+                status_code=422,
+                detail=f"AGENTS52_CONFIG_NOT_EXECUTABLE:{body.agent_id}",
+            )
+        raise HTTPException(
+            status_code=404,
+            detail=f"UNKNOWN_OPERATIONAL_AGENT:{body.agent_id}",
+        )
     a = _make_action(body.action)
     result = run_registered_agent(body.agent_id, a)
     result.assert_non_sovereign()
