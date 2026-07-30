@@ -36,6 +36,11 @@ from periphery.math_core.governance_partition import partition_to_gate, is_admis
 from periphery.math_core.lyapunov import LyapunovResult
 from periphery.agent_registry import list_agents, run_registered_agent
 from periphery.agent_contracts import AgentLayer, NonSovereignAgentSpec
+from periphery.agents_obsidia_config_registry import (
+    get_agent_config as get_agent52_config,
+    get_registry_provenance as get_agent52_provenance,
+    list_agent_configs as list_agent52_configs,
+)
 from periphery.action_lifecycle import ActionLifecycleTrace, ActionPhase
 from periphery.action_sequence_governor import govern_action_sequence, ActionSequence, ActionStep
 from periphery.github.github_workflow_guard import guard_workflow_action
@@ -551,6 +556,53 @@ async def periphery_agent_spec_check(body: AgentSpecPayload):
         safe_flag = False
         violation = str(exc)
     return safe_backend_response({"agent_id": spec.agent_id, "layer": str(spec.layer), "safe": safe_flag, "violation": violation, **_BOUNDARY}, source="REAL_BACKEND")
+
+
+@router.get("/governance/agents-52")
+async def periphery_list_agents_52():
+    try:
+        configs = list_agent52_configs()
+        provenance = get_agent52_provenance()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"AGENTS52_REGISTRY_UNAVAILABLE: {exc}")
+    return safe_backend_response({
+        "agents": configs,
+        "count": len(configs),
+        "provenance": provenance,
+        **_BOUNDARY,
+    }, source="REAL_BACKEND")
+
+
+@router.get("/governance/agent-config/{agent_id}")
+async def periphery_get_agent_config(agent_id: str):
+    try:
+        entry = get_agent52_config(agent_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"UNKNOWN_AGENT_CONFIG:{agent_id}")
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"AGENTS52_REGISTRY_UNAVAILABLE: {exc}")
+    return safe_backend_response({
+        "agent_id": entry.agent_id,
+        "name": entry.name,
+        "family": entry.family,
+        "role": entry.role,
+        "validation_status": entry.validation_status,
+        "compilation_status": entry.compilation_status,
+        "authority": entry.authority,
+        "readonly": entry.readonly,
+        "can_decide": entry.can_decide,
+        "can_act": entry.can_act,
+        "emits_act": entry.emits_act,
+        "input_contract": entry.input_contract,
+        "output_contract": entry.output_contract,
+        "non_decision": entry.non_decision,
+        "boundary": entry.boundary,
+        "deployment": entry.deployment,
+        "source_reference": entry.source_reference,
+        "source_row_id": entry.source_row_id,
+        "compilation_batch": entry.compilation_batch,
+        **_BOUNDARY,
+    }, source="REAL_BACKEND")
 
 
 @router.post("/governance/lifecycle")
