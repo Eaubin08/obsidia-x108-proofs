@@ -170,7 +170,7 @@ jobs:
           java-version: '17'
 
       - name: Cache tla2tools.jar
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-tla
         with:
           path: tla2tools.jar
