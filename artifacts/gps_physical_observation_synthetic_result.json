@@ -1,0 +1,252 @@
+{
+  "claim_boundary": "Physical claim allowed only if proof_level is real and eligible_for_physical_claim is true.",
+  "domain_payload": {
+    "altitude": 1000.0,
+    "attestation_ready": false,
+    "authorized_route_hash": "synthetic-route-hash",
+    "brownout_score": 0.0,
+    "domain_state_hash": "1ce1ab5f3c4178dd821ca1a2bf4d07c679e929828d11f6e3e2d23049a394f93f",
+    "flight_id": "synthetic-format-only-af994",
+    "flow_type": "TRAJECTORY_DECISION",
+    "freshness_ms": 42.0,
+    "g_load": 1.1,
+    "gps_available": true,
+    "gps_status": "ONLINE",
+    "ground_speed": 430.0,
+    "inertial_available": true,
+    "mission_id": "unit-test-fixture",
+    "radio_available": true,
+    "replay_window_detected": false,
+    "rollback_possible": true,
+    "satellites_count": 6,
+    "sensor_attested": false,
+    "signal_noise_ratio": 0.9,
+    "source_conflict_score": 0.01,
+    "spoof_score": 0.0,
+    "time_skew_score": 0.0,
+    "trajectory_drift_score": 0.02
+  },
+  "input_file": "hackathons\\nativebuilder-gps-defense\\samples\\synthetic_observation.json",
+  "mode": "PHYSICAL_OBSERVATION_ENVELOPE",
+  "p4_20_evidence": {
+    "authorized_route_ok": true,
+    "coherence_ok": true,
+    "decision_authority": "KX108_ONLY",
+    "drift_bound_ok": true,
+    "emits_verdict": false,
+    "evidence_hash": "c83892c8df3544fa396cde5f0aab777a9441814ecae588cebba5b9059812d80d",
+    "evidence_refs": [
+      "obsidia_core/guardians/path_fidelity_guard.py",
+      "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_PathFidelity_RequiresCoherence.lean"
+    ],
+    "path_fidelity_ok": true,
+    "physical_envelope_ok": true,
+    "reason_codes": [],
+    "replay_consistent": true
+  },
+  "physical_gate": {
+    "decision_authority": "KX108_ONLY",
+    "eligible_for_p3_05": true,
+    "emits_verdict": false,
+    "reason_codes": [
+      "INPUT_HASH_UNKNOWN",
+      "SYNTHETIC_TEST_ONLY_NOT_PHYSICAL"
+    ],
+    "status": "UNKNOWN"
+  },
+  "x108_result": {
+    "domain": "gps_defense_aviation",
+    "gate_version": "v2-reality-authenticity",
+    "ir_payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.9,
+        "S": 0.7,
+        "T_mean": 0.02,
+        "altitude": 1000.0,
+        "attestation_ready": false,
+        "brownout_score": 0.0,
+        "domain_state_hash": "8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e",
+        "flight_id": "synthetic-format-only-af994",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 430.0,
+        "inertial_available": true,
+        "mission_id": "unit-test-fixture",
+        "nuisances": [
+          "CIC_ATTESTATION_FAILURE"
+        ],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "CIC_ATTESTATION_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 6,
+        "signal_noise_ratio": 0.9,
+        "source_conflict_score": 0.01,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.02
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.9,
+          "domain_state_hash": "8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e",
+          "fail_closed": true,
+          "flight_id": "synthetic-format-only-af994",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [
+            "PROVENANCE_FAILURE"
+          ],
+          "nuisances": [
+            "CIC_ATTESTATION_FAILURE"
+          ],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 42.0,
+            "is_fresh": true,
+            "multisource_coherent": true,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "CIC_ATTESTATION_FAILED"
+            ],
+            "sensor_attested": false
+          },
+          "risk_score": 0.02,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "reason": "INPUT_NOT_CANONIZED_FOR_KERNEL_EXECUTION",
+    "receipt": {
+      "connector_decides": false,
+      "contract": "DOMAIN_BRIDGE_ONLY",
+      "created_at_ms": 1785700637767,
+      "decision_authority": "KX108_ONLY",
+      "domain": "gps_defense_aviation",
+      "domain_state_hash": "8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e",
+      "gate": "P3-05",
+      "gate_file": "domains/gps/gps_x108_gate.py",
+      "ir_payload": {
+        "data": {
+          "A_score": 1.0,
+          "H_score": 0.9,
+          "S": 0.7,
+          "T_mean": 0.02,
+          "altitude": 1000.0,
+          "attestation_ready": false,
+          "brownout_score": 0.0,
+          "domain_state_hash": "8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e",
+          "flight_id": "synthetic-format-only-af994",
+          "gps_available": true,
+          "gps_status": "ONLINE",
+          "ground_speed": 430.0,
+          "inertial_available": true,
+          "mission_id": "unit-test-fixture",
+          "nuisances": [
+            "CIC_ATTESTATION_FAILURE"
+          ],
+          "radio_available": true,
+          "reality_authenticity_reasons": [
+            "CIC_ATTESTATION_FAILED"
+          ],
+          "rollback_possible": true,
+          "satellites_count": 6,
+          "signal_noise_ratio": 0.9,
+          "source_conflict_score": 0.01,
+          "time_skew_score": 0.0,
+          "trajectory_drift_score": 0.02
+        },
+        "domain": "gps_defense_aviation",
+        "meta": {
+          "contract": "DOMAIN_BRIDGE_ONLY",
+          "decides_alone": false,
+          "decision_authority": "KX108_ONLY",
+          "domain_state": {
+            "audit_score": 1.0,
+            "confidence_index": 0.9,
+            "domain_state_hash": "8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e",
+            "fail_closed": true,
+            "flight_id": "synthetic-format-only-af994",
+            "flow_type": "TRAJECTORY_DECISION",
+            "nuisance_risk_classes": [
+              "PROVENANCE_FAILURE"
+            ],
+            "nuisances": [
+              "CIC_ATTESTATION_FAILURE"
+            ],
+            "reality_authenticity": {
+              "anti_replay_ok": true,
+              "freshness_ms": 42.0,
+              "is_fresh": true,
+              "multisource_coherent": true,
+              "physical_envelope_ok": true,
+              "reasons": [
+                "CIC_ATTESTATION_FAILED"
+              ],
+              "sensor_attested": false
+            },
+            "risk_score": 0.02,
+            "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+            "threshold_s": 0.7
+          },
+          "flow_type": "TRAJECTORY_DECISION",
+          "gate_version": "v2-reality-authenticity",
+          "ir_intent": "AUDIT_ONLY",
+          "risk_class": "",
+          "zone": ""
+        }
+      },
+      "kernel_decision": {},
+      "os3_ticket": {
+        "action_id": "gps-synthetic-format-only-af994-8e54c254fe51",
+        "contradictions": [],
+        "domain": "gps_defense_aviation",
+        "evidence_refs": [
+          "domains/gps/gps_x108_gate.py",
+          "periphery/os3_ticket.py",
+          "domain_state_hash:8e54c254fe5194df312ecb8e16daf62b344cd700f5116c133c0bb31d353a533e"
+        ],
+        "input_hash": "e99df321f209c0b621e3ca4d1b089848d94cf4f6a39b7c9dee4d02e8fe4dcb00",
+        "merkle_root": "d55232508ae76afb01af8101a336874e661925acf22aa108a708667ae7219cfd",
+        "output_hash": "7b0e587dca5e27a28081bf91a15de6cd1b98c7edec02943ec753b946d160d366",
+        "reason_code": "P3_05_FAIL_CLOSED",
+        "replay_status": "NOT_RUN",
+        "risk_flags": [
+          "CIC_ATTESTATION_FAILED",
+          "CIC_ATTESTATION_FAILURE"
+        ],
+        "scores": {
+          "audit_score": 1.0,
+          "confidence_index": 0.9,
+          "freshness_ms": 42.0,
+          "risk_score": 0.02
+        },
+        "severity": "S4",
+        "ticket_id": "80ca1e2090fb45ada5ab7392005e10ce",
+        "trace_hash": "b2ba981510950a1cb160738a29e741ca8416991bc64adbf65fe25840d65890e2",
+        "unknowns": [
+          "CIC_ATTESTATION_FAILED"
+        ],
+        "x108_gate": "HOLD"
+      },
+      "os3_ticket_valid": true,
+      "signature_kind": "LOCAL_SHA256_DEMO_NOT_PRODUCTION_SIGNING",
+      "signed_decision_receipt_sha256": "b6c675f77cc60236bd38d790cc95ea5355d096cac37866c67719b3a627e62116",
+      "source": "P3_05_FAIL_CLOSED",
+      "verdict": "HOLD"
+    },
+    "source": "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED",
+    "verdict": "HOLD"
+  }
+}
