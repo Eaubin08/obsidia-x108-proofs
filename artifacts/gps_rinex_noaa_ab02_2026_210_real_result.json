@@ -1,0 +1,562 @@
+{
+  "domain_payload": {
+    "altitude": 0.0,
+    "attestation_ready": true,
+    "authorized_route_hash": "c81c0c78f99cc945d8d4f2074fd46de98974965d897b887c0ba45cdc77e81ea0",
+    "brownout_score": 0.0,
+    "domain_state_hash": "a6437964c92b327028f281be34349ebacf765ddd50061b9989764968f1ab80d1",
+    "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+    "flow_type": "TRAJECTORY_DECISION",
+    "freshness_ms": 0.0,
+    "g_load": 1.0,
+    "gps_available": true,
+    "gps_status": "ONLINE",
+    "ground_speed": 0.0,
+    "inertial_available": false,
+    "mission_id": "NOAA_NGS_NCN_CORS_RINEX",
+    "radio_available": true,
+    "replay_window_detected": false,
+    "rollback_possible": true,
+    "satellites_count": 31,
+    "sensor_attested": true,
+    "signal_noise_ratio": 0.01,
+    "source_conflict_score": 0.0,
+    "spoof_score": 0.0,
+    "time_skew_score": 0.0,
+    "trajectory_drift_score": 0.0
+  },
+  "input_file": "hackathons\\nativebuilder-gps-defense\\data\\rinex\\noaa_ab02_2026_210\\ab022100.26o.gz",
+  "kernel_http_evidence": {
+    "endpoint": "http://127.0.0.1:3001/kernel/ragnarok",
+    "payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.01,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 0.0,
+        "attestation_ready": true,
+        "brownout_score": 0.0,
+        "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+        "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.0,
+        "inertial_available": false,
+        "mission_id": "NOAA_NGS_NCN_CORS_RINEX",
+        "nuisances": [],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 31,
+        "signal_noise_ratio": 0.01,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.01,
+          "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+          "fail_closed": true,
+          "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [],
+          "nuisances": [],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "payload_sha256": "c019cddb145b26d3b6cb69391a66ba0c2e909464ae30c1ab1be13e6586ccaf21",
+    "raw_response": "{\"domain\":\"gps_defense_aviation\",\"market_verdict\":\"RECALC_TRAJECTORY\",\"confidence\":0.35,\"confidence_integrity\":0.35,\"confidence_governance\":0.75,\"confidence_readiness\":0.48,\"confidence_scope\":\"integrity\",\"governance_scope\":\"x108_decision_robustness\",\"readiness_scope\":\"harmonic_integrity_governance\",\"contradictions\":[],\"unknowns\":[\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"TICKET_NOT_READY\"],\"risk_flags\":[],\"x108_gate\":\"HOLD\",\"reason_code\":\"UNKNOWNS_OR_CONFIDENCE_LOW\",\"severity\":\"S2\",\"decision_id\":\"gps_defense_aviation-de1a76514344\",\"trace_id\":\"43d79d50-89a9-4ee9-a451-a10e8407f7cc\",\"ticket_required\":false,\"ticket_id\":null,\"attestation_ref\":\"c8ebf0fd50afd9f40be1efaa\",\"source\":\"canonical_framework\",\"evidence_refs\":[\"7d915b7839dbf211\",\"dc0a11715aac7cfb\",\"f2234840f53eb622\",\"a4f978c39559e013\",\"9ff2b803d2b3673c\",\"43053fc000293fad\",\"meta:UnknownsAgent\",\"meta:ConflictResolutionAgent\",\"meta:PolicyScopeAgent\",\"meta:TicketReadinessAgent\",\"meta:TraceIntegrityAgent\",\"meta:AttestationReadinessAgent\",\"meta:HumanOverrideEligibilityAgent\",\"meta:SeverityClassifierAgent\",\"meta:ReplayConsistencyAgent\",\"meta:ProofConsistencyAgent\"],\"metrics\":{\"trajectory_valid_score\":0,\"recalc_score\":0.35,\"degraded_score\":0,\"abort_score\":0,\"truth_score\":0,\"sigma_score\":0.35,\"mismatch_gap\":0.35,\"proof_ready\":true,\"deterministic\":true,\"action_metadata\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null}},\"raw_engine\":{\"domain\":\"gps_defense_aviation\",\"agent_votes\":[\"SourceAvailabilityAgent\",\"TrajectoryIntegrityAgent\",\"SourceConflictAgent\",\"TimeSkewAgent\",\"BrownoutAgent\",\"GpsAttestationReadinessAgent\"],\"vote_count\":6,\"agent_vote_details\":[{\"agent_id\":\"SourceAvailabilityAgent\",\"vote\":\"RECALC_TRAJECTORY\",\"proposed_verdict\":\"RECALC_TRAJECTORY\",\"selected_vote\":\"RECALC_TRAJECTORY\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0.35,\"domain\":\"gps_defense_aviation\",\"layer\":1,\"claim\":\"source availability\",\"severity_hint\":3,\"contradictions\":[],\"unknowns\":[\"INERTIAL_MISSING\"],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":false,\"aggregate4_domain_enum_rejected\":false,\"aggregate4_false_act_surface_blocked\":false,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TrajectoryIntegrityAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"SourceConflictAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TimeSkewAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"BrownoutAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"GpsAttestationReadinessAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":0.9,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true}],\"consensus\":{\"rule\":\"aggregate4\",\"threshold\":\"3/4\",\"voters_expected\":4,\"supermajority_min\":3,\"source\":\"P3G_MAX_CONSENSUS_SCORE_CONTRACT\",\"proof_scope\":\"aggregate4 over exactly 4 voters\",\"authority\":\"PROOF_SURFACE_ONLY\",\"does_not_override_x108_gate\":true,\"does_not_authorize_action\":true,\"agent_vote_details_exposed\":true,\"agent_vote_source\":\"AgentVote.vote / AgentVote.proposed_verdict / AgentVote.confidence\",\"voters_observed\":6,\"raw_vote_counts\":{\"RECALC_TRAJECTORY\":1,\"gps_defense_aviation\":5},\"proposed_verdict_counts\":{\"RECALC_TRAJECTORY\":1,\"TRAJECTORY_VALID\":5},\"normalized_vote_counts\":{\"HOLD\":6},\"observation_ratio\":{\"display_only\":true,\"authority\":\"NONE\",\"warning\":\"Observation ratio is not a Kernel decision and not a Lean aggregate4 proof.\",\"threshold_ratio\":0.75,\"voters_observed\":6,\"max_decision\":\"HOLD\",\"max_count\":6,\"ratio\":1,\"ratio_threshold_met\":true},\"formal_result_status\":\"NOT_APPLIED_REQUIRES_4_VOTERS\",\"formal_result\":null,\"reason\":\"aggregate4 proof scope is exactly 4 voters; live agent count differs.\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true,\"aggregate4_false_act_surface_blocked_count\":5,\"aggregate4_invalid_legacy_votes_count\":5,\"aggregate4_domain_enum_rejected_count\":5}},\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null,\"p3t9b_trusted_metadata_available\":false,\"p3t9b_trusted_metadata_source\":\"NONE\",\"p3t9b_caller_metadata_ignored\":true,\"p3t9b_demoted_for_missing_trusted_metadata\":false,\"p3t9b_reason_code\":\"P3T9B_NOT_APPLIED\",\"p3t9b_caller_action_meta_untrusted\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null},\"pre_sigma_market_verdict\":\"RECALC_TRAJECTORY\",\"pre_sigma_severity\":\"S2\",\"sigma_override_policy\":\"POST_GUARD_VETO_ONLY\",\"sigma_override\":false,\"sigma_authority\":\"REPORT_ONLY\",\"sigma_step\":{\"step\":0,\"severity\":\"S2\",\"z\":0.5,\"z_t\":0.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true},\"sigma_report\":{\"pass\":true,\"status\":\"PASS\",\"steps_evaluated\":1,\"unstable_steps\":0,\"violations_total\":0,\"violation_types\":[],\"metrics\":{\"mean_velocity\":0,\"total_steps\":1,\"tau_max_used\":5,\"accel_limit_used\":0.6},\"constraints\":{\"vanishing_acceleration\":\"OK\",\"velocity_band\":\"OK\",\"coherence_stationarity\":\"OK\"},\"steps_detail\":[{\"step\":0,\"severity\":\"S2\",\"z\":0.5,\"z_t\":0.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true}],\"stdout\":\"V18.9 Sigma Dynamic Stability - PASS\\nSteps evaluated : 1\\nUnstable steps  : 0\\nTotal violations: 0\\nConfig source   : C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-x108-proofs_REMOTE_A5F21C6B\\\\sigma\\\\sigma_config.json\\ntau_max         : 5.0\\naccel_limit     : 0.6\\nNo violations detected.\\n\"}}",
+    "raw_response_sha256": "8639a34c75f8dbd7eb08784ee48c3636654328ba529fb7bde44791ac7cf201fd",
+    "status_http": 200,
+    "timestamp_ms": 1785701452651
+  },
+  "license": "NOAA NCN terms: use at your own risk; NOAA gives no warranty; public NCN access",
+  "mode": "RINEX_RECORDED_REAL_GNSS",
+  "observation_envelope": {
+    "capture_timestamp": "2026-07-29T00:00:00.000Z",
+    "constellation": [
+      "G"
+    ],
+    "dataset_name": "NOAA_NGS_NCN_CORS_RINEX",
+    "dataset_version": "2026-07-29",
+    "domain_state_hash": "UNKNOWN",
+    "eligible_for_physical_claim": true,
+    "input_hash": "c81c0c78f99cc945d8d4f2074fd46de98974965d897b887c0ba45cdc77e81ea0",
+    "license": "NOAA NCN terms: use at your own risk; NOAA gives no warranty; public NCN access",
+    "limitations": [
+      "RINEX_OBSERVABLES_ONLY",
+      "NO_RAW_RF_IQ",
+      "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+      "NO_PVT_SOLUTION_COMPUTED"
+    ],
+    "observables": {
+      "antenna": "0220356918          TRM29659.00     SCIT",
+      "brownout_score": 0.0,
+      "epoch_count": 5760,
+      "first_epoch": "2026-07-29T00:00:00.000Z",
+      "freshness_ms": 0,
+      "g_load": 1.0,
+      "inertial_available": false,
+      "last_epoch": "2026-07-29T23:59:45.000Z",
+      "marker_name": "AB02",
+      "observed_constellations": [
+        "G"
+      ],
+      "radio_available": true,
+      "receiver": "4625209604          TRIMBLE NETRS       1.3-2",
+      "replay_window_detected": false,
+      "rinex_version": "2.11",
+      "source_conflict_score": 0.0,
+      "spoof_score": 0.0,
+      "time_skew_score": 0.0,
+      "trajectory_drift_score": 0.0,
+      "unique_satellite_count": 31
+    },
+    "observables_hash": "93bc9f49d4e8a0efe25cc526c2f2b56df329b6f90a548f9f7b52d5465a13e564",
+    "observation_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+    "official_url": "https://geodesy.noaa.gov/corsdata/rinex/2026/210/ab02/ab022100.26o.gz",
+    "parent_receipt_id": "UNKNOWN",
+    "processing_timestamp": "1785701452646",
+    "processor_config_hash": "138ade9fb6e14dc5b4dde73ce9dd9a3a9dd283f7d238c18ebc37984dffb9db3e",
+    "processor_name": "obsidia-rinex-v2-observation-parser",
+    "processor_version": "v0",
+    "proof_level": "RECORDED_REAL_GNSS",
+    "provenance": {
+      "constellation_counts": {
+        "G": 61382
+      },
+      "epoch_count": 5760,
+      "file": "hackathons\\nativebuilder-gps-defense\\data\\rinex\\noaa_ab02_2026_210\\ab022100.26o.gz",
+      "file_sha256": "c81c0c78f99cc945d8d4f2074fd46de98974965d897b887c0ba45cdc77e81ea0",
+      "first_epoch": "2026-07-29T00:00:00.000Z",
+      "header": {
+        "antenna": "0220356918          TRM29659.00     SCIT",
+        "approx_position_xyz_m": [
+          -3776807.243,
+          -744084.917,
+          5068727.604
+        ],
+        "marker_name": "AB02",
+        "obs_types": [
+          "L1",
+          "L2",
+          "C1",
+          "P2",
+          "P1",
+          "S1",
+          "S2"
+        ],
+        "receiver": "4625209604          TRIMBLE NETRS       1.3-2",
+        "rinex_type": "OBSERVATION DATA",
+        "rinex_version": "2.11"
+      },
+      "last_epoch": "2026-07-29T23:59:45.000Z",
+      "observed_constellations": [
+        "G"
+      ],
+      "sample_epochs": [
+        {
+          "epoch": "2026-07-29T00:00:00.000Z",
+          "satellites": [
+            "G11",
+            "G07",
+            "G01",
+            "G19",
+            "G04",
+            "G03",
+            "G06",
+            "G09",
+            "G17",
+            "G31",
+            "G26"
+          ]
+        },
+        {
+          "epoch": "2026-07-29T00:00:15.000Z",
+          "satellites": [
+            "G11",
+            "G07",
+            "G01",
+            "G19",
+            "G04",
+            "G03",
+            "G06",
+            "G09",
+            "G17",
+            "G31",
+            "G26"
+          ]
+        },
+        {
+          "epoch": "2026-07-29T00:00:30.000Z",
+          "satellites": [
+            "G11",
+            "G07",
+            "G01",
+            "G19",
+            "G04",
+            "G03",
+            "G06",
+            "G09",
+            "G17",
+            "G31",
+            "G26"
+          ]
+        },
+        {
+          "epoch": "2026-07-29T00:00:45.000Z",
+          "satellites": [
+            "G11",
+            "G07",
+            "G01",
+            "G19",
+            "G04",
+            "G03",
+            "G06",
+            "G09",
+            "G17",
+            "G31",
+            "G26"
+          ]
+        },
+        {
+          "epoch": "2026-07-29T00:01:00.000Z",
+          "satellites": [
+            "G11",
+            "G07",
+            "G01",
+            "G19",
+            "G04",
+            "G03",
+            "G06",
+            "G09",
+            "G17",
+            "G31",
+            "G26"
+          ]
+        }
+      ],
+      "station_log": "hackathons\\nativebuilder-gps-defense\\data\\rinex\\noaa_ab02_2026_210\\ab02.log.txt",
+      "station_log_sha256": "0c56f8bf2f068823e3922859bc042db6be4163d3f82675ba75ea0d0fe25075ce",
+      "unique_satellites": [
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G10",
+        "G11",
+        "G12",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "G19",
+        "G20",
+        "G21",
+        "G22",
+        "G23",
+        "G24",
+        "G25",
+        "G26",
+        "G27",
+        "G28",
+        "G29",
+        "G30",
+        "G31",
+        "G32"
+      ]
+    },
+    "receiver": {
+      "antenna": "0220356918          TRM29659.00     SCIT",
+      "receiver": "4625209604          TRIMBLE NETRS       1.3-2",
+      "station": "AB02",
+      "station_log_sha256": "0c56f8bf2f068823e3922859bc042db6be4163d3f82675ba75ea0d0fe25075ce"
+    },
+    "satellites": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08",
+      "G09",
+      "G10",
+      "G11",
+      "G12",
+      "G14",
+      "G15",
+      "G16",
+      "G17",
+      "G18",
+      "G19",
+      "G20",
+      "G21",
+      "G22",
+      "G23",
+      "G24",
+      "G25",
+      "G26",
+      "G27",
+      "G28",
+      "G29",
+      "G30",
+      "G31",
+      "G32"
+    ],
+    "source_type": "RINEX_OBSERVATION_FILE",
+    "synthetic": false,
+    "truth_reference": {
+      "labels_used_by_pipeline": false,
+      "route_hash": "c81c0c78f99cc945d8d4f2074fd46de98974965d897b887c0ba45cdc77e81ea0"
+    }
+  },
+  "official_url": "https://geodesy.noaa.gov/corsdata/rinex/2026/210/ab02/ab022100.26o.gz",
+  "p4_20_evidence": {
+    "authorized_route_ok": true,
+    "coherence_ok": false,
+    "decision_authority": "KX108_ONLY",
+    "drift_bound_ok": true,
+    "emits_verdict": false,
+    "evidence_hash": "f306e5941b86d6ed7ac2e4c32abb803b398ed362653adbeedf5ea4d1cc4b2c9a",
+    "evidence_refs": [
+      "obsidia_core/guardians/path_fidelity_guard.py",
+      "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_PathFidelity_RequiresCoherence.lean"
+    ],
+    "path_fidelity_ok": false,
+    "physical_envelope_ok": true,
+    "reason_codes": [
+      "P4_20_SOURCE_COHERENCE_FAILED"
+    ],
+    "replay_consistent": true
+  },
+  "physical_gate": {
+    "decision_authority": "KX108_ONLY",
+    "eligible_for_p3_05": true,
+    "emits_verdict": false,
+    "reason_codes": [],
+    "status": "AUTHENTICATED"
+  },
+  "proof_level": "RECORDED_REAL_GNSS",
+  "station_log": "hackathons\\nativebuilder-gps-defense\\data\\rinex\\noaa_ab02_2026_210\\ab02.log.txt",
+  "synthetic": false,
+  "x108_result": {
+    "domain": "gps_defense_aviation",
+    "gate_version": "v2-reality-authenticity",
+    "ir_payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.01,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 0.0,
+        "attestation_ready": true,
+        "brownout_score": 0.0,
+        "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+        "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.0,
+        "inertial_available": false,
+        "mission_id": "NOAA_NGS_NCN_CORS_RINEX",
+        "nuisances": [],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 31,
+        "signal_noise_ratio": 0.01,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.01,
+          "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+          "fail_closed": true,
+          "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [],
+          "nuisances": [],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "reason": "INPUT_NOT_CANONIZED_FOR_KERNEL_EXECUTION",
+    "receipt": {
+      "connector_decides": false,
+      "contract": "DOMAIN_BRIDGE_ONLY",
+      "created_at_ms": 1785701452646,
+      "decision_authority": "KX108_ONLY",
+      "domain": "gps_defense_aviation",
+      "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+      "gate": "P3-05",
+      "gate_file": "domains/gps/gps_x108_gate.py",
+      "ir_payload": {
+        "data": {
+          "A_score": 1.0,
+          "H_score": 0.01,
+          "S": 0.7,
+          "T_mean": 0.5,
+          "altitude": 0.0,
+          "attestation_ready": true,
+          "brownout_score": 0.0,
+          "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+          "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+          "gps_available": true,
+          "gps_status": "ONLINE",
+          "ground_speed": 0.0,
+          "inertial_available": false,
+          "mission_id": "NOAA_NGS_NCN_CORS_RINEX",
+          "nuisances": [],
+          "radio_available": true,
+          "reality_authenticity_reasons": [
+            "MULTI_SOURCE_COHERENCE_FAILED"
+          ],
+          "rollback_possible": true,
+          "satellites_count": 31,
+          "signal_noise_ratio": 0.01,
+          "source_conflict_score": 0.0,
+          "time_skew_score": 0.0,
+          "trajectory_drift_score": 0.0
+        },
+        "domain": "gps_defense_aviation",
+        "meta": {
+          "contract": "DOMAIN_BRIDGE_ONLY",
+          "decides_alone": false,
+          "decision_authority": "KX108_ONLY",
+          "domain_state": {
+            "audit_score": 1.0,
+            "confidence_index": 0.01,
+            "domain_state_hash": "97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e",
+            "fail_closed": true,
+            "flight_id": "rinex-ab02-2026-07-29T00:00:00.000Z",
+            "flow_type": "TRAJECTORY_DECISION",
+            "nuisance_risk_classes": [],
+            "nuisances": [],
+            "reality_authenticity": {
+              "anti_replay_ok": true,
+              "freshness_ms": 0.0,
+              "is_fresh": true,
+              "multisource_coherent": false,
+              "physical_envelope_ok": true,
+              "reasons": [
+                "MULTI_SOURCE_COHERENCE_FAILED"
+              ],
+              "sensor_attested": true
+            },
+            "risk_score": 0.5,
+            "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+            "threshold_s": 0.7
+          },
+          "flow_type": "TRAJECTORY_DECISION",
+          "gate_version": "v2-reality-authenticity",
+          "ir_intent": "AUDIT_ONLY",
+          "risk_class": "",
+          "zone": ""
+        }
+      },
+      "kernel_decision": {},
+      "os3_ticket": {
+        "action_id": "gps-rinex-ab02-2026-07-29T00:00:00.000Z-97327ee147c1",
+        "contradictions": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "domain": "gps_defense_aviation",
+        "evidence_refs": [
+          "domains/gps/gps_x108_gate.py",
+          "periphery/os3_ticket.py",
+          "domain_state_hash:97327ee147c170c8c632dd9bfd359e85a478c2ad072f22310f13dfcf71e9291e"
+        ],
+        "input_hash": "a2c6d1d2e8cf4cce1c7e1c57591f892440302c67ca6d467e803413363f6a20e4",
+        "merkle_root": "283ada87b66842ba81938a98339e05beec30d9d3b1cca6ac09cd3c1863f3eea4",
+        "output_hash": "e5e2f9fbc729f4667d0103733cc8515319258d9f6887de31fba865cad00b1a90",
+        "reason_code": "P3_05_FAIL_CLOSED",
+        "replay_status": "NOT_RUN",
+        "risk_flags": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "scores": {
+          "audit_score": 1.0,
+          "confidence_index": 0.01,
+          "freshness_ms": 0.0,
+          "risk_score": 0.5
+        },
+        "severity": "S4",
+        "ticket_id": "e28814d9249e4e4fa63e0935c0eeca7a",
+        "trace_hash": "78d1191364470506e4133a38beeac541a08cf75ff04d0d643837b43c555c760c",
+        "unknowns": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "x108_gate": "HOLD"
+      },
+      "os3_ticket_valid": true,
+      "signature_kind": "LOCAL_SHA256_DEMO_NOT_PRODUCTION_SIGNING",
+      "signed_decision_receipt_sha256": "5e1fde80fc19b0f02e5470943233f0e06d22cc8df9a2f531e2a7199e4cc58691",
+      "source": "P3_05_FAIL_CLOSED",
+      "verdict": "HOLD"
+    },
+    "source": "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED",
+    "verdict": "HOLD"
+  }
+}

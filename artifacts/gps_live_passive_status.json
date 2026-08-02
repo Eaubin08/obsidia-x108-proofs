@@ -1,0 +1,55 @@
+{
+  "blocked": true,
+  "envelope": {
+    "capture_timestamp": "1785700637926",
+    "constellation": [],
+    "dataset_name": "local-live-passive",
+    "dataset_version": "v0",
+    "domain_state_hash": "UNKNOWN",
+    "eligible_for_physical_claim": false,
+    "input_hash": "UNKNOWN",
+    "license": "LOCAL_OPERATOR",
+    "limitations": [
+      "NO_HARDWARE_DETECTED",
+      "WINDOWS_HARDWARE_ENUMERATION_NOT_AVAILABLE"
+    ],
+    "observables": {},
+    "observables_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "observation_id": "live-passive-1785700637926",
+    "official_url": "UNKNOWN",
+    "parent_receipt_id": "UNKNOWN",
+    "processing_timestamp": "1785700637926",
+    "processor_config_hash": "7600825c5788e6fffa5b1ac6392ef4c00e6a9ef65fbe3227f773b9298405634e",
+    "processor_name": "obsidia-live-passive-adapter",
+    "processor_version": "v0",
+    "proof_level": "STRUCTURED_STATE",
+    "receiver": {
+      "detected_candidates": [],
+      "docker_path": "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.EXE",
+      "eligible_for_physical_claim": false,
+      "gnss_sdr_path": "NOT_FOUND",
+      "limitations": [
+        "NO_HARDWARE_DETECTED",
+        "WINDOWS_HARDWARE_ENUMERATION_NOT_AVAILABLE"
+      ],
+      "proof_level": "STRUCTURED_STATE",
+      "status": "NO_HARDWARE_DETECTED"
+    },
+    "satellites": [],
+    "source_type": "LIVE_PASSIVE_RECEIVER",
+    "truth_reference": {}
+  },
+  "mode": "LIVE_PASSIVE_ADAPTER",
+  "next_human_action": "Connect a passive GNSS/SDR receiver and set OBSIDIA_GNSS_DEVICE or provide GNSS-SDR output.",
+  "physical_gate": {
+    "decision_authority": "KX108_ONLY",
+    "eligible_for_p3_05": false,
+    "emits_verdict": false,
+    "reason_codes": [
+      "INPUT_HASH_UNKNOWN",
+      "NO_HARDWARE_DETECTED"
+    ],
+    "status": "UNKNOWN"
+  },
+  "status": "NO_HARDWARE_DETECTED"
+}

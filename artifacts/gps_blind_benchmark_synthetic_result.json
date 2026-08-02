@@ -1,0 +1,15 @@
+{
+  "case_count": 1,
+  "mode": "BLIND_BENCHMARK",
+  "results": [
+    {
+      "case_id": "case-001",
+      "physical_gate_status": "UNKNOWN",
+      "public_observation_path": "hackathons/nativebuilder-gps-defense/samples/synthetic_observation.json",
+      "receipt_id": "4ac8e4ff93884b9c8288f09ab9558e0b",
+      "x108_source": "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED",
+      "x108_verdict": "HOLD"
+    }
+  ],
+  "truth_manifest_used_by_pipeline": false
+}

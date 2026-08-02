@@ -1,0 +1,44 @@
+{
+  "observation_id": "synthetic-format-only-af994",
+  "source_type": "SYNTHETIC_FORMAT_FIXTURE",
+  "proof_level": "SYNTHETIC_TEST_ONLY",
+  "eligible_for_physical_claim": false,
+  "dataset_name": "unit-test-fixture",
+  "dataset_version": "v0",
+  "license": "LOCAL_TEST_ONLY",
+  "official_url": "UNKNOWN",
+  "capture_timestamp": "1785699000000",
+  "processing_timestamp": "1785699000000",
+  "receiver": {
+    "name": "NO_REAL_RECEIVER",
+    "serial": "UNKNOWN"
+  },
+  "constellation": ["GPS"],
+  "satellites": ["G01", "G03", "G11", "G19", "G22", "G28"],
+  "observables": {
+    "cn0_dbhz": 45.0,
+    "freshness_ms": 42,
+    "g_load": 1.1,
+    "inertial_available": true,
+    "radio_available": true,
+    "trajectory_drift_score": 0.02,
+    "source_conflict_score": 0.01,
+    "time_skew_score": 0.0,
+    "brownout_score": 0.0,
+    "pvt": {
+      "altitude_m": 1000,
+      "speed_kt": 430
+    }
+  },
+  "truth_reference": {
+    "route_hash": "synthetic-route-hash"
+  },
+  "input_hash": "UNKNOWN",
+  "processor_name": "obsidia-synthetic-fixture",
+  "processor_version": "v0",
+  "processor_config_hash": "UNKNOWN",
+  "observables_hash": "UNKNOWN",
+  "domain_state_hash": "UNKNOWN",
+  "parent_receipt_id": "UNKNOWN",
+  "limitations": ["SYNTHETIC_TEST_ONLY", "NO_PHYSICAL_CLAIM"]
+}
