@@ -1,6 +1,6 @@
 {
   "artifact": "reproducibility_report",
-  "status": "PARTIAL_REPRODUCIBILITY_NOT_PASS",
+  "status": "NOT_RUN_GNSS_SDR_BLOCKED_WITH_REAL_HOSTILE_RF",
   "required_runs_per_file": 2,
   "executed_runs_per_file": 3,
   "cases": [
@@ -16,5 +16,5 @@
     }
   ],
   "reproducible": false,
-  "blocker": "Repeated receiver attempts do not produce NAV/PVT, so the full hostile RF benchmark cannot be closed."
+  "blocker": "FGI-SpoofRepo UT_DFMC L1/E1 is local and hash-verified, but no GNSS-SDR/receiver runtime is executable in this environment."
 }

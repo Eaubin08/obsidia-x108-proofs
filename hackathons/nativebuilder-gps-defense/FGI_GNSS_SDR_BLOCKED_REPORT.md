@@ -1,7 +1,7 @@
 # FGI GNSS-SDR Blocked Report
 
 Date: 2026-08-03
-Status: `SUPERSEDED_BY_GNSS_SDR_EXECUTION_NO_PVT`
+Status: `GNSS_SDR_BLOCKED_WITH_REAL_FGI_HOSTILE_RF`
 
 ## Real Dataset Present
 
@@ -13,33 +13,47 @@ Status: `SUPERSEDED_BY_GNSS_SDR_EXECUTION_NO_PVT`
 - Package SHA-256: `1df410917bc853b5ab843667acd47ede4e03bf237ce3e399d791a597ce9713ad`
 - L1/E1 SHA-256: `e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72`
 
-## Receiver Runtime Update
+## Commands Attempted
 
-This blocker is no longer the current boundary when commands run with the unsandboxed Windows user. Docker Desktop and the local `carlesfernandez/docker-gnsssdr:latest` image were reused successfully for the FGI hostile RF lot.
+```powershell
+docker --config .local\docker-config info --format '{{.ServerVersion}}'
+```
 
-Recovered runtime:
+Result:
 
-- Docker version: `29.4.3`.
-- Context: `desktop-linux`.
-- Image: `carlesfernandez/docker-gnsssdr:latest`.
-- GNSS-SDR version: `0.0.21.git-next-2a7214a4f`.
+```text
+permission denied while trying to connect to the docker API at npipe:////./pipe/docker_engine
+```
 
-The current blocker is technical receiver output quality, not Docker availability:
+```powershell
+wsl.exe --status
+wsl.exe -l -v
+```
 
-- GNSS-SDR acquisition/tracking/observables: produced.
-- NAV messages: not produced.
-- PVT positions: not produced.
-- Live X-108: called successfully.
-- Receipt: produced.
+Result:
 
-The historical sandbox limitation still exists for the `codexsandboxoffline` user. Docker daemon access works when the command is executed as the normal Windows user.
+```text
+Wsl/EnumerateDistros/Service/E_ACCESSDENIED
+```
 
-## Next Required Technical Action
+```powershell
+where.exe gnss-sdr
+choco search gnss-sdr --limit-output
+```
 
-One of these must be done before `RECORDED_RF_ATTACK` can honestly pass:
+Result:
 
-- Run the official FGI-GSRx receiver with MATLAB/Octave on the FGI UT_DFMC L1/E1 file.
-- Produce a GNSS-SDR configuration that yields NAV/PVT from the official `real 8-bit I`, `26 MHz`, `1569.03 MHz` L1/E1 recording without inventing physical parameters.
-- Execute a matched nominal/hostile pair and compute metrics after label reveal.
+```text
+gnss-sdr not found; no Chocolatey package result returned.
+```
 
-No RF emission is needed. This remains offline file processing only.
+## Required Human Action
+
+One of these must be made available before `RECORDED_RF_ATTACK` can be attempted:
+
+- Docker Desktop daemon access for this Windows user, including access to `npipe:////./pipe/docker_engine`.
+- A WSL2 distro where GNSS-SDR can be installed and run.
+- A local GNSS-SDR executable on Windows.
+- The official FGI receiver toolchain executable in a usable local runtime.
+
+No RF emission is needed. This is offline file processing only.

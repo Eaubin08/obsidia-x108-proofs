@@ -1,15 +1,14 @@
 {
   "artifact": "confusion_matrix",
-  "status": "NOT_COMPUTED_NO_NOMINAL_PAIR_NO_PVT_NO_ATTACK_CLASSIFICATION",
+  "status": "NOT_COMPUTED_GNSS_SDR_BLOCKED_WITH_REAL_HOSTILE_RF",
   "tp": null,
   "tn": null,
   "fp": null,
   "fn": null,
   "matrix": [],
   "notes": [
-    "FGI-SpoofRepo UT_DFMC hostile RF was executed through GNSS-SDR.",
-    "The run produced acquisition/tracking/observables but no NAV/PVT solution.",
-    "No nominal FGI pair was executed in the same benchmark family.",
-    "A HOLD on this hostile file is not counted as a true positive spoofing classification because the observed anomaly predates the official attack onset."
+    "FGI-SpoofRepo UT_DFMC hostile RF was downloaded and hash-verified.",
+    "No GNSS-SDR observables/PVT were produced, so no anomaly result, spoofing classification, X-108 decision, or receipt can be counted.",
+    "A HOLD on a hostile file would not be counted as spoofing detection unless the RF anomaly reason is computed separately from the governance decision."
   ]
 }

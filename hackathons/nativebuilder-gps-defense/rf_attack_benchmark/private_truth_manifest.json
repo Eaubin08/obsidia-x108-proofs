@@ -1,10 +1,9 @@
 {
   "artifact": "private_truth_manifest",
-  "status": "EXECUTED_OPAQUE_CASE_LABELS_NOT_COMMITTED",
+  "status": "NOT_USED_NO_EXECUTED_CASES",
   "created_at": "2026-08-02T23:41:09+02:00",
-  "updated_at": "2026-08-03T02:05:00+02:00",
+  "updated_at": "2026-08-03T00:25:00+02:00",
   "committed_truth_labels": false,
-  "truth_manifest_read_before_decisions": false,
-  "note": "A real FGI-SpoofRepo UT_DFMC RF case was executed through an opaque pipeline input. Labels remain excluded from committed pipeline inputs; official scenario family and onset are used only for post-run interpretation in public metrics/reports.",
+  "note": "A real FGI-SpoofRepo hostile RF corpus is local, but no blind benchmark case was executed because GNSS-SDR/receiver execution is blocked. Keep scenario truth outside pipeline_inputs and read it only after all X-108 decisions are written.",
   "cases": []
 }
