@@ -1,8 +1,9 @@
 {
   "artifact": "private_truth_manifest",
-  "status": "EMPTY_NO_HOSTILE_RF_INPUT",
+  "status": "NOT_USED_NO_EXECUTED_CASES",
   "created_at": "2026-08-02T23:41:09+02:00",
+  "updated_at": "2026-08-03T00:25:00+02:00",
   "committed_truth_labels": false,
-  "note": "No scenario labels are committed because no hostile RF scenario was downloaded or executed. For a real campaign, keep this file outside pipeline_inputs and read it only after all X-108 decisions are written.",
+  "note": "A real FGI-SpoofRepo hostile RF corpus is local, but no blind benchmark case was executed because GNSS-SDR/receiver execution is blocked. Keep scenario truth outside pipeline_inputs and read it only after all X-108 decisions are written.",
   "cases": []
 }
