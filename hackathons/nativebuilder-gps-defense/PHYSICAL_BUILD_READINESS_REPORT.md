@@ -1,6 +1,6 @@
 # Physical Build Readiness Report
 
-Status: PASS_REAL_RINEX_WITH_BLOCKERS
+Status: PASS_REAL_RF_WITH_BLOCKERS
 Date: 2026-08-02
 
 ## Environment
@@ -32,6 +32,7 @@ Ready:
 - Observation-to-DomainState adapter.
 - P3-05 / X-108 runtime bridge.
 - Real NOAA/NGS RINEX parser and recorded GNSS execution.
+- Real public GNSS I/Q execution through Dockerized GNSS-SDR.
 - Synthetic format tests explicitly marked non-physical.
 - Live passive no-hardware fallback.
 
@@ -44,7 +45,7 @@ Blocked:
 
 ## Claim
 
-This lot can claim one real recorded GNSS execution via NOAA/NGS RINEX. It still cannot claim RF/IQ processing, TEXBAT attack processing, or live passive receiver ingestion.
+This lot can claim one real recorded GNSS execution via NOAA/NGS RINEX and one real recorded RF execution via public CTTC I/Q processed by GNSS-SDR. It still cannot claim TEXBAT attack processing or live passive receiver ingestion.
 
 ## Executed Outputs
 
@@ -57,6 +58,8 @@ Generated on 2026-08-02:
 | `artifacts/gps_blind_benchmark_synthetic_result.json` | Blind benchmark runner executed without using a truth manifest in the pipeline; synthetic case ended in `HOLD`. | `CB38F7CA148D9F77FB360BC15F26D27DDF74ADB795FBC764B83604B893368A11` |
 | `artifacts/gps_rinex_noaa_ab02_2026_210_real_result.json` | Real NOAA/NGS RINEX observation reached live X-108 HTTP status `200`; verdict `HOLD` because inertial corroboration is missing. | `619C48EF5885245A5B6531EBA9025D507462904CD62DFB968E0FF425BDC684CF` |
 | `artifacts/gps_rinex_noaa_ab02_2026_210_provenance_manifest.json` | Separate provenance manifest for the real RINEX execution. | `EEAF668ADBC4BD6AA48F72DB915A48FF4715A915E0C499597129DF32DCABD2CC` |
+| `artifacts/gps_iq_cttc_2013_04_04_recorded_real_rf_result.json` | Real public CTTC I/Q processed by GNSS-SDR reached live X-108 HTTP status `200`; verdict `HOLD` because inertial corroboration is missing. | `A75EB1908C3D675816A56AC8BC39F622E4DBADF9D8810D2CF686342A29DF73E3` |
+| `artifacts/gps_iq_cttc_2013_04_04_recorded_real_rf_manifest.json` | Separate provenance manifest for the real RF execution. | `5286418CA85258CD6C318C61EE364AF525052FFF8FF4F4E0B5548FF978C9C3D1` |
 
 Schema hash:
 
@@ -64,6 +67,6 @@ Schema hash:
 
 ## Hackathon Truth Boundary
 
-- Demonstrable now: real NOAA/NGS RINEX file, provenance manifest, parsed epochs/satellites, Physical Reality Gate, structured DomainState bridge, P3-05 handoff, P4-20 evidence, live X-108 HTTP `200`, kernel `HOLD` for missing inertial corroboration.
-- Not demonstrable yet: decoded RF/IQ, live GNSS-SDR observables/PVT, TEXBAT RF attack processing, production sensor attestation, production cryptographic receipt, Lean L-02/L-06 final proof closure.
-- Pitch wording: "we executed one real recorded GNSS chain from NOAA RINEX to live X-108; the kernel correctly returns HOLD because single-source GNSS is not enough for physical action authority."
+- Demonstrable now: real NOAA/NGS RINEX file, real CTTC I/Q file, GNSS-SDR acquisition/tracking/PVT, provenance manifests, parsed satellites/CN0/PVT, Physical Reality Gate, structured DomainState bridge, P3-05 handoff, P4-20 evidence, live X-108 HTTP `200`, kernel `HOLD` for missing inertial corroboration.
+- Not demonstrable yet: TEXBAT RF attack processing, production sensor attestation, production cryptographic receipt, Lean L-02/L-06 final proof closure.
+- Pitch wording: "we executed real recorded GNSS and real recorded RF chains to live X-108; the kernel correctly returns HOLD because single-source GNSS/RF is not enough for physical action authority."

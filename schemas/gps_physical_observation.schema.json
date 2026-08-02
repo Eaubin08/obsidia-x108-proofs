@@ -26,6 +26,7 @@
         "SYNTHETIC_TEST_ONLY",
         "STRUCTURED_STATE",
         "RECORDED_REAL_GNSS",
+        "RECORDED_REAL_RF",
         "RECORDED_RF_ATTACK",
         "REAL_PASSIVE_GNSS",
         "HARDWARE_IN_THE_LOOP",

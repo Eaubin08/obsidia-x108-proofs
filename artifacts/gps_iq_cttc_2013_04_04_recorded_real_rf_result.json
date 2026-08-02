@@ -1,0 +1,837 @@
+{
+  "domain_payload": {
+    "altitude": 74.65,
+    "attestation_ready": true,
+    "authorized_route_hash": "6489a6630784478f144f20bf872848410dee3b54a20fd8d1bdd9258afccf2976",
+    "brownout_score": 0.0,
+    "domain_state_hash": "47121b0f105688c1e230b349939b7c3adefbaa576d6e41ef383f3370e1e6604a",
+    "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+    "flow_type": "TRAJECTORY_DECISION",
+    "freshness_ms": 0.0,
+    "g_load": 1.0,
+    "gps_available": true,
+    "gps_status": "ONLINE",
+    "ground_speed": 0.8367565450422606,
+    "inertial_available": false,
+    "mission_id": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+    "radio_available": true,
+    "replay_window_detected": false,
+    "rollback_possible": true,
+    "satellites_count": 22,
+    "sensor_attested": true,
+    "signal_noise_ratio": 0.9212465753424658,
+    "source_conflict_score": 0.0,
+    "spoof_score": 0.0,
+    "time_skew_score": 0.0,
+    "trajectory_drift_score": 0.0
+  },
+  "kernel_http_evidence": {
+    "endpoint": "http://127.0.0.1:3001/kernel/ragnarok",
+    "payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.9212465753424658,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 74.65,
+        "attestation_ready": true,
+        "brownout_score": 0.0,
+        "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+        "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.8367565450422606,
+        "inertial_available": false,
+        "mission_id": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+        "nuisances": [],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 22,
+        "signal_noise_ratio": 0.9212465753424658,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.9212465753424658,
+          "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+          "fail_closed": true,
+          "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [],
+          "nuisances": [],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "payload_sha256": "5137fc1bba8128eb63902b7a7e964a75da83c75a033ff4e33483077e62373c81",
+    "raw_response": "{\"domain\":\"gps_defense_aviation\",\"market_verdict\":\"RECALC_TRAJECTORY\",\"confidence\":0.35,\"confidence_integrity\":0.35,\"confidence_governance\":0.75,\"confidence_readiness\":0.48,\"confidence_scope\":\"integrity\",\"governance_scope\":\"x108_decision_robustness\",\"readiness_scope\":\"harmonic_integrity_governance\",\"contradictions\":[],\"unknowns\":[\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"INERTIAL_MISSING\",\"TICKET_NOT_READY\"],\"risk_flags\":[],\"x108_gate\":\"HOLD\",\"reason_code\":\"UNKNOWNS_OR_CONFIDENCE_LOW\",\"severity\":\"S2\",\"decision_id\":\"gps_defense_aviation-5d56a56e135a\",\"trace_id\":\"10218a71-7e96-4fe4-9740-827d624a1ba9\",\"ticket_required\":false,\"ticket_id\":null,\"attestation_ref\":\"c8ebf0fd50afd9f40be1efaa\",\"source\":\"canonical_framework\",\"evidence_refs\":[\"7d915b7839dbf211\",\"dc0a11715aac7cfb\",\"f2234840f53eb622\",\"a4f978c39559e013\",\"9ff2b803d2b3673c\",\"43053fc000293fad\",\"meta:UnknownsAgent\",\"meta:ConflictResolutionAgent\",\"meta:PolicyScopeAgent\",\"meta:TicketReadinessAgent\",\"meta:TraceIntegrityAgent\",\"meta:AttestationReadinessAgent\",\"meta:HumanOverrideEligibilityAgent\",\"meta:SeverityClassifierAgent\",\"meta:ReplayConsistencyAgent\",\"meta:ProofConsistencyAgent\"],\"metrics\":{\"trajectory_valid_score\":0,\"recalc_score\":0.35,\"degraded_score\":0,\"abort_score\":0,\"truth_score\":0,\"sigma_score\":0.35,\"mismatch_gap\":0.35,\"proof_ready\":true,\"deterministic\":true,\"action_metadata\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null}},\"raw_engine\":{\"domain\":\"gps_defense_aviation\",\"agent_votes\":[\"SourceAvailabilityAgent\",\"TrajectoryIntegrityAgent\",\"SourceConflictAgent\",\"TimeSkewAgent\",\"BrownoutAgent\",\"GpsAttestationReadinessAgent\"],\"vote_count\":6,\"agent_vote_details\":[{\"agent_id\":\"SourceAvailabilityAgent\",\"vote\":\"RECALC_TRAJECTORY\",\"proposed_verdict\":\"RECALC_TRAJECTORY\",\"selected_vote\":\"RECALC_TRAJECTORY\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0.35,\"domain\":\"gps_defense_aviation\",\"layer\":1,\"claim\":\"source availability\",\"severity_hint\":3,\"contradictions\":[],\"unknowns\":[\"INERTIAL_MISSING\"],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":false,\"aggregate4_domain_enum_rejected\":false,\"aggregate4_false_act_surface_blocked\":false,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TrajectoryIntegrityAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"SourceConflictAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TimeSkewAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"BrownoutAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"GpsAttestationReadinessAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":0.9,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true}],\"consensus\":{\"rule\":\"aggregate4\",\"threshold\":\"3/4\",\"voters_expected\":4,\"supermajority_min\":3,\"source\":\"P3G_MAX_CONSENSUS_SCORE_CONTRACT\",\"proof_scope\":\"aggregate4 over exactly 4 voters\",\"authority\":\"PROOF_SURFACE_ONLY\",\"does_not_override_x108_gate\":true,\"does_not_authorize_action\":true,\"agent_vote_details_exposed\":true,\"agent_vote_source\":\"AgentVote.vote / AgentVote.proposed_verdict / AgentVote.confidence\",\"voters_observed\":6,\"raw_vote_counts\":{\"RECALC_TRAJECTORY\":1,\"gps_defense_aviation\":5},\"proposed_verdict_counts\":{\"RECALC_TRAJECTORY\":1,\"TRAJECTORY_VALID\":5},\"normalized_vote_counts\":{\"HOLD\":6},\"observation_ratio\":{\"display_only\":true,\"authority\":\"NONE\",\"warning\":\"Observation ratio is not a Kernel decision and not a Lean aggregate4 proof.\",\"threshold_ratio\":0.75,\"voters_observed\":6,\"max_decision\":\"HOLD\",\"max_count\":6,\"ratio\":1,\"ratio_threshold_met\":true},\"formal_result_status\":\"NOT_APPLIED_REQUIRES_4_VOTERS\",\"formal_result\":null,\"reason\":\"aggregate4 proof scope is exactly 4 voters; live agent count differs.\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true,\"aggregate4_false_act_surface_blocked_count\":5,\"aggregate4_invalid_legacy_votes_count\":5,\"aggregate4_domain_enum_rejected_count\":5}},\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null,\"p3t9b_trusted_metadata_available\":false,\"p3t9b_trusted_metadata_source\":\"NONE\",\"p3t9b_caller_metadata_ignored\":true,\"p3t9b_demoted_for_missing_trusted_metadata\":false,\"p3t9b_reason_code\":\"P3T9B_NOT_APPLIED\",\"p3t9b_caller_action_meta_untrusted\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null},\"pre_sigma_market_verdict\":\"RECALC_TRAJECTORY\",\"pre_sigma_severity\":\"S2\",\"sigma_override_policy\":\"POST_GUARD_VETO_ONLY\",\"sigma_override\":false,\"sigma_authority\":\"REPORT_ONLY\",\"sigma_step\":{\"step\":0,\"severity\":\"S2\",\"z\":0.5,\"z_t\":0.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true},\"sigma_report\":{\"pass\":true,\"status\":\"PASS\",\"steps_evaluated\":1,\"unstable_steps\":0,\"violations_total\":0,\"violation_types\":[],\"metrics\":{\"mean_velocity\":0,\"total_steps\":1,\"tau_max_used\":5,\"accel_limit_used\":0.6},\"constraints\":{\"vanishing_acceleration\":\"OK\",\"velocity_band\":\"OK\",\"coherence_stationarity\":\"OK\"},\"steps_detail\":[{\"step\":0,\"severity\":\"S2\",\"z\":0.5,\"z_t\":0.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true}],\"stdout\":\"V18.9 Sigma Dynamic Stability - PASS\\nSteps evaluated : 1\\nUnstable steps  : 0\\nTotal violations: 0\\nConfig source   : C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-x108-proofs_REMOTE_A5F21C6B\\\\sigma\\\\sigma_config.json\\ntau_max         : 5.0\\naccel_limit     : 0.6\\nNo violations detected.\\n\"}}",
+    "raw_response_sha256": "188933c80e307f6a63cea7a7e48f601b262d7a9bcae03295e36e1b1fda309216",
+    "status_http": 200,
+    "timestamp_ms": 1785705769730
+  },
+  "mode": "GNSS_SDR_RECORDED_REAL_RF",
+  "observation_envelope": {
+    "capture_timestamp": "2032-Nov-18 06:23:30.120000",
+    "constellation": [
+      "G"
+    ],
+    "dataset_name": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+    "dataset_version": "2013-04-04",
+    "domain_state_hash": "UNKNOWN",
+    "eligible_for_physical_claim": true,
+    "input_hash": "6489a6630784478f144f20bf872848410dee3b54a20fd8d1bdd9258afccf2976",
+    "license": "GNSS-SDR public sample from SourceForge; SPDX config GPL-3.0-or-later; dataset for public experimentation per GNSS-SDR docs",
+    "limitations": [
+      "RECORDED_PUBLIC_IQ",
+      "GNSS_SDR_CONTAINER_RUNTIME",
+      "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+      "NO_INERTIAL_CORROBORATION"
+    ],
+    "observables": {
+      "brownout_score": 0.0,
+      "cn0_by_prn_dbhz": {
+        "G01": [
+          48.0,
+          49.0,
+          48.0,
+          48.38,
+          48.34,
+          48.07,
+          48.66,
+          48.26,
+          48.03,
+          48.28,
+          48.26,
+          48.26,
+          48.14,
+          47.77,
+          47.92
+        ],
+        "G11": [
+          46.0,
+          46.0,
+          45.4,
+          45.55,
+          45.43,
+          45.99,
+          45.72,
+          45.49,
+          45.53,
+          45.98,
+          46.09,
+          45.59,
+          45.85,
+          45.95
+        ],
+        "G17": [
+          45.0,
+          46.0,
+          45.26,
+          46.11,
+          45.34,
+          45.79,
+          45.11,
+          45.4,
+          46.14,
+          45.03,
+          44.75,
+          44.42,
+          45.03
+        ],
+        "G20": [
+          44.0,
+          45.0,
+          44.0,
+          44.05,
+          44.59,
+          43.97,
+          44.48,
+          44.05,
+          43.91,
+          44.38,
+          44.55,
+          44.5,
+          44.05,
+          44.19,
+          44.25
+        ],
+        "G32": [
+          47.0,
+          48.0,
+          47.0,
+          47.0,
+          47.62,
+          47.05,
+          46.67,
+          47.12,
+          46.43,
+          46.36,
+          46.16,
+          45.89,
+          46.05,
+          46.36,
+          45.57,
+          44.98
+        ]
+      },
+      "cn0_dbhz": 46.06232876712329,
+      "first_fix": {
+        "altitude_m": 77.768,
+        "gdop": 5.94463,
+        "lat_deg": 41.2748,
+        "lon_deg": 1.98766,
+        "time_utc": "2032-Nov-18 06:23:30.120000"
+      },
+      "freshness_ms": 0,
+      "g_load": 1.0,
+      "inertial_available": false,
+      "last_velocity_mps": {
+        "east_mps": -0.22,
+        "north_mps": -0.37,
+        "up_mps": -0.72
+      },
+      "loss_of_lock_count": 24,
+      "max_cn0_dbhz": 49.0,
+      "nav_message_satellites": [
+        "G01",
+        "G11",
+        "G17",
+        "G20",
+        "G32"
+      ],
+      "position_count": 149,
+      "pvt": {
+        "altitude_m": 74.65,
+        "fix_time_utc": "2032-Nov-18 06:24:44.500000",
+        "lat_deg": 41.274831,
+        "lon_deg": 1.98769,
+        "observations": 5,
+        "speed_kt": 0.8367565450422606
+      },
+      "radio_available": true,
+      "replay_window_detected": false,
+      "run_time_seconds": 102.147686,
+      "source_conflict_score": 0.0,
+      "spoof_score": 0.0,
+      "time_skew_score": 0.0,
+      "tracked_satellites": [
+        "G01",
+        "G02",
+        "G03",
+        "G05",
+        "G06",
+        "G08",
+        "G10",
+        "G11",
+        "G12",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "G20",
+        "G21",
+        "G25",
+        "G26",
+        "G27",
+        "G30",
+        "G31",
+        "G32"
+      ],
+      "tracking_channels": {
+        "G01": [
+          4
+        ],
+        "G02": [
+          1
+        ],
+        "G03": [
+          5
+        ],
+        "G05": [
+          5
+        ],
+        "G06": [
+          7
+        ],
+        "G08": [
+          5,
+          7
+        ],
+        "G10": [
+          7
+        ],
+        "G11": [
+          6
+        ],
+        "G12": [
+          7
+        ],
+        "G14": [
+          5
+        ],
+        "G15": [
+          7
+        ],
+        "G16": [
+          1,
+          5,
+          7
+        ],
+        "G17": [
+          0
+        ],
+        "G18": [
+          7
+        ],
+        "G20": [
+          3
+        ],
+        "G21": [
+          1
+        ],
+        "G25": [
+          1
+        ],
+        "G26": [
+          1
+        ],
+        "G27": [
+          1
+        ],
+        "G30": [
+          1
+        ],
+        "G31": [
+          5
+        ],
+        "G32": [
+          2
+        ]
+      },
+      "trajectory_drift_score": 0.0
+    },
+    "observables_hash": "d4261305008f9fa87e4bf7346d9134e4b42813ff9e1430ba7d71c155726ff085",
+    "observation_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+    "official_url": "https://sourceforge.net/projects/gnss-sdr/files/data/2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN.tar.gz/download",
+    "parent_receipt_id": "UNKNOWN",
+    "processing_timestamp": "1785705758050",
+    "processor_config_hash": "62557c92444c5da035cffdd650b5f4d8f4c7053cc21d3804b1dbb2c348dff650",
+    "processor_name": "obsidia-gnss-sdr-stdout-normalizer",
+    "processor_version": "v0",
+    "proof_level": "RECORDED_REAL_RF",
+    "provenance": {
+      "archive_file": "hackathons\\nativebuilder-gps-defense\\data\\iq\\gnss_sdr_cttc_2013_04_04\\2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN.tar.gz",
+      "archive_sha256": "d5b926aefe7462ca4211bcae2129591a810fa4960a214f35d056a883aa2af3ff",
+      "config_file": "hackathons\\nativebuilder-gps-defense\\gnss_sdr_cttc_2013_04_04_modern_runtime.conf",
+      "config_sha256": "62557c92444c5da035cffdd650b5f4d8f4c7053cc21d3804b1dbb2c348dff650",
+      "iq_file": "hackathons\\nativebuilder-gps-defense\\data\\iq\\gnss_sdr_cttc_2013_04_04\\2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN\\2013_04_04_GNSS_SIGNAL_at_CTTC_SPAIN.dat",
+      "iq_sha256": "6489a6630784478f144f20bf872848410dee3b54a20fd8d1bdd9258afccf2976",
+      "output_hashes": {
+        "geojson": "558186accb34c0fae8d5c269e1063255d7a1c60bd7ee0adfde081eee2cb82616",
+        "gnss_sdr_log": "d90f224962a7064bac3ffce4ee10cdc74246f3ed083b84c7e1656770a2199185",
+        "gpx": "c0ea731af8f6215adc8c030808178127a8e83d644c40d1bdd3072a62b35806af",
+        "kml": "41c159139bf7aebcc68b9cbd2d11b834c0c5b46f4ebfeb8a94d90fa6826f77fc",
+        "observables_dat": "757850edc61390f183a591935ce4a5e4bfc1da6b8560c4e9e93ebdab88883cbf",
+        "pvt_dat": "6dcc4fc15620943c76a96ef7012388f30fd438b7e1c68a7c738fd6c8405cd0d2",
+        "rinex_nav": "4c9f0533c4f8a974542660749d1630331535c755f30198ec9ce15bd1b3221ec6",
+        "rinex_obs": "c10517cf34461c594d2994409ed0d401f9f6f0ed1b6bdea99059d5f2ef5105f8",
+        "stdout_log": "3291e8d2cffebeeee0411ab467ca4de85b5cdb9253b64df6f4bad13108710ac2"
+      },
+      "parsed_stdout": {
+        "avg_cn0_dbhz": 46.06232876712329,
+        "cn0_by_prn_dbhz": {
+          "G01": [
+            48.0,
+            49.0,
+            48.0,
+            48.38,
+            48.34,
+            48.07,
+            48.66,
+            48.26,
+            48.03,
+            48.28,
+            48.26,
+            48.26,
+            48.14,
+            47.77,
+            47.92
+          ],
+          "G11": [
+            46.0,
+            46.0,
+            45.4,
+            45.55,
+            45.43,
+            45.99,
+            45.72,
+            45.49,
+            45.53,
+            45.98,
+            46.09,
+            45.59,
+            45.85,
+            45.95
+          ],
+          "G17": [
+            45.0,
+            46.0,
+            45.26,
+            46.11,
+            45.34,
+            45.79,
+            45.11,
+            45.4,
+            46.14,
+            45.03,
+            44.75,
+            44.42,
+            45.03
+          ],
+          "G20": [
+            44.0,
+            45.0,
+            44.0,
+            44.05,
+            44.59,
+            43.97,
+            44.48,
+            44.05,
+            43.91,
+            44.38,
+            44.55,
+            44.5,
+            44.05,
+            44.19,
+            44.25
+          ],
+          "G32": [
+            47.0,
+            48.0,
+            47.0,
+            47.0,
+            47.62,
+            47.05,
+            46.67,
+            47.12,
+            46.43,
+            46.36,
+            46.16,
+            45.89,
+            46.05,
+            46.36,
+            45.57,
+            44.98
+          ]
+        },
+        "first_fix": {
+          "altitude_m": 77.768,
+          "gdop": 5.94463,
+          "lat_deg": 41.2748,
+          "lon_deg": 1.98766,
+          "time_utc": "2032-Nov-18 06:23:30.120000"
+        },
+        "ground_speed_kt": 0.8367565450422606,
+        "ground_speed_mps": 0.43046486500061765,
+        "last_position": {
+          "altitude_m": 74.65,
+          "lat_deg": 41.274831,
+          "lon_deg": 1.98769,
+          "observations": 5,
+          "time_utc": "2032-Nov-18 06:24:44.500000"
+        },
+        "last_velocity_mps": {
+          "east_mps": -0.22,
+          "north_mps": -0.37,
+          "up_mps": -0.72
+        },
+        "loss_of_lock_count": 24,
+        "max_cn0_dbhz": 49.0,
+        "nav_message_satellites": [
+          "G01",
+          "G11",
+          "G17",
+          "G20",
+          "G32"
+        ],
+        "position_count": 149,
+        "run_time_seconds": 102.147686,
+        "stdout_file": "hackathons\\nativebuilder-gps-defense\\runs\\iq_cttc_2013_04_04\\gnss_sdr_run_stdout_modern.log",
+        "stdout_sha256": "3291e8d2cffebeeee0411ab467ca4de85b5cdb9253b64df6f4bad13108710ac2",
+        "tracked_satellites": [
+          "G01",
+          "G02",
+          "G03",
+          "G05",
+          "G06",
+          "G08",
+          "G10",
+          "G11",
+          "G12",
+          "G14",
+          "G15",
+          "G16",
+          "G17",
+          "G18",
+          "G20",
+          "G21",
+          "G25",
+          "G26",
+          "G27",
+          "G30",
+          "G31",
+          "G32"
+        ],
+        "tracking_channels": {
+          "G01": [
+            4
+          ],
+          "G02": [
+            1
+          ],
+          "G03": [
+            5
+          ],
+          "G05": [
+            5
+          ],
+          "G06": [
+            7
+          ],
+          "G08": [
+            5,
+            7
+          ],
+          "G10": [
+            7
+          ],
+          "G11": [
+            6
+          ],
+          "G12": [
+            7
+          ],
+          "G14": [
+            5
+          ],
+          "G15": [
+            7
+          ],
+          "G16": [
+            1,
+            5,
+            7
+          ],
+          "G17": [
+            0
+          ],
+          "G18": [
+            7
+          ],
+          "G20": [
+            3
+          ],
+          "G21": [
+            1
+          ],
+          "G25": [
+            1
+          ],
+          "G26": [
+            1
+          ],
+          "G27": [
+            1
+          ],
+          "G30": [
+            1
+          ],
+          "G31": [
+            5
+          ],
+          "G32": [
+            2
+          ]
+        }
+      },
+      "run_dir": "hackathons\\nativebuilder-gps-defense\\runs\\iq_cttc_2013_04_04"
+    },
+    "receiver": {
+      "front_end_center_frequency_hz": 1575420000,
+      "item_type": "ishort",
+      "processor": "gnss-sdr",
+      "processor_version": "0.0.21.git-next-2a7214a4f",
+      "sampling_frequency_sps": 4000000
+    },
+    "satellites": [
+      "G01",
+      "G02",
+      "G03",
+      "G05",
+      "G06",
+      "G08",
+      "G10",
+      "G11",
+      "G12",
+      "G14",
+      "G15",
+      "G16",
+      "G17",
+      "G18",
+      "G20",
+      "G21",
+      "G25",
+      "G26",
+      "G27",
+      "G30",
+      "G31",
+      "G32"
+    ],
+    "source_type": "GNSS_SDR_IQ_PROCESSING_RUN",
+    "synthetic": false,
+    "truth_reference": {
+      "labels_used_by_pipeline": false,
+      "route_hash": "6489a6630784478f144f20bf872848410dee3b54a20fd8d1bdd9258afccf2976"
+    }
+  },
+  "p4_20_evidence": {
+    "authorized_route_ok": true,
+    "coherence_ok": false,
+    "decision_authority": "KX108_ONLY",
+    "drift_bound_ok": true,
+    "emits_verdict": false,
+    "evidence_hash": "f306e5941b86d6ed7ac2e4c32abb803b398ed362653adbeedf5ea4d1cc4b2c9a",
+    "evidence_refs": [
+      "obsidia_core/guardians/path_fidelity_guard.py",
+      "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_PathFidelity_RequiresCoherence.lean"
+    ],
+    "path_fidelity_ok": false,
+    "physical_envelope_ok": true,
+    "reason_codes": [
+      "P4_20_SOURCE_COHERENCE_FAILED"
+    ],
+    "replay_consistent": true
+  },
+  "physical_gate": {
+    "decision_authority": "KX108_ONLY",
+    "eligible_for_p3_05": true,
+    "emits_verdict": false,
+    "reason_codes": [],
+    "status": "AUTHENTICATED"
+  },
+  "proof_level": "RECORDED_REAL_RF",
+  "synthetic": false,
+  "x108_result": {
+    "domain": "gps_defense_aviation",
+    "gate_version": "v2-reality-authenticity",
+    "ir_payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.9212465753424658,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 74.65,
+        "attestation_ready": true,
+        "brownout_score": 0.0,
+        "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+        "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.8367565450422606,
+        "inertial_available": false,
+        "mission_id": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+        "nuisances": [],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 22,
+        "signal_noise_ratio": 0.9212465753424658,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.9212465753424658,
+          "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+          "fail_closed": true,
+          "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [],
+          "nuisances": [],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "reason": "INPUT_NOT_CANONIZED_FOR_KERNEL_EXECUTION",
+    "receipt": {
+      "connector_decides": false,
+      "contract": "DOMAIN_BRIDGE_ONLY",
+      "created_at_ms": 1785705769728,
+      "decision_authority": "KX108_ONLY",
+      "domain": "gps_defense_aviation",
+      "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+      "gate": "P3-05",
+      "gate_file": "domains/gps/gps_x108_gate.py",
+      "ir_payload": {
+        "data": {
+          "A_score": 1.0,
+          "H_score": 0.9212465753424658,
+          "S": 0.7,
+          "T_mean": 0.5,
+          "altitude": 74.65,
+          "attestation_ready": true,
+          "brownout_score": 0.0,
+          "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+          "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+          "gps_available": true,
+          "gps_status": "ONLINE",
+          "ground_speed": 0.8367565450422606,
+          "inertial_available": false,
+          "mission_id": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+          "nuisances": [],
+          "radio_available": true,
+          "reality_authenticity_reasons": [
+            "MULTI_SOURCE_COHERENCE_FAILED"
+          ],
+          "rollback_possible": true,
+          "satellites_count": 22,
+          "signal_noise_ratio": 0.9212465753424658,
+          "source_conflict_score": 0.0,
+          "time_skew_score": 0.0,
+          "trajectory_drift_score": 0.0
+        },
+        "domain": "gps_defense_aviation",
+        "meta": {
+          "contract": "DOMAIN_BRIDGE_ONLY",
+          "decides_alone": false,
+          "decision_authority": "KX108_ONLY",
+          "domain_state": {
+            "audit_score": 1.0,
+            "confidence_index": 0.9212465753424658,
+            "domain_state_hash": "37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f",
+            "fail_closed": true,
+            "flight_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+            "flow_type": "TRAJECTORY_DECISION",
+            "nuisance_risk_classes": [],
+            "nuisances": [],
+            "reality_authenticity": {
+              "anti_replay_ok": true,
+              "freshness_ms": 0.0,
+              "is_fresh": true,
+              "multisource_coherent": false,
+              "physical_envelope_ok": true,
+              "reasons": [
+                "MULTI_SOURCE_COHERENCE_FAILED"
+              ],
+              "sensor_attested": true
+            },
+            "risk_score": 0.5,
+            "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+            "threshold_s": 0.7
+          },
+          "flow_type": "TRAJECTORY_DECISION",
+          "gate_version": "v2-reality-authenticity",
+          "ir_intent": "AUDIT_ONLY",
+          "risk_class": "",
+          "zone": ""
+        }
+      },
+      "kernel_decision": {},
+      "os3_ticket": {
+        "action_id": "gps-iq-cttc-2013-04-04-gnss-sdr-real-rf-37104d846b5f",
+        "contradictions": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "domain": "gps_defense_aviation",
+        "evidence_refs": [
+          "domains/gps/gps_x108_gate.py",
+          "periphery/os3_ticket.py",
+          "domain_state_hash:37104d846b5f41ecfe124cec79075685662330df36fcda95d4366257088e857f"
+        ],
+        "input_hash": "63f2d76660006af2b9dc235c94852b269bde053114c93651bf09232881534f34",
+        "merkle_root": "8128e8eb2d8367670603fa4e885c01cb734b2e2bba449a0d2285f7e9a3c22aea",
+        "output_hash": "64a4ffc373b1ffd67e45f5ec8790589c5d7fcb6799306eed2ee434de4d99f59d",
+        "reason_code": "P3_05_FAIL_CLOSED",
+        "replay_status": "NOT_RUN",
+        "risk_flags": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "scores": {
+          "audit_score": 1.0,
+          "confidence_index": 0.9212465753424658,
+          "freshness_ms": 0.0,
+          "risk_score": 0.5
+        },
+        "severity": "S4",
+        "ticket_id": "251b0dc2838e447ebd3e732591c23fa6",
+        "trace_hash": "c7ae8861590b6be124d2e0b7e6e458b454d3c0aecf15f9fcc2a42d52089a7fb3",
+        "unknowns": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "x108_gate": "HOLD"
+      },
+      "os3_ticket_valid": true,
+      "signature_kind": "LOCAL_SHA256_DEMO_NOT_PRODUCTION_SIGNING",
+      "signed_decision_receipt_sha256": "4258e5b02899b924acdc5066dc90dd1956b3bfa51ea64373bad130e9b4d97958",
+      "source": "P3_05_FAIL_CLOSED",
+      "verdict": "HOLD"
+    },
+    "source": "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED",
+    "verdict": "HOLD"
+  }
+}

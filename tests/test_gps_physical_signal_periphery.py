@@ -9,6 +9,7 @@ SAMPLE = ROOT / "hackathons" / "nativebuilder-gps-defense" / "samples" / "synthe
 BENCH = ROOT / "hackathons" / "nativebuilder-gps-defense" / "samples" / "blind_manifest.json"
 REAL_RINEX = ROOT / "hackathons" / "nativebuilder-gps-defense" / "data" / "rinex" / "noaa_ab02_2026_210" / "ab022100.26o.gz"
 REAL_STATION_LOG = ROOT / "hackathons" / "nativebuilder-gps-defense" / "data" / "rinex" / "noaa_ab02_2026_210" / "ab02.log.txt"
+REAL_RF_RUN = ROOT / "hackathons" / "nativebuilder-gps-defense" / "runs" / "iq_cttc_2013_04_04"
 
 
 def load_module():
@@ -71,3 +72,16 @@ def test_real_rinex_parser_extracts_noaa_ab02_observations_when_present():
     assert parsed["epoch_count"] > 0
     assert "G" in parsed["observed_constellations"]
     assert len(parsed["unique_satellites"]) > 0
+
+
+def test_real_gnss_sdr_stdout_parser_extracts_rf_observables_when_present():
+    stdout = REAL_RF_RUN / "gnss_sdr_run_stdout_modern.log"
+    if not stdout.exists():
+        return
+    mod = load_module()
+    parsed = mod.parse_gnss_sdr_stdout(stdout)
+
+    assert parsed["run_time_seconds"] > 0
+    assert parsed["position_count"] > 0
+    assert len(parsed["tracked_satellites"]) >= 5
+    assert parsed["avg_cn0_dbhz"] > 0
