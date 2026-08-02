@@ -57,6 +57,25 @@ _BATCH002_ROW_MAP: dict[str, str] = {
 }
 _BATCH002_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH002_ROW_MAP.items()}
 
+# Batch 003 — explicit mapping from ART181 (campaign selection).
+# Source: 181_AGENTS52_BATCH003_SELECTION_REV2D.json
+# Family: Atlas Obsidia
+# Note: row 1829 (CARTOGRAPHE_LOIS_PROTOCOLES) carries BRODY provenance — included per Batch 002 precedent.
+_BATCH003_TAG = "AGENTS52_BATCH003"
+_BATCH003_STATUS = "DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY"
+
+_BATCH003_ROW_MAP: dict[str, str] = {
+    "1826": "GRAND_CARTOGRAPHE_OBSIDIA",
+    "1827": "ONTOLOGUE_OBSIDIA",
+    "1828": "CARTOGRAPHE_COUCHES",
+    "1829": "CARTOGRAPHE_LOIS_PROTOCOLES",
+    "1830": "CARTOGRAPHE_FORMULES",
+    "1831": "CARTOGRAPHE_DOMAINES_TERRAIN",
+    "1832": "CARTOGRAPHE_AGI_VISION_HAUTE",
+    "1833": "COLLISION_DETECTOR",
+}
+_BATCH003_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH003_ROW_MAP.items()}
+
 
 @dataclass(frozen=True)
 class AgentConfigEntry:
@@ -143,6 +162,10 @@ def _build_entry(raw: dict, sha256: str) -> AgentConfigEntry:
         row_id = _BATCH002_AGENT_TO_ROW[name]
         c_batch = _BATCH002_TAG
         c_status = _BATCH002_STATUS
+    elif name in _BATCH003_AGENT_TO_ROW:
+        row_id = _BATCH003_AGENT_TO_ROW[name]
+        c_batch = _BATCH003_TAG
+        c_status = _BATCH003_STATUS
     else:
         row_id = None
         c_batch = None
@@ -196,7 +219,8 @@ def validate_registry() -> dict:
     entries = load_registry()
     batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
     batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
-    technically_compiled = batch1 + batch2
+    batch3 = [e for e in entries if e.compilation_batch == _BATCH003_TAG]
+    technically_compiled = batch1 + batch2 + batch3
     return {
         "entry_count": len(entries),
         "unique_ids": len({e.agent_id for e in entries}),
@@ -210,6 +234,7 @@ def validate_registry() -> dict:
         "all_no_neo4j_write": all(not e.neo4j_write for e in entries),
         "batch001_count": len(batch1),
         "batch002_count": len(batch2),
+        "batch003_count": len(batch3),
         "technically_compiled_readonly_count": len(technically_compiled),
         "documented_source_only_count": len(entries) - len(technically_compiled),
         "other_count": len(entries) - len(batch1),
@@ -248,6 +273,7 @@ def get_registry_provenance() -> dict:
     entries = _CACHE or ()
     batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
     batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
+    batch3 = [e for e in entries if e.compilation_batch == _BATCH003_TAG]
     return {
         "source_path": _rel_path(),
         "source_sha256": _CACHE_SHA,
@@ -264,5 +290,8 @@ def get_registry_provenance() -> dict:
         "batch002_compiled": _BATCH002_TAG,
         "batch002_compiled_count": len(batch2),
         "batch002_compiled_agent_ids": sorted(e.agent_id for e in batch2),
-        "technically_compiled_readonly_count": len(batch1) + len(batch2),
+        "batch003_compiled": _BATCH003_TAG,
+        "batch003_compiled_count": len(batch3),
+        "batch003_compiled_agent_ids": sorted(e.agent_id for e in batch3),
+        "technically_compiled_readonly_count": len(batch1) + len(batch2) + len(batch3),
     }

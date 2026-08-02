@@ -1,7 +1,7 @@
 """
-Tests for periphery.agents_obsidia_config_registry — Batch 001 + Batch 002.
+Tests for periphery.agents_obsidia_config_registry — Batch 001 + Batch 002 + Batch 003.
 
-PHASE: AGENTS52_READONLY_REGISTRY_BATCH002_001
+PHASE: AGENTS52_READONLY_REGISTRY_BATCH003_001
 AUTHORITY: NON_SOVEREIGN — no agent invoked, no model called, no memory written.
 """
 from __future__ import annotations
@@ -21,6 +21,9 @@ from periphery.agents_obsidia_config_registry import (
     _BATCH002_AGENT_TO_ROW,
     _BATCH002_ROW_MAP,
     _BATCH002_TAG,
+    _BATCH003_AGENT_TO_ROW,
+    _BATCH003_ROW_MAP,
+    _BATCH003_TAG,
     _registry_path,
     get_agent_config,
     get_registry_provenance,
@@ -51,6 +54,20 @@ _ART150_ROW_MAP = {
 }
 _ART150_NAMES = set(_ART150_ROW_MAP.values())
 _FRISE_FAMILY = "Frise / Arbres / Monde humain"
+
+# ART181 reference data — single source of truth for batch003 mapping verification
+_ART181_ROW_MAP = {
+    "1826": "GRAND_CARTOGRAPHE_OBSIDIA",
+    "1827": "ONTOLOGUE_OBSIDIA",
+    "1828": "CARTOGRAPHE_COUCHES",
+    "1829": "CARTOGRAPHE_LOIS_PROTOCOLES",
+    "1830": "CARTOGRAPHE_FORMULES",
+    "1831": "CARTOGRAPHE_DOMAINES_TERRAIN",
+    "1832": "CARTOGRAPHE_AGI_VISION_HAUTE",
+    "1833": "COLLISION_DETECTOR",
+}
+_ART181_NAMES = set(_ART181_ROW_MAP.values())
+_ATLAS_FAMILY = "Atlas Obsidia"
 
 
 # ── Registry source and load ──────────────────────────────────────────────────
@@ -132,10 +149,10 @@ def test_009_batch001_row_ids_match_art118():
         )
 
 
-def test_010_other_42_documented_source_only():
-    """42 non-batch entries have compilation_batch=None and DOCUMENTED_SOURCE_ONLY."""
+def test_010_other_34_documented_source_only():
+    """34 non-batch entries have compilation_batch=None and DOCUMENTED_SOURCE_ONLY."""
     others = [e for e in load_registry() if e.compilation_batch is None]
-    assert len(others) == 42, f"Expected 42 (47 minus 5 batch002), got {len(others)}"
+    assert len(others) == 34, f"Expected 34 (52 minus 5+5+8 batches), got {len(others)}"
     for e in others:
         assert e.compilation_status == "DOCUMENTED_SOURCE_ONLY", (
             f"{e.agent_id}: status should be DOCUMENTED_SOURCE_ONLY"
@@ -624,19 +641,19 @@ def test_052_no_overlap_batch001_batch002():
     assert not overlap, f"Batch001/002 overlap detected: {overlap}"
 
 
-def test_053_ten_technically_compiled_readonly():
-    """Exactly 10 entries are technically compiled readonly (batch001 + batch002)."""
+def test_053_eighteen_technically_compiled_readonly():
+    """Exactly 18 entries are technically compiled readonly (batch001 + batch002 + batch003)."""
     compiled = [
         e for e in load_registry()
-        if e.compilation_batch in (_BATCH001_TAG, _BATCH002_TAG)
+        if e.compilation_batch in (_BATCH001_TAG, _BATCH002_TAG, _BATCH003_TAG)
     ]
-    assert len(compiled) == 10, f"Expected 10 compiled, got {len(compiled)}"
+    assert len(compiled) == 18, f"Expected 18 compiled, got {len(compiled)}"
 
 
-def test_054_42_documented_source_only():
-    """Exactly 42 entries remain DOCUMENTED_SOURCE_ONLY (compilation_batch=None)."""
+def test_054_34_documented_source_only():
+    """Exactly 34 entries remain DOCUMENTED_SOURCE_ONLY (compilation_batch=None)."""
     others = [e for e in load_registry() if e.compilation_batch is None]
-    assert len(others) == 42, f"Expected 42, got {len(others)}"
+    assert len(others) == 34, f"Expected 34, got {len(others)}"
     for e in others:
         assert e.compilation_status == "DOCUMENTED_SOURCE_ONLY", (
             f"{e.agent_id}: compilation_status must be DOCUMENTED_SOURCE_ONLY"
@@ -868,3 +885,260 @@ def test_075_no_decision_or_act_emission():
         assert e.can_decide is False, f"{e.agent_id}: can_decide must be False"
         assert e.can_act is False, f"{e.agent_id}: can_act must be False"
         assert e.memory_write is False, f"{e.agent_id}: memory_write must be False"
+
+
+# ── Batch 003 — Atlas Obsidia (ART181) ───────────────────────────────────────
+
+def test_076_batch003_eight_mappings():
+    """Exactly 8 entries carry the AGENTS52_BATCH003 tag."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    assert len(batch3) == 8, f"Expected 8 batch003 entries, got {len(batch3)}"
+
+
+def test_077_batch003_row_map_count():
+    """_BATCH003_ROW_MAP has exactly 8 entries."""
+    assert len(_BATCH003_ROW_MAP) == 8, f"Expected 8, got {len(_BATCH003_ROW_MAP)}"
+
+
+def test_078_batch003_row_ids_exact():
+    """_BATCH003_ROW_MAP keys are exactly the 8 expected row IDs."""
+    expected = {"1826", "1827", "1828", "1829", "1830", "1831", "1832", "1833"}
+    assert set(_BATCH003_ROW_MAP.keys()) == expected, (
+        f"Row IDs mismatch: {set(_BATCH003_ROW_MAP.keys())} != {expected}"
+    )
+
+
+def test_079_batch003_agent_ids_exact():
+    """_BATCH003_ROW_MAP values are exactly the 8 expected Atlas Obsidia agent IDs."""
+    assert set(_BATCH003_ROW_MAP.values()) == _ART181_NAMES, (
+        f"Agent IDs mismatch: {set(_BATCH003_ROW_MAP.values())} != {_ART181_NAMES}"
+    )
+
+
+def test_080_batch003_inverse_map_consistent():
+    """_BATCH003_AGENT_TO_ROW is the exact inverse of _BATCH003_ROW_MAP."""
+    for row_id, agent_name in _BATCH003_ROW_MAP.items():
+        assert _BATCH003_AGENT_TO_ROW[agent_name] == row_id, (
+            f"Inverse map inconsistency: {agent_name} -> {_BATCH003_AGENT_TO_ROW.get(agent_name)!r} != {row_id!r}"
+        )
+    assert len(_BATCH003_AGENT_TO_ROW) == len(_BATCH003_ROW_MAP)
+
+
+def test_081_batch003_no_overlap_batch001():
+    """No agent_id appears in both batch003 and batch001."""
+    batch1_ids = {e.agent_id for e in load_registry() if e.compilation_batch == _BATCH001_TAG}
+    batch3_ids = {e.agent_id for e in load_registry() if e.compilation_batch == _BATCH003_TAG}
+    overlap = batch1_ids & batch3_ids
+    assert not overlap, f"Batch001/003 overlap: {overlap}"
+
+
+def test_082_batch003_no_overlap_batch002():
+    """No agent_id appears in both batch003 and batch002."""
+    batch2_ids = {e.agent_id for e in load_registry() if e.compilation_batch == _BATCH002_TAG}
+    batch3_ids = {e.agent_id for e in load_registry() if e.compilation_batch == _BATCH003_TAG}
+    overlap = batch2_ids & batch3_ids
+    assert not overlap, f"Batch002/003 overlap: {overlap}"
+
+
+def test_083_batch003_row_ids_match_ledger():
+    """Each batch003 entry has source_row_id matching ART181 reference."""
+    batch_map = {
+        e.agent_id: e.source_row_id
+        for e in load_registry()
+        if e.compilation_batch == _BATCH003_TAG
+    }
+    for row_id, agent_name in _ART181_ROW_MAP.items():
+        got = batch_map.get(agent_name)
+        assert got == row_id, (
+            f"Row ID mismatch: {agent_name} expected {row_id!r}, got {got!r}"
+        )
+
+
+def test_084_batch003_family_atlas_obsidia():
+    """All 8 batch003 entries belong to the 'Atlas Obsidia' internal family."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.family == _ATLAS_FAMILY, (
+            f"{e.agent_id}: family expected {_ATLAS_FAMILY!r}, got {e.family!r}"
+        )
+
+
+def test_085_batch003_compilation_status():
+    """All 8 batch003 entries have DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY status."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.compilation_status == "DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY", (
+            f"{e.agent_id}: compilation_status wrong: {e.compilation_status!r}"
+        )
+
+
+def test_086_batch003_readonly():
+    """All 8 batch003 entries have readonly=True."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.readonly is True, f"{e.agent_id}: readonly must be True"
+
+
+def test_087_batch003_non_sovereign():
+    """All 8 batch003 entries have authority=NON_SOVEREIGN."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.authority == "NON_SOVEREIGN", (
+            f"{e.agent_id}: authority must be NON_SOVEREIGN, got {e.authority!r}"
+        )
+
+
+def test_088_batch003_can_decide_false():
+    """can_decide is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.can_decide is False, f"{e.agent_id}: can_decide must be False"
+
+
+def test_089_batch003_can_act_false():
+    """can_act is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.can_act is False, f"{e.agent_id}: can_act must be False"
+
+
+def test_090_batch003_emits_act_false():
+    """emits_act is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.emits_act is False, f"{e.agent_id}: emits_act must be False"
+
+
+def test_091_batch003_memory_write_false():
+    """memory_write is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.memory_write is False, f"{e.agent_id}: memory_write must be False"
+
+
+def test_092_batch003_graphiti_write_false():
+    """graphiti_write is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.graphiti_write is False, f"{e.agent_id}: graphiti_write must be False"
+
+
+def test_093_batch003_neo4j_write_false():
+    """neo4j_write is False for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.neo4j_write is False, f"{e.agent_id}: neo4j_write must be False"
+
+
+def test_094_batch003_needs_human_validation():
+    """All 8 batch003 entries retain NEEDS_HUMAN_VALIDATION — semantic validation not granted."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.validation_status == "NEEDS_HUMAN_VALIDATION", (
+            f"{e.agent_id}: validation_status must be NEEDS_HUMAN_VALIDATION"
+        )
+
+
+def test_095_batch003_non_decision():
+    """non_decision is True for all 8 batch003 entries."""
+    batch3 = [e for e in load_registry() if e.compilation_batch == _BATCH003_TAG]
+    for e in batch3:
+        assert e.non_decision is True, f"{e.agent_id}: non_decision must be True"
+
+
+def test_096_batch003_get_agent_config():
+    """get_agent_config returns correct entry for each batch003 agent."""
+    for name in _ART181_NAMES:
+        e = get_agent_config(name)
+        assert e.compilation_batch == _BATCH003_TAG, (
+            f"{name}: compilation_batch must be {_BATCH003_TAG!r}, got {e.compilation_batch!r}"
+        )
+        assert e.agent_id == name
+
+
+def test_097_batch003_api_list_count():
+    """GET /agents-52 still returns count=52 after batch003 addition."""
+    client = _agent_run_client()
+    r = client.get("/api/periphery/governance/agents-52")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["count"] == 52, f"Expected count=52, got {body['count']}"
+
+
+def test_098_batch003_api_detail_grand_cartographe():
+    """GET /agent-config/GRAND_CARTOGRAPHE_OBSIDIA returns compilation_batch=AGENTS52_BATCH003."""
+    client = _agent_run_client()
+    r = client.get("/api/periphery/governance/agent-config/GRAND_CARTOGRAPHE_OBSIDIA")
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
+    body = r.json()
+    assert body.get("compilation_batch") == _BATCH003_TAG, (
+        f"compilation_batch mismatch: {body.get('compilation_batch')!r}"
+    )
+
+
+def test_099_batch003_agent_run_all_rejected_422():
+    """All 8 batch003 Atlas Obsidia agents return 422 on agent-run."""
+    client = _agent_run_client()
+    for agent_id in _ART181_NAMES:
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        assert r.status_code == 422, (
+            f"{agent_id}: expected 422, got {r.status_code}: {r.text}"
+        )
+        assert "AGENTS52_CONFIG_NOT_EXECUTABLE" in r.text, (
+            f"{agent_id}: rejection detail missing: {r.text}"
+        )
+
+
+def test_100_all_52_still_rejected_after_batch003():
+    """All 52 agents52 IDs still return 422 on agent-run after batch003 addition."""
+    client = _agent_run_client()
+    all_ids = list_agent_configs()
+    assert len(all_ids) == 52
+    failures = []
+    for agent_id in all_ids:
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        if r.status_code != 422:
+            failures.append(f"{agent_id}: got {r.status_code}")
+    assert not failures, f"Agents not returning 422 ({len(failures)}/52): {failures}"
+
+
+def test_101_batch001_and_batch002_regression_after_batch003():
+    """Batch001 and batch002 mappings remain unchanged after batch003 addition."""
+    for row_id, agent_name in {**_ART118_ROW_MAP, **_ART150_ROW_MAP}.items():
+        e = get_agent_config(agent_name)
+        assert e.source_row_id == row_id, (
+            f"Regression: {agent_name} row_id changed to {e.source_row_id!r}"
+        )
+
+
+def test_102_provenance_includes_batch003():
+    """get_registry_provenance reports batch003_compiled with count=8."""
+    prov = get_registry_provenance()
+    assert prov.get("batch003_compiled") == _BATCH003_TAG, (
+        f"batch003_compiled missing or wrong: {prov.get('batch003_compiled')!r}"
+    )
+    assert prov.get("batch003_compiled_count") == 8, (
+        f"batch003_compiled_count must be 8, got {prov.get('batch003_compiled_count')!r}"
+    )
+    expected_ids = sorted(_ART181_NAMES)
+    assert prov.get("batch003_compiled_agent_ids") == expected_ids, (
+        f"batch003_compiled_agent_ids mismatch"
+    )
+    assert prov.get("technically_compiled_readonly_count") == 18, (
+        f"technically_compiled_readonly_count must be 18, got {prov.get('technically_compiled_readonly_count')!r}"
+    )
+
+
+def test_103_list_agent_configs_includes_batch003():
+    """list_agent_configs includes all 8 batch003 agents and remains sorted with 52 total."""
+    configs = list_agent_configs()
+    assert len(configs) == 52
+    assert configs == sorted(configs), "list_agent_configs not sorted"
+    for name in _ART181_NAMES:
+        assert name in configs, f"Batch003 agent {name!r} missing from list_agent_configs"
