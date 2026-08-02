@@ -2478,3 +2478,115 @@ def test_t112_payload_never_in_first_failure(tmp_path):
     assert "payload" not in ff_out, f"payload exposé dans first_failure : {ff_out}"
     assert "secret" not in str(ff_out)
     assert "should_not" not in str(ff_out)
+
+
+# ===========================================================================
+# T113-T115 : encodage UTF-8 strict (REV01 UTF-8)
+# ===========================================================================
+
+def _run_bytes(args: list, *, timeout: int = 30):
+    """Comme _run mais retourne des bytes bruts sans décodage text."""
+    r = subprocess.run(
+        [_PYTHON, "-B", str(_CLI)] + list(args),
+        capture_output=True,
+        timeout=timeout,
+        cwd=str(_REPO_ROOT),
+    )
+    return r.stdout, r.stderr, r.returncode
+
+
+def test_t113_utf8_bytes_e_accent_python_direct(tmp_path):
+    """T113 : bytes c3 a9 présents dans stdout pour lock_path contenant é (Python direct, binaire)."""
+    udir = tmp_path / "répertoire-é"
+    try:
+        udir.mkdir()
+    except (OSError, UnicodeEncodeError):
+        pytest.skip("chemin Unicode non supporté dans cet environnement")
+    lock = udir / "sim.lock"
+    raw_stdout, raw_stderr, code = _run_bytes([
+        "--lock-path", str(lock),
+        "--session-id", "utf8-bytes-113",
+        "--heartbeat-interval-seconds", "0.01",
+        "--max-steps", "1",
+        "--control", "none",
+        "--ack-temp-lock-mutation",
+    ])
+    assert raw_stderr == b"", f"stderr non vide : {raw_stderr!r}"
+    assert code in (0, 3), f"exit inattendu : {code}"
+    assert b'\xc3\xa9' in raw_stdout, (
+        f"bytes UTF-8 c3 a9 absents pour é — stdout bytes : {raw_stdout!r}"
+    )
+    decoded = raw_stdout.decode("utf-8")
+    data = json.loads(decoded.strip())
+    assert "é" in data["lock_path"], f"é absent du lock_path JSON : {data['lock_path']!r}"
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows uniquement")
+def test_t114_utf8_bytes_e_accent_powershell(tmp_path):
+    """T114 : bytes c3 a9 présents dans stdout pour lock_path contenant é (via PowerShell, binaire)."""
+    udir = tmp_path / "répertoire-é"
+    try:
+        udir.mkdir()
+    except (OSError, UnicodeEncodeError):
+        pytest.skip("chemin Unicode non supporté dans cet environnement")
+    lock = udir / "sim.lock"
+    cli_path = str(_CLI).replace("'", "''")
+    lock_path = str(lock).replace("'", "''")
+    ps_command = (
+        "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; "
+        "$OutputEncoding = [System.Text.Encoding]::UTF8; "
+        f"& python -B '{cli_path}' "
+        f"--lock-path '{lock_path}' "
+        "--session-id utf8-ps-114 "
+        "--heartbeat-interval-seconds 0.01 "
+        "--max-steps 1 "
+        "--control none "
+        "--ack-temp-lock-mutation"
+    )
+    r = subprocess.run(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-Command", ps_command],
+        capture_output=True,
+        timeout=30,
+        cwd=str(_REPO_ROOT),
+    )
+    assert r.returncode in (0, 3), (
+        f"exit inattendu : {r.returncode}, stderr : {r.stderr!r}"
+    )
+    raw = r.stdout
+    assert b'\xc3\xa9' in raw, (
+        f"bytes UTF-8 c3 a9 absents pour é via PowerShell — stdout bytes : {raw!r}"
+    )
+
+
+def test_t115_reconfigure_failure_exit_1_empty_stdout(tmp_path):
+    """T115 : sys.stdout.reconfigure lève → exit 1, stdout vide, lock non créé."""
+    mod = _load_cli()
+    lock = tmp_path / "reconf_fail.lock"
+    written = []
+
+    class _BrokenReconfigure:
+        def write(self, s):
+            written.append(s)
+        def flush(self):
+            pass
+        def reconfigure(self, **kwargs):
+            raise OSError("reconfigure cassé")
+
+    original = sys.stdout
+    try:
+        sys.stdout = _BrokenReconfigure()
+        code = mod.main([
+            "--lock-path", str(lock),
+            "--session-id", "reconf-115",
+            "--heartbeat-interval-seconds", "0.01",
+            "--max-steps", "1",
+            "--control", "none",
+            "--ack-temp-lock-mutation",
+        ])
+    finally:
+        sys.stdout = original
+
+    assert code == 1
+    assert written == [], f"stdout non vide après reconfigure failure : {written}"
+    assert not lock.exists(), "lock créé malgré reconfigure failure"

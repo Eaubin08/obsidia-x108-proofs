@@ -360,6 +360,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="strict")
+        except Exception:
+            return 1
+
     # Phase 3 — Parser strict
     parsed, parse_err = _parse_argv(argv)
     if parsed is None:
