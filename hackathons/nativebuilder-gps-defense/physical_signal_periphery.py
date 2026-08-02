@@ -4,7 +4,9 @@ import argparse
 import gzip
 import hashlib
 import json
+import math
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -27,6 +29,7 @@ PROOF_LEVELS = {
     "SYNTHETIC_TEST_ONLY",
     "STRUCTURED_STATE",
     "RECORDED_REAL_GNSS",
+    "RECORDED_REAL_RF",
     "RECORDED_RF_ATTACK",
     "REAL_PASSIVE_GNSS",
     "HARDWARE_IN_THE_LOOP",
@@ -35,6 +38,7 @@ PROOF_LEVELS = {
 
 PHYSICAL_PROOF_LEVELS = {
     "RECORDED_REAL_GNSS",
+    "RECORDED_REAL_RF",
     "RECORDED_RF_ATTACK",
     "REAL_PASSIVE_GNSS",
     "HARDWARE_IN_THE_LOOP",
@@ -421,6 +425,236 @@ def run_rinex(
     }
 
 
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+TRACKING_RE = re.compile(r"Tracking of GPS L1 C/A signal started on channel (?P<channel>\d+) for satellite GPS PRN (?P<prn>\d+)")
+NAV_RE = re.compile(r"New GPS NAV message received.*GPS PRN (?P<prn>\d+).*CN0=(?P<cn0>[0-9.]+) dB-Hz")
+FIRST_FIX_RE = re.compile(
+    r"First position fix at (?P<time>.+?) UTC is Lat = (?P<lat>-?[0-9.]+) \[deg\], "
+    r"Long = (?P<lon>-?[0-9.]+) \[deg\], Height = (?P<height>-?[0-9.]+) \[m\], with GDOP = (?P<gdop>[0-9.]+)"
+)
+POSITION_RE = re.compile(
+    r"Position at (?P<time>.+?) UTC using (?P<observations>\d+) observations is Lat = (?P<lat>-?[0-9.]+) \[deg\], "
+    r"Long = (?P<lon>-?[0-9.]+) \[deg\], Height = (?P<height>-?[0-9.]+) \[m\]"
+)
+VELOCITY_RE = re.compile(r"Velocity: East: (?P<east>-?[0-9.]+) \[m/s\], North: (?P<north>-?[0-9.]+) \[m/s\], Up = (?P<up>-?[0-9.]+) \[m/s\]")
+RUN_TIME_RE = re.compile(r"Total GNSS-SDR run time: (?P<seconds>[0-9.]+) \[seconds\]")
+
+
+def parse_gnss_sdr_stdout(path: Path) -> dict[str, Any]:
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    clean = ANSI_RE.sub("", raw)
+    tracked: dict[str, set[int]] = {}
+    cn0_by_prn: dict[str, list[float]] = {}
+    positions: list[dict[str, Any]] = []
+    velocities: list[dict[str, float]] = []
+    first_fix: dict[str, Any] | None = None
+    loss_of_lock_count = 0
+    run_time_seconds = 0.0
+
+    for line in clean.splitlines():
+        if "Loss of lock" in line:
+            loss_of_lock_count += 1
+        if m := TRACKING_RE.search(line):
+            tracked.setdefault(f"G{int(m.group('prn')):02d}", set()).add(int(m.group("channel")))
+        if m := NAV_RE.search(line):
+            cn0_by_prn.setdefault(f"G{int(m.group('prn')):02d}", []).append(float(m.group("cn0")))
+        if m := FIRST_FIX_RE.search(line):
+            first_fix = {
+                "time_utc": m.group("time"),
+                "lat_deg": float(m.group("lat")),
+                "lon_deg": float(m.group("lon")),
+                "altitude_m": float(m.group("height")),
+                "gdop": float(m.group("gdop")),
+            }
+        if m := POSITION_RE.search(line):
+            positions.append(
+                {
+                    "time_utc": m.group("time"),
+                    "observations": int(m.group("observations")),
+                    "lat_deg": float(m.group("lat")),
+                    "lon_deg": float(m.group("lon")),
+                    "altitude_m": float(m.group("height")),
+                }
+            )
+        if m := VELOCITY_RE.search(line):
+            velocities.append(
+                {
+                    "east_mps": float(m.group("east")),
+                    "north_mps": float(m.group("north")),
+                    "up_mps": float(m.group("up")),
+                }
+            )
+        if m := RUN_TIME_RE.search(line):
+            run_time_seconds = float(m.group("seconds"))
+
+    avg_cn0 = 0.0
+    all_cn0 = [v for values in cn0_by_prn.values() for v in values]
+    if all_cn0:
+        avg_cn0 = sum(all_cn0) / len(all_cn0)
+
+    last_velocity = velocities[-1] if velocities else {"east_mps": 0.0, "north_mps": 0.0, "up_mps": 0.0}
+    ground_speed_mps = math.hypot(last_velocity["east_mps"], last_velocity["north_mps"])
+    last_position = positions[-1] if positions else first_fix or {}
+    return {
+        "stdout_file": str(path),
+        "stdout_sha256": sha256_file(path),
+        "tracked_satellites": sorted(tracked),
+        "tracking_channels": {sat: sorted(channels) for sat, channels in tracked.items()},
+        "nav_message_satellites": sorted(cn0_by_prn),
+        "cn0_by_prn_dbhz": {sat: values for sat, values in sorted(cn0_by_prn.items())},
+        "avg_cn0_dbhz": avg_cn0,
+        "max_cn0_dbhz": max(all_cn0) if all_cn0 else 0.0,
+        "first_fix": first_fix,
+        "position_count": len(positions),
+        "last_position": last_position,
+        "last_velocity_mps": last_velocity,
+        "ground_speed_mps": ground_speed_mps,
+        "ground_speed_kt": ground_speed_mps * 1.943844,
+        "loss_of_lock_count": loss_of_lock_count,
+        "run_time_seconds": run_time_seconds,
+    }
+
+
+def gnss_sdr_run_to_observation_envelope(
+    run_dir: Path,
+    iq_file: Path,
+    archive_file: Path,
+    config_file: Path,
+    source_url: str,
+    license_text: str,
+) -> dict[str, Any]:
+    stdout_path = run_dir / "gnss_sdr_run_stdout_modern.log"
+    parsed = parse_gnss_sdr_stdout(stdout_path)
+    output_files = {
+        "stdout_log": stdout_path,
+        "gnss_sdr_log": run_dir / "gnss-sdr.log",
+        "observables_dat": run_dir / "observables.dat",
+        "pvt_dat": run_dir / "PVT.dat",
+        "rinex_obs": run_dir / "GSDR214v18.26O",
+        "rinex_nav": run_dir / "GSDR214v18.26N",
+        "geojson": next(iter(run_dir.glob("PVT_*.geojson")), None),
+        "gpx": next(iter(run_dir.glob("PVT_*.gpx")), None),
+        "kml": next(iter(run_dir.glob("PVT_*.kml")), None),
+    }
+    output_hashes = {
+        key: sha256_file(path)
+        for key, path in output_files.items()
+        if path is not None and path.exists()
+    }
+    pvt = {
+        "lat_deg": parsed.get("last_position", {}).get("lat_deg", 0.0),
+        "lon_deg": parsed.get("last_position", {}).get("lon_deg", 0.0),
+        "altitude_m": parsed.get("last_position", {}).get("altitude_m", 0.0),
+        "speed_kt": parsed.get("ground_speed_kt", 0.0),
+        "observations": parsed.get("last_position", {}).get("observations", 0),
+        "fix_time_utc": parsed.get("last_position", {}).get("time_utc", "UNKNOWN"),
+    }
+    observables = {
+        "pvt": pvt,
+        "cn0_dbhz": parsed["avg_cn0_dbhz"],
+        "max_cn0_dbhz": parsed["max_cn0_dbhz"],
+        "tracked_satellites": parsed["tracked_satellites"],
+        "nav_message_satellites": parsed["nav_message_satellites"],
+        "tracking_channels": parsed["tracking_channels"],
+        "cn0_by_prn_dbhz": parsed["cn0_by_prn_dbhz"],
+        "first_fix": parsed["first_fix"],
+        "position_count": parsed["position_count"],
+        "last_velocity_mps": parsed["last_velocity_mps"],
+        "loss_of_lock_count": parsed["loss_of_lock_count"],
+        "run_time_seconds": parsed["run_time_seconds"],
+        "freshness_ms": 0,
+        "g_load": 1.0,
+        "spoof_score": 0.0,
+        "replay_window_detected": False,
+        "inertial_available": False,
+        "radio_available": True,
+        "trajectory_drift_score": 0.0,
+        "source_conflict_score": 0.0,
+        "time_skew_score": 0.0,
+        "brownout_score": 0.0,
+    }
+    now_ms = str(int(time.time() * 1000))
+    return {
+        "observation_id": "iq-cttc-2013-04-04-gnss-sdr-real-rf",
+        "source_type": "GNSS_SDR_IQ_PROCESSING_RUN",
+        "proof_level": "RECORDED_REAL_RF",
+        "eligible_for_physical_claim": True,
+        "synthetic": False,
+        "dataset_name": "GNSS_SDR_CTTC_2013_04_04_SAMPLE",
+        "dataset_version": "2013-04-04",
+        "license": license_text,
+        "official_url": source_url,
+        "capture_timestamp": parsed.get("first_fix", {}).get("time_utc", "2013-04-04") if parsed.get("first_fix") else "2013-04-04",
+        "processing_timestamp": now_ms,
+        "receiver": {
+            "processor": "gnss-sdr",
+            "processor_version": "0.0.21.git-next-2a7214a4f",
+            "front_end_center_frequency_hz": 1575420000,
+            "sampling_frequency_sps": 4000000,
+            "item_type": "ishort",
+        },
+        "constellation": ["G"],
+        "satellites": parsed["tracked_satellites"],
+        "observables": observables,
+        "truth_reference": {
+            "route_hash": sha256_file(iq_file),
+            "labels_used_by_pipeline": False,
+        },
+        "input_hash": sha256_file(iq_file),
+        "processor_name": "obsidia-gnss-sdr-stdout-normalizer",
+        "processor_version": "v0",
+        "processor_config_hash": sha256_file(config_file),
+        "observables_hash": sha256_obj(observables),
+        "domain_state_hash": "UNKNOWN",
+        "parent_receipt_id": "UNKNOWN",
+        "limitations": [
+            "RECORDED_PUBLIC_IQ",
+            "GNSS_SDR_CONTAINER_RUNTIME",
+            "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+            "NO_INERTIAL_CORROBORATION",
+        ],
+        "provenance": {
+            "archive_file": str(archive_file),
+            "archive_sha256": sha256_file(archive_file),
+            "iq_file": str(iq_file),
+            "iq_sha256": sha256_file(iq_file),
+            "config_file": str(config_file),
+            "config_sha256": sha256_file(config_file),
+            "run_dir": str(run_dir),
+            "output_hashes": output_hashes,
+            "parsed_stdout": parsed,
+        },
+    }
+
+
+def run_gnss_sdr_run(
+    run_dir: Path,
+    iq_file: Path,
+    archive_file: Path,
+    config_file: Path,
+    source_url: str,
+    license_text: str,
+    kernel_endpoint: str,
+) -> dict[str, Any]:
+    envelope = gnss_sdr_run_to_observation_envelope(run_dir, iq_file, archive_file, config_file, source_url, license_text)
+    gate = physical_reality_gate(envelope)
+    payload = observation_to_domain_payload(envelope)
+    p4_20 = evaluate_path_fidelity(payload).to_dict()
+    x108 = GpsX108Gate().evaluate(payload)
+    http_probe = _http_post_json(kernel_endpoint, x108.get("ir_payload", payload))
+    return {
+        "mode": "GNSS_SDR_RECORDED_REAL_RF",
+        "proof_level": "RECORDED_REAL_RF",
+        "synthetic": False,
+        "physical_gate": asdict(gate),
+        "observation_envelope": envelope,
+        "domain_payload": payload,
+        "p4_20_evidence": p4_20,
+        "x108_result": x108,
+        "kernel_http_evidence": http_probe,
+    }
+
+
 def detect_live_passive_receiver() -> dict[str, Any]:
     gnss_sdr = shutil.which("gnss-sdr")
     docker = shutil.which("docker")
@@ -521,6 +755,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Obsidia GPS Physical Signal Periphery V0")
     parser.add_argument("--physical-observation", type=Path)
     parser.add_argument("--rinex", type=Path)
+    parser.add_argument("--gnss-sdr-run", type=Path)
+    parser.add_argument("--iq-file", type=Path)
+    parser.add_argument("--archive-file", type=Path)
+    parser.add_argument("--config-file", type=Path)
     parser.add_argument("--station-log", type=Path)
     parser.add_argument("--source-url", default="UNKNOWN")
     parser.add_argument("--license", default="UNKNOWN")
@@ -530,7 +768,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
 
-    selected = sum(bool(x) for x in [args.physical_observation, args.rinex, args.live_passive, args.blind_benchmark])
+    selected = sum(bool(x) for x in [args.physical_observation, args.rinex, args.gnss_sdr_run, args.live_passive, args.blind_benchmark])
     if selected != 1:
         parser.error("select exactly one mode")
 
@@ -540,6 +778,18 @@ def main(argv: list[str] | None = None) -> int:
         result = run_rinex(
             args.rinex,
             args.station_log,
+            args.source_url,
+            args.license,
+            args.kernel_endpoint,
+        )
+    elif args.gnss_sdr_run:
+        if not args.iq_file or not args.archive_file or not args.config_file:
+            parser.error("--gnss-sdr-run requires --iq-file, --archive-file, and --config-file")
+        result = run_gnss_sdr_run(
+            args.gnss_sdr_run,
+            args.iq_file,
+            args.archive_file,
+            args.config_file,
             args.source_url,
             args.license,
             args.kernel_endpoint,

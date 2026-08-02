@@ -1,7 +1,7 @@
 # GPS Physical Signal Periphery Claim Matrix
 
 Date: 2026-08-02
-Status: PASS_REAL_RINEX_WITH_BLOCKERS
+Status: PASS_REAL_RF_WITH_BLOCKERS
 
 | Claim | Current status | Evidence | Allowed wording |
 |---|---|---|---|
@@ -12,7 +12,9 @@ Status: PASS_REAL_RINEX_WITH_BLOCKERS
 | Synthetic observation reaches P3-05 | DONE | `artifacts/gps_physical_observation_synthetic_result.json` | "A structured observation can traverse the bridge and fail closed to `HOLD` when not attested." |
 | Real RINEX reaches live X-108 | DONE | `artifacts/gps_rinex_noaa_ab02_2026_210_real_result.json` | "A real NOAA/NGS RINEX observation traversed the chain to a live X-108 HTTP `HOLD` decision." |
 | RECORDED_REAL_GNSS minimum | PASS_REAL | `artifacts/gps_rinex_noaa_ab02_2026_210_provenance_manifest.json` | "The minimum real GNSS closure level is reached through recorded RINEX, not RF." |
+| Real I/Q reaches GNSS-SDR and live X-108 | DONE | `artifacts/gps_iq_cttc_2013_04_04_recorded_real_rf_result.json` | "A public CTTC I/Q recording was processed by GNSS-SDR, normalized, and sent to live X-108." |
+| RECORDED_REAL_RF | PASS_REAL | `hackathons/nativebuilder-gps-defense/REAL_RF_CLOSURE_REPORT.md` | "The real RF closure level is reached for nominal public GNSS I/Q." |
 | Live passive hardware available | BLOCKED | `artifacts/gps_live_passive_status.json` | "No local GNSS/SDR receiver was confirmed; live physical ingestion is blocked, not mocked." |
 | Blind benchmark path exists | DONE | `artifacts/gps_blind_benchmark_synthetic_result.json` | "The benchmark runner keeps truth labels outside the decision pipeline." |
-| Production RF physical proof | BLOCKED | GNSS-SDR unavailable; Docker daemon unavailable | "RF/IQ proof requires GNSS-SDR execution over a real raw recording." |
+| Production RF certification | BLOCKED | public I/Q is recorded nominal RF, no private sensor attestation | "This is a real RF demo closure, not certified aviation/defense production attestation." |
 | Lean L-02/L-06 final closure | BLOCKED_PROTECTED | `hackathons/nativebuilder-gps-defense/GPS_PHYSICAL_TO_LEAN_FUTURE_BRIDGE.md` | "Formal proof mapping is documented; protected Lean proof closure is future work." |
