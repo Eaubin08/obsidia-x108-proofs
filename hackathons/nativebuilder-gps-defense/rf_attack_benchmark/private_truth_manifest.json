@@ -1,0 +1,8 @@
+{
+  "artifact": "private_truth_manifest",
+  "status": "EMPTY_NO_HOSTILE_RF_INPUT",
+  "created_at": "2026-08-02T23:41:09+02:00",
+  "committed_truth_labels": false,
+  "note": "No scenario labels are committed because no hostile RF scenario was downloaded or executed. For a real campaign, keep this file outside pipeline_inputs and read it only after all X-108 decisions are written.",
+  "cases": []
+}

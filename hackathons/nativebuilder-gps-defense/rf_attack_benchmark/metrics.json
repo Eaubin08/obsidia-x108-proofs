@@ -1,0 +1,25 @@
+{
+  "artifact": "metrics",
+  "status": "NOT_COMPUTED_NO_EXECUTED_CASES",
+  "rf_anomaly_detected": null,
+  "attack_correctly_classified": null,
+  "x108_governance_decision": null,
+  "detection_rate": null,
+  "false_positive_rate": null,
+  "false_negative_rate": null,
+  "detection_delay_seconds": null,
+  "drift_before_detection_meters": null,
+  "latency": {
+    "gnss_sdr_seconds": null,
+    "physical_periphery_seconds": null,
+    "p3_05_p4_20_seconds": null,
+    "x108_seconds": null
+  },
+  "decision_distribution": {
+    "ALLOW": 0,
+    "HOLD": 0,
+    "BLOCK": 0
+  },
+  "receipt_coverage": 0,
+  "reproducibility": "NOT_RUN"
+}

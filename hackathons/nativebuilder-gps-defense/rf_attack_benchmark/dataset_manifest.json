@@ -1,0 +1,91 @@
+{
+  "artifact": "dataset_manifest",
+  "status": "BLOCKED_RECORDED_RF_ATTACK",
+  "created_at": "2026-08-02T23:41:09+02:00",
+  "baseline": "b4df0cbe825515b675380084d86b921390d78c26",
+  "large_datasets_committed": false,
+  "emission_rf": "FORBIDDEN_NOT_USED",
+  "mocks_used": false,
+  "primary_corpus_attempted": {
+    "name": "Texas Spoofing Test Battery (TEXBAT)",
+    "publisher": "University of Texas Radionavigation Laboratory",
+    "official_page": "https://radionavlab.ae.utexas.edu/texbat/",
+    "official_index": "https://rnl-data.ae.utexas.edu/datastore/texbat/",
+    "conditions_observed": "University of Texas research-use notice; do not redistribute data; no warranty.",
+    "files_attempted": [
+      {
+        "scenario": "cleanStatic80",
+        "url": "https://rnl-data.ae.utexas.edu/datastore/texbat/cleanStatic80.bin",
+        "published_size": "7.5G",
+        "attempt": "HTTP range bytes 0-1048575",
+        "result": "TIMEOUT_ZERO_BYTES",
+        "sha256": null
+      },
+      {
+        "scenario": "ds1",
+        "url": "https://rnl-data.ae.utexas.edu/datastore/texbat/ds1.bin",
+        "published_size": "43G",
+        "attempt": "HTTP range bytes 0-1048575 and attack-window probe bytes 12000000000-12001048575",
+        "result": "TIMEOUT_ZERO_BYTES",
+        "sha256": null
+      },
+      {
+        "scenario": "ds1 metadata",
+        "url": "https://rnl-data.ae.utexas.edu/datastore/texbat/ds1.xml",
+        "published_size": "1.9K",
+        "attempt": "full metadata download",
+        "result": "TIMEOUT_ZERO_BYTES",
+        "sha256": null
+      },
+      {
+        "scenario": "cleanStatic metadata",
+        "url": "https://rnl-data.ae.utexas.edu/datastore/texbat/cleanStatic.xml",
+        "published_size": "1.9K",
+        "attempt": "full metadata download",
+        "result": "TIMEOUT_ZERO_BYTES",
+        "sha256": null
+      }
+    ]
+  },
+  "fallback_corpora_evaluated": [
+    {
+      "name": "OAKBAT GPS",
+      "publisher": "Oak Ridge National Laboratory",
+      "doi": "10.13139/ORNLNCCS/1664429",
+      "download": "Globus file manager",
+      "status": "PUBLIC_BUT_REQUIRES_GLOBUS_INTERACTIVE_ACCESS",
+      "fit_for_goal_if_obtained": true,
+      "notes": "Recognized RF spoofing corpus, but no unauthenticated direct RF file was available to this run."
+    },
+    {
+      "name": "FGI-JSDR / FGI-SpoofRepo",
+      "publisher": "National Land Survey of Finland",
+      "url": "https://www.maanmittauslaitos.fi/en/research/research/gnss-specialists/fgi-gnss-jamming-and-spoofing-dataset-repository-fgi-jsdr",
+      "status": "PUBLIC_INDEX_FOUND_REQUIRES_DATASET_PORTAL_FLOW",
+      "fit_for_goal_if_obtained": true,
+      "notes": "Raw GNSS I/Q spoofing datasets exist, but were not downloaded or processed in this run."
+    },
+    {
+      "name": "Raw I/Q measurement data and software for GNSS RFF fingerprinting",
+      "publisher": "Zenodo / Tampere University",
+      "doi": "10.5281/zenodo.13846381",
+      "status": "METADATA_DOWNLOADED_NOT_ELIGIBLE_FOR_GNSS_SDR_PVT_CLOSURE",
+      "downloaded_small_files": [
+        {
+          "path": "hackathons/nativebuilder-gps-defense/data/texbat/metadata/zenodo_13846381_readme.txt",
+          "sha256": "11378893aa5e3e15e5f77b920e279240a20499d08e47b2a8d515ffacc61be19d"
+        },
+        {
+          "path": "hackathons/nativebuilder-gps-defense/data/texbat/metadata/zenodo_13846381_demo.py",
+          "sha256": "be9e9e3c81e6a3fcd70522a6a540603c6fe47c86bf91e556a5cd552f62b7e283"
+        }
+      ],
+      "fit_for_goal_if_obtained": false,
+      "reason_not_eligible": "The open README describes short labeled .mat samples for RF fingerprinting/classification; the demo loads labels from file names and does not provide a continuous GNSS-SDR acquisition/tracking/PVT flow."
+    }
+  ],
+  "proof_level_reached": "RECORDED_REAL_RF",
+  "proof_level_requested": "RECORDED_RF_ATTACK",
+  "recorded_rf_attack_pass": false,
+  "blocker": "No official hostile RF recording was obtained locally for GNSS-SDR processing."
+}
