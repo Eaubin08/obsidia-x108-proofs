@@ -2590,3 +2590,318 @@ def test_t115_reconfigure_failure_exit_1_empty_stdout(tmp_path):
     assert code == 1
     assert written == [], f"stdout non vide après reconfigure failure : {written}"
     assert not lock.exists(), "lock créé malgré reconfigure failure"
+
+
+# ===========================================================================
+# T116-T118 : preuves symlink / reparse non skippées (REV02)
+# ===========================================================================
+
+def test_t116_existing_or_dangling_target_monkeypatch(tmp_path):
+    """T116 (non skippé) : os.path.lexists=True sur cible → INVOCATION_INVALID exit 2, adapter non construit."""
+    mod = _load_cli()
+    lock = tmp_path / "phantom.lock"
+    target_str = str(lock)
+    orig_lexists = os.path.lexists
+
+    def _patched_lexists(path):
+        return True if str(path) == target_str else orig_lexists(path)
+
+    buf = io.StringIO()
+    orig_stdout = sys.stdout
+    try:
+        sys.stdout = buf
+        with patch("os.path.lexists", side_effect=_patched_lexists):
+            with patch.object(mod, "TerminalSessionAdapter") as mock_cls:
+                code = mod.main([
+                    "--lock-path", str(lock),
+                    "--session-id", "phantom-116",
+                    "--heartbeat-interval-seconds", "1.0",
+                    "--max-steps", "3",
+                    "--control", "none",
+                    "--ack-temp-lock-mutation",
+                ])
+                adapter_built = mock_cls.call_count
+    finally:
+        sys.stdout = orig_stdout
+
+    assert code == 2
+    data = json.loads(buf.getvalue().strip())
+    assert data["adapter_code"] == "INVOCATION_INVALID"
+    assert adapter_built == 0, "adapter construit malgré cible préexistante"
+    assert not lock.exists()
+
+
+def test_t117_parent_symlink_monkeypatch(tmp_path):
+    """T117 (non skippé) : composant parent symlink → exit 2, adapter non construit (monkeypatch ciblé)."""
+    mod = _load_cli()
+    parent_dir = tmp_path / "sym_parent"
+    parent_dir.mkdir()
+    lock = parent_dir / "sim.lock"
+    parent_norm = os.path.normcase(str(parent_dir))
+
+    _real_is_symlink = Path.is_symlink
+
+    def _targeted_is_symlink(self):
+        return True if os.path.normcase(str(self)) == parent_norm else _real_is_symlink(self)
+
+    buf = io.StringIO()
+    orig_stdout = sys.stdout
+    try:
+        sys.stdout = buf
+        with patch.object(Path, "is_symlink", _targeted_is_symlink):
+            with patch.object(mod, "TerminalSessionAdapter") as mock_cls:
+                code = mod.main([
+                    "--lock-path", str(lock),
+                    "--session-id", "symlinkparent-117",
+                    "--heartbeat-interval-seconds", "1.0",
+                    "--max-steps", "3",
+                    "--control", "none",
+                    "--ack-temp-lock-mutation",
+                ])
+                adapter_built = mock_cls.call_count
+    finally:
+        sys.stdout = orig_stdout
+
+    assert code == 2
+    assert adapter_built == 0, "adapter construit malgré parent symlink"
+    assert not lock.exists()
+
+
+def test_t118_parent_reparse_point_monkeypatch(tmp_path):
+    """T118 (non skippé) : parent reparse point → exit 2, adapter non construit (monkeypatch + constante portée)."""
+    import stat as _stat_mod
+    mod = _load_cli()
+    parent_dir = tmp_path / "reparse_parent"
+    parent_dir.mkdir()
+    lock = parent_dir / "sim.lock"
+    parent_norm = os.path.normcase(str(parent_dir))
+
+    REPARSE_FLAG = getattr(_stat_mod, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+
+    class _FakeStat:
+        st_file_attributes = REPARSE_FLAG
+        st_mode = 0o040755
+
+    orig_lstat = os.lstat
+
+    def _patched_lstat(path):
+        if os.path.normcase(str(path)) == parent_norm:
+            return _FakeStat()
+        return orig_lstat(path)
+
+    buf = io.StringIO()
+    orig_stdout = sys.stdout
+    try:
+        sys.stdout = buf
+        with patch("os.lstat", side_effect=_patched_lstat):
+            with patch.object(_stat_mod, "FILE_ATTRIBUTE_REPARSE_POINT", REPARSE_FLAG, create=True):
+                with patch.object(mod, "TerminalSessionAdapter") as mock_cls:
+                    code = mod.main([
+                        "--lock-path", str(lock),
+                        "--session-id", "reparse-118",
+                        "--heartbeat-interval-seconds", "1.0",
+                        "--max-steps", "3",
+                        "--control", "none",
+                        "--ack-temp-lock-mutation",
+                    ])
+                    adapter_built = mock_cls.call_count
+    finally:
+        sys.stdout = orig_stdout
+
+    assert code == 2
+    assert adapter_built == 0, "adapter construit malgré reparse point"
+    assert not lock.exists()
+
+
+# ===========================================================================
+# T119-T124 : non-routage PowerShell renforcé (REV02)
+# ===========================================================================
+
+def _snapshot_files(d: Path) -> set:
+    return {str(p.relative_to(d)) for p in d.rglob("*") if p.is_file()}
+
+
+def _run_ps_non_routing(args: list, lock: Path, tmp_dir: Path, *, timeout: int = 15):
+    files_before = _snapshot_files(tmp_dir)
+    r = subprocess.run(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(_PS)] + args,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        timeout=timeout, cwd=str(_REPO_ROOT),
+    )
+    files_after = _snapshot_files(tmp_dir)
+    return r.stdout, r.stderr, r.returncode, files_after - files_before
+
+
+def _assert_no_simulate_envelope(stdout: str, case: str):
+    for line in stdout.splitlines():
+        line = line.strip()
+        if line.startswith("{"):
+            try:
+                data = json.loads(line)
+                assert data.get("command") != "obsidia session simulate", \
+                    f"[{case}] route simulate activée : {data.get('command')!r}"
+            except json.JSONDecodeError:
+                pass
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t119_session_simulate_uppercase_no_route(tmp_path):
+    """T119 : 'SESSION SIMULATE' → route simulate non activée, lock non créé, tmp propre."""
+    lock = tmp_path / "nr119.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["SESSION", "SIMULATE",
+         "--lock-path", str(lock), "--session-id", "nr119",
+         "--heartbeat-interval-seconds", "1.0", "--max-steps", "1",
+         "--control", "none", "--ack-temp-lock-mutation"],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "SESSION SIMULATE")
+    assert not lock.exists(), f"lock créé pour SESSION SIMULATE"
+    assert not added, f"fichiers ajoutés : {added}"
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t120_session_simulate_mixed_case1_no_route(tmp_path):
+    """T120 : 'Session Simulate' → route simulate non activée."""
+    lock = tmp_path / "nr120.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["Session", "Simulate",
+         "--lock-path", str(lock), "--session-id", "nr120",
+         "--heartbeat-interval-seconds", "1.0", "--max-steps", "1",
+         "--control", "none", "--ack-temp-lock-mutation"],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "Session Simulate")
+    assert not lock.exists()
+    assert not added
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t121_session_simulate_mixed_case2_no_route(tmp_path):
+    """T121 : 'session Simulate' → route simulate non activée."""
+    lock = tmp_path / "nr121.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["session", "Simulate",
+         "--lock-path", str(lock), "--session-id", "nr121",
+         "--heartbeat-interval-seconds", "1.0", "--max-steps", "1",
+         "--control", "none", "--ack-temp-lock-mutation"],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "session Simulate")
+    assert not lock.exists()
+    assert not added
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t122_session_run_no_route(tmp_path):
+    """T122 : 'session run' → route simulate non activée, lock non créé."""
+    lock = tmp_path / "nr122.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["session", "run", "--lock-path", str(lock), "--something"],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "session run")
+    assert not lock.exists()
+    assert not added
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t123_session_execute_no_route(tmp_path):
+    """T123 : 'session execute' → route simulate non activée, lock non créé."""
+    lock = tmp_path / "nr123.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["session", "execute"],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "session execute")
+    assert not lock.exists()
+    assert not added
+
+
+@pytest.mark.skipif(not _ps_available(), reason="PowerShell non disponible")
+def test_t124_session_resume_no_route(tmp_path):
+    """T124 : 'session resume' → route simulate non activée, lock non créé, aucun fichier ajouté."""
+    lock = tmp_path / "nr124.lock"
+    stdout, stderr, code, added = _run_ps_non_routing(
+        ["session", "resume", "--lock-path", str(lock)],
+        lock, tmp_path,
+    )
+    _assert_no_simulate_envelope(stdout, "session resume")
+    assert not lock.exists(), f"lock créé pour session resume"
+    assert not added, f"fichiers ajoutés au tmp : {added}"
+
+
+# ===========================================================================
+# T125-T129 : AST reclaim renforcé + preuves synthétiques (REV02)
+# ===========================================================================
+
+_FORBIDDEN_RECLAIM = frozenset({
+    "classify_lock", "prepare_reclaim_proposal", "execute_reclaim", "reclaim",
+})
+
+
+def _scan_reclaim_violations(source: str) -> list:
+    """Détecteur reclaim complet (imports, alias, attributs, getattr) sur source Python."""
+    tree = ast.parse(source)
+    violations = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] in _FORBIDDEN_RECLAIM:
+                    violations.append(f"direct-import:{alias.name}")
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.name in _FORBIDDEN_RECLAIM:
+                    violations.append(f"from-import:{alias.name}")
+        elif isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id in _FORBIDDEN_RECLAIM:
+                violations.append(f"name-call:{node.func.id}")
+            elif isinstance(node.func, ast.Attribute) and node.func.attr in _FORBIDDEN_RECLAIM:
+                violations.append(f"attr-call:{node.func.attr}")
+            if (
+                isinstance(node.func, ast.Name) and node.func.id == "getattr"
+                and len(node.args) >= 2
+                and isinstance(node.args[1], ast.Constant)
+                and isinstance(node.args[1].value, str)
+                and node.args[1].value in _FORBIDDEN_RECLAIM
+            ):
+                violations.append(f"getattr-literal:{node.args[1].value}")
+    return violations
+
+
+def test_t125_ast_reclaim_full_scan_production():
+    """T125 : scan reclaim complet (imports + alias + attr + getattr) sur production — 0 violation."""
+    source = _CLI.read_text(encoding="utf-8")
+    violations = _scan_reclaim_violations(source)
+    assert not violations, f"violations reclaim dans la production : {violations}"
+
+
+def test_t126_ast_detector_catches_aliased_import():
+    """T126 (synthétique) : import aliasé détecté — 'import reclaim as r'."""
+    snippet = "import reclaim as r\n"
+    violations = _scan_reclaim_violations(snippet)
+    assert any("direct-import:reclaim" in v for v in violations), \
+        f"import aliasé non détecté : {violations}"
+
+
+def test_t127_ast_detector_catches_attr_call():
+    """T127 (synthétique) : appel attribut détecté — 'obj.execute_reclaim()'."""
+    snippet = "obj.execute_reclaim()\n"
+    violations = _scan_reclaim_violations(snippet)
+    assert any("attr-call:execute_reclaim" in v for v in violations), \
+        f"appel attribut non détecté : {violations}"
+
+
+def test_t128_ast_detector_catches_getattr_literal():
+    """T128 (synthétique) : getattr littéral détecté — 'getattr(obj, \"reclaim\")'."""
+    snippet = 'getattr(obj, "reclaim")\n'
+    violations = _scan_reclaim_violations(snippet)
+    assert any("getattr-literal:reclaim" in v for v in violations), \
+        f"getattr littéral non détecté : {violations}"
+
+
+def test_t129_ast_detector_no_false_positive_docstring():
+    """T129 (synthétique) : 'reclaim' dans docstring ne génère aucune violation AST."""
+    snippet = '"""This function does reclaim and classify_lock work."""\ndef foo(): pass\n'
+    violations = _scan_reclaim_violations(snippet)
+    assert not violations, f"faux positif sur docstring : {violations}"
