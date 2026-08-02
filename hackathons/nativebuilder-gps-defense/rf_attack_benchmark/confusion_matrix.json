@@ -1,0 +1,13 @@
+{
+  "artifact": "confusion_matrix",
+  "status": "NOT_COMPUTED_NO_EXECUTED_CASES",
+  "tp": null,
+  "tn": null,
+  "fp": null,
+  "fn": null,
+  "matrix": [],
+  "notes": [
+    "No hostile RF scenario was processed.",
+    "A HOLD on a hostile file would not be counted as spoofing detection unless the RF anomaly reason is computed separately from the governance decision."
+  ]
+}
