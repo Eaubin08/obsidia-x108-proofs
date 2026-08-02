@@ -42,6 +42,21 @@ _BATCH001_ROW_MAP: dict[str, str] = {
 }
 _BATCH001_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH001_ROW_MAP.items()}
 
+# Batch 002 — explicit mapping from ART150.
+# Source: 150_AGENTS52_BATCH002_HUMAN_VALIDATION_PROPOSAL_REV2D.csv
+# Family: Frise / Arbres / Monde humain
+_BATCH002_TAG = "AGENTS52_BATCH002"
+_BATCH002_STATUS = "DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY"
+
+_BATCH002_ROW_MAP: dict[str, str] = {
+    "1821": "FRISE_HUMAINE",
+    "1822": "CARTOGRAPHE_34_ARBRES",
+    "1823": "HUMAN_HISTORY_MAPPER",
+    "1824": "CALIBRATION_PROCEDURALE",
+    "1825": "NUAGE_POINTS",
+}
+_BATCH002_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH002_ROW_MAP.items()}
+
 
 @dataclass(frozen=True)
 class AgentConfigEntry:
@@ -124,6 +139,10 @@ def _build_entry(raw: dict, sha256: str) -> AgentConfigEntry:
         row_id = _BATCH001_AGENT_TO_ROW[name]
         c_batch = _BATCH001_TAG
         c_status = _BATCH001_STATUS
+    elif name in _BATCH002_AGENT_TO_ROW:
+        row_id = _BATCH002_AGENT_TO_ROW[name]
+        c_batch = _BATCH002_TAG
+        c_status = _BATCH002_STATUS
     else:
         row_id = None
         c_batch = None
@@ -175,7 +194,9 @@ def load_registry() -> tuple[AgentConfigEntry, ...]:
 def validate_registry() -> dict:
     """Validate registry integrity; return diagnostic summary."""
     entries = load_registry()
-    batch = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
+    technically_compiled = batch1 + batch2
     return {
         "entry_count": len(entries),
         "unique_ids": len({e.agent_id for e in entries}),
@@ -187,8 +208,11 @@ def validate_registry() -> dict:
         "all_no_memory_write": all(not e.memory_write for e in entries),
         "all_no_graphiti_write": all(not e.graphiti_write for e in entries),
         "all_no_neo4j_write": all(not e.neo4j_write for e in entries),
-        "batch001_count": len(batch),
-        "other_count": len(entries) - len(batch),
+        "batch001_count": len(batch1),
+        "batch002_count": len(batch2),
+        "technically_compiled_readonly_count": len(technically_compiled),
+        "documented_source_only_count": len(entries) - len(technically_compiled),
+        "other_count": len(entries) - len(batch1),
         "validation_status_uniform": all(
             e.validation_status == "NEEDS_HUMAN_VALIDATION" for e in entries
         ),
@@ -222,7 +246,8 @@ def get_registry_provenance() -> dict:
     """Return provenance metadata: relative source path, SHA256, counts, batch info."""
     load_registry()
     entries = _CACHE or ()
-    batch = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
     return {
         "source_path": _rel_path(),
         "source_sha256": _CACHE_SHA,
@@ -234,6 +259,10 @@ def get_registry_provenance() -> dict:
         "emits_act": False,
         "memory_write": False,
         "batch_compiled": _BATCH001_TAG,
-        "batch_compiled_count": len(batch),
-        "batch_compiled_agent_ids": sorted(e.agent_id for e in batch),
+        "batch_compiled_count": len(batch1),
+        "batch_compiled_agent_ids": sorted(e.agent_id for e in batch1),
+        "batch002_compiled": _BATCH002_TAG,
+        "batch002_compiled_count": len(batch2),
+        "batch002_compiled_agent_ids": sorted(e.agent_id for e in batch2),
+        "technically_compiled_readonly_count": len(batch1) + len(batch2),
     }
