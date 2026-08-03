@@ -369,3 +369,124 @@ def test_w2_030_operational_catalog_endpoint_exists():
     assert "get_operational_catalog_provenance" in source, (
         "get_operational_catalog_provenance not called in periphery_ops.py"
     )
+
+
+# ── Document index tests ──────────────────────────────────────────────────────
+
+_DOC_INDEX_REL = "periphery/agents/operational_agent_document_index.json"
+
+
+def _doc_index_path() -> "Path":
+    from pathlib import Path
+    return _manifest_path().parent.parent.parent / _DOC_INDEX_REL
+
+
+def _load_doc_index() -> dict:
+    import json
+    return json.loads(_doc_index_path().read_bytes())
+
+
+def test_w2_031_doc_index_exists():
+    """operational_agent_document_index.json exists on disk."""
+    assert _doc_index_path().exists(), f"Document index missing: {_DOC_INDEX_REL}"
+
+
+def test_w2_032_doc_index_loads():
+    """operational_agent_document_index.json is valid JSON with expected keys."""
+    idx = _load_doc_index()
+    assert "entries" in idx
+    assert "total_documents" in idx
+    assert idx["schema_version"] == "1.0"
+    assert idx["authority"] == "NON_SOVEREIGN"
+    assert idx["readonly"] is True
+
+
+def test_w2_033_doc_index_entry_count():
+    """Document index covers all 167 catalog entries (164 .md + 3 special)."""
+    idx = _load_doc_index()
+    assert idx["total_documents"] == 167
+    assert len(idx["entries"]) == 167
+
+
+def test_w2_034_doc_index_all_linked_to_exist():
+    """All linked_to targets in the document index exist on disk."""
+    from pathlib import Path
+    repo = _manifest_path().parent.parent.parent
+    idx = _load_doc_index()
+    missing = [
+        e["linked_to"] for e in idx["entries"]
+        if not (repo / e["linked_to"]).exists()
+    ]
+    assert missing == [], f"linked_to targets missing: {missing}"
+
+
+def test_w2_035_doc_index_all_sha256_correct():
+    """SHA256 of all indexed files matches the recorded value."""
+    import hashlib
+    from pathlib import Path
+    repo = _manifest_path().parent.parent.parent
+    idx = _load_doc_index()
+    mismatched = []
+    for e in idx["entries"]:
+        p = repo / e["path"]
+        if not p.exists():
+            mismatched.append(f"MISSING:{e['path']}")
+            continue
+        actual = hashlib.sha256(p.read_bytes()).hexdigest()
+        if actual != e["sha256"]:
+            mismatched.append(e["path"])
+    assert mismatched == [], f"SHA256 mismatches in doc index: {mismatched}"
+
+
+def test_w2_036_doc_index_no_path_duplicates():
+    """All paths in the document index are unique."""
+    idx = _load_doc_index()
+    paths = [e["path"] for e in idx["entries"]]
+    assert len(paths) == len(set(paths)), "Duplicate paths in document index"
+
+
+def test_w2_037_doc_index_agent_domain_integrator_blocked():
+    """agent_domain_integrator.py is marked BLOCKED_WITH_EXPLICIT_REASON in the index."""
+    idx = _load_doc_index()
+    blocked = [
+        e for e in idx["entries"]
+        if "agent_domain_integrator.py" in e["path"]
+    ]
+    assert len(blocked) == 1, "agent_domain_integrator.py not in document index"
+    entry = blocked[0]
+    assert entry["relation_status"] == "BLOCKED_WITH_EXPLICIT_REASON", (
+        f"Expected BLOCKED_WITH_EXPLICIT_REASON, got {entry['relation_status']!r}"
+    )
+    assert entry["exact_issue"] == "NO_PRODUCTION_IMPORT_FOUND"
+
+
+def test_w2_038_doc_index_ps1_linked_to_python():
+    """PS1 script is linked to its Python command target in the index."""
+    idx = _load_doc_index()
+    ps1 = [e for e in idx["entries"] if e["path"].endswith(".ps1")]
+    assert len(ps1) == 1, "PS1 entry not found in document index"
+    entry = ps1[0]
+    assert entry["link_type"] == "SCRIPT_LINKED_TO_COMMAND"
+    assert entry["linked_to"].endswith("brody_agent_readonly_session_test_packet_v1.py")
+
+
+def test_w2_039_doc_index_agents_detected_documented():
+    """agents_detected.json is marked CONNECTED_DOCUMENTED with GENERATED_SCAN_OUTPUT_NO_LOADER."""
+    idx = _load_doc_index()
+    det = [e for e in idx["entries"] if "agents_detected.json" in e["path"]]
+    assert len(det) == 1
+    entry = det[0]
+    assert entry["relation_status"] == "CONNECTED_DOCUMENTED"
+    assert entry["exact_issue"] == "GENERATED_SCAN_OUTPUT_NO_LOADER"
+
+
+def test_w2_040_doc_index_md_files_all_documented():
+    """All 164 .md entries have relation_status CONNECTED_DOCUMENTED."""
+    idx = _load_doc_index()
+    md_entries = [e for e in idx["entries"] if e["file_type"] == "MARKDOWN_DOCUMENTATION"]
+    assert len(md_entries) == 164, f"Expected 164 .md entries, got {len(md_entries)}"
+    non_documented = [
+        e["path"] for e in md_entries
+        if e["relation_status"] != "CONNECTED_DOCUMENTED"
+    ]
+    assert non_documented == [], f".md files not CONNECTED_DOCUMENTED: {non_documented}"

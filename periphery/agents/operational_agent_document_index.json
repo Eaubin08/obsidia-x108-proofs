@@ -1,0 +1,1687 @@
+{
+  "schema_version": "1.0",
+  "index_id": "PYTHON_OPERATIONAL_AGENT_DOCUMENT_INDEX_V1",
+  "system": "PYTHON_OPERATIONAL_AGENT_SYSTEM",
+  "wave": "AGENTS_FILE_WIRING_WAVE_002",
+  "generated_at": "2026-08-03T04:46:49.454900",
+  "authority": "NON_SOVEREIGN",
+  "readonly": true,
+  "can_decide": false,
+  "can_act": false,
+  "total_documents": 167,
+  "entries": [
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/01_REGISTRES_JSON/agents_detected.json",
+      "sha256": "ffd0989476fce244d28654286260dd951dd7c884b59742afa59eb2ca42f5e435",
+      "file_type": "JSON_DATA",
+      "group": "GROUP_REGISTRES_JSON",
+      "link_type": "SCAN_OUTPUT_DOCUMENTED",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/01_REGISTRES_JSON/agents_canoniques.json",
+      "destination_role": "Resultat de scan detection agents V4 — aucun loader Python actif",
+      "relation_status": "CONNECTED_DOCUMENTED",
+      "exact_issue": "GENERATED_SCAN_OUTPUT_NO_LOADER"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/02_BLOCS_17/Bloc_13__Infrastructure_et_Agents_C11.md",
+      "sha256": "48e119c22d884284414c8080db21ac50741fcfe7e2fde69a3f51fc0204a10bc9",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_BLOCS_17",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Document Bloc_13 — Infrastructure et Agents, rattache au groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P137__Agent_Role_Protocole_Flux.md",
+      "sha256": "c6f3dd04121803798212abaeeb5505208cbf7a6023d0b5d6ebdc5dc96d5ec0b8",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_161",
+      "link_type": "KNOWLEDGE_SEED_AGENT",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Pepites de connaissance agent (consensus, ecologie) — referencees par agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P138__Ecologie_dagents.md",
+      "sha256": "7c5160507a49e53c93730886a65ca50e6a7d2f2b6b4d3179443b16a7dcea961f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_161",
+      "link_type": "KNOWLEDGE_SEED_AGENT",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Pepites de connaissance agent (consensus, ecologie) — referencees par agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P46__Consensus_fail_closed_4_agents.md",
+      "sha256": "65e76d32dda9a03aaf2b229609a30a967d87d724c3d2409d81a0386c7edac7ae",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_161",
+      "link_type": "KNOWLEDGE_SEED_AGENT",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Pepites de connaissance agent (consensus, ecologie) — referencees par agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/AGENTS_ET_ROLES_DETECTES.md",
+      "sha256": "33e955f71ffef5d8042d0ec073f20fe41a6ef2adc451ede8342f91afe04f6e78",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/AGENT_001__Observateur.md",
+      "sha256": "0b12702d273f9ced5b43df65f158a5d15ac22faf9fa9705287445505e5f3432a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/AGENT_002__Sentinelle.md",
+      "sha256": "3f343c0d1cb51f7ea2f184489166b99d5d9984ba33cfe6004e5a7e5f231569d6",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/AGENT_003__Gardien.md",
+      "sha256": "c4c2135372d9adb936643bfea4ebbbc548956fa6aeeefa46e5bb4b187680bd61",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/AGENT_004__Architecte.md",
+      "sha256": "e805c22f0b03a06237a750e3b0ce2f61d064fa539bbeb7e80ca8530d42226a73",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_009__Sigma_Verifier.md",
+      "sha256": "2f331e600ee543add6e474414039b3f824e441f29d1ab5f998abaea319b004c0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_010__Merkle_Verifier.md",
+      "sha256": "f8ae9f61dcf9c49d7640ffe7f9c9b0fa257631a14148d537776fe06304fc9cf5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_011__RFC3161_Verifier.md",
+      "sha256": "39c84ef0bacb089152e3ddd32b3245c024ce693dbdae9792610c3cd5762722ed",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_012__TLA_Verifier.md",
+      "sha256": "5cc306a05219a25ede7a415c2c847b53f3dbdac780888dd6b8cb557e638fcbc0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_016__GPS_Gardien_Guide_Alerteur.md",
+      "sha256": "3f9fc90a070cfe5b8e3d7dd1346ce6126adfb3d285b6a9070904b9a3b1b82603",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/GUARDIAN_017__ADeLe.md",
+      "sha256": "7f85b0b02dbb02a54ed9b8d26ae714be86b97a250c780964c22c87c1a34f8c5f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_005__Human_Operator.md",
+      "sha256": "6e65a01535bd33c6d6df4e21b63464cc602bd8a165579b2a827157be30d24a5b",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_006__Governance_Layer.md",
+      "sha256": "651a93804984c01b30cef95fdbb6b6879ac12ae5f9ef858466f32a75420069f7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_007__OS3_Audit_Layer.md",
+      "sha256": "166c59767f632baa51c527848b13eb595e62d5abc6d4b6e5faeefcb20a68c2bc",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_008__Agents_Tools.md",
+      "sha256": "6e2ad71d58ad19a3e6068964a462c37368e5436e3e3f0692a05e076cc6ef839e",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_014__Adapter_MCP.md",
+      "sha256": "998b9a6ad4e58682627d3464776376b62c8b3400e2ce081994a817ec29f08ee7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/CANONIQUES/ROLE_015__Cortex.md",
+      "sha256": "1ea0fa085285ae624418924fff8abab0044640600ac3b40f37ac4913e020c8da",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/07_AGENTS_ET_ROLES/README_AGENTS_PROPRE.md",
+      "sha256": "223f5ba0269d2348a7f948679c396679265d97abdb65e8a607a92a35c5c42cc9",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_ET_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION",
+      "linked_to": "periphery/agent_contracts.py",
+      "destination_role": "Definition des roles canoniques des agents — implementes dans agent_contracts.py",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/06_AGENT_ROLE__Merkle_Verifier.md",
+      "sha256": "f8ae9f61dcf9c49d7640ffe7f9c9b0fa257631a14148d537776fe06304fc9cf5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_01 Memoire/Trace/Audit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/06_AGENT_ROLE__OS3_Audit_Layer.md",
+      "sha256": "166c59767f632baa51c527848b13eb595e62d5abc6d4b6e5faeefcb20a68c2bc",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_01 Memoire/Trace/Audit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/06_AGENT_ROLE__RFC3161_Verifier.md",
+      "sha256": "39c84ef0bacb089152e3ddd32b3245c024ce693dbdae9792610c3cd5762722ed",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_01 Memoire/Trace/Audit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/02_PEPITE_P046__Consensus_fail_closed_4_agents.md",
+      "sha256": "65e76d32dda9a03aaf2b229609a30a967d87d724c3d2409d81a0386c7edac7ae",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_02 Temps/X108/Non-contournement",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/06_AGENT_ROLE__GPS_Gardien_Guide_Alerteur.md",
+      "sha256": "3f9fc90a070cfe5b8e3d7dd1346ce6126adfb3d285b6a9070904b9a3b1b82603",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_02 Temps/X108/Non-contournement",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/06_AGENT_ROLE__Gardien.md",
+      "sha256": "c4c2135372d9adb936643bfea4ebbbc548956fa6aeeefa46e5bb4b187680bd61",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_02 Temps/X108/Non-contournement",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/06_AGENT_ROLE__TLA_Verifier.md",
+      "sha256": "5cc306a05219a25ede7a415c2c847b53f3dbdac780888dd6b8cb557e638fcbc0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_02 Temps/X108/Non-contournement",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/02_PEPITE_P046__Consensus_fail_closed_4_agents.md",
+      "sha256": "65e76d32dda9a03aaf2b229609a30a967d87d724c3d2409d81a0386c7edac7ae",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_03 Semantique/OS4/Recit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/06_AGENT_ROLE__Architecte.md",
+      "sha256": "e805c22f0b03a06237a750e3b0ce2f61d064fa539bbeb7e80ca8530d42226a73",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_03 Semantique/OS4/Recit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/06_AGENT_ROLE__Cortex.md",
+      "sha256": "1ea0fa085285ae624418924fff8abab0044640600ac3b40f37ac4913e020c8da",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_03 Semantique/OS4/Recit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/06_AGENT_ROLE__Observateur.md",
+      "sha256": "0b12702d273f9ced5b43df65f158a5d15ac22faf9fa9705287445505e5f3432a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_03 Semantique/OS4/Recit",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/06_AGENT_ROLE__ADeLe.md",
+      "sha256": "7f85b0b02dbb02a54ed9b8d26ae714be86b97a250c780964c22c87c1a34f8c5f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_04 Ethique/ADeLe/Securite",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/06_AGENT_ROLE__Governance_Layer.md",
+      "sha256": "651a93804984c01b30cef95fdbb6b6879ac12ae5f9ef858466f32a75420069f7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_04 Ethique/ADeLe/Securite",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/06_AGENT_ROLE__Human_Operator.md",
+      "sha256": "6e65a01535bd33c6d6df4e21b63464cc602bd8a165579b2a827157be30d24a5b",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_04 Ethique/ADeLe/Securite",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/06_AGENT_ROLE__Sentinelle.md",
+      "sha256": "3f343c0d1cb51f7ea2f184489166b99d5d9984ba33cfe6004e5a7e5f231569d6",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_04 Ethique/ADeLe/Securite",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/01_BLOC_13__Infrastructure_et_Agents_C11.md",
+      "sha256": "48e119c22d884284414c8080db21ac50741fcfe7e2fde69a3f51fc0204a10bc9",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/01_BLOC_15__Les_16_Dimensions_Cognitives_LTO_16D.md",
+      "sha256": "218a466586fc2dcbd82bf45bfcb00d5a1341a5430c7d064bdc9b9c9daf3e22f4",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P114__Guard_Kernel_Temporal_Consensus.md",
+      "sha256": "5abe5e8d402689d05fdae2d3efdc26c1f9db4121e1d3caed9cea6340310fcee2",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P115__Filtre_ethique_du_moteur.md",
+      "sha256": "beafef3d79cc98e9ba9b207287f21680f554ccc3e9391accbda8b68afd658b4c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P116__Pipeline_de_couches.md",
+      "sha256": "41e1e9a290a3df832b59ec881ba0f7a8d0eab3050ecd0a94d85443d072be7082",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P117__Orchestration_par_scheduler.md",
+      "sha256": "6846fa4c87b772711b57d72b07db767c756ca68f998acd7857235327df1c5475",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P118__Isolation_des_couches.md",
+      "sha256": "a94a40e29f7f1bb3522b795c5d67b26572a6e25bb3e3d5aa851efa314b6e6043",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P119__Composition_fonctionnelle.md",
+      "sha256": "b16af3a47c6ca210c3d1e751bafad8ba118677bbe81b1f8aae0503e46c4f2d9c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P120__Abstraction_par_interface.md",
+      "sha256": "ed4e10e3d709c79be4735076e2ba95d3d93f3b59a3e7a24543a203f6e1caf278",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P121__Encapsulation_boite_noire.md",
+      "sha256": "d11c07bf1e69b93c2b04ab07e59e02bd498d5184a12c492b55c762103871465c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P122__Modularite.md",
+      "sha256": "835534fd63e3abfbfbbdc7d9b45053746c7ea12946ca088c733a6ff507ad4f54",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P123__Extensibilite.md",
+      "sha256": "9e1750ade40e67e7c2430bef05aec682d7b132f9451a0ff2f5b3c4edd8424a98",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P124__Infrastructure_IM_O.md",
+      "sha256": "430284004bbb34bad608d3de7acfea970131d760d796e539b6b5e464f3dc174c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P125__Deploiement_Build_Test_Release.md",
+      "sha256": "f59b43bc64bd95be8fc388a07136a3500baeb3ab1ac9eec49a4ff8e2c2b32444",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P126__Scalabilite_lineaire.md",
+      "sha256": "ffb7b7067e6ae7fab35908e040f56526680fe034bdaedf1cfcd2a37159cfddda",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P127__Disponibilite_uptime.md",
+      "sha256": "11f3139c1d1260d3bdd3397cdc3213b15b59d02331a1fef920bd6cfd81ee1f53",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P128__Latence_de_reponse.md",
+      "sha256": "3d04b09cfd9a6874e4e7a46645fbc720e3c22658d792e6efe743adb1c050520f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P129__Debit_throughput.md",
+      "sha256": "29bec7ffe0615cf2b136bc46a9a4705b85ac12ed8f97eabb38191b1a40b51261",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P130__Resilience_MTBF_MTTR.md",
+      "sha256": "6ffcd1fb5d561e75649831f2cf843a395a8b6467f47b0d9ab852812ea4a25bec",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P131__Securite_CIA.md",
+      "sha256": "a46c4b2d83029fa4fa73610cbb15fdf55def3800d066774fbcc722d3a5e0c1ee",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P132__Observabilite_logs_metriques_traces.md",
+      "sha256": "fa578cb7b2ca64180343834ddd130bb452b422771cb73756da7c9bb113ce3728",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P133__Configuration_cle_valeur.md",
+      "sha256": "f679740913fbbd930889a773a91408e139ea626a68487d497fa3c72fb2f7aaec",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P134__Versioning_semantique.md",
+      "sha256": "b22866b7fb48de5b561b2282e2885fae876a1e11641d433467a6d92e89325945",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P135__Pipeline_CI_CD.md",
+      "sha256": "2cd88eb0058ba18eec431d2da17fad8f54692e5d535aebd5883120beb726b745",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P136__Infrastructure_as_Code.md",
+      "sha256": "ba071af43c7ecff7a937ad4aad711bb551cde1d8512c3cb2c585c8f842504d77",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P137__Agent_Role_Protocole_Flux.md",
+      "sha256": "c6f3dd04121803798212abaeeb5505208cbf7a6023d0b5d6ebdc5dc96d5ec0b8",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P138__Ecologie_dagents.md",
+      "sha256": "7c5160507a49e53c93730886a65ca50e6a7d2f2b6b4d3179443b16a7dcea961f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P139__Protocole_sequence_de_messages.md",
+      "sha256": "719dd6e6a0f936d6c6b49cf2a74686e3bbd6478ba3d2489452b8d2f363ab0f12",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P140__Coordination_par_consensus.md",
+      "sha256": "c0161c2d9b6aaa3594950ed673b26ae46eb1bead3dbbc2637661add891c213ba",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P141__Emergence_collective.md",
+      "sha256": "ca30b94dead98208c0c325db774b5030ae21e3eef50bb23ee0d2980a17cd4742",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/02_PEPITE_P142__Specialisation_par_domaine.md",
+      "sha256": "0b3c8bf79009ed27740d7e5502031dd5a7a25b52707b76ec85f559b515f2c5ce",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_09__Tool_Adapter_MCP_vers_Policy_Gate_mapping_tools_scopes_P81_P90_valider_V4.md",
+      "sha256": "0db96565e5dc75b8168a0578eeb5fc879dab8b9478513d4d96be32c4c17bd46a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_10__Tool_Registry_Canonical_registre_outils_P91_P100_valider_V4.md",
+      "sha256": "1024ca594ba4c55bc2b6023acdfa17cd780e9a8d8a0959dc265995c0af616d6c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_12__MCP_Server_Attestation_integrite_serveur_P111_P113_valider_V4.md",
+      "sha256": "91d209f4c93a875d38b5efa4ac3907484f89e69c2319818d1d45bf357b388949",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_26__Liability_Boundary_Responsibility_Graph_P41_P46_valider_V4.md",
+      "sha256": "3af052f4e411ee6870a4fe4b9199dbcaf61b45b6457899bf50a641fde04a5667",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_32__Obsidia_Foundation_Trust_Model_P101_P110_valider_V4.md",
+      "sha256": "92b0127e003a9fbf71c22bcf3681e1f6f6ecfac1289464bd641fdc9e35167d01",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_33__National_AI_Oversight_Stack_P111_P113_valider_V4.md",
+      "sha256": "efe3c566905608633771f79bb329f747c65922f4a030064f853c52cf2cb4a82b",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/03_SPEC_36__Inter_Foundation_Federation_Protocol_P131_P140_valider_V4.md",
+      "sha256": "1d1c363a80521954db940f5f29c8d4d4c9ba4a55074481ff60630d9ff55c7810",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/04_MODULE_A21__Cryptographie_Homomorphe_Mediatheque_fractale.md",
+      "sha256": "ddb2d8556b564355a0892e2c0478dbbcb37b3b1fbd09f173dda7c3215c9d851d",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/04_MODULE_A22__Propagation_Information_Simulation_cognitive.md",
+      "sha256": "fd1849c5a4d0dc13d503b6a0d3d46e7e84b1392184c03b39b1b544ead19caa51",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/05_GARDIEN_T02__Gardien_de_fond__Conscience_Distribuee_Validation_reciprocite.md",
+      "sha256": "2c6000d53716554063c15928a126f089b37592a99623ac44fdf9d840f51d13f5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/05_GARDIEN_T08__Gardien_de_fond__Auto_Organisation_Apprentissage_inverse.md",
+      "sha256": "b6ca17aed567fd05fc1a2d1ab8c0fc02564d6c7c8d5c9a23b2c6cabff64facfa",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/05_GARDIEN_T11__Gardien_de_fond__Generation_Aleatoire_Frugalite_bio_inspiree.md",
+      "sha256": "d4f3ee1228affa1078de967e89cd44114b330705e2f8692cf7ffb67d778cf8bd",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/06_AGENT_ROLE__Adapter_MCP.md",
+      "sha256": "998b9a6ad4e58682627d3464776376b62c8b3400e2ce081994a817ec29f08ee7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/06_AGENT_ROLE__Agents_Tools.md",
+      "sha256": "6e2ad71d58ad19a3e6068964a462c37368e5436e3e3f0692a05e076cc6ef839e",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/06_AGENT_ROLE__Architecte.md",
+      "sha256": "e805c22f0b03a06237a750e3b0ce2f61d064fa539bbeb7e80ca8530d42226a73",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/06_AGENT_ROLE__Observateur.md",
+      "sha256": "0b12702d273f9ced5b43df65f158a5d15ac22faf9fa9705287445505e5f3432a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/07_AUDIT_C__Validation_des_40_specs_institutionnelles.md",
+      "sha256": "fdeeac4ff67a99c5cf3c196dc463e383532bc3563501c839215d2be41d6e8544",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/07_AUDIT_D__Tests_modules_A1_A24_T1_T12_etats_TESTED_REJECTED_BLOCKED.md",
+      "sha256": "12a71118851aba053c1055c095d5fba39bb41c813f7021496c93bb104ebae6c2",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/07_AUDIT_E__Isolation_OS3_OS4_non_contamination_L25.md",
+      "sha256": "3f198724e0d95a33f00f3b806c420fa1962f227386015b981e1b4f90e3841a64",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/07_AUDIT_F__Gouvernance_ADeLe_scenarios_critiques_Banking_Trading_Aviation.md",
+      "sha256": "671f45431b2abe00fdaa3fd51dd846a29e493b3d33d5b587ec16a17d9a783c6c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__CHAOS_REPLAY_8.md",
+      "sha256": "54d708706ce3f67d984413fd7cc2d843e6a3c8c5497ae453217c7f097d8d8a68",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__LOAD_REPLAY_5.md",
+      "sha256": "bd9da44da091380abe73877daab1f38f7fcb8a4d6794796638782d523699702f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__PYTHON_AVIATION_12_TESTS.md",
+      "sha256": "b50fa45cbcf9d81e81617f1fa2f6302fffe9b1303c39b8da930e667f5f6bf2f2",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__PYTHON_BANKING_28_TESTS.md",
+      "sha256": "e719ec9a183a0c48c4b912b6ff7e74834367dd8318049f76b8c1088942cfe26d",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__PYTHON_CORE_14_TESTS.md",
+      "sha256": "887a03a98518fa07b724ad0853aa82e949cf2d225417eb00c76db13099cd3f8a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__PYTHON_TRADING_15_TESTS.md",
+      "sha256": "d78467fc861228408217a6ea895c2dbd70220a19ae969ba2b5f674641d49e162",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__TLA_MODEL_CHECK_V4.md",
+      "sha256": "f13a75c1b9e95d356918cb7fd1852a080b77a21f0266759909408900679e44ea",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/10_TESTS__VITEST_COVERAGE_97.md",
+      "sha256": "953e0fc70a7e952e1cb3461c51500a8aa624861d7f04dd72f841d007f47fab00",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__ACP.md",
+      "sha256": "3b32b93c34cd08b3fab87c161a86b5a505c07a4e2f9119095f08c076d780b836",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__BALANCE.md",
+      "sha256": "0f2c7e218018a922cc362d0e57eaaf1b924ccfd74c9bfdc1e09fc9bedcadc9fc",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__BRANCHESXYZKLN.md",
+      "sha256": "14a4277ac313a41046143a975fdc7d889d55910dad7a6287292d1a97a06d7ec1",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__COSMIQUE.md",
+      "sha256": "d5802d68c8c49a2620eeca3104fb4b73e124cdf45af31e6a905596484a0ae5b0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__EXTENSIONS_INDEX_CLAIR.md",
+      "sha256": "e883c21cb9291b1293a7d17a562b9c730572f54f1137b1061b09e64e320442af",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__GENCOIN.md",
+      "sha256": "ed183a5d9506048440f07e3e622a9fc9437532e975d2c9b975b2d3537908d67f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__GPS.md",
+      "sha256": "78ea630fe12af1f8ad43029b9a70477fe4ede1940bcc458b225cfef8121a0973",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__LTCUPLUS.md",
+      "sha256": "151f0dc89a58aae73845425f2d2741da8479fb1541b43e86926fef5838aefa41",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P162r.md",
+      "sha256": "6618a14cd24a760f701a9a29d833ea577dc8e50527df7c853cd38eb171aa1337",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P163r.md",
+      "sha256": "bc661a99bd5472121e64f7223ff69fa6192cd5077d8f36497e0714051a63392c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P164r.md",
+      "sha256": "e595c5c07230a37d5b87527db7d10bbebc16668f571e15a9a8a5b520a0a2e2ae",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P165r.md",
+      "sha256": "75398d3f1d4614375e4a706219d0ba963884ed5f195f5dc480d318924d555017",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P166r.md",
+      "sha256": "9bea22fc059eeaf5358b9d819617828ca84785c38cdcb33f65eeabb1e46456d4",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P167r.md",
+      "sha256": "09ddaa9eca01665a9895c5147a0f4071d4b7e3fac0099067a11fdefeea1da9f3",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P168r.md",
+      "sha256": "f3d7a3a74c401826ab2edf472b9300926779aa8c9f2cd60f23c11676cadc9af5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__P169r.md",
+      "sha256": "8a801f3c0f0848c04649492838b747466025ba0f535a759f6453316aee4bc500",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__PETRI.md",
+      "sha256": "e476c9ec57f18883a5b19f4a8422bb46d616a6b0707ec9c4636b039898024c11",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__VARIANTES70.md",
+      "sha256": "807ea2485908c5bef5fc58830d4bcb783c87c97c1ad9c4b43b900cf5753c93c3",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/12_ENGINE__EVIDENCE_CONTRACT_V4.md",
+      "sha256": "a7b07e264f2f97251c05a49f2157f002ee4dd1c390a629acdad2ea82ddfe944b",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/__init__.py",
+      "destination_role": "Documentation role-agent/infrastructure du groupe GROUPE_05",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/06_AGENT_ROLE__GPS_Gardien_Guide_Alerteur.md",
+      "sha256": "3f9fc90a070cfe5b8e3d7dd1346ce6126adfb3d285b6a9070904b9a3b1b82603",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_06 Cosmologie/Economie/R&D",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/06_AGENT_ROLE__Gardien.md",
+      "sha256": "c4c2135372d9adb936643bfea4ebbbc548956fa6aeeefa46e5bb4b187680bd61",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_06 Cosmologie/Economie/R&D",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/01_BLOC_13__Infrastructure_et_Agents_C11.md",
+      "sha256": "48e119c22d884284414c8080db21ac50741fcfe7e2fde69a3f51fc0204a10bc9",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_07 Ops/CI-CD/Validation continue",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/06_AGENT_ROLE__Sigma_Verifier.md",
+      "sha256": "2f331e600ee543add6e474414039b3f824e441f29d1ab5f998abaea319b004c0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_07 Ops/CI-CD/Validation continue",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/06_AGENT_ROLE__TLA_Verifier.md",
+      "sha256": "5cc306a05219a25ede7a415c2c847b53f3dbdac780888dd6b8cb557e638fcbc0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue",
+      "link_type": "COHERENCE_GROUP_DOCUMENT",
+      "linked_to": "periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/__init__.py",
+      "destination_role": "Documentation role-agent du groupe GROUPE_07 Ops/CI-CD/Validation continue",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/agent_domain_integrator.py",
+      "sha256": "d1389e64d1d0c5488856cb41ad5ac49582cb90b638632fc260660b68f3625103",
+      "file_type": "PYTHON_MODULE",
+      "group": "GROUP_CORE_PYTHON",
+      "link_type": "BLOCKED_PENDING_CONSUMER",
+      "linked_to": "periphery/agents/__init__.py",
+      "destination_role": "Outil operationnel autonome — aucun consommateur de production identifie",
+      "relation_status": "BLOCKED_WITH_EXPLICIT_REASON",
+      "exact_issue": "NO_PRODUCTION_IMPORT_FOUND"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A01__Signature_Entropique_Pare_feu_symbolique.md",
+      "sha256": "fcfc76eb92a793915f2574e43d0369a95c58e6bfd085d2975b1f16ff88fbb156",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A02__Verification_de_Reciprocite_Detection_contradictions.md",
+      "sha256": "baddff0ddcdc32f39962d16993176403cc6976d7aa208c5da0cd466d207d1983",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A03__Equilibre_Dynamique_Alignement_ethique.md",
+      "sha256": "adb5d74847344a6ce027ff4f85c6225c469744cda12eeb386b3c953d60484233",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A04__Gestion_de_la_Friction_Bascule_Semantique.md",
+      "sha256": "3224b929664385a7eef5828fc0b64618f6d3fdde413304953f5c020224af0f7d",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A05__Singularite_Initiale_Audit_ethique_permanent.md",
+      "sha256": "98ed67efaac13f507d1b1fc53ed535e4f60d51d64d067762c64ecf0f700c491d",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A06__Integrite_Structurelle_Enregistrement_etats.md",
+      "sha256": "631d05e559c9ade9efd8c4799ba2b45bea1cd81840fa4fbd1dae2d7d4e04de9e",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A07__Coherence_Temporelle_Chronique_obsidienne.md",
+      "sha256": "ccd69fb3210ad234060d29fe1360130e5bdd76a5b9e544d03187e7d9838e2dcb",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A08__Emergence_des_Proprietes_Transmutation_cognitive.md",
+      "sha256": "ee8a9609d76727cd6fd1edd716357e80834b092d4fc1fd400a54755f4a83c2d8",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A09__Non_Contradiction_Convergence_intentionnelle.md",
+      "sha256": "44350f731c46c1ba5b7f2baa416cf251870f0bc2a559ec3a5b6819e608903f79",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A10__Completude_Emergence_par_tension.md",
+      "sha256": "8978024ee7911399ea26605519915e67ed0f218f0646902c7dadfffcfda84fd3",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A11__Resonance_Reconstruction_totale.md",
+      "sha256": "6cb69d5b38c78a88f8b28d3895f840832efcbb07b831c09be7b0fa47b4d4b49c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A12__Dualite_Contrat_moral.md",
+      "sha256": "f7a5c5bcdcfeecdb0f4f41f110ddd64282009f405ae85c10f8399b3251747d93",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A13__Securite_Interactions_Mode_reflexe.md",
+      "sha256": "9aec9ef379c689593be36f017adf2724237067ecd7261f83c1e77a1a39e2486c",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A14__Verification_Identite_Captation_creative.md",
+      "sha256": "cf26c22fb6d3b7599ced0a536c039a92b2d8256a105785cdfff4c93e54010159",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A15__Adaptation_Dynamique_Vibration_multimodale.md",
+      "sha256": "33efc534030a2ba689121c68d6a0fa675907007733ee45d6b362a0ae70e2defc",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A16__Recursivite_Architecture_du_savoir.md",
+      "sha256": "f262fdaa3221d3623c7a85d2df5f6fefe41f6570dac7710e7043fec0a30ad05a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A17__Complexite_Minimale_Apprentissage_universel.md",
+      "sha256": "805ee9010e80df78010a232fec6bbbff703ff482a48b3f4cc3b003297c8e1901",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A18__Optimisation_Ressources_Friction_creative.md",
+      "sha256": "1b8889cde7e9bda614c607a0ddca811207da6c1d91914971ae4a15d2c8bc5568",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A19__Interconnexion_Narration_cognitive.md",
+      "sha256": "60b1b82812984601d4ba7d8cf7e5fe6f7363aa6f51017381eba211ae49651db1",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A20__Confidentialite_Entrainement_emotionnel.md",
+      "sha256": "f1835b40173cbb279b29741aadb669255123ba44e489942709ae1a70fb773387",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A21__Cryptographie_Homomorphe_Mediatheque_fractale.md",
+      "sha256": "ddb2d8556b564355a0892e2c0478dbbcb37b3b1fbd09f173dda7c3215c9d851d",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A22__Propagation_Information_Simulation_cognitive.md",
+      "sha256": "fd1849c5a4d0dc13d503b6a0d3d46e7e84b1392184c03b39b1b544ead19caa51",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A23__Causalite_Calibration_procedurale.md",
+      "sha256": "1378a66e75ad9d3063de2e60be65a83cd6bd6db29ef17257d0549238ff8fd1a5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/modules_a1_a24/A24__Predictibilite_Metriques_et_veille.md",
+      "sha256": "721a41a07286a846ca6900eb9a7d400ed43f9bbbd4e6f21fbe93f654339c64a3",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_MODULES_A1_A24",
+      "link_type": "MODULE_SPECIFICATION",
+      "linked_to": "periphery/agents/modules_a1_a24/__init__.py",
+      "destination_role": "Specification fonctionnelle des modules A01-A24 du systeme operationnel",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/AGENTS_ET_ROLES_DETECTES.md",
+      "sha256": "33e955f71ffef5d8042d0ec073f20fe41a6ef2adc451ede8342f91afe04f6e78",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/AGENT_001__Observateur.md",
+      "sha256": "0b12702d273f9ced5b43df65f158a5d15ac22faf9fa9705287445505e5f3432a",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/AGENT_002__Sentinelle.md",
+      "sha256": "3f343c0d1cb51f7ea2f184489166b99d5d9984ba33cfe6004e5a7e5f231569d6",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/AGENT_003__Gardien.md",
+      "sha256": "c4c2135372d9adb936643bfea4ebbbc548956fa6aeeefa46e5bb4b187680bd61",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/AGENT_004__Architecte.md",
+      "sha256": "e805c22f0b03a06237a750e3b0ce2f61d064fa539bbeb7e80ca8530d42226a73",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/GUARDIAN_009__Sigma_Verifier.md",
+      "sha256": "2f331e600ee543add6e474414039b3f824e441f29d1ab5f998abaea319b004c0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/GUARDIAN_010__Merkle_Verifier.md",
+      "sha256": "f8ae9f61dcf9c49d7640ffe7f9c9b0fa257631a14148d537776fe06304fc9cf5",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/GUARDIAN_011__RFC3161_Verifier.md",
+      "sha256": "39c84ef0bacb089152e3ddd32b3245c024ce693dbdae9792610c3cd5762722ed",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/GUARDIAN_012__TLA_Verifier.md",
+      "sha256": "5cc306a05219a25ede7a415c2c847b53f3dbdac780888dd6b8cb557e638fcbc0",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/GUARDIAN_016__GPS_Gardien_Guide_Alerteur.md",
+      "sha256": "3f9fc90a070cfe5b8e3d7dd1346ce6126adfb3d285b6a9070904b9a3b1b82603",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_005__Human_Operator.md",
+      "sha256": "6e65a01535bd33c6d6df4e21b63464cc602bd8a165579b2a827157be30d24a5b",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_006__Governance_Layer.md",
+      "sha256": "651a93804984c01b30cef95fdbb6b6879ac12ae5f9ef858466f32a75420069f7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_007__OS3_Audit_Layer.md",
+      "sha256": "166c59767f632baa51c527848b13eb595e62d5abc6d4b6e5faeefcb20a68c2bc",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_008__Agents_Tools.md",
+      "sha256": "6e2ad71d58ad19a3e6068964a462c37368e5436e3e3f0692a05e076cc6ef839e",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_014__Adapter_MCP.md",
+      "sha256": "998b9a6ad4e58682627d3464776376b62c8b3400e2ce081994a817ec29f08ee7",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/CANONIQUES/ROLE_015__Cortex.md",
+      "sha256": "1ea0fa085285ae624418924fff8abab0044640600ac3b40f37ac4913e020c8da",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/agents/v4_roles/README_AGENTS_PROPRE.md",
+      "sha256": "223f5ba0269d2348a7f948679c396679265d97abdb65e8a607a92a35c5c42cc9",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_AGENTS_V4_ROLES_CANONIQUES",
+      "link_type": "AGENT_ROLE_SPECIFICATION_V4",
+      "linked_to": "periphery/agents/v4_roles/__init__.py",
+      "destination_role": "Definition des roles V4 des agents — miroir dans periphery/agents/v4_roles/",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
+      "sha256": "01e1c28e7eb50e6db44bf2d1471c58e07fdf99beebe522301c70965a768f8399",
+      "file_type": "POWERSHELL_SCRIPT",
+      "group": "GROUP_BRODY_MEMORY_READONLY",
+      "link_type": "SCRIPT_LINKED_TO_COMMAND",
+      "linked_to": "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/brody_agent_readonly_session_test_packet_v1.py",
+      "destination_role": "Lanceur PowerShell du packet test readonly Brody — invoque brody_agent_readonly_session_test_packet_v1.py",
+      "relation_status": "CONNECTED_DOCUMENTED",
+      "exact_issue": "DO_NOT_EXECUTE_WITH_POLICY"
+    },
+    {
+      "path": "periphery/pepites_search_algo/P137__Agent_Role_Protocole_Flux.md",
+      "sha256": "c6f3dd04121803798212abaeeb5505208cbf7a6023d0b5d6ebdc5dc96d5ec0b8",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_SEARCH_ALGO",
+      "link_type": "SEARCH_ALGO_COLLECTION_MEMBER",
+      "linked_to": "periphery/pepites_search_algo/P137__Agent_Role_Protocole_Flux.md",
+      "destination_role": "Pepites miroirs dans le dossier pepites_search_algo (collection de 162 documents)",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/pepites_search_algo/P138__Ecologie_dagents.md",
+      "sha256": "7c5160507a49e53c93730886a65ca50e6a7d2f2b6b4d3179443b16a7dcea961f",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_SEARCH_ALGO",
+      "link_type": "SEARCH_ALGO_COLLECTION_MEMBER",
+      "linked_to": "periphery/pepites_search_algo/P137__Agent_Role_Protocole_Flux.md",
+      "destination_role": "Pepites miroirs dans le dossier pepites_search_algo (collection de 162 documents)",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    },
+    {
+      "path": "periphery/pepites_search_algo/P46__Consensus_fail_closed_4_agents.md",
+      "sha256": "65e76d32dda9a03aaf2b229609a30a967d87d724c3d2409d81a0386c7edac7ae",
+      "file_type": "MARKDOWN_DOCUMENTATION",
+      "group": "GROUP_PEPITES_SEARCH_ALGO",
+      "link_type": "SEARCH_ALGO_COLLECTION_MEMBER",
+      "linked_to": "periphery/pepites_search_algo/P137__Agent_Role_Protocole_Flux.md",
+      "destination_role": "Pepites miroirs dans le dossier pepites_search_algo (collection de 162 documents)",
+      "relation_status": "CONNECTED_DOCUMENTED"
+    }
+  ]
+}
