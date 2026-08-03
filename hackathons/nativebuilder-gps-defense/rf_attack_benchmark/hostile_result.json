@@ -1,0 +1,16 @@
+{
+  "artifact": "hostile_result",
+  "status": "NOT_EXECUTED_FOR_TEMPORAL_ATTACK_CLAIM",
+  "baseline_commit": "73cedd4353daa3a512836e0a6480c01839e2b868",
+  "mocks_used": false,
+  "reason": "The required nominal/pre-attack receiver prerequisite failed. Hostile post-onset analysis is blocked until the same receiver/configuration produces NAV/PVT before 135 s.",
+  "previous_partial_hostile_chain": {
+    "artifact": "hackathons/nativebuilder-gps-defense/rf_attack_benchmark/fgi_full_chain_no_pvt_result.json",
+    "x108_live_called": true,
+    "x108_verdict": "HOLD",
+    "receipt_id": "a29e2738bde0446ea7c12c3e31c7d554",
+    "valid_for_temporal_attack_claim": false,
+    "reason": "The previous full-file hostile run produced no NAV/PVT and first lock loss predates official onset."
+  },
+  "proof_level_reached": "BLOCKED_RECEIVER_CONFIGURATION"
+}
