@@ -95,8 +95,12 @@ def test_w3_010_population_exact():
 
 def test_w3_010b_truth_audit_present():
     d = _load_index()
-    assert d.get("truth_audit") == "WAVE003_TRUTH_AUDIT_V1"
+    assert d.get("truth_audit") == "WAVE003_EVIDENCE_GATE_V2"
     assert d.get("false_relations_corrected") == 117
+    gate = d.get("gate_v2_corrections", {})
+    assert gate.get("total_gate_v2") == 512, (
+        f"Expected 512 gate_v2 corrections, got {gate.get('total_gate_v2')}"
+    )
 
 
 def test_w3_011_paths_unique():
@@ -141,6 +145,7 @@ def test_w3_021_no_unknown_role():
         "PROOF_DOCUMENTATION", "DATA_DICTIONARY", "MIGRATION_DOCUMENT",
         "GENERATED_REPORT", "HISTORICAL_SOURCE", "LEGACY_DOCUMENT",
         "ARCHIVE_DOCUMENT", "DUPLICATE_DOCUMENT", "INDEX_DOCUMENT",
+        "NAMESPACE_ANCHOR",
         "UNKNOWN_PENDING_REVIEW",
     }
     for e in _entries():
@@ -197,59 +202,94 @@ def test_w3_031_zero_unexplained_unresolved():
 # ---------------------------------------------------------------------------
 
 def test_w3_040_arbres_34_proved_structural_relation():
-    """04_ARBRES is the ONLY family with TRUE_STRUCTURAL_RELATION to a runtime component."""
+    """04_ARBRES: content docs -> STRUCTURAL_NAMESPACE, __init__.py -> CANONICAL_INDEX.
+
+    GATE_V2: tree_registry.py references pack name only (criterion C). No individual
+    file loading (L15: individual MMONDE file SHAs NOT_COMPUTED in V0). 388 content
+    documents link to tree_registry.py as DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE.
+    35 __init__.py namespace anchors link to MANIFEST_SHA256.json as CANONICAL_INDEX.
+    """
     arbres = [e for e in _entries() if e["directory_family"] == "04_ARBRES_34_TENSOR_MATRIX"]
     assert len(arbres) == 423, f"Expected 423 ARBRES entries, got {len(arbres)}"
-    for e in arbres:
-        assert "cognitive_trees" in (e.get("destination") or ""), (
-            f"Arbre not linked to cognitive_trees: {e['path']}"
+    content = [e for e in arbres if not e["path"].endswith("__init__.py")]
+    init = [e for e in arbres if e["path"].endswith("__init__.py")]
+    assert len(content) == 388, f"Expected 388 ARBRES content files, got {len(content)}"
+    assert len(init) == 35, f"Expected 35 ARBRES __init__.py, got {len(init)}"
+    for e in content:
+        assert e.get("relation_type") == "DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE", (
+            f"ARBRES content must be STRUCTURAL_NAMESPACE: {e['path']}"
         )
-        assert e.get("relation_type") == "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
-        assert e.get("semantic_verdict") == "TRUE_STRUCTURAL_RELATION"
+        assert "cognitive_trees" in (e.get("destination") or ""), (
+            f"ARBRES content must link to cognitive_trees: {e['path']}"
+        )
+        assert e.get("semantic_verdict") == "TRUE_DOCUMENTARY_RELATION"
+    for e in init:
+        assert e.get("relation_type") == "DOCUMENT_LINKED_TO_CANONICAL_INDEX", (
+            f"ARBRES __init__ must be CANONICAL_INDEX: {e['path']}"
+        )
+        assert e.get("role") == "NAMESPACE_ANCHOR"
 
 
 def test_w3_041_agents52_proved_structural_relation():
+    """10_AGENTS_52: 53 source docs -> REGISTRY_ENTRY (agents_52.registry.json has 52 named entries).
+    Remaining 13 (init + structural) -> CANONICAL_INDEX.
+    GATE_V2: all semantic_verdicts are TRUE_DOCUMENTARY_RELATION."""
     a52 = [e for e in _entries() if e["directory_family"] == "10_AGENTS_52"]
-    assert len(a52) > 0
-    for e in a52:
+    assert len(a52) == 66, f"Expected 66 AGENTS52 entries, got {len(a52)}"
+    source_docs = [e for e in a52 if e["relation_type"] == "DOCUMENT_LINKED_TO_REGISTRY_ENTRY"]
+    assert len(source_docs) == 53, (
+        f"Expected 53 AGENTS52 source docs in REGISTRY_ENTRY, got {len(source_docs)}"
+    )
+    for e in source_docs:
         assert "agents_52.registry.json" in (e.get("destination") or ""), (
-            f"Agents52 entry not linked to agents_52.registry.json: {e['path']}"
+            f"Agents52 source doc not linked to agents_52.registry.json: {e['path']}"
         )
-        assert e.get("semantic_verdict") == "TRUE_STRUCTURAL_RELATION"
+        assert e.get("semantic_verdict") == "TRUE_DOCUMENTARY_RELATION"
+    canonical = [e for e in a52 if e["relation_type"] == "DOCUMENT_LINKED_TO_CANONICAL_INDEX"]
+    assert len(canonical) == 13, (
+        f"Expected 13 AGENTS52 structural/namespace entries in CANONICAL_INDEX, got {len(canonical)}"
+    )
 
 
-def test_w3_042_shazam_linked_to_named_registry_not_runtime():
-    """05_SHAZAM links to shazam.registry.json (not to shazam_cognitif.py -- corrected)."""
+def test_w3_042_shazam_linked_to_canonical_not_runtime():
+    """05_SHAZAM links to MANIFEST_SHA256.json (GATE_V2: shazam.registry.json is an empty stub).
+
+    GATE_V2: shazam.registry.json has 0 entries — no EXACT_REGISTRY_ENTRY possible.
+    All shazam files reclassified to DOCUMENT_LINKED_TO_CANONICAL_INDEX.
+    Previous claim (shazam_cognitif.py) was FALSE — no MMONDE reference found.
+    """
     shazam = [e for e in _entries() if e["directory_family"] == "05_SHAZAM_COGNITIF"]
     assert len(shazam) > 0
     for e in shazam:
-        assert "shazam.registry.json" in (e.get("destination") or ""), (
-            f"Shazam not linked to shazam.registry.json: {e['path']}"
+        assert e.get("relation_type") == "DOCUMENT_LINKED_TO_CANONICAL_INDEX", (
+            f"Shazam must be CANONICAL_INDEX (empty registry): {e['path']}"
         )
-        # Must NOT claim a direct runtime component link (corrected)
         assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT", (
             f"Shazam must not claim false runtime link: {e['path']}"
         )
+        assert "MANIFEST_SHA256.json" in (e.get("destination") or ""), (
+            f"Shazam not linked to MANIFEST_SHA256.json: {e['path']}"
+        )
 
 
-def test_w3_043_mcp_linked_to_named_registry_not_runtime():
-    """09_MCP links to mcp_bridge.registry.json (corrected from false runtime claim)."""
+def test_w3_043_mcp_linked_to_canonical_not_runtime():
+    """09_MCP links to MANIFEST_SHA256.json (GATE_V2: mcp_bridge.registry.json is empty stub)."""
     mcp = [e for e in _entries() if e["directory_family"] == "09_MCP_BRIDGE_OBSIDIA_IR"]
     assert len(mcp) > 0
     for e in mcp:
-        assert "mcp_bridge.registry.json" in (e.get("destination") or ""), (
-            f"MCP not linked to mcp_bridge.registry.json: {e['path']}"
+        assert "MANIFEST_SHA256.json" in (e.get("destination") or ""), (
+            f"MCP not linked to MANIFEST_SHA256.json: {e['path']}"
         )
         assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
 
 
-def test_w3_044_guards_linked_to_named_registry_not_runtime():
-    """15_GUARDS links to guards.registry.json (corrected from false runtime claim)."""
+def test_w3_044_guards_linked_to_canonical_not_runtime():
+    """15_GUARDS links to MANIFEST_SHA256.json (GATE_V2: guards.registry.json is empty stub)."""
     guards = [e for e in _entries() if e["directory_family"] == "15_GUARDS_NON_DECISION"]
     assert len(guards) > 0
     for e in guards:
-        assert "guards.registry.json" in (e.get("destination") or ""), (
-            f"Guards not linked to guards.registry.json: {e['path']}"
+        assert "MANIFEST_SHA256.json" in (e.get("destination") or ""), (
+            f"Guards not linked to MANIFEST_SHA256.json: {e['path']}"
         )
         assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
 
@@ -265,17 +305,32 @@ def test_w3_046_index_family_count():
 
 
 def test_w3_047_relation_distribution():
-    """Verify the corrected relation distribution."""
+    """Verify the GATE_V2 corrected relation distribution.
+
+    GATE_V2 final:
+    - DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE: 388 (04_ARBRES content -- pack name ref only)
+    - DOCUMENT_LINKED_TO_REGISTRY_ENTRY:        53 (10_AGENTS_52 source docs, EXACT entries)
+    - DOCUMENT_LINKED_TO_CANONICAL_INDEX:       237 (35 ARBRES init + 86 empty-registry + 3 hist + 113 orig)
+    - HISTORICAL_DOCUMENT_LINKED_TO_CURRENT_SOURCE: 2 (extracted_text_all.md + image_34_arbres.png)
+    - DOCUMENT_LINKED_TO_RUNTIME_COMPONENT:      0 (all reclassified at gate)
+    """
     from collections import Counter
     dist = Counter(e["relation_type"] for e in _entries())
-    assert dist["DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"] == 423, (
-        f"Expected 423 runtime relations (04_ARBRES only), got {dist['DOCUMENT_LINKED_TO_RUNTIME_COMPONENT']}"
+    assert dist["DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE"] == 388, (
+        f"Expected 388 structural-namespace (04_ARBRES content), got {dist['DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE']}"
     )
-    assert dist["DOCUMENT_LINKED_TO_REGISTRY_ENTRY"] == 139, (
-        f"Expected 139 registry relations, got {dist['DOCUMENT_LINKED_TO_REGISTRY_ENTRY']}"
+    assert dist["DOCUMENT_LINKED_TO_REGISTRY_ENTRY"] == 53, (
+        f"Expected 53 registry relations (agents52 source docs), got {dist['DOCUMENT_LINKED_TO_REGISTRY_ENTRY']}"
     )
-    assert dist["DOCUMENT_LINKED_TO_CANONICAL_INDEX"] == 113, (
-        f"Expected 113 canonical index relations, got {dist['DOCUMENT_LINKED_TO_CANONICAL_INDEX']}"
+    assert dist["DOCUMENT_LINKED_TO_CANONICAL_INDEX"] == 237, (
+        f"Expected 237 canonical index relations, got {dist['DOCUMENT_LINKED_TO_CANONICAL_INDEX']}"
+    )
+    assert dist["HISTORICAL_DOCUMENT_LINKED_TO_CURRENT_SOURCE"] == 2, (
+        f"Expected 2 historical source relations, got {dist['HISTORICAL_DOCUMENT_LINKED_TO_CURRENT_SOURCE']}"
+    )
+    assert dist.get("DOCUMENT_LINKED_TO_RUNTIME_COMPONENT", 0) == 0, (
+        f"No DOCUMENT_LINKED_TO_RUNTIME_COMPONENT must remain after GATE_V2, "
+        f"got {dist.get('DOCUMENT_LINKED_TO_RUNTIME_COMPONENT', 0)}"
     )
     assert dist.get("GENERATED_DOCUMENT_LINKED_TO_GENERATOR", 0) == 0, (
         "No GENERATED_DOCUMENT_LINKED_TO_GENERATOR must remain (all corrected)"
@@ -286,21 +341,28 @@ def test_w3_047_relation_distribution():
 
 
 def test_w3_048_semantic_verdicts_all_true():
-    """All entries must have TRUE_STRUCTURAL_RELATION or TRUE_DOCUMENTARY_RELATION."""
+    """All entries must have TRUE_DOCUMENTARY_RELATION (GATE_V2: TRUE_STRUCTURAL eliminated)."""
     for e in _entries():
         v = e.get("semantic_verdict", "")
-        assert v in ("TRUE_STRUCTURAL_RELATION", "TRUE_DOCUMENTARY_RELATION"), (
-            f"Entry {e['path']} has semantic_verdict={v!r} -- must be TRUE"
+        assert v == "TRUE_DOCUMENTARY_RELATION", (
+            f"Entry {e['path']} has semantic_verdict={v!r} -- must be TRUE_DOCUMENTARY_RELATION after GATE_V2"
         )
 
 
-def test_w3_049_no_false_runtime_claim_for_non_arbres():
-    """Only 04_ARBRES may claim DOCUMENT_LINKED_TO_RUNTIME_COMPONENT."""
-    for e in _entries():
-        if e.get("relation_type") == "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT":
-            assert e["directory_family"] == "04_ARBRES_34_TENSOR_MATRIX", (
-                f"Non-arbres entry claims false runtime link: {e['path']}"
-            )
+def test_w3_049_no_runtime_component_claims():
+    """GATE_V2: zero entries may claim DOCUMENT_LINKED_TO_RUNTIME_COMPONENT.
+
+    04_ARBRES content was reclassified to DOCUMENT_LINKED_TO_STRUCTURAL_NAMESPACE
+    (tree_registry.py references pack name only -- criterion C, no individual file loading).
+    """
+    runtime_entries = [
+        e for e in _entries()
+        if e.get("relation_type") == "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
+    ]
+    assert len(runtime_entries) == 0, (
+        f"GATE_V2: {len(runtime_entries)} entries still claim RUNTIME_COMPONENT -- must be zero: "
+        f"{[e['path'] for e in runtime_entries[:3]]}"
+    )
 
 
 # ---------------------------------------------------------------------------
