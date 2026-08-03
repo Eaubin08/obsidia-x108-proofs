@@ -25,6 +25,16 @@ _REGISTRY_REL_PARTS = (
     "agents_52.registry.json",
 )
 
+_MANIFEST_REL_PARTS = (
+    "periphery",
+    "OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1",
+    "10_AGENTS_52",
+    "agents_52.source_manifest.json",
+)
+
+_SUPPORTED_MANIFEST_SCHEMA = "1.0"
+_EXPECTED_SOURCE_DOCUMENT_COUNT = 52
+
 # Batch 001 — explicit mapping from ART118.
 # Source: 118_AGENTS52_FIRST_HUMAN_VALIDATION_BATCH_PROPOSAL_REV2D.csv
 # Never derive ROW_IDs from JSON position, ordinal, name order, or list index.
@@ -129,9 +139,21 @@ def _rel_path() -> str:
     return "/".join(_REGISTRY_REL_PARTS)
 
 
+def _manifest_path() -> Path:
+    return _repo_root().joinpath(*_MANIFEST_REL_PARTS)
+
+
+def _manifest_rel_path() -> str:
+    return "/".join(_MANIFEST_REL_PARTS)
+
+
 # Module-level cache — loaded once, never mutated after construction.
 _CACHE: tuple[AgentConfigEntry, ...] | None = None
 _CACHE_SHA: str = ""
+
+# Source manifest cache — loaded once, validated on first access.
+_MANIFEST_CACHE: dict | None = None
+_MANIFEST_CACHE_SHA: str = ""
 
 
 def _build_entry(raw: dict, sha256: str) -> AgentConfigEntry:
@@ -200,6 +222,93 @@ def _build_entry(raw: dict, sha256: str) -> AgentConfigEntry:
     )
 
 
+def load_source_manifest() -> dict:
+    """Load and validate agents_52.source_manifest.json. Returns validated manifest dict.
+
+    Validates: schema_version, entry_count, agent_id uniqueness,
+    source_document_path uniqueness, existence of all 52 documents,
+    SHA256 of all 52 documents, authority fields.
+    Raises ValueError or FileNotFoundError on any violation.
+    Cached after first successful call.
+    """
+    global _MANIFEST_CACHE, _MANIFEST_CACHE_SHA
+    if _MANIFEST_CACHE is not None:
+        return _MANIFEST_CACHE
+
+    path = _manifest_path()
+    if not path.exists():
+        raise FileNotFoundError(
+            f"AGENTS52_SOURCE_MANIFEST_MISSING:{_manifest_rel_path()}"
+        )
+
+    raw_bytes = path.read_bytes()
+    manifest = json.loads(raw_bytes)
+
+    schema = manifest.get("schema_version")
+    if schema != _SUPPORTED_MANIFEST_SCHEMA:
+        raise ValueError(
+            f"AGENTS52_SOURCE_MANIFEST_UNSUPPORTED_SCHEMA:{schema!r}"
+            f" expected={_SUPPORTED_MANIFEST_SCHEMA!r}"
+        )
+
+    if manifest.get("authority") != "NON_SOVEREIGN":
+        raise ValueError(
+            f"AGENTS52_SOURCE_MANIFEST_AUTHORITY_VIOLATION:"
+            f"{manifest.get('authority')!r}"
+        )
+
+    if manifest.get("readonly") is not True:
+        raise ValueError("AGENTS52_SOURCE_MANIFEST_READONLY_VIOLATION")
+
+    entries: list[dict] = manifest.get("entries", [])
+    if len(entries) != _EXPECTED_SOURCE_DOCUMENT_COUNT:
+        raise ValueError(
+            f"AGENTS52_SOURCE_MANIFEST_ENTRY_COUNT:{len(entries)}"
+            f" expected={_EXPECTED_SOURCE_DOCUMENT_COUNT}"
+        )
+
+    agent_ids = [e["agent_id"] for e in entries]
+    if len(agent_ids) != len(set(agent_ids)):
+        raise ValueError("AGENTS52_SOURCE_MANIFEST_DUPLICATE_AGENT_ID")
+
+    doc_paths = [e["source_document_path"] for e in entries]
+    if len(doc_paths) != len(set(doc_paths)):
+        raise ValueError("AGENTS52_SOURCE_MANIFEST_DUPLICATE_SOURCE_PATH")
+
+    repo = _repo_root()
+    missing: list[str] = []
+    mismatched: list[str] = []
+    for entry in entries:
+        doc_rel = entry["source_document_path"]
+        # Reject paths that escape the repo root.
+        try:
+            doc_abs = (repo / doc_rel).resolve()
+            doc_abs.relative_to(repo.resolve())
+        except ValueError:
+            raise ValueError(
+                f"AGENTS52_SOURCE_MANIFEST_PATH_ESCAPE:{doc_rel}"
+            )
+        if not doc_abs.exists():
+            missing.append(doc_rel)
+            continue
+        actual_sha = hashlib.sha256(doc_abs.read_bytes()).hexdigest()
+        if actual_sha != entry["source_document_sha256"]:
+            mismatched.append(doc_rel)
+
+    if missing:
+        raise ValueError(
+            f"AGENTS52_SOURCE_MANIFEST_MISSING_DOCUMENTS:{missing}"
+        )
+    if mismatched:
+        raise ValueError(
+            f"AGENTS52_SOURCE_MANIFEST_HASH_MISMATCH:{mismatched}"
+        )
+
+    _MANIFEST_CACHE_SHA = hashlib.sha256(raw_bytes).hexdigest()
+    _MANIFEST_CACHE = manifest
+    return _MANIFEST_CACHE
+
+
 def load_registry() -> tuple[AgentConfigEntry, ...]:
     """Load agents_52.registry.json; return immutable tuple. Cached after first call."""
     global _CACHE, _CACHE_SHA
@@ -243,6 +352,10 @@ def validate_registry() -> dict:
         ),
         "authority_uniform": all(e.authority == "NON_SOVEREIGN" for e in entries),
         "source_sha256": _CACHE_SHA,
+        "source_manifest_path": _manifest_rel_path(),
+        "source_manifest_loaded": _MANIFEST_CACHE is not None,
+        "source_manifest_sha256": _MANIFEST_CACHE_SHA if _MANIFEST_CACHE else "",
+        "source_manifest_entry_count": len((_MANIFEST_CACHE or {}).get("entries", [])),
     }
 
 
@@ -294,4 +407,24 @@ def get_registry_provenance() -> dict:
         "batch003_compiled_count": len(batch3),
         "batch003_compiled_agent_ids": sorted(e.agent_id for e in batch3),
         "technically_compiled_readonly_count": len(batch1) + len(batch2) + len(batch3),
+        "source_manifest_path": _manifest_rel_path(),
+        "source_manifest_sha256": _MANIFEST_CACHE_SHA if _MANIFEST_CACHE else "",
+        "source_manifest_entry_count": len((_MANIFEST_CACHE or {}).get("entries", [])),
+        "source_documents_count": _EXPECTED_SOURCE_DOCUMENT_COUNT,
+        "source_documents_verified": _MANIFEST_CACHE is not None,
+        "source_documents_missing": 0 if _MANIFEST_CACHE else -1,
+        "source_documents_hash_mismatch": 0 if _MANIFEST_CACHE else -1,
+        "canonical_registry_path": _rel_path(),
+        "canonical_registry_sha256": _CACHE_SHA,
+        "secondary_registry_path": (
+            (_MANIFEST_CACHE or {}).get("secondary_registry_path", "")
+        ),
+        "secondary_registry_role": (
+            (_MANIFEST_CACHE or {}).get("secondary_registry_role", "")
+        ),
+        "secondary_registry_sha256_match": (
+            (_MANIFEST_CACHE or {}).get("secondary_registry_sha256_matches_canonical", False)
+        ),
+        "csv_path": (_MANIFEST_CACHE or {}).get("csv_path", ""),
+        "csv_role": (_MANIFEST_CACHE or {}).get("csv_role", ""),
     }
