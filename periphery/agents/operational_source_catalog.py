@@ -1,11 +1,12 @@
 """
-Readonly registry for the PYTHON_OPERATIONAL_AGENT_SYSTEM — Wave 002.
+Readonly source catalog for the PYTHON_OPERATIONAL_AGENT_SYSTEM — Wave 002.
 
-Loads and validates operational_system_manifest.json, proving that all 167
-unresolved source files exist on disk and match their recorded SHA256.
+Loads and validates operational_source_catalog.json, proving that all 167
+catalogued source files exist on disk and match their recorded SHA256.
 
 AUTHORITY: NON_SOVEREIGN — KX108_ONLY decision authority.
 WAVE: AGENTS_FILE_WIRING_WAVE_002
+ROLE: OPERATIONAL_AGENT_SOURCE_CATALOG (not a runtime registry)
 """
 from __future__ import annotations
 
@@ -14,7 +15,7 @@ import hashlib
 import json
 from pathlib import Path
 
-_MANIFEST_REL = "periphery/agents/operational_system_manifest.json"
+_MANIFEST_REL = "periphery/agents/operational_source_catalog.json"
 _SUPPORTED_SCHEMA = "1.0"
 _EXPECTED_ENTRY_COUNT = 167
 
@@ -23,7 +24,7 @@ _CACHE_SHA: str = ""
 
 
 def _repo_root() -> Path:
-    # __file__ = periphery/agents/operational_system_registry.py
+    # __file__ = periphery/agents/operational_source_catalog.py
     # .parent   = periphery/agents/
     # .parent   = periphery/
     # .parent   = repo root
@@ -39,7 +40,7 @@ def _manifest_rel_path() -> str:
 
 
 def load_operational_manifest() -> dict:
-    """Load and validate operational_system_manifest.json.
+    """Load and validate operational_source_catalog.json.
 
     Validates: schema_version, entry_count, path uniqueness,
     existence of all files, SHA256 of all files, authority fields.
@@ -53,7 +54,7 @@ def load_operational_manifest() -> dict:
     path = _manifest_path()
     if not path.exists():
         raise FileNotFoundError(
-            f"WAVE002_OPERATIONAL_MANIFEST_MISSING:{_MANIFEST_REL}"
+            f"WAVE002_OPERATIONAL_CATALOG_MISSING:{_MANIFEST_REL}"
         )
 
     raw = path.read_bytes()
