@@ -1,0 +1,155 @@
+{
+  "capture_timestamp": "UT_DFMC_WINDOW_C_135_180",
+  "constellation": [
+    "G"
+  ],
+  "dataset_name": "FGI_UT_DFMC",
+  "dataset_version": "UT_DFMC",
+  "domain_state_hash": "UNKNOWN",
+  "eligible_for_physical_claim": true,
+  "input_hash": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+  "license": "FGI-SpoofRepo official dataset terms; FGI-GSRx GPL-3.0 receiver",
+  "limitations": [
+    "RECORDED_PUBLIC_HOSTILE_IQ",
+    "FGI_GSRX_OCTAVE_HEADLESS_RUNTIME",
+    "NO_SENSOR_PRIVATE_KEY_ATTESTATION",
+    "NO_INERTIAL_CORROBORATION",
+    "CN0_PROXY_FROM_VALID_SATELLITES_NOT_RAW_CN0"
+  ],
+  "observables": {
+    "brownout_score": 0.0,
+    "cn0_dbhz": 35.0,
+    "fgi_window_id": "C_135_180",
+    "first_valid_pvt": {
+      "dop": [
+        1.6015203499073833,
+        1.4535079949967709,
+        1.2330712803424784,
+        0.769558775607227,
+        0.6724447483979146
+      ],
+      "epoch_index": 1,
+      "fom": 1.1307088628690545,
+      "lla": [
+        60.16678285928633,
+        24.566605685033455,
+        27.978812254033983
+      ],
+      "nr_sats": 12,
+      "velocity_xyz": [
+        0.0030138779073780597,
+        -0.02059028712241684,
+        -0.02259893159290627
+      ],
+      "xyz": [
+        2893062.8332489133,
+        1322508.480091404,
+        5509768.917948164
+      ]
+    },
+    "freshness_ms": 0,
+    "g_load": 1.0,
+    "inertial_available": false,
+    "last_valid_pvt": {
+      "dop": [
+        2.2200975396727434,
+        2.030679807231099,
+        1.7198875343481967,
+        1.0796514940895574,
+        0.8973141067457013
+      ],
+      "epoch_index": 368,
+      "fom": 0.1775306257874834,
+      "lla": [
+        60.166766258689,
+        24.56664339163901,
+        5.841682508587837
+      ],
+      "nr_sats": 7,
+      "velocity_xyz": [
+        0.002741343922082251,
+        -0.007583807229607942,
+        0.016390368424652024
+      ],
+      "xyz": [
+        2893053.406289601,
+        1322506.4725307138,
+        5509748.794379793
+      ]
+    },
+    "max_cn0_dbhz": 35.0,
+    "nav_epochs": 368,
+    "nav_message_satellites": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07"
+    ],
+    "nav_valid_epochs": 368,
+    "pvt": {
+      "altitude_m": 5.841682508587837,
+      "fix_time_utc": "FGI_GSRX_TOW_INTERNAL",
+      "lat_deg": 60.166766258689,
+      "lon_deg": 24.56664339163901,
+      "observations": 7,
+      "speed_kt": 0.03550766557149063
+    },
+    "radio_available": true,
+    "replay_window_detected": false,
+    "source_conflict_score": 0.0,
+    "spoof_score": 0.0,
+    "time_skew_score": 0.0,
+    "tracked_satellites": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07"
+    ],
+    "trajectory_drift_score": 0.0
+  },
+  "observables_hash": "4814c9e5ebd96f4b488a301bf93356f016dee49b9def26a0cfc111426e43e50b",
+  "observation_id": "fgi-ut-dfmc-c_135_180",
+  "official_url": "https://etsin.fairdata.fi/dataset/367379a8-7d78-4b08-91f0-8027ce7a621b",
+  "parent_receipt_id": "UNKNOWN",
+  "processing_timestamp": "1785773460921",
+  "processor_config_hash": "32e7adcb03b6716be67df1f8f55d5ec1c0c3616a696210e67779ee862220afcd",
+  "processor_name": "obsidia-fgi-gsrx-nav-normalizer",
+  "processor_version": "v0",
+  "proof_level": "RECORDED_RF_ATTACK",
+  "provenance": {
+    "iq_file": "hackathons\\nativebuilder-gps-defense\\data\\fgi-spoofrepo\\FGISpoofRepo\\UT_DFMC\\UTD_L1_E1.dat",
+    "iq_sha256": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+    "nav_summary": "hackathons\\nativebuilder-gps-defense\\fgi_gsrx_runtime\\results\\window_C_nav_derived.json",
+    "nav_summary_sha256": "32e7adcb03b6716be67df1f8f55d5ec1c0c3616a696210e67779ee862220afcd",
+    "window_id": "C_135_180"
+  },
+  "receiver": {
+    "front_end_center_frequency_hz": 1569030000,
+    "item_type": "int8",
+    "processor": "FGI-GSRx",
+    "processor_version": "v2.1.3",
+    "runtime": "Docker Ubuntu 24.04 + GNU Octave 8.4.0",
+    "sampling_frequency_sps": 26000000
+  },
+  "satellites": [
+    "G01",
+    "G02",
+    "G03",
+    "G04",
+    "G05",
+    "G06",
+    "G07"
+  ],
+  "source_type": "FGI_GSRX_NAV_DERIVED_IQ_PROCESSING_RUN",
+  "synthetic": false,
+  "truth_reference": {
+    "labels_used_by_pipeline": false,
+    "route_hash": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72"
+  }
+}

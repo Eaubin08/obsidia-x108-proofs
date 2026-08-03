@@ -1,0 +1,36 @@
+warning: mkdir: directory exists
+warning: mkdir: directory exists
+warning: fopen: '/opt/fgi-gsrx-runtime/FGI-GSRx/param/defaultReceiverConfiguration.txt' found by searching load path
+warning: called from
+    readParamFile at line 33 column 5
+    readSettings at line 35 column 10
+    /opt/fgi-gsrx-runtime/scripts/smoke_ut_dfmc.m at line 16 column 12
+
+gpsl1 Enabled
+
+Acquiring gpsl1 signals...
+*================================================================================================*
+|01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 |
+*================================================================================================*
+Found gpsl1 signals:
+*================================================================================================*
+|.. 02 .. .. .. .. 07 08 .. 10 .. .. 13 14 15 .. 17 .. 19 .. 21 22 23 24 .. .. .. .. .. 30 .. .. |
+*================================================================================================*
+14 gpsl1 signals acquired in 272.50 sec.
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    /opt/fgi-gsrx-runtime/scripts/smoke_ut_dfmc.m at line 54 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    /opt/fgi-gsrx-runtime/scripts/smoke_ut_dfmc.m at line 54 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    /opt/fgi-gsrx-runtime/scripts/smoke_ut_dfmc.m at line 54 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    /opt/fgi-gsrx-runtime/scripts/smoke_ut_dfmc.m at line 54 column 3
+
+SMOKE_ACQUISITION_COMPLETED

@@ -1,0 +1,266 @@
+warning: mkdir: directory exists
+warning: mkdir: directory exists
+warning: fopen: '/opt/fgi-gsrx-runtime/FGI-GSRx/param/defaultReceiverConfiguration.txt' found by searching load path
+warning: called from
+    readParamFile at line 33 column 5
+    readSettings at line 35 column 10
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 24 column 12
+
+gpsl1 Enabled
+warning: mkdir: directory exists
+
+Welcome to:  FGI-GSRx software GNSS receiver
+by the Finnish Geospatial Research Institute
+
+                   -------------------------------
+
+warning: fopen: '/opt/fgi-gsrx-runtime/FGI-GSRx/param/defaultReceiverConfiguration.txt' found by searching load path
+warning: called from
+    readParamFile at line 33 column 5
+    readSettings at line 35 column 10
+    gsrx at line 55 column 14
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+gpsl1 Enabled
+
+Acquiring gpsl1 signals...
+*================================================================================================*
+|01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 |
+*================================================================================================*
+Found gpsl1 signals:
+*================================================================================================*
+|.. 02 .. .. .. .. 07 08 .. 10 .. .. 13 14 15 .. 17 .. 19 .. 21 22 23 24 .. .. .. .. .. 30 .. .. |
+*================================================================================================*
+14 gpsl1 signals acquired in 328.18 sec.
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 89 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 89 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 89 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 89 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+   Tracking started at 03-Aug-2026 13:18:33
+Ms Processed: 1000 Ms Left: 1000
+Time processed: 163 Time left: 163
+   Bit sync for gpsl1 prn 7 found at 1520 with index 2
+   Bit sync for gpsl1 prn 10 found at 1520 with index 20
+   Bit sync for gpsl1 prn 13 found at 1520 with index 6
+   Bit sync for gpsl1 prn 14 found at 1520 with index 7
+   Bit sync for gpsl1 prn 15 found at 1520 with index 6
+   Bit sync for gpsl1 prn 17 found at 1520 with index 13
+   Bit sync for gpsl1 prn 21 found at 1520 with index 19
+   Bit sync for gpsl1 prn 22 found at 1520 with index 6
+   Bit sync for gpsl1 prn 23 found at 1520 with index 14
+   Bit sync for gpsl1 prn 24 found at 1520 with index 13
+   Bit sync for gpsl1 prn 30 found at 1520 with index 13
+   Bit sync for gpsl1 prn 2 found at 1540 with index 1
+   Bit sync for gpsl1 prn 8 found at 1540 with index 20
+   Bit sync for gpsl1 prn 19 found at 1620 with index 20
+Ms Processed: 2000 Ms Left: 0
+Time processed: 347 Time left: 0
+   Tracking is over (elapsed time 00:05:47)
+   Tracking started at 03-Aug-2026 13:24:21
+Ms Processed: 1000 Ms Left: 59000
+Time processed: 97 Time left: 5709
+   Bit sync for gpsl1 prn 7 found at 1500 with index 1
+   Bit sync for gpsl1 prn 8 found at 1500 with index 1
+   Bit sync for gpsl1 prn 10 found at 1500 with index 2
+   Bit sync for gpsl1 prn 13 found at 1500 with index 2
+   Bit sync for gpsl1 prn 14 found at 1500 with index 2
+   Bit sync for gpsl1 prn 15 found at 1500 with index 2
+   Bit sync for gpsl1 prn 17 found at 1500 with index 2
+   Bit sync for gpsl1 prn 19 found at 1500 with index 2
+   Bit sync for gpsl1 prn 21 found at 1500 with index 1
+   Bit sync for gpsl1 prn 22 found at 1500 with index 2
+   Bit sync for gpsl1 prn 23 found at 1500 with index 1
+   Bit sync for gpsl1 prn 24 found at 1500 with index 1
+   Bit sync for gpsl1 prn 30 found at 1500 with index 1
+   Bit sync for gpsl1 prn 2 found at 1520 with index 2
+Ms Processed: 2000 Ms Left: 58000
+Time processed: 192 Time left: 5569
+Ms Processed: 3000 Ms Left: 57000
+Time processed: 332 Time left: 6309
+Ms Processed: 4000 Ms Left: 56000
+Time processed: 477 Time left: 6683
+Ms Processed: 5000 Ms Left: 55000
+Time processed: 565 Time left: 6215
+Ms Processed: 6000 Ms Left: 54000
+Time processed: 650 Time left: 5854
+Ms Processed: 7000 Ms Left: 53000
+Time processed: 737 Time left: 5577
+Ms Processed: 8000 Ms Left: 52000
+Time processed: 824 Time left: 5356
+Ms Processed: 9000 Ms Left: 51000
+Time processed: 902 Time left: 5113
+Ms Processed: 10000 Ms Left: 50000
+Time processed: 988 Time left: 4942
+Ms Processed: 11000 Ms Left: 49000
+Time processed: 1073 Time left: 4778
+Ms Processed: 12000 Ms Left: 48000
+Time processed: 1160 Time left: 4639
+Ms Processed: 13000 Ms Left: 47000
+Time processed: 1246 Time left: 4504
+Ms Processed: 14000 Ms Left: 46000
+Time processed: 1337 Time left: 4392
+Ms Processed: 15000 Ms Left: 45000
+Time processed: 1440 Time left: 4321
+Ms Processed: 16000 Ms Left: 44000
+Time processed: 1525 Time left: 4194
+Ms Processed: 17000 Ms Left: 43000
+Time processed: 1619 Time left: 4095
+Ms Processed: 18000 Ms Left: 42000
+Time processed: 1723 Time left: 4021
+Ms Processed: 19000 Ms Left: 41000
+Time processed: 1818 Time left: 3923
+Ms Processed: 20000 Ms Left: 40000
+Time processed: 1904 Time left: 3809
+Ms Processed: 21000 Ms Left: 39000
+Time processed: 2007 Time left: 3727
+Ms Processed: 22000 Ms Left: 38000
+Time processed: 2098 Time left: 3624
+Ms Processed: 23000 Ms Left: 37000
+Time processed: 2215 Time left: 3563
+Ms Processed: 24000 Ms Left: 36000
+Time processed: 2351 Time left: 3526
+Ms Processed: 25000 Ms Left: 35000
+Time processed: 2454 Time left: 3435
+Ms Processed: 26000 Ms Left: 34000
+Time processed: 2548 Time left: 3332
+Ms Processed: 27000 Ms Left: 33000
+Time processed: 2650 Time left: 3239
+Ms Processed: 28000 Ms Left: 32000
+Time processed: 2755 Time left: 3149
+Ms Processed: 29000 Ms Left: 31000
+Time processed: 2850 Time left: 3046
+Ms Processed: 30000 Ms Left: 30000
+Time processed: 2947 Time left: 2947
+Ms Processed: 31000 Ms Left: 29000
+Time processed: 3046 Time left: 2850
+Ms Processed: 32000 Ms Left: 28000
+Time processed: 3141 Time left: 2748
+Ms Processed: 33000 Ms Left: 27000
+Time processed: 3248 Time left: 2658
+Ms Processed: 34000 Ms Left: 26000
+Time processed: 3349 Time left: 2561
+Ms Processed: 35000 Ms Left: 25000
+Time processed: 3432 Time left: 2451
+Ms Processed: 36000 Ms Left: 24000
+Time processed: 3509 Time left: 2339
+Ms Processed: 37000 Ms Left: 23000
+Time processed: 3582 Time left: 2227
+Ms Processed: 38000 Ms Left: 22000
+Time processed: 3677 Time left: 2129
+Ms Processed: 39000 Ms Left: 21000
+Time processed: 3760 Time left: 2025
+Ms Processed: 40000 Ms Left: 20000
+Time processed: 3838 Time left: 1919
+Ms Processed: 41000 Ms Left: 19000
+Time processed: 3915 Time left: 1814
+Ms Processed: 42000 Ms Left: 18000
+Time processed: 3992 Time left: 1711
+Ms Processed: 43000 Ms Left: 17000
+Time processed: 4072 Time left: 1610
+Ms Processed: 44000 Ms Left: 16000
+Time processed: 4147 Time left: 1508
+Ms Processed: 45000 Ms Left: 15000
+Time processed: 4223 Time left: 1408
+Ms Processed: 46000 Ms Left: 14000
+Time processed: 4299 Time left: 1309
+Ms Processed: 47000 Ms Left: 13000
+Time processed: 4371 Time left: 1209
+Ms Processed: 48000 Ms Left: 12000
+Time processed: 4443 Time left: 1111
+Ms Processed: 49000 Ms Left: 11000
+Time processed: 4516 Time left: 1014
+Ms Processed: 50000 Ms Left: 10000
+Time processed: 4587 Time left: 917
+Ms Processed: 51000 Ms Left: 9000
+Time processed: 4659 Time left: 822
+Ms Processed: 52000 Ms Left: 8000
+Time processed: 4733 Time left: 728
+Ms Processed: 53000 Ms Left: 7000
+Time processed: 4805 Time left: 635
+Ms Processed: 54000 Ms Left: 6000
+Time processed: 4878 Time left: 542
+Ms Processed: 55000 Ms Left: 5000
+Time processed: 4950 Time left: 450
+Ms Processed: 56000 Ms Left: 4000
+Time processed: 5022 Time left: 359
+Ms Processed: 57000 Ms Left: 3000
+Time processed: 5094 Time left: 268
+Ms Processed: 58000 Ms Left: 2000
+Time processed: 5166 Time left: 178
+Ms Processed: 59000 Ms Left: 1000
+Time processed: 5246 Time left: 89
+Ms Processed: 60000 Ms Left: 0
+Time processed: 5320 Time left: 0
+   Tracking is over (elapsed time 01:28:40)
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 133 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 133 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 133 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 133 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 150 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 150 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 150 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+warning: struct: converting a classdef object into a struct overrides the access restrictions defined for properties. All properties are returned, including private and protected ones.
+warning: called from
+    gsrx at line 150 column 5
+    /opt/fgi-gsrx-runtime/scripts/run_ut_dfmc_window.m at line 37 column 3
+
+Preamble found for gpsl1 prn 2!
+Could not find valid preambles for gpsl1 prn 7!
+Preamble found for gpsl1 prn 8!
+Preamble found for gpsl1 prn 10!
+Preamble found for gpsl1 prn 13!
+Preamble found for gpsl1 prn 14!
+Preamble found for gpsl1 prn 15!
+Preamble found for gpsl1 prn 17!
+Preamble found for gpsl1 prn 19!
+Preamble found for gpsl1 prn 21!
+Preamble found for gpsl1 prn 22!
+Preamble found for gpsl1 prn 23!
+Preamble found for gpsl1 prn 24!
+Preamble found for gpsl1 prn 30!
+GSRX_FAILED
+dec2bin: input must be integers
