@@ -1,0 +1,90 @@
+{
+  "artifact_id": "AGENTS_FILE_WIRING_GLOBAL_STATE_V1",
+  "artifact_role": "GLOBAL_CAMPAIGN_STATE",
+  "campaign": "AGENTS_FILE_WIRING",
+  "authority": "NON_SOVEREIGN",
+  "can_decide": false,
+  "can_act": false,
+  "emits_act": false,
+  "memory_write": false,
+  "model_calls": 0,
+  "runtime_consumed": false,
+  "generated_at": "2026-08-03",
+  "active_version": "V1",
+  "global_artifact_index_path": "periphery/agents/agents_file_wiring_artifact_index.json",
+  "wave_registry": {
+    "WAVE001": {
+      "subsystem": "AGENTS52_CONFIGURATION_SYSTEM",
+      "status": "CLOSED",
+      "functional_files_processed": 167,
+      "primary_index_path": "periphery/agents/operational_agent_document_index.json",
+      "local_state_path": null,
+      "commits": ["612200b"]
+    },
+    "WAVE002": {
+      "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM",
+      "status": "CLOSED",
+      "functional_files_processed": 167,
+      "primary_index_path": "periphery/agents/operational_source_catalog.json",
+      "local_state_path": null,
+      "commits": ["366b480", "17deaf8"]
+    },
+    "WAVE003": {
+      "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION",
+      "status": "CLOSED",
+      "functional_files_processed": 680,
+      "primary_index_path": "periphery/agents/agent_source_pack_documentation.index.json",
+      "local_state_path": null,
+      "commits": ["5e5edd8", "f29bc0e"]
+    },
+    "WAVE004": {
+      "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM",
+      "status": "CLOSED",
+      "functional_files_processed": 8,
+      "primary_index_path": "periphery/agents/agent_test_and_proof_system.index.json",
+      "local_state_path": null,
+      "commits": ["366b480", "17deaf8"]
+    },
+    "WAVE005_A": {
+      "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
+      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
+      "scope_complete": false,
+      "covered_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
+      "functional_files_processed": 11,
+      "brody_primary_census": 902,
+      "brody_secondary_relations": 4,
+      "brody_campaign_metadata": 8,
+      "files_pending_later_brody_subwaves": 891,
+      "pending_subwaves": {
+        "WAVE005_B": 144,
+        "WAVE005_C": 51,
+        "WAVE005_D": 506,
+        "WAVE005_E": 124,
+        "WAVE005_F": 66
+      },
+      "pending_sum": 891,
+      "primary_unresolved": 0,
+      "secondary_relations_requiring_future_review": 2,
+      "secondary_review_paths": [
+        "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+        "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
+      ],
+      "primary_index_path": "periphery/agents/brody_governance_element_system.index.json",
+      "local_reconciliation_matrix_path": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+      "local_state_path": "periphery/agents/wave005_campaign_state.json",
+      "local_state_role": "WAVE005_A_LOCAL_CAMPAIGN_STATE",
+      "local_unresolved_path": "periphery/agents/wave005_unresolved_queue.json",
+      "commits": ["49a3087", "6be9830", "7002eb9", "b72c32f"]
+    }
+  },
+  "global_summary": {
+    "total_waves_closed": 5,
+    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). Only A is closed. B-F require future waves.",
+    "total_functional_files_closed_to_date": 1023,
+    "total_functional_files_closed_note": "167(W1) + 167(W2) + 680(W3) + 8(W4) + 11(W5A) = 1033 indexed. W1/W2 share 167 files (same catalog, different perspectives). Net unique: context-dependent.",
+    "baseline_reference_status": "NON_RECONSTRUCTIBLE_AGGREGATE_COUNTER",
+    "current_active_brody_primary": 902
+  },
+  "blocker_queue": [],
+  "orphan_confirmed_queue": []
+}

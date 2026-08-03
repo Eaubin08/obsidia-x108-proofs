@@ -1,5 +1,5 @@
 {
-  "queue_id": "WAVE005_UNRESOLVED_QUEUE_V1",
+  "queue_id": "AGENTS_FILE_WIRING_UNRESOLVED_QUEUE_V1",
   "authority": "NON_SOVEREIGN",
   "can_decide": false,
   "can_act": false,
@@ -13,22 +13,30 @@
       "path": "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
       "file_type": "PYTHON_MODULE",
       "current_subwave": "WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "why_unresolved": "Brody workflow governance snapshot adapter — located in periphery/workflow_governance_readonly/integration/. Has 'brody' in name and likely imports Brody modules. Exact subsystem boundary unclear: could belong to a future WORKFLOW_GOVERNANCE_SYSTEM (not yet created) or to WAVE005_C BRODY_PROTOCOL layer.",
+      "why_unresolved": "Brody workflow governance snapshot adapter \u2014 located in periphery/workflow_governance_readonly/integration/. Has 'brody' in name and likely imports Brody modules. Exact subsystem boundary unclear: could belong to a future WORKFLOW_GOVERNANCE_SYSTEM (not yet created) or to WAVE005_C BRODY_PROTOCOL layer.",
       "evidence_already_checked": "File name contains 'brody' and 'workflow_governance'. Physical location is periphery/workflow_governance_readonly/, not periphery/brody/. No Wave001-004 entry covers it.",
-      "owner": "BRODY_GOVERNANCE_ELEMENT_SYSTEM (provisional — review needed)",
-      "next_action": "REVIEW_IMPORT_GRAPH — check actual imports. If imports periphery.brody.*, assign to WAVE005_C BRODY_PROTOCOL. If imports are workflow-only, reassign to future WORKFLOW_GOVERNANCE_SYSTEM."
+      "owner": "BRODY_GOVERNANCE_ELEMENT_SYSTEM (provisional \u2014 review needed)",
+      "next_action": "REVIEW_IMPORT_GRAPH \u2014 check actual imports. If imports periphery.brody.*, assign to WAVE005_C BRODY_PROTOCOL. If imports are workflow-only, reassign to future WORKFLOW_GOVERNANCE_SYSTEM.",
+      "classification": "SECONDARY_RELATION_ONLY_REQUIRING_FUTURE_REVIEW"
     },
     {
       "path": "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py",
       "file_type": "PYTHON_MODULE",
       "current_subwave": "WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "why_unresolved": "Brody workflow operator (readonly) — same subsystem ambiguity as the snapshot adapter. 'readonly' suffix suggests alignment with Brody governance philosophy, but physical location in workflow_governance_readonly/ suggests cross-system coupling.",
+      "why_unresolved": "Brody workflow operator (readonly) \u2014 same subsystem ambiguity as the snapshot adapter. 'readonly' suffix suggests alignment with Brody governance philosophy, but physical location in workflow_governance_readonly/ suggests cross-system coupling.",
       "evidence_already_checked": "File name contains 'brody' and 'workflow_operator'. Physical location is periphery/workflow_governance_readonly/. No Wave001-004 entry covers it.",
-      "owner": "BRODY_GOVERNANCE_ELEMENT_SYSTEM (provisional — review needed)",
-      "next_action": "REVIEW_IMPORT_GRAPH — same approach as snapshot adapter. Resolve together as pair."
+      "owner": "BRODY_GOVERNANCE_ELEMENT_SYSTEM (provisional \u2014 review needed)",
+      "next_action": "REVIEW_IMPORT_GRAPH \u2014 same approach as snapshot adapter. Resolve together as pair.",
+      "classification": "SECONDARY_RELATION_ONLY_REQUIRING_FUTURE_REVIEW"
     }
   ],
   "blocker_queue": [],
   "orphan_confirmed_queue": [],
-  "unexplained_unresolved": 0
+  "unexplained_unresolved": 0,
+  "artifact_role": "GLOBAL_UNRESOLVED_QUEUE",
+  "queue_scope": "AGENTS_FILE_WIRING_CAMPAIGN_ALL_WAVES",
+  "global_state_path": "periphery/agents/agents_file_wiring_global_state.json",
+  "primary_unresolved": 0,
+  "secondary_relations_requiring_review": 2,
+  "note": "2 workflow_governance_readonly files are SECONDARY_RELATION_ONLY (not primary unresolved). Future review needed to confirm final subsystem assignment."
 }

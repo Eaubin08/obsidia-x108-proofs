@@ -429,3 +429,67 @@ def test_wr_112_wave005d_contains_memory_interface_files():
     assert len(d_entries) > 400
     mem_paths = [e["path"] for e in d_entries if "brody_memory_readonly" in e["path"]]
     assert len(mem_paths) > 400
+
+
+# ---------------------------------------------------------------------------
+# WR-120 — Artifact registration: local vs global role separation
+# ---------------------------------------------------------------------------
+
+def test_wr_120_local_matrix_is_not_global_manifest():
+    idx = bgsr.get_index()
+    assert idx.get("artifact_role") == "WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX", (
+        "Reconciliation matrix must declare LOCAL role, not global manifest"
+    )
+    assert idx.get("is_global_file_manifest") is False
+
+
+def test_wr_121_local_matrix_is_not_global_relation_graph():
+    idx = bgsr.get_index()
+    assert idx.get("is_global_relation_graph") is False
+
+
+def test_wr_122_prior_wave_intersections_is_local_view():
+    idx = bgsr.get_index()
+    assert "local_scope_relation_view_note" in idx or "prior_wave_intersections" in idx, (
+        "prior_wave_intersections must exist as LOCAL_SCOPE_RELATION_VIEW"
+    )
+
+
+def test_wr_123_global_state_path_declared():
+    idx = bgsr.get_index()
+    assert idx.get("global_state_path") == "periphery/agents/agents_file_wiring_global_state.json"
+
+
+# ---------------------------------------------------------------------------
+# WR-130 — Census stability sentinel
+# ---------------------------------------------------------------------------
+
+def test_wr_130_primary_census_stable_at_902():
+    primary = bgsr.get_primary_entries()
+    assert len(primary) == 902, (
+        f"Primary census is {len(primary)}, expected 902. "
+        "New campaign artefacts must NOT increase this count."
+    )
+
+
+def test_wr_131_pending_bf_subwaves_sum_891():
+    s = bgsr.summary()
+    p = s["partition"]
+    pending = (
+        p.get("WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS", 0) +
+        p.get("WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS", 0) +
+        p.get("WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS", 0) +
+        p.get("WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS", 0) +
+        p.get("WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW", 0)
+    )
+    assert pending == 891, f"B+C+D+E+F primary sum = {pending}, expected 891"
+
+
+def test_wr_132_campaign_metadata_total_not_in_primary():
+    meta = bgsr.get_campaign_metadata_entries()
+    assert len(meta) == 6
+    primary_paths = {e["path"] for e in bgsr.get_primary_entries()}
+    for e in meta:
+        assert e["path"] not in primary_paths, (
+            f"Campaign metadata {e['path']} wrongly in primary census"
+        )

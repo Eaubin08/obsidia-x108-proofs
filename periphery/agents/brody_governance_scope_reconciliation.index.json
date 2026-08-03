@@ -19258,5 +19258,10 @@
     "prior_wave_secondary_intersections": 2,
     "silent_double_count": 0
   },
-  "unresolved_note": "The 2 workflow_governance_readonly paths are reclassified as SECONDARY_RELATION_ONLY (physical location periphery/workflow_governance_readonly/ \u2014 not a Brody primary directory)"
+  "unresolved_note": "The 2 workflow_governance_readonly paths are reclassified as SECONDARY_RELATION_ONLY (physical location periphery/workflow_governance_readonly/ \u2014 not a Brody primary directory)",
+  "artifact_role": "WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX",
+  "local_scope_relation_view_note": "prior_wave_intersections = LOCAL_SCOPE_RELATION_VIEW (Wave005_A only). NOT the global relation graph (see agents_file_wiring_artifact_index.json).",
+  "is_global_file_manifest": false,
+  "is_global_relation_graph": false,
+  "global_state_path": "periphery/agents/agents_file_wiring_global_state.json"
 }

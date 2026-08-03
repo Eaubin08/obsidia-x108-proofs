@@ -1,0 +1,149 @@
+{
+  "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
+  "artifact_role": "GLOBAL_ARTIFACT_INDEX",
+  "secondary_roles": ["GLOBAL_FILE_MANIFEST", "GLOBAL_RELATION_GRAPH"],
+  "campaign": "AGENTS_FILE_WIRING",
+  "authority": "NON_SOVEREIGN",
+  "can_decide": false,
+  "can_act": false,
+  "emits_act": false,
+  "memory_write": false,
+  "model_calls": 0,
+  "runtime_consumed": false,
+  "generated_at": "2026-08-03",
+  "active_version": "V1",
+  "global_artifacts": {
+    "GLOBAL_CAMPAIGN_STATE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "artifact_id": "AGENTS_FILE_WIRING_GLOBAL_STATE_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_ARTIFACT_INDEX": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_FILE_MANIFEST": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "wave_file_manifests",
+      "note": "Each wave primary index IS the file manifest for that wave. This artifact index aggregates them.",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_RELATION_GRAPH": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "relation_graph",
+      "note": "Compact inter-wave relation graph. Wave005_A LOCAL view is in brody_governance_scope_reconciliation.index.json (artifact_role=WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX -- NOT the global graph).",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_UNRESOLVED_QUEUE": {
+      "path": "periphery/agents/wave005_unresolved_queue.json",
+      "artifact_id": "AGENTS_FILE_WIRING_UNRESOLVED_QUEUE_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 2,
+      "current_note": "2 secondary relations (workflow_governance_readonly) requiring future review. 0 primary unresolved."
+    },
+    "GLOBAL_BLOCKER_QUEUE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "role_section": "blocker_queue",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 0
+    },
+    "GLOBAL_ORPHAN_CONFIRMED_QUEUE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "role_section": "orphan_confirmed_queue",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 0
+    }
+  },
+  "wave_file_manifests": {
+    "WAVE001": {
+      "path": "periphery/agents/operational_agent_document_index.json",
+      "index_id": "PYTHON_OPERATIONAL_AGENT_DOCUMENT_INDEX_V1",
+      "files_indexed": 167,
+      "status": "CLOSED"
+    },
+    "WAVE002": {
+      "path": "periphery/agents/operational_source_catalog.json",
+      "manifest_id": "PYTHON_OPERATIONAL_AGENT_SYSTEM_WAVE002_V1",
+      "files_indexed": 167,
+      "status": "CLOSED"
+    },
+    "WAVE003": {
+      "path": "periphery/agents/agent_source_pack_documentation.index.json",
+      "index_id": "AGENT_SOURCE_PACK_DOCUMENTATION_INDEX_V1",
+      "files_indexed": 680,
+      "status": "CLOSED"
+    },
+    "WAVE004": {
+      "path": "periphery/agents/agent_test_and_proof_system.index.json",
+      "index_id": "AGENT_TEST_AND_PROOF_SYSTEM_INDEX_V1",
+      "files_indexed": 8,
+      "status": "CLOSED"
+    },
+    "WAVE005_A": {
+      "path": "periphery/agents/brody_governance_element_system.index.json",
+      "index_id": "BRODY_GOVERNANCE_ELEMENT_SYSTEM_INDEX_V1",
+      "files_indexed": 11,
+      "local_reconciliation_matrix": {
+        "path": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+        "artifact_role": "WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX",
+        "index_id": "BRODY_GOVERNANCE_SCOPE_RECONCILIATION_INDEX_V1",
+        "is_global_file_manifest": false,
+        "is_global_relation_graph": false,
+        "note": "Local scope view for Wave005_A only. prior_wave_intersections = LOCAL_SCOPE_RELATION_VIEW, not global graph."
+      },
+      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
+      "scope_complete": false
+    }
+  },
+  "relation_graph": {
+    "graph_id": "AGENTS_FILE_WIRING_INTER_WAVE_RELATIONS_V1",
+    "graph_scope": "GLOBAL_INTER_WAVE",
+    "nodes": [
+      {"wave": "WAVE001", "subsystem": "AGENTS52_CONFIGURATION_SYSTEM", "files": 167},
+      {"wave": "WAVE002", "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM", "files": 167},
+      {"wave": "WAVE003", "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION", "files": 680},
+      {"wave": "WAVE004", "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM", "files": 8},
+      {"wave": "WAVE005_A", "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM", "files": 11}
+    ],
+    "edges": [
+      {
+        "from_wave": "WAVE001",
+        "to_wave": "WAVE005_A",
+        "relation_type": "SECONDARY_RELATION",
+        "paths": [
+          "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+        ],
+        "primary_owner": "WAVE001",
+        "secondary_owner": "WAVE005_A"
+      },
+      {
+        "from_wave": "WAVE002",
+        "to_wave": "WAVE005_A",
+        "relation_type": "SECONDARY_RELATION",
+        "paths": [
+          "periphery/agents/brody_memory_agent.py",
+          "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+        ],
+        "primary_owner": "WAVE002",
+        "secondary_owner": "WAVE005_A"
+      }
+    ],
+    "silent_double_count": 0,
+    "cross_wave_primary_overlaps": 0
+  }
+}

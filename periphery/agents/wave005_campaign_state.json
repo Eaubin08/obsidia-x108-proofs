@@ -29,20 +29,23 @@
     },
     "WAVE005": {
       "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
-      "status": "WAVE005_A_CLOSED_PENDING_B_THROUGH_F",
+      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
       "current_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
       "scope_complete": false,
       "index": "periphery/agents/brody_governance_element_system.index.json",
       "reconciliation_matrix": "periphery/agents/brody_governance_scope_reconciliation.index.json",
-      "wave005_a_commits": ["49a3087", "6be9830"],
-      "wave005_a_accounting_commit": "PENDING_THIS_COMMIT",
+      "wave005_a_commits": [
+        "49a3087",
+        "6be9830"
+      ],
+      "wave005_a_accounting_commit": "7002eb9",
       "wave005_a_indexed_entries": 11,
       "wave005_a_total_scope": 18,
       "wave005_a_tests_passed": 47,
       "initial_scan": 914,
       "normalized_total": 912,
       "excluded_from_914": 5,
-      "excluded_paths_note": ".runtime_freezes/ (5 MANIFEST_SHA256.json — hidden folder, integrity seals, not active files)",
+      "excluded_paths_note": ".runtime_freezes/ (5 MANIFEST_SHA256.json \u2014 hidden folder, integrity seals, not active files)",
       "baseline_reference": 905,
       "net_delta_from_baseline": 7,
       "unresolved_count": 2,
@@ -51,7 +54,8 @@
         "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
       ],
       "silent_double_count": 0,
-      "next_subwave": "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS"
+      "next_subwave": "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS",
+      "wave005_a_stable_census_commit": "b72c32f"
     }
   },
   "active_artifact_index": {
@@ -64,9 +68,10 @@
     "WAVE005_A_campaign_state": "periphery/agents/wave005_campaign_state.json",
     "WAVE005_A_unresolved_queue": "periphery/agents/wave005_unresolved_queue.json"
   },
-  "ACTIVE_GLOBAL_MANIFEST_UPDATED": true,
-  "ACTIVE_RELATION_GRAPH_UPDATED": true,
-  "ACTIVE_UNRESOLVED_QUEUE_UPDATED": true,
-  "ACTIVE_CAMPAIGN_STATE_UPDATED": true,
-  "ACTIVE_ARTIFACT_INDEX_UPDATED": true
+  "artifact_role": "WAVE005_A_LOCAL_CAMPAIGN_STATE",
+  "global_campaign_state_path": "periphery/agents/agents_file_wiring_global_state.json",
+  "global_artifact_index_path": "periphery/agents/agents_file_wiring_artifact_index.json",
+  "is_global_campaign_state": false,
+  "WAVE005_A_LOCAL_STATE_COMPLETE": true,
+  "WAVE005_A_GLOBAL_REGISTRATION_COMPLETE": true
 }
