@@ -1,0 +1,24 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        git \
+        octave \
+        octave-signal \
+        octave-statistics \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/fgi-gsrx-runtime
+
+COPY upstream/FGI-GSRx /opt/fgi-gsrx-runtime/FGI-GSRx
+COPY compatibility_shims /opt/fgi-gsrx-runtime/compatibility_shims
+COPY scripts /opt/fgi-gsrx-runtime/scripts
+
+ENV FGI_GSRX_ROOT=/opt/fgi-gsrx-runtime/FGI-GSRx
+ENV FGI_GSRX_SHIMS=/opt/fgi-gsrx-runtime/compatibility_shims
+ENV OCTAVE_HISTFILE=/tmp/octave-history
+
+ENTRYPOINT ["octave", "--no-gui", "--quiet"]
