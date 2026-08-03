@@ -1,0 +1,91 @@
+Initializing GNSS-SDR v0.0.21.git-next-2a7214a4f ... Please wait.
+Logging will be written at /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1
+RF Channels: 1
+File .//work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/gnss_sdr_pvt.nmea cannot be saved. Wrong permissions?
+Processing 3120000000 samples from file /work/hackathons/nativebuilder-gps-defense/data/fgi-spoofrepo/pipeline_inputs/case_0001_l1e1_real8.dat
+GNSS signal recorded time to be processed: 120 [s]
+vmcircbuf_prefs::get :info: /root/.config/gnuradio/prefs/vmcircbuf_default_factory failed to open: bad true, fail true, eof true
+Volk warning: no arch found, returning generic impl
+Volk warning: no arch found, returning generic impl
+Current receiver time: 1 s
+Current receiver time: 2 s
+Current receiver time: 3 s
+Current receiver time: 4 s
+Current receiver time: 5 s
+Current receiver time: 6 s
+Tracking of GPS L1 C/A signal started on channel 3 for satellite GPS PRN 20 (Block IIR)
+Current receiver time: 7 s
+Current receiver time: 8 s
+Current receiver time: 9 s
+Current receiver time: 10 s
+Current receiver time: 11 s
+Current receiver time: 12 s
+Current receiver time: 13 s
+Current receiver time: 14 s
+Current receiver time: 15 s
+Current receiver time: 16 s
+Current receiver time: 17 s
+Loss of lock in channel 3, satellite GPS PRN 20 (Block IIR) !
+Current receiver time: 18 s
+Current receiver time: 19 s
+Current receiver time: 20 s
+Current receiver time: 21 s
+Current receiver time: 22 s
+Current receiver time: 23 s
+Current receiver time: 24 s
+Current receiver time: 25 s
+Current receiver time: 26 s
+Current receiver time: 27 s
+Current receiver time: 28 s
+Current receiver time: 29 s
+Current receiver time: 30 s
+Current receiver time: 31 s
+Current receiver time: 32 s
+Current receiver time: 33 s
+Current receiver time: 34 s
+Tracking of GPS L1 C/A signal started on channel 7 for satellite GPS PRN 30 (Block IIF)
+Current receiver time: 35 s
+Current receiver time: 36 s
+Current receiver time: 37 s
+Current receiver time: 38 s
+Tracking of GPS L1 C/A signal started on channel 4 for satellite GPS PRN 02 (Block IIR)
+Current receiver time: 39 s
+Current receiver time: 40 s
+Current receiver time: 41 s
+Current receiver time: 42 s
+Current receiver time: 43 s
+Current receiver time: 44 s
+Current receiver time: 45 s
+Tracking of GPS L1 C/A signal started on channel 2 for satellite GPS PRN 06 (Block IIF)
+Loss of lock in channel 7, satellite GPS PRN 30 (Block IIF) !
+Current receiver time: 46 s
+Current receiver time: 47 s
+Current receiver time: 48 s
+Current receiver time: 49 s
+Loss of lock in channel 4, satellite GPS PRN 02 (Block IIR) !
+Current receiver time: 50 s
+Loss of lock in channel 2, satellite GPS PRN 06 (Block IIF) !
+Current receiver time: 51 s
+Current receiver time: 52 s
+Current receiver time: 53 s
+Current receiver time: 54 s
+Current receiver time: 55 s
+Current receiver time: 56 s
+Current receiver time: 57 s
+Current receiver time: 58 s
+Current receiver time: 59 s
+Current receiver time: 1 min 0 s
+Stopping GNSS-SDR, please wait!
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_0.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_1.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_2.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_3.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_4.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_5.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_6.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_7.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_8.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_9.dat
+Generating .mat file for /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/observables.dat
+Total GNSS-SDR run time: 833.294 [seconds]
+GNSS-SDR program ended.

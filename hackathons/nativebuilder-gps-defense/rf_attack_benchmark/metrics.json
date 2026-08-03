@@ -1,25 +1,29 @@
 {
   "artifact": "metrics",
-  "status": "NOT_COMPUTED_NO_EXECUTED_CASES",
-  "rf_anomaly_detected": null,
+  "status": "PARTIAL_COMPUTED_NO_PVT_NO_ATTACK_CLASSIFICATION",
+  "rf_anomaly_detected": true,
   "attack_correctly_classified": null,
-  "x108_governance_decision": null,
+  "x108_governance_decision": "HOLD",
   "detection_rate": null,
   "false_positive_rate": null,
   "false_negative_rate": null,
   "detection_delay_seconds": null,
   "drift_before_detection_meters": null,
+  "official_attack_onset_seconds": 135,
+  "first_loss_of_lock_time_seconds": 14,
+  "first_loss_minus_onset_seconds": -121,
+  "why_delay_not_claimed": "First loss-of-lock predates official onset; this proves receiver instability/no-PVT on hostile corpus, not correct spoofing-onset detection.",
   "latency": {
-    "gnss_sdr_seconds": null,
+    "gnss_sdr_seconds": 1331.28,
     "physical_periphery_seconds": null,
     "p3_05_p4_20_seconds": null,
     "x108_seconds": null
   },
   "decision_distribution": {
     "ALLOW": 0,
-    "HOLD": 0,
+    "HOLD": 1,
     "BLOCK": 0
   },
-  "receipt_coverage": 0,
-  "reproducibility": "NOT_RUN"
+  "receipt_coverage": 1,
+  "reproducibility": "PARTIAL_TWO_CONFIG_ATTEMPTS_ONE_FULL_RUN"
 }

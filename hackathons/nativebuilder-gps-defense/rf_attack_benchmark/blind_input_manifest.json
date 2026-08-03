@@ -1,18 +1,21 @@
 {
   "artifact": "blind_input_manifest",
-  "status": "NOT_EXECUTED_NO_HOSTILE_RF_INPUT",
-  "created_at": "2026-08-02T23:41:09+02:00",
-  "pipeline_inputs_root": "hackathons/nativebuilder-gps-defense/data/rf_attack/pipeline_inputs",
+  "status": "EXECUTED_WITH_OPAQUE_INPUT_NO_PVT",
+  "updated_at": "2026-08-03T02:05:00+02:00",
+  "pipeline_inputs_root": "hackathons/nativebuilder-gps-defense/data/fgi-spoofrepo/pipeline_inputs",
   "truth_manifest_path": "hackathons/nativebuilder-gps-defense/rf_attack_benchmark/private_truth_manifest.json",
-  "label_leak_checks": {
-    "filename": "PASS_NO_CASES",
-    "path": "PASS_NO_CASES",
-    "metadata": "PASS_NO_CASES",
-    "cli_arguments": "PASS_NO_CASES",
-    "scenario_identifier": "PASS_NO_CASES",
-    "config_specific_to_expected_verdict": "PASS_NO_CASES"
-  },
-  "cases": [],
+  "label_leak_report": "hackathons/nativebuilder-gps-defense/rf_attack_benchmark/label_leak_report.json",
+  "cases": [
+    {
+      "case_id": "case_0001_l1e1_real8",
+      "public_input_path": "hackathons/nativebuilder-gps-defense/data/fgi-spoofrepo/pipeline_inputs/case_0001_l1e1_real8.dat",
+      "input_sha256": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+      "receiver_config": "hackathons/nativebuilder-gps-defense/gnss_sdr_fgi_ut_dfmc_l1e1_ifneg_full_runtime.conf",
+      "receiver_run_dir": "hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1_ifneg_full",
+      "truth_label_visible_to_pipeline": false
+    }
+  ],
   "truth_manifest_read_before_decisions": false,
-  "eligible_for_recorded_rf_attack": false
+  "eligible_for_recorded_rf_attack": false,
+  "reason_not_eligible": "Receiver produced tracking/observables but no NAV/PVT; X-108 decision is a governance HOLD on incomplete physical evidence, not a proven spoofing detection benchmark."
 }
