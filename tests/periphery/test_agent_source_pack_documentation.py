@@ -93,6 +93,11 @@ def test_w3_010_population_exact():
     assert d["total_files"] == 680, f"Expected 680, got {d['total_files']}"
     assert len(d["entries"]) == 680
 
+def test_w3_010b_truth_audit_present():
+    d = _load_index()
+    assert d.get("truth_audit") == "WAVE003_TRUTH_AUDIT_V1"
+    assert d.get("false_relations_corrected") == 117
+
 
 def test_w3_011_paths_unique():
     paths = [e["path"] for e in _entries()]
@@ -191,49 +196,62 @@ def test_w3_031_zero_unexplained_unresolved():
 # W3_040 -- Subfamily distributions
 # ---------------------------------------------------------------------------
 
-def test_w3_040_arbres_34_family_linked_to_tree_registry():
+def test_w3_040_arbres_34_proved_structural_relation():
+    """04_ARBRES is the ONLY family with TRUE_STRUCTURAL_RELATION to a runtime component."""
     arbres = [e for e in _entries() if e["directory_family"] == "04_ARBRES_34_TENSOR_MATRIX"]
-    assert len(arbres) > 0
+    assert len(arbres) == 423, f"Expected 423 ARBRES entries, got {len(arbres)}"
     for e in arbres:
         assert "cognitive_trees" in (e.get("destination") or ""), (
             f"Arbre not linked to cognitive_trees: {e['path']}"
         )
+        assert e.get("relation_type") == "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
+        assert e.get("semantic_verdict") == "TRUE_STRUCTURAL_RELATION"
 
 
-def test_w3_041_agents52_family_linked_to_registry():
+def test_w3_041_agents52_proved_structural_relation():
     a52 = [e for e in _entries() if e["directory_family"] == "10_AGENTS_52"]
     assert len(a52) > 0
     for e in a52:
         assert "agents_52.registry.json" in (e.get("destination") or ""), (
             f"Agents52 entry not linked to agents_52.registry.json: {e['path']}"
         )
+        assert e.get("semantic_verdict") == "TRUE_STRUCTURAL_RELATION"
 
 
-def test_w3_042_shazam_linked_to_shazam_cognitif():
+def test_w3_042_shazam_linked_to_named_registry_not_runtime():
+    """05_SHAZAM links to shazam.registry.json (not to shazam_cognitif.py -- corrected)."""
     shazam = [e for e in _entries() if e["directory_family"] == "05_SHAZAM_COGNITIF"]
     assert len(shazam) > 0
     for e in shazam:
-        assert "shazam_cognitif" in (e.get("destination") or ""), (
-            f"Shazam not linked to shazam_cognitif: {e['path']}"
+        assert "shazam.registry.json" in (e.get("destination") or ""), (
+            f"Shazam not linked to shazam.registry.json: {e['path']}"
+        )
+        # Must NOT claim a direct runtime component link (corrected)
+        assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT", (
+            f"Shazam must not claim false runtime link: {e['path']}"
         )
 
 
-def test_w3_043_mcp_family_linked_to_mcp():
+def test_w3_043_mcp_linked_to_named_registry_not_runtime():
+    """09_MCP links to mcp_bridge.registry.json (corrected from false runtime claim)."""
     mcp = [e for e in _entries() if e["directory_family"] == "09_MCP_BRIDGE_OBSIDIA_IR"]
     assert len(mcp) > 0
     for e in mcp:
-        assert "mcp" in (e.get("destination") or ""), (
-            f"MCP bridge not linked to mcp: {e['path']}"
+        assert "mcp_bridge.registry.json" in (e.get("destination") or ""), (
+            f"MCP not linked to mcp_bridge.registry.json: {e['path']}"
         )
+        assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
 
 
-def test_w3_044_guards_linked_to_guards():
+def test_w3_044_guards_linked_to_named_registry_not_runtime():
+    """15_GUARDS links to guards.registry.json (corrected from false runtime claim)."""
     guards = [e for e in _entries() if e["directory_family"] == "15_GUARDS_NON_DECISION"]
     assert len(guards) > 0
     for e in guards:
-        assert "guards" in (e.get("destination") or ""), (
-            f"Guards not linked to guards: {e['path']}"
+        assert "guards.registry.json" in (e.get("destination") or ""), (
+            f"Guards not linked to guards.registry.json: {e['path']}"
         )
+        assert e.get("relation_type") != "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"
 
 
 def test_w3_045_registres_json_linked_to_self():
@@ -244,6 +262,45 @@ def test_w3_045_registres_json_linked_to_self():
 def test_w3_046_index_family_count():
     idx = [e for e in _entries() if e["directory_family"] == "00_INDEX"]
     assert len(idx) >= 8, f"Expected >=8 index docs, got {len(idx)}"
+
+
+def test_w3_047_relation_distribution():
+    """Verify the corrected relation distribution."""
+    from collections import Counter
+    dist = Counter(e["relation_type"] for e in _entries())
+    assert dist["DOCUMENT_LINKED_TO_RUNTIME_COMPONENT"] == 423, (
+        f"Expected 423 runtime relations (04_ARBRES only), got {dist['DOCUMENT_LINKED_TO_RUNTIME_COMPONENT']}"
+    )
+    assert dist["DOCUMENT_LINKED_TO_REGISTRY_ENTRY"] == 139, (
+        f"Expected 139 registry relations, got {dist['DOCUMENT_LINKED_TO_REGISTRY_ENTRY']}"
+    )
+    assert dist["DOCUMENT_LINKED_TO_CANONICAL_INDEX"] == 113, (
+        f"Expected 113 canonical index relations, got {dist['DOCUMENT_LINKED_TO_CANONICAL_INDEX']}"
+    )
+    assert dist.get("GENERATED_DOCUMENT_LINKED_TO_GENERATOR", 0) == 0, (
+        "No GENERATED_DOCUMENT_LINKED_TO_GENERATOR must remain (all corrected)"
+    )
+    assert dist.get("DOCUMENT_LINKED_TO_TEST", 0) == 0, (
+        "No DOCUMENT_LINKED_TO_TEST must remain (corrected -- no proven test link)"
+    )
+
+
+def test_w3_048_semantic_verdicts_all_true():
+    """All entries must have TRUE_STRUCTURAL_RELATION or TRUE_DOCUMENTARY_RELATION."""
+    for e in _entries():
+        v = e.get("semantic_verdict", "")
+        assert v in ("TRUE_STRUCTURAL_RELATION", "TRUE_DOCUMENTARY_RELATION"), (
+            f"Entry {e['path']} has semantic_verdict={v!r} -- must be TRUE"
+        )
+
+
+def test_w3_049_no_false_runtime_claim_for_non_arbres():
+    """Only 04_ARBRES may claim DOCUMENT_LINKED_TO_RUNTIME_COMPONENT."""
+    for e in _entries():
+        if e.get("relation_type") == "DOCUMENT_LINKED_TO_RUNTIME_COMPONENT":
+            assert e["directory_family"] == "04_ARBRES_34_TENSOR_MATRIX", (
+                f"Non-arbres entry claims false runtime link: {e['path']}"
+            )
 
 
 # ---------------------------------------------------------------------------
