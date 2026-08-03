@@ -12,9 +12,10 @@
   "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
   "wave": "WAVE005",
   "wave_role": "WAVE005_A",
-  "covered_slice": "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST",
+  "covered_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
   "scope_complete": false,
-  "scope_note": "This index covers WAVE005_A only: the 6-file periphery/brody/ core package plus 5 governance invariant tests. The full BRODY_GOVERNANCE_ELEMENT_SYSTEM spans 909 active files. Remaining slices (WAVE005_B through WAVE005_F) are documented in remaining_population below.",
+  "scope_note": "This index covers WAVE005_A only: the 6-file periphery/brody/ core package plus 5 governance invariant tests (11 indexed entries). The full BRODY_GOVERNANCE_ELEMENT_SYSTEM spans 912 active files (normalized, excl. .runtime_freezes/). Remaining 894 files assigned to WAVE005_B through WAVE005_F per brody_governance_scope_reconciliation.index.json.",
+  "reconciliation_matrix": "periphery/agents/brody_governance_scope_reconciliation.index.json",
   "truth_audit": "WAVE005_TRUTH_GATE_V1",
   "physical_membership_rule": "WAVE005_A scope: (1) Files physically located in periphery/brody/ package (core governance contract, runtime, context query, language router, sanitizer — NOT periphery/brody_runtime/ which belongs to WAVE005_B BRODY_INTEGRATION_RUNTIME), or (2) executable test files whose PRIMARY import target is periphery.brody.* modules AND whose primary claim is a pure governance invariant (readonly / no-act / no-verdict). Excludes periphery/brody_bridge.py (compatibility bridge, writes to audit bus — WAVE005_B). Excludes periphery/brody_runtime/ (5 files — runtime freeze packets F32-F37, WAVE005_B). Excludes periphery/brody_memory_readonly/ (496 files — WAVE005_D). Excludes periphery/agents/brody_memory_agent.py (Wave002 operational agent). Excludes tests/api/test_brody_* (70 API integration tests — WAVE005_B). Excludes tests/test_brody_v3_* and other root-level brody tests (WAVE005_B or WAVE005_C).",
   "population_audit": {
@@ -27,47 +28,53 @@
   },
   "scope_reconciliation": {
     "baseline_reference_total": 905,
-    "baseline_note": "Historical campaign baseline — computed before Wave005 work. Slightly below current active count of 909 due to file churn since baseline date.",
-    "current_active_total": 909,
-    "current_active_method": "disk scan excl. .git __pycache__ _local_audits .pytest_cache .graph-memory .runtime_freezes",
-    "wave005_a_entries": 11,
+    "baseline_note": "Historical campaign baseline counter — no file list available for exact path-by-path diff. Delta of 7 (912-905) explained by 6 Wave005_A artefacts created during this campaign + 1 pre-existing file unaccounted in original counter.",
+    "current_active_total": 912,
+    "current_active_method": "disk scan excl. .git __pycache__ node_modules _local_audits .pytest_cache .graph-memory .runtime_freezes (hidden folder with leading dot — 5 MANIFEST_SHA256.json integrity seals excluded)",
+    "initial_scan_914": "First scan included .runtime_freezes/ (5 files). Corrected to 909 in 6be9830. Further corrected to 912 after Wave005_A artefacts created (6 new files with brody in name).",
+    "wave005_a_total_scope": 18,
+    "wave005_a_indexed_entries": 11,
+    "wave005_a_meta_artefacts": 7,
+    "wave005_a_meta_note": "7 = 3 Wave005_A index/validator/test + 3 reconciliation index/validator/test + 1 brody_memory_agent.py (SECONDARY_RELATION_ONLY, primary owner Wave002)",
     "files_already_processed_by_waves_001_to_004": 0,
-    "files_already_processed_detail": "No brody file appears in Wave001 (AGENTS52_CONFIG), Wave002 (PYTHON_OPERATIONAL_AGENT, 167 entries), Wave003 (AGENT_SOURCE_PACK_DOC, 680 entries), Wave004 (AGENT_TEST_AND_PROOF, 8 entries). Zero double-count.",
+    "files_already_processed_detail": "No brody file appears in Wave001, Wave003, Wave004 entries. Wave002 has 1 overlap (brody_memory_agent.py in Wave002 catalog AND brody_memory_readonly .ps1 in Wave001+Wave002 catalog) — both SECONDARY_RELATION_ONLY, BRODY_GOVERNANCE is primary for the .ps1.",
     "double_counted_with_wave004": [],
-    "double_counted_with_other_waves": [],
+    "double_counted_silent": [],
     "unaccounted_files": 0,
-    "accounted_for_total": 909,
-    "accounting_note": "909 = 11 (WAVE005_A indexed) + 898 (assigned to WAVE005_B through WAVE005_F, documented in remaining_population)"
+    "accounted_for_total": 912,
+    "accounting_note": "912 = 18 (WAVE005_A scope) + 894 (WAVE005_B through WAVE005_F per reconciliation matrix)"
   },
   "remaining_population": {
-    "total_remaining": 898,
-    "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST": {
-      "count": 11,
-      "status": "INDEXED_IN_THIS_FILE",
-      "paths": "periphery/brody/ (6 files) + 5 governance invariant tests"
+    "total_remaining": 894,
+    "source_of_truth": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+    "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST": {
+      "count": 18,
+      "indexed_entries": 11,
+      "meta_artefacts": 7,
+      "status": "INDEXED_IN_THIS_FILE_AND_RECONCILIATION_MATRIX",
+      "paths": "periphery/brody/ (6 files) + 5 governance invariant tests + 3 Wave005_A index/validator/test + 3 reconciliation index/validator/test + 1 Wave002 secondary"
     },
     "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS": {
-      "count": 143,
+      "count": 144,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
         "periphery_brody_runtime": 5,
         "periphery_brody_bridge_py": 1,
-        "apps_obsidia_api_brody": 67,
+        "apps_obsidia_api_brody": 68,
         "tests_api_test_brody": 70
       },
       "note": "periphery/brody_runtime/ = F32-F37 freeze packets (readonly runtime integration). tests/api/test_brody_* = 70 live API integration tests. All physical imports target the API layer, not periphery.brody.* directly."
     },
-    "WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_SCRIPTS": {
-      "count": 67,
+    "WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS": {
+      "count": 51,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
-        "apps_non_brody_api": 0,
         "connectors": 1,
         "scripts_brody": 21,
         "runtime_wiring_brody": 2,
         "_runtime_wiring_preflight_brody": 2,
-        "tests_cli_gates_integration_brody": 5,
-        "tests_misc_root_brody": 36
+        "tests_cli_gates_integration_brody": 3,
+        "tests_misc_root_brody": 22
       }
     },
     "WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS": {
@@ -81,27 +88,27 @@
       },
       "note": "BRODY_MEMORY_READONLY pipeline — 495 files in periphery/brody_memory_readonly/. NON_SOVEREIGN readonly memory operators. No decision authority. MEMORY_SOVEREIGNTY = KX108_ONLY."
     },
-    "WAVE005_E_BRODY_DOCUMENTATION_AND_ARCHITECTURE": {
-      "count": 127,
+    "WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS": {
+      "count": 124,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
         "docs_brody_runtime_reports": 108,
-        "docs_brody_architecture": 19
+        "docs_brody_architecture": 16
       },
       "note": "Generated runtime payload reports (F17-F21) and architecture documents. BRODY_GENERATED_REPORT and BRODY_ARCHITECTURE_DOCUMENT families."
     },
-    "WAVE005_F_BRODY_LEGACY_ARCHIVE_AND_DEVELOPMENT_TOOLING": {
-      "count": 54,
+    "WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW": {
+      "count": 68,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
-        "docs_freeze_brody": 7,
+        "brody_archive_docs_freeze": 60,
         "apps_workbench_brody": 3,
-        "development_tooling_scripts": 21,
-        "tests_legacy_root_brody_api": 1,
-        "runtime_freezes_brody": 5,
-        "unknown_pending_review": 2,
-        "remaining_misc": 15
-      }
+        "tests_legacy_ui_brody": 3,
+        "tools_brody": 0,
+        "runtime_freezes_brody": 0,
+        "unknown_pending_review": 2
+      },
+      "note": "runtime_freezes_brody: 0 — .runtime_freezes/ (hidden folder) excluded from active scan. These 5 MANIFEST_SHA256.json integrity seals are NOT counted in the active total."
     }
   },
   "executability_audit": {

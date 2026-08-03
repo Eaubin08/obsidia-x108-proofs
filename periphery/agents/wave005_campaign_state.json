@@ -1,0 +1,72 @@
+{
+  "campaign": "AGENTS_FILE_WIRING",
+  "authority": "NON_SOVEREIGN",
+  "can_decide": false,
+  "can_act": false,
+  "emits_act": false,
+  "memory_write": false,
+  "generated_at": "2026-08-03",
+  "wave_history": {
+    "WAVE001": {
+      "subsystem": "AGENTS52_CONFIGURATION_SYSTEM",
+      "status": "CLOSED",
+      "index": "periphery/agents/operational_agent_document_index.json"
+    },
+    "WAVE002": {
+      "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM",
+      "status": "CLOSED",
+      "index": "periphery/agents/operational_source_catalog.json"
+    },
+    "WAVE003": {
+      "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION",
+      "status": "CLOSED",
+      "index": "periphery/agents/agent_source_pack_documentation.index.json"
+    },
+    "WAVE004": {
+      "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM",
+      "status": "CLOSED",
+      "index": "periphery/agents/agent_test_and_proof_system.index.json"
+    },
+    "WAVE005": {
+      "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
+      "status": "WAVE005_A_CLOSED_PENDING_B_THROUGH_F",
+      "current_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
+      "scope_complete": false,
+      "index": "periphery/agents/brody_governance_element_system.index.json",
+      "reconciliation_matrix": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+      "wave005_a_commits": ["49a3087", "6be9830"],
+      "wave005_a_accounting_commit": "PENDING_THIS_COMMIT",
+      "wave005_a_indexed_entries": 11,
+      "wave005_a_total_scope": 18,
+      "wave005_a_tests_passed": 47,
+      "initial_scan": 914,
+      "normalized_total": 912,
+      "excluded_from_914": 5,
+      "excluded_paths_note": ".runtime_freezes/ (5 MANIFEST_SHA256.json — hidden folder, integrity seals, not active files)",
+      "baseline_reference": 905,
+      "net_delta_from_baseline": 7,
+      "unresolved_count": 2,
+      "unresolved_paths": [
+        "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+        "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
+      ],
+      "silent_double_count": 0,
+      "next_subwave": "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS"
+    }
+  },
+  "active_artifact_index": {
+    "WAVE001_index": "periphery/agents/operational_agent_document_index.json",
+    "WAVE002_index": "periphery/agents/operational_source_catalog.json",
+    "WAVE003_index": "periphery/agents/agent_source_pack_documentation.index.json",
+    "WAVE004_index": "periphery/agents/agent_test_and_proof_system.index.json",
+    "WAVE005_A_index": "periphery/agents/brody_governance_element_system.index.json",
+    "WAVE005_A_reconciliation": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+    "WAVE005_A_campaign_state": "periphery/agents/wave005_campaign_state.json",
+    "WAVE005_A_unresolved_queue": "periphery/agents/wave005_unresolved_queue.json"
+  },
+  "ACTIVE_GLOBAL_MANIFEST_UPDATED": true,
+  "ACTIVE_RELATION_GRAPH_UPDATED": true,
+  "ACTIVE_UNRESOLVED_QUEUE_UPDATED": true,
+  "ACTIVE_CAMPAIGN_STATE_UPDATED": true,
+  "ACTIVE_ARTIFACT_INDEX_UPDATED": true
+}

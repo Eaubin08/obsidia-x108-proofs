@@ -314,7 +314,7 @@ def test_w5r_001_scope_complete_is_false():
 
 
 def test_w5r_002_covered_slice():
-    assert bges.get_covered_slice() == "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST"
+    assert bges.get_covered_slice() == "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST"
 
 
 def test_w5r_003_wave_role():
@@ -326,7 +326,7 @@ def test_w5r_004_scope_reconciliation_present():
     rec = bges.get_scope_reconciliation()
     assert rec != {}
     assert "current_active_total" in rec
-    assert "wave005_a_entries" in rec
+    assert "wave005_a_indexed_entries" in rec
     assert "files_already_processed_by_waves_001_to_004" in rec
     assert "double_counted_with_wave004" in rec
     assert "unaccounted_files" in rec
@@ -335,7 +335,7 @@ def test_w5r_004_scope_reconciliation_present():
 def test_w5r_005_no_double_count_with_wave004():
     rec = bges.get_scope_reconciliation()
     assert rec["double_counted_with_wave004"] == []
-    assert rec["double_counted_with_other_waves"] == []
+    assert rec["double_counted_silent"] == []
 
 
 def test_w5r_006_unaccounted_files_zero():
@@ -343,10 +343,10 @@ def test_w5r_006_unaccounted_files_zero():
     assert rec["unaccounted_files"] == 0
 
 
-def test_w5r_007_wave005a_entries_match_index():
+def test_w5r_007_wave005a_indexed_entries_match_index():
     rec = bges.get_scope_reconciliation()
     entries = bges.get_entries()
-    assert rec["wave005_a_entries"] == len(entries)
+    assert rec["wave005_a_indexed_entries"] == len(entries)
 
 
 def test_w5r_008_no_brody_runtime_pkg_in_index():
@@ -375,8 +375,8 @@ def test_w5r_010_remaining_population_present():
 def test_w5r_011_remaining_population_accounts_for_baseline():
     rec = bges.get_scope_reconciliation()
     rem = bges.get_remaining_population()
-    # wave005_a (11) + remaining (898) = 909 = current_active_total
-    wave_a = rec["wave005_a_entries"]
+    # wave005_a_total_scope (18) + remaining (894) = 912 = current_active_total
+    wave_a = rec["wave005_a_total_scope"]
     total_remaining = rem["total_remaining"]
     current = rec["current_active_total"]
     assert wave_a + total_remaining == current, (
