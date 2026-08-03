@@ -331,8 +331,13 @@ def test_w2_028_negative_duplicate_path():
         assert "DUPLICATE_PATH" in str(exc_info.value)
 
 
-def test_w2_029_production_consumer_imports_catalog():
-    """periphery_ops.py imports get_wave002_provenance from operational_source_catalog."""
+def test_w2_029_catalog_option_b_not_api_wired():
+    """OPTION_B verified: operational_source_catalog is NOT imported as an API consumer.
+
+    Wave 002 catalog role is DOCUMENTARY_INDEX only.  The artificial
+    /governance/operational-catalog route was removed (repair commit).
+    periphery_ops.py must NOT import from periphery.agents.operational_source_catalog.
+    """
     import ast
     from pathlib import Path
 
@@ -346,28 +351,29 @@ def test_w2_029_production_consumer_imports_catalog():
         if isinstance(node, ast.ImportFrom)
         and node.module == "periphery.agents.operational_source_catalog"
     ]
-    assert catalog_imports, (
-        "periphery_ops.py does not import from periphery.agents.operational_source_catalog"
-    )
-    imported_names = {alias.name for imp in catalog_imports for alias in imp.names}
-    assert "get_wave002_provenance" in imported_names, (
-        f"get_wave002_provenance not imported; found: {imported_names}"
+    assert not catalog_imports, (
+        "periphery_ops.py still imports from operational_source_catalog — "
+        "artificial API wiring not removed (OPTION_B violated)"
     )
 
 
-def test_w2_030_operational_catalog_endpoint_exists():
-    """/governance/operational-catalog endpoint is declared in periphery_ops.py."""
+def test_w2_030_catalog_option_b_no_artificial_endpoint():
+    """OPTION_B verified: /governance/operational-catalog endpoint is absent from periphery_ops.py.
+
+    The route was artificially created to make the Wave 002 catalog appear
+    'production consumed'. It has been removed. Catalog role is DOCUMENTARY_INDEX.
+    """
     from pathlib import Path
 
     route_path = Path(__file__).resolve().parent.parent.parent / (
         "apps/obsidia_api/routes/periphery_ops.py"
     )
     source = route_path.read_text(encoding="utf-8")
-    assert '"/governance/operational-catalog"' in source, (
-        "Endpoint /governance/operational-catalog not found in periphery_ops.py"
+    assert '"/governance/operational-catalog"' not in source, (
+        "Artificial endpoint /governance/operational-catalog still present in periphery_ops.py"
     )
-    assert "get_operational_catalog_provenance" in source, (
-        "get_operational_catalog_provenance not called in periphery_ops.py"
+    assert "get_operational_catalog_provenance" not in source, (
+        "Artificial alias get_operational_catalog_provenance still present in periphery_ops.py"
     )
 
 
