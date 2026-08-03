@@ -1,6 +1,6 @@
 {
   "artifact_id": "AGENTS_FILE_WIRING_GLOBAL_STATE_V1",
-  "artifact_role": "GLOBAL_CAMPAIGN_STATE",
+  "artifact_role": "PROVISIONAL_CAMPAIGN_STATE_SUCCESSOR_V1",
   "campaign": "AGENTS_FILE_WIRING",
   "authority": "NON_SOVEREIGN",
   "can_decide": false,
@@ -11,6 +11,11 @@
   "runtime_consumed": false,
   "generated_at": "2026-08-03",
   "active_version": "V1",
+  "global_manifest_complete": false,
+  "global_relation_graph_complete": false,
+  "prior_global_artifacts_recovery_status": "ART193_TO_ART200_NOT_FOUND_IN_TREE_OR_RECENT_HISTORY",
+  "blocking_reason": "No prior global campaign artifacts (ART193-ART200) found in git tree. MANIFEST_SHA256.json (5407 files, 2026-07-07) is repo-wide, not campaign-specific. Graphiti index (3267 records) is cognitive memory, not AGENTS_FILE_WIRING relational graph.",
+  "next_action": "Locate or generate authoritative AGENTS_FILE_WIRING global file manifest and relation graph before declaring GLOBAL complete.",
   "global_artifact_index_path": "periphery/agents/agents_file_wiring_artifact_index.json",
   "wave_registry": {
     "WAVE001": {
@@ -47,7 +52,7 @@
     },
     "WAVE005_A": {
       "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
-      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
+      "status": "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED",
       "scope_complete": false,
       "covered_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
       "functional_files_processed": 11,
@@ -74,7 +79,7 @@
       "local_state_path": "periphery/agents/wave005_campaign_state.json",
       "local_state_role": "WAVE005_A_LOCAL_CAMPAIGN_STATE",
       "local_unresolved_path": "periphery/agents/wave005_unresolved_queue.json",
-      "commits": ["49a3087", "6be9830", "7002eb9", "b72c32f"]
+      "commits": ["49a3087", "6be9830", "7002eb9", "b72c32f", "216c8a1"]
     }
   },
   "global_summary": {

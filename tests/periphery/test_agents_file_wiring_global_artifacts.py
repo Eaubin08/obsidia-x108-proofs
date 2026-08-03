@@ -33,7 +33,7 @@ def test_ga_001_global_state_exists():
 
 def test_ga_002_global_state_artifact_role():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["artifact_role"] == "GLOBAL_CAMPAIGN_STATE"
+    assert d["artifact_role"] == "PROVISIONAL_CAMPAIGN_STATE_SUCCESSOR_V1"
 
 
 def test_ga_003_global_state_non_sovereign():
@@ -47,7 +47,7 @@ def test_ga_003_global_state_non_sovereign():
 def test_ga_004_global_state_registers_wave005a():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     w5a = d["wave_registry"]["WAVE005_A"]
-    assert w5a["status"] == "CLOSED_NEXT_SUBWAVE_REQUIRED"
+    assert w5a["status"] == "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED"
     assert w5a["functional_files_processed"] == 11
     assert w5a["brody_primary_census"] == 902
     assert w5a["files_pending_later_brody_subwaves"] == 891
@@ -99,9 +99,11 @@ def test_ga_020_artifact_index_exists():
 
 def test_ga_021_artifact_index_role():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
-    assert d["artifact_role"] == "GLOBAL_ARTIFACT_INDEX"
-    assert "GLOBAL_FILE_MANIFEST" in d.get("secondary_roles", [])
-    assert "GLOBAL_RELATION_GRAPH" in d.get("secondary_roles", [])
+    assert d["artifact_role"] == "PROVISIONAL_CAMPAIGN_ARTIFACT_REGISTRY_V1"
+    # OPTION B: false secondary_roles removed — no claim of GLOBAL_FILE_MANIFEST or GLOBAL_RELATION_GRAPH
+    secondary = d.get("secondary_roles", [])
+    assert "GLOBAL_FILE_MANIFEST" not in secondary
+    assert "GLOBAL_RELATION_GRAPH" not in secondary
 
 
 def test_ga_022_artifact_index_all_global_artifacts_declared():
@@ -134,7 +136,7 @@ def test_ga_024_artifact_index_wave005a_in_manifests():
     assert "WAVE005_A" in d["wave_file_manifests"]
     w5a = d["wave_file_manifests"]["WAVE005_A"]
     assert w5a["files_indexed"] == 11
-    assert w5a["status"] == "CLOSED_NEXT_SUBWAVE_REQUIRED"
+    assert w5a["status"] == "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED"
 
 
 def test_ga_025_relation_graph_silent_double_count_zero():
@@ -187,9 +189,11 @@ def test_ga_041_local_state_points_to_global():
     assert d.get("global_artifact_index_path") == "periphery/agents/agents_file_wiring_artifact_index.json"
 
 
-def test_ga_042_local_state_wave005a_registration_complete():
+def test_ga_042_local_state_wave005a_registration_blocked():
     d = _load("periphery/agents/wave005_campaign_state.json")
-    assert d.get("WAVE005_A_GLOBAL_REGISTRATION_COMPLETE") is True
+    # OPTION B: global registration is blocked — prior global artifacts not found
+    assert d.get("WAVE005_A_GLOBAL_REGISTRATION_COMPLETE") is False
+    assert d.get("WAVE005_A_GLOBAL_REGISTRATION_STATUS") == "BLOCKED_PRIOR_ARTIFACTS_NOT_FOUND"
 
 
 # ---------------------------------------------------------------------------
@@ -225,3 +229,48 @@ def test_ga_053_global_artifacts_not_in_brody_primary():
             f"Global artifact {rel} contains 'brody' in name — "
             "would be incorrectly picked up by brody census scan"
         )
+
+
+# ---------------------------------------------------------------------------
+# GA-054 to GA-058 — OPTION B: provisional state, blocking metadata
+# ---------------------------------------------------------------------------
+
+def test_ga_054_global_manifest_not_complete():
+    """OPTION B: no authoritative AGENTS_FILE_WIRING global file manifest exists."""
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    assert d["global_manifest_complete"] is False
+    d2 = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    assert d2["global_manifest_complete"] is False
+
+
+def test_ga_055_global_relation_graph_not_complete():
+    """OPTION B: no authoritative AGENTS_FILE_WIRING global relation graph exists."""
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    assert d["global_relation_graph_complete"] is False
+    d2 = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    assert d2["global_relation_graph_complete"] is False
+
+
+def test_ga_056_art193_to_200_not_found():
+    """OPTION B: prior global artifact IDs ART193-ART200 absent from tree and recent history."""
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    status = d.get("prior_global_artifacts_recovery_status", "")
+    assert "ART193" in status
+    assert "NOT_FOUND" in status
+
+
+def test_ga_057_global_registration_blocked():
+    """OPTION B: artifact index declares global registration as blocked."""
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    assert d["global_registration_blocked"] is True
+
+
+def test_ga_058_global_file_manifest_entry_absent():
+    """OPTION B: GLOBAL_FILE_MANIFEST entry in artifact index has exists=false and path=null."""
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    gfm = d["global_artifacts"]["GLOBAL_FILE_MANIFEST"]
+    assert gfm["exists"] is False
+    assert gfm["path"] is None
+    grg = d["global_artifacts"]["GLOBAL_RELATION_GRAPH"]
+    assert grg["exists"] is False
+    assert grg["path"] is None

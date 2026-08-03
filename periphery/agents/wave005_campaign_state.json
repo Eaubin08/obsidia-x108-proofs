@@ -29,7 +29,7 @@
     },
     "WAVE005": {
       "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
-      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
+      "status": "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED",
       "current_slice": "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
       "scope_complete": false,
       "index": "periphery/agents/brody_governance_element_system.index.json",
@@ -73,5 +73,6 @@
   "global_artifact_index_path": "periphery/agents/agents_file_wiring_artifact_index.json",
   "is_global_campaign_state": false,
   "WAVE005_A_LOCAL_STATE_COMPLETE": true,
-  "WAVE005_A_GLOBAL_REGISTRATION_COMPLETE": true
+  "WAVE005_A_GLOBAL_REGISTRATION_COMPLETE": false,
+  "WAVE005_A_GLOBAL_REGISTRATION_STATUS": "BLOCKED_PRIOR_ARTIFACTS_NOT_FOUND"
 }

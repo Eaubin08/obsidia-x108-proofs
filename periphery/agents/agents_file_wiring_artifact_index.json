@@ -1,7 +1,9 @@
 {
   "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
-  "artifact_role": "GLOBAL_ARTIFACT_INDEX",
-  "secondary_roles": ["GLOBAL_FILE_MANIFEST", "GLOBAL_RELATION_GRAPH"],
+  "artifact_role": "PROVISIONAL_CAMPAIGN_ARTIFACT_REGISTRY_V1",
+  "global_manifest_complete": false,
+  "global_relation_graph_complete": false,
+  "global_registration_blocked": true,
   "campaign": "AGENTS_FILE_WIRING",
   "authority": "NON_SOVEREIGN",
   "can_decide": false,
@@ -28,20 +30,14 @@
       "active_version": "V1"
     },
     "GLOBAL_FILE_MANIFEST": {
-      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
-      "role_section": "wave_file_manifests",
-      "note": "Each wave primary index IS the file manifest for that wave. This artifact index aggregates them.",
-      "exists": true,
-      "tracked": true,
-      "active_version": "V1"
+      "path": null,
+      "exists": false,
+      "note": "Not found. MANIFEST_SHA256.json (5407 files, 2026-07-07) is repo-wide manifest but not AGENTS_FILE_WIRING-specific. ART193-ART200 searched exhaustively in git tree and recent history — not found."
     },
     "GLOBAL_RELATION_GRAPH": {
-      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
-      "role_section": "relation_graph",
-      "note": "Compact inter-wave relation graph. Wave005_A LOCAL view is in brody_governance_scope_reconciliation.index.json (artifact_role=WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX -- NOT the global graph).",
-      "exists": true,
-      "tracked": true,
-      "active_version": "V1"
+      "path": null,
+      "exists": false,
+      "note": "Not found. Graphiti V2 (3267 records) is cognitive memory index, not AGENTS_FILE_WIRING campaign relation graph. ART193-ART200 searched — not found."
     },
     "GLOBAL_UNRESOLVED_QUEUE": {
       "path": "periphery/agents/wave005_unresolved_queue.json",
@@ -106,7 +102,7 @@
         "is_global_relation_graph": false,
         "note": "Local scope view for Wave005_A only. prior_wave_intersections = LOCAL_SCOPE_RELATION_VIEW, not global graph."
       },
-      "status": "CLOSED_NEXT_SUBWAVE_REQUIRED",
+      "status": "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED",
       "scope_complete": false
     }
   },
