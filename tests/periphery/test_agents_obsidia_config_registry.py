@@ -1,7 +1,7 @@
 """
-Tests for periphery.agents_obsidia_config_registry — Batch 001 + Batch 002 + Batch 003 + Wave 001.
+Tests for periphery.agents_obsidia_config_registry — Batch 001 + Batch 002 + Batch 003 + Wave 001 + Runtime Closure.
 
-PHASE: AGENTS52_READONLY_REGISTRY_WAVE001_PROVENANCE
+PHASE: AGENTS52_READONLY_REGISTRY_WAVE001_RUNTIME_CLOSURE
 AUTHORITY: NON_SOVEREIGN — no agent invoked, no model called, no memory written.
 """
 from __future__ import annotations
@@ -29,9 +29,14 @@ from periphery.agents_obsidia_config_registry import (
     _BATCH003_TAG,
     _EXPECTED_SOURCE_DOCUMENT_COUNT,
     _SUPPORTED_MANIFEST_SCHEMA,
+    _build_registry_entries,
     _manifest_path,
     _manifest_rel_path,
+    _read_registry_raw,
+    _read_source_manifest_raw,
     _registry_path,
+    _validate_manifest_against_registry,
+    _validate_source_manifest_files,
     get_agent_config,
     get_registry_provenance,
     list_agent_configs,
@@ -1518,3 +1523,292 @@ def test_131_negative_path_escape_rejected():
         mod._MANIFEST_CACHE = original_cache
         mod._MANIFEST_CACHE_SHA = original_sha
         tmp_path.unlink(missing_ok=True)
+
+
+# ── Wave 001 Runtime Closure — helpers ───────────────────────────────────────
+
+import contextlib
+from pathlib import Path
+
+
+@contextlib.contextmanager
+def _reset_all_caches():
+    """Context manager that clears all module caches and restores them on exit."""
+    import periphery.agents_obsidia_config_registry as mod
+    orig = (mod._CACHE, mod._CACHE_SHA, mod._MANIFEST_CACHE, mod._MANIFEST_CACHE_SHA)
+    mod._CACHE = None
+    mod._CACHE_SHA = ""
+    mod._MANIFEST_CACHE = None
+    mod._MANIFEST_CACHE_SHA = ""
+    try:
+        yield mod
+    finally:
+        mod._CACHE, mod._CACHE_SHA, mod._MANIFEST_CACHE, mod._MANIFEST_CACHE_SHA = orig
+
+
+@contextlib.contextmanager
+def _tampered_manifest(tampered: dict):
+    """Write tampered manifest to temp file, patch _manifest_path, reset all caches."""
+    import periphery.agents_obsidia_config_registry as mod
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(tampered, tmp)
+        tmp_path = Path(tmp.name)
+    orig_fn = mod._manifest_path
+    orig = (mod._CACHE, mod._CACHE_SHA, mod._MANIFEST_CACHE, mod._MANIFEST_CACHE_SHA)
+    mod._manifest_path = lambda: tmp_path  # type: ignore[assignment]
+    mod._CACHE = None
+    mod._CACHE_SHA = ""
+    mod._MANIFEST_CACHE = None
+    mod._MANIFEST_CACHE_SHA = ""
+    try:
+        yield mod
+    finally:
+        mod._manifest_path = orig_fn  # type: ignore[assignment]
+        mod._CACHE, mod._CACHE_SHA, mod._MANIFEST_CACHE, mod._MANIFEST_CACHE_SHA = orig
+        tmp_path.unlink(missing_ok=True)
+
+
+# ── Wave 001 Runtime Closure — cold-start ────────────────────────────────────
+
+
+def test_132_cold_start_load_registry_fills_manifest_cache():
+    """load_registry() cold-start populates _MANIFEST_CACHE automatically."""
+    with _reset_all_caches() as mod:
+        assert mod._MANIFEST_CACHE is None, "Precondition: manifest cache should be empty"
+        entries = mod.load_registry()
+        assert mod._MANIFEST_CACHE is not None, "load_registry() must fill _MANIFEST_CACHE"
+        assert len(entries) == 52
+
+
+def test_133_cold_start_provenance_valid_without_explicit_manifest_call():
+    """get_registry_provenance() on cold start exposes verified manifest data."""
+    with _reset_all_caches() as mod:
+        prov = mod.get_registry_provenance()
+        assert prov["source_manifest_loaded"] is True, "source_manifest_loaded must be True at cold start"
+        assert prov["source_manifest_entry_count"] == 52
+        assert prov["source_documents_verified"] is True
+        assert prov["source_documents_missing"] == 0
+        assert prov["source_documents_hash_mismatch"] == 0
+        assert prov["secondary_registry_role"] == "MIRROR_OF_CANONICAL"
+        assert prov["secondary_registry_sha256_match"] is True
+        assert prov["csv_role"] == "MANUAL_EXPORT_SUBSET"
+
+
+def test_134_cold_start_validate_registry_exposes_manifest():
+    """validate_registry() on cold start shows source_manifest_loaded=True."""
+    with _reset_all_caches() as mod:
+        result = mod.validate_registry()
+        assert result["source_manifest_loaded"] is True
+        assert result["source_manifest_entry_count"] == 52
+
+
+# ── Wave 001 Runtime Closure — load_registry enforcement ─────────────────────
+
+
+def test_135_load_registry_rejects_bad_manifest_schema():
+    """load_registry() raises when manifest schema_version is wrong."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["schema_version"] = "9.9"
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises((ValueError, FileNotFoundError)):
+            mod.load_registry()
+
+
+def test_136_load_registry_rejects_canonical_sha256_mismatch():
+    """load_registry() raises when manifest canonical_registry_sha256 does not match disk."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["canonical_registry_sha256"] = "0" * 64
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "CANONICAL_SHA256_MISMATCH" in str(exc_info.value)
+
+
+def test_137_load_registry_rejects_agent_name_not_in_registry():
+    """load_registry() raises when manifest contains an agent_name not in registry."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["entries"][0]["agent_name"] = "FAKE_AGENT_XYZ_NOT_IN_REGISTRY"
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "EXTRA_AGENTS" in str(exc_info.value) or "MISMATCH" in str(exc_info.value)
+
+
+def test_138_load_registry_rejects_family_mismatch():
+    """load_registry() raises when manifest entry family differs from registry."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["entries"][0]["family"] = "WRONG_FAMILY_XXXXXXX"
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "FAMILY_MISMATCH" in str(exc_info.value)
+
+
+def test_139_load_registry_rejects_bad_validation_status():
+    """load_registry() raises when an entry has wrong validation_status."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["entries"][0]["validation_status"] = "APPROVED"
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "BAD_VALIDATION_STATUS" in str(exc_info.value)
+
+
+def test_140_load_registry_rejects_secondary_registry_hash_mismatch():
+    """load_registry() raises when secondary_registry_path SHA256 differs from canonical."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    # Point secondary_registry to the manifest itself (different SHA256 from canonical registry)
+    tampered["secondary_registry_path"] = _manifest_rel_path()
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "SECONDARY_REGISTRY_HASH_MISMATCH" in str(exc_info.value)
+
+
+def test_141_load_registry_rejects_missing_csv_path():
+    """load_registry() raises when csv_role=MANUAL_EXPORT_SUBSET but csv_path is empty."""
+    base = load_source_manifest()
+    tampered = json.loads(json.dumps(base))
+    tampered["csv_path"] = ""
+    with _tampered_manifest(tampered) as mod:
+        with pytest.raises(ValueError) as exc_info:
+            mod.load_registry()
+        assert "CSV_PATH_MISSING" in str(exc_info.value)
+
+
+# ── Wave 001 Runtime Closure — immutabilité du manifeste ─────────────────────
+
+
+def test_142_manifest_cache_immutable_list_mutation():
+    """Mutating entries list of load_source_manifest() result does not affect internal cache."""
+    import periphery.agents_obsidia_config_registry as mod
+
+    m1 = load_source_manifest()
+    original_count = len(m1["entries"])
+    m1["entries"].clear()
+
+    assert mod._MANIFEST_CACHE is not None
+    assert len(mod._MANIFEST_CACHE["entries"]) == original_count, (
+        "Internal _MANIFEST_CACHE mutated by caller"
+    )
+
+    m2 = load_source_manifest()
+    assert len(m2["entries"]) == original_count, "Second call returned corrupted manifest"
+
+
+def test_143_manifest_cache_immutable_dict_injection():
+    """Injecting a key into load_source_manifest() result does not affect internal cache."""
+    import periphery.agents_obsidia_config_registry as mod
+
+    m1 = load_source_manifest()
+    m1["INJECTED_MALICIOUS_KEY"] = "mutation_attempt"
+
+    assert "INJECTED_MALICIOUS_KEY" not in (mod._MANIFEST_CACHE or {}), (
+        "Internal cache was mutated via returned reference"
+    )
+
+    m2 = load_source_manifest()
+    assert "INJECTED_MALICIOUS_KEY" not in m2
+
+
+def test_144_manifest_two_calls_return_independent_copies():
+    """Two successive calls to load_source_manifest() return independent dict objects."""
+    m1 = load_source_manifest()
+    m2 = load_source_manifest()
+    assert m1 is not m2, "load_source_manifest() must return new copies each time"
+    assert m1["entries"] is not m2["entries"]
+
+
+# ── Wave 001 Runtime Closure — CSV rôle ──────────────────────────────────────
+
+
+def test_145_csv_role_is_manual_export_subset():
+    """Manifest csv_role equals MANUAL_EXPORT_SUBSET (not CANONICAL_SOURCE)."""
+    m = load_source_manifest()
+    assert m["csv_role"] == "MANUAL_EXPORT_SUBSET"
+    assert m["csv_role"] != "CANONICAL_SOURCE"
+
+
+def test_146_csv_not_used_as_registry_loader():
+    """No code path in agents_obsidia_config_registry.py reads a .csv file at runtime."""
+    import inspect as _inspect
+    import re
+    import periphery.agents_obsidia_config_registry as mod
+    src = _inspect.getsource(mod)
+    # The module may reference csv_path as a string constant in manifest metadata,
+    # but must never open or read_bytes a .csv file.
+    for forbidden_pattern in (r'open\(.*\.csv', r'read_bytes.*\.csv', r'\.csv.*read_bytes'):
+        assert not re.search(forbidden_pattern, src), (
+            f"CSV read pattern {forbidden_pattern!r} found in module source"
+        )
+
+
+# ── Wave 001 Runtime Closure — régressions ───────────────────────────────────
+
+
+def test_147_wave001_runtime_regression_batch_counts():
+    """After runtime closure, batch counts remain: B001=5, B002=5, B003=8, total=52."""
+    entries = load_registry()
+    b1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    b2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
+    b3 = [e for e in entries if e.compilation_batch == _BATCH003_TAG]
+    assert len(b1) == 5, f"Batch001: {len(b1)}"
+    assert len(b2) == 5, f"Batch002: {len(b2)}"
+    assert len(b3) == 8, f"Batch003: {len(b3)}"
+    assert len(entries) == 52
+
+
+def test_148_wave001_runtime_regression_all_52_rejected_422():
+    """After runtime closure, all 52 agents still rejected by agent-run with 422."""
+    client = _agent_run_client()
+    for agent_id in list_agent_configs():
+        r = client.post(
+            "/api/periphery/governance/agent-run",
+            json={"agent_id": agent_id, "action": _AGENT_RUN_ACTION},
+        )
+        assert r.status_code == 422, (
+            f"{agent_id}: expected 422, got {r.status_code}"
+        )
+
+
+def test_149_wave001_runtime_no_memory_write_in_internal_functions():
+    """Internal validation functions contain no memory write calls."""
+    import inspect as _inspect
+    import periphery.agents_obsidia_config_registry as mod
+    for fn in (
+        mod._validate_source_manifest_files,
+        mod._validate_manifest_against_registry,
+        mod._read_registry_raw,
+        mod._read_source_manifest_raw,
+    ):
+        src = _inspect.getsource(fn)
+        for forbidden in ("graphiti", "neo4j", "memory.write", "append_memory"):
+            assert forbidden not in src.lower(), (
+                f"Memory write {forbidden!r} in {fn.__name__}"
+            )
+
+
+def test_150_wave001_runtime_no_model_call_in_internal_functions():
+    """Internal validation functions contain no LLM/model calls."""
+    import inspect as _inspect
+    import periphery.agents_obsidia_config_registry as mod
+    for fn in (
+        mod._validate_source_manifest_files,
+        mod._validate_manifest_against_registry,
+        mod._read_registry_raw,
+        mod._read_source_manifest_raw,
+        mod._build_registry_entries,
+    ):
+        src = _inspect.getsource(fn)
+        for forbidden in ("anthropic", "openai", "client.messages", "llm.invoke"):
+            assert forbidden not in src.lower(), (
+                f"Model call {forbidden!r} in {fn.__name__}"
+            )
