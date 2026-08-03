@@ -11,8 +11,12 @@
   "catalog_role": "DOCUMENTARY_INDEX",
   "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
   "wave": "WAVE005",
+  "wave_role": "WAVE005_A",
+  "covered_slice": "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST",
+  "scope_complete": false,
+  "scope_note": "This index covers WAVE005_A only: the 6-file periphery/brody/ core package plus 5 governance invariant tests. The full BRODY_GOVERNANCE_ELEMENT_SYSTEM spans 909 active files. Remaining slices (WAVE005_B through WAVE005_F) are documented in remaining_population below.",
   "truth_audit": "WAVE005_TRUTH_GATE_V1",
-  "physical_membership_rule": "Files that are (1) physically located in periphery/brody/ package (source components defining the Brody readonly contextual response system), or (2) executable test files whose PRIMARY import target is periphery.brody.* modules and whose primary claim is a governance invariant over the Brody system. Excludes periphery/brody_bridge.py (compatibility bridge, different subsystem — writes to audit bus). Excludes periphery/brody_memory_readonly/ (memory pipeline, different subsystem). Excludes periphery/agents/brody_memory_agent.py (Wave002 operational agent). Excludes tests/api/test_brody_* (60+ API-level integration tests, different subsystem).",
+  "physical_membership_rule": "WAVE005_A scope: (1) Files physically located in periphery/brody/ package (core governance contract, runtime, context query, language router, sanitizer — NOT periphery/brody_runtime/ which belongs to WAVE005_B BRODY_INTEGRATION_RUNTIME), or (2) executable test files whose PRIMARY import target is periphery.brody.* modules AND whose primary claim is a pure governance invariant (readonly / no-act / no-verdict). Excludes periphery/brody_bridge.py (compatibility bridge, writes to audit bus — WAVE005_B). Excludes periphery/brody_runtime/ (5 files — runtime freeze packets F32-F37, WAVE005_B). Excludes periphery/brody_memory_readonly/ (496 files — WAVE005_D). Excludes periphery/agents/brody_memory_agent.py (Wave002 operational agent). Excludes tests/api/test_brody_* (70 API integration tests — WAVE005_B). Excludes tests/test_brody_v3_* and other root-level brody tests (WAVE005_B or WAVE005_C).",
   "population_audit": {
     "total": 11,
     "previously_indicated": 11,
@@ -20,6 +24,85 @@
     "test_files": 5,
     "test_count_total": 25,
     "method": "physical file inspection + pytest collection check + SHA256 verification + runtime execution"
+  },
+  "scope_reconciliation": {
+    "baseline_reference_total": 905,
+    "baseline_note": "Historical campaign baseline — computed before Wave005 work. Slightly below current active count of 909 due to file churn since baseline date.",
+    "current_active_total": 909,
+    "current_active_method": "disk scan excl. .git __pycache__ _local_audits .pytest_cache .graph-memory .runtime_freezes",
+    "wave005_a_entries": 11,
+    "files_already_processed_by_waves_001_to_004": 0,
+    "files_already_processed_detail": "No brody file appears in Wave001 (AGENTS52_CONFIG), Wave002 (PYTHON_OPERATIONAL_AGENT, 167 entries), Wave003 (AGENT_SOURCE_PACK_DOC, 680 entries), Wave004 (AGENT_TEST_AND_PROOF, 8 entries). Zero double-count.",
+    "double_counted_with_wave004": [],
+    "double_counted_with_other_waves": [],
+    "unaccounted_files": 0,
+    "accounted_for_total": 909,
+    "accounting_note": "909 = 11 (WAVE005_A indexed) + 898 (assigned to WAVE005_B through WAVE005_F, documented in remaining_population)"
+  },
+  "remaining_population": {
+    "total_remaining": 898,
+    "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST": {
+      "count": 11,
+      "status": "INDEXED_IN_THIS_FILE",
+      "paths": "periphery/brody/ (6 files) + 5 governance invariant tests"
+    },
+    "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS": {
+      "count": 143,
+      "status": "PENDING_NEXT_SUBWAVE",
+      "components": {
+        "periphery_brody_runtime": 5,
+        "periphery_brody_bridge_py": 1,
+        "apps_obsidia_api_brody": 67,
+        "tests_api_test_brody": 70
+      },
+      "note": "periphery/brody_runtime/ = F32-F37 freeze packets (readonly runtime integration). tests/api/test_brody_* = 70 live API integration tests. All physical imports target the API layer, not periphery.brody.* directly."
+    },
+    "WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_SCRIPTS": {
+      "count": 67,
+      "status": "PENDING_NEXT_SUBWAVE",
+      "components": {
+        "apps_non_brody_api": 0,
+        "connectors": 1,
+        "scripts_brody": 21,
+        "runtime_wiring_brody": 2,
+        "_runtime_wiring_preflight_brody": 2,
+        "tests_cli_gates_integration_brody": 5,
+        "tests_misc_root_brody": 36
+      }
+    },
+    "WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS": {
+      "count": 507,
+      "status": "PENDING_NEXT_SUBWAVE",
+      "components": {
+        "periphery_brody_memory_readonly": 495,
+        "periphery_feedback_memory_bridge_brody_readonly_py": 1,
+        "specs_08_MEMORY_BRODY": 9,
+        "runtime_contracts_brody": 2
+      },
+      "note": "BRODY_MEMORY_READONLY pipeline — 495 files in periphery/brody_memory_readonly/. NON_SOVEREIGN readonly memory operators. No decision authority. MEMORY_SOVEREIGNTY = KX108_ONLY."
+    },
+    "WAVE005_E_BRODY_DOCUMENTATION_AND_ARCHITECTURE": {
+      "count": 127,
+      "status": "PENDING_NEXT_SUBWAVE",
+      "components": {
+        "docs_brody_runtime_reports": 108,
+        "docs_brody_architecture": 19
+      },
+      "note": "Generated runtime payload reports (F17-F21) and architecture documents. BRODY_GENERATED_REPORT and BRODY_ARCHITECTURE_DOCUMENT families."
+    },
+    "WAVE005_F_BRODY_LEGACY_ARCHIVE_AND_DEVELOPMENT_TOOLING": {
+      "count": 54,
+      "status": "PENDING_NEXT_SUBWAVE",
+      "components": {
+        "docs_freeze_brody": 7,
+        "apps_workbench_brody": 3,
+        "development_tooling_scripts": 21,
+        "tests_legacy_root_brody_api": 1,
+        "runtime_freezes_brody": 5,
+        "unknown_pending_review": 2,
+        "remaining_misc": 15
+      }
+    }
   },
   "executability_audit": {
     "EXECUTABLE_PASSES": 5,

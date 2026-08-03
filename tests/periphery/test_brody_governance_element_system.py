@@ -303,3 +303,114 @@ def test_w5_090_world_action_bus_unchanged_by_wave005_module():
     _ = bges.validate_all_paths_exist()
     after = _sha256(bus)
     assert before == after, "world_action_bus.jsonl was modified by Wave005 module calls"
+
+
+# ---------------------------------------------------------------------------
+# W5-100 — Scope reconciliation (Wave005_A = partial slice, not full system)
+# ---------------------------------------------------------------------------
+
+def test_w5r_001_scope_complete_is_false():
+    assert bges.is_scope_complete() is False
+
+
+def test_w5r_002_covered_slice():
+    assert bges.get_covered_slice() == "WAVE005_A_BRODY_CORE_RUNTIME_AND_TEST"
+
+
+def test_w5r_003_wave_role():
+    idx = bges.get_index()
+    assert idx["wave_role"] == "WAVE005_A"
+
+
+def test_w5r_004_scope_reconciliation_present():
+    rec = bges.get_scope_reconciliation()
+    assert rec != {}
+    assert "current_active_total" in rec
+    assert "wave005_a_entries" in rec
+    assert "files_already_processed_by_waves_001_to_004" in rec
+    assert "double_counted_with_wave004" in rec
+    assert "unaccounted_files" in rec
+
+
+def test_w5r_005_no_double_count_with_wave004():
+    rec = bges.get_scope_reconciliation()
+    assert rec["double_counted_with_wave004"] == []
+    assert rec["double_counted_with_other_waves"] == []
+
+
+def test_w5r_006_unaccounted_files_zero():
+    rec = bges.get_scope_reconciliation()
+    assert rec["unaccounted_files"] == 0
+
+
+def test_w5r_007_wave005a_entries_match_index():
+    rec = bges.get_scope_reconciliation()
+    entries = bges.get_entries()
+    assert rec["wave005_a_entries"] == len(entries)
+
+
+def test_w5r_008_no_brody_runtime_pkg_in_index():
+    entries = bges.get_entries()
+    runtime_pkg_paths = [e["path"] for e in entries if "brody_runtime/" in e["path"]]
+    assert runtime_pkg_paths == [], (
+        f"periphery/brody_runtime/ entries wrongly included in Wave005_A: {runtime_pkg_paths}"
+    )
+
+
+def test_w5r_009_no_api_tests_in_index():
+    entries = bges.get_entries()
+    api_test_paths = [e["path"] for e in entries if e["path"].startswith("tests/api/")]
+    assert api_test_paths == [], (
+        f"tests/api/ entries wrongly included in Wave005_A: {api_test_paths}"
+    )
+
+
+def test_w5r_010_remaining_population_present():
+    rem = bges.get_remaining_population()
+    assert "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS" in rem
+    assert "WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS" in rem
+    assert rem["total_remaining"] > 0
+
+
+def test_w5r_011_remaining_population_accounts_for_baseline():
+    rec = bges.get_scope_reconciliation()
+    rem = bges.get_remaining_population()
+    # wave005_a (11) + remaining (898) = 909 = current_active_total
+    wave_a = rec["wave005_a_entries"]
+    total_remaining = rem["total_remaining"]
+    current = rec["current_active_total"]
+    assert wave_a + total_remaining == current, (
+        f"{wave_a} + {total_remaining} != {current}"
+    )
+
+
+def test_w5r_012_files_already_processed_by_waves_001_to_004_is_zero():
+    rec = bges.get_scope_reconciliation()
+    assert rec["files_already_processed_by_waves_001_to_004"] == 0
+
+
+def test_w5r_013_no_brody_memory_readonly_in_index():
+    entries = bges.get_entries()
+    memory_readonly_paths = [
+        e["path"] for e in entries if "brody_memory_readonly" in e["path"]
+    ]
+    assert memory_readonly_paths == [], (
+        f"brody_memory_readonly entries wrongly included in Wave005_A: {memory_readonly_paths}"
+    )
+
+
+def test_w5r_014_scope_note_present():
+    idx = bges.get_index()
+    assert "scope_note" in idx
+    assert "WAVE005_A" in idx["scope_note"]
+    assert "scope_complete" in idx
+
+
+def test_w5r_015_no_brody_only_declared_as_runtime():
+    entries = bges.get_entries()
+    for e in entries:
+        # governance source files must not be declared as RUNTIME_CONNECTED
+        owner = e.get("owner_subsystem", "")
+        assert "RUNTIME_CONNECTED" not in owner, (
+            f"{e['path']} wrongly declares RUNTIME_CONNECTED"
+        )

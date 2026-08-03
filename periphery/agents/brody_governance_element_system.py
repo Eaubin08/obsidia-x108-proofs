@@ -155,6 +155,30 @@ def get_governance_invariants() -> dict:
     return copy.deepcopy(raw.get("governance_claims", {}))
 
 
+def get_scope_reconciliation() -> dict:
+    """Return scope_reconciliation block — population accounting for Wave005_A."""
+    raw = _load_index()
+    return copy.deepcopy(raw.get("scope_reconciliation", {}))
+
+
+def get_remaining_population() -> dict:
+    """Return remaining_population block — WAVE005_B through WAVE005_F."""
+    raw = _load_index()
+    return copy.deepcopy(raw.get("remaining_population", {}))
+
+
+def is_scope_complete() -> bool:
+    """Return False — this index covers WAVE005_A only (scope_complete=false)."""
+    raw = _load_index()
+    return bool(raw.get("scope_complete", False))
+
+
+def get_covered_slice() -> str:
+    """Return the slice identifier for this index."""
+    raw = _load_index()
+    return raw.get("covered_slice", "")
+
+
 def summary() -> dict:
     entries = get_entries()
     from collections import Counter
