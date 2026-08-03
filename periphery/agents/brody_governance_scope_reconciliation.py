@@ -12,7 +12,6 @@ can_decide=false / can_act=false / emits_act=false / memory_write=false
 from __future__ import annotations
 
 import copy
-import hashlib
 import json
 from pathlib import Path
 
@@ -23,7 +22,7 @@ _INDEX_REL_PARTS = (
 )
 
 _EXPECTED_INDEX_ID = "BRODY_GOVERNANCE_SCOPE_RECONCILIATION_INDEX_V1"
-_SUPPORTED_SCHEMA = "1.0"
+_CENSUS_ID = "BRODY_PRIMARY_POPULATION_CENSUS_V1"
 
 _VALID_SUBWAVES = frozenset({
     "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST",
@@ -65,7 +64,18 @@ _WAVE005_A_GOVERNANCE_TESTS = frozenset({
     "tests/non_sovereignty/test_brody_response_never_emits_verdict.py",
 })
 
-_UNRESOLVED_PATHS = frozenset({
+_CAMPAIGN_METADATA_PATHS = frozenset({
+    "periphery/agents/brody_governance_element_system.index.json",
+    "periphery/agents/brody_governance_element_system.py",
+    "tests/periphery/test_brody_governance_element_system.py",
+    "periphery/agents/brody_governance_scope_reconciliation.index.json",
+    "periphery/agents/brody_governance_scope_reconciliation.py",
+    "tests/periphery/test_brody_governance_scope_reconciliation.py",
+})
+
+_SECONDARY_RELATION_PATHS = frozenset({
+    "periphery/agents/brody_memory_agent.py",
+    "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
     "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
     "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py",
 })
@@ -104,27 +114,50 @@ def get_index() -> dict:
 
 
 def get_entries() -> list[dict]:
-    """Return a deep copy of all matrix entries."""
+    """Return all 912 matrix entries (primary + secondary + campaign metadata)."""
     raw = _load_index()
     return copy.deepcopy(raw.get("entries", []))
 
 
+def get_primary_entries() -> list[dict]:
+    """Return only entries where counted_in_brody_primary_census=True (902 entries)."""
+    return [e for e in get_entries() if e.get("counted_in_brody_primary_census") is True]
+
+
+def get_campaign_metadata_entries() -> list[dict]:
+    """Return campaign metadata entries (6 entries with brody in name)."""
+    return [e for e in get_entries() if e["path"] in _CAMPAIGN_METADATA_PATHS]
+
+
+def get_secondary_relation_entries() -> list[dict]:
+    """Return secondary relation entries (4 entries)."""
+    return [e for e in get_entries() if e["path"] in _SECONDARY_RELATION_PATHS]
+
+
 def get_entries_by_subwave(subwave: str) -> list[dict]:
-    return [e for e in get_entries() if e.get("assigned_subwave") == subwave]
+    """Return primary entries for a given subwave."""
+    return [e for e in get_primary_entries() if e.get("assigned_subwave") == subwave]
 
 
 def get_unresolved_entries() -> list[dict]:
-    return [e for e in get_entries() if e.get("current_relation_status") == "UNRESOLVED"]
+    """Return UNRESOLVED primary entries (0 after reclassification of workflow_governance_readonly)."""
+    return [
+        e for e in get_primary_entries()
+        if e.get("current_relation_status") == "UNRESOLVED"
+    ]
 
 
 def get_wave005a_entries() -> list[dict]:
-    return [e for e in get_entries()
-            if e.get("assigned_subwave") == "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST"]
+    """Return all WAVE005_A primary entries."""
+    return [
+        e for e in get_primary_entries()
+        if e.get("assigned_subwave") == "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST"
+    ]
 
 
 def get_wave005a_indexed_entries() -> list[dict]:
-    return [e for e in get_entries()
-            if e.get("current_relation_status") == "INDEXED"]
+    """Return INDEXED WAVE005_A entries (11 functional entries)."""
+    return [e for e in get_primary_entries() if e.get("current_relation_status") == "INDEXED"]
 
 
 def get_double_count_entries() -> list[dict]:
@@ -135,10 +168,10 @@ def get_double_count_entries() -> list[dict]:
 
 
 def validate_all_current_paths_exist() -> dict[str, bool]:
-    """Check physical existence for all entries marked current_present=True."""
+    """Check physical existence for primary entries marked current_present=True."""
     root = _repo_root()
     result: dict[str, bool] = {}
-    for entry in get_entries():
+    for entry in get_primary_entries():
         if entry.get("current_present", False):
             p = root / entry["path"]
             result[entry["path"]] = p.is_file()
@@ -146,37 +179,49 @@ def validate_all_current_paths_exist() -> dict[str, bool]:
 
 
 def get_partition_summary() -> dict[str, int]:
+    """Return the PRIMARY partition summary (A-F, primary owners only)."""
     raw = _load_index()
-    return copy.deepcopy(raw.get("partition_summary", {}))
+    return copy.deepcopy(raw.get("primary_partition_summary", {}))
 
 
 def get_five_excluded_from_914() -> list[str]:
-    """Return the exact 5 paths excluded to go from scan-914 to normalized total."""
+    """Return the exact 5 .runtime_freezes paths excluded from the initial scan."""
     return list(_FIVE_EXCLUDED_FROM_914)
 
 
 def get_unresolved_paths() -> list[str]:
-    """Return the 2 paths currently UNRESOLVED after review."""
-    return [e["path"] for e in get_unresolved_entries()
-            if "workflow_governance_readonly" in e["path"]]
+    """Return paths of UNRESOLVED primary entries (0 after reclassification)."""
+    return [e["path"] for e in get_unresolved_entries()]
+
+
+def get_prior_wave_intersections() -> dict:
+    """Return Wave001-004 intersection data from index."""
+    raw = _load_index()
+    return copy.deepcopy(raw.get("prior_wave_intersections", {}))
 
 
 def summary() -> dict:
-    entries = get_entries()
+    primary = get_primary_entries()
+    all_entries = get_entries()
     idx = get_index()
     return {
-        "normalized_current_total": len(entries),
+        "normalized_current_total": len(all_entries),
+        "primary_census_total": len(primary),
+        "campaign_metadata_total": len(get_campaign_metadata_entries()),
+        "secondary_relation_total": len(get_secondary_relation_entries()),
         "initial_scan_914": 914,
         "excluded_from_914": 5,
-        "files_added_since_initial_scan_914": 3,
         "partition": get_partition_summary(),
         "wave005a_indexed": len(get_wave005a_indexed_entries()),
-        "wave005a_core_sources": len([e for e in entries if e["path"] in _WAVE005_A_CORE_SOURCES]),
-        "wave005a_governance_tests": len([e for e in entries if e["path"] in _WAVE005_A_GOVERNANCE_TESTS]),
+        "wave005a_core_sources": len([e for e in primary if e["path"] in _WAVE005_A_CORE_SOURCES]),
+        "wave005a_governance_tests": len([e for e in primary if e["path"] in _WAVE005_A_GOVERNANCE_TESTS]),
         "unresolved": len(get_unresolved_entries()),
         "unresolved_paths": get_unresolved_paths(),
         "double_count_secondary_only": idx.get("double_count_status", {}).get("secondary_relation_only", 0),
         "silent_double_count": 0,
+        "prior_wave_primary_owners": get_prior_wave_intersections().get("prior_wave_primary_owners", 0),
+        "prior_wave_secondary_intersections": get_prior_wave_intersections().get("prior_wave_secondary_intersections", 0),
         "baseline_reference": 905,
-        "net_delta_from_baseline": len(entries) - 905,
+        "baseline_reference_status": "NON_RECONSTRUCTIBLE_AGGREGATE_COUNTER",
+        "net_delta_from_baseline": "UNKNOWN",
     }

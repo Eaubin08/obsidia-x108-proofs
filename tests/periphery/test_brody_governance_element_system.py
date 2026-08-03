@@ -375,8 +375,8 @@ def test_w5r_010_remaining_population_present():
 def test_w5r_011_remaining_population_accounts_for_baseline():
     rec = bges.get_scope_reconciliation()
     rem = bges.get_remaining_population()
-    # wave005_a_total_scope (18) + remaining (894) = 912 = current_active_total
-    wave_a = rec["wave005_a_total_scope"]
+    # wave005_a functional (11) + remaining (891) = 902 = current_active_total (primary)
+    wave_a = rec["wave005_a_functional_total"]
     total_remaining = rem["total_remaining"]
     current = rec["current_active_total"]
     assert wave_a + total_remaining == current, (

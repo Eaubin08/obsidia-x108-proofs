@@ -17,7 +17,7 @@
   "scope_note": "This index covers WAVE005_A only: the 6-file periphery/brody/ core package plus 5 governance invariant tests (11 indexed entries). The full BRODY_GOVERNANCE_ELEMENT_SYSTEM spans 912 active files (normalized, excl. .runtime_freezes/). Remaining 894 files assigned to WAVE005_B through WAVE005_F per brody_governance_scope_reconciliation.index.json.",
   "reconciliation_matrix": "periphery/agents/brody_governance_scope_reconciliation.index.json",
   "truth_audit": "WAVE005_TRUTH_GATE_V1",
-  "physical_membership_rule": "WAVE005_A scope: (1) Files physically located in periphery/brody/ package (core governance contract, runtime, context query, language router, sanitizer — NOT periphery/brody_runtime/ which belongs to WAVE005_B BRODY_INTEGRATION_RUNTIME), or (2) executable test files whose PRIMARY import target is periphery.brody.* modules AND whose primary claim is a pure governance invariant (readonly / no-act / no-verdict). Excludes periphery/brody_bridge.py (compatibility bridge, writes to audit bus — WAVE005_B). Excludes periphery/brody_runtime/ (5 files — runtime freeze packets F32-F37, WAVE005_B). Excludes periphery/brody_memory_readonly/ (496 files — WAVE005_D). Excludes periphery/agents/brody_memory_agent.py (Wave002 operational agent). Excludes tests/api/test_brody_* (70 API integration tests — WAVE005_B). Excludes tests/test_brody_v3_* and other root-level brody tests (WAVE005_B or WAVE005_C).",
+  "physical_membership_rule": "WAVE005_A scope: (1) Files physically located in periphery/brody/ package (core governance contract, runtime, context query, language router, sanitizer \u2014 NOT periphery/brody_runtime/ which belongs to WAVE005_B BRODY_INTEGRATION_RUNTIME), or (2) executable test files whose PRIMARY import target is periphery.brody.* modules AND whose primary claim is a pure governance invariant (readonly / no-act / no-verdict). Excludes periphery/brody_bridge.py (compatibility bridge, writes to audit bus \u2014 WAVE005_B). Excludes periphery/brody_runtime/ (5 files \u2014 runtime freeze packets F32-F37, WAVE005_B). Excludes periphery/brody_memory_readonly/ (496 files \u2014 WAVE005_D). Excludes periphery/agents/brody_memory_agent.py (Wave002 operational agent). Excludes tests/api/test_brody_* (70 API integration tests \u2014 WAVE005_B). Excludes tests/test_brody_v3_* and other root-level brody tests (WAVE005_B or WAVE005_C).",
   "population_audit": {
     "total": 11,
     "previously_indicated": 11,
@@ -28,31 +28,42 @@
   },
   "scope_reconciliation": {
     "baseline_reference_total": 905,
-    "baseline_note": "Historical campaign baseline counter — no file list available for exact path-by-path diff. Delta of 7 (912-905) explained by 6 Wave005_A artefacts created during this campaign + 1 pre-existing file unaccounted in original counter.",
-    "current_active_total": 912,
-    "current_active_method": "disk scan excl. .git __pycache__ node_modules _local_audits .pytest_cache .graph-memory .runtime_freezes (hidden folder with leading dot — 5 MANIFEST_SHA256.json integrity seals excluded)",
-    "initial_scan_914": "First scan included .runtime_freezes/ (5 files). Corrected to 909 in 6be9830. Further corrected to 912 after Wave005_A artefacts created (6 new files with brody in name).",
-    "wave005_a_total_scope": 18,
+    "current_active_total": 902,
+    "current_active_method": "git ls-files | grep -i brody, excl. .runtime_freezes (5 integrity seals), excl. campaign_metadata (6 artefacts), excl. secondary_relations (4 files)",
     "wave005_a_indexed_entries": 11,
-    "wave005_a_meta_artefacts": 7,
-    "wave005_a_meta_note": "7 = 3 Wave005_A index/validator/test + 3 reconciliation index/validator/test + 1 brody_memory_agent.py (SECONDARY_RELATION_ONLY, primary owner Wave002)",
     "files_already_processed_by_waves_001_to_004": 0,
-    "files_already_processed_detail": "No brody file appears in Wave001, Wave003, Wave004 entries. Wave002 has 1 overlap (brody_memory_agent.py in Wave002 catalog AND brody_memory_readonly .ps1 in Wave001+Wave002 catalog) — both SECONDARY_RELATION_ONLY, BRODY_GOVERNANCE is primary for the .ps1.",
+    "files_already_processed_detail": "No brody PRIMARY file is primary owner in Wave001-004. Prior wave intersections tracked as secondary only.",
     "double_counted_with_wave004": [],
     "double_counted_silent": [],
     "unaccounted_files": 0,
-    "accounted_for_total": 912,
-    "accounting_note": "912 = 18 (WAVE005_A scope) + 894 (WAVE005_B through WAVE005_F per reconciliation matrix)"
+    "accounted_for_total": 902,
+    "accounting_note": "902 = 11 (WAVE005_A functional) + 891 (WAVE005_B through WAVE005_F primary)",
+    "baseline_reference_status": "NON_RECONSTRUCTIBLE_AGGREGATE_COUNTER",
+    "baseline_path_list_available": false,
+    "exact_added_since_baseline": "UNKNOWN",
+    "exact_removed_since_baseline": "UNKNOWN",
+    "census_id": "BRODY_PRIMARY_POPULATION_CENSUS_V1",
+    "census_base_commit": "6be9830",
+    "wave005_a_functional_total": 11,
+    "wave005_a_campaign_metadata": 8,
+    "wave005_a_campaign_metadata_note": "6 artefacts with brody in name (3 governance index/validator/test + 3 reconciliation index/validator/test) + 2 without brody in name (wave005_campaign_state.json, wave005_unresolved_queue.json)",
+    "wave005_a_secondary_relations": 1,
+    "wave005_a_secondary_relations_note": "periphery/agents/brody_memory_agent.py \u2014 Wave002 primary owner, SECONDARY_RELATION_ONLY to BRODY_GOVERNANCE",
+    "prior_wave_primary_owners": 0,
+    "prior_wave_secondary_intersections": 2,
+    "prior_wave_secondary_intersections_detail": [
+      "periphery/agents/brody_memory_agent.py (Wave002 primary)",
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1 (Wave001+Wave002 primary)"
+    ]
   },
   "remaining_population": {
-    "total_remaining": 894,
+    "total_remaining": 891,
     "source_of_truth": "periphery/agents/brody_governance_scope_reconciliation.index.json",
     "WAVE005_A_BRODY_CORE_GOVERNANCE_AND_TEST": {
-      "count": 18,
+      "count": 11,
       "indexed_entries": 11,
-      "meta_artefacts": 7,
       "status": "INDEXED_IN_THIS_FILE_AND_RECONCILIATION_MATRIX",
-      "paths": "periphery/brody/ (6 files) + 5 governance invariant tests + 3 Wave005_A index/validator/test + 3 reconciliation index/validator/test + 1 Wave002 secondary"
+      "note": "6 core sources in periphery/brody/ + 5 governance invariant tests"
     },
     "WAVE005_B_BRODY_INTEGRATION_RUNTIME_AND_API_TESTS": {
       "count": 144,
@@ -78,15 +89,15 @@
       }
     },
     "WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS": {
-      "count": 507,
+      "count": 506,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
-        "periphery_brody_memory_readonly": 495,
+        "periphery_brody_memory_readonly": 494,
         "periphery_feedback_memory_bridge_brody_readonly_py": 1,
         "specs_08_MEMORY_BRODY": 9,
         "runtime_contracts_brody": 2
       },
-      "note": "BRODY_MEMORY_READONLY pipeline — 495 files in periphery/brody_memory_readonly/. NON_SOVEREIGN readonly memory operators. No decision authority. MEMORY_SOVEREIGNTY = KX108_ONLY."
+      "note": "BRODY_MEMORY_READONLY pipeline \u2014 494 primary files (excl. .ps1 secondary relation) in periphery/brody_memory_readonly/. NON_SOVEREIGN readonly memory operators. No decision authority. MEMORY_SOVEREIGNTY = KX108_ONLY."
     },
     "WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS": {
       "count": 124,
@@ -98,7 +109,7 @@
       "note": "Generated runtime payload reports (F17-F21) and architecture documents. BRODY_GENERATED_REPORT and BRODY_ARCHITECTURE_DOCUMENT families."
     },
     "WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW": {
-      "count": 68,
+      "count": 66,
       "status": "PENDING_NEXT_SUBWAVE",
       "components": {
         "brody_archive_docs_freeze": 60,
@@ -106,9 +117,9 @@
         "tests_legacy_ui_brody": 3,
         "tools_brody": 0,
         "runtime_freezes_brody": 0,
-        "unknown_pending_review": 2
+        "unknown_pending_review": 0
       },
-      "note": "runtime_freezes_brody: 0 — .runtime_freezes/ (hidden folder) excluded from active scan. These 5 MANIFEST_SHA256.json integrity seals are NOT counted in the active total."
+      "note": "Legacy archive + tooling. 2 workflow_governance_readonly files reclassified as SECONDARY_RELATION_ONLY (not Brody primary). runtime_freezes_brody: 0 \u2014 .runtime_freezes/ excluded."
     }
   },
   "executability_audit": {
@@ -151,9 +162,17 @@
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
       "executability_status": "NOT_A_TEST",
       "last_result": "NOT_APPLICABLE",
-      "real_role": "Namespace anchor — declares periphery.brody as a Python package. One-line comment asserting the Brody invariant: 'Brody responds, never decides. readonly=True always.' All 5 test files in this subsystem reach Brody source components via this package boundary.",
-      "api_surface": ["periphery.brody.*"],
-      "consumer": ["tests/periphery/test_brody_response_contract.py", "tests/periphery/test_brody_runtime_readonly.py", "tests/non_sovereignty/test_brody_no_act.py", "tests/non_sovereignty/test_brody_no_decision.py", "tests/non_sovereignty/test_brody_response_never_emits_verdict.py"]
+      "real_role": "Namespace anchor \u2014 declares periphery.brody as a Python package. One-line comment asserting the Brody invariant: 'Brody responds, never decides. readonly=True always.' All 5 test files in this subsystem reach Brody source components via this package boundary.",
+      "api_surface": [
+        "periphery.brody.*"
+      ],
+      "consumer": [
+        "tests/periphery/test_brody_response_contract.py",
+        "tests/periphery/test_brody_runtime_readonly.py",
+        "tests/non_sovereignty/test_brody_no_act.py",
+        "tests/non_sovereignty/test_brody_no_decision.py",
+        "tests/non_sovereignty/test_brody_response_never_emits_verdict.py"
+      ]
     },
     {
       "path": "periphery/brody/brody_response_contract.py",
@@ -170,10 +189,26 @@
       "last_result": "NOT_APPLICABLE",
       "real_role": "Defines BrodyResponseContract dataclass with 8 governance invariants (readonly, advisory_only, context_signal_only, emits_act, emits_verdict, decision_authority, memory_write, kernel_mutation). validate() asserts all invariants with typed error messages (BRODY_CONTRACT_VIOLATION:*). BRODY_CONTRACT singleton is the canonical proof artifact imported by brody_runtime_readonly.py and all test files.",
       "singleton": "BRODY_CONTRACT = BrodyResponseContract()",
-      "validate_asserts": ["readonly is True", "emits_act is False", "emits_verdict is False", "memory_write is False", "kernel_mutation is False", "decision_authority == 'KX108_ONLY'"],
-      "api_surface": ["BrodyResponseContract", "BRODY_CONTRACT"],
-      "consumer": ["periphery/brody/brody_runtime_readonly.py", "tests/periphery/test_brody_response_contract.py", "tests/non_sovereignty/test_brody_no_act.py", "tests/non_sovereignty/test_brody_no_decision.py", "tests/non_sovereignty/test_brody_response_never_emits_verdict.py"],
-      "claim_text": "BRODY_CONTRACT is an immutable singleton with all governance invariants set to their safe values. validate() enforces these invariants at call time — called unconditionally by brody_respond()."
+      "validate_asserts": [
+        "readonly is True",
+        "emits_act is False",
+        "emits_verdict is False",
+        "memory_write is False",
+        "kernel_mutation is False",
+        "decision_authority == 'KX108_ONLY'"
+      ],
+      "api_surface": [
+        "BrodyResponseContract",
+        "BRODY_CONTRACT"
+      ],
+      "consumer": [
+        "periphery/brody/brody_runtime_readonly.py",
+        "tests/periphery/test_brody_response_contract.py",
+        "tests/non_sovereignty/test_brody_no_act.py",
+        "tests/non_sovereignty/test_brody_no_decision.py",
+        "tests/non_sovereignty/test_brody_response_never_emits_verdict.py"
+      ],
+      "claim_text": "BRODY_CONTRACT is an immutable singleton with all governance invariants set to their safe values. validate() enforces these invariants at call time \u2014 called unconditionally by brody_respond()."
     },
     {
       "path": "periphery/brody/brody_runtime_readonly.py",
@@ -188,10 +223,16 @@
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
       "executability_status": "NOT_A_TEST",
       "last_result": "NOT_APPLICABLE",
-      "real_role": "Defines BrodyResponse dataclass and brody_respond() function. brody_respond() calls BRODY_CONTRACT.validate() unconditionally before returning — making the governance contract a runtime invariant, not just a declaration. Returns BrodyResponse with readonly=True, emits_act=False, memory_write=False hardcoded at construction.",
-      "api_surface": ["BrodyResponse", "brody_respond"],
-      "contract_enforcement": "BRODY_CONTRACT.validate() called at entry of brody_respond() — runtime enforcement of all 6 invariants on every call",
-      "consumer": ["tests/periphery/test_brody_runtime_readonly.py", "tests/non_sovereignty/test_brody_no_act.py"]
+      "real_role": "Defines BrodyResponse dataclass and brody_respond() function. brody_respond() calls BRODY_CONTRACT.validate() unconditionally before returning \u2014 making the governance contract a runtime invariant, not just a declaration. Returns BrodyResponse with readonly=True, emits_act=False, memory_write=False hardcoded at construction.",
+      "api_surface": [
+        "BrodyResponse",
+        "brody_respond"
+      ],
+      "contract_enforcement": "BRODY_CONTRACT.validate() called at entry of brody_respond() \u2014 runtime enforcement of all 6 invariants on every call",
+      "consumer": [
+        "tests/periphery/test_brody_runtime_readonly.py",
+        "tests/non_sovereignty/test_brody_no_act.py"
+      ]
     },
     {
       "path": "periphery/brody/brody_context_query.py",
@@ -207,8 +248,13 @@
       "executability_status": "NOT_A_TEST",
       "last_result": "NOT_APPLICABLE",
       "real_role": "Defines BrodyContextQuery dataclass with readonly=True, memory_write=False hardcoded. build_context_query() factory function truncates query_text to 500 chars. No network call, no memory write, no model call. Defines the read-only query contract feeding into brody_respond().",
-      "api_surface": ["BrodyContextQuery", "build_context_query"],
-      "consumer": ["tests/non_sovereignty/test_brody_no_decision.py"]
+      "api_surface": [
+        "BrodyContextQuery",
+        "build_context_query"
+      ],
+      "consumer": [
+        "tests/non_sovereignty/test_brody_no_decision.py"
+      ]
     },
     {
       "path": "periphery/brody/brody_language_router.py",
@@ -223,9 +269,15 @@
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
       "executability_status": "NOT_A_TEST",
       "last_result": "NOT_APPLICABLE",
-      "real_role": "Defines BrodyLanguageRoute dataclass with memory_write=False and route_brody_language() function. Supported languages: en, fr, es, de, pt, it. Routes unsupported languages to brody_default_chain. No decision emitted — routing is a mechanical mapping with no ACT.",
-      "api_surface": ["BrodyLanguageRoute", "route_brody_language", "_SUPPORTED_LANGUAGES"],
-      "consumer": ["tests/non_sovereignty/test_brody_no_decision.py"]
+      "real_role": "Defines BrodyLanguageRoute dataclass with memory_write=False and route_brody_language() function. Supported languages: en, fr, es, de, pt, it. Routes unsupported languages to brody_default_chain. No decision emitted \u2014 routing is a mechanical mapping with no ACT.",
+      "api_surface": [
+        "BrodyLanguageRoute",
+        "route_brody_language",
+        "_SUPPORTED_LANGUAGES"
+      ],
+      "consumer": [
+        "tests/non_sovereignty/test_brody_no_decision.py"
+      ]
     },
     {
       "path": "periphery/brody/brody_response_sanitizer.py",
@@ -240,10 +292,25 @@
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
       "executability_status": "NOT_A_TEST",
       "last_result": "NOT_APPLICABLE",
-      "real_role": "Defines SanitizedResponse dataclass and sanitize_brody_response() function. _FORBIDDEN = {ALLOW, HOLD, BLOCK, ACT, DECIDE, VERDICT, AUTHORIZE, APPROVE} — 8 sovereign decision tokens redacted from any Brody output text. Enforces the boundary between advisory response and sovereign decision.",
-      "api_surface": ["SanitizedResponse", "sanitize_brody_response", "_FORBIDDEN"],
-      "forbidden_tokens": ["ALLOW", "HOLD", "BLOCK", "ACT", "DECIDE", "VERDICT", "AUTHORIZE", "APPROVE"],
-      "consumer": ["tests/non_sovereignty/test_brody_response_never_emits_verdict.py"]
+      "real_role": "Defines SanitizedResponse dataclass and sanitize_brody_response() function. _FORBIDDEN = {ALLOW, HOLD, BLOCK, ACT, DECIDE, VERDICT, AUTHORIZE, APPROVE} \u2014 8 sovereign decision tokens redacted from any Brody output text. Enforces the boundary between advisory response and sovereign decision.",
+      "api_surface": [
+        "SanitizedResponse",
+        "sanitize_brody_response",
+        "_FORBIDDEN"
+      ],
+      "forbidden_tokens": [
+        "ALLOW",
+        "HOLD",
+        "BLOCK",
+        "ACT",
+        "DECIDE",
+        "VERDICT",
+        "AUTHORIZE",
+        "APPROVE"
+      ],
+      "consumer": [
+        "tests/non_sovereignty/test_brody_response_never_emits_verdict.py"
+      ]
     },
     {
       "path": "tests/periphery/test_brody_response_contract.py",
@@ -259,11 +326,14 @@
       "executability_status": "EXECUTABLE_PASSES",
       "last_result": "PASS",
       "runner": "pytest",
-      "collector": "pytest auto-discovery — test_*.py pattern in tests/periphery/",
+      "collector": "pytest auto-discovery \u2014 test_*.py pattern in tests/periphery/",
       "execution_command": "python -m pytest tests/periphery/test_brody_response_contract.py",
       "test_count": 6,
       "target_component": "periphery/brody/brody_response_contract.py",
-      "target_classes": ["BrodyResponseContract", "BRODY_CONTRACT"],
+      "target_classes": [
+        "BrodyResponseContract",
+        "BRODY_CONTRACT"
+      ],
       "target_proved": true,
       "claim_text": "BRODY_CONTRACT singleton has readonly=True, emits_act=False, emits_verdict=False, memory_write=False, kernel_mutation=False, decision_authority=KX108_ONLY. validate() raises AssertionError with typed message on invariant violation. to_dict() returns all fields.",
       "limitations": "6 tests. Tests the singleton at import time only. Does not test concurrent mutation scenarios. PASS is runtime assertion, not formal proof."
@@ -282,11 +352,14 @@
       "executability_status": "EXECUTABLE_PASSES",
       "last_result": "PASS",
       "runner": "pytest",
-      "collector": "pytest auto-discovery — test_*.py pattern in tests/periphery/",
+      "collector": "pytest auto-discovery \u2014 test_*.py pattern in tests/periphery/",
       "execution_command": "python -m pytest tests/periphery/test_brody_runtime_readonly.py",
       "test_count": 5,
       "target_component": "periphery/brody/brody_runtime_readonly.py",
-      "target_functions": ["brody_respond", "BrodyResponse.to_dict"],
+      "target_functions": [
+        "brody_respond",
+        "BrodyResponse.to_dict"
+      ],
       "target_proved": true,
       "claim_text": "brody_respond() returns BrodyResponse with readonly=True, emits_act=False, memory_write=False. response_id is hex string. query is truncated to 500 chars. confidence is clamped to [0.0, 1.0].",
       "limitations": "5 tests. Does not test concurrent execution. PASS is runtime assertion, not formal proof of side-effect absence."
@@ -305,7 +378,7 @@
       "executability_status": "EXECUTABLE_PASSES",
       "last_result": "PASS",
       "runner": "pytest",
-      "collector": "pytest auto-discovery — test_*.py pattern in tests/non_sovereignty/",
+      "collector": "pytest auto-discovery \u2014 test_*.py pattern in tests/non_sovereignty/",
       "execution_command": "python -m pytest tests/non_sovereignty/test_brody_no_act.py",
       "test_count": 4,
       "target_component": "periphery/brody/brody_runtime_readonly.py",
@@ -313,7 +386,7 @@
       "target_proved": true,
       "side_effect_isolation": "tests/non_sovereignty/conftest.py patches _DEFAULT_BUS_PATH to tmp_path (autouse)",
       "claim_text": "brody_respond() never returns emits_act=True. BrodyResponse instances always have emits_act=False. Attempting to set emits_act=True on a BrodyResponseContract raises AssertionError.",
-      "limitations": "4 tests. Negative tests only — verify what Brody CANNOT do. PASS is runtime enforcement check, not formal proof."
+      "limitations": "4 tests. Negative tests only \u2014 verify what Brody CANNOT do. PASS is runtime enforcement check, not formal proof."
     },
     {
       "path": "tests/non_sovereignty/test_brody_no_decision.py",
@@ -329,10 +402,13 @@
       "executability_status": "EXECUTABLE_PASSES",
       "last_result": "PASS",
       "runner": "pytest",
-      "collector": "pytest auto-discovery — test_*.py pattern in tests/non_sovereignty/",
+      "collector": "pytest auto-discovery \u2014 test_*.py pattern in tests/non_sovereignty/",
       "execution_command": "python -m pytest tests/non_sovereignty/test_brody_no_decision.py",
       "test_count": 4,
-      "target_components": ["periphery/brody/brody_context_query.py", "periphery/brody/brody_language_router.py"],
+      "target_components": [
+        "periphery/brody/brody_context_query.py",
+        "periphery/brody/brody_language_router.py"
+      ],
       "governance_invariant": "NON_SOVEREIGNTY_DECISION_PROHIBITION",
       "target_proved": true,
       "side_effect_isolation": "tests/non_sovereignty/conftest.py patches _DEFAULT_BUS_PATH to tmp_path (autouse)",
@@ -353,7 +429,7 @@
       "executability_status": "EXECUTABLE_PASSES",
       "last_result": "PASS",
       "runner": "pytest",
-      "collector": "pytest auto-discovery — test_*.py pattern in tests/non_sovereignty/",
+      "collector": "pytest auto-discovery \u2014 test_*.py pattern in tests/non_sovereignty/",
       "execution_command": "python -m pytest tests/non_sovereignty/test_brody_response_never_emits_verdict.py",
       "test_count": 6,
       "target_component": "periphery/brody/brody_response_sanitizer.py",
