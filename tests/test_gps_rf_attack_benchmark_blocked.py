@@ -60,3 +60,22 @@ def test_report_forbids_overclaiming():
     assert "no NAV messages and no PVT solution" in report
     assert "RESISTANT_TO_SPOOFING" in report
     assert "PRODUCTION" in report
+
+
+def test_temporal_benchmark_blocks_without_pre_attack_pvt():
+    nominal = load_json("nominal_result.json")
+    pre_attack = load_json("pre_attack_baseline.json")
+    temporal = load_json("temporal_detection_report.json")
+    truth = load_json("truth_alignment_report.json")
+    compatibility = (BENCH / "receiver_compatibility_report.md").read_text(encoding="utf-8")
+
+    assert nominal["proof_level_reached"] == "BLOCKED_RECEIVER_CONFIGURATION"
+    assert nominal["receiver_prerequisite"]["satisfied"] is False
+    assert pre_attack["status"] == "PRE_ATTACK_RECEIVER_FAILURE"
+    assert pre_attack["receiver_prerequisite_satisfied"] is False
+    assert all(run["pvt_position_count"] == 0 for run in pre_attack["runs"])
+    assert all(run["nav_message_count"] == 0 for run in pre_attack["runs"])
+    assert temporal["status"] == "BLOCKED_RECEIVER_CONFIGURATION"
+    assert "loss of lock at 14 s" in temporal["do_not_use_as_attack_evidence"]
+    assert truth["alignment_result"] == "NOT_SCORED"
+    assert "PRE_ATTACK_RECEIVER_FAILURE" in compatibility

@@ -1,7 +1,7 @@
 # GPS Physical Signal Periphery Claim Matrix
 
 Date: 2026-08-03
-Status: PASS_REAL_RF_WITH_FGI_HOSTILE_RF_PARTIAL_CHAIN_NO_PVT
+Status: PASS_REAL_RF_WITH_FGI_HOSTILE_RF_TEMPORAL_BLOCKED_RECEIVER_CONFIGURATION
 
 | Claim | Current status | Evidence | Allowed wording |
 |---|---|---|---|
@@ -18,6 +18,7 @@ Status: PASS_REAL_RF_WITH_FGI_HOSTILE_RF_PARTIAL_CHAIN_NO_PVT
 | Blind benchmark path exists | DONE | `artifacts/gps_blind_benchmark_synthetic_result.json` | "The benchmark runner keeps truth labels outside the decision pipeline." |
 | Official hostile RF corpus obtained | DONE | `hackathons/nativebuilder-gps-defense/rf_attack_benchmark/dataset_manifest.json` | "An official FGI-SpoofRepo hostile RF corpus was downloaded and hash-verified locally." |
 | Official hostile RF benchmark | PARTIAL_NO_PVT | `hackathons/nativebuilder-gps-defense/RECORDED_RF_ATTACK_REPORT.md` | "Official FGI hostile RF traversed GNSS-SDR acquisition/tracking/observables and live X-108 with a `HOLD` receipt, but `RECORDED_RF_ATTACK` is not reached because NAV/PVT and correct spoofing classification are not proven." |
+| FGI temporal attack benchmark around 135 s | BLOCKED_RECEIVER_CONFIGURATION | `hackathons/nativebuilder-gps-defense/rf_attack_benchmark/receiver_compatibility_report.md` | "Temporal spoofing metrics are blocked until the receiver produces NAV/PVT before the official 135 s onset; pre-onset loss of lock is classified as receiver/configuration failure, not attack detection." |
 | TEXBAT / OAKBAT / FGI spoofing resistance | FALSE | `hackathons/nativebuilder-gps-defense/rf_attack_benchmark/metrics.json` | "No spoofing-resistance claim is allowed; the hostile RF run produced fail-closed governance evidence, not a validated spoofing classification metric." |
 | Production RF certification | BLOCKED | public I/Q is recorded nominal RF, no private sensor attestation | "This is a real RF demo closure, not certified aviation/defense production attestation." |
 | Lean L-02/L-06 final closure | BLOCKED_PROTECTED | `hackathons/nativebuilder-gps-defense/GPS_PHYSICAL_TO_LEAN_FUTURE_BRIDGE.md` | "Formal proof mapping is documented; protected Lean proof closure is future work." |

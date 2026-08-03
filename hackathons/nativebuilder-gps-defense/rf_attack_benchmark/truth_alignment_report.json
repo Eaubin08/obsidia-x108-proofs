@@ -1,0 +1,24 @@
+{
+  "artifact": "truth_alignment_report",
+  "status": "TRUTH_AVAILABLE_BUT_NOT_ELIGIBLE_FOR_TEMPORAL_SCORING",
+  "official_truth": {
+    "dataset": "FGI-SpoofRepo",
+    "scenario": "UT_DFMC",
+    "license": "CC-BY-4.0",
+    "stationary_true_position": {
+      "latitude_degrees": 60.182,
+      "longitude_degrees": 24.828,
+      "altitude_meters": 47.248
+    },
+    "recording_start_utc": "2023-11-10T14:05:00Z",
+    "official_attack_onset_seconds": 135,
+    "signal_family": "GPS L1 C/A and Galileo E1"
+  },
+  "pipeline_label_leak": {
+    "truth_manifest_read_before_decisions": false,
+    "labels_exposed_to_receiver_config": false,
+    "labels_exposed_to_pipeline_path": false
+  },
+  "alignment_result": "NOT_SCORED",
+  "reason": "Receiver did not establish a stable pre-onset NAV/PVT baseline."
+}
