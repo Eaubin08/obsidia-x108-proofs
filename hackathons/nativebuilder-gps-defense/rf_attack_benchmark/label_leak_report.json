@@ -1,0 +1,19 @@
+{
+  "artifact": "label_leak_report",
+  "status": "PASS_FOR_EXECUTED_PIPELINE_INPUT",
+  "case_id": "case_0001_l1e1_real8",
+  "truth_manifest_read_before_decisions": false,
+  "checks": {
+    "filename": "PASS_OPAQUE",
+    "path": "PASS_OPAQUE_PIPELINE_INPUT_PATH",
+    "metadata_used_for_receiver": "PASS_NO_LABEL",
+    "cli_arguments": "PASS_NO_LABEL",
+    "scenario_identifier": "PASS_OPAQUE_CASE_ID",
+    "config_specific_to_expected_verdict": "PASS_NO_SCENARIO_THRESHOLD_TUNING"
+  },
+  "notes": [
+    "The executable receiver used an opaque hardlink path under data/fgi-spoofrepo/pipeline_inputs.",
+    "The committed truth manifest does not expose labels to the pipeline.",
+    "Official onset and hostile scenario family are used only for post-run interpretation, not for X-108 decision generation."
+  ]
+}

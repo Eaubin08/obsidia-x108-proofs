@@ -1,0 +1,120 @@
+I0803 00:40:47.762542      10 gnss_block_factory.cc:920] Getting SignalSource SignalSource with implementation File_Signal_Source
+I0803 00:40:47.840986      10 gnss_block_factory.cc:968] Getting SignalConditioner with DataTypeAdapter implementation: Ibyte_To_Complex, InputFilter implementation: Freq_Xlating_Fir_Filter, and Resampler implementation: Direct_Resampler
+I0803 00:40:48.078963      10 freq_xlating_fir_filter.cc:114] Created freq_xlating_fir_filter with 11 taps
+I0803 00:40:48.238858      10 gnss_block_factory.cc:899] Getting Observables with implementation Hybrid_Observables
+I0803 00:40:48.638916      10 hybrid_observables_gs.cc:151] Observables dump enabled Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/observables.dat
+I0803 00:40:48.661951      10 gnss_block_factory.cc:899] Getting PVT with implementation RTKLIB_PVT
+I0803 00:40:49.193582      10 rtklib_solver.cc:168] PVT lib dump enabled Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/PVT.dat
+I0803 00:40:49.275054      10 gnss_block_factory.cc:1070] Getting 10 GPS L1 C/A channels
+I0803 00:40:49.286493      10 gnss_block_factory.cc:1033] Instantiating Channel 0 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:52.383159      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 0
+I0803 00:40:52.744985      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 0 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_0.dat
+I0803 00:40:52.851008      10 gnss_block_factory.cc:1033] Instantiating Channel 1 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:53.724683      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 1
+I0803 00:40:53.738642      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 1 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_1.dat
+I0803 00:40:53.739393      10 gnss_block_factory.cc:1033] Instantiating Channel 2 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:53.934150      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 2
+I0803 00:40:53.947247      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 2 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_2.dat
+I0803 00:40:53.959391      10 gnss_block_factory.cc:1033] Instantiating Channel 3 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:54.112434      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 3
+I0803 00:40:54.122300      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 3 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_3.dat
+I0803 00:40:54.125242      10 gnss_block_factory.cc:1033] Instantiating Channel 4 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:54.367931      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 4
+I0803 00:40:54.464447      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 4 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_4.dat
+I0803 00:40:54.467676      10 gnss_block_factory.cc:1033] Instantiating Channel 5 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:54.603226      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 5
+I0803 00:40:54.606931      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 5 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_5.dat
+I0803 00:40:54.607451      10 gnss_block_factory.cc:1033] Instantiating Channel 6 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:54.851014      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 6
+I0803 00:40:54.893056      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 6 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_6.dat
+I0803 00:40:54.894969      10 gnss_block_factory.cc:1033] Instantiating Channel 7 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:54.981771      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 7
+I0803 00:40:55.028990      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 7 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_7.dat
+I0803 00:40:55.178113      10 gnss_block_factory.cc:1033] Instantiating Channel 8 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:56.530817      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 8
+I0803 00:40:56.610519      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 8 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_8.dat
+I0803 00:40:56.618160      10 gnss_block_factory.cc:1033] Instantiating Channel 9 with Acquisition Implementation: GPS_L1_CA_PCPS_Acquisition, Tracking Implementation: GPS_L1_CA_DLL_PLL_Tracking, Telemetry Decoder implementation: GPS_L1_CA_Telemetry_Decoder
+I0803 00:40:57.015447      10 dll_pll_veml_tracking.cc:1881] Tracking Channel set to 9
+I0803 00:40:57.086637      10 dll_pll_veml_tracking.cc:1897] Tracking dump enabled on channel 9 Log file: /work/hackathons/nativebuilder-gps-defense/rf_attack_benchmark/gnss_sdr_runs/fgi_ut_dfmc_l1e1/epl_tracking_ch_9.dat
+I0803 00:40:57.091845      10 gnss_block_factory.cc:1070] Getting 0 GPS L2C (M) channels
+I0803 00:40:57.098694      10 gnss_block_factory.cc:1070] Getting 0 GPS L5 channels
+I0803 00:40:57.111061      10 gnss_block_factory.cc:1070] Getting 0 GALILEO E1 B (I/NAV OS) channels
+I0803 00:40:57.123159      10 gnss_block_factory.cc:1070] Getting 0 GALILEO E5a I (F/NAV OS) channels
+I0803 00:40:57.126537      10 gnss_block_factory.cc:1070] Getting 0 GALILEO E6 (B/C HAS) channels
+I0803 00:40:57.128088      10 gnss_block_factory.cc:1070] Getting 0 GLONASS L1 C/A channels
+I0803 00:40:57.132115      10 gnss_block_factory.cc:1070] Getting 0 GLONASS L2 C/A channels
+I0803 00:40:57.141929      10 gnss_block_factory.cc:1070] Getting 0 BEIDOU B1I channels
+I0803 00:40:57.146180      10 gnss_block_factory.cc:1070] Getting 0 BEIDOU B3I channels
+I0803 00:40:57.149942      10 gnss_block_factory.cc:1070] Getting 0 GALILEO E5b I (I/NAV OS) channels
+I0803 00:40:57.152898      10 gnss_block_factory.cc:1070] Getting 0 QZSS L1 C/A channels
+I0803 00:40:57.157786      10 gnss_block_factory.cc:1070] Getting 0 QZSS L5 channels
+I0803 00:40:57.229890      10 gnss_flowgraph.cc:439] Connecting flowgraph
+I0803 00:40:57.477237      10 gnss_flowgraph.cc:1083] connecting sig_source_ 0 stream 0 to conditioner 0
+I0803 00:40:57.526612      10 gnss_flowgraph.cc:602] Channel 0 assigned to GPS PRN 01 (Block IIF) Signal 1C
+I0803 00:40:57.536310      10 gnss_flowgraph.cc:619] Channel 0 connected to observables and ready for acquisition
+I0803 00:40:57.553632      10 gnss_flowgraph.cc:602] Channel 1 assigned to GPS PRN 02 (Block IIR) Signal 1C
+I0803 00:40:57.571421      10 gnss_flowgraph.cc:619] Channel 1 connected to observables and ready for acquisition
+I0803 00:40:57.599768      10 gnss_flowgraph.cc:602] Channel 2 assigned to GPS PRN 03 (Block IIF) Signal 1C
+I0803 00:40:57.664221      10 gnss_flowgraph.cc:623] Channel 2 connected to observables in standby mode
+I0803 00:40:57.669395      10 gnss_flowgraph.cc:602] Channel 3 assigned to GPS PRN 04 (Block III) Signal 1C
+I0803 00:40:57.692161      10 gnss_flowgraph.cc:623] Channel 3 connected to observables in standby mode
+I0803 00:40:57.730206      10 gnss_flowgraph.cc:602] Channel 4 assigned to GPS PRN 05 (Block IIR-M) Signal 1C
+I0803 00:40:57.749923      10 gnss_flowgraph.cc:623] Channel 4 connected to observables in standby mode
+I0803 00:40:57.774033      10 gnss_flowgraph.cc:602] Channel 5 assigned to GPS PRN 06 (Block IIF) Signal 1C
+I0803 00:40:57.788304      10 gnss_flowgraph.cc:623] Channel 5 connected to observables in standby mode
+I0803 00:40:57.790874      10 gnss_flowgraph.cc:602] Channel 6 assigned to GPS PRN 07 (Block IIR-M) Signal 1C
+I0803 00:40:57.794105      10 gnss_flowgraph.cc:623] Channel 6 connected to observables in standby mode
+I0803 00:40:57.794552      10 gnss_flowgraph.cc:602] Channel 7 assigned to GPS PRN 08 (Block IIF) Signal 1C
+I0803 00:40:57.794951      10 gnss_flowgraph.cc:623] Channel 7 connected to observables in standby mode
+I0803 00:40:57.795224      10 gnss_flowgraph.cc:602] Channel 8 assigned to GPS PRN 09 (Block IIF) Signal 1C
+I0803 00:40:57.795562      10 gnss_flowgraph.cc:623] Channel 8 connected to observables in standby mode
+I0803 00:40:57.795862      10 gnss_flowgraph.cc:602] Channel 9 assigned to GPS PRN 10 (Block IIF) Signal 1C
+I0803 00:40:57.796266      10 gnss_flowgraph.cc:623] Channel 9 connected to observables in standby mode
+I0803 00:40:57.796577      10 gnss_flowgraph.cc:627] The GNU Radio flowgraph for the current GNSS-SDR configuration has been successfully connected
+I0803 00:40:57.796897      10 gnss_flowgraph.cc:475] Flowgraph connected
+I0803 00:40:57.797180      10 control_thread.cc:404] Flowgraph connected
+I0803 00:40:57.931066      10 control_thread.cc:414] Flowgraph started
+I0803 00:42:47.116317    1511 pcps_acquisition.cc:353] Successful acquisition in channel 3 for satellite G 20
+I0803 00:42:47.128592      46 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = 2295 ( 0.00057375 s)for satellite GPS PRN 20 (Block IIR) in channel 3
+I0803 00:46:35.414146      46 dll_pll_veml_tracking.cc:1238] Loss of lock in channel 3, satellite GPS PRN 20 (Block IIR) (carrier_lock_fail_counter:5001 code_lock_fail_counter : 0)
+I0803 00:46:35.929956      10 gnss_flowgraph.cc:1914] Channel 3 Idle state
+I0803 00:51:10.114486      34 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = 4797 ( 0.00119925 s)for satellite GPS PRN 30 (Block IIF) in channel 7
+I0803 00:51:10.114486      34 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = 4797 ( 0.00119925 s)for satellite GPS PRN 30 (Block IIF) in channel 7
+I0803 00:51:10.113480    8522 pcps_acquisition.cc:353] Successful acquisition in channel 7 for satellite G 30
+I0803 00:51:38.257185    9456 pcps_acquisition.cc:353] Successful acquisition in channel 4 for satellite G 2
+I0803 00:51:38.265821      43 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = 1652 ( 0.000413 s)for satellite GPS PRN 02 (Block IIR) in channel 4
+I0803 00:52:28.357398      49 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = -4000 ( -0.001 s)for satellite GPS PRN 06 (Block IIF) in channel 2
+I0803 00:52:28.357398      49 dll_pll_veml_tracking.cc:2005] Pull-in: Number of samples between Acquisition and Tracking = -4000 ( -0.001 s)for satellite GPS PRN 06 (Block IIF) in channel 2
+I0803 00:52:28.357520   10839 pcps_acquisition.cc:353] Successful acquisition in channel 2 for satellite G 6
+I0803 00:52:30.350402      34 dll_pll_veml_tracking.cc:1238] Loss of lock in channel 7, satellite GPS PRN 30 (Block IIF) (carrier_lock_fail_counter:5001 code_lock_fail_counter : 0)
+I0803 00:52:30.866957      10 gnss_flowgraph.cc:1914] Channel 7 Idle state
+I0803 00:53:00.375688      43 dll_pll_veml_tracking.cc:1238] Loss of lock in channel 4, satellite GPS PRN 02 (Block IIR) (carrier_lock_fail_counter:5001 code_lock_fail_counter : 0)
+I0803 00:53:00.641983      10 gnss_flowgraph.cc:1914] Channel 4 Idle state
+I0803 00:53:08.191459      49 dll_pll_veml_tracking.cc:1238] Loss of lock in channel 2, satellite GPS PRN 06 (Block IIF) (carrier_lock_fail_counter:5001 code_lock_fail_counter : 0)
+I0803 00:53:08.319364      10 gnss_flowgraph.cc:1914] Channel 2 Idle state
+I0803 00:54:44.017912      23 gnss_sdr_valve.cc:90] Stopping receiver, 3120000000 samples processed
+I0803 00:54:44.572058      10 control_thread.cc:996] Received action STOP
+I0803 00:54:44.580251      10 gnss_flowgraph.cc:482] Disconnecting flowgraph
+I0803 00:54:44.581958      10 gnss_flowgraph.cc:499] Flowgraph disconnected
+I0803 00:54:44.582674      10 control_thread.cc:494] Flowgraph stopped
+I0803 00:54:50.485620      10 rtklib_pvt_gs.cc:673] Failed to save GPS L2CM or L5 Ephemeris, map is empty
+I0803 00:54:50.486710      10 rtklib_pvt_gs.cc:699] Failed to save GPS L1 CA Ephemeris, map is empty
+I0803 00:54:50.487452      10 rtklib_pvt_gs.cc:762] Failed to save GLONASS GNAV Ephemeris, map is empty
+I0803 00:54:50.487904      10 rtklib_pvt_gs.cc:792] Failed to save GPS UTC model parameters, not valid data
+I0803 00:54:50.488308      10 rtklib_pvt_gs.cc:822] Failed to save Galileo UTC model parameters, not valid data
+I0803 00:54:50.489261      10 rtklib_pvt_gs.cc:852] Failed to save GPS ionospheric model parameters, not valid data
+I0803 00:54:50.489675      10 rtklib_pvt_gs.cc:882] Failed to save GPS CNAV ionospheric model parameters, not valid data
+I0803 00:54:50.490012      10 rtklib_pvt_gs.cc:912] Failed to save QZSS UTC model parameters, not valid data
+I0803 00:54:50.490409      10 rtklib_pvt_gs.cc:942] Failed to save QZSS ionospheric model parameters, not valid data
+I0803 00:54:50.490819      10 rtklib_pvt_gs.cc:972] Failed to save QZSS CNAV UTC model parameters, not valid data
+I0803 00:54:50.491142      10 rtklib_pvt_gs.cc:1002] Failed to save QZSS CNAV ionospheric model parameters, not valid data
+I0803 00:54:50.491507      10 rtklib_pvt_gs.cc:1032] Failed to save Galileo ionospheric model parameters, not valid data
+I0803 00:54:50.491904      10 rtklib_pvt_gs.cc:1062] Failed to save GPS almanac, map is empty
+I0803 00:54:50.493386      10 rtklib_pvt_gs.cc:1092] Failed to save Galileo almanac, not valid data
+I0803 00:54:50.493793      10 rtklib_pvt_gs.cc:1122] Failed to save GPS CNAV UTC model parameters, not valid data
+I0803 00:54:50.494723      10 rtklib_pvt_gs.cc:1152] Failed to save GLONASS GNAV ephemeris, map is empty
+I0803 00:54:50.495216      10 rtklib_pvt_gs.cc:1182] Failed to save GLONASS GNAV ephemeris, not valid data
+I0803 00:54:50.495642      10 rtklib_pvt_gs.cc:1212] Failed to save BeiDou DNAV Ephemeris, map is empty
+I0803 00:54:50.496003      10 rtklib_pvt_gs.cc:1242] Failed to save BeiDou DNAV ionospheric model parameters, not valid data
+I0803 00:54:50.496328      10 rtklib_pvt_gs.cc:1272] Failed to save BeiDou DNAV almanac, map is empty
+I0803 00:54:50.496654      10 rtklib_pvt_gs.cc:1302] Failed to save BeiDou DNAV UTC model parameters, not valid data
