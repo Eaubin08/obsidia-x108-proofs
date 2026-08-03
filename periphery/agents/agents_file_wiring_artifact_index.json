@@ -90,6 +90,16 @@
       "files_indexed": 8,
       "status": "CLOSED"
     },
+    "WAVE005_B": {
+      "path": "periphery/agents/brody_integration_runtime_api_system.index.json",
+      "index_id": "BRODY_INTEGRATION_RUNTIME_API_SYSTEM_INDEX_V1",
+      "files_indexed": 144,
+      "source_files": 70,
+      "test_files": 74,
+      "executable_passes": 66,
+      "executable_fails": 8,
+      "status": "CLOSED"
+    },
     "WAVE005_A": {
       "path": "periphery/agents/brody_governance_element_system.index.json",
       "index_id": "BRODY_GOVERNANCE_ELEMENT_SYSTEM_INDEX_V1",
