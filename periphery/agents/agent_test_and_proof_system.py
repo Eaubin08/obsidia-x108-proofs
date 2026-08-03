@@ -136,8 +136,8 @@ def get_blocked_entries() -> list[dict]:
     return [e for e in get_entries() if (e.get("status") or "").startswith("BLOCKED")]
 
 
-def get_placeholder_entries() -> list[dict]:
-    return [e for e in get_entries() if e.get("status") == "STATIC_PLACEHOLDER"]
+def get_legacy_entries() -> list[dict]:
+    return [e for e in get_entries() if e.get("role") == "LEGACY_TEST_OR_PROOF"]
 
 
 def summary() -> dict:
@@ -150,5 +150,5 @@ def summary() -> dict:
         "by_executability": dict(Counter(e["executability_status"] for e in entries)),
         "by_semantic_verdict": dict(Counter(e["semantic_verdict"] for e in entries)),
         "blocked": sum(1 for e in entries if (e.get("status") or "").startswith("BLOCKED")),
-        "placeholder": sum(1 for e in entries if e.get("status") == "STATIC_PLACEHOLDER"),
+        "legacy": sum(1 for e in entries if e.get("role") == "LEGACY_TEST_OR_PROOF"),
     }
