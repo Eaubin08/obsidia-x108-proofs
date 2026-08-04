@@ -119,12 +119,51 @@
     }
   },
   "global_summary": {
-    "total_waves_closed": 7,
-    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A, B, and C are PARTIALLY_BLOCKED (documented). D-F require future waves.",
-    "total_functional_files_closed_to_date": 1218,
-    "total_functional_files_closed_note": "167(W1) + 167(W2) + 680(W3) + 8(W4) + 11(W5A) + 144(W5B) + 51(W5C) = 1228 indexed. W1/W2 share 167 files (same catalog, different perspectives). Net unique: context-dependent.",
-    "baseline_reference_status": "NON_RECONSTRUCTIBLE_AGGREGATE_COUNTER",
-    "current_active_brody_primary": 902
+    "wave_slices_registered": ["WAVE001", "WAVE002", "WAVE003", "WAVE004", "WAVE005_A", "WAVE005_B", "WAVE005_C"],
+    "wave_slices_fully_closed": ["WAVE001", "WAVE002", "WAVE003", "WAVE004"],
+    "wave_slices_partially_blocked": ["WAVE005_B", "WAVE005_C"],
+    "wave_slices_global_registration_blocked": ["WAVE005_A"],
+    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B and C: PARTIALLY_BLOCKED with documented blockers. D-F: require future waves.",
+    "gross_wave_index_entries": 1228,
+    "gross_wave_index_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)=1228",
+    "unique_primary_paths_accounted": 1061,
+    "known_cross_wave_overlap_paths": 167,
+    "overlap_detail": "167 paths indexed in both WAVE001 and WAVE002 (same catalog, different perspectives). Overlap is documented in relation_graph, not silent.",
+    "silent_double_count": 0,
+    "gross_total_reconciled": true,
+    "unique_total_computed_from_paths": true,
+    "current_active_brody_primary": 902,
+    "campaign_metadata_total": 17,
+    "campaign_metadata_included_in_brody_primary": 0,
+    "campaign_metadata_note": "17 documentary campaign files (indexes, validators, tests) excluded from Brody primary census of 902."
+  },
+  "campaign_metadata_registry": {
+    "total": 17,
+    "included_in_brody_primary": 0,
+    "included_in_primary_partition": 0,
+    "wave005_a_metadata": [
+      "periphery/agents/brody_governance_element_system.index.json",
+      "periphery/agents/brody_governance_element_system.py",
+      "tests/periphery/test_brody_governance_element_system.py",
+      "periphery/agents/brody_governance_scope_reconciliation.index.json",
+      "periphery/agents/brody_governance_scope_reconciliation.py",
+      "periphery/agents/wave005_campaign_state.json",
+      "periphery/agents/wave005_unresolved_queue.json",
+      "tests/periphery/test_brody_governance_scope_reconciliation.py",
+      "periphery/agents/agents_file_wiring_artifact_index.json",
+      "periphery/agents/agents_file_wiring_global_state.json",
+      "tests/periphery/test_agents_file_wiring_global_artifacts.py"
+    ],
+    "wave005_b_metadata": [
+      "periphery/agents/brody_integration_runtime_api_system.index.json",
+      "periphery/agents/brody_integration_runtime_api_system.py",
+      "tests/periphery/test_brody_integration_runtime_api_system.py"
+    ],
+    "wave005_c_metadata": [
+      "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "periphery/agents/brody_protocols_connectors_scripts.py",
+      "tests/periphery/test_brody_protocols_connectors_scripts.py"
+    ]
   },
   "blocker_queue": [],
   "orphan_confirmed_queue": []
