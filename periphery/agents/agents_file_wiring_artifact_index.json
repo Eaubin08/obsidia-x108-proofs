@@ -191,7 +191,7 @@
       {"wave": "WAVE005_A", "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM", "files": 11},
       {"wave": "WAVE005_B", "subsystem": "BRODY_INTEGRATION_RUNTIME_AND_API_SYSTEM", "files": 144},
       {"wave": "WAVE005_C", "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS", "files": 51},
-      {"wave": "WAVE005_D", "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS", "files": 507}
+      {"wave": "WAVE005_D", "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS", "files": 506, "all_matrix_rows": 507, "secondary_relation_rows": 1}
     ],
     "edges": [
       {

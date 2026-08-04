@@ -13,7 +13,10 @@
   "runtime_consumed": false,
   "generated_at": "2026-08-04",
   "total_entries": 507,
-  "census_vs_registered_note": "Census physical count: 507. Previously registered in global_state: 506. Divergence: +1. Census is authoritative for this index.",
+  "primary_files_accounted": 506,
+  "secondary_relation_rows": 1,
+  "all_matrix_rows_note": "507 total rows in matrix. 506 are primary files owned by Wave005_D. 1 row is a secondary relation (file primarily owned by another wave, appearing in Wave005_D census zone).",
+  "census_vs_registered_note": "Primary count: 506. Registered in global_state pending: 506. Divergence: 0. Total matrix rows (including 1 secondary relation row): 507.",
   "executability_audit": {
     "EXECUTABLE_PASSES": 0,
     "EXECUTABLE_FAILS": 0,
@@ -76,20 +79,22 @@
     "wave005a_processed": 11,
     "wave005b_accounted": 144,
     "wave005c_accounted": 51,
-    "wave005d_accounted": 507,
+    "wave005d_accounted": 506,
+    "wave005d_all_matrix_rows": 507,
+    "wave005d_secondary_relation_rows": 1,
     "wave005e_registered": 124,
-    "wave005f_registered": 68,
-    "census_physical_sum_d_to_f": 699,
+    "wave005f_registered": 66,
+    "census_physical_sum_d_to_f": 697,
     "census_physical_total": 912,
     "brody_primary_total": 902,
     "census_vs_primary_delta": 10,
-    "delta_note": "Census includes campaign metadata files (indexes, validators, tests) counted in Wave005_A census but excluded from Brody primary census of 902."
+    "delta_note": "Census includes campaign metadata files (indexes, validators, tests) counted in Wave005_A census but excluded from Brody primary census of 902. census_physical_sum_d_to_f uses D zone physical rows (507) + E (124) + F (66) = 697."
   },
   "remaining_population": {
     "WAVE005_E": 124,
-    "WAVE005_F": 68,
-    "total_remaining": 192,
-    "registered_values_note": "WAVE005_E=124 and WAVE005_F=68 from census physical count."
+    "WAVE005_F": 66,
+    "total_remaining": 190,
+    "registered_values_note": "WAVE005_E=124 and WAVE005_F=66. Primary ownership remaining: 902-(11+144+51+506)=190."
   },
   "governance_claims": {
     "NON_SOVEREIGN": true,

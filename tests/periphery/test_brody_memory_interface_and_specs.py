@@ -396,14 +396,16 @@ def test_wd_061_scope_wave005c_51():
     assert sr["wave005c_accounted"] == 51
 
 
-def test_wd_062_scope_wave005d_507():
+def test_wd_062_scope_wave005d_primary_506():
     sr = get_scope_reconciliation()
-    assert sr["wave005d_accounted"] == 507
+    assert sr["wave005d_accounted"] == 506
+    assert sr["wave005d_all_matrix_rows"] == 507
+    assert sr["wave005d_secondary_relation_rows"] == 1
 
 
 def test_wd_063_scope_census_sum_d_to_f():
     sr = get_scope_reconciliation()
-    assert sr["census_physical_sum_d_to_f"] == 699
+    assert sr["census_physical_sum_d_to_f"] == 697
 
 
 def test_wd_064_scope_census_vs_primary_delta():
@@ -418,17 +420,17 @@ def test_wd_065_remaining_wave005e():
 
 def test_wd_066_remaining_wave005f():
     rp = get_remaining_population()
-    assert rp["WAVE005_F"] == 68
+    assert rp["WAVE005_F"] == 66
 
 
 def test_wd_067_remaining_total():
     rp = get_remaining_population()
-    assert rp["total_remaining"] == 192
+    assert rp["total_remaining"] == 190
 
 
 def test_wd_068_remaining_ef_sum():
     rp = get_remaining_population()
-    assert rp["WAVE005_E"] + rp["WAVE005_F"] == 192
+    assert rp["WAVE005_E"] + rp["WAVE005_F"] == 190
 
 
 # ---------------------------------------------------------------------------
@@ -503,7 +505,9 @@ def test_wd_077_wave005d_registered_in_global_state():
         data = json.load(f)
     assert "WAVE005_D" in data["wave_registry"]
     assert data["wave_registry"]["WAVE005_D"]["status"] == "AGENTS_FILE_WIRING_WAVE005_D_PARTIALLY_BLOCKED"
-    assert data["wave_registry"]["WAVE005_D"]["functional_files_accounted"] == 507
+    assert data["wave_registry"]["WAVE005_D"]["functional_files_accounted"] == 506
+    assert data["wave_registry"]["WAVE005_D"]["all_matrix_rows"] == 507
+    assert data["wave_registry"]["WAVE005_D"]["secondary_relation_rows"] == 1
 
 
 def test_wd_078_wave005d_in_artifact_index():
@@ -536,4 +540,5 @@ def test_wd_080_gross_wave_index_entries_updated():
             break
     with open(p / "periphery/agents/agents_file_wiring_global_state.json", encoding="utf-8") as f:
         data = json.load(f)
-    assert data["global_summary"]["gross_wave_index_entries"] == 1735
+    assert data["global_summary"]["gross_wave_index_entries"] == 1734
+    assert data["global_summary"]["gross_documentary_rows_including_secondary"] == 1735

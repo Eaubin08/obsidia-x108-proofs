@@ -351,9 +351,10 @@ def test_ga_066_wave_slices_global_registration_blocked():
     assert "WAVE005_C" not in grb
 
 
-def test_ga_067_gross_wave_index_entries_1735():
+def test_ga_067_gross_wave_index_entries_1734():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["gross_wave_index_entries"] == 1735
+    assert d["global_summary"]["gross_wave_index_entries"] == 1734
+    assert d["global_summary"]["gross_documentary_rows_including_secondary"] == 1735
 
 
 def test_ga_068_unique_primary_paths_1061():
