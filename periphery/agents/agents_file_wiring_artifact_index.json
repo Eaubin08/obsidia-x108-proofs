@@ -90,6 +90,18 @@
       "files_indexed": 8,
       "status": "CLOSED"
     },
+    "WAVE005_D": {
+      "path": "periphery/agents/brody_memory_interface_and_specs.index.json",
+      "index_id": "BRODY_MEMORY_INTERFACE_AND_SPECS_INDEX_V1",
+      "files_indexed": 507,
+      "memory_interface_modules": 496,
+      "governance_rule_artifacts": 11,
+      "source_py_modules": 160,
+      "not_executable_artifacts": 347,
+      "executable_tests": 0,
+      "status": "AGENTS_FILE_WIRING_WAVE005_D_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 2
+    },
     "WAVE005_C": {
       "path": "periphery/agents/brody_protocols_connectors_scripts.index.json",
       "index_id": "BRODY_PROTOCOLS_CONNECTORS_SCRIPTS_INDEX_V1",
@@ -130,13 +142,13 @@
     }
   },
   "wave_status_registry": {
-    "wave_slices_registered": ["WAVE001", "WAVE002", "WAVE003", "WAVE004", "WAVE005_A", "WAVE005_B", "WAVE005_C"],
+    "wave_slices_registered": ["WAVE001", "WAVE002", "WAVE003", "WAVE004", "WAVE005_A", "WAVE005_B", "WAVE005_C", "WAVE005_D"],
     "wave_slices_fully_closed": ["WAVE001", "WAVE002", "WAVE003", "WAVE004"],
-    "wave_slices_partially_blocked": ["WAVE005_B", "WAVE005_C"],
+    "wave_slices_partially_blocked": ["WAVE005_B", "WAVE005_C", "WAVE005_D"],
     "wave_slices_global_registration_blocked": ["WAVE005_A"]
   },
   "campaign_metadata_registry": {
-    "total": 17,
+    "total": 20,
     "included_in_brody_primary": 0,
     "included_in_primary_partition": 0,
     "wave005_a_metadata": [
@@ -161,6 +173,11 @@
       "periphery/agents/brody_protocols_connectors_scripts.index.json",
       "periphery/agents/brody_protocols_connectors_scripts.py",
       "tests/periphery/test_brody_protocols_connectors_scripts.py"
+    ],
+    "wave005_d_metadata": [
+      "periphery/agents/brody_memory_interface_and_specs.index.json",
+      "periphery/agents/brody_memory_interface_and_specs.py",
+      "tests/periphery/test_brody_memory_interface_and_specs.py"
     ]
   },
   "relation_graph": {
@@ -173,7 +190,8 @@
       {"wave": "WAVE004", "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM", "files": 8},
       {"wave": "WAVE005_A", "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM", "files": 11},
       {"wave": "WAVE005_B", "subsystem": "BRODY_INTEGRATION_RUNTIME_AND_API_SYSTEM", "files": 144},
-      {"wave": "WAVE005_C", "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS", "files": 51}
+      {"wave": "WAVE005_C", "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS", "files": 51},
+      {"wave": "WAVE005_D", "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS", "files": 507}
     ],
     "edges": [
       {

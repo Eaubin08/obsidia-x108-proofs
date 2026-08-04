@@ -351,9 +351,9 @@ def test_ga_066_wave_slices_global_registration_blocked():
     assert "WAVE005_C" not in grb
 
 
-def test_ga_067_gross_wave_index_entries_1228():
+def test_ga_067_gross_wave_index_entries_1735():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["gross_wave_index_entries"] == 1228
+    assert d["global_summary"]["gross_wave_index_entries"] == 1735
 
 
 def test_ga_068_unique_primary_paths_1061():
@@ -382,31 +382,33 @@ def test_ga_072_census_902_preserved_after_wave005c():
     assert d["global_summary"]["current_active_brody_primary"] == 902
 
 
-def test_ga_073_campaign_metadata_total_17():
+def test_ga_073_campaign_metadata_total_20():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["campaign_metadata_total"] == 17
+    assert d["global_summary"]["campaign_metadata_total"] == 20
     assert d["global_summary"]["campaign_metadata_included_in_brody_primary"] == 0
 
 
 def test_ga_074_campaign_metadata_registry_counts():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     reg = d["campaign_metadata_registry"]
-    assert reg["total"] == 17
+    assert reg["total"] == 20
     assert reg["included_in_brody_primary"] == 0
     assert reg["included_in_primary_partition"] == 0
     assert len(reg["wave005_a_metadata"]) == 11
     assert len(reg["wave005_b_metadata"]) == 3
     assert len(reg["wave005_c_metadata"]) == 3
+    assert len(reg["wave005_d_metadata"]) == 3
 
 
 def test_ga_075_artifact_index_campaign_metadata_registry():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     reg = d["campaign_metadata_registry"]
-    assert reg["total"] == 17
+    assert reg["total"] == 20
     assert reg["included_in_brody_primary"] == 0
     assert len(reg["wave005_a_metadata"]) == 11
     assert len(reg["wave005_b_metadata"]) == 3
     assert len(reg["wave005_c_metadata"]) == 3
+    assert len(reg["wave005_d_metadata"]) == 3
 
 
 def test_ga_076_wave005b_metadata_excluded_from_primary():
