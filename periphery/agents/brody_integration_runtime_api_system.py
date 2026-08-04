@@ -52,6 +52,7 @@ _VALID_RELATION_TYPES = frozenset({
 _VALID_EXECUTABILITY = frozenset({
     "EXECUTABLE_PASSES",
     "EXECUTABLE_FAILS",
+    "EXECUTABLE_INTERMITTENT",
     "NOT_A_TEST",
     "NOT_EXECUTABLE",
 })
@@ -148,6 +149,19 @@ def get_failing_test_entries() -> list[dict]:
     return [e for e in get_entries() if e.get("executability_status") == "EXECUTABLE_FAILS"]
 
 
+def get_intermittent_test_entries() -> list[dict]:
+    return [e for e in get_entries() if e.get("executability_status") == "EXECUTABLE_INTERMITTENT"]
+
+
+def get_blocked_source_entries() -> list[dict]:
+    return [e for e in get_entries() if e.get("relation_type") == "BLOCKED_SOURCE_WITHOUT_CONSUMER"]
+
+
+def get_blocker_queue() -> list[dict]:
+    raw = _load_index()
+    return copy.deepcopy(raw.get("wave005b_blocker_queue", []))
+
+
 def get_governance_invariants() -> dict:
     """Return the governance_claims block from the index."""
     raw = _load_index()
@@ -189,5 +203,7 @@ def summary() -> dict:
         "by_semantic_verdict": dict(Counter(e["semantic_verdict"] for e in entries)),
         "by_family": dict(Counter(e.get("brody_family", "?") for e in entries)),
         "executable_fails_count": sum(1 for e in entries if e.get("executability_status") == "EXECUTABLE_FAILS"),
+        "executable_intermittent_count": sum(1 for e in entries if e.get("executability_status") == "EXECUTABLE_INTERMITTENT"),
         "source_files_count": sum(1 for e in entries if e.get("executability_status") == "NOT_A_TEST"),
+        "blocked_source_count": sum(1 for e in entries if e.get("relation_type") == "BLOCKED_SOURCE_WITHOUT_CONSUMER"),
     }

@@ -98,7 +98,8 @@
       "test_files": 74,
       "executable_passes": 66,
       "executable_fails": 8,
-      "status": "CLOSED"
+      "status": "AGENTS_FILE_WIRING_WAVE005_B_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 9
     },
     "WAVE005_A": {
       "path": "periphery/agents/brody_governance_element_system.index.json",

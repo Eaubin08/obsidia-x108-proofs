@@ -150,7 +150,8 @@ def test_wb_040_executability_distribution():
     idx = biras.get_index()
     audit = idx["executability_audit"]
     assert audit["EXECUTABLE_PASSES"] == 66
-    assert audit["EXECUTABLE_FAILS"] == 8
+    assert audit["EXECUTABLE_FAILS"] == 4, "4 files consistently fail"
+    assert audit["EXECUTABLE_INTERMITTENT"] == 4, "4 files intermittently fail (flaky)"
     assert audit["NOT_A_TEST"] == 70
     assert audit["NOT_EXECUTABLE"] == 0
 
@@ -167,24 +168,34 @@ def test_wb_041_source_files_not_a_test():
 
 def test_wb_042_executable_fails_count():
     failing = biras.get_failing_test_entries()
-    assert len(failing) == 8
+    assert len(failing) == 4, "4 files have CONSISTENT failures"
 
 
-def test_wb_043_known_failing_tests_declared():
+def test_wb_042b_executable_intermittent_count():
+    intermittent = biras.get_intermittent_test_entries()
+    assert len(intermittent) == 4, "4 files have INTERMITTENT (flaky) failures"
+
+
+def test_wb_043_known_consistent_failing_tests_declared():
     failing_paths = {e["path"] for e in biras.get_failing_test_entries()}
-    expected_fails = {
+    expected_consistent_fails = {
         "tests/api/test_brody_automation_orchestrator.py",
-        "tests/api/test_brody_chat_readonly.py",
-        "tests/api/test_brody_general_conversation_mode_readonly.py",
         "tests/api/test_brody_memory_candidate_automation.py",
         "tests/api/test_brody_no_invented_metrics.py",
         "tests/api/test_brody_payload_packetization.py",
+    }
+    assert failing_paths == expected_consistent_fails
+
+
+def test_wb_043b_known_intermittent_tests_declared():
+    intermittent_paths = {e["path"] for e in biras.get_intermittent_test_entries()}
+    expected_flaky = {
+        "tests/api/test_brody_chat_readonly.py",
+        "tests/api/test_brody_general_conversation_mode_readonly.py",
         "tests/api/test_brody_response_quality_fr.py",
         "tests/api/test_brody_response_source_not_frontend_mock.py",
     }
-    assert failing_paths == expected_fails, (
-        f"Failing paths mismatch:\n  expected={expected_fails}\n  got={failing_paths}"
-    )
+    assert intermittent_paths == expected_flaky
 
 
 def test_wb_044_passing_tests_count():
@@ -208,7 +219,8 @@ def test_wb_050_relation_distribution():
     idx = biras.get_index()
     dist = idx["gate_v5_relation_distribution"]
     assert dist["INTEGRATION_RUNTIME_LINKED_TO_GOVERNANCE_INDEX"] == 5
-    assert dist["API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX"] == 65
+    assert dist["API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX"] == 63  # 64 api - 1 blocked + 1 bridge = 65 protocol total; 1 has BLOCKED_SOURCE_WITHOUT_CONSUMER
+    assert dist["BLOCKED_SOURCE_WITHOUT_CONSUMER"] == 1
     assert dist["EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT"] == 74
 
 
@@ -277,7 +289,8 @@ def test_wb_080_summary_total():
 
 def test_wb_081_summary_executable_fails():
     s = biras.summary()
-    assert s["executable_fails_count"] == 8
+    assert s["executable_fails_count"] == 4, "4 consistent failures"
+    assert s["executable_intermittent_count"] == 4, "4 flaky failures"
 
 
 def test_wb_082_summary_source_files():
@@ -387,3 +400,127 @@ def test_wb_103_all_api_protocol_in_obsidia_api_or_periphery():
         assert e["path"].startswith("apps/obsidia_api/") or e["path"].startswith("periphery/"), (
             f"API protocol entry outside expected dirs: {e['path']}"
         )
+
+
+# ---------------------------------------------------------------------------
+# WB-110 — Source/test partition proof
+# ---------------------------------------------------------------------------
+
+def test_wb_110_partition_proof_present():
+    idx = biras.get_index()
+    proof = idx.get("source_test_partition_proof", {})
+    assert proof.get("SUM") == 144
+    assert proof.get("TOTAL_SOURCE") == 70
+    assert proof.get("TOTAL_TEST") == 74
+
+
+def test_wb_111_partition_proof_verified_from_census():
+    idx = biras.get_index()
+    proof = idx["source_test_partition_proof"]
+    assert proof["partition_verified_from_census"] is True
+    assert proof["all_test_files_have_test_functions"] is True
+    assert proof["all_test_files_collected_by_pytest"] is True
+
+
+def test_wb_112_partition_families_consistent():
+    idx = biras.get_index()
+    proof = idx["source_test_partition_proof"]
+    assert proof["BRODY_RUNTIME_SOURCE_MODULES"] == 5
+    assert proof["BRODY_BRIDGE_SOURCE_MODULES"] == 1
+    assert proof["BRODY_API_SOURCE_MODULES_IN_APPS"] == 64
+    assert proof["BRODY_API_ROUTE_FILES"] == 2
+    assert proof["BRODY_API_TEST_FILES"] == 74
+    assert proof["OTHER_TEST_FILES"] == 0
+
+
+# ---------------------------------------------------------------------------
+# WB-120 — Blocker queue and partially blocked status
+# ---------------------------------------------------------------------------
+
+def test_wb_120_blocker_queue_present():
+    queue = biras.get_blocker_queue()
+    assert len(queue) == 9, f"Expected 9 blocker entries, got {len(queue)}"
+
+
+def test_wb_121_blocker_consistent_failures_documented():
+    queue = biras.get_blocker_queue()
+    consistent = [b for b in queue if b.get("failure_type") == "CONSISTENT"]
+    assert len(consistent) == 4
+
+
+def test_wb_122_blocker_intermittent_failures_documented():
+    queue = biras.get_blocker_queue()
+    intermittent = [b for b in queue if b.get("failure_type") == "INTERMITTENT"]
+    assert len(intermittent) == 4
+
+
+def test_wb_123_blocked_source_without_consumer_documented():
+    queue = biras.get_blocker_queue()
+    source_blockers = [b for b in queue if b.get("failure_type") == "SOURCE_BLOCKER"]
+    assert len(source_blockers) == 1
+    assert source_blockers[0]["path"] == "apps/obsidia_api/brody_backend_response_composer.py"
+
+
+def test_wb_124_no_safe_fix_declared():
+    queue = biras.get_blocker_queue()
+    safe_fixes = [b for b in queue if b.get("safe_to_fix_in_wave005b") is True]
+    assert safe_fixes == [], f"No safe fix should exist: {safe_fixes}"
+
+
+def test_wb_125_all_preexisting_failures():
+    queue = biras.get_blocker_queue()
+    test_blockers = [b for b in queue if b.get("failure_type") != "SOURCE_BLOCKER"]
+    for b in test_blockers:
+        assert "preexisting_commit" in b, f"Missing preexisting_commit for {b['path']}"
+
+
+def test_wb_126_no_failing_file_marked_executable_passes():
+    fails_paths = {
+        e["path"] for e in biras.get_failing_test_entries()
+    } | {
+        e["path"] for e in biras.get_intermittent_test_entries()
+    }
+    passing = biras.get_entries_by_executability("EXECUTABLE_PASSES")
+    for e in passing:
+        assert e["path"] not in fails_paths, (
+            f"File {e['path']} is in fails set but marked EXECUTABLE_PASSES"
+        )
+
+
+# ---------------------------------------------------------------------------
+# WB-130 — Global registration blocker preserved
+# ---------------------------------------------------------------------------
+
+def test_wb_130_global_registration_blocked_preserved():
+    from pathlib import Path
+    import json
+
+    def _repo_root():
+        here = Path(__file__).resolve()
+        for p in here.parents:
+            if (p / ".git").exists():
+                return p
+        raise RuntimeError("Cannot locate repo root")
+
+    root = _repo_root()
+    gs = json.loads((root / "periphery/agents/agents_file_wiring_global_state.json").read_text(encoding="utf-8"))
+    assert gs["global_manifest_complete"] is False
+    assert gs["global_relation_graph_complete"] is False
+    ai = json.loads((root / "periphery/agents/agents_file_wiring_artifact_index.json").read_text(encoding="utf-8"))
+    assert ai["global_registration_blocked"] is True
+    assert ai["global_manifest_complete"] is False
+    assert ai["global_relation_graph_complete"] is False
+
+
+def test_wb_131_census_primary_unchanged():
+    rec = biras.get_scope_reconciliation()
+    assert rec["current_active_total"] == 902
+
+
+def test_wb_132_c_to_f_remaining_correct():
+    rem = biras.get_remaining_population()
+    assert rem["total_remaining"] == 747
+    assert rem["WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS"] == 51
+    assert rem["WAVE005_D_BRODY_MEMORY_INTERFACE_AND_SPECS"] == 506
+    assert rem["WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS"] == 124
+    assert rem["WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW"] == 66

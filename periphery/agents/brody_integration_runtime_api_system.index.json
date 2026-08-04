@@ -23,7 +23,14 @@
     "api_protocol_sources": 65,
     "test_count_total": null,
     "failing_tests_observed": 10,
-    "skipped_tests_observed": 14
+    "skipped_tests_observed": 14,
+    "bridge_modules": 1,
+    "api_protocol_sources_in_apps": 64,
+    "api_route_files": 2,
+    "failing_tests_consistent_files": 4,
+    "failing_tests_intermittent_files": 4,
+    "failing_test_functions_consistent": 6,
+    "failing_test_functions_intermittent": 4
   },
   "gate_v5_distribution": {
     "INTEGRATION_RUNTIME_READONLY_MODULE": 5,
@@ -32,24 +39,22 @@
   },
   "gate_v5_relation_distribution": {
     "INTEGRATION_RUNTIME_LINKED_TO_GOVERNANCE_INDEX": 5,
-    "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX": 65,
-    "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT": 74
+    "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX": 63,
+    "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT": 74,
+    "BLOCKED_SOURCE_WITHOUT_CONSUMER": 1
   },
   "executability_audit": {
     "EXECUTABLE_PASSES": 66,
-    "EXECUTABLE_FAILS": 8,
+    "EXECUTABLE_FAILS": 4,
+    "EXECUTABLE_INTERMITTENT": 4,
     "NOT_A_TEST": 70,
     "NOT_EXECUTABLE": 0
   },
   "executable_fails_paths": [
     "tests/api/test_brody_automation_orchestrator.py",
-    "tests/api/test_brody_chat_readonly.py",
-    "tests/api/test_brody_general_conversation_mode_readonly.py",
     "tests/api/test_brody_memory_candidate_automation.py",
     "tests/api/test_brody_no_invented_metrics.py",
-    "tests/api/test_brody_payload_packetization.py",
-    "tests/api/test_brody_response_quality_fr.py",
-    "tests/api/test_brody_response_source_not_frontend_mock.py"
+    "tests/api/test_brody_payload_packetization.py"
   ],
   "governance_claims": {
     "brody_never_decides": "Brody never emits a decision \u2014 KX108 decides",
@@ -119,12 +124,14 @@
       "sha256": "0fa7cd2ad4ea03d039b8864c5f50c22ccbb25333879e8fc565ad234c72287f81",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
-      "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
+      "relation_type": "BLOCKED_SOURCE_WITHOUT_CONSUMER",
       "owner_subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
       "brody_family": "BRODY_PROTOCOL",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "NOT_A_TEST"
+      "executability_status": "NOT_A_TEST",
+      "blocker_category": "BLOCKED_SOURCE_WITHOUT_CONSUMER",
+      "blocker_note": "No importer found in apps/ or tests/ directories"
     },
     {
       "path": "apps/obsidia_api/brody_balance_engine.py",
@@ -952,7 +959,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_FAILS",
+      "failure_type": "CONSISTENT",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_automation_snapshot_payload.py",
@@ -1012,7 +1022,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_INTERMITTENT",
+      "failure_type": "FLAKY_RUNTIME_NONDETERMINISTIC",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_f10c_existing_command_packet_reconnect.py",
@@ -1264,7 +1277,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_INTERMITTENT",
+      "failure_type": "FLAKY_RUNTIME_NONDETERMINISTIC",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_intent_classifier_hard_fix.py",
@@ -1324,7 +1340,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_FAILS",
+      "failure_type": "CONSISTENT",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_memory_context_response_quality.py",
@@ -1408,7 +1427,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_FAILS",
+      "failure_type": "CONSISTENT",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_no_placeholder_response.py",
@@ -1468,7 +1490,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_FAILS",
+      "failure_type": "CONSISTENT",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_readonly_activation_api_p51.py",
@@ -1492,7 +1517,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_INTERMITTENT",
+      "failure_type": "FLAKY_RUNTIME_NONDETERMINISTIC",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_response_schema_utf8.py",
@@ -1516,7 +1544,10 @@
       "brody_family": "BRODY_TEST",
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
-      "executability_status": "EXECUTABLE_FAILS"
+      "executability_status": "EXECUTABLE_INTERMITTENT",
+      "failure_type": "FLAKY_RUNTIME_NONDETERMINISTIC",
+      "preexisting": true,
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE"
     },
     {
       "path": "tests/api/test_brody_rights_authority_matrix.py",
@@ -1805,6 +1836,123 @@
       "status": "ACTIVE",
       "semantic_verdict": "TRUE_DOCUMENTARY_RELATION",
       "executability_status": "EXECUTABLE_PASSES"
+    }
+  ],
+  "executable_intermittent_paths": [
+    "tests/api/test_brody_chat_readonly.py",
+    "tests/api/test_brody_general_conversation_mode_readonly.py",
+    "tests/api/test_brody_response_quality_fr.py",
+    "tests/api/test_brody_response_source_not_frontend_mock.py"
+  ],
+  "blocked_source_paths": [
+    "apps/obsidia_api/brody_backend_response_composer.py"
+  ],
+  "source_test_partition_proof": {
+    "BRODY_RUNTIME_SOURCE_MODULES": 5,
+    "BRODY_BRIDGE_SOURCE_MODULES": 1,
+    "BRODY_API_SOURCE_MODULES_IN_APPS": 64,
+    "BRODY_API_ROUTE_FILES": 2,
+    "TOTAL_SOURCE": 70,
+    "BRODY_API_TEST_FILES": 74,
+    "OTHER_TEST_FILES": 0,
+    "TOTAL_TEST": 74,
+    "SUM": 144,
+    "all_test_files_have_test_functions": true,
+    "all_test_files_collected_by_pytest": true,
+    "partition_verified_from_census": true
+  },
+  "wave005b_blocker_queue": [
+    {
+      "path": "tests/api/test_brody_automation_orchestrator.py",
+      "failure_type": "CONSISTENT",
+      "failing_function": "test_memory_candidate_auto_triage_runs",
+      "root_cause": "triage zone returns SEMI_ACTIVE not in expected (CRISTAL, TRANSITION, NEANT)",
+      "blocker_category": "BLOCKED_EXPECTATION_STALE",
+      "owner": "BRODY_AUTOMATION_ORCHESTRATOR_SUBSYSTEM",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_memory_candidate_automation.py",
+      "failure_type": "CONSISTENT",
+      "failing_function": "test_triage_zone_valid",
+      "root_cause": "triage zone returns SEMI_ACTIVE not in expected values",
+      "blocker_category": "BLOCKED_EXPECTATION_STALE",
+      "owner": "BRODY_AUTOMATION_ORCHESTRATOR_SUBSYSTEM",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_no_invented_metrics.py",
+      "failure_type": "CONSISTENT",
+      "failing_function": "test_triage_zone_only_real_values_when_enabled",
+      "root_cause": "triage zone returns SEMI_ACTIVE not in expected values",
+      "blocker_category": "BLOCKED_EXPECTATION_STALE",
+      "owner": "BRODY_AUTOMATION_ORCHESTRATOR_SUBSYSTEM",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_payload_packetization.py",
+      "failure_type": "CONSISTENT",
+      "failing_functions": [
+        "test_topic_present",
+        "test_compact_mode_flag",
+        "test_debug_payload_omitted"
+      ],
+      "root_cause": "compact_response missing topic/compact_mode/deep_snapshots_omitted fields",
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE",
+      "owner": "BRODY_COMPACT_PAYLOAD_SUBSYSTEM",
+      "preexisting_commit": "a5f21c6",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_chat_readonly.py",
+      "failure_type": "INTERMITTENT",
+      "failing_function": "test_brody_source_is_not_frontend_mock",
+      "root_cause": "source field value varies with LLM runtime output (non-deterministic)",
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE",
+      "owner": "BRODY_CHAT_RUNTIME",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_general_conversation_mode_readonly.py",
+      "failure_type": "INTERMITTENT",
+      "failing_function": "test_api_dis_bonjour_maman_general_conversation_readonly",
+      "root_cause": "LLM response non-deterministic for conversational prompt",
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE",
+      "owner": "BRODY_GENERAL_CONVERSATION_CLASSIFIER",
+      "preexisting_commit": "a5f21c6",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_response_quality_fr.py",
+      "failure_type": "INTERMITTENT",
+      "failing_function": "test_french_response_source_real_backend",
+      "root_cause": "source field varies with runtime context (non-deterministic)",
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE",
+      "owner": "BRODY_RESPONSE_QUALITY_SYSTEM",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "tests/api/test_brody_response_source_not_frontend_mock.py",
+      "failure_type": "INTERMITTENT",
+      "failing_function": "test_brody_source_not_frontend_mock",
+      "root_cause": "source value REAL_BRODY_GRAPHITI_NEO4J_LIVE_READONLY not in expected set",
+      "blocker_category": "BLOCKED_PREEXISTING_FAILURE",
+      "owner": "BRODY_RESPONSE_SOURCE_ENUM",
+      "preexisting_commit": "e9e43e4",
+      "safe_to_fix_in_wave005b": false
+    },
+    {
+      "path": "apps/obsidia_api/brody_backend_response_composer.py",
+      "failure_type": "SOURCE_BLOCKER",
+      "root_cause": "No importer found in apps/ or tests/ \u2014 source module not wired to any consumer",
+      "blocker_category": "BLOCKED_SOURCE_WITHOUT_CONSUMER",
+      "owner": "WAVE005_B",
+      "safe_to_fix_in_wave005b": false
     }
   ]
 }
