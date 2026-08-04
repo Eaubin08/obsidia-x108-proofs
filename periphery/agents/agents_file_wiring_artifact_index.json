@@ -90,6 +90,18 @@
       "files_indexed": 8,
       "status": "CLOSED"
     },
+    "WAVE005_C": {
+      "path": "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "index_id": "BRODY_PROTOCOLS_CONNECTORS_SCRIPTS_INDEX_V1",
+      "files_indexed": 51,
+      "protocol_source_modules": 3,
+      "development_tooling_modules": 23,
+      "test_files": 25,
+      "executable_passes": 24,
+      "executable_fails": 1,
+      "status": "AGENTS_FILE_WIRING_WAVE005_C_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 2
+    },
     "WAVE005_B": {
       "path": "periphery/agents/brody_integration_runtime_api_system.index.json",
       "index_id": "BRODY_INTEGRATION_RUNTIME_API_SYSTEM_INDEX_V1",
@@ -125,7 +137,8 @@
       {"wave": "WAVE002", "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM", "files": 167},
       {"wave": "WAVE003", "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION", "files": 680},
       {"wave": "WAVE004", "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM", "files": 8},
-      {"wave": "WAVE005_A", "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM", "files": 11}
+      {"wave": "WAVE005_A", "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM", "files": 11},
+      {"wave": "WAVE005_C", "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS", "files": 51}
     ],
     "edges": [
       {

@@ -50,6 +50,24 @@
       "local_state_path": null,
       "commits": ["366b480", "17deaf8"]
     },
+    "WAVE005_C": {
+      "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS",
+      "status": "AGENTS_FILE_WIRING_WAVE005_C_PARTIALLY_BLOCKED",
+      "scope_complete": false,
+      "covered_slice": "WAVE005_C_BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS",
+      "functional_files_accounted": 51,
+      "files_with_explicit_blocker": 2,
+      "consistent_failing_test_files": 1,
+      "blocked_source_without_consumer": 1,
+      "protocol_source_modules": 3,
+      "development_tooling_modules": 23,
+      "test_files": 25,
+      "executable_passes": 24,
+      "executable_fails": 1,
+      "primary_index_path": "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "local_state_path": null,
+      "commits": []
+    },
     "WAVE005_B": {
       "subsystem": "BRODY_INTEGRATION_RUNTIME_AND_API_SYSTEM",
       "status": "AGENTS_FILE_WIRING_WAVE005_B_PARTIALLY_BLOCKED",
@@ -66,7 +84,7 @@
       "executable_fails": 8,
       "primary_index_path": "periphery/agents/brody_integration_runtime_api_system.index.json",
       "local_state_path": null,
-      "commits": []
+      "commits": ["70a0f90", "cb64d41"]
     },
     "WAVE005_A": {
       "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
@@ -101,10 +119,10 @@
     }
   },
   "global_summary": {
-    "total_waves_closed": 6,
-    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A and B are closed. C-F require future waves.",
-    "total_functional_files_closed_to_date": 1167,
-    "total_functional_files_closed_note": "167(W1) + 167(W2) + 680(W3) + 8(W4) + 11(W5A) + 144(W5B) = 1177 indexed. W1/W2 share 167 files (same catalog, different perspectives). Net unique: context-dependent.",
+    "total_waves_closed": 7,
+    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A, B, and C are PARTIALLY_BLOCKED (documented). D-F require future waves.",
+    "total_functional_files_closed_to_date": 1218,
+    "total_functional_files_closed_note": "167(W1) + 167(W2) + 680(W3) + 8(W4) + 11(W5A) + 144(W5B) + 51(W5C) = 1228 indexed. W1/W2 share 167 files (same catalog, different perspectives). Net unique: context-dependent.",
     "baseline_reference_status": "NON_RECONSTRUCTIBLE_AGGREGATE_COUNTER",
     "current_active_brody_primary": 902
   },
