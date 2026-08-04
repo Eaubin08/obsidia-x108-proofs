@@ -555,8 +555,12 @@ def test_wd_080_gross_wave_index_entries_updated():
             break
     with open(p / "periphery/agents/agents_file_wiring_global_state.json", encoding="utf-8") as f:
         data = json.load(f)
-    assert data["global_summary"]["gross_wave_index_entries"] == 1734
-    assert data["global_summary"]["gross_documentary_rows_including_secondary"] == 1735
+    # Wave005_D contributed 506 primary entries to the global gross.
+    # Global gross grows with each new wave; assert minimum (Wave005_D floor = 1734).
+    assert data["global_summary"]["gross_wave_index_entries"] >= 1734
+    gross_doc = data["global_summary"]["gross_documentary_rows_including_secondary"]
+    assert gross_doc >= 1735
+    assert gross_doc == data["global_summary"]["gross_wave_index_entries"] + 1
 
 
 # ---------------------------------------------------------------------------

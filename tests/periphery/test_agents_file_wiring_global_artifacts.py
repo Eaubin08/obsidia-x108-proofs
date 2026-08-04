@@ -351,15 +351,15 @@ def test_ga_066_wave_slices_global_registration_blocked():
     assert "WAVE005_C" not in grb
 
 
-def test_ga_067_gross_wave_index_entries_1734():
+def test_ga_067_gross_wave_index_entries_1858():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["gross_wave_index_entries"] == 1734
-    assert d["global_summary"]["gross_documentary_rows_including_secondary"] == 1735
+    assert d["global_summary"]["gross_wave_index_entries"] == 1858
+    assert d["global_summary"]["gross_documentary_rows_including_secondary"] == 1859
 
 
-def test_ga_068_unique_primary_paths_1567():
+def test_ga_068_unique_primary_paths_1691():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["unique_primary_paths_accounted"] == 1567
+    assert d["global_summary"]["unique_primary_paths_accounted"] == 1691
     assert d["global_summary"]["primary_overlap_count"] == 167
 
 
@@ -384,33 +384,35 @@ def test_ga_072_census_902_preserved_after_wave005c():
     assert d["global_summary"]["current_active_brody_primary"] == 902
 
 
-def test_ga_073_campaign_metadata_total_20():
+def test_ga_073_campaign_metadata_total_23():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["campaign_metadata_total"] == 20
+    assert d["global_summary"]["campaign_metadata_total"] == 23
     assert d["global_summary"]["campaign_metadata_included_in_brody_primary"] == 0
 
 
 def test_ga_074_campaign_metadata_registry_counts():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     reg = d["campaign_metadata_registry"]
-    assert reg["total"] == 20
+    assert reg["total"] == 23
     assert reg["included_in_brody_primary"] == 0
     assert reg["included_in_primary_partition"] == 0
     assert len(reg["wave005_a_metadata"]) == 11
     assert len(reg["wave005_b_metadata"]) == 3
     assert len(reg["wave005_c_metadata"]) == 3
     assert len(reg["wave005_d_metadata"]) == 3
+    assert len(reg["wave005_e_metadata"]) == 3
 
 
 def test_ga_075_artifact_index_campaign_metadata_registry():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     reg = d["campaign_metadata_registry"]
-    assert reg["total"] == 20
+    assert reg["total"] == 23
     assert reg["included_in_brody_primary"] == 0
     assert len(reg["wave005_a_metadata"]) == 11
     assert len(reg["wave005_b_metadata"]) == 3
     assert len(reg["wave005_c_metadata"]) == 3
     assert len(reg["wave005_d_metadata"]) == 3
+    assert len(reg["wave005_e_metadata"]) == 3
 
 
 def test_ga_076_wave005b_metadata_excluded_from_primary():
@@ -455,3 +457,63 @@ def test_ga_080_wave005c_blockers_preserved():
     assert w5c["consistent_failing_test_files"] == 1
     assert w5c["blocked_source_without_consumer"] == 1
     assert w5c["status"] == "AGENTS_FILE_WIRING_WAVE005_C_PARTIALLY_BLOCKED"
+
+
+# ---------------------------------------------------------------------------
+# GA-081 — Wave005_E registration
+# ---------------------------------------------------------------------------
+
+def test_ga_081_wave005e_registered_in_global_state():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    assert "WAVE005_E" in d["wave_registry"]
+    w5e = d["wave_registry"]["WAVE005_E"]
+    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_INDEXED"
+    assert w5e["functional_files_accounted"] == 124
+    assert w5e["files_with_explicit_blocker"] == 0
+    assert w5e["remaining_for_wave005f"] == 66
+
+
+def test_ga_082_wave005e_in_artifact_index_manifests():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    assert "WAVE005_E" in d["wave_file_manifests"]
+    w5e = d["wave_file_manifests"]["WAVE005_E"]
+    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_INDEXED"
+    assert w5e["files_indexed"] == 124
+    assert w5e["files_with_explicit_blocker"] == 0
+
+
+def test_ga_083_wave005e_in_wave_slices_registered():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    wsr = d["wave_status_registry"]
+    assert "WAVE005_E" in wsr["wave_slices_registered"]
+
+
+def test_ga_084_wave005e_zero_blockers():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    w5e = d["wave_registry"]["WAVE005_E"]
+    assert w5e["files_with_explicit_blocker"] == 0
+    assert w5e["executable_tests"] == 0
+
+
+def test_ga_085_wave005e_node_in_relation_graph():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    nodes = d["relation_graph"]["nodes"]
+    wave_ids = [n["wave"] for n in nodes]
+    assert "WAVE005_E" in wave_ids
+    w5e_node = next(n for n in nodes if n["wave"] == "WAVE005_E")
+    assert w5e_node["files"] == 124
+
+
+def test_ga_086_gross_note_contains_wave005e():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    note = d["global_summary"]["gross_wave_index_note"]
+    assert "W5E" in note or "124" in note
+
+
+def test_ga_087_wave005e_metadata_in_global_state():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    reg = d["campaign_metadata_registry"]
+    w5e_meta = reg["wave005_e_metadata"]
+    assert "periphery/agents/brody_documentation_architecture_reports.index.json" in w5e_meta
+    assert "periphery/agents/brody_documentation_architecture_reports.py" in w5e_meta
+    assert "tests/periphery/test_brody_documentation_architecture_reports.py" in w5e_meta

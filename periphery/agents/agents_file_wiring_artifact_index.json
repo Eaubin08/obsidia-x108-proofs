@@ -90,6 +90,19 @@
       "files_indexed": 8,
       "status": "CLOSED"
     },
+    "WAVE005_E": {
+      "path": "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "index_id": "BRODY_DOCUMENTATION_ARCHITECTURE_REPORTS_INDEX_V1",
+      "files_indexed": 124,
+      "md_artifacts": 97,
+      "json_artifacts": 15,
+      "txt_artifacts": 11,
+      "py_source_modules": 1,
+      "not_executable_artifacts": 123,
+      "executable_tests": 0,
+      "status": "AGENTS_FILE_WIRING_WAVE005_E_INDEXED",
+      "files_with_explicit_blocker": 0
+    },
     "WAVE005_D": {
       "path": "periphery/agents/brody_memory_interface_and_specs.index.json",
       "index_id": "BRODY_MEMORY_INTERFACE_AND_SPECS_INDEX_V1",
@@ -152,7 +165,8 @@
       "WAVE005_A",
       "WAVE005_B",
       "WAVE005_C",
-      "WAVE005_D"
+      "WAVE005_D",
+      "WAVE005_E"
     ],
     "wave_slices_fully_closed": [
       "WAVE001",
@@ -200,6 +214,11 @@
       "periphery/agents/brody_memory_interface_and_specs.index.json",
       "periphery/agents/brody_memory_interface_and_specs.py",
       "tests/periphery/test_brody_memory_interface_and_specs.py"
+    ],
+    "wave005_e_metadata": [
+      "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "periphery/agents/brody_documentation_architecture_reports.py",
+      "tests/periphery/test_brody_documentation_architecture_reports.py"
     ]
   },
   "relation_graph": {
@@ -247,6 +266,11 @@
         "files": 506,
         "all_matrix_rows": 507,
         "secondary_relation_rows": 1
+      },
+      {
+        "wave": "WAVE005_E",
+        "subsystem": "BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
+        "files": 124
       }
     ],
     "edges": [
@@ -282,6 +306,45 @@
     "silent_double_count": 0,
     "cross_wave_primary_overlaps": 0
   },
-  "unique_primary_paths_accounted": 1567,
-  "unique_primary_note": "Recalculated: 1567 = 1061(W1-W5C) + 506(W5D_primary)."
+  "unique_primary_paths_accounted": 1691,
+  "unique_primary_note": "Recalculated: 1691 = 1567(W1-W5D_primary) + 124(W5E). W1xW2 overlap=167. SILENT_DOUBLE_COUNT=0.",
+  "campaign_metadata_registry": {
+    "total": 23,
+    "included_in_brody_primary": 0,
+    "included_in_primary_partition": 0,
+    "note": "23 = 20(W5A-W5D meta) + 3(W5E meta). Wave005_E adds index, validator, tests.",
+    "wave005_a_metadata": [
+      "periphery/agents/brody_governance_element_system.index.json",
+      "periphery/agents/brody_governance_element_system.py",
+      "tests/periphery/test_brody_governance_element_system.py",
+      "periphery/agents/brody_governance_scope_reconciliation.index.json",
+      "periphery/agents/brody_governance_scope_reconciliation.py",
+      "periphery/agents/wave005_campaign_state.json",
+      "periphery/agents/wave005_unresolved_queue.json",
+      "tests/periphery/test_brody_governance_scope_reconciliation.py",
+      "periphery/agents/agents_file_wiring_artifact_index.json",
+      "periphery/agents/agents_file_wiring_global_state.json",
+      "tests/periphery/test_agents_file_wiring_global_artifacts.py"
+    ],
+    "wave005_b_metadata": [
+      "periphery/agents/brody_integration_runtime_api_system.index.json",
+      "periphery/agents/brody_integration_runtime_api_system.py",
+      "tests/periphery/test_brody_integration_runtime_api_system.py"
+    ],
+    "wave005_c_metadata": [
+      "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "periphery/agents/brody_protocols_connectors_scripts.py",
+      "tests/periphery/test_brody_protocols_connectors_scripts.py"
+    ],
+    "wave005_d_metadata": [
+      "periphery/agents/brody_memory_interface_and_specs.index.json",
+      "periphery/agents/brody_memory_interface_and_specs.py",
+      "tests/periphery/test_brody_memory_interface_and_specs.py"
+    ],
+    "wave005_e_metadata": [
+      "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "periphery/agents/brody_documentation_architecture_reports.py",
+      "tests/periphery/test_brody_documentation_architecture_reports.py"
+    ]
+  }
 }

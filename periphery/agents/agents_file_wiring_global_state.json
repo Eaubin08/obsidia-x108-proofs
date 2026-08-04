@@ -61,6 +61,26 @@
         "17deaf8"
       ]
     },
+    "WAVE005_E": {
+      "subsystem": "BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
+      "status": "AGENTS_FILE_WIRING_WAVE005_E_INDEXED",
+      "scope_complete": false,
+      "covered_slice": "WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
+      "functional_files_accounted": 124,
+      "files_with_explicit_blocker": 0,
+      "md_artifacts": 97,
+      "json_artifacts": 15,
+      "txt_artifacts": 11,
+      "py_source_modules": 1,
+      "not_executable_artifacts": 123,
+      "not_a_test_modules": 1,
+      "executable_tests": 0,
+      "primary_index_path": "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "local_state_path": null,
+      "commits": [],
+      "blocker_note": "Wave005_E has zero blockers. 124 files fully indexed. 66 files remain for Wave005_F.",
+      "remaining_for_wave005f": 66
+    },
     "WAVE005_D": {
       "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS",
       "status": "AGENTS_FILE_WIRING_WAVE005_D_PARTIALLY_BLOCKED",
@@ -182,7 +202,8 @@
       "WAVE005_A",
       "WAVE005_B",
       "WAVE005_C",
-      "WAVE005_D"
+      "WAVE005_D",
+      "WAVE005_E"
     ],
     "wave_slices_fully_closed": [
       "WAVE001",
@@ -198,27 +219,27 @@
     "wave_slices_global_registration_blocked": [
       "WAVE005_A"
     ],
-    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B, C, D: PARTIALLY_BLOCKED with documented blockers. E-F: require future waves.",
-    "gross_wave_index_entries": 1734,
-    "gross_wave_index_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D_primary)=1734",
-    "gross_documentary_rows_including_secondary": 1735,
-    "gross_documentary_note": "1735 = 1734 primary + 1 secondary relation row in Wave005_D matrix.",
-    "unique_primary_paths_accounted": 1567,
+    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B, C, D: PARTIALLY_BLOCKED with documented blockers. E: INDEXED (0 blockers). F: requires Wave005_F.",
+    "gross_wave_index_entries": 1858,
+    "gross_wave_index_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D_primary)+124(W5E)=1858",
+    "gross_documentary_rows_including_secondary": 1859,
+    "gross_documentary_note": "1859 = 1858 primary + 1 secondary relation row in Wave005_D matrix.",
+    "unique_primary_paths_accounted": 1691,
     "known_cross_wave_overlap_paths": 167,
     "overlap_detail": "167 paths indexed in both WAVE001 and WAVE002 (same catalog, different perspectives). Overlap is documented in relation_graph, not silent.",
     "silent_double_count": 0,
     "gross_total_reconciled": true,
     "unique_total_computed_from_paths": true,
     "current_active_brody_primary": 902,
-    "campaign_metadata_total": 20,
+    "campaign_metadata_total": 23,
     "campaign_metadata_included_in_brody_primary": 0,
-    "campaign_metadata_note": "20 documentary campaign files (indexes, validators, tests) excluded from Brody primary census of 902.",
-    "unique_primary_note": "Recalculated from physical paths: 1061(W1-W5C) + 506(W5D_primary) = 1567. W5D secondary excluded.",
+    "campaign_metadata_note": "23 documentary campaign files (indexes, validators, tests) excluded from Brody primary census of 902.",
+    "unique_primary_note": "Recalculated from physical paths: 1567(W1-W5D_primary) + 124(W5E) = 1691. W5D secondary excluded. W1xW2 overlap=167.",
     "primary_overlap_count": 167,
     "primary_overlap_detail": "W1 x W2 only (167 paths). No other cross-wave primary overlap. SILENT_DOUBLE_COUNT=0."
   },
   "campaign_metadata_registry": {
-    "total": 20,
+    "total": 23,
     "included_in_brody_primary": 0,
     "included_in_primary_partition": 0,
     "wave005_a_metadata": [
@@ -248,6 +269,11 @@
       "periphery/agents/brody_memory_interface_and_specs.index.json",
       "periphery/agents/brody_memory_interface_and_specs.py",
       "tests/periphery/test_brody_memory_interface_and_specs.py"
+    ],
+    "wave005_e_metadata": [
+      "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "periphery/agents/brody_documentation_architecture_reports.py",
+      "tests/periphery/test_brody_documentation_architecture_reports.py"
     ]
   },
   "blocker_queue": [],
