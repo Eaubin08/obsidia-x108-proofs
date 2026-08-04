@@ -54,25 +54,40 @@
     {
       "blocker_id": "WD-BLK-001",
       "path": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231137",
-      "blocker_type": "BLOCKED_ARTIFACT_BACKUP",
-      "failure_class": "BLOCKED_ARTIFACT_BACKUP",
-      "failure_detail": "Backup artifact from safe scan 2026-05-20. Not a functional Brody module.",
-      "preexisting_before_wave005": true,
-      "safe_fix_possible": false,
-      "owner_subsystem": "BRODY_MEMORY_INTERFACE"
+      "blocker_type": "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
+      "blocking_reason": "SHA256 mismatch with canonical. Intermediate scan state.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
     },
     {
       "blocker_id": "WD-BLK-002",
       "path": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231228",
-      "blocker_type": "BLOCKED_ARTIFACT_BACKUP",
-      "failure_class": "BLOCKED_ARTIFACT_BACKUP",
-      "failure_detail": "Backup artifact from safe scan 2026-05-20. Not a functional Brody module.",
-      "preexisting_before_wave005": true,
-      "safe_fix_possible": false,
-      "owner_subsystem": "BRODY_MEMORY_INTERFACE"
+      "blocker_type": "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
+      "blocking_reason": "SHA256 mismatch with canonical. Intermediate scan state.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
+    },
+    {
+      "blocker_id": "WD-BLK-003",
+      "path": "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py",
+      "blocker_type": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER",
+      "blocking_reason": "SRL v0 module. No importer found via full-repo rg scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
+    },
+    {
+      "blocker_id": "WD-BLK-004",
+      "path": "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py",
+      "blocker_type": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER",
+      "blocking_reason": "SRL v0 module. No importer found via full-repo rg scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
+    },
+    {
+      "blocker_id": "WD-BLK-005",
+      "path": "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py",
+      "blocker_type": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER",
+      "blocking_reason": "SRL v0 module. No importer found via full-repo rg scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
     }
   ],
-  "files_with_explicit_blocker": 2,
+  "files_with_explicit_blocker": 5,
   "blocked_artifact_backups": 2,
   "scope_reconciliation": {
     "current_active_total": 902,
@@ -253,13 +268,22 @@
       "path": "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
       "sha256": "01e1c28e7eb50e6db44bf2d1471c58e07fdf99beebe522301c70965a768f8399",
       "role": "MEMORY_INTERFACE_ARTIFACT",
-      "relation_type": "MEMORY_INTERFACE_LINKED_TO_BRODY_RUNTIME",
+      "relation_type": "SECONDARY_RELATION_TO_PRIOR_WAVE",
       "executability_status": "NOT_EXECUTABLE",
       "semantic_verdict": "VALID_TOOLING_SCRIPT",
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
-      "status": "INDEXED"
+      "status": "SECONDARY_RELATION_DOCUMENTED",
+      "counted_in_wave005_d_primary": false,
+      "relation_role": "SECONDARY_RELATION_ONLY",
+      "primary_files_accounted_contribution": 0,
+      "primary_owner": "WAVE001",
+      "prior_waves": [
+        "WAVE001",
+        "WAVE002"
+      ],
+      "why_not_primary_d": "Primary in WAVE001/WAVE002 (AGENTS52_CONFIGURATION_SYSTEM + PYTHON_OPERATIONAL_AGENT_SYSTEM). Physical presence in brody_memory_readonly/ zone is incidental."
     },
     {
       "path": "periphery/brody_memory_readonly/brody_api_bridge_authorization_packet_readonly/BRODY_API_BRIDGE_AUTHORIZATION_PACKET_READONLY_MANIFEST.json",
@@ -3721,27 +3745,41 @@
       "path": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231137",
       "sha256": "2fa6e87e4617f0876989a08c585650a6688691b60e23c7ad1ab1965a3d56b805",
       "role": "MEMORY_INTERFACE_ARTIFACT",
-      "relation_type": "BLOCKED_ARTIFACT_BACKUP",
+      "relation_type": "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
       "executability_status": "NOT_EXECUTABLE",
       "semantic_verdict": "BLOCKED_ARTIFACT_BACKUP",
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
       "status": "INDEXED",
-      "blocker": "Backup artifact from safe scan 2026-05-20. Not a functional Brody file. BLOCKED_ARTIFACT_BACKUP."
+      "blocker": "Backup artifact from safe scan 2026-05-20. Not a functional Brody file. BLOCKED_ARTIFACT_BACKUP.",
+      "canonical_successor": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py",
+      "canonical_successor_exists": true,
+      "sha_matches_canonical": false,
+      "current_status": "EXPLICIT_BLOCKER",
+      "blocker_id": "WD-BLK-001",
+      "blocking_reason": "SHA256 mismatch with canonical successor (brody_content_hydration_readonly_v1.py). Backup is an intermediate scan state (safe_scan_20260520). Canonical exists but content has since evolved. No exact successor state proved.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
     },
     {
       "path": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231228",
       "sha256": "a39c5fae582c8264d2cde2fe5782505a729b1d765908c52574dae2959fa1430d",
       "role": "MEMORY_INTERFACE_ARTIFACT",
-      "relation_type": "BLOCKED_ARTIFACT_BACKUP",
+      "relation_type": "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
       "executability_status": "NOT_EXECUTABLE",
       "semantic_verdict": "BLOCKED_ARTIFACT_BACKUP",
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
       "status": "INDEXED",
-      "blocker": "Backup artifact from safe scan 2026-05-20. Not a functional Brody file. BLOCKED_ARTIFACT_BACKUP."
+      "blocker": "Backup artifact from safe scan 2026-05-20. Not a functional Brody file. BLOCKED_ARTIFACT_BACKUP.",
+      "canonical_successor": "periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py",
+      "canonical_successor_exists": true,
+      "sha_matches_canonical": false,
+      "current_status": "EXPLICIT_BLOCKER",
+      "blocker_id": "WD-BLK-002",
+      "blocking_reason": "SHA256 mismatch with canonical successor (brody_content_hydration_readonly_v1.py). Backup is an intermediate scan state (safe_scan_20260520). Canonical exists but content has since evolved. No exact successor state proved.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE"
     },
     {
       "path": "periphery/brody_memory_readonly/content_hydration_readonly/run_brody_content_hydration_readonly_v1.ps1",
@@ -5793,7 +5831,11 @@
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
-      "status": "INDEXED"
+      "status": "BLOCKED",
+      "blocker_id": "WD-BLK-003",
+      "blocking_reason": "SRL v0 module — no static import, no dynamic reference, no PS1 caller found across full repo scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE",
+      "current_status": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER"
     },
     {
       "path": "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py",
@@ -5805,7 +5847,11 @@
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
-      "status": "INDEXED"
+      "status": "BLOCKED",
+      "blocker_id": "WD-BLK-004",
+      "blocking_reason": "SRL v0 module — no static import, no dynamic reference, no PS1 caller found across full repo scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE",
+      "current_status": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER"
     },
     {
       "path": "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_context_reload_pack_schema_readonly_v0.json",
@@ -5841,7 +5887,11 @@
       "owner_subsystem": "BRODY_MEMORY_INTERFACE",
       "brody_family": "BRODY_MEMORY_INTERFACE",
       "canonicality_status": "CANONICAL",
-      "status": "INDEXED"
+      "status": "BLOCKED",
+      "blocker_id": "WD-BLK-005",
+      "blocking_reason": "SRL v0 module — no static import, no dynamic reference, no PS1 caller found across full repo scan.",
+      "next_action": "REVIEW_IN_WAVE005_F_OR_ARCHIVE",
+      "current_status": "BLOCKED_PYTHON_MODULE_WITHOUT_CONSUMER"
     },
     {
       "path": "periphery/brody_memory_readonly/taxonomy_mapper_34_8_readonly/BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY_MANIFEST.json",
@@ -6191,5 +6241,87 @@
       "canonicality_status": "CANONICAL",
       "status": "INDEXED"
     }
-  ]
+  ],
+  "blocked_python_no_consumer": 3,
+  "union_recalculation": {
+    "gross_primary_wave_index_entries": 1734,
+    "gross_primary_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D_primary)=1734",
+    "unique_primary_paths_accounted": 1567,
+    "unique_computation": "1061(prior_W1_to_W5C_unique) + 506(W5D_primary_new) = 1567. W5D secondary excluded.",
+    "primary_overlap_count": 167,
+    "primary_overlap_detail": "167 paths in both WAVE001 and WAVE002 only. No other cross-wave primary overlap.",
+    "silent_double_count": 0,
+    "gross_minus_overlap": "1734 - 167 = 1567 (matches physical calculation)",
+    "computed_from_physical_paths": true
+  },
+  "relation_evidence_audit": {
+    "audit_date": "2026-08-04",
+    "gate": "WAVE005_D_RELATION_EVIDENCE_GATE_V2",
+    "secondary_relation": {
+      "path": "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
+      "primary_owner": "WAVE001",
+      "prior_waves": [
+        "WAVE001",
+        "WAVE002"
+      ],
+      "relation_role": "SECONDARY_RELATION_ONLY",
+      "counted_in_wave005_d_primary": false,
+      "physical_exists": true
+    },
+    "python_audit": {
+      "total_python_primary": 160,
+      "named_py": 51,
+      "init_py": 109,
+      "named_imported_by_runtime": 17,
+      "named_loaded_dynamically": 31,
+      "named_blocked_no_consumer": 3,
+      "named_blocked_paths": [
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py",
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py",
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py"
+      ],
+      "init_imported_package": 42,
+      "init_namespace_marker": 67,
+      "group_rule_init_py": {
+        "GROUP_RULE": "Empty __init__.py in brody_memory_readonly/ are Python package namespace markers.",
+        "LOADER_OR_INDEX": "Python import machinery + periphery/core_registry.py",
+        "MEMBERS_CHECKED": 109,
+        "EXCEPTIONS": "srl_session_registry_layer_readonly/__init__.py has 161b content — still classified as namespace marker.",
+        "EVIDENCE": "108/109 are empty. Packages with confirmed named-module imports → __init__ classified MEMORY_INTERFACE_IMPORTED_AND_CONSUMED (42). Others → MEMORY_INTERFACE_LINKED_TO_BRODY_RUNTIME (67)."
+      }
+    },
+    "non_python_audit": {
+      "ps1_primary": 94,
+      "ps1_proved_documentary_destination": 94,
+      "ps1_evidence_method": "rg across *.ps1, *.py, *.md, *.json — each run_* script referenced in at least 1 doc",
+      "md_primary": 103,
+      "md_document_linked_to_component": 103,
+      "md_group_rule": {
+        "GROUP_RULE": "MD files in brody_memory_readonly/ are spec/documentation for their containing component.",
+        "LOADER_OR_INDEX": "None — documentary artifacts",
+        "MEMBERS_CHECKED": 103,
+        "EXCEPTIONS": "None — all 103 are component documentation",
+        "EVIDENCE": "Parent directory is a brody_memory_readonly component. File names follow component spec pattern."
+      },
+      "json_primary": 137,
+      "json_spec_loaded_by_validator": 21,
+      "json_spec_referenced": 3,
+      "json_document_linked": 113,
+      "json_evidence_method": "rg filename across *.py *.ps1 for 21 loaded; keyword-pattern for spec/state for 3; directory membership for 113",
+      "txt_primary": 9,
+      "txt_document_linked": 9,
+      "csv_primary": 1,
+      "csv_document_linked": 1,
+      "bak_primary": 2,
+      "bak_blocked": 2
+    },
+    "primary_summary": {
+      "total_primary_files": 506,
+      "files_with_proved_relation": 501,
+      "files_with_explicit_blocker": 5,
+      "files_unresolved": 0,
+      "false_relations": 0,
+      "unsupported_group_relations": 0
+    }
+  }
 }

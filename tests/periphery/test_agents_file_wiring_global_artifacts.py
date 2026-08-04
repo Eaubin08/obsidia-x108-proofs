@@ -357,9 +357,10 @@ def test_ga_067_gross_wave_index_entries_1734():
     assert d["global_summary"]["gross_documentary_rows_including_secondary"] == 1735
 
 
-def test_ga_068_unique_primary_paths_1061():
+def test_ga_068_unique_primary_paths_1567():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_summary"]["unique_primary_paths_accounted"] == 1061
+    assert d["global_summary"]["unique_primary_paths_accounted"] == 1567
+    assert d["global_summary"]["primary_overlap_count"] == 167
 
 
 def test_ga_069_known_cross_wave_overlap_167():

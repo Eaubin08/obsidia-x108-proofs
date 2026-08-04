@@ -47,6 +47,8 @@ _VALID_RELATION_TYPES = frozenset({
     "MEMORY_INTERFACE_LINKED_TO_BRODY_RUNTIME",
     "GOVERNANCE_RULE_LINKED_TO_BRODY_RUNTIME",
     "BLOCKED_ARTIFACT_BACKUP",
+    "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
+    "SECONDARY_RELATION_TO_PRIOR_WAVE",
 })
 
 _VALID_EXECUTABILITY = frozenset({
@@ -146,7 +148,8 @@ def get_governance_rule_entries() -> list[dict]:
 
 
 def get_blocked_backup_entries() -> list[dict]:
-    return [e for e in get_entries() if e.get("relation_type") == "BLOCKED_ARTIFACT_BACKUP"]
+    _bak_types = frozenset({"BLOCKED_ARTIFACT_BACKUP", "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR"})
+    return [e for e in get_entries() if e.get("relation_type") in _bak_types]
 
 
 def get_blocker_queue() -> list[dict]:
@@ -184,6 +187,32 @@ def has_no_executable_tests() -> bool:
     return bool(raw.get("no_executable_tests", False))
 
 
+def get_secondary_relation() -> dict:
+    raw = _load_index()
+    audit = raw.get("relation_evidence_audit", {})
+    return copy.deepcopy(audit.get("secondary_relation", {}))
+
+
+def get_union_recalculation() -> dict:
+    raw = _load_index()
+    return copy.deepcopy(raw.get("union_recalculation", {}))
+
+
+def get_relation_evidence_audit() -> dict:
+    raw = _load_index()
+    return copy.deepcopy(raw.get("relation_evidence_audit", {}))
+
+
+def get_primary_proved_count() -> int:
+    audit = get_relation_evidence_audit()
+    return audit.get("primary_summary", {}).get("files_with_proved_relation", 0)
+
+
+def get_primary_blocker_count() -> int:
+    raw = _load_index()
+    return int(raw.get("files_with_explicit_blocker", 0))
+
+
 def summary() -> dict:
     entries = get_entries()
     from collections import Counter
@@ -195,7 +224,7 @@ def summary() -> dict:
         "by_semantic_verdict": dict(Counter(e["semantic_verdict"] for e in entries)),
         "by_family": dict(Counter(e.get("brody_family", "?") for e in entries)),
         "source_modules_count": sum(1 for e in entries if e.get("role") == "MEMORY_INTERFACE_SOURCE_MODULE"),
-        "blocked_backup_count": sum(1 for e in entries if e.get("relation_type") == "BLOCKED_ARTIFACT_BACKUP"),
+        "blocked_backup_count": sum(1 for e in entries if e.get("relation_type") in {"BLOCKED_ARTIFACT_BACKUP", "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR"}),
         "not_executable_count": sum(1 for e in entries if e.get("executability_status") == "NOT_EXECUTABLE"),
         "not_a_test_count": sum(1 for e in entries if e.get("executability_status") == "NOT_A_TEST"),
     }

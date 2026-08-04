@@ -24,7 +24,9 @@
       "functional_files_processed": 167,
       "primary_index_path": "periphery/agents/operational_agent_document_index.json",
       "local_state_path": null,
-      "commits": ["612200b"]
+      "commits": [
+        "612200b"
+      ]
     },
     "WAVE002": {
       "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM",
@@ -32,7 +34,10 @@
       "functional_files_processed": 167,
       "primary_index_path": "periphery/agents/operational_source_catalog.json",
       "local_state_path": null,
-      "commits": ["366b480", "17deaf8"]
+      "commits": [
+        "366b480",
+        "17deaf8"
+      ]
     },
     "WAVE003": {
       "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION",
@@ -40,7 +45,10 @@
       "functional_files_processed": 680,
       "primary_index_path": "periphery/agents/agent_source_pack_documentation.index.json",
       "local_state_path": null,
-      "commits": ["5e5edd8", "f29bc0e"]
+      "commits": [
+        "5e5edd8",
+        "f29bc0e"
+      ]
     },
     "WAVE004": {
       "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM",
@@ -48,7 +56,10 @@
       "functional_files_processed": 8,
       "primary_index_path": "periphery/agents/agent_test_and_proof_system.index.json",
       "local_state_path": null,
-      "commits": ["366b480", "17deaf8"]
+      "commits": [
+        "366b480",
+        "17deaf8"
+      ]
     },
     "WAVE005_D": {
       "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS",
@@ -60,7 +71,7 @@
       "secondary_relation_rows": 1,
       "census_vs_registered_divergence": 0,
       "census_vs_registered_note": "Primary files accounted: 506. Registered in pending: 506. Match. Total matrix rows: 507 (includes 1 secondary relation row from another wave's primary scope).",
-      "files_with_explicit_blocker": 2,
+      "files_with_explicit_blocker": 5,
       "blocked_artifact_backups": 2,
       "memory_interface_modules": 496,
       "governance_rule_artifacts": 11,
@@ -69,7 +80,21 @@
       "executable_tests": 0,
       "primary_index_path": "periphery/agents/brody_memory_interface_and_specs.index.json",
       "local_state_path": null,
-      "commits": []
+      "commits": [],
+      "bak_blockers": 2,
+      "python_no_consumer_blockers": 3,
+      "python_no_consumer_paths": [
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py",
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py",
+        "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py"
+      ],
+      "primary_files_with_proved_relation": 501,
+      "primary_files_unresolved": 0,
+      "relation_evidence_gate": "WAVE005_D_RELATION_EVIDENCE_GATE_V2_PASSED",
+      "python_imported_by_runtime": 17,
+      "python_loaded_dynamically": 31,
+      "python_namespace_init": 109,
+      "unique_primary_paths_wave005d": 506
     },
     "WAVE005_C": {
       "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS",
@@ -105,7 +130,10 @@
       "executable_fails": 8,
       "primary_index_path": "periphery/agents/brody_integration_runtime_api_system.index.json",
       "local_state_path": null,
-      "commits": ["70a0f90", "cb64d41"]
+      "commits": [
+        "70a0f90",
+        "cb64d41"
+      ]
     },
     "WAVE005_A": {
       "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
@@ -136,20 +164,46 @@
       "local_state_path": "periphery/agents/wave005_campaign_state.json",
       "local_state_role": "WAVE005_A_LOCAL_CAMPAIGN_STATE",
       "local_unresolved_path": "periphery/agents/wave005_unresolved_queue.json",
-      "commits": ["49a3087", "6be9830", "7002eb9", "b72c32f", "216c8a1"]
+      "commits": [
+        "49a3087",
+        "6be9830",
+        "7002eb9",
+        "b72c32f",
+        "216c8a1"
+      ]
     }
   },
   "global_summary": {
-    "wave_slices_registered": ["WAVE001", "WAVE002", "WAVE003", "WAVE004", "WAVE005_A", "WAVE005_B", "WAVE005_C", "WAVE005_D"],
-    "wave_slices_fully_closed": ["WAVE001", "WAVE002", "WAVE003", "WAVE004"],
-    "wave_slices_partially_blocked": ["WAVE005_B", "WAVE005_C", "WAVE005_D"],
-    "wave_slices_global_registration_blocked": ["WAVE005_A"],
+    "wave_slices_registered": [
+      "WAVE001",
+      "WAVE002",
+      "WAVE003",
+      "WAVE004",
+      "WAVE005_A",
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "wave_slices_fully_closed": [
+      "WAVE001",
+      "WAVE002",
+      "WAVE003",
+      "WAVE004"
+    ],
+    "wave_slices_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "wave_slices_global_registration_blocked": [
+      "WAVE005_A"
+    ],
     "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B, C, D: PARTIALLY_BLOCKED with documented blockers. E-F: require future waves.",
     "gross_wave_index_entries": 1734,
     "gross_wave_index_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D_primary)=1734",
     "gross_documentary_rows_including_secondary": 1735,
     "gross_documentary_note": "1735 = 1734 primary + 1 secondary relation row in Wave005_D matrix.",
-    "unique_primary_paths_accounted": 1061,
+    "unique_primary_paths_accounted": 1567,
     "known_cross_wave_overlap_paths": 167,
     "overlap_detail": "167 paths indexed in both WAVE001 and WAVE002 (same catalog, different perspectives). Overlap is documented in relation_graph, not silent.",
     "silent_double_count": 0,
@@ -158,7 +212,10 @@
     "current_active_brody_primary": 902,
     "campaign_metadata_total": 20,
     "campaign_metadata_included_in_brody_primary": 0,
-    "campaign_metadata_note": "20 documentary campaign files (indexes, validators, tests) excluded from Brody primary census of 902."
+    "campaign_metadata_note": "20 documentary campaign files (indexes, validators, tests) excluded from Brody primary census of 902.",
+    "unique_primary_note": "Recalculated from physical paths: 1061(W1-W5C) + 506(W5D_primary) = 1567. W5D secondary excluded.",
+    "primary_overlap_count": 167,
+    "primary_overlap_detail": "W1 x W2 only (167 paths). No other cross-wave primary overlap. SILENT_DOUBLE_COUNT=0."
   },
   "campaign_metadata_registry": {
     "total": 20,

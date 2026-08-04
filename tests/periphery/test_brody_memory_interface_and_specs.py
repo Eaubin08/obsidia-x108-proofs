@@ -23,6 +23,11 @@ from periphery.agents.brody_memory_interface_and_specs import (
     has_no_executable_tests,
     summary,
     validate_all_paths_exist,
+    get_secondary_relation,
+    get_union_recalculation,
+    get_relation_evidence_audit,
+    get_primary_proved_count,
+    get_primary_blocker_count,
 )
 
 
@@ -79,7 +84,9 @@ def test_wd_009_entries_count_matches():
 
 def test_wd_010_files_with_explicit_blocker():
     idx = get_index()
-    assert idx["files_with_explicit_blocker"] == 2
+    assert idx["files_with_explicit_blocker"] == 5
+    assert idx["blocked_artifact_backups"] == 2
+    assert idx["blocked_python_no_consumer"] == 3
 
 
 # ---------------------------------------------------------------------------
@@ -255,6 +262,8 @@ def test_wd_039_all_relation_types_valid():
         "MEMORY_INTERFACE_LINKED_TO_BRODY_RUNTIME",
         "GOVERNANCE_RULE_LINKED_TO_BRODY_RUNTIME",
         "BLOCKED_ARTIFACT_BACKUP",
+        "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR",
+        "SECONDARY_RELATION_TO_PRIOR_WAVE",
     }
     for e in get_entries():
         assert e["relation_type"] in valid, f"Invalid relation for {e['path']}: {e['relation_type']}"
@@ -266,8 +275,9 @@ def test_wd_040_all_canonicality_canonical():
 
 
 def test_wd_041_all_status_indexed():
+    allowed = {"INDEXED", "SECONDARY_RELATION_DOCUMENTED", "BLOCKED"}
     for e in get_entries():
-        assert e["status"] == "INDEXED"
+        assert e["status"] in allowed, f"Unexpected status for {e['path']}: {e['status']}"
 
 
 def test_wd_042_py_entries_are_not_a_test():
@@ -290,9 +300,8 @@ def test_wd_044_sha256_format():
 
 
 def test_wd_045_get_artifact_entries():
-    arts = get_artifact_entries()
-    # includes both MEMORY_INTERFACE_ARTIFACT with NOT_EXECUTABLE (bak included)
-    blocked = [e for e in arts if e.get("relation_type") == "BLOCKED_ARTIFACT_BACKUP"]
+    # bak entries have BACKUP_LINKED_TO_CANONICAL_SUCCESSOR (updated in Gate V2)
+    blocked = get_blocked_backup_entries()
     assert len(blocked) == 2
 
 
@@ -337,7 +346,7 @@ def test_wd_051_summary_by_family():
 
 def test_wd_052_blocker_queue_count():
     bq = get_blocker_queue()
-    assert len(bq) == 2
+    assert len(bq) == 5
 
 
 def test_wd_053_blocker_ids():
@@ -345,31 +354,36 @@ def test_wd_053_blocker_ids():
     ids = {b["blocker_id"] for b in bq}
     assert "WD-BLK-001" in ids
     assert "WD-BLK-002" in ids
+    assert "WD-BLK-003" in ids
+    assert "WD-BLK-004" in ids
+    assert "WD-BLK-005" in ids
 
 
 def test_wd_054_blk001_type():
     bq = get_blocker_queue()
     blk001 = next(b for b in bq if b["blocker_id"] == "WD-BLK-001")
-    assert blk001["blocker_type"] == "BLOCKED_ARTIFACT_BACKUP"
+    assert blk001["blocker_type"] == "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR"
     assert "content_hydration_readonly" in blk001["path"]
 
 
 def test_wd_055_blk002_type():
     bq = get_blocker_queue()
     blk002 = next(b for b in bq if b["blocker_id"] == "WD-BLK-002")
-    assert blk002["blocker_type"] == "BLOCKED_ARTIFACT_BACKUP"
+    assert blk002["blocker_type"] == "BACKUP_LINKED_TO_CANONICAL_SUCCESSOR"
 
 
-def test_wd_056_blockers_preexisting():
+def test_wd_056_blockers_have_blocking_reason():
     bq = get_blocker_queue()
     for b in bq:
-        assert b["preexisting_before_wave005"] is True
+        assert "blocking_reason" in b
+        assert len(b["blocking_reason"]) > 0
 
 
-def test_wd_057_no_safe_fixes():
+def test_wd_057_blockers_have_next_action():
     bq = get_blocker_queue()
     for b in bq:
-        assert b["safe_fix_possible"] is False
+        assert "next_action" in b
+        assert b["next_action"] in ("REVIEW_IN_WAVE005_F_OR_ARCHIVE",)
 
 
 # ---------------------------------------------------------------------------
@@ -529,8 +543,9 @@ def test_wd_079_wave005d_blockers_2():
     with open(p / "periphery/agents/agents_file_wiring_global_state.json", encoding="utf-8") as f:
         data = json.load(f)
     w5d = data["wave_registry"]["WAVE005_D"]
-    assert w5d["files_with_explicit_blocker"] == 2
+    assert w5d["files_with_explicit_blocker"] == 5
     assert w5d["blocked_artifact_backups"] == 2
+    assert w5d["python_no_consumer_blockers"] == 3
 
 
 def test_wd_080_gross_wave_index_entries_updated():
@@ -542,3 +557,137 @@ def test_wd_080_gross_wave_index_entries_updated():
         data = json.load(f)
     assert data["global_summary"]["gross_wave_index_entries"] == 1734
     assert data["global_summary"]["gross_documentary_rows_including_secondary"] == 1735
+
+
+# ---------------------------------------------------------------------------
+# WD-081 to WD-100 — Gate V2 relation evidence
+# ---------------------------------------------------------------------------
+
+SECONDARY_PATH_EXPECTED = (
+    "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet"
+    "/run_brody_agent_readonly_session_test_packet_v1.ps1"
+)
+SRL_BLOCKED_PATHS = [
+    "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py",
+    "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py",
+    "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py",
+]
+
+
+def test_wd_081_secondary_relation_path():
+    sec = get_secondary_relation()
+    assert sec["path"] == SECONDARY_PATH_EXPECTED
+
+
+def test_wd_082_secondary_relation_not_primary():
+    sec = get_secondary_relation()
+    assert sec["counted_in_wave005_d_primary"] is False
+    # primary_files_accounted_contribution lives on the index entry
+    entries = get_entries()
+    sec_entry = next(
+        (e for e in entries if e["path"] == SECONDARY_PATH_EXPECTED), None
+    )
+    assert sec_entry is not None
+    assert sec_entry.get("primary_files_accounted_contribution") == 0
+
+
+def test_wd_083_secondary_relation_prior_waves():
+    sec = get_secondary_relation()
+    assert "WAVE001" in sec["prior_waves"]
+    assert "WAVE002" in sec["prior_waves"]
+
+
+def test_wd_084_secondary_relation_role():
+    sec = get_secondary_relation()
+    assert sec["relation_role"] == "SECONDARY_RELATION_ONLY"
+
+
+def test_wd_085_primary_files_accounted_506():
+    idx = get_index()
+    assert idx["primary_files_accounted"] == 506
+
+
+def test_wd_086_secondary_rows_1():
+    idx = get_index()
+    assert idx["secondary_relation_rows"] == 1
+
+
+def test_wd_087_all_matrix_rows_507():
+    idx = get_index()
+    assert idx["total_entries"] == 507
+
+
+def test_wd_088_files_with_explicit_blocker_5():
+    assert get_primary_blocker_count() == 5
+
+
+def test_wd_089_primary_files_with_proved_relation_501():
+    assert get_primary_proved_count() == 501
+
+
+def test_wd_090_primary_files_unresolved_0():
+    audit = get_relation_evidence_audit()
+    assert audit["primary_summary"]["files_unresolved"] == 0
+
+
+def test_wd_091_false_relations_0():
+    audit = get_relation_evidence_audit()
+    assert audit["primary_summary"]["false_relations"] == 0
+
+
+def test_wd_092_blocker_queue_5():
+    bq = get_blocker_queue()
+    assert len(bq) == 5
+    ids = {b["blocker_id"] for b in bq}
+    assert "WD-BLK-001" in ids
+    assert "WD-BLK-002" in ids
+    assert "WD-BLK-003" in ids
+    assert "WD-BLK-004" in ids
+    assert "WD-BLK-005" in ids
+
+
+def test_wd_093_bak_blockers_2():
+    audit = get_relation_evidence_audit()
+    assert audit["non_python_audit"]["bak_blocked"] == 2
+
+
+def test_wd_094_srl_blocked_3():
+    audit = get_relation_evidence_audit()
+    assert audit["python_audit"]["named_blocked_no_consumer"] == 3
+    assert audit["python_audit"]["named_blocked_paths"] == SRL_BLOCKED_PATHS
+
+
+def test_wd_095_union_gross_primary_1734():
+    u = get_union_recalculation()
+    assert u["gross_primary_wave_index_entries"] == 1734
+
+
+def test_wd_096_union_unique_1567():
+    u = get_union_recalculation()
+    assert u["unique_primary_paths_accounted"] == 1567
+
+
+def test_wd_097_union_overlap_167():
+    u = get_union_recalculation()
+    assert u["primary_overlap_count"] == 167
+
+
+def test_wd_098_union_silent_double_count_0():
+    u = get_union_recalculation()
+    assert u["silent_double_count"] == 0
+
+
+def test_wd_099_group_rule_init_py_documented():
+    audit = get_relation_evidence_audit()
+    gr = audit["python_audit"]["group_rule_init_py"]
+    assert "GROUP_RULE" in gr
+    assert "LOADER_OR_INDEX" in gr
+    assert gr["MEMBERS_CHECKED"] == 109
+
+
+def test_wd_100_secondary_relation_entry_in_index():
+    entries = get_entries()
+    sec = next((e for e in entries if e["path"] == SECONDARY_PATH_EXPECTED), None)
+    assert sec is not None
+    assert sec.get("counted_in_wave005_d_primary") is False
+    assert sec.get("relation_role") == "SECONDARY_RELATION_ONLY"
