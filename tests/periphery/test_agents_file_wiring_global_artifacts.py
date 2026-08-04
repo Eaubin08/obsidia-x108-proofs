@@ -467,19 +467,23 @@ def test_ga_081_wave005e_registered_in_global_state():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     assert "WAVE005_E" in d["wave_registry"]
     w5e = d["wave_registry"]["WAVE005_E"]
-    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_INDEXED"
+    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_CLOSED"
     assert w5e["functional_files_accounted"] == 124
     assert w5e["files_with_explicit_blocker"] == 0
     assert w5e["remaining_for_wave005f"] == 66
+    assert w5e["primary_files_with_proved_relation"] == 124
+    assert w5e["primary_files_unresolved"] == 0
 
 
 def test_ga_082_wave005e_in_artifact_index_manifests():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     assert "WAVE005_E" in d["wave_file_manifests"]
     w5e = d["wave_file_manifests"]["WAVE005_E"]
-    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_INDEXED"
+    assert w5e["status"] == "AGENTS_FILE_WIRING_WAVE005_E_CLOSED"
     assert w5e["files_indexed"] == 124
     assert w5e["files_with_explicit_blocker"] == 0
+    assert w5e["primary_files_with_proved_relation"] == 124
+    assert w5e.get("relation_and_provenance_gate") == "WAVE005_E_RELATION_AND_PROVENANCE_GATE_V1_PASSED"
 
 
 def test_ga_083_wave005e_in_wave_slices_registered():

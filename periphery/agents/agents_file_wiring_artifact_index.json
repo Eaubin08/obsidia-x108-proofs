@@ -100,8 +100,11 @@
       "py_source_modules": 1,
       "not_executable_artifacts": 123,
       "executable_tests": 0,
-      "status": "AGENTS_FILE_WIRING_WAVE005_E_INDEXED",
-      "files_with_explicit_blocker": 0
+      "status": "AGENTS_FILE_WIRING_WAVE005_E_CLOSED",
+      "files_with_explicit_blocker": 0,
+      "primary_files_with_proved_relation": 124,
+      "primary_files_unresolved": 0,
+      "relation_and_provenance_gate": "WAVE005_E_RELATION_AND_PROVENANCE_GATE_V1_PASSED"
     },
     "WAVE005_D": {
       "path": "periphery/agents/brody_memory_interface_and_specs.index.json",
@@ -166,6 +169,9 @@
       "WAVE005_B",
       "WAVE005_C",
       "WAVE005_D",
+      "WAVE005_E"
+    ],
+    "wave_slices_closed": [
       "WAVE005_E"
     ],
     "wave_slices_fully_closed": [

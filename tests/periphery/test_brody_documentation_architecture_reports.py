@@ -27,6 +27,14 @@ from periphery.agents.brody_documentation_architecture_reports import (
     get_covered_slice,
     has_no_executable_tests,
     summary,
+    get_relation_evidence_audit,
+    get_primary_proved_count,
+    get_primary_blocker_count,
+    get_primary_unresolved_count,
+    get_union_recalculation,
+    get_group_rules,
+    get_final_status,
+    get_legacy_duplicate_report,
 )
 
 # ---------------------------------------------------------------------------
@@ -120,11 +128,24 @@ def test_we_030_all_roles_valid():
 
 
 _VALID_RELATION_TYPES = {
+    # Initial types
     "DOCUMENT_LINKED_TO_BRODY_RUNTIME",
     "DOCUMENT_REFERENCED_BY_COMPONENT",
     "ARCHITECTURE_SPEC_LINKED_TO_FROZEN_COMPONENT",
     "RUNTIME_REPORT_LINKED_TO_AUDIT_TRAIL",
     "DOCUMENT_LINKED_TO_BRODY_COMPONENT",
+    # Gate V1 enriched types
+    "GENERATED_REPORT_LINKED_TO_RUNTIME_RUN",
+    "GENERATED_REPORT_LINKED_TO_FREEZE_MANIFEST",
+    "HISTORICAL_REPORT_LINKED_TO_ARCHIVE_INDEX",
+    "DOCUMENT_LINKED_TO_COMPONENT",
+    "DOCUMENT_LINKED_TO_CANONICAL_INDEX",
+    "DOCUMENT_LINKED_TO_PROTOCOL",
+    "HISTORICAL_DOCUMENT_LINKED_TO_ARCHIVE",
+    "ARCH_SPEC_REFERENCED_BY_COMPONENT",
+    "ARCH_SPEC_REFERENCED_BY_RUNTIME_CONTRACT",
+    "ARCH_SPEC_LINKED_TO_CANONICAL_INDEX",
+    "DOC_SOURCE_LINKED_TO_EXECUTABLE_TEST",
 }
 
 def test_we_031_all_relation_types_valid():
@@ -265,8 +286,9 @@ def test_we_053_non_py_not_executable():
 # ---------------------------------------------------------------------------
 # WE-060  Scope reconciliation
 # ---------------------------------------------------------------------------
-def test_we_060_scope_complete_false():
-    assert is_scope_complete() is False
+def test_we_060_scope_complete_true_after_gate():
+    # After Gate V1: all 124 proved, no blockers → scope_complete=True (CLOSED)
+    assert is_scope_complete() is True
 
 
 def test_we_061_covered_slice():
@@ -392,3 +414,304 @@ def test_we_102_summary_not_executable():
     s = summary()
     assert s["not_executable_count"] == 123
     assert s["not_a_test_count"] == 1
+
+
+# ---------------------------------------------------------------------------
+# WE-110  Relation & Provenance Gate V1
+# ---------------------------------------------------------------------------
+
+def test_we_110_all_124_proved():
+    """Tous les 124 fichiers doivent avoir une preuve de relation valide."""
+    assert get_primary_proved_count() == 124
+
+
+def test_we_111_zero_blockers():
+    assert get_primary_blocker_count() == 0
+
+
+def test_we_112_zero_unresolved():
+    assert get_primary_unresolved_count() == 0
+
+
+def test_we_113_final_status_closed():
+    assert get_final_status() == "AGENTS_FILE_WIRING_WAVE005_E_CLOSED"
+
+
+def test_we_114_scope_complete_true():
+    assert is_scope_complete() is True
+
+
+def test_we_115_entries_have_current_status():
+    entries = get_entries()
+    valid_statuses = {
+        "PROVED_GENERATOR_RELATION",
+        "PROVED_COMPONENT_RELATION",
+        "PROVED_CANONICAL_INDEX_RELATION",
+        "PROVED_ARCHIVE_OR_MANIFEST_RELATION",
+        "PROVED_SUCCESSOR_RELATION",
+        "EXPLICIT_BLOCKER",
+        "RELATION_UNRESOLVED_AFTER_REVIEW",
+    }
+    for e in entries:
+        s = e.get("current_status", "")
+        assert s in valid_statuses, f"current_status invalide '{s}' pour {e['path']}"
+
+
+def test_we_116_entries_have_evidence():
+    """Chaque entrée doit avoir un champ evidence non vide."""
+    entries = get_entries()
+    for e in entries:
+        ev = e.get("evidence", "")
+        assert ev and ev not in {"FILE_EXISTS", "SHA256_VERIFIED", "INDEXED", "DOCUMENT_ONLY", "RUNTIME_REPORT", "NOT_EXECUTABLE"}, (
+            f"Preuve insuffisante pour {e['path']}: {ev!r}"
+        )
+
+
+def test_we_117_entries_have_relation_type():
+    entries = get_entries()
+    for e in entries:
+        assert e.get("relation_type"), f"relation_type vide pour {e['path']}"
+
+
+def test_we_118_no_runtime_report_role_used_as_sole_proof():
+    """RUNTIME_REPORT ne doit pas être utilisé comme seule preuve."""
+    entries = get_entries()
+    for e in entries:
+        ev = e.get("evidence", "")
+        assert ev.strip() != "RUNTIME_REPORT", f"RUNTIME_REPORT utilisé comme preuve pour {e['path']}"
+
+
+# ---------------------------------------------------------------------------
+# WE-120  Runtime report audit
+# ---------------------------------------------------------------------------
+
+def test_we_120_runtime_report_total_82():
+    audit = get_relation_evidence_audit()
+    assert audit["runtime_report_audit"]["total"] == 82
+
+
+def test_we_121_runtime_report_proved_generator_or_run():
+    audit = get_relation_evidence_audit()
+    rr = audit["runtime_report_audit"]
+    proved = rr["REPORTS_WITH_PROVED_GENERATOR_OR_RUN"]
+    historical = rr["REPORTS_HISTORICAL_WITH_ARCHIVE_RELATION"]
+    assert rr["REPORTS_WITH_EXPLICIT_BLOCKER"] == 0
+    assert rr["REPORTS_UNRESOLVED"] == 0
+    assert proved + historical == 82, f"{proved}+{historical}!=82"
+
+
+def test_we_122_freeze_reports_have_freeze_relation():
+    entries = get_entries()
+    freeze = [e for e in entries
+              if e["role"] == "BRODY_RUNTIME_REPORT"
+              and "FREEZE" in e["path"].split("/")[-1]
+              and "archive" not in e["path"]]
+    for e in freeze:
+        assert e["relation_type"] == "GENERATED_REPORT_LINKED_TO_FREEZE_MANIFEST", (
+            f"Freeze report avec mauvaise relation: {e['path']}"
+        )
+
+
+def test_we_123_archive_reports_have_historical_relation():
+    entries = get_entries()
+    archive = [e for e in entries
+               if "archive/phase10_12_legacy_untracked" in e["path"]
+               and e["role"] == "BRODY_RUNTIME_REPORT"
+               and "PHASE12G_LEGACY_UNTRACKED_ARCHIVE_MANIFEST" not in e["path"]]
+    for e in archive:
+        assert e["relation_type"] == "HISTORICAL_REPORT_LINKED_TO_ARCHIVE_INDEX", (
+            f"Archive report avec mauvaise relation: {e['path']}"
+        )
+
+
+def test_we_124_group_rules_present():
+    grs = get_group_rules()
+    assert "GROUP_RULE_A" in grs
+    assert "GROUP_RULE_B" in grs
+    assert "GROUP_RULE_C" in grs
+    for key in ("GROUP_RULE_A", "GROUP_RULE_B", "GROUP_RULE_C"):
+        gr = grs[key]
+        assert "group_rule" in gr
+        assert "path_pattern" in gr
+        assert "generator" in gr
+        assert "members_checked" in gr
+        assert "exceptions" in gr
+        assert "evidence" in gr
+
+
+# ---------------------------------------------------------------------------
+# WE-130  Doc artifact audit
+# ---------------------------------------------------------------------------
+
+def test_we_130_doc_artifact_total_35():
+    audit = get_relation_evidence_audit()
+    assert audit["doc_artifact_audit"]["total"] == 35
+
+
+def test_we_131_doc_artifact_all_covered():
+    audit = get_relation_evidence_audit()
+    da = audit["doc_artifact_audit"]
+    total = da["CURRENT_DOCUMENTS_WITH_COMPONENT"] + da["HISTORICAL_OR_LEGACY_DOCUMENTS"]
+    assert total == 35, f"Total doc artifact couverture: {total} != 35"
+    assert da["DOCUMENTS_WITH_EXPLICIT_BLOCKER"] == 0
+    assert da["DOCUMENTS_UNRESOLVED"] == 0
+
+
+# ---------------------------------------------------------------------------
+# WE-140  Arch spec audit
+# ---------------------------------------------------------------------------
+
+def test_we_140_arch_spec_total_6():
+    audit = get_relation_evidence_audit()
+    assert audit["arch_spec_audit"]["total"] == 6
+
+
+def test_we_141_arch_spec_all_proved():
+    audit = get_relation_evidence_audit()
+    aa = audit["arch_spec_audit"]
+    assert aa["ARCH_SPECS_WITH_PROVED_RELATION"] == 6
+    assert aa["ARCH_SPECS_WITH_EXPLICIT_BLOCKER"] == 0
+    assert aa["ARCH_SPECS_UNRESOLVED"] == 0
+
+
+def test_we_142_arch_specs_have_canonical_component():
+    entries = get_entries()
+    arch = [e for e in entries if e["role"] == "BRODY_ARCHITECTURE_SPEC"]
+    for e in arch:
+        assert e.get("canonical_component"), f"canonical_component vide pour {e['path']}"
+        assert e.get("implementation_target"), f"implementation_target vide pour {e['path']}"
+
+
+# ---------------------------------------------------------------------------
+# WE-150  Python source audit
+# ---------------------------------------------------------------------------
+
+def test_we_150_py_source_total_1():
+    audit = get_relation_evidence_audit()
+    assert audit["py_source_audit"]["total"] == 1
+
+
+def test_we_151_py_source_path():
+    audit = get_relation_evidence_audit()
+    assert audit["py_source_audit"]["path"] == "demos/local_flows/memory_brody_graphiti_flow.py"
+
+
+def test_we_152_py_source_proved():
+    audit = get_relation_evidence_audit()
+    pa = audit["py_source_audit"]
+    assert pa["PY_SOURCE_WITH_PROVED_RELATION"] == 1
+    assert pa["PY_SOURCE_WITH_EXPLICIT_BLOCKER"] == 0
+    assert pa["PY_SOURCE_UNRESOLVED"] == 0
+    assert pa["relation_type"] == "DOC_SOURCE_LINKED_TO_EXECUTABLE_TEST"
+    assert len(pa["test_consumers"]) == 3
+
+
+# ---------------------------------------------------------------------------
+# WE-160  JSON et TXT audit
+# ---------------------------------------------------------------------------
+
+def test_we_160_json_total_15():
+    audit = get_relation_evidence_audit()
+    ja = audit["json_audit"]
+    total = ja["JSON_LOADED_OR_CONSUMED"] + ja["JSON_GENERATED_WITH_PROVENANCE"] + ja["JSON_LINKED_TO_REPORT"]
+    assert total == 15, f"JSON total {total} != 15"
+    assert ja["JSON_WITH_EXPLICIT_BLOCKER"] == 0
+    assert ja["JSON_UNRESOLVED"] == 0
+
+
+def test_we_161_txt_total_11():
+    audit = get_relation_evidence_audit()
+    ta = audit["txt_audit"]
+    total = ta["TXT_GENERATED_WITH_PROVENANCE"] + ta["TXT_LINKED_TO_COMPONENT"] + ta["TXT_HISTORICAL_ARCHIVED"]
+    assert total == 11, f"TXT total {total} != 11"
+    assert ta["TXT_WITH_EXPLICIT_BLOCKER"] == 0
+    assert ta["TXT_UNRESOLVED"] == 0
+
+
+# ---------------------------------------------------------------------------
+# WE-170  Legacy / Duplicate / Superseded
+# ---------------------------------------------------------------------------
+
+def test_we_170_no_identical_hash_duplicates():
+    report = get_legacy_duplicate_report()
+    assert report["IDENTICAL_HASH_DUPLICATES"] == []
+
+
+def test_we_171_no_silent_double_count():
+    u = get_union_recalculation()
+    assert u["silent_double_count"] == 0
+
+
+def test_we_172_no_new_overlaps_with_prior_waves():
+    u = get_union_recalculation()
+    assert u["new_overlaps_w5e_with_prior"] == 0
+
+
+# ---------------------------------------------------------------------------
+# WE-180  Union recalculation
+# ---------------------------------------------------------------------------
+
+def test_we_180_gross_1858():
+    u = get_union_recalculation()
+    assert u["gross_primary_wave_index_entries"] == 1858
+
+
+def test_we_181_unique_1691():
+    u = get_union_recalculation()
+    assert u["unique_primary_paths_accounted"] == 1691
+
+
+def test_we_182_overlap_167():
+    u = get_union_recalculation()
+    assert u["primary_overlap_count"] == 167
+
+
+def test_we_183_union_formula():
+    u = get_union_recalculation()
+    assert u["gross_primary_wave_index_entries"] - u["primary_overlap_count"] == u["unique_primary_paths_accounted"]
+
+
+# ---------------------------------------------------------------------------
+# WE-190  Aucune relation runtime inventée
+# ---------------------------------------------------------------------------
+
+_FORBIDDEN_SOLE_PROOFS = {
+    "FILE_EXISTS", "SHA256_VERIFIED", "INDEXED",
+    "DOCUMENT_ONLY", "RUNTIME_REPORT", "NOT_EXECUTABLE",
+}
+
+def test_we_190_no_forbidden_sole_proof():
+    entries = get_entries()
+    for e in entries:
+        ev = e.get("evidence", "")
+        assert ev.strip() not in _FORBIDDEN_SOLE_PROOFS, (
+            f"Preuve interdite pour {e['path']}: {ev!r}"
+        )
+
+
+def test_we_191_no_runtime_consumed_invented():
+    """Aucun rapport ne prétend être consommé par le runtime sans preuve."""
+    entries = get_entries()
+    for e in entries:
+        if e["role"] == "BRODY_RUNTIME_REPORT":
+            # runtime report should NOT claim consumer_or_destination is a runtime process
+            # (they are documentation, not runtime-consumed artifacts)
+            consumer = e.get("consumer_or_destination", "")
+            assert consumer not in {"BRODY_RUNTIME", "RUNTIME_CONSUMER", "BRODY_AGENT"}, (
+                f"Relation runtime inventée pour {e['path']}: consumer={consumer}"
+            )
+
+
+def test_we_192_no_brody_authority():
+    gc = get_governance_invariants()
+    assert gc["brody_authority"] is False
+
+
+def test_we_193_no_memory_write():
+    gc = get_governance_invariants()
+    assert gc["no_memory_written"] is True
+
+
+def test_we_194_no_act_emitted():
+    gc = get_governance_invariants()
+    assert gc["no_act_emitted"] is True

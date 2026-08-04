@@ -46,11 +46,24 @@ _VALID_ROLES = frozenset({
 })
 
 _VALID_RELATION_TYPES = frozenset({
+    # Wave005_E initial types
     "DOCUMENT_LINKED_TO_BRODY_RUNTIME",
     "DOCUMENT_REFERENCED_BY_COMPONENT",
     "ARCHITECTURE_SPEC_LINKED_TO_FROZEN_COMPONENT",
     "RUNTIME_REPORT_LINKED_TO_AUDIT_TRAIL",
     "DOCUMENT_LINKED_TO_BRODY_COMPONENT",
+    # Gate V1 enriched relation types
+    "GENERATED_REPORT_LINKED_TO_RUNTIME_RUN",
+    "GENERATED_REPORT_LINKED_TO_FREEZE_MANIFEST",
+    "HISTORICAL_REPORT_LINKED_TO_ARCHIVE_INDEX",
+    "DOCUMENT_LINKED_TO_COMPONENT",
+    "DOCUMENT_LINKED_TO_CANONICAL_INDEX",
+    "DOCUMENT_LINKED_TO_PROTOCOL",
+    "HISTORICAL_DOCUMENT_LINKED_TO_ARCHIVE",
+    "ARCH_SPEC_REFERENCED_BY_COMPONENT",
+    "ARCH_SPEC_REFERENCED_BY_RUNTIME_CONTRACT",
+    "ARCH_SPEC_LINKED_TO_CANONICAL_INDEX",
+    "DOC_SOURCE_LINKED_TO_EXECUTABLE_TEST",
 })
 
 _VALID_EXECUTABILITY = frozenset({
@@ -194,6 +207,45 @@ def get_covered_slice() -> str:
 def has_no_executable_tests() -> bool:
     raw = _load_index()
     return bool(raw.get("no_executable_tests", False))
+
+
+def get_relation_evidence_audit() -> dict:
+    raw = _load_index()
+    return copy.deepcopy(raw.get("relation_evidence_audit", {}))
+
+
+def get_primary_proved_count() -> int:
+    return get_relation_evidence_audit().get("primary_summary", {}).get("files_with_proved_relation", 0)
+
+
+def get_primary_blocker_count() -> int:
+    raw = _load_index()
+    return int(raw.get("primary_files_with_explicit_blocker", 0))
+
+
+def get_primary_unresolved_count() -> int:
+    raw = _load_index()
+    return int(raw.get("primary_files_unresolved", 0))
+
+
+def get_union_recalculation() -> dict:
+    audit = get_relation_evidence_audit()
+    return copy.deepcopy(audit.get("union_recalculation", {}))
+
+
+def get_group_rules() -> dict:
+    audit = get_relation_evidence_audit()
+    return copy.deepcopy(audit.get("group_rules", {}))
+
+
+def get_final_status() -> str:
+    raw = _load_index()
+    return raw.get("final_status", "")
+
+
+def get_legacy_duplicate_report() -> dict:
+    audit = get_relation_evidence_audit()
+    return copy.deepcopy(audit.get("legacy_duplicate_superseded", {}))
 
 
 def summary() -> dict:

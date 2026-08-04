@@ -63,8 +63,8 @@
     },
     "WAVE005_E": {
       "subsystem": "BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
-      "status": "AGENTS_FILE_WIRING_WAVE005_E_INDEXED",
-      "scope_complete": false,
+      "status": "AGENTS_FILE_WIRING_WAVE005_E_CLOSED",
+      "scope_complete": true,
       "covered_slice": "WAVE005_E_BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
       "functional_files_accounted": 124,
       "files_with_explicit_blocker": 0,
@@ -78,7 +78,9 @@
       "primary_index_path": "periphery/agents/brody_documentation_architecture_reports.index.json",
       "local_state_path": null,
       "commits": [],
-      "blocker_note": "Wave005_E has zero blockers. 124 files fully indexed. 66 files remain for Wave005_F.",
+      "blocker_note": "Wave005_E CLOSED. All 124 files proved. 0 blockers. 0 unresolved. Relation_and_provenance gate passed.",
+      "primary_files_with_proved_relation": 124,
+      "primary_files_unresolved": 0,
       "remaining_for_wave005f": 66
     },
     "WAVE005_D": {
@@ -203,6 +205,9 @@
       "WAVE005_B",
       "WAVE005_C",
       "WAVE005_D",
+      "WAVE005_E"
+    ],
+    "wave_slices_closed": [
       "WAVE005_E"
     ],
     "wave_slices_fully_closed": [
