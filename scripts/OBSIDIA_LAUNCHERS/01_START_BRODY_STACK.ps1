@@ -55,7 +55,7 @@ docker ps | Select-String "neo4j|deploy-neo4j" | Out-Host
 # ============================================================
 # 2. API BRODY / OBSIDIA — 8000
 # ============================================================
-Write-Host "`n=== 2. START API BRODY / OBSIDIA — 8000 ===" -ForegroundColor Cyan
+Write-Host "`n=== 2. START API BRODY / OBSIDIA - 8000 ===" -ForegroundColor Cyan
 Start-Process powershell -ArgumentList @(
     "-NoExit",
     "-Command",
@@ -67,17 +67,17 @@ Write-Host "`n=== CHECK API 8000 ===" -ForegroundColor Cyan
 try {
     Invoke-RestMethod "$API/" | ConvertTo-Json -Depth 8 | Out-Host
 } catch {
-    Write-Host "API 8000 NOT READY — $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "API 8000 NOT READY - $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # ============================================================
 # 3. GRAPHITI FROZEN BRIDGE — 8011
 # ============================================================
-Write-Host "`n=== 3. START GRAPHITI FROZEN BRIDGE — 8011 ===" -ForegroundColor Cyan
+Write-Host "`n=== 3. START GRAPHITI FROZEN BRIDGE - 8011 ===" -ForegroundColor Cyan
 
 if (-not (Test-Path $SHELL)) {
     Write-Host "[WARN] obsidiashell-main introuvable : $SHELL" -ForegroundColor Yellow
-    Write-Host "  Graphiti 8011 ignoré — vérifier que obsidiashell-main est dans $ROOT" -ForegroundColor Yellow
+    Write-Host "  Graphiti 8011 ignore - verifier que obsidiashell-main est dans $ROOT" -ForegroundColor Yellow
 } else {
     Start-Process powershell -ArgumentList @(
         "-NoExit",
@@ -90,14 +90,14 @@ if (-not (Test-Path $SHELL)) {
     try {
         Invoke-RestMethod "$GRAPH/graph/v20/frozen/status" | ConvertTo-Json -Depth 8 | Out-Host
     } catch {
-        Write-Host "GRAPHITI 8011 NOT READY — $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "GRAPHITI 8011 NOT READY - $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
 # ============================================================
 # 4. UI WORKBENCH — 5173
 # ============================================================
-Write-Host "`n=== 4. START UI WORKBENCH — 5173 ===" -ForegroundColor Cyan
+Write-Host "`n=== 4. START UI WORKBENCH - 5173 ===" -ForegroundColor Cyan
 $UI_DIR = Join-Path $X108 "apps\obsidia-workbench"
 Start-Process powershell -ArgumentList @(
     "-NoExit",
@@ -111,7 +111,7 @@ try {
     $STATUS = (Invoke-WebRequest "$UI" -UseBasicParsing -TimeoutSec 5).StatusCode
     Write-Host "UI status=$STATUS" -ForegroundColor Green
 } catch {
-    Write-Host "UI 5173 NOT READY — $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "UI 5173 NOT READY - $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # ============================================================

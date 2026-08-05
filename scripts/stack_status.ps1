@@ -1,35 +1,40 @@
 # =============================================================================
-# scripts/stack_status.ps1 — STATUS STRUCTURÉ STACK OBSIDIA
-# Affiche pour chaque composant :
-#   name / status / pid / port / health / launch_command / log_location /
-#   coverage / authority / shutdown_command
+# scripts/stack_status.ps1 -- STATUS STRUCTURE STACK OBSIDIA
+# Compatible: Windows PowerShell 5.1 + PowerShell 7+
+# ASCII-only strings (no BOM issue).
+#
+# Usage:
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\stack_status.ps1
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\stack_status.ps1 -Quiet
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\stack_status.ps1 -Json
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\stack_status.ps1 -NoHttp
 #
 # NE LANCE RIEN. NE MUTE RIEN. NE COMMIT RIEN.
-# Lecture seule — health checks via netstat + HTTP GET readonly.
+# Lecture seule -- health checks via netstat + HTTP GET readonly.
 # decision_authority = KX108_ONLY
 # =============================================================================
 
 param(
-    [switch]$Json,      # Sortie JSON brute
-    [switch]$Quiet,     # Une ligne par composant uniquement
-    [switch]$NoHttp     # Désactive les HTTP checks (netstat seulement)
+    [switch]$Json,      # JSON output (machine-readable)
+    [switch]$Quiet,     # One line per component
+    [switch]$NoHttp     # Skip HTTP checks (netstat only)
 )
 
 $ErrorActionPreference = "SilentlyContinue"
 
-# ── Chemins canoniques (auto-détection depuis $PSScriptRoot) ────────────────
+# -- Canonical paths (auto-detect from $PSScriptRoot) ----------------------
 $X108   = Split-Path -Parent $PSScriptRoot
 $ROOT   = Split-Path -Parent $X108
 $SHELL  = Join-Path $ROOT "obsidiashell-main"
 $RT     = Join-Path $X108 "runtime_terrain_bank_trading_gps"
 
-# ── URLs canoniques ──────────────────────────────────────────────────────────
+# -- Canonical URLs --------------------------------------------------------
 $API    = "http://127.0.0.1:8000"
 $GRAPH  = "http://127.0.0.1:8011"
 $UI     = "http://127.0.0.1:5173"
 
 # =============================================================================
-# FONCTIONS UTILITAIRES
+# UTILITY FUNCTIONS
 # =============================================================================
 
 function Get-PidOnPort {
@@ -39,13 +44,13 @@ function Get-PidOnPort {
         Where-Object { $_.Line -match "LISTENING" } |
         Select-Object -First 1
     if (-not $line) { return $null }
-    $parts = ($line -split "\s+") | Where-Object { $_ -ne "" }
+    $parts = ($line.Line -split "\s+") | Where-Object { $_ -ne "" }
     return $parts[-1]
 }
 
 function Test-PortListening {
     param([int]$Port)
-    return $null -ne (Get-PidOnPort $Port)
+    return ($null -ne (Get-PidOnPort $Port))
 }
 
 function Test-HttpHealth {
@@ -54,7 +59,7 @@ function Test-HttpHealth {
     try {
         $resp = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec $TimeoutSec -ErrorAction Stop
         if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400) { return "OK" }
-        return "HTTP_$($resp.StatusCode)"
+        return ("HTTP_" + $resp.StatusCode)
     } catch {
         return "UNREACHABLE"
     }
@@ -62,12 +67,14 @@ function Test-HttpHealth {
 
 function Find-ProcessByPattern {
     param([string]$Pattern)
-    $p = Get-CimInstance Win32_Process |
+    $p = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
         Where-Object { $_.CommandLine -match $Pattern } |
         Select-Object -First 1
     if ($p) { return $p.ProcessId } else { return $null }
 }
 
+# Build-Component: returns a PSCustomObject for one stack component.
+# All string parameters must be ASCII-safe before calling.
 function Build-Component {
     param(
         [string]$Name,
@@ -82,31 +89,43 @@ function Build-Component {
         [string]$ShutdownCommand
     )
 
-    # PID
-    $pid_ = $null
-    if ($Port -gt 0) { $pid_ = Get-PidOnPort $Port }
-    if (-not $pid_ -and $ProcessPattern) { $pid_ = Find-ProcessByPattern $ProcessPattern }
+    # Resolve PID
+    $foundPid = $null
+    if ($Port -gt 0) { $foundPid = Get-PidOnPort $Port }
+    if ((-not $foundPid) -and $ProcessPattern) {
+        $foundPid = Find-ProcessByPattern $ProcessPattern
+    }
 
-    # Status
-    $portOk = ($Port -gt 0) -and (Test-PortListening $Port)
-    $status = if ($portOk -or ($pid_)) { "UP" } elseif ($Port -gt 0) { "DOWN" } else { "UNKNOWN" }
+    # Determine status
+    $portUp = ($Port -gt 0) -and (Test-PortListening $Port)
+    if ($portUp -or $foundPid) {
+        $status = "UP"
+    } elseif ($Port -gt 0) {
+        $status = "DOWN"
+    } else {
+        $status = "UNKNOWN"
+    }
 
-    # Health
+    # Determine health
     $health = "N/A"
-    if ($HealthUrl -and $status -eq "UP") {
+    if ($HealthUrl -and ($status -eq "UP")) {
         $health = Test-HttpHealth $HealthUrl
-    } elseif ($status -eq "UP" -and -not $HealthUrl) {
+    } elseif (($status -eq "UP") -and (-not $HealthUrl)) {
         $health = "PORT_OK"
     } elseif ($status -eq "DOWN") {
         $health = "DOWN"
     }
 
+    # PID display
+    if ($foundPid) { $pidDisplay = $foundPid } else { $pidDisplay = "-" }
+    if ($Port -gt 0) { $portDisplay = $Port } else { $portDisplay = "-" }
+
     return [PSCustomObject]@{
         name             = $Name
         role             = $Role
         status           = $status
-        pid              = if ($pid_) { $pid_ } else { "-" }
-        port             = if ($Port -gt 0) { $Port } else { "-" }
+        pid              = $pidDisplay
+        port             = $portDisplay
         health           = $health
         launch_command   = $LaunchCommand
         log_location     = $LogLocation
@@ -117,125 +136,245 @@ function Build-Component {
 }
 
 # =============================================================================
-# DÉFINITION DES COMPOSANTS
+# COMPONENT DEFINITIONS
 # =============================================================================
 
 $components = @()
 
-# 1. Kernel Ragnarok — 3001
+# ---- 1. Kernel Ragnarok -- port 3001 ----------------------------------------
 $kernelFile = Join-Path $RT "server.kernel.sealed.cjs"
 $kernelPresent = Test-Path $kernelFile
+if ($kernelPresent) { $kernelCoverage = "PRESENT_AND_RUNNABLE" } else { $kernelCoverage = "ABSENT" }
+$kernelLaunch = "node " + (Join-Path $RT "server.kernel.sealed.cjs")
+
 $components += Build-Component `
     -Name            "KERNEL_RAGNAROK" `
-    -Role            "Noyau X-108 — autorité finale (KX108_ONLY). PROTECTED." `
+    -Role            "Kernel X-108 - decision authority KX108_ONLY. PROTECTED." `
     -Port            3001 `
     -ProcessPattern  "server\.kernel\.sealed\.cjs" `
     -HealthUrl       "" `
-    -LaunchCommand   "node $RT\server.kernel.sealed.cjs" `
-    -LogLocation     "fenetre PowerShell RAGNAROK KERNEL 3001" `
-    -Coverage        $(if ($kernelPresent) { "PRESENT_AND_RUNNABLE" } else { "ABSENT" }) `
-    -Authority       "KX108_ONLY — décision finale" `
-    -ShutdownCommand "obsidia stop  OU  Stop-Process -Id <PID> -Force"
+    -LaunchCommand   $kernelLaunch `
+    -LogLocation     "PowerShell window RAGNAROK KERNEL 3001" `
+    -Coverage        $kernelCoverage `
+    -Authority       "KX108_ONLY - final authority" `
+    -ShutdownCommand "obsidia stop  OR  Stop-Process -Id [PID] -Force"
 
-# 2. API Obsidia/Brody — 8000
+# ---- 2. API Obsidia/Brody -- port 8000 --------------------------------------
+$apiBrodyLaunch = "uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port 8000"
 $components += Build-Component `
     -Name            "API_OBSIDIA_BRODY" `
-    -Role            "API FastAPI + Brody chat. Cerveau OS_TRAD/IR/OS_REVERSE." `
+    -Role            "FastAPI + Brody chat. OS_TRAD/IR/OS_REVERSE brain." `
     -Port            8000 `
     -ProcessPattern  "apps\.obsidia_api\.main:app" `
     -HealthUrl       "$API/api/health" `
-    -LaunchCommand   "uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port 8000" `
-    -LogLocation     "fenetre PowerShell OBSIDIA API 8000" `
+    -LaunchCommand   $apiBrodyLaunch `
+    -LogLocation     "PowerShell window OBSIDIA API 8000" `
     -Coverage        "PRESENT_AND_RUNNABLE" `
-    -Authority       "READONLY — POST Brody autorisé launcher humain uniquement" `
-    -ShutdownCommand "obsidia stop  OU  Stop-Process -Id <PID> -Force"
+    -Authority       "READONLY - POST Brody allowed from human launcher only" `
+    -ShutdownCommand "obsidia stop  OR  Stop-Process -Id [PID] -Force"
 
-# 3. Graphiti/ObsidiaShell — 8011
+# ---- 3. Graphiti/ObsidiaShell -- port 8011 ----------------------------------
 $shellPresent = Test-Path $SHELL
+if ($shellPresent) { $shellCoverage = "PRESENT_AND_RUNNABLE" } else { $shellCoverage = "ABSENT - obsidiashell-main missing" }
+$graphitiLaunch = "uvicorn obsidia_core.agent_bridge:app --host 127.0.0.1 --port 8011  (from " + $SHELL + ")"
 $components += Build-Component `
     -Name            "GRAPHITI_OBSIDIASHELL" `
-    -Role            "Mémoire graphe sémantique — bridge frozen V20." `
+    -Role            "Semantic graph memory - frozen V20 bridge." `
     -Port            8011 `
     -ProcessPattern  "obsidia_core\.agent_bridge:app" `
     -HealthUrl       "$GRAPH/graph/v20/frozen/status" `
-    -LaunchCommand   "uvicorn obsidia_core.agent_bridge:app --host 127.0.0.1 --port 8011  (depuis $SHELL)" `
-    -LogLocation     "fenetre PowerShell OBSIDIASHELL GRAPHITI 8011" `
-    -Coverage        $(if ($shellPresent) { "PRESENT_AND_RUNNABLE" } else { "ABSENT — obsidiashell-main manquant" }) `
-    -Authority       "READONLY — aucune écriture graphe sans approbation" `
-    -ShutdownCommand "obsidia stop  OU  Stop-Process -Id <PID> -Force"
+    -LaunchCommand   $graphitiLaunch `
+    -LogLocation     "PowerShell window OBSIDIASHELL GRAPHITI 8011" `
+    -Coverage        $shellCoverage `
+    -Authority       "READONLY - no graph write without approval" `
+    -ShutdownCommand "obsidia stop  OR  Stop-Process -Id [PID] -Force"
 
-# 4. UI Workbench — 5173
+# ---- 4. UI Workbench -- port 5173 -------------------------------------------
 $uiDir = Join-Path $X108 "apps\obsidia-workbench"
 $uiPresent = Test-Path $uiDir
+if ($uiPresent) { $uiCoverage = "PRESENT" } else { $uiCoverage = "ABSENT" }
+$uiLaunch = "npm run dev -- --host 127.0.0.1 --port 5173  (from " + $uiDir + ")"
 $components += Build-Component `
     -Name            "UI_WORKBENCH" `
-    -Role            "Interface Vite/React Obsidia X-108." `
+    -Role            "Vite/React interface Obsidia X-108." `
     -Port            5173 `
     -ProcessPattern  "npm run dev" `
     -HealthUrl       $UI `
-    -LaunchCommand   "npm run dev -- --host 127.0.0.1 --port 5173  (depuis $uiDir)" `
-    -LogLocation     "fenetre PowerShell OBSIDIA WORKBENCH UI 5173" `
-    -Coverage        $(if ($uiPresent) { "PRESENT" } else { "ABSENT" }) `
-    -Authority       "READONLY — UI display seulement" `
-    -ShutdownCommand "obsidia stop  OU  Stop-Process -Id <PID> -Force"
+    -LaunchCommand   $uiLaunch `
+    -LogLocation     "PowerShell window OBSIDIA WORKBENCH UI 5173" `
+    -Coverage        $uiCoverage `
+    -Authority       "READONLY - display only" `
+    -ShutdownCommand "obsidia stop  OR  Stop-Process -Id [PID] -Force"
 
-# 5. Neo4j Docker — 7475/7688
+# ---- 5. Neo4j -- ports 7475 (Browser) + 7688 (Instance) --------------------
 $neo4jRunning = $null
 try {
-    $neo4jRunning = docker inspect --format "{{.State.Running}}" deploy-neo4j-1 2>$null
+    $neo4jRunning = (docker inspect --format "{{.State.Running}}" deploy-neo4j-1 2>$null)
 } catch {}
-$neo4jStatus = if ($neo4jRunning -eq "true") { "UP" } elseif ($neo4jRunning -eq "false") { "DOWN" } else { "UNKNOWN" }
+if ($neo4jRunning -eq "true") {
+    $neo4jStatus = "UP"
+} elseif ($neo4jRunning -eq "false") {
+    $neo4jStatus = "DOWN"
+} else {
+    $neo4jStatus = "UNKNOWN"
+}
+
+# Browser port 7475
 $components += [PSCustomObject]@{
-    name             = "NEO4J_DOCKER"
-    role             = "Base graphe Neo4j — persistance Graphiti."
+    name             = "NEO4J_BROWSER"
+    role             = "Neo4j Browser - graph visualization. Local container deploy-neo4j-1."
     status           = $neo4jStatus
     pid              = "-"
-    port             = "7475/7688"
+    port             = 7475
     health           = $neo4jStatus
     launch_command   = "docker start deploy-neo4j-1"
     log_location     = "docker logs deploy-neo4j-1"
-    coverage         = "UNKNOWN — dépend runtime Docker"
-    authority        = "INFRASTRUCTURE — ne pas killer sans arrêt Graphiti d'abord"
-    shutdown_command = "docker stop deploy-neo4j-1  (NE PAS tuer via obsidia stop)"
+    coverage         = "UNKNOWN - depends on Docker runtime"
+    authority        = "INFRASTRUCTURE - do not kill without stopping Graphiti first"
+    shutdown_command = "docker stop deploy-neo4j-1  (NOT via obsidia stop)"
 }
 
-# 6. Terminal CLI (obsidia>)
-$cliFile = Join-Path $X108 "scripts\obsidia_cli.py"
-$cliPresent = Test-Path $cliFile
+# Instance port 7688
 $components += [PSCustomObject]@{
-    name             = "TERMINAL_CLI"
-    role             = "Shell interactif non souverain. Routage NL. Aucune mutation."
-    status           = if ($cliPresent) { "READY" } else { "ABSENT" }
+    name             = "NEO4J_INSTANCE"
+    role             = "Neo4j Bolt endpoint. Graphiti connects here (bolt://127.0.0.1:7688)."
+    status           = $neo4jStatus
     pid              = "-"
-    port             = "-"
-    health           = if ($cliPresent) { "FILE_OK" } else { "ABSENT" }
-    launch_command   = "python scripts\obsidia_cli.py  OU  obsidia start"
-    log_location     = "audit\obsidia_gateway_usage.jsonl (receipts JSONL)"
-    coverage         = if ($cliPresent) { "PRESENT_AND_RUNNABLE" } else { "ABSENT" }
-    authority        = "KX108_ONLY — decision_authority = KX108_ONLY. Aucun ACT."
-    shutdown_command = "exit  OU  Ctrl+C"
+    port             = 7688
+    health           = $neo4jStatus
+    launch_command   = "docker start deploy-neo4j-1"
+    log_location     = "docker logs deploy-neo4j-1"
+    coverage         = "UNKNOWN - depends on Docker runtime"
+    authority        = "INFRASTRUCTURE - same container as NEO4J_BROWSER"
+    shutdown_command = "docker stop deploy-neo4j-1  (NOT via obsidia stop)"
 }
 
-# 7. Obsidure Agent
+# ---- 6. Bank connector ------------------------------------------------------
+$bankFile = Join-Path $X108 "connectors\bank_normal_flow.py"
+$bankPresent = Test-Path $bankFile
+if ($bankPresent) { $bankCoverage = "PRESENT_AND_RUNNABLE" } else { $bankCoverage = "ABSENT" }
+$bankStatus = if ($bankPresent) { "UNKNOWN" } else { "ABSENT" }
+$bankFoundPid = Find-ProcessByPattern "connectors\\\\bank_normal_flow\.py"
+if ($bankFoundPid) { $bankStatus = "UP" }
+$components += [PSCustomObject]@{
+    name             = "CONNECTOR_BANK"
+    role             = "Bank domain connector -> API 8000."
+    status           = $bankStatus
+    pid              = if ($bankFoundPid) { $bankFoundPid } else { "-" }
+    port             = "-"
+    health           = $bankStatus
+    launch_command   = "python connectors\bank_normal_flow.py  (OBSIDIA_API_BASE=http://127.0.0.1:8000)"
+    log_location     = "PowerShell window bank_normal_flow.py"
+    coverage         = $bankCoverage
+    authority        = "READONLY - domain data only"
+    shutdown_command = "obsidia stop  OR  Stop-Process -Id [PID] -Force"
+}
+
+# ---- 7. Trading connector ---------------------------------------------------
+$tradingFile = Join-Path $X108 "connectors\trading_live.py"
+$tradingPresent = Test-Path $tradingFile
+if ($tradingPresent) { $tradingCoverage = "PRESENT_AND_RUNNABLE" } else { $tradingCoverage = "ABSENT" }
+$tradingStatus = if ($tradingPresent) { "UNKNOWN" } else { "ABSENT" }
+$tradingFoundPid = Find-ProcessByPattern "connectors\\\\trading_live\.py"
+if ($tradingFoundPid) { $tradingStatus = "UP" }
+$components += [PSCustomObject]@{
+    name             = "CONNECTOR_TRADING"
+    role             = "Trading domain connector -> API 8000."
+    status           = $tradingStatus
+    pid              = if ($tradingFoundPid) { $tradingFoundPid } else { "-" }
+    port             = "-"
+    health           = $tradingStatus
+    launch_command   = "python connectors\trading_live.py  (OBSIDIA_API_BASE=http://127.0.0.1:8000)"
+    log_location     = "PowerShell window trading_live.py"
+    coverage         = $tradingCoverage
+    authority        = "READONLY - domain data only"
+    shutdown_command = "obsidia stop  OR  Stop-Process -Id [PID] -Force"
+}
+
+# ---- 8. GPS/Aviation connector ----------------------------------------------
+$gpsFile = Join-Path $X108 "connectors\aviation_robo.py"
+$gpsPresent = Test-Path $gpsFile
+if ($gpsPresent) { $gpsCoverage = "PRESENT_AND_RUNNABLE" } else { $gpsCoverage = "ABSENT" }
+$gpsStatus = if ($gpsPresent) { "UNKNOWN" } else { "ABSENT" }
+$gpsFoundPid = Find-ProcessByPattern "connectors\\\\aviation_robo\.py"
+if ($gpsFoundPid) { $gpsStatus = "UP" }
+$components += [PSCustomObject]@{
+    name             = "CONNECTOR_GPS_AVIATION"
+    role             = "GPS/Aviation domain connector -> API 8000."
+    status           = $gpsStatus
+    pid              = if ($gpsFoundPid) { $gpsFoundPid } else { "-" }
+    port             = "-"
+    health           = $gpsStatus
+    launch_command   = "python connectors\aviation_robo.py  (OBSIDIA_API_BASE=http://127.0.0.1:8000)"
+    log_location     = "PowerShell window aviation_robo.py"
+    coverage         = $gpsCoverage
+    authority        = "READONLY - domain data only"
+    shutdown_command = "obsidia stop  OR  Stop-Process -Id [PID] -Force"
+}
+
+# ---- 9. Brody Enriched terminal (preferred) ---------------------------------
+$brodyEnrichedFile = Join-Path $X108 "scripts\run_brody_terminal_enriched.ps1"
+$brodyEnrichedPresent = Test-Path $brodyEnrichedFile
+if ($brodyEnrichedPresent) { $brodyEnrichedCoverage = "PRESENT_AND_RUNNABLE" } else { $brodyEnrichedCoverage = "ABSENT" }
+$brodyEnrichedStatus = "UNKNOWN"
+$brodyEnrichedPid = Find-ProcessByPattern "run_brody_terminal_enriched\.ps1"
+if ($brodyEnrichedPid) { $brodyEnrichedStatus = "UP" }
+if (-not $brodyEnrichedPresent) { $brodyEnrichedStatus = "ABSENT" }
+$components += [PSCustomObject]@{
+    name             = "BRODY_ENRICHED_TERMINAL"
+    role             = "Brody enriched chat terminal (preferred). Points to API 8000."
+    status           = $brodyEnrichedStatus
+    pid              = if ($brodyEnrichedPid) { $brodyEnrichedPid } else { "-" }
+    port             = "-"
+    health           = $brodyEnrichedStatus
+    launch_command   = "powershell.exe -File scripts\run_brody_terminal_enriched.ps1 -Base http://127.0.0.1:8000"
+    log_location     = "PowerShell window BRODY ENRICHED"
+    coverage         = $brodyEnrichedCoverage
+    authority        = "READONLY - readonly=true emits_act=false decision_authority=KX108_ONLY"
+    shutdown_command = "Ctrl+C in Brody window"
+}
+
+# ---- 10. Obsidure agent -----------------------------------------------------
 $obsidureFile = Join-Path $X108 "periphery\agents\agent_obsidure.py"
 $obsidurePresent = Test-Path $obsidureFile
-$obsidureCli = Join-Path $X108 "scripts\obsidure_cli.py"
+if ($obsidurePresent) { $obsidureCoverage = "PRESENT_AND_RUNNABLE (standalone)" } else { $obsidureCoverage = "ABSENT" }
+$obsidureStatus = if ($obsidurePresent) { "READY" } else { "ABSENT" }
 $components += [PSCustomObject]@{
     name             = "AGENT_OBSIDURE"
-    role             = "Bâtisseur périphérique. AVDR. Sandbox. Proposals. HUMAN_APPROVED_WRITE."
-    status           = if ($obsidurePresent) { "READY" } else { "ABSENT" }
+    role             = "Peripheral builder. AVDR. Sandbox. Proposals. HUMAN_APPROVED_WRITE."
+    status           = $obsidureStatus
     pid              = "-"
     port             = "-"
     health           = if ($obsidurePresent) { "FILE_OK" } else { "ABSENT" }
-    launch_command   = "pwsh -File scripts\run_agent_obsidure.ps1  OU  python scripts\obsidure_cli.py"
-    log_location     = "_PATCH_PROPOSALS\<id>\RECEIPT.md"
-    coverage         = if ($obsidurePresent) { "PRESENT_AND_RUNNABLE (standalone)" } else { "ABSENT" }
-    authority        = "HUMAN_APPROVED_WRITE — toute sortie attend approbation humaine"
-    shutdown_command = "quit  OU  Ctrl+C"
+    launch_command   = "powershell.exe -File scripts\run_agent_obsidure.ps1  OR  python scripts\obsidure_cli.py"
+    log_location     = "_PATCH_PROPOSALS\[id]\RECEIPT.md"
+    coverage         = $obsidureCoverage
+    authority        = "HUMAN_APPROVED_WRITE - all output waits for human approval"
+    shutdown_command = "quit  OR  Ctrl+C"
+}
+
+# ---- 11. Terminal CLI (obsidia>) --------------------------------------------
+$cliFile = Join-Path $X108 "scripts\obsidia_cli.py"
+$cliPresent = Test-Path $cliFile
+$cliStatus = if ($cliPresent) { "READY" } else { "ABSENT" }
+$cliHealth = if ($cliPresent) { "FILE_OK" } else { "ABSENT" }
+$cliCoverage = if ($cliPresent) { "PRESENT_AND_RUNNABLE" } else { "ABSENT" }
+$components += [PSCustomObject]@{
+    name             = "TERMINAL_CLI"
+    role             = "Non-sovereign interactive shell. NL routing. No mutation. KX108_ONLY."
+    status           = $cliStatus
+    pid              = "-"
+    port             = "-"
+    health           = $cliHealth
+    launch_command   = "python scripts\obsidia_cli.py  OR  powershell.exe -File scripts\obsidia.ps1"
+    log_location     = "audit\obsidia_gateway_usage.jsonl (JSONL receipts)"
+    coverage         = $cliCoverage
+    authority        = "KX108_ONLY - decision_authority=KX108_ONLY. No ACT."
+    shutdown_command = "exit  OR  Ctrl+C"
 }
 
 # =============================================================================
-# AFFICHAGE
+# OUTPUT
 # =============================================================================
 
 if ($Json) {
@@ -246,49 +385,58 @@ if ($Json) {
 if (-not $Quiet) {
     Write-Host ""
     Write-Host "  ============================================================" -ForegroundColor Cyan
-    Write-Host "  OBSIDIA X-108 — STACK STATUS" -ForegroundColor Cyan
-    Write-Host "  decision_authority = KX108_ONLY  |  lecture seule" -ForegroundColor DarkGray
+    Write-Host "  OBSIDIA X-108 -- STACK STATUS" -ForegroundColor Cyan
+    Write-Host "  decision_authority = KX108_ONLY  |  read-only" -ForegroundColor DarkGray
     Write-Host "  ============================================================" -ForegroundColor Cyan
     Write-Host ""
 }
 
 foreach ($c in $components) {
-    $color = switch ($c.status) {
-        "UP"      { "Green" }
-        "READY"   { "Green" }
-        "DOWN"    { "Red" }
-        "ABSENT"  { "Red" }
-        "UNKNOWN" { "Yellow" }
-        default   { "White" }
-    }
-    if ($Quiet) {
-        Write-Host ("  {0,-24} {1,-8} port={2,-10} health={3}" -f $c.name, $c.status, $c.port, $c.health) -ForegroundColor $color
+    $st = $c.status
+    if ($st -eq "UP" -or $st -eq "READY") {
+        $color = "Green"
+    } elseif ($st -eq "DOWN" -or $st -eq "ABSENT") {
+        $color = "Red"
+    } elseif ($st -eq "UNKNOWN") {
+        $color = "Yellow"
     } else {
-        Write-Host ("  ── {0}" -f $c.name) -ForegroundColor $color
-        Write-Host ("     role       : {0}" -f $c.role) -ForegroundColor Gray
-        Write-Host ("     status     : {0}" -f $c.status) -ForegroundColor $color
-        Write-Host ("     pid        : {0}" -f $c.pid)
-        Write-Host ("     port       : {0}" -f $c.port)
-        Write-Host ("     health     : {0}" -f $c.health) -ForegroundColor $color
-        Write-Host ("     coverage   : {0}" -f $c.coverage) -ForegroundColor DarkGray
-        Write-Host ("     authority  : {0}" -f $c.authority) -ForegroundColor DarkGray
-        Write-Host ("     launch     : {0}" -f $c.launch_command) -ForegroundColor DarkGray
-        Write-Host ("     logs       : {0}" -f $c.log_location) -ForegroundColor DarkGray
-        Write-Host ("     shutdown   : {0}" -f $c.shutdown_command) -ForegroundColor DarkGray
+        $color = "White"
+    }
+
+    if ($Quiet) {
+        $line = "  {0,-28} {1,-8} port={2,-10} health={3}" -f $c.name, $c.status, $c.port, $c.health
+        Write-Host $line -ForegroundColor $color
+    } else {
+        Write-Host ("  -- " + $c.name) -ForegroundColor $color
+        Write-Host ("     role       : " + $c.role) -ForegroundColor Gray
+        Write-Host ("     status     : " + $c.status) -ForegroundColor $color
+        Write-Host ("     pid        : " + $c.pid)
+        Write-Host ("     port       : " + $c.port)
+        Write-Host ("     health     : " + $c.health) -ForegroundColor $color
+        Write-Host ("     coverage   : " + $c.coverage) -ForegroundColor DarkGray
+        Write-Host ("     authority  : " + $c.authority) -ForegroundColor DarkGray
+        Write-Host ("     launch     : " + $c.launch_command) -ForegroundColor DarkGray
+        Write-Host ("     logs       : " + $c.log_location) -ForegroundColor DarkGray
+        Write-Host ("     shutdown   : " + $c.shutdown_command) -ForegroundColor DarkGray
         Write-Host ""
     }
 }
 
 if (-not $Quiet) {
     Write-Host "  ============================================================" -ForegroundColor Cyan
-    $up    = ($components | Where-Object { $_.status -in @("UP","READY") }).Count
-    $down  = ($components | Where-Object { $_.status -in @("DOWN","ABSENT") }).Count
-    $unk   = ($components | Where-Object { $_.status -eq "UNKNOWN" }).Count
-    Write-Host ("  RÉSUMÉ : {0} UP/READY  |  {1} DOWN/ABSENT  |  {2} UNKNOWN" -f $up, $down, $unk) -ForegroundColor Cyan
+    $upCount   = 0
+    $downCount = 0
+    $unkCount  = 0
+    foreach ($c in $components) {
+        if ($c.status -eq "UP" -or $c.status -eq "READY") { $upCount++ }
+        elseif ($c.status -eq "DOWN" -or $c.status -eq "ABSENT") { $downCount++ }
+        else { $unkCount++ }
+    }
+    Write-Host ("  SUMMARY: " + $upCount + " UP/READY  |  " + $downCount + " DOWN/ABSENT  |  " + $unkCount + " UNKNOWN") -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  DÉMARRER la stack : pwsh -File scripts\obsidia.ps1" -ForegroundColor DarkGray
-    Write-Host "  ARRÊTER la stack  : pwsh -File scripts\obsidia.ps1 stop" -ForegroundColor DarkGray
-    Write-Host "  OBSIDURE seul     : pwsh -File scripts\run_agent_obsidure.ps1" -ForegroundColor DarkGray
+    Write-Host "  START stack : powershell.exe -File scripts\obsidia.ps1" -ForegroundColor DarkGray
+    Write-Host "  STOP  stack : powershell.exe -File scripts\obsidia.ps1 stop" -ForegroundColor DarkGray
+    Write-Host "  OBSIDURE    : powershell.exe -File scripts\run_agent_obsidure.ps1" -ForegroundColor DarkGray
     Write-Host "  ============================================================" -ForegroundColor Cyan
     Write-Host ""
 }

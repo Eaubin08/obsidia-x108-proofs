@@ -360,3 +360,126 @@ class TestKernelProtected:
         assert "server.kernel.sealed.cjs" in content, (
             "agent_obsidure.py doit explicitement nommer le kernel sealed comme path protégé"
         )
+
+
+# =============================================================================
+# GROUPE K — Compatibilité Windows PowerShell 5.1 (parsing réel)
+# =============================================================================
+
+class TestPowerShell51Parsing:
+    """
+    Parse les scripts PS1 via powershell.exe (PS 5.1) et vérifie 0 erreur.
+    Utilise EXCLUSIVEMENT powershell.exe (pas pwsh) conformément au mandat.
+    Ces tests sont skippés si powershell.exe n'est pas trouvé dans le PATH.
+    """
+
+    PS_SCRIPTS = [
+        "scripts/stack_status.ps1",
+        "scripts/obsidia.ps1",
+        "scripts/run_brody_terminal_enriched.ps1",
+        "scripts/run_agent_obsidure.ps1",
+        "scripts/OBSIDIA_LAUNCHERS/00_STOP_ALL_SERVERS.ps1",
+        "scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1",
+        "scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1",
+    ]
+
+    @classmethod
+    def _find_powershell_exe(cls) -> str | None:
+        import shutil
+        return shutil.which("powershell.exe")
+
+    @pytest.mark.parametrize("relpath", PS_SCRIPTS)
+    def test_ps1_parses_under_ps51(self, relpath: str):
+        """Vérifie 0 erreur de parsing PS 5.1 pour chaque script."""
+        ps_exe = self._find_powershell_exe()
+        if not ps_exe:
+            pytest.skip("powershell.exe introuvable dans le PATH")
+
+        script_path = str(REPO / relpath).replace("/", "\\")
+        ps_cmd = (
+            f"$errs=$null; "
+            f"$null=[System.Management.Automation.Language.Parser]::"
+            f"ParseFile('{script_path}',[ref]$null,[ref]$errs); "
+            f"if($errs.Count -gt 0){{$errs|ForEach-Object{{Write-Host $_.Message}}; exit 1}} "
+            f"else{{exit 0}}"
+        )
+        result = subprocess.run(
+            [ps_exe, "-NoProfile", "-Command", ps_cmd],
+            capture_output=True, text=True, timeout=30
+        )
+        assert result.returncode == 0, (
+            f"PS 5.1 parse errors in {relpath}:\n{result.stdout}\n{result.stderr}"
+        )
+
+    def test_stack_status_executes_quiet_without_error(self):
+        """stack_status.ps1 -Quiet s'exécute sans erreur sous PS 5.1."""
+        ps_exe = self._find_powershell_exe()
+        if not ps_exe:
+            pytest.skip("powershell.exe introuvable dans le PATH")
+
+        script_path = str(SCRIPTS / "stack_status.ps1")
+        result = subprocess.run(
+            [ps_exe, "-NoProfile", "-ExecutionPolicy", "Bypass",
+             "-File", script_path, "-Quiet"],
+            capture_output=True, text=True, timeout=30
+        )
+        assert result.returncode == 0, (
+            f"stack_status.ps1 -Quiet a échoué:\n{result.stdout}\n{result.stderr}"
+        )
+        # Doit contenir au moins un composant lisible
+        assert "KERNEL_RAGNAROK" in result.stdout or "TERMINAL_CLI" in result.stdout
+
+    def test_stack_status_json_output_is_parsable(self):
+        """stack_status.ps1 -Json produit du JSON parsable par Python."""
+        import json
+        ps_exe = self._find_powershell_exe()
+        if not ps_exe:
+            pytest.skip("powershell.exe introuvable dans le PATH")
+
+        script_path = str(SCRIPTS / "stack_status.ps1")
+        result = subprocess.run(
+            [ps_exe, "-NoProfile", "-ExecutionPolicy", "Bypass",
+             "-File", script_path, "-Json"],
+            capture_output=True, text=True, timeout=30
+        )
+        assert result.returncode == 0, f"stack_status.ps1 -Json a échoué:\n{result.stderr}"
+        try:
+            data = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            pytest.fail(f"Sortie JSON non parsable : {exc}\nSortie: {result.stdout[:500]}")
+        assert isinstance(data, list), "La sortie JSON doit être une liste de composants"
+        assert len(data) >= 11, f"Attendu >= 11 composants, obtenu {len(data)}"
+        names = {c.get("name") for c in data if isinstance(c, dict)}
+        for required in ("KERNEL_RAGNAROK", "API_OBSIDIA_BRODY", "NEO4J_BROWSER",
+                         "NEO4J_INSTANCE", "AGENT_OBSIDURE", "TERMINAL_CLI"):
+            assert required in names, f"Composant requis absent du JSON: {required}"
+
+    def test_stack_status_has_no_em_dash_in_string_literals(self):
+        """stack_status.ps1 ne doit pas contenir d'em-dash (U+2014) dans les chaînes."""
+        content = (SCRIPTS / "stack_status.ps1").read_text(encoding="utf-8")
+        # L'em-dash est le bug root-cause PS 5.1
+        assert "—" not in content, (
+            "stack_status.ps1 contient un em-dash U+2014 — incompatible PS 5.1 sans BOM"
+        )
+
+    def test_launcher_scripts_have_no_em_dash_in_string_literals(self):
+        """Les launchers ne doivent plus contenir d'em-dash dans des litéraux de chaîne."""
+        launchers = [
+            "scripts/OBSIDIA_LAUNCHERS/00_STOP_ALL_SERVERS.ps1",
+            "scripts/OBSIDIA_LAUNCHERS/01_START_BRODY_STACK.ps1",
+            "scripts/OBSIDIA_LAUNCHERS/02_START_KERNEL_AND_DOMAINS.ps1",
+        ]
+        for relpath in launchers:
+            path = REPO / relpath
+            if not path.is_file():
+                continue
+            content = path.read_text(encoding="utf-8")
+            # Recherche d'em-dash dans des lignes qui ne sont pas des commentaires
+            for lineno, line in enumerate(content.splitlines(), 1):
+                stripped = line.lstrip()
+                if stripped.startswith("#"):
+                    continue  # commentaire, pas un problème
+                assert "—" not in line, (
+                    f"Em-dash U+2014 trouvé dans une ligne de code (non-commentaire) "
+                    f"dans {relpath}:{lineno}: {line!r}"
+                )

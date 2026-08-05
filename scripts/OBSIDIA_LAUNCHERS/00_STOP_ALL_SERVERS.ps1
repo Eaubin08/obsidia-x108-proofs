@@ -57,7 +57,7 @@ Write-Host "`n=== VÉRIFICATION PORTS APRÈS NETTOYAGE ===" -ForegroundColor Cya
 foreach ($P in $PORTS_TO_KILL) {
     $LISTEN = netstat -ano | Select-String ":$P\s" | Select-String "LISTENING"
     if ($LISTEN) {
-        Write-Host "[WARN] Port $P encore LISTENING — vérifier manuellement" -ForegroundColor Red
+        Write-Host "[WARN] Port $P encore LISTENING - verifier manuellement" -ForegroundColor Red
     } else {
         Write-Host "[OK]   Port $P libre" -ForegroundColor Green
     }

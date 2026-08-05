@@ -111,7 +111,9 @@ function Stop-OldObsidiaProcesses {
         $_.CommandLine -match "run_brody_terminal_chat\.ps1" -or
         $_.CommandLine -match "run_brody_terminal_enriched\.ps1" -or
         $_.CommandLine -match "run_brody_terminal\.ps1" -or
-        $_.CommandLine -match "brody_terminal_chat\.py"
+        $_.CommandLine -match "brody_terminal_chat\.py" -or
+        $_.CommandLine -match "run_agent_obsidure\.ps1" -or
+        $_.CommandLine -match "obsidure_cli\.py"
     } | ForEach-Object {
         Write-INFO "Arret PID=$($_.ProcessId)"
         Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
@@ -328,12 +330,48 @@ function Start-BrodyTerminals {
 }
 
 # =============================================================================
+# BRODY ENRICHED - run_brody_terminal_enriched.ps1 -Base $API (8000, pas 8012)
+# Lance en fenetre separee. Brody = readonly=true, emits_act=false, KX108_ONLY.
+# =============================================================================
+function Start-BrodyEnriched {
+    Write-Step "BRODY" "Brody Enriched - -Base $API (pas 8012)..."
+    $script_enriched = "$X108\scripts\run_brody_terminal_enriched.ps1"
+    if (Test-Path $script_enriched) {
+        Start-Process powershell -ArgumentList @(
+            "-NoExit", "-ExecutionPolicy", "Bypass", "-Command",
+            "[Console]::Title='BRODY ENRICHED -> API 8000 (PREFERRED)'; cd '$X108'; & '$script_enriched' -Base '$API'"
+        )
+        Write-OK "Brody Enriched lance -> $API  (preferred, pas 8012)"
+    } else {
+        Write-WARN "run_brody_terminal_enriched.ps1 absent : $script_enriched"
+    }
+}
+
+# =============================================================================
+# OBSIDURE - run_agent_obsidure.ps1 (DryRun - aucune mutation sans approbation KX108)
+# decision_authority = KX108_ONLY | allowed_to_decide = false
+# =============================================================================
+function Start-ObsidureAgent {
+    Write-Step "OBSIDURE" "Agent Obsidure (DryRun, KX108_ONLY, aucune mutation)..."
+    $script_obsidure = "$X108\scripts\run_agent_obsidure.ps1"
+    if (Test-Path $script_obsidure) {
+        Start-Process powershell -ArgumentList @(
+            "-NoExit", "-ExecutionPolicy", "Bypass", "-Command",
+            "[Console]::Title='OBSIDURE AGENT KX108_ONLY DryRun'; cd '$X108'; & '$script_obsidure' -DryRun -Api '$API'"
+        )
+        Write-OK "Obsidure lance (DryRun, KX108_ONLY, aucune mutation autonome)"
+    } else {
+        Write-WARN "run_agent_obsidure.ps1 absent : $script_obsidure"
+    }
+}
+
+# =============================================================================
 # NAVIGATEURS - UI / Graphiti / Neo4j
 # Appele uniquement via 'obsidia open' - pas dans le boot par defaut.
 # =============================================================================
 function Open-ObsidiaBrowsers {
     Write-Step "BROWSER" "Ouverture des navigateurs Obsidia..."
-    foreach ($url in @($UI, $GRAPH_WORKBENCH, $GRAPH_DOCS, $NEO4J_BROWSER)) {
+    foreach ($url in @($UI, "$API/docs", $GRAPH_WORKBENCH, $GRAPH_DOCS, $NEO4J_BROWSER)) {
         try {
             Start-Process $url
             Write-INFO "Ouvert : $url"
@@ -415,20 +453,21 @@ function Print-StartPlan {
     Write-Host "  A  Test-ObsidiaStackRunning -> si UP : boot skip, entre dans obsidia>"
     Write-Host "  B  Si DOWN : lance les services core suivants :"
     $plan = @(
-        "01  docker start deploy-neo4j-1            ports 7475/7688  Neo4j Docker",
-        "02  node server.kernel.sealed.cjs           port  3001       Kernel Ragnarok (X108 autorite)",
-        "03  uvicorn apps.obsidia_api.main:app       port  8000       API Obsidia/Brody",
-        "04  GET  $API/api/health                   test  API",
-        "05  POST $API/api/brody/chat               test  Brody Chat (POST launcher humain uniquement)",
-        "06  uvicorn obsidia_core.agent_bridge:app   port  8011       Graphiti/ObsidiaShell",
-        "07  GET  $GRAPH/graph/v20/frozen/status    test  Graphiti",
-        "08  npm run dev -- --host 127.0.0.1 --port 5173              UI Workbench",
-        "09  GET  $UI                               test  UI",
-        "10  python connectors\bank_normal_flow.py                    Bank connector",
-        "11  python connectors\trading_live.py                        Trading connector",
-        "12  python connectors\aviation_robo.py                       GPS/Aviation connector",
-        "13  python scripts\obsidia_cli.py 'runtime'                  Carte runtime (lecture seule)",
-        "14  python scripts\obsidia_cli.py           (sans arg)       Enter-ObsidiaInteractiveShell -> obsidia>"
+        "01  docker start deploy-neo4j-1                 ports 7475/7688  Neo4j Docker (deploy-neo4j-1)",
+        "02  node server.kernel.sealed.cjs                port  3001       Kernel Ragnarok (X108 autorite finale)",
+        "03  uvicorn apps.obsidia_api.main:app            port  8000       API Obsidia/Brody",
+        "    GET  $API/api/health                        [test API health]",
+        "    POST $API/api/brody/chat                    [test Brody - POST launcher humain uniquement]",
+        "04  python connectors\bank_normal_flow.py                         Bank connector -> API 8000",
+        "05  python connectors\trading_live.py                             Trading connector -> API 8000",
+        "06  python connectors\aviation_robo.py                            GPS/Aviation connector -> API 8000",
+        "07  uvicorn obsidia_core.agent_bridge:app        port  8011       Graphiti/ObsidiaShell",
+        "    GET  $GRAPH/graph/v20/frozen/status         [test Graphiti]",
+        "08  npm run dev -- --host 127.0.0.1 --port 5173                   UI Workbench",
+        "    GET  $UI                                    [test UI]",
+        "09  run_brody_terminal_enriched.ps1 -Base $API                    Brody Enriched (preferred, pas 8012)",
+        "10  run_agent_obsidure.ps1 -DryRun -Api $API                      Obsidure Agent (DryRun, KX108_ONLY)",
+        "11  python scripts\obsidia_cli.py --tui                           Terminal interactif Obsidia -> obsidia>"
     )
     foreach ($s in $plan) { Write-Host "  $s" }
     Write-Host ""
@@ -479,15 +518,12 @@ function Start-ObsidiaFullStack {
     Start-KernelRagnarok
     Start-ObsidiaApiBrody
     Test-ApiAndBrody
+    Start-DomainConnectors
     Start-Graphiti
     Start-WorkbenchUi
-    Start-DomainConnectors
-    # NOTE: Brody terminals non lances par defaut.
-    # Brody reste accessible via API 8000 et via le terminal obsidia>.
-    # Brody Enriched preferred - -Base http://127.0.0.1:8000 (pas 8012).
-    # Pour lancer les fenetres Brody manuellement : Start-BrodyTerminals
-    # NOTE: Navigateurs non ouverts par defaut.
-    # Pour ouvrir les navigateurs : obsidia open
+    Start-BrodyEnriched
+    Start-ObsidureAgent
+    # NOTE: Navigateurs non ouverts par defaut - utiliser 'obsidia open'
     Show-FinalPortsAndProcesses
 }
 
