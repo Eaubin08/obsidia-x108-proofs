@@ -90,6 +90,25 @@
       "files_indexed": 8,
       "status": "CLOSED"
     },
+    "WAVE005_F": {
+      "path": "periphery/agents/brody_legacy_archive_tooling_review.index.json",
+      "index_id": "BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1",
+      "files_indexed": 66,
+      "md_artifacts": 45,
+      "json_artifacts": 8,
+      "txt_artifacts": 7,
+      "py_source_modules": 4,
+      "tsx_modules": 1,
+      "ts_modules": 1,
+      "not_executable_artifacts": 62,
+      "not_a_test_modules": 2,
+      "executable_passes": 2,
+      "status": "AGENTS_FILE_WIRING_WAVE005_F_INDEXED",
+      "files_with_explicit_blocker": 0,
+      "primary_files_with_proved_relation": 66,
+      "primary_files_unresolved": 0,
+      "note": "Closes Brody primary census. 902 total = W5A+W5B+W5C+W5D+W5E+W5F."
+    },
     "WAVE005_E": {
       "path": "periphery/agents/brody_documentation_architecture_reports.index.json",
       "index_id": "BRODY_DOCUMENTATION_ARCHITECTURE_REPORTS_INDEX_V1",
@@ -169,7 +188,8 @@
       "WAVE005_B",
       "WAVE005_C",
       "WAVE005_D",
-      "WAVE005_E"
+      "WAVE005_E",
+      "WAVE005_F"
     ],
     "wave_slices_closed": [
       "WAVE005_E"
@@ -190,9 +210,10 @@
     ]
   },
   "campaign_metadata_registry": {
-    "total": 20,
+    "total": 26,
     "included_in_brody_primary": 0,
     "included_in_primary_partition": 0,
+    "note": "26 = 23(W5A-W5E meta) + 3(W5F meta). Wave005_F adds index, validator, tests.",
     "wave005_a_metadata": [
       "periphery/agents/brody_governance_element_system.index.json",
       "periphery/agents/brody_governance_element_system.py",
@@ -225,6 +246,11 @@
       "periphery/agents/brody_documentation_architecture_reports.index.json",
       "periphery/agents/brody_documentation_architecture_reports.py",
       "tests/periphery/test_brody_documentation_architecture_reports.py"
+    ],
+    "wave005_f_metadata": [
+      "periphery/agents/brody_legacy_archive_tooling_review.index.json",
+      "periphery/agents/brody_legacy_archive_tooling_review.py",
+      "tests/periphery/test_brody_legacy_archive_tooling_review.py"
     ]
   },
   "relation_graph": {
@@ -277,6 +303,12 @@
         "wave": "WAVE005_E",
         "subsystem": "BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
         "files": 124
+      },
+      {
+        "wave": "WAVE005_F",
+        "subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
+        "files": 66,
+        "note": "Closes Brody primary census at 902 files."
       }
     ],
     "edges": [
@@ -312,45 +344,6 @@
     "silent_double_count": 0,
     "cross_wave_primary_overlaps": 0
   },
-  "unique_primary_paths_accounted": 1691,
-  "unique_primary_note": "Recalculated: 1691 = 1567(W1-W5D_primary) + 124(W5E). W1xW2 overlap=167. SILENT_DOUBLE_COUNT=0.",
-  "campaign_metadata_registry": {
-    "total": 23,
-    "included_in_brody_primary": 0,
-    "included_in_primary_partition": 0,
-    "note": "23 = 20(W5A-W5D meta) + 3(W5E meta). Wave005_E adds index, validator, tests.",
-    "wave005_a_metadata": [
-      "periphery/agents/brody_governance_element_system.index.json",
-      "periphery/agents/brody_governance_element_system.py",
-      "tests/periphery/test_brody_governance_element_system.py",
-      "periphery/agents/brody_governance_scope_reconciliation.index.json",
-      "periphery/agents/brody_governance_scope_reconciliation.py",
-      "periphery/agents/wave005_campaign_state.json",
-      "periphery/agents/wave005_unresolved_queue.json",
-      "tests/periphery/test_brody_governance_scope_reconciliation.py",
-      "periphery/agents/agents_file_wiring_artifact_index.json",
-      "periphery/agents/agents_file_wiring_global_state.json",
-      "tests/periphery/test_agents_file_wiring_global_artifacts.py"
-    ],
-    "wave005_b_metadata": [
-      "periphery/agents/brody_integration_runtime_api_system.index.json",
-      "periphery/agents/brody_integration_runtime_api_system.py",
-      "tests/periphery/test_brody_integration_runtime_api_system.py"
-    ],
-    "wave005_c_metadata": [
-      "periphery/agents/brody_protocols_connectors_scripts.index.json",
-      "periphery/agents/brody_protocols_connectors_scripts.py",
-      "tests/periphery/test_brody_protocols_connectors_scripts.py"
-    ],
-    "wave005_d_metadata": [
-      "periphery/agents/brody_memory_interface_and_specs.index.json",
-      "periphery/agents/brody_memory_interface_and_specs.py",
-      "tests/periphery/test_brody_memory_interface_and_specs.py"
-    ],
-    "wave005_e_metadata": [
-      "periphery/agents/brody_documentation_architecture_reports.index.json",
-      "periphery/agents/brody_documentation_architecture_reports.py",
-      "tests/periphery/test_brody_documentation_architecture_reports.py"
-    ]
-  }
+  "unique_primary_paths_accounted": 1757,
+  "unique_primary_note": "Recalculated: 1757 = 1691(W1-W5E_unique) + 66(W5F). W1xW2 overlap=167. W5F overlap with prior=0. SILENT_DOUBLE_COUNT=0."
 }
