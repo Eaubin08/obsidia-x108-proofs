@@ -516,3 +516,183 @@ def test_family070_w5d_bak_blockers_2():
     w5d = d["wave_registry"]["WAVE005_D"]
     assert w5d.get("bak_blockers") == 2
     assert w5d.get("python_no_consumer_blockers") == 3
+
+
+# ---------------------------------------------------------------------------
+# FAMILY-071 to FAMILY-090: Consistency gate — secondary relations + blocker causality
+# ---------------------------------------------------------------------------
+
+_PS1 = (
+    "periphery/brody_memory_readonly/"
+    "brody_agent_readonly_session_test_packet/"
+    "run_brody_agent_readonly_session_test_packet_v1.ps1"
+)
+
+_EXPECTED_SECONDARY_PATHS = {
+    "periphery/agents/brody_memory_agent.py",
+    _PS1,
+    "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+    "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py",
+}
+
+
+def test_family071_secondary_paths_unique_4():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["secondary_paths_unique"] == 4
+
+
+def test_family072_secondary_relation_total_final_4():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["secondary_relation_total_final"] == 4
+
+
+def test_family073_secondary_paths_unique_list_correct():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    actual = set(rec.get("secondary_paths_unique_list", []))
+    assert actual == _EXPECTED_SECONDARY_PATHS
+
+
+def test_family074_secondary_duplicate_ps1_identified():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    dups = rec.get("secondary_duplicate_paths", [])
+    assert _PS1 in dups, f"PS1 path must be in secondary_duplicate_paths: {dups}"
+
+
+def test_family075_frozen_census_contradiction_false():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["frozen_census_contradiction"] is False
+
+
+def test_family076_secondary_rows_raw_5():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["secondary_rows_raw"] == 5
+
+
+def test_family077_secondary_rows_raw_breakdown():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    bd = rec.get("secondary_rows_raw_breakdown", {})
+    assert bd["W5A_scope_reconciliation"] == 4
+    assert bd["W5D_matrix"] == 1
+
+
+def test_family078_secondary_relations_not_in_primary():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["secondary_relations_included_in_primary"] == 0
+
+
+def test_family079_w5d_secondary_ps1_not_primary():
+    """The PS1 path in W5D matrix is explicitly NOT counted in W5D primary."""
+    from pathlib import Path
+    import json
+    with open(Path(__file__).parents[2] /
+              "periphery/agents/brody_memory_interface_and_specs.index.json",
+              encoding="utf-8") as f:
+        w5d = json.load(f)
+    ps1_entries = [e for e in w5d.get("entries", []) if e.get("path") == _PS1]
+    assert len(ps1_entries) == 1
+    e = ps1_entries[0]
+    assert e["counted_in_wave005_d_primary"] is False
+    assert e["primary_files_accounted_contribution"] == 0
+
+
+def test_family080_global_blocker_root_cause_present():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    roots = rec.get("global_blocker_root_causes", [])
+    assert "ART193_ART200_ABSENT" in roots
+
+
+def test_family081_global_blockers_share_root_cause():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec.get("global_blockers_share_root_cause") is True
+
+
+def test_family082_global_blocker_consequence_chain_present():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    chain = rec.get("global_blocker_consequence_chain", "")
+    assert "ART193_ART200" in chain
+    assert "BLK-GLOBAL-002" in chain
+    assert "BLK-GLOBAL-003" in chain
+    assert "BLK-GLOBAL-001" in chain
+
+
+def test_family083_blk_global_001_is_cascading():
+    d = _gs()
+    blockers = d["blocker_matrix_v1"]["blockers"]
+    g1 = next(b for b in blockers if b["blocker_id"] == "BLK-GLOBAL-001")
+    assert g1.get("global_blocker_root_cause") == "ART193_ART200_ABSENT"
+    assert g1.get("is_direct_consequence_of_root_cause") is False
+    assert "BLK-GLOBAL-002" in (g1.get("is_cascading_consequence_of") or [])
+
+
+def test_family084_blk_global_002_003_are_direct():
+    d = _gs()
+    blockers = d["blocker_matrix_v1"]["blockers"]
+    for bid in ["BLK-GLOBAL-002", "BLK-GLOBAL-003"]:
+        b = next(x for x in blockers if x["blocker_id"] == bid)
+        assert b.get("global_blocker_root_cause") == "ART193_ART200_ABSENT"
+        assert b.get("is_direct_consequence_of_root_cause") is True
+
+
+def test_family085_silent_double_count_0():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["silent_double_count"] == 0
+
+
+def test_family086_silent_double_count_proof():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    proof = rec.get("silent_double_count_proof", {})
+    assert proof["gross"] == 1924
+    assert proof["documented_overlap"] == 167
+    assert proof["unique"] == 1757
+    assert proof["gross"] - proof["documented_overlap"] == proof["unique"]
+    assert proof["equation_holds"] is True
+    assert proof["secondary_included_in_primary"] == 0
+    assert proof["metadata_included_in_primary"] == 0
+
+
+def test_family087_missing_consumer_blocker_count_5():
+    d = _gs()
+    bm = d["blocker_matrix_v1"]
+    mc = [b for b in bm["blockers"] if b["blocker_category"] == "MISSING_CONSUMER_BLOCKER"]
+    assert len(mc) == 5
+
+
+def test_family088_missing_consumer_blocker_paths():
+    d = _gs()
+    bm = d["blocker_matrix_v1"]
+    mc_paths = {b["path"] for b in bm["blockers"] if b["blocker_category"] == "MISSING_CONSUMER_BLOCKER"}
+    assert "apps/obsidia_api/brody_backend_response_composer.py" in mc_paths
+    assert "connectors/brody_memory_readonly_flow.py" in mc_paths
+    assert "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py" in mc_paths
+    assert "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_component_matrix_readonly_v0.py" in mc_paths
+    assert "periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py" in mc_paths
+
+
+def test_family089_duplicate_blockers_counted_0():
+    d = _gs()
+    ids = [b["blocker_id"] for b in d["blocker_matrix_v1"]["blockers"]]
+    assert len(ids) == len(set(ids))
+
+
+def test_family090_artifact_index_consistency_fields():
+    d = _ai()
+    rec = d.get("agents_family_reconciliation", {})
+    assert rec["secondary_paths_unique"] == 4
+    assert rec["secondary_relation_total_final"] == 4
+    assert rec["frozen_census_contradiction"] is False
+    assert rec["global_blocker_root_causes"] == ["ART193_ART200_ABSENT"]
+    assert rec["global_blockers_share_root_cause"] is True
+    assert rec["silent_double_count"] == 0

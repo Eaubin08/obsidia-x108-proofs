@@ -434,7 +434,43 @@
     "can_decide": false,
     "can_act": false,
     "emits_act": false,
-    "memory_write": false
+    "memory_write": false,
+    "secondary_rows_raw": 5,
+    "secondary_rows_raw_breakdown": {
+      "W5A_scope_reconciliation": 4,
+      "W5D_matrix": 1
+    },
+    "secondary_paths_unique": 4,
+    "secondary_paths_unique_list": [
+      "periphery/agents/brody_memory_agent.py",
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
+      "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+      "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
+    ],
+    "secondary_duplicate_paths": [
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+    ],
+    "secondary_duplicate_explanation": "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1 documented as secondary in both W5A scope_reconciliation (WAVE001 primary) and W5D matrix (relation_type=SECONDARY_RELATION_TO_PRIOR_WAVE, counted_in_wave005_d_primary=false). Same physical path, primary_owner=WAVE001+WAVE002. Not a new distinct secondary — unique secondary paths = 4.",
+    "frozen_census_contradiction": false,
+    "secondary_relation_total_final": 4,
+    "secondary_relations_included_in_primary": 0,
+    "global_blocker_root_causes": [
+      "ART193_ART200_ABSENT"
+    ],
+    "global_blocker_root_cause_explanation": "ART193-ART200 are prior global AGENTS_FILE_WIRING campaign artifacts not found in git tree or recent history. Their absence is the single root cause of all 3 global blockers.",
+    "global_blocker_consequence_chain": "ART193_ART200 absent (root) → BLK-GLOBAL-002 (AGENTS_FILE_WIRING global file manifest absent) + BLK-GLOBAL-003 (global relation graph absent) → BLK-GLOBAL-001 (Wave005_A global registration blocked, because manifest required for global registration is absent)",
+    "global_blockers_share_root_cause": true,
+    "global_blockers_are_counted_as_consequences": true,
+    "global_blocker_count_note": "3 distinct blocked states (manifest, graph, W5A registration), 1 shared root cause (ART193-ART200 absent). AGENTS_FAMILY_GLOBAL_BLOCKERS=3 counts consequences, not root causes.",
+    "silent_double_count_proof": {
+      "gross": 1924,
+      "documented_overlap": 167,
+      "formula": "1924 - 167 = 1757",
+      "unique": 1757,
+      "secondary_included_in_primary": 0,
+      "metadata_included_in_primary": 0,
+      "equation_holds": true
+    }
   },
   "blocker_matrix_v1": {
     "blocker_matrix_id": "AGENTS_FILE_WIRING_BLOCKER_MATRIX_V1",
@@ -697,7 +733,12 @@
         "is_global_blocker": true,
         "is_preexisting": true,
         "resolution_required_before_modules": false,
-        "source_artifact": "periphery/agents/agents_file_wiring_global_state.json"
+        "source_artifact": "periphery/agents/agents_file_wiring_global_state.json",
+        "global_blocker_root_cause": "ART193_ART200_ABSENT",
+        "is_cascading_consequence_of": [
+          "BLK-GLOBAL-002"
+        ],
+        "is_direct_consequence_of_root_cause": false
       },
       {
         "blocker_id": "BLK-GLOBAL-002",
@@ -712,7 +753,10 @@
         "is_global_blocker": true,
         "is_preexisting": true,
         "resolution_required_before_modules": false,
-        "source_artifact": "periphery/agents/agents_file_wiring_artifact_index.json"
+        "source_artifact": "periphery/agents/agents_file_wiring_artifact_index.json",
+        "global_blocker_root_cause": "ART193_ART200_ABSENT",
+        "is_direct_consequence_of_root_cause": true,
+        "is_cascading_consequence_of": null
       },
       {
         "blocker_id": "BLK-GLOBAL-003",
@@ -727,7 +771,10 @@
         "is_global_blocker": true,
         "is_preexisting": true,
         "resolution_required_before_modules": false,
-        "source_artifact": "periphery/agents/agents_file_wiring_artifact_index.json"
+        "source_artifact": "periphery/agents/agents_file_wiring_artifact_index.json",
+        "global_blocker_root_cause": "ART193_ART200_ABSENT",
+        "is_direct_consequence_of_root_cause": true,
+        "is_cascading_consequence_of": null
       }
     ]
   }

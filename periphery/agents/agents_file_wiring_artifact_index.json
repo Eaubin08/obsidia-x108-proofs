@@ -373,6 +373,23 @@
     "agents_family_file_blockers": 16,
     "agents_family_global_blockers": 3,
     "modules_start_decision": "AUTHORIZED_WITH_PERSISTED_AGENTS_BLOCKERS",
-    "generated_at": "2026-08-05"
+    "generated_at": "2026-08-05",
+    "secondary_paths_unique": 4,
+    "secondary_paths_unique_list": [
+      "periphery/agents/brody_memory_agent.py",
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
+      "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+      "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
+    ],
+    "secondary_duplicate_paths": [
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+    ],
+    "frozen_census_contradiction": false,
+    "secondary_relation_total_final": 4,
+    "global_blocker_root_causes": [
+      "ART193_ART200_ABSENT"
+    ],
+    "global_blockers_share_root_cause": true,
+    "silent_double_count": 0
   }
 }
