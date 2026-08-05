@@ -365,5 +365,14 @@
     "subwave_blockers_total": 16,
     "wave005_fully_closed": false,
     "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+  },
+  "agents_family_reconciliation": {
+    "family_status": "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ARTIFACTS_BLOCKED",
+    "agents_primary_accounting_complete": true,
+    "agents_family_fully_closed": false,
+    "agents_family_file_blockers": 16,
+    "agents_family_global_blockers": 3,
+    "modules_start_decision": "AUTHORIZED_WITH_PERSISTED_AGENTS_BLOCKERS",
+    "generated_at": "2026-08-05"
   }
 }
