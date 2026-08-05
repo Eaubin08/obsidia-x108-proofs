@@ -96,8 +96,8 @@ def test_wf009_memory_write_false():
     assert idx["memory_write"] is False
 
 
-def test_wf010_final_status_indexed():
-    assert get_final_status() == "AGENTS_FILE_WIRING_WAVE005_F_INDEXED"
+def test_wf010_final_status_closed():
+    assert get_final_status() == "AGENTS_FILE_WIRING_WAVE005_F_CLOSED"
 
 
 # ---------------------------------------------------------------------------
@@ -284,8 +284,8 @@ def test_wf044_has_executable_tests_true():
     assert has_executable_tests() is True
 
 
-def test_wf045_scope_complete_false():
-    assert is_scope_complete() is False
+def test_wf045_scope_complete_true():
+    assert is_scope_complete() is True
 
 
 def test_wf046_blocker_queue_empty():
@@ -366,10 +366,10 @@ def test_wf059_all_entries_owner_subsystem():
         assert e.get("owner_subsystem") == "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW"
 
 
-def test_wf060_all_entries_status_indexed():
+def test_wf060_all_entries_status_closed():
     for e in get_entries():
-        assert e.get("status") == "INDEXED"
-        assert e.get("current_status") == "INDEXED"
+        assert e.get("status") == "CLOSED"
+        assert e.get("current_status") == "CLOSED"
 
 
 # ---------------------------------------------------------------------------
@@ -981,3 +981,167 @@ def test_wf160_recovery_audit_empty_file_note():
     note = audit["freeze_recovery_audit"].get("note_empty_file", "")
     assert "protected_files_diff" in note
     assert "0-byte" in note or "empty" in note.lower()
+
+
+# ---------------------------------------------------------------------------
+# WF-161 to WF-185: Closure, entry fields, Wave005 reconciliation
+# ---------------------------------------------------------------------------
+
+def test_wf161_scope_complete_true():
+    assert is_scope_complete() is True
+
+
+def test_wf162_all_entries_have_primary_owner():
+    for e in get_entries():
+        assert "primary_owner" in e, f"Missing primary_owner in {e['path']}"
+        assert e["primary_owner"] == "WAVE005_F"
+
+
+def test_wf163_all_entries_have_consumer_or_destination():
+    for e in get_entries():
+        assert "consumer_or_destination" in e, f"Missing consumer_or_destination in {e['path']}"
+        assert len(e["consumer_or_destination"]) > 5
+
+
+def test_wf164_all_entries_have_generator_or_source():
+    for e in get_entries():
+        assert "generator_or_source" in e, f"Missing generator_or_source in {e['path']}"
+        assert len(e["generator_or_source"]) > 5
+
+
+def test_wf165_all_entries_have_limitations():
+    for e in get_entries():
+        assert "limitations" in e, f"Missing limitations in {e['path']}"
+
+
+def test_wf166_all_entries_have_blocker_id():
+    for e in get_entries():
+        assert "blocker_id" in e, f"Missing blocker_id in {e['path']}"
+
+
+def test_wf167_all_blockers_null():
+    for e in get_entries():
+        assert e["blocker_id"] is None, f"Unexpected blocker_id in {e['path']}: {e['blocker_id']}"
+
+
+def test_wf168_all_entries_status_closed():
+    for e in get_entries():
+        assert e.get("status") == "CLOSED", f"Entry not CLOSED: {e['path']}"
+
+
+def test_wf169_brody_panel_code_classification_legacy():
+    tsx = get_tsx_entries()
+    assert len(tsx) == 1
+    e = tsx[0]
+    assert e["path"] == "apps/obsidia-workbench/src/components/BrodyPanel.tsx"
+    assert e.get("code_classification") == "LEGACY_TOOLING_LINKED_TO_REVIEW_WORKFLOW"
+
+
+def test_wf170_brody_response_composer_code_classification():
+    ts_entries = get_ts_entries()
+    assert len(ts_entries) == 1
+    e = ts_entries[0]
+    assert e["path"] == "apps/obsidia-workbench/src/lib/brodyResponseComposer.ts"
+    assert e.get("code_classification") == "UI_HELPER_IMPORTED_BY_COMPONENT"
+
+
+def test_wf171_tooling_modules_code_classification():
+    for e in get_tooling_module_entries():
+        assert e.get("code_classification") == "TOOLING_SOURCE_WITH_PROVED_CONSUMER"
+
+
+def test_wf172_executable_tests_code_classification():
+    for e in get_entries_by_executability("EXECUTABLE_PASSES"):
+        assert e.get("code_classification") == "EXECUTABLE_TEST_PASSES"
+
+
+def test_wf173_wave005_global_reconciliation_present():
+    idx = get_index()
+    rec = idx.get("wave005_global_reconciliation", {})
+    assert rec, "wave005_global_reconciliation must be present"
+
+
+def test_wf174_wave005_global_status():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+
+
+def test_wf175_wave005_brody_primary_census_complete():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    assert rec["brody_primary_census_complete"] is True
+    assert rec["brody_primary_total"] == 902
+
+
+def test_wf176_wave005_breakdown_sums_to_902():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    bd = rec["breakdown"]
+    total = bd["WAVE005_A"] + bd["WAVE005_B"] + bd["WAVE005_C"] + bd["WAVE005_D"] + bd["WAVE005_E"] + bd["WAVE005_F"]
+    assert total == 902
+    assert bd["total"] == 902
+
+
+def test_wf177_wave005_subwave_closed():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    closed = rec["subwave_closed"]
+    assert "WAVE005_E" in closed
+    assert "WAVE005_F" in closed
+
+
+def test_wf178_wave005_subwave_blockers_total_16():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    assert rec["subwave_blockers_total"] == 16
+
+
+def test_wf179_wave005_blockers_detail():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    detail = rec["subwave_blockers_detail"]
+    assert detail["WAVE005_A"] == 0
+    assert detail["WAVE005_B"] == 9
+    assert detail["WAVE005_C"] == 2
+    assert detail["WAVE005_D"] == 5
+    assert detail["WAVE005_E"] == 0
+    assert detail["WAVE005_F"] == 0
+    assert sum(detail.values()) == 16
+
+
+def test_wf180_wave005_not_fully_closed():
+    idx = get_index()
+    rec = idx["wave005_global_reconciliation"]
+    assert rec["wave005_fully_closed"] is False
+
+
+def test_wf181_brody_panel_consumer_says_legacy():
+    tsx = get_tsx_entries()
+    e = tsx[0]
+    dest = e.get("consumer_or_destination", "")
+    assert "LEGACY" in dest or "superseded" in dest.lower() or "ChatView" in dest
+
+
+def test_wf182_brody_response_composer_consumer_app_tsx():
+    ts_entries = get_ts_entries()
+    e = ts_entries[0]
+    dest = e.get("consumer_or_destination", "")
+    assert "App.tsx" in dest or "composeBrodyResponse" in dest
+
+
+def test_wf183_no_entry_has_indexed_status():
+    for e in get_entries():
+        assert e.get("status") != "INDEXED", f"Entry still INDEXED: {e['path']}"
+
+
+def test_wf184_tooling_modules_limitations_live_server():
+    for e in get_tooling_module_entries():
+        lim = e.get("limitations", "")
+        assert "LIVE_SERVER_REQUIRED" in lim or "port 8000" in lim
+
+
+def test_wf185_executable_tests_limitations_none():
+    for e in get_entries_by_executability("EXECUTABLE_PASSES"):
+        lim = e.get("limitations", "")
+        assert "NONE" in lim

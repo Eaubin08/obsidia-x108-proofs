@@ -20,8 +20,8 @@
   "wave_registry": {
     "WAVE005_F": {
       "subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "AGENTS_FILE_WIRING_WAVE005_F_INDEXED",
-      "scope_complete": false,
+      "status": "AGENTS_FILE_WIRING_WAVE005_F_CLOSED",
+      "scope_complete": true,
       "covered_slice": "WAVE005_F_BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
       "functional_files_accounted": 66,
       "files_with_explicit_blocker": 0,
@@ -37,7 +37,7 @@
       "primary_index_path": "periphery/agents/brody_legacy_archive_tooling_review.index.json",
       "local_state_path": null,
       "commits": [],
-      "blocker_note": "Wave005_F INDEXED. All 66 files indexed. 0 blockers. 0 unresolved. Closes Brody primary census (902 total).",
+      "blocker_note": "Wave005_F CLOSED. All 66 files proved. 0 blockers. 0 unresolved. Closes Brody primary census (902 total).",
       "primary_files_with_proved_relation": 66,
       "primary_files_unresolved": 0,
       "remaining_after_wave005f": 0,
@@ -234,7 +234,8 @@
       "WAVE005_F"
     ],
     "wave_slices_closed": [
-      "WAVE005_E"
+      "WAVE005_E",
+      "WAVE005_F"
     ],
     "wave_slices_fully_closed": [
       "WAVE001",
@@ -250,7 +251,7 @@
     "wave_slices_global_registration_blocked": [
       "WAVE005_A"
     ],
-    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B, C, D: PARTIALLY_BLOCKED with documented blockers. E: CLOSED (0 blockers). F: INDEXED (0 blockers, closes Brody primary census at 902 files).",
+    "note_wave005_partial": "WAVE005 has 6 subwaves (A-F). A: CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED. B, C, D: PARTIALLY_BLOCKED with documented blockers. E: CLOSED (0 blockers). F: CLOSED (0 blockers, closes Brody primary census at 902 files).",
     "gross_wave_index_entries": 1924,
     "gross_wave_index_note": "167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D_primary)+124(W5E)+66(W5F)=1924",
     "gross_documentary_rows_including_secondary": 1925,
@@ -313,5 +314,41 @@
     ]
   },
   "blocker_queue": [],
-  "orphan_confirmed_queue": []
+  "orphan_confirmed_queue": [],
+  "wave005_global_reconciliation": {
+    "brody_primary_census_complete": true,
+    "brody_primary_total": 902,
+    "breakdown": {
+      "WAVE005_A": 11,
+      "WAVE005_B": 144,
+      "WAVE005_C": 51,
+      "WAVE005_D": 506,
+      "WAVE005_E": 124,
+      "WAVE005_F": 66,
+      "total": 902
+    },
+    "subwave_closed": [
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "subwave_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "subwave_global_registration_blocked": [
+      "WAVE005_A"
+    ],
+    "subwave_blockers_total": 16,
+    "subwave_blockers_detail": {
+      "WAVE005_A": 0,
+      "WAVE005_B": 9,
+      "WAVE005_C": 2,
+      "WAVE005_D": 5,
+      "WAVE005_E": 0,
+      "WAVE005_F": 0
+    },
+    "wave005_fully_closed": false,
+    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+  }
 }

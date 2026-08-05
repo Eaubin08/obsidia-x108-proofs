@@ -103,7 +103,7 @@
       "not_executable_artifacts": 62,
       "not_a_test_modules": 2,
       "executable_passes": 2,
-      "status": "AGENTS_FILE_WIRING_WAVE005_F_INDEXED",
+      "status": "AGENTS_FILE_WIRING_WAVE005_F_CLOSED",
       "files_with_explicit_blocker": 0,
       "primary_files_with_proved_relation": 66,
       "primary_files_unresolved": 0,
@@ -192,7 +192,8 @@
       "WAVE005_F"
     ],
     "wave_slices_closed": [
-      "WAVE005_E"
+      "WAVE005_E",
+      "WAVE005_F"
     ],
     "wave_slices_fully_closed": [
       "WAVE001",
@@ -345,5 +346,24 @@
     "cross_wave_primary_overlaps": 0
   },
   "unique_primary_paths_accounted": 1757,
-  "unique_primary_note": "Recalculated: 1757 = 1691(W1-W5E_unique) + 66(W5F). W1xW2 overlap=167. W5F overlap with prior=0. SILENT_DOUBLE_COUNT=0."
+  "unique_primary_note": "Recalculated: 1757 = 1691(W1-W5E_unique) + 66(W5F). W1xW2 overlap=167. W5F overlap with prior=0. SILENT_DOUBLE_COUNT=0.",
+  "wave005_global_reconciliation": {
+    "brody_primary_census_complete": true,
+    "brody_primary_total": 902,
+    "subwave_closed": [
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "subwave_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "subwave_global_registration_blocked": [
+      "WAVE005_A"
+    ],
+    "subwave_blockers_total": 16,
+    "wave005_fully_closed": false,
+    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+  }
 }

@@ -534,7 +534,7 @@ def test_ga_088_wave005f_registered_in_global_state():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     assert "WAVE005_F" in d["wave_registry"]
     w5f = d["wave_registry"]["WAVE005_F"]
-    assert w5f["status"] == "AGENTS_FILE_WIRING_WAVE005_F_INDEXED"
+    assert w5f["status"] == "AGENTS_FILE_WIRING_WAVE005_F_CLOSED"
     assert w5f["functional_files_accounted"] == 66
     assert w5f["files_with_explicit_blocker"] == 0
     assert w5f["primary_files_with_proved_relation"] == 66
@@ -546,7 +546,7 @@ def test_ga_089_wave005f_in_artifact_index_manifests():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     assert "WAVE005_F" in d["wave_file_manifests"]
     w5f = d["wave_file_manifests"]["WAVE005_F"]
-    assert w5f["status"] == "AGENTS_FILE_WIRING_WAVE005_F_INDEXED"
+    assert w5f["status"] == "AGENTS_FILE_WIRING_WAVE005_F_CLOSED"
     assert w5f["files_indexed"] == 66
     assert w5f["files_with_explicit_blocker"] == 0
     assert w5f["primary_files_with_proved_relation"] == 66
@@ -633,3 +633,113 @@ def test_ga_100_wave005f_executable_counts():
     assert w5f["not_executable_artifacts"] == 62
     assert w5f["not_a_test_modules"] == 2
     assert w5f["executable_passes"] == 2
+
+
+# ---------------------------------------------------------------------------
+# GA-101 to GA-115: Wave005 global reconciliation
+# ---------------------------------------------------------------------------
+
+def test_ga_101_wave005f_scope_complete_true():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    assert d["wave_registry"]["WAVE005_F"]["scope_complete"] is True
+
+
+def test_ga_102_wave005f_closed_in_global_summary():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    closed = d["global_summary"]["wave_slices_closed"]
+    assert "WAVE005_F" in closed
+    assert "WAVE005_E" in closed
+
+
+def test_ga_103_wave005f_closed_in_artifact_index_registry():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    closed = d["wave_status_registry"]["wave_slices_closed"]
+    assert "WAVE005_F" in closed
+    assert "WAVE005_E" in closed
+
+
+def test_ga_104_wave005_global_reconciliation_in_global_state():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d.get("wave005_global_reconciliation", {})
+    assert rec, "wave005_global_reconciliation must be present in global_state"
+
+
+def test_ga_105_wave005_global_status():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+
+
+def test_ga_106_wave005_brody_primary_census_complete():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["brody_primary_census_complete"] is True
+    assert rec["brody_primary_total"] == 902
+
+
+def test_ga_107_wave005_subwave_blockers_total_16():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["subwave_blockers_total"] == 16
+
+
+def test_ga_108_wave005_fully_closed_false():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["wave005_fully_closed"] is False
+
+
+def test_ga_109_wave005_global_reconciliation_in_artifact_index():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    rec = d.get("wave005_global_reconciliation", {})
+    assert rec, "wave005_global_reconciliation must be present in artifact_index"
+
+
+def test_ga_110_artifact_index_wave005_status():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+
+
+def test_ga_111_artifact_index_wave005_blockers_total():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["subwave_blockers_total"] == 16
+
+
+def test_ga_112_artifact_index_wave005_not_fully_closed():
+    d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
+    rec = d["wave005_global_reconciliation"]
+    assert rec["wave005_fully_closed"] is False
+
+
+def test_ga_113_wave005_breakdown_preserved():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    bd = rec["breakdown"]
+    assert bd["WAVE005_A"] == 11
+    assert bd["WAVE005_B"] == 144
+    assert bd["WAVE005_C"] == 51
+    assert bd["WAVE005_D"] == 506
+    assert bd["WAVE005_E"] == 124
+    assert bd["WAVE005_F"] == 66
+    assert bd["total"] == 902
+
+
+def test_ga_114_blockers_per_subwave():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    rec = d["wave005_global_reconciliation"]
+    detail = rec["subwave_blockers_detail"]
+    assert detail["WAVE005_A"] == 0
+    assert detail["WAVE005_B"] == 9
+    assert detail["WAVE005_C"] == 2
+    assert detail["WAVE005_D"] == 5
+    assert detail["WAVE005_E"] == 0
+    assert detail["WAVE005_F"] == 0
+
+
+def test_ga_115_wave005f_closed_does_not_affect_blocked_subwaves():
+    d = _load("periphery/agents/agents_file_wiring_global_state.json")
+    assert d["wave_registry"]["WAVE005_B"]["status"] == "AGENTS_FILE_WIRING_WAVE005_B_PARTIALLY_BLOCKED"
+    assert d["wave_registry"]["WAVE005_C"]["status"] == "AGENTS_FILE_WIRING_WAVE005_C_PARTIALLY_BLOCKED"
+    assert d["wave_registry"]["WAVE005_D"]["status"] == "AGENTS_FILE_WIRING_WAVE005_D_PARTIALLY_BLOCKED"

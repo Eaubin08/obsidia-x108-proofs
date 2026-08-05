@@ -9,9 +9,9 @@
   "can_act": false,
   "emits_act": false,
   "memory_write": false,
-  "generated_at": "2026-08-04",
-  "scope_complete": false,
-  "final_status": "AGENTS_FILE_WIRING_WAVE005_F_INDEXED",
+  "generated_at": "2026-08-05",
+  "scope_complete": true,
+  "final_status": "AGENTS_FILE_WIRING_WAVE005_F_CLOSED",
   "primary_files_with_proved_relation": 66,
   "primary_files_with_explicit_blocker": 0,
   "primary_files_unresolved": 0,
@@ -212,11 +212,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_AUTOMATION_SNAPSHOT_API_REPORT.md",
@@ -225,11 +230,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_EXISTING_AUTOMATION_MODULES_AUDIT.md",
@@ -238,11 +248,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_EXISTING_METRICS_AND_STATES_MAP.md",
@@ -251,11 +266,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FINAL_ANSWER_CAPABILITY_PATCH_REPORT.md",
@@ -264,11 +284,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FINAL_ANSWER_RESPONSE_MD_SPLIT_REPORT.md",
@@ -277,11 +302,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FULL_LIVE_RUNTIME_CLOSE_REPORT.md",
@@ -290,11 +320,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FULL_POINTER_MAP.md",
@@ -303,11 +338,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_GRAPHITI_LIVE_READONLY_REPORT.md",
@@ -316,11 +356,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_GRAPHITI_LIVE_RUNTIME_CLOSE_REPORT.md",
@@ -329,11 +374,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_LIVE_SMOKE_STRICT_REPORT.md",
@@ -342,11 +392,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_LLM_OBSIDIEN_SOURCE_DOCS_AUDIT.md",
@@ -355,11 +410,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_LOCAL_RESPONSE_ENGINE_AS_FINALIZER_REPORT.md",
@@ -368,11 +428,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_LOW_MATERIAL_TEXT_PREVIEW_PATCH_REPORT.md",
@@ -381,11 +446,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_NEXT_FIX_PLAN.md",
@@ -394,11 +464,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_NO_RAW_TUPLE_CLOSE_REPORT.md",
@@ -407,11 +482,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_OS_TRAD_IR_REVERSE_DISCOVERY_REPORT.md",
@@ -420,11 +500,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_P0_REAL_BACKEND_IMPLEMENTATION_REPORT.md",
@@ -433,11 +518,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_REAL_BACKEND_AUDIT_REPORT.md",
@@ -446,11 +536,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_REAL_MEMORY_RESPONSE_CHAIN_LIVE_RETEST_AFTER_PATCH.md",
@@ -459,11 +554,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_REAL_MODULE_DISCOVERY_FOR_API.md",
@@ -472,11 +572,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_REAL_RESPONSE_MD_PIPELINE_REPORT.md",
@@ -485,11 +590,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_MATRIX_REPORT.md",
@@ -498,11 +608,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RUNTIME_MODULE_USAGE_REPORT.md",
@@ -511,11 +626,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_SOURCE_OF_TRUTH_REBIND_REPORT.md",
@@ -524,11 +644,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_THREE_FOUNDATIONS_CURRENT_STATE_AUDIT.md",
@@ -537,11 +662,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_THREE_FOUNDATIONS_VALIDATION_REPORT.md",
@@ -550,11 +680,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_TREE_POLICY_BINDING_REPORT.md",
@@ -563,11 +698,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_UTF8_MOJIBAKE_AUDIT.md",
@@ -576,11 +716,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_UTF8_MOJIBAKE_FIX_FREEZE_REPORT.md",
@@ -589,11 +734,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_CREATOR_BOUNDARY_TEST_REPORT.md",
@@ -602,11 +752,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_FINAL_ANSWER_BINDING_REPORT.md",
@@ -615,11 +770,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_FULL_INTEGRATION_CLOSE_REPORT.md",
@@ -628,11 +788,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_LIVE_STACK_FINAL_SMOKE_REPORT.md",
@@ -641,11 +806,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_SOURCE_INSPECTION_REPORT.md",
@@ -654,11 +824,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_WORKBENCH_AUTHORITY_SNAPSHOT_REPORT.md",
@@ -667,11 +842,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_WORKBENCH_AUTOMATION_PANEL_REPORT.md",
@@ -680,11 +860,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_WORKBENCH_BINDING_GAP_REPORT.md",
@@ -693,11 +878,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_WORKBENCH_V1_4_12A_RENDER_REPORT.md",
@@ -706,11 +896,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/FINAL_BRODY_FULL_CLOSE_REPORT.md",
@@ -719,11 +914,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/V5B_PLUS_BRODY_RESPONSE_MODULE_AUDIT.md",
@@ -732,11 +932,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/V5B_PLUS_BRODY_RESPONSE_QUALITY_REPORT.md",
@@ -745,11 +950,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_D applies: FREEZE_REPORT_LINKED_TO_ARCHIVE_INDEX. Freeze archive report generated during Brody V5A/V5B/V1.4.12A integration sessions (2026-05-19 to 2026-05-20). Git commit 48ea81a (test(p80): full regression freeze local) anchors freeze corpus. Content headers confirm Date field and Brody system context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration/freeze session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: documentary freeze artifact, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.md",
@@ -758,13 +968,18 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_FOUNDATION_DOC_LINKED_TO_CANONICAL_SPEC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "File header: Status=FOUNDATION_A_PARTIAL, Date=2026-05-20. Content explains PARTIAL status (Neo4j offline during freeze). JSON pair BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.json confirmed present. Git commit 48ea81a anchors docs/freeze/ archive.",
-      "current_status": "INDEXED",
+      "current_status": "CLOSED",
       "json_pair": "docs/freeze/BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.json",
-      "freeze_status": "FOUNDATION_A_PARTIAL"
+      "freeze_status": "FOUNDATION_A_PARTIAL",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation JSON manifest (FOUNDATION_A/B/C), BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: canonical freeze specification",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.md",
@@ -773,13 +988,18 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_FOUNDATION_DOC_LINKED_TO_CANONICAL_SPEC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "File header: Status=FOUNDATION_B_READY, Date=2026-05-20. JSON pair BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.json confirmed present. Canonical session-memory specification for Foundation B.",
-      "current_status": "INDEXED",
+      "current_status": "CLOSED",
       "json_pair": "docs/freeze/BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.json",
-      "freeze_status": "FOUNDATION_B_READY"
+      "freeze_status": "FOUNDATION_B_READY",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation JSON manifest (FOUNDATION_A/B/C), BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: canonical freeze specification",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.md",
@@ -788,13 +1008,18 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_FOUNDATION_DOC_LINKED_TO_CANONICAL_SPEC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "File header: Status=FOUNDATION_C_READY, Date=2026-05-20. JSON pair BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.json confirmed present. Canonical true-response-structure specification for Foundation C.",
-      "current_status": "INDEXED",
+      "current_status": "CLOSED",
       "json_pair": "docs/freeze/BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.json",
-      "freeze_status": "FOUNDATION_C_READY"
+      "freeze_status": "FOUNDATION_C_READY",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation JSON manifest (FOUNDATION_A/B/C), BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: canonical freeze specification",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.json",
@@ -803,12 +1028,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_FOUNDATION_DOC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "Structured Foundation A freeze specification. Paired with BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.md (FOUNDATION_A_PARTIAL). JSON encodes project-memory freeze state as of 2026-05-20.",
-      "current_status": "INDEXED",
-      "md_pair": "docs/freeze/BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.md"
+      "current_status": "CLOSED",
+      "md_pair": "docs/freeze/BRODY_FOUNDATION_A_PROJECT_MEMORY_FREEZE.md",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation .md specification (FOUNDATION_A/B/C_SPEC.md)",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.json",
@@ -817,12 +1047,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_FOUNDATION_DOC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "Structured Foundation B freeze specification. Paired with BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.md (FOUNDATION_B_READY). JSON encodes session-memory follow-up freeze state.",
-      "current_status": "INDEXED",
-      "md_pair": "docs/freeze/BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.md"
+      "current_status": "CLOSED",
+      "md_pair": "docs/freeze/BRODY_FOUNDATION_B_SESSION_MEMORY_FOLLOWUP_FREEZE.md",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation .md specification (FOUNDATION_A/B/C_SPEC.md)",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.json",
@@ -831,12 +1066,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_FOUNDATION_DOC",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "Structured Foundation C freeze specification. Paired with BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.md (FOUNDATION_C_READY). JSON encodes true-response-structure freeze state.",
-      "current_status": "INDEXED",
-      "md_pair": "docs/freeze/BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.md"
+      "current_status": "CLOSED",
+      "md_pair": "docs/freeze/BRODY_FOUNDATION_C_TRUE_RESPONSE_STRUCTURE_FREEZE.md",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "Paired foundation .md specification (FOUNDATION_A/B/C_SPEC.md)",
+      "generator_or_source": "Brody foundation freeze session 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_COGNITIVE_MODULE_RESOLUTION_TABLE.json",
@@ -845,11 +1085,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_E applies: FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX. Structured JSON manifest of Brody runtime/cognitive state captured during freeze sessions. Co-located with GROUP_RULE_D reports in docs/freeze/. Git commit 48ea81a confirms generation context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_FULL_EXISTING_RUNTIME_SOURCE_MAP.json",
@@ -858,11 +1103,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_E applies: FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX. Structured JSON manifest of Brody runtime/cognitive state captured during freeze sessions. Co-located with GROUP_RULE_D reports in docs/freeze/. Git commit 48ea81a confirms generation context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_GLOBAL_BRANCHAGE_AUDIT.json",
@@ -871,11 +1121,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_E applies: FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX. Structured JSON manifest of Brody runtime/cognitive state captured during freeze sessions. Co-located with GROUP_RULE_D reports in docs/freeze/. Git commit 48ea81a confirms generation context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_REAL_MEMORY_RESPONSE_CHAIN_LIVE_RETEST_AFTER_PATCH.json",
@@ -884,11 +1139,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_E applies: FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX. Structured JSON manifest of Brody runtime/cognitive state captured during freeze sessions. Co-located with GROUP_RULE_D reports in docs/freeze/. Git commit 48ea81a confirms generation context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_V1_4_12A_LIVE_SMOKE_OUTPUT.json",
@@ -897,11 +1157,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_E applies: FREEZE_MANIFEST_LINKED_TO_ARCHIVE_INDEX. Structured JSON manifest of Brody runtime/cognitive state captured during freeze sessions. Co-located with GROUP_RULE_D reports in docs/freeze/. Git commit 48ea81a confirms generation context.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW index (BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1)",
+      "generator_or_source": "Brody integration session 2026-05-19 to 2026-05-20, git anchor 48ea81a",
+      "limitations": "NOT_EXECUTABLE: structured freeze manifest, no code consumer",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/RECOVERY_VALIDATION_SUMMARY.txt",
@@ -910,11 +1175,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/protected_files_diff.txt",
@@ -923,11 +1193,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/pytest_all_output.txt",
@@ -936,11 +1211,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/pytest_api_output.txt",
@@ -949,11 +1229,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/pytest_non_sovereignty_output.txt",
@@ -962,11 +1247,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/sigma_output.txt",
@@ -975,11 +1265,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "docs/freeze/BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234/workbench_build_output.txt",
@@ -988,11 +1283,16 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "GROUP_RULE_F applies: FREEZE_RECOVERY_ARTIFACT_LINKED_TO_VALIDATION_RUN. Pytest/sigma/build output captured during BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY run 2026-05-20T06:42:34. Directory name encodes timestamp. RECOVERY_VALIDATION_SUMMARY.txt links all outputs to recovery session.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY_20260520_064234 session summary",
+      "generator_or_source": "BRODY_RIGHTS_AUTHORITY_FINAL_VALIDATION_RECOVERY recovery session 2026-05-20T06:42:34",
+      "limitations": "NOT_EXECUTABLE: pytest/build stdout capture artifact",
+      "blocker_id": null
     },
     {
       "path": "apps/obsidia-workbench/audit_brody.py",
@@ -1001,11 +1301,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "TOOLING_MODULE_LINKED_TO_RUNTIME_API",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_A_TEST",
       "evidence": "Python script: import requests; POSTs to http://127.0.0.1:8000/api/brody/chat (Brody runtime API). Git commits 8c38f54 (test(p39): add full server matrix runtime validation), 3ae0e30 (feat(p29): expose source runtime status in api and workbench). NOT_A_TEST: requires live server on port 8000, no pytest marker.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "http://127.0.0.1:8000/api/brody/chat (Brody runtime API)",
+      "generator_or_source": "developer tooling, git commit 8c38f54",
+      "limitations": "LIVE_SERVER_REQUIRED: calls API at port 8000; NOT_A_TEST",
+      "blocker_id": null,
+      "code_classification": "TOOLING_SOURCE_WITH_PROVED_CONSUMER"
     },
     {
       "path": "apps/obsidia-workbench/src/components/BrodyPanel.tsx",
@@ -1014,11 +1320,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "UI_COMPONENT_LINKED_TO_WORKBENCH_APP",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "React component (TSX). Imports from lucide-react (Send, Lock, AlertCircle). Git commit 7495ca4 (feat(workbench): route Brody support calls through dev proxy). UI panel wired to Brody workbench app.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "LEGACY: superseded by ChatView.tsx (WORKBENCH_V2_BUILD_REPORT.md: 'replaces BrodyPanel in routing')",
+      "generator_or_source": "git commit 7495ca4 (feat(workbench): route Brody support calls through dev proxy)",
+      "limitations": "NO_CURRENT_IMPORTER: ChatView.tsx supersedes this component. Kept as legacy review artifact. No live code consumer.",
+      "blocker_id": null,
+      "code_classification": "LEGACY_TOOLING_LINKED_TO_REVIEW_WORKFLOW"
     },
     {
       "path": "apps/obsidia-workbench/src/lib/brodyResponseComposer.ts",
@@ -1027,11 +1339,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "UI_FALLBACK_MODULE_LINKED_TO_RUNTIME_API",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_EXECUTABLE",
       "evidence": "File header: 'FALLBACK ONLY. Primary Brody response source is POST /api/brody/chat (port 8012). This module is used only when the backend API is unreachable.' Git commit 7495ca4. Fallback module consumed by workbench frontend when primary API unavailable.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "apps/obsidia-workbench/src/App.tsx (L21: import { composeBrodyResponse })",
+      "generator_or_source": "git commit 7495ca4 (feat(workbench): route Brody support calls through dev proxy)",
+      "limitations": "NOT_EXECUTABLE: TypeScript module",
+      "blocker_id": null,
+      "code_classification": "UI_HELPER_IMPORTED_BY_COMPONENT"
     },
     {
       "path": "tests/legacy_root/brody_api/test_conscience.py",
@@ -1040,11 +1358,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "LEGACY_TEST_LINKED_TO_BRODY_API",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "EXECUTABLE_PASSES",
       "evidence": "Docstring: 'Legacy Brody conscience test CI-safe rewrite. Uses FastAPI TestClient (no live server, no network, runs in CI). Validates /api/brody/chat: HTTP 200, decision_authority=KX108_ONLY, emits_act=False, final_answer present.' Git commit cdb636d (fix: make legacy brody conscience test ci-safe).",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "apps/obsidia_api.main (FastAPI TestClient target)",
+      "generator_or_source": "git commit cdb636d (fix: make legacy brody conscience test ci-safe)",
+      "limitations": "NONE: CI-safe rewrite, no live server required",
+      "blocker_id": null,
+      "code_classification": "EXECUTABLE_TEST_PASSES"
     },
     {
       "path": "tests/ui/test_chatview_brody_terminal_view.py",
@@ -1053,11 +1377,17 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "UI_TEST_LINKED_TO_UI_COMPONENT",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "EXECUTABLE_PASSES",
       "evidence": "Tests that apps/obsidia-workbench/src/views/ChatView.tsx contains BrodyTerminalView function, OBSIDIA_TERMINAL_VIEW_V1 markers, and BrodyPanel wiring. Git commit 5c07997 (feat: freeze Brody terminal chat view F9).",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "apps/obsidia-workbench/src/views/ChatView.tsx (file read assertion)",
+      "generator_or_source": "git commit 5c07997 (feat: freeze Brody terminal chat view F9)",
+      "limitations": "NONE: reads file only, no live server required",
+      "blocker_id": null,
+      "code_classification": "EXECUTABLE_TEST_PASSES"
     },
     {
       "path": "tools/brody_chat.py",
@@ -1066,11 +1396,59 @@
       "canonicality_status": "CANONICAL",
       "relation_type": "TOOLING_MODULE_LINKED_TO_RUNTIME_API",
       "owner_subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
-      "status": "INDEXED",
+      "status": "CLOSED",
       "semantic_verdict": "CONFIRMED",
       "executability_status": "NOT_A_TEST",
       "evidence": "CLI tool for interactive Brody chat. Git commits fe4a0b5 (feat: freeze F20 Gencoin cognitive ledger visibility), 653a4c7 (feat: freeze F15C strict live surface repair), 96911a3 (feat: expose Brody adaptive response policy phase 12J-B). NOT_A_TEST: CLI script (#!/usr/bin/env python3), no pytest marker.",
-      "current_status": "INDEXED"
+      "current_status": "CLOSED",
+      "primary_owner": "WAVE005_F",
+      "consumer_or_destination": "http://127.0.0.1:8000 (Brody runtime API via CLI)",
+      "generator_or_source": "developer tooling, git commit fe4a0b5",
+      "limitations": "LIVE_SERVER_REQUIRED: calls API at port 8000; NOT_A_TEST",
+      "blocker_id": null,
+      "code_classification": "TOOLING_SOURCE_WITH_PROVED_CONSUMER"
     }
-  ]
+  ],
+  "wave005_global_reconciliation": {
+    "brody_primary_census_complete": true,
+    "brody_primary_total": 902,
+    "breakdown": {
+      "WAVE005_A": 11,
+      "WAVE005_B": 144,
+      "WAVE005_C": 51,
+      "WAVE005_D": 506,
+      "WAVE005_E": 124,
+      "WAVE005_F": 66,
+      "total": 902
+    },
+    "subwave_closed": [
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "subwave_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "subwave_global_registration_blocked": [
+      "WAVE005_A"
+    ],
+    "subwave_blockers_total": 16,
+    "subwave_blockers_detail": {
+      "WAVE005_A": 0,
+      "WAVE005_B": 9,
+      "WAVE005_C": 2,
+      "WAVE005_D": 5,
+      "WAVE005_E": 0,
+      "WAVE005_F": 0
+    },
+    "wave005_fully_closed": false,
+    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED",
+    "gross_campaign_index_entries": 1924,
+    "unique_primary_paths": 1757,
+    "silent_double_count": 0,
+    "gross_formula": "1924 = 167(W1)+167(W2)+680(W3)+8(W4)+11(W5A)+144(W5B)+51(W5C)+506(W5D)+124(W5E)+66(W5F)",
+    "unique_formula": "1757 = 1924 - 167(W1xW2 documented overlap)",
+    "note": "Wave005 is CENSUS_COMPLETE with documented blockers in B/C/D and global registration blocked at A. No further sub-wave additions required."
+  }
 }
