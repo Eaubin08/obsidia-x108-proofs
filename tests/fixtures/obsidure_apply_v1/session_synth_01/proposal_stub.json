@@ -1,0 +1,33 @@
+{
+  "_note": "STUB pour tests unitaires déterministes uniquement. NE PAS utiliser comme preuve de fermeture Checkpoint 3.",
+  "proposal_id": "stub-proposal-synth-01",
+  "session_id": "synth-01",
+  "base_sha": "d072baa612a60e1df5b6e671c11f5510183eefd2",
+  "worktree": "TERMINAL_BOUNDED_V1",
+  "objective": "Mettre à jour PERIPHERAL_VERSION de v0 à v1 dans target_peripheral.py",
+  "approved_scope": [
+    "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py"
+  ],
+  "proposal_files": [
+    "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py"
+  ],
+  "operations": [
+    {
+      "file": "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py",
+      "operation_type": "MODIFY",
+      "reason": "Mise à jour PERIPHERAL_VERSION v0 → v1",
+      "expected_change": "PERIPHERAL_VERSION = 'v1'"
+    }
+  ],
+  "patches": [
+    {
+      "path": "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py",
+      "sandbox_path": "__FIXTURE_SANDBOX__",
+      "action": "MODIFY"
+    }
+  ],
+  "protected_paths_check": "CLEAN",
+  "human_approved": false,
+  "status": "AWAITING_HUMAN_APPROVED_WRITE",
+  "created_at": "2026-08-17T00:00:00+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "session_id": "synth-01",
+  "base_sha": "d072baa612a60e1df5b6e671c11f5510183eefd2",
+  "worktree": "TERMINAL_BOUNDED_V1",
+  "approved_scope": [
+    "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py"
+  ],
+  "max_files": 20,
+  "approved_by": "HUMAN",
+  "approved_at": "2026-08-17T00:00:00+00:00"
+}

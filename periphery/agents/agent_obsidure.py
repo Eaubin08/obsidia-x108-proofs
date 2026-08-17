@@ -3470,13 +3470,28 @@ class AgentObsidure:
 
     # ── APPLY PROPOSAL ───────────────────────────────────────────────────
 
-    def apply_proposal(self, proposal_id: str) -> Dict[str, Any]:
+    def apply_proposal(
+        self,
+        proposal_id: str,
+        target_root: Optional[Path] = None,
+        proposals_dir: Optional[Path] = None,
+    ) -> Dict[str, Any]:
         """
         HUMAN_APPROVED_WRITE : copie les fichiers sandbox vers leur destination finale.
         Ne touche jamais kernel / proofs / sealed / V18.
         Retourne un bilan {applied, skipped, errors}.
+
+        target_root    : racine de destination alternative (worktree isolé).
+            Par défaut = REPO_ROOT (comportement original).
+            OBSIDURE_BOUNDED_APPLY_V1 passe le worktree de session ici.
+        proposals_dir  : répertoire racine des proposals.
+            Par défaut = PROPOSALS_DIR du module (comportement original).
+            Permet l'isolation dans les tests sans monkeypatching global.
         """
-        proposal_dir = REPO_ROOT / "_PATCH_PROPOSALS" / proposal_id
+        effective_root: Path = target_root if target_root is not None else REPO_ROOT
+        effective_proposals: Path = proposals_dir if proposals_dir is not None else PROPOSALS_DIR
+
+        proposal_dir = effective_proposals / proposal_id
         proposal_json = proposal_dir / "proposal.json"
         if not proposal_json.exists():
             raise FileNotFoundError(f"Proposal introuvable : {proposal_json}")
@@ -3489,7 +3504,6 @@ class AgentObsidure:
         for patch in data.get("patches", []):
             rel_path   = patch.get("path", "")
             sandbox    = patch.get("sandbox_path", "")
-            action     = patch.get("action", "")
 
             if _is_protected(rel_path):
                 skipped.append({"path": rel_path, "reason": "PROTECTED"})
@@ -3501,7 +3515,7 @@ class AgentObsidure:
                 self._log(f"  ERREUR sandbox absent : {rel_path}", level="ERROR")
                 continue
 
-            dst = REPO_ROOT / rel_path
+            dst = effective_root / rel_path
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(sandbox, dst)
             applied.append(rel_path)
@@ -3518,6 +3532,7 @@ class AgentObsidure:
             "skipped": skipped,
             "errors": errors,
             "status": "APPLIED" if not errors else "APPLIED_WITH_ERRORS",
+            "target_root": str(effective_root),
         }
         self._log(f"\n  Bilan apply : {len(applied)} appliqué(s), {len(skipped)} ignoré(s), {len(errors)} erreur(s).")
         return bilan
