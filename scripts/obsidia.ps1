@@ -561,6 +561,12 @@ if ($args.Count -eq 0 -or $_first -eq "start") {
     # Plan uniquement - ne lance rien
     Print-StartPlan
 
+} elseif ($_first -eq "build") {
+    # Moteur de build borne -- PLAN_PROPOSED puis HUMAN_APPROVED_BUILD_SESSION
+    # decision_authority = KX108_ONLY | auto_commit = NEVER | auto_push = NEVER
+    $rest = if ($args.Count -gt 1) { $args[1..($args.Count - 1)] } else { @() }
+    python "$X108\scripts\obsidia_build.py" @rest
+
 } elseif ($_first -eq "chat") {
     # Gateway fusionne : router pre-inference -> memory -> brody -> claude -p
     # Level 0/2 repondus localement (0 token). Escalade LLM uniquement si necessaire.

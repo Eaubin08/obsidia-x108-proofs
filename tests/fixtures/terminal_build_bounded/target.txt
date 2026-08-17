@@ -1,0 +1,3 @@
+TERMINAL_BUILD_BOUNDED_V1_TARGET_V0
+Cible synthetique pour le moteur de build borne.
+Non protegee. Modifiable uniquement dans le worktree de session.

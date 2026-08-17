@@ -7754,6 +7754,18 @@ def interactive_tui_shell(registry: dict) -> int:
             active_right_tab = "PLAN"
             continue
 
+        # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
+        _first_tui = line.split(None, 1)
+        if _first_tui and _first_tui[0].lower() == "build":
+            _obj_tui = _first_tui[1].strip().strip('"').strip("'") if len(_first_tui) > 1 else ""
+            _build_output_tui = _handle_build_plan(objective=_obj_tui)
+            main_lines = _build_output_tui.splitlines()
+            plan_lines = ["=== BUILD ===", "", "mode: PLAN_PROPOSED",
+                          "auto_commit: NEVER", "", "AUTORITE:", "  X108=FINAL"]
+            current_layer = "TOOLING"
+            active_right_tab = "PLAN"
+            continue
+
         resp = answer_router(line, registry)
         resp["session_id"] = session_id
         write_receipt(registry, resp)
@@ -7767,6 +7779,39 @@ def interactive_tui_shell(registry: dict) -> int:
 
 
 # ─── FIN TUI LAYOUT V2 ───────────────────────────────────────────────────────
+
+
+# ─── BUILD PLAN HANDLER (aucun subprocess, import direct) ────────────────────
+
+def _handle_build_plan(objective: str) -> str:
+    """
+    Appelle obsidia_build.compute_plan et formate le resultat.
+    Aucun subprocess. Aucune mutation. Retourne le texte PLAN_PROPOSED.
+    Respect de la doctrine: stdlib uniquement, zero subprocess.
+    """
+    if not objective:
+        return (
+            "GUIDE: build \"<objectif>\"\n"
+            "  Phase 1 uniquement : PLAN_PROPOSED, zero ecriture.\n"
+            "  Phase 2 (approbation) : via PowerShell :\n"
+            "    powershell.exe -File scripts\\obsidia.ps1 build \"<obj>\" "
+            "--approve <token>"
+        )
+    try:
+        # Import dans le meme dossier que obsidia_cli.py (scripts/)
+        import importlib, sys as _sys
+        _scripts_dir = str(Path(__file__).resolve().parent)
+        if _scripts_dir not in _sys.path:
+            _sys.path.insert(0, _scripts_dir)
+        _mod = importlib.import_module("obsidia_build")
+        _base_sha = _mod.get_base_sha()
+        _plan = _mod.compute_plan(objective, _base_sha)
+        _stack = _mod._probe_api_status()
+        return _mod.format_plan_proposed(_plan, _stack)
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    except Exception as exc:
+        return f"[BUILD_ERROR] {exc}"
 
 
 def interactive_shell(registry: dict) -> int:
@@ -7816,6 +7861,11 @@ def interactive_shell(registry: dict) -> int:
             continue
         first = line.split(None, 1)
         cmd0 = first[0].lower()
+        # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
+        if cmd0 == "build":
+            _obj_plain = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
+            print(_handle_build_plan(objective=_obj_plain))
+            continue
         if cmd0 in ("raw", "json") or low == "doctor":
             target = line if low == "doctor" else (
                 first[1].strip().strip('"').strip("'") if len(first) > 1 else "")
@@ -8655,6 +8705,11 @@ def main(argv: list[str]) -> int:
         print(text)
         return 0
     cmd0 = argv[0].lower()
+    # Commande build: import direct depuis obsidia_build, aucun subprocess
+    if cmd0 == "build":
+        _obj_main = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_handle_build_plan(objective=_obj_main))
+        return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
         target = raw if normalize(raw) == "doctor" else (

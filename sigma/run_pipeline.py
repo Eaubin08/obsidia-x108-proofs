@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState
-from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline
+from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState, ToolingBuildState
+from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline, run_tooling_build_pipeline
 from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor
 
 
@@ -333,6 +333,94 @@ def _apply_p3t9b_rule(result_dict: dict, caller_meta: dict, meta_keys: tuple) ->
     return result_dict
 
 
+REQUIRED_TOOLING_BUILD_FIELDS = {
+    "session_id",
+    "objective",
+    "base_sha",
+    "manifest_hash",
+    "human_approval_status",
+    "worktree_isolated",
+    "branch_isolated",
+    "tests_results",
+    "gates_results",
+    "commit_status",
+    "push_status",
+    "merge_status",
+    "auto_commit_disabled",
+    "auto_push_disabled",
+    "auto_merge_disabled",
+    "decision_authority",
+}
+
+ALLOWED_TOOLING_BUILD_FIELDS = {
+    # Identification
+    "session_id", "objective", "base_sha", "manifest_hash", "diff_hash",
+    # Scope
+    "approved_scope", "actual_touched_files", "new_files", "deleted_files",
+    # Statuts
+    "protected_scope_status", "human_approval_status", "obsidure_status",
+    # Isolation
+    "worktree_isolated", "branch_isolated",
+    # Garde-fous
+    "auto_commit_disabled", "auto_push_disabled", "auto_merge_disabled",
+    # Tests/gates
+    "tests_results", "gates_results", "first_failure",
+    # Git ops
+    "commit_status", "push_status", "merge_status",
+    # Pré-conditions
+    "unknowns", "contradictions", "risk_flags",
+    # Autorité
+    "decision_authority",
+}
+
+TOOLING_BUILD_BOOL_FIELDS = {
+    "worktree_isolated", "branch_isolated",
+    "auto_commit_disabled", "auto_push_disabled", "auto_merge_disabled",
+}
+
+TOOLING_BUILD_STRING_FIELDS = {
+    "session_id", "objective", "base_sha", "manifest_hash", "diff_hash",
+    "protected_scope_status", "human_approval_status", "obsidure_status",
+    "tests_results", "gates_results", "first_failure",
+    "commit_status", "push_status", "merge_status",
+    "decision_authority",
+}
+
+TOOLING_BUILD_LIST_FIELDS = {
+    "approved_scope", "actual_touched_files", "new_files", "deleted_files",
+    "unknowns", "contradictions", "risk_flags",
+}
+
+
+def validate_tooling_build_payload(state_data: dict) -> None:
+    if not isinstance(state_data, dict):
+        raise ValueError("tooling_build payload must be a JSON object")
+
+    missing = sorted(REQUIRED_TOOLING_BUILD_FIELDS - set(state_data.keys()))
+    if missing:
+        raise ValueError(f"Missing required tooling_build fields: {', '.join(missing)}")
+
+    unknown = sorted(set(state_data.keys()) - ALLOWED_TOOLING_BUILD_FIELDS)
+    if unknown:
+        raise ValueError(f"Unknown tooling_build fields: {', '.join(unknown)}")
+
+    for f in TOOLING_BUILD_BOOL_FIELDS:
+        if f in state_data and not isinstance(state_data[f], bool):
+            raise ValueError(f"Invalid tooling_build field type: {f} must be a boolean")
+
+    for f in TOOLING_BUILD_STRING_FIELDS:
+        if f in state_data and not isinstance(state_data[f], str):
+            raise ValueError(f"Invalid tooling_build field type: {f} must be a string")
+
+    for f in TOOLING_BUILD_LIST_FIELDS:
+        val = state_data.get(f)
+        if val is not None and not isinstance(val, list):
+            raise ValueError(f"Invalid tooling_build field type: {f} must be a list")
+
+    if state_data.get("decision_authority") != "KX108_ONLY":
+        raise ValueError("Invalid tooling_build field: decision_authority must be 'KX108_ONLY'")
+
+
 def main():
     if len(sys.argv) < 3:
         print(json.dumps({"error": "Usage: run_pipeline.py <domain> <json_state_or_json_file>"}), file=sys.stderr)
@@ -376,8 +464,13 @@ def main():
         elif domain == "gps_defense_aviation":
             state = GpsDefenseAviationState(**state_data)
             result = run_gps_defense_aviation_pipeline(state)
+        elif domain == "tooling_build":
+            state_data.pop("domain", None)
+            validate_tooling_build_payload(state_data)
+            state = ToolingBuildState(**state_data)
+            result = run_tooling_build_pipeline(state)
         else:
-            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_defense_aviation"}), file=sys.stderr)
+            print(json.dumps({"error": f"Unknown domain: {domain}. Use trading|bank|ecom|gps_defense_aviation|tooling_build"}), file=sys.stderr)
             sys.exit(1)
 
         result_dict = envelope_to_dict(result)
