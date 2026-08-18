@@ -53,13 +53,18 @@ from obsidia_batch_execution import (  # noqa: E402
     run_execution,
     executable_candidate_count,
     real_session_executor_via_compute_plan,
-    create_approval_record,
+    load_approval_artifact,
+    verify_approval_artifact,
+    store_approval_artifact,
+    compute_approval_record_hash,
     _validate_approval,
+    _approval_path,
     cmd_execution_status,
     cmd_execution_inspect,
     cmd_execution_list,
     _compute_aggregate_status,
     _load_execution,
+    _save_execution,
     APPROVED_FOR_BOUNDED_EXECUTION,
     EXECUTION_APPROVAL_INVALID,
     SOURCE_INTEGRITY_MISMATCH,
@@ -115,6 +120,42 @@ def _materialize_source(tmp_path, eid: str, content: bytes = b"synthetic\n") -> 
     src_file = src_dir / f"{eid}.py"
     src_file.write_bytes(content)
     return hashlib.sha256(content).hexdigest()[:16]
+
+
+# ─── Helper de TEST UNIQUEMENT — frontiere d'autorite externe simulee ────────
+#
+# obsidia_batch_execution.py ne fabrique JAMAIS approved_by="HUMAN" depuis
+# une enveloppe : ce helper simule la frontiere externe (hors module) qui
+# construit un record complet, calcule son hash, puis le stocke via
+# store_approval_artifact (persistance stricte, append-only). Rien ici ne
+# represente une capacite de production.
+
+def _build_synthetic_approval_record(envelope: dict, overrides: dict | None = None, approval_id: str | None = None) -> dict:
+    import uuid
+    record = {
+        "approval_id": approval_id or uuid.uuid4().hex[:16],
+        "approval_schema_version": SCHEMA_VERSION,
+        "created_at": "2026-01-01T00:00:00+00:00",
+        "batch_execution_id": envelope["batch_execution_id"],
+        "batch_id": envelope["batch_id"],
+        "batch_hash": envelope["batch_hash"],
+        "candidate_scope_hash": envelope["candidate_scope_hash"],
+        "approved_by": "HUMAN",
+        "approval_status": APPROVED_FOR_BOUNDED_EXECUTION,
+        "decision_authority": DECISION_AUTHORITY,
+    }
+    if overrides:
+        record.update(overrides)
+    record["approval_record_hash"] = compute_approval_record_hash(record)
+    return record
+
+
+def _create_synthetic_approval(envelope: dict, execution_dir, overrides: dict | None = None) -> str:
+    """Construit + stocke un artefact d'approbation synthetique VALIDE. Retourne son approval_id."""
+    record = _build_synthetic_approval_record(envelope, overrides)
+    result = store_approval_artifact(record, execution_dir)
+    assert result["status"] == "STORED"
+    return record["approval_id"]
 
 
 def _prepare_synthetic_batch(tmp_path, entries: list[dict], candidate_entry_ids: list[str], objective="synthetic"):
@@ -326,12 +367,12 @@ class TestRunExecutionScenarios:
 
     def test_all_act(self, tmp_path):
         env, ed = self._bcd(tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             return {"kx108_decision": "ACT", "session_id": f"sess-{child['candidate_entry_id']}"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["dep_B"]["execution_status"] == EXECUTED_ACT
         assert by_id["dep_A"]["execution_status"] == EXECUTED_ACT
@@ -340,14 +381,14 @@ class TestRunExecutionScenarios:
 
     def test_dependency_block(self, tmp_path):
         env, ed = self._bcd(tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "dep_B":
                 return {"kx108_decision": "BLOCK"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["dep_B"]["execution_status"] == EXECUTED_BLOCK
         assert by_id["dep_A"]["execution_status"] == DEPENDENCY_BLOCKED
@@ -357,14 +398,14 @@ class TestRunExecutionScenarios:
 
     def test_dependency_hold(self, tmp_path):
         env, ed = self._bcd(tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "dep_B":
                 return {"kx108_decision": "HOLD"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["dep_B"]["execution_status"] == EXECUTED_HOLD
         assert by_id["dep_A"]["execution_status"] == DEPENDENCY_BLOCKED
@@ -386,14 +427,14 @@ class TestRunExecutionScenarios:
             tmp_path, [a, b, c], ["trn_A", "trn_B", "trn_C"], objective="transitive",
         )
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "trn_C":
                 return {"kx108_decision": "BLOCK"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["trn_C"]["execution_status"] == EXECUTED_BLOCK
         assert by_id["trn_B"]["execution_status"] == DEPENDENCY_BLOCKED
@@ -411,7 +452,7 @@ class TestRunExecutionScenarios:
             tmp_path, [a, b, c], ["mix_A", "mix_B", "mix_C"], objective="mixed",
         )
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "mix_A":
@@ -420,19 +461,19 @@ class TestRunExecutionScenarios:
                 return {"kx108_decision": "HOLD"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert result["aggregate_status"] == BATCH_PARTIAL
 
     def test_independent_branch_continues_after_dependency_block(self, tmp_path):
         env, ed = self._bcd(tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "dep_B":
                 return {"kx108_decision": "BLOCK"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["dep_C"]["execution_status"] == EXECUTED_ACT
         assert by_id["dep_C"]["kx108_decision"] == "ACT"
@@ -443,7 +484,7 @@ class TestRunExecutionScenarios:
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["noop1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
         assert executable_candidate_count(env) == 0
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         called = []
 
@@ -451,7 +492,7 @@ class TestRunExecutionScenarios:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []  # jamais invoque : rien n'etait PLANNED
         assert result["aggregate_status"] == BATCH_EXECUTION_NOT_READY
 
@@ -459,14 +500,14 @@ class TestRunExecutionScenarios:
         entries = [_synthetic_entry("undef1", "periphery/undef1.py", "h1", operation_type=None)]
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["undef1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
 
     def test_run_execution_unknown_id(self, tmp_path):
@@ -480,12 +521,12 @@ class TestRunExecutionScenarios:
         entries = [_synthetic_entry("err1", "periphery/err1.py", _materialize_source(tmp_path, "err1", b"E\n"))]
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["err1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             return {"kx108_decision": "UNEXPECTED_VALUE"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert result["children"][0]["execution_status"] == EXECUTED_ERROR
 
 
@@ -513,78 +554,188 @@ class TestHumanApprovalGate:
 
     def test_wrong_execution_id_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        approval["batch_execution_id"] = "tampered_execution_id"
+        approval_id = _create_synthetic_approval(env, ed, {"batch_execution_id": "tampered_execution_id"})
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert "APPROVAL_WRONG_EXECUTION_ID" in result["execution_approval_status"]
 
     def test_wrong_batch_hash_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        approval["batch_hash"] = "tampered_hash"
+        approval_id = _create_synthetic_approval(env, ed, {"batch_hash": "tampered_hash"})
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert "APPROVAL_WRONG_BATCH_HASH" in result["execution_approval_status"]
 
     def test_wrong_scope_hash_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        approval["candidate_scope_hash"] = "tampered_scope_hash"
+        approval_id = _create_synthetic_approval(env, ed, {"candidate_scope_hash": "tampered_scope_hash"})
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert "APPROVAL_WRONG_SCOPE_HASH" in result["execution_approval_status"]
 
     def test_wrong_status_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        approval["status"] = "SOMETHING_ELSE"
+        approval_id = _create_synthetic_approval(env, ed, {"approval_status": "SOMETHING_ELSE"})
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert "APPROVAL_STATUS_INVALID" in result["execution_approval_status"]
 
     def test_not_human_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        approval["approved_by"] = "AGENT"
+        approval_id = _create_synthetic_approval(env, ed, {"approved_by": "AGENT"})
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert "APPROVAL_NOT_HUMAN" in result["execution_approval_status"]
 
+    def test_wrong_decision_authority_zero_calls(self, tmp_path):
+        env, ed = self._planned_envelope(tmp_path)
+        approval_id = _create_synthetic_approval(env, ed, {"decision_authority": "SOMETHING_ELSE"})
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_WRONG_DECISION_AUTHORITY" in result["execution_approval_status"]
+
+    def test_unknown_approval_id_zero_calls(self, tmp_path):
+        env, ed = self._planned_envelope(tmp_path)
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], "totally_unknown_approval_id", executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_MISSING" in result["execution_approval_status"]
+
+    def test_approval_belongs_to_another_execution_zero_calls(self, tmp_path):
+        env_a, ed = self._planned_envelope(tmp_path)
+        entries_b = [_synthetic_entry("appr2", "periphery/appr2.py", _materialize_source(tmp_path, "appr2", b"Y\n"))]
+        proposal_b, ld_b, sd_b, ed_b = _prepare_synthetic_batch(tmp_path, entries_b, ["appr2"], objective="second")
+        env_b = prepare_execution(proposal_b["batch_id"], ld_b, sd_b, ed, repo_root=tmp_path)
+
+        approval_id_for_b = _create_synthetic_approval(env_b, ed)
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        # tente d'utiliser l'approbation de B pour executer A
+        result = run_execution(env_a["batch_execution_id"], approval_id_for_b, executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_WRONG_EXECUTION_ID" in result["execution_approval_status"]
+
+    def test_fabricated_in_memory_dict_is_not_authority(self, tmp_path):
+        """Un dict fabrique par l'appelant, meme avec tous les champs
+        corrects, n'est JAMAIS accepte par run_execution — seul un
+        approval_id charge depuis le magasin canonique compte."""
+        env, ed = self._planned_envelope(tmp_path)
+        fake = _build_synthetic_approval_record(env)  # jamais stocke
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        # run_execution n'accepte qu'un ID (str) ; passer un ID jamais
+        # stocke prouve qu'aucun contenu en memoire ne peut faire autorite.
+        result = run_execution(env["batch_execution_id"], fake["approval_id"], executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_MISSING" in result["execution_approval_status"]
+
+    def test_tampered_stored_field_without_hash_update_zero_calls(self, tmp_path):
+        """Un champ stocke est altere manuellement SANS mettre a jour le
+        hash -> verify_approval_artifact doit le detecter."""
+        env, ed = self._planned_envelope(tmp_path)
+        approval_id = _create_synthetic_approval(env, ed)
+        p = _approval_path(approval_id, ed)
+        record = json.loads(p.read_text(encoding="utf-8"))
+        record["approved_by"] = "AGENT"  # altere sans recalculer le hash
+        p.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_RECORD_HASH_MISMATCH" in result["execution_approval_status"]
+
+    def test_human_execution_approved_bool_is_not_authority(self, tmp_path):
+        """La sortie stale human_execution_approved=True dans l'enveloppe
+        ne doit JAMAIS autoriser une execution sans artefact valide."""
+        env, ed = self._planned_envelope(tmp_path)
+        env["human_execution_approved"] = True
+        _save_execution(env, ed)
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], None, executor, ed, tmp_path)
+        assert called == []
+
+    def test_manually_set_execution_approval_status_is_not_authority(self, tmp_path):
+        """Ecrire execution_approval_status='EXECUTION_APPROVAL_VALID'
+        directement dans l'enveloppe stockee ne doit rien autoriser :
+        run_execution revalide toujours depuis zero a chaque appel."""
+        env, ed = self._planned_envelope(tmp_path)
+        env["execution_approval_status"] = "EXECUTION_APPROVAL_VALID"
+        env["execution_approval_id"] = "fake_id"
+        _save_execution(env, ed)
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], None, executor, ed, tmp_path)
+        assert called == []
+        assert EXECUTION_APPROVAL_INVALID in result["execution_approval_status"]
+
     def test_valid_approval_permits_execution(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)
-        approval = create_approval_record(env, ed)
-        ok, reason = _validate_approval(approval, env)
+        approval_id = _create_synthetic_approval(env, ed)
+        stored = load_approval_artifact(approval_id, ed)
+        ok, reason = _validate_approval(stored, env)
         assert ok is True
         assert reason is None
         called = []
@@ -593,7 +744,7 @@ class TestHumanApprovalGate:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called != []
         assert result["execution_approval_status"] == "EXECUTION_APPROVAL_VALID"
         assert result["children"][0]["execution_status"] == EXECUTED_ACT
@@ -603,14 +754,14 @@ class TestHumanApprovalGate:
         entries[0]["target_path"] = entries[0]["source_path"]
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["noopa1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
         called = []
 
         def executor(child):
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert result["aggregate_status"] == BATCH_EXECUTION_NOT_READY
 
@@ -624,14 +775,14 @@ class TestHumanApprovalGate:
             tmp_path, [b, a], ["ov_B", "ov_A"], objective="override-dep",
         )
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         def executor(child):
             if child["candidate_entry_id"] == "ov_B":
                 return {"kx108_decision": "BLOCK"}
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         by_id = {c["candidate_entry_id"]: c for c in result["children"]}
         assert by_id["ov_A"]["execution_status"] == DEPENDENCY_BLOCKED
         assert by_id["ov_A"]["kx108_decision"] is None
@@ -654,7 +805,7 @@ class TestSourceAndTargetRuntimeIntegrity:
         e["source_path"] = "_synthetic_source/drift1.py"
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, [e], ["drift1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         # Mutation APRES prepare, AVANT run
         real_src.write_bytes(b"v2_mutated\n")
@@ -665,7 +816,7 @@ class TestSourceAndTargetRuntimeIntegrity:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert result["children"][0]["execution_status"] == SOURCE_INTEGRITY_MISMATCH
 
@@ -686,7 +837,7 @@ class TestSourceAndTargetRuntimeIntegrity:
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
         # verifie que le gate de materialite a bien vu un delta (contenu different)
         assert env["children"][0]["execution_status"] == PLANNED
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         # La cible change APRES prepare, AVANT run
         target.write_bytes(b"target_v2_mutated\n")
@@ -697,7 +848,7 @@ class TestSourceAndTargetRuntimeIntegrity:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert result["children"][0]["execution_status"] == TARGET_PRECONDITION_MISMATCH
 
@@ -711,7 +862,7 @@ class TestSourceAndTargetRuntimeIntegrity:
         proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, [e], ["appear1"])
         env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
         assert env["children"][0]["target_pre_hash"] is None
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         # La cible apparait APRES prepare, AVANT run
         target = tmp_path / "new" / "appears_later.py"
@@ -724,7 +875,7 @@ class TestSourceAndTargetRuntimeIntegrity:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert result["children"][0]["execution_status"] == TARGET_PRECONDITION_MISMATCH
 
@@ -741,7 +892,7 @@ class TestSourceAndTargetRuntimeIntegrity:
         env["children"][0]["target_path"] = "proofs/injected.json"
         from obsidia_batch_execution import _save_execution
         _save_execution(env, ed)
-        approval = create_approval_record(env, ed)
+        approval_id = _create_synthetic_approval(env, ed)
 
         called = []
 
@@ -749,7 +900,7 @@ class TestSourceAndTargetRuntimeIntegrity:
             called.append(child)
             return {"kx108_decision": "ACT"}
 
-        result = run_execution(env["batch_execution_id"], approval, executor, ed, tmp_path)
+        result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
         assert result["children"][0]["execution_status"] == REFUSED_PROTECTED_TARGET
 
@@ -903,3 +1054,88 @@ class TestAuthorityAndImmutability:
         # donc ce candidat ne doit meme pas apparaitre selectionne.
         assert len(env["children"]) == 0
         assert env["aggregate_status"] == BATCH_EXECUTION_NOT_READY
+
+
+# --- TestApprovalArtifactStorage (append-only, no-overwrite, integrite) ------
+
+class TestApprovalArtifactStorage:
+    def _envelope(self, tmp_path):
+        entries = [_synthetic_entry("stor1", "periphery/stor1.py", _materialize_source(tmp_path, "stor1", b"S\n"))]
+        proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["stor1"])
+        env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
+        return env, ed
+
+    def test_store_creates_exactly_once(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        r1 = store_approval_artifact(record, ed)
+        assert r1["status"] == "STORED"
+
+    def test_store_exact_duplicate_idempotent(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        store_approval_artifact(record, ed)
+        r2 = store_approval_artifact(record, ed)
+        assert r2["status"] == "IDEMPOTENT_ALREADY_EXISTS"
+
+    def test_store_same_id_different_content_refused(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id="fixed_id")
+        store_approval_artifact(record, ed)
+        different = _build_synthetic_approval_record(
+            env, overrides={"batch_hash": "different_hash"}, approval_id="fixed_id",
+        )
+        result = store_approval_artifact(different, ed)
+        assert result["status"] == "APPROVAL_IMMUTABILITY_VIOLATION"
+
+    def test_overwrite_attempt_leaves_bytes_unchanged(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id="fixed_id2")
+        store_approval_artifact(record, ed)
+        p = _approval_path("fixed_id2", ed)
+        before = p.read_bytes()
+
+        different = _build_synthetic_approval_record(
+            env, overrides={"approved_by": "AGENT"}, approval_id="fixed_id2",
+        )
+        store_approval_artifact(different, ed)  # doit etre refuse
+        after = p.read_bytes()
+        assert before == after
+
+    def test_verify_valid_record(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        ok, reason = verify_approval_artifact(record)
+        assert ok is True
+        assert reason is None
+
+    def test_verify_none_record(self):
+        ok, reason = verify_approval_artifact(None)
+        assert ok is False
+        assert reason == "APPROVAL_MISSING"
+
+    def test_verify_hash_mismatch_detected(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        record["approval_record_hash"] = "corrupted_hash_value"
+        ok, reason = verify_approval_artifact(record)
+        assert ok is False
+        assert reason == "APPROVAL_RECORD_HASH_MISMATCH"
+
+    def test_verify_missing_field_detected(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        del record["approved_by"]
+        ok, reason = verify_approval_artifact(record)
+        assert ok is False
+        assert "APPROVAL_FIELD_MISSING" in reason
+
+    def test_load_unknown_returns_none(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        assert load_approval_artifact("does_not_exist", ed) is None
+
+    def test_compute_hash_changes_with_any_bound_field(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        r1 = _build_synthetic_approval_record(env)
+        r2 = _build_synthetic_approval_record(env, overrides={"approved_by": "NOT_HUMAN"})
+        assert compute_approval_record_hash(r1) != compute_approval_record_hash(r2)

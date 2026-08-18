@@ -171,21 +171,74 @@ def _list_executions(execution_dir: Optional[Path] = None) -> list:
     return result
 
 
-# ─── Enregistrement d'approbation (append-only, distinct de KX108) ───────────
+# ─── Frontière d'autorité d'approbation humaine ──────────────────────────────
+#
+# CAN_LOAD_APPROVAL       = TRUE   (lire un artefact stocké par son ID)
+# CAN_VERIFY_APPROVAL     = TRUE   (intégrité structurelle du record)
+# CAN_BIND_APPROVAL_TO_BATCH = TRUE (liaison aux champs immuables du batch)
+# CAN_STORE_APPROVAL_ARTIFACT = TRUE (persistance stricte, append-only,
+#                                      SANS jamais fabriquer approved_by)
+#
+# CAN_SELF_APPROVE        = FALSE  (aucune fonction ne dérive une approbation
+#                                    depuis une seule enveloppe)
+# CAN_MINT_HUMAN_AUTHORITY = FALSE
+#
+# La construction du record complet (avec approved_by="HUMAN" ou autre
+# origine) est la responsabilité de la frontière EXTERNE — un futur
+# adaptateur d'autorité (CLI de confirmation, etc.) ou, pour ce palier,
+# un helper de TEST dédié (jamais ce module). Ce module ne fait que
+# stocker (sans invention), charger, vérifier et lier.
 
 def _approval_path(approval_id: str, execution_dir: Optional[Path] = None) -> Path:
     d = execution_dir or EXECUTION_DIR
     return d / "approvals" / approval_id / "approval.json"
 
 
-def _save_approval(record: dict, execution_dir: Optional[Path] = None) -> Path:
+_APPROVAL_BOUND_FIELDS = (
+    "approval_id", "approval_schema_version", "created_at",
+    "batch_execution_id", "batch_id", "batch_hash", "candidate_scope_hash",
+    "approved_by", "approval_status", "decision_authority",
+)
+
+
+def compute_approval_record_hash(record: dict) -> str:
+    """
+    Hash déterministe liant les champs significatifs d'un artefact
+    d'approbation. Utilitaire pur — ne stocke rien, ne fabrique aucune
+    identité. Modifier un seul champ lié change ce hash.
+    """
+    payload = json.dumps(
+        {k: record.get(k) for k in _APPROVAL_BOUND_FIELDS},
+        sort_keys=True,
+    )
+    return _sha16(payload)
+
+
+def store_approval_artifact(record: dict, execution_dir: Optional[Path] = None) -> dict:
+    """
+    Persistance STRICTE, append-only, sans écrasement — jamais de
+    fabrication d'identité (le record complet, y compris approved_by,
+    doit déjà être construit par l'appelant/la frontière externe).
+
+    - chemin absent  -> écrit exactement une fois
+    - chemin présent + octets identiques -> IDEMPOTENT_ALREADY_EXISTS
+    - chemin présent + octets différents -> APPROVAL_IMMUTABILITY_VIOLATION,
+      refuse d'écraser
+    """
     p = _approval_path(record["approval_id"], execution_dir)
+    payload = json.dumps(record, ensure_ascii=False, indent=2)
+    if p.exists():
+        existing = p.read_text(encoding="utf-8")
+        if existing == payload:
+            return {"status": "IDEMPOTENT_ALREADY_EXISTS", "approval_id": record["approval_id"]}
+        return {"status": "APPROVAL_IMMUTABILITY_VIOLATION", "approval_id": record["approval_id"]}
     _ensure_dir(p.parent)
-    p.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-    return p
+    p.write_text(payload, encoding="utf-8")
+    return {"status": "STORED", "approval_id": record["approval_id"]}
 
 
-def _load_approval(approval_id: str, execution_dir: Optional[Path] = None) -> Optional[dict]:
+def load_approval_artifact(approval_id: str, execution_dir: Optional[Path] = None) -> Optional[dict]:
+    """Charge un artefact d'approbation stocké — jamais construit à la volée."""
     p = _approval_path(approval_id, execution_dir)
     if not p.exists():
         return None
@@ -195,29 +248,26 @@ def _load_approval(approval_id: str, execution_dir: Optional[Path] = None) -> Op
         return None
 
 
-def create_approval_record(envelope: dict, execution_dir: Optional[Path] = None) -> dict:
+def verify_approval_artifact(record: Optional[dict]) -> tuple[bool, Optional[str]]:
     """
-    Enregistrement d'approbation APPEND-ONLY, distinct de
-    BatchExecutionEnvelope (jamais réécrit) et distinct de toute décision
-    KX108. Signifie UNIQUEMENT « autorisation de TENTER une exécution
-    bornée » — jamais ACT, jamais commit/push/merge. decision_authority
-    reste KX108_ONLY.
+    Intégrité STRUCTURELLE du record lui-même (schéma supporté, tous les
+    champs liés présents, hash stocké == hash recalculé sur les champs
+    liés). Ne vérifie PAS encore la liaison à une enveloppe précise —
+    voir _validate_approval pour cela. N'affirme aucune garantie
+    cryptographique d'identité humaine : seule l'existence d'un artefact
+    immuable stocké constitue la frontière de confiance de ce palier.
     """
-    approval_id = _sha16(f"{envelope['batch_execution_id']}:{_now()}")
-    record = {
-        "approval_id": approval_id,
-        "schema_version": SCHEMA_VERSION,
-        "created_at": _now(),
-        "batch_execution_id": envelope["batch_execution_id"],
-        "batch_id": envelope["batch_id"],
-        "batch_hash": envelope["batch_hash"],
-        "candidate_scope_hash": envelope["candidate_scope_hash"],
-        "approved_by": "HUMAN",
-        "status": APPROVED_FOR_BOUNDED_EXECUTION,
-        "decision_authority": DECISION_AUTHORITY,
-    }
-    _save_approval(record, execution_dir)
-    return record
+    if record is None:
+        return False, "APPROVAL_MISSING"
+    if record.get("approval_schema_version") != SCHEMA_VERSION:
+        return False, "APPROVAL_SCHEMA_UNSUPPORTED"
+    for f in _APPROVAL_BOUND_FIELDS:
+        if f not in record:
+            return False, f"APPROVAL_FIELD_MISSING:{f}"
+    expected_hash = compute_approval_record_hash(record)
+    if record.get("approval_record_hash") != expected_hash:
+        return False, "APPROVAL_RECORD_HASH_MISMATCH"
+    return True, None
 
 
 def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, Optional[str]]:
@@ -227,8 +277,9 @@ def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, 
     lever un gate de preuve (matérialité, dépendance, intégrité,
     protection).
     """
-    if approval is None:
-        return False, "APPROVAL_MISSING"
+    ok, reason = verify_approval_artifact(approval)
+    if not ok:
+        return False, reason
     if approval.get("batch_execution_id") != envelope.get("batch_execution_id"):
         return False, "APPROVAL_WRONG_EXECUTION_ID"
     if approval.get("batch_id") != envelope.get("batch_id"):
@@ -237,10 +288,12 @@ def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, 
         return False, "APPROVAL_WRONG_BATCH_HASH"
     if approval.get("candidate_scope_hash") != envelope.get("candidate_scope_hash"):
         return False, "APPROVAL_WRONG_SCOPE_HASH"
-    if approval.get("status") != APPROVED_FOR_BOUNDED_EXECUTION:
+    if approval.get("approval_status") != APPROVED_FOR_BOUNDED_EXECUTION:
         return False, "APPROVAL_STATUS_INVALID"
     if approval.get("approved_by") != "HUMAN":
         return False, "APPROVAL_NOT_HUMAN"
+    if approval.get("decision_authority") != DECISION_AUTHORITY:
+        return False, "APPROVAL_WRONG_DECISION_AUTHORITY"
     return True, None
 
 
@@ -629,7 +682,7 @@ def real_session_executor_via_compute_plan(child: dict, repo_root: Optional[Path
 
 def run_execution(
     batch_execution_id: str,
-    approval: Optional[dict],
+    approval_id: Optional[str],
     session_executor: Callable[[dict], dict],
     execution_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
@@ -638,8 +691,11 @@ def run_execution(
     Ordre des gates AVANT tout appel à session_executor, pour CHAQUE
     enfant, dans cet ordre exact :
       1. intégrité de l'enveloppe (déjà vérifiée à prepare_execution) ;
-      2. approbation d'exécution humaine VALIDE (append-only, distincte de
-         KX108) — sans elle, session_executor n'est JAMAIS invoqué ;
+      2. approbation d'exécution humaine VALIDE — CHARGÉE depuis le
+         magasin canonique par approval_id (jamais un dict fourni
+         directement par l'appelant : un dict fabriqué en mémoire ne
+         constitue jamais une autorité) — sans artefact stocké valide,
+         session_executor n'est JAMAIS invoqué ;
       3. prérequis de dépendance satisfaits (tous les EXECUTED_ACT) ;
       4/5. matérialité/opération déjà garanties par le statut PLANNED ;
       6. hash de la source RE-LU maintenant == hash enregistré ;
@@ -667,8 +723,11 @@ def run_execution(
         _save_execution(envelope, execution_dir)
         return envelope
 
-    # Gate 2 : approbation d'exécution humaine valide — AUCUN enfant n'est
-    # jamais touché, AUCUN executor jamais appelé, sans elle.
+    # Gate 2 : approbation d'exécution humaine valide — CHARGÉE depuis le
+    # magasin canonique (jamais acceptée telle quelle depuis l'appelant).
+    # AUCUN enfant n'est jamais touché, AUCUN executor jamais appelé, sans
+    # un artefact stocké valide.
+    approval = load_approval_artifact(approval_id, execution_dir) if approval_id else None
     ok, reason = _validate_approval(approval, envelope)
     if not ok:
         envelope["execution_approval_status"] = f"{EXECUTION_APPROVAL_INVALID}:{reason}"
