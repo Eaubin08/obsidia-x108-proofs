@@ -36,6 +36,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import datetime
 from pathlib import Path
 from typing import Optional, Callable
@@ -189,9 +190,33 @@ def _list_executions(execution_dir: Optional[Path] = None) -> list:
 # un helper de TEST dédié (jamais ce module). Ce module ne fait que
 # stocker (sans invention), charger, vérifier et lier.
 
+_APPROVAL_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
+
+
+def _is_valid_approval_id(approval_id) -> bool:
+    return isinstance(approval_id, str) and bool(_APPROVAL_ID_RE.match(approval_id))
+
+
 def _approval_path(approval_id: str, execution_dir: Optional[Path] = None) -> Path:
-    d = execution_dir or EXECUTION_DIR
-    return d / "approvals" / approval_id / "approval.json"
+    """
+    approval_id est un IDENTIFIANT, JAMAIS un chemin. Deux défenses
+    indépendantes, l'une n'excusant pas l'autre :
+      1. validation lexicale stricte ([A-Za-z0-9_-]{1,128}) — rejette
+         '../', '..\\', chemins absolus, séparateurs, ID vide, '.'/'..' ;
+      2. confinement STRUCTUREL (Path.relative_to sur les chemins résolus)
+         — garantit qu'aucune résolution ne peut jamais sortir du magasin
+         canonique, même si la validation lexicale avait un angle mort.
+    Lève ValueError("INVALID_APPROVAL_ID") si l'une des deux échoue.
+    """
+    if not _is_valid_approval_id(approval_id):
+        raise ValueError("INVALID_APPROVAL_ID")
+    base = ((execution_dir or EXECUTION_DIR) / "approvals").resolve()
+    candidate = (base / approval_id / "approval.json").resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise ValueError("INVALID_APPROVAL_ID")
+    return candidate
 
 
 _APPROVAL_BOUND_FIELDS = (
@@ -216,30 +241,50 @@ def compute_approval_record_hash(record: dict) -> str:
 
 def store_approval_artifact(record: dict, execution_dir: Optional[Path] = None) -> dict:
     """
-    Persistance STRICTE, append-only, sans écrasement — jamais de
-    fabrication d'identité (le record complet, y compris approved_by,
-    doit déjà être construit par l'appelant/la frontière externe).
+    Persistance STRICTE, append-only, ATOMIQUE — jamais de fabrication
+    d'identité (le record complet, y compris approved_by, doit déjà être
+    construit par l'appelant/la frontière externe).
 
-    - chemin absent  -> écrit exactement une fois
-    - chemin présent + octets identiques -> IDEMPOTENT_ALREADY_EXISTS
-    - chemin présent + octets différents -> APPROVAL_IMMUTABILITY_VIOLATION,
-      refuse d'écraser
+    Création EXCLUSIVE (open(..., "x") -> O_CREAT|O_EXCL, atomique au
+    niveau OS — pas de fenêtre exists()-puis-write() exploitable par des
+    écrivains concurrents) :
+    - création réussie                      -> STORED
+    - déjà existant, octets identiques        -> IDEMPOTENT_ALREADY_EXISTS
+    - déjà existant, octets différents        -> APPROVAL_IMMUTABILITY_VIOLATION
+      (jamais tronqué, jamais écrasé)
+    - approval_id malformé (pas un identifiant, tentative de traversée
+      de chemin, etc.)                        -> INVALID_APPROVAL_ID
+      (aucun accès fichier hors du magasin canonique)
     """
-    p = _approval_path(record["approval_id"], execution_dir)
+    approval_id = record.get("approval_id")
+    try:
+        p = _approval_path(approval_id, execution_dir)
+    except ValueError:
+        return {"status": "INVALID_APPROVAL_ID", "approval_id": approval_id}
+
     payload = json.dumps(record, ensure_ascii=False, indent=2)
-    if p.exists():
+    _ensure_dir(p.parent)
+    try:
+        with open(p, "x", encoding="utf-8") as fh:
+            fh.write(payload)
+        return {"status": "STORED", "approval_id": approval_id}
+    except FileExistsError:
         existing = p.read_text(encoding="utf-8")
         if existing == payload:
-            return {"status": "IDEMPOTENT_ALREADY_EXISTS", "approval_id": record["approval_id"]}
-        return {"status": "APPROVAL_IMMUTABILITY_VIOLATION", "approval_id": record["approval_id"]}
-    _ensure_dir(p.parent)
-    p.write_text(payload, encoding="utf-8")
-    return {"status": "STORED", "approval_id": record["approval_id"]}
+            return {"status": "IDEMPOTENT_ALREADY_EXISTS", "approval_id": approval_id}
+        return {"status": "APPROVAL_IMMUTABILITY_VIOLATION", "approval_id": approval_id}
 
 
 def load_approval_artifact(approval_id: str, execution_dir: Optional[Path] = None) -> Optional[dict]:
-    """Charge un artefact d'approbation stocké — jamais construit à la volée."""
-    p = _approval_path(approval_id, execution_dir)
+    """
+    Charge un artefact d'approbation stocké — jamais construit à la volée.
+    ID malformé/hors magasin canonique -> None (mêmes défenses que
+    store_approval_artifact ; aucune lecture hors du magasin canonique).
+    """
+    try:
+        p = _approval_path(approval_id, execution_dir)
+    except ValueError:
+        return None
     if not p.exists():
         return None
     try:

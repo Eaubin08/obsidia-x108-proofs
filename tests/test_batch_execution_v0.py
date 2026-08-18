@@ -1139,3 +1139,146 @@ class TestApprovalArtifactStorage:
         r1 = _build_synthetic_approval_record(env)
         r2 = _build_synthetic_approval_record(env, overrides={"approved_by": "NOT_HUMAN"})
         assert compute_approval_record_hash(r1) != compute_approval_record_hash(r2)
+
+
+# --- TestApprovalIdSafety (HARDEN_APPROVAL_ARTIFACT_STORAGE_ATOMICITY_V0) -----
+
+class TestApprovalIdSafety:
+    """approval_id est un IDENTIFIANT, jamais un chemin. Validation
+    lexicale + confinement structurel, testes cote store ET load."""
+
+    def _envelope(self, tmp_path):
+        entries = [_synthetic_entry("idsafe1", "periphery/idsafe1.py", _materialize_source(tmp_path, "idsafe1", b"I\n"))]
+        proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["idsafe1"])
+        env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
+        return env, ed
+
+    _MALFORMED_IDS = [
+        "../escape",
+        "../../escape",
+        "..\\escape",
+        "foo/bar",
+        "foo\\bar",
+        "",
+        ".",
+        "..",
+    ]
+
+    @pytest.mark.parametrize("bad_id", _MALFORMED_IDS)
+    def test_store_rejects_malformed_id(self, tmp_path, bad_id):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id=bad_id) if bad_id else None
+        if record is None:
+            # id vide : construire quand meme un record avec cet id explicite
+            record = _build_synthetic_approval_record(env)
+            record["approval_id"] = bad_id
+            record["approval_record_hash"] = compute_approval_record_hash(record)
+        result = store_approval_artifact(record, ed)
+        assert result["status"] == "INVALID_APPROVAL_ID"
+        # Rien ecrit hors du magasin canonique (ni meme dedans, pour un ID invalide)
+        approvals_dir = ed / "approvals"
+        if approvals_dir.exists():
+            for p in approvals_dir.rglob("*"):
+                assert p.is_dir() or p.name == "approval.json"
+
+    @pytest.mark.parametrize("bad_id", _MALFORMED_IDS)
+    def test_load_rejects_malformed_id(self, tmp_path, bad_id):
+        env, ed = self._envelope(tmp_path)
+        assert load_approval_artifact(bad_id, ed) is None
+
+    def test_store_rejects_absolute_path_id(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env)
+        record["approval_id"] = str(tmp_path / "escaped")
+        record["approval_record_hash"] = compute_approval_record_hash(record)
+        result = store_approval_artifact(record, ed)
+        assert result["status"] == "INVALID_APPROVAL_ID"
+
+    def test_no_file_created_outside_approvals_dir(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id="../escape_attempt")
+        record["approval_record_hash"] = compute_approval_record_hash(record)
+        store_approval_artifact(record, ed)
+        escape_target = ed / "escape_attempt"
+        assert not escape_target.exists()
+
+    def test_valid_id_still_works(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id="valid_id-123")
+        result = store_approval_artifact(record, ed)
+        assert result["status"] == "STORED"
+        assert load_approval_artifact("valid_id-123", ed) is not None
+
+    def test_run_execution_with_malformed_approval_id_zero_calls(self, tmp_path):
+        env, ed = self._envelope(tmp_path)
+        called = []
+
+        def executor(child):
+            called.append(child)
+            return {"kx108_decision": "ACT"}
+
+        result = run_execution(env["batch_execution_id"], "../escape", executor, ed, tmp_path)
+        assert called == []
+        assert "APPROVAL_MISSING" in result["execution_approval_status"]
+
+
+# --- TestApprovalConcurrency ----------------------------------------------------
+
+class TestApprovalConcurrency:
+    def _envelope(self, tmp_path):
+        entries = [_synthetic_entry("conc1", "periphery/conc1.py", _materialize_source(tmp_path, "conc1", b"C\n"))]
+        proposal, ld, sd, ed = _prepare_synthetic_batch(tmp_path, entries, ["conc1"])
+        env = prepare_execution(proposal["batch_id"], ld, sd, ed, repo_root=tmp_path)
+        return env, ed
+
+    def test_concurrent_different_content_no_double_store(self, tmp_path):
+        import threading
+        env, ed = self._envelope(tmp_path)
+        record_a = _build_synthetic_approval_record(env, overrides={"approved_by": "HUMAN"}, approval_id="race_id")
+        record_b = _build_synthetic_approval_record(env, overrides={"approved_by": "AGENT"}, approval_id="race_id")
+
+        results = []
+        barrier = threading.Barrier(2)
+
+        def worker(record):
+            barrier.wait()
+            results.append(store_approval_artifact(record, ed))
+
+        t1 = threading.Thread(target=worker, args=(record_a,))
+        t2 = threading.Thread(target=worker, args=(record_b,))
+        t1.start(); t2.start()
+        t1.join(); t2.join()
+
+        statuses = sorted(r["status"] for r in results)
+        assert statuses == ["APPROVAL_IMMUTABILITY_VIOLATION", "STORED"]
+
+        # Exactement UNE version de contenu sur disque, correspondant a
+        # celui qui a reellement gagne la creation exclusive.
+        stored = load_approval_artifact("race_id", ed)
+        assert stored is not None
+        assert stored["approved_by"] in ("HUMAN", "AGENT")
+        winner = record_a if stored["approved_by"] == "HUMAN" else record_b
+        assert stored == winner
+
+    def test_concurrent_identical_content_idempotent(self, tmp_path):
+        import threading
+        env, ed = self._envelope(tmp_path)
+        record = _build_synthetic_approval_record(env, approval_id="race_id_same")
+
+        results = []
+        barrier = threading.Barrier(2)
+
+        def worker():
+            barrier.wait()
+            results.append(store_approval_artifact(record, ed))
+
+        t1 = threading.Thread(target=worker)
+        t2 = threading.Thread(target=worker)
+        t1.start(); t2.start()
+        t1.join(); t2.join()
+
+        statuses = sorted(r["status"] for r in results)
+        assert statuses == ["IDEMPOTENT_ALREADY_EXISTS", "STORED"]
+
+        stored = load_approval_artifact("race_id_same", ed)
+        assert stored == record
