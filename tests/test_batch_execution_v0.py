@@ -990,13 +990,19 @@ class TestRealPilotBatchRefusal:
             assert c["session_id"] is None
             assert c["kx108_decision"] is None
 
-    def test_real_bridge_fails_closed_on_scope_mismatch(self):
+    def test_real_bridge_plans_explicit_scope_exactly(self):
+        """Depuis IMPLEMENT_EXPLICIT_CHILD_SESSION_SCOPE_V0, le pont reel
+        planifie desormais correctement une portee explicite a un seul
+        target — mais ne cree JAMAIS de session/ecriture/KX108 reel."""
         env = prepare_execution("84a929c6f48a90c5")
         child = env["children"][0]
         result = real_session_executor_via_compute_plan(child)
         assert result["kx108_decision"] is None
         assert result["session_id"] is None
-        assert "bridge_error" in result or result.get("plan_verified") is True
+        assert result.get("plan_verified") is True
+        assert result.get("scope_mode") == "EXPLICIT_CHILD_TARGET"
+        assert result.get("approved_scope") == [child["target_path"]]
+        assert result.get("next_step") == "cmd_execute_required_manually_outside_this_mandate"
 
     def test_real_batch_sources_unchanged_after_review(self):
         import hashlib
@@ -1011,6 +1017,31 @@ class TestRealPilotBatchRefusal:
             content = (_REPO_ROOT / rel).read_bytes()
             actual = hashlib.sha256(content).hexdigest()[:16]
             assert actual == expected_hash, f"{rel} hash drifted"
+
+    def test_real_bridge_all_five_children_plan_exactly_one_target_each(self):
+        """Chaque enfant du batch reel obtient une portee exacte a un seul
+        element correspondant a son propre target — jamais un melange."""
+        env = prepare_execution("84a929c6f48a90c5")
+        for child in env["children"]:
+            result = real_session_executor_via_compute_plan(child)
+            assert result.get("plan_verified") is True
+            assert result.get("approved_scope") == [child["target_path"]]
+
+    def test_real_bridge_never_writes_anything(self):
+        """compute_plan est pur -- aucune ecriture, meme via le pont reel."""
+        env = prepare_execution("84a929c6f48a90c5")
+        child = env["children"][0]
+        before = (_REPO_ROOT / child["target_path"]).read_bytes()
+        real_session_executor_via_compute_plan(child)
+        after = (_REPO_ROOT / child["target_path"]).read_bytes()
+        assert before == after
+
+    def test_real_bridge_never_creates_real_session_or_kx108(self):
+        env = prepare_execution("84a929c6f48a90c5")
+        for child in env["children"]:
+            result = real_session_executor_via_compute_plan(child)
+            assert result["session_id"] is None
+            assert result["kx108_decision"] is None
 
 
 # ─── G. Autorité / non-mutation / append-only ─────────────────────────────────

@@ -215,15 +215,108 @@ def infer_tests(
     return seen[:5]
 
 
+SCOPE_MODE_HEURISTIC_LEGACY = "HEURISTIC_LEGACY"
+SCOPE_MODE_EXPLICIT_CHILD_TARGET = "EXPLICIT_CHILD_TARGET"
+
+
+def compute_approved_scope_hash(approved_scope: list[str]) -> str:
+    """Identité pure de l'ENSEMBLE de chemins de la portée — change dès
+    qu'un target_path change. Distinct de manifest_hash (qui inclut aussi
+    les tailles de fichiers) et de tout hash côté batch_execution/approval."""
+    payload = json.dumps(sorted(approved_scope), sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def canonicalize_explicit_target(raw: str, repo_root: Path) -> tuple[str | None, str | None]:
+    """
+    Résout un target explicite en identité canonique repo-relative, ou
+    rejette avec une raison explicite. JAMAIS Path.cwd() comme autorité —
+    seul repo_root sert de référence. Fail-closed : aucune fabrication de
+    chemin, aucune expansion.
+
+    Retourne (chemin_canonique_repo_relatif, None) si valide,
+    ou (None, raison) si rejeté.
+    """
+    if raw is None or not str(raw).strip():
+        return None, "EXPLICIT_SCOPE_EMPTY_TARGET"
+    raw = str(raw)
+    if any(ch in raw for ch in ("*", "?")):
+        return None, "EXPLICIT_SCOPE_WILDCARD_REJECTED"
+
+    root = repo_root.resolve()
+    p = Path(raw)
+    resolved = p.resolve() if p.is_absolute() else (root / raw).resolve()
+
+    try:
+        rel = resolved.relative_to(root)
+    except ValueError:
+        return None, "EXPLICIT_SCOPE_OUTSIDE_REPO"
+
+    rel_str = rel.as_posix()
+    if rel_str in ("", "."):
+        return None, "EXPLICIT_SCOPE_EMPTY_TARGET"
+    if resolved.exists() and resolved.is_dir():
+        return None, "EXPLICIT_SCOPE_DIRECTORY_REJECTED"
+    if is_protected(rel_str):
+        return None, "EXPLICIT_SCOPE_PROTECTED_REJECTED"
+
+    return rel_str, None
+
+
 def compute_plan(
     objective: str,
     base_sha: str,
     repo_root: Path | None = None,
+    explicit_scope: list[str] | None = None,
 ) -> dict:
-    """Fonction pure -- aucun I/O, aucune ecriture, aucune mutation. Deterministe."""
+    """
+    Fonction pure -- aucun I/O, aucune ecriture, aucune mutation. Deterministe.
+
+    explicit_scope=None (défaut) : comportement heuristique historique
+    inchangé (HEURISTIC_LEGACY) — find_candidate_files() découvre les
+    candidats depuis l'objectif/domaine.
+
+    explicit_scope=[...] : mode EXPLICIT_CHILD_TARGET — la portée fournie
+    fait AUTORITÉ. Aucune découverte heuristique n'a lieu. Aucune union
+    avec des fichiers heuristiques. Un target rejeté (hors repo, protégé,
+    wildcard, répertoire, vide) ne retombe JAMAIS sur le mode heuristique
+    — échec fermé explicite (status=PLAN_REJECTED, scope_error=<raison>).
+    Le texte de l'objectif reste purement descriptif : il ne peut jamais
+    élargir cette portée.
+    """
     root = repo_root or REPO_ROOT
     domain = detect_domain(objective)
-    candidate_files, protected_detected = find_candidate_files(objective, domain, root)
+
+    if explicit_scope is not None:
+        scope_mode = SCOPE_MODE_EXPLICIT_CHILD_TARGET
+        canonical: list[str] = []
+        for raw in explicit_scope:
+            canon, reason = canonicalize_explicit_target(raw, root)
+            if reason is not None:
+                return {
+                    "session_id": None,
+                    "objective": objective,
+                    "domain": domain,
+                    "base_sha": base_sha,
+                    "scope_mode": scope_mode,
+                    "requested_explicit_scope": list(explicit_scope),
+                    "approved_scope_proposal": [],
+                    "candidate_files": [],
+                    "excluded_files": [],
+                    "protected_files": list(PROTECTED_PATHS),
+                    "manifest_hash": None,
+                    "approved_scope_hash": None,
+                    "decision_authority": DECISION_AUTHORITY,
+                    "status": "PLAN_REJECTED",
+                    "scope_error": reason,
+                }
+            canonical.append(canon)
+        candidate_files = canonical
+        protected_detected: list[str] = []
+    else:
+        scope_mode = SCOPE_MODE_HEURISTIC_LEGACY
+        candidate_files, protected_detected = find_candidate_files(objective, domain, root)
+
     manifest_hash = compute_manifest_hash(candidate_files, root)
     session_id = compute_session_id(objective, base_sha, manifest_hash)
     risk = estimate_risk(candidate_files, domain)
@@ -248,12 +341,16 @@ def compute_plan(
         "worktree_proposal":     worktree_proposal,
         "branch_proposal":       branch_proposal,
         "manifest_hash":         manifest_hash,
+        "approved_scope_hash":   compute_approved_scope_hash(candidate_files),
         "decision_authority":    DECISION_AUTHORITY,
         "next_human_action":     token,
         "auto_commit":           AUTO_COMMIT,
         "auto_push":             AUTO_PUSH,
         "auto_merge":            AUTO_MERGE,
         "status":                "PLAN_PROPOSED",
+        "scope_mode":            scope_mode,
+        "requested_explicit_scope": list(explicit_scope) if explicit_scope is not None else None,
+        "scope_error":           None,
     }
 
 
@@ -481,11 +578,18 @@ def cmd_execute(
     approval_token: str,
     repo_root: Path | None = None,
     state_dir: Path | None = None,
+    explicit_scope: list[str] | None = None,
 ) -> int:
     """
     Phase 2 -- valide token, regenere plan, execute.
     JAMAIS de commit automatique. JAMAIS de push. JAMAIS de merge.
     Receipt ecrit dans state_dir (hors depot).
+
+    explicit_scope DOIT être identique à celui utilisé pour produire le
+    plan/token approuvé — la régénération du plan ici utilise EXACTEMENT
+    la même primitive (compute_plan) avec le même explicit_scope, jamais
+    une redécouverte heuristique divergente (pas de recalcul de portée
+    différent entre planification et exécution).
     """
     root = repo_root or REPO_ROOT
     sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
@@ -500,7 +604,7 @@ def cmd_execute(
 
     # ── 1. Regenerer le plan depuis l'etat courant ───────────────────────────
     current_sha = get_base_sha(root)
-    plan = compute_plan(objective, current_sha, root)
+    plan = compute_plan(objective, current_sha, root, explicit_scope=explicit_scope)
 
     # ── 2. Verifications croisees token <-> plan regenere ────────────────────
     if plan["session_id"] != token_sid:
@@ -546,6 +650,8 @@ def cmd_execute(
         "worktree":            str(worktree_path),
         "branch":              branch_name,
         "approved_scope":      approved_scope,
+        "scope_mode":          plan.get("scope_mode"),
+        "approved_scope_hash": plan.get("approved_scope_hash"),
         "actual_touched_files": [],
         "new_files":           [],
         "deleted_files":       [],

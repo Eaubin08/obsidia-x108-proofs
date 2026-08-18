@@ -210,8 +210,16 @@ def _approval_path(approval_id: str, execution_dir: Optional[Path] = None) -> Pa
     """
     if not _is_valid_approval_id(approval_id):
         raise ValueError("INVALID_APPROVAL_ID")
-    base = ((execution_dir or EXECUTION_DIR) / "approvals").resolve()
-    candidate = (base / approval_id / "approval.json").resolve()
+    # Confinement structurel PUR (aucun accès disque) : la regex stricte
+    # de _is_valid_approval_id interdit déjà tout caractère permettant une
+    # évasion ('..', '/', '\\', etc.), donc la jointure Path ne peut
+    # jamais sortir de `base`. On évite délibérément .resolve() ici : sous
+    # création concurrente de répertoires, résoudre un chemin pas encore
+    # créé peut se comporter de façon incohérente (observé sous Windows)
+    # et provoquer un faux rejet — la validation lexicale suffit déjà,
+    # cette seconde défense reste purement structurelle et déterministe.
+    base = (execution_dir or EXECUTION_DIR) / "approvals"
+    candidate = base / approval_id / "approval.json"
     try:
         candidate.relative_to(base)
     except ValueError:
@@ -245,15 +253,20 @@ def store_approval_artifact(record: dict, execution_dir: Optional[Path] = None) 
     d'identité (le record complet, y compris approved_by, doit déjà être
     construit par l'appelant/la frontière externe).
 
-    Création EXCLUSIVE (open(..., "x") -> O_CREAT|O_EXCL, atomique au
-    niveau OS — pas de fenêtre exists()-puis-write() exploitable par des
-    écrivains concurrents) :
-    - création réussie                      -> STORED
-    - déjà existant, octets identiques        -> IDEMPOTENT_ALREADY_EXISTS
-    - déjà existant, octets différents        -> APPROVAL_IMMUTABILITY_VIOLATION
+    Écrit d'abord un fichier temporaire complet, puis le publie via
+    os.link() — un lien physique est atomique et échoue avec
+    FileExistsError si la cible existe déjà, SANS jamais laisser un
+    lecteur concurrent observer un fichier final partiellement écrit
+    (contrairement à open(p, "x") suivi d'un write() : entre la création
+    et la fin d'écriture, un lecteur concurrent pourrait sinon lire un
+    contenu tronqué et provoquer un faux APPROVAL_IMMUTABILITY_VIOLATION
+    sur une écriture pourtant identique) :
+    - publication réussie                     -> STORED
+    - déjà existant, octets identiques         -> IDEMPOTENT_ALREADY_EXISTS
+    - déjà existant, octets différents         -> APPROVAL_IMMUTABILITY_VIOLATION
       (jamais tronqué, jamais écrasé)
     - approval_id malformé (pas un identifiant, tentative de traversée
-      de chemin, etc.)                        -> INVALID_APPROVAL_ID
+      de chemin, etc.)                         -> INVALID_APPROVAL_ID
       (aucun accès fichier hors du magasin canonique)
     """
     approval_id = record.get("approval_id")
@@ -264,15 +277,22 @@ def store_approval_artifact(record: dict, execution_dir: Optional[Path] = None) 
 
     payload = json.dumps(record, ensure_ascii=False, indent=2)
     _ensure_dir(p.parent)
+
+    tmp = p.parent / f".{p.name}.{os.getpid()}.{_sha16(payload + str(id(record)))}.tmp"
+    tmp.write_text(payload, encoding="utf-8")
     try:
-        with open(p, "x", encoding="utf-8") as fh:
-            fh.write(payload)
+        os.link(tmp, p)
         return {"status": "STORED", "approval_id": approval_id}
     except FileExistsError:
         existing = p.read_text(encoding="utf-8")
         if existing == payload:
             return {"status": "IDEMPOTENT_ALREADY_EXISTS", "approval_id": approval_id}
         return {"status": "APPROVAL_IMMUTABILITY_VIOLATION", "approval_id": approval_id}
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def load_approval_artifact(approval_id: str, execution_dir: Optional[Path] = None) -> Optional[dict]:
@@ -682,17 +702,19 @@ def _compute_aggregate_status(children: list[dict]) -> str:
 def real_session_executor_via_compute_plan(child: dict, repo_root: Optional[Path] = None) -> dict:
     """
     Bridge RÉEL — réutilise obsidia_build.compute_plan (fonction pure,
-    aucune écriture) pour vérifier si le pipeline existant peut produire un
-    plan dont approved_scope_proposal correspond EXACTEMENT à la cible de
-    ce child. compute_plan() découvre les fichiers candidats depuis un
-    texte d'objectif (heuristique par mots-clés) — il n'existe PAS de
-    primitive acceptant un target_path explicite unique.
+    aucune écriture) en mode EXPLICIT_CHILD_TARGET (cf.
+    IMPLEMENT_EXPLICIT_CHILD_SESSION_SCOPE_V0) : la portée demandée est
+    EXACTEMENT [child.target_path], sans découverte heuristique, sans
+    élargissement par l'objectif, sans union avec des fichiers de
+    dépendance/test. V0 = un child = un target = une portée à un élément.
 
-    Si la portée découverte ne correspond pas exactement, le bridge échoue
-    fermé plutôt que d'halluciner une session à portée erronée. Ce module
-    NE CRÉE JAMAIS de session réelle (cmd_execute), N'APPELLE JAMAIS KX108
-    — matérialiser une session reste un geste séparé, humain, hors de ce
-    palier (NO REAL OBSIDURE RUN / NO REAL KX108 BUILD DECISION).
+    Défense en profondeur conservée (§15) : même si le mode explicite rend
+    la divergence structurellement impossible, la portée retournée par
+    compute_plan est revérifiée explicitement avant tout usage.
+
+    Ce module NE CRÉE JAMAIS de session réelle (cmd_execute), N'APPELLE
+    JAMAIS KX108 — matérialiser une session reste un geste séparé, humain,
+    hors de ce palier (NO REAL OBSIDURE RUN / NO REAL KX108 BUILD DECISION).
     """
     import sys as _sys
     _scripts = str(Path(__file__).resolve().parent)
@@ -702,11 +724,22 @@ def real_session_executor_via_compute_plan(child: dict, repo_root: Optional[Path
 
     root = repo_root or _REPO_ROOT
     target_path = child.get("target_path")
-    objective = f"periphery {target_path}"
+    objective = child.get("operation_reason") or f"child target {target_path}"
     base_sha = _build.get_base_sha(root)
-    plan = _build.compute_plan(objective, base_sha, root)
+    plan = _build.compute_plan(objective, base_sha, root, explicit_scope=[target_path])
 
-    if plan.get("approved_scope_proposal") != [target_path]:
+    if plan.get("status") == "PLAN_REJECTED":
+        return {
+            "kx108_decision": None,
+            "session_id": None,
+            "bridge_error": plan.get("scope_error") or "EXPLICIT_SCOPE_REJECTED",
+        }
+
+    if (
+        plan.get("scope_mode") != "EXPLICIT_CHILD_TARGET"
+        or plan.get("approved_scope_proposal") != [target_path]
+        or len(plan.get("approved_scope_proposal") or []) != 1
+    ):
         return {
             "kx108_decision": None,
             "session_id": None,
@@ -718,7 +751,11 @@ def real_session_executor_via_compute_plan(child: dict, repo_root: Optional[Path
         "kx108_decision": None,
         "session_id": None,
         "plan_verified": True,
+        "scope_mode": plan.get("scope_mode"),
+        "approved_scope": plan.get("approved_scope_proposal"),
+        "approved_scope_hash": plan.get("approved_scope_hash"),
         "manifest_hash": plan.get("manifest_hash"),
+        "next_human_action": plan.get("next_human_action"),
         "next_step": "cmd_execute_required_manually_outside_this_mandate",
     }
 

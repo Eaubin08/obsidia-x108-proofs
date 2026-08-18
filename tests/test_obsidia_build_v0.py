@@ -346,6 +346,151 @@ class TestComputePlan:
 
 
 # =============================================================================
+# Groupe A2 — explicit_scope (IMPLEMENT_EXPLICIT_CHILD_SESSION_SCOPE_V0)
+# =============================================================================
+
+class TestExplicitChildScope:
+    """compute_plan(explicit_scope=[...]) : portee AUTORITAIRE, additive au
+    mode heuristique historique (explicit_scope=None inchange)."""
+
+    def test_legacy_mode_unchanged_when_none(self, repo):
+        plan = B.compute_plan("Appliquer le marqueur synthetique TERMINAL_BUILD_BOUNDED_V1", "sha", repo)
+        assert plan["scope_mode"] == "HEURISTIC_LEGACY"
+        assert plan["requested_explicit_scope"] is None
+        assert plan["status"] == "PLAN_PROPOSED"
+
+    def test_explicit_single_target(self, repo):
+        plan = B.compute_plan(
+            "objectif", "sha", repo,
+            explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"],
+        )
+        assert plan["scope_mode"] == "EXPLICIT_CHILD_TARGET"
+        assert plan["approved_scope_proposal"] == ["tests/fixtures/terminal_build_bounded/target.txt"]
+        assert plan["status"] == "PLAN_PROPOSED"
+
+    def test_objective_cannot_widen_explicit_scope(self, repo):
+        wide_objective = "target_b common constants energy all peripheral files bank trading gps"
+        plan = B.compute_plan(
+            wide_objective, "sha", repo,
+            explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"],
+        )
+        assert plan["approved_scope_proposal"] == ["tests/fixtures/terminal_build_bounded/target.txt"]
+
+    def test_two_children_never_share_scope(self, repo):
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "target_a.py").write_text("a\n", encoding="utf-8")
+        (repo / "periphery" / "target_b.py").write_text("b\n", encoding="utf-8")
+        plan_a = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/target_a.py"])
+        plan_b = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/target_b.py"])
+        assert plan_a["approved_scope_proposal"] == ["periphery/target_a.py"]
+        assert plan_b["approved_scope_proposal"] == ["periphery/target_b.py"]
+        assert "periphery/target_b.py" not in plan_a["approved_scope_proposal"]
+        assert "periphery/target_a.py" not in plan_b["approved_scope_proposal"]
+
+    def test_dependency_does_not_widen_scope(self, repo):
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "dep_a.py").write_text("a\n", encoding="utf-8")
+        (repo / "periphery" / "dep_b.py").write_text("b\n", encoding="utf-8")
+        # A depend de B mais la portee explicite d'ecriture de A reste [A]
+        plan_a = B.compute_plan("A depends on B", "sha", repo, explicit_scope=["periphery/dep_a.py"])
+        assert plan_a["approved_scope_proposal"] == ["periphery/dep_a.py"]
+
+    def test_test_files_not_added_to_write_scope(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        assert plan["approved_scope_proposal"] == ["tests/fixtures/terminal_build_bounded/target.txt"]
+        assert "tests/fixtures/terminal_build_bounded/test_target_content.py" not in plan["approved_scope_proposal"]
+
+    def test_cwd_independent_identity(self, repo, monkeypatch):
+        p1 = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        monkeypatch.chdir(repo.parent)
+        p2 = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        assert p1["approved_scope_proposal"] == p2["approved_scope_proposal"]
+        assert p1["approved_scope_hash"] == p2["approved_scope_hash"]
+
+    def test_absolute_in_repo_target_resolves_same_identity(self, repo):
+        rel = "tests/fixtures/terminal_build_bounded/target.txt"
+        abs_path = str((repo / rel).resolve())
+        p_rel = B.compute_plan("obj", "sha", repo, explicit_scope=[rel])
+        p_abs = B.compute_plan("obj", "sha", repo, explicit_scope=[abs_path])
+        assert p_rel["approved_scope_proposal"] == p_abs["approved_scope_proposal"] == [rel]
+        assert p_rel["approved_scope_hash"] == p_abs["approved_scope_hash"]
+
+    def test_traversal_alias_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/../proofs/x.json"])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_PROTECTED_REJECTED"
+
+    def test_relative_dot_protected_alias_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["./proofs/x.json"])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_PROTECTED_REJECTED"
+
+    def test_outside_repo_relative_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["../outside.py"])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_OUTSIDE_REPO"
+
+    def test_outside_repo_absolute_rejected(self, repo, tmp_path):
+        outside = tmp_path / "elsewhere.py"
+        outside.write_text("x\n", encoding="utf-8")
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=[str(outside)])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_OUTSIDE_REPO"
+
+    def test_protected_kernel_sealed_rejected(self, repo):
+        plan = B.compute_plan(
+            "obj", "sha", repo,
+            explicit_scope=["runtime_terrain_bank_trading_gps/server.kernel.sealed.cjs"],
+        )
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_PROTECTED_REJECTED"
+
+    def test_wildcard_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/*.py"])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_WILDCARD_REJECTED"
+
+    def test_empty_target_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=[""])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_EMPTY_TARGET"
+
+    def test_directory_scope_rejected(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded"])
+        assert plan["status"] == "PLAN_REJECTED"
+        assert plan["scope_error"] == "EXPLICIT_SCOPE_DIRECTORY_REJECTED"
+
+    def test_new_not_yet_existing_target_supported(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/new_module.py"])
+        assert plan["status"] == "PLAN_PROPOSED"
+        assert plan["approved_scope_proposal"] == ["periphery/new_module.py"]
+        assert not (repo / "periphery" / "new_module.py").exists()  # aucune ecriture pendant la planification
+
+    def test_no_fallback_to_heuristic_on_rejection(self, repo):
+        plan = B.compute_plan(
+            "Appliquer le marqueur synthetique TERMINAL_BUILD_BOUNDED_V1",
+            "sha", repo, explicit_scope=["../outside.py"],
+        )
+        # meme si l'objectif matcherait normalement des fichiers heuristiques,
+        # un rejet explicite ne retombe jamais sur la decouverte heuristique
+        assert plan["approved_scope_proposal"] == []
+        assert plan["status"] == "PLAN_REJECTED"
+
+    def test_approved_scope_hash_changes_with_target(self, repo):
+        p1 = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        p2 = B.compute_plan("obj", "sha", repo, explicit_scope=["periphery/new_module.py"])
+        assert p1["approved_scope_hash"] != p2["approved_scope_hash"]
+
+    def test_scope_error_never_populated_on_success(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        assert plan["scope_error"] is None
+
+    def test_decision_authority_kx108_only(self, repo):
+        plan = B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        assert plan["decision_authority"] == "KX108_ONLY"
+
+
+# =============================================================================
 # Groupe B — Phase 1: zero ecriture
 # =============================================================================
 
@@ -588,6 +733,79 @@ class TestPhase2Execute:
             touched = [f.strip() for f in r.stdout.splitlines() if f.strip()]
             for f in touched:
                 assert f in plan["approved_scope_proposal"], f"SCOPE_DRIFT: {f}"
+        _cleanup_repo(repo)
+
+
+# =============================================================================
+# Groupe D2 — Liaison session explicite (depot temporaire, JAMAIS le vrai repo)
+# =============================================================================
+
+class TestExplicitScopeSessionBinding:
+    """Preuve que compute_plan(explicit_scope=...) -> cmd_execute(explicit_scope=...)
+    -> receipt conservent la MEME identite de portee canonique, dans un
+    depot Git temporaire totalement isole. Chaine complete :
+    child.target_path -> plan explicite -> approved_scope de session ->
+    receipt/lifecycle -- une seule identite de cible canonique inchangee."""
+
+    TARGET = "tests/fixtures/terminal_build_bounded/target.txt"
+
+    def test_explicit_scope_binds_through_to_receipt(self, repo, state_dir):
+        sha = B.get_base_sha(repo)
+        plan = B.compute_plan("explicit e2e binding", sha, repo, explicit_scope=[self.TARGET])
+        assert plan["status"] == "PLAN_PROPOSED"
+        assert plan["scope_mode"] == "EXPLICIT_CHILD_TARGET"
+        token = plan["next_human_action"]
+
+        B.cmd_execute(
+            "explicit e2e binding", token,
+            repo_root=repo, state_dir=state_dir, explicit_scope=[self.TARGET],
+        )
+
+        receipt_path = state_dir / plan["session_id"] / "receipt.json"
+        assert receipt_path.exists(), f"Receipt absent: {receipt_path}"
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        assert receipt["approved_scope"] == [self.TARGET]
+        assert receipt["scope_mode"] == "EXPLICIT_CHILD_TARGET"
+        assert receipt["approved_scope_hash"] == plan["approved_scope_hash"]
+        _cleanup_repo(repo)
+
+    def test_execute_without_explicit_scope_rejects_token_from_explicit_plan(self, repo, state_dir):
+        """Si le plan a ete approuve en mode explicite sur une cible que
+        l'heuristique ne decouvrirait jamais (hors tests/fixtures/...),
+        re-executer SANS explicit_scope doit regenerer un plan heuristique
+        different -> session_id/manifest_hash divergent -> token rejete
+        (fail-closed, pas de fallback silencieux)."""
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "not_heuristically_found.py").write_text("x\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=repo, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "add target"], cwd=repo, capture_output=True, check=True)
+
+        sha = B.get_base_sha(repo)
+        plan = B.compute_plan("obj", sha, repo, explicit_scope=["periphery/not_heuristically_found.py"])
+        token = plan["next_human_action"]
+        rc = B.cmd_execute("obj", token, repo_root=repo, state_dir=state_dir)  # sans explicit_scope
+        assert rc == 2
+        _cleanup_repo(repo)
+
+    def test_two_children_produce_two_independent_sessions(self, repo, state_dir):
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "e2e_a.py").write_text("a\n", encoding="utf-8")
+        (repo / "periphery" / "e2e_b.py").write_text("b\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=repo, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "add e2e targets"], cwd=repo, capture_output=True, check=True)
+
+        sha = B.get_base_sha(repo)
+        plan_a = B.compute_plan("obj a", sha, repo, explicit_scope=["periphery/e2e_a.py"])
+        plan_b = B.compute_plan("obj b", sha, repo, explicit_scope=["periphery/e2e_b.py"])
+        assert plan_a["session_id"] != plan_b["session_id"]
+
+        B.cmd_execute("obj a", plan_a["next_human_action"], repo_root=repo, state_dir=state_dir, explicit_scope=["periphery/e2e_a.py"])
+        B.cmd_execute("obj b", plan_b["next_human_action"], repo_root=repo, state_dir=state_dir, explicit_scope=["periphery/e2e_b.py"])
+
+        receipt_a = json.loads((state_dir / plan_a["session_id"] / "receipt.json").read_text(encoding="utf-8"))
+        receipt_b = json.loads((state_dir / plan_b["session_id"] / "receipt.json").read_text(encoding="utf-8"))
+        assert receipt_a["approved_scope"] == ["periphery/e2e_a.py"]
+        assert receipt_b["approved_scope"] == ["periphery/e2e_b.py"]
         _cleanup_repo(repo)
 
 
