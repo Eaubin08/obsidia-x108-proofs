@@ -7869,6 +7869,81 @@ def _handle_build_lifecycle(subcmd: str, session_id: str, extra: str = "") -> st
     return _buf.getvalue() or f"[{subcmd.upper()}] Terminé."
 
 
+def _dispatch_batch(rest: str) -> str:
+    """Dispatche 'batch <subcmd> [args]' vers BATCH_SELECTOR_V0."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_batch_selector")
+    except ImportError as exc:
+        return f"[BATCH_UNAVAILABLE] obsidia_batch_selector non importable: {exc}"
+
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return (
+            "GUIDE: batch propose [--max N] [--objective TEXT] "
+            "| batch list | batch status <batch_id> "
+            "| batch inspect <batch_id> | batch candidates"
+        )
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    def _capture(fn):
+        _old = sys.stdout
+        sys.stdout = _buf = _io.StringIO()
+        try:
+            fn()
+        except Exception as exc:
+            sys.stdout = _old
+            return f"[BATCH_ERROR] {exc}"
+        sys.stdout = _old
+        return _buf.getvalue() or f"[{subcmd.upper()}] Termine."
+
+    if subcmd == "propose":
+        max_size = _mod.DEFAULT_MAX_BATCH_SIZE
+        objective = ""
+        tokens = subarg.split()
+        i = 0
+        while i < len(tokens):
+            if tokens[i] in ("--max", "-m") and i + 1 < len(tokens):
+                try:
+                    max_size = int(tokens[i + 1])
+                except ValueError:
+                    pass
+                i += 2
+            elif tokens[i] in ("--objective", "-o") and i + 1 < len(tokens):
+                objective = tokens[i + 1]
+                i += 2
+            else:
+                i += 1
+        result = _mod.propose_batch(objective=objective, max_batch_size=max_size)
+        return json.dumps({
+            "batch_id": result["batch_id"],
+            "status": result["status"],
+            "selected_count": result["selected_count"],
+            "hold_count": result["hold_count"],
+            "excluded_count": result["excluded_count"],
+            "batch_hash": result["batch_hash"],
+            "metrics": result["metrics"],
+        }, ensure_ascii=False)
+    if subcmd == "list":
+        return _capture(lambda: _mod.cmd_batch_list())
+    if subcmd in ("status", "inspect"):
+        if not subarg:
+            return f"GUIDE: batch {subcmd} <batch_id>"
+        fn_map = {
+            "status":  lambda: _mod.cmd_batch_status(subarg),
+            "inspect": lambda: _mod.cmd_batch_inspect(subarg),
+        }
+        return _capture(fn_map[subcmd])
+    if subcmd == "candidates":
+        return _capture(lambda: _mod.cmd_batch_candidates())
+    return f"[BATCH_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+
+
 def _dispatch_ledger(rest: str) -> str:
     """Dispatche 'ledger <subcmd> [arg]' vers BRANCHING_LEDGER_V0."""
     import io as _io
@@ -8851,6 +8926,11 @@ def main(argv: list[str]) -> int:
     if cmd0 == "ledger":
         _obj_ledger = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(_dispatch_ledger(_obj_ledger))
+        return 0
+    # Commande batch: BATCH_SELECTOR_V0, aucun subprocess
+    if cmd0 == "batch":
+        _obj_batch = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_dispatch_batch(_obj_batch))
         return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
