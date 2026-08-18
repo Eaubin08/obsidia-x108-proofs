@@ -7869,6 +7869,64 @@ def _handle_build_lifecycle(subcmd: str, session_id: str, extra: str = "") -> st
     return _buf.getvalue() or f"[{subcmd.upper()}] Terminé."
 
 
+def _dispatch_ledger(rest: str) -> str:
+    """Dispatche 'ledger <subcmd> [arg]' vers BRANCHING_LEDGER_V0."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_branching_ledger")
+    except ImportError as exc:
+        return f"[LEDGER_UNAVAILABLE] obsidia_branching_ledger non importable: {exc}"
+
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return (
+            "GUIDE: ledger list | ingest <session_id> | status <entry_id> "
+            "| inspect <entry_id> | history <entry_id> "
+            "| find --path <path> | find --session <session_id>"
+        )
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    def _capture(fn):
+        _old = sys.stdout
+        sys.stdout = _buf = _io.StringIO()
+        try:
+            fn()
+        except Exception as exc:
+            sys.stdout = _old
+            return f"[LEDGER_ERROR] {exc}"
+        sys.stdout = _old
+        return _buf.getvalue() or f"[{subcmd.upper()}] Termine."
+
+    if subcmd == "list":
+        return _capture(lambda: _mod.cmd_ledger_list())
+    if subcmd == "ingest":
+        if not subarg:
+            return "GUIDE: ledger ingest <session_id>"
+        result = _mod.ingest_from_receipt(subarg)
+        return json.dumps(result, ensure_ascii=False)
+    if subcmd in ("status", "inspect", "history"):
+        if not subarg:
+            return f"GUIDE: ledger {subcmd} <entry_id>"
+        fn_map = {
+            "status":  lambda: _mod.cmd_ledger_status(subarg),
+            "inspect": lambda: _mod.cmd_ledger_inspect(subarg),
+            "history": lambda: _mod.cmd_ledger_history(subarg),
+        }
+        return _capture(fn_map[subcmd])
+    if subcmd == "find":
+        if subarg.startswith("--path "):
+            return _capture(lambda: _mod.cmd_ledger_find_path(subarg[7:].strip()))
+        if subarg.startswith("--session "):
+            return _capture(lambda: _mod.cmd_ledger_find_session(subarg[10:].strip()))
+        return "GUIDE: ledger find --path <path> | ledger find --session <session_id>"
+    return f"[LEDGER_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+
+
 def _dispatch_build(rest: str) -> str:
     """Dispatche 'build <subcmd> [arg]' vers lifecycle ou plan selon le sous-commande."""
     parts = rest.strip().split(None, 1)
@@ -8788,6 +8846,11 @@ def main(argv: list[str]) -> int:
     if cmd0 == "build":
         _obj_main = " ".join(argv[1:]).strip().strip('"').strip("'")
         print(_dispatch_build(_obj_main))
+        return 0
+    # Commande ledger: BRANCHING_LEDGER_V0, aucun subprocess
+    if cmd0 == "ledger":
+        _obj_ledger = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_dispatch_ledger(_obj_ledger))
         return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
