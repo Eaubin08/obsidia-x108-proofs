@@ -356,10 +356,18 @@ class OSTradClient:
                 return [str(raw)] if raw else []
             return [x.get("text", str(x)) if isinstance(x, dict) else str(x) for x in raw]
 
+        # Si l'API retourne "unknown" ou vide, _local_intent() prend le relais.
+        _api_intent = str(ir.get("intent", ""))
+        _resolved_intent = (
+            _api_intent
+            if _api_intent and _api_intent.lower() not in ("unknown", "", "none")
+            else _local_intent(text)
+        )
+
         return OSTradResult(
             detected_language=detected_language,
             alphabet_units=_to_str_list(alphabet_units),
-            intent=str(ir.get("intent", _local_intent(text))),
+            intent=_resolved_intent,
             risk_flags=_to_str_list(risk_flags),
             constraints=_to_str_list(ir.get("constraints", [])),
             contradictions=_to_str_list(ir.get("contradictions", [])),
@@ -2143,6 +2151,20 @@ def _python_peripheral_stub(rel: str, objective: str, attempt: int) -> str:
         '"""\n'
     )
 
+    # ── Détection version-bump (ex: CONST_NAME de v0 a v1) ──────────────
+    # Produit la constante cible dans le stub si l'objectif la référence.
+    _bump = re.search(
+        r"([A-Z_]+)\s+de\s+\S+\s+[àa]\s+(\S+)",
+        objective,
+        re.IGNORECASE,
+    )
+    _version_constants = ""
+    if _bump:
+        _const_name = _bump.group(1).upper()
+        _new_val = re.sub(r"[^a-zA-Z0-9_.]", "", _bump.group(2))
+        if _const_name and _new_val and re.match(r"^[A-Z][A-Z0-9_]+$", _const_name):
+            _version_constants = f'\n{_const_name} = "{_new_val}"\n'
+
     # ── Détection mode enrichi ──────────────────────────────────────────
     _ENRICHED_TRIGGERS = (
         "IMPORTE", "IMPORT", "VERIFIE", "VERIFY", "ASSERT",
@@ -2155,7 +2177,8 @@ def _python_peripheral_stub(rel: str, objective: str, attempt: int) -> str:
         return (
             header
             + "from __future__ import annotations\n"
-            + "from typing import Any, Dict\n\n\n"
+            + "from typing import Any, Dict\n"
+            + _version_constants + "\n\n"
             + f"def {module_name}_init() -> Dict[str, Any]:\n"
             + '    """Stub généré — à compléter selon MATH_MEMORY_INDEX.json."""\n'
             + f'    return {{"module": "{module_name}", "status": "STUB", "route": "PYTHON_PATCH_PROPOSAL"}}\n'

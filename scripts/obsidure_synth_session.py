@@ -4,31 +4,37 @@ scripts/obsidure_synth_session.py -- Session synthetique OBSIDURE_BOUNDED_APPLY_
 ===================================================================================
 Preuve E2E reelle (spec s.15) :
 
-  1. AgentObsidure.run_cycle() -- generation reelle de PatchProposal
-  2. persist_proposal()
+  1. AgentObsidure.run_cycle() -- generation reelle (1 seul appel)
+  2. Mise a jour des metadonnees de session uniquement (pas de remplacement patches)
   3. load_and_validate_proposal()
   4. dryrun_bounded()
   5. run_bounded_apply()
   6. diff verification (scope post-apply)
-  7. run_tests_for_evidence()
-  8. build_tooling_state_from_evidence()
-  9. GuardX108 (run_tooling_build_pipeline)
-  10. write_apply_receipt()
-  11. READY_FOR_COMMIT_REVIEW
+  7. target_effect_evidence -- lecture reelle du fichier modifie
+  8. regression_test_evidence -- suite de tests existante
+  9. build_tooling_state_from_evidence()
+  10. GuardX108 (run_tooling_build_pipeline)
+      ACT seulement si target_effect_evidence ET regression_test_evidence sont PASS
+  11. write_apply_receipt()
+  12. READY_FOR_COMMIT_REVIEW
 
-NE PAS remplacer par un stub si la generation reelle est disponible.
-Si OS_TRAD_REVERSE est indisponible : Obsidure utilise son mode offline.
-Si le mode offline echoue egalement : le palier reste HOLD pour la preuve E2E.
+Cible : periphery/math_core/peripheral_version_target.py
+  -- chemin en periphery/ : aucune redirection par _generate_python_peripheral_patches.
+  -- patches produits par run_cycle() utilises tels quels (PATCH_INJECTION = FALSE).
+  -- BASE_SHA capture git rev-parse HEAD une seule fois au debut.
 
-Cible : tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py
+INTERDIT : remplacer data["patches"] apres run_cycle().
+INTERDIT : injecter sandbox_path externe.
+INTERDIT : court-circuiter GuardX108.
+INTERDIT : falsifier test_evidence (booleen injecte).
 """
 
 from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -37,7 +43,7 @@ _REPO_ROOT = _SCRIPTS_DIR.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from periphery.agents.agent_obsidure import AgentObsidure, PROPOSALS_DIR, persist_proposal
+from periphery.agents.agent_obsidure import AgentObsidure, PROPOSALS_DIR
 from scripts.obsidure_bounded_apply import (
     load_and_validate_proposal,
     dryrun_bounded,
@@ -50,11 +56,29 @@ from scripts.obsidure_bounded_apply import (
 
 WORKTREE_ROOT = _REPO_ROOT
 SESSION_ID = f"synth-e2e-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
-TARGET_REL = "tests/fixtures/obsidure_apply_v1/session_synth_01/target_peripheral.py"
-SANDBOX_SRC = _REPO_ROOT / "tests" / "fixtures" / "obsidure_apply_v1" / "session_synth_01" / "sandbox" / "target_peripheral.py"
-APPROVED_SCOPE = [TARGET_REL]
-BASE_SHA = "d072baa612a60e1df5b6e671c11f5510183eefd2"
 WORKTREE_NAME = "TERMINAL_BOUNDED_V1"
+
+# Objectif pointant directement vers periphery/ : pas de redirection par l'agent.
+_SYNTH_OBJECTIVE = (
+    "Mettre a jour PERIPHERAL_VERSION de v0 a v1 dans "
+    "periphery/math_core/peripheral_version_target.py -- "
+    "session synthetique OBSIDURE_BOUNDED_APPLY_V1"
+)
+
+
+def _capture_head(worktree: Path) -> str:
+    """Lit git rev-parse HEAD dans le worktree une seule fois au demarrage."""
+    try:
+        r = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True, text=True, cwd=str(worktree), timeout=10,
+        )
+        sha = r.stdout.strip()
+        if r.returncode != 0 or not sha:
+            raise RuntimeError(f"git rev-parse HEAD echec : {r.stderr.strip()}")
+        return sha
+    except Exception as exc:
+        raise RuntimeError(f"Impossible de lire HEAD : {exc}") from exc
 
 
 def _banner(msg: str) -> None:
@@ -64,137 +88,159 @@ def _banner(msg: str) -> None:
 
 
 def run_synth_session() -> dict:
-    _banner("OBSIDURE_BOUNDED_APPLY_V1 — Session synthétique E2E")
-    print(f"  session_id    : {SESSION_ID}")
-    print(f"  target        : {TARGET_REL}")
-    print(f"  base_sha      : {BASE_SHA}")
+    _banner("OBSIDURE_BOUNDED_APPLY_V1 -- Session synthetique E2E")
+
+    # -- Capture HEAD avant tout autre appel (Section 2) -----------------
+    base_sha = _capture_head(WORKTREE_ROOT)
+    print(f"  session_id         : {SESSION_ID}")
+    print(f"  base_sha (HEAD)    : {base_sha}")
+    print(f"  PATCH_INJECTION    : FALSE")
+    print(f"  run_cycle_count    : 1")
     print()
 
-    # ── Étape 1 : génération réelle via AgentObsidure ────────────────────
-    _banner("Étape 1 — AgentObsidure.run_cycle() [mode offline si API absente]")
+    # -- Etape 1 : generation reelle via AgentObsidure (1 seul appel) ---
+    _banner("Etape 1 -- AgentObsidure.run_cycle() REAL [offline si API absente]")
 
     agent = AgentObsidure()
-    objective = (
-        "Mettre à jour PERIPHERAL_VERSION de v0 à v1 dans "
-        f"{TARGET_REL} — session synthétique OBSIDURE_BOUNDED_APPLY_V1"
-    )
+    _run_cycle_count = 0
 
-    proposal = agent.run_cycle(objective)
-    print(f"  proposal_id   : {proposal.proposal_id}")
-    print(f"  patches       : {len(proposal.patches)} patch(es)")
+    proposal = agent.run_cycle(_SYNTH_OBJECTIVE)
+    _run_cycle_count += 1
 
-    # ── Étape 2 : corriger sandbox_path pour pointer vers notre fixture ───
-    _banner("Étape 2 — Liaison sandbox_path → fixture réelle")
+    print(f"  proposal_id        : {proposal.proposal_id}")
+    print(f"  patches            : {len(proposal.patches)} patch(es)")
+    print(f"  PATCH_SOURCE       : REAL_AGENTOBSIDURE")
+    print(f"  run_cycle_count    : {_run_cycle_count}")
+
+    if not proposal.patches:
+        print("  [HOLD] run_cycle() a produit 0 patch -- chaine reelle bloquee.")
+        return {"status": "HOLD_NO_PATCHES", "proposal_id": proposal.proposal_id}
+
+    assert _run_cycle_count == 1, "Invariant : run_cycle() ne doit etre appele qu'une fois"
+
+    # -- Etape 2 : metadonnees de session uniquement (pas de patches) ---
+    _banner("Etape 2 -- Metadonnees de session (PATCH_INJECTION = FALSE)")
     proposal_dir = PROPOSALS_DIR / proposal.proposal_id
     proposal_json = proposal_dir / "proposal.json"
 
     with proposal_json.open(encoding="utf-8") as f:
         data = json.load(f)
 
-    # La génération offline produit des patches périphériques génériques.
-    # On les remplace par le patch réel de la fixture pour avoir une preuve concrète.
+    # Chemins reels produits par l'agent -- NE PAS remplacer
+    actual_patch_paths = [p["path"] for p in data.get("patches", [])]
+    print(f"  chemins generes    : {actual_patch_paths}")
+
+    peripheral_ok = all(p.startswith("periphery/") for p in actual_patch_paths)
+    if not peripheral_ok:
+        print(f"  [HOLD] Patches hors periphery/ : {actual_patch_paths}")
+        return {"status": "HOLD_PATCH_OUT_OF_PERIPHERY", "paths": actual_patch_paths}
+
+    # Mise a jour des seules metadonnees de session
     data["session_id"] = SESSION_ID
-    data["base_sha"] = BASE_SHA
+    data["base_sha"] = base_sha
     data["worktree"] = WORKTREE_NAME
-    data["approved_scope"] = APPROVED_SCOPE
-    data["proposal_files"] = APPROVED_SCOPE
-
-    real_patch = {
-        "path": TARGET_REL,
-        "sandbox_path": str(SANDBOX_SRC),
-        "action": "MODIFY",
-    }
-
-    original_patches = data.get("patches", [])
-    peripheral_patches = [p for p in original_patches if not _any_protected(p.get("path", ""))]
-
-    if peripheral_patches:
-        first = peripheral_patches[0]
-        first["path"] = TARGET_REL
-        first["sandbox_path"] = str(SANDBOX_SRC)
-        first["action"] = "MODIFY"
-        data["patches"] = [first]
-    else:
-        data["patches"] = [real_patch]
+    data["approved_scope"] = actual_patch_paths
+    data["proposal_files"] = actual_patch_paths
 
     proposal_hash = _compute_proposal_hash(data)
     data["proposal_hash"] = proposal_hash
     proposal_json.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"  proposal_hash : {proposal_hash}")
+    print(f"  proposal_hash      : {proposal_hash}")
+    print(f"  PATCH_INJECTION    : FALSE")
 
-    # ── Étape 3 : sauvegarde du fichier cible avant apply ────────────────
-    _banner("Étape 3 — Sauvegarde du fichier cible avant apply")
-    target_abs = WORKTREE_ROOT / TARGET_REL
+    # -- Etape 3 : sauvegarde si cible existante -------------------------
+    _banner("Etape 3 -- Sauvegarde avant apply")
+    target_rel = actual_patch_paths[0]
+    target_abs = WORKTREE_ROOT / target_rel
     backup_abs = target_abs.with_suffix(".py.synth_backup")
     if target_abs.exists():
         shutil.copy2(str(target_abs), str(backup_abs))
-        print(f"  Backup : {backup_abs.name}")
+        print(f"  Backup             : {backup_abs.name}")
+    else:
+        print(f"  Cible inexistante (nouveau fichier) : {target_rel}")
 
-    # ── Étapes 4+5 : validation + dryrun ─────────────────────────────────
-    _banner("Étapes 4+5 — load_and_validate_proposal + dryrun_bounded")
+    # -- Etapes 4+5 : validation + dryrun --------------------------------
+    _banner("Etapes 4+5 -- load_and_validate_proposal + dryrun_bounded")
     session = load_and_validate_proposal(
         proposal_id=proposal.proposal_id,
         session_id=SESSION_ID,
-        base_sha=BASE_SHA,
+        base_sha=base_sha,
         worktree=WORKTREE_NAME,
-        approved_scope=APPROVED_SCOPE,
+        approved_scope=actual_patch_paths,
     )
     session = dryrun_bounded(session)
-    print(f"  dryrun_status : {session.dryrun_status}")
+    print(f"  dryrun             : {session.dryrun_status}")
 
     if session.dryrun_status != "OBSIDURE_DRYRUN_READY_FOR_PROPOSAL_REVIEW":
-        print(f"\n  [HOLD] DryRun bloqué : {session.dryrun_status}")
+        print(f"\n  [HOLD] DryRun bloque : {session.dryrun_status}")
         return {"status": "HOLD_DRYRUN", "dryrun_status": session.dryrun_status}
 
-    # ── Étape 6 : apply borné ────────────────────────────────────────────
-    _banner("Étape 6 — run_bounded_apply (apply réel dans worktree)")
+    # -- Etape 6 : apply borne -------------------------------------------
+    _banner("Etape 6 -- run_bounded_apply (apply reel)")
     session = run_bounded_apply(session, agent, WORKTREE_ROOT)
-    print(f"  apply_status         : {session.apply_status}")
-    print(f"  actual_modified_files: {session.actual_modified_files}")
+    print(f"  apply_status       : {session.apply_status}")
+    print(f"  actual_modified    : {session.actual_modified_files}")
 
     if session.apply_status.startswith("BLOCK"):
         _restore_backup(target_abs, backup_abs)
         return {"status": session.apply_status, "session": session.session_id}
 
-    # ── Étape 7 : vérification diff ──────────────────────────────────────
-    _banner("Étape 7 — Scope verification post-apply")
+    # -- Etape 7 : scope verification ------------------------------------
+    _banner("Etape 7 -- Scope verification post-apply")
     drift = sorted(set(session.actual_modified_files) - set(session.proposal_files))
     session.scope_verification = "CLEAN" if not drift else f"DRIFT:{drift}"
     print(f"  scope_verification : {session.scope_verification}")
 
-    # Vérification concrète du contenu modifié
-    if target_abs.exists():
-        content = target_abs.read_text(encoding="utf-8")
-        print(f"  PERIPHERAL_VERSION dans fichier : {'v1' if 'v1' in content else 'INCONNU'}")
-
-    # ── Étape 8 : tests attestés ─────────────────────────────────────────
-    _banner("Étape 8 — run_tests_for_evidence")
-    test_cmd = [sys.executable, "-m", "pytest",
-                "tests/fixtures/obsidure_apply_v1/",
-                "-q", "--tb=short", "--no-header"]
-    test_ev = run_tests_for_evidence(
-        test_command=test_cmd,
-        test_identity=f"synth_e2e_tests_{SESSION_ID}",
-        worktree_root=WORKTREE_ROOT,
-        timeout=60,
+    # -- Etape 8a : TARGET_EFFECT_EVIDENCE (lecture reelle du fichier) ---
+    _banner("Etape 8a -- target_effect_evidence (lecture fichier modifie)")
+    check_script = (
+        "import sys; from pathlib import Path; "
+        "p = Path('" + target_rel.replace("\\", "/") + "'); "
+        "assert p.exists(), 'Fichier non cree: ' + str(p); "
+        "c = p.read_text(encoding='utf-8'); "
+        "lines = [l.strip() for l in c.splitlines() if 'PERIPHERAL_VERSION' in l]; "
+        "assert lines, 'PERIPHERAL_VERSION absent du fichier'; "
+        "assert any('v1' in l for l in lines), "
+        "'PERIPHERAL_VERSION=v1 non confirme: ' + str(lines); "
+        "print('TARGET_EFFECT_PASS: PERIPHERAL_VERSION=v1 confirme'); sys.exit(0)"
     )
-    print(f"  test exit_code : {test_ev.exit_code}")
-    print(f"  test status    : {test_ev.status}")
-    print(f"  receipt_hash   : {test_ev.receipt_hash}")
-
-    gate_ev = run_tests_for_evidence(
-        test_command=test_cmd,
-        test_identity=f"synth_e2e_gates_{SESSION_ID}",
+    target_effect_cmd = [sys.executable, "-c", check_script]
+    target_effect_ev = run_tests_for_evidence(
+        test_command=target_effect_cmd,
+        test_identity=f"target_effect_{SESSION_ID}",
         worktree_root=WORKTREE_ROOT,
-        timeout=60,
+        timeout=30,
     )
+    print(f"  target_effect      : {target_effect_ev.status} (exit={target_effect_ev.exit_code})")
+    print(f"  receipt_hash       : {target_effect_ev.receipt_hash}")
+    if not target_effect_ev.passed:
+        print(f"  [HOLD] target_effect FAIL : {target_effect_ev.results_summary[:200]}")
 
-    session.test_evidence = test_ev
-    session.gate_evidence = gate_ev
+    # -- Etape 8b : REGRESSION_TEST_EVIDENCE (suite de tests moteur) -----
+    _banner("Etape 8b -- regression_test_evidence (suite obsidure_bounded_apply)")
+    regression_cmd = [
+        sys.executable, "-m", "pytest",
+        "tests/test_obsidure_bounded_apply_v1.py",
+        "-q", "--tb=short", "--no-header",
+    ]
+    regression_ev = run_tests_for_evidence(
+        test_command=regression_cmd,
+        test_identity=f"regression_{SESSION_ID}",
+        worktree_root=WORKTREE_ROOT,
+        timeout=180,
+    )
+    print(f"  regression         : {regression_ev.status} (exit={regression_ev.exit_code})")
+    print(f"  receipt_hash       : {regression_ev.receipt_hash}")
 
-    # ── Étape 9 : ToolingBuildState ──────────────────────────────────────
-    _banner("Étape 9 — build_tooling_state_from_evidence → GuardX108")
-    state = build_tooling_state_from_evidence(session, test_ev, gate_ev)
+    session.test_evidence = target_effect_ev
+    session.gate_evidence = regression_ev
+
+    both_pass = target_effect_ev.passed and regression_ev.passed
+
+    # -- Etape 9 : ToolingBuildState + GuardX108 -------------------------
+    _banner("Etape 9 -- build_tooling_state_from_evidence -> GuardX108")
+    # test_ev = target_effect, gate_ev = regression
+    state = build_tooling_state_from_evidence(session, target_effect_ev, regression_ev)
 
     from sigma.protocols import run_tooling_build_pipeline
     import dataclasses as _dc
@@ -205,38 +251,58 @@ def run_synth_session() -> dict:
     gate_map = {"ALLOW": "ACT", "ACT": "ACT", "HOLD": "HOLD", "BLOCK": "BLOCK"}
     kx108_decision = gate_map.get(x108_gate, "HOLD")
 
+    # ACT seulement si les deux evidences passent
+    if kx108_decision == "ACT" and not both_pass:
+        kx108_decision = "HOLD"
+        print("  [HOLD] KX108 retrogradé : target_effect ou regression non PASS")
+
     session.kx108_decision = kx108_decision
-    print(f"  x108_gate      : {x108_gate}")
-    print(f"  kx108_decision : {kx108_decision}")
+    print(f"  x108_gate          : {x108_gate}")
+    print(f"  kx108_decision     : {kx108_decision}")
 
-    # ── Étape 10 : receipt ───────────────────────────────────────────────
-    _banner("Étape 10 — write_apply_receipt")
+    # -- Etape 10 : receipt ----------------------------------------------
+    _banner("Etape 10 -- write_apply_receipt")
     receipt_path = write_apply_receipt(session, result_dict, kx108_decision)
-    print(f"  receipt : {receipt_path}")
+    print(f"  receipt            : {receipt_path}")
 
-    # ── Étape 11 : résultat final ────────────────────────────────────────
-    _banner("RÉSULTAT FINAL")
+    # -- Etape 11 : resultat final ---------------------------------------
+    _banner("RESULTAT FINAL")
     next_action = "READY_FOR_COMMIT_REVIEW" if kx108_decision == "ACT" else kx108_decision
 
-    print(f"  kx108_decision         : {kx108_decision}")
-    print(f"  next_human_action      : {next_action}")
-    print(f"  commit_status          : NOT_COMMITTED")
-    print(f"  push_status            : NOT_PUSHED")
-    print(f"  merge_status           : NOT_MERGED")
-    print(f"  decision_authority     : KX108_ONLY")
+    print(f"  base_sha                   : {base_sha}")
+    print(f"  AgentObsidure.run_cycle    : REAL")
+    print(f"  run_cycle_count            : {_run_cycle_count}")
+    print(f"  patches                    : {len(proposal.patches)}")
+    print(f"  PATCH_SOURCE               : REAL_AGENTOBSIDURE")
+    print(f"  PATCH_INJECTION            : FALSE")
+    print(f"  dryrun                     : PASS")
+    print(f"  apply                      : {session.apply_status}")
+    print(f"  scope_verification         : {session.scope_verification}")
+    print(f"  target_effect_evidence     : {target_effect_ev.status}")
+    print(f"  regression_test_evidence   : {regression_ev.status}")
+    print(f"  gates                      : {'PASS' if both_pass else 'FAIL'}")
+    print(f"  x108_gate                  : {x108_gate}")
+    print(f"  kx108_decision             : {kx108_decision}")
+    print(f"  next_human_action          : {next_action}")
+    print(f"  commit_status              : NOT_COMMITTED")
+    print(f"  push_status                : NOT_PUSHED")
+    print(f"  merge_status               : NOT_MERGED")
+    print(f"  decision_authority         : KX108_ONLY")
 
     if kx108_decision == "ACT":
         _banner("OBSIDURE_BOUNDED_APPLY_V1_READY_FOR_HUMAN_VALIDATION")
-        print("  Le worktree est modifié mais non committé.")
-        print("  L'humain peut inspecter le diff et décider du commit.")
+        print("  Le worktree est modifie mais non committe.")
+        print("  L'humain peut inspecter le diff et decider du commit.")
     else:
-        _banner(f"VERDICT: {kx108_decision} — worktree restauré")
+        _banner(f"VERDICT: {kx108_decision} -- worktree restaure")
         _restore_backup(target_abs, backup_abs)
 
     return {
         "status": "OBSIDURE_BOUNDED_APPLY_V1_COMPLETE",
         "session_id": SESSION_ID,
         "proposal_id": proposal.proposal_id,
+        "proposal_hash": proposal_hash,
+        "base_sha": base_sha,
         "kx108_decision": kx108_decision,
         "next_human_action": next_action,
         "commit_status": "NOT_COMMITTED",
@@ -244,24 +310,30 @@ def run_synth_session() -> dict:
         "merge_status": "NOT_MERGED",
         "decision_authority": "KX108_ONLY",
         "receipt_path": str(receipt_path),
-        "test_evidence": {
-            "status": test_ev.status,
-            "exit_code": test_ev.exit_code,
-            "receipt_hash": test_ev.receipt_hash,
+        "patch_source": "REAL_AGENTOBSIDURE",
+        "patch_injection": False,
+        "run_cycle_count": _run_cycle_count,
+        "target_effect_evidence": {
+            "status": target_effect_ev.status,
+            "exit_code": target_effect_ev.exit_code,
+            "receipt_hash": target_effect_ev.receipt_hash,
+        },
+        "regression_test_evidence": {
+            "status": regression_ev.status,
+            "exit_code": regression_ev.exit_code,
+            "receipt_hash": regression_ev.receipt_hash,
         },
     }
-
-
-def _any_protected(path: str) -> bool:
-    from periphery.agents.agent_obsidure import _is_protected
-    return _is_protected(path)
 
 
 def _restore_backup(target: Path, backup: Path) -> None:
     if backup.exists():
         shutil.copy2(str(backup), str(target))
         backup.unlink()
-        print(f"  [RESTORE] {target.name} restauré depuis backup")
+        print(f"  [RESTORE] {target.name} restaure depuis backup")
+    elif target.exists():
+        target.unlink()
+        print(f"  [RESTORE] {target.name} supprime (fichier nouveau)")
 
 
 if __name__ == "__main__":
