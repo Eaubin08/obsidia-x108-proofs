@@ -980,3 +980,126 @@ class TestE2ERealLedger:
         )
         content_after = ledger_path.read_text(encoding="utf-8")
         assert content_before == content_after
+
+
+# --- TestSelectorDiscoveredStage (PREBUILD_SOURCE_DISCOVERY_V0) ---------------
+
+class TestSelectorDiscoveredStage:
+    """Selector doit distinguer une source DISCOVERED (pre-build) d'une
+    entree post-build cassee. proposal_id/kx108 absents ne doivent PAS
+    a eux seuls declencher un HOLD pour une entree DISCOVERED."""
+
+    def _discovered(self, **overrides) -> dict:
+        params = dict(
+            eid="disc01",
+            path="periphery/discovered_a.py",
+            source_hash="disc0000000hash1",
+            kx108=None,
+            lifecycle="DISCOVERED",
+            dedup="DISTINCT_CONTENT",
+            unknowns=[],
+        )
+        # overrides matching _entry()'s own kwargs (path, source_hash, kx108, ...)
+        entry_kwargs = {k: v for k, v in overrides.items() if k in params or k in (
+            "prev", "domain", "schema",
+        )}
+        params.update(entry_kwargs)
+        entry = _entry(**params)
+        # any remaining overrides target raw ledger-entry fields directly
+        for k, v in overrides.items():
+            if k not in entry_kwargs:
+                entry[k] = v
+        return entry
+
+    def test_discovered_complete_source_is_eligible(self):
+        e = self._discovered()
+        status, reasons = _check_eligibility(e)
+        assert status == ELIGIBLE, reasons
+
+    def test_discovered_without_proposal_id_not_holding_for_that_alone(self):
+        e = self._discovered(proposal_id=None)
+        status, reasons = _check_eligibility(e)
+        assert status == ELIGIBLE
+        assert not any("proposal_id" in r for r in reasons)
+
+    def test_discovered_without_kx108_not_holding_for_that_alone(self):
+        e = self._discovered(kx108=None)
+        status, reasons = _check_eligibility(e)
+        assert status == ELIGIBLE
+        assert not any("kx108_decision_missing" in r for r in reasons)
+
+    def test_discovered_missing_hash_still_holds(self):
+        e = self._discovered(source_hash=None)
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+        assert "source_hash_missing" in reasons
+
+    def test_discovered_protected_still_excluded(self):
+        e = self._discovered(path="proofs/whatever.py")
+        status, reasons = _check_eligibility(e)
+        assert status == PROTECTED
+
+    def test_discovered_dedup_unknown_still_holds(self):
+        e = self._discovered(dedup="DEDUP_UNKNOWN")
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+        assert "dedup_unknown" in reasons
+
+    def test_discovered_missing_dependency_holds(self):
+        # dependency_outside_batch est injecté dans unknowns par detect_dependencies
+        e = self._discovered(unknowns=["dependency_outside_batch"])
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+
+    def test_discovered_clear_dependencies_selectable_in_full_flow(self, tmp_path):
+        candidates = [build_candidate(self._discovered())]
+        result = select_batch(candidates, max_batch_size=5, objective="disc-flow")
+        sel_ids = {c["candidate_id"] for c in result["selected"]}
+        assert "disc01" in sel_ids
+
+    def test_discovered_kx108_block_still_ineligible(self):
+        e = self._discovered(kx108="BLOCK")
+        status, reasons = _check_eligibility(e)
+        assert status == INELIGIBLE
+        assert "kx108_blocked" in reasons
+
+    def test_discovered_kx108_hold_still_holds(self):
+        e = self._discovered(kx108="HOLD")
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+        assert "kx108_hold_status" in reasons
+
+    def test_historical_postbuild_entry_missing_proposal_id_still_holds(self):
+        """Non-regression : une entree POST-BUILD (pas DISCOVERED) avec
+        proposal_id manquant dans ses unknowns doit toujours etre HOLD."""
+        e = _entry(
+            eid="post01",
+            lifecycle="READY_FOR_COMMIT_REVIEW",
+            kx108="ACT",
+            unknowns=["proposal_id_missing"],
+        )
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+        assert "unknowns:['proposal_id_missing']" in reasons
+
+    def test_historical_postbuild_entry_missing_kx108_still_holds(self):
+        """Non-regression : une entree POST-BUILD sans kx108_decision doit
+        toujours HOLD (le kx108 absent n'est acceptable qu'a DISCOVERED)."""
+        e = _entry(
+            eid="post02",
+            lifecycle="READY_FOR_COMMIT_REVIEW",
+            kx108=None,
+        )
+        status, reasons = _check_eligibility(e)
+        assert status == HOLD_UNKNOWN
+        assert "kx108_decision_missing" in reasons
+
+    def test_discovered_no_authority_leakage(self):
+        e = self._discovered()
+        status, reasons = _check_eligibility(e)
+        assert status == ELIGIBLE
+        # ELIGIBLE for batch proposal never implies apply/commit authority
+        c = build_candidate(e)
+        assert c["eligibility"] == ELIGIBLE
+        assert c.get("kx108_decision") is None
+        assert c.get("proposal_id") is None

@@ -59,6 +59,51 @@ def ledger_entry_id(session_id: str, source_hash: str) -> str:
     return _sha16(f"{session_id}:{source_hash}")
 
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _normalize_source_path(path: Path) -> str:
+    """
+    Identité canonique, INDÉPENDANTE du cwd du process appelant :
+    chemin relatif à _REPO_ROOT si le fichier est dans le repo, sinon
+    chemin absolu résolu (stable, jamais relatif au cwd courant).
+    """
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(_REPO_ROOT).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
+def _protected_absolute_paths() -> "list[Path]":
+    """Chemins protégés résolus une fois, ancrés à _REPO_ROOT — indépendants du cwd."""
+    return [(_REPO_ROOT / prefix.rstrip("/")).resolve() for prefix in PROTECTED_PATHS]
+
+
+def _is_protected_resolved(resolved: Path) -> bool:
+    """
+    Vérification structurelle (Path.relative_to), pas de comparaison de
+    préfixe de chaîne : indépendante du cwd, insensible aux traversées
+    ('..'), et ne confond pas un chemin similaire (ex. proofs_backup/)
+    avec un chemin réellement protégé (proofs/).
+    """
+    for prot in _protected_absolute_paths():
+        try:
+            resolved.relative_to(prot)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _is_protected(path: str) -> bool:
+    """Variante chaîne (préfixe normalisé) — conservée pour compat/lecture rapide."""
+    for prefix in PROTECTED_PATHS:
+        if path.startswith(prefix) or path == prefix.rstrip("/"):
+            return True
+    return False
+
+
 def _ensure_dir(ledger_dir: Path) -> None:
     ledger_dir.mkdir(parents=True, exist_ok=True)
 
@@ -117,6 +162,17 @@ def _append_event(event: dict, ledger_dir: "Path | None" = None) -> None:
 
 # ─── Déduplication ──────────────────────────────────────────────────────────
 
+def _effective_identity_path(entry: dict) -> str:
+    """
+    Identité effective d'une entrée pour la dédup :
+    target_path si explicitement connu, sinon source_path (pre-build).
+    Utilisée de façon cohérente à l'écriture (nouvelle entrée) et à la
+    lecture (comparaison aux entrées existantes) — ne modifie PAS la
+    sémantique de target_path (destination) vs source_path (provenance).
+    """
+    return entry.get("target_path") or entry.get("source_path") or ""
+
+
 def classify_dedup(entries: list, primary_path: str, source_hash: "str | None") -> str:
     """
     SAME_PATH_SAME_CONTENT  — chemin et hash identiques, preuve disponible
@@ -124,10 +180,15 @@ def classify_dedup(entries: list, primary_path: str, source_hash: "str | None") 
     MOVED_SAME_CONTENT      — hash identique, chemin différent, preuve disponible
     DISTINCT_CONTENT        — contenu réellement comparable et distinct selon preuves disponibles
     DEDUP_UNKNOWN           — preuve de contenu insuffisante (hash absent, vide ou invalide)
+
+    primary_path doit être l'identité effective (_effective_identity_path)
+    de la nouvelle entrée — comparée à l'identité effective de chaque
+    entrée existante, jamais à target_path brut seul (qui peut être None
+    pour une source DISCOVERED sans target déclaré).
     """
     if not source_hash or source_hash == "unknown":
         return "DEDUP_UNKNOWN"
-    same_path = [e for e in entries if e.get("target_path") == primary_path]
+    same_path = [e for e in entries if _effective_identity_path(e) == primary_path]
     if same_path:
         if any(e.get("source_hash") == source_hash for e in same_path):
             return "SAME_PATH_SAME_CONTENT"
@@ -266,7 +327,7 @@ def ingest_from_receipt(
     # Previous entry for SAME_PATH_NEW_CONTENT versioning
     prev_entry_id: "str | None" = None
     if dedup == "SAME_PATH_NEW_CONTENT":
-        same_path = [e for e in existing if e.get("target_path") == target_path]
+        same_path = [e for e in existing if _effective_identity_path(e) == target_path]
         if same_path:
             prev_entry_id = same_path[-1]["ledger_entry_id"]
 
@@ -387,6 +448,130 @@ def link_commit(
         "timestamp": _now(),
     }, ledger_dir)
     return {"status": "COMMITTED_LINKED", "ledger_entry_id": entry_id, "commit_sha": commit_sha}
+
+
+def register_source(
+    source_path: str,
+    source_type: str = "REAL_SOURCE",
+    target_domain: "str | None" = None,
+    target_path: "str | None" = None,
+    reason: "str | None" = None,
+    dependency_refs: "list | None" = None,
+    provenance_refs: "dict | None" = None,
+    ledger_dir: "Path | None" = None,
+) -> dict:
+    """
+    Enregistre une source réelle DÉCOUVERTE, AVANT toute session de build,
+    proposal, décision KX108 ou commit.
+
+    lifecycle_status = DISCOVERED
+    proposal_id = kx108_decision = commit_sha = None (NOT YET APPLICABLE,
+    pas une preuve manquante).
+
+    Lecture seule sur la source : hash + métadonnées uniquement.
+    Append-only. Idempotent (même chemin normalisé + même hash → pas de
+    doublon).
+    """
+    p = Path(source_path)
+    if not p.exists() or not p.is_file():
+        return {"error": f"Source introuvable ou non-fichier : {source_path}"}
+
+    resolved = p.resolve()
+
+    # Vérification protégée structurelle AVANT tout hash/normalisation
+    # d'affichage — indépendante du cwd, résiste aux traversées ('..'),
+    # ne confond jamais un chemin similaire (proofs_backup/) avec un
+    # chemin réellement protégé (proofs/).
+    if _is_protected_resolved(resolved):
+        return {
+            "status": "REJECTED_PROTECTED",
+            "reason": "protected_path",
+            "source_path": _normalize_source_path(p),
+        }
+
+    normalized_path = _normalize_source_path(p)
+
+    source_hash = _content_hash(p)  # jamais fabriqué — lecture réelle du fichier
+    if source_hash is None:
+        return {"error": f"Impossible de hasher la source : {source_path}"}
+
+    identity_path = target_path or normalized_path
+
+    existing = _load_entries(ledger_dir)
+    dedup = classify_dedup(existing, identity_path, source_hash)
+
+    entry_id = ledger_entry_id(f"DISCOVERED:{normalized_path}", source_hash)
+
+    if any(e.get("ledger_entry_id") == entry_id for e in existing):
+        return {"status": "ALREADY_REGISTERED", "ledger_entry_id": entry_id}
+
+    if dedup == "SAME_PATH_SAME_CONTENT":
+        return {"status": "SAME_PATH_SAME_CONTENT", "ledger_entry_id": entry_id}
+
+    prev_entry_id: "str | None" = None
+    if dedup == "SAME_PATH_NEW_CONTENT":
+        same_path = [e for e in existing if _effective_identity_path(e) == identity_path]
+        if same_path:
+            prev_entry_id = same_path[-1]["ledger_entry_id"]
+
+    entry: dict = {
+        "ledger_entry_id": entry_id,
+        "entry_schema_version": SCHEMA_VERSION,
+        "timestamp": _now(),
+
+        "source_type": source_type,
+        "source_path": normalized_path,
+        "source_hash": source_hash,
+
+        "target_path": target_path,
+        "target_domain": target_domain,
+
+        "session_id": None,
+        "branch": None,
+        "worktree": None,
+        "base_sha": None,
+
+        "objective": reason,
+
+        "proposal_id": None,
+        "proposal_hash": None,
+
+        "approved_scope": [],
+        "proposal_files": [],
+        "actual_modified_files": [],
+
+        "test_evidence_ref": None,
+        "gate_evidence_ref": None,
+
+        "kx108_decision": None,
+        "next_human_action": "REVIEW_SOURCE_CANDIDATE",
+
+        "lifecycle_status": "DISCOVERED",
+        "commit_sha": None,
+
+        "provenance_refs": provenance_refs or {},
+        "dependency_refs": dependency_refs or [],
+
+        "dedup_classification": dedup,
+        "prev_entry_id": prev_entry_id,
+
+        "status": "DISCOVERED",
+        "unknowns": [],
+        "risk_flags": [],
+
+        "decision_authority": DECISION_AUTHORITY,
+    }
+
+    _append_entry(entry, ledger_dir)
+    _append_event({
+        "event_type": "DISCOVERED",
+        "ledger_entry_id": entry_id,
+        "source_path": normalized_path,
+        "timestamp": _now(),
+        "dedup": dedup,
+    }, ledger_dir)
+
+    return {"status": "DISCOVERED", "ledger_entry_id": entry_id}
 
 
 # ─── Commandes lecture ───────────────────────────────────────────────────────

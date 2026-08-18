@@ -249,24 +249,31 @@ def _check_eligibility(entry: dict) -> tuple[str, list[str]]:
         reasons.append("dedup_unknown")
         return HOLD_UNKNOWN, reasons
 
-    # KX108 absent → HOLD (pas de preuve de décision)
+    # Stage-aware : une source DISCOVERED (pre-build) n'a PAS encore de
+    # kx108_decision / proposal_id / commit_sha — absence attendue
+    # (NOT_YET_APPLICABLE), pas une preuve manquante. Les entrées post-build
+    # (tout autre lifecycle_status) gardent le comportement fail-closed strict.
+    lc = entry.get("lifecycle_status") or ""
+    is_discovered = lc == "DISCOVERED"
+
+    # KX108 absent → HOLD (pas de preuve de décision), sauf stage DISCOVERED
     kx108 = entry.get("kx108_decision")
     if not kx108:
-        reasons.append("kx108_decision_missing")
-        return HOLD_UNKNOWN, reasons
+        if not is_discovered:
+            reasons.append("kx108_decision_missing")
+            return HOLD_UNKNOWN, reasons
+    else:
+        # KX108 BLOCK → non sélectionnable
+        if kx108 == "BLOCK":
+            reasons.append("kx108_blocked")
+            return INELIGIBLE, reasons
 
-    # KX108 BLOCK → non sélectionnable
-    if kx108 == "BLOCK":
-        reasons.append("kx108_blocked")
-        return INELIGIBLE, reasons
-
-    # KX108 HOLD → état incertain, ne pas sélectionner sans résolution humaine
-    if kx108 == "HOLD":
-        reasons.append("kx108_hold_status")
-        return HOLD_UNKNOWN, reasons
+        # KX108 HOLD → état incertain, ne pas sélectionner sans résolution humaine
+        if kx108 == "HOLD":
+            reasons.append("kx108_hold_status")
+            return HOLD_UNKNOWN, reasons
 
     # Lifecycle ABORTED / CLEANED → déjà traité
-    lc = entry.get("lifecycle_status") or ""
     if lc in ("ABORTED", "CLEANED"):
         reasons.append(f"lifecycle_{lc.lower()}")
         return ALREADY_PROCESSED, reasons
@@ -278,6 +285,11 @@ def _check_eligibility(entry: dict) -> tuple[str, list[str]]:
 
     # Unknowns critiques (hors source_hash_missing, déjà traité)
     unknowns = [u for u in (entry.get("unknowns") or []) if u != "commit_sha_pending"]
+    if is_discovered:
+        unknowns = [
+            u for u in unknowns
+            if u not in ("proposal_id_missing", "kx108_decision_missing")
+        ]
     if unknowns:
         reasons.append(f"unknowns:{unknowns}")
         return HOLD_UNKNOWN, reasons

@@ -7944,8 +7944,15 @@ def _dispatch_batch(rest: str) -> str:
     return f"[BATCH_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
 
 
-def _dispatch_ledger(rest: str) -> str:
-    """Dispatche 'ledger <subcmd> [arg]' vers BRANCHING_LEDGER_V0."""
+def _dispatch_ledger(rest: str, raw_tokens: "list[str] | None" = None) -> str:
+    """Dispatche 'ledger <subcmd> [arg]' vers BRANCHING_LEDGER_V0.
+
+    raw_tokens : argv brut (argv[1:] après 'ledger'), tokens déjà
+    correctement délimités par le shell/OS — préserve les espaces internes
+    d'un token entre guillemets (chemins Windows, --reason "texte avec
+    espaces"). Utilisé par register-source ; les autres sous-commandes
+    conservent le parsing historique basé sur la chaîne jointe.
+    """
     import io as _io
     import importlib
     _scripts_dir = str(Path(__file__).resolve().parent)
@@ -7961,7 +7968,8 @@ def _dispatch_ledger(rest: str) -> str:
         return (
             "GUIDE: ledger list | ingest <session_id> | status <entry_id> "
             "| inspect <entry_id> | history <entry_id> "
-            "| find --path <path> | find --session <session_id>"
+            "| find --path <path> | find --session <session_id> "
+            "| register-source <path> [--domain D] [--target T] [--reason TEXT]"
         )
     subcmd = parts[0].lower()
     subarg = parts[1].strip() if len(parts) > 1 else ""
@@ -7999,6 +8007,55 @@ def _dispatch_ledger(rest: str) -> str:
         if subarg.startswith("--session "):
             return _capture(lambda: _mod.cmd_ledger_find_session(subarg[10:].strip()))
         return "GUIDE: ledger find --path <path> | ledger find --session <session_id>"
+    if subcmd == "register-source":
+        # raw_tokens = argv brut (tokens deja delimites par le shell/OS) —
+        # préserve exactement les espaces internes d'un token entre
+        # guillemets. Fallback sur subarg.split() uniquement si appelé
+        # sans argv (rétro-compatibilité / appels directs en tests).
+        if raw_tokens is not None:
+            rs_tokens = list(raw_tokens[1:])
+        else:
+            rs_tokens = subarg.split()
+        if not rs_tokens:
+            return "GUIDE: ledger register-source <path> [--domain D] [--target T] [--reason TEXT]"
+        source_path = rs_tokens[0]
+        domain = None
+        target = None
+        reason: "str | None" = None
+        i = 1
+        while i < len(rs_tokens):
+            tok = rs_tokens[i]
+            if tok == "--domain":
+                if i + 1 >= len(rs_tokens):
+                    return "[LEDGER_CLI_ERROR] --domain requiert une valeur"
+                domain = rs_tokens[i + 1]
+                i += 2
+            elif tok == "--target":
+                if i + 1 >= len(rs_tokens):
+                    return "[LEDGER_CLI_ERROR] --target requiert une valeur"
+                target = rs_tokens[i + 1]
+                i += 2
+            elif tok == "--reason":
+                if raw_tokens is not None:
+                    # argv réel : le token --reason suivant est déjà le
+                    # texte complet (le shell a préservé les guillemets).
+                    if i + 1 >= len(rs_tokens):
+                        return "[LEDGER_CLI_ERROR] --reason requiert une valeur"
+                    reason = rs_tokens[i + 1]
+                    i += 2
+                else:
+                    # Fallback chaîne jointe : --reason absorbe le reste.
+                    reason = " ".join(rs_tokens[i + 1:]).strip().strip('"').strip("'") or None
+                    i = len(rs_tokens)
+            else:
+                return f"[LEDGER_CLI_ERROR] Flag inconnu : {tok}"
+        result = _mod.register_source(
+            source_path,
+            target_domain=domain,
+            target_path=target,
+            reason=reason,
+        )
+        return json.dumps(result, ensure_ascii=False)
     return f"[LEDGER_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
 
 
@@ -8925,7 +8982,7 @@ def main(argv: list[str]) -> int:
     # Commande ledger: BRANCHING_LEDGER_V0, aucun subprocess
     if cmd0 == "ledger":
         _obj_ledger = " ".join(argv[1:]).strip().strip('"').strip("'")
-        print(_dispatch_ledger(_obj_ledger))
+        print(_dispatch_ledger(_obj_ledger, argv[1:]))
         return 0
     # Commande batch: BATCH_SELECTOR_V0, aucun subprocess
     if cmd0 == "batch":

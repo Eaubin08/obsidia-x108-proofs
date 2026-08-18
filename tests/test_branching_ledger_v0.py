@@ -43,10 +43,14 @@ from obsidia_branching_ledger import (  # noqa: E402
     ingest_from_proposal,
     ledger_entry_id,
     link_commit,
+    register_source,
     _append_entry,
     _append_event,
     _load_entries,
     _load_events,
+    _normalize_source_path,
+    _is_protected_resolved,
+    _REPO_ROOT,
 )
 from obsidia_build import OBSIDIA_BUILD_STATE_DIR  # noqa: E402
 
@@ -870,3 +874,507 @@ class TestLedgerE2E:
         cmd_ledger_find_session("35d45cb9", d)
         out = capsys.readouterr().out
         assert "35d45cb9" in out
+
+
+# --- TestLedgerRegisterSource (PREBUILD_SOURCE_DISCOVERY_V0) ------------------
+
+class TestLedgerRegisterSource:
+    """register_source : enregistrement pre-build d'une source reelle."""
+
+    def _real_file(self, tmp_path: Path, name: str = "candidate.py", content: str = "x = 1\n") -> Path:
+        p = tmp_path / name
+        p.write_text(content, encoding="utf-8")
+        return p
+
+    def test_register_computes_real_hash(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        result = register_source(str(src), target_domain="PERIPHERAL", ledger_dir=d)
+        assert result["status"] == "DISCOVERED"
+        entry = _load_entries(d)[0]
+        import hashlib
+        expected = hashlib.sha256(src.read_bytes()).hexdigest()[:16]
+        assert entry["source_hash"] == expected
+
+    def test_register_normalized_path_stored(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path, name="mod.py")
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["source_path"]
+        assert "\\" not in entry["source_path"]
+
+    def test_register_lifecycle_discovered(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["lifecycle_status"] == "DISCOVERED"
+        assert entry["status"] == "DISCOVERED"
+
+    def test_register_proposal_id_none_accepted(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["proposal_id"] is None
+        assert "proposal_id_missing" not in (entry.get("unknowns") or [])
+
+    def test_register_kx108_none_accepted(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["kx108_decision"] is None
+        assert "kx108_decision_missing" not in (entry.get("unknowns") or [])
+
+    def test_register_commit_sha_none_accepted(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["commit_sha"] is None
+
+    def test_register_decision_authority_kx108_only(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["decision_authority"] == "KX108_ONLY"
+
+    def test_register_no_fabricated_session_or_receipt(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["session_id"] is None
+        assert entry["branch"] is None
+        assert entry["approved_scope"] == []
+
+    def test_register_same_path_same_content_idempotent(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        r1 = register_source(str(src), ledger_dir=d)
+        r2 = register_source(str(src), ledger_dir=d)
+        assert r1["status"] == "DISCOVERED"
+        assert r2["status"] == "ALREADY_REGISTERED"
+        assert len(_load_entries(d)) == 1
+
+    def test_register_same_path_new_content_versioned(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path, name="versioned.py", content="v1\n")
+        r1 = register_source(str(src), target_path="periphery/versioned.py", ledger_dir=d)
+        src.write_text("v2\n", encoding="utf-8")
+        r2 = register_source(str(src), target_path="periphery/versioned.py", ledger_dir=d)
+        assert r2["status"] == "DISCOVERED"
+        entries = _load_entries(d)
+        assert len(entries) == 2
+        newest = next(e for e in entries if e["ledger_entry_id"] == r2["ledger_entry_id"])
+        assert newest["dedup_classification"] == "SAME_PATH_NEW_CONTENT"
+        assert newest["prev_entry_id"] == r1["ledger_entry_id"]
+
+    def test_register_moved_same_content(self, tmp_path):
+        d = tmp_path / "ledger"
+        src_a = self._real_file(tmp_path, name="a.py", content="same\n")
+        register_source(str(src_a), target_path="periphery/a.py", ledger_dir=d)
+        src_b = self._real_file(tmp_path, name="b.py", content="same\n")
+        r2 = register_source(str(src_b), target_path="periphery/b.py", ledger_dir=d)
+        entries = _load_entries(d)
+        moved = next(e for e in entries if e["ledger_entry_id"] == r2["ledger_entry_id"])
+        assert moved["dedup_classification"] == "MOVED_SAME_CONTENT"
+
+    def test_register_missing_file_no_fabrication(self, tmp_path):
+        d = tmp_path / "ledger"
+        result = register_source(str(tmp_path / "does_not_exist.py"), ledger_dir=d)
+        assert "error" in result
+        assert _load_entries(d) == []
+
+    def test_register_protected_path_rejected(self, tmp_path):
+        d = tmp_path / "ledger"
+        protected_file = _REPO_ROOT / "proofs" / "metadata.json"
+        if not protected_file.exists():
+            pytest.skip("proofs/metadata.json absent")
+        result = register_source(str(protected_file), ledger_dir=d)
+        assert result["status"] == "REJECTED_PROTECTED"
+        assert _load_entries(d) == []
+
+    def test_register_append_only_no_history_rewrite(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(str(src), ledger_dir=d)
+        entries_path = d / "entries.jsonl"
+        before = entries_path.read_text(encoding="utf-8")
+        src2 = self._real_file(tmp_path, name="other.py", content="other\n")
+        register_source(str(src2), ledger_dir=d)
+        after = entries_path.read_text(encoding="utf-8")
+        assert after.startswith(before)
+
+    def test_register_source_file_not_mutated(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        before = src.read_bytes()
+        register_source(str(src), ledger_dir=d)
+        after = src.read_bytes()
+        assert before == after
+
+    def test_register_emits_discovered_event(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        result = register_source(str(src), ledger_dir=d)
+        events = _load_events(d)
+        related = [e for e in events if e.get("ledger_entry_id") == result["ledger_entry_id"]]
+        assert any(e.get("event_type") == "DISCOVERED" for e in related)
+
+    def test_register_provenance_and_reason_recorded(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = self._real_file(tmp_path)
+        register_source(
+            str(src),
+            target_domain="PERIPHERAL",
+            reason="candidate for first real pilot",
+            provenance_refs={"origin": "manual_discovery"},
+            dependency_refs=["periphery/other.py"],
+            ledger_dir=d,
+        )
+        entry = _load_entries(d)[0]
+        assert entry["objective"] == "candidate for first real pilot"
+        assert entry["provenance_refs"] == {"origin": "manual_discovery"}
+        assert entry["dependency_refs"] == ["periphery/other.py"]
+
+
+# --- TestLedgerStageAwareValidation --------------------------------------------
+
+class TestLedgerStageAwareValidation:
+    """Distinction NOT_YET_APPLICABLE (DISCOVERED) vs UNKNOWN/MISSING (post-build)."""
+
+    def test_discovered_proposal_id_none_is_valid(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = tmp_path / "s.py"
+        src.write_text("s\n", encoding="utf-8")
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["lifecycle_status"] == "DISCOVERED"
+        assert entry["proposal_id"] is None
+        assert entry["unknowns"] == []
+
+    def test_discovered_kx108_none_is_valid(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = tmp_path / "s.py"
+        src.write_text("s\n", encoding="utf-8")
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["kx108_decision"] is None
+        assert entry["unknowns"] == []
+
+    def test_discovered_commit_sha_none_is_valid(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = tmp_path / "s.py"
+        src.write_text("s\n", encoding="utf-8")
+        register_source(str(src), ledger_dir=d)
+        entry = _load_entries(d)[0]
+        assert entry["commit_sha"] is None
+        assert entry["unknowns"] == []
+
+    def test_postbuild_proposal_id_missing_still_flagged(self, tmp_path):
+        d = tmp_path / "ledger"
+        sd = tmp_path / "sessions"
+        sid = "stage-aware-01"
+        _write_receipt(sd, sid, _receipt_act(tmp_path, sid))
+        ingest_from_receipt(sid, sd, d)
+        entry = _load_entries(d)[0]
+        assert entry["lifecycle_status"] != "DISCOVERED"
+        assert "proposal_id_missing" in entry["unknowns"]
+
+
+# --- TestPrebuildHardening (HARDEN_PREBUILD_SOURCE_DISCOVERY_V0) --------------
+
+class TestPrebuildHardening:
+    """
+    Durcissement cwd-independent identity, protected-check structurel,
+    dedup sans target_path, CLI Windows avec espaces/guillemets,
+    flags CLI fail-closed.
+    """
+
+    # --- 1. Identite canonique independante du cwd -----------------------
+
+    def test_identity_repo_file_is_repo_relative(self):
+        repo_file = _REPO_ROOT / "scripts" / "obsidia_cli.py"
+        normalized = _normalize_source_path(repo_file)
+        assert normalized == "scripts/obsidia_cli.py"
+        assert "\\" not in normalized
+
+    def test_identity_external_file_is_stable_absolute(self, tmp_path):
+        ext = tmp_path / "external.py"
+        ext.write_text("e\n", encoding="utf-8")
+        n1 = _normalize_source_path(ext)
+        n2 = _normalize_source_path(ext)
+        assert n1 == n2
+        assert n1 == ext.resolve().as_posix()
+
+    def test_identity_same_physical_source_two_cwd_one_semantic_entry(self, tmp_path):
+        """Meme fichier physique enregistre deux fois (chemin relatif puis
+        chemin absolu) -> meme ledger_entry_id, deuxieme = ALREADY_REGISTERED."""
+        d = tmp_path / "ledger"
+        src = tmp_path / "same_physical.py"
+        src.write_text("same\n", encoding="utf-8")
+        r1 = register_source(str(src), ledger_dir=d)
+        r2 = register_source(str(src.resolve()), ledger_dir=d)
+        assert r1["status"] == "DISCOVERED"
+        assert r2["status"] == "ALREADY_REGISTERED"
+        assert r1["ledger_entry_id"] == r2["ledger_entry_id"]
+        assert len(_load_entries(d)) == 1
+
+    def test_identity_cross_cwd_real_cli(self, tmp_path):
+        """Meme source physique enregistree via CLI reel depuis repo root
+        puis depuis un cwd externe (chemin absolu) -> une seule entree
+        semantique dans le Ledger reel (LOCALAPPDATA)."""
+        import subprocess
+        src_dir = tmp_path / "cross_cwd_src"
+        src_dir.mkdir()
+        src = src_dir / "cross_cwd_candidate.py"
+        src.write_text("cross_cwd\n", encoding="utf-8")
+
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        r1 = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src),
+             "--reason", "cross-cwd-e2e"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert r1.returncode == 0
+        d1 = json.loads(r1.stdout)
+
+        r2 = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src.resolve()),
+             "--reason", "cross-cwd-e2e"],
+            capture_output=True, text=True, cwd=str(tmp_path),
+        )
+        assert r2.returncode == 0
+        d2 = json.loads(r2.stdout)
+
+        if d1.get("status") == "DISCOVERED":
+            assert d2.get("status") == "ALREADY_REGISTERED"
+            assert d2.get("ledger_entry_id") == d1.get("ledger_entry_id")
+        else:
+            # Deja enregistre par un run precedent : les deux doivent converger
+            assert d1.get("ledger_entry_id") == d2.get("ledger_entry_id")
+
+    # --- 2. Protected check structurel, cwd-independent -------------------
+
+    def test_protected_relative_from_repo_root(self, tmp_path):
+        target = _REPO_ROOT / "proofs" / "metadata.json"
+        if not target.exists():
+            pytest.skip("proofs/metadata.json absent")
+        d = tmp_path / "ledger"
+        result = register_source(str(target), ledger_dir=d)
+        assert result["status"] == "REJECTED_PROTECTED"
+
+    def test_protected_absolute_from_external_cwd(self, tmp_path):
+        target = _REPO_ROOT / "proofs" / "metadata.json"
+        if not target.exists():
+            pytest.skip("proofs/metadata.json absent")
+        assert _is_protected_resolved(target.resolve()) is True
+
+    def test_protected_traversal_path_resolves_and_rejects(self, tmp_path):
+        traversal = _REPO_ROOT / "scripts" / ".." / "proofs" / "metadata.json"
+        if not (_REPO_ROOT / "proofs" / "metadata.json").exists():
+            pytest.skip("proofs/metadata.json absent")
+        d = tmp_path / "ledger"
+        result = register_source(str(traversal), ledger_dir=d)
+        assert result["status"] == "REJECTED_PROTECTED"
+
+    def test_protected_kernel_sealed_exact_path(self):
+        kernel = _REPO_ROOT / "runtime_terrain_bank_trading_gps" / "server.kernel.sealed.cjs"
+        if not kernel.exists():
+            pytest.skip("kernel sealed absent")
+        assert _is_protected_resolved(kernel.resolve()) is True
+
+    def test_lookalike_proofs_backup_not_protected(self, tmp_path):
+        lookalike_dir = _REPO_ROOT / "proofs_backup_test_lookalike"
+        fake = lookalike_dir / "file.py"
+        assert _is_protected_resolved(fake.resolve()) is False
+
+    def test_no_protected_source_ever_hashed(self, tmp_path, monkeypatch):
+        target = _REPO_ROOT / "proofs" / "metadata.json"
+        if not target.exists():
+            pytest.skip("proofs/metadata.json absent")
+        import obsidia_branching_ledger as _mod
+        calls = []
+        orig = _mod._content_hash
+        def _spy(p):
+            calls.append(p)
+            return orig(p)
+        monkeypatch.setattr(_mod, "_content_hash", _spy)
+        d = tmp_path / "ledger"
+        register_source(str(target), ledger_dir=d)
+        assert calls == []
+
+    # --- 3. Dedup sans target_path -----------------------------------------
+
+    def test_same_source_new_content_without_target_path(self, tmp_path):
+        d = tmp_path / "ledger"
+        src = tmp_path / "notarget_versioned.py"
+        src.write_text("v1\n", encoding="utf-8")
+        r1 = register_source(str(src), ledger_dir=d)
+        src.write_text("v2\n", encoding="utf-8")
+        r2 = register_source(str(src), ledger_dir=d)
+        assert r2["status"] == "DISCOVERED"
+        entries = _load_entries(d)
+        newest = next(e for e in entries if e["ledger_entry_id"] == r2["ledger_entry_id"])
+        assert newest["dedup_classification"] == "SAME_PATH_NEW_CONTENT"
+        assert newest["prev_entry_id"] == r1["ledger_entry_id"]
+        assert newest["target_path"] is None
+
+    def test_moved_same_content_without_target_path(self, tmp_path):
+        d = tmp_path / "ledger"
+        a = tmp_path / "notarget_a.py"
+        a.write_text("identical\n", encoding="utf-8")
+        register_source(str(a), ledger_dir=d)
+        b = tmp_path / "notarget_b.py"
+        b.write_text("identical\n", encoding="utf-8")
+        r2 = register_source(str(b), ledger_dir=d)
+        entries = _load_entries(d)
+        moved = next(e for e in entries if e["ledger_entry_id"] == r2["ledger_entry_id"])
+        assert moved["dedup_classification"] == "MOVED_SAME_CONTENT"
+        assert moved["target_path"] is None
+
+    # --- 4. CLI Windows : chemins/valeurs avec espaces, via CLI reel ------
+
+    def test_cli_register_source_path_with_spaces(self, tmp_path):
+        import subprocess
+        src_dir = tmp_path / "candidate sources"
+        src_dir.mkdir()
+        src = src_dir / "module with spaces.py"
+        src.write_text("x = 1\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src)],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        assert data.get("status") in ("DISCOVERED", "ALREADY_REGISTERED")
+
+    def test_cli_register_source_target_with_spaces(self, tmp_path):
+        import subprocess
+        src = tmp_path / "target_spaces_src.py"
+        src.write_text("x = 2\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src),
+             "--target", "periphery/path with spaces/candidate.py"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        eid = data.get("ledger_entry_id")
+        if data.get("status") == "DISCOVERED" and eid:
+            entries = _load_entries()
+            entry = next((e for e in entries if e["ledger_entry_id"] == eid), None)
+            assert entry is not None
+            assert entry["target_path"] == "periphery/path with spaces/candidate.py"
+
+    def test_cli_register_source_reason_with_spaces(self, tmp_path):
+        import subprocess
+        src = tmp_path / "reason_spaces_src.py"
+        src.write_text("x = 3\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src),
+             "--reason", "candidate for first real pilot"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        eid = data.get("ledger_entry_id")
+        if data.get("status") == "DISCOVERED" and eid:
+            entries = _load_entries()
+            entry = next((e for e in entries if e["ledger_entry_id"] == eid), None)
+            assert entry is not None
+            assert entry["objective"] == "candidate for first real pilot"
+
+    # --- 5. CLI fail-closed sur flags malformes -----------------------------
+
+    def test_cli_register_source_no_args_guide(self):
+        import subprocess
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        assert "GUIDE" in result.stdout
+
+    def test_cli_register_source_unknown_flag_fails_closed(self, tmp_path):
+        import subprocess
+        src = tmp_path / "unknown_flag_src.py"
+        src.write_text("x = 4\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src), "--bogus", "x"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        assert "LEDGER_CLI_ERROR" in result.stdout
+        assert "DISCOVERED" not in result.stdout
+
+    def test_cli_register_source_domain_missing_value_fails_closed(self, tmp_path):
+        import subprocess
+        src = tmp_path / "missing_domain_value_src.py"
+        src.write_text("x = 5\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src), "--domain"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        assert "LEDGER_CLI_ERROR" in result.stdout
+        assert "DISCOVERED" not in result.stdout
+
+    def test_cli_register_source_target_missing_value_fails_closed(self, tmp_path):
+        import subprocess
+        src = tmp_path / "missing_target_value_src.py"
+        src.write_text("x = 6\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src), "--target"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        assert "LEDGER_CLI_ERROR" in result.stdout
+        assert "DISCOVERED" not in result.stdout
+
+    def test_cli_register_source_reason_missing_value_fails_closed(self, tmp_path):
+        import subprocess
+        src = tmp_path / "missing_reason_value_src.py"
+        src.write_text("x = 7\n", encoding="utf-8")
+        cli = str(_REPO_ROOT / "scripts" / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src), "--reason"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        )
+        assert result.returncode == 0
+        assert "LEDGER_CLI_ERROR" in result.stdout
+        assert "DISCOVERED" not in result.stdout
+
+    # --- 6. Aucune mutation source / append-only preserve -------------------
+
+    def test_hardening_source_not_mutated(self, tmp_path):
+        src = tmp_path / "hardening_immut.py"
+        before = "keep me\n"
+        src.write_text(before, encoding="utf-8")
+        d = tmp_path / "ledger"
+        register_source(str(src), ledger_dir=d)
+        register_source(str(src.resolve()), ledger_dir=d)
+        assert src.read_text(encoding="utf-8") == before
+
+    def test_hardening_append_only_preserved(self, tmp_path):
+        d = tmp_path / "ledger"
+        src1 = tmp_path / "append_only_1.py"
+        src1.write_text("a1\n", encoding="utf-8")
+        register_source(str(src1), ledger_dir=d)
+        before = (d / "entries.jsonl").read_text(encoding="utf-8")
+        src2 = tmp_path / "append_only_2.py"
+        src2.write_text("a2\n", encoding="utf-8")
+        register_source(str(src2), ledger_dir=d)
+        after = (d / "entries.jsonl").read_text(encoding="utf-8")
+        assert after.startswith(before)
