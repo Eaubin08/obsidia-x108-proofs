@@ -341,6 +341,7 @@ def build_candidate(entry: dict) -> dict:
         "proposal_hash": entry.get("proposal_hash"),
         "dependencies": [],
         "dependency_refs": list(entry.get("dependency_refs") or []),
+        "provenance_refs": dict(entry.get("provenance_refs") or {}),
         "dependency_status": NO_DEPENDENCY_KNOWN,
         "risk_flags": list(entry.get("risk_flags") or []),
         "unknowns": list(entry.get("unknowns") or []),

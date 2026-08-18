@@ -7891,7 +7891,9 @@ def _dispatch_batch(rest: str, raw_tokens: "list[str] | None" = None) -> str:
         return (
             "GUIDE: batch propose [--max N] [--objective TEXT] [--entries id1,id2,...] "
             "| batch list | batch status <batch_id> "
-            "| batch inspect <batch_id> | batch candidates"
+            "| batch inspect <batch_id> | batch candidates "
+            "| batch execution prepare <batch_id> | batch execution status <id> "
+            "| batch execution inspect <id> | batch execution list"
         )
     subcmd = parts[0].lower()
     subarg = parts[1].strip() if len(parts) > 1 else ""
@@ -7984,6 +7986,50 @@ def _dispatch_batch(rest: str, raw_tokens: "list[str] | None" = None) -> str:
         return _capture(fn_map[subcmd])
     if subcmd == "candidates":
         return _capture(lambda: _mod.cmd_batch_candidates())
+    if subcmd == "execution":
+        # BATCH_EXECUTION_ENVELOPE_V0 — prepare/status/inspect uniquement.
+        # Aucune commande 'run' exposee : le run reel n'est pas autorise
+        # par ce palier (synthetic-only, injection Python directe).
+        try:
+            import obsidia_batch_execution as _exe
+        except ImportError as exc:
+            return f"[BATCH_EXECUTION_UNAVAILABLE] obsidia_batch_execution non importable: {exc}"
+        exec_parts = subarg.strip().split(None, 1)
+        if not exec_parts:
+            return (
+                "GUIDE: batch execution prepare <batch_id> "
+                "| batch execution status <batch_execution_id> "
+                "| batch execution inspect <batch_execution_id> "
+                "| batch execution list"
+            )
+        exec_sub = exec_parts[0].lower()
+        exec_arg = exec_parts[1].strip().split()[0] if len(exec_parts) > 1 and exec_parts[1].strip() else ""
+        if exec_sub == "prepare":
+            if not exec_arg:
+                return "GUIDE: batch execution prepare <batch_id>"
+            env = _exe.prepare_execution(exec_arg)
+            return json.dumps({
+                "batch_execution_id": env.get("batch_execution_id"),
+                "batch_id": env.get("batch_id"),
+                "aggregate_status": env.get("aggregate_status"),
+                "integrity_verified": env.get("integrity_verified"),
+                "integrity_error": env.get("integrity_error"),
+                "children_count": len(env.get("children", [])),
+                "executable_candidate_count": _exe.executable_candidate_count(env),
+                "human_execution_approved": env.get("human_execution_approved"),
+                "decision_authority": env.get("decision_authority"),
+            }, ensure_ascii=False)
+        if exec_sub == "list":
+            return _capture(lambda: _exe.cmd_execution_list())
+        if exec_sub in ("status", "inspect"):
+            if not exec_arg:
+                return f"GUIDE: batch execution {exec_sub} <batch_execution_id>"
+            fn_map = {
+                "status":  lambda: _exe.cmd_execution_status(exec_arg),
+                "inspect": lambda: _exe.cmd_execution_inspect(exec_arg),
+            }
+            return _capture(fn_map[exec_sub])
+        return f"[BATCH_EXECUTION_UNKNOWN_SUBCMD] Sous-commande inconnue : {exec_sub}"
     return f"[BATCH_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
 
 
