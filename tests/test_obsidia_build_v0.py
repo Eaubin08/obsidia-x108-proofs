@@ -359,6 +359,30 @@ class TestExplicitChildScope:
         assert plan["requested_explicit_scope"] is None
         assert plan["status"] == "PLAN_PROPOSED"
 
+    def test_explicit_mode_never_calls_heuristic_discovery(self, repo, monkeypatch):
+        calls = []
+        orig = B.find_candidate_files
+
+        def spy(*a, **kw):
+            calls.append(1)
+            return orig(*a, **kw)
+
+        monkeypatch.setattr(B, "find_candidate_files", spy)
+        B.compute_plan("obj", "sha", repo, explicit_scope=["tests/fixtures/terminal_build_bounded/target.txt"])
+        assert len(calls) == 0
+
+    def test_heuristic_mode_still_calls_discovery(self, repo, monkeypatch):
+        calls = []
+        orig = B.find_candidate_files
+
+        def spy(*a, **kw):
+            calls.append(1)
+            return orig(*a, **kw)
+
+        monkeypatch.setattr(B, "find_candidate_files", spy)
+        B.compute_plan("Appliquer le marqueur synthetique TERMINAL_BUILD_BOUNDED_V1", "sha", repo)
+        assert len(calls) == 1
+
     def test_explicit_single_target(self, repo):
         plan = B.compute_plan(
             "objectif", "sha", repo,
@@ -806,6 +830,173 @@ class TestExplicitScopeSessionBinding:
         receipt_b = json.loads((state_dir / plan_b["session_id"] / "receipt.json").read_text(encoding="utf-8"))
         assert receipt_a["approved_scope"] == ["periphery/e2e_a.py"]
         assert receipt_b["approved_scope"] == ["periphery/e2e_b.py"]
+        _cleanup_repo(repo)
+
+
+# =============================================================================
+# Groupe D3 — Identite d'autorite du plan (HARDEN_EXPLICIT_SCOPE_IDENTITY_BINDING_V0)
+# =============================================================================
+
+class TestExplicitScopeAuthorityIdentity:
+    """L'objectif TERMINAL_BUILD_BOUNDED_V1 fait decouvrir a l'heuristique
+    EXACTEMENT tests/fixtures/terminal_build_bounded/target.txt (domaine
+    PERIPHERAL) -- collision de fichiers deliberee pour prouver que
+    l'autorite reste separee malgre l'identite de fichiers."""
+
+    OBJ = "Appliquer le marqueur synthetique TERMINAL_BUILD_BOUNDED_V1"
+    TARGET = "tests/fixtures/terminal_build_bounded/target.txt"
+
+    def test_same_files_different_scope_mode(self, repo):
+        sha = B.get_base_sha(repo)
+        explicit_plan = B.compute_plan(self.OBJ, sha, repo, explicit_scope=[self.TARGET])
+        heuristic_plan = B.compute_plan(self.OBJ, sha, repo)
+
+        # Meme ensemble de fichiers candidats (collision deliberee)
+        assert explicit_plan["approved_scope_proposal"] == heuristic_plan["approved_scope_proposal"] == [self.TARGET]
+        assert explicit_plan["manifest_hash"] == heuristic_plan["manifest_hash"]
+
+        # scope_mode et autorite de plan DOIVENT differer
+        assert explicit_plan["scope_mode"] != heuristic_plan["scope_mode"]
+        assert explicit_plan["plan_authority_hash"] != heuristic_plan["plan_authority_hash"]
+
+        # L'identite OPERATIONNELLE complete doit aussi differer :
+        # session_id, worktree, branche, token — jamais de partage
+        # d'artefacts entre deux autorites semantiquement distinctes.
+        assert explicit_plan["session_id"] != heuristic_plan["session_id"]
+        assert explicit_plan["worktree_proposal"] != heuristic_plan["worktree_proposal"]
+        assert explicit_plan["branch_proposal"] != heuristic_plan["branch_proposal"]
+
+        explicit_token_seg2 = explicit_plan["next_human_action"].split(":", 1)[1]
+        heuristic_token_seg2 = heuristic_plan["next_human_action"].split(":", 1)[1]
+        assert explicit_token_seg2 != heuristic_token_seg2
+
+    def test_legacy_session_id_formula_unchanged(self, repo):
+        """La formule historique de compute_session_id reste inchangee
+        pour le mode HEURISTIC_LEGACY -- pas de migration d'identite."""
+        sha = B.get_base_sha(repo)
+        heuristic_plan = B.compute_plan(self.OBJ, sha, repo)
+        manifest_hash = heuristic_plan["manifest_hash"]
+        legacy_sid_direct = B.compute_session_id(self.OBJ, sha, manifest_hash)
+        assert heuristic_plan["session_id"] == legacy_sid_direct
+
+    def test_explicit_session_id_deterministic(self, repo):
+        sha = B.get_base_sha(repo)
+        p1 = B.compute_plan(self.OBJ, sha, repo, explicit_scope=[self.TARGET])
+        p2 = B.compute_plan(self.OBJ, sha, repo, explicit_scope=[self.TARGET])
+        assert p1["session_id"] == p2["session_id"]
+        assert p1["worktree_proposal"] == p2["worktree_proposal"]
+        assert p1["branch_proposal"] == p2["branch_proposal"]
+
+    def test_collision_produces_separate_receipts(self, repo, state_dir):
+        """Execution reelle des DEUX modes (fichiers identiques) dans le
+        meme depot temporaire -- deux receipts totalement separes,
+        aucun ecrasement, chacun garde son propre scope_mode."""
+        sha = B.get_base_sha(repo)
+        explicit_plan = B.compute_plan(self.OBJ, sha, repo, explicit_scope=[self.TARGET])
+        heuristic_plan = B.compute_plan(self.OBJ, sha, repo)
+        assert explicit_plan["session_id"] != heuristic_plan["session_id"]
+
+        B.cmd_execute(
+            self.OBJ, explicit_plan["next_human_action"],
+            repo_root=repo, state_dir=state_dir, explicit_scope=[self.TARGET],
+        )
+        B.cmd_execute(
+            self.OBJ, heuristic_plan["next_human_action"],
+            repo_root=repo, state_dir=state_dir,
+        )
+
+        explicit_receipt_path = state_dir / explicit_plan["session_id"] / "receipt.json"
+        heuristic_receipt_path = state_dir / heuristic_plan["session_id"] / "receipt.json"
+        assert explicit_receipt_path.exists()
+        assert heuristic_receipt_path.exists()
+        assert explicit_receipt_path != heuristic_receipt_path
+
+        explicit_receipt = json.loads(explicit_receipt_path.read_text(encoding="utf-8"))
+        heuristic_receipt = json.loads(heuristic_receipt_path.read_text(encoding="utf-8"))
+        assert explicit_receipt["scope_mode"] == "EXPLICIT_CHILD_TARGET"
+        assert heuristic_receipt["scope_mode"] == "HEURISTIC_LEGACY"
+        assert explicit_receipt["plan_authority_hash"] != heuristic_receipt["plan_authority_hash"]
+        assert explicit_receipt["session_id"] != heuristic_receipt["session_id"]
+        _cleanup_repo(repo)
+
+    def test_explicit_token_cannot_authorize_heuristic_execution(self, repo, state_dir):
+        sha = B.get_base_sha(repo)
+        explicit_plan = B.compute_plan(self.OBJ, sha, repo, explicit_scope=[self.TARGET])
+        token = explicit_plan["next_human_action"]
+        # execution SANS explicit_scope -> regenere en HEURISTIC_LEGACY
+        rc = B.cmd_execute(self.OBJ, token, repo_root=repo, state_dir=state_dir)
+        assert rc == 2
+        _cleanup_repo(repo)
+
+    def test_heuristic_token_cannot_authorize_explicit_execution(self, repo, state_dir):
+        sha = B.get_base_sha(repo)
+        heuristic_plan = B.compute_plan(self.OBJ, sha, repo)
+        token = heuristic_plan["next_human_action"]
+        # execution AVEC explicit_scope -> regenere en EXPLICIT_CHILD_TARGET
+        rc = B.cmd_execute(self.OBJ, token, repo_root=repo, state_dir=state_dir, explicit_scope=[self.TARGET])
+        assert rc == 2
+        _cleanup_repo(repo)
+
+    def test_explicit_a_cannot_authorize_explicit_b(self, repo, state_dir):
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "auth_a.py").write_text("a\n", encoding="utf-8")
+        (repo / "periphery" / "auth_b.py").write_text("b\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=repo, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "add auth targets"], cwd=repo, capture_output=True, check=True)
+
+        sha = B.get_base_sha(repo)
+        plan_a = B.compute_plan("obj", sha, repo, explicit_scope=["periphery/auth_a.py"])
+        token_a = plan_a["next_human_action"]
+        rc = B.cmd_execute("obj", token_a, repo_root=repo, state_dir=state_dir, explicit_scope=["periphery/auth_b.py"])
+        assert rc == 2
+        _cleanup_repo(repo)
+
+    def test_same_explicit_plan_repeated_deterministic_identity(self, repo):
+        sha = B.get_base_sha(repo)
+        p1 = B.compute_plan("obj", sha, repo, explicit_scope=[self.TARGET])
+        p2 = B.compute_plan("obj", sha, repo, explicit_scope=[self.TARGET])
+        assert p1["plan_authority_hash"] == p2["plan_authority_hash"]
+        assert p1["next_human_action"] == p2["next_human_action"]
+
+    def test_approved_scope_hash_bound_before_execution(self, repo, state_dir):
+        """Modifier explicit_scope entre plan et execute change
+        plan_authority_hash -> rejet, l'ancien token ne s'applique plus."""
+        (repo / "periphery").mkdir(exist_ok=True)
+        (repo / "periphery" / "bind_a.py").write_text("a\n", encoding="utf-8")
+        (repo / "periphery" / "bind_b.py").write_text("b\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=repo, capture_output=True, check=True)
+        subprocess.run(["git", "commit", "-m", "add bind targets"], cwd=repo, capture_output=True, check=True)
+
+        sha = B.get_base_sha(repo)
+        plan = B.compute_plan("obj", sha, repo, explicit_scope=["periphery/bind_a.py"])
+        token = plan["next_human_action"]
+        rc = B.cmd_execute("obj", token, repo_root=repo, state_dir=state_dir, explicit_scope=["periphery/bind_b.py"])
+        assert rc == 2
+        _cleanup_repo(repo)
+
+    def test_receipt_retains_plan_authority_hash(self, repo, state_dir):
+        sha = B.get_base_sha(repo)
+        plan = B.compute_plan("obj", sha, repo, explicit_scope=[self.TARGET])
+        token = plan["next_human_action"]
+        B.cmd_execute("obj", token, repo_root=repo, state_dir=state_dir, explicit_scope=[self.TARGET])
+        receipt_path = state_dir / plan["session_id"] / "receipt.json"
+        assert receipt_path.exists()
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        assert receipt["plan_authority_hash"] == plan["plan_authority_hash"]
+        assert receipt["scope_mode"] == "EXPLICIT_CHILD_TARGET"
+        _cleanup_repo(repo)
+
+    def test_legacy_heuristic_token_still_works_unaffected(self, repo, state_dir):
+        """Non-regression : un cycle heuristique pur (aucun explicit_scope
+        nulle part) doit continuer a fonctionner exactement comme avant."""
+        sha = B.get_base_sha(repo)
+        plan = B.compute_plan(self.OBJ, sha, repo)
+        token = plan["next_human_action"]
+        rc = B.cmd_execute(self.OBJ, token, repo_root=repo, state_dir=state_dir)
+        receipt_path = state_dir / plan["session_id"] / "receipt.json"
+        assert receipt_path.exists()
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        assert receipt["scope_mode"] == "HEURISTIC_LEGACY"
         _cleanup_repo(repo)
 
 

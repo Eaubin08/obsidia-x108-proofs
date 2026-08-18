@@ -263,6 +263,47 @@ def canonicalize_explicit_target(raw: str, repo_root: Path) -> tuple[str | None,
     return rel_str, None
 
 
+def compute_explicit_session_id(legacy_session_id: str, plan_authority_hash: str) -> str:
+    """
+    Identité de SESSION pour le mode EXPLICIT_CHILD_TARGET — dérivée du
+    session_id legacy ET de plan_authority_hash, pour qu'un plan explicite
+    et un plan heuristique sélectionnant EXACTEMENT les mêmes fichiers
+    (même objective/base_sha/manifest_hash, donc même legacy session_id)
+    n'occupent jamais le même worktree/branche/état de session — ils
+    doivent rester deux artefacts opérationnels totalement distincts.
+    """
+    raw = f"{legacy_session_id}\x00{plan_authority_hash}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:8]
+
+
+def compute_plan_authority_hash(
+    objective: str,
+    base_sha: str,
+    manifest_hash: str,
+    scope_mode: str,
+    approved_scope_hash: str,
+) -> str:
+    """
+    Identité d'AUTORITÉ du plan — lie scope_mode et approved_scope_hash à
+    l'identité, pas seulement objective/base_sha/manifest_hash (cf.
+    compute_session_id, dont la formule reste inchangée pour compat
+    historique). Deux plans avec exactement les mêmes candidate_files
+    mais des scope_mode différents (EXPLICIT_CHILD_TARGET vs
+    HEURISTIC_LEGACY) — ou des approved_scope différents — DOIVENT
+    produire des plan_authority_hash différents. Ne jamais confondre avec
+    KX108, BatchProposal.batch_hash, candidate_scope_hash ou
+    approval_record_hash (autres systèmes, autres autorités).
+    """
+    payload = json.dumps({
+        "objective": objective,
+        "base_sha": base_sha,
+        "manifest_hash": manifest_hash,
+        "scope_mode": scope_mode,
+        "approved_scope_hash": approved_scope_hash,
+    }, sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
 def compute_plan(
     objective: str,
     base_sha: str,
@@ -306,6 +347,7 @@ def compute_plan(
                     "protected_files": list(PROTECTED_PATHS),
                     "manifest_hash": None,
                     "approved_scope_hash": None,
+                    "plan_authority_hash": None,
                     "decision_authority": DECISION_AUTHORITY,
                     "status": "PLAN_REJECTED",
                     "scope_error": reason,
@@ -318,13 +360,38 @@ def compute_plan(
         candidate_files, protected_detected = find_candidate_files(objective, domain, root)
 
     manifest_hash = compute_manifest_hash(candidate_files, root)
-    session_id = compute_session_id(objective, base_sha, manifest_hash)
+    # legacy_session_id garde SA formule historique (objective, base_sha,
+    # manifest_hash) inchangée pour compatibilité — c'est l'identité
+    # OPÉRATIONNELLE finale en mode HEURISTIC_LEGACY. En mode
+    # EXPLICIT_CHILD_TARGET, l'identité finale dérive EN PLUS de
+    # plan_authority_hash (cf. compute_explicit_session_id) pour qu'un
+    # plan explicite et un plan heuristique aux fichiers identiques
+    # n'occupent jamais le même worktree/branche/état de session.
+    legacy_session_id = compute_session_id(objective, base_sha, manifest_hash)
+    approved_scope_hash = compute_approved_scope_hash(candidate_files)
+    plan_authority_hash = compute_plan_authority_hash(
+        objective, base_sha, manifest_hash, scope_mode, approved_scope_hash,
+    )
+    session_id = (
+        compute_explicit_session_id(legacy_session_id, plan_authority_hash)
+        if scope_mode == SCOPE_MODE_EXPLICIT_CHILD_TARGET
+        else legacy_session_id
+    )
     risk = estimate_risk(candidate_files, domain)
     tests_required = infer_tests(candidate_files, domain, root)
     gates_available = [g for g in GATES_REAL if (root / g).exists()]
     worktree_proposal = f"obsidia-x108-proofs_BUILD_{session_id}"
     branch_proposal = f"feat/build-{session_id}"
-    token = f"HUMAN_APPROVED_BUILD_SESSION={session_id}:{manifest_hash}"
+    # Le 2e segment du token porte l'AUTORITÉ complète en mode explicite
+    # (scope_mode + approved_scope_hash liés), le manifest_hash brut en
+    # mode heuristique legacy (format de token inchangé, comportement
+    # historique préservé à l'identique) — un token émis pour un mode ne
+    # peut jamais valider l'autre, même si les fichiers coïncident.
+    token_scope_value = (
+        plan_authority_hash if scope_mode == SCOPE_MODE_EXPLICIT_CHILD_TARGET
+        else manifest_hash
+    )
+    token = f"HUMAN_APPROVED_BUILD_SESSION={session_id}:{token_scope_value}"
 
     return {
         "session_id":            session_id,
@@ -341,7 +408,8 @@ def compute_plan(
         "worktree_proposal":     worktree_proposal,
         "branch_proposal":       branch_proposal,
         "manifest_hash":         manifest_hash,
-        "approved_scope_hash":   compute_approved_scope_hash(candidate_files),
+        "approved_scope_hash":   approved_scope_hash,
+        "plan_authority_hash":   plan_authority_hash,
         "decision_authority":    DECISION_AUTHORITY,
         "next_human_action":     token,
         "auto_commit":           AUTO_COMMIT,
@@ -614,11 +682,25 @@ def cmd_execute(
         print("  L'objectif, le depot ou les candidats ont change.")
         return 2
 
-    if plan["manifest_hash"] != token_mhash:
+    # En mode EXPLICIT_CHILD_TARGET, le 2e segment du token porte
+    # plan_authority_hash (lie scope_mode + approved_scope_hash), pas le
+    # manifest_hash brut — un token EXPLICIT ne peut donc jamais valider
+    # une exécution regénérée en HEURISTIC_LEGACY (ou vice-versa, ou avec
+    # une portée explicite différente), même si les fichiers candidats
+    # coïncident exactement. Format de token inchangé (toujours
+    # <session_id>:<X>) ; seule la sémantique de X dépend du scope_mode
+    # régénéré, exactement comme au moment de la génération du plan.
+    expected_scope_value = (
+        plan.get("plan_authority_hash")
+        if plan.get("scope_mode") == SCOPE_MODE_EXPLICIT_CHILD_TARGET
+        else plan["manifest_hash"]
+    )
+    if expected_scope_value != token_mhash:
         print(f"\n[BLOCKED_MANIFEST_CHANGED]")
-        print(f"  manifest plan  : {plan['manifest_hash']}")
-        print(f"  manifest token : {token_mhash}")
-        print("  Les fichiers candidats ont change depuis le token.")
+        print(f"  scope_mode plan          : {plan.get('scope_mode')}")
+        print(f"  valeur attendue (plan)   : {expected_scope_value}")
+        print(f"  valeur token             : {token_mhash}")
+        print("  Les fichiers candidats ou le mode de portee ont change depuis le token.")
         return 2
 
     # (base_sha entre dans compute_session_id: si HEAD change, session_id change)
@@ -652,6 +734,7 @@ def cmd_execute(
         "approved_scope":      approved_scope,
         "scope_mode":          plan.get("scope_mode"),
         "approved_scope_hash": plan.get("approved_scope_hash"),
+        "plan_authority_hash": plan.get("plan_authority_hash"),
         "actual_touched_files": [],
         "new_files":           [],
         "deleted_files":       [],
