@@ -7869,8 +7869,13 @@ def _handle_build_lifecycle(subcmd: str, session_id: str, extra: str = "") -> st
     return _buf.getvalue() or f"[{subcmd.upper()}] Terminé."
 
 
-def _dispatch_batch(rest: str) -> str:
-    """Dispatche 'batch <subcmd> [args]' vers BATCH_SELECTOR_V0."""
+def _dispatch_batch(rest: str, raw_tokens: "list[str] | None" = None) -> str:
+    """Dispatche 'batch <subcmd> [args]' vers BATCH_SELECTOR_V0.
+
+    raw_tokens : argv brut (argv[1:] après 'batch') — tokens déjà délimités
+    par le shell/OS, préserve les espaces internes (--objective "texte
+    avec espaces"). Utilisé par 'propose' ; fallback sur la chaîne jointe
+    historique si non fourni (appels directs/tests)."""
     import io as _io
     import importlib
     _scripts_dir = str(Path(__file__).resolve().parent)
@@ -7884,7 +7889,7 @@ def _dispatch_batch(rest: str) -> str:
     parts = rest.strip().split(None, 1)
     if not parts:
         return (
-            "GUIDE: batch propose [--max N] [--objective TEXT] "
+            "GUIDE: batch propose [--max N] [--objective TEXT] [--entries id1,id2,...] "
             "| batch list | batch status <batch_id> "
             "| batch inspect <batch_id> | batch candidates"
         )
@@ -7905,21 +7910,53 @@ def _dispatch_batch(rest: str) -> str:
     if subcmd == "propose":
         max_size = _mod.DEFAULT_MAX_BATCH_SIZE
         objective = ""
-        tokens = subarg.split()
+        entry_ids: "list[str] | None" = None
+        # argv brut (préserve les espaces internes d'un token entre
+        # guillemets, ex. --objective "First real batch pilot V0") ;
+        # fallback sur la chaîne jointe historique si non fourni.
+        tokens = list(raw_tokens[1:]) if raw_tokens is not None else subarg.split()
         i = 0
+        cli_error: "str | None" = None
         while i < len(tokens):
-            if tokens[i] in ("--max", "-m") and i + 1 < len(tokens):
+            tok = tokens[i]
+            if tok in ("--max", "-m"):
+                if i + 1 >= len(tokens):
+                    cli_error = "--max requiert une valeur"
+                    break
                 try:
                     max_size = int(tokens[i + 1])
                 except ValueError:
-                    pass
+                    cli_error = f"--max valeur invalide : {tokens[i + 1]}"
+                    break
                 i += 2
-            elif tokens[i] in ("--objective", "-o") and i + 1 < len(tokens):
+            elif tok in ("--objective", "-o"):
+                if i + 1 >= len(tokens):
+                    cli_error = "--objective requiert une valeur"
+                    break
                 objective = tokens[i + 1]
                 i += 2
+            elif tok == "--entries":
+                # Portée explicite : liste d'entry_id séparés par des
+                # virgules — pas de fallback silencieux vers le mode
+                # GLOBAL, pas de wildcard/'*'.
+                if i + 1 >= len(tokens):
+                    cli_error = "--entries requiert une valeur (liste séparée par des virgules)"
+                    break
+                entry_ids = [e for e in tokens[i + 1].split(",") if e]
+                if not entry_ids:
+                    cli_error = "--entries : liste vide"
+                    break
+                i += 2
             else:
-                i += 1
-        result = _mod.propose_batch(objective=objective, max_batch_size=max_size)
+                cli_error = f"Flag inconnu : {tok}"
+                break
+        if cli_error:
+            return f"[BATCH_CLI_ERROR] {cli_error}"
+        result = _mod.propose_batch(
+            objective=objective,
+            max_batch_size=max_size,
+            candidate_entry_ids=entry_ids,
+        )
         return json.dumps({
             "batch_id": result["batch_id"],
             "status": result["status"],
@@ -7928,6 +7965,12 @@ def _dispatch_batch(rest: str) -> str:
             "excluded_count": result["excluded_count"],
             "batch_hash": result["batch_hash"],
             "metrics": result["metrics"],
+            "candidate_scope_mode": result.get("candidate_scope_mode"),
+            "candidate_entry_ids": result.get("candidate_entry_ids"),
+            "candidate_scope_hash": result.get("candidate_scope_hash"),
+            "scope_error": result.get("scope_error"),
+            "execution_order": result.get("execution_order"),
+            "dependency_edges": result.get("dependency_edges"),
         }, ensure_ascii=False)
     if subcmd == "list":
         return _capture(lambda: _mod.cmd_batch_list())
@@ -8987,7 +9030,7 @@ def main(argv: list[str]) -> int:
     # Commande batch: BATCH_SELECTOR_V0, aucun subprocess
     if cmd0 == "batch":
         _obj_batch = " ".join(argv[1:]).strip().strip('"').strip("'")
-        print(_dispatch_batch(_obj_batch))
+        print(_dispatch_batch(_obj_batch, argv[1:]))
         return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":

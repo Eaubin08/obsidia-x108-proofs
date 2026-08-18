@@ -75,11 +75,18 @@ UNSUPPORTED          = "UNSUPPORTED"
 
 # ─── Dépendances ─────────────────────────────────────────────────────────────
 
-DEPENDENCY_CONFIRMED = "DEPENDENCY_CONFIRMED"
-DEPENDENCY_PROBABLE  = "DEPENDENCY_PROBABLE"
-DEPENDENCY_UNKNOWN   = "DEPENDENCY_UNKNOWN"
-NO_DEPENDENCY_KNOWN  = "NO_DEPENDENCY_KNOWN"
-DEPENDENCY_CYCLE     = "DEPENDENCY_CYCLE"
+DEPENDENCY_CONFIRMED     = "DEPENDENCY_CONFIRMED"
+DEPENDENCY_PROBABLE      = "DEPENDENCY_PROBABLE"
+DEPENDENCY_UNKNOWN       = "DEPENDENCY_UNKNOWN"
+NO_DEPENDENCY_KNOWN      = "NO_DEPENDENCY_KNOWN"
+DEPENDENCY_CYCLE         = "DEPENDENCY_CYCLE"
+DEPENDENCY_UNRESOLVED    = "DEPENDENCY_UNRESOLVED"
+DEPENDENCY_OUTSIDE_SCOPE = "DEPENDENCY_OUTSIDE_SCOPE"
+
+# ─── Portée explicite de candidats ────────────────────────────────────────────
+
+SCOPE_GLOBAL   = "GLOBAL"
+SCOPE_EXPLICIT = "EXPLICIT_ENTRY_IDS"
 
 # ─── Status batch ─────────────────────────────────────────────────────────────
 
@@ -187,8 +194,18 @@ def batch_hash_from_proposal(
     dependency_edges: list[dict],
     objective: str,
     max_batch_size: int,
+    execution_order: "list[str] | None" = None,
+    candidate_scope_mode: "str | None" = None,
+    candidate_entry_ids: "list[str] | None" = None,
 ) -> str:
-    """Hash couvrant la substance complète de la proposition."""
+    """
+    Hash couvrant la substance complète de la proposition — y compris la
+    sémantique de dépendance réellement utilisée (arêtes ET ordre
+    d'exécution canonique qui en résulte), pas seulement l'ensemble des
+    IDs sélectionnés. Deux batchs avec le même contenu mais un graphe de
+    dépendances différent (donc un ordre d'exécution différent) doivent
+    produire des batch_hash différents.
+    """
     payload = json.dumps({
         "selected": sorted(selected_entry_ids),
         "source_hashes": sorted(h for h in source_hashes if h),
@@ -196,6 +213,9 @@ def batch_hash_from_proposal(
             (e.get("from", ""), e.get("to", ""), e.get("type", ""))
             for e in dependency_edges
         ),
+        "execution_order": execution_order or [],
+        "candidate_scope_mode": candidate_scope_mode,
+        "candidate_entry_ids": sorted(candidate_entry_ids) if candidate_entry_ids else None,
         "objective": objective,
         "max_batch_size": max_batch_size,
         "selector_version": SELECTOR_VERSION,
@@ -309,6 +329,7 @@ def build_candidate(entry: dict) -> dict:
         "normalized_path": entry.get("target_path", "UNKNOWN"),
         "source_hash": entry.get("source_hash"),
         "source_type": entry.get("source_type"),
+        "source_path": entry.get("source_path"),
         "target_path": entry.get("target_path"),
         "target_domain": entry.get("target_domain"),
         "session_id": entry.get("session_id"),
@@ -319,6 +340,7 @@ def build_candidate(entry: dict) -> dict:
         "proposal_id": entry.get("proposal_id"),
         "proposal_hash": entry.get("proposal_hash"),
         "dependencies": [],
+        "dependency_refs": list(entry.get("dependency_refs") or []),
         "dependency_status": NO_DEPENDENCY_KNOWN,
         "risk_flags": list(entry.get("risk_flags") or []),
         "unknowns": list(entry.get("unknowns") or []),
@@ -327,83 +349,263 @@ def build_candidate(entry: dict) -> dict:
     }
 
 
-def build_candidates_from_ledger(
-    ledger_dir: Optional[Path] = None,
-    additional_candidates: Optional[list[dict]] = None,
-) -> list[dict]:
-    """
-    Charge toutes les entrées du Ledger et construit les candidats.
-    additional_candidates : liste de dicts d'entrées Ledger injectés (pour tests/E2E).
-    """
+def _ledger_module():
     import sys as _sys, pathlib as _pathlib
     _scripts = str(_pathlib.Path(__file__).resolve().parent)
     if _scripts not in _sys.path:
         _sys.path.insert(0, _scripts)
-    from obsidia_branching_ledger import _load_entries
+    import obsidia_branching_ledger as _mod
+    return _mod
 
-    entries = _load_entries(ledger_dir)
+
+def _load_ledger_universe(
+    ledger_dir: Optional[Path] = None,
+    additional_candidates: Optional[list[dict]] = None,
+) -> list[dict]:
+    """Toutes les entrées Ledger connues (GLOBAL) — indépendamment de toute
+    portée explicite ultérieure. Sert de référentiel pour la résolution de
+    dependency_refs et pour la validation des entry_id demandés."""
+    entries = _ledger_module()._load_entries(ledger_dir)
     if additional_candidates:
         entries = entries + additional_candidates
+    return entries
 
-    return [build_candidate(e) for e in entries]
+
+def _load_dependency_link_events(ledger_dir: Optional[Path] = None) -> dict[str, list[str]]:
+    """Projette les événements append-only DEPENDENCY_LINKED en
+    {source_ledger_entry_id: [dependency_ledger_entry_id, ...]}.
+    Ne modifie jamais les lignes d'entrées — lecture d'historique seule."""
+    links: dict[str, list[str]] = {}
+    for ev in _ledger_module()._load_events(ledger_dir):
+        if ev.get("event_type") != "DEPENDENCY_LINKED":
+            continue
+        src = ev.get("source_ledger_entry_id")
+        dep = ev.get("dependency_ledger_entry_id")
+        if src and dep:
+            bucket = links.setdefault(src, [])
+            if dep not in bucket:
+                bucket.append(dep)
+    return links
+
+
+def _build_entry_index(entries: list[dict]) -> dict[str, str]:
+    """path/entry_id -> ledger_entry_id, depuis l'UNIVERS COMPLET (pas la
+    portée). Permet de distinguer DEPENDENCY_OUTSIDE_SCOPE (résolu mais hors
+    portée) de DEPENDENCY_UNRESOLVED (ne résout nulle part)."""
+    index: dict[str, str] = {}
+    for e in entries:
+        eid = e.get("ledger_entry_id")
+        if not eid:
+            continue
+        index.setdefault(eid, eid)
+        if e.get("target_path"):
+            index.setdefault(e["target_path"], eid)
+        if e.get("source_path"):
+            index.setdefault(e["source_path"], eid)
+    return index
+
+
+def build_entry_index_from_ledger(
+    ledger_dir: Optional[Path] = None,
+    additional_candidates: Optional[list[dict]] = None,
+) -> dict[str, str]:
+    return _build_entry_index(_load_ledger_universe(ledger_dir, additional_candidates))
+
+
+def build_candidates_from_ledger(
+    ledger_dir: Optional[Path] = None,
+    additional_candidates: Optional[list[dict]] = None,
+    candidate_entry_ids: Optional[list[str]] = None,
+) -> list[dict]:
+    """
+    Charge les entrées du Ledger et construit les candidats.
+    additional_candidates : liste de dicts d'entrées Ledger injectés (pour tests/E2E).
+    candidate_entry_ids   : None = mode GLOBAL (historique, inchangé).
+                            liste = mode EXPLICITE — seules ces entrées
+                            deviennent des candidats (pas de filtrage après
+                            coup : la portée contraint l'univers AVANT
+                            sélection).
+    """
+    entries = _load_ledger_universe(ledger_dir, additional_candidates)
+    dep_links = _load_dependency_link_events(ledger_dir)
+
+    if candidate_entry_ids is not None:
+        scope_set = set(candidate_entry_ids)
+        entries = [e for e in entries if e.get("ledger_entry_id") in scope_set]
+
+    candidates: list[dict] = []
+    for e in entries:
+        eid = e.get("ledger_entry_id")
+        merged_refs = list(e.get("dependency_refs") or []) + dep_links.get(eid, [])
+        e_augmented = dict(e)
+        e_augmented["dependency_refs"] = merged_refs
+        candidates.append(build_candidate(e_augmented))
+    return candidates
 
 
 # ─── Dépendances (V0 minimal) ────────────────────────────────────────────────
 
-def detect_dependencies(candidates: list[dict]) -> list[dict]:
+def detect_dependencies(
+    candidates: list[dict],
+    entry_index: Optional[dict[str, str]] = None,
+) -> list[dict]:
     """
-    V0 : modélise uniquement la relation prev_entry_id (version chain).
-    Retourne une liste d'edges {from, to, type}.
+    Combine deux mécanismes, sans dupliquer une même relation (from,to) :
+    1. relation de version prev_entry_id (V0 historique, inchangée)
+    2. dependency_refs explicites (champ d'enregistrement + événements
+       append-only DEPENDENCY_LINKED), résolus via entry_index — l'UNIVERS
+       COMPLET du Ledger, pas seulement les candidats en portée. Permet de
+       distinguer :
+         - résolu ET dans la portée courante  -> DEPENDENCY_CONFIRMED
+         - résolu MAIS hors portée courante    -> DEPENDENCY_OUTSIDE_SCOPE (HOLD)
+         - ne résout nulle part                -> DEPENDENCY_UNRESOLVED (HOLD)
+    Ne jamais inventer un ordre si les preuves ne le permettent pas.
     """
     edges: list[dict] = []
+    seen: set[tuple[str, str]] = set()
     id_set = {c["candidate_id"] for c in candidates}
+    idx = entry_index or {}
 
+    def _add_edge(frm: str, to: str, etype: str, reason: str) -> None:
+        key = (frm, to)
+        if key in seen:
+            return
+        seen.add(key)
+        edges.append({"from": frm, "to": to, "type": etype, "reason": reason})
+
+    # 1. Chaîne de version (prev_entry_id)
     for c in candidates:
         prev = c.get("prev_entry_id")
         if prev:
             edge_type = DEPENDENCY_CONFIRMED if prev in id_set else DEPENDENCY_PROBABLE
-            edges.append({
-                "from": c["candidate_id"],
-                "to": prev,
-                "type": edge_type,
-                "reason": "prev_entry_id_version_chain",
-            })
+            _add_edge(c["candidate_id"], prev, edge_type, "prev_entry_id_version_chain")
             if edge_type == DEPENDENCY_PROBABLE:
                 c["dependency_status"] = "DEPENDENCY_OUTSIDE_BATCH"
                 c["unknowns"] = list(c.get("unknowns") or []) + ["dependency_outside_batch"]
             else:
                 c["dependency_status"] = DEPENDENCY_CONFIRMED
 
+    # 2. dependency_refs explicites (champ + événements DEPENDENCY_LINKED)
+    for c in candidates:
+        refs = c.get("dependency_refs") or []
+        for ref in refs:
+            resolved = idx.get(ref)
+            if resolved is None:
+                _add_edge(c["candidate_id"], ref, DEPENDENCY_UNRESOLVED, "dependency_ref_unresolved")
+                c["dependency_status"] = DEPENDENCY_UNRESOLVED
+                c["unknowns"] = list(c.get("unknowns") or []) + ["dependency_unresolved"]
+            elif resolved in id_set:
+                _add_edge(c["candidate_id"], resolved, DEPENDENCY_CONFIRMED, "dependency_ref")
+                if c.get("dependency_status") in (None, NO_DEPENDENCY_KNOWN):
+                    c["dependency_status"] = DEPENDENCY_CONFIRMED
+            else:
+                _add_edge(c["candidate_id"], resolved, DEPENDENCY_OUTSIDE_SCOPE, "dependency_ref_outside_scope")
+                c["dependency_status"] = DEPENDENCY_OUTSIDE_SCOPE
+                c["unknowns"] = list(c.get("unknowns") or []) + ["dependency_outside_scope"]
+
     return edges
 
 
 def detect_cycles(candidates: list[dict], edges: list[dict]) -> list[str]:
-    """Détection simple de cycles dans le graphe de dépendances."""
+    """
+    Détection COMPLÈTE des composantes cycliques (Tarjan SCC), pas
+    seulement le nœud cible d'une back-edge. Tout nœud appartenant à une
+    composante fortement connexe de taille > 1, ou à une boucle réflexive
+    (A -> A), est retourné — déterministe (ordre d'apparition dans
+    `candidates`). Les arêtes pointant hors de l'univers `candidates`
+    (dépendance hors-portée/non-résolue) sont ignorées : elles ne peuvent
+    pas participer à un cycle interne au batch.
+    """
     graph: dict[str, list[str]] = {c["candidate_id"]: [] for c in candidates}
     for e in edges:
         if e["from"] in graph:
             graph[e["from"]].append(e["to"])
 
-    visited: set = set()
-    in_stack: set = set()
-    cycles: list[str] = []
+    index_counter = [0]
+    stack: list[str] = []
+    on_stack: set[str] = set()
+    indices: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    cyclic: set[str] = set()
 
-    def dfs(node: str) -> None:
-        if node in in_stack:
-            cycles.append(node)
-            return
-        if node in visited:
-            return
-        visited.add(node)
-        in_stack.add(node)
-        for neighbor in graph.get(node, []):
-            dfs(neighbor)
-        in_stack.discard(node)
+    def strongconnect(v: str) -> None:
+        indices[v] = index_counter[0]
+        lowlink[v] = index_counter[0]
+        index_counter[0] += 1
+        stack.append(v)
+        on_stack.add(v)
+
+        for w in graph.get(v, []):
+            if w not in graph:
+                continue  # hors univers candidat : ne peut pas boucler ici
+            if w not in indices:
+                strongconnect(w)
+                lowlink[v] = min(lowlink[v], lowlink[w])
+            elif w in on_stack:
+                lowlink[v] = min(lowlink[v], indices[w])
+
+        if lowlink[v] == indices[v]:
+            component: list[str] = []
+            while True:
+                w = stack.pop()
+                on_stack.discard(w)
+                component.append(w)
+                if w == v:
+                    break
+            is_cyclic = len(component) > 1 or v in graph.get(v, [])
+            if is_cyclic:
+                cyclic.update(component)
 
     for c in candidates:
-        dfs(c["candidate_id"])
+        node = c["candidate_id"]
+        if node not in indices:
+            strongconnect(node)
 
-    return cycles
+    return [c["candidate_id"] for c in candidates if c["candidate_id"] in cyclic]
+
+
+# ─── Ordre d'exécution (dépendances d'abord) ─────────────────────────────────
+
+def compute_execution_order(selected: list[dict], edges: list[dict]) -> list[str]:
+    """
+    Ordre topologique déterministe des candidats retenus : une dépendance
+    DEPENDENCY_CONFIRMED précède toujours son dépendant. Les noeuds
+    indépendants gardent un ordre stable (ordre d'apparition dans
+    `selected` — jamais l'ordre de la requête d'entrée, cf. §6).
+    N'ordonne jamais de noeuds cycliques (déjà retirés de `selected` en
+    amont). Ne fabrique aucun ordre non justifié par les preuves : si un
+    blocage inattendu survient (ne devrait pas arriver, cycles déjà
+    retirés), le reste est placé dans l'ordre stable d'origine plutôt que
+    de planter ou d'inventer une dépendance.
+    """
+    selected_ids = [c["candidate_id"] for c in selected]
+    id_set = set(selected_ids)
+
+    predecessors: dict[str, set[str]] = {sid: set() for sid in selected_ids}
+    for e in edges:
+        if e.get("type") != DEPENDENCY_CONFIRMED:
+            continue
+        frm, to = e.get("from"), e.get("to")
+        if frm in id_set and to in id_set:
+            predecessors[frm].add(to)
+
+    order: list[str] = []
+    remaining = set(selected_ids)
+    placed: set[str] = set()
+
+    while remaining:
+        ready = [
+            sid for sid in selected_ids
+            if sid in remaining and predecessors[sid] <= placed
+        ]
+        if not ready:
+            ready = [sid for sid in selected_ids if sid in remaining]
+        for sid in ready:
+            order.append(sid)
+            placed.add(sid)
+            remaining.discard(sid)
+
+    return order
 
 
 # ─── Déduplication dans la sélection ────────────────────────────────────────
@@ -441,6 +643,7 @@ def select_batch(
     candidates: list[dict],
     max_batch_size: int = DEFAULT_MAX_BATCH_SIZE,
     objective: str = "",
+    entry_index: Optional[dict[str, str]] = None,
 ) -> dict:
     """
     Politique déterministe V0 :
@@ -478,8 +681,8 @@ def select_batch(
             c["exclusion_reason"] = c.get("exclusion_reason") or elig
             excluded_entries.append(c)
 
-    # Étape 4 : dépendances
-    edges = detect_dependencies(selected + hold_entries)
+    # Étape 4 : dépendances (version chain + dependency_refs explicites)
+    edges = detect_dependencies(selected + hold_entries, entry_index)
 
     # Étape 5 : cycles — retirer par référence originale, pas par copie
     cycle_nodes = detect_cycles(selected + hold_entries, edges)
@@ -491,7 +694,27 @@ def select_batch(
         hold_entries.append(c_hold)
         selected.remove(c_orig)
 
-    # Étape 6 : coupe à max
+    # Étape 5bis : dépendance résolue hors-portée ou non résolue → HOLD
+    # (fail-closed — ne jamais sélectionner un candidat dont la dépendance
+    # déclarée ne peut être garantie dans ce même batch).
+    dep_hold_originals = [
+        c for c in selected
+        if c.get("dependency_status") in (DEPENDENCY_OUTSIDE_SCOPE, DEPENDENCY_UNRESOLVED)
+    ]
+    for c_orig in dep_hold_originals:
+        c_hold = dict(c_orig)
+        c_hold["hold_reason"] = [c_orig["dependency_status"]]
+        hold_entries.append(c_hold)
+        selected.remove(c_orig)
+
+    # Étape 5ter : ordre d'exécution topologique déterministe — les
+    # dépendances CONFIRMED précèdent leur dépendant, indépendant de
+    # l'ordre de la requête d'entrée (§6).
+    execution_order = compute_execution_order(selected, edges)
+    order_index = {sid: i for i, sid in enumerate(execution_order)}
+    selected.sort(key=lambda c: order_index.get(c["candidate_id"], len(execution_order)))
+
+    # Étape 6 : coupe à max (respecte l'ordre topologique ci-dessus)
     overflow: list[dict] = []
     if len(selected) > max_batch_size:
         overflow = selected[max_batch_size:]
@@ -500,6 +723,7 @@ def select_batch(
             c = dict(c)
             c["exclusion_reason"] = "EXCEEDS_MAX_BATCH_SIZE"
             excluded_entries.append(c)
+    execution_order = [c["candidate_id"] for c in selected]
 
     return {
         "selected": selected,
@@ -507,6 +731,7 @@ def select_batch(
         "excluded_entries": excluded_entries,
         "dependency_edges": edges,
         "cycle_nodes": cycle_nodes,
+        "execution_order": execution_order,
         "overflow": overflow,
     }
 
@@ -540,7 +765,10 @@ def compute_metrics(
         "dependency_count": len(edges),
         "missing_dependency_count": sum(
             1 for c in candidates
-            if "dependency_outside_batch" in (c.get("unknowns") or [])
+            if any(
+                u in (c.get("unknowns") or [])
+                for u in ("dependency_outside_batch", "dependency_outside_scope", "dependency_unresolved")
+            )
         ),
         "cycle_count": len(cycle_nodes),
         "average_dependencies_per_selected": (
@@ -561,10 +789,16 @@ def propose_batch(
     ledger_dir: Optional[Path] = None,
     selector_dir: Optional[Path] = None,
     additional_candidates: Optional[list[dict]] = None,
+    candidate_entry_ids: Optional[list[str]] = None,
 ) -> dict:
     """
     Point d'entrée principal du Selector.
     Découvre les candidats, sélectionne, produit un BatchProposal immuable.
+
+    candidate_entry_ids : None = mode GLOBAL (historique, Ledger entier).
+        list[str] = mode EXPLICITE — seuls ces entry_id peuvent devenir
+        candidats. Liste vide ou entry_id inconnu -> fail-closed
+        (scope_error, aucune sélection, rien sauvegardé).
     """
     import time
     t0 = time.monotonic()
@@ -572,14 +806,80 @@ def propose_batch(
     if max_batch_size > HARD_MAX_BATCH_SIZE:
         max_batch_size = HARD_MAX_BATCH_SIZE
 
-    candidates = build_candidates_from_ledger(ledger_dir, additional_candidates)
-    sel_result = select_batch(candidates, max_batch_size, objective)
+    candidate_scope_mode = SCOPE_EXPLICIT if candidate_entry_ids is not None else SCOPE_GLOBAL
+    normalized_scope_ids: Optional[list[str]] = None
+    scope_error: Optional[str] = None
 
-    selected   = sel_result["selected"]
-    hold       = sel_result["hold_entries"]
-    excluded   = sel_result["excluded_entries"]
-    edges      = sel_result["dependency_edges"]
-    cycles     = sel_result["cycle_nodes"]
+    if candidate_entry_ids is not None:
+        seen_ids: list[str] = []
+        for eid in candidate_entry_ids:
+            if eid not in seen_ids:
+                seen_ids.append(eid)
+        normalized_scope_ids = seen_ids
+        if not normalized_scope_ids:
+            scope_error = "EMPTY_EXPLICIT_SCOPE"
+        else:
+            universe = _load_ledger_universe(ledger_dir, additional_candidates)
+            known_ids = {e.get("ledger_entry_id") for e in universe}
+            unknown_ids = [eid for eid in normalized_scope_ids if eid not in known_ids]
+            if unknown_ids:
+                scope_error = f"UNKNOWN_CANDIDATE_ENTRY_ID:{unknown_ids}"
+
+    candidate_scope_hash = (
+        _sha16(json.dumps(sorted(normalized_scope_ids)))
+        if normalized_scope_ids else None
+    )
+
+    if scope_error:
+        duration_ms = (time.monotonic() - t0) * 1000.0
+        metrics = compute_metrics([], [], [], [], [], [], duration_ms)
+        return {
+            "batch_id": None,
+            "batch_schema_version": BATCH_SCHEMA_VERSION,
+            "created_at": _now(),
+            "selector_version": SELECTOR_VERSION,
+            "objective": objective,
+            "requested_max_size": max_batch_size,
+            "actual_size": 0,
+            "candidate_count": 0,
+            "eligible_count": 0,
+            "selected_count": 0,
+            "hold_count": 0,
+            "excluded_count": 0,
+            "selected_entries": [],
+            "excluded_entries": [],
+            "hold_entries": [],
+            "dependency_edges": [],
+            "dependency_groups": [],
+            "cycle_nodes": [],
+            "execution_order": [],
+            "selection_reasons": {},
+            "exclusion_reasons": {},
+            "hold_reasons": {},
+            "risk_flags": [],
+            "unknowns": [],
+            "ledger_refs": [],
+            "batch_hash": None,
+            "status": BATCH_HOLD,
+            "human_approved": False,
+            "decision_authority": DECISION_AUTHORITY,
+            "metrics": metrics,
+            "candidate_scope_mode": candidate_scope_mode,
+            "candidate_entry_ids": normalized_scope_ids,
+            "candidate_scope_hash": candidate_scope_hash,
+            "scope_error": scope_error,
+        }
+
+    candidates = build_candidates_from_ledger(ledger_dir, additional_candidates, normalized_scope_ids)
+    entry_index = build_entry_index_from_ledger(ledger_dir, additional_candidates)
+    sel_result = select_batch(candidates, max_batch_size, objective, entry_index)
+
+    selected        = sel_result["selected"]
+    hold            = sel_result["hold_entries"]
+    excluded        = sel_result["excluded_entries"]
+    edges           = sel_result["dependency_edges"]
+    cycles          = sel_result["cycle_nodes"]
+    execution_order = sel_result["execution_order"]
 
     duration_ms = (time.monotonic() - t0) * 1000.0
 
@@ -587,7 +887,12 @@ def propose_batch(
     source_hashes  = [c["source_hash"] for c in selected if c.get("source_hash")]
 
     bid  = batch_id_from_selection(selected_ids, objective, max_batch_size)
-    bhash = batch_hash_from_proposal(selected_ids, source_hashes, edges, objective, max_batch_size)
+    bhash = batch_hash_from_proposal(
+        selected_ids, source_hashes, edges, objective, max_batch_size,
+        execution_order=execution_order,
+        candidate_scope_mode=candidate_scope_mode,
+        candidate_entry_ids=normalized_scope_ids,
+    )
 
     status = BATCH_PROPOSED if not (cycles or not candidates) else BATCH_HOLD
     if not candidates:
@@ -620,6 +925,7 @@ def propose_batch(
         "dependency_edges": edges,
         "dependency_groups": [],
         "cycle_nodes": cycles,
+        "execution_order": execution_order,
 
         "selection_reasons": {
             c["candidate_id"]: c.get("eligibility_reasons", [])
@@ -649,6 +955,11 @@ def propose_batch(
         "decision_authority": DECISION_AUTHORITY,
 
         "metrics": metrics,
+
+        "candidate_scope_mode": candidate_scope_mode,
+        "candidate_entry_ids": normalized_scope_ids,
+        "candidate_scope_hash": candidate_scope_hash,
+        "scope_error": None,
     }
 
     _save_batch(proposal, selector_dir)

@@ -450,6 +450,58 @@ def link_commit(
     return {"status": "COMMITTED_LINKED", "ledger_entry_id": entry_id, "commit_sha": commit_sha}
 
 
+def link_dependency(
+    source_entry_id: str,
+    dependency_entry_id: str,
+    relation_type: str = "DEPENDENCY_CONFIRMED",
+    evidence_type: "str | None" = None,
+    evidence_ref: "str | None" = None,
+    ledger_dir: "Path | None" = None,
+) -> dict:
+    """
+    Enregistre une relation de dépendance entre deux entrées Ledger déjà
+    existantes — événement append-only (DEPENDENCY_LINKED), ne modifie
+    JAMAIS les lignes d'entrées existantes.
+
+    Fail-closed :
+    - les deux entry_id doivent déjà exister dans le Ledger, sinon aucune
+      preuve n'est fabriquée et rien n'est enregistré ;
+    - V0 n'accepte QUE relation_type="DEPENDENCY_CONFIRMED" — le Selector
+      ne doit jamais interpréter silencieusement un lien déclaré
+      DEPENDENCY_PROBABLE/DEPENDENCY_UNKNOWN comme confirmé. Tant qu'un
+      projecteur fidèle au relation_type déclaré n'existe pas côté
+      Selector, on refuse d'enregistrer autre chose que du confirmé
+      plutôt que de risquer une confirmation fabriquée.
+    """
+    if relation_type != "DEPENDENCY_CONFIRMED":
+        return {
+            "error": (
+                "relation_type non supporté en V0 : "
+                f"{relation_type} (seul DEPENDENCY_CONFIRMED est accepté)"
+            )
+        }
+    entries = _load_entries(ledger_dir)
+    known_ids = {e.get("ledger_entry_id") for e in entries}
+    if source_entry_id not in known_ids:
+        return {"error": f"source_ledger_entry_id inconnu : {source_entry_id}"}
+    if dependency_entry_id not in known_ids:
+        return {"error": f"dependency_ledger_entry_id inconnu : {dependency_entry_id}"}
+    _append_event({
+        "event_type": "DEPENDENCY_LINKED",
+        "source_ledger_entry_id": source_entry_id,
+        "dependency_ledger_entry_id": dependency_entry_id,
+        "relation_type": relation_type,
+        "evidence_type": evidence_type,
+        "evidence_ref": evidence_ref,
+        "timestamp": _now(),
+    }, ledger_dir)
+    return {
+        "status": "DEPENDENCY_LINKED",
+        "source_ledger_entry_id": source_entry_id,
+        "dependency_ledger_entry_id": dependency_entry_id,
+    }
+
+
 def register_source(
     source_path: str,
     source_type: str = "REAL_SOURCE",

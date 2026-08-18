@@ -42,6 +42,10 @@ from obsidia_batch_selector import (  # noqa: E402
     DEPENDENCY_CYCLE,
     DEPENDENCY_PROBABLE,
     DEPENDENCY_UNKNOWN,
+    DEPENDENCY_UNRESOLVED,
+    DEPENDENCY_OUTSIDE_SCOPE,
+    SCOPE_GLOBAL,
+    SCOPE_EXPLICIT,
     HARD_MAX_BATCH_SIZE,
     NO_DEPENDENCY_KNOWN,
     SELECTOR_VERSION,
@@ -55,11 +59,13 @@ from obsidia_batch_selector import (  # noqa: E402
     batch_id_from_selection,
     build_candidate,
     build_candidates_from_ledger,
+    build_entry_index_from_ledger,
     cmd_batch_candidates,
     cmd_batch_inspect,
     cmd_batch_list,
     cmd_batch_status,
     compute_metrics,
+    compute_execution_order,
     detect_cycles,
     detect_dependencies,
     propose_batch,
@@ -71,6 +77,8 @@ from obsidia_batch_selector import (  # noqa: E402
     _save_batch,
     _list_batches,
 )
+from obsidia_branching_ledger import link_dependency as _link_dependency  # noqa: E402
+from obsidia_branching_ledger import register_source as _register_source  # noqa: E402
 
 
 # ─── Fixtures helpers ─────────────────────────────────────────────────────────
@@ -296,7 +304,31 @@ class TestDependencies:
         c2 = build_candidate(_entry("eid02", prev="eid01"))
         edges = detect_dependencies([c1, c2])
         cycles = detect_cycles([c1, c2], edges)
-        assert len(cycles) > 0
+        # Detection COMPLETE (Tarjan SCC) : les DEUX membres du cycle,
+        # pas seulement la cible d'une back-edge.
+        assert set(cycles) == {"eid01", "eid02"}
+
+    def test_cycle_three_node_all_held(self):
+        a = build_candidate(_entry("cyc_a", prev="cyc_c"))
+        b = build_candidate(_entry("cyc_b", path="b.py", prev="cyc_a"))
+        c = build_candidate(_entry("cyc_c", path="c.py", prev="cyc_b"))
+        edges = detect_dependencies([a, b, c])
+        cycles = detect_cycles([a, b, c], edges)
+        assert set(cycles) == {"cyc_a", "cyc_b", "cyc_c"}
+
+    def test_self_loop_cyclic(self):
+        a = build_candidate(_entry("self_a"))
+        edges = [{"from": "self_a", "to": "self_a", "type": DEPENDENCY_CONFIRMED, "reason": "test"}]
+        cycles = detect_cycles([a], edges)
+        assert cycles == ["self_a"]
+
+    def test_acyclic_chain_no_cycles(self):
+        a = build_candidate(_entry("chain_a", prev="chain_b"))
+        b = build_candidate(_entry("chain_b", path="b.py", prev="chain_c"))
+        c = build_candidate(_entry("chain_c", path="c.py"))
+        edges = detect_dependencies([a, b, c])
+        cycles = detect_cycles([a, b, c], edges)
+        assert cycles == []
 
     def test_dependency_outside_batch_marks_unknown(self):
         c = build_candidate(_entry("eid99", prev="eid_missing"))
@@ -805,9 +837,17 @@ class TestFailClosed:
             ledger_dir=tmp_path / "empty",
             selector_dir=tmp_path / "sel",
         )
-        # Les candidats en cycle ne doivent pas être dans selected
+        # HOLD COMPLET : aucun des deux membres du cycle ne doit rester
+        # selectionne (Tarjan SCC — pas seulement un noeud).
         sel_ids = {e["candidate_id"] for e in result["selected_entries"]}
-        assert "e01" not in sel_ids or "e02" not in sel_ids
+        assert "e01" not in sel_ids
+        assert "e02" not in sel_ids
+        hold_ids = {e["candidate_id"] for e in result["hold_entries"]}
+        assert "e01" in hold_ids
+        assert "e02" in hold_ids
+        for e in result["hold_entries"]:
+            if e["candidate_id"] in ("e01", "e02"):
+                assert "DEPENDENCY_CYCLE" in e["hold_reason"]
 
 
 # ─── E2E synthétique §29 ─────────────────────────────────────────────────────
@@ -1103,3 +1143,640 @@ class TestSelectorDiscoveredStage:
         assert c["eligibility"] == ELIGIBLE
         assert c.get("kx108_decision") is None
         assert c.get("proposal_id") is None
+
+
+# --- TestExplicitScope (IMPLEMENT_SCOPED_BATCH_AND_DEPENDENCY_REFS_V0) --------
+
+class TestExplicitScope:
+    """Portee explicite de candidats : GLOBAL != EXPLICIT_ENTRY_IDS,
+    aucune fuite de residu Ledger hors de la portee demandee."""
+
+    def _pool(self):
+        return [
+            _entry(eid="scp_a", path="periphery/scp_a.py", source_hash="haaaaaaaaaaaaaaa"),
+            _entry(eid="scp_b", path="periphery/scp_b.py", source_hash="hbbbbbbbbbbbbbbb"),
+            _entry(eid="scp_c", path="periphery/scp_c.py", source_hash="hccccccccccccccc"),
+            _entry(eid="scp_d", path="periphery/scp_d.py", source_hash="hddddddddddddddd"),
+            _entry(eid="scp_e", path="periphery/scp_e.py", source_hash="heeeeeeeeeeeeeee"),
+        ]
+
+    def test_global_mode_unchanged_default(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["candidate_scope_mode"] == SCOPE_GLOBAL
+        assert result["candidate_entry_ids"] is None
+        assert result["candidate_scope_hash"] is None
+        assert result["candidate_count"] == 5
+
+    def test_explicit_scope_restricts_candidates_no_leakage(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "scp_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["candidate_scope_mode"] == SCOPE_EXPLICIT
+        assert result["candidate_count"] == 2
+        all_ids = (
+            {c["candidate_id"] for c in result["selected_entries"]}
+            | {c["candidate_id"] for c in result["hold_entries"]}
+            | {c["candidate_id"] for c in result["excluded_entries"]}
+        )
+        assert all_ids <= {"scp_a", "scp_b"}
+        assert "scp_c" not in all_ids
+        assert "scp_d" not in all_ids
+        assert "scp_e" not in all_ids
+
+    def test_selected_subset_of_explicit_scope(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "scp_b", "scp_c"],
+            max_batch_size=5,
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        selected_ids = {c["candidate_id"] for c in result["selected_entries"]}
+        assert selected_ids <= {"scp_a", "scp_b", "scp_c"}
+
+    def test_explicit_scope_unknown_id_fails_closed(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "does_not_exist"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["scope_error"] is not None
+        assert "UNKNOWN_CANDIDATE_ENTRY_ID" in result["scope_error"]
+        assert result["candidate_count"] == 0
+        assert result["selected_count"] == 0
+        assert result["status"] == BATCH_HOLD
+
+    def test_explicit_scope_empty_list_fails_closed(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=[],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["scope_error"] == "EMPTY_EXPLICIT_SCOPE"
+        assert result["candidate_count"] == 0
+        assert result["status"] == BATCH_HOLD
+
+    def test_explicit_scope_duplicate_ids_deterministic(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "scp_a", "scp_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["candidate_entry_ids"] == ["scp_a", "scp_b"]
+        assert result["candidate_count"] == 2
+
+    def test_explicit_scope_hash_order_independent(self, tmp_path):
+        r1 = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "scp_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel1",
+        )
+        r2 = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_b", "scp_a"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel2",
+        )
+        assert r1["candidate_scope_hash"] == r2["candidate_scope_hash"]
+        assert r1["candidate_scope_hash"] is not None
+
+    def test_scope_hash_differs_from_batch_hash(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a", "scp_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["candidate_scope_hash"] != result["batch_hash"]
+
+    def test_explicit_scope_human_approved_and_authority(self, tmp_path):
+        result = propose_batch(
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_a"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["human_approved"] is False
+        assert result["decision_authority"] == DECISION_AUTHORITY
+
+    def test_build_candidates_from_ledger_scoped_matches_propose(self, tmp_path):
+        candidates = build_candidates_from_ledger(
+            ledger_dir=tmp_path / "empty",
+            additional_candidates=self._pool(),
+            candidate_entry_ids=["scp_c"],
+        )
+        assert len(candidates) == 1
+        assert candidates[0]["candidate_id"] == "scp_c"
+
+
+# --- TestDependencyRefsScope (dependency_refs consumed by Selector) ----------
+
+class TestDependencyRefsScope:
+    """dependency_refs (champ Ledger + evenements DEPENDENCY_LINKED) sont
+    desormais consommes par detect_dependencies, resolus contre l'univers
+    complet du Ledger, distinguant confirmed / outside-scope / unresolved."""
+
+    def _pair(self, a_refs=None, b_refs=None):
+        a = _entry(eid="dep_a", path="periphery/dep_a.py", source_hash="da00000000000001")
+        b = _entry(eid="dep_b", path="periphery/dep_b.py", source_hash="db00000000000002")
+        if a_refs is not None:
+            a["dependency_refs"] = a_refs
+        if b_refs is not None:
+            b["dependency_refs"] = b_refs
+        return a, b
+
+    def test_dependency_ref_confirmed_in_scope(self, tmp_path):
+        a, b = self._pair(a_refs=["dep_b"])
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_a", "dep_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        edges = result["dependency_edges"]
+        assert any(
+            e["from"] == "dep_a" and e["to"] == "dep_b" and e["type"] == DEPENDENCY_CONFIRMED
+            for e in edges
+        )
+        selected_ids = {c["candidate_id"] for c in result["selected_entries"]}
+        assert "dep_a" in selected_ids
+        assert "dep_b" in selected_ids
+
+    def test_dependency_ref_resolves_via_target_path(self, tmp_path):
+        a, b = self._pair(a_refs=["periphery/dep_b.py"])
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_a", "dep_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        edges = result["dependency_edges"]
+        assert any(e["from"] == "dep_a" and e["to"] == "dep_b" for e in edges)
+
+    def test_dependency_ref_outside_scope_holds(self, tmp_path):
+        a, b = self._pair(a_refs=["dep_b"])
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_a"],  # dep_b existe mais hors portee
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        hold_ids = {c["candidate_id"] for c in result["hold_entries"]}
+        assert "dep_a" in hold_ids
+        held = next(c for c in result["hold_entries"] if c["candidate_id"] == "dep_a")
+        assert DEPENDENCY_OUTSIDE_SCOPE in held["hold_reason"]
+
+    def test_dependency_ref_unresolved_holds(self, tmp_path):
+        a, b = self._pair(a_refs=["periphery/does_not_exist_anywhere.py"])
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_a", "dep_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        hold_ids = {c["candidate_id"] for c in result["hold_entries"]}
+        assert "dep_a" in hold_ids
+        held = next(c for c in result["hold_entries"] if c["candidate_id"] == "dep_a")
+        assert DEPENDENCY_UNRESOLVED in held["hold_reason"]
+
+    def test_no_dependency_refs_is_no_dependency_known(self, tmp_path):
+        a, b = self._pair()
+        candidates = build_candidates_from_ledger(
+            ledger_dir=tmp_path / "empty",
+            additional_candidates=[a, b],
+        )
+        c = next(c for c in candidates if c["candidate_id"] == "dep_a")
+        assert c["dependency_status"] == NO_DEPENDENCY_KNOWN
+
+    def test_dependency_ref_cycle_detected(self, tmp_path):
+        a, b = self._pair(a_refs=["dep_b"], b_refs=["dep_a"])
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_a", "dep_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert len(result["cycle_nodes"]) > 0
+        # detect_cycles (V0, inchangé) ne marque que le noeud cible de la
+        # back-edge — au moins un des deux membres du cycle n'est pas
+        # selectionne (meme convention que test_cycle_produces_hold_not_selection).
+        selected_ids = {c["candidate_id"] for c in result["selected_entries"]}
+        assert "dep_a" not in selected_ids or "dep_b" not in selected_ids
+
+    def test_version_and_dependency_ref_no_duplicate_edge(self, tmp_path):
+        a = _entry(eid="dep_v_a", path="periphery/dep_v_a.py", source_hash="dv0000000000001a")
+        b = _entry(eid="dep_v_b", path="periphery/dep_v_b.py", source_hash="dv0000000000002b")
+        a["prev_entry_id"] = "dep_v_b"
+        a["dependency_refs"] = ["dep_v_b"]
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["dep_v_a", "dep_v_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        matching = [
+            e for e in result["dependency_edges"]
+            if e["from"] == "dep_v_a" and e["to"] == "dep_v_b"
+        ]
+        assert len(matching) == 1
+
+    def test_dependency_linked_event_consumed(self, tmp_path):
+        """Relation enregistree APRES coup via evenement append-only
+        DEPENDENCY_LINKED (pas de reecriture des lignes d'entree)."""
+        ld = tmp_path / "ledger"
+        src = tmp_path / "evt_a.py"
+        src.write_text("a\n", encoding="utf-8")
+        dep = tmp_path / "evt_b.py"
+        dep.write_text("b\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/evt_a.py", ledger_dir=ld)
+        r_b = _register_source(str(dep), target_path="periphery/evt_b.py", ledger_dir=ld)
+        link_result = _link_dependency(
+            r_a["ledger_entry_id"], r_b["ledger_entry_id"],
+            evidence_type="PYTHON_IMPORT", ledger_dir=ld,
+        )
+        assert link_result["status"] == "DEPENDENCY_LINKED"
+
+        result = propose_batch(
+            candidate_entry_ids=[r_a["ledger_entry_id"], r_b["ledger_entry_id"]],
+            ledger_dir=ld,
+            selector_dir=tmp_path / "sel",
+        )
+        edges = result["dependency_edges"]
+        assert any(
+            e["from"] == r_a["ledger_entry_id"] and e["to"] == r_b["ledger_entry_id"]
+            and e["type"] == DEPENDENCY_CONFIRMED
+            for e in edges
+        )
+
+    def test_link_dependency_fails_closed_unknown_source(self, tmp_path):
+        ld = tmp_path / "ledger"
+        dep = tmp_path / "only_b.py"
+        dep.write_text("b\n", encoding="utf-8")
+        r_b = _register_source(str(dep), target_path="periphery/only_b.py", ledger_dir=ld)
+        result = _link_dependency("nonexistent_source", r_b["ledger_entry_id"], ledger_dir=ld)
+        assert "error" in result
+
+    def test_link_dependency_fails_closed_unknown_dependency(self, tmp_path):
+        ld = tmp_path / "ledger"
+        src = tmp_path / "only_a.py"
+        src.write_text("a\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/only_a.py", ledger_dir=ld)
+        result = _link_dependency(r_a["ledger_entry_id"], "nonexistent_dependency", ledger_dir=ld)
+        assert "error" in result
+
+    def test_link_dependency_does_not_rewrite_entries(self, tmp_path):
+        ld = tmp_path / "ledger"
+        src = tmp_path / "immut_a.py"
+        src.write_text("a\n", encoding="utf-8")
+        dep = tmp_path / "immut_b.py"
+        dep.write_text("b\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/immut_a.py", ledger_dir=ld)
+        r_b = _register_source(str(dep), target_path="periphery/immut_b.py", ledger_dir=ld)
+        entries_before = (ld / "entries.jsonl").read_text(encoding="utf-8")
+        _link_dependency(r_a["ledger_entry_id"], r_b["ledger_entry_id"], ledger_dir=ld)
+        entries_after = (ld / "entries.jsonl").read_text(encoding="utf-8")
+        assert entries_before == entries_after
+
+
+# --- TestCLIExplicitScope (real CLI --entries, fail-closed) -------------------
+
+class TestCLIExplicitScope:
+    def test_cli_propose_entries_no_residue_leakage(self, tmp_path):
+        import subprocess, uuid
+        unique = uuid.uuid4().hex[:12]
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        src1 = tmp_path / "cli_scope_1.py"
+        src1.write_text(f"x = 1  # {unique}\n", encoding="utf-8")
+        src2 = tmp_path / "cli_scope_2.py"
+        src2.write_text(f"x = 2  # {unique}\n", encoding="utf-8")
+
+        r1 = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src1),
+             "--target", f"periphery/cli_scope_1_{unique}.py", "--domain", "PERIPHERAL"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        r2 = subprocess.run(
+            [sys.executable, cli, "ledger", "register-source", str(src2),
+             "--target", f"periphery/cli_scope_2_{unique}.py", "--domain", "PERIPHERAL"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert r1.returncode == 0 and r2.returncode == 0
+        d1 = json.loads(r1.stdout)
+        d2 = json.loads(r2.stdout)
+        id1 = d1.get("ledger_entry_id")
+        id2 = d2.get("ledger_entry_id")
+        assert id1 and id2
+
+        propose = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--max", "5",
+             "--objective", "cli-scope-test", "--entries", f"{id1},{id2}"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert propose.returncode == 0
+        out = json.loads(propose.stdout)
+        assert out["candidate_scope_mode"] == "EXPLICIT_ENTRY_IDS"
+        assert set(out["candidate_entry_ids"]) == {id1, id2}
+        assert out["metrics"]["candidate_count"] == 2
+
+    def test_cli_propose_entries_unknown_id_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--entries", "totally_bogus_id_xyz"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        out = json.loads(result.stdout)
+        assert out["scope_error"] is not None
+        assert out["selected_count"] == 0
+
+    def test_cli_propose_unknown_flag_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--bogus", "x"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        assert "BATCH_CLI_ERROR" in result.stdout
+
+    def test_cli_propose_max_missing_value_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--max"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        assert "BATCH_CLI_ERROR" in result.stdout
+
+    def test_cli_propose_entries_empty_value_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--entries", ""],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        assert "BATCH_CLI_ERROR" in result.stdout
+
+
+# --- TestDependencyExecutionOrder (dependency-first, input-order independent) -
+
+class TestDependencyExecutionOrder:
+    def _dependent_pair(self):
+        """A (dependant) apparait EN PREMIER dans additional_candidates,
+        alors qu'il depend de B (qui apparait en second) — l'ordre naturel
+        pre-tri est donc [A,B], l'ordre canonique attendu est [B,A]."""
+        a = _entry(eid="ord_a", path="periphery/ord_a.py", source_hash="oa0000000000001a")
+        b = _entry(eid="ord_b", path="periphery/ord_b.py", source_hash="ob0000000000002b")
+        a["dependency_refs"] = ["ord_b"]
+        return a, b
+
+    def test_dependency_precedes_dependant_direct_call(self):
+        a, b = self._dependent_pair()
+        ca = build_candidate(a)
+        cb = build_candidate(b)
+        edges = detect_dependencies([ca, cb], entry_index={"ord_a": "ord_a", "ord_b": "ord_b"})
+        order = compute_execution_order([ca, cb], edges)
+        assert order.index("ord_b") < order.index("ord_a")
+
+    def test_order_independent_of_input_order(self, tmp_path):
+        a, b = self._dependent_pair()
+        r1 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel1",
+        )
+        r2 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_b", "ord_a"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel2",
+        )
+        assert r1["execution_order"] == ["ord_b", "ord_a"]
+        assert r2["execution_order"] == ["ord_b", "ord_a"]
+        assert r1["execution_order"] == r2["execution_order"]
+
+    def test_independent_control_deterministic_position(self, tmp_path):
+        a, b = self._dependent_pair()
+        c = _entry(eid="ord_c", path="periphery/ord_c.py", source_hash="oc0000000000003c")
+        result = propose_batch(
+            additional_candidates=[a, b, c],
+            candidate_entry_ids=["ord_a", "ord_b", "ord_c"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        order = result["execution_order"]
+        assert order.index("ord_b") < order.index("ord_a")
+        assert set(order) == {"ord_a", "ord_b", "ord_c"}
+
+    def test_chain_a_depends_b_depends_c(self, tmp_path):
+        a = _entry(eid="chn_a", path="periphery/chn_a.py", source_hash="ca0000000000001a")
+        b = _entry(eid="chn_b", path="periphery/chn_b.py", source_hash="cb0000000000002b")
+        c = _entry(eid="chn_c", path="periphery/chn_c.py", source_hash="cc0000000000003c")
+        a["dependency_refs"] = ["chn_b"]
+        b["dependency_refs"] = ["chn_c"]
+        result = propose_batch(
+            additional_candidates=[a, b, c],
+            candidate_entry_ids=["chn_a", "chn_b", "chn_c"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        order = result["execution_order"]
+        assert order == ["chn_c", "chn_b", "chn_a"]
+
+    def test_repeated_same_graph_same_order(self, tmp_path):
+        a, b = self._dependent_pair()
+        r1 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel1",
+        )
+        r2 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel2",
+        )
+        assert r1["execution_order"] == r2["execution_order"]
+
+    def test_execution_order_equals_selected_ids(self, tmp_path):
+        a, b = self._dependent_pair()
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        selected_ids = {c["candidate_id"] for c in result["selected_entries"]}
+        assert set(result["execution_order"]) == selected_ids
+
+    def test_real_gencoin_pilot_order(self, tmp_path):
+        """Reproduit le graphe reel gencoin -> os3_ticket via dependency_refs."""
+        a = _entry(eid="gc_gencoin", path="periphery/gencoin.py", source_hash="gc00000000000001")
+        b = _entry(eid="gc_os3", path="periphery/os3_ticket.py", source_hash="gc00000000000002")
+        a["dependency_refs"] = ["gc_os3"]
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["gc_gencoin", "gc_os3"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        order = result["execution_order"]
+        assert order.index("gc_os3") < order.index("gc_gencoin")
+
+
+# --- TestBatchHashBindsDependencySemantics -------------------------------------
+
+class TestBatchHashBindsDependencySemantics:
+    def test_same_graph_same_hash(self, tmp_path):
+        a, b = TestDependencyExecutionOrder()._dependent_pair()
+        r1 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            objective="hash-stable",
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel1",
+        )
+        r2 = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            objective="hash-stable",
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel2",
+        )
+        assert r1["batch_hash"] == r2["batch_hash"]
+
+    def test_dependency_changes_hash(self, tmp_path):
+        a_no_dep = _entry(eid="hb_a", path="periphery/hb_a.py", source_hash="hb0000000000001a")
+        b_ctrl = _entry(eid="hb_b", path="periphery/hb_b.py", source_hash="hb0000000000002b")
+        r_without = propose_batch(
+            additional_candidates=[a_no_dep, b_ctrl],
+            candidate_entry_ids=["hb_a", "hb_b"],
+            objective="hash-dep-cmp",
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel1",
+        )
+        a_with_dep = dict(a_no_dep)
+        a_with_dep["dependency_refs"] = ["hb_b"]
+        r_with = propose_batch(
+            additional_candidates=[a_with_dep, b_ctrl],
+            candidate_entry_ids=["hb_a", "hb_b"],
+            objective="hash-dep-cmp",
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel2",
+        )
+        assert r_without["batch_hash"] != r_with["batch_hash"]
+        # meme contenu selectionne, meme scope -- seule la semantique de
+        # dependance change
+        assert set(c["candidate_id"] for c in r_without["selected_entries"]) == \
+               set(c["candidate_id"] for c in r_with["selected_entries"])
+
+    def test_scope_hash_and_batch_hash_are_distinct(self, tmp_path):
+        a, b = TestDependencyExecutionOrder()._dependent_pair()
+        result = propose_batch(
+            additional_candidates=[a, b],
+            candidate_entry_ids=["ord_a", "ord_b"],
+            ledger_dir=tmp_path / "empty",
+            selector_dir=tmp_path / "sel",
+        )
+        assert result["candidate_scope_hash"] != result["batch_hash"]
+
+
+# --- TestLinkDependencyRelationTypeRestriction ---------------------------------
+
+class TestLinkDependencyRelationTypeRestriction:
+    def test_confirmed_accepted(self, tmp_path):
+        ld = tmp_path / "ledger"
+        src = tmp_path / "rt_a.py"; src.write_text("a\n", encoding="utf-8")
+        dep = tmp_path / "rt_b.py"; dep.write_text("b\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/rt_a.py", ledger_dir=ld)
+        r_b = _register_source(str(dep), target_path="periphery/rt_b.py", ledger_dir=ld)
+        result = _link_dependency(
+            r_a["ledger_entry_id"], r_b["ledger_entry_id"],
+            relation_type="DEPENDENCY_CONFIRMED", ledger_dir=ld,
+        )
+        assert result["status"] == "DEPENDENCY_LINKED"
+
+    def test_probable_rejected_fail_closed(self, tmp_path):
+        ld = tmp_path / "ledger"
+        src = tmp_path / "rt_c.py"; src.write_text("c\n", encoding="utf-8")
+        dep = tmp_path / "rt_d.py"; dep.write_text("d\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/rt_c.py", ledger_dir=ld)
+        r_b = _register_source(str(dep), target_path="periphery/rt_d.py", ledger_dir=ld)
+        result = _link_dependency(
+            r_a["ledger_entry_id"], r_b["ledger_entry_id"],
+            relation_type="DEPENDENCY_PROBABLE", ledger_dir=ld,
+        )
+        assert "error" in result
+
+    def test_unknown_relation_type_rejected(self, tmp_path):
+        ld = tmp_path / "ledger"
+        src = tmp_path / "rt_e.py"; src.write_text("e\n", encoding="utf-8")
+        dep = tmp_path / "rt_f.py"; dep.write_text("f\n", encoding="utf-8")
+        r_a = _register_source(str(src), target_path="periphery/rt_e.py", ledger_dir=ld)
+        r_b = _register_source(str(dep), target_path="periphery/rt_f.py", ledger_dir=ld)
+        result = _link_dependency(
+            r_a["ledger_entry_id"], r_b["ledger_entry_id"],
+            relation_type="DEPENDENCY_UNKNOWN", ledger_dir=ld,
+        )
+        assert "error" in result
+
+
+# --- TestCLIQuotedObjectiveAndEntries -------------------------------------------
+
+class TestCLIQuotedObjectiveAndEntries:
+    def test_cli_quoted_objective_preserved(self, tmp_path):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--max", "1",
+             "--objective", "First real batch pilot V0"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        out = json.loads(result.stdout)
+        assert out.get("scope_error") is None or out["scope_error"] is None
+        # Verifie via inspect que l'objectif complet (avec espaces) a ete
+        # preserve tel quel dans le BatchProposal sauvegarde.
+        bid = out.get("batch_id")
+        if bid:
+            status = subprocess.run(
+                [sys.executable, cli, "batch", "status", bid],
+                capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+            )
+            assert "First real batch pilot V0" in status.stdout
+
+    def test_cli_objective_missing_value_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--objective"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        assert "BATCH_CLI_ERROR" in result.stdout
+
+    def test_cli_invalid_max_fails_closed(self):
+        import subprocess
+        cli = str(_SCRIPTS_DIR / "obsidia_cli.py")
+        result = subprocess.run(
+            [sys.executable, cli, "batch", "propose", "--max", "notanumber"],
+            capture_output=True, text=True, cwd=str(_SCRIPTS_DIR.parent),
+        )
+        assert result.returncode == 0
+        assert "BATCH_CLI_ERROR" in result.stdout
