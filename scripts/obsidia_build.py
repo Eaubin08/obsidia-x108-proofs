@@ -1400,6 +1400,626 @@ def _write_receipt(state_dir: Path, session_id: str, receipt: dict) -> Path:
 
 
 # =============================================================================
+# TERMINAL BUILD LIFECYCLE V1
+# =============================================================================
+# Source de vérité dérivée — jamais de valeur brute écrite pour "status".
+# IMMUTABLE: receipt.json, apply_receipt.json — jamais réécrits après production.
+# OPERATOR:  lifecycle_events.jsonl (événements opérateur uniquement).
+# KX108 decisions {ACT, HOLD, BLOCK} ≠ lifecycle_status {ABORTED, CLEANED, …}.
+# =============================================================================
+
+
+def _load_receipt(session_id: str, state_dir: Path | None = None) -> "dict | None":
+    """Charge receipt.json. Retourne None si absent ou illisible."""
+    p = (state_dir or OBSIDIA_BUILD_STATE_DIR) / session_id / "receipt.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _load_apply_receipt(session_id: str, state_dir: Path | None = None) -> "dict | None":
+    """Charge apply_receipt.json. Retourne None si absent ou illisible."""
+    p = (state_dir or OBSIDIA_BUILD_STATE_DIR) / session_id / "apply_receipt.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _load_lifecycle_events(session_id: str, state_dir: Path | None = None) -> list:
+    """Charge lifecycle_events.jsonl. Retourne [] si absent."""
+    p = (state_dir or OBSIDIA_BUILD_STATE_DIR) / session_id / "lifecycle_events.jsonl"
+    if not p.exists():
+        return []
+    events: list = []
+    try:
+        for raw in p.read_text(encoding="utf-8").splitlines():
+            raw = raw.strip()
+            if raw:
+                try:
+                    events.append(json.loads(raw))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return events
+
+
+def _append_lifecycle_event(
+    session_id: str,
+    event_type: str,
+    details: "dict | None" = None,
+    state_dir: "Path | None" = None,
+) -> None:
+    """Ajoute un événement dans lifecycle_events.jsonl. Ne touche pas les receipts."""
+    session_path = (state_dir or OBSIDIA_BUILD_STATE_DIR) / session_id
+    session_path.mkdir(parents=True, exist_ok=True)
+    event = {
+        "type": event_type,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "by": "operator",
+        **(details or {}),
+    }
+    p = session_path / "lifecycle_events.jsonl"
+    with p.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+
+def _list_sessions(state_dir: "Path | None" = None) -> list:
+    """Liste les session_ids ayant receipt.json ou apply_receipt.json."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    if not sdir.exists():
+        return []
+    result: list = []
+    try:
+        for child in sorted(sdir.iterdir()):
+            if not child.is_dir():
+                continue
+            if (child / "receipt.json").exists() or (child / "apply_receipt.json").exists():
+                result.append(child.name)
+    except Exception:
+        pass
+    return result
+
+
+def _git_worktree_state(worktree_path: Path) -> dict:
+    """Lit l'état git d'un worktree. READ_ONLY.
+    Fail-closed: dirty=None si git status échoue (jamais False par défaut).
+    Champs: exists, path, branch, head, dirty, state_complete, errors."""
+    if not worktree_path.exists():
+        return {"exists": False, "path": str(worktree_path)}
+    result: dict = {
+        "exists": True, "path": str(worktree_path),
+        "state_complete": True, "errors": [],
+    }
+    for cmd, key in [
+        (["git", "rev-parse", "--abbrev-ref", "HEAD"], "branch"),
+        (["git", "rev-parse", "HEAD"], "head"),
+    ]:
+        try:
+            r = subprocess.run(
+                cmd, cwd=str(worktree_path),
+                capture_output=True, text=True, timeout=10,
+            )
+            result[key] = r.stdout.strip() if r.returncode == 0 else "?"
+        except Exception:
+            result[key] = "?"
+    try:
+        r = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=str(worktree_path),
+            capture_output=True, text=True, timeout=10,
+        )
+        if r.returncode == 0:
+            result["dirty"] = bool(r.stdout.strip())
+        else:
+            result["dirty"] = None
+            result["state_complete"] = False
+            result["errors"].append(
+                f"git status returncode={r.returncode}: {r.stderr.strip()[:80]}"
+            )
+    except Exception as exc:
+        result["dirty"] = None
+        result["state_complete"] = False
+        result["errors"].append(f"git status exception: {exc}")
+    return result
+
+
+def _derive_lifecycle_status(
+    receipt: "dict | None",
+    apply_receipt: "dict | None",
+    lifecycle_events: list,
+    worktree_state: "dict | None",
+) -> str:
+    """
+    Dérive le lifecycle_status de façon déterministe depuis les artifacts.
+    Hiérarchie : événements opérateur > receipt > apply_receipt > défaut.
+    KX108 decisions (ACT/HOLD/BLOCK) ≠ lifecycle_status (ABORTED, CLEANED, …).
+    """
+    # 1. Événements opérateur — états terminaux définitifs
+    for ev in reversed(lifecycle_events):
+        t = ev.get("type", "")
+        if t == "CLEANED":
+            return "CLEANED"
+        if t == "ABORTED":
+            return "ABORTED"
+
+    # 2. Depuis receipt.json (session build via cmd_execute)
+    if receipt:
+        if receipt.get("commit_status") == "COMMITTED":
+            return "COMMITTED"
+        kx108 = receipt.get("kx108_decision", "")
+        nha = receipt.get("next_human_action", "")
+        if kx108 == "ACT" or nha == "READY_FOR_COMMIT_REVIEW":
+            return "READY_FOR_COMMIT_REVIEW"
+        if kx108 == "BLOCK":
+            return "BLOCK"
+        if kx108 == "HOLD":
+            return "HOLD"
+        if receipt.get("approved_scope"):
+            wt = worktree_state or {}
+            return "WORKTREE_READY" if wt.get("exists") else "APPROVED"
+        return "PLAN_PROPOSED"
+
+    # 3. Depuis apply_receipt.json (session Obsidure)
+    if apply_receipt:
+        kx108 = apply_receipt.get("kx108_decision", "")
+        nha = apply_receipt.get("next_human_action", "")
+        if kx108 == "ACT" or nha == "READY_FOR_COMMIT_REVIEW":
+            return "READY_FOR_COMMIT_REVIEW"
+        if kx108 == "BLOCK":
+            return "BLOCK"
+        if kx108 == "HOLD":
+            return "HOLD"
+        if apply_receipt.get("apply_status") == "APPLIED":
+            return "APPLIED"
+
+    return "UNKNOWN"
+
+
+def _session_summary(session_id: str, state_dir: "Path | None" = None) -> dict:
+    """Construit un résumé dérivé (lecture seule) — projection de la vérité."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    lifecycle_events = _load_lifecycle_events(session_id, sdir)
+
+    src = receipt or apply_receipt or {}
+    wt_path_str: str = src.get("worktree", "")
+
+    worktree_state: "dict | None" = None
+    if wt_path_str and Path(wt_path_str).is_absolute():
+        worktree_state = _git_worktree_state(Path(wt_path_str))
+
+    lifecycle_status = _derive_lifecycle_status(
+        receipt, apply_receipt, lifecycle_events, worktree_state
+    )
+
+    ts = (receipt or {}).get("timestamps", {})
+    created_at = ts.get("start") or (apply_receipt or {}).get("created_at", "?")
+    updated_at = (
+        ts.get("resume_kx108") or ts.get("end")
+        or (apply_receipt or {}).get("written_at", "?")
+    )
+
+    return {
+        "session_id": session_id,
+        "objective": src.get("objective", "?"),
+        "lifecycle_status": lifecycle_status,
+        "kx108_decision": src.get("kx108_decision", "?"),
+        "next_human_action": src.get("next_human_action", "?"),
+        "branch": (receipt or {}).get("branch", "?"),
+        "worktree": wt_path_str or "?",
+        "created_at": created_at,
+        "updated_at": updated_at,
+        "commit_status": src.get("commit_status", "NOT_COMMITTED"),
+        "push_status": src.get("push_status", "NOT_PUSHED"),
+        "merge_status": src.get("merge_status", "NOT_MERGED"),
+        "decision_authority": src.get("decision_authority", DECISION_AUTHORITY),
+        "has_receipt": receipt is not None,
+        "has_apply_receipt": apply_receipt is not None,
+        "lifecycle_events_count": len(lifecycle_events),
+        "worktree_state": worktree_state,
+    }
+
+
+# ─── Commandes lifecycle ────────────────────────────────────────────────────
+
+def cmd_list(state_dir: "Path | None" = None) -> int:
+    """Liste toutes les sessions avec leur lifecycle_status dérivé."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- LIST")
+    print(f"  state_dir : {sdir}")
+    print(f"{sep}\n")
+    sessions = _list_sessions(sdir)
+    if not sessions:
+        print("  Aucune session build trouvée.")
+        return 0
+    hdr = f"  {'SESSION_ID':<30} {'STATUS':<26} {'KX108':<6} {'NEXT_ACTION'}"
+    print(hdr)
+    print("  " + "-" * 72)
+    for sid in sessions:
+        s = _session_summary(sid, sdir)
+        print(
+            f"  {sid:<30} {s['lifecycle_status']:<26} "
+            f"{s['kx108_decision']:<6} {s['next_human_action']}"
+        )
+    print(f"\n  {len(sessions)} session(s) — decision_authority = KX108_ONLY")
+    return 0
+
+
+def cmd_status(session_id: str, state_dir: "Path | None" = None) -> int:
+    """Vue courte déterministe d'une session."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    if _load_receipt(session_id, sdir) is None and _load_apply_receipt(session_id, sdir) is None:
+        print(f"  [STATUS_FAIL] Session inconnue : {session_id}")
+        return 2
+    s = _session_summary(session_id, sdir)
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- STATUS")
+    print(f"  session_id        : {session_id}")
+    print(f"{sep}")
+    print(f"  lifecycle_status  : {s['lifecycle_status']}")
+    print(f"  kx108_decision    : {s['kx108_decision']}")
+    print(f"  next_human_action : {s['next_human_action']}")
+    print(f"  commit_status     : {s['commit_status']}")
+    print(f"  branch            : {s['branch']}")
+    wt = s.get("worktree_state") or {}
+    if wt.get("exists"):
+        dirty_tag = " [DIRTY]" if wt.get("dirty") else ""
+        wt_label = f"présent{dirty_tag}"
+    elif s["worktree"] != "?":
+        wt_label = "absent"
+    else:
+        wt_label = "?"
+    print(f"  worktree          : {wt_label}")
+    print(f"  created_at        : {s['created_at']}")
+    print(f"  updated_at        : {s['updated_at']}")
+    print(f"  decision_authority: KX108_ONLY")
+    return 0
+
+
+def cmd_inspect(session_id: str, state_dir: "Path | None" = None) -> int:
+    """Vue détaillée et auditable. READ_ONLY."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    lifecycle_events = _load_lifecycle_events(session_id, sdir)
+    if receipt is None and apply_receipt is None:
+        print(f"  [INSPECT_FAIL] Session inconnue : {session_id}")
+        return 2
+    s = _session_summary(session_id, sdir)
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- INSPECT (READ_ONLY)")
+    print(f"  session_id        : {session_id}")
+    print(f"{sep}\n")
+    print("  [LIFECYCLE]")
+    print(f"  lifecycle_status  : {s['lifecycle_status']}")
+    print(f"  lifecycle_events  : {s['lifecycle_events_count']} event(s)")
+    for ev in lifecycle_events:
+        print(f"    [{ev.get('type','?')}] {ev.get('timestamp','?')} — {ev.get('by','?')}")
+    print("\n  [IDENTITE]")
+    print(f"  objective         : {s['objective']}")
+    print(f"  branch            : {s['branch']}")
+    print(f"  worktree          : {s['worktree']}")
+    print(f"  created_at        : {s['created_at']}")
+    print(f"  updated_at        : {s['updated_at']}")
+    print("\n  [KX108]")
+    print(f"  kx108_decision    : {s['kx108_decision']}")
+    print(f"  next_human_action : {s['next_human_action']}")
+    print(f"  decision_authority: KX108_ONLY")
+    print("\n  [COMMIT GUARD]")
+    print(f"  commit_status     : {s['commit_status']}")
+    print(f"  push_status       : {s['push_status']}")
+    print(f"  merge_status      : {s['merge_status']}")
+    print(f"  auto_commit       : NEVER")
+    print(f"  auto_push         : NEVER")
+    print(f"  auto_merge        : NEVER")
+    wt = s.get("worktree_state") or {}
+    if wt:
+        print("\n  [GIT STATE]")
+        print(f"  worktree exists   : {wt.get('exists', False)}")
+        if wt.get("exists"):
+            print(f"  branch            : {wt.get('branch', '?')}")
+            print(f"  HEAD              : {wt.get('head', '?')}")
+            print(f"  dirty             : {wt.get('dirty', False)}")
+    if receipt:
+        print("\n  [RECEIPT.JSON]")
+        for k in ("base_sha", "manifest_hash", "approved_scope", "domain",
+                  "diff_hash", "tests_results", "gates_results"):
+            v = receipt.get(k, "absent")
+            print(f"  {k:<20}: {str(v)[:80]}")
+    if apply_receipt:
+        print("\n  [APPLY_RECEIPT.JSON]")
+        for k in ("proposal_id", "proposal_hash", "apply_status",
+                  "scope_verification", "protected_paths_status"):
+            v = apply_receipt.get(k, "absent")
+            print(f"  {k:<24}: {str(v)[:80]}")
+    return 0
+
+
+def cmd_resume(
+    session_id: str,
+    repo_root: "Path | None" = None,
+    state_dir: "Path | None" = None,
+) -> int:
+    """
+    Reprend la session depuis le dernier état prouvé.
+    Ne re-joue jamais une étape déjà prouvée.
+    HOLD_SESSION_STATE_MISMATCH si la branche git diverge du receipt.
+    """
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    if receipt is None and apply_receipt is None:
+        print(f"  [RESUME_FAIL] Session inconnue : {session_id}")
+        return 2
+    s = _session_summary(session_id, sdir)
+    status = s["lifecycle_status"]
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- RESUME")
+    print(f"  session_id        : {session_id}")
+    print(f"  lifecycle_status  : {status}")
+    print(f"{sep}\n")
+    # Mismatch: worktree présent mais sur la mauvaise branche
+    wt = s.get("worktree_state") or {}
+    if receipt and wt.get("exists"):
+        expected = receipt.get("branch", "")
+        actual = wt.get("branch", "")
+        if expected and actual and actual != "?" and expected != actual:
+            print("  [HOLD_SESSION_STATE_MISMATCH]")
+            print(f"  Branche attendue  : {expected}")
+            print(f"  Branche réelle    : {actual}")
+            print("  Aucune reprise automatique. Inspecter manuellement.")
+            return 3
+    # États terminaux — rien à reprendre
+    if status in ("COMMITTED", "ABORTED", "CLEANED"):
+        print(f"  [NO_RESUME] Session en état {status} — rien à reprendre.")
+        return 0
+    # En attente d'approbation humaine
+    if status in ("PLAN_PROPOSED", "AWAITING_APPROVAL"):
+        print("  [AWAITING_APPROVAL] Session en attente d'approbation humaine.")
+        print(f"  Objectif : {s['objective']}")
+        print(f"  Pour approuver : python scripts/obsidia_build.py \"<obj>\" "
+              f"--approve HUMAN_APPROVED_BUILD_SESSION={session_id}:<manifest_hash>")
+        return 0
+    # Prête pour revue — rediriger
+    if status == "READY_FOR_COMMIT_REVIEW":
+        print("  [READY_FOR_COMMIT_REVIEW] Session prête pour revue humaine.")
+        print(f"  Utiliser : build review {session_id}")
+        print("  Ce command NE COMMIT PAS — decision_authority = KX108_ONLY")
+        return 0
+    # Bloquée — aucune reprise automatique
+    if status == "BLOCK":
+        print("  [BLOCK] Session bloquée par KX108 — aucune reprise automatique.")
+        print(f"  kx108_decision : {s['kx108_decision']}")
+        return 1
+    # HOLD — tenter reprise KX108 si le receipt est complet
+    if status == "HOLD":
+        required = [
+            "base_sha", "manifest_hash", "approved_scope",
+            "worktree", "branch", "diff_hash",
+        ]
+        if receipt and all(f in receipt for f in required):
+            print("  [RESUME_KX108] Reprise KX108 pour session HOLD...")
+            return cmd_resume_kx108(session_id, repo_root or REPO_ROOT, sdir)
+        print("  [HOLD] Données insuffisantes pour reprise KX108 automatique.")
+        print(f"  Inspecter avec : build inspect {session_id}")
+        return 1
+    # Autres états (WORKTREE_READY, APPROVED, APPLIED, UNKNOWN)
+    print(f"  [INFO] État {status} — aucune reprise automatique disponible en V1.")
+    print(f"  Inspecter avec : build inspect {session_id}")
+    return 0
+
+
+def cmd_review(session_id: str, state_dir: "Path | None" = None) -> int:
+    """Vue opérateur pour READY_FOR_COMMIT_REVIEW. Ne commit PAS."""
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    if receipt is None and apply_receipt is None:
+        print(f"  [REVIEW_FAIL] Session inconnue : {session_id}")
+        return 2
+    s = _session_summary(session_id, sdir)
+    status = s["lifecycle_status"]
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- REVIEW")
+    print(f"  session_id : {session_id}")
+    print(f"  status     : {status}")
+    print(f"{sep}\n")
+    if status != "READY_FOR_COMMIT_REVIEW":
+        print(f"  [REVIEW_NA] Session non en READY_FOR_COMMIT_REVIEW (état : {status})")
+        if status == "HOLD":
+            print(f"  → Reprendre avec : build resume {session_id}")
+        elif status == "BLOCK":
+            print("  → Session bloquée par KX108. Aucune action.")
+        elif status in ("ABORTED", "CLEANED"):
+            print("  → Session terminée.")
+        elif status == "COMMITTED":
+            print("  → Session déjà committée.")
+        return 1
+    src = receipt or apply_receipt or {}
+    print(f"  objective          : {s['objective']}")
+    print(f"  kx108_decision     : {src.get('kx108_decision', '?')}")
+    print(f"  branch             : {s['branch']}")
+    print(f"  worktree           : {s['worktree']}")
+    print(f"  commit_status      : {src.get('commit_status', 'NOT_COMMITTED')}")
+    print(f"  push_status        : {src.get('push_status', 'NOT_PUSHED')}")
+    print(f"  merge_status       : {src.get('merge_status', 'NOT_MERGED')}")
+    print(f"  decision_authority : KX108_ONLY")
+    wt = s.get("worktree_state") or {}
+    if wt.get("exists"):
+        print("\n  [GIT STATE WORKTREE]")
+        print(f"  HEAD    : {wt.get('head', '?')}")
+        print(f"  branch  : {wt.get('branch', '?')}")
+        dirty_lbl = "OUI [ATTENTION]" if wt.get("dirty") else "non"
+        print(f"  dirty   : {dirty_lbl}")
+    print("\n  [REVIEW_READY] Inspectez le diff dans le worktree avant de committer.")
+    print("  Ce command NE COMMIT PAS.")
+    print("  decision_authority = KX108_ONLY")
+    return 0
+
+
+def cmd_abort(
+    session_id: str,
+    reason: str = "",
+    state_dir: "Path | None" = None,
+) -> int:
+    """
+    Clôture logique de la session. Préserve tous les artifacts.
+    Écrit uniquement dans lifecycle_events.jsonl — receipts immutables.
+    HOLD si worktree dirty non préservé.
+    """
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    if receipt is None and apply_receipt is None:
+        print(f"  [ABORT_FAIL] Session inconnue : {session_id}")
+        return 2
+    lifecycle_events = _load_lifecycle_events(session_id, sdir)
+    src = receipt or apply_receipt or {}
+    wt_path_str: str = src.get("worktree", "")
+    wt_state: "dict | None" = None
+    if wt_path_str and Path(wt_path_str).is_absolute() and Path(wt_path_str).exists():
+        wt_state = _git_worktree_state(Path(wt_path_str))
+    status = _derive_lifecycle_status(receipt, apply_receipt, lifecycle_events, wt_state)
+    if status in ("COMMITTED", "CLEANED", "ABORTED"):
+        print(f"  [ABORT_FAIL] Session {session_id} déjà en état {status}.")
+        return 1
+    if wt_state and wt_state.get("exists"):
+        _dirty = wt_state.get("dirty")
+        if _dirty is True:
+            print("  [HOLD_ABORT_REQUIRES_HUMAN_REVIEW]")
+            print(f"  Worktree dirty : {wt_path_str}")
+            print("  Inspecter le diff avant d'aborter — aucune écriture effectuée.")
+            return 3
+        if _dirty is None:
+            print("  [HOLD_SESSION_GIT_STATE_UNKNOWN]")
+            print(f"  État git du worktree indéterminable : {wt_path_str}")
+            _errs = wt_state.get("errors", [])
+            if _errs:
+                print(f"  Erreurs : {_errs[:2]}")
+            print("  Impossible de vérifier si le worktree est propre — aucune écriture effectuée.")
+            return 3
+    _append_lifecycle_event(
+        session_id, "ABORTED",
+        {"reason": reason or "operator_abort", "previous_status": status},
+        sdir,
+    )
+    print(f"  [ABORTED] Session {session_id} — état ABORTED enregistré.")
+    print("  receipt.json et apply_receipt.json PRÉSERVÉS (immutables).")
+    print("  lifecycle_events.jsonl mis à jour.")
+    return 0
+
+
+def cmd_cleanup(session_id: str, state_dir: "Path | None" = None) -> int:
+    """
+    Nettoie les ressources opérationnelles (worktree git uniquement).
+    NE supprime PAS state_dir ni les preuves.
+    Autorisé uniquement si lifecycle_status ∈ {COMMITTED, ABORTED}.
+    """
+    sdir = state_dir or OBSIDIA_BUILD_STATE_DIR
+    receipt = _load_receipt(session_id, sdir)
+    apply_receipt = _load_apply_receipt(session_id, sdir)
+    if receipt is None and apply_receipt is None:
+        print(f"  [CLEANUP_FAIL] Session inconnue : {session_id}")
+        return 2
+    lifecycle_events = _load_lifecycle_events(session_id, sdir)
+    src = receipt or apply_receipt or {}
+    wt_path_str: str = src.get("worktree", "")
+    wt_state: "dict | None" = None
+    if wt_path_str and Path(wt_path_str).is_absolute() and Path(wt_path_str).exists():
+        wt_state = _git_worktree_state(Path(wt_path_str))
+    status = _derive_lifecycle_status(receipt, apply_receipt, lifecycle_events, wt_state)
+    sep = "=" * 70
+    print(f"\n{sep}")
+    print("  OBSIDIA BUILD -- CLEANUP")
+    print(f"  session_id : {session_id}")
+    print(f"  status     : {status}")
+    print(f"{sep}\n")
+    if status not in ("COMMITTED", "ABORTED"):
+        print("  [CLEANUP_REFUSED] Cleanup autorisé uniquement pour : COMMITTED, ABORTED")
+        print(f"  État actuel : {status}")
+        if status == "READY_FOR_COMMIT_REVIEW":
+            print("  → Committer d'abord, puis cleanup.")
+        elif status not in ("CLEANED",):
+            print(f"  → Aborter si nécessaire : build abort {session_id}")
+        return 1
+    session_path = sdir / session_id
+    preserved = [
+        f for f in ("receipt.json", "apply_receipt.json", "lifecycle_events.jsonl")
+        if (session_path / f).exists()
+    ]
+    if not preserved:
+        print(f"  [CLEANUP_REFUSED] Aucune preuve persistée pour {session_id}.")
+        return 1
+    cleaned_worktree = False
+    if wt_path_str and Path(wt_path_str).is_absolute() and Path(wt_path_str).exists():
+        # Relire l'état réel immédiatement avant suppression (fail-closed)
+        fresh_wt = _git_worktree_state(Path(wt_path_str))
+        _fresh_dirty = fresh_wt.get("dirty")
+        if not fresh_wt.get("state_complete", True):
+            print("  [HOLD_CLEANUP_REQUIRES_HUMAN_REVIEW]")
+            print(f"  État git du worktree indéterminable : {wt_path_str}")
+            _errs = fresh_wt.get("errors", [])
+            if _errs:
+                print(f"  Erreurs : {_errs[:2]}")
+            print("  Impossible de vérifier l'état du worktree — aucune suppression.")
+            return 3
+        if _fresh_dirty is True:
+            print("  [HOLD_CLEANUP_REQUIRES_HUMAN_REVIEW]")
+            print(f"  Worktree dirty : {wt_path_str}")
+            print("  Inspecter le diff avant cleanup — aucune suppression effectuée.")
+            return 3
+        # Worktree propre confirmé — suppression sans --force
+        try:
+            r = subprocess.run(
+                ["git", "worktree", "remove", wt_path_str],
+                cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=30,
+            )
+        except Exception as exc:
+            print(f"  [HOLD_CLEANUP_FAILED] Erreur suppression worktree : {exc}")
+            print("  Aucun événement CLEANED écrit.")
+            return 3
+        if r.returncode != 0:
+            print(f"  [HOLD_CLEANUP_FAILED] git worktree remove a échoué :")
+            print(f"  {r.stderr.strip()[:200]}")
+            print("  Aucun événement CLEANED écrit.")
+            return 3
+        # Postcondition : vérifier l'absence effective
+        if Path(wt_path_str).exists():
+            print("  [HOLD_CLEANUP_POSTCONDITION_FAILED] Worktree toujours présent après suppression.")
+            print(f"  Chemin : {wt_path_str}")
+            print("  Aucun événement CLEANED écrit.")
+            return 3
+        cleaned_worktree = True
+        print(f"  [OK] Worktree supprimé et vérifié absent : {wt_path_str}")
+    else:
+        print("  [INFO] Worktree absent ou non absolu — CLEANED sans suppression.")
+    _append_lifecycle_event(
+        session_id, "CLEANED",
+        {"worktree_removed": cleaned_worktree, "previous_status": status},
+        sdir,
+    )
+    print(f"  [CLEANED] Session {session_id}.")
+    print(f"  Preuves préservées dans : {session_path}")
+    print(f"  Fichiers préservés : {preserved}")
+    print("  State_dir CONSERVÉ — les preuves ne sont jamais supprimées.")
+    return 0
+
+
+# =============================================================================
 # Point d'entree CLI
 # =============================================================================
 

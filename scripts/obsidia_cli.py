@@ -7758,7 +7758,7 @@ def interactive_tui_shell(registry: dict) -> int:
         _first_tui = line.split(None, 1)
         if _first_tui and _first_tui[0].lower() == "build":
             _obj_tui = _first_tui[1].strip().strip('"').strip("'") if len(_first_tui) > 1 else ""
-            _build_output_tui = _handle_build_plan(objective=_obj_tui)
+            _build_output_tui = _dispatch_build(_obj_tui)
             main_lines = _build_output_tui.splitlines()
             plan_lines = ["=== BUILD ===", "", "mode: PLAN_PROPOSED",
                           "auto_commit: NEVER", "", "AUTORITE:", "  X108=FINAL"]
@@ -7814,6 +7814,85 @@ def _handle_build_plan(objective: str) -> str:
         return f"[BUILD_ERROR] {exc}"
 
 
+def _handle_build_list() -> str:
+    """Appelle cmd_list() et retourne le texte capturé."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_build")
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    _old = sys.stdout
+    sys.stdout = _buf = _io.StringIO()
+    try:
+        _mod.cmd_list()
+    except Exception as exc:
+        sys.stdout = _old
+        return f"[BUILD_ERROR] {exc}"
+    sys.stdout = _old
+    return _buf.getvalue() or "[LIST] Aucune session."
+
+
+def _handle_build_lifecycle(subcmd: str, session_id: str, extra: str = "") -> str:
+    """Appelle cmd_<subcmd>(session_id, …) et retourne le texte capturé."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_build")
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    _fn_map = {
+        "status":  lambda: _mod.cmd_status(session_id),
+        "inspect": lambda: _mod.cmd_inspect(session_id),
+        "resume":  lambda: _mod.cmd_resume(session_id),
+        "review":  lambda: _mod.cmd_review(session_id),
+        "abort":   lambda: _mod.cmd_abort(session_id, extra),
+        "cleanup": lambda: _mod.cmd_cleanup(session_id),
+    }
+    fn = _fn_map.get(subcmd)
+    if fn is None:
+        return f"[BUILD_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+    _old = sys.stdout
+    sys.stdout = _buf = _io.StringIO()
+    try:
+        fn()
+    except Exception as exc:
+        sys.stdout = _old
+        return f"[BUILD_ERROR] {exc}"
+    sys.stdout = _old
+    return _buf.getvalue() or f"[{subcmd.upper()}] Terminé."
+
+
+def _dispatch_build(rest: str) -> str:
+    """Dispatche 'build <subcmd> [arg]' vers lifecycle ou plan selon le sous-commande."""
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return _handle_build_plan(objective="")
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+    if subcmd == "list":
+        return _handle_build_list()
+    if subcmd in ("status", "inspect", "resume", "review", "cleanup"):
+        if not subarg:
+            return f"GUIDE: build {subcmd} <session_id>"
+        return _handle_build_lifecycle(subcmd, subarg.split()[0])
+    if subcmd == "abort":
+        if not subarg:
+            return "GUIDE: build abort <session_id> [reason]"
+        abort_parts = subarg.split(None, 1)
+        sid = abort_parts[0]
+        reason = abort_parts[1] if len(abort_parts) > 1 else ""
+        return _handle_build_lifecycle("abort", sid, reason)
+    # Aucun sous-commande lifecycle → objectif de plan
+    return _handle_build_plan(objective=rest)
+
+
 def interactive_shell(registry: dict) -> int:
     session_id = uuid.uuid4().hex[:8]
     last_plan: dict | None = None
@@ -7864,7 +7943,7 @@ def interactive_shell(registry: dict) -> int:
         # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
         if cmd0 == "build":
             _obj_plain = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
-            print(_handle_build_plan(objective=_obj_plain))
+            print(_dispatch_build(_obj_plain))
             continue
         if cmd0 in ("raw", "json") or low == "doctor":
             target = line if low == "doctor" else (
@@ -8708,7 +8787,7 @@ def main(argv: list[str]) -> int:
     # Commande build: import direct depuis obsidia_build, aucun subprocess
     if cmd0 == "build":
         _obj_main = " ".join(argv[1:]).strip().strip('"').strip("'")
-        print(_handle_build_plan(objective=_obj_main))
+        print(_dispatch_build(_obj_main))
         return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
