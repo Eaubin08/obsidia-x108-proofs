@@ -19,6 +19,8 @@ from __future__ import annotations
 import datetime
 import hashlib
 import json
+import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -254,4 +256,211 @@ def run_test_contract(contract: dict, repo_root: Path) -> dict:
         "aggregate_status": aggregate,
         "decision_authority": DECISION_AUTHORITY,
         "kx108_decision": None,
+    }
+
+
+# ─── CLOSE_TEST_CONTRACT_RESULT_PERSISTENCE_GAP_V0 ──────────────────────────
+#
+# TestContractResult est une PREUVE POST-AUTORITÉ — elle référence
+# l'exécution/l'approbation/le contrat déjà approuvés, elle ne les mute
+# JAMAIS. Persistance immuable, hors dépôt, publication atomique
+# (même modèle que les artefacts d'approbation CP9.2). Le magasin
+# n'émet jamais ACT/HOLD/BLOCK.
+
+RESULT_SCHEMA_VERSION = 1
+
+TEST_CONTRACT_RESULT_DIR = Path(os.environ.get("LOCALAPPDATA", "")) / "Obsidia" / "test_contract_results"
+
+_RESULT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
+
+_RESULT_BOUND_FIELDS = (
+    "result_schema_version", "result_id", "created_at", "started_at", "finished_at",
+    "batch_execution_id", "child_execution_id", "execution_authority_hash",
+    "approval_id", "test_contract_hash", "aggregate_status",
+    "required_check_count", "check_count", "checks", "decision_authority",
+)
+
+_RESULT_IDENTITY_SEED_FIELDS = (
+    "batch_execution_id", "child_execution_id", "execution_authority_hash",
+    "approval_id", "test_contract_hash", "started_at", "finished_at", "checks",
+)
+
+
+def compute_test_contract_result_hash(result: dict) -> str:
+    """
+    SHA256 COMPLET (64 hex). Exclut uniquement result_record_hash
+    lui-même. Toute mutation d'un seul check, du child, du contrat,
+    de l'autorité d'exécution ou de l'approbation change ce hash.
+    """
+    payload = json.dumps(
+        {k: result.get(k) for k in _RESULT_BOUND_FIELDS},
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _compute_result_identity(seed: dict) -> str:
+    """
+    Identité CONTENU (pas un UUID aléatoire) : deux tentatives avec
+    exactement les mêmes résultats/horodatages produisent le même
+    result_id (republication idempotente) ; toute tentative réellement
+    différente (résultats ou horodatages différents) produit un
+    result_id différent — plusieurs tentatives coexistent, aucune
+    n'écrase une tentative antérieure (APPEND_ONLY).
+    """
+    payload = json.dumps(
+        {k: seed.get(k) for k in _RESULT_IDENTITY_SEED_FIELDS},
+        sort_keys=True,
+    )
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"tcr-{digest[:32]}"
+
+
+def _result_path(result_id: "str | None", results_dir: Optional[Path] = None) -> Path:
+    """
+    Validation purement lexicale (jamais .resolve()) — sûre même sous
+    création concurrente de répertoire (cf. le même correctif appliqué
+    à _approval_path lors de CP9.2). La regex stricte interdit déjà tout
+    caractère de traversée ; la jointure ne peut donc structurellement
+    jamais sortir de `d`.
+    """
+    if not result_id or not _RESULT_ID_RE.match(result_id):
+        raise ValueError("INVALID_RESULT_ID")
+    d = results_dir or TEST_CONTRACT_RESULT_DIR
+    return d / f"{result_id}.json"
+
+
+def store_test_contract_result(record: dict, results_dir: Optional[Path] = None) -> dict:
+    """
+    Publication STRICTE, append-only, ATOMIQUE — même modèle que
+    store_approval_artifact (CP9.2) : fichier temporaire complet puis
+    publication via os.link (atomique, échoue si la cible existe déjà),
+    jamais de fichier partiel visible par un lecteur concurrent.
+      - publication réussie                -> STORED
+      - déjà existant, octets identiques   -> IDEMPOTENT_EXISTING_IDENTICAL
+      - déjà existant, octets différents   -> IMMUTABILITY_VIOLATION
+      - result_id malformé/hors magasin    -> INVALID_RESULT_ID
+    """
+    result_id = record.get("result_id")
+    try:
+        p = _result_path(result_id, results_dir)
+    except ValueError:
+        return {"status": "INVALID_RESULT_ID", "result_id": result_id}
+
+    payload = json.dumps(record, ensure_ascii=False, indent=2)
+    p.parent.mkdir(parents=True, exist_ok=True)
+
+    tmp_name = f".{p.name}.{os.getpid()}.{hashlib.sha256((payload + str(id(record))).encode('utf-8')).hexdigest()[:16]}.tmp"
+    tmp = p.parent / tmp_name
+    tmp.write_text(payload, encoding="utf-8")
+    try:
+        os.link(tmp, p)
+        return {"status": "STORED", "result_id": result_id}
+    except FileExistsError:
+        existing = p.read_text(encoding="utf-8")
+        if existing == payload:
+            return {"status": "IDEMPOTENT_EXISTING_IDENTICAL", "result_id": result_id}
+        return {"status": "IMMUTABILITY_VIOLATION", "result_id": result_id}
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def load_test_contract_result(result_id: str, results_dir: Optional[Path] = None) -> Optional[dict]:
+    """Charge un TestContractResult stocké — jamais construit à la volée."""
+    try:
+        p = _result_path(result_id, results_dir)
+    except ValueError:
+        return None
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def verify_test_contract_result_artifact(record: Optional[dict]) -> "tuple[bool, Optional[str]]":
+    """Intégrité STRUCTURELLE : schéma supporté, champs liés présents, hash stocké == recalculé."""
+    if record is None:
+        return False, "RESULT_MISSING"
+    if record.get("result_schema_version") != RESULT_SCHEMA_VERSION:
+        return False, "RESULT_SCHEMA_UNSUPPORTED"
+    for f in _RESULT_BOUND_FIELDS:
+        if f not in record:
+            return False, f"RESULT_FIELD_MISSING:{f}"
+    expected_hash = compute_test_contract_result_hash(record)
+    if record.get("result_record_hash") != expected_hash:
+        return False, "RESULT_RECORD_HASH_MISMATCH"
+    return True, None
+
+
+def run_and_persist_test_contract(
+    contract: dict,
+    repo_root: Path,
+    batch_execution_id: str,
+    child_execution_id: str,
+    execution_authority_hash: str,
+    approval_id: str,
+    results_dir: Optional[Path] = None,
+) -> dict:
+    """
+    Chemin de production unique : exécute EXACTEMENT le contrat fourni via
+    run_test_contract (aucune reconstruction), construit un
+    TestContractResult canonique lié à l'exécution/approbation/contrat
+    fournis, le publie atomiquement, puis le recharge et le vérifie.
+
+    N'émet jamais ACT/HOLD/BLOCK. Ne mute ni l'enveloppe d'exécution ni
+    l'artefact d'approbation — le résultat les RÉFÉRENCE uniquement.
+    """
+    started_at = _now()
+    run_result = run_test_contract(contract, repo_root)
+    finished_at = _now()
+
+    checks = run_result["checks"]
+    required_count = sum(1 for c in contract.get("checks", []) if c.get("required", True))
+
+    identity_seed = {
+        "batch_execution_id": batch_execution_id,
+        "child_execution_id": child_execution_id,
+        "execution_authority_hash": execution_authority_hash,
+        "approval_id": approval_id,
+        "test_contract_hash": run_result["test_contract_hash"],
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "checks": checks,
+    }
+    result_id = _compute_result_identity(identity_seed)
+
+    record: dict = {
+        "result_schema_version": RESULT_SCHEMA_VERSION,
+        "result_id": result_id,
+        "created_at": _now(),
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "batch_execution_id": batch_execution_id,
+        "child_execution_id": child_execution_id,
+        "execution_authority_hash": execution_authority_hash,
+        "approval_id": approval_id,
+        "test_contract_hash": run_result["test_contract_hash"],
+        "aggregate_status": run_result["aggregate_status"],
+        "required_check_count": required_count,
+        "check_count": len(checks),
+        "checks": checks,
+        "decision_authority": DECISION_AUTHORITY,
+    }
+    record["result_record_hash"] = compute_test_contract_result_hash(record)
+
+    store_result = store_test_contract_result(record, results_dir)
+    reloaded = load_test_contract_result(result_id, results_dir)
+    verify_ok, verify_reason = verify_test_contract_result_artifact(reloaded)
+
+    return {
+        "result_id": result_id,
+        "store_result": store_result,
+        "record": reloaded,
+        "verify_ok": verify_ok,
+        "verify_reason": verify_reason,
     }
