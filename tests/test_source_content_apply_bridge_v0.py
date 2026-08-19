@@ -36,6 +36,7 @@ import obsidia_branching_ledger as L  # noqa: E402
 import obsidia_batch_selector as S  # noqa: E402
 import obsidia_batch_execution as E  # noqa: E402
 import obsidia_content_apply as C  # noqa: E402
+import obsidia_test_contract as TC  # noqa: E402
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -101,6 +102,16 @@ def _create_synthetic_approval(envelope: dict, execution_dir: Path, approval_id:
     return record["approval_id"]
 
 
+def _minimal_test_contract(candidate_entry_id: str, batch_id: str, target_path: str) -> dict:
+    """Contrat de test synthétique minimal — un check toujours réussi (python -c 'pass')."""
+    check = TC.build_check(
+        "trivial-noop", TC.CHECK_TYPE_SUBPROCESS,
+        argv=[sys.executable, "-c", "pass"], cwd_policy="REPO_ROOT",
+        expected_exit_code=0, required=True, timeout_seconds=10,
+    )
+    return TC.build_test_contract("synthetic-contract", candidate_entry_id, batch_id, target_path, [check])
+
+
 def _prepare_git_flow(synthetic_repo, tmp_path, target_rel="dst/target.py"):
     """Ledger réel -> proposal réelle -> envelope réelle -> approbation synthétique. Tout isolé."""
     ledger_dir = tmp_path / "ledger"
@@ -122,9 +133,10 @@ def _prepare_git_flow(synthetic_repo, tmp_path, target_rel="dst/target.py"):
     )
     assert proposal["selected_count"] == 1
 
+    contract = _minimal_test_contract(reg["ledger_entry_id"], proposal["batch_id"], target_rel)
     envelope = E.prepare_execution(
         proposal["batch_id"], ledger_dir=ledger_dir, selector_dir=selector_dir,
-        execution_dir=execution_dir, repo_root=synthetic_repo,
+        execution_dir=execution_dir, repo_root=synthetic_repo, test_contract=contract,
     )
     assert envelope["integrity_verified"] is True
     child = envelope["children"][0]
@@ -173,9 +185,10 @@ def _prepare_filesystem_flow(tmp_path, source_content=b"NEW_FS_CONTENT\n", targe
     )
     assert proposal["selected_count"] == 1
 
+    contract = _minimal_test_contract(reg["ledger_entry_id"], proposal["batch_id"], "target.py")
     envelope = E.prepare_execution(
         proposal["batch_id"], ledger_dir=ledger_dir, selector_dir=selector_dir,
-        execution_dir=execution_dir, repo_root=repo_root,
+        execution_dir=execution_dir, repo_root=repo_root, test_contract=contract,
     )
     assert envelope["integrity_verified"] is True
     child = envelope["children"][0]

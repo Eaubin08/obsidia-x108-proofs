@@ -195,6 +195,7 @@ def compute_execution_authority_hash(envelope: dict) -> str:
                 for e in (envelope.get("dependency_edges") or [])
             ),
             "children": children_authority,
+            "test_contract_hash": envelope.get("test_contract_hash"),
             "decision_authority": envelope.get("decision_authority"),
         },
         sort_keys=True,
@@ -219,6 +220,15 @@ def _selector_module():
     if _scripts not in _sys.path:
         _sys.path.insert(0, _scripts)
     import obsidia_batch_selector as _mod
+    return _mod
+
+
+def _test_contract_module():
+    import sys as _sys
+    _scripts = str(Path(__file__).resolve().parent)
+    if _scripts not in _sys.path:
+        _sys.path.insert(0, _scripts)
+    import obsidia_test_contract as _mod
     return _mod
 
 
@@ -707,12 +717,20 @@ def prepare_execution(
     selector_dir: Optional[Path] = None,
     execution_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    test_contract: Optional[dict] = None,
 ) -> dict:
     """
     Charge le BatchProposal stocké, vérifie son intégrité, construit
     l'enveloppe d'exécution (parent non-souverain) + un ChildExecutionRecord
     par candidat sélectionné, applique les gates de matérialité/opération.
     Ne crée AUCUNE session, n'invoque AUCUN Obsidure, AUCUN KX108.
+
+    test_contract (optionnel, additif — PREPARE_ACD01_EXECUTION_TEST_
+    CONTRACT_V0) : contrat de test immuable attaché à l'enveloppe AVANT
+    tout calcul d'autorité d'exécution. Son hash complet (SHA256) est
+    lié dans execution_authority_hash — l'approbation humaine engage
+    donc transitivement l'EXACT contrat de test, pas seulement son ID.
+    Absent (None) pour les appels existants — comportement inchangé.
     """
     sel = _selector_module()
     proposal = sel._load_batch(batch_id, selector_dir)
@@ -846,6 +864,14 @@ def prepare_execution(
         "execution_approval_status": None,
         "execution_approval_id": None,
     }
+
+    if test_contract is not None:
+        tc_mod = _test_contract_module()
+        envelope["test_contract"] = test_contract
+        envelope["test_contract_hash"] = tc_mod.compute_test_contract_hash(test_contract)
+    else:
+        envelope["test_contract"] = None
+        envelope["test_contract_hash"] = None
 
     envelope["execution_authority_hash"] = compute_execution_authority_hash(envelope)
 

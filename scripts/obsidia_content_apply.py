@@ -76,6 +76,7 @@ CHILD_NOT_FOUND            = "CHILD_NOT_FOUND"
 CHILD_NOT_READY            = "CHILD_NOT_READY"
 NOT_READY_STRONG_PRECONDITION_REQUIRED = "NOT_READY_STRONG_PRECONDITION_REQUIRED"
 APPROVAL_EXECUTION_CONTENT_MISMATCH = "APPROVAL_EXECUTION_CONTENT_MISMATCH"
+NOT_READY_TEST_CONTRACT_REQUIRED = "NOT_READY_TEST_CONTRACT_REQUIRED"
 
 
 def _now() -> str:
@@ -407,6 +408,13 @@ def apply_validated_source_content(
         return {"status": ENVELOPE_NOT_FOUND, "batch_execution_id": batch_execution_id}
     if not envelope.get("integrity_verified"):
         return {"status": ENVELOPE_NOT_FOUND, "reason": "ENVELOPE_INTEGRITY_NOT_VERIFIED"}
+    if not envelope.get("test_contract_hash"):
+        # Toute nouvelle exécution de production destinée à une écriture
+        # de contenu réelle doit porter un contrat de test immuable —
+        # cf. PREPARE_ACD01_EXECUTION_TEST_CONTRACT_V0 §14. Ne s'applique
+        # pas aux enveloppes/API historiques n'impliquant aucune écriture
+        # de contenu réelle (elles n'appellent jamais ce pont).
+        return {"status": NOT_READY_TEST_CONTRACT_REQUIRED}
 
     approval = E.load_approval_artifact(approval_id, execution_dir) if approval_id else None
     ok, reason = E._validate_approval(approval, envelope)
