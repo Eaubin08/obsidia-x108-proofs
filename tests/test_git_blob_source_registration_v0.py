@@ -731,6 +731,7 @@ class TestRepositoryIdentityBinding:
             "execution_approval_status": None,
             "execution_approval_id": None,
         }
+        envelope["execution_authority_hash"] = E.compute_execution_authority_hash(envelope)
         E._save_execution(envelope, execution_dir)
 
         approval = {
@@ -741,6 +742,7 @@ class TestRepositoryIdentityBinding:
             "batch_id": "b1",
             "batch_hash": "h1",
             "candidate_scope_hash": "s1",
+            "execution_authority_hash": envelope["execution_authority_hash"],
             "approval_status": E.APPROVED_FOR_BOUNDED_EXECUTION,
             "approved_by": "HUMAN",
             "decision_authority": E.DECISION_AUTHORITY,

@@ -143,6 +143,65 @@ def compute_child_precondition_integrity_hash(child: dict) -> str:
     return _sha16(payload)
 
 
+_EXECUTION_AUTHORITY_CHILD_FIELDS = (
+    "candidate_entry_id", "child_execution_id",
+    "source_kind", "source_hash", "source_content_sha256",
+    "source_repository_identity", "source_git_commit_sha",
+    "source_git_blob_sha", "source_git_historical_path",
+    "target_path", "target_pre_hash", "target_pre_sha256",
+    "operation_type",
+)
+
+
+def compute_execution_authority_hash(envelope: dict) -> str:
+    """
+    execution_authority_hash — identité IMMUABLE du contenu d'exécution
+    présenté à l'approbation humaine (HUMAN_APPROVAL_CONTENT_BINDING).
+
+    Distincte de :
+      - precondition_integrity_hash (CORRUPTION_DETECTION_NOT_AUTHORITY,
+        par enfant, détecte une incohérence LOCALE mais ne prouve rien
+        sur ce qui a été présenté à l'humain) ;
+      - approval_record_hash (APPROVAL_ARTIFACT_INTEGRITY, protège
+        l'artefact d'approbation lui-même, ne prouve pas CE QUI a été
+        approuvé).
+
+    SHA256 COMPLET (64 hex), jamais tronqué — c'est la primitive de
+    liaison d'autorité humaine. Calculée par prepare_execution, AVANT
+    toute approbation ; recalculée avant toute écriture de contenu.
+
+    Ne lie JAMAIS un résultat runtime mutable (execution_status après
+    run, kx108_decision, receipts d'apply/rollback, hash post-écriture,
+    horodatages qui changent légitimement) — uniquement les faits
+    d'autorité stables (source, cible, précondition, opération, portée).
+    """
+    children_authority = []
+    for c in envelope.get("children", []):
+        children_authority.append({k: c.get(k) for k in _EXECUTION_AUTHORITY_CHILD_FIELDS})
+    children_authority.sort(
+        key=lambda d: (d.get("candidate_entry_id") or "", d.get("child_execution_id") or "")
+    )
+
+    payload = json.dumps(
+        {
+            "batch_execution_id": envelope.get("batch_execution_id"),
+            "batch_id": envelope.get("batch_id"),
+            "batch_hash": envelope.get("batch_hash"),
+            "batch_hash_version": envelope.get("batch_hash_version"),
+            "candidate_scope_hash": envelope.get("candidate_scope_hash"),
+            "execution_order": envelope.get("execution_order"),
+            "dependency_edges": sorted(
+                (e.get("from", ""), e.get("to", ""), e.get("type", ""))
+                for e in (envelope.get("dependency_edges") or [])
+            ),
+            "children": children_authority,
+            "decision_authority": envelope.get("decision_authority"),
+        },
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
@@ -270,6 +329,7 @@ def _approval_path(approval_id: str, execution_dir: Optional[Path] = None) -> Pa
 _APPROVAL_BOUND_FIELDS = (
     "approval_id", "approval_schema_version", "created_at",
     "batch_execution_id", "batch_id", "batch_hash", "candidate_scope_hash",
+    "execution_authority_hash",
     "approved_by", "approval_status", "decision_authority",
 )
 
@@ -393,6 +453,12 @@ def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, 
         return False, "APPROVAL_WRONG_BATCH_HASH"
     if approval.get("candidate_scope_hash") != envelope.get("candidate_scope_hash"):
         return False, "APPROVAL_WRONG_SCOPE_HASH"
+    # Liaison au CONTENU d'exécution (HUMAN_APPROVAL_CONTENT_BINDING) —
+    # distincte de batch_hash (identité Ledger/Proposal) : couvre les
+    # faits capturés à prepare_execution (précondition de cible complète,
+    # provenance source, opération) que batch_hash ne lie pas.
+    if approval.get("execution_authority_hash") != envelope.get("execution_authority_hash"):
+        return False, "APPROVAL_EXECUTION_CONTENT_MISMATCH"
     if approval.get("approval_status") != APPROVED_FOR_BOUNDED_EXECUTION:
         return False, "APPROVAL_STATUS_INVALID"
     if approval.get("approved_by") != "HUMAN":
@@ -754,6 +820,7 @@ def prepare_execution(
 
         "batch_id": batch_id,
         "batch_hash": proposal.get("batch_hash"),
+        "batch_hash_version": proposal.get("batch_hash_version"),
         "candidate_scope_hash": proposal.get("candidate_scope_hash"),
 
         "human_execution_approved": False,
@@ -779,6 +846,8 @@ def prepare_execution(
         "execution_approval_status": None,
         "execution_approval_id": None,
     }
+
+    envelope["execution_authority_hash"] = compute_execution_authority_hash(envelope)
 
     _save_execution(envelope, execution_dir)
     return envelope

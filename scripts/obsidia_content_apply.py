@@ -75,6 +75,7 @@ ENVELOPE_NOT_FOUND         = "ENVELOPE_NOT_FOUND"
 CHILD_NOT_FOUND            = "CHILD_NOT_FOUND"
 CHILD_NOT_READY            = "CHILD_NOT_READY"
 NOT_READY_STRONG_PRECONDITION_REQUIRED = "NOT_READY_STRONG_PRECONDITION_REQUIRED"
+APPROVAL_EXECUTION_CONTENT_MISMATCH = "APPROVAL_EXECUTION_CONTENT_MISMATCH"
 
 
 def _now() -> str:
@@ -411,6 +412,20 @@ def apply_validated_source_content(
     ok, reason = E._validate_approval(approval, envelope)
     if not ok:
         return {"status": APPROVAL_INVALID, "reason": reason}
+
+    # Rebinding pré-écriture (§9 BIND_HUMAN_APPROVAL_TO_EXECUTION_CONTENT_V0) :
+    # recalcule execution_authority_hash à partir des faits d'autorité
+    # ACTUELS de l'enveloppe chargée — exige recalculé == enveloppe stockée
+    # == approbation. _validate_approval ne compare que approbation vs
+    # enveloppe STOCKÉE ; ce recalcul détecte en plus une enveloppe dont le
+    # champ execution_authority_hash stocké aurait été rendu cohérent avec
+    # un contenu enfant tamperé (target_pre_sha256, source, opération...)
+    # sans que l'approbation externe, elle, n'ait été mise à jour.
+    recomputed_authority_hash = E.compute_execution_authority_hash(envelope)
+    if recomputed_authority_hash != envelope.get("execution_authority_hash"):
+        return {"status": APPROVAL_EXECUTION_CONTENT_MISMATCH, "reason": "ENVELOPE_CONTENT_DRIFTED"}
+    if recomputed_authority_hash != approval.get("execution_authority_hash"):
+        return {"status": APPROVAL_EXECUTION_CONTENT_MISMATCH, "reason": "APPROVAL_CONTENT_MISMATCH"}
 
     child = next(
         (c for c in envelope.get("children", []) if c.get("child_execution_id") == child_execution_id),

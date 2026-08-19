@@ -20,6 +20,7 @@ réel, jamais le Ledger/Selector réels) :
 from __future__ import annotations
 
 import base64
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -84,6 +85,7 @@ def _build_synthetic_approval_record(envelope: dict, approval_id: str = "test-ap
         "batch_id": envelope["batch_id"],
         "batch_hash": envelope["batch_hash"],
         "candidate_scope_hash": envelope["candidate_scope_hash"],
+        "execution_authority_hash": envelope.get("execution_authority_hash"),
         "approved_by": "HUMAN",
         "approval_status": E.APPROVED_FOR_BOUNDED_EXECUTION,
         "decision_authority": E.DECISION_AUTHORITY,
@@ -285,11 +287,11 @@ class TestDriftAtWriteTime:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        # Detecte par l'empreinte d'integrite precondition/provenance
-        # (verifiee plus tot que le TOCTOU source specifique) — meme
-        # propriete de securite (aucune ecriture), gate plus generique.
-        assert result["status"] == C.BATCH_BINDING_MISMATCH
-        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
+        # Detecte desormais par la liaison d'autorite d'execution (le champ
+        # tampere modifie execution_authority_hash) — verifiee AVANT
+        # l'empreinte d'integrite locale et le TOCTOU source specifique.
+        # Meme propriete de securite (aucune ecriture), gate plus precoce.
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
         target = synthetic_repo / "dst" / "target.py"
         assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
 
@@ -304,8 +306,7 @@ class TestDriftAtWriteTime:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.BATCH_BINDING_MISMATCH
-        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
 
 
 # ─── B. Confinement de cible — protégé / hors dépôt / racine ────────────────
@@ -362,10 +363,9 @@ class TestScopeEscape:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        # Detecte par l'empreinte d'integrite precondition (target_path en
+        # Detecte par la liaison d'autorite d'execution (target_path en
         # fait partie) avant meme d'atteindre la verification de portee.
-        assert result["status"] == C.BATCH_BINDING_MISMATCH
-        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
         assert not (synthetic_repo / "dst" / "other.py").exists()
         assert (synthetic_repo / "dst" / "target.py").read_bytes() == b"OLD_TARGET_CONTENT\n"
 
@@ -584,22 +584,21 @@ class TestFullTargetPreconditionPersisted:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.BATCH_BINDING_MISMATCH
-        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
         target = synthetic_repo / "dst" / "target.py"
         assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
 
 
 class TestTruncatedHashNotSufficientAuthority:
-    def test_correct_truncated_prefix_but_wrong_full_sha256_rejected(self, synthetic_repo, tmp_path):
+    def test_correct_truncated_prefix_but_wrong_full_sha256_rejected_by_execution_authority(
+        self, synthetic_repo, tmp_path,
+    ):
         """
-        §7 — construit un child ou le prefixe tronque de compatibilite
-        (target_pre_hash) est EXACT, mais le SHA256 complet est
-        volontairement faux, ET l'empreinte d'integrite est recalculee
-        pour rester coherente avec ce faux SHA256 complet (simulant un
-        attaquant capable de maintenir cette coherence interne). Le
-        SHA256 complet reste neanmoins l'autorite : le prefixe tronque
-        correct seul ne peut jamais suffire.
+        §7 — child ou le prefixe tronque de compatibilite (target_pre_hash)
+        est EXACT, mais le SHA256 complet est volontairement faux. Meme
+        sans toucher a l'empreinte d'autorite d'execution, la liaison
+        d'approbation au contenu (execution_authority_hash) detecte deja
+        la divergence — le prefixe tronque correct seul ne suffit jamais.
         """
         ctx = _prepare_git_flow(synthetic_repo, tmp_path)
         real_full = C._full_sha256(b"OLD_TARGET_CONTENT\n")
@@ -607,9 +606,7 @@ class TestTruncatedHashNotSufficientAuthority:
         assert forged_full != real_full
 
         ctx["child"]["target_pre_sha256"] = forged_full
-        # target_pre_hash (prefixe) reste correct/inchange
         assert ctx["child"]["target_pre_hash"] == real_full[:16]
-        ctx["child"]["precondition_integrity_hash"] = E.compute_child_precondition_integrity_hash(ctx["child"])
         E._save_execution(ctx["envelope"], ctx["execution_dir"])
 
         result = C.apply_validated_source_content(
@@ -618,9 +615,43 @@ class TestTruncatedHashNotSufficientAuthority:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        # L'empreinte d'integrite est maintenant coherente (recalculee) —
-        # c'est le SHA256 complet, comparé aux octets REELS de la cible,
-        # qui refuse l'ecriture.
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
+        target = synthetic_repo / "dst" / "target.py"
+        assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
+
+    def test_wrong_full_sha256_still_rejected_even_if_authority_hashes_kept_consistent(
+        self, synthetic_repo, tmp_path,
+    ):
+        """
+        Défense en profondeur : même dans le scénario extrême où un
+        attaquant maintient TOUTES les empreintes internes cohérentes
+        (précondition locale ET execution_authority_hash de l'enveloppe
+        ET une nouvelle approbation forgée assortie), le TOCTOU sur les
+        octets RÉELS de la cible (SHA256 complet) refuse quand même
+        l'écriture — c'est la dernière ligne de défense, indépendante de
+        toute empreinte déclarative.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        real_full = C._full_sha256(b"OLD_TARGET_CONTENT\n")
+        forged_full = real_full[:16] + "0" * 48
+        assert forged_full != real_full
+
+        ctx["child"]["target_pre_sha256"] = forged_full
+        ctx["child"]["precondition_integrity_hash"] = E.compute_child_precondition_integrity_hash(ctx["child"])
+        ctx["envelope"]["execution_authority_hash"] = E.compute_execution_authority_hash(ctx["envelope"])
+        E._save_execution(ctx["envelope"], ctx["execution_dir"])
+
+        forged_approval_id = "forged-consistent-approval"
+        forged_record = _build_synthetic_approval_record(ctx["envelope"], forged_approval_id)
+        store_result = E.store_approval_artifact(forged_record, ctx["execution_dir"])
+        assert store_result["status"] == "STORED"
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            forged_approval_id, execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
         assert result["status"] == C.TARGET_PRECONDITION_MISMATCH
         assert result["expected_target_pre_sha256"] == forged_full
         assert result["actual_target_sha256"] == real_full
@@ -629,10 +660,48 @@ class TestTruncatedHashNotSufficientAuthority:
 
 
 class TestLegacyExecutionMissingFullPrecondition:
+    def test_legacy_approval_without_execution_authority_hash_refused(self, synthetic_repo, tmp_path):
+        """
+        §17 — une approbation "légataire" (créée avant ce durcissement,
+        sans le champ execution_authority_hash) ne peut jamais autoriser
+        une écriture réelle, même si tous les autres champs sont exacts.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        legacy_record = {
+            "approval_id": "legacy-approval",
+            "approval_schema_version": E.SCHEMA_VERSION,
+            "created_at": "2020-01-01T00:00:00+00:00",
+            "batch_execution_id": ctx["envelope"]["batch_execution_id"],
+            "batch_id": ctx["envelope"]["batch_id"],
+            "batch_hash": ctx["envelope"]["batch_hash"],
+            "candidate_scope_hash": ctx["envelope"]["candidate_scope_hash"],
+            # pas de execution_authority_hash — forme legataire
+            "approved_by": "HUMAN",
+            "approval_status": E.APPROVED_FOR_BOUNDED_EXECUTION,
+            "decision_authority": E.DECISION_AUTHORITY,
+        }
+        legacy_record["approval_record_hash"] = E.compute_approval_record_hash(legacy_record)
+        store_result = E.store_approval_artifact(legacy_record, ctx["execution_dir"])
+        assert store_result["status"] == "STORED"
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            "legacy-approval", execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
+        assert result["status"] == C.APPROVAL_INVALID
+        assert "execution_authority_hash" in result["reason"]
+        target = synthetic_repo / "dst" / "target.py"
+        assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
+
     def test_legacy_child_without_target_pre_sha256_refused(self, synthetic_repo, tmp_path):
         ctx = _prepare_git_flow(synthetic_repo, tmp_path)
         # Simule une enveloppe créée AVANT ce durcissement : le champ
-        # target_pre_sha256 (et l'empreinte qui en dépend) est absent.
+        # target_pre_sha256 (et l'empreinte qui en dépend) est absent —
+        # détecté ici par la dérive de execution_authority_hash au niveau
+        # enveloppe (couche la plus précoce), qui couvre transitivement
+        # cette même absence.
         del ctx["child"]["target_pre_sha256"]
         del ctx["child"]["precondition_integrity_hash"]
         E._save_execution(ctx["envelope"], ctx["execution_dir"])
@@ -643,7 +712,7 @@ class TestLegacyExecutionMissingFullPrecondition:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.NOT_READY_STRONG_PRECONDITION_REQUIRED
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
         target = synthetic_repo / "dst" / "target.py"
         assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
 
@@ -762,3 +831,70 @@ class TestNoReceiptNoIdempotentSuccess:
         )
         assert result["status"] != C.ALREADY_APPLIED_SAME_CONTENT
         assert result["status"] == C.TARGET_PRECONDITION_MISMATCH
+
+
+# ─── L. Déterminisme / attaque même execution_id / intégrité artefact ───────
+
+class TestExecutionAuthorityHashDeterminism:
+    def test_identical_envelope_content_same_hash(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        h1 = E.compute_execution_authority_hash(ctx["envelope"])
+        h2 = E.compute_execution_authority_hash(ctx["envelope"])
+        assert h1 == h2
+        assert len(h1) == 64  # SHA256 complet, jamais tronqué
+
+    def test_different_target_precondition_different_hash(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        h1 = E.compute_execution_authority_hash(ctx["envelope"])
+        mutated = json.loads(json.dumps(ctx["envelope"]))
+        mutated["children"][0]["target_pre_sha256"] = "0" * 64
+        h2 = E.compute_execution_authority_hash(mutated)
+        assert h1 != h2
+
+    def test_hash_persisted_matches_recomputation_on_fresh_envelope(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        assert ctx["envelope"]["execution_authority_hash"] == E.compute_execution_authority_hash(ctx["envelope"])
+
+
+class TestSameExecutionIdDifferentContentRejected:
+    def test_same_batch_execution_id_mutated_content_rejected(self, synthetic_repo, tmp_path):
+        """
+        §14 — batch_execution_id identique (X) mais contenu d'autorité
+        modifié après approbation (H1 -> H2) : l'approbation qui liait H1
+        DOIT rejeter, même si X n'a pas changé.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        h1 = ctx["envelope"]["execution_authority_hash"]
+
+        ctx["child"]["target_path"] = "dst/renamed_target.py"
+        E._save_execution(ctx["envelope"], ctx["execution_dir"])
+        h2 = E.compute_execution_authority_hash(ctx["envelope"])
+        assert h1 != h2
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
+        assert result["status"] == C.APPROVAL_EXECUTION_CONTENT_MISMATCH
+
+
+class TestApprovalArtifactHashIntegrity:
+    def test_tampered_execution_authority_hash_on_stored_approval_fails_artifact_integrity(
+        self, synthetic_repo, tmp_path,
+    ):
+        """
+        Modifier execution_authority_hash DANS l'artefact d'approbation
+        stocké (sans recalculer approval_record_hash en conséquence) doit
+        échouer l'intégrité structurelle existante de l'artefact — le même
+        mécanisme (CP9.2) protège désormais aussi ce nouveau champ.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        stored = E.load_approval_artifact(ctx["approval_id"], ctx["execution_dir"])
+        assert stored is not None
+        stored["execution_authority_hash"] = "f" * 64  # falsifie sans recalcul du hash d'artefact
+
+        ok, reason = E.verify_approval_artifact(stored)
+        assert ok is False
+        assert reason == "APPROVAL_RECORD_HASH_MISMATCH"
