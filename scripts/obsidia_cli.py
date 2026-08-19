@@ -8058,7 +8058,9 @@ def _dispatch_ledger(rest: str, raw_tokens: "list[str] | None" = None) -> str:
             "GUIDE: ledger list | ingest <session_id> | status <entry_id> "
             "| inspect <entry_id> | history <entry_id> "
             "| find --path <path> | find --session <session_id> "
-            "| register-source <path> [--domain D] [--target T] [--reason TEXT]"
+            "| register-source <path> [--domain D] [--target T] [--reason TEXT] "
+            "| register-git-source --commit <ref> --path <historical-path> "
+            "[--target T] [--domain D] [--reason TEXT]"
         )
     subcmd = parts[0].lower()
     subarg = parts[1].strip() if len(parts) > 1 else ""
@@ -8142,6 +8144,59 @@ def _dispatch_ledger(rest: str, raw_tokens: "list[str] | None" = None) -> str:
             source_path,
             target_domain=domain,
             target_path=target,
+            reason=reason,
+        )
+        return json.dumps(result, ensure_ascii=False)
+    if subcmd == "register-git-source":
+        # Aucun positionnel : tout est explicite via flags, pour éviter
+        # toute ambiguïté entre ref/chemin/cible (aucun checkout implicite).
+        gs_tokens = list(raw_tokens[1:]) if raw_tokens is not None else subarg.split()
+        commit_ref = None
+        historical_path = None
+        target = None
+        domain = None
+        reason: "str | None" = None
+        i = 0
+        while i < len(gs_tokens):
+            tok = gs_tokens[i]
+            if tok == "--commit":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --commit requiert une valeur"
+                commit_ref = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--path":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --path requiert une valeur"
+                historical_path = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--target":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --target requiert une valeur"
+                target = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--domain":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --domain requiert une valeur"
+                domain = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--reason":
+                if raw_tokens is not None:
+                    if i + 1 >= len(gs_tokens):
+                        return "[LEDGER_CLI_ERROR] --reason requiert une valeur"
+                    reason = gs_tokens[i + 1]
+                    i += 2
+                else:
+                    reason = " ".join(gs_tokens[i + 1:]).strip().strip('"').strip("'") or None
+                    i = len(gs_tokens)
+            else:
+                return f"[LEDGER_CLI_ERROR] Flag inconnu : {tok}"
+        if not commit_ref or not historical_path:
+            return "GUIDE: ledger register-git-source --commit <ref> --path <historical-path> [--target T] [--domain D] [--reason TEXT]"
+        result = _mod.register_git_blob_source(
+            commit_ref,
+            historical_path,
+            target_path=target,
+            target_domain=domain,
             reason=reason,
         )
         return json.dumps(result, ensure_ascii=False)

@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 import datetime
 from pathlib import Path
 from typing import Optional
@@ -30,6 +31,12 @@ from typing import Optional
 SCHEMA_VERSION = "V0"
 DECISION_AUTHORITY = "KX108_ONLY"
 LEDGER_DIR = Path(os.environ.get("LOCALAPPDATA", "")) / "Obsidia" / "branching_ledger"
+
+# Kinds de source Ledger — additif, la sémantique filesystem existante ne
+# change pas. Une entrée sans "source_kind" (legacy) est interprétée comme
+# FILESYSTEM_FILE partout en aval.
+SOURCE_KIND_FILESYSTEM = "FILESYSTEM_FILE"
+SOURCE_KIND_GIT_BLOB = "GIT_BLOB"
 
 PROTECTED_PATHS = frozenset([
     "proofs/",
@@ -624,6 +631,273 @@ def register_source(
     }, ledger_dir)
 
     return {"status": "DISCOVERED", "ledger_entry_id": entry_id}
+
+
+# ─── Source Git immuable (GIT_BLOB) ─────────────────────────────────────────
+#
+# Un blob Git est un matériau source réel et immuable. On ne le matérialise
+# JAMAIS dans le dépôt pour satisfaire une API pensée pour des fichiers
+# filesystem — on lit ses octets via la plomberie Git en lecture seule
+# (rev-parse / ls-tree / cat-file), sans jamais checkout/switch/restore.
+#
+# Autorité immuable = (commit_sha exact, blob_sha, content_sha256).
+# Une branche/ref (ex. "main") n'est JAMAIS l'autorité — elle est résolue en
+# commit exact UNE FOIS, à l'enregistrement, puis conservée seulement comme
+# indice de provenance (source_git_ref_hint). Le déplacement ultérieur de la
+# branche ne peut jamais muter une source déjà enregistrée.
+
+class GitSourceError(Exception):
+    pass
+
+
+def _run_git(repo_root: Path, args: "list[str]") -> "tuple[int, bytes, str]":
+    result = subprocess.run(
+        ["git", *args],
+        cwd=str(repo_root),
+        capture_output=True,
+    )
+    return result.returncode, result.stdout, result.stderr.decode("utf-8", errors="replace")
+
+
+def _git_resolve_commit_sha(repo_root: Path, ref: str) -> Optional[str]:
+    """Résout un ref (branche, tag, SHA partiel/complet) en SHA de commit exact. None si invalide."""
+    code, out, _err = _run_git(repo_root, ["rev-parse", "--verify", f"{ref}^{{commit}}"])
+    if code != 0:
+        return None
+    sha = out.decode("ascii", errors="replace").strip()
+    return sha or None
+
+
+def _git_blob_sha_at_commit(repo_root: Path, commit_sha: str, historical_path: str) -> Optional[str]:
+    """SHA du blob à <commit_sha>:<historical_path>. None si absent ou si l'objet n'est pas un blob."""
+    code, out, _err = _run_git(repo_root, ["ls-tree", commit_sha, "--", historical_path])
+    if code != 0:
+        return None
+    line = out.decode("utf-8", errors="replace").strip()
+    if not line:
+        return None
+    parts = line.split(None, 3)
+    if len(parts) < 4:
+        return None
+    _mode, obj_type, obj_sha, _path_field = parts
+    if obj_type != "blob":
+        return None
+    return obj_sha
+
+
+def _git_read_blob_bytes(repo_root: Path, blob_sha: str) -> Optional[bytes]:
+    """Octets bruts du blob. None si illisible. Ne fabrique jamais de contenu."""
+    code, out, _err = _run_git(repo_root, ["cat-file", "-p", blob_sha])
+    if code != 0:
+        return None
+    return out
+
+
+def _validate_git_historical_path(historical_path: "str | None") -> "tuple[str | None, str | None]":
+    """
+    Valide historical_path SANS jamais toucher le disque (il n'a pas besoin
+    d'exister dans l'arbre de travail courant — il décrit où le blob
+    existait AU COMMIT). Retourne (chemin_canonique_posix, None) ou
+    (None, raison_rejet).
+    """
+    if not historical_path or not str(historical_path).strip():
+        return None, "GIT_SOURCE_EMPTY_PATH"
+    raw = str(historical_path).strip()
+    if "*" in raw or "?" in raw:
+        return None, "GIT_SOURCE_WILDCARD_REJECTED"
+    norm = raw.replace("\\", "/")
+    if norm.startswith("/") or (len(norm) > 1 and norm[1] == ":"):
+        return None, "GIT_SOURCE_ABSOLUTE_PATH_REJECTED"
+    candidate = (_REPO_ROOT / norm).resolve()
+    try:
+        rel = candidate.relative_to(_REPO_ROOT)
+    except ValueError:
+        return None, "GIT_SOURCE_OUTSIDE_REPO_NAMESPACE"
+    if _is_protected_resolved(candidate):
+        return None, "GIT_SOURCE_PROTECTED_REJECTED"
+    return rel.as_posix(), None
+
+
+def register_git_blob_source(
+    commit_sha_or_ref: str,
+    historical_path: str,
+    target_path: "str | None" = None,
+    target_domain: "str | None" = None,
+    reason: "str | None" = None,
+    provenance_refs: "dict | None" = None,
+    dependency_refs: "list | None" = None,
+    expected_blob_sha: "str | None" = None,
+    expected_content_sha256: "str | None" = None,
+    repo_root: "Path | None" = None,
+    ledger_dir: "Path | None" = None,
+) -> dict:
+    """
+    Enregistre une source Git RÉELLE et IMMUABLE (blob), AVANT toute session
+    de build, proposal, décision KX108 ou commit.
+
+    lifecycle_status = DISCOVERED. Ne checkout jamais, ne mute jamais le
+    dépôt. Fail-closed sur commit inconnu, chemin absent au commit, objet
+    non-blob, mismatch de hash attendu, ou cible protégée.
+
+    Identité d'ENTRÉE (commit + chemin historique) toujours distincte de
+    l'identité de CONTENU (source_hash) — deux provenances différentes
+    restent deux entrées même si les octets sont identiques.
+    """
+    root = repo_root or _REPO_ROOT
+
+    if not commit_sha_or_ref or not str(commit_sha_or_ref).strip():
+        return {"status": "REJECTED", "reason": "GIT_SOURCE_EMPTY_COMMIT_REF"}
+
+    canonical_path, reject_reason = _validate_git_historical_path(historical_path)
+    if reject_reason:
+        return {"status": "REJECTED", "reason": reject_reason, "historical_path": historical_path}
+
+    commit_sha = _git_resolve_commit_sha(root, str(commit_sha_or_ref).strip())
+    if not commit_sha:
+        return {
+            "status": "REJECTED",
+            "reason": "GIT_SOURCE_UNKNOWN_COMMIT",
+            "commit_ref": commit_sha_or_ref,
+        }
+
+    blob_sha = _git_blob_sha_at_commit(root, commit_sha, canonical_path)
+    if not blob_sha:
+        return {
+            "status": "REJECTED",
+            "reason": "GIT_SOURCE_PATH_NOT_FOUND_AT_COMMIT",
+            "commit_sha": commit_sha,
+            "historical_path": canonical_path,
+        }
+
+    if expected_blob_sha and expected_blob_sha != blob_sha:
+        return {
+            "status": "REJECTED",
+            "reason": "GIT_SOURCE_BLOB_SHA_MISMATCH",
+            "expected_blob_sha": expected_blob_sha,
+            "actual_blob_sha": blob_sha,
+        }
+
+    blob_bytes = _git_read_blob_bytes(root, blob_sha)
+    if blob_bytes is None:
+        return {"status": "REJECTED", "reason": "GIT_SOURCE_BLOB_UNREADABLE", "blob_sha": blob_sha}
+
+    content_sha256_full = hashlib.sha256(blob_bytes).hexdigest()
+    if expected_content_sha256 and expected_content_sha256 != content_sha256_full:
+        return {
+            "status": "REJECTED",
+            "reason": "GIT_SOURCE_CONTENT_SHA256_MISMATCH",
+            "expected_content_sha256": expected_content_sha256,
+            "actual_content_sha256": content_sha256_full,
+        }
+
+    source_hash = content_sha256_full[:16]  # sémantique Ledger existante préservée
+
+    if target_path:
+        # La cible désigne toujours un emplacement dans le dépôt Obsidia
+        # canonique (_REPO_ROOT) — c'est là qu'une éventuelle écriture
+        # future se produirait, indépendamment du dépôt source d'où le
+        # blob Git est lu (repo_root peut être un autre clone local).
+        tp = Path(target_path)
+        tp_resolved = tp.resolve() if tp.is_absolute() else (_REPO_ROOT / target_path).resolve()
+        if _is_protected_resolved(tp_resolved):
+            return {
+                "status": "REJECTED_PROTECTED",
+                "reason": "protected_target",
+                "target_path": target_path,
+            }
+
+    identity_path = target_path or canonical_path
+
+    existing = _load_entries(ledger_dir)
+    dedup = classify_dedup(existing, identity_path, source_hash)
+
+    entry_id = ledger_entry_id(
+        f"DISCOVERED_GIT:{commit_sha}:{canonical_path}", source_hash,
+    )
+
+    if any(e.get("ledger_entry_id") == entry_id for e in existing):
+        return {"status": "ALREADY_REGISTERED", "ledger_entry_id": entry_id}
+
+    prev_entry_id: "str | None" = None
+    if dedup == "SAME_PATH_NEW_CONTENT":
+        same_path = [e for e in existing if _effective_identity_path(e) == identity_path]
+        if same_path:
+            prev_entry_id = same_path[-1]["ledger_entry_id"]
+
+    entry: dict = {
+        "ledger_entry_id": entry_id,
+        "entry_schema_version": SCHEMA_VERSION,
+        "timestamp": _now(),
+
+        "source_kind": SOURCE_KIND_GIT_BLOB,
+        "source_type": "GIT_BLOB_SOURCE",
+        "source_path": canonical_path,
+        "source_hash": source_hash,
+
+        "source_git_commit_sha": commit_sha,
+        "source_git_blob_sha": blob_sha,
+        "source_git_historical_path": canonical_path,
+        "source_git_ref_hint": str(commit_sha_or_ref).strip(),
+        "source_repository_identity": str(root.resolve()),
+        "source_content_sha256": content_sha256_full,
+
+        "target_path": target_path,
+        "target_domain": target_domain,
+
+        "session_id": None,
+        "branch": None,
+        "worktree": None,
+        "base_sha": None,
+
+        "objective": reason,
+
+        "proposal_id": None,
+        "proposal_hash": None,
+
+        "approved_scope": [],
+        "proposal_files": [],
+        "actual_modified_files": [],
+
+        "test_evidence_ref": None,
+        "gate_evidence_ref": None,
+
+        "kx108_decision": None,
+        "next_human_action": "REVIEW_SOURCE_CANDIDATE",
+
+        "lifecycle_status": "DISCOVERED",
+        "commit_sha": None,  # commit d'APPLICATION futur — distinct de source_git_commit_sha (provenance)
+
+        "provenance_refs": provenance_refs or {},
+        "dependency_refs": dependency_refs or [],
+
+        "dedup_classification": dedup,
+        "prev_entry_id": prev_entry_id,
+
+        "status": "DISCOVERED",
+        "unknowns": [],
+        "risk_flags": [],
+
+        "decision_authority": DECISION_AUTHORITY,
+    }
+
+    _append_entry(entry, ledger_dir)
+    _append_event({
+        "event_type": "DISCOVERED_GIT_BLOB",
+        "ledger_entry_id": entry_id,
+        "source_git_commit_sha": commit_sha,
+        "source_git_blob_sha": blob_sha,
+        "source_git_historical_path": canonical_path,
+        "timestamp": _now(),
+        "dedup": dedup,
+    }, ledger_dir)
+
+    return {
+        "status": "DISCOVERED",
+        "ledger_entry_id": entry_id,
+        "source_git_commit_sha": commit_sha,
+        "source_git_blob_sha": blob_sha,
+        "source_content_sha256": content_sha256_full,
+    }
 
 
 # ─── Commandes lecture ───────────────────────────────────────────────────────

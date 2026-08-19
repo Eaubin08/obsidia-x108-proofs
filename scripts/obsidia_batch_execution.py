@@ -132,6 +132,15 @@ def _selector_module():
     return _mod
 
 
+def _ledger_module():
+    import sys as _sys
+    _scripts = str(Path(__file__).resolve().parent)
+    if _scripts not in _sys.path:
+        _sys.path.insert(0, _scripts)
+    import obsidia_branching_ledger as _mod
+    return _mod
+
+
 # ─── Stockage (hors repo, %LOCALAPPDATA%\Obsidia\batch_execution\) ───────────
 
 def _execution_path(batch_execution_id: str, execution_dir: Optional[Path] = None) -> Path:
@@ -372,6 +381,42 @@ def _resolve_and_hash(path_str: Optional[str], root: Path) -> Optional[str]:
     return _content_hash(p)
 
 
+def resolve_source_bytes_hash(child: dict, root: Path) -> Optional[str]:
+    """
+    Hash de la source RÉELLE, relu MAINTENANT — jamais fabriqué.
+
+    FILESYSTEM_FILE (défaut/legacy) : lecture disque de source_path relatif
+    à root, comportement inchangé.
+
+    GIT_BLOB : lecture immuable via (source_git_commit_sha,
+    source_git_historical_path) enregistrés — JAMAIS via une branche/ref
+    mutable, et JAMAIS via le chemin filesystem courant (qui peut, par
+    coïncidence, exister sous le même nom et contenir un contenu différent
+    — c'est exactement le cas ACD-01). Le blob_sha résolu au commit
+    enregistré doit correspondre au blob_sha enregistré ; sinon échec fermé.
+    """
+    source_kind = child.get("source_kind") or "FILESYSTEM_FILE"
+    if source_kind != "GIT_BLOB":
+        return _resolve_and_hash(child.get("source_path"), root)
+
+    commit_sha = child.get("source_git_commit_sha")
+    historical_path = child.get("source_git_historical_path")
+    expected_blob_sha = child.get("source_git_blob_sha")
+    if not commit_sha or not historical_path:
+        return None
+
+    led = _ledger_module()
+    blob_sha = led._git_blob_sha_at_commit(root, commit_sha, historical_path)
+    if not blob_sha or (expected_blob_sha and blob_sha != expected_blob_sha):
+        return None
+
+    blob_bytes = led._git_read_blob_bytes(root, blob_sha)
+    if blob_bytes is None:
+        return None
+
+    return hashlib.sha256(blob_bytes).hexdigest()[:16]
+
+
 # ─── Intégrité : liaison immuable au BatchProposal stocké ────────────────────
 
 def verify_batch_integrity(
@@ -441,6 +486,7 @@ def assess_materiality(
     target_path: Optional[str],
     source_hash: Optional[str],
     repo_root: Optional[Path] = None,
+    source_kind: Optional[str] = None,
 ) -> tuple[str, dict]:
     """
     NO_MEANINGFUL_DELTA : source et cible sont le même fichier physique, OU
@@ -449,12 +495,19 @@ def assess_materiality(
                             n'existe pas encore.
     UNKNOWN                : target_path absent — impossible à évaluer.
     Ne fabrique jamais de hash — lecture réelle uniquement.
+
+    Le raccourci "source_path == target_path ⇒ no-op" n'est valide QUE pour
+    une source FILESYSTEM_FILE (même fichier physique). Pour une source
+    GIT_BLOB, le chemin historique peut légitimement être identique au
+    chemin cible courant sans que le CONTENU le soit (ex. ACD-01) — dans ce
+    cas on compare toujours les octets réels, jamais les chaînes de chemin.
     """
     root = repo_root or _REPO_ROOT
     if not target_path:
         return MATERIALITY_UNKNOWN, {"reason": "target_path_missing"}
 
-    if source_path and source_path == target_path:
+    kind = source_kind or "FILESYSTEM_FILE"
+    if kind == "FILESYSTEM_FILE" and source_path and source_path == target_path:
         return NO_MEANINGFUL_DELTA, {
             "reason": "source_equals_target_path",
             "target_pre_hash": source_hash,
@@ -555,11 +608,12 @@ def prepare_execution(
         source_path = c.get("source_path")
         target_path = c.get("target_path")
         source_hash = c.get("source_hash")
+        source_kind = c.get("source_kind") or "FILESYSTEM_FILE"
 
         protected = bool(target_path and _is_protected(target_path))
 
         materiality_status, materiality_detail = assess_materiality(
-            source_path, target_path, source_hash, root,
+            source_path, target_path, source_hash, root, source_kind=source_kind,
         )
         operation_type, operation_reason = assess_operation(c.get("provenance_refs"))
 
@@ -578,6 +632,10 @@ def prepare_execution(
             "candidate_entry_id": cid,
             "source_path": source_path,
             "source_hash": source_hash,
+            "source_kind": source_kind,
+            "source_git_commit_sha": c.get("source_git_commit_sha"),
+            "source_git_blob_sha": c.get("source_git_blob_sha"),
+            "source_git_historical_path": c.get("source_git_historical_path"),
             "target_path": target_path,
             "target_pre_hash": materiality_detail.get("target_pre_hash"),
             "operation_type": operation_type,
@@ -849,7 +907,9 @@ def run_execution(
             continue
 
         # Gate 6 : intégrité octet-pour-octet de la source, relue MAINTENANT
-        actual_source_hash = _resolve_and_hash(child.get("source_path"), root)
+        # (source-kind-aware : GIT_BLOB relit via commit+chemin historique
+        # immuables, jamais via le chemin filesystem courant).
+        actual_source_hash = resolve_source_bytes_hash(child, root)
         if actual_source_hash != child.get("source_hash"):
             child["execution_status"] = SOURCE_INTEGRITY_MISMATCH
             child["integrity_detail"] = {
