@@ -74,6 +74,7 @@ APPROVAL_INVALID           = "APPROVAL_INVALID"
 ENVELOPE_NOT_FOUND         = "ENVELOPE_NOT_FOUND"
 CHILD_NOT_FOUND            = "CHILD_NOT_FOUND"
 CHILD_NOT_READY            = "CHILD_NOT_READY"
+NOT_READY_STRONG_PRECONDITION_REQUIRED = "NOT_READY_STRONG_PRECONDITION_REQUIRED"
 
 
 def _now() -> str:
@@ -420,6 +421,18 @@ def apply_validated_source_content(
     if child.get("execution_status") != E.PLANNED:
         return {"status": CHILD_NOT_READY, "actual_execution_status": child.get("execution_status")}
 
+    # Empreinte d'intégrité précondition+provenance+opération, calculée à
+    # prepare_execution. Une divergence (édition isolée d'un champ dans
+    # l'enveloppe persistée — ex. target_pre_sha256 seul) est détectée.
+    # Absente sur les enveloppes légataires (créées avant ce durcissement)
+    # — dans ce cas la vérification plus bas sur target_pre_sha256 manquant
+    # tranche déjà (NOT_READY_STRONG_PRECONDITION_REQUIRED).
+    stored_integrity_hash = child.get("precondition_integrity_hash")
+    if stored_integrity_hash is not None:
+        recomputed_integrity_hash = E.compute_child_precondition_integrity_hash(child)
+        if recomputed_integrity_hash != stored_integrity_hash:
+            return {"status": BATCH_BINDING_MISMATCH, "reason": "PRECONDITION_INTEGRITY_HASH_MISMATCH"}
+
     # Liaison au batch immuable d'origine — toute derive (cible, provenance
     # Git complete, intention d'operation, ordre...) refuse l'ecriture.
     proposal = S._load_batch(envelope.get("batch_id"), selector_dir)
@@ -494,9 +507,33 @@ def apply_validated_source_content(
             "target_post_sha256": current_target_sha256,
         }
 
+    # Précondition de cible — le SHA256 COMPLET est l'AUTORITÉ d'écriture,
+    # jamais le seul préfixe tronqué à 16 caractères (celui-ci reste
+    # vérifié en plus, par compatibilité, mais ne peut jamais A LUI SEUL
+    # autoriser une écriture — cf. HARDEN_CONTENT_APPLY_PRECONDITION_
+    # AND_IDEMPOTENCE_V0).
+    expected_pre_sha256 = child.get("target_pre_sha256")
     expected_pre_hash16 = child.get("target_pre_hash")
+
+    if current_target_sha256 is not None and expected_pre_sha256 is None:
+        # La cible existe réellement mais l'enregistrement d'exécution ne
+        # porte pas de précondition SHA256 complète — enveloppe légataire
+        # (créée avant ce durcissement) : autorité d'écriture insuffisante,
+        # jamais silencieusement acceptée sur la seule foi du préfixe.
+        return {
+            "status": NOT_READY_STRONG_PRECONDITION_REQUIRED,
+            "reason": "LEGACY_EXECUTION_MISSING_FULL_PRECONDITION",
+        }
+
+    if current_target_sha256 != expected_pre_sha256:
+        return {
+            "status": TARGET_PRECONDITION_MISMATCH,
+            "expected_target_pre_sha256": expected_pre_sha256,
+            "actual_target_sha256": current_target_sha256,
+        }
+
     actual_pre_hash16 = current_target_sha256[:16] if current_target_sha256 else None
-    if actual_pre_hash16 != expected_pre_hash16:
+    if expected_pre_hash16 is not None and actual_pre_hash16 != expected_pre_hash16:
         return {
             "status": TARGET_PRECONDITION_MISMATCH,
             "expected_target_pre_hash": expected_pre_hash16,

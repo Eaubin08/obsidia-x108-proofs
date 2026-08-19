@@ -114,6 +114,35 @@ def _content_hash(path: Path) -> Optional[str]:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
 
 
+_PRECONDITION_BOUND_FIELDS = (
+    "target_path", "target_pre_hash", "target_pre_sha256",
+    "source_kind", "source_git_commit_sha", "source_git_blob_sha",
+    "source_git_historical_path", "source_content_sha256",
+    "source_repository_identity", "source_hash", "operation_type",
+)
+
+
+def compute_child_precondition_integrity_hash(child: dict) -> str:
+    """
+    Empreinte liant la précondition de cible + l'identité de source + le
+    type d'opération d'un ChildExecutionRecord au moment de
+    prepare_execution. Recalculée par le pont d'application avant toute
+    écriture — une divergence (édition directe du fichier d'enveloppe
+    persisté, ex. target_pre_sha256 modifié isolément) est détectée
+    fermé. Ne protège pas contre un attaquant capable de recalculer
+    cette empreinte lui-même après falsification (aucun mécanisme de ce
+    type n'existe ailleurs dans ce module — cf. batch_hash/
+    approval_record_hash, même modèle de menace) ; protège contre une
+    corruption partielle, un caller fabriquant un dict incomplet, ou une
+    édition isolée d'un seul champ.
+    """
+    payload = json.dumps(
+        {k: child.get(k) for k in _PRECONDITION_BOUND_FIELDS},
+        sort_keys=True,
+    )
+    return _sha16(payload)
+
+
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
@@ -549,21 +578,42 @@ def assess_materiality(
         return NO_MEANINGFUL_DELTA, {
             "reason": "source_equals_target_path",
             "target_pre_hash": source_hash,
+            "target_pre_sha256": None,
         }
 
     tp = Path(target_path)
     if not tp.is_absolute():
         tp = root / target_path
-    target_pre_hash = _content_hash(tp)
+
+    # Une SEULE lecture des octets — dérive à la fois le hash tronqué de
+    # compatibilité (historique) ET le SHA256 complet, qui devient
+    # l'autorité de précondition d'écriture (cf.
+    # HARDEN_CONTENT_APPLY_PRECONDITION_AND_IDEMPOTENCE_V0).
+    if not tp.exists() or not tp.is_file():
+        target_pre_hash = None
+        target_pre_sha256 = None
+    else:
+        target_bytes = tp.read_bytes()
+        target_pre_sha256 = hashlib.sha256(target_bytes).hexdigest()
+        target_pre_hash = target_pre_sha256[:16]
 
     if target_pre_hash is None:
-        return MEANINGFUL_DELTA, {"reason": "target_does_not_exist_yet", "target_pre_hash": None}
+        return MEANINGFUL_DELTA, {
+            "reason": "target_does_not_exist_yet",
+            "target_pre_hash": None,
+            "target_pre_sha256": None,
+        }
     if target_pre_hash == source_hash:
         return NO_MEANINGFUL_DELTA, {
             "reason": "target_content_equals_source",
             "target_pre_hash": target_pre_hash,
+            "target_pre_sha256": target_pre_sha256,
         }
-    return MEANINGFUL_DELTA, {"reason": "target_content_differs", "target_pre_hash": target_pre_hash}
+    return MEANINGFUL_DELTA, {
+        "reason": "target_content_differs",
+        "target_pre_hash": target_pre_hash,
+        "target_pre_sha256": target_pre_sha256,
+    }
 
 
 # ─── Gate d'opération ──────────────────────────────────────────────────────────
@@ -678,6 +728,7 @@ def prepare_execution(
             "source_content_sha256": c.get("source_content_sha256"),
             "target_path": target_path,
             "target_pre_hash": materiality_detail.get("target_pre_hash"),
+            "target_pre_sha256": materiality_detail.get("target_pre_sha256"),
             "operation_type": operation_type,
             "operation_reason": operation_reason,
             "materiality_status": materiality_status,
@@ -691,6 +742,7 @@ def prepare_execution(
             "execution_status": execution_status,
             "decision_authority": DECISION_AUTHORITY,
         }
+        child["precondition_integrity_hash"] = compute_child_precondition_integrity_hash(child)
         children.append(child)
 
     aggregate_status = _compute_aggregate_status(children)

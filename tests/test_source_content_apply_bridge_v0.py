@@ -285,7 +285,11 @@ class TestDriftAtWriteTime:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.SOURCE_INTEGRITY_MISMATCH
+        # Detecte par l'empreinte d'integrite precondition/provenance
+        # (verifiee plus tot que le TOCTOU source specifique) — meme
+        # propriete de securite (aucune ecriture), gate plus generique.
+        assert result["status"] == C.BATCH_BINDING_MISMATCH
+        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
         target = synthetic_repo / "dst" / "target.py"
         assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
 
@@ -300,7 +304,8 @@ class TestDriftAtWriteTime:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.SOURCE_INTEGRITY_MISMATCH
+        assert result["status"] == C.BATCH_BINDING_MISMATCH
+        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
 
 
 # ─── B. Confinement de cible — protégé / hors dépôt / racine ────────────────
@@ -357,7 +362,10 @@ class TestScopeEscape:
             ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
             evidence_dir=tmp_path / "evidence",
         )
-        assert result["status"] == C.SCOPE_MISMATCH
+        # Detecte par l'empreinte d'integrite precondition (target_path en
+        # fait partie) avant meme d'atteindre la verification de portee.
+        assert result["status"] == C.BATCH_BINDING_MISMATCH
+        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
         assert not (synthetic_repo / "dst" / "other.py").exists()
         assert (synthetic_repo / "dst" / "target.py").read_bytes() == b"OLD_TARGET_CONTENT\n"
 
@@ -544,3 +552,213 @@ class TestFilesystemNonRegression:
         data, reason = C.resolve_source_bytes(child, tmp_path)
         assert data is None
         assert reason == "SOURCE_FILE_MISSING"
+
+
+# ─── K. HARDEN_CONTENT_APPLY_PRECONDITION_AND_IDEMPOTENCE_V0 ────────────────
+
+class TestFullTargetPreconditionPersisted:
+    def test_prepare_execution_captures_full_target_pre_sha256(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        expected_full = C._full_sha256(b"OLD_TARGET_CONTENT\n")
+        assert ctx["child"]["target_pre_sha256"] == expected_full
+        assert ctx["child"]["target_pre_hash"] == expected_full[:16]
+
+    def test_full_target_pre_sha256_survives_persistence_and_reload(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        reloaded = E._load_execution(ctx["envelope"]["batch_execution_id"], ctx["execution_dir"])
+        reloaded_child = reloaded["children"][0]
+        assert reloaded_child["target_pre_sha256"] == ctx["child"]["target_pre_sha256"]
+        assert reloaded_child["precondition_integrity_hash"] == ctx["child"]["precondition_integrity_hash"]
+
+    def test_precondition_integrity_hash_binds_target_pre_sha256(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        # Falsification isolee du SEUL champ target_pre_sha256 (le préfixe
+        # tronqué de compatibilité reste, lui, correct) — l'empreinte
+        # d'intégrité doit quand même détecter la divergence.
+        ctx["child"]["target_pre_sha256"] = "f" * 64
+        E._save_execution(ctx["envelope"], ctx["execution_dir"])
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
+        assert result["status"] == C.BATCH_BINDING_MISMATCH
+        assert result["reason"] == "PRECONDITION_INTEGRITY_HASH_MISMATCH"
+        target = synthetic_repo / "dst" / "target.py"
+        assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
+
+
+class TestTruncatedHashNotSufficientAuthority:
+    def test_correct_truncated_prefix_but_wrong_full_sha256_rejected(self, synthetic_repo, tmp_path):
+        """
+        §7 — construit un child ou le prefixe tronque de compatibilite
+        (target_pre_hash) est EXACT, mais le SHA256 complet est
+        volontairement faux, ET l'empreinte d'integrite est recalculee
+        pour rester coherente avec ce faux SHA256 complet (simulant un
+        attaquant capable de maintenir cette coherence interne). Le
+        SHA256 complet reste neanmoins l'autorite : le prefixe tronque
+        correct seul ne peut jamais suffire.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        real_full = C._full_sha256(b"OLD_TARGET_CONTENT\n")
+        forged_full = real_full[:16] + "0" * 48  # meme prefixe 16, fin fausse
+        assert forged_full != real_full
+
+        ctx["child"]["target_pre_sha256"] = forged_full
+        # target_pre_hash (prefixe) reste correct/inchange
+        assert ctx["child"]["target_pre_hash"] == real_full[:16]
+        ctx["child"]["precondition_integrity_hash"] = E.compute_child_precondition_integrity_hash(ctx["child"])
+        E._save_execution(ctx["envelope"], ctx["execution_dir"])
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
+        # L'empreinte d'integrite est maintenant coherente (recalculee) —
+        # c'est le SHA256 complet, comparé aux octets REELS de la cible,
+        # qui refuse l'ecriture.
+        assert result["status"] == C.TARGET_PRECONDITION_MISMATCH
+        assert result["expected_target_pre_sha256"] == forged_full
+        assert result["actual_target_sha256"] == real_full
+        target = synthetic_repo / "dst" / "target.py"
+        assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
+
+
+class TestLegacyExecutionMissingFullPrecondition:
+    def test_legacy_child_without_target_pre_sha256_refused(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        # Simule une enveloppe créée AVANT ce durcissement : le champ
+        # target_pre_sha256 (et l'empreinte qui en dépend) est absent.
+        del ctx["child"]["target_pre_sha256"]
+        del ctx["child"]["precondition_integrity_hash"]
+        E._save_execution(ctx["envelope"], ctx["execution_dir"])
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo,
+            evidence_dir=tmp_path / "evidence",
+        )
+        assert result["status"] == C.NOT_READY_STRONG_PRECONDITION_REQUIRED
+        target = synthetic_repo / "dst" / "target.py"
+        assert target.read_bytes() == b"OLD_TARGET_CONTENT\n"
+
+
+class TestExactReplaySemantics:
+    def test_replay_performs_no_second_atomic_replace(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        evidence_dir = tmp_path / "evidence"
+        r1 = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        assert r1["status"] == C.CONTENT_APPLIED
+        target = synthetic_repo / "dst" / "target.py"
+        mtime_after_first = target.stat().st_mtime_ns
+        inode_after_first = target.stat().st_ino if hasattr(target.stat(), "st_ino") else None
+
+        r2 = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        assert r2["status"] == C.ALREADY_APPLIED_SAME_CONTENT
+        assert target.read_bytes() == b"NEW_SOURCE_CONTENT\n"
+        # Aucun second remplacement atomique n'a eu lieu — mtime inchange.
+        assert target.stat().st_mtime_ns == mtime_after_first
+        if inode_after_first is not None:
+            assert target.stat().st_ino == inode_after_first
+
+    def test_replay_preserves_original_rollback_baseline(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        evidence_dir = tmp_path / "evidence"
+        C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        rollback_after_first = C.load_rollback_evidence(ctx["child"]["child_execution_id"], evidence_dir)
+        assert base64.b64decode(rollback_after_first["pre_write_bytes_b64"]) == b"OLD_TARGET_CONTENT\n"
+
+        C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        rollback_after_replay = C.load_rollback_evidence(ctx["child"]["child_execution_id"], evidence_dir)
+        # La baseline de rollback reste celle du PREMIER apply (OLD), jamais
+        # remplacee par NEW malgre le rejeu.
+        assert base64.b64decode(rollback_after_replay["pre_write_bytes_b64"]) == b"OLD_TARGET_CONTENT\n"
+        assert rollback_after_replay == rollback_after_first
+
+    def test_replay_does_not_produce_duplicate_success_receipt_with_different_evidence(
+        self, synthetic_repo, tmp_path,
+    ):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        evidence_dir = tmp_path / "evidence"
+        r1 = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        receipt_after_first = C.load_apply_receipt(ctx["child"]["child_execution_id"], evidence_dir)
+
+        C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        receipt_after_replay = C.load_apply_receipt(ctx["child"]["child_execution_id"], evidence_dir)
+        # Le rejeu (statut ALREADY_APPLIED_SAME_CONTENT) n'ecrit pas de
+        # nouveau receipt CONTENT_APPLIED — l'historique reste celui du
+        # premier succes reel.
+        assert receipt_after_replay == receipt_after_first
+        assert receipt_after_first["status"] == C.CONTENT_APPLIED
+
+
+class TestCrossChildReceiptIsolation:
+    def test_different_child_cannot_reuse_receipt(self, synthetic_repo, tmp_path):
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        evidence_dir = tmp_path / "evidence"
+        C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        # Aucun receipt n'existe pour un child_execution_id different, meme
+        # cible/source — l'isolation est structurelle (cle = child_execution_id).
+        other_receipt = C.load_apply_receipt("some-other-child-id-never-applied", evidence_dir)
+        assert other_receipt is None
+
+
+class TestNoReceiptNoIdempotentSuccess:
+    def test_target_already_equals_source_without_receipt_is_not_idempotent_success(
+        self, synthetic_repo, tmp_path,
+    ):
+        """
+        §14 — la cible vaut déjà les octets source (par coïncidence, pas
+        via ce pont) mais aucun receipt CONTENT_APPLIED n'existe pour ce
+        child : ne doit JAMAIS retourner ALREADY_APPLIED_SAME_CONTENT.
+        La précondition stricte (capturée à prepare_execution, sur
+        l'ancien contenu) doit refuser fermé.
+        """
+        ctx = _prepare_git_flow(synthetic_repo, tmp_path)
+        evidence_dir = tmp_path / "evidence"
+        assert C.load_apply_receipt(ctx["child"]["child_execution_id"], evidence_dir) is None
+
+        # La cible se retrouve DEJA a la valeur source, hors de ce pont.
+        target = synthetic_repo / "dst" / "target.py"
+        target.write_bytes(b"NEW_SOURCE_CONTENT\n")
+
+        result = C.apply_validated_source_content(
+            ctx["envelope"]["batch_execution_id"], ctx["child"]["child_execution_id"],
+            ctx["approval_id"], execution_dir=ctx["execution_dir"], selector_dir=ctx["selector_dir"],
+            ledger_dir=ctx["ledger_dir"], repo_root=synthetic_repo, evidence_dir=evidence_dir,
+        )
+        assert result["status"] != C.ALREADY_APPLIED_SAME_CONTENT
+        assert result["status"] == C.TARGET_PRECONDITION_MISMATCH
