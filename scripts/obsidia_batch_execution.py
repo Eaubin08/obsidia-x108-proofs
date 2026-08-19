@@ -68,6 +68,7 @@ NOT_READY_UNDEFINED_OPERATION = "NOT_READY_UNDEFINED_OPERATION"
 DEPENDENCY_BLOCKED          = "DEPENDENCY_BLOCKED"
 REFUSED_PROTECTED_TARGET    = "REFUSED_PROTECTED_TARGET"
 SOURCE_INTEGRITY_MISMATCH   = "SOURCE_INTEGRITY_MISMATCH"
+SOURCE_REPOSITORY_IDENTITY_MISMATCH = "SOURCE_REPOSITORY_IDENTITY_MISMATCH"
 TARGET_PRECONDITION_MISMATCH = "TARGET_PRECONDITION_MISMATCH"
 EXECUTED_ACT                = "EXECUTED_ACT"
 EXECUTED_HOLD               = "EXECUTED_HOLD"
@@ -77,6 +78,7 @@ EXECUTED_ERROR               = "EXECUTED_ERROR"
 _TERMINAL_STATUSES = frozenset([
     NOT_READY_NO_DELTA, NOT_READY_UNDEFINED_OPERATION, DEPENDENCY_BLOCKED,
     REFUSED_PROTECTED_TARGET, SOURCE_INTEGRITY_MISMATCH,
+    SOURCE_REPOSITORY_IDENTITY_MISMATCH,
     TARGET_PRECONDITION_MISMATCH, EXECUTED_ACT, EXECUTED_HOLD, EXECUTED_BLOCK,
     EXECUTED_ERROR,
 ])
@@ -402,6 +404,7 @@ def resolve_source_bytes_hash(child: dict, root: Path) -> Optional[str]:
     commit_sha = child.get("source_git_commit_sha")
     historical_path = child.get("source_git_historical_path")
     expected_blob_sha = child.get("source_git_blob_sha")
+    expected_content_sha256 = child.get("source_content_sha256")
     if not commit_sha or not historical_path:
         return None
 
@@ -414,7 +417,15 @@ def resolve_source_bytes_hash(child: dict, root: Path) -> Optional[str]:
     if blob_bytes is None:
         return None
 
-    return hashlib.sha256(blob_bytes).hexdigest()[:16]
+    # Vérification du SHA256 COMPLET, pas seulement la forme tronquée à 16
+    # caractères utilisée pour la compatibilité avec source_hash — un
+    # mismatch sur les octets complets échoue fermé même si, par
+    # coïncidence, le préfixe tronqué correspondait encore.
+    full_sha256 = hashlib.sha256(blob_bytes).hexdigest()
+    if expected_content_sha256 and full_sha256 != expected_content_sha256:
+        return None
+
+    return full_sha256[:16]
 
 
 # ─── Intégrité : liaison immuable au BatchProposal stocké ────────────────────
@@ -636,6 +647,8 @@ def prepare_execution(
             "source_git_commit_sha": c.get("source_git_commit_sha"),
             "source_git_blob_sha": c.get("source_git_blob_sha"),
             "source_git_historical_path": c.get("source_git_historical_path"),
+            "source_repository_identity": c.get("source_repository_identity"),
+            "source_content_sha256": c.get("source_content_sha256"),
             "target_path": target_path,
             "target_pre_hash": materiality_detail.get("target_pre_hash"),
             "operation_type": operation_type,
@@ -906,9 +919,25 @@ def run_execution(
             child["execution_status"] = REFUSED_PROTECTED_TARGET
             continue
 
+        # Gate 5b : identité de dépôt (GIT_BLOB uniquement) — la source a
+        # été enregistrée contre un dépôt précis ; si le dépôt utilisé pour
+        # cette exécution diffère, on refuse fermé plutôt que d'interroger
+        # silencieusement un autre object database Git.
+        if child.get("source_kind") == "GIT_BLOB":
+            expected_repo = child.get("source_repository_identity")
+            actual_repo = str(root.resolve())
+            if expected_repo and expected_repo != actual_repo:
+                child["execution_status"] = SOURCE_REPOSITORY_IDENTITY_MISMATCH
+                child["integrity_detail"] = {
+                    "expected_repository": expected_repo,
+                    "actual_repository": actual_repo,
+                }
+                continue
+
         # Gate 6 : intégrité octet-pour-octet de la source, relue MAINTENANT
         # (source-kind-aware : GIT_BLOB relit via commit+chemin historique
-        # immuables, jamais via le chemin filesystem courant).
+        # immuables, jamais via le chemin filesystem courant, avec
+        # vérification SHA256 complète — cf. resolve_source_bytes_hash).
         actual_source_hash = resolve_source_bytes_hash(child, root)
         if actual_source_hash != child.get("source_hash"):
             child["execution_status"] = SOURCE_INTEGRITY_MISMATCH

@@ -334,6 +334,8 @@ def build_candidate(entry: dict) -> dict:
         "source_git_commit_sha": entry.get("source_git_commit_sha"),
         "source_git_blob_sha": entry.get("source_git_blob_sha"),
         "source_git_historical_path": entry.get("source_git_historical_path"),
+        "source_repository_identity": entry.get("source_repository_identity"),
+        "source_content_sha256": entry.get("source_content_sha256"),
         "target_path": entry.get("target_path"),
         "target_domain": entry.get("target_domain"),
         "session_id": entry.get("session_id"),

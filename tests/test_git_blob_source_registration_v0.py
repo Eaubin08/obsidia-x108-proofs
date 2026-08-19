@@ -515,3 +515,413 @@ class TestFilesystemNonRegression:
         status, detail = assess_materiality("x.py", "x.py", "abc")
         assert status == NO_MEANINGFUL_DELTA
         assert detail["reason"] == "source_equals_target_path"
+
+
+# ─── K. Confinement du chemin cible (HARDEN_GIT_BLOB_SOURCE_BOUNDARIES_V0) ───
+
+class TestTargetPathConfinement:
+    def test_target_traversal_outside_repo_rejected(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="../outside.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED"
+        assert result["reason"] == "GIT_TARGET_OUTSIDE_REPO_NAMESPACE"
+
+    def test_target_deep_traversal_outside_repo_rejected(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="../../../../escape.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED"
+        assert result["reason"] == "GIT_TARGET_OUTSIDE_REPO_NAMESPACE"
+
+    def test_target_absolute_outside_repo_rejected(self, synthetic_repo, tmp_path):
+        outside = tmp_path / "outside_dir" / "x.py"
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path=str(outside),
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED"
+        assert result["reason"] == "GIT_TARGET_OUTSIDE_REPO_NAMESPACE"
+
+    def test_target_traversal_into_protected_rejected(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="periphery/../proofs/x.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED_PROTECTED"
+
+    def test_target_dot_prefixed_protected_rejected(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="./proofs/x.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED_PROTECTED"
+
+    def test_target_real_active_file_accepted(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="scripts/check_forbidden_content.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "DISCOVERED"
+
+    def test_target_with_spaces_accepted(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="target dir/module with spaces.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "DISCOVERED"
+        entries = L._load_entries(tmp_path / "ledger")
+        assert entries[0]["target_path"] == "target dir/module with spaces.py"
+
+    def test_no_target_still_valid(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "DISCOVERED"
+
+    def test_target_empty_string_rejected(self, synthetic_repo, tmp_path):
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED"
+        assert result["reason"] == "GIT_TARGET_EMPTY_PATH"
+
+
+# ─── L. Bug d'autorité scindée sur historical_path (audit §4) ───────────────
+
+class TestHistoricalPathNoSplitAuthority:
+    def test_historical_path_namespace_checked_against_same_repo_as_plumbing(
+        self, synthetic_repo, tmp_path,
+    ):
+        """
+        historical_path pointant hors de synthetic_repo (mais théoriquement
+        dans _REPO_ROOT réel) doit être rejeté comme hors-namespace — la
+        validation de confinement utilise le MÊME repo_root que la lecture
+        Git effective, jamais _REPO_ROOT implicitement.
+        """
+        # Un chemin qui remonterait hors de synthetic_repo entièrement.
+        result = L.register_git_blob_source(
+            "candidate", "../../../../../outside_of_synthetic_repo.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "REJECTED"
+        assert result["reason"] == "GIT_SOURCE_OUTSIDE_REPO_NAMESPACE"
+
+    def test_historical_path_read_from_same_repo_root_used_for_validation(
+        self, synthetic_repo, tmp_path,
+    ):
+        """Le blob effectivement lu correspond bien à repo_root — pas d'autre dépôt."""
+        result = L.register_git_blob_source(
+            "candidate", "src/module.py",
+            repo_root=synthetic_repo, ledger_dir=tmp_path / "ledger",
+        )
+        assert result["status"] == "DISCOVERED"
+        entries = L._load_entries(tmp_path / "ledger")
+        assert entries[0]["source_repository_identity"] == str(synthetic_repo.resolve())
+
+
+# ─── M. Identité de dépôt — fail-closed à la relecture d'exécution ──────────
+
+class TestRepositoryIdentityBinding:
+    def test_repository_mismatch_fails_closed(self, synthetic_repo, tmp_path):
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        blob = _blob_sha(synthetic_repo, c1, "src/module.py")
+
+        # dépôt "autre" : une seconde copie synthétique distincte contenant
+        # PAR COÏNCIDENCE un blob de même SHA (même octets, même arbre Git —
+        # deux dépôts indépendants peuvent légitimement partager un blob_sha
+        # identique pour un contenu identique).
+        other_repo = tmp_path / "other_repo"
+        other_repo.mkdir()
+        _git(other_repo, "init", "-q")
+        _git(other_repo, "config", "user.email", "test@example.com")
+        _git(other_repo, "config", "user.name", "Test")
+        (other_repo / "src").mkdir()
+        (other_repo / "src" / "module.py").write_bytes(b"CONTENT_A\n")
+        _git(other_repo, "add", "src/module.py")
+        _git(other_repo, "commit", "-q", "-m", "same content, other repo")
+
+        child = {
+            "source_kind": "GIT_BLOB",
+            "source_git_commit_sha": c1,
+            "source_git_historical_path": "src/module.py",
+            "source_git_blob_sha": blob,
+            "source_repository_identity": str(synthetic_repo.resolve()),
+        }
+
+        # other_repo n'a jamais vu le commit c1 (object database distincte)
+        # — même si son blob a, par coïncidence, les mêmes octets/SHA, la
+        # relecture par commit échoue fermé (None), jamais un faux succès
+        # basé sur une correspondance accidentelle de contenu.
+        rehash_against_wrong_repo = resolve_source_bytes_hash(child, other_repo)
+        assert rehash_against_wrong_repo is None
+
+        # Le gate 5b explicite de run_execution (identité déclarée vs dépôt
+        # réel d'exécution) est vérifié de bout en bout dans le test suivant.
+        actual_repo = str(other_repo.resolve())
+        expected_repo = child["source_repository_identity"]
+        assert expected_repo != actual_repo  # préconditions du test
+
+    def test_matching_repository_integrity_recheck_succeeds(self, synthetic_repo, tmp_path):
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        blob = _blob_sha(synthetic_repo, c1, "src/module.py")
+        child = {
+            "source_kind": "GIT_BLOB",
+            "source_git_commit_sha": c1,
+            "source_git_historical_path": "src/module.py",
+            "source_git_blob_sha": blob,
+            "source_repository_identity": str(synthetic_repo.resolve()),
+        }
+        rehash = resolve_source_bytes_hash(child, synthetic_repo)
+        assert rehash is not None
+
+    def test_run_execution_rejects_repository_mismatch_end_to_end(self, synthetic_repo, tmp_path):
+        import obsidia_batch_execution as E
+
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        blob = _blob_sha(synthetic_repo, c1, "src/module.py")
+        execution_dir = tmp_path / "exec"
+
+        envelope = {
+            "batch_execution_id": "test-repo-mismatch",
+            "schema_version": E.SCHEMA_VERSION,
+            "created_at": "now",
+            "batch_id": "b1",
+            "batch_hash": "h1",
+            "candidate_scope_hash": "s1",
+            "human_execution_approved": False,
+            "decision_authority": E.DECISION_AUTHORITY,
+            "execution_order": ["c1"],
+            "dependency_edges": [],
+            "children": [{
+                "child_execution_id": "child1",
+                "batch_execution_id": "test-repo-mismatch",
+                "candidate_entry_id": "c1",
+                "source_kind": "GIT_BLOB",
+                "source_git_commit_sha": c1,
+                "source_git_historical_path": "src/module.py",
+                "source_git_blob_sha": blob,
+                "source_repository_identity": str((tmp_path / "not_the_real_repo").resolve()),
+                "source_hash": "irrelevant",
+                "target_path": "dst/module.py",
+                "target_pre_hash": None,
+                "operation_type": "UPDATE_TARGET_FROM_SOURCE",
+                "operation_reason": None,
+                "materiality_status": E.MEANINGFUL_DELTA,
+                "materiality_detail": {},
+                "dependencies": [],
+                "dependency_status": "NOT_APPLICABLE",
+                "execution_position": 0,
+                "session_id": None,
+                "proposal_id": None,
+                "kx108_decision": None,
+                "execution_status": E.PLANNED,
+                "decision_authority": E.DECISION_AUTHORITY,
+            }],
+            "aggregate_status": E.BATCH_PLANNED,
+            "risk_flags": [],
+            "unknowns": [],
+            "source_batch_ref": {"batch_id": "b1", "batch_hash": "h1"},
+            "integrity_verified": True,
+            "integrity_error": None,
+            "execution_approval_status": None,
+            "execution_approval_id": None,
+        }
+        E._save_execution(envelope, execution_dir)
+
+        approval = {
+            "approval_id": "appr1",
+            "approval_schema_version": E.SCHEMA_VERSION,
+            "created_at": "2026-01-01T00:00:00+00:00",
+            "batch_execution_id": "test-repo-mismatch",
+            "batch_id": "b1",
+            "batch_hash": "h1",
+            "candidate_scope_hash": "s1",
+            "approval_status": E.APPROVED_FOR_BOUNDED_EXECUTION,
+            "approved_by": "HUMAN",
+            "decision_authority": E.DECISION_AUTHORITY,
+        }
+        approval["approval_record_hash"] = E.compute_approval_record_hash(approval)
+        store_result = E.store_approval_artifact(approval, execution_dir)
+        assert store_result["status"] == "STORED"
+
+        calls = []
+
+        def _executor(child):
+            calls.append(child)
+            return {"session_id": "should-never-run", "kx108_decision": "ACT"}
+
+        result = E.run_execution(
+            "test-repo-mismatch", "appr1", _executor,
+            execution_dir=execution_dir, repo_root=synthetic_repo,
+        )
+        child_out = result["children"][0]
+        assert child_out["execution_status"] == E.SOURCE_REPOSITORY_IDENTITY_MISMATCH
+        assert calls == []  # jamais appelé — refus AVANT tout executor
+
+
+# ─── N. Relecture SHA256 complète (§9) ───────────────────────────────────────
+
+class TestFullSha256Recheck:
+    def test_full_sha256_mismatch_fails_closed_even_if_truncated_would_match(
+        self, synthetic_repo, tmp_path,
+    ):
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        blob = _blob_sha(synthetic_repo, c1, "src/module.py")
+        import hashlib
+        real_full = hashlib.sha256(b"CONTENT_A\n").hexdigest()
+
+        child = {
+            "source_kind": "GIT_BLOB",
+            "source_git_commit_sha": c1,
+            "source_git_historical_path": "src/module.py",
+            "source_git_blob_sha": blob,
+            # Préfixe tronqué correct, mais SHA256 complet volontairement faux.
+            "source_content_sha256": real_full[:16] + "0" * 48,
+        }
+        assert resolve_source_bytes_hash(child, synthetic_repo) is None
+
+    def test_full_sha256_match_succeeds(self, synthetic_repo, tmp_path):
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        blob = _blob_sha(synthetic_repo, c1, "src/module.py")
+        import hashlib
+        real_full = hashlib.sha256(b"CONTENT_A\n").hexdigest()
+
+        child = {
+            "source_kind": "GIT_BLOB",
+            "source_git_commit_sha": c1,
+            "source_git_historical_path": "src/module.py",
+            "source_git_blob_sha": blob,
+            "source_content_sha256": real_full,
+        }
+        rehash = resolve_source_bytes_hash(child, synthetic_repo)
+        assert rehash == real_full[:16]
+
+
+# ─── O. Liaison de l'identité source au batch_hash (§10) ────────────────────
+
+class TestBatchHashBindsGitSourceIdentity:
+    def test_different_entry_id_from_different_commit_changes_batch_hash(self):
+        from obsidia_batch_selector import batch_hash_from_proposal
+
+        h1 = batch_hash_from_proposal(
+            ["entry-from-commit-A"], ["deadbeef00000001"], [], "obj", 10,
+        )
+        h2 = batch_hash_from_proposal(
+            ["entry-from-commit-B"], ["deadbeef00000002"], [], "obj", 10,
+        )
+        assert h1 != h2
+
+    def test_registering_same_blob_from_two_commits_yields_distinguishable_entries(
+        self, synthetic_repo, tmp_path,
+    ):
+        ledger_dir = tmp_path / "ledger"
+        c1 = _resolve_commit(synthetic_repo, "candidate")
+        c2 = _git(synthetic_repo, "rev-parse", "HEAD")
+
+        r1 = L.register_git_blob_source(
+            c1, "src/module.py", ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        r2 = L.register_git_blob_source(
+            c2, "src/module.py", ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        assert r1["ledger_entry_id"] != r2["ledger_entry_id"]
+
+        from obsidia_batch_selector import batch_hash_from_proposal
+        h1 = batch_hash_from_proposal([r1["ledger_entry_id"]], [], [], "obj", 10)
+        h2 = batch_hash_from_proposal([r2["ledger_entry_id"]], [], [], "obj", 10)
+        assert h1 != h2
+
+    def test_same_source_different_target_stays_single_entry_no_silent_overwrite(
+        self, synthetic_repo, tmp_path,
+    ):
+        """
+        Caractéristique documentée (partagée avec le filesystem
+        register_source existant) : l'identité d'entrée ne dépend pas de
+        target_path. Réenregistrer le même (commit, chemin historique)
+        avec une cible différente ne fabrique PAS silencieusement une
+        seconde entrée avec la nouvelle cible — ALREADY_REGISTERED est
+        retourné, l'entrée stockée garde sa cible d'origine. Documenté ici
+        pour qu'aucune régression future ne le change sans le remarquer.
+        """
+        ledger_dir = tmp_path / "ledger"
+        r1 = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="dst/a.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        r2 = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="dst/b.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        assert r1["status"] == "DISCOVERED"
+        assert r2["status"] == "ALREADY_REGISTERED"
+        entries = L._load_entries(ledger_dir)
+        assert len(entries) == 1
+        assert entries[0]["target_path"] == "dst/a.py"
+
+
+# ─── P. CLI réel — arguments cités/multi-mots, environnement synthétique ────
+
+class TestCLIRegisterGitSource:
+    def test_cli_quoted_multiword_args_synthetic_only(self, synthetic_repo, tmp_path, monkeypatch):
+        import obsidia_cli
+
+        src_dir = synthetic_repo / "path with spaces"
+        src_dir.mkdir()
+        (src_dir / "module.py").write_bytes(b"SPACED\n")
+        _git(synthetic_repo, "add", "path with spaces/module.py")
+        _git(synthetic_repo, "commit", "-q", "-m", "spaced path")
+        c_sha = _git(synthetic_repo, "rev-parse", "HEAD")
+
+        ledger_dir = tmp_path / "cli_ledger"
+        monkeypatch.setattr(L, "LEDGER_DIR", ledger_dir)
+        monkeypatch.setattr(L, "_REPO_ROOT", synthetic_repo)
+
+        raw_tokens = [
+            "register-git-source",
+            "--commit", c_sha,
+            "--path", "path with spaces/module.py",
+            "--target", "target path/module.py",
+            "--reason", "multi word reason",
+        ]
+        result = obsidia_cli._dispatch_ledger("register-git-source", raw_tokens=raw_tokens)
+        import json as _json
+        parsed = _json.loads(result)
+        assert parsed["status"] == "DISCOVERED"
+
+        entries = L._load_entries(ledger_dir)
+        assert len(entries) == 1
+        assert entries[0]["source_git_historical_path"] == "path with spaces/module.py"
+        assert entries[0]["target_path"] == "target path/module.py"
+        assert entries[0]["objective"] == "multi word reason"
+
+        # Aucune mutation du Ledger réel (LOCALAPPDATA) — isolation confirmée
+        # par construction (LEDGER_DIR monkeypatché avant tout appel CLI).
+
+    def test_cli_unknown_flag_fails_closed(self, synthetic_repo, tmp_path, monkeypatch):
+        import obsidia_cli
+
+        ledger_dir = tmp_path / "cli_ledger"
+        monkeypatch.setattr(L, "LEDGER_DIR", ledger_dir)
+        monkeypatch.setattr(L, "_REPO_ROOT", synthetic_repo)
+
+        raw_tokens = ["register-git-source", "--commit", "candidate", "--bogus", "x"]
+        result = obsidia_cli._dispatch_ledger("register-git-source", raw_tokens=raw_tokens)
+        assert result.startswith("[LEDGER_CLI_ERROR]")
+        assert L._load_entries(ledger_dir) == []
+
+    def test_cli_missing_required_flags_fails_closed(self, synthetic_repo, tmp_path, monkeypatch):
+        import obsidia_cli
+
+        ledger_dir = tmp_path / "cli_ledger"
+        monkeypatch.setattr(L, "LEDGER_DIR", ledger_dir)
+        monkeypatch.setattr(L, "_REPO_ROOT", synthetic_repo)
+
+        raw_tokens = ["register-git-source", "--commit", "candidate"]  # --path manquant
+        result = obsidia_cli._dispatch_ledger("register-git-source", raw_tokens=raw_tokens)
+        assert result.startswith("GUIDE:")
+        assert L._load_entries(ledger_dir) == []

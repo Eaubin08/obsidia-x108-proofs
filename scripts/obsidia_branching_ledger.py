@@ -693,12 +693,21 @@ def _git_read_blob_bytes(repo_root: Path, blob_sha: str) -> Optional[bytes]:
     return out
 
 
-def _validate_git_historical_path(historical_path: "str | None") -> "tuple[str | None, str | None]":
+def _validate_git_historical_path(
+    historical_path: "str | None", repo_root: Path,
+) -> "tuple[str | None, str | None]":
     """
     Valide historical_path SANS jamais toucher le disque (il n'a pas besoin
     d'exister dans l'arbre de travail courant — il décrit où le blob
     existait AU COMMIT). Retourne (chemin_canonique_posix, None) ou
     (None, raison_rejet).
+
+    L'espace de noms de confinement (traversée hors dépôt) est vérifié
+    contre repo_root — le MÊME dépôt que celui interrogé ensuite par
+    rev-parse/ls-tree/cat-file. Jamais d'autorité scindée (valider contre
+    un dépôt, lire le blob dans un autre). Le statut PROTÉGÉ reste, lui,
+    toujours ancré au dépôt Obsidia canonique (_REPO_ROOT) — c'est une
+    invariante globale de CE dépôt, indépendante du dépôt source lu.
     """
     if not historical_path or not str(historical_path).strip():
         return None, "GIT_SOURCE_EMPTY_PATH"
@@ -708,13 +717,45 @@ def _validate_git_historical_path(historical_path: "str | None") -> "tuple[str |
     norm = raw.replace("\\", "/")
     if norm.startswith("/") or (len(norm) > 1 and norm[1] == ":"):
         return None, "GIT_SOURCE_ABSOLUTE_PATH_REJECTED"
-    candidate = (_REPO_ROOT / norm).resolve()
+    candidate = (repo_root / norm).resolve()
+    try:
+        rel = candidate.relative_to(repo_root.resolve())
+    except ValueError:
+        return None, "GIT_SOURCE_OUTSIDE_REPO_NAMESPACE"
+    if _is_protected_resolved((_REPO_ROOT / rel).resolve()):
+        return None, "GIT_SOURCE_PROTECTED_REJECTED"
+    return rel.as_posix(), None
+
+
+def _validate_git_target_path(target_path: "str | None") -> "tuple[str | None, str | None]":
+    """
+    Valide target_path : chemin repo-relatif canonique, toujours ancré au
+    dépôt Obsidia canonique (_REPO_ROOT) — c'est là qu'une éventuelle
+    écriture future se produirait, indépendamment du dépôt source d'où le
+    blob Git est lu. N'exige PAS l'existence sur disque (la cible peut ne
+    pas encore exister). None est valide (aucune cible connue à ce stade).
+    Retourne (chemin_canonique_posix_ou_None, raison_rejet_ou_None).
+    """
+    if target_path is None:
+        return None, None
+    raw = str(target_path).strip()
+    if not raw:
+        return None, "GIT_TARGET_EMPTY_PATH"
+    if "*" in raw or "?" in raw:
+        return None, "GIT_TARGET_WILDCARD_REJECTED"
+    norm = raw.replace("\\", "/")
+    if norm.startswith("/") or (len(norm) > 1 and norm[1] == ":"):
+        candidate = Path(raw).resolve()
+    else:
+        candidate = (_REPO_ROOT / norm).resolve()
     try:
         rel = candidate.relative_to(_REPO_ROOT)
     except ValueError:
-        return None, "GIT_SOURCE_OUTSIDE_REPO_NAMESPACE"
+        return None, "GIT_TARGET_OUTSIDE_REPO_NAMESPACE"
+    if rel.as_posix() == ".":
+        return None, "GIT_TARGET_REPO_ROOT_REJECTED"
     if _is_protected_resolved(candidate):
-        return None, "GIT_SOURCE_PROTECTED_REJECTED"
+        return None, "GIT_TARGET_PROTECTED_REJECTED"
     return rel.as_posix(), None
 
 
@@ -748,7 +789,7 @@ def register_git_blob_source(
     if not commit_sha_or_ref or not str(commit_sha_or_ref).strip():
         return {"status": "REJECTED", "reason": "GIT_SOURCE_EMPTY_COMMIT_REF"}
 
-    canonical_path, reject_reason = _validate_git_historical_path(historical_path)
+    canonical_path, reject_reason = _validate_git_historical_path(historical_path, root)
     if reject_reason:
         return {"status": "REJECTED", "reason": reject_reason, "historical_path": historical_path}
 
@@ -792,21 +833,17 @@ def register_git_blob_source(
 
     source_hash = content_sha256_full[:16]  # sémantique Ledger existante préservée
 
-    if target_path:
-        # La cible désigne toujours un emplacement dans le dépôt Obsidia
-        # canonique (_REPO_ROOT) — c'est là qu'une éventuelle écriture
-        # future se produirait, indépendamment du dépôt source d'où le
-        # blob Git est lu (repo_root peut être un autre clone local).
-        tp = Path(target_path)
-        tp_resolved = tp.resolve() if tp.is_absolute() else (_REPO_ROOT / target_path).resolve()
-        if _is_protected_resolved(tp_resolved):
-            return {
-                "status": "REJECTED_PROTECTED",
-                "reason": "protected_target",
-                "target_path": target_path,
-            }
+    canonical_target, target_reject_reason = _validate_git_target_path(target_path)
+    if target_reject_reason == "GIT_TARGET_PROTECTED_REJECTED":
+        return {
+            "status": "REJECTED_PROTECTED",
+            "reason": "protected_target",
+            "target_path": target_path,
+        }
+    if target_reject_reason:
+        return {"status": "REJECTED", "reason": target_reject_reason, "target_path": target_path}
 
-    identity_path = target_path or canonical_path
+    identity_path = canonical_target or canonical_path
 
     existing = _load_entries(ledger_dir)
     dedup = classify_dedup(existing, identity_path, source_hash)
@@ -841,7 +878,7 @@ def register_git_blob_source(
         "source_repository_identity": str(root.resolve()),
         "source_content_sha256": content_sha256_full,
 
-        "target_path": target_path,
+        "target_path": canonical_target,
         "target_domain": target_domain,
 
         "session_id": None,
