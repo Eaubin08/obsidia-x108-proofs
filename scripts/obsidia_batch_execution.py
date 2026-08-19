@@ -465,6 +465,33 @@ def verify_batch_integrity(
         if current.get("target_path") != c.get("target_path"):
             return False, f"TARGET_PATH_DRIFT:{eid}"
 
+        # Provenance Git complète — un attaquant/une corruption pourrait
+        # sinon modifier UNIQUEMENT ces champs dans la proposition stockée
+        # (candidate_id/entry_id inchangé) sans que source_hash/target_path
+        # seuls le détectent.
+        stored_kind = c.get("source_kind") or "FILESYSTEM_FILE"
+        current_kind = current.get("source_kind") or "FILESYSTEM_FILE"
+        if stored_kind != current_kind:
+            return False, f"SOURCE_KIND_DRIFT:{eid}"
+        if stored_kind == "GIT_BLOB":
+            for field, label in (
+                ("source_git_commit_sha", "COMMIT"),
+                ("source_git_blob_sha", "BLOB_SHA"),
+                ("source_git_historical_path", "HISTORICAL_PATH"),
+                ("source_content_sha256", "FULL_SHA256"),
+                ("source_repository_identity", "REPOSITORY_IDENTITY"),
+            ):
+                if current.get(field) != c.get(field):
+                    return False, f"GIT_SOURCE_{label}_DRIFT:{eid}"
+
+        # Intention d'opération — provenance_refs.operation_type ne doit
+        # pas pouvoir être substitué dans la proposition stockée sans
+        # échec d'intégrité.
+        stored_op = (c.get("provenance_refs") or {}).get("operation_type")
+        current_op = (current.get("provenance_refs") or {}).get("operation_type")
+        if stored_op != current_op:
+            return False, f"OPERATION_INTENT_DRIFT:{eid}"
+
     entry_index = sel.build_entry_index_from_ledger(ledger_dir)
     candidates = sel.build_candidates_from_ledger(ledger_dir, None, scope_ids)
     edges = sel.detect_dependencies(candidates, entry_index)

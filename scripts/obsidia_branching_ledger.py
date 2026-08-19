@@ -780,9 +780,12 @@ def register_git_blob_source(
     dépôt. Fail-closed sur commit inconnu, chemin absent au commit, objet
     non-blob, mismatch de hash attendu, ou cible protégée.
 
-    Identité d'ENTRÉE (commit + chemin historique) toujours distincte de
-    l'identité de CONTENU (source_hash) — deux provenances différentes
-    restent deux entrées même si les octets sont identiques.
+    Identité d'ENTRÉE = provenance immuable complète (dépôt, commit, blob,
+    chemin historique, octets) + cible d'intégration (target_path, ou son
+    absence) — toujours distincte de l'identité de CONTENU (source_hash).
+    Deux provenances différentes, ou une même provenance vers deux cibles
+    différentes, restent des entrées distinctes même si les octets sont
+    identiques.
     """
     root = repo_root or _REPO_ROOT
 
@@ -848,9 +851,17 @@ def register_git_blob_source(
     existing = _load_entries(ledger_dir)
     dedup = classify_dedup(existing, identity_path, source_hash)
 
-    entry_id = ledger_entry_id(
-        f"DISCOVERED_GIT:{commit_sha}:{canonical_path}", source_hash,
+    # Identité d'entrée = provenance IMMUABLE complète + intention
+    # d'intégration (cible). Même source (repo+commit+chemin+blob+octets)
+    # vers deux cibles différentes DOIT rester deux entrées distinctes —
+    # ce sont deux intentions d'intégration sémantiquement différentes.
+    # target_path=None (aucune cible connue) reste distinct d'une cible
+    # explicite ultérieure : jamais fusionné en place.
+    identity_key = (
+        f"DISCOVERED_GIT:{root.resolve()}:{commit_sha}:{canonical_path}:"
+        f"{blob_sha}:{content_sha256_full}:{canonical_target or 'NO_TARGET'}"
     )
+    entry_id = ledger_entry_id(identity_key, source_hash)
 
     if any(e.get("ledger_entry_id") == entry_id for e in existing):
         return {"status": "ALREADY_REGISTERED", "ledger_entry_id": entry_id}

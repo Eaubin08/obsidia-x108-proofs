@@ -197,6 +197,8 @@ def batch_hash_from_proposal(
     execution_order: "list[str] | None" = None,
     candidate_scope_mode: "str | None" = None,
     candidate_entry_ids: "list[str] | None" = None,
+    target_paths: "list[str] | None" = None,
+    git_source_identities: "list[dict] | None" = None,
 ) -> str:
     """
     Hash couvrant la substance complète de la proposition — y compris la
@@ -205,8 +207,21 @@ def batch_hash_from_proposal(
     IDs sélectionnés. Deux batchs avec le même contenu mais un graphe de
     dépendances différent (donc un ordre d'exécution différent) doivent
     produire des batch_hash différents.
+
+    batch_hash_version : 1 (historique, formule inchangée en substance)
+    si ni target_paths ni git_source_identities ne sont fournis ; 2 sinon
+    — lie explicitement le chemin cible ET la provenance Git complète
+    (dépôt, commit, blob, chemin historique, SHA256 complet) de chaque
+    candidat GIT_BLOB sélectionné, pas seulement le source_hash tronqué
+    à 16 caractères. batch_hash n'est JAMAIS recalculé pour comparaison
+    contre une proposition déjà stockée ailleurs dans le code (toujours
+    lu tel quel depuis l'enregistrement persistant) — étendre ce champ
+    n'invalide donc aucune preuve historique déjà stockée.
     """
-    payload = json.dumps({
+    has_v2_fields = target_paths is not None or git_source_identities is not None
+    batch_hash_version = 2 if has_v2_fields else 1
+
+    payload: dict = {
         "selected": sorted(selected_entry_ids),
         "source_hashes": sorted(h for h in source_hashes if h),
         "dependency_edges": sorted(
@@ -219,8 +234,14 @@ def batch_hash_from_proposal(
         "objective": objective,
         "max_batch_size": max_batch_size,
         "selector_version": SELECTOR_VERSION,
-    }, sort_keys=True)
-    return _sha16(payload)
+        "batch_hash_version": batch_hash_version,
+    }
+    if batch_hash_version >= 2:
+        payload["target_paths"] = sorted(t for t in (target_paths or []) if t)
+        payload["git_source_identities"] = sorted(
+            json.dumps(g, sort_keys=True) for g in (git_source_identities or [])
+        )
+    return _sha16(json.dumps(payload, sort_keys=True))
 
 
 # ─── Éligibilité d'un candidat ───────────────────────────────────────────────
@@ -892,6 +913,19 @@ def propose_batch(
 
     selected_ids   = [c["candidate_id"] for c in selected]
     source_hashes  = [c["source_hash"] for c in selected if c.get("source_hash")]
+    target_paths   = [c.get("target_path") for c in selected if c.get("target_path")]
+    git_source_identities = [
+        {
+            "source_kind": c.get("source_kind"),
+            "source_repository_identity": c.get("source_repository_identity"),
+            "source_git_commit_sha": c.get("source_git_commit_sha"),
+            "source_git_blob_sha": c.get("source_git_blob_sha"),
+            "source_git_historical_path": c.get("source_git_historical_path"),
+            "source_content_sha256": c.get("source_content_sha256"),
+            "target_path": c.get("target_path"),
+        }
+        for c in selected if c.get("source_kind") == "GIT_BLOB"
+    ]
 
     bid  = batch_id_from_selection(selected_ids, objective, max_batch_size)
     bhash = batch_hash_from_proposal(
@@ -899,6 +933,8 @@ def propose_batch(
         execution_order=execution_order,
         candidate_scope_mode=candidate_scope_mode,
         candidate_entry_ids=normalized_scope_ids,
+        target_paths=target_paths,
+        git_source_identities=git_source_identities,
     )
 
     status = BATCH_PROPOSED if not (cycles or not candidates) else BATCH_HOLD

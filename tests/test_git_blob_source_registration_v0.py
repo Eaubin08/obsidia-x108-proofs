@@ -836,17 +836,14 @@ class TestBatchHashBindsGitSourceIdentity:
         h2 = batch_hash_from_proposal([r2["ledger_entry_id"]], [], [], "obj", 10)
         assert h1 != h2
 
-    def test_same_source_different_target_stays_single_entry_no_silent_overwrite(
+    def test_same_source_different_target_yields_distinct_entries(
         self, synthetic_repo, tmp_path,
     ):
         """
-        Caractéristique documentée (partagée avec le filesystem
-        register_source existant) : l'identité d'entrée ne dépend pas de
-        target_path. Réenregistrer le même (commit, chemin historique)
-        avec une cible différente ne fabrique PAS silencieusement une
-        seconde entrée avec la nouvelle cible — ALREADY_REGISTERED est
-        retourné, l'entrée stockée garde sa cible d'origine. Documenté ici
-        pour qu'aucune régression future ne le change sans le remarquer.
+        BIND_GIT_SOURCE_AND_TARGET_IDENTITY_TO_BATCH_V0 : même source
+        immuable (commit + chemin historique + blob + octets) vers deux
+        cibles différentes est DEUX intentions d'intégration distinctes —
+        chacune reçoit sa propre entrée Ledger, aucune n'écrase l'autre.
         """
         ledger_dir = tmp_path / "ledger"
         r1 = L.register_git_blob_source(
@@ -858,10 +855,46 @@ class TestBatchHashBindsGitSourceIdentity:
             ledger_dir=ledger_dir, repo_root=synthetic_repo,
         )
         assert r1["status"] == "DISCOVERED"
+        assert r2["status"] == "DISCOVERED"
+        assert r1["ledger_entry_id"] != r2["ledger_entry_id"]
+        entries = {e["ledger_entry_id"]: e for e in L._load_entries(ledger_dir)}
+        assert len(entries) == 2
+        assert entries[r1["ledger_entry_id"]]["target_path"] == "dst/a.py"
+        assert entries[r2["ledger_entry_id"]]["target_path"] == "dst/b.py"
+        # Même identité de CONTENU malgré des entrées distinctes.
+        assert entries[r1["ledger_entry_id"]]["source_hash"] == entries[r2["ledger_entry_id"]]["source_hash"]
+
+    def test_exact_same_registration_repeated_is_idempotent(self, synthetic_repo, tmp_path):
+        ledger_dir = tmp_path / "ledger"
+        r1 = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="dst/a.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        r2 = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="dst/a.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        assert r1["status"] == "DISCOVERED"
         assert r2["status"] == "ALREADY_REGISTERED"
-        entries = L._load_entries(ledger_dir)
-        assert len(entries) == 1
-        assert entries[0]["target_path"] == "dst/a.py"
+        assert r2["ledger_entry_id"] == r1["ledger_entry_id"]
+        assert len(L._load_entries(ledger_dir)) == 1
+
+    def test_targetless_vs_targeted_registration_are_distinct(self, synthetic_repo, tmp_path):
+        ledger_dir = tmp_path / "ledger"
+        r_none = L.register_git_blob_source(
+            "candidate", "src/module.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        r_target = L.register_git_blob_source(
+            "candidate", "src/module.py", target_path="scripts/check_forbidden_content.py",
+            ledger_dir=ledger_dir, repo_root=synthetic_repo,
+        )
+        assert r_none["status"] == "DISCOVERED"
+        assert r_target["status"] == "DISCOVERED"
+        assert r_none["ledger_entry_id"] != r_target["ledger_entry_id"]
+        entries = {e["ledger_entry_id"]: e for e in L._load_entries(ledger_dir)}
+        assert entries[r_none["ledger_entry_id"]]["target_path"] is None
+        assert entries[r_target["ledger_entry_id"]]["target_path"] == "scripts/check_forbidden_content.py"
 
 
 # ─── P. CLI réel — arguments cités/multi-mots, environnement synthétique ────
