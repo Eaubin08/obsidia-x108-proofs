@@ -216,6 +216,31 @@ class TestLegacyBatchHashCompatibility:
         loaded = _load_batch("legacy-batch-1", selector_dir)
         assert loaded["batch_hash"] == legacy_hash
 
+    def test_legacy_proposal_without_field_interpreted_as_v1(self):
+        """Une proposition historique sans batch_hash_version est V1 par convention."""
+        legacy_shaped_proposal = {"batch_id": "old", "batch_hash": "whatever"}
+        assert legacy_shaped_proposal.get("batch_hash_version", 1) == 1
+
+    def test_new_git_proposal_persists_batch_hash_version_2_explicitly(
+        self, synthetic_repo, tmp_path,
+    ):
+        ledger_dir = tmp_path / "ledger"
+        selector_dir = tmp_path / "selector"
+        reg = _register(synthetic_repo, ledger_dir, target_path="dst/module.py")
+        proposal = _propose(ledger_dir, selector_dir, reg["ledger_entry_id"])
+        assert proposal["batch_hash_version"] == 2
+
+    def test_new_filesystem_only_proposal_persists_batch_hash_version_1_explicitly(
+        self, tmp_path,
+    ):
+        ledger_dir = tmp_path / "ledger"
+        selector_dir = tmp_path / "selector"
+        src = tmp_path / "plain3.py"
+        src.write_bytes(b"PLAIN3\n")
+        reg = L.register_source(str(src), ledger_dir=ledger_dir)
+        proposal = _propose(ledger_dir, selector_dir, reg["ledger_entry_id"])
+        assert proposal["batch_hash_version"] == 1
+
 
 # ─── 3. verify_batch_integrity — dérive détectée pour chaque champ Git ──────
 

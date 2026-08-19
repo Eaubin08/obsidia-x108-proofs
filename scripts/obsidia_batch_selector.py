@@ -927,6 +927,12 @@ def propose_batch(
         for c in selected if c.get("source_kind") == "GIT_BLOB"
     ]
 
+    # Persisté explicitement dans le BatchProposal (pas seulement injecté
+    # dans le payload haché) — preuve durable et auto-descriptive de la
+    # formule utilisée. Une proposition historique sans ce champ reste
+    # interprétée comme version 1 (jamais réécrite/migrée).
+    bhash_version = 2 if (target_paths or git_source_identities) else 1
+
     bid  = batch_id_from_selection(selected_ids, objective, max_batch_size)
     bhash = batch_hash_from_proposal(
         selected_ids, source_hashes, edges, objective, max_batch_size,
@@ -992,6 +998,7 @@ def propose_batch(
 
         "ledger_refs": selected_ids,
         "batch_hash": bhash,
+        "batch_hash_version": bhash_version,
 
         "status": status,
         "human_approved": False,
