@@ -34,6 +34,9 @@ ALLOWED_PATH_FRAGMENTS = [
     "docs/security/",
     ".github/workflows/",
     "docs/core_import/POST_P80_SECRET_ROTATION",
+    # brody_secret_scrubber.py is a sanitisation utility — no credential content.
+    # "secret" in the filename is intentional (it scrubs secrets from outputs).
+    "apps/obsidia_api/brody_secret_scrubber.py",
 ]
 
 def norm(path: str) -> str:
