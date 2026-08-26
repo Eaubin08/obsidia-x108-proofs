@@ -41,6 +41,7 @@ import datetime
 import hashlib
 import json
 import os
+import subprocess
 import time
 from pathlib import Path
 from typing import Optional
@@ -124,6 +125,51 @@ def _selector_module():
 
 # ─── Resolution de la source — lecture reelle, jamais fabriquee ─────────────
 
+# ─── Identité de dépôt Git (CLOSE_ACD02_GIT_WORKTREE_SOURCE_REPOSITORY_IDENTITY_GAP_V0) ─
+
+def derive_git_repository_identity(path: "str | Path") -> Optional[str]:
+    """
+    GIT_COMMON_REPOSITORY_IDENTITY_V0 — identité de dépôt DÉRIVÉE, jamais
+    assertée par l'appelant. Résout `git rev-parse --git-common-dir` DEPUIS
+    le chemin donné et normalise en chemin absolu résolu. Deux worktrees
+    liés au MÊME dépôt (`git worktree add`) partagent ce répertoire — un
+    clone indépendant, même avec un contenu byte-identique, en a un
+    différent. None si le chemin n'est pas dans un arbre de travail Git
+    accessible (jamais fabriqué, jamais deviné).
+    """
+    p = Path(path)
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=str(p), capture_output=True, text=True, timeout=15,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        return None
+    if proc.returncode != 0:
+        return None
+    out = proc.stdout.strip()
+    if not out:
+        return None
+    common = Path(out)
+    if not common.is_absolute():
+        common = p / out
+    try:
+        return str(common.resolve())
+    except OSError:
+        return None
+
+
+def same_git_repository(path_a: "str | Path", path_b: "str | Path") -> bool:
+    """
+    TRUE uniquement si les deux chemins résolvent vers le MÊME
+    git-common-dir. Chemin malformé, absent, ou non-Git -> None ->
+    toujours FALSE (fail-closed, jamais une comparaison partielle).
+    """
+    identity_a = derive_git_repository_identity(path_a)
+    identity_b = derive_git_repository_identity(path_b)
+    return identity_a is not None and identity_b is not None and identity_a == identity_b
+
+
 def resolve_source_bytes(child: dict, repo_root: Path) -> "tuple[Optional[bytes], Optional[str]]":
     """
     Retourne (octets_source, raison_echec). octets_source est None si la
@@ -170,7 +216,13 @@ def resolve_source_bytes(child: dict, repo_root: Path) -> "tuple[Optional[bytes]
 
         actual_repo_identity = str(repo_root.resolve())
         if expected_repo_identity and expected_repo_identity != actual_repo_identity:
-            return None, "SOURCE_REPOSITORY_IDENTITY_MISMATCH"
+            # Chemins littéraux différents : encore valide si les DEUX
+            # résolvent vers le même dépôt Git (worktrees liés) — jamais
+            # sur la seule base d'un commit/blob/SHA identique, jamais sur
+            # une URL remote. Un clone indépendant reste rejeté même à
+            # contenu byte-identique (identités de git-common-dir distinctes).
+            if not same_git_repository(expected_repo_identity, repo_root):
+                return None, "SOURCE_REPOSITORY_IDENTITY_MISMATCH"
 
         led = _ledger_module()
         blob_sha = led._git_blob_sha_at_commit(repo_root, commit_sha, historical_path)
