@@ -27,7 +27,8 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # version par defaut pour toute NOUVELLE capture (create_pre_execution_context)
+SUPPORTED_SCHEMA_VERSIONS = (1, 2)
 DECISION_AUTHORITY = "KX108_ONLY"
 
 STATUS_STORED = "STORED"
@@ -63,7 +64,7 @@ _MANIFEST_BOUND_FIELDS = (
     "test_contract_hash", "schema_version",
 )
 
-_CONTEXT_BOUND_FIELDS = (
+_CONTEXT_BOUND_FIELDS_V1 = (
     "context_schema_version", "context_id", "created_at",
     "repository_identity", "repository_root",
     "execution_worktree_path", "branch_name", "base_sha",
@@ -76,6 +77,31 @@ _CONTEXT_BOUND_FIELDS = (
     "manifest_sha256", "legacy_manifest_hash_short",
     "decision_authority",
 )
+
+# V2 — SELF_CONTAINED_MANIFEST_REPAIR (CLOSE_PREEXEC_CONTEXT_PROPAGATION_GAP_V0) :
+# ajoute "manifest" (le dict COMPLET deja utilise pour calculer manifest_sha256,
+# persiste tel quel) afin qu'un verificateur independant puisse recalculer
+# manifest_sha256 UNIQUEMENT depuis les octets persistes, sans connaissance
+# hors-bande (schema_version/test_contract_hash n'etaient pas persistes sous
+# ces noms en V1 — c'etait le defaut trouve en revue humaine).
+_CONTEXT_BOUND_FIELDS_V2 = (
+    "context_schema_version", "context_id", "created_at",
+    "repository_identity", "repository_root",
+    "execution_worktree_path", "branch_name", "base_sha",
+    "target_path", "target_pre_sha256",
+    "source_kind", "source_repository_identity", "source_commit", "source_blob_sha",
+    "source_path", "source_sha256",
+    "operation", "approved_scope",
+    "worktree_isolated", "branch_isolated",
+    "protected_scope_status",
+    "manifest", "manifest_sha256", "legacy_manifest_hash_short",
+    "decision_authority",
+)
+
+_CONTEXT_BOUND_FIELDS_BY_VERSION = {1: _CONTEXT_BOUND_FIELDS_V1, 2: _CONTEXT_BOUND_FIELDS_V2}
+
+# Alias retro-compatible — code/tests existants qui referencent le nom plat.
+_CONTEXT_BOUND_FIELDS = _CONTEXT_BOUND_FIELDS_V2
 
 
 def _now() -> str:
@@ -205,7 +231,16 @@ def compute_manifest_sha256(fields: dict) -> str:
 
 
 def compute_context_record_hash(record: dict) -> str:
-    payload = json.dumps({k: record.get(k) for k in _CONTEXT_BOUND_FIELDS}, sort_keys=True)
+    """
+    Champs liés dépendants de context_schema_version — jamais
+    réinterprétés silencieusement : un enregistrement V1 existant se
+    hash toujours avec _CONTEXT_BOUND_FIELDS_V1, un V2 avec
+    _CONTEXT_BOUND_FIELDS_V2. Version absente/inconnue -> V2 (dernier
+    schéma) par défaut pour un dict construit à la volée.
+    """
+    version = record.get("context_schema_version", SCHEMA_VERSION)
+    fields = _CONTEXT_BOUND_FIELDS_BY_VERSION.get(version, _CONTEXT_BOUND_FIELDS_V2)
+    payload = json.dumps({k: record.get(k) for k in fields}, sort_keys=True)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -258,11 +293,21 @@ def load_pre_execution_context_record(context_id: str, store_dir: Optional[Path]
 
 
 def verify_pre_execution_context_record(record: Optional[dict]) -> "tuple[bool, Optional[str]]":
+    """
+    Version-aware : un enregistrement V1 historique reste vérifiable
+    sous ses propres règles (manifest_sha256 non re-vérifiable de
+    façon autonome — limitation connue, documentée, jamais silencieuse).
+    Un enregistrement V2 voit EN PLUS son manifest_sha256 recalculé
+    UNIQUEMENT depuis record["manifest"] (persisté), sans aucune
+    connaissance hors-bande.
+    """
     if record is None:
         return False, "CONTEXT_RECORD_MISSING"
-    if record.get("context_schema_version") != SCHEMA_VERSION:
+    version = record.get("context_schema_version")
+    if version not in SUPPORTED_SCHEMA_VERSIONS:
         return False, "CONTEXT_RECORD_SCHEMA_UNSUPPORTED"
-    for f in _CONTEXT_BOUND_FIELDS:
+    fields = _CONTEXT_BOUND_FIELDS_BY_VERSION[version]
+    for f in fields:
         if f not in record:
             return False, f"CONTEXT_RECORD_FIELD_MISSING:{f}"
     if record.get("decision_authority") != DECISION_AUTHORITY:
@@ -270,6 +315,10 @@ def verify_pre_execution_context_record(record: Optional[dict]) -> "tuple[bool, 
     expected_hash = compute_context_record_hash(record)
     if record.get("context_record_hash") != expected_hash:
         return False, "CONTEXT_RECORD_HASH_MISMATCH"
+    if version >= 2:
+        recomputed_manifest_sha256 = compute_manifest_sha256(record.get("manifest") or {})
+        if recomputed_manifest_sha256 != record.get("manifest_sha256"):
+            return False, "MANIFEST_SHA256_NOT_SELF_CONTAINED_RECOMPUTATION_MISMATCH"
     return True, None
 
 
@@ -341,6 +390,11 @@ def create_pre_execution_context(
         "test_contract_hash": test_contract_hash,
         "schema_version": SCHEMA_VERSION,
     }
+    # SELF_CONTAINED_MANIFEST_REPAIR : le dict COMPLET utilisé pour le hash
+    # est persisté tel quel (record["manifest"]) — un vérificateur
+    # indépendant recalcule manifest_sha256 UNIQUEMENT depuis ces octets
+    # persistés, sans connaissance hors-bande de test_contract_hash ou
+    # schema_version au moment de la capture.
     manifest_sha256 = compute_manifest_sha256(manifest_fields)
 
     record: dict = {
@@ -364,11 +418,13 @@ def create_pre_execution_context(
         "worktree_isolated": isolation["worktree_isolated"],
         "branch_isolated": isolation["branch_isolated"],
         "protected_scope_status": protected_scope_status,
+        "manifest": manifest_fields,
         "manifest_sha256": manifest_sha256,
         "legacy_manifest_hash_short": legacy_manifest_hash_short,
         "decision_authority": DECISION_AUTHORITY,
     }
-    record["context_id"] = f"pec-{hashlib.sha256(json.dumps({k: record.get(k) for k in _CONTEXT_BOUND_FIELDS if k not in ('context_schema_version','context_id','created_at')}, sort_keys=True).encode('utf-8')).hexdigest()[:32]}"
+    identity_seed_fields = [f for f in _CONTEXT_BOUND_FIELDS_V2 if f not in ("context_schema_version", "context_id", "created_at")]
+    record["context_id"] = f"pec-{hashlib.sha256(json.dumps({k: record.get(k) for k in identity_seed_fields}, sort_keys=True).encode('utf-8')).hexdigest()[:32]}"
     record["context_record_hash"] = compute_context_record_hash(record)
 
     store_result = store_pre_execution_context_record(record, store_dir)

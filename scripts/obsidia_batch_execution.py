@@ -726,6 +726,8 @@ def prepare_execution(
     execution_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
     test_contract: Optional[dict] = None,
+    pre_execution_context: Optional[dict] = None,
+    pre_execution_context_dir: Optional[Path] = None,
 ) -> dict:
     """
     Charge le BatchProposal stocké, vérifie son intégrité, construit
@@ -739,6 +741,22 @@ def prepare_execution(
     lié dans execution_authority_hash — l'approbation humaine engage
     donc transitivement l'EXACT contrat de test, pas seulement son ID.
     Absent (None) pour les appels existants — comportement inchangé.
+
+    pre_execution_context (optionnel, additif —
+    CLOSE_PREEXEC_CONTEXT_PROPAGATION_GAP_V0) :
+    {"context_id": ..., "context_record_hash": ...} — UNE référence,
+    jamais des faits fournis directement. Le contexte canonique
+    correspondant est CHARGÉ et VÉRIFIÉ (schéma, hash d'enregistrement,
+    identité) AVANT toute liaison à l'enveloppe — l'appelant ne peut
+    jamais faire passer worktree_isolated / branch_isolated / base_sha
+    / manifest_hash directement : ces faits n'existent QUE dans le
+    contexte canonique déjà capturé et vérifié séparément par
+    obsidia_pre_execution_context.create_pre_execution_context. Contexte
+    absent, introuvable, de schéma non supporté, ou dont le hash fourni
+    ne correspond pas à l'enregistrement rechargé -> échec fermé
+    (enveloppe BATCH_HOLD), rien n'est lié à l'autorité d'exécution.
+    Absent (None) pour les appels existants — comportement historique
+    (ACD-01) strictement inchangé.
     """
     sel = _selector_module()
     proposal = sel._load_batch(batch_id, selector_dir)
@@ -764,6 +782,38 @@ def prepare_execution(
         )
         _save_execution(envelope, execution_dir)
         return envelope
+
+    verified_pre_execution_context = None
+    if pre_execution_context is not None:
+        import sys as _sys
+        _scripts = str(Path(__file__).resolve().parent)
+        if _scripts not in _sys.path:
+            _sys.path.insert(0, _scripts)
+        import obsidia_pre_execution_context as _pec
+
+        ref_context_id = pre_execution_context.get("context_id")
+        ref_record_hash = pre_execution_context.get("context_record_hash")
+        loaded_context = _pec.load_pre_execution_context_record(ref_context_id, pre_execution_context_dir)
+        ctx_ok, ctx_reason = _pec.verify_pre_execution_context_record(loaded_context)
+        if not ctx_ok:
+            envelope = _blank_envelope(
+                batch_execution_id, batch_id, proposal.get("batch_hash"),
+                proposal.get("candidate_scope_hash"),
+                aggregate_status=BATCH_HOLD,
+                integrity_error=f"PRE_EXECUTION_CONTEXT_INVALID:{ctx_reason}",
+            )
+            _save_execution(envelope, execution_dir)
+            return envelope
+        if loaded_context.get("context_id") != ref_context_id or loaded_context.get("context_record_hash") != ref_record_hash:
+            envelope = _blank_envelope(
+                batch_execution_id, batch_id, proposal.get("batch_hash"),
+                proposal.get("candidate_scope_hash"),
+                aggregate_status=BATCH_HOLD,
+                integrity_error="PRE_EXECUTION_CONTEXT_REFERENCE_MISMATCH",
+            )
+            _save_execution(envelope, execution_dir)
+            return envelope
+        verified_pre_execution_context = loaded_context
 
     root = repo_root or _REPO_ROOT
     selected = proposal.get("selected_entries") or []
@@ -880,6 +930,10 @@ def prepare_execution(
     else:
         envelope["test_contract"] = None
         envelope["test_contract_hash"] = None
+
+    if verified_pre_execution_context is not None:
+        envelope["pre_execution_context_id"] = verified_pre_execution_context["context_id"]
+        envelope["pre_execution_context_record_hash"] = verified_pre_execution_context["context_record_hash"]
 
     envelope["execution_authority_hash"] = compute_execution_authority_hash(envelope)
 
