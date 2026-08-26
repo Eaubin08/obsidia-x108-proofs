@@ -53,6 +53,7 @@ from obsidia_law_registry_v1 import (  # noqa: E402
     get_terminal_law_panel_v1,
     get_terminal_law_registry_v1,
 )
+import obsidia_family_wiring as _family_wiring  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).resolve().parent / "obsidia_registry.yaml"
@@ -8969,6 +8970,50 @@ def format_obsidure_operator_task_card_v1(card: dict) -> str:
     )
 
 
+# ----------------------------------------------------------------------------
+# TERMINAL_FAMILY_WIRING_SELF_AUDIT_V0 — "wiring status/audit/blockers <FAMILY>"
+# READ_ONLY. NON_SOVEREIGN. Aucune mutation, aucune resolution de blocker,
+# aucune invocation KX108 -- restitue l'etat canonique deja persiste et son
+# recalcul independant. Voir scripts/obsidia_family_wiring.py.
+# ----------------------------------------------------------------------------
+
+def build_family_wiring_audit_response_v1(family_id: str, registry: dict) -> dict:
+    return _family_wiring.audit_family_wiring(family_id, registry, repo_root=REPO_ROOT)
+
+
+def format_family_wiring_audit_v1(result: dict) -> str:
+    status = result.get("status")
+    if status != _family_wiring.STATUS_OK:
+        return (
+            f"FAMILLE : {result.get('family')}\n"
+            f"STATUT  : {status}\n"
+            f"(echec ferme -- aucune donnee fabriquee)"
+        )
+
+    prov = result.get("provenance", {})
+    lines = [
+        f"FAMILLE : {result['family']}  (authority={result['authority']}, decision_authority={result['decision_authority']})",
+        f"family_status        : {result['family_status']}",
+        f"fully_closed         : {result['fully_closed']}",
+        f"global_manifest_complete       : {result['global_manifest_complete']}",
+        f"global_relation_graph_complete : {result['global_relation_graph_complete']}",
+        f"global_registration_blocked    : {result['global_registration_blocked']}",
+        "",
+        f"active_file_blockers      : persisted={result['persisted_active_file_blockers']}  recomputed={result['recomputed_active_file_blockers']}",
+        f"active_global_blockers    : persisted={result['persisted_active_global_blockers']}  recomputed={result['recomputed_active_global_blockers']}",
+        f"active_total_blockers     : persisted={result['persisted_active_total_blockers']}  recomputed={result['recomputed_active_total_blockers']}",
+        f"historical_superseded     : persisted={result['persisted_historical_superseded']}  recomputed={result['recomputed_historical_superseded']}",
+        f"consistency_status        : {result['consistency_status']}",
+        "",
+        f"active_blockers : {len(result['active_blockers'])} (voir --json pour le detail complet)",
+        f"historical_superseded_blockers : {len(result['historical_superseded_blockers'])}",
+        "",
+        f"provenance.state_source_sha256 : {prov.get('state_source_sha256')}",
+        f"provenance.git_branch          : {prov.get('git_branch')}",
+        f"provenance.git_head            : {prov.get('git_head')}",
+        f"provenance.captured_at         : {prov.get('captured_at')}",
+    ]
+    return "\n".join(lines)
 
 
 def main(argv: list[str]) -> int:
@@ -8976,6 +9021,18 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    # TERMINAL_FAMILY_WIRING_SELF_AUDIT_V0 : "wiring status|audit|blockers <FAMILY>"
+    # READ_ONLY. NON_SOVEREIGN. Toutes les sous-commandes retournent le meme
+    # resultat structure (audit complet) -- alias distincts pour lisibilite
+    # d'invocation seulement, aucune semantique differente.
+    if argv and argv[0].lower() == "wiring" and len(argv) >= 3 and argv[1].lower() in ("status", "audit", "blockers"):
+        family_arg = argv[2].upper()
+        resp = build_family_wiring_audit_response_v1(family_arg, registry)
+        if len(argv) > 3 and argv[3].lower() == "--json":
+            print(json.dumps(resp, indent=2, default=str))
+        else:
+            print(format_family_wiring_audit_v1(resp))
+        return 0
     # Skill resolver cleanup readonly : skill resolver status / skills status /
     # resolver skills / status skills / "show skills status" — resolver_authority=NONE
     _src_argv = argv[0].split() if len(argv) == 1 else argv

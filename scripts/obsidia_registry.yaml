@@ -103,3 +103,14 @@ layers:
 policy:
   deny_keywords: [commit, push, deploy, deploie, apply, applique, act, ecris, ecrire, write, delete, supprime, supprimer, efface, mutate, mute, install, installe, "rm -", force, reset, rebase, amend]
   deny_message: Mutation ou action critique detectee. Le terminal V0 est readonly et sans chemin d'application. Utilise le workflow gated approprie (Obsidure proposals / approbation humaine).
+
+# TERMINAL_FAMILY_WIRING_SELF_AUDIT_V0 — enregistrement generique de famille.
+# Le lecteur (scripts/obsidia_family_wiring.py) ne connait AUCUN nom de
+# famille en dur — il lit uniquement cette section. Ajouter une famille
+# = ajouter une entree ici, jamais du code dedie dans le kernel/terminal.
+families:
+  AGENTS:
+    canonical_state: periphery/agents/agents_file_wiring_global_state.json
+    artifact_index: periphery/agents/agents_file_wiring_artifact_index.json
+    authority: NON_SOVEREIGN
+    write_capability: false
