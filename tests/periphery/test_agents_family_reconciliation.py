@@ -237,10 +237,16 @@ def test_family031_file_blockers_total_16():
     assert rec["agents_family_file_blockers"] == 16
 
 
-def test_family032_global_blockers_total_3():
+def test_family032_active_global_blockers_0():
     d = _gs()
     rec = d["agents_family_reconciliation"]
-    assert rec["agents_family_global_blockers"] == 3
+    assert rec["agents_family_global_blockers"] == 0
+
+
+def test_family032b_historical_superseded_global_blockers_3():
+    d = _gs()
+    rec = d["agents_family_reconciliation"]
+    assert rec["agents_family_historical_superseded_global_blockers"] == 3
 
 
 def test_family033_wave005_file_blockers_16():
@@ -262,10 +268,10 @@ def test_family035_blocker_matrix_present():
     assert "blockers" in bm
 
 
-def test_family036_blocker_matrix_19_entries():
+def test_family036_blocker_matrix_19_objects_16_active():
     d = _gs()
     bm = d["blocker_matrix_v1"]
-    assert bm["total_blockers"] == 19
+    assert bm["total_blockers"] == 16
     assert len(bm["blockers"]) == 19
 
 
@@ -410,24 +416,24 @@ def test_family056_family_not_fully_closed():
     assert rec["agents_family_fully_closed"] is False
 
 
-def test_family057_global_registration_blocked():
+def test_family057_global_registration_superseded():
     d = _gs()
     rec = d["agents_family_reconciliation"]
-    assert rec["global_registration_blocked"] is True
+    assert rec["global_registration_blocked"] is False
 
 
-def test_family058_global_manifest_not_complete():
+def test_family058_global_manifest_complete():
     d = _gs()
     rec = d["agents_family_reconciliation"]
-    assert rec["global_manifest_complete"] is False
-    assert d["global_manifest_complete"] is False
+    assert rec["global_manifest_complete"] is True
+    assert d["global_manifest_complete"] is True
 
 
-def test_family059_global_relation_graph_not_complete():
+def test_family059_global_relation_graph_complete():
     d = _gs()
     rec = d["agents_family_reconciliation"]
-    assert rec["global_relation_graph_complete"] is False
-    assert d["global_relation_graph_complete"] is False
+    assert rec["global_relation_graph_complete"] is True
+    assert d["global_relation_graph_complete"] is True
 
 
 def test_family060_modules_decision_authorized():
@@ -446,7 +452,7 @@ def test_family060_modules_decision_authorized():
 def test_family061_family_status_correct():
     d = _gs()
     rec = d["agents_family_reconciliation"]
-    assert rec["family_status"] == "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ARTIFACTS_BLOCKED"
+    assert rec["family_status"] == "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ACCOUNTING_SUPERSEDED_FILE_BLOCKERS_REMAIN"
 
 
 def test_family062_family_is_non_sovereign():
@@ -459,30 +465,30 @@ def test_family062_family_is_non_sovereign():
     assert rec["memory_write"] is False
 
 
-def test_family063_global_state_still_provisional():
+def test_family063_global_state_accounting_resolved():
     d = _gs()
-    assert d.get("global_manifest_complete") is False
-    assert d.get("global_relation_graph_complete") is False
+    assert d.get("global_manifest_complete") is True
+    assert d.get("global_relation_graph_complete") is True
 
 
-def test_family064_artifact_index_still_provisional():
+def test_family064_artifact_index_accounting_resolved():
     d = _ai()
-    assert d.get("global_manifest_complete") is False
-    assert d.get("global_relation_graph_complete") is False
-    assert d.get("global_registration_blocked") is True
+    assert d.get("global_manifest_complete") is True
+    assert d.get("global_relation_graph_complete") is True
+    assert d.get("global_registration_blocked") is False
     assert d.get("artifact_role") == "PROVISIONAL_CAMPAIGN_ARTIFACT_REGISTRY_V1"
 
 
 def test_family065_artifact_index_family_status():
     d = _ai()
     rec = d.get("agents_family_reconciliation", {})
-    assert rec.get("family_status") == "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ARTIFACTS_BLOCKED"
+    assert rec.get("family_status") == "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ACCOUNTING_SUPERSEDED_FILE_BLOCKERS_REMAIN"
 
 
 def test_family066_wave005_global_status_preserved():
     d = _gs()
     rec = d["wave005_global_reconciliation"]
-    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_SUPERSEDED_FILE_BLOCKERS_REMAIN"
     assert rec["wave005_fully_closed"] is False
 
 
@@ -696,3 +702,114 @@ def test_family090_artifact_index_consistency_fields():
     assert rec["global_blocker_root_causes"] == ["ART193_ART200_ABSENT"]
     assert rec["global_blockers_share_root_cause"] is True
     assert rec["silent_double_count"] == 0
+
+
+# ---------------------------------------------------------------------------
+# FAMILY-091 to FAMILY-102: AGENTS_GLOBAL_METADATA_REMEDIATION_V1 -- supersession schema
+# ---------------------------------------------------------------------------
+
+def test_family091_legacy_file_blocker_missing_resolution_status_is_open():
+    d = _gs()
+    for b in d["blocker_matrix_v1"]["blockers"]:
+        if b.get("is_file_blocker"):
+            assert "resolution_status" not in b or b.get("resolution_status") == "OPEN"
+
+
+def test_family092_legacy_file_blockers_count_as_active():
+    d = _gs()
+    active_file = [
+        b for b in d["blocker_matrix_v1"]["blockers"]
+        if b.get("is_file_blocker") and b.get("resolution_status", "OPEN") == "OPEN"
+    ]
+    assert len(active_file) == 16
+
+
+def test_family093_superseded_global_blocker_objects_persist():
+    d = _gs()
+    ids = {b["blocker_id"] for b in d["blocker_matrix_v1"]["blockers"]}
+    assert "BLK-GLOBAL-001" in ids
+    assert "BLK-GLOBAL-002" in ids
+    assert "BLK-GLOBAL-003" in ids
+
+
+def test_family094_superseded_global_blockers_excluded_from_active_count():
+    d = _gs()
+    active_global = [
+        b for b in d["blocker_matrix_v1"]["blockers"]
+        if b.get("is_global_blocker") and b.get("resolution_status", "OPEN") == "OPEN"
+    ]
+    assert len(active_global) == 0
+
+
+def test_family095_superseded_blockers_have_resolved_by_provider():
+    d = _gs()
+    expected = {
+        "BLK-GLOBAL-001": "periphery/agents/agents_file_wiring_global_state.json#wave_registry+agents_family_reconciliation",
+        "BLK-GLOBAL-002": "periphery/agents/agents_file_wiring_artifact_index.json#wave_file_manifests",
+        "BLK-GLOBAL-003": "periphery/agents/agents_file_wiring_artifact_index.json#relation_graph",
+    }
+    for b in d["blocker_matrix_v1"]["blockers"]:
+        if b.get("blocker_id") in expected:
+            assert b["resolution_status"] == "SUPERSEDED"
+            assert b["resolved_by_provider"] == expected[b["blocker_id"]]
+            assert b["resolution_reason"]
+            assert b["resolved_at"]
+
+
+def test_family096_superseded_blockers_retain_historical_root_cause():
+    d = _gs()
+    for b in d["blocker_matrix_v1"]["blockers"]:
+        if b.get("blocker_id") in ("BLK-GLOBAL-001", "BLK-GLOBAL-002", "BLK-GLOBAL-003"):
+            assert b["global_blocker_root_cause"] == "ART193_ART200_ABSENT"
+
+
+def test_family097_active_global_blockers_equals_0():
+    d = _gs()
+    assert d["agents_family_reconciliation"]["agents_family_global_blockers"] == 0
+
+
+def test_family098_active_file_blockers_equals_16():
+    d = _gs()
+    assert d["agents_family_reconciliation"]["agents_family_file_blockers"] == 16
+
+
+def test_family099_active_total_blockers_equals_16():
+    d = _gs()
+    bm = d["blocker_matrix_v1"]
+    assert bm["total_blockers"] == 16
+    assert bm["file_blockers"] == 16
+    assert bm["global_blockers"] == 0
+
+
+def test_family100_historical_superseded_global_blockers_equals_3():
+    d = _gs()
+    assert d["agents_family_reconciliation"]["agents_family_historical_superseded_global_blockers"] == 3
+    assert d["blocker_matrix_v1"]["total_historical_superseded"] == 3
+
+
+def test_family101_agents_fully_closed_still_false():
+    d = _gs()
+    assert d["agents_family_reconciliation"]["agents_family_fully_closed"] is False
+
+
+def test_family102_no_art193_art200_path_fabricated():
+    d = _gs()
+    for b in d["blocker_matrix_v1"]["blockers"]:
+        provider = b.get("resolved_by_provider", "")
+        assert "ART193" not in provider
+        assert "ART194" not in provider
+        assert "ART195" not in provider
+        assert "ART196" not in provider
+        assert "ART197" not in provider
+        assert "ART198" not in provider
+        assert "ART199" not in provider
+        assert "ART200" not in provider
+    d2 = _ai()
+    gfm = d2["global_artifacts"]["GLOBAL_FILE_MANIFEST"]
+    grg = d2["global_artifacts"]["GLOBAL_RELATION_GRAPH"]
+    for entry in (gfm, grg):
+        assert entry["path"] in (
+            "periphery/agents/agents_file_wiring_artifact_index.json",
+        )
+        for art_id in ("ART193", "ART194", "ART195", "ART196", "ART197", "ART198", "ART199", "ART200"):
+            assert art_id not in entry["path"]

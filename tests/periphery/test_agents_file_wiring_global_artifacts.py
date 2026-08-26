@@ -235,45 +235,55 @@ def test_ga_053_global_artifacts_not_in_brody_primary():
 # GA-054 to GA-058 — OPTION B: provisional state, blocking metadata
 # ---------------------------------------------------------------------------
 
-def test_ga_054_global_manifest_not_complete():
-    """OPTION B: no authoritative AGENTS_FILE_WIRING global file manifest exists."""
+def test_ga_054_global_manifest_complete():
+    """AGENTS_GLOBAL_METADATA_REMEDIATION_V1: wave_file_manifests supersedes the invalid
+    ART193-ART200 requirement and constitutes the authoritative AGENTS_FILE_WIRING global
+    file manifest."""
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_manifest_complete"] is False
+    assert d["global_manifest_complete"] is True
     d2 = _load("periphery/agents/agents_file_wiring_artifact_index.json")
-    assert d2["global_manifest_complete"] is False
+    assert d2["global_manifest_complete"] is True
 
 
-def test_ga_055_global_relation_graph_not_complete():
-    """OPTION B: no authoritative AGENTS_FILE_WIRING global relation graph exists."""
+def test_ga_055_global_relation_graph_complete():
+    """AGENTS_GLOBAL_METADATA_REMEDIATION_V1: relation_graph supersedes the invalid
+    ART193-ART200 requirement and constitutes the authoritative AGENTS_FILE_WIRING global
+    relation graph."""
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
-    assert d["global_relation_graph_complete"] is False
+    assert d["global_relation_graph_complete"] is True
     d2 = _load("periphery/agents/agents_file_wiring_artifact_index.json")
-    assert d2["global_relation_graph_complete"] is False
+    assert d2["global_relation_graph_complete"] is True
 
 
 def test_ga_056_art193_to_200_not_found():
-    """OPTION B: prior global artifact IDs ART193-ART200 absent from tree and recent history."""
+    """Historical fact preserved unchanged: prior global artifact IDs ART193-ART200 were
+    never found in tree or recent history. This narrative remains true even after the
+    accounting error is superseded -- it is not rewritten."""
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     status = d.get("prior_global_artifacts_recovery_status", "")
     assert "ART193" in status
     assert "NOT_FOUND" in status
 
 
-def test_ga_057_global_registration_blocked():
-    """OPTION B: artifact index declares global registration as blocked."""
+def test_ga_057_global_registration_superseded():
+    """AGENTS_GLOBAL_METADATA_REMEDIATION_V1: global registration blocker superseded."""
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
-    assert d["global_registration_blocked"] is True
+    assert d["global_registration_blocked"] is False
 
 
-def test_ga_058_global_file_manifest_entry_absent():
-    """OPTION B: GLOBAL_FILE_MANIFEST entry in artifact index has exists=false and path=null."""
+def test_ga_058_global_file_manifest_entry_present():
+    """AGENTS_GLOBAL_METADATA_REMEDIATION_V1: GLOBAL_FILE_MANIFEST/GLOBAL_RELATION_GRAPH
+    entries now bind to the real wave_file_manifests/relation_graph sections of this same
+    file -- a real filesystem path, never an ART193-ART200 path."""
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     gfm = d["global_artifacts"]["GLOBAL_FILE_MANIFEST"]
-    assert gfm["exists"] is False
-    assert gfm["path"] is None
+    assert gfm["exists"] is True
+    assert gfm["path"] == "periphery/agents/agents_file_wiring_artifact_index.json"
+    assert gfm["role_section"] == "wave_file_manifests"
     grg = d["global_artifacts"]["GLOBAL_RELATION_GRAPH"]
-    assert grg["exists"] is False
-    assert grg["path"] is None
+    assert grg["exists"] is True
+    assert grg["path"] == "periphery/agents/agents_file_wiring_artifact_index.json"
+    assert grg["role_section"] == "relation_graph"
 
 
 # ---------------------------------------------------------------------------
@@ -342,13 +352,14 @@ def test_ga_065_wave_slices_partially_blocked():
     assert "WAVE005_A" not in blocked
 
 
-def test_ga_066_wave_slices_global_registration_blocked():
+def test_ga_066_wave_slices_global_registration_blocked_now_empty():
+    """AGENTS_GLOBAL_METADATA_REMEDIATION_V1: WAVE005_A's global registration blocker was
+    a cascading consequence of the superseded ART193-ART200 requirement -- no wave slice
+    remains in the active global-registration-blocked list."""
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     wsr = d["wave_status_registry"]
     grb = wsr["wave_slices_global_registration_blocked"]
-    assert "WAVE005_A" in grb
-    assert "WAVE005_B" not in grb
-    assert "WAVE005_C" not in grb
+    assert grb == []
 
 
 def test_ga_067_gross_wave_index_entries_1924():
@@ -667,7 +678,7 @@ def test_ga_104_wave005_global_reconciliation_in_global_state():
 def test_ga_105_wave005_global_status():
     d = _load("periphery/agents/agents_file_wiring_global_state.json")
     rec = d["wave005_global_reconciliation"]
-    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_SUPERSEDED_FILE_BLOCKERS_REMAIN"
 
 
 def test_ga_106_wave005_brody_primary_census_complete():
@@ -698,7 +709,7 @@ def test_ga_109_wave005_global_reconciliation_in_artifact_index():
 def test_ga_110_artifact_index_wave005_status():
     d = _load("periphery/agents/agents_file_wiring_artifact_index.json")
     rec = d["wave005_global_reconciliation"]
-    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+    assert rec["wave005_global_status"] == "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_SUPERSEDED_FILE_BLOCKERS_REMAIN"
 
 
 def test_ga_111_artifact_index_wave005_blockers_total():

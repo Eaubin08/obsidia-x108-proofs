@@ -1,9 +1,9 @@
 {
   "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
   "artifact_role": "PROVISIONAL_CAMPAIGN_ARTIFACT_REGISTRY_V1",
-  "global_manifest_complete": false,
-  "global_relation_graph_complete": false,
-  "global_registration_blocked": true,
+  "global_manifest_complete": true,
+  "global_relation_graph_complete": true,
+  "global_registration_blocked": false,
   "campaign": "AGENTS_FILE_WIRING",
   "authority": "NON_SOVEREIGN",
   "can_decide": false,
@@ -30,14 +30,20 @@
       "active_version": "V1"
     },
     "GLOBAL_FILE_MANIFEST": {
-      "path": null,
-      "exists": false,
-      "note": "Not found. MANIFEST_SHA256.json (5407 files, 2026-07-07) is repo-wide manifest but not AGENTS_FILE_WIRING-specific. ART193-ART200 searched exhaustively in git tree and recent history — not found."
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "wave_file_manifests",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "note": "SUPERSEDED_2026: prior ART193-ART200 requirement was a historical accounting error (see agents_file_wiring_global_state.json#blocker_matrix_v1, BLK-GLOBAL-002). wave_file_manifests aggregates all 10 wave indices (1924 gross / 1757 unique paths) and constitutes the family-level file manifest."
     },
     "GLOBAL_RELATION_GRAPH": {
-      "path": null,
-      "exists": false,
-      "note": "Not found. Graphiti V2 (3267 records) is cognitive memory index, not AGENTS_FILE_WIRING campaign relation graph. ART193-ART200 searched — not found."
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "relation_graph",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "note": "SUPERSEDED_2026: prior ART193-ART200 requirement was a historical accounting error (see agents_file_wiring_global_state.json#blocker_matrix_v1, BLK-GLOBAL-003). relation_graph contains 10/10 wave nodes and accounts for all 4 unique secondary relation paths (2 as edges, 2 in GLOBAL_UNRESOLVED_QUEUE)."
     },
     "GLOBAL_UNRESOLVED_QUEUE": {
       "path": "periphery/agents/wave005_unresolved_queue.json",
@@ -206,9 +212,7 @@
       "WAVE005_C",
       "WAVE005_D"
     ],
-    "wave_slices_global_registration_blocked": [
-      "WAVE005_A"
-    ]
+    "wave_slices_global_registration_blocked": []
   },
   "campaign_metadata_registry": {
     "total": 26,
@@ -364,14 +368,15 @@
     ],
     "subwave_blockers_total": 16,
     "wave005_fully_closed": false,
-    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_BLOCKED"
+    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_SUPERSEDED_FILE_BLOCKERS_REMAIN"
   },
   "agents_family_reconciliation": {
-    "family_status": "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ARTIFACTS_BLOCKED",
+    "family_status": "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ACCOUNTING_SUPERSEDED_FILE_BLOCKERS_REMAIN",
     "agents_primary_accounting_complete": true,
     "agents_family_fully_closed": false,
     "agents_family_file_blockers": 16,
-    "agents_family_global_blockers": 3,
+    "agents_family_global_blockers": 0,
+    "agents_family_historical_superseded_global_blockers": 3,
     "modules_start_decision": "AUTHORIZED_WITH_PERSISTED_AGENTS_BLOCKERS",
     "generated_at": "2026-08-05",
     "secondary_paths_unique": 4,
