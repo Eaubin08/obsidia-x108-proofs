@@ -108,6 +108,7 @@ def translate_evidence_to_tooling_build_state(
     results_dir: Optional[Path] = None,
     evidence_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    pre_execution_context_dir: Optional[Path] = None,
 ) -> dict:
     """
     Charge et valide croise l'évidence canonique référencée, puis
@@ -138,6 +139,25 @@ def translate_evidence_to_tooling_build_state(
     recomputed_eah = E.compute_execution_authority_hash(envelope)
     if recomputed_eah != envelope.get("execution_authority_hash"):
         return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "EXECUTION_AUTHORITY_HASH_DRIFT"}
+
+    # --- Contexte pré-exécution (CLOSE_ACD02_PREEXECUTION_BINDING_GAP_V0) ---
+    # Absent sur toute enveloppe historique (ACD-01 et antérieures) : le
+    # comportement legacy (worktree_isolated=False, branch_isolated=False,
+    # base_sha/manifest_hash UNKNOWN) reste alors strictement inchangé plus
+    # bas. Présent UNIQUEMENT si l'enveloppe le référence explicitement ET
+    # que ce même hash est déjà lié dans execution_authority_hash (vérifié
+    # ci-dessus) — un appelant ne peut donc jamais injecter un contexte non
+    # lié à l'autorité d'exécution déjà validée.
+    pre_ctx = None
+    pre_ctx_id = envelope.get("pre_execution_context_id")
+    if pre_ctx_id:
+        import obsidia_pre_execution_context as PEC
+        pre_ctx = PEC.load_pre_execution_context_record(pre_ctx_id, pre_execution_context_dir)
+        ok_ctx, reason_ctx = PEC.verify_pre_execution_context_record(pre_ctx)
+        if not ok_ctx:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": f"PRE_EXECUTION_CONTEXT_INVALID:{reason_ctx}"}
+        if pre_ctx.get("context_record_hash") != envelope.get("pre_execution_context_record_hash"):
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "PRE_EXECUTION_CONTEXT_HASH_MISMATCH"}
 
     child = next(
         (c for c in envelope.get("children", []) if c.get("child_execution_id") == child_execution_id),
@@ -255,11 +275,27 @@ def translate_evidence_to_tooling_build_state(
             first_failure = f"{c.get('check_id')}:{c.get('result')}"
             break
 
+    # DÉRIVÉ, jamais fourni par un paramètre d'appel de cette fonction —
+    # translate_evidence_to_tooling_build_state n'accepte aucun argument
+    # worktree_isolated/branch_isolated/base_sha/manifest_hash : la seule
+    # source possible est le PreExecutionContext déjà vérifié ci-dessus
+    # (ou, à défaut, le comportement historique inchangé).
+    if pre_ctx is not None:
+        derived_worktree_isolated = pre_ctx["worktree_isolated"]
+        derived_branch_isolated = pre_ctx["branch_isolated"]
+        derived_base_sha = pre_ctx["base_sha"]
+        derived_manifest_hash = pre_ctx["manifest_sha256"]
+    else:
+        derived_worktree_isolated = False
+        derived_branch_isolated = False
+        derived_base_sha = ""
+        derived_manifest_hash = ""
+
     kwargs = {
         "session_id": child_execution_id,
         "objective": proposal.get("objective") or "",
-        "base_sha": "",
-        "manifest_hash": "",
+        "base_sha": derived_base_sha,
+        "manifest_hash": derived_manifest_hash,
         "diff_hash": "",
         "approved_scope": [target_path],
         "actual_touched_files": actual_diff_paths,
@@ -268,8 +304,8 @@ def translate_evidence_to_tooling_build_state(
         "protected_scope_status": protected_scope_status,
         "human_approval_status": "APPROVED",
         "obsidure_status": "NOT_APPLICABLE",
-        "worktree_isolated": False,
-        "branch_isolated": False,
+        "worktree_isolated": derived_worktree_isolated,
+        "branch_isolated": derived_branch_isolated,
         "auto_commit_disabled": True,
         "auto_push_disabled": True,
         "auto_merge_disabled": True,
@@ -291,13 +327,22 @@ def translate_evidence_to_tooling_build_state(
                  "identifiant du child utilisé tel quel comme session_id"),
         _mapping("objective", kwargs["objective"], CLASSIFICATION_DIRECT,
                  "BatchProposal", "objective", "lu tel quel"),
-        _mapping("base_sha", kwargs["base_sha"], CLASSIFICATION_UNKNOWN,
-                 None, None,
+        _mapping("base_sha", kwargs["base_sha"],
+                 CLASSIFICATION_DERIVED if pre_ctx is not None else CLASSIFICATION_UNKNOWN,
+                 "PreExecutionContext" if pre_ctx is not None else None,
+                 "base_sha" if pre_ctx is not None else None,
+                 "issu du PreExecutionContext vérifié (isolation dérivée de faits Git observés)"
+                 if pre_ctx is not None else
                  "jamais capturé par le pipeline GIT_BLOB CP9-CP14 — "
                  "non recalculé après coup pour éviter de mal étiqueter "
                  "une valeur post-exécution comme fait pré-exécution"),
-        _mapping("manifest_hash", kwargs["manifest_hash"], CLASSIFICATION_UNKNOWN,
-                 None, None, "jamais capturé — aucun concept de manifest dans ce pipeline"),
+        _mapping("manifest_hash", kwargs["manifest_hash"],
+                 CLASSIFICATION_DERIVED if pre_ctx is not None else CLASSIFICATION_UNKNOWN,
+                 "PreExecutionContext" if pre_ctx is not None else None,
+                 "manifest_sha256" if pre_ctx is not None else None,
+                 "SHA256 complet issu du PreExecutionContext vérifié — jamais le hash 16-hex de compatibilité"
+                 if pre_ctx is not None else
+                 "jamais capturé — aucun concept de manifest dans ce pipeline"),
         _mapping("diff_hash", kwargs["diff_hash"], CLASSIFICATION_UNKNOWN,
                  None, None, "jamais capturé — aucun concept de diff_hash dans ce pipeline"),
         _mapping("approved_scope", kwargs["approved_scope"], CLASSIFICATION_DIRECT,
@@ -316,12 +361,21 @@ def translate_evidence_to_tooling_build_state(
                  "HumanApproval", "approval_status", "artefact chargé et validé"),
         _mapping("obsidure_status", "NOT_APPLICABLE", CLASSIFICATION_NOT_APPLICABLE,
                  None, None, "ACD-01 n'a jamais invoqué AgentObsidure — aucun agent actuel ne lit ce champ"),
-        _mapping("worktree_isolated", False, CLASSIFICATION_FALSE,
-                 None, None,
+        _mapping("worktree_isolated", derived_worktree_isolated,
+                 CLASSIFICATION_DERIVED if pre_ctx is not None else CLASSIFICATION_FALSE,
+                 "PreExecutionContext (derive_isolation_evidence)" if pre_ctx is not None else None,
+                 "worktree_isolated" if pre_ctx is not None else None,
+                 "dérivé de faits Git observés (git worktree list --porcelain, HEAD, status) — jamais d'une assertion d'appelant"
+                 if pre_ctx is not None else
                  "le pipeline GIT_BLOB a lu/écrit directement sur repo_root — "
                  "aucun worktree isolé créé. 'cible bornée' != 'worktree isolé'."),
-        _mapping("branch_isolated", False, CLASSIFICATION_FALSE,
-                 None, None, "aucune branche dédiée créée pour cette exécution"),
+        _mapping("branch_isolated", derived_branch_isolated,
+                 CLASSIFICATION_DERIVED if pre_ctx is not None else CLASSIFICATION_FALSE,
+                 "PreExecutionContext (derive_isolation_evidence)" if pre_ctx is not None else None,
+                 "branch_isolated" if pre_ctx is not None else None,
+                 "dérivé de faits Git observés — jamais d'une assertion d'appelant"
+                 if pre_ctx is not None else
+                 "aucune branche dédiée créée pour cette exécution"),
         _mapping("auto_commit_disabled", True, CLASSIFICATION_DIRECT,
                  "pipeline CP9-CP14", None, "aucune fonction de ce pipeline n'appelle jamais git commit"),
         _mapping("auto_push_disabled", True, CLASSIFICATION_DIRECT,

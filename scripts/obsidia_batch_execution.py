@@ -182,24 +182,32 @@ def compute_execution_authority_hash(envelope: dict) -> str:
         key=lambda d: (d.get("candidate_entry_id") or "", d.get("child_execution_id") or "")
     )
 
-    payload = json.dumps(
-        {
-            "batch_execution_id": envelope.get("batch_execution_id"),
-            "batch_id": envelope.get("batch_id"),
-            "batch_hash": envelope.get("batch_hash"),
-            "batch_hash_version": envelope.get("batch_hash_version"),
-            "candidate_scope_hash": envelope.get("candidate_scope_hash"),
-            "execution_order": envelope.get("execution_order"),
-            "dependency_edges": sorted(
-                (e.get("from", ""), e.get("to", ""), e.get("type", ""))
-                for e in (envelope.get("dependency_edges") or [])
-            ),
-            "children": children_authority,
-            "test_contract_hash": envelope.get("test_contract_hash"),
-            "decision_authority": envelope.get("decision_authority"),
-        },
-        sort_keys=True,
-    )
+    authority_payload = {
+        "batch_execution_id": envelope.get("batch_execution_id"),
+        "batch_id": envelope.get("batch_id"),
+        "batch_hash": envelope.get("batch_hash"),
+        "batch_hash_version": envelope.get("batch_hash_version"),
+        "candidate_scope_hash": envelope.get("candidate_scope_hash"),
+        "execution_order": envelope.get("execution_order"),
+        "dependency_edges": sorted(
+            (e.get("from", ""), e.get("to", ""), e.get("type", ""))
+            for e in (envelope.get("dependency_edges") or [])
+        ),
+        "children": children_authority,
+        "test_contract_hash": envelope.get("test_contract_hash"),
+        "decision_authority": envelope.get("decision_authority"),
+    }
+    # BIND_PRE_EXECUTION_CONTEXT_V0 (CLOSE_ACD02_PREEXECUTION_BINDING_GAP_V0):
+    # inclus UNIQUEMENT si la clé est présente dans l'enveloppe, jamais avec
+    # une valeur par défaut — une enveloppe historique (sans cette clé) ne
+    # voit donc jamais son execution_authority_hash changer. Seule une
+    # nouvelle enveloppe qui porte explicitement ces clés lie le contexte
+    # pré-exécution vérifié dans l'autorité d'exécution.
+    if "pre_execution_context_id" in envelope:
+        authority_payload["pre_execution_context_id"] = envelope.get("pre_execution_context_id")
+        authority_payload["pre_execution_context_record_hash"] = envelope.get("pre_execution_context_record_hash")
+
+    payload = json.dumps(authority_payload, sort_keys=True)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
