@@ -1,4 +1,4 @@
 CANONICAL_C2_CONFORMANCE_PILOT_V0
-state: UNREMEDIATED
+state: GOVERNED_C2_PILOT_APPLIED
 rail-baseline: committed A1-C1-C2-D1-D2 at 7f40160
 role: canonical governed-rail conformance fixture; no runtime consumer
