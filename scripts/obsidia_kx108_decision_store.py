@@ -111,6 +111,29 @@ _PRE_RECORD_BOUND_FIELDS = (
 
 _PRE_IDENTITY_SEED_FIELDS = _PRE_BINDING_CONTEXT_FIELDS + ("decision_phase", "canonical_envelope")
 
+# ── KX108_POST_PRE_BINDING_D1_V0 — décision POST liée à la décision PRE exacte ──
+#
+# Un enregistrement POST-LIÉ porte decision_phase == POST_EXECUTION ET
+# référence la décision KX108_PRE exacte par (kx108_pre_decision_record_id,
+# kx108_pre_decision_record_hash). Le hash PRE n'est JAMAIS fourni par
+# l'appelant : il est dérivé du record PRE canonique rechargé et vérifié.
+#
+# Rétro-compatibilité STRICTE : un enregistrement POST historique n'a NI
+# clé decision_phase NI kx108_pre_decision_record_id ->
+# _record_bound_fields_for retombe sur _RECORD_BOUND_FIELDS d'origine
+# (hash + vérification byte-identiques). run_and_persist_kx108_decision
+# (POST legacy) reste INCHANGÉE. Aucun record existant n'est lu / migré /
+# réécrit.
+_POST_PRE_LINK_FIELDS = (
+    "kx108_pre_decision_record_id", "kx108_pre_decision_record_hash",
+)
+
+_POST_PRE_LINKED_RECORD_BOUND_FIELDS = _RECORD_BOUND_FIELDS + ("decision_phase",) + _POST_PRE_LINK_FIELDS
+
+_POST_PRE_LINKED_IDENTITY_SEED_FIELDS = (
+    _BINDING_CONTEXT_FIELDS + _POST_PRE_LINK_FIELDS + ("decision_phase", "canonical_envelope")
+)
+
 
 def decision_phase_of(record: "Optional[dict]") -> str:
     """Phase d'un enregistrement de décision KX108.
@@ -123,9 +146,14 @@ def decision_phase_of(record: "Optional[dict]") -> str:
 
 
 def _record_bound_fields_for(record: dict) -> tuple:
-    """PRE => _PRE_RECORD_BOUND_FIELDS ; sinon (absent / POST) => jeu POST d'origine."""
-    if record.get("decision_phase") == PRE_DECISION_PHASE:
+    """PRE => _PRE_RECORD_BOUND_FIELDS ;
+    POST explicitement lié à une décision PRE => _POST_PRE_LINKED_RECORD_BOUND_FIELDS ;
+    sinon (schéma POST historique, decision_phase absent) => _RECORD_BOUND_FIELDS d'origine."""
+    phase = record.get("decision_phase")
+    if phase == PRE_DECISION_PHASE:
         return _PRE_RECORD_BOUND_FIELDS
+    if phase == POST_DECISION_PHASE and record.get("kx108_pre_decision_record_id"):
+        return _POST_PRE_LINKED_RECORD_BOUND_FIELDS
     return _RECORD_BOUND_FIELDS
 
 
@@ -422,4 +450,163 @@ def run_and_persist_kx108_pre_execution_decision(
         "record": reloaded,
         "verify_ok": verify_ok,
         "verify_reason": verify_reason,
+    }
+
+
+# ── POST-EXECUTION lié à PRE (phase 2, D1) ──────────────────────────────────
+
+def _compute_post_pre_linked_decision_record_identity(seed: dict) -> str:
+    """Identité CONTENU d'une décision POST liée — préfixe distinct (kxpost-)
+    des décisions PRE (kxpre-) et POST legacy (kxd-)."""
+    payload = json.dumps(
+        {k: seed.get(k) for k in _POST_PRE_LINKED_IDENTITY_SEED_FIELDS},
+        sort_keys=True,
+    )
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"kxpost-{digest[:32]}"
+
+
+def _batch_execution_module():
+    import sys as _sys
+    _scripts = str(Path(__file__).resolve().parent)
+    if _scripts not in _sys.path:
+        _sys.path.insert(0, _scripts)
+    import obsidia_batch_execution as _mod
+    return _mod
+
+
+def run_and_persist_kx108_post_execution_decision(
+    tooling_build_state_kwargs: dict,
+    binding_context: dict,
+    kx108_pre_decision_record_id: str,
+    execution_dir: Optional[Path] = None,
+    pre_decision_store_dir: Optional[Path] = None,
+    post_decision_store_dir: Optional[Path] = None,
+) -> dict:
+    """
+    Chemin de production POST-EXECUTION lié à la décision KX108_PRE exacte (D1).
+
+    AVANT toute invocation du kernel KX108_POST, prouve :
+      1. binding_context POST complet (_validate_binding_context)
+      2. record PRE chargé canoniquement par id + verify_kx108_decision_record OK
+      3. decision_phase_of(pre) == PRE_EXECUTION
+      4. pre.x108_gate == ALLOW
+      5. pre.approval_id == binding_context.approval_id
+      6. ExecutionEnvelope canonique chargée + integrity_verified
+      7. current_eah = compute_execution_authority_hash(envelope) == envelope.execution_authority_hash
+      8. pre.execution_authority_hash == current_eah
+      9. binding_context.execution_authority_hash == current_eah
+    Tout échec -> {"status": "REJECTED", ..., "kx108_kernel_call_count": 0} ;
+    le kernel KX108_POST n'est PAS invoqué.
+
+    Le hash du record PRE est dérivé du record RECHARGÉ (jamais fourni par
+    l'appelant) et persisté avec l'id dans l'enregistrement POST lié.
+
+    Aucune écriture de cible. Aucun rollback. Aucune closure.
+    """
+    binding_error = _validate_binding_context(binding_context)
+    if binding_error:
+        return {"status": "REJECTED", "reason": binding_error, "kx108_kernel_call_count": 0}
+
+    if not (isinstance(kx108_pre_decision_record_id, str) and kx108_pre_decision_record_id.strip()):
+        return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_RECORD_ID_MISSING",
+                "kx108_kernel_call_count": 0}
+    kx108_pre_decision_record_id = kx108_pre_decision_record_id.strip()
+
+    # --- PRE record : chargé + vérifié canoniquement ---
+    pre = load_kx108_decision_record(kx108_pre_decision_record_id, pre_decision_store_dir)
+    if pre is None:
+        return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_NOT_FOUND",
+                "kx108_kernel_call_count": 0}
+    ok_pre, reason_pre = verify_kx108_decision_record(pre)
+    if not ok_pre:
+        return {"status": "REJECTED", "reason": f"KX108_PRE_DECISION_INVALID:{reason_pre}",
+                "kx108_kernel_call_count": 0}
+    if decision_phase_of(pre) != PRE_DECISION_PHASE:
+        return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_NOT_PRE_EXECUTION_PHASE",
+                "kx108_kernel_call_count": 0}
+    if pre.get("x108_gate") != "ALLOW":
+        return {"status": "REJECTED", "reason": "KX108_PRE_GATE_NOT_ALLOW",
+                "pre_x108_gate": pre.get("x108_gate"), "kx108_kernel_call_count": 0}
+    if pre.get("approval_id") != binding_context.get("approval_id"):
+        return {"status": "REJECTED", "reason": "KX108_PRE_APPROVAL_ID_MISMATCH",
+                "kx108_kernel_call_count": 0}
+
+    # --- ExecutionEnvelope canonique + EAH recalculé MAINTENANT ---
+    E = _batch_execution_module()
+    envelope = E._load_execution(binding_context.get("batch_execution_id"), execution_dir)
+    if envelope is None:
+        return {"status": "REJECTED", "reason": "EXECUTION_ENVELOPE_NOT_FOUND",
+                "kx108_kernel_call_count": 0}
+    if not envelope.get("integrity_verified"):
+        return {"status": "REJECTED", "reason": "EXECUTION_ENVELOPE_INTEGRITY_NOT_VERIFIED",
+                "kx108_kernel_call_count": 0}
+    current_eah = E.compute_execution_authority_hash(envelope)
+    if current_eah != envelope.get("execution_authority_hash"):
+        return {"status": "REJECTED", "reason": "EXECUTION_AUTHORITY_HASH_DRIFT",
+                "kx108_kernel_call_count": 0}
+    if pre.get("execution_authority_hash") != current_eah:
+        return {"status": "REJECTED", "reason": "KX108_PRE_EXECUTION_AUTHORITY_HASH_MISMATCH",
+                "kx108_kernel_call_count": 0}
+    if binding_context.get("execution_authority_hash") != current_eah:
+        return {"status": "REJECTED", "reason": "POST_BINDING_EXECUTION_AUTHORITY_HASH_MISMATCH",
+                "kx108_kernel_call_count": 0}
+
+    # Hash PRE dérivé du record RECHARGÉ — jamais de l'appelant.
+    kx108_pre_decision_record_hash = pre["decision_record_hash"]
+
+    # --- Kernel KX108_POST : EXACTEMENT UNE FOIS ---
+    from sigma.contracts import ToolingBuildState
+    from sigma.protocols import run_tooling_build_pipeline
+
+    state = ToolingBuildState(**tooling_build_state_kwargs)
+    decision = run_tooling_build_pipeline(state)  # EXACTEMENT UNE FOIS
+    envelope_dec = dataclasses.asdict(decision)
+
+    record: dict = {
+        "decision_record_schema_version": SCHEMA_VERSION,
+        "created_at": _now(),
+        "decision_phase": POST_DECISION_PHASE,
+        **{k: binding_context[k] for k in _BINDING_CONTEXT_FIELDS},
+        "kx108_pre_decision_record_id": kx108_pre_decision_record_id,
+        "kx108_pre_decision_record_hash": kx108_pre_decision_record_hash,
+        "decision_id": envelope_dec.get("decision_id"),
+        "trace_id": envelope_dec.get("trace_id"),
+        "domain": envelope_dec.get("domain"),
+        "x108_gate": envelope_dec.get("x108_gate"),
+        "reason_code": envelope_dec.get("reason_code"),
+        "severity": envelope_dec.get("severity"),
+        "market_verdict": envelope_dec.get("market_verdict"),
+        "contradictions": list(envelope_dec.get("contradictions") or []),
+        "unknowns": list(envelope_dec.get("unknowns") or []),
+        "risk_flags": list(envelope_dec.get("risk_flags") or []),
+        "decision_authority": DECISION_AUTHORITY,
+        "canonical_envelope": envelope_dec,
+    }
+
+    identity_seed = {k: record[k] for k in _BINDING_CONTEXT_FIELDS}
+    identity_seed["kx108_pre_decision_record_id"] = kx108_pre_decision_record_id
+    identity_seed["kx108_pre_decision_record_hash"] = kx108_pre_decision_record_hash
+    identity_seed["decision_phase"] = POST_DECISION_PHASE
+    identity_seed["canonical_envelope"] = envelope_dec
+    record["decision_record_id"] = _compute_post_pre_linked_decision_record_identity(identity_seed)
+    record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
+
+    store_result = store_kx108_decision_record(record, post_decision_store_dir)
+    reloaded = load_kx108_decision_record(record["decision_record_id"], post_decision_store_dir)
+    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+
+    return {
+        "status": "STORED" if verify_ok else "VERIFY_FAILED",
+        "decision_record_id": record["decision_record_id"],
+        "decision_phase": POST_DECISION_PHASE,
+        "x108_gate": record["x108_gate"],
+        "kx108_pre_decision_record_id": kx108_pre_decision_record_id,
+        "kx108_pre_decision_record_hash": kx108_pre_decision_record_hash,
+        "execution_authority_hash": current_eah,
+        "store_result": store_result,
+        "record": reloaded,
+        "verify_ok": verify_ok,
+        "verify_reason": verify_reason,
+        "kx108_kernel_call_count": 1,
     }
