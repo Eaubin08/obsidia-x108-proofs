@@ -240,3 +240,196 @@ def audit_family_wiring(
 
         "provenance": provenance,
     }
+
+
+# ---------------------------------------------------------------------------
+# FAMILY_WIRING_CANDIDATE_ONLY_V0 — Family Wiring active blocker
+#   -> deterministic structured FamilyRemediationCandidate
+#
+# READ_ONLY. NON_SOVEREIGN. write_capability = false. Zero writes, zero
+# persisted artefact (this path only calls audit_family_wiring, itself
+# read-only). This is OBSERVATION -> STRUCTURED CANDIDATE only: it is NOT
+# a KX108 decision, NOT a HumanApproval, NOT an Obsidure proposal, NOT an
+# apply/commit authorization. The full governed remediation seam remains
+# on HOLD (KX108 + human gate are not proven before the first target
+# mutation); this checkpoint does not change that.
+#
+# An ambiguous canonical next_action (structural disjunction — an
+# "..._OR_..." head — or a deferral to a named campaign/effort) is
+# preserved verbatim as source_next_action and NEVER collapsed into a
+# single action: remediation_intent stays HOLD_FOR_HUMAN_REMEDIATION_CHOICE
+# and this function selects nothing.
+# ---------------------------------------------------------------------------
+
+CANDIDATE_SCHEMA_VERSION = 1
+CANDIDATE_DECISION_AUTHORITY = "KX108_ONLY"
+
+STATUS_CONSISTENCY_HOLD = "CONSISTENCY_HOLD"
+STATUS_BLOCKER_NOT_FOUND = "BLOCKER_NOT_FOUND"
+STATUS_BLOCKER_NOT_ACTIVE = "BLOCKER_NOT_ACTIVE"
+STATUS_BLOCKER_MALFORMED = "BLOCKER_MALFORMED"
+
+REMEDIATION_HOLD_FOR_HUMAN_CHOICE = "HOLD_FOR_HUMAN_REMEDIATION_CHOICE"
+CANDIDATE_STATUS_HOLD_FOR_HUMAN_REMEDIATION_CHOICE = "HOLD_FOR_HUMAN_REMEDIATION_CHOICE"
+CANDIDATE_STATUS_READY_FOR_HUMAN_REVIEW = "READY_FOR_HUMAN_REVIEW"
+
+
+def _classify_next_action(next_action: Optional[str]) -> tuple:
+    """Structural, generic classification of a canonical blocker next_action.
+
+    No verb whitelist, no family knowledge, no hardcoded token. Returns
+    (is_single_deterministic: bool, action_head: Optional[str], reason: str).
+
+    Rules (purely structural — the head is everything before a "_IN_<effort>"
+    deferral suffix):
+      - absent / non-string                -> (False, None, "next_action_absent")
+      - head contains "_OR_"               -> (False, head, "next_action_is_explicit_disjunction")
+      - a "_IN_<effort>" suffix is present -> (False, head, "next_action_deferred_to_named_effort")
+      - otherwise                          -> (True,  head, "next_action_is_single_token")
+    """
+    if not isinstance(next_action, str) or not next_action.strip():
+        return False, None, "next_action_absent"
+    token = next_action.strip()
+    head, sep, _effort = token.partition("_IN_")
+    if "_OR_" in head:
+        return False, head, "next_action_is_explicit_disjunction"
+    if sep:
+        return False, head, "next_action_deferred_to_named_effort"
+    return True, head, "next_action_is_single_token"
+
+
+def build_family_remediation_candidate(
+    family_id: str,
+    blocker_id: str,
+    registry: dict,
+    repo_root: Optional[Path] = None,
+) -> dict:
+    """
+    READ_ONLY production path — a currently active Family Wiring blocker
+    becomes a deterministic FamilyRemediationCandidate. Performs ZERO writes
+    and creates ZERO persisted artefact.
+
+    Fail-closed (status != OK, no candidate emitted) when:
+      - family not registered / canonical state missing / malformed
+        (status propagated verbatim from audit_family_wiring)
+      - consistency_status != PASS               -> CONSISTENCY_HOLD
+      - blocker_id not present at all            -> BLOCKER_NOT_FOUND
+      - blocker_id present but non-active
+        (SUPERSEDED / historical)                -> BLOCKER_NOT_ACTIVE
+      - active blocker without a canonical
+        target path                              -> BLOCKER_MALFORMED
+
+    Deterministic: same canonical state (same state_source_sha256) + same
+    blocker_id => byte-identical candidate_id. captured_at is provenance
+    only and is NOT part of candidate_id. Ambiguity in the canonical
+    next_action is preserved, never resolved here.
+    """
+    root = repo_root or Path(__file__).resolve().parent.parent
+
+    audit = audit_family_wiring(family_id, registry, repo_root=root)
+    if audit.get("status") != STATUS_OK:
+        return {
+            "status": audit.get("status"),
+            "schema_version": CANDIDATE_SCHEMA_VERSION,
+            "family_id": family_id,
+            "source_blocker_id": blocker_id,
+        }
+
+    if audit.get("consistency_status") != CONSISTENCY_PASS:
+        return {
+            "status": STATUS_CONSISTENCY_HOLD,
+            "schema_version": CANDIDATE_SCHEMA_VERSION,
+            "family_id": family_id,
+            "source_blocker_id": blocker_id,
+            "consistency_status": audit.get("consistency_status"),
+        }
+
+    active = {b.get("blocker_id"): b for b in audit.get("active_blockers", [])}
+    historical = {b.get("blocker_id"): b for b in audit.get("historical_superseded_blockers", [])}
+
+    blocker = active.get(blocker_id)
+    if blocker is None:
+        non_active = blocker_id in historical
+        return {
+            "status": STATUS_BLOCKER_NOT_ACTIVE if non_active else STATUS_BLOCKER_NOT_FOUND,
+            "schema_version": CANDIDATE_SCHEMA_VERSION,
+            "family_id": family_id,
+            "source_blocker_id": blocker_id,
+            "resolution_status": (
+                (historical.get(blocker_id) or {}).get("resolution_status") if non_active else None
+            ),
+        }
+
+    target_path = blocker.get("path")
+    if not isinstance(target_path, str) or not target_path.strip():
+        return {
+            "status": STATUS_BLOCKER_MALFORMED,
+            "schema_version": CANDIDATE_SCHEMA_VERSION,
+            "family_id": family_id,
+            "source_blocker_id": blocker_id,
+            "reason": "active_blocker_without_canonical_target_path",
+        }
+    target_path = target_path.strip()
+
+    prov = audit.get("provenance", {}) or {}
+    state_sha = prov.get("state_source_sha256")
+
+    next_action = blocker.get("next_action")
+    is_single, action_head, action_reason = _classify_next_action(next_action)
+    if is_single:
+        candidate_status = CANDIDATE_STATUS_READY_FOR_HUMAN_REVIEW
+        remediation_intent = action_head
+    else:
+        candidate_status = CANDIDATE_STATUS_HOLD_FOR_HUMAN_REMEDIATION_CHOICE
+        remediation_intent = REMEDIATION_HOLD_FOR_HUMAN_CHOICE
+
+    id_material = json.dumps(
+        {
+            "family_id": family_id,
+            "source_blocker_id": blocker_id,
+            "target_path": target_path,
+            "family_wiring_state_sha256": state_sha,
+            "source_next_action": next_action,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    candidate_id = "frc-" + hashlib.sha256(id_material.encode("utf-8")).hexdigest()[:32]
+
+    return {
+        "status": STATUS_OK,
+        "schema_version": CANDIDATE_SCHEMA_VERSION,
+
+        "candidate_id": candidate_id,
+        "candidate_status": candidate_status,
+
+        "family_id": family_id,
+        "source_blocker_id": blocker_id,
+        "target_path": target_path,
+
+        "blocker_category": blocker.get("blocker_category"),
+        "blocker_type": blocker.get("blocker_type"),
+        "owner": blocker.get("owner"),
+        "reason": blocker.get("reason"),
+
+        "source_next_action": next_action,
+        "source_next_action_classification": action_reason,
+
+        "remediation_intent": remediation_intent,
+
+        "allowed_scope": [target_path],
+        "forbidden_scope": [],
+
+        "finding_provenance": {
+            "family_wiring_state_sha256": state_sha,
+            "source_artifact": blocker.get("source_artifact"),
+            "git_branch": prov.get("git_branch"),
+            "git_head": prov.get("git_head"),
+            "captured_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        },
+
+        "requires_human_review": True,
+        "authority": DECISION_AUTHORITY,               # NON_SOVEREIGN
+        "write_capability": False,
+        "decision_authority": CANDIDATE_DECISION_AUTHORITY,  # KX108_ONLY — decisions are NOT this candidate's
+    }

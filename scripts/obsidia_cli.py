@@ -9016,6 +9016,69 @@ def format_family_wiring_audit_v1(result: dict) -> str:
     return "\n".join(lines)
 
 
+# ----------------------------------------------------------------------------
+# FAMILY_WIRING_CANDIDATE_ONLY_V0 — "wiring candidate <FAMILY> <BLOCKER_ID>"
+# READ_ONLY. NON_SOVEREIGN. write_capability=false. Turns ONE currently
+# active Family Wiring blocker into a deterministic structured
+# FamilyRemediationCandidate on stdout only -- no proposal, no ledger, no
+# batch, no KX108, no HumanApproval, no target mutation, no persisted
+# artefact. The full governed remediation seam stays on HOLD.
+# ----------------------------------------------------------------------------
+
+def build_family_wiring_candidate_response_v1(family_id: str, blocker_id: str, registry: dict) -> dict:
+    return _family_wiring.build_family_remediation_candidate(
+        family_id, blocker_id, registry, repo_root=REPO_ROOT
+    )
+
+
+def format_family_wiring_candidate_v1(result: dict) -> str:
+    status = result.get("status")
+    if status != _family_wiring.STATUS_OK:
+        return (
+            f"FAMILLE           : {result.get('family_id')}\n"
+            f"BLOCKER           : {result.get('source_blocker_id')}\n"
+            f"STATUT            : {status}\n"
+            f"(echec ferme -- aucun candidat fabrique)"
+        )
+
+    prov = result.get("finding_provenance", {})
+    lines = [
+        f"FAMILLE              : {result['family_id']}  "
+        f"(authority={result['authority']}, decision_authority={result['decision_authority']}, "
+        f"write_capability={result['write_capability']})",
+        f"candidate_id         : {result['candidate_id']}",
+        f"candidate_status     : {result['candidate_status']}",
+        f"source_blocker_id    : {result['source_blocker_id']}",
+        f"target_path          : {result['target_path']}",
+        f"blocker_category     : {result['blocker_category']}",
+        f"blocker_type         : {result['blocker_type']}",
+        f"owner                : {result['owner']}",
+        f"reason               : {result['reason']}",
+        f"source_next_action   : {result['source_next_action']}",
+        f"  classification     : {result['source_next_action_classification']}",
+        f"remediation_intent   : {result['remediation_intent']}",
+        f"allowed_scope        : {result['allowed_scope']}",
+        f"forbidden_scope      : {result['forbidden_scope']}",
+        f"requires_human_review : {result['requires_human_review']}",
+        "",
+        f"finding_provenance.family_wiring_state_sha256 : {prov.get('family_wiring_state_sha256')}",
+        f"finding_provenance.source_artifact            : {prov.get('source_artifact')}",
+        f"finding_provenance.git_branch                 : {prov.get('git_branch')}",
+        f"finding_provenance.git_head                   : {prov.get('git_head')}",
+        f"finding_provenance.captured_at                : {prov.get('captured_at')}",
+    ]
+    if result["candidate_status"] == _family_wiring.CANDIDATE_STATUS_HOLD_FOR_HUMAN_REMEDIATION_CHOICE:
+        lines += [
+            "",
+            "  +-- HUMAN REMEDIATION CHOICE REQUIRED --------------------------------",
+            "  | source_next_action is NOT a single deterministic action.",
+            "  | NO archive / delete / other action has been selected by the machine.",
+            "  | This candidate is NOT an execution authorization and NOT an approval.",
+            "  +-------------------------------------------------------------------",
+        ]
+    return "\n".join(lines)
+
+
 def main(argv: list[str]) -> int:
     if argv and argv[0] in ("-h", "--help"):
         print(__doc__)
@@ -9025,6 +9088,19 @@ def main(argv: list[str]) -> int:
     # READ_ONLY. NON_SOVEREIGN. Toutes les sous-commandes retournent le meme
     # resultat structure (audit complet) -- alias distincts pour lisibilite
     # d'invocation seulement, aucune semantique differente.
+    # FAMILY_WIRING_CANDIDATE_ONLY_V0 : "wiring candidate <FAMILY> <BLOCKER_ID> [--json]"
+    # READ_ONLY. NON_SOVEREIGN. Distinct from status|audit|blockers: it needs a
+    # blocker id and returns a single structured remediation candidate. No
+    # persisted artefact, no proposal/ledger/batch/KX108/approval/mutation.
+    if argv and argv[0].lower() == "wiring" and len(argv) >= 4 and argv[1].lower() == "candidate":
+        family_arg = argv[2].upper()
+        blocker_arg = argv[3]
+        resp = build_family_wiring_candidate_response_v1(family_arg, blocker_arg, registry)
+        if len(argv) > 4 and argv[4].lower() == "--json":
+            print(json.dumps(resp, indent=2, default=str))
+        else:
+            print(format_family_wiring_candidate_v1(resp))
+        return 0
     if argv and argv[0].lower() == "wiring" and len(argv) >= 3 and argv[1].lower() in ("status", "audit", "blockers"):
         family_arg = argv[2].upper()
         resp = build_family_wiring_audit_response_v1(family_arg, registry)
