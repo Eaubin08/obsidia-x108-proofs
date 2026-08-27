@@ -109,6 +109,10 @@ def translate_evidence_to_tooling_build_state(
     evidence_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
     pre_execution_context_dir: Optional[Path] = None,
+    sealed_apply_receipt_id: Optional[str] = None,
+    sealed_rollback_evidence_id: Optional[str] = None,
+    sealed_receipt_dir: Optional[Path] = None,
+    sealed_rollback_evidence_dir: Optional[Path] = None,
 ) -> dict:
     """
     Charge et valide croise l'évidence canonique référencée, puis
@@ -172,13 +176,27 @@ def translate_evidence_to_tooling_build_state(
     if not ok:
         return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": f"APPROVAL_INVALID:{reason}"}
 
-    # --- BatchProposal d'origine ---
-    proposal = S._load_batch(envelope.get("batch_id"), selector_dir)
-    if proposal is None:
-        return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "PROPOSAL_NOT_FOUND"}
-    integrity_ok, integrity_reason = E.verify_batch_integrity(proposal, ledger_dir)
-    if not integrity_ok:
-        return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": f"BATCH_INTEGRITY:{integrity_reason}"}
+    # --- BatchProposal d'origine (ou scope PreExecutionContext si aucun batch) ---
+    # Une enveloppe gouvernée C2 issue du bridge Family Wiring ne porte pas
+    # de batch_id (batch_id=None) : le scope est alors vérifié contre
+    # PreExecutionContext.approved_scope (jamais un pass silencieux), comme
+    # dans validate_governed_apply_preflight §9. Une enveloppe portant un
+    # batch_id garde EXACTEMENT le comportement historique.
+    proposal = None
+    if envelope.get("batch_id"):
+        proposal = S._load_batch(envelope.get("batch_id"), selector_dir)
+        if proposal is None:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "PROPOSAL_NOT_FOUND"}
+        integrity_ok, integrity_reason = E.verify_batch_integrity(proposal, ledger_dir)
+        if not integrity_ok:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": f"BATCH_INTEGRITY:{integrity_reason}"}
+    else:
+        if pre_ctx is None:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "NO_BATCH_AND_NO_PRE_EXECUTION_CONTEXT"}
+        _approved = pre_ctx.get("approved_scope") or []
+        if child.get("target_path") not in _approved:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                    "reason": "TARGET_NOT_IN_PRE_EXECUTION_CONTEXT_SCOPE"}
 
     # --- Contrat de test persisté ---
     contract = envelope.get("test_contract")
@@ -201,8 +219,21 @@ def translate_evidence_to_tooling_build_state(
     if result.get("test_contract_hash") != envelope.get("test_contract_hash"):
         return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "TEST_RESULT_CONTRACT_MISMATCH"}
 
-    # --- Receipt d'apply ---
-    receipt = C.load_apply_receipt(child_execution_id, evidence_dir)
+    # --- Receipt d'apply (mutable historique OU vue legacy d'un SealedApplyReceipt) ---
+    if sealed_apply_receipt_id:
+        import sys as _sysx
+        _sdx = str(Path(__file__).resolve().parent)
+        if _sdx not in _sysx.path:
+            _sysx.path.insert(0, _sdx)
+        import obsidia_sealed_evidence_v0 as _SEVr
+        _sar_r = _SEVr.load_sealed_apply_receipt(sealed_apply_receipt_id, sealed_receipt_dir)
+        _ok_r, _rr = _SEVr.verify_sealed_apply_receipt(_sar_r)
+        if not _ok_r:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                    "reason": f"SEALED_APPLY_RECEIPT_INVALID:{_rr}"}
+        receipt = _SEVr.as_legacy_receipt_dict(_sar_r)
+    else:
+        receipt = C.load_apply_receipt(child_execution_id, evidence_dir)
     if receipt is None or receipt.get("status") != "CONTENT_APPLIED":
         return {"status": NOT_READY_EVIDENCE_INTEGRITY, "reason": "APPLY_RECEIPT_MISSING_OR_NOT_APPLIED"}
     if receipt.get("child_execution_id") != child_execution_id:
@@ -293,7 +324,8 @@ def translate_evidence_to_tooling_build_state(
 
     kwargs = {
         "session_id": child_execution_id,
-        "objective": proposal.get("objective") or "",
+        "objective": (proposal.get("objective") if proposal
+                      else (envelope.get("objective") or child.get("operation_reason") or "")) or "",
         "base_sha": derived_base_sha,
         "manifest_hash": derived_manifest_hash,
         "diff_hash": "",
@@ -409,6 +441,66 @@ def translate_evidence_to_tooling_build_state(
                  "ExecutionEnvelope", "decision_authority", "lu tel quel"),
     ]
 
+    # ── Évidence SCELLÉE C2 (optionnelle, additive) ──────────────────────
+    # Fournie -> chargée + vérifiée + recoupée, puis ses id/hash exacts
+    # entrent dans `provenance` AVANT le calcul de kx108_input_translation_hash
+    # (le hash de traduction CHANGE donc si l'évidence scellée exacte change).
+    # Absente -> `provenance` et la sortie restent byte-identiques à
+    # l'historique (aucun champ ajouté). cf. §17.
+    sealed_provenance_extra: dict = {}
+    if sealed_apply_receipt_id or sealed_rollback_evidence_id:
+        import sys as _sys
+        _sd = str(Path(__file__).resolve().parent)
+        if _sd not in _sys.path:
+            _sys.path.insert(0, _sd)
+        import obsidia_sealed_evidence_v0 as SEV
+        if not (sealed_apply_receipt_id and sealed_rollback_evidence_id):
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                    "reason": "SEALED_EVIDENCE_INCOMPLETE_BOTH_IDS_REQUIRED"}
+        sar = SEV.load_sealed_apply_receipt(sealed_apply_receipt_id, sealed_receipt_dir)
+        ok_sar, r_sar = SEV.verify_sealed_apply_receipt(sar)
+        if not ok_sar:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                    "reason": f"SEALED_APPLY_RECEIPT_INVALID:{r_sar}"}
+        sre = SEV.load_sealed_rollback_evidence(sealed_rollback_evidence_id, sealed_rollback_evidence_dir)
+        ok_sre, r_sre = SEV.verify_sealed_rollback_evidence(sre)
+        if not ok_sre:
+            return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                    "reason": f"SEALED_ROLLBACK_EVIDENCE_INVALID:{r_sre}"}
+        cur_eah = envelope.get("execution_authority_hash")
+        expected_post_sha256 = receipt.get("target_post_sha256")
+        checks = [
+            (sar.get("execution_authority_hash") == cur_eah, "SAR_EAH"),
+            (sre.get("execution_authority_hash") == cur_eah, "SRE_EAH"),
+            (sar.get("approval_id") == approval_id, "SAR_APPROVAL"),
+            (sre.get("approval_id") == approval_id, "SRE_APPROVAL"),
+            (sar.get("child_execution_id") == child_execution_id, "SAR_CHILD"),
+            (sre.get("child_execution_id") == child_execution_id, "SRE_CHILD"),
+            (sar.get("batch_execution_id") == batch_execution_id, "SAR_BATCH"),
+            (sre.get("batch_execution_id") == batch_execution_id, "SRE_BATCH"),
+            (sar.get("target_path") == target_path, "SAR_TARGET_PATH"),
+            (sre.get("target_path") == target_path, "SRE_TARGET_PATH"),
+            (sar.get("target_pre_sha256") == child.get("target_pre_sha256"), "SAR_TARGET_PRE"),
+            (sre.get("pre_write_sha256") == child.get("target_pre_sha256"), "SRE_PRE_WRITE"),
+            (sar.get("target_post_sha256") == expected_post_sha256, "SAR_TARGET_POST"),
+            (sar.get("source_content_sha256") == child.get("source_content_sha256"), "SAR_SOURCE_SHA"),
+            (sre.get("source_content_sha256") == child.get("source_content_sha256"), "SRE_SOURCE_SHA"),
+            (sar.get("sealed_rollback_evidence_id") == sealed_rollback_evidence_id, "SAR_LINKS_SRE_ID"),
+            (sar.get("sealed_rollback_evidence_hash") == sre.get("sealed_rollback_evidence_hash"), "SAR_LINKS_SRE_HASH"),
+            (sar.get("kx108_pre_decision_record_id") == sre.get("kx108_pre_decision_record_id"), "SAR_SRE_PRE_ID"),
+            (sar.get("kx108_pre_decision_record_hash") == sre.get("kx108_pre_decision_record_hash"), "SAR_SRE_PRE_HASH"),
+        ]
+        for ok_c, label in checks:
+            if not ok_c:
+                return {"status": NOT_READY_EVIDENCE_INTEGRITY,
+                        "reason": f"SEALED_EVIDENCE_CROSS_LINK_MISMATCH:{label}"}
+        sealed_provenance_extra = {
+            "sealed_apply_receipt_id": sar["sealed_apply_receipt_id"],
+            "sealed_apply_receipt_hash": sar["sealed_apply_receipt_hash"],
+            "sealed_rollback_evidence_id": sre["sealed_rollback_evidence_id"],
+            "sealed_rollback_evidence_hash": sre["sealed_rollback_evidence_hash"],
+        }
+
     provenance = {
         "batch_execution_id": batch_execution_id,
         "child_execution_id": child_execution_id,
@@ -417,6 +509,7 @@ def translate_evidence_to_tooling_build_state(
         "test_contract_hash": envelope.get("test_contract_hash"),
         "test_contract_result_id": test_contract_result_id,
         "test_contract_result_record_hash": result.get("result_record_hash"),
+        **sealed_provenance_extra,
     }
 
     translation_report = {

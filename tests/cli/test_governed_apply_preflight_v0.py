@@ -435,7 +435,14 @@ def test_18_source_content_sha256_mismatch_holds(canon):
     canon["fake"]["sandbox"].write_bytes(b"# drifted after bridge\nVALUE = 42\n")
     r = _preflight(canon)
     assert r["status"] == GA.STATUS_HOLD
-    assert r["reason"] in ("SOURCE_CONTENT_SHA256_MISMATCH", "SOURCE_RESOLVE_FAILED:SOURCE_INTEGRITY_MISMATCH")
+    # Fail-closed préservé. Le durcissement FILESYSTEM_FILE C2 (§10) fait
+    # échouer resolve_source_bytes plus tôt avec un motif SHA256 complet
+    # précis ; le préflight l'enveloppe alors en SOURCE_RESOLVE_FAILED:*.
+    assert r["reason"] in (
+        "SOURCE_CONTENT_SHA256_MISMATCH",
+        "SOURCE_RESOLVE_FAILED:SOURCE_INTEGRITY_MISMATCH",
+        "SOURCE_RESOLVE_FAILED:SOURCE_CONTENT_SHA256_MISMATCH",
+    )
 
 
 def test_19_source_bytes_modified_after_bridge_holds(canon):
@@ -567,13 +574,49 @@ def test_31_32_33_34_no_governance_side_artifacts(canon):
         assert not list(canon["tmp"].rglob(f"*{banned}*"))
 
 
+_BANNED_MUTATION_SYMBOLS = (
+    "apply_validated_source_content(", "atomic_replace_with_bytes(",
+    "apply_proposal(", "run_bounded_apply(", "os.replace(",
+    "write_bytes(", "write_text(", "git commit", "git push", "git merge",
+)
+
+
 def test_35_static_no_mutation_symbols_in_c1_modules():
-    for mod in (GA, BRIDGE):
-        src = Path(mod.__file__).read_text(encoding="utf-8")
-        for banned in ("apply_validated_source_content(", "atomic_replace_with_bytes(",
-                       "apply_proposal(", "run_bounded_apply(", "os.replace(",
-                       "write_bytes(", "write_text(", "git commit", "git push", "git merge"):
-            assert banned not in src, f"{mod.__name__}: {banned}"
+    """Le module bridge reste entièrement non-mutant. Pour
+    obsidia_governed_apply_v0, C2 (frozen C2_D_ATOMIC_DESIGN_V1 §7/§19) ajoute
+    délibérément l'UNIQUE chemin d'écriture gouverné `run_governed_content_apply`
+    — l'invariant historique n'est donc plus au niveau MODULE mais au niveau
+    FONCTION : `validate_governed_apply_preflight` lui-même doit rester
+    strictement READ_ONLY. cf. test_35b."""
+    src = Path(BRIDGE.__file__).read_text(encoding="utf-8")
+    for banned in _BANNED_MUTATION_SYMBOLS:
+        assert banned not in src, f"{BRIDGE.__name__}: {banned}"
+
+
+def test_35b_c1_preflight_function_remains_read_only():
+    import inspect
+    pf_src = inspect.getsource(GA.validate_governed_apply_preflight)
+    for banned in _BANNED_MUTATION_SYMBOLS:
+        assert banned not in pf_src, f"validate_governed_apply_preflight: {banned}"
+    # aucune écriture disque d'aucune sorte dans la fonction de préflight
+    for banned in ("open(", ".mkdir(", "os.link(", "os.remove(", "shutil.",
+                   "store_", "run_and_persist", "run_governed_content_apply("):
+        assert banned not in pf_src, f"validate_governed_apply_preflight: {banned}"
+    assert GA.validate_governed_apply_preflight(  # signature/inspection only
+        "x", "x", "x", "x").get("write_capability") is False
+
+
+def test_35c_c2_write_path_is_the_single_write_capable_entrypoint():
+    """Documente le partage intentionnel : le SEUL point d'écriture du module
+    est run_governed_content_apply (C2). Le préflight n'écrit jamais."""
+    assert hasattr(GA, "run_governed_content_apply")
+    assert GA.PUBLIC_SUCCESS_BEFORE_KX108_POST_ALLOW is False
+    ga_src = Path(GA.__file__).read_text(encoding="utf-8")
+    # la seule occurrence d'atomic_replace_with_bytes( est dans le corps de C2
+    import inspect
+    c2_src = inspect.getsource(GA.run_governed_content_apply)
+    assert "atomic_replace_with_bytes(" in c2_src
+    assert ga_src.count("atomic_replace_with_bytes(") == c2_src.count("atomic_replace_with_bytes(")
 
 
 # ═══ E2E real stack ═══

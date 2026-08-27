@@ -58,6 +58,18 @@ WORKTREE_ROOT = _REPO_ROOT
 SESSION_ID = f"synth-e2e-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
 WORKTREE_NAME = "TERMINAL_BOUNDED_V1"
 
+# ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 — TEST_ONLY ──────────────────────
+# Cette session synthétique mute une cible réelle via run_bounded_apply.
+# Elle est désormais TEST_ONLY et ne peut JAMAIS s'exécuter contre le dépôt
+# canonique Obsidia — même avec OBSIDIA_GOVERNED_TEST_MODE=1. Pour une
+# exécution de test, WORKTREE_ROOT doit pointer vers un dépôt NON-canonique
+# isolé (et toutes les gardes structurelles de la garde d'écriture gouvernée
+# doivent passer).
+__test_only__ = True
+
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
 # Objectif pointant directement vers periphery/ : pas de redirection par l'agent.
 _SYNTH_OBJECTIVE = (
     "Mettre a jour PERIPHERAL_VERSION de v0 a v1 dans "
@@ -89,6 +101,11 @@ def _banner(msg: str) -> None:
 
 def run_synth_session() -> dict:
     _banner("OBSIDURE_BOUNDED_APPLY_V1 -- Session synthetique E2E")
+
+    # TEST_ONLY : refus dur si la racine d'écriture est canonique (ou un
+    # worktree lié / magasin canonique), inconditionnellement.
+    import obsidia_governed_write_guard_v0 as _wg
+    _wg.assert_isolated_non_canonical_write_root(WORKTREE_ROOT, PROPOSALS_DIR)
 
     # -- Capture HEAD avant tout autre appel (Section 2) -----------------
     base_sha = _capture_head(WORKTREE_ROOT)

@@ -284,6 +284,16 @@ def run_bounded_apply(
 
     _enforce_boundaries()
 
+    # ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 ──────────────────────────────
+    # run_bounded_apply n'est autorisé que vers une racine NON-canonique
+    # isolée sous garde de test gouvernée. Le dépôt canonique est TOUJOURS
+    # refusé (aucune variable d'environnement ne lève ce refus). dryrun_bounded
+    # (READ-ONLY, aucune écriture) n'est jamais concerné. cf. §6/§36.
+    if str(_SCRIPTS_DIR) not in sys.path:
+        sys.path.insert(0, str(_SCRIPTS_DIR))
+    import obsidia_governed_write_guard_v0 as _wg
+    _wg.assert_isolated_non_canonical_write_root(worktree_root, PROPOSALS_DIR)
+
     bilan = agent.apply_proposal(
         proposal_id=session.proposal_id,
         target_root=worktree_root,

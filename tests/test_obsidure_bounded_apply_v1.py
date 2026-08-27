@@ -356,8 +356,19 @@ class TestDryrunBounded:
 # ---------------------------------------------------------------------------
 
 def _patch_proposals(monkeypatch, tmp_path: Path) -> None:
-    """Patche PROPOSALS_DIR dans obsidure_bounded_apply (propagé via proposals_dir=PROPOSALS_DIR)."""
+    """Patche PROPOSALS_DIR dans obsidure_bounded_apply (propagé via proposals_dir=PROPOSALS_DIR).
+
+    C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 : run_bounded_apply est désormais
+    fail-closed (obsidia_governed_write_guard_v0) — l'apply legacy n'est
+    autorisé que sous garde de test gouvernée + racine NON-canonique isolée.
+    tmp_path (worktree_root) ET tmp_path/_PATCH_PROPOSALS satisfont déjà
+    toutes les gardes STRUCTURELLES (hors dépôt canonique, pas un worktree
+    lié, hors magasins canoniques). On pose ici l'unique flag
+    NÉCESSAIRE-mais-jamais-suffisant OBSIDIA_GOVERNED_TEST_MODE=1 propre au
+    contexte de test — aucune garde n'est contournée, aucun canonical
+    n'est autorisé (cf. test_governed_content_apply_c2_v0::test_19/20)."""
     monkeypatch.setattr("scripts.obsidure_bounded_apply.PROPOSALS_DIR", tmp_path / "_PATCH_PROPOSALS")
+    monkeypatch.setenv("OBSIDIA_GOVERNED_TEST_MODE", "1")
 
 
 class TestRunBoundedApply:
@@ -421,7 +432,22 @@ class TestRunBoundedApply:
         s = dryrun_bounded(s)
         agent = AgentObsidure()
         run_bounded_apply(s, agent, tmp_path)
-        assert git_calls == [], f"Git appele par run_bounded_apply : {git_calls}"
+        # C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 : la garde d'écriture gouvernée
+        # exécute une SONDE D'IDENTITÉ EN LECTURE SEULE (`git rev-parse
+        # --git-common-dir`) pour prouver que la racine d'écriture n'est pas un
+        # worktree lié du dépôt canonique. Ce n'est PAS de l'automatisation Git :
+        # aucune disposition (add/commit/push/merge/rebase/cherry-pick/reset/
+        # checkout) n'est jamais émise par run_bounded_apply.
+        _DISPOSITION = ("commit", "push", "merge", "rebase", "cherry-pick",
+                        "reset", "checkout", "add", "stash", "tag", "branch")
+        disposition_calls = [
+            c for c in git_calls
+            if len(c) > 1 and str(c[1]).lower() in _DISPOSITION
+        ]
+        assert disposition_calls == [], f"Git disposition par run_bounded_apply : {disposition_calls}"
+        for c in git_calls:
+            assert list(c[:3]) == ["git", "rev-parse", "--git-common-dir"], \
+                f"Appel Git inattendu (non lecture-seule d'identité) : {c}"
 
 
 # ---------------------------------------------------------------------------

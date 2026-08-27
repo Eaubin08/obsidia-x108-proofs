@@ -134,6 +134,32 @@ _POST_PRE_LINKED_IDENTITY_SEED_FIELDS = (
     _BINDING_CONTEXT_FIELDS + _POST_PRE_LINK_FIELDS + ("decision_phase", "canonical_envelope")
 )
 
+# ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 — lien d'évidence SCELLÉE ──────────
+#
+# Un enregistrement POST-lié C2 porte EN PLUS les id/hash EXACTS des deux
+# artefacts d'évidence scellée (SealedApplyReceipt, SealedRollbackEvidence).
+# Ces 4 champs sont AUSSI couverts, transitivement, par
+# kx108_input_translation_hash (l'adaptateur les injecte dans `provenance`
+# avant de le calculer) — d'où un DOUBLE liage : via le hash de traduction
+# ET via des champs de record immuables explicites.
+#
+# Rétro-compatibilité STRICTE : un record sans clé sealed_apply_receipt_id
+# -> _record_bound_fields_for retombe sur le jeu POST-lié (ou POST legacy)
+# d'origine. Aucun record PRE / POST legacy / D1-POST-sans-sealed n'est
+# affecté (hash + vérification byte-identiques).
+_POST_SEALED_EVIDENCE_LINK_FIELDS = (
+    "sealed_apply_receipt_id", "sealed_apply_receipt_hash",
+    "sealed_rollback_evidence_id", "sealed_rollback_evidence_hash",
+)
+
+_POST_PRE_LINKED_SEALED_RECORD_BOUND_FIELDS = (
+    _POST_PRE_LINKED_RECORD_BOUND_FIELDS + _POST_SEALED_EVIDENCE_LINK_FIELDS
+)
+
+_POST_PRE_LINKED_SEALED_IDENTITY_SEED_FIELDS = (
+    _POST_PRE_LINKED_IDENTITY_SEED_FIELDS + _POST_SEALED_EVIDENCE_LINK_FIELDS
+)
+
 
 def decision_phase_of(record: "Optional[dict]") -> str:
     """Phase d'un enregistrement de décision KX108.
@@ -153,6 +179,8 @@ def _record_bound_fields_for(record: dict) -> tuple:
     if phase == PRE_DECISION_PHASE:
         return _PRE_RECORD_BOUND_FIELDS
     if phase == POST_DECISION_PHASE and record.get("kx108_pre_decision_record_id"):
+        if record.get("sealed_apply_receipt_id"):
+            return _POST_PRE_LINKED_SEALED_RECORD_BOUND_FIELDS
         return _POST_PRE_LINKED_RECORD_BOUND_FIELDS
     return _RECORD_BOUND_FIELDS
 
@@ -457,9 +485,14 @@ def run_and_persist_kx108_pre_execution_decision(
 
 def _compute_post_pre_linked_decision_record_identity(seed: dict) -> str:
     """Identité CONTENU d'une décision POST liée — préfixe distinct (kxpost-)
-    des décisions PRE (kxpre-) et POST legacy (kxd-)."""
+    des décisions PRE (kxpre-) et POST legacy (kxd-). Si le seed porte les
+    champs d'évidence scellée C2, ils entrent dans l'identité (jamais pour
+    un POST-lié D1 historique sans évidence scellée)."""
+    fields = _POST_PRE_LINKED_IDENTITY_SEED_FIELDS
+    if seed.get("sealed_apply_receipt_id"):
+        fields = _POST_PRE_LINKED_SEALED_IDENTITY_SEED_FIELDS
     payload = json.dumps(
-        {k: seed.get(k) for k in _POST_PRE_LINKED_IDENTITY_SEED_FIELDS},
+        {k: seed.get(k) for k in fields},
         sort_keys=True,
     )
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -482,6 +515,7 @@ def run_and_persist_kx108_post_execution_decision(
     execution_dir: Optional[Path] = None,
     pre_decision_store_dir: Optional[Path] = None,
     post_decision_store_dir: Optional[Path] = None,
+    sealed_evidence_link: Optional[dict] = None,
 ) -> dict:
     """
     Chemin de production POST-EXECUTION lié à la décision KX108_PRE exacte (D1).
@@ -507,6 +541,16 @@ def run_and_persist_kx108_post_execution_decision(
     binding_error = _validate_binding_context(binding_context)
     if binding_error:
         return {"status": "REJECTED", "reason": binding_error, "kx108_kernel_call_count": 0}
+
+    sealed_link: Optional[dict] = None
+    if sealed_evidence_link is not None:
+        if not isinstance(sealed_evidence_link, dict) or not all(
+            isinstance(sealed_evidence_link.get(k), str) and sealed_evidence_link.get(k)
+            for k in _POST_SEALED_EVIDENCE_LINK_FIELDS
+        ):
+            return {"status": "REJECTED", "reason": "SEALED_EVIDENCE_LINK_INCOMPLETE",
+                    "kx108_kernel_call_count": 0}
+        sealed_link = {k: sealed_evidence_link[k] for k in _POST_SEALED_EVIDENCE_LINK_FIELDS}
 
     if not (isinstance(kx108_pre_decision_record_id, str) and kx108_pre_decision_record_id.strip()):
         return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_RECORD_ID_MISSING",
@@ -583,12 +627,16 @@ def run_and_persist_kx108_post_execution_decision(
         "decision_authority": DECISION_AUTHORITY,
         "canonical_envelope": envelope_dec,
     }
+    if sealed_link is not None:
+        record.update(sealed_link)
 
     identity_seed = {k: record[k] for k in _BINDING_CONTEXT_FIELDS}
     identity_seed["kx108_pre_decision_record_id"] = kx108_pre_decision_record_id
     identity_seed["kx108_pre_decision_record_hash"] = kx108_pre_decision_record_hash
     identity_seed["decision_phase"] = POST_DECISION_PHASE
     identity_seed["canonical_envelope"] = envelope_dec
+    if sealed_link is not None:
+        identity_seed.update(sealed_link)
     record["decision_record_id"] = _compute_post_pre_linked_decision_record_identity(identity_seed)
     record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
 

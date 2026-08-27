@@ -105,6 +105,15 @@ def _batch_execution_module():
     return _mod
 
 
+def _write_guard_module():
+    import sys as _sys
+    _scripts = str(Path(__file__).resolve().parent)
+    if _scripts not in _sys.path:
+        _sys.path.insert(0, _scripts)
+    import obsidia_governed_write_guard_v0 as _mod
+    return _mod
+
+
 def _ledger_module():
     import sys as _sys
     _scripts = str(Path(__file__).resolve().parent)
@@ -194,6 +203,51 @@ def resolve_source_bytes(child: dict, repo_root: Path) -> "tuple[Optional[bytes]
         p = Path(path_str)
         if not p.is_absolute():
             p = repo_root / path_str
+
+        # ── Durcissement FILESYSTEM_FILE C2 (SOURCE_REPARSE_SAFETY) ──────────
+        # Activé UNIQUEMENT lorsque le child porte un source_content_sha256
+        # COMPLET (64 hex) — l'autorité de contenu C2 (bridge C1). Les
+        # children légataires ne portant qu'un source_hash tronqué à 16 ne
+        # voient AUCUN changement de comportement (préfixe-16 seul, comme
+        # avant — jamais suffisant pour C2). cf. HARDEN §10/§11.
+        expected_full = child.get("source_content_sha256")
+        c2_boundary = (
+            isinstance(expected_full, str) and len(expected_full) == 64
+            and all(ch in "0123456789abcdef" for ch in expected_full.lower())
+        )
+        if c2_boundary:
+            root_resolved = Path(repo_root).resolve()
+            try:
+                p_resolved = p.resolve()
+            except OSError as exc:
+                return None, f"SOURCE_PATH_UNRESOLVABLE:{exc}"
+            try:
+                p_resolved.relative_to(root_resolved)
+            except ValueError:
+                return None, "SOURCE_PATH_ESCAPE"
+            if not p_resolved.exists() or not p_resolved.is_file():
+                return None, "SOURCE_FILE_MISSING"
+            _WG = _write_guard_module()
+            # lien / reparse sur la source LITTÉRALE + composants parents
+            literal = (root_resolved / p_resolved.relative_to(root_resolved))
+            ok_rp, reason_rp = _WG.verify_path_reparse_safe(
+                root_resolved, literal, kind="SOURCE"
+            )
+            if not ok_rp:
+                return None, f"SOURCE_REPARSE_UNSAFE:{reason_rp}"
+            try:
+                data = literal.read_bytes()
+            except OSError:
+                return None, "SOURCE_FILE_UNREADABLE"
+            actual_full = _full_sha256(data)
+            if actual_full != expected_full:
+                return None, "SOURCE_CONTENT_SHA256_MISMATCH"
+            expected_hash16 = child.get("source_hash")
+            if expected_hash16 and actual_full[:16] != expected_hash16:
+                return None, "SOURCE_INTEGRITY_MISMATCH"
+            return data, None
+
+        # ── Chemin légataire (source_hash tronqué à 16 uniquement) ──────────
         if not p.exists() or not p.is_file():
             return None, "SOURCE_FILE_MISSING"
         try:

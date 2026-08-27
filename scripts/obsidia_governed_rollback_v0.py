@@ -323,7 +323,7 @@ def _atomic_restore(target_literal: Path, target_canonical: Path, preimage: byte
 # ── Entrypoint ───────────────────────────────────────────────────────────
 
 def _finalize(*, status, reason, ctx, observed_before=None, observed_after=None,
-              rollback_result_dir=None) -> dict:
+              rollback_result_dir=None, evidence_sealed=False) -> dict:
     """Construit + publie (immuable) le RollbackResult ; retourne le dict complet."""
     record = {
         "rollback_result_schema_version": RESULT_SCHEMA_VERSION,
@@ -348,7 +348,7 @@ def _finalize(*, status, reason, ctx, observed_before=None, observed_after=None,
         "restored_pre_sha256": ctx.get("restored_pre_sha256"),
         "observed_after_rollback_sha256": observed_after,
         "preimage_size": ctx.get("preimage_size"),
-        "evidence_sealed": False,
+        "evidence_sealed": bool(evidence_sealed),
         "decision_authority": DECISION_AUTHORITY,
     }
     seed = {k: record.get(k) for k in _IDENTITY_SEED_FIELDS}
@@ -379,8 +379,129 @@ def _finalize(*, status, reason, ctx, observed_before=None, observed_after=None,
                                                   ROLLBACK_SUCCEEDED_RESULT_UNPERSISTED),
         "quarantine_required": quarantine_required,
         "kx108_invocations_during_rollback": 0,
-        "evidence_sealed": False,
+        "evidence_sealed": bool(evidence_sealed),
+        "expected_post_sha256": ctx.get("expected_post_sha256"),
+        "rollback_expected_b_authority": ctx.get("rollback_expected_b_authority"),
     }
+
+
+def _sealed_evidence_module():
+    import sys as _sys
+    _scripts = str(Path(__file__).resolve().parent)
+    if _scripts not in _sys.path:
+        _sys.path.insert(0, _scripts)
+    import obsidia_sealed_evidence_v0 as _mod
+    return _mod
+
+
+def _sealed_rollback_tail(
+    *, root, ctx, child, current_eah, approval_id, batch_execution_id,
+    kx108_pre_decision_record_id, pre_hash,
+    sealed_rollback_evidence_id, sealed_apply_receipt_id,
+    sealed_receipt_dir, sealed_rollback_evidence_dir, rollback_result_dir,
+) -> dict:
+    """Queue de rollback pour évidence SCELLÉE C2. B attendu = autorité
+    EAH-liée child.source_content_sha256 (jamais reçu / stamp / fichier
+    source courant). SealedApplyReceipt OPTIONNEL (§22)."""
+    SEV = _sealed_evidence_module()
+    child_execution_id = child.get("child_execution_id")
+    target_path = child.get("target_path")
+    child_source_sha = child.get("source_content_sha256")
+    child_target_pre = child.get("target_pre_sha256")
+    ctx["rollback_expected_b_authority"] = "EXECUTION_ENVELOPE_CHILD_SOURCE_CONTENT_SHA256"
+
+    def _fin(status, reason, **kw):
+        return _finalize(status=status, reason=reason, ctx=ctx,
+                         rollback_result_dir=rollback_result_dir,
+                         evidence_sealed=True, **kw)
+
+    # 5s. SealedRollbackEvidence — chargée + vérifiée (hash / preimage / schéma)
+    sre = SEV.load_sealed_rollback_evidence(sealed_rollback_evidence_id, sealed_rollback_evidence_dir)
+    ok_sre, r_sre = SEV.verify_sealed_rollback_evidence(sre)
+    if not ok_sre:
+        return _fin(ROLLBACK_REFUSED_PREIMAGE_INVALID, f"SEALED_ROLLBACK_EVIDENCE_INVALID:{r_sre}")
+    ctx["rollback_evidence_sha256"] = sre.get("sealed_rollback_evidence_hash")
+
+    # 6s. Recoupement de l'identité SCELLÉE contre l'identité reconstruite
+    if (sre.get("execution_authority_hash") != current_eah
+            or sre.get("approval_id") != approval_id
+            or sre.get("kx108_pre_decision_record_id") != kx108_pre_decision_record_id
+            or sre.get("kx108_pre_decision_record_hash") != pre_hash
+            or sre.get("child_execution_id") != child_execution_id
+            or sre.get("batch_execution_id") != batch_execution_id
+            or sre.get("target_path") != target_path
+            or sre.get("operation_type") != OPERATION_TYPE
+            or sre.get("decision_authority") != DECISION_AUTHORITY
+            or sre.get("source_content_sha256") != child_source_sha
+            or sre.get("pre_write_sha256") != child_target_pre):
+        return _fin(ROLLBACK_REFUSED_IDENTITY_MISMATCH, "SEALED_ROLLBACK_EVIDENCE_CROSS_LINK_MISMATCH")
+
+    # 7s. SealedApplyReceipt — OPTIONNEL. S'il est fourni : vérifié + recoupé.
+    if sealed_apply_receipt_id:
+        sar = SEV.load_sealed_apply_receipt(sealed_apply_receipt_id, sealed_receipt_dir)
+        ok_sar, r_sar = SEV.verify_sealed_apply_receipt(sar)
+        if not ok_sar:
+            return _fin(ROLLBACK_REFUSED_IDENTITY_MISMATCH, f"SEALED_APPLY_RECEIPT_INVALID:{r_sar}")
+        if (sar.get("sealed_rollback_evidence_id") != sealed_rollback_evidence_id
+                or sar.get("sealed_rollback_evidence_hash") != sre.get("sealed_rollback_evidence_hash")
+                or sar.get("execution_authority_hash") != current_eah
+                or sar.get("approval_id") != approval_id
+                or sar.get("kx108_pre_decision_record_id") != kx108_pre_decision_record_id
+                or sar.get("kx108_pre_decision_record_hash") != pre_hash
+                or sar.get("child_execution_id") != child_execution_id
+                or sar.get("batch_execution_id") != batch_execution_id
+                or sar.get("target_path") != target_path
+                or sar.get("target_pre_sha256") != child_target_pre
+                or sar.get("target_post_sha256") != child_source_sha
+                or sar.get("source_content_sha256") != child_source_sha):
+            return _fin(ROLLBACK_REFUSED_IDENTITY_MISMATCH, "SEALED_APPLY_RECEIPT_CROSS_LINK_MISMATCH")
+        ctx["apply_receipt_sha256"] = sar.get("sealed_apply_receipt_hash")
+
+    # 8s. Preimage
+    preimage, r_pre = SEV.decode_sealed_preimage(sre)
+    if preimage is None:
+        return _fin(ROLLBACK_REFUSED_PREIMAGE_INVALID, f"PREIMAGE_{r_pre}")
+    pre_write_sha256 = sre["pre_write_sha256"]
+    pre_write_size = sre["pre_write_size"]
+
+    # 9s. B attendu = autorité EAH-liée (jamais le fichier source courant)
+    if not _is_full_sha256(child_source_sha):
+        return _fin(ROLLBACK_REFUSED_IDENTITY_MISMATCH, "CHILD_SOURCE_CONTENT_SHA256_NOT_FULL_64_HEX")
+    expected_post = child_source_sha
+    ctx.update({"target_path": target_path, "expected_post_sha256": expected_post,
+                "restored_pre_sha256": pre_write_sha256, "preimage_size": pre_write_size})
+
+    # 10s. Identité + sécurité du chemin cible
+    target_canonical, treason = _C.canonicalize_write_target(target_path, root)
+    if treason or target_canonical is None:
+        return _fin(ROLLBACK_REFUSED_PATH_SAFETY, f"CANONICALIZE:{treason}")
+    target_literal = (root / Path(str(target_path).replace("\\", "/")))
+    try:
+        target_literal.relative_to(root)
+    except ValueError:
+        return _fin(ROLLBACK_REFUSED_PATH_SAFETY, "TARGET_LITERAL_OUTSIDE_REPO")
+    if target_literal.exists() and target_literal.is_dir():
+        return _fin(ROLLBACK_REFUSED_PATH_SAFETY, "TARGET_IS_DIRECTORY")
+    if _is_unsafe_link_or_reparse(target_literal):
+        return _fin(ROLLBACK_REFUSED_PATH_SAFETY, "TARGET_IS_LINK_OR_REPARSE")
+    ok_par, reason_par = _verify_no_reparse_on_path(root, target_literal)
+    if not ok_par:
+        return _fin(ROLLBACK_REFUSED_PATH_SAFETY, reason_par)
+
+    # 11s. Garde d'état courant (fail-closed)
+    observed_before = _read_target_sha256(target_literal)
+    if observed_before == pre_write_sha256:
+        return _fin(ALREADY_ROLLED_BACK, "TARGET_ALREADY_AT_PREIMAGE",
+                    observed_before=observed_before, observed_after=observed_before)
+    if observed_before != expected_post:
+        return _fin(ROLLBACK_REFUSED_POST_STATE_DRIFT, "CURRENT_TARGET_NEITHER_POST_NOR_PRE",
+                    observed_before=observed_before)
+
+    # 12s. Restauration atomique gardée (double TOCTOU + re-check reparse)
+    restore = _atomic_restore(target_literal, target_canonical, preimage,
+                              pre_write_sha256, expected_post, root)
+    return _fin(restore["status"], restore.get("reason"),
+                observed_before=observed_before, observed_after=restore.get("observed_after"))
 
 
 def run_governed_rollback(
@@ -395,6 +516,10 @@ def run_governed_rollback(
     post_decision_store_dir: Optional[Path] = None,
     rollback_result_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    sealed_apply_receipt_id: Optional[str] = None,
+    sealed_rollback_evidence_id: Optional[str] = None,
+    sealed_receipt_dir: Optional[Path] = None,
+    sealed_rollback_evidence_dir: Optional[Path] = None,
 ) -> dict:
     """
     FAIL_CLOSED_RECOVERY_ACTION. N'invoque JAMAIS KX108. Ne mute que la
@@ -517,6 +642,26 @@ def run_governed_rollback(
         return _finalize(status=ROLLBACK_REFUSED_NOT_MUST_ROLLBACK,
                          reason=f"DISPOSITION_{disp.get('disposition')}", ctx=ctx,
                          rollback_result_dir=rollback_result_dir)
+
+    # ─── C2 : évidence SCELLÉE ────────────────────────────────────────────
+    # ROLLBACK_EXPECTED_B_DEPENDS_ON_CURRENT_SOURCE_FILE = FALSE.
+    # L'état B attendu est l'autorité EAH-liée child.source_content_sha256
+    # (l'ExecutionEnvelope a déjà été rechargée + EAH recalculé == stocké
+    # ci-dessus). AUCUN ApplyReceipt, AUCUN post-stamp, AUCUN fichier
+    # source courant n'est requis pour connaître B. Le SealedApplyReceipt
+    # est OPTIONNEL (cas §22 : échec du scellé de reçu après écriture).
+    if sealed_rollback_evidence_id:
+        return _sealed_rollback_tail(
+            root=root, ctx=ctx, child=child, current_eah=current_eah,
+            approval_id=approval_id, batch_execution_id=batch_execution_id,
+            kx108_pre_decision_record_id=kx108_pre_decision_record_id,
+            pre_hash=pre_hash,
+            sealed_rollback_evidence_id=sealed_rollback_evidence_id,
+            sealed_apply_receipt_id=sealed_apply_receipt_id,
+            sealed_receipt_dir=sealed_receipt_dir,
+            sealed_rollback_evidence_dir=sealed_rollback_evidence_dir,
+            rollback_result_dir=rollback_result_dir,
+        )
 
     # 5. ApplyReceipt — octets exacts hachés au chargement + recoupements sémantiques
     receipt_path = _C._apply_receipt_path(child_execution_id, evidence_dir)

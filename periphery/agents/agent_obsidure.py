@@ -3493,6 +3493,18 @@ class AgentObsidure:
 
     # ── APPLY PROPOSAL ───────────────────────────────────────────────────
 
+    @staticmethod
+    def _governed_write_guard():
+        """Import paresseux de la garde d'écriture gouvernée partagée
+        (scripts/obsidia_governed_write_guard_v0.py). Isolé ici pour ne pas
+        imposer d'import scripts/ au chargement de la couche periphery."""
+        import sys as _sys
+        _scripts = str(Path(__file__).resolve().parents[2] / "scripts")
+        if _scripts not in _sys.path:
+            _sys.path.insert(0, _scripts)
+        import obsidia_governed_write_guard_v0 as _wg
+        return _wg
+
     def apply_proposal(
         self,
         proposal_id: str,
@@ -3513,6 +3525,17 @@ class AgentObsidure:
         """
         effective_root: Path = target_root if target_root is not None else REPO_ROOT
         effective_proposals: Path = proposals_dir if proposals_dir is not None else PROPOSALS_DIR
+
+        # ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 — FAIL_CLOSED_FOR_CANONICAL_REPO_MUTATION ──
+        # apply_proposal() ne peut JAMAIS muter le dépôt canonique Obsidia
+        # (ni un worktree lié, ni un magasin canonique). Aucune variable
+        # d'environnement ne lève ce refus. Une racine NON-canonique isolée
+        # n'est acceptée que si TOUTES les gardes structurelles passent
+        # (OBSIDIA_GOVERNED_TEST_MODE=1 nécessaire mais jamais suffisant).
+        _wg = self._governed_write_guard()
+        _wg.assert_isolated_non_canonical_write_root(
+            effective_root, effective_proposals,
+        )
 
         proposal_dir = effective_proposals / proposal_id
         proposal_json = proposal_dir / "proposal.json"
@@ -3538,7 +3561,8 @@ class AgentObsidure:
                 self._log(f"  ERREUR sandbox absent : {rel_path}", level="ERROR")
                 continue
 
-            dst = effective_root / rel_path
+            # Confinement + sûreté lien/reparse par fichier, juste avant la copie.
+            dst = _wg.assert_destination_confined(effective_root, rel_path)
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(sandbox, dst)
             applied.append(rel_path)
