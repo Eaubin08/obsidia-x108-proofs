@@ -1,0 +1,328 @@
+{
+  "manifest_schema_version": 1,
+  "purpose": "CANONICAL_C2_GOVERNED_REMEDIATION_CONFORMANCE_V0",
+  "created_at_note": "archival turn — timestamps of proof artifacts are the originals, unchanged",
+  "canonical_branch": "feat/terminal-runtime-repair-and-bounded-build-v1",
+  "canonical_commit": "e3877b5e70d95de8962009313021017e7b596213",
+  "canonical_target_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt",
+  "canonical_target_git_blob": "c3c464024b852afb4f7db99f6ca754acad5aa296",
+  "target_a_sha256": "8526a8f54067416f1f28ec07396ce1c7c34ec79adbc4ffd0a2d0923ee19a0b1d",
+  "target_b_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+  "authorized_source_git_blob": "c3c464024b852afb4f7db99f6ca754acad5aa296",
+  "authorized_source_historical_commit": "d25dbd5a0c2f8da6eddc7132e241de2a58bc1a09",
+  "authorized_source_historical_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_source_v0.txt",
+  "governance_authority_note": "The persisted chain (ExecutionEnvelope/EAH -> HumanApproval -> KX108_PRE -> SealedRollbackEvidence -> SealedApplyReceipt -> TestContractResult -> KX108_POST -> D1/D2) IS the governance authority. Git commit e3877b5 is the DISPOSITION/INTEGRATION record, NOT governance authority.",
+  "manifest_git_as_governance_authority": false,
+  "negative_run": {
+    "identity": "NEGATIVE — proves genuine test FAIL -> real KX108_POST BLOCK -> D1 MUST_ROLLBACK -> D2 -> exact A",
+    "execution_authority_hash": "ec7e1ac4ebfb6256eec786e2e9fb4b22a701fd5dc698b12f113b49cb00229e10",
+    "batch_execution_id": "57420e49466cbd17",
+    "child_execution_id": "fe26f5ab458b7cbf",
+    "human_approval_id": "appr-588b43e080a537ea42c5ce661678bdef",
+    "human_authorization_reference": "EVENT2B_NEGATIVE_EAH_AUTHORIZED_2026-08-27",
+    "kx108_pre_decision_record_id": "kxpre-59f76e6cd9338e106de3c2052bc2a05e",
+    "kx108_pre_gate": "ALLOW",
+    "sealed_rollback_evidence_id": "sre-6ece1d558c11cf58c9ed18123163960b",
+    "sealed_apply_receipt_id": "sar-7058c70bb319294dc18807d2b96afad3",
+    "sealed_apply_receipt_target_post_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+    "test_contract_hash": "c8178e0851ac7fc19e94b8bb911ff724af958cc37c41fa90585f615862d7ad3a",
+    "test_contract_result_id": "tcr-874879a85312201faeb0fdb80112f8f5",
+    "test_contract_result_aggregate": "REQUIRED_TEST_FAILED",
+    "kx108_post_decision_record_id": "kxpost-1d7c12381fe63a211a2b33765d0f58f3",
+    "kx108_post_gate": "BLOCK",
+    "d1_disposition": "MUST_ROLLBACK",
+    "rollback_result_id": "rbk-659f421139a2813712f548ce066406da",
+    "rollback_status": "ROLLBACK_SUCCEEDED",
+    "final_target_sha256": "8526a8f54067416f1f28ec07396ce1c7c34ec79adbc4ffd0a2d0923ee19a0b1d",
+    "kx108_forced": false,
+    "rollback_driver_authored": false,
+    "source_packet_original_location": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_C2_PILOT_2A_NEG_STORES",
+    "archived_relative_root": "negative/",
+    "archived_packet_reverify": {
+      "approval": true,
+      "envelope_eah": true,
+      "pec": true,
+      "kx108_pre": true,
+      "kx108_post": true,
+      "sre": true,
+      "sar": true,
+      "tcr": true,
+      "disposition": true,
+      "rbk": true
+    }
+  },
+  "positive_run": {
+    "identity": "POSITIVE — proves genuine test PASS -> real KX108_POST ALLOW -> D1 KEEP -> human commit -> canonical FF",
+    "execution_authority_hash": "1c744c92eeaa1677898abaf1608e24c7756f956a6873ee9bd74877bde0b96424",
+    "batch_execution_id": "da1004250ce41e47",
+    "child_execution_id": "bf9e005c0f30ba9c",
+    "human_approval_id": "appr-b819b7ec6b5477adc1a5d5c9d373d29a",
+    "human_authorization_reference": "EVENT2C_POSITIVE_EAH_AUTHORIZED_2026-08-27",
+    "kx108_pre_decision_record_id": "kxpre-10d592db211c0dc11b3944f81a6fe047",
+    "kx108_pre_gate": "ALLOW",
+    "sealed_rollback_evidence_id": "sre-de0d0875ce2932ed3d09b861faa706b6",
+    "sealed_apply_receipt_id": "sar-9cece6875a7e6ff5533515766c9573c4",
+    "sealed_apply_receipt_target_post_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+    "test_contract_hash": "16521a934311e311097d8e23b13864969df8c693befcc4c9cffd014bdc9df3fb",
+    "test_contract_result_id": "tcr-cd240c25ba9bff9dd547576e5ccfb15e",
+    "test_contract_result_aggregate": "ALL_REQUIRED_PASS",
+    "kx108_post_decision_record_id": "kxpost-4fdea9d68801952861eb76cf0df591da",
+    "kx108_post_gate": "ALLOW",
+    "d1_disposition": "KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW",
+    "positive_rollback_result": null,
+    "final_target_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+    "kx108_forced": false,
+    "keep_driver_authored": false,
+    "human_git_commit": "e3877b5e70d95de8962009313021017e7b596213",
+    "canonical_integration": "FAST_FORWARD_ONLY 6b9cb4a..e3877b5 (linear, no merge commit)",
+    "source_packet_original_location": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_C2_PILOT_2C_POS_STORES",
+    "archived_relative_root": "positive/",
+    "archived_packet_reverify": {
+      "approval": true,
+      "envelope_eah": true,
+      "pec": true,
+      "kx108_pre": true,
+      "kx108_post": true,
+      "sre": true,
+      "sar": true,
+      "tcr": true,
+      "disposition": true
+    }
+  },
+  "artifact_inventory": [
+    {
+      "source_relative_path": "executions/approvals/appr-588b43e080a537ea42c5ce661678bdef/approval.json",
+      "artifact_type": "HumanApproval",
+      "byte_size": 665,
+      "source_sha256": "5920947ca861ebe3a4810fb89c764095b3c0f04cd8e7fda4349fce338864525a",
+      "archived_relative_path": "negative/executions/approvals/appr-588b43e080a537ea42c5ce661678bdef/approval.json",
+      "archived_sha256": "5920947ca861ebe3a4810fb89c764095b3c0f04cd8e7fda4349fce338864525a",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "executions/executions/57420e49466cbd17/execution.json",
+      "artifact_type": "ExecutionEnvelope",
+      "byte_size": 3574,
+      "source_sha256": "c4f0aadac1035e77fdd42fe6e51a6370070c02bed050827125397144597aa61c",
+      "archived_relative_path": "negative/executions/executions/57420e49466cbd17/execution.json",
+      "archived_sha256": "c4f0aadac1035e77fdd42fe6e51a6370070c02bed050827125397144597aa61c",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "kx108_post/kxpost-1d7c12381fe63a211a2b33765d0f58f3.json",
+      "artifact_type": "KX108_POST_DecisionRecord",
+      "byte_size": 9736,
+      "source_sha256": "ebd476caf3427970f3c29b6c92fb206df29d16caf91ab3f7566c64d1c2f259dc",
+      "archived_relative_path": "negative/kx108_post/kxpost-1d7c12381fe63a211a2b33765d0f58f3.json",
+      "archived_sha256": "ebd476caf3427970f3c29b6c92fb206df29d16caf91ab3f7566c64d1c2f259dc",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "kx108_pre/kxpre-59f76e6cd9338e106de3c2052bc2a05e.json",
+      "artifact_type": "KX108_PRE_DecisionRecord",
+      "byte_size": 8716,
+      "source_sha256": "4952035e82b6866dfefde32762f2060f098ea98d85fdc4e992c7fb53c64762d8",
+      "archived_relative_path": "negative/kx108_pre/kxpre-59f76e6cd9338e106de3c2052bc2a05e.json",
+      "archived_sha256": "4952035e82b6866dfefde32762f2060f098ea98d85fdc4e992c7fb53c64762d8",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "ledger/entries.jsonl",
+      "artifact_type": "LedgerEntries",
+      "byte_size": 1561,
+      "source_sha256": "312b541086b16b5097b19c5252dbca8910478778dad34af65f409b614a707ddb",
+      "archived_relative_path": "negative/ledger/entries.jsonl",
+      "archived_sha256": "312b541086b16b5097b19c5252dbca8910478778dad34af65f409b614a707ddb",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "ledger/events.jsonl",
+      "artifact_type": "LedgerEvents",
+      "byte_size": 390,
+      "source_sha256": "2ccc014784b32e57281190bc8a264230631381f20b87e56aa99f720649c785b7",
+      "archived_relative_path": "negative/ledger/events.jsonl",
+      "archived_sha256": "2ccc014784b32e57281190bc8a264230631381f20b87e56aa99f720649c785b7",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "pre_execution_context/pec-5f7b35f95483a4ac15e16b2f820cadfc.json",
+      "artifact_type": "PreExecutionContext",
+      "byte_size": 3072,
+      "source_sha256": "bac5d4e3dea68f62f9bcc7c8c10ba524e922e46746f7e1c50e7e6c55d7cc14bc",
+      "archived_relative_path": "negative/pre_execution_context/pec-5f7b35f95483a4ac15e16b2f820cadfc.json",
+      "archived_sha256": "bac5d4e3dea68f62f9bcc7c8c10ba524e922e46746f7e1c50e7e6c55d7cc14bc",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "rollback_results/rbk-659f421139a2813712f548ce066406da.json",
+      "artifact_type": "RollbackResult",
+      "byte_size": 1785,
+      "source_sha256": "c69cd33f2c532628cc760202e298edfa8486fc05b9887b49d6047eec8592ace8",
+      "archived_relative_path": "negative/rollback_results/rbk-659f421139a2813712f548ce066406da.json",
+      "archived_sha256": "c69cd33f2c532628cc760202e298edfa8486fc05b9887b49d6047eec8592ace8",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "sealed_receipts/sar-7058c70bb319294dc18807d2b96afad3.json",
+      "artifact_type": "SealedApplyReceipt",
+      "byte_size": 1786,
+      "source_sha256": "b67db206f85a6109d2afbcc25791aa9f82139472c6211d00a588f0e6d9f66a66",
+      "archived_relative_path": "negative/sealed_receipts/sar-7058c70bb319294dc18807d2b96afad3.json",
+      "archived_sha256": "b67db206f85a6109d2afbcc25791aa9f82139472c6211d00a588f0e6d9f66a66",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "sealed_rollback_evidence/sre-6ece1d558c11cf58c9ed18123163960b.json",
+      "artifact_type": "SealedRollbackEvidence",
+      "byte_size": 1757,
+      "source_sha256": "8eeb19e6f6e78e4b2f74a9b7fd940af475bf016f58c92688fe49b498d4194941",
+      "archived_relative_path": "negative/sealed_rollback_evidence/sre-6ece1d558c11cf58c9ed18123163960b.json",
+      "archived_sha256": "8eeb19e6f6e78e4b2f74a9b7fd940af475bf016f58c92688fe49b498d4194941",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "selector/batches/1c21b719e8823ece/batch_proposal.json",
+      "artifact_type": "BatchProposal",
+      "byte_size": 3204,
+      "source_sha256": "00bd7c68b30014af3cb1eda84f65a6c0b179af4af72b6c7333e67e5b09822dd9",
+      "archived_relative_path": "negative/selector/batches/1c21b719e8823ece/batch_proposal.json",
+      "archived_sha256": "00bd7c68b30014af3cb1eda84f65a6c0b179af4af72b6c7333e67e5b09822dd9",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "test_contract_results/tcr-874879a85312201faeb0fdb80112f8f5.json",
+      "artifact_type": "TestContractResult",
+      "byte_size": 1211,
+      "source_sha256": "084c6cefd638993fd9ab662f4df9638d39b55aff26381c22573eeb8a3ea015e9",
+      "archived_relative_path": "negative/test_contract_results/tcr-874879a85312201faeb0fdb80112f8f5.json",
+      "archived_sha256": "084c6cefd638993fd9ab662f4df9638d39b55aff26381c22573eeb8a3ea015e9",
+      "source_packet": "NEGATIVE"
+    },
+    {
+      "source_relative_path": "executions/approvals/appr-b819b7ec6b5477adc1a5d5c9d373d29a/approval.json",
+      "artifact_type": "HumanApproval",
+      "byte_size": 665,
+      "source_sha256": "4ecaa719cff6c12d2e8d5fbddb87bdcb26a03842d21bd84013f162e5863a694f",
+      "archived_relative_path": "positive/executions/approvals/appr-b819b7ec6b5477adc1a5d5c9d373d29a/approval.json",
+      "archived_sha256": "4ecaa719cff6c12d2e8d5fbddb87bdcb26a03842d21bd84013f162e5863a694f",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "executions/executions/da1004250ce41e47/execution.json",
+      "artifact_type": "ExecutionEnvelope",
+      "byte_size": 4834,
+      "source_sha256": "eaeb2eee5220bf2963a238e32fca5a16ca0483a38aab7dc86fb89ce27c9c81f2",
+      "archived_relative_path": "positive/executions/executions/da1004250ce41e47/execution.json",
+      "archived_sha256": "eaeb2eee5220bf2963a238e32fca5a16ca0483a38aab7dc86fb89ce27c9c81f2",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "kx108_post/kxpost-4fdea9d68801952861eb76cf0df591da.json",
+      "artifact_type": "KX108_POST_DecisionRecord",
+      "byte_size": 9228,
+      "source_sha256": "984defdcb26ef08305ef32f26ca4bf470a484d1feeab3f0b0e07a4366fcf042a",
+      "archived_relative_path": "positive/kx108_post/kxpost-4fdea9d68801952861eb76cf0df591da.json",
+      "archived_sha256": "984defdcb26ef08305ef32f26ca4bf470a484d1feeab3f0b0e07a4366fcf042a",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "kx108_pre/kxpre-10d592db211c0dc11b3944f81a6fe047.json",
+      "artifact_type": "KX108_PRE_DecisionRecord",
+      "byte_size": 8716,
+      "source_sha256": "74b2820b81207414aeeac471c5971ec45c8274a8fd72efe3fd6254fa05d67392",
+      "archived_relative_path": "positive/kx108_pre/kxpre-10d592db211c0dc11b3944f81a6fe047.json",
+      "archived_sha256": "74b2820b81207414aeeac471c5971ec45c8274a8fd72efe3fd6254fa05d67392",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "ledger/entries.jsonl",
+      "artifact_type": "LedgerEntries",
+      "byte_size": 1561,
+      "source_sha256": "b4b7f646526653597be9fd11f60c5dfc6f39ebdb196d4ad579c30185d704afac",
+      "archived_relative_path": "positive/ledger/entries.jsonl",
+      "archived_sha256": "b4b7f646526653597be9fd11f60c5dfc6f39ebdb196d4ad579c30185d704afac",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "ledger/events.jsonl",
+      "artifact_type": "LedgerEvents",
+      "byte_size": 390,
+      "source_sha256": "d35d0856e8ea8042e750525f959344a635312d4af82b41aecff7db44564f92d9",
+      "archived_relative_path": "positive/ledger/events.jsonl",
+      "archived_sha256": "d35d0856e8ea8042e750525f959344a635312d4af82b41aecff7db44564f92d9",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "pre_execution_context/pec-541a04676f48b09b21efebcafda3f9b7.json",
+      "artifact_type": "PreExecutionContext",
+      "byte_size": 3072,
+      "source_sha256": "9412e036935a113b4591ed8ce3101036ce3fcbf968ce9e5e5d2f5e8b8f9e59db",
+      "archived_relative_path": "positive/pre_execution_context/pec-541a04676f48b09b21efebcafda3f9b7.json",
+      "archived_sha256": "9412e036935a113b4591ed8ce3101036ce3fcbf968ce9e5e5d2f5e8b8f9e59db",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "sealed_receipts/sar-9cece6875a7e6ff5533515766c9573c4.json",
+      "artifact_type": "SealedApplyReceipt",
+      "byte_size": 1786,
+      "source_sha256": "e137f728573feebe388d0d1a3d761efa30ca5ddbbae1a52f6f1cc008b9cce6a2",
+      "archived_relative_path": "positive/sealed_receipts/sar-9cece6875a7e6ff5533515766c9573c4.json",
+      "archived_sha256": "e137f728573feebe388d0d1a3d761efa30ca5ddbbae1a52f6f1cc008b9cce6a2",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "sealed_rollback_evidence/sre-de0d0875ce2932ed3d09b861faa706b6.json",
+      "artifact_type": "SealedRollbackEvidence",
+      "byte_size": 1757,
+      "source_sha256": "a604d770b0b8326ef3ded48dcffd302a18b0b7856c135258346eff11b2fca259",
+      "archived_relative_path": "positive/sealed_rollback_evidence/sre-de0d0875ce2932ed3d09b861faa706b6.json",
+      "archived_sha256": "a604d770b0b8326ef3ded48dcffd302a18b0b7856c135258346eff11b2fca259",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "selector/batches/25dcf1b92f147d09/batch_proposal.json",
+      "artifact_type": "BatchProposal",
+      "byte_size": 3204,
+      "source_sha256": "fd6345f61edc04559ee1075b5b4068a1376c96cdb2710bef61e1c793d6ae443d",
+      "archived_relative_path": "positive/selector/batches/25dcf1b92f147d09/batch_proposal.json",
+      "archived_sha256": "fd6345f61edc04559ee1075b5b4068a1376c96cdb2710bef61e1c793d6ae443d",
+      "source_packet": "POSITIVE"
+    },
+    {
+      "source_relative_path": "test_contract_results/tcr-cd240c25ba9bff9dd547576e5ccfb15e.json",
+      "artifact_type": "TestContractResult",
+      "byte_size": 2001,
+      "source_sha256": "b9bf208898e7fab79e1e0a6a739c43388b8cdacb277b3cc3c589e7142eecc9f2",
+      "archived_relative_path": "positive/test_contract_results/tcr-cd240c25ba9bff9dd547576e5ccfb15e.json",
+      "archived_sha256": "b9bf208898e7fab79e1e0a6a739c43388b8cdacb277b3cc3c589e7142eecc9f2",
+      "source_packet": "POSITIVE"
+    }
+  ],
+  "original_temporary_roots_untouched_this_turn": true,
+  "original_temporary_roots": [
+    "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_C2_PILOT_2A_NEG_STORES",
+    "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_C2_PILOT_2C_POS_STORES"
+  ],
+  "proof_artifact_count": 23,
+  "archive_metadata_policy_file_count": 3,
+  "total_archive_file_count": 26,
+  "archive_metadata_policy_files": [
+    "README.md",
+    "MANIFEST.json",
+    ".gitattributes"
+  ],
+  "archive_policy_files": [
+    {
+      "path": ".gitattributes",
+      "purpose": "preserve_verbatim_evidence_bytes_and_accept_cr_at_eol",
+      "policy": "* -text whitespace=cr-at-eol",
+      "sha256": "730a35ae3d558080083c3103d9ac8100c3f6561678092abe341701dfa331eb1d"
+    }
+  ],
+  "proof_artifact_rollup_sha256": "518a96fb219245f3fc2ea5253a7e8a34a6aa5ddcead0f58589cc96f63be82693",
+  "proof_artifact_rollup_note": ".gitattributes is an archive-policy file and is NOT part of the 23-proof-artifact rollup.",
+  "superseded_manifest_sha256": "10a6dbbd536c0c92cbaf6638bff2525c2afa7794da15fed1126c5d3b3a13a370",
+  "superseded_manifest_reason": "archive-policy metadata added (scoped .gitattributes); zero proof artifact bytes or hashes changed; manifest re-emitted with LF newlines.",
+  "proof_authority_changed": false,
+  "proof_bytes_changed": false
+}

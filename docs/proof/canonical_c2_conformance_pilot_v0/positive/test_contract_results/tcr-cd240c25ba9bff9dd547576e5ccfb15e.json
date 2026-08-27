@@ -1,0 +1,52 @@
+{
+  "result_schema_version": 1,
+  "result_id": "tcr-cd240c25ba9bff9dd547576e5ccfb15e",
+  "created_at": "2026-08-27T12:20:20.308544+00:00",
+  "started_at": "2026-08-27T12:20:20.211666+00:00",
+  "finished_at": "2026-08-27T12:20:20.308498+00:00",
+  "batch_execution_id": "da1004250ce41e47",
+  "child_execution_id": "bf9e005c0f30ba9c",
+  "execution_authority_hash": "1c744c92eeaa1677898abaf1608e24c7756f956a6873ee9bd74877bde0b96424",
+  "approval_id": "appr-b819b7ec6b5477adc1a5d5c9d373d29a",
+  "test_contract_hash": "16521a934311e311097d8e23b13864969df8c693befcc4c9cffd014bdc9df3fb",
+  "aggregate_status": "ALL_REQUIRED_PASS",
+  "required_check_count": 3,
+  "check_count": 3,
+  "checks": [
+    {
+      "check_id": "post-sha",
+      "result": "PASS",
+      "actual_target_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+      "expected_target_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+      "started_at": "2026-08-27T12:20:20.211675+00:00",
+      "finished_at": "2026-08-27T12:20:20.211839+00:00",
+      "required": true
+    },
+    {
+      "check_id": "diff-scope",
+      "result": "PASS",
+      "actual_diff_paths": [
+        "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt"
+      ],
+      "expected_diff_paths": [
+        "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt"
+      ],
+      "started_at": "2026-08-27T12:20:20.211847+00:00",
+      "finished_at": "2026-08-27T12:20:20.250199+00:00",
+      "required": true
+    },
+    {
+      "check_id": "semantic",
+      "result": "PASS",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "started_at": "2026-08-27T12:20:20.250219+00:00",
+      "finished_at": "2026-08-27T12:20:20.308381+00:00",
+      "required": true
+    }
+  ],
+  "decision_authority": "KX108_ONLY",
+  "result_record_hash": "4cdc3a6c8e0f182b4cf26fe9e49afabdeab6ca0162d15f383139758a56e73134"
+}

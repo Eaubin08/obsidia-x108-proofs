@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "sealed": true,
+  "created_at": "2026-08-27T12:08:03.682253+00:00",
+  "batch_execution_id": "57420e49466cbd17",
+  "child_execution_id": "fe26f5ab458b7cbf",
+  "execution_authority_hash": "ec7e1ac4ebfb6256eec786e2e9fb4b22a701fd5dc698b12f113b49cb00229e10",
+  "approval_id": "appr-588b43e080a537ea42c5ce661678bdef",
+  "kx108_pre_decision_record_id": "kxpre-59f76e6cd9338e106de3c2052bc2a05e",
+  "kx108_pre_decision_record_hash": "f5de9a3721bf52b116b567b8dee6d7a4a3383dab8d23464ec7317a96e11cacb8",
+  "sealed_rollback_evidence_id": "sre-6ece1d558c11cf58c9ed18123163960b",
+  "sealed_rollback_evidence_hash": "21c7d3f258452cee1fdd44b4129767dd1d3b7e22eadb71c3502f264c680a532f",
+  "target_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt",
+  "target_pre_sha256": "8526a8f54067416f1f28ec07396ce1c7c34ec79adbc4ffd0a2d0923ee19a0b1d",
+  "target_post_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+  "source_content_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+  "bytes_written": 189,
+  "source_kind": "GIT_BLOB",
+  "source_identity": {
+    "source_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_source_v0.txt",
+    "source_git_commit_sha": "d25dbd5a0c2f8da6eddc7132e241de2a58bc1a09",
+    "source_git_blob_sha": "c3c464024b852afb4f7db99f6ca754acad5aa296",
+    "source_git_historical_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_source_v0.txt"
+  },
+  "operation_type": "UPDATE_TARGET_FROM_SOURCE",
+  "status": "CONTENT_APPLIED",
+  "decision_authority": "KX108_ONLY",
+  "sealed_apply_receipt_id": "sar-7058c70bb319294dc18807d2b96afad3",
+  "sealed_apply_receipt_hash": "e12b316243a669a2fee41bdb48c0842d6ac18f259713d3f945bfefafdca97dc0"
+}

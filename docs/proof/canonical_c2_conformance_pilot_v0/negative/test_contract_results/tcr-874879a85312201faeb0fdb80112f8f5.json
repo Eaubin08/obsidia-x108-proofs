@@ -1,0 +1,30 @@
+{
+  "result_schema_version": 1,
+  "result_id": "tcr-874879a85312201faeb0fdb80112f8f5",
+  "created_at": "2026-08-27T12:08:03.719852+00:00",
+  "started_at": "2026-08-27T12:08:03.684749+00:00",
+  "finished_at": "2026-08-27T12:08:03.719822+00:00",
+  "batch_execution_id": "57420e49466cbd17",
+  "child_execution_id": "fe26f5ab458b7cbf",
+  "execution_authority_hash": "ec7e1ac4ebfb6256eec786e2e9fb4b22a701fd5dc698b12f113b49cb00229e10",
+  "approval_id": "appr-588b43e080a537ea42c5ce661678bdef",
+  "test_contract_hash": "c8178e0851ac7fc19e94b8bb911ff724af958cc37c41fa90585f615862d7ad3a",
+  "aggregate_status": "REQUIRED_TEST_FAILED",
+  "required_check_count": 1,
+  "check_count": 1,
+  "checks": [
+    {
+      "check_id": "no-change-expected",
+      "result": "FAIL",
+      "actual_diff_paths": [
+        "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt"
+      ],
+      "expected_diff_paths": [],
+      "started_at": "2026-08-27T12:08:03.684759+00:00",
+      "finished_at": "2026-08-27T12:08:03.719739+00:00",
+      "required": true
+    }
+  ],
+  "decision_authority": "KX108_ONLY",
+  "result_record_hash": "f5b35c487748bfd3c48cf8649bba52ab7064e3345c228c1a944e7eb587827ade"
+}

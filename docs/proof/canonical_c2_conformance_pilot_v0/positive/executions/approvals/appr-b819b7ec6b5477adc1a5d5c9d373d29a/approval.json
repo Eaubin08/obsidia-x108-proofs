@@ -1,0 +1,15 @@
+{
+  "approval_id": "appr-b819b7ec6b5477adc1a5d5c9d373d29a",
+  "approval_schema_version": "V0",
+  "created_at": "2026-08-27T12:20:19.924341+00:00",
+  "batch_execution_id": "da1004250ce41e47",
+  "batch_id": "25dcf1b92f147d09",
+  "batch_hash": "4855d14cd5c8440a",
+  "candidate_scope_hash": "3b0c66efa71e1de7",
+  "execution_authority_hash": "1c744c92eeaa1677898abaf1608e24c7756f956a6873ee9bd74877bde0b96424",
+  "approved_by": "HUMAN",
+  "approval_status": "APPROVED_FOR_BOUNDED_EXECUTION",
+  "decision_authority": "KX108_ONLY",
+  "human_authorization_reference": "EVENT2C_POSITIVE_EAH_AUTHORIZED_2026-08-27",
+  "approval_record_hash": "5273c0f04024bc7a"
+}
