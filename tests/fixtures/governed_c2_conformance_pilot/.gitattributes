@@ -1,0 +1,6 @@
+# Scoped byte-pin for the canonical C2 conformance pilot fixture.
+# The governed pilot uses exact SHA256 / GIT_BLOB byte authority: checkout
+# line-ending normalization must never alter these files. Overrides nothing
+# outside this directory.
+pilot_target_v0.txt -text
+pilot_source_v0.txt -text
