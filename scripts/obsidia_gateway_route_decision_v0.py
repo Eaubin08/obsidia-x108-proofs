@@ -387,6 +387,21 @@ def _load_record(kind_dir: str, rec_id: str, store_dir) -> Optional[dict]:
         return None
 
 
+def load_mission_submission(mission_submission_id: str, store_dir=None) -> Optional[dict]:
+    """Lecture publique d'une MissionSubmission CG-B (pour les consommateurs
+    canoniques, ex. CG-C). Aucune écriture, aucune autorité."""
+    if not (isinstance(mission_submission_id, str) and mission_submission_id.startswith("gsub-")):
+        return None
+    return _load_record("submissions", mission_submission_id, store_dir)
+
+
+def load_capability_request(capability_request_id: str, store_dir=None) -> Optional[dict]:
+    """Lecture publique d'une CapabilityRequest CG-B (INERTE : granted=False)."""
+    if not (isinstance(capability_request_id, str) and capability_request_id.startswith("gcap-")):
+        return None
+    return _load_record("capability_requests", capability_request_id, store_dir)
+
+
 def submit_mission(
     *, requested_outcome: str,
     mission_contract_ref: Optional[str] = None,
