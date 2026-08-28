@@ -75,6 +75,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
 import obsidia_pre_execution_context as _PEC          # helpers Git READ-ONLY + verify PEC
 import obsidia_isolated_work_unit_v0 as _WU           # pont mono-action Checkpoint 1
 import obsidia_batch_execution as _E                  # rechargement enveloppe + recalcul EAH CANONIQUES
+import obsidia_mission_local_snapshot_v0 as _LS       # Stage 3A : verify_local_snapshot_receipt (LECTURE SEULE)
 
 DECISION_AUTHORITY = "KX108_ONLY"
 SEMANTIC_DECISION_AUTHORITY = "NON_SOVEREIGN"
@@ -124,6 +125,10 @@ E_ACTION_EXECUTE_ROLLED_BACK = "ACTION_EXECUTE_ROLLED_BACK"
 E_ACTION_EXECUTE_QUARANTINE = "ACTION_EXECUTE_QUARANTINE"
 E_MISSION_CLOSED_NO_PLAN = "MISSION_CLOSED_NO_PLAN"
 E_MISSION_ABORTED = "MISSION_ABORTED"
+# ── Stage 3B additif : gel Git local d'un résultat gouverné KEEP, lié depuis
+#    un LocalSnapshotReceipt Stage 3A VÉRIFIÉ (jamais créé ici). Fait avancer
+#    le mission_tip_sha DÉRIVÉ. Ne sélectionne AUCUNE action suivante. ──
+E_ACTION_LOCAL_SNAPSHOT_COMMITTED = "ACTION_LOCAL_SNAPSHOT_COMMITTED"
 
 # ── Table de transitions FERMÉE. Clé = (from_state, event) -> to_state.
 #    from_state None == genèse. Les cas dépendant du contexte (HOLD_RESOLVED,
@@ -139,6 +144,10 @@ _TRANSITIONS = {
     (S_ACTION_PREPARED, E_ACTION_EXECUTE_ROLLED_BACK): S_ACTION_EXECUTED_ROLLED_BACK,
     (S_ACTION_PREPARED, E_ACTION_EXECUTE_QUARANTINE): S_ACTION_FAILED_QUARANTINE,
     (S_ACTION_EXECUTED_KEPT, E_MISSION_CLOSED_NO_PLAN): S_CLOSED_AWAITING_NEXT_PLAN,
+    # Stage 3B : le résultat KEEP a été gelé en Git local, worktree attendu propre
+    # au nouveau tip ; la mission est structurellement prête pour une future action
+    # (AUCUNE sélection automatique — c'est Stage 3D).
+    (S_ACTION_EXECUTED_KEPT, E_ACTION_LOCAL_SNAPSHOT_COMMITTED): S_WORKTREE_BOUND,
 }
 # HOLD_RESOLVED : depuis HELD uniquement, vers l'état interrompu (ou repli sûr).
 _HOLD_RESOLVE_ALLOWED_TO = (S_WORKTREE_BOUND, S_ACTION_PREPARED)
@@ -192,6 +201,9 @@ STATUS_ABORT_REJECTED = "ABORT_REJECTED"
 STATUS_PROJECTION_OK = "PROJECTION_OK"
 STATUS_MISSION_NOT_FOUND = "MISSION_NOT_FOUND"
 STATUS_MISSION_PROJECTION_INVALID = "MISSION_PROJECTION_INVALID"
+STATUS_LOCAL_SNAPSHOT_RECORDED = "LOCAL_SNAPSHOT_RECORDED"
+STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED = "LOCAL_SNAPSHOT_RECORD_REJECTED"
+STATUS_LOCAL_SNAPSHOT_EVENT_IDEMPOTENT = "LOCAL_SNAPSHOT_EVENT_IDEMPOTENT_EXISTING_IDENTICAL"
 
 # Statuts terminaux du pont Checkpoint 1 / driver (ré-exportés, jamais réinterprétés)
 _KEPT = _WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
@@ -327,10 +339,17 @@ def _git_common_dir(path: Path) -> Optional[str]:
 
 
 def _verify_mission_worktree_binding(genesis: dict, worktree_path: Path,
-                                     main_worktree_path: Path, *, require_clean: bool) -> "tuple[bool, Optional[str]]":
+                                     main_worktree_path: Path, *, require_clean: bool,
+                                     expected_head_sha: "Optional[str]" = None) -> "tuple[bool, Optional[str]]":
     """Revérifie le lien mission<->worktree à partir de FAITS Git observés
     (helpers PEC), jamais d'assertions. Aucune seconde implémentation
-    d'isolation Git."""
+    d'isolation Git.
+
+    `expected_head_sha` (Stage 3B) : HEAD attendu du worktree. Par défaut ==
+    genesis["canonical_base_sha"] (comportement Stage 2 inchangé) ; l'appelant
+    passe `projection["mission_tip_sha"]` pour une mission qui a fait avancer
+    son tip local via des snapshots gouvernés. `require_clean` INCHANGÉ."""
+    expected_head = expected_head_sha or genesis["canonical_base_sha"]
     worktree_path = worktree_path.resolve()
     main_worktree_path = main_worktree_path.resolve()
 
@@ -357,8 +376,9 @@ def _verify_mission_worktree_binding(genesis: dict, worktree_path: Path,
     rc, head_out, _ = _PEC._run_git(["rev-parse", "HEAD"], cwd=worktree_path)
     if rc != 0:
         return False, "WORKTREE_DRIFT:HEAD_UNREADABLE"
-    # Stage 2 : aucune disposition Git, HEAD reste == canonical_base_sha.
-    if head_out.strip() != genesis["canonical_base_sha"]:
+    # HEAD attendu == tip de mission (== canonical_base_sha tant qu'aucun snapshot
+    # gouverné n'a fait avancer la branche locale).
+    if head_out.strip() != expected_head:
         return False, f"WORKTREE_DRIFT:HEAD:{head_out.strip()}"
 
     if require_clean:
@@ -506,6 +526,14 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
     active_hold_id: Optional[str] = None
     last_prepared_evidence: Optional[dict] = None
     aborted_from_state: Optional[str] = None
+    # ── Stage 3B : tip de mission DÉRIVÉ (jamais stocké). Chaîne descendant de
+    #    canonical_base_sha, avancée UNIQUEMENT par un événement snapshot vérifié. ──
+    running_tip = genesis["canonical_base_sha"]
+    snapshot_count = 0
+    snapshotted_action_ids: "set" = set()
+    latest_snapshot_receipt_id: Optional[str] = None
+    latest_snapshot_receipt_record_hash: Optional[str] = None
+    local_snapshots: "list[dict]" = []
 
     for idx, rev in enumerate(revisions, start=1):
         if rev.get("__unparseable__"):
@@ -584,6 +612,36 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
                 if h["resolution_state"] == "OPEN":
                     h["resolution_state"] = "SUPERSEDED"
             active_hold_id = None
+        elif event == E_ACTION_LOCAL_SNAPSHOT_COMMITTED:
+            prev_tip = ev.get("previous_mission_tip_sha")
+            new_tip = ev.get("new_mission_tip_sha")
+            commit_parent = ev.get("commit_parent_sha")
+            new_commit = ev.get("new_commit_sha")
+            snap_action_id = ev.get("action_id")
+            if prev_tip != running_tip:
+                return _proj_invalid(mission_id, f"MISSION_PROJECTION_INVALID:SNAPSHOT_TIP_CHAIN_BREAK:{idx}:previous_tip")
+            if commit_parent != running_tip:
+                return _proj_invalid(mission_id, f"MISSION_PROJECTION_INVALID:SNAPSHOT_TIP_CHAIN_BREAK:{idx}:commit_parent")
+            if new_tip != new_commit:
+                return _proj_invalid(mission_id, f"MISSION_PROJECTION_INVALID:SNAPSHOT_TIP_CHAIN_BREAK:{idx}:new_tip_neq_commit")
+            if not (isinstance(new_commit, str) and len(new_commit) == 40
+                    and all(c in "0123456789abcdef" for c in new_commit.lower())):
+                return _proj_invalid(mission_id, f"MISSION_PROJECTION_INVALID:SNAPSHOT_MALFORMED_COMMIT_SHA:{idx}")
+            if snap_action_id in snapshotted_action_ids:
+                return _proj_invalid(mission_id, f"MISSION_PROJECTION_INVALID:SNAPSHOT_ACTION_RECORDED_TWICE:{idx}")
+            snapshotted_action_ids.add(snap_action_id)
+            running_tip = new_tip
+            snapshot_count += 1
+            latest_snapshot_receipt_id = ev.get("snapshot_receipt_id")
+            latest_snapshot_receipt_record_hash = ev.get("local_snapshot_receipt_record_hash")
+            local_snapshots.append({
+                "action_id": snap_action_id, "ordinal": ev.get("ordinal"),
+                "previous_mission_tip_sha": prev_tip, "new_mission_tip_sha": new_tip,
+                "new_commit_sha": new_commit, "commit_parent_sha": commit_parent,
+                "committed_paths": ev.get("committed_paths"),
+                "snapshot_receipt_id": ev.get("snapshot_receipt_id"),
+                "local_snapshot_receipt_record_hash": ev.get("local_snapshot_receipt_record_hash"),
+            })
 
         state = to_state
         prev_hash = rev["mission_revision_record_hash"]
@@ -618,6 +676,12 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
         "created_at": genesis["created_at"],
         "repository_identity": genesis["repository_identity"],
         "canonical_base_sha": genesis["canonical_base_sha"],
+        "mission_tip_sha": running_tip,
+        "has_local_mission_snapshots": snapshot_count > 0,
+        "local_snapshot_count": snapshot_count,
+        "latest_snapshot_receipt_id": latest_snapshot_receipt_id,
+        "latest_snapshot_receipt_record_hash": latest_snapshot_receipt_record_hash,
+        "local_snapshots": local_snapshots,
         "branch_name": genesis["branch_name"],
         "worktree_path": genesis["worktree_path"],
         "main_worktree_path": genesis["main_worktree_path"],
@@ -792,10 +856,11 @@ def bind_work_unit(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit",
     if str(Path(work_unit.main_worktree_path).resolve()) != genesis["main_worktree_path"]:
         return _rej(STATUS_BIND_REJECTED, "BIND_MAIN_WORKTREE_PATH_MISMATCH")
 
-    # 2. Faits Git observés (helpers PEC — jamais une seconde implémentation)
+    # 2. Faits Git observés (helpers PEC — jamais une seconde implémentation).
+    #    À l'état CREATED le tip == canonical_base_sha ; on le passe explicitement.
     ok, reason = _verify_mission_worktree_binding(
         genesis, Path(work_unit.worktree_path), Path(work_unit.main_worktree_path),
-        require_clean=True,
+        require_clean=True, expected_head_sha=proj["mission_tip_sha"],
     )
     if not ok:
         return _rej(STATUS_BIND_REJECTED, reason)
@@ -1024,6 +1089,143 @@ def close_mission_no_plan(*, mission_id: str, mission_store_dir: "str | Path") -
             "current_state": S_CLOSED_AWAITING_NEXT_PLAN, "revision": rec["revision"],
             "mission_revision_record_hash": rec["mission_revision_record_hash"],
             "multi_action_sequencer_included": False}
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  4bis — Stage 3B : LIER un LocalSnapshotReceipt Stage 3A VÉRIFIÉ à l'histoire
+#         de mission -> avance le mission_tip_sha DÉRIVÉ. N'écrit AUCUN commit Git.
+# ══════════════════════════════════════════════════════════════════════════
+
+def record_local_snapshot(*, mission_id: str, action_id: str, snapshot_receipt_id: str,
+                          work_unit: "_WU.IsolatedWorkUnit",
+                          snapshot_store_dir: "str | Path",
+                          mission_store_dir: "str | Path") -> dict:
+    """Recharge le LocalSnapshotReceipt Stage 3A, le VÉRIFIE via le vérificateur
+    canonique `_LS.verify_local_snapshot_receipt` (jamais dupliqué), le lie à
+    l'action KEEP courante de la mission, et append une révision
+    ACTION_LOCAL_SNAPSHOT_COMMITTED. La couche mission ne crée AUCUN commit Git —
+    Stage 3A en est le seul auteur. `only KEEP` peut faire avancer le tip."""
+    store_dir = Path(mission_store_dir)
+    proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    if proj["status"] != STATUS_PROJECTION_OK:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                    f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
+    if proj["current_state"] != S_ACTION_EXECUTED_KEPT:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                    f"ONLY_KEEP_CAN_ADVANCE_MISSION_TIP:STATE_IS:{proj['current_state']}")
+    if not isinstance(work_unit, _WU.IsolatedWorkUnit):
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "WORK_UNIT_HANDLE_REQUIRED")
+
+    # ── Idempotence : un événement snapshot pour cet action_id existe déjà ? ──
+    for s in proj.get("local_snapshots", []):
+        if s.get("action_id") == action_id:
+            if s.get("snapshot_receipt_id") == snapshot_receipt_id:
+                return {"status": STATUS_LOCAL_SNAPSHOT_EVENT_IDEMPOTENT, "reason": None,
+                        "mission_id": mission_id, "current_state": proj["current_state"],
+                        "mission_tip_sha": proj["mission_tip_sha"],
+                        "new_commit_sha": s.get("new_commit_sha")}
+            return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                        "MISSION_TIP_CHAIN_FORK:ACTION_ALREADY_SNAPSHOTTED_WITH_DIFFERENT_RECEIPT")
+
+    # ── Recharge + VÉRIFIE le reçu Stage 3A (canonique, jamais dupliqué) ──
+    try:
+        rpath = _safe_id_path(Path(snapshot_store_dir), snapshot_receipt_id)
+    except ValueError:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_ID_INVALID")
+    if not rpath.exists():
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_NOT_FOUND")
+    try:
+        receipt = json.loads(rpath.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_UNPARSEABLE")
+    ok_r, why_r = _LS.verify_local_snapshot_receipt(receipt, repo_root=Path(work_unit.worktree_path))
+    if not ok_r:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, f"SNAPSHOT_RECEIPT_INVALID:{why_r}")
+
+    # ── Le reçu doit désigner CETTE mission + CETTE action KEEP courante ──
+    if receipt.get("snapshot_receipt_id") != snapshot_receipt_id:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_ID_MISMATCH")
+    if receipt.get("mission_id") != mission_id:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_MISSION_MISMATCH")
+    if receipt.get("action_id") != action_id:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_ACTION_MISMATCH")
+    if receipt.get("decision_authority") != SEMANTIC_DECISION_AUTHORITY:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_NOT_NON_SOVEREIGN")
+    if receipt.get("not_final_human_git_disposition") is not True:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_MISSING_NOT_FINAL_MARKER")
+    committed_paths = receipt.get("committed_paths")
+    if not (isinstance(committed_paths, list) and len(committed_paths) == 1):
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_RECEIPT_NOT_SINGLE_TARGET")
+
+    last_exec = (proj.get("linked_governed_executions") or [])
+    if not last_exec:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "MISSION_HAS_NO_LINKED_GOVERNED_EXECUTION")
+    kept = last_exec[-1]
+    if kept.get("outcome_status") != _KEPT:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "LAST_LINKED_EXECUTION_NOT_KEEP")
+    if receipt.get("batch_execution_id") != kept.get("batch_execution_id") or \
+       receipt.get("child_execution_id") != kept.get("child_execution_id") or \
+       receipt.get("execution_authority_hash") != kept.get("execution_authority_hash"):
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                    "SNAPSHOT_RECEIPT_NOT_BOUND_TO_MISSION_KEPT_ACTION")
+
+    # ── Chaîne de tip ──
+    if receipt.get("previous_mission_tip_sha") != proj["mission_tip_sha"]:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                    f"SNAPSHOT_PREVIOUS_TIP_MISMATCH:{receipt.get('previous_mission_tip_sha')}")
+    if receipt.get("commit_parent_sha") != proj["mission_tip_sha"]:
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED,
+                    f"SNAPSHOT_COMMIT_PARENT_MISMATCH:{receipt.get('commit_parent_sha')}")
+    new_commit_sha = receipt.get("new_commit_sha")
+    if not (isinstance(new_commit_sha, str) and len(new_commit_sha) == 40
+            and all(c in "0123456789abcdef" for c in new_commit_sha.lower())):
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, "SNAPSHOT_NEW_COMMIT_SHA_MALFORMED")
+
+    rec, err = _append_revision(
+        mission_id, store_dir, revision=proj["revision"] + 1,
+        parent_hash=proj["mission_revision_record_hash"],
+        event=E_ACTION_LOCAL_SNAPSHOT_COMMITTED, from_state=S_ACTION_EXECUTED_KEPT,
+        to_state=S_WORKTREE_BOUND,
+        evidence_refs={
+            "mission_id": mission_id,
+            "action_id": action_id,
+            "ordinal": receipt.get("ordinal"),
+            "previous_mission_tip_sha": proj["mission_tip_sha"],
+            "new_mission_tip_sha": new_commit_sha,
+            "new_commit_sha": new_commit_sha,
+            "commit_parent_sha": receipt.get("commit_parent_sha"),
+            "committed_paths": committed_paths,
+            "snapshot_receipt_id": snapshot_receipt_id,
+            "local_snapshot_receipt_record_hash": receipt.get("local_snapshot_receipt_record_hash"),
+        },
+        actor="STACK",
+    )
+    if err:
+        # Concurrence : une autre écriture a gagné la course sur ce numéro de révision.
+        reproj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+        for s in reproj.get("local_snapshots", []):
+            if s.get("action_id") == action_id and s.get("snapshot_receipt_id") == snapshot_receipt_id:
+                return {"status": STATUS_LOCAL_SNAPSHOT_EVENT_IDEMPOTENT, "reason": "LOST_RACE_REPROJECTED",
+                        "mission_id": mission_id, "current_state": reproj.get("current_state"),
+                        "mission_tip_sha": reproj.get("mission_tip_sha"),
+                        "new_commit_sha": new_commit_sha}
+        return _rej(STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED, f"MISSION_TIP_CHAIN_FORK:{err}")
+
+    new_proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    return {
+        "status": STATUS_LOCAL_SNAPSHOT_RECORDED, "reason": None, "mission_id": mission_id,
+        "current_state": new_proj["current_state"],
+        "revision": rec["revision"],
+        "mission_revision_record_hash": rec["mission_revision_record_hash"],
+        "mission_tip_sha": new_proj["mission_tip_sha"],
+        "canonical_base_sha": new_proj["canonical_base_sha"],
+        "previous_mission_tip_sha": proj["mission_tip_sha"],
+        "new_commit_sha": new_commit_sha,
+        "local_snapshot_count": new_proj["local_snapshot_count"],
+        "mission_layer_creates_local_git_commit": False,
+        "mission_layer_reuses_stage_3a_receipt": True,
+        "only_keep_can_advance_mission_tip": True,
+    }
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1261,7 +1463,9 @@ def build_resume_reference(*, mission_id: str, mission_revision: int,
         "expected_repository_identity": expected_repository_identity,
         "expected_branch_name": expected_branch_name,
         "expected_worktree_path": expected_worktree_path,
-        "expected_head_relationship": {"ref": "canonical_base_sha", "relation": "EQUAL"},
+        # Stage 3B : la reprise exige HEAD == tip de mission DÉRIVÉ (== canonical_base_sha
+        # tant qu'aucun snapshot gouverné n'a fait avancer la branche locale).
+        "expected_head_relationship": {"ref": "mission_tip_sha", "relation": "EQUAL"},
         "next_allowed_transition": next_allowed_transition,
     }
     ref["resume_reference_hash"] = _sha256_hex(_canon({k: ref.get(k) for k in _RESUME_REF_FIELDS}))
@@ -1344,10 +1548,11 @@ def resolve_mission_hold(*, mission_id: str, hold_id: str, human_mission_decisio
         return _rej(STATUS_HOLD_RESOLVE_REJECTED, "DECISION_FREEFORM_NOT_ALLOWED")
 
     genesis = _load_genesis(mission_id, store_dir)
-    # Dérive du worktree / branche (helpers PEC — pas de sémantique concurrente)
+    # Dérive du worktree / branche (helpers PEC — pas de sémantique concurrente).
+    # HEAD attendu == tip de mission DÉRIVÉ (avance avec les snapshots gouvernés).
     ok_wt, reason_wt = _verify_mission_worktree_binding(
         genesis, Path(work_unit.worktree_path), Path(work_unit.main_worktree_path),
-        require_clean=True,
+        require_clean=True, expected_head_sha=proj["mission_tip_sha"],
     )
     if not ok_wt:
         return _rej(STATUS_HOLD_RESOLVE_REJECTED, reason_wt)
@@ -1467,6 +1672,7 @@ def check_resume_preconditions(*, resume_reference: dict, mission_id: str,
     ok_wt, reason_wt = _verify_mission_worktree_binding(
         genesis, Path(work_unit.worktree_path), Path(work_unit.main_worktree_path),
         require_clean=(proj["current_state"] != S_ACTION_PREPARED),
+        expected_head_sha=proj["mission_tip_sha"],
     )
     if not ok_wt:
         return {"resumable": False, "reason": reason_wt}
@@ -1531,6 +1737,11 @@ def compute_safe_cleanup_eligibility(projection: dict,
     if projection.get("status") != STATUS_PROJECTION_OK:
         return {"eligible": False, "reason": "MISSION_NOT_PROJECTABLE"}
     state = projection["current_state"]
+    # Stage 3B : une mission qui a créé des commits de snapshot local N'EST PAS
+    # équivalente à une branche intouchée à canonical_base_sha — la disposition
+    # Git est une décision humaine, jamais un nettoyage automatique.
+    if projection.get("has_local_mission_snapshots"):
+        return {"eligible": False, "reason": "SNAPSHOT_MISSION_REQUIRES_HUMAN_GIT_DISPOSITION"}
     if projection["linked_governed_executions"]:
         return {"eligible": False, "reason": "GOVERNED_EXECUTION_EVIDENCE_PRESENT"}
     if state in (S_ACTION_EXECUTED_KEPT, S_ACTION_FAILED_QUARANTINE, S_ACTION_EXECUTED_ROLLED_BACK):
@@ -1548,8 +1759,8 @@ def compute_safe_cleanup_eligibility(projection: dict,
         return {"eligible": False, "reason": "WORKTREE_FACTS_UNREADABLE"}
     if rc != 0 or st_out.strip() != "":
         return {"eligible": False, "reason": "WORKTREE_NOT_CLEAN"}
-    if rc2 != 0 or head_out.strip() != projection["canonical_base_sha"]:
-        return {"eligible": False, "reason": "HEAD_NOT_AT_CANONICAL_BASE_SHA"}
+    if rc2 != 0 or head_out.strip() != projection["mission_tip_sha"]:
+        return {"eligible": False, "reason": "HEAD_NOT_AT_MISSION_TIP_SHA"}
     return {"eligible": True, "reason": None,
             "note": "delegate actual removal to obsidia_isolated_work_unit_v0.dispose_isolated_work_unit"}
 

@@ -476,7 +476,6 @@ def test_AE_AF_pec_and_checkpoints_byte_unchanged():
     r = subprocess.run(["git", "status", "--porcelain",
                         "scripts/obsidia_pre_execution_context.py",
                         "scripts/obsidia_isolated_work_unit_v0.py",
-                        "scripts/obsidia_bounded_mission_v0.py",
                         "scripts/obsidia_governed_execution_driver_v0.py",
                         "scripts/obsidia_kx108_decision_store.py"],
                        cwd=str(_REPO_ROOT), capture_output=True, text=True)

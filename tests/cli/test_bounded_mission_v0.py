@@ -45,6 +45,7 @@ import obsidia_bounded_mission_v0 as M                # noqa: E402
 import obsidia_pre_execution_context as PEC           # noqa: E402
 import obsidia_batch_execution as BE                  # noqa: E402
 import obsidia_kx108_decision_store as DS             # noqa: E402
+import obsidia_mission_local_snapshot_v0 as LS        # noqa: E402  (Stage 3B)
 
 _TARGET_REL = "periphery/xdomain/bm_target_v0.txt"
 _SOURCE_REL = "periphery/xdomain/bm_source_v0.txt"
@@ -994,3 +995,391 @@ def test_invariant_audit_world_action_bus_untouched():
     p = _REPO_ROOT / "audit" / "world_action_bus.jsonl"
     src = Path(M.__file__).read_text(encoding="utf-8")
     assert str(p) not in src and "world_action_bus" not in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  STAGE 3B — intégration du mission_tip DÉRIVÉ à partir de snapshots Stage 3A
+# ══════════════════════════════════════════════════════════════════════════
+
+_S3B_ACTION_ID = "act-ck2-stage3b-0001"
+
+
+def _snap_dir(env):
+    d = env["root"] / "snap3b"
+    return d
+
+
+def _drive_mission_to_kept(env, *, objective="stage3b", contract=None):
+    r = _genesis(env, objective=objective)
+    mid = r["mission_id"]
+    assert _bind(env, mid)["status"] == M.STATUS_WORKTREE_BOUND
+    p = _prepare(env, mid, contract=contract)
+    assert p["status"] == M.STATUS_ACTION_PREPARED, p
+    ex = _execute(env, mid, p)
+    return mid, p, ex
+
+
+def _stage3a_snapshot(env, mid, p, ex, *, action_id=_S3B_ACTION_ID, ordinal=0, **over):
+    s = env["stores"]
+    c1 = ex["checkpoint1_result"]
+    kw = dict(
+        mission_id=mid, action_id=action_id, ordinal=ordinal,
+        expected_branch_name="bmbr", expected_worktree_path=env["wt_path"],
+        expected_previous_mission_tip_sha=env["base_sha"],
+        batch_execution_id=p["batch_execution_id"], child_execution_id=p["child_execution_id"],
+        execution_authority_hash=c1["execution_authority_hash"], approval_id=c1["approval_id"],
+        kx108_pre_decision_record_id=c1["kx108_pre_decision_record_id"],
+        kx108_post_decision_record_id=c1["kx108_post_decision_record_id"],
+        test_contract_result_id=c1["test_contract_result_id"],
+        sealed_apply_receipt_id=c1["sealed_apply_receipt_id"],
+        sealed_rollback_evidence_id=c1["sealed_rollback_evidence_id"],
+        target_path=_TARGET_REL,
+        execution_dir=s["exec"], kx108_pre_decision_dir=s["kxpre"],
+        kx108_post_decision_dir=s["kxpost"], test_contract_results_dir=s["tcr"],
+        sealed_receipt_dir=s["sar"], sealed_rollback_evidence_dir=s["sre"],
+        rollback_result_dir=s["rbk"], snapshot_store_dir=_snap_dir(env),
+    )
+    kw.update(over)
+    return LS.create_local_snapshot(**kw)
+
+
+def _record(env, mid, snap, *, action_id=_S3B_ACTION_ID):
+    return M.record_local_snapshot(
+        mission_id=mid, action_id=action_id, snapshot_receipt_id=snap["snapshot_receipt_id"],
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env),
+        mission_store_dir=env["stores"]["missions"])
+
+
+# ── A / D — mission historique sans snapshot : tip == canonical_base_sha ──
+
+def test_S3B_A_historical_mission_tip_equals_canonical_base(env):
+    mid = _genesis(env)["mission_id"]
+    _bind(env, mid)
+    proj = _proj(env, mid)
+    assert proj["mission_tip_sha"] == proj["canonical_base_sha"] == env["base_sha"]
+    assert proj["has_local_mission_snapshots"] is False
+    assert proj["local_snapshot_count"] == 0
+
+
+# ── B / C / D / E / F — snapshot vérifié -> tip avance ──
+
+def test_S3B_BC_verified_receipt_advances_mission_tip(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    assert ex["driver_status"] == WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
+    assert _proj(env, mid)["current_state"] == M.S_ACTION_EXECUTED_KEPT
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    assert snap["status"] == LS.SNAPSHOT_COMMITTED, snap
+    rec = _record(env, mid, snap)
+    assert rec["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORDED, rec
+    proj = _proj(env, mid)
+    assert proj["mission_tip_sha"] == snap["new_commit_sha"]                  # C
+    assert proj["canonical_base_sha"] == env["base_sha"]                      # D
+    assert proj["current_state"] == M.S_WORKTREE_BOUND                        # E
+    assert proj["has_local_mission_snapshots"] is True
+    assert proj["local_snapshot_count"] == 1
+    # F — la révision ne stocke que des références exactes du reçu
+    revs = sorted((env["stores"]["missions"] / mid / "revisions").glob("*.json"))
+    last = json.loads(revs[-1].read_text(encoding="utf-8"))
+    assert last["event"] == M.E_ACTION_LOCAL_SNAPSHOT_COMMITTED
+    ev = last["evidence_refs"]
+    assert ev["new_commit_sha"] == snap["new_commit_sha"]
+    assert ev["commit_parent_sha"] == env["base_sha"]
+    assert ev["new_mission_tip_sha"] == snap["new_commit_sha"]
+    assert ev["snapshot_receipt_id"] == snap["snapshot_receipt_id"]
+    assert ev["committed_paths"] == [_TARGET_REL]
+    assert "target_post_sha256" not in ev  # détail canonique -> reste dans le reçu
+
+
+# ── G / H / I / J / K / L — reçu invalide / mal lié rejeté ──
+
+def test_S3B_G_invalid_receipt_rejected(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    _stage3a_snapshot(env, mid, p, ex)
+    # trafiquer le reçu stocké
+    rid = LS._snapshot_receipt_id  # sanity: helper exists
+    files = list(_snap_dir(env).glob("lsr-*.json"))
+    assert files
+    rec = json.loads(files[0].read_text(encoding="utf-8"))
+    rec["new_commit_sha"] = "0" * 40
+    files[0].write_text(json.dumps(rec, indent=2, sort_keys=True), encoding="utf-8")
+    out = M.record_local_snapshot(
+        mission_id=mid, action_id=_S3B_ACTION_ID, snapshot_receipt_id=rec["snapshot_receipt_id"],
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    assert out["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED
+    assert out["reason"].startswith("SNAPSHOT_RECEIPT_INVALID")
+    assert _proj(env, mid)["mission_tip_sha"] == env["base_sha"]  # tip inchangé
+
+
+def test_S3B_H_wrong_mission_receipt_rejected(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    # créer une 2e mission au même worktree/base
+    other = _genesis(env, objective="other-mission")["mission_id"]
+    _bind(env, other)
+    # ... mais elle n'est pas KEPT
+    out = M.record_local_snapshot(
+        mission_id=other, action_id=_S3B_ACTION_ID, snapshot_receipt_id=snap["snapshot_receipt_id"],
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    assert out["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED
+    assert out["reason"].startswith("ONLY_KEEP_CAN_ADVANCE_MISSION_TIP")
+
+
+def test_S3B_I_wrong_action_receipt_rejected(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex, action_id="act-real")
+    out = M.record_local_snapshot(
+        mission_id=mid, action_id="act-DIFFERENT", snapshot_receipt_id=snap["snapshot_receipt_id"],
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    assert out["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED
+    assert out["reason"] == "SNAPSHOT_RECEIPT_ACTION_MISMATCH"
+
+
+def test_S3B_M_non_keep_state_cannot_record_snapshot(env):
+    mid, p, ex = _drive_mission_to_kept(env, contract=_negative_contract())
+    assert ex["driver_status"] == WU._DRV.REJECTED_ROLLED_BACK
+    # pas de reçu Stage 3A possible ; on tente record avec un id bidon
+    out = M.record_local_snapshot(
+        mission_id=mid, action_id=_S3B_ACTION_ID, snapshot_receipt_id="lsr-bogus",
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    assert out["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED
+    assert out["reason"].startswith("ONLY_KEEP_CAN_ADVANCE_MISSION_TIP")
+
+
+def test_S3B_N_double_incompatible_snapshot_rejected(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    r1 = _record(env, mid, snap)
+    assert r1["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORDED
+    # même action, id de reçu différent -> fork rejeté
+    out = M.record_local_snapshot(
+        mission_id=mid, action_id=_S3B_ACTION_ID, snapshot_receipt_id="lsr-other",
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    # état déjà WORKTREE_BOUND -> refus "only KEEP" (défense en profondeur)
+    assert out["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED
+
+
+def test_S3B_idempotent_same_receipt(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    r1 = _record(env, mid, snap)
+    n_before = _proj(env, mid)["revision"]
+    # ré-appel identique alors qu'on est déjà WORKTREE_BOUND -> pas de 2e révision
+    # (l'état n'est plus ACTION_EXECUTED_KEPT ; défense en profondeur)
+    r2 = M.record_local_snapshot(
+        mission_id=mid, action_id=_S3B_ACTION_ID, snapshot_receipt_id=snap["snapshot_receipt_id"],
+        work_unit=env["wu"], snapshot_store_dir=_snap_dir(env), mission_store_dir=env["stores"]["missions"])
+    assert r2["status"] in (M.STATUS_LOCAL_SNAPSHOT_EVENT_IDEMPOTENT, M.STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED)
+    assert _proj(env, mid)["revision"] == n_before
+
+
+# ── O / P — chaîne de tip dérivée + fail-closed (fixtures de révision contrôlées) ──
+
+def _raw_append(env, mid, *, event, from_state, to_state, evidence_refs):
+    d = env["stores"]["missions"] / mid / "revisions"
+    revs = sorted(d.glob("*.json"))
+    last = json.loads(revs[-1].read_text(encoding="utf-8"))
+    n = last["revision"] + 1
+    rec = {
+        "mission_record_schema_version": M.REVISION_SCHEMA_VERSION,
+        "mission_id": mid, "revision": n,
+        "parent_revision_hash": last["mission_revision_record_hash"],
+        "event": event, "from_state": from_state, "to_state": to_state,
+        "evidence_refs": evidence_refs, "actor": "STACK",
+        "created_at": "2026-08-28T00:00:00+00:00",
+    }
+    rec["mission_revision_record_hash"] = M._record_hash(rec, M._REVISION_BOUND_FIELDS)
+    (d / f"{n:06d}-{rec['mission_revision_record_hash'][:12]}.json").write_text(
+        json.dumps(rec, indent=2, sort_keys=True), encoding="utf-8")
+    return rec
+
+
+def _kept_ev(bid, cid, eah):
+    return {"driver_status": WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW,
+            "batch_execution_id": bid, "child_execution_id": cid,
+            "execution_authority_hash": eah, "approval_id": "appr-x",
+            "kx108_pre_decision_record_id": "kxpre-x", "kx108_pre_gate": "ALLOW",
+            "kx108_post_gate": "ALLOW", "rollback_result_id": None,
+            "sealed_apply_receipt_id": "sar-x", "sealed_rollback_evidence_id": "sre-x",
+            "target_mutated": True}
+
+
+def _snap_ev(action_id, prev_tip, commit):
+    return {"mission_id": None, "action_id": action_id, "ordinal": 0,
+            "previous_mission_tip_sha": prev_tip, "new_mission_tip_sha": commit,
+            "new_commit_sha": commit, "commit_parent_sha": prev_tip,
+            "committed_paths": [_TARGET_REL], "snapshot_receipt_id": f"lsr-{action_id}",
+            "local_snapshot_receipt_record_hash": "h" * 64}
+
+
+def test_S3B_OP_two_snapshot_projection_chain(env):
+    # base -> A -> B via fixtures de révision valides ; prouve la DÉRIVATION du tip
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)                        # base -> A (réel)
+    commit_a = snap["new_commit_sha"]
+    # fabriquer une 2e action KEEP + snapshot B (fixtures — Stage 3C absent)
+    commit_b = "b" * 40
+    _raw_append(env, mid, event=M.E_ACTION_PREPARE_SUCCEEDED, from_state=M.S_WORKTREE_BOUND,
+                to_state=M.S_ACTION_PREPARED,
+                evidence_refs={"batch_execution_id": "be2", "child_execution_id": "ce2",
+                               "execution_authority_hash": "e" * 64, "pre_execution_context_id": "pec2",
+                               "pre_execution_context_record_hash": "p" * 64, "test_contract_hash": "t" * 64,
+                               "ledger_entry_id": "le2", "target_path": _TARGET_REL,
+                               "operation": "UPDATE_TARGET_FROM_SOURCE"})
+    _raw_append(env, mid, event=M.E_ACTION_EXECUTE_KEPT, from_state=M.S_ACTION_PREPARED,
+                to_state=M.S_ACTION_EXECUTED_KEPT, evidence_refs=_kept_ev("be2", "ce2", "e" * 64))
+    _raw_append(env, mid, event=M.E_ACTION_LOCAL_SNAPSHOT_COMMITTED,
+                from_state=M.S_ACTION_EXECUTED_KEPT, to_state=M.S_WORKTREE_BOUND,
+                evidence_refs=_snap_ev("act-B", commit_a, commit_b))
+    proj = _proj(env, mid)
+    assert proj["status"] == M.STATUS_PROJECTION_OK
+    assert proj["mission_tip_sha"] == commit_b
+    assert proj["local_snapshot_count"] == 2
+    assert proj["local_snapshots"][0]["new_commit_sha"] == commit_a
+    assert proj["local_snapshots"][1]["commit_parent_sha"] == commit_a
+    assert proj["canonical_base_sha"] == env["base_sha"]
+
+
+def test_S3B_O_broken_snapshot_chain_projection_invalid(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    # snapshot B avec un previous_tip FAUX (ne descend pas de A)
+    _raw_append(env, mid, event=M.E_ACTION_PREPARE_SUCCEEDED, from_state=M.S_WORKTREE_BOUND,
+                to_state=M.S_ACTION_PREPARED,
+                evidence_refs={"batch_execution_id": "be2", "child_execution_id": "ce2",
+                               "execution_authority_hash": "e" * 64, "pre_execution_context_id": "pec2",
+                               "pre_execution_context_record_hash": "p" * 64, "test_contract_hash": "t" * 64})
+    _raw_append(env, mid, event=M.E_ACTION_EXECUTE_KEPT, from_state=M.S_ACTION_PREPARED,
+                to_state=M.S_ACTION_EXECUTED_KEPT, evidence_refs=_kept_ev("be2", "ce2", "e" * 64))
+    _raw_append(env, mid, event=M.E_ACTION_LOCAL_SNAPSHOT_COMMITTED,
+                from_state=M.S_ACTION_EXECUTED_KEPT, to_state=M.S_WORKTREE_BOUND,
+                evidence_refs=_snap_ev("act-B", "f" * 40, "b" * 40))   # previous_tip faux
+    proj = _proj(env, mid)
+    assert proj["status"] == M.STATUS_MISSION_PROJECTION_INVALID
+    assert "SNAPSHOT_TIP_CHAIN_BREAK" in proj["reason"]
+
+
+def test_S3B_non_keep_snapshot_event_rejected_in_fold(env):
+    mid = _genesis(env)["mission_id"]
+    _bind(env, mid)
+    # tenter d'appender un snapshot depuis WORKTREE_BOUND (transition illégale)
+    _raw_append(env, mid, event=M.E_ACTION_LOCAL_SNAPSHOT_COMMITTED,
+                from_state=M.S_WORKTREE_BOUND, to_state=M.S_WORKTREE_BOUND,
+                evidence_refs=_snap_ev("act-x", env["base_sha"], "a" * 40))
+    proj = _proj(env, mid)
+    assert proj["status"] == M.STATUS_MISSION_PROJECTION_INVALID
+    assert "MISSION_TRANSITION_ILLEGAL" in proj["reason"]
+
+
+# ── R / S / T — liaison worktree tip-aware ──
+
+def test_S3B_R_worktree_binding_accepts_head_equal_derived_tip(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    proj = _proj(env, mid)
+    # HEAD du worktree == nouveau tip (Stage 3A a committé) ; require_clean OK
+    ok, reason = M._verify_mission_worktree_binding(
+        M._load_genesis(mid, env["stores"]["missions"]),
+        env["wt_path"], env["main"].resolve(),
+        require_clean=True, expected_head_sha=proj["mission_tip_sha"])
+    assert ok, reason
+
+
+def test_S3B_S_worktree_binding_rejects_head_at_old_canonical_base(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    ok, reason = M._verify_mission_worktree_binding(
+        M._load_genesis(mid, env["stores"]["missions"]),
+        env["wt_path"], env["main"].resolve(),
+        require_clean=True, expected_head_sha=env["base_sha"])   # ancien base, tip a avancé
+    assert ok is False
+    assert reason.startswith("WORKTREE_DRIFT:HEAD")
+
+
+def test_S3B_T_worktree_binding_still_rejects_dirty(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    (env["wt_path"] / _TARGET_REL).write_bytes(b"dirty again\n")
+    proj = _proj(env, mid)
+    ok, reason = M._verify_mission_worktree_binding(
+        M._load_genesis(mid, env["stores"]["missions"]),
+        env["wt_path"], env["main"].resolve(),
+        require_clean=True, expected_head_sha=proj["mission_tip_sha"])
+    assert ok is False and reason == "WORKTREE_DRIFT:DIRTY"
+
+
+# ── W — mission avec snapshot n'est pas auto-cleanup-eligible ──
+
+def test_S3B_W_snapshot_mission_not_auto_cleanup_eligible(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    elig = M.compute_safe_cleanup_eligibility(_proj(env, mid), env["wu"])
+    assert elig["eligible"] is False
+    assert elig["reason"] == "SNAPSHOT_MISSION_REQUIRES_HUMAN_GIT_DISPOSITION"
+
+
+# ── static / invariance ──
+
+def test_S3B_static_no_git_mutation_and_reuses_receipt():
+    src = Path(M.__file__).read_text(encoding="utf-8")
+    for banned in ('"add", "--"', '"add", "."', '"commit", "-m"', '"restore", "--staged"',
+                   '"reset"', '"--hard"', '"clean"', '"checkout"', '"push"', '"merge"',
+                   '"rebase"', '"cherry-pick"', "create_local_snapshot("):
+        assert banned not in src, banned
+    # réutilise le VÉRIFICATEUR canonique Stage 3A, ne le duplique pas
+    assert "verify_local_snapshot_receipt" in src
+    assert src.count("_LS.verify_local_snapshot_receipt(") == 1
+    # ne réimplémente pas la vérification de reçu
+    assert "_LS_BOUND_FIELDS" not in src and "snapshot_correlation_id" not in src
+
+
+def test_S3B_stage3a_module_and_pec_byte_unchanged():
+    r = subprocess.run(["git", "status", "--porcelain",
+                        "scripts/obsidia_mission_local_snapshot_v0.py",
+                        "scripts/obsidia_pre_execution_context.py",
+                        "scripts/obsidia_isolated_work_unit_v0.py",
+                        "scripts/obsidia_governed_execution_driver_v0.py"],
+                       cwd=str(_REPO_ROOT), capture_output=True, text=True)
+    assert r.stdout.strip() == "", f"unexpected changes: {r.stdout}"
+
+
+def test_S3B_canonical_base_never_mutated_by_snapshot(env):
+    mid, p, ex = _drive_mission_to_kept(env)
+    g_before = json.loads((env["stores"]["missions"] / mid / "genesis.json").read_text(encoding="utf-8"))
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    _record(env, mid, snap)
+    g_after = json.loads((env["stores"]["missions"] / mid / "genesis.json").read_text(encoding="utf-8"))
+    assert g_before == g_after
+    assert g_after["canonical_base_sha"] == env["base_sha"]
+    ok, why = M._verify_genesis(g_after)
+    assert ok, why
+
+
+def test_S3B_real_keep_snapshot_to_mission_tip_proof(env):
+    """§22 — preuve d'intégration bout-en-bout, dépôt temporaire réel."""
+    mid, p, ex = _drive_mission_to_kept(env)
+    assert ex["driver_status"] == WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
+    snap = _stage3a_snapshot(env, mid, p, ex)
+    assert snap["status"] == LS.SNAPSHOT_COMMITTED
+    ok, why = LS.verify_local_snapshot_receipt(snap["snapshot_receipt"], repo_root=env["wt_path"])
+    assert ok, why
+    rec = _record(env, mid, snap)
+    assert rec["status"] == M.STATUS_LOCAL_SNAPSHOT_RECORDED
+    assert rec["mission_layer_creates_local_git_commit"] is False
+    assert rec["mission_layer_reuses_stage_3a_receipt"] is True
+    # rechargement à froid
+    for name in ("obsidia_bounded_mission_v0",):
+        sys.modules.pop(name, None)
+    import obsidia_bounded_mission_v0 as M2
+    proj = M2.project_mission(mission_id=mid, mission_store_dir=env["stores"]["missions"])
+    import obsidia_bounded_mission_v0  # noqa: restaure l'alias
+    assert proj["canonical_base_sha"] == env["base_sha"]
+    assert proj["mission_tip_sha"] == snap["new_commit_sha"]
+    assert proj["current_state"] == "WORKTREE_BOUND"
+    assert _git(env["wt_path"], "status", "--porcelain") == ""
+    assert _git(env["wt_path"], "rev-parse", "HEAD") == snap["new_commit_sha"]
