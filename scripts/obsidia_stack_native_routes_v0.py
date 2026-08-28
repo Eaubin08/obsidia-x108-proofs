@@ -35,16 +35,31 @@ ROUTE_IS_KX_AUTHORITY = False
 ROUTE_MUTATES_REPO = False
 ROUTE_ACCEPTS_ARBITRARY_SHELL = False
 
-# ── Allowlists — EXACT targets only. Jamais de découverte arbitraire. ──
-_AUTHORIZED_TEST_TARGETS = (
-    "tests/cli/test_gateway_route_decision_cgb_v0.py",
-    "tests/cli/test_cognitive_capability_lease_cgc_v0.py",
-    "tests/cli/test_mission_capability_scope_cgc2_v0.py",
-    "tests/cli/test_pretool_shadow_cgd_v0.py",
-    "tests/cli/test_relay_first_v0.py",
-    "tests/cli/test_mission_authority_v0.py",
-)
-_AUTHORIZED_LEAN_TARGETS = ("Obsidia.MissionAuthority", "Obsidia")
+# ── Registres NOMMÉS — familles enregistrées, jamais une cible libre ──
+#  Le modèle fournit un family_id / target_id ; JAMAIS un chemin/module brut.
+TEST_FAMILY_REGISTRY = {
+    "GOVERNANCE_CG_SUITE": (
+        "tests/cli/test_gateway_route_decision_cgb_v0.py",
+        "tests/cli/test_cognitive_capability_lease_cgc_v0.py",
+        "tests/cli/test_mission_capability_scope_cgc2_v0.py",
+        "tests/cli/test_pretool_shadow_cgd_v0.py",
+    ),
+    "RELAY_FIRST_SUITE": (
+        "tests/cli/test_relay_first_v0.py",
+        "tests/cli/test_capability_graph_v0.py",
+    ),
+    "STAGE4_AUTHORITY_GUARD": (
+        "tests/cli/test_mission_authority_v0.py",
+    ),
+}
+LEAN_TARGET_REGISTRY = {
+    "MISSION_AUTHORITY": "Obsidia.MissionAuthority",
+    "OBSIDIA_AGGREGATE": "Obsidia",
+}
+
+# Rétro-compat : liste plate dérivée des registres (aucune cible hors registre).
+_AUTHORIZED_TEST_TARGETS = tuple(sorted({t for fam in TEST_FAMILY_REGISTRY.values() for t in fam}))
+_AUTHORIZED_LEAN_TARGETS = tuple(sorted(set(LEAN_TARGET_REGISTRY.values())))
 
 # READ-ONLY git subcommands only (mirror of settings.json allow-list intent).
 _GIT_READ_ONLY = {
@@ -125,22 +140,48 @@ def authorized_test_targets() -> tuple:
     return _AUTHORIZED_TEST_TARGETS
 
 
+def test_family_ids() -> tuple:
+    return tuple(TEST_FAMILY_REGISTRY.keys())
+
+
+def _pytest_targets(targets: "list[str]", *, repo_root=None, timeout: float,
+                    label: str) -> dict:
+    repo = Path(repo_root) if repo_root else _REPO_ROOT
+    try:
+        r = subprocess.run([sys.executable, "-m", "pytest", *targets, "-q",
+                            "-p", "no:cacheprovider"],
+                           cwd=str(repo), capture_output=True, text=True, timeout=timeout)
+    except Exception as exc:
+        return _evidence("TEST_FAMILY_RUN", False, label=label,
+                         reason=f"PYTEST_ERROR:{type(exc).__name__}")
+    tail = "\n".join((r.stdout or "").strip().splitlines()[-6:])
+    return _evidence("TEST_FAMILY_RUN", r.returncode == 0, label=label,
+                     targets=list(targets), exit_code=r.returncode, result_tail=tail)
+
+
 def run_test_family(target: str, *, repo_root=None, timeout: float = 600.0) -> dict:
+    """Rétro-compat : une cible EXACTE (issue d'un registre)."""
     if target not in _AUTHORIZED_TEST_TARGETS:
         return _evidence("TEST_FAMILY_RUN", False,
                          reason=f"TARGET_NOT_AUTHORIZED:{target}",
                          authorized=list(_AUTHORIZED_TEST_TARGETS))
-    repo = Path(repo_root) if repo_root else _REPO_ROOT
-    try:
-        r = subprocess.run([sys.executable, "-m", "pytest", target, "-q",
-                            "-p", "no:cacheprovider"],
-                           cwd=str(repo), capture_output=True, text=True, timeout=timeout)
-    except Exception as exc:
-        return _evidence("TEST_FAMILY_RUN", False, target=target,
-                         reason=f"PYTEST_ERROR:{type(exc).__name__}")
-    tail = "\n".join((r.stdout or "").strip().splitlines()[-6:])
-    return _evidence("TEST_FAMILY_RUN", r.returncode == 0, target=target,
-                     exit_code=r.returncode, result_tail=tail)
+    ev = _pytest_targets([target], repo_root=repo_root, timeout=timeout, label=target)
+    ev["target"] = target
+    return ev
+
+
+def run_test_family_by_id(test_family_id: str, *, repo_root=None,
+                          timeout: float = 900.0) -> dict:
+    """GAP-CG-1 : famille NOMMÉE enregistrée uniquement."""
+    fam = TEST_FAMILY_REGISTRY.get(test_family_id)
+    if fam is None:
+        return _evidence("TEST_FAMILY_RUN", False,
+                         reason=f"TEST_FAMILY_ID_NOT_REGISTERED:{test_family_id}",
+                         registered=list(TEST_FAMILY_REGISTRY))
+    ev = _pytest_targets(list(fam), repo_root=repo_root, timeout=timeout,
+                         label=test_family_id)
+    ev["test_family_id"] = test_family_id
+    return ev
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -149,6 +190,22 @@ def run_test_family(target: str, *, repo_root=None, timeout: float = 600.0) -> d
 
 def authorized_lean_targets() -> tuple:
     return _AUTHORIZED_LEAN_TARGETS
+
+
+def lean_target_ids() -> tuple:
+    return tuple(LEAN_TARGET_REGISTRY.keys())
+
+
+def run_lean_by_id(lean_target_id: str, *, lean_root=None, timeout: float = 900.0) -> dict:
+    """GAP-CG-2 : cible Lean NOMMÉE enregistrée uniquement."""
+    module = LEAN_TARGET_REGISTRY.get(lean_target_id)
+    if module is None:
+        return _evidence("LEAN_BUILD", False,
+                         reason=f"LEAN_TARGET_ID_NOT_REGISTERED:{lean_target_id}",
+                         registered=list(LEAN_TARGET_REGISTRY))
+    ev = run_lean_target(module, lean_root=lean_root, timeout=timeout)
+    ev["lean_target_id"] = lean_target_id
+    return ev
 
 
 def run_lean_target(module: str, *, lean_root=None, timeout: float = 900.0) -> dict:
@@ -173,8 +230,8 @@ def run_lean_target(module: str, *, lean_root=None, timeout: float = 900.0) -> d
 # ── Table de dispatch bornée (aucune exécution depuis une chaîne libre) ──
 NATIVE_CAPABILITIES = {
     "GIT_STATE_READ": ("read_git_state", read_git_state),
-    "TEST_FAMILY_RUN": ("run_test_family", run_test_family),
-    "LEAN_BUILD": ("run_lean_target", run_lean_target),
+    "TEST_FAMILY_RUN": ("run_test_family_by_id", run_test_family_by_id),
+    "LEAN_BUILD": ("run_lean_by_id", run_lean_by_id),
 }
 
 
@@ -191,6 +248,8 @@ def _main(argv) -> int:
             "ROUTE_MUTATES_REPO": ROUTE_MUTATES_REPO,
             "ROUTE_ACCEPTS_ARBITRARY_SHELL": ROUTE_ACCEPTS_ARBITRARY_SHELL,
             "native_capabilities": list(NATIVE_CAPABILITIES),
+            "test_family_ids": list(TEST_FAMILY_REGISTRY),
+            "lean_target_ids": list(LEAN_TARGET_REGISTRY),
             "authorized_test_targets": list(_AUTHORIZED_TEST_TARGETS),
             "authorized_lean_targets": list(_AUTHORIZED_LEAN_TARGETS),
         }, indent=2))

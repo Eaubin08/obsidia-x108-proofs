@@ -99,28 +99,31 @@ def test_e2e_native_git_state_mission_zero_cognition(tmp_path):
 
 
 def test_e2e_native_test_family_route(tmp_path):
-    tgt = "tests/cli/test_gateway_route_decision_cgb_v0.py"
-    assert tgt in NAT.authorized_test_targets()
-    out = R.relay_submit_mission(requested_outcome=f"run {tgt}",
-                                 mission_kind=R.KIND_TEST_FAMILY_RUN, target=tgt,
+    fam = "STAGE4_AUTHORITY_GUARD"      # registered NAMED family, not a raw path
+    assert fam in NAT.test_family_ids()
+    out = R.relay_submit_mission(requested_outcome=f"run {fam}",
+                                 mission_kind=R.KIND_TEST_FAMILY_RUN, target=fam,
                                  store_dir=_sd(tmp_path))
     assert out["mission_state"] == R.MISSION_COMPLETE
     assert out["metrics"]["cognitive_request_count"] == 0
     assert out["native_evidence"]["native_route_kind"] == "TEST_FAMILY_RUN"
     assert out["native_evidence"]["exit_code"] == 0
+    assert out["native_evidence"]["test_family_id"] == fam
 
 
-def test_native_test_family_rejects_unauthorized_target(tmp_path):
+def test_native_test_family_rejects_unregistered_family_id(tmp_path):
     out = R.relay_submit_mission(requested_outcome="run everything",
                                  mission_kind=R.KIND_TEST_FAMILY_RUN,
                                  target="tests/cli/", store_dir=_sd(tmp_path))
     assert out["mission_state"] == R.MISSION_FAILED
-    assert "TARGET_NOT_AUTHORIZED" in (out["native_evidence"]["reason"])
+    assert "TEST_FAMILY_ID_NOT_REGISTERED" in (out["native_evidence"]["reason"])
 
 
-def test_native_lean_rejects_unauthorized_module():
-    ev = NAT.run_lean_target("Obsidia.Nope")
-    assert ev["ok"] is False and "MODULE_NOT_AUTHORIZED" in ev["reason"]
+def test_native_lean_rejects_unregistered_target_id():
+    ev = NAT.run_lean_by_id("NOPE")
+    assert ev["ok"] is False and "LEAN_TARGET_ID_NOT_REGISTERED" in ev["reason"]
+    ev2 = NAT.run_lean_target("Obsidia.Nope")   # legacy raw path still rejected
+    assert ev2["ok"] is False and "MODULE_NOT_AUTHORIZED" in ev2["reason"]
 
 
 # ══════════════════════════════════════════════════════════════════════════

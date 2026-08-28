@@ -40,6 +40,7 @@ if str(_SCRIPTS) not in sys.path:
 
 import obsidia_gateway_route_decision_v0 as _RD          # CG-B relay substrate + store helpers
 import obsidia_stack_native_routes_v0 as _NAT           # stack-native bounded capabilities
+import obsidia_capability_graph_v0 as _CG               # runtime capability graph (lookup only)
 import obsidia_pretool_shadow_v0 as _SHADOW             # CG-D receipts helpers (diagnostic reuse)
 
 SCHEMA_VERSION = 1
@@ -79,24 +80,48 @@ MAX_GOVERNED_MUTATION_OPERATION_V0 = "UPDATE_TARGET_FROM_SOURCE"
 #  Discovery only (§22). Ne mute PAS ~/.claude. À placer dans un
 #  .claude/settings.local.json repo-local *par un humain* si Relay-First
 #  devient le déploiement par défaut. Ne casse pas la conversation Claude.
+#  Statut : PROPOSITION — NON appliquée par ce checkpoint. Application =
+#  décision humaine (worktree cold start / MCP tool exposure). `~/.claude*`
+#  jamais muté. CLAUDE_DIRECT_REPO_MUTATION_DEFAULT reste NOT_PROVEN tant que
+#  l'humain n'a pas appliqué + vérifié via le modèle de permission effectif.
+CLAUDE_DIRECT_REPO_MUTATION_DEFAULT = "NOT_PROVEN"
+CLAUDE_DIRECT_GIT_MUTATION_DEFAULT = "NOT_PROVEN"
+CLAUDE_ARBITRARY_ENGINEERING_BASH_DEFAULT = "NOT_PROVEN"
 RELAY_FIRST_HOST_PERMISSION_PROFILE_PROPOSAL_V0 = {
-    "note": "PROPOSAL ONLY — not applied by CG. Repo-local .claude/settings.local.json.",
+    "note": "PROPOSAL ONLY — not applied. Add to repo-local .claude/settings.json "
+            "(tracked) OR .claude/settings.local.json (gitignored) by a human, then "
+            "verify via the effective host permission model (a fresh session).",
+    "apply_to": ".claude/settings.json (project-local, tracked) — merge into existing permissions.deny",
     "permissions": {
         "deny": [
             "Edit(**)", "Write(**)", "NotebookEdit(**)",
             "Bash(git add:*)", "Bash(git commit:*)", "Bash(git reset:*)",
             "Bash(git checkout:*)", "Bash(git switch:*)", "Bash(git restore:*)",
             "Bash(git rebase:*)", "Bash(git merge:*)", "Bash(git stash:*)",
-            "Bash(git push:*)", "Bash(rm:*)", "Bash(mv:*)", "Bash(cp:*)",
-            "Bash(sed -i:*)", "Bash(tee:*)",
+            "Bash(git push:*)", "Bash(git cherry-pick:*)", "Bash(git revert:*)",
+            "Bash(git apply:*)", "Bash(git worktree:*)", "Bash(git config:*)",
+            "Bash(rm:*)", "Bash(mv:*)", "Bash(cp:*)", "Bash(mkdir:*)",
+            "Bash(sed -i:*)", "Bash(tee:*)", "Bash(dd:*)", "Bash(truncate:*)",
+            "Bash(chmod:*)", "Bash(ln:*)",
         ],
-        "allow_relay_surface_only": [
-            "Bash(python scripts/obsidia_relay_v0.py *)",
+        "allow": [
+            "Read", "Glob", "Grep", "Task",
+            "Bash(python scripts/obsidia_relay_v0.py:*)",
+            "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+            "Bash(git show:*)", "Bash(git branch:*)", "Bash(git rev-parse:*)",
         ],
     },
-    "rationale": "Direct mutation primitives unavailable; governed mutation only "
-                 "via the Obsidia relay + KX108 rail. Pure conversation/reasoning "
-                 "unaffected. Prefer a native MCP tool exposure over CLI-through-Bash.",
+    "preserves": "pure conversation / reasoning / analysis / code proposals (no tool call).",
+    "rationale": "Direct mutation primitives unavailable by default; governed mutation "
+                 "only via the Obsidia relay + Stage 4 rail + KX108. Prefer a native "
+                 "MCP tool exposure over CLI-through-Bash for the relay surface.",
+    "verification_steps": [
+        "cold-start a fresh Claude Code session on this worktree (not --resume)",
+        "attempt Edit/Write on a scratch file -> must be DENIED by the host",
+        "attempt `git add`/`git commit` -> must be DENIED",
+        "Read / Grep / Glob / relay CLI -> AVAILABLE",
+        "then set CLAUDE_DIRECT_REPO_MUTATION_DEFAULT = DENIED",
+    ],
 }
 
 # ── États de mission relais ────────────────────────────────────────────
@@ -114,14 +139,16 @@ KIND_GIT_STATE_READ = "GIT_STATE_READ"
 KIND_TEST_FAMILY_RUN = "TEST_FAMILY_RUN"
 KIND_LEAN_BUILD = "LEAN_BUILD"
 KIND_ENGINEERING_REASONING = "ENGINEERING_REASONING"
+KIND_GOVERNED_UPDATE = "GOVERNED_UPDATE_TARGET_FROM_SOURCE"
 KIND_HUMAN_DECISION = "HUMAN_DECISION"
 KIND_UNKNOWN = "UNKNOWN"
 KIND_CONVERSATION = "CONVERSATION"
 _MISSION_KINDS = (KIND_GIT_STATE_READ, KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD,
-                  KIND_ENGINEERING_REASONING, KIND_HUMAN_DECISION, KIND_UNKNOWN,
-                  KIND_CONVERSATION)
+                  KIND_ENGINEERING_REASONING, KIND_GOVERNED_UPDATE,
+                  KIND_HUMAN_DECISION, KIND_UNKNOWN, KIND_CONVERSATION)
 _NATIVE_KINDS = {KIND_GIT_STATE_READ, KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD}
 _COGNITIVE_KINDS = {KIND_ENGINEERING_REASONING}
+_GOVERNED_KINDS = {KIND_GOVERNED_UPDATE}
 _HOLD_KINDS = {KIND_HUMAN_DECISION}
 
 # ── Ressources cognitives (capacité != autorité) ───────────────────────
@@ -226,13 +253,13 @@ def load_relay_receipt(relay_receipt_id: str, store_dir=None) -> Optional[dict]:
 
 def _run_native(mission: dict) -> dict:
     kind = mission["mission_kind"]
-    tgt = mission.get("target")
+    tgt = mission.get("target")   # test_family_id | lean_target_id (NOMMÉ, jamais un chemin brut)
     if kind == KIND_GIT_STATE_READ:
         return _NAT.read_git_state(repo_root=mission.get("repo_root"))
     if kind == KIND_TEST_FAMILY_RUN:
-        return _NAT.run_test_family(str(tgt or ""), repo_root=mission.get("repo_root"))
+        return _NAT.run_test_family_by_id(str(tgt or ""), repo_root=mission.get("repo_root"))
     if kind == KIND_LEAN_BUILD:
-        return _NAT.run_lean_target(str(tgt or ""), lean_root=mission.get("lean_root"))
+        return _NAT.run_lean_by_id(str(tgt or ""), lean_root=mission.get("lean_root"))
     return _NAT._evidence("UNSUPPORTED_NATIVE_KIND", False, kind=kind)
 
 
@@ -242,6 +269,21 @@ def _resolve(store_dir, mission: dict) -> dict:
     + HOLD ; les paliers intermédiaires retombent sur cognitive ou HOLD."""
     kind = mission["mission_kind"]
     mission["mission_state"] = MISSION_RUNNING
+
+    # 0 — consultation du graphe de capacités (lookup, jamais une autorité)
+    cap = _CG.resolve_capability_for_kind(kind)
+    mission["capability_resolution"] = cap
+    _emit_receipt(store_dir, mission, "CAPABILITY_RESOLVED",
+                  {"capability_id": cap.get("capability_id"), "route": cap.get("route"),
+                   "owner": cap.get("owner"), "grants_authority": False})
+    if cap.get("gap"):
+        mission["mission_state"] = MISSION_HOLD
+        mission["hold_reason"] = cap["gap"]
+        mission["resource_selected"] = RESOURCE_HUMAN
+        mission["metrics"]["hold_count"] += 1
+        _emit_receipt(store_dir, mission, "HOLD_OPENED",
+                      {"reason": cap["gap"], "detail": cap.get("reason")})
+        return mission
 
     # 1 — capacité stack-native déterministe
     if kind in _NATIVE_KINDS:
@@ -275,6 +317,26 @@ def _resolve(store_dir, mission: dict) -> dict:
         _emit_receipt(store_dir, mission, "COGNITIVE_REQUEST_ISSUED",
                       {"capability_request_ref": mission["capability_request_ref"],
                        "candidates": mission["resource_candidates"]})
+        return mission
+
+    # 2bis — apply gouverné (Stage 4 rail) : le relais ORCHESTRE un HOLD pour
+    #  l'autorisation humaine de l'EAH exact ; il NE construit PAS l'enveloppe,
+    #  NE forge PAS l'EAH/HMA, NE touche PAS KX108_PRE/POST. UPDATE_TARGET_FROM_SOURCE
+    #  UNIQUEMENT (pas de CREATE/DELETE/MOVE/RENAME — Stage 5).
+    if kind in _GOVERNED_KINDS:
+        mission["mission_state"] = MISSION_HOLD
+        mission["hold_reason"] = "HUMAN_EAH_AUTHORIZATION_REQUIRED"
+        mission["resource_selected"] = RESOURCE_HUMAN
+        mission["governed_apply_route"] = "STAGE4_GOVERNED_RAIL"
+        mission["governed_apply_operation"] = MAX_GOVERNED_MUTATION_OPERATION_V0
+        mission["governed_apply_relay_builds_envelope"] = False
+        mission["metrics"]["hold_count"] += 1
+        _emit_receipt(store_dir, mission, "HOLD_OPENED",
+                      {"reason": "HUMAN_EAH_AUTHORIZATION_REQUIRED",
+                       "governed_apply_route": "STAGE4_GOVERNED_RAIL",
+                       "operation": MAX_GOVERNED_MUTATION_OPERATION_V0,
+                       "relay_constructs_envelope": False,
+                       "relay_mints_eah_or_hma": False})
         return mission
 
     # 3 — autorité humaine requise / genre inconnu -> HOLD (jamais LLM)
@@ -361,6 +423,15 @@ def relay_get_status(relay_mission_id: str, store_dir=None) -> dict:
 
 def relay_get_receipt(relay_receipt_id: str, store_dir=None) -> Optional[dict]:
     return load_relay_receipt(relay_receipt_id, store_dir=store_dir)
+
+
+def relay_capability_graph() -> dict:
+    """Snapshot READ-ONLY du graphe de capacités canonique (lookup, jamais autorité)."""
+    return _CG.graph_snapshot()
+
+
+def relay_resolve_capability(mission_kind: str) -> dict:
+    return _CG.resolve_capability_for_kind(mission_kind)
 
 
 def relay_request_capability(*, relay_mission_id: str, requested_capability: str,
@@ -552,6 +623,11 @@ def _main(argv) -> int:
             "OPTIONAL_CLAUDE_DIRECT_TOOL_MODE": OPTIONAL_CLAUDE_DIRECT_TOOL_MODE,
             "OPTIONAL_CLAUDE_DIRECT_TOOL_MODE_PRECONDITION_1": OPTIONAL_CLAUDE_DIRECT_TOOL_MODE_PRECONDITION_1,
             "OPTIONAL_CLAUDE_DIRECT_TOOL_MODE_PRECONDITION_2": OPTIONAL_CLAUDE_DIRECT_TOOL_MODE_PRECONDITION_2,
+            "CLAUDE_DIRECT_REPO_MUTATION_DEFAULT": CLAUDE_DIRECT_REPO_MUTATION_DEFAULT,
+            "CLAUDE_DIRECT_GIT_MUTATION_DEFAULT": CLAUDE_DIRECT_GIT_MUTATION_DEFAULT,
+            "CLAUDE_ARBITRARY_ENGINEERING_BASH_DEFAULT": CLAUDE_ARBITRARY_ENGINEERING_BASH_DEFAULT,
+            "CAPABILITY_GRAPH": "ACTIVE",
+            "capability_ids": list(_CG.capability_ids()),
             "mission_states": list(_MISSION_STATES),
             "mission_kinds": list(_MISSION_KINDS),
         }, indent=2))
