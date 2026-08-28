@@ -25,6 +25,8 @@ import Obsidia.MissionAuthority.ActionWitness
 import Obsidia.MissionAuthority.Transition
 import Obsidia.MissionAuthority.Invariants
 import Obsidia.MissionAuthority.Refinement
+-- STAGE 4B — preuves machine-vérifiées des 16 invariants + second théorème central
+import Obsidia.MissionAuthority.Proofs
 
 #print axioms Obsidia.MissionAuthority.scopeLE_refl
 #print axioms Obsidia.MissionAuthority.scopeLE_trans
