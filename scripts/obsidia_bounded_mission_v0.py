@@ -135,6 +135,14 @@ E_ACTION_LOCAL_SNAPSHOT_COMMITTED = "ACTION_LOCAL_SNAPSHOT_COMMITTED"
 # ── Stage 3D additif : liaison d'UN plan d'action borné immuable / complétion. ──
 E_PLAN_BOUND = "PLAN_BOUND"
 E_PLAN_COMPLETED = "PLAN_COMPLETED"
+# ── Stage 4E additif : liaison d'UNE HumanMissionAuthorization à la mission +
+#    dérivation automatique d'un DerivedActionAuthorityWitness par action.
+#    ÉVIDENCE STRICTEMENT NON_SOUVERAINE : n'autorise AUCUNE exécution, ne
+#    satisfait AUCUNE HumanApproval, ne touche NI le rail PRE NI KX108. Le mode
+#    d'exécution runtime demeure PER_ACTION_HUMAN_EAH. Transitions self-loop
+#    (aucun changement d'état de mission). ──
+E_MISSION_AUTHORITY_BOUND = "MISSION_AUTHORITY_BOUND"
+E_ACTION_AUTHORITY_WITNESS_DERIVED = "ACTION_AUTHORITY_WITNESS_DERIVED"
 
 # ── Table de transitions FERMÉE. Clé = (from_state, event) -> to_state.
 #    from_state None == genèse. Les cas dépendant du contexte (HOLD_RESOLVED,
@@ -157,6 +165,9 @@ _TRANSITIONS = {
     # Stage 3D : liaison / complétion d'un plan borné (aucun nouvel état mission).
     (S_WORKTREE_BOUND, E_PLAN_BOUND): S_WORKTREE_BOUND,
     (S_WORKTREE_BOUND, E_PLAN_COMPLETED): S_CLOSED_AWAITING_NEXT_PLAN,
+    # Stage 4E : évidence NON_SOUVERAINE additive — self-loop, aucun changement d'état.
+    (S_WORKTREE_BOUND, E_MISSION_AUTHORITY_BOUND): S_WORKTREE_BOUND,
+    (S_ACTION_PREPARED, E_ACTION_AUTHORITY_WITNESS_DERIVED): S_ACTION_PREPARED,
 }
 # HOLD_RESOLVED : depuis HELD uniquement, vers l'état interrompu (ou repli sûr).
 _HOLD_RESOLVE_ALLOWED_TO = (S_WORKTREE_BOUND, S_ACTION_PREPARED)
@@ -217,6 +228,12 @@ STATUS_PLAN_BOUND = "PLAN_BOUND"
 STATUS_PLAN_BIND_REJECTED = "PLAN_BIND_REJECTED"
 STATUS_PLAN_COMPLETED = "PLAN_COMPLETED"
 STATUS_PLAN_CLOSE_REJECTED = "PLAN_CLOSE_REJECTED"
+# Stage 4E — évidence NON_SOUVERAINE (autorité de mission bornée PRÉPARÉE, non active)
+STATUS_MISSION_AUTHORITY_BOUND = "MISSION_AUTHORITY_BOUND"
+STATUS_MISSION_AUTHORITY_BIND_REJECTED = "MISSION_AUTHORITY_BIND_REJECTED"
+STATUS_ACTION_AUTHORITY_WITNESS_RECORDED = "ACTION_AUTHORITY_WITNESS_RECORDED"
+STATUS_ACTION_AUTHORITY_WITNESS_REJECTED = "ACTION_AUTHORITY_WITNESS_REJECTED"
+STATUS_ACTION_AUTHORITY_WITNESS_EVENT_IDEMPOTENT = "ACTION_AUTHORITY_WITNESS_EVENT_IDEMPOTENT"
 
 # Statuts terminaux du pont Checkpoint 1 / driver (ré-exportés, jamais réinterprétés)
 _KEPT = _WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
@@ -561,6 +578,15 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
     kept_action_ids: "set" = set()
     rolled_back_action_ids: "set" = set()
     quarantined_action_ids: "set" = set()
+    # ── Stage 4E : mode d'autorité de mission + témoins d'action DÉRIVÉS
+    #    (NON_SOUVERAINS, dérivés du journal immuable — jamais stockés mutables). ──
+    mission_authority_mode = "PER_ACTION_HUMAN_EAH"
+    active_hma_id: Optional[str] = None
+    active_hma_record_hash: Optional[str] = None
+    active_hma_plan_id: Optional[str] = None
+    active_hma_plan_hash: Optional[str] = None
+    derived_witnesses: "list[dict]" = []
+    derived_witness_action_ids: "set" = set()
 
     for idx, rev in enumerate(revisions, start=1):
         if rev.get("__unparseable__"):
@@ -652,6 +678,23 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
             plan_bound_revision = idx
         elif event == E_PLAN_COMPLETED:
             plan_completed = True
+        elif event == E_MISSION_AUTHORITY_BOUND:
+            mission_authority_mode = "BOUNDED_MISSION_AUTHORITY_PREPARED"
+            active_hma_id = ev.get("hma_id")
+            active_hma_record_hash = ev.get("hma_record_hash")
+            active_hma_plan_id = ev.get("plan_id")
+            active_hma_plan_hash = ev.get("plan_hash")
+        elif event == E_ACTION_AUTHORITY_WITNESS_DERIVED:
+            _waid = ev.get("action_id")
+            if _waid:
+                derived_witness_action_ids.add(_waid)
+            derived_witnesses.append({
+                "action_id": _waid, "ordinal": ev.get("ordinal"),
+                "daaw_id": ev.get("daaw_id"), "daaw_record_hash": ev.get("daaw_record_hash"),
+                "execution_authority_hash": ev.get("execution_authority_hash"),
+                "action_base_sha": ev.get("action_base_sha"),
+                "hma_id": ev.get("hma_id"),
+            })
         elif event == E_MISSION_ABORTED:
             aborted_from_state = rev.get("from_state")
             for h in holds.values():
@@ -764,6 +807,14 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
         "rolled_back_action_ids": sorted(rolled_back_action_ids),
         "quarantined_action_ids": sorted(quarantined_action_ids),
         "snapshotted_action_ids": sorted(a for a in snapshotted_action_ids if a),
+        # ── Stage 4E : mode d'autorité + témoins d'action DÉRIVÉS (NON_SOUVERAINS) ──
+        "mission_authority_mode": mission_authority_mode,
+        "active_hma_id": active_hma_id,
+        "active_hma_record_hash": active_hma_record_hash,
+        "active_hma_plan_id": active_hma_plan_id,
+        "active_hma_plan_hash": active_hma_plan_hash,
+        "derived_witnesses": derived_witnesses,
+        "derived_witness_action_ids": sorted(a for a in derived_witness_action_ids if a),
         "unknowns": unknowns,
     }
 
@@ -1586,6 +1637,173 @@ def close_plan(*, mission_id: str, plan_id: str, mission_store_dir: "str | Path"
             "plan_id": plan_id, "current_state": S_CLOSED_AWAITING_NEXT_PLAN,
             "revision": rec["revision"], "mission_revision_record_hash": rec["mission_revision_record_hash"],
             "mission_closure_stage_6_still_required": True}
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  4quater — Stage 4E : liaison HMA + témoin d'action DÉRIVÉ (NON_SOUVERAIN).
+#            ÉVIDENCE UNIQUEMENT : n'autorise AUCUNE exécution, ne satisfait
+#            AUCUNE HumanApproval, ne touche NI PRE NI KX108. L'HMA elle-même
+#            est construite/vérifiée hors de ce module (sous-système d'autorité
+#            de mission Stage 4C + couture d'intégration Stage 4E).
+# ══════════════════════════════════════════════════════════════════════════
+
+def bind_mission_authority(*, mission_id: str, hma_id: str, hma_record_hash: str,
+                           plan_id: str, plan_hash: str,
+                           mission_store_dir: "str | Path") -> dict:
+    """Append-only `MISSION_AUTHORITY_BOUND`. Self-loop `WORKTREE_BOUND` :
+    aucun changement d'état, aucune autorité d'exécution. V0 : une seule HMA
+    par mission ; l'HMA doit être liée EXACTEMENT au plan actif."""
+    store_dir = Path(mission_store_dir)
+    proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    if proj["status"] != STATUS_PROJECTION_OK:
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED,
+                    f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
+    if not (_is_64_hex(hma_record_hash) and isinstance(hma_id, str) and hma_id.startswith("hma-")):
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED, "HMA_REFERENCE_MALFORMED")
+    if proj["current_state"] != S_WORKTREE_BOUND:
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED,
+                    f"MISSION_NOT_IN_WORKTREE_BOUND_STATE:{proj['current_state']}")
+    if proj.get("active_hma_id"):
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED, "MISSION_AUTHORITY_ALREADY_BOUND")
+    if not proj.get("active_plan_id"):
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED, "NO_PLAN_BOUND")
+    if proj.get("active_plan_id") != plan_id or proj.get("active_plan_hash") != plan_hash:
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED, "HMA_PLAN_BINDING_MISMATCH")
+    rec, err = _append_revision(
+        mission_id, store_dir, revision=proj["revision"] + 1,
+        parent_hash=proj["mission_revision_record_hash"],
+        event=E_MISSION_AUTHORITY_BOUND, from_state=S_WORKTREE_BOUND, to_state=S_WORKTREE_BOUND,
+        evidence_refs={"hma_id": hma_id, "hma_record_hash": hma_record_hash,
+                       "plan_id": plan_id, "plan_hash": plan_hash,
+                       "non_sovereign": True, "is_execution_authority": False},
+        actor="HUMAN")
+    if err:
+        return _rej(STATUS_MISSION_AUTHORITY_BIND_REJECTED, err)
+    return {"status": STATUS_MISSION_AUTHORITY_BOUND, "reason": None,
+            "mission_id": mission_id, "hma_id": hma_id, "hma_record_hash": hma_record_hash,
+            "plan_id": plan_id, "plan_hash": plan_hash,
+            "mission_authority_mode": "BOUNDED_MISSION_AUTHORITY_PREPARED",
+            "revision": rec["revision"],
+            "is_execution_authority": False, "non_sovereign": True}
+
+
+_WITNESS_IDEMPOTENCE_KEY_FIELDS = (
+    "ordinal", "daaw_id", "daaw_record_hash",
+    "execution_authority_hash", "action_base_sha", "hma_id",
+)
+
+
+def _witnesses_dir(mission_id: str, store_dir: Path) -> Path:
+    return _mission_dir(mission_id, store_dir) / "action_authority_witnesses"
+
+
+def _load_action_authority_witness_artifact(mission_id: str, daaw_id: "Optional[str]",
+                                            store_dir: Path) -> Optional[dict]:
+    if not (isinstance(daaw_id, str) and daaw_id):
+        return None
+    try:
+        p = _safe_id_path(_witnesses_dir(mission_id, store_dir), daaw_id)
+    except ValueError:
+        return None
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _verify_witness_event_matches_artifact(event_entry: dict,
+                                           art: Optional[dict]) -> "tuple[bool, Optional[str]]":
+    """L'événement mission NE SUFFIT PAS : l'artefact DAAW write-once canonique
+    doit exister et concorder exactement avec la référence de l'événement."""
+    if not isinstance(art, dict):
+        return False, "ARTIFACT_MISSING"
+    if art.get("derived_action_authority_witness_id") != event_entry.get("daaw_id"):
+        return False, "DAAW_ID"
+    if art.get("daaw_record_hash") != event_entry.get("daaw_record_hash"):
+        return False, "RECORD_HASH"
+    if art.get("execution_authority_hash") != event_entry.get("execution_authority_hash"):
+        return False, "EAH"
+    if art.get("action_base_sha") != event_entry.get("action_base_sha"):
+        return False, "ACTION_BASE"
+    if art.get("human_mission_authorization_id") != event_entry.get("hma_id"):
+        return False, "HMA"
+    return True, None
+
+
+def record_action_authority_witness(*, mission_id: str, action_id: str, ordinal: "Optional[int]",
+                                    daaw_id: str, daaw_record_hash: str,
+                                    execution_authority_hash: str, action_base_sha: str,
+                                    hma_id: str, mission_store_dir: "str | Path") -> dict:
+    """Append-only `ACTION_AUTHORITY_WITNESS_DERIVED`. Self-loop `ACTION_PREPARED` :
+    évidence NON_SOUVERAINE.
+
+    Idempotence liée au MATÉRIEL EXACT du témoin (jamais au seul action_id) :
+    un `action_id` déjà consigné avec un `daaw_id` / `daaw_record_hash` /
+    `execution_authority_hash` / `action_base_sha` / `ordinal` / `hma_id`
+    DIVERGENT échoue fermé (`WITNESS_MATERIAL_DIVERGES_FROM_RECORDED`) — aucune
+    révision appendée. Sur duplicata identique : l'identité CANONIQUE consignée
+    est renvoyée (jamais le `daaw_id` fourni par l'appelant)."""
+    store_dir = Path(mission_store_dir)
+    proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    if proj["status"] != STATUS_PROJECTION_OK:
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED,
+                    f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
+    if proj["current_state"] != S_ACTION_PREPARED:
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED,
+                    f"MISSION_NOT_IN_ACTION_PREPARED_STATE:{proj['current_state']}")
+    if proj.get("active_hma_id") != hma_id:
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED, "HMA_NOT_BOUND_TO_MISSION")
+    pe = proj.get("last_prepared_evidence") or {}
+    if pe.get("action_id") != action_id:
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED, "WITNESS_ACTION_NOT_CURRENTLY_PREPARED")
+    if not (_is_64_hex(daaw_record_hash) and _is_64_hex(execution_authority_hash)):
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED, "WITNESS_HASH_MALFORMED")
+
+    already = next((w for w in (proj.get("derived_witnesses") or [])
+                    if w.get("action_id") == action_id), None)
+    if already is not None:
+        supplied = {"ordinal": ordinal, "daaw_id": daaw_id,
+                    "daaw_record_hash": daaw_record_hash,
+                    "execution_authority_hash": execution_authority_hash,
+                    "action_base_sha": action_base_sha, "hma_id": hma_id}
+        recorded = {k: already.get(k) for k in _WITNESS_IDEMPOTENCE_KEY_FIELDS}
+        if supplied != recorded:
+            # AUCUNE révision appendée sur divergence.
+            return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED,
+                        "WITNESS_MATERIAL_DIVERGES_FROM_RECORDED",
+                        recorded_daaw_id=already.get("daaw_id"),
+                        recorded_daaw_record_hash=already.get("daaw_record_hash"))
+        art = _load_action_authority_witness_artifact(mission_id, already.get("daaw_id"), store_dir)
+        ok_art, why_art = _verify_witness_event_matches_artifact(already, art)
+        if not ok_art:
+            return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED,
+                        f"WITNESS_ARTIFACT_DISAGREES_WITH_EVENT:{why_art}")
+        return {"status": STATUS_ACTION_AUTHORITY_WITNESS_EVENT_IDEMPOTENT, "reason": None,
+                "mission_id": mission_id, "action_id": action_id, "ordinal": already.get("ordinal"),
+                "daaw_id": already.get("daaw_id"),
+                "daaw_record_hash": already.get("daaw_record_hash"),
+                "execution_authority_hash": already.get("execution_authority_hash"),
+                "action_base_sha": already.get("action_base_sha"),
+                "revision": proj["revision"], "idempotent": True,
+                "is_execution_authority": False, "non_sovereign": True}
+    rec, err = _append_revision(
+        mission_id, store_dir, revision=proj["revision"] + 1,
+        parent_hash=proj["mission_revision_record_hash"],
+        event=E_ACTION_AUTHORITY_WITNESS_DERIVED, from_state=S_ACTION_PREPARED, to_state=S_ACTION_PREPARED,
+        evidence_refs={"action_id": action_id, "ordinal": ordinal,
+                       "daaw_id": daaw_id, "daaw_record_hash": daaw_record_hash,
+                       "execution_authority_hash": execution_authority_hash,
+                       "action_base_sha": action_base_sha, "hma_id": hma_id,
+                       "non_sovereign": True, "is_execution_authority": False},
+        actor="STACK")
+    if err:
+        return _rej(STATUS_ACTION_AUTHORITY_WITNESS_REJECTED, err)
+    return {"status": STATUS_ACTION_AUTHORITY_WITNESS_RECORDED, "reason": None,
+            "mission_id": mission_id, "action_id": action_id, "ordinal": ordinal,
+            "daaw_id": daaw_id, "daaw_record_hash": daaw_record_hash,
+            "revision": rec["revision"], "is_execution_authority": False, "non_sovereign": True}
 
 
 # ══════════════════════════════════════════════════════════════════════════

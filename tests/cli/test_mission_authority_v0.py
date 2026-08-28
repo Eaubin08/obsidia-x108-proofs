@@ -178,13 +178,27 @@ def test_static_no_bypass_or_kx_or_pre():
 
 
 def test_no_production_callers():
+    # Stage 4E autorise EXACTEMENT un consommateur de production : la couture
+    # d'intégration `obsidia_mission_authority_integration_v0` (dérivation DAAW =
+    # ÉVIDENCE, jamais exécution). Aucun autre module de production ne référence
+    # `obsidia_mission_authority_v0` ; en particulier PAS le rail PRE/KX108/apply.
+    _AUTHORIZED = {"obsidia_mission_authority_v0.py",
+                   "obsidia_mission_authority_integration_v0.py"}
     hits = []
     for p in _SCRIPTS.glob("*.py"):
-        if p.name == "obsidia_mission_authority_v0.py":
+        if p.name in _AUTHORIZED:
             continue
         if "obsidia_mission_authority_v0" in p.read_text(encoding="utf-8"):
             hits.append(p.name)
     assert hits == [], f"unexpected production callers: {hits}"
+    # le module 4C n'est jamais IMPORTÉ par le rail PRE / KX108 / governed apply
+    for banned in ("obsidia_pre_execution_context.py", "obsidia_kx108_decision_store.py",
+                   "obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+                   "obsidia_governed_apply_v0.py", "obsidia_governed_execution_driver_v0.py",
+                   "obsidia_batch_execution.py"):
+        src = (_SCRIPTS / banned).read_text(encoding="utf-8")
+        assert "import obsidia_mission_authority_v0" not in src, banned
+        assert "import obsidia_mission_authority_integration_v0" not in src, banned
 
 
 def test_semantic_decision_is_not_mission_authorization():

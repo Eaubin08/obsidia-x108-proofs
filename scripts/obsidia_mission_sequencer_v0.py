@@ -48,6 +48,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
 
 import obsidia_bounded_mission_v0 as _M
 import obsidia_mission_local_snapshot_v0 as _LS
+import obsidia_mission_authority_integration_v0 as _INT   # Stage 4E : dérivation DAAW (ÉVIDENCE, non exécution)
 
 DECISION_AUTHORITY = "NON_SOVEREIGN"
 
@@ -59,6 +60,10 @@ PLAN_BLOCKED = "PLAN_BLOCKED"
 ADVANCE_REJECTED = "ADVANCE_REJECTED"
 MISSION_ADVANCE_LOST_RACE = "MISSION_ADVANCE_LOST_RACE"
 ADVANCE_INPUT_AMBIGUOUS = "ADVANCE_INPUT_AMBIGUOUS"
+# Stage 4E : routage NON_SOUVERAIN au niveau mission — refus de progresser depuis
+# une mission Stage-4-préparée dont la dérivation du DAAW échoue (HMA révoquée /
+# invalide / dépendance non satisfaite). N'a AUCUN effet sur PRE/KX108.
+MISSION_AUTHORITY_HOLD = "MISSION_AUTHORITY_HOLD"
 
 MAX_GOVERNED_TARGET_MUTATIONS_PER_ADVANCE_CALL = 1
 
@@ -311,6 +316,38 @@ def advance_bounded_mission(
         if p["status"] != _M.STATUS_ACTION_PREPARED:
             return _rej(ADVANCE_REJECTED, f"PREPARE_FAILED:{p.get('reason')}",
                         action_id=next_action["action_id"], checkpoint2_result=p, _mut=mut)
+
+        # ── Stage 4E : si une HumanMissionAuthorization est liée à la mission,
+        #    dériver + vérifier + persister le DAAW EXACT de cette action APRÈS que
+        #    l'EAH canonique existe. ÉVIDENCE UNIQUEMENT — ne satisfait AUCUNE
+        #    HumanApproval, ne touche NI le rail PRE NI KX108, n'exécute rien.
+        #    L'EAH humain par action reste requis (mode PER_ACTION_HUMAN_EAH). ──
+        daaw_refs: dict = {}
+        proj2 = _M.project_mission(mission_id=mission_id, mission_store_dir=mission_store_dir,
+                                   hold_store_dir=hold_store_dir)
+        if proj2["status"] == _M.STATUS_PROJECTION_OK and proj2.get("active_hma_id"):
+            dv = _INT.derive_and_record_action_authority_witness(
+                mission_id=mission_id, work_unit=work_unit,
+                execution_dir=execution_dir, mission_store_dir=mission_store_dir,
+                hold_store_dir=hold_store_dir)
+            if dv["status"] != _INT.WITNESS_DERIVED_AND_VERIFIED:
+                return {"status": MISSION_AUTHORITY_HOLD, "reason": dv.get("reason"),
+                        "mission_id": mission_id, "plan_id": plan_id,
+                        "action_id": next_action["action_id"], "ordinal": next_action["ordinal"],
+                        "witness_status": dv["status"],
+                        "execution_authority_hash": p["execution_authority_hash"],
+                        "per_action_human_eah_still_required": True,
+                        "kx_pre_semantics_changed": False,
+                        "daaw_is_execution_authority": False,
+                        "governed_target_mutations_this_call": mut}
+            daaw_refs = {
+                "derived_action_authority_witness_id": dv["derived_action_authority_witness_id"],
+                "daaw_record_hash": dv["daaw_record_hash"],
+                "mission_authority_mode": "BOUNDED_MISSION_AUTHORITY_PREPARED",
+                "daaw_is_execution_authority": False,
+                "daaw_can_authorize_pre": False,
+            }
+
         return {"status": MISSION_AWAITING_HUMAN_EAH_APPROVAL, "reason": None,
                 "mission_id": mission_id, "plan_id": plan_id,
                 "action_id": next_action["action_id"], "ordinal": next_action["ordinal"],
@@ -320,6 +357,6 @@ def advance_bounded_mission(
                 "prepared_action_base_sha": proj["mission_tip_sha"],
                 "human_authorization_reference_required": True,
                 "eah_per_action_unchanged": True,
-                "governed_target_mutations_this_call": mut}
+                "governed_target_mutations_this_call": mut, **daaw_refs}
 
     return _rej(ADVANCE_REJECTED, f"MISSION_STATE_NOT_ADVANCEABLE:{state}", _mut=mut)
