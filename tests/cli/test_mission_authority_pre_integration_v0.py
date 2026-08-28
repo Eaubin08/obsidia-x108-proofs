@@ -385,8 +385,17 @@ def test_mission_not_action_prepared_dmae_build_fail_closed(env):
 #  Sequencer NON activé en Stage 4F
 # ══════════════════════════════════════════════════════════════════════════
 
-def test_sequencer_byte_unchanged_stage4f():
-    r = subprocess.run(["git", "status", "--porcelain",
-                        "scripts/obsidia_mission_sequencer_v0.py"],
-                       cwd=str(_REPO_ROOT), capture_output=True, text=True)
-    assert r.stdout.strip() == "", "sequencer must be byte-unchanged in Stage 4F"
+def test_sequencer_no_authority_fabrication():
+    # Le séquenceur est modifié par Stage 4G (intégration d'exécution mission) mais
+    # ne fabrique JAMAIS d'autorité : ni approbation, ni décision KX, ni EAH, ni
+    # DAAW/DMAE, ni écriture de cible. Il ne fait QUE composer des appels de haut
+    # niveau (execute_mission_action / derive_and_record_action_authority_witness).
+    src = (_SCRIPTS / "obsidia_mission_sequencer_v0.py").read_text(encoding="utf-8")
+    for banned in ("store_approval_artifact(", "run_and_persist_kx108", "GuardX108",
+                   "run_governed_content_apply(", "atomic_replace_with_bytes",
+                   "build_derived_mission_approval_evidence(",
+                   "compute_execution_authority_hash(", ".write_bytes(",
+                   "approved_by", '"commit"'):
+        assert banned not in src, banned
+    assert "import obsidia_governed_apply_v0" not in src
+    assert "import obsidia_mission_authority_v0" not in src

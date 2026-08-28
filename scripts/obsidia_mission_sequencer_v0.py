@@ -65,6 +65,16 @@ ADVANCE_INPUT_AMBIGUOUS = "ADVANCE_INPUT_AMBIGUOUS"
 # invalide / dépendance non satisfaite). N'a AUCUN effet sur PRE/KX108.
 MISSION_AUTHORITY_HOLD = "MISSION_AUTHORITY_HOLD"
 
+# Stage 4G : mode BOUNDED_MISSION_AUTHORITY explicite. Après avoir préparé la
+# prochaine action (EAH canonique + DAAW dérivé), la mission N'ATTEND AUCUN EAH
+# humain par action — l'appel `advance` suivant l'exécute directement via le rail
+# Stage 4F. Rythme identique à Stage 3D : ≤1 mutation gouvernée par appel.
+MISSION_STAGE4_ACTION_PREPARED = "MISSION_STAGE4_ACTION_PREPARED"
+
+AUTHORITY_MODE_PER_ACTION_HUMAN_EAH = _M._WU._DRV.AUTHORITY_MODE_PER_ACTION_HUMAN_EAH
+AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY = _M._WU._DRV.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY
+DEFAULT_AUTHORITY_MODE = _M._WU._DRV.DEFAULT_AUTHORITY_MODE
+
 MAX_GOVERNED_TARGET_MUTATIONS_PER_ADVANCE_CALL = 1
 
 _KEPT = _M._KEPT   # GOVERNED_REMEDIATION_KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
@@ -92,16 +102,36 @@ def advance_bounded_mission(
     human_authorized_execution_authority_hash: "Optional[str]" = None,
     human_authorization_reference: "Optional[str]" = None,
     human_mission_decision_id: "Optional[str]" = None,
+    authority_mode: str = DEFAULT_AUTHORITY_MODE,
 ) -> dict:
-    """Fait avancer la mission d'AU PLUS une mutation de cible gouvernée."""
+    """Fait avancer la mission d'AU PLUS une mutation de cible gouvernée.
+
+    STAGE 4G — `authority_mode` :
+      * `PER_ACTION_HUMAN_EAH` (défaut) : rythme Stage 3D INCHANGÉ ; chaque
+        action préparée s'arrête sur `MISSION_AWAITING_HUMAN_EAH_APPROVAL`
+        jusqu'à réception d'un EAH humain exact.
+      * `BOUNDED_MISSION_AUTHORITY` (EXPLICITE ; jamais d'auto-upgrade) :
+        exige une HumanMissionAuthorization liée à la mission ; aucune
+        entrée EAH/référence/décision humaine par action ; une action
+        préparée est exécutée par l'appel `advance` suivant via le rail
+        Stage 4F (DMAE canonique + KX108_PRE/POST souverains par action).
+        Échec de validation Stage 4 → HOLD, JAMAIS de repli vers Stage 3.
+    """
     mut = 0
     eah = human_authorized_execution_authority_hash
     ref = human_authorization_reference
     hmd = human_mission_decision_id
+    if authority_mode not in (AUTHORITY_MODE_PER_ACTION_HUMAN_EAH,
+                              AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY):
+        return _rej(ADVANCE_REJECTED, f"UNKNOWN_AUTHORITY_MODE:{authority_mode}")
+    _stage4 = (authority_mode == AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY)
 
     # ── Entrées d'autorité mutuellement exclusives ──
     if (eah is not None) and (hmd is not None):
         return _rej(ADVANCE_INPUT_AMBIGUOUS, "EAH_AND_SEMANTIC_DECISION_IN_SAME_CALL",
+                    semantic_decision_is_execution_approval=False)
+    if _stage4 and (eah is not None or ref is not None or hmd is not None):
+        return _rej(ADVANCE_INPUT_AMBIGUOUS, "STAGE4_MODE_REJECTS_PER_ACTION_HUMAN_INPUT",
                     semantic_decision_is_execution_approval=False)
 
     proj = _M.project_mission(mission_id=mission_id, mission_store_dir=mission_store_dir,
@@ -156,14 +186,16 @@ def advance_bounded_mission(
             return _rej(ADVANCE_REJECTED, f"MISSION_NOT_PROJECTABLE_AFTER_RESOLVE:{proj.get('reason')}")
         state = proj["current_state"]
 
-    # ══ ACTION_PREPARED : attend l'EAH humain exact, puis exécute CETTE action ══
+    # ══ ACTION_PREPARED : (Stage 3) attend l'EAH humain exact puis exécute
+    #    CETTE action ; (Stage 4G) exécute directement CETTE action via le rail
+    #    Stage 4F, sans aucun EAH humain par action. ══
     if state == _M.S_ACTION_PREPARED:
         prepared = proj.get("last_prepared_evidence") or {}
         cur_aid = prepared.get("action_id")
         cur_ord = prepared.get("ordinal")
-        if hmd is not None:
+        if (not _stage4) and hmd is not None:
             return _rej(ADVANCE_INPUT_AMBIGUOUS, "SEMANTIC_DECISION_SUPPLIED_BUT_ACTION_AWAITS_EAH")
-        if eah is None:
+        if (not _stage4) and eah is None:
             return {"status": MISSION_AWAITING_HUMAN_EAH_APPROVAL, "reason": None,
                     "mission_id": mission_id, "plan_id": plan_id,
                     "action_id": cur_aid, "ordinal": cur_ord,
@@ -173,16 +205,33 @@ def advance_bounded_mission(
                     "human_authorization_reference_required": True,
                     "eah_per_action_unchanged": True,
                     "governed_target_mutations_this_call": 0}
-        if not (isinstance(ref, str) and ref.strip()):
+        if (not _stage4) and not (isinstance(ref, str) and ref.strip()):
             return _rej(ADVANCE_REJECTED, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED")
+
+        if _stage4:
+            # mission RÉELLEMENT autorisée Stage 4 : HMA liée + DAAW dérivé pour
+            # CETTE action préparée. Sinon HOLD — jamais de repli vers Stage 3.
+            if not proj.get("active_hma_id"):
+                return {"status": MISSION_AUTHORITY_HOLD, "reason": "NO_MISSION_AUTHORITY_BOUND",
+                        "mission_id": mission_id, "plan_id": plan_id, "action_id": cur_aid,
+                        "ordinal": cur_ord, "stage4_to_stage3_autofallback": False,
+                        "governed_target_mutations_this_call": 0}
+            _dw = next((w for w in (proj.get("derived_witnesses") or [])
+                        if w.get("action_id") == cur_aid), None)
+            if _dw is None:
+                return {"status": MISSION_AUTHORITY_HOLD, "reason": "NO_DERIVED_WITNESS_FOR_PREPARED_ACTION",
+                        "mission_id": mission_id, "plan_id": plan_id, "action_id": cur_aid,
+                        "ordinal": cur_ord, "stage4_to_stage3_autofallback": False,
+                        "governed_target_mutations_this_call": 0}
 
         prev_tip = proj["mission_tip_sha"]
         ex = _M.execute_mission_action(
             mission_id=mission_id, work_unit=work_unit,
             batch_execution_id=prepared.get("batch_execution_id"),
             child_execution_id=prepared.get("child_execution_id"),
-            human_authorized_execution_authority_hash=eah,
-            human_authorization_reference=ref,
+            human_authorized_execution_authority_hash=(None if _stage4 else eah),
+            human_authorization_reference=(None if _stage4 else ref),
+            authority_mode=authority_mode,
             execution_dir=execution_dir, pre_execution_context_dir=pre_execution_context_dir,
             selector_dir=selector_dir, ledger_dir=ledger_dir,
             kx108_pre_decision_dir=kx108_pre_decision_dir, kx108_post_decision_dir=kx108_post_decision_dir,
@@ -321,10 +370,17 @@ def advance_bounded_mission(
         #    dériver + vérifier + persister le DAAW EXACT de cette action APRÈS que
         #    l'EAH canonique existe. ÉVIDENCE UNIQUEMENT — ne satisfait AUCUNE
         #    HumanApproval, ne touche NI le rail PRE NI KX108, n'exécute rien.
-        #    L'EAH humain par action reste requis (mode PER_ACTION_HUMAN_EAH). ──
+        #    (Stage 3) l'EAH humain par action reste requis ensuite ;
+        #    (Stage 4G) l'appel `advance` suivant exécute directement. ──
         daaw_refs: dict = {}
         proj2 = _M.project_mission(mission_id=mission_id, mission_store_dir=mission_store_dir,
                                    hold_store_dir=hold_store_dir)
+        if _stage4 and not (proj2["status"] == _M.STATUS_PROJECTION_OK and proj2.get("active_hma_id")):
+            return {"status": MISSION_AUTHORITY_HOLD, "reason": "NO_MISSION_AUTHORITY_BOUND",
+                    "mission_id": mission_id, "plan_id": plan_id,
+                    "action_id": next_action["action_id"], "ordinal": next_action["ordinal"],
+                    "stage4_to_stage3_autofallback": False,
+                    "governed_target_mutations_this_call": mut}
         if proj2["status"] == _M.STATUS_PROJECTION_OK and proj2.get("active_hma_id"):
             dv = _INT.derive_and_record_action_authority_witness(
                 mission_id=mission_id, work_unit=work_unit,
@@ -347,6 +403,22 @@ def advance_bounded_mission(
                 "daaw_is_execution_authority": False,
                 "daaw_can_authorize_pre": False,
             }
+
+        if _stage4:
+            # action préparée + DAAW dérivé : l'appel `advance` suivant l'exécute
+            # via le rail Stage 4F. AUCUN EAH humain par action.
+            return {"status": MISSION_STAGE4_ACTION_PREPARED, "reason": None,
+                    "mission_id": mission_id, "plan_id": plan_id,
+                    "action_id": next_action["action_id"], "ordinal": next_action["ordinal"],
+                    "execution_authority_hash": p["execution_authority_hash"],
+                    "batch_execution_id": p["batch_execution_id"],
+                    "child_execution_id": p["child_execution_id"],
+                    "prepared_action_base_sha": proj["mission_tip_sha"],
+                    "authority_mode": AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY,
+                    "human_authorization_reference_required": False,
+                    "per_action_human_eah_required": False,
+                    "next_call_executes_this_action": True,
+                    "governed_target_mutations_this_call": mut, **daaw_refs}
 
         return {"status": MISSION_AWAITING_HUMAN_EAH_APPROVAL, "reason": None,
                 "mission_id": mission_id, "plan_id": plan_id,

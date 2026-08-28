@@ -151,9 +151,12 @@ def _run_stage4(env, d):
 # ══════════════════════════════════════════════════════════════════════════
 
 def test_frozen_files_clean():
+    # Gelés par la réparation de couture 4F : Lean, KX108 POST evidence adapter,
+    # rollback D2, D1/D2 disposition, sémantique DAAW 4E.
+    # (`obsidia_mission_sequencer_v0.py` est modifié plus tard par Stage 4G —
+    #  intégration d'exécution mission — hors périmètre de la réparation 4F.)
     r = subprocess.run(["git", "status", "--porcelain",
                         "proofs/lean/",
-                        "scripts/obsidia_mission_sequencer_v0.py",
                         "scripts/obsidia_governed_rollback_v0.py",
                         "scripts/obsidia_kx108_evidence_adapter.py",
                         "scripts/obsidia_post_execution_disposition_v0.py",

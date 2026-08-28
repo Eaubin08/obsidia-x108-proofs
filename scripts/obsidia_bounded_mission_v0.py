@@ -1096,16 +1096,18 @@ def prepare_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
 
 def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit",
                            batch_execution_id: str, child_execution_id: str,
-                           human_authorized_execution_authority_hash: str,
-                           human_authorization_reference: str,
+                           human_authorized_execution_authority_hash: "Optional[str]" = None,
+                           human_authorization_reference: "Optional[str]" = None,
                            execution_dir: "str | Path", pre_execution_context_dir: "str | Path",
                            selector_dir: "str | Path", ledger_dir: "str | Path",
                            kx108_pre_decision_dir: "str | Path", kx108_post_decision_dir: "str | Path",
                            test_contract_results_dir: "str | Path", sealed_receipt_dir: "str | Path",
                            sealed_rollback_evidence_dir: "str | Path", rollback_result_dir: "str | Path",
                            mission_store_dir: "str | Path",
-                           approval_dir: "Optional[str | Path]" = None) -> dict:
+                           approval_dir: "Optional[str | Path]" = None,
+                           authority_mode: str = _WU._DRV.DEFAULT_AUTHORITY_MODE) -> dict:
     store_dir = Path(mission_store_dir)
+    _stage4 = (authority_mode == _WU._DRV.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY)
     proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
     if proj["status"] != STATUS_PROJECTION_OK:
         return _rej(STATUS_EXECUTE_REJECTED, f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
@@ -1117,10 +1119,16 @@ def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
        prepared.get("child_execution_id") != child_execution_id:
         return _rej(STATUS_EXECUTE_REJECTED, "EXECUTE_IDS_DO_NOT_MATCH_PREPARED_ACTION")
 
+    if _stage4 and (human_authorized_execution_authority_hash is not None
+                    or human_authorization_reference is not None):
+        return _rej(STATUS_EXECUTE_REJECTED, "STAGE4_MODE_REJECTS_PER_ACTION_HUMAN_EAH")
+
     # Délégation VERBATIM au pont Checkpoint 1 : c'est LUI (+ driver + PEC) qui
-    # recharge l'enveloppe, recalcule l'EAH, exige recomputed == stored == humain,
-    # persiste la HumanApproval, invoque KX108 PRE/POST, C2, D1/D2. La couche
-    # mission ne fabrique RIEN de tout cela.
+    # recharge l'enveloppe, recalcule l'EAH, (mode historique) exige recomputed ==
+    # stored == humain / (mode Stage 4) construit + revérifie CANONIQUEMENT la
+    # DerivedMissionApprovalEvidence, persiste la HumanApproval, invoque KX108
+    # PRE/POST, C2, D1/D2. La couche mission ne fabrique RIEN de tout cela ; en
+    # mode Stage 4 elle NE FOURNIT AUCUN EAH humain par action.
     driver_result = _WU.execute_work_unit_remediation(
         work_unit=work_unit,
         batch_execution_id=batch_execution_id,
@@ -1133,6 +1141,9 @@ def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
         test_contract_results_dir=test_contract_results_dir, sealed_receipt_dir=sealed_receipt_dir,
         sealed_rollback_evidence_dir=sealed_rollback_evidence_dir, rollback_result_dir=rollback_result_dir,
         approval_dir=approval_dir,
+        authority_mode=authority_mode,
+        mission_id=(mission_id if _stage4 else None),
+        mission_store_dir=(store_dir if _stage4 else None),
     )
     dstatus = driver_result.get("status")
 
@@ -1169,7 +1180,13 @@ def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
         "child_execution_id": child_execution_id,
         "execution_authority_hash": driver_result.get("execution_authority_hash"),
         "approval_id": driver_result.get("approval_id"),
-        "human_authorization_reference": human_authorization_reference,
+        # mode Stage 4 : la référence d'autorisation humaine EFFECTIVE est celle de
+        # l'HMA racine, propagée par le driver via la DMAE (jamais un EAH par action).
+        "human_authorization_reference": (
+            human_authorization_reference if not _stage4
+            else driver_result.get("human_authorization_reference")),
+        "authority_mode": authority_mode,
+        "derived_mission_approval_evidence_id": driver_result.get("derived_mission_approval_evidence_id"),
         "kx108_pre_decision_record_id": driver_result.get("kx108_pre_decision_record_id"),
         "kx108_pre_gate": driver_result.get("kx108_pre_gate"),
         "kx108_post_gate": driver_result.get("kx108_post_gate"),

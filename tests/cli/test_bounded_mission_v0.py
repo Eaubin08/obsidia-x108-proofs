@@ -951,10 +951,16 @@ def test_static_reserved_authority_fields_absent():
 
 
 def test_static_execute_requires_exact_human_authorization_inputs():
+    # Stage 4G : les paramètres d'EAH humain deviennent Optional pour le dispatch
+    # de mode (`authority_mode`), mais en mode historique PER_ACTION_HUMAN_EAH
+    # (défaut) leur exigence exacte reste portée par le driver. En mode Stage 4,
+    # tout EAH humain par action est REJETÉ.
     sig = inspect.signature(M.execute_mission_action)
     for pn in ("human_authorized_execution_authority_hash", "human_authorization_reference"):
         assert pn in sig.parameters
-        assert sig.parameters[pn].default is inspect.Parameter.empty
+    assert sig.parameters["authority_mode"].default == "PER_ACTION_HUMAN_EAH"
+    src = Path(M.__file__).read_text(encoding="utf-8")
+    assert "STAGE4_MODE_REJECTS_PER_ACTION_HUMAN_EAH" in src
 
 
 def test_static_no_multi_action_sequencer():

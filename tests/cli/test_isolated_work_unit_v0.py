@@ -430,11 +430,23 @@ def test_static_no_bounded_mission_authority_no_preapproval():
                    "approved_by", "def synthesize_approval", "store_approval_artifact("):
         assert banned not in src, banned
     assert "KX108_ONLY" in src
-    # exécution : les paramètres d'autorité humaine restent requis (via délégation)
+    # Stage 4G : les deux paramètres d'EAH humain deviennent Optional pour le
+    # dispatch de mode, mais restent EXIGÉS au runtime en mode historique
+    # PER_ACTION_HUMAN_EAH (défaut) — la contrainte d'exigence est portée par le
+    # driver, pas par une valeur-défaut de signature.
     sig = inspect.signature(WU.execute_work_unit_remediation)
     for pn in ("human_authorized_execution_authority_hash", "human_authorization_reference"):
         assert pn in sig.parameters
-        assert sig.parameters[pn].default is inspect.Parameter.empty
+    assert sig.parameters["authority_mode"].default == "PER_ACTION_HUMAN_EAH"
+    r = WU.execute_work_unit_remediation(
+        work_unit=object(), batch_execution_id="be", child_execution_id="ch",
+        execution_dir="/nonexistent", pre_execution_context_dir="/nonexistent",
+        selector_dir="/nonexistent", ledger_dir="/nonexistent",
+        kx108_pre_decision_dir="/nonexistent", kx108_post_decision_dir="/nonexistent",
+        test_contract_results_dir="/nonexistent", sealed_receipt_dir="/nonexistent",
+        sealed_rollback_evidence_dir="/nonexistent", rollback_result_dir="/nonexistent")
+    assert r["status"] == WU._DRV.PRE_EXECUTION_REJECTED
+    assert r["reason"] == "WORK_UNIT_HANDLE_REQUIRED"
 
 
 # ══════════════════════════════════════════════════════════════════════════

@@ -441,8 +441,8 @@ def execute_work_unit_remediation(
     work_unit: IsolatedWorkUnit,
     batch_execution_id: str,
     child_execution_id: str,
-    human_authorized_execution_authority_hash: str,
-    human_authorization_reference: str,
+    human_authorized_execution_authority_hash: "Optional[str]" = None,
+    human_authorization_reference: "Optional[str]" = None,
     execution_dir: "str | Path",
     pre_execution_context_dir: "str | Path",
     selector_dir: "str | Path",
@@ -454,12 +454,22 @@ def execute_work_unit_remediation(
     sealed_rollback_evidence_dir: "str | Path",
     rollback_result_dir: "str | Path",
     approval_dir: "Optional[str | Path]" = None,
+    authority_mode: str = _DRV.DEFAULT_AUTHORITY_MODE,
+    mission_id: "Optional[str]" = None,
+    mission_store_dir: "Optional[str | Path]" = None,
 ) -> dict:
     """
     Délègue à `execute_governed_remediation(...)` sans rien y ajouter :
     le rechargement d'enveloppe, le recalcul d'EAH, la revérification PEC
     et l'échec fermé sur dérive sont ceux du driver + PEC existants.
     `repo_root` est TOUJOURS le worktree isolé de l'unité de travail.
+
+    STAGE 4G — passe-plat additif : `authority_mode` / `mission_id` /
+    `mission_store_dir` sont transmis TELS QUELS au driver. En mode
+    `PER_ACTION_HUMAN_EAH` (défaut) le comportement est INCHANGÉ ; en mode
+    `BOUNDED_MISSION_AUTHORITY` le driver exige mission_id + mission_store_dir
+    et n'accepte AUCUN EAH humain par action (dispatch + fail-closed dans le
+    driver Stage 4F, jamais ici).
     """
     if not isinstance(work_unit, IsolatedWorkUnit):
         return _DRV._pre_exec_reject("WORK_UNIT_HANDLE_REQUIRED")
@@ -476,6 +486,9 @@ def execute_work_unit_remediation(
         rollback_result_dir=rollback_result_dir,
         repo_root=work_unit.worktree_path,
         approval_dir=approval_dir,
+        authority_mode=authority_mode,
+        mission_id=mission_id,
+        mission_store_dir=mission_store_dir,
     )
     out = dict(result)
     out["work_unit_id"] = work_unit.work_unit_id
