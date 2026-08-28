@@ -27,6 +27,8 @@ import Obsidia.MissionAuthority.Invariants
 import Obsidia.MissionAuthority.Refinement
 -- STAGE 4B — preuves machine-vérifiées des 16 invariants + second théorème central
 import Obsidia.MissionAuthority.Proofs
+-- STAGE 4D — oracle exécutable de conformance sémantique (decide sur les prédicats committés)
+import Obsidia.MissionAuthority.ConformanceVectors
 
 #print axioms Obsidia.MissionAuthority.scopeLE_refl
 #print axioms Obsidia.MissionAuthority.scopeLE_trans
