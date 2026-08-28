@@ -1382,3 +1382,139 @@ def test_S3B_real_keep_snapshot_to_mission_tip_proof(env):
     assert proj["current_state"] == "WORKTREE_BOUND"
     assert _git(env["wt_path"], "status", "--porcelain") == ""
     assert _git(env["wt_path"], "rev-parse", "HEAD") == snap["new_commit_sha"]
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  STAGE 3D — MissionActionPlan borné immuable (primitives dans ce module)
+# ══════════════════════════════════════════════════════════════════════════
+
+_PLAN_SCOPE_3 = {
+    "allowed_operation_shapes": ["UPDATE_TARGET_FROM_SOURCE"],
+    "allowed_target_paths": [_TARGET_REL],
+    "max_actions": 3,
+    "max_retries_per_action": 0,
+}
+
+
+def _plan_actions(env, *, deps1=(0,), deps2=(1,)):
+    return [
+        {"ordinal": 0, "target_path": _TARGET_REL, "source_git_commit": env["base_sha"],
+         "source_historical_path": _SOURCE_REL, "test_contract": _positive_contract(),
+         "dependency_ordinals": []},
+        {"ordinal": 1, "target_path": _TARGET_REL, "source_git_commit": env["base_sha"],
+         "source_historical_path": _SOURCE_REL, "test_contract": _positive_contract(),
+         "dependency_ordinals": list(deps1)},
+        {"ordinal": 2, "target_path": _TARGET_REL, "source_git_commit": env["base_sha"],
+         "source_historical_path": _SOURCE_REL, "test_contract": _positive_contract(),
+         "dependency_ordinals": list(deps2)},
+    ]
+
+
+def test_S3D_bind_plan_valid_projection_metadata(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    r = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env),
+                            mission_store_dir=env["stores"]["missions"])
+    assert r["status"] == M.STATUS_PLAN_BOUND, r
+    assert r["plan_id"].startswith("mpl-")
+    proj = _proj(env, mid)
+    assert proj["current_state"] == M.S_WORKTREE_BOUND          # PLAN_BOUND ne change pas l'état
+    assert proj["active_plan_id"] == r["plan_id"]
+    assert proj["active_plan_hash"] == r["plan_hash"]
+    assert proj["plan_completed"] is False
+    assert proj["plan_bound_revision"] == proj["revision"]
+    # identité non circulaire : action_id dérive d'ordinaux + champs propres
+    plan = M.load_mission_plan(mid, r["plan_id"], env["stores"]["missions"])
+    assert plan["execution_order"] == [a["action_id"] for a in plan["actions"]]  # topo: 0->1->2
+    g = M.load_mission_genesis(mid, env["stores"]["missions"])
+    ok, why = M.verify_mission_plan(plan, genesis=g)
+    assert ok, why
+
+
+def test_S3D_plan_is_write_once(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    r1 = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env),
+                             mission_store_dir=env["stores"]["missions"])
+    assert r1["status"] == M.STATUS_PLAN_BOUND
+    r2 = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env),
+                             mission_store_dir=env["stores"]["missions"])
+    assert r2["status"] == M.STATUS_PLAN_BIND_REJECTED and r2["reason"] == "PLAN_ALREADY_BOUND"
+
+
+def test_S3D_plan_tamper_detected_by_verify(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    r = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env),
+                            mission_store_dir=env["stores"]["missions"])
+    ppath = next((env["stores"]["missions"] / mid / "plans").glob("mpl-*.json"))
+    p = json.loads(ppath.read_text(encoding="utf-8"))
+    p["actions"][1]["source_historical_path"] = "periphery/xdomain/elsewhere.txt"
+    g = M.load_mission_genesis(mid, env["stores"]["missions"])
+    ok, why = M.verify_mission_plan(p, genesis=g)
+    assert ok is False
+    assert why.startswith("ACTION_ID_NOT_DERIVED") or why == "PLAN_HASH_MISMATCH"
+
+
+def test_S3D_close_plan_requires_all_snapshotted(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    r = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env),
+                            mission_store_dir=env["stores"]["missions"])
+    c = M.close_plan(mission_id=mid, plan_id=r["plan_id"], mission_store_dir=env["stores"]["missions"])
+    assert c["status"] == M.STATUS_PLAN_CLOSE_REJECTED
+    assert c["reason"].startswith("PLAN_ACTIONS_NOT_ALL_SNAPSHOTTED")
+
+
+def test_S3D_plan_cycle_rejected_at_bind(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    r = M.bind_mission_plan(mission_id=mid, actions=_plan_actions(env, deps1=(2,), deps2=(1,)),
+                            mission_store_dir=env["stores"]["missions"])
+    assert r["status"] == M.STATUS_PLAN_BIND_REJECTED
+    assert r["reason"].startswith("PLAN_MALFORMED:DEPENDENCY_CYCLE")
+
+
+def test_S3D_retries_used_per_action_id_not_prepare_count(env):
+    # une projection avec 3 préparations d'ACTIONS DISTINCTES -> retries_used == 0
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    # fabrique 3 révisions PREPARE_SUCCEEDED avec des action_id distincts (fixtures)
+    def _raw(evt, frm, to, ev):
+        d = env["stores"]["missions"] / mid / "revisions"
+        last = json.loads(sorted(d.glob("*.json"))[-1].read_text(encoding="utf-8"))
+        n = last["revision"] + 1
+        rec = {"mission_record_schema_version": M.REVISION_SCHEMA_VERSION, "mission_id": mid,
+               "revision": n, "parent_revision_hash": last["mission_revision_record_hash"],
+               "event": evt, "from_state": frm, "to_state": to, "evidence_refs": ev,
+               "actor": "STACK", "created_at": "2026-08-28T00:00:00+00:00"}
+        rec["mission_revision_record_hash"] = M._record_hash(rec, M._REVISION_BOUND_FIELDS)
+        (d / f"{n:06d}-{rec['mission_revision_record_hash'][:12]}.json").write_text(
+            json.dumps(rec, indent=2, sort_keys=True), encoding="utf-8")
+    prep_ev = {"batch_execution_id": "b", "child_execution_id": "c", "execution_authority_hash": "e" * 64,
+               "pre_execution_context_id": "p", "pre_execution_context_record_hash": "h" * 64,
+               "test_contract_hash": "t" * 64}
+    kept_ev = {"driver_status": WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW,
+               "batch_execution_id": "b", "child_execution_id": "c", "execution_authority_hash": "e" * 64}
+    _raw(M.E_ACTION_PREPARE_SUCCEEDED, M.S_WORKTREE_BOUND, M.S_ACTION_PREPARED, {**prep_ev, "action_id": "act-1"})
+    _raw(M.E_ACTION_EXECUTE_KEPT, M.S_ACTION_PREPARED, M.S_ACTION_EXECUTED_KEPT, {**kept_ev, "action_id": "act-1"})
+    _raw(M.E_ACTION_LOCAL_SNAPSHOT_COMMITTED, M.S_ACTION_EXECUTED_KEPT, M.S_WORKTREE_BOUND,
+         {"action_id": "act-1", "previous_mission_tip_sha": env["base_sha"], "new_mission_tip_sha": "a" * 40,
+          "new_commit_sha": "a" * 40, "commit_parent_sha": env["base_sha"], "committed_paths": [_TARGET_REL],
+          "snapshot_receipt_id": "lsr-1", "local_snapshot_receipt_record_hash": "x" * 64})
+    _raw(M.E_ACTION_PREPARE_SUCCEEDED, M.S_WORKTREE_BOUND, M.S_ACTION_PREPARED, {**prep_ev, "action_id": "act-2"})
+    proj = _proj(env, mid)
+    assert proj["status"] == M.STATUS_PROJECTION_OK
+    assert proj["retries_used"] == 0                 # 2 action_id distincts -> 0 retry
+    assert set(proj["kept_action_ids"]) == {"act-1"}
+    assert set(proj["snapshotted_action_ids"]) == {"act-1"}
+
+
+def test_S3D_historical_mission_without_plan_projects_as_before(env):
+    mid = _genesis(env, scope=dict(_PLAN_SCOPE_3))["mission_id"]
+    _bind(env, mid)
+    proj = _proj(env, mid)
+    assert proj["active_plan_id"] is None
+    assert proj["active_plan_hash"] is None
+    assert proj["plan_completed"] is False
+    assert proj["mission_tip_sha"] == proj["canonical_base_sha"]

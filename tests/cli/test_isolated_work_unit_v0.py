@@ -693,7 +693,6 @@ def test_3c_R_S_T_pec_driver_kx108_not_modified():
                         "scripts/obsidia_kx108_decision_store.py",
                         "scripts/obsidia_governed_apply_v0.py",
                         "scripts/obsidia_governed_rollback_v0.py",
-                        "scripts/obsidia_bounded_mission_v0.py",
                         "scripts/obsidia_mission_local_snapshot_v0.py"],
                        cwd=str(_REPO_ROOT), capture_output=True, text=True)
     assert r.stdout.strip() == "", f"unexpected changes: {r.stdout}"

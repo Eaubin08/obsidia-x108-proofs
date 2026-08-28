@@ -76,6 +76,8 @@ import obsidia_pre_execution_context as _PEC          # helpers Git READ-ONLY + 
 import obsidia_isolated_work_unit_v0 as _WU           # pont mono-action Checkpoint 1
 import obsidia_batch_execution as _E                  # rechargement enveloppe + recalcul EAH CANONIQUES
 import obsidia_mission_local_snapshot_v0 as _LS       # Stage 3A : verify_local_snapshot_receipt (LECTURE SEULE)
+import obsidia_batch_selector as _S                   # Stage 3D : detect_cycles + compute_execution_order (RÉUTILISÉS)
+import obsidia_test_contract as _TC                   # Stage 3D : compute_test_contract_hash (RÉUTILISÉ)
 
 DECISION_AUTHORITY = "KX108_ONLY"
 SEMANTIC_DECISION_AUTHORITY = "NON_SOVEREIGN"
@@ -86,6 +88,7 @@ REVISION_SCHEMA_VERSION = 1
 HOLD_SCHEMA_VERSION = 1
 HUMAN_MISSION_DECISION_SCHEMA_VERSION = 1
 RESUME_REFERENCE_SCHEMA_VERSION = 1
+PLAN_SCHEMA_VERSION = 1
 
 _SUPPORTED_GENESIS_SCHEMA_VERSIONS = (1,)
 _SUPPORTED_REVISION_SCHEMA_VERSIONS = (1,)
@@ -129,6 +132,9 @@ E_MISSION_ABORTED = "MISSION_ABORTED"
 #    un LocalSnapshotReceipt Stage 3A VÉRIFIÉ (jamais créé ici). Fait avancer
 #    le mission_tip_sha DÉRIVÉ. Ne sélectionne AUCUNE action suivante. ──
 E_ACTION_LOCAL_SNAPSHOT_COMMITTED = "ACTION_LOCAL_SNAPSHOT_COMMITTED"
+# ── Stage 3D additif : liaison d'UN plan d'action borné immuable / complétion. ──
+E_PLAN_BOUND = "PLAN_BOUND"
+E_PLAN_COMPLETED = "PLAN_COMPLETED"
 
 # ── Table de transitions FERMÉE. Clé = (from_state, event) -> to_state.
 #    from_state None == genèse. Les cas dépendant du contexte (HOLD_RESOLVED,
@@ -148,6 +154,9 @@ _TRANSITIONS = {
     # au nouveau tip ; la mission est structurellement prête pour une future action
     # (AUCUNE sélection automatique — c'est Stage 3D).
     (S_ACTION_EXECUTED_KEPT, E_ACTION_LOCAL_SNAPSHOT_COMMITTED): S_WORKTREE_BOUND,
+    # Stage 3D : liaison / complétion d'un plan borné (aucun nouvel état mission).
+    (S_WORKTREE_BOUND, E_PLAN_BOUND): S_WORKTREE_BOUND,
+    (S_WORKTREE_BOUND, E_PLAN_COMPLETED): S_CLOSED_AWAITING_NEXT_PLAN,
 }
 # HOLD_RESOLVED : depuis HELD uniquement, vers l'état interrompu (ou repli sûr).
 _HOLD_RESOLVE_ALLOWED_TO = (S_WORKTREE_BOUND, S_ACTION_PREPARED)
@@ -204,6 +213,10 @@ STATUS_MISSION_PROJECTION_INVALID = "MISSION_PROJECTION_INVALID"
 STATUS_LOCAL_SNAPSHOT_RECORDED = "LOCAL_SNAPSHOT_RECORDED"
 STATUS_LOCAL_SNAPSHOT_RECORD_REJECTED = "LOCAL_SNAPSHOT_RECORD_REJECTED"
 STATUS_LOCAL_SNAPSHOT_EVENT_IDEMPOTENT = "LOCAL_SNAPSHOT_EVENT_IDEMPOTENT_EXISTING_IDENTICAL"
+STATUS_PLAN_BOUND = "PLAN_BOUND"
+STATUS_PLAN_BIND_REJECTED = "PLAN_BIND_REJECTED"
+STATUS_PLAN_COMPLETED = "PLAN_COMPLETED"
+STATUS_PLAN_CLOSE_REJECTED = "PLAN_CLOSE_REJECTED"
 
 # Statuts terminaux du pont Checkpoint 1 / driver (ré-exportés, jamais réinterprétés)
 _KEPT = _WU._DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
@@ -462,6 +475,11 @@ def _load_genesis(mission_id: str, store_dir: Path) -> Optional[dict]:
         return None
 
 
+def load_mission_genesis(mission_id: str, mission_store_dir: "str | Path") -> Optional[dict]:
+    """Accès LECTURE SEULE au record de genèse (verify via _verify_genesis)."""
+    return _load_genesis(mission_id, Path(mission_store_dir))
+
+
 def _load_revisions(mission_id: str, store_dir: Path) -> "list[dict]":
     try:
         d = _mission_dir(mission_id, store_dir) / "revisions"
@@ -534,6 +552,15 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
     latest_snapshot_receipt_id: Optional[str] = None
     latest_snapshot_receipt_record_hash: Optional[str] = None
     local_snapshots: "list[dict]" = []
+    # ── Stage 3D : plan borné + statut d'action DÉRIVÉ par action_id ──
+    active_plan_id: Optional[str] = None
+    active_plan_hash: Optional[str] = None
+    plan_bound_revision: Optional[int] = None
+    plan_completed = False
+    prepares_by_action_id: "dict[str, int]" = {}
+    kept_action_ids: "set" = set()
+    rolled_back_action_ids: "set" = set()
+    quarantined_action_ids: "set" = set()
 
     for idx, rev in enumerate(revisions, start=1):
         if rev.get("__unparseable__"):
@@ -574,6 +601,9 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
         if event == E_ACTION_PREPARE_SUCCEEDED:
             prepare_count += 1
             last_prepared_evidence = dict(ev)
+            _aid = ev.get("action_id")
+            if _aid:
+                prepares_by_action_id[_aid] = prepares_by_action_id.get(_aid, 0) + 1
         elif event == E_HOLD_OPENED:
             hid = ev.get("hold_id")
             holds[hid] = {"opened_at_rev": idx, "held_from_state": ev.get("held_from_state"),
@@ -595,17 +625,33 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
             actions_completed += 1
             if event != E_ACTION_EXECUTE_KEPT:
                 actions_failed += 1
+            _aid = ev.get("action_id")
+            if _aid and event == E_ACTION_EXECUTE_KEPT:
+                kept_action_ids.add(_aid)
+            elif _aid and event == E_ACTION_EXECUTE_ROLLED_BACK:
+                rolled_back_action_ids.add(_aid)
+            elif _aid and event == E_ACTION_EXECUTE_QUARANTINE:
+                quarantined_action_ids.add(_aid)
             linked_execution_ids.append({
                 "batch_execution_id": ev.get("batch_execution_id"),
                 "child_execution_id": ev.get("child_execution_id"),
                 "execution_authority_hash": ev.get("execution_authority_hash"),
                 "outcome_status": ev.get("driver_status"),
+                "action_id": _aid,
+                "plan_id": ev.get("plan_id"),
+                "ordinal": ev.get("ordinal"),
                 "approval_id": ev.get("approval_id"),
                 "kx108_pre_decision_record_id": ev.get("kx108_pre_decision_record_id"),
                 "kx108_pre_gate": ev.get("kx108_pre_gate"),
                 "kx108_post_gate": ev.get("kx108_post_gate"),
                 "rollback_result_id": ev.get("rollback_result_id"),
             })
+        elif event == E_PLAN_BOUND:
+            active_plan_id = ev.get("plan_id")
+            active_plan_hash = ev.get("plan_hash")
+            plan_bound_revision = idx
+        elif event == E_PLAN_COMPLETED:
+            plan_completed = True
         elif event == E_MISSION_ABORTED:
             aborted_from_state = rev.get("from_state")
             for h in holds.values():
@@ -646,7 +692,14 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
         state = to_state
         prev_hash = rev["mission_revision_record_hash"]
 
-    retries_used = max(0, prepare_count - 1)
+    # retries_used : re-préparations d'UNE MÊME action au-delà de la première.
+    # Stage 3D : les révisions de préparation portent action_id -> compte par action_id
+    # (une action distincte préparée une fois = 0 retry). Historique sans action_id ->
+    # ancienne dérivation `prepare_count - 1` (compat Stage 2).
+    if prepares_by_action_id:
+        retries_used = sum(max(0, c - 1) for c in prepares_by_action_id.values())
+    else:
+        retries_used = max(0, prepare_count - 1)
     scope = genesis["scope"]
     active_hold = None
     if active_hold_id is not None:
@@ -701,6 +754,16 @@ def project_mission(*, mission_id: str, mission_store_dir: "str | Path",
         "remaining_action_budget": scope["max_actions"] - actions_completed,
         "last_prepared_evidence": last_prepared_evidence,
         "aborted_from_state": aborted_from_state,
+        # ── Stage 3D : métadonnées de plan DÉRIVÉES ──
+        "active_plan_id": active_plan_id,
+        "active_plan_hash": active_plan_hash,
+        "plan_bound_revision": plan_bound_revision,
+        "plan_completed": plan_completed,
+        "prepared_action_ids": sorted(prepares_by_action_id.keys()),
+        "kept_action_ids": sorted(kept_action_ids),
+        "rolled_back_action_ids": sorted(rolled_back_action_ids),
+        "quarantined_action_ids": sorted(quarantined_action_ids),
+        "snapshotted_action_ids": sorted(a for a in snapshotted_action_ids if a),
         "unknowns": unknowns,
     }
 
@@ -897,7 +960,11 @@ def prepare_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
                            execution_dir: "str | Path", pre_execution_context_dir: "str | Path",
                            mission_store_dir: "str | Path", objective: str = "",
                            operation: str = SUPPORTED_OPERATION,
-                           repository_identity: "Optional[str]" = None) -> dict:
+                           repository_identity: "Optional[str]" = None,
+                           expected_action_base_sha: "Optional[str]" = None,
+                           plan_id: "Optional[str]" = None,
+                           action_id: "Optional[str]" = None,
+                           ordinal: "Optional[int]" = None) -> dict:
     store_dir = Path(mission_store_dir)
     proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
     if proj["status"] != STATUS_PROJECTION_OK:
@@ -913,7 +980,9 @@ def prepare_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
     if scope_refusal:
         return _rej(STATUS_PREPARE_REJECTED, scope_refusal, mission_scope_is_upper_bound=True)
 
-    # Délégation VERBATIM au pont Checkpoint 1 (aucune étape du driver reproduite)
+    # Délégation VERBATIM au pont Checkpoint 1 (aucune étape du driver reproduite).
+    # Stage 3D : `expected_action_base_sha` (== projection.mission_tip_sha fourni par le
+    # séquenceur) est transmis TEL QUEL au préflight de base dynamique Stage 3C.
     driver_result = _WU.prepare_work_unit_execution(
         work_unit=work_unit,
         source_git_commit=source_git_commit,
@@ -925,6 +994,7 @@ def prepare_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
         objective=objective or genesis["objective"],
         operation=operation,
         repository_identity=repository_identity,
+        expected_action_base_sha=expected_action_base_sha,
     )
     if driver_result.get("status") != _WU._DRV.PREPARED_AWAITING_HUMAN_APPROVAL:
         return {"status": STATUS_PREPARE_REJECTED, "reason": "CHECKPOINT1_PREPARE_DID_NOT_SUCCEED",
@@ -941,6 +1011,10 @@ def prepare_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
         "ledger_entry_id": driver_result.get("ledger_entry_id"),
         "target_path": target_path,
         "operation": operation,
+        "effective_action_base_sha": driver_result.get("effective_action_base_sha"),
+        "plan_id": plan_id,
+        "action_id": action_id,
+        "ordinal": ordinal,
     }
     rec, err = _append_revision(
         mission_id, store_dir, revision=proj["revision"] + 1,
@@ -1035,6 +1109,9 @@ def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
                 "mission_id": mission_id, "current_state": S_ACTION_PREPARED,
                 "checkpoint1_result": driver_result}
 
+    # Stage 3D : l'identité de plan/action est celle de l'action PRÉPARÉE (autoritaire,
+    # jamais fournie à l'exécution) — reprise depuis last_prepared_evidence.
+    _pe = proj.get("last_prepared_evidence") or {}
     ev = {
         "driver_status": dstatus,
         "batch_execution_id": batch_execution_id,
@@ -1049,6 +1126,11 @@ def execute_mission_action(*, mission_id: str, work_unit: "_WU.IsolatedWorkUnit"
         "sealed_apply_receipt_id": driver_result.get("sealed_apply_receipt_id"),
         "sealed_rollback_evidence_id": driver_result.get("sealed_rollback_evidence_id"),
         "target_mutated": bool(driver_result.get("target_mutated")) if "target_mutated" in driver_result else None,
+        "plan_id": _pe.get("plan_id"),
+        "action_id": _pe.get("action_id"),
+        "ordinal": _pe.get("ordinal"),
+        "test_contract_result_id": driver_result.get("test_contract_result_id"),
+        "kx108_post_decision_record_id": driver_result.get("kx108_post_decision_record_id"),
     }
     rec, err = _append_revision(
         mission_id, store_dir, revision=proj["revision"] + 1,
@@ -1099,7 +1181,8 @@ def close_mission_no_plan(*, mission_id: str, mission_store_dir: "str | Path") -
 def record_local_snapshot(*, mission_id: str, action_id: str, snapshot_receipt_id: str,
                           work_unit: "_WU.IsolatedWorkUnit",
                           snapshot_store_dir: "str | Path",
-                          mission_store_dir: "str | Path") -> dict:
+                          mission_store_dir: "str | Path",
+                          plan_id: "Optional[str]" = None) -> dict:
     """Recharge le LocalSnapshotReceipt Stage 3A, le VÉRIFIE via le vérificateur
     canonique `_LS.verify_local_snapshot_receipt` (jamais dupliqué), le lie à
     l'action KEEP courante de la mission, et append une révision
@@ -1189,6 +1272,7 @@ def record_local_snapshot(*, mission_id: str, action_id: str, snapshot_receipt_i
         evidence_refs={
             "mission_id": mission_id,
             "action_id": action_id,
+            "plan_id": plan_id,
             "ordinal": receipt.get("ordinal"),
             "previous_mission_tip_sha": proj["mission_tip_sha"],
             "new_mission_tip_sha": new_commit_sha,
@@ -1226,6 +1310,282 @@ def record_local_snapshot(*, mission_id: str, action_id: str, snapshot_receipt_i
         "mission_layer_reuses_stage_3a_receipt": True,
         "only_keep_can_advance_mission_tip": True,
     }
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  4ter — Stage 3D : MissionActionPlan IMMUTABLE (write-once, lié-contenu,
+#         NON_SOVEREIGN). Le séquenceur (obsidia_mission_sequencer_v0) le CONSOMME.
+#         Aucune identité circulaire : action_id dérive d'ordinaux+champs propres,
+#         plan_id dérive du matériel de plan qui INCLUT les action_id.
+# ══════════════════════════════════════════════════════════════════════════
+
+_PLAN_ACTION_MATERIAL_FIELDS = (
+    "mission_id", "ordinal", "operation", "target_path",
+    "source_git_commit", "source_historical_path",
+    "test_contract_hash", "dependency_ordinals",
+)
+
+
+def _plan_action_id(mat: dict) -> str:
+    return "act-" + _sha256_hex(_canon({k: mat.get(k) for k in _PLAN_ACTION_MATERIAL_FIELDS}))[:32]
+
+
+def _plan_material(mission_id: str, genesis: dict, action_descriptors: "list[dict]",
+                   dependency_edges: "list[dict]") -> str:
+    return _canon({
+        "plan_schema_version": PLAN_SCHEMA_VERSION,
+        "mission_id": mission_id,
+        "mission_genesis_record_hash": genesis["mission_genesis_record_hash"],
+        "canonical_base_sha": genesis["canonical_base_sha"],
+        "branch_name": genesis["branch_name"],
+        "worktree_path": genesis["worktree_path"],
+        "actions": action_descriptors,
+        "dependency_edges": dependency_edges,
+    })
+
+
+def _plans_dir(mission_id: str, store_dir: Path) -> Path:
+    return _mission_dir(mission_id, store_dir) / "plans"
+
+
+def build_mission_action_plan(*, mission_id: str, genesis: dict,
+                              actions: "list[dict]") -> "tuple[Optional[dict], Optional[str]]":
+    """Construit (JAMAIS ne persiste) le MissionActionPlan immuable. `actions` :
+    liste de {ordinal, target_path, source_git_commit, source_historical_path,
+    test_contract, dependency_ordinals?}. Renvoie (plan_dict, None) ou (None, reason)."""
+    if not isinstance(actions, list) or not actions:
+        return None, "PLAN_HAS_NO_ACTIONS"
+    seen_ord: set = set()
+    descriptors: "list[dict]" = []
+    for a in actions:
+        if not isinstance(a, dict):
+            return None, "ACTION_DESCRIPTOR_NOT_AN_OBJECT"
+        ordv = a.get("ordinal")
+        if not (isinstance(ordv, int) and not isinstance(ordv, bool) and ordv >= 0):
+            return None, "ACTION_ORDINAL_INVALID"
+        if ordv in seen_ord:
+            return None, f"DUPLICATE_ORDINAL:{ordv}"
+        seen_ord.add(ordv)
+        op = a.get("operation", SUPPORTED_OPERATION)
+        if op != SUPPORTED_OPERATION:
+            return None, f"UNSUPPORTED_OPERATION_SHAPE:{op}"
+        tp = a.get("target_path")
+        if not (isinstance(tp, str) and tp.strip()):
+            return None, "ACTION_TARGET_PATH_REQUIRED"
+        sgc = a.get("source_git_commit")
+        shp = a.get("source_historical_path")
+        if not (isinstance(sgc, str) and sgc.strip() and isinstance(shp, str) and shp.strip()):
+            return None, "ACTION_SOURCE_REFERENCE_REQUIRED"
+        tc = a.get("test_contract")
+        if not isinstance(tc, dict) or not isinstance(tc.get("checks"), list):
+            return None, "ACTION_TEST_CONTRACT_MALFORMED"
+        tc_hash = _TC.compute_test_contract_hash(tc)
+        deps = a.get("dependency_ordinals") or []
+        if not isinstance(deps, list) or any(not isinstance(d, int) or isinstance(d, bool) for d in deps):
+            return None, "ACTION_DEPENDENCY_ORDINALS_MALFORMED"
+        if ordv in deps:
+            return None, f"ACTION_SELF_DEPENDENCY:{ordv}"
+        mat = {
+            "mission_id": mission_id, "ordinal": ordv, "operation": op, "target_path": tp,
+            "source_git_commit": sgc, "source_historical_path": shp,
+            "test_contract_hash": tc_hash, "dependency_ordinals": sorted(set(deps)),
+        }
+        descriptors.append({
+            "action_id": _plan_action_id(mat), "ordinal": ordv, "operation": op,
+            "target_path": tp, "source_git_commit": sgc, "source_historical_path": shp,
+            "test_contract": tc, "test_contract_hash": tc_hash,
+            "dependency_ordinals": sorted(set(deps)),
+        })
+    descriptors.sort(key=lambda d: d["ordinal"])
+    ord_to_aid = {d["ordinal"]: d["action_id"] for d in descriptors}
+    for d in descriptors:
+        for dep in d["dependency_ordinals"]:
+            if dep not in ord_to_aid:
+                return None, f"DEPENDENCY_ORDINAL_NOT_IN_PLAN:{dep}"
+
+    dependency_edges = sorted(
+        ({"from": d["action_id"], "to": ord_to_aid[dep], "type": _S.DEPENDENCY_CONFIRMED}
+         for d in descriptors for dep in d["dependency_ordinals"]),
+        key=lambda e: (e["from"], e["to"]),
+    )
+    cand = [{"candidate_id": d["action_id"]} for d in descriptors]
+    cyclic = _S.detect_cycles(cand, dependency_edges)
+    if cyclic:
+        return None, f"DEPENDENCY_CYCLE:{sorted(cyclic)}"
+    execution_order = _S.compute_execution_order(cand, dependency_edges)
+
+    material = _plan_material(mission_id, genesis, descriptors, dependency_edges)
+    plan_id = "mpl-" + _sha256_hex(material)[:32]
+    plan_hash = _sha256_hex(material)
+    from datetime import datetime, timezone
+    plan = {
+        "plan_schema_version": PLAN_SCHEMA_VERSION,
+        "plan_id": plan_id,
+        "mission_id": mission_id,
+        "mission_genesis_record_hash": genesis["mission_genesis_record_hash"],
+        "canonical_base_sha": genesis["canonical_base_sha"],
+        "branch_name": genesis["branch_name"],
+        "worktree_path": genesis["worktree_path"],
+        "actions": descriptors,
+        "dependency_edges": dependency_edges,
+        "execution_order": execution_order,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "decision_authority": SEMANTIC_DECISION_AUTHORITY,
+        "plan_is_execution_authority": False,
+        "plan_hash": plan_hash,
+    }
+    return plan, None
+
+
+def verify_mission_plan(record: Optional[dict], *, genesis: "Optional[dict]" = None) -> "tuple[bool, Optional[str]]":
+    if not isinstance(record, dict):
+        return False, "PLAN_RECORD_MISSING"
+    if record.get("plan_schema_version") != PLAN_SCHEMA_VERSION:
+        return False, "PLAN_SCHEMA_UNSUPPORTED"
+    if record.get("decision_authority") != SEMANTIC_DECISION_AUTHORITY:
+        return False, "PLAN_DECISION_AUTHORITY_NOT_NON_SOVEREIGN"
+    if record.get("plan_is_execution_authority") is not False:
+        return False, "PLAN_MUST_NOT_BE_EXECUTION_AUTHORITY"
+    acts = record.get("actions")
+    if not isinstance(acts, list) or not acts:
+        return False, "PLAN_HAS_NO_ACTIONS"
+    for d in acts:
+        mat = {k: (d.get("ordinal") if k == "ordinal" else
+                   sorted(d.get("dependency_ordinals") or []) if k == "dependency_ordinals" else
+                   record["mission_id"] if k == "mission_id" else d.get(k))
+               for k in _PLAN_ACTION_MATERIAL_FIELDS}
+        if d.get("action_id") != _plan_action_id(mat):
+            return False, f"ACTION_ID_NOT_DERIVED:{d.get('ordinal')}"
+        if d.get("test_contract_hash") != _TC.compute_test_contract_hash(d.get("test_contract") or {}):
+            return False, f"ACTION_TEST_CONTRACT_HASH_MISMATCH:{d.get('ordinal')}"
+    if genesis is not None:
+        material = _plan_material(record["mission_id"], genesis, acts, record.get("dependency_edges") or [])
+        if record.get("plan_id") != "mpl-" + _sha256_hex(material)[:32]:
+            return False, "PLAN_ID_NOT_DERIVED"
+        if record.get("plan_hash") != _sha256_hex(material):
+            return False, "PLAN_HASH_MISMATCH"
+    return True, None
+
+
+def load_mission_plan(mission_id: str, plan_id: str, mission_store_dir: "str | Path") -> Optional[dict]:
+    try:
+        p = _safe_id_path(_plans_dir(mission_id, Path(mission_store_dir)), plan_id)
+    except ValueError:
+        return None
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def bind_mission_plan(*, mission_id: str, actions: "list[dict]",
+                      mission_store_dir: "str | Path") -> dict:
+    """Valide UN plan borné contre la portée / le budget / le DAG de la mission,
+    le persiste write-once, et append une révision PLAN_BOUND. V0 : un seul plan
+    par mission (aucune supersession). Le plan N'EST PAS une autorité."""
+    store_dir = Path(mission_store_dir)
+    proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    if proj["status"] != STATUS_PROJECTION_OK:
+        return _rej(STATUS_PLAN_BIND_REJECTED, f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
+    if proj["current_state"] != S_WORKTREE_BOUND:
+        return _rej(STATUS_PLAN_BIND_REJECTED, f"MISSION_NOT_IN_WORKTREE_BOUND_STATE:{proj['current_state']}")
+    if proj.get("active_plan_id"):
+        return _rej(STATUS_PLAN_BIND_REJECTED, "PLAN_ALREADY_BOUND")
+
+    genesis = _load_genesis(mission_id, store_dir)
+    plan, reason = build_mission_action_plan(mission_id=mission_id, genesis=genesis, actions=actions)
+    if plan is None:
+        return _rej(STATUS_PLAN_BIND_REJECTED, f"PLAN_MALFORMED:{reason}")
+
+    scope = genesis["scope"]
+    if len(plan["actions"]) > scope["max_actions"]:
+        return _rej(STATUS_PLAN_BIND_REJECTED, "PLAN_EXCEEDS_MAX_ACTIONS")
+    if len(plan["actions"]) > proj["remaining_action_budget"]:
+        return _rej(STATUS_PLAN_BIND_REJECTED, "PLAN_EXCEEDS_REMAINING_ACTION_BUDGET")
+    atp = scope["allowed_target_paths"]
+    if atp is not None:
+        for d in plan["actions"]:
+            if d["target_path"] not in atp:
+                return _rej(STATUS_PLAN_BIND_REJECTED, f"PLAN_TARGET_OUTSIDE_MISSION_SCOPE:{d['target_path']}")
+    for d in plan["actions"]:
+        if d["operation"] not in scope["allowed_operation_shapes"]:
+            return _rej(STATUS_PLAN_BIND_REJECTED, f"PLAN_OPERATION_OUTSIDE_MISSION_SCOPE:{d['operation']}")
+
+    ppath = _safe_id_path(_plans_dir(mission_id, store_dir), plan["plan_id"])
+    st = _atomic_publish_json(ppath, plan)
+    if st == "IMMUTABILITY_VIOLATION":
+        return _rej(STATUS_PLAN_BIND_REJECTED, "PLAN_IMMUTABILITY_VIOLATION")
+
+    rec, err = _append_revision(
+        mission_id, store_dir, revision=proj["revision"] + 1,
+        parent_hash=proj["mission_revision_record_hash"],
+        event=E_PLAN_BOUND, from_state=S_WORKTREE_BOUND, to_state=S_WORKTREE_BOUND,
+        evidence_refs={
+            "plan_id": plan["plan_id"], "plan_hash": plan["plan_hash"],
+            "action_count": len(plan["actions"]),
+            "execution_order": plan["execution_order"],
+        },
+        actor="HUMAN",
+    )
+    if err:
+        return _rej(STATUS_PLAN_BIND_REJECTED, err)
+    return {
+        "status": STATUS_PLAN_BOUND, "reason": None, "mission_id": mission_id,
+        "plan_id": plan["plan_id"], "plan_hash": plan["plan_hash"],
+        "plan_store_status": st, "current_state": S_WORKTREE_BOUND,
+        "revision": rec["revision"], "mission_revision_record_hash": rec["mission_revision_record_hash"],
+        "execution_order": plan["execution_order"],
+        "actions": [{"action_id": d["action_id"], "ordinal": d["ordinal"],
+                     "target_path": d["target_path"], "dependency_ordinals": d["dependency_ordinals"]}
+                    for d in plan["actions"]],
+        "plan_is_execution_authority": False,
+        "decision_authority": SEMANTIC_DECISION_AUTHORITY,
+    }
+
+
+def close_plan(*, mission_id: str, plan_id: str, mission_store_dir: "str | Path") -> dict:
+    """Append PLAN_COMPLETED -> CLOSED_AWAITING_NEXT_PLAN quand CHAQUE action du
+    plan a un événement snapshot vérifié. Aucune disposition Git finale (Stage 6)."""
+    store_dir = Path(mission_store_dir)
+    proj = project_mission(mission_id=mission_id, mission_store_dir=store_dir)
+    if proj["status"] != STATUS_PROJECTION_OK:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj['status']}")
+    if proj["current_state"] != S_WORKTREE_BOUND:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, f"MISSION_NOT_IN_WORKTREE_BOUND_STATE:{proj['current_state']}")
+    if proj.get("active_plan_id") != plan_id:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, "PLAN_ID_NOT_ACTIVE")
+    if proj.get("plan_completed"):
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, "PLAN_ALREADY_COMPLETED")
+
+    plan = load_mission_plan(mission_id, plan_id, store_dir)
+    genesis = _load_genesis(mission_id, store_dir)
+    ok_p, reason_p = verify_mission_plan(plan, genesis=genesis)
+    if not ok_p:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, f"PLAN_INVALID:{reason_p}")
+    if plan["plan_hash"] != proj["active_plan_hash"]:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, "PLAN_HASH_DRIFT")
+
+    done = set(proj["snapshotted_action_ids"])
+    missing = [d["action_id"] for d in plan["actions"] if d["action_id"] not in done]
+    if missing:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, f"PLAN_ACTIONS_NOT_ALL_SNAPSHOTTED:{missing}")
+
+    rec, err = _append_revision(
+        mission_id, store_dir, revision=proj["revision"] + 1,
+        parent_hash=proj["mission_revision_record_hash"],
+        event=E_PLAN_COMPLETED, from_state=S_WORKTREE_BOUND, to_state=S_CLOSED_AWAITING_NEXT_PLAN,
+        evidence_refs={"plan_id": plan_id, "plan_hash": plan["plan_hash"],
+                       "action_count": len(plan["actions"])},
+        actor="STACK",
+    )
+    if err:
+        return _rej(STATUS_PLAN_CLOSE_REJECTED, err)
+    return {"status": STATUS_PLAN_COMPLETED, "reason": None, "mission_id": mission_id,
+            "plan_id": plan_id, "current_state": S_CLOSED_AWAITING_NEXT_PLAN,
+            "revision": rec["revision"], "mission_revision_record_hash": rec["mission_revision_record_hash"],
+            "mission_closure_stage_6_still_required": True}
 
 
 # ══════════════════════════════════════════════════════════════════════════
