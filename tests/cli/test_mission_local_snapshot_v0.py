@@ -473,9 +473,11 @@ def test_AD_no_mission_revision_write(env):
 
 
 def test_AE_AF_pec_and_checkpoints_byte_unchanged():
+    # Le snapshot local ne modifie NI le PEC NI KX108.
+    # (`obsidia_governed_execution_driver_v0.py` est modifié plus tard par Stage 4F
+    #  — dispatch de mode d'autorité PRE dérivée ; hors périmètre de ce module.)
     r = subprocess.run(["git", "status", "--porcelain",
                         "scripts/obsidia_pre_execution_context.py",
-                        "scripts/obsidia_governed_execution_driver_v0.py",
                         "scripts/obsidia_kx108_decision_store.py"],
                        cwd=str(_REPO_ROOT), capture_output=True, text=True)
     assert r.stdout.strip() == "", f"unexpected changes: {r.stdout}"

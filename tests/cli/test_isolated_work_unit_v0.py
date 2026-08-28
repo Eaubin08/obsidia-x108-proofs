@@ -687,11 +687,14 @@ def test_3c_Q_checkpoint1_remains_mission_agnostic():
 
 
 def test_3c_R_S_T_pec_driver_kx108_not_modified():
+    # Stage 3C ne modifie NI le PEC, NI le KX108 decision store, NI le rollback,
+    # NI le snapshot. (`obsidia_governed_execution_driver_v0.py` et
+    #  `obsidia_governed_apply_v0.py` sont modifiés plus tard par Stage 4F /
+    #  Stage 4F REPAIR — hors périmètre 3C ; le rollback D2, KX108 POST, D1/D2
+    #  restent byte-inchangés.)
     r = subprocess.run(["git", "status", "--porcelain",
                         "scripts/obsidia_pre_execution_context.py",
-                        "scripts/obsidia_governed_execution_driver_v0.py",
                         "scripts/obsidia_kx108_decision_store.py",
-                        "scripts/obsidia_governed_apply_v0.py",
                         "scripts/obsidia_governed_rollback_v0.py",
                         "scripts/obsidia_mission_local_snapshot_v0.py"],
                        cwd=str(_REPO_ROOT), capture_output=True, text=True)

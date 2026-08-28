@@ -94,6 +94,8 @@ def translate_pre_execution_evidence_to_tooling_build_state(
     execution_dir: Optional[Path] = None,
     pre_execution_context_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    *,
+    derived_authority_context=None,
 ) -> dict:
     """
     Retourne :
@@ -205,12 +207,28 @@ def translate_pre_execution_evidence_to_tooling_build_state(
     ok_a, reason_a = _E.verify_approval_artifact(approval)
     if not ok_a:
         return _not_ready(f"HUMAN_APPROVAL_ARTIFACT_INVALID:{reason_a}")
-    ok_v, reason_v = _E._validate_approval(approval, envelope)
+    ok_v, reason_v = _E._validate_approval(
+        approval, envelope, derived_authority_context=derived_authority_context)
     if not ok_v:
         return _not_ready(f"HUMAN_APPROVAL_NOT_BOUND_TO_EXECUTION:{reason_v}")
     # défense en profondeur : lie explicitement à l'EAH RECALCULÉ (étape 2)
     if approval.get("execution_authority_hash") != recomputed_eah:
         return _not_ready("HUMAN_APPROVAL_EXECUTION_AUTHORITY_HASH_MISMATCH")
+
+    # STAGE 4F REPAIR — approbation dérivée : re-vérification CANONIQUE COMPLÈTE
+    # (DMAE → HMA racine humaine + révocations → DAAW → EAH exact → projection
+    # courante) via le vérificateur centralisé. SANS contexte : rejet fermé.
+    if approval.get("approved_by") == "HUMAN_MISSION_AUTHORITY_DERIVED":
+        if derived_authority_context is None:
+            return _not_ready("DERIVED_APPROVAL_REQUIRES_CANONICAL_CONTEXT")
+        try:
+            import obsidia_mission_authority_pre_adapter_v0 as _PADP  # lazy : évite le cycle
+        except Exception as exc:  # noqa: BLE001
+            return _not_ready(f"DERIVED_APPROVAL_VERIFIER_UNAVAILABLE:{exc!r}")
+        ok_dc, why_dc = _PADP.verify_derived_approval_with_context(
+            approval, envelope, derived_authority_context)
+        if not ok_dc:
+            return _not_ready(f"DERIVED_APPROVAL_CANONICAL_VERIFICATION_FAILED:{why_dc}")
 
     human_approval_record_hash = approval.get("approval_record_hash")
 

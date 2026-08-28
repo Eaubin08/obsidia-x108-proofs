@@ -178,12 +178,19 @@ def test_static_no_bypass_or_kx_or_pre():
 
 
 def test_no_production_callers():
-    # Stage 4E autorise EXACTEMENT un consommateur de production : la couture
-    # d'intégration `obsidia_mission_authority_integration_v0` (dérivation DAAW =
-    # ÉVIDENCE, jamais exécution). Aucun autre module de production ne référence
-    # `obsidia_mission_authority_v0` ; en particulier PAS le rail PRE/KX108/apply.
+    # Stage 4E/4F autorisent DEUX consommateurs de production :
+    #  - `obsidia_mission_authority_integration_v0` : dérivation DAAW = ÉVIDENCE ;
+    #  - `obsidia_mission_authority_pre_adapter_v0` : construit/re-vérifie la
+    #    `DerivedMissionApprovalEvidence` (NON_SOVEREIGN) consommée par PRE en mode
+    #    `BOUNDED_MISSION_AUTHORITY`. KX108_PRE reste la seule décision souveraine.
+    # Aucun autre module de production ne référence `obsidia_mission_authority_v0` ;
+    # en particulier PAS directement le rail PRE/KX108/apply.
     _AUTHORIZED = {"obsidia_mission_authority_v0.py",
-                   "obsidia_mission_authority_integration_v0.py"}
+                   "obsidia_mission_authority_integration_v0.py",
+                   "obsidia_mission_authority_pre_adapter_v0.py",
+                   # STAGE 4F REPAIR — co-participant du verrou de linéarisation
+                   # (ne réfère `obsidia_mission_authority_v0` que dans sa docstring).
+                   "obsidia_mission_authority_freshness_lock_v0.py"}
     hits = []
     for p in _SCRIPTS.glob("*.py"):
         if p.name in _AUTHORIZED:

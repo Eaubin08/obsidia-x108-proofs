@@ -394,9 +394,17 @@ def record_mission_authority_revocation(
     *, mission_id: str, hma_id: str, hma_record_hash: str,
     revocation_reference: str, mission_store_dir: "str | Path",
     actor: str = "HUMAN",
+    authority_lock_root: "Optional[str]" = None,
+    authority_lock_timeout_s: "Optional[float]" = None,
 ) -> dict:
     """Évidence de révocation APPEND-ONLY. N'efface AUCUNE histoire ; ne
-    touche à AUCUN KEEP passé. Re-révocation identique -> idempotent."""
+    touche à AUCUN KEEP passé. Re-révocation identique -> idempotent.
+
+    STAGE 4F REPAIR — la publication de l'évidence de révocation est
+    LINÉARISÉE avec la section critique de mutation gouvernée Stage 4 via
+    le MÊME verrou inter-processus indexé par `mission_id`. Aucun champ
+    sémantique de l'enregistrement n'est modifié : seule la publication est
+    encadrée par le verrou. Sur timeout d'acquisition -> FAIL_CLOSED."""
     if actor != "HUMAN":
         return _rej(REVOCATION_REJECTED, "REVOCATION_ACTOR_NOT_HUMAN")
     if not (isinstance(revocation_reference, str) and revocation_reference.strip()):
@@ -420,7 +428,15 @@ def record_mission_authority_revocation(
                              record["mission_authority_revocation_id"])
     except ValueError:
         return _rej(REVOCATION_REJECTED, "INVALID_REVOCATION_ID")
-    st = _M._atomic_publish_json(p, record)
+
+    import obsidia_mission_authority_freshness_lock_v0 as _LK  # lazy : stdlib uniquement
+    _lroot = authority_lock_root or _LK.authority_lock_root_for(str(mission_id), mission_store_dir)
+    _lkw = {} if authority_lock_timeout_s is None else {"timeout_s": float(authority_lock_timeout_s)}
+    try:
+        with _LK.mission_authority_lock(str(mission_id), lock_root=_lroot, **_lkw):
+            st = _M._atomic_publish_json(p, record)
+    except _LK.MissionAuthorityLockTimeout:
+        return _rej(REVOCATION_REJECTED, "AUTHORITY_LOCK_TIMEOUT")
     if st == "IMMUTABILITY_VIOLATION":
         return _rej(REVOCATION_REJECTED, "REVOCATION_IMMUTABILITY_VIOLATION")
     return {

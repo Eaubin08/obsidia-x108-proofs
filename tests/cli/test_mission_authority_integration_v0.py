@@ -396,10 +396,23 @@ def test_closed_mission_cannot_derive_daaw(env):
 
 
 def test_pre_and_kx_untouched_static(env):
-    for name in ("obsidia_pre_execution_context.py", "obsidia_kx108_decision_store.py",
-                 "obsidia_governed_apply_v0.py", "obsidia_governed_execution_driver_v0.py"):
+    # PEC / KX108 store : AUCUNE référence à la couture d'autorité de mission.
+    for name in ("obsidia_pre_execution_context.py", "obsidia_kx108_decision_store.py"):
         src = (_SCRIPTS / name).read_text(encoding="utf-8")
         assert "obsidia_mission_authority" not in src, name
+    # Stage 4F REPAIR : `obsidia_governed_apply_v0` consomme la couture UNIQUEMENT
+    # via l'adaptateur PRE dédié + le verrou de linéarisation — jamais 4C ni 4E.
+    ga = (_SCRIPTS / "obsidia_governed_apply_v0.py").read_text(encoding="utf-8")
+    assert "import obsidia_mission_authority_v0" not in ga
+    assert "import obsidia_mission_authority_integration_v0" not in ga
+    assert "obsidia_mission_authority_pre_adapter_v0" in ga
+    assert "obsidia_mission_authority_freshness_lock_v0" in ga
+    # le driver consomme la DerivedMissionApprovalEvidence UNIQUEMENT via
+    # l'adaptateur PRE dédié, jamais en important directement 4C ou 4E.
+    drv = (_SCRIPTS / "obsidia_governed_execution_driver_v0.py").read_text(encoding="utf-8")
+    assert "import obsidia_mission_authority_v0" not in drv
+    assert "import obsidia_mission_authority_integration_v0" not in drv
+    assert "import obsidia_mission_authority_pre_adapter_v0" in drv
     integ = (_SCRIPTS / "obsidia_mission_authority_integration_v0.py").read_text(encoding="utf-8")
     # aucun APPEL au rail PRE/KX108/apply/rollback ni écriture de cible/git
     for banned in ("store_approval_artifact(", "_validate_approval(", "run_and_persist_kx108",

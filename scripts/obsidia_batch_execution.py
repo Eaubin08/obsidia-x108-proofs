@@ -86,6 +86,20 @@ _TERMINAL_STATUSES = frozenset([
 # ─── Statuts d'approbation d'exécution (parent) ──────────────────────────────
 
 APPROVED_FOR_BOUNDED_EXECUTION = "APPROVED_FOR_BOUNDED_EXECUTION"
+# ── Stage 4F additif : la voie d'autorisation « évidence d'autorité de mission
+#    dérivée ». `approved_by = HUMAN_MISSION_AUTHORITY_DERIVED` est accepté par
+#    _validate_approval UNIQUEMENT s'il porte `approval_kind` + un
+#    `derived_mission_approval_evidence_id` ; la vérification CANONIQUE
+#    HMA→DAAW est faite en amont par obsidia_mission_authority_pre_adapter_v0
+#    (ce module ne fabrique aucune autorité). Les artefacts d'approbation
+#    historiques (`approved_by = HUMAN`) restent BYTE-IDENTIQUES : les champs
+#    additifs ne sont liés au hash QUE pour la voie dérivée. ──
+APPROVED_BY_HUMAN = "HUMAN"
+APPROVED_BY_HUMAN_MISSION_AUTHORITY_DERIVED = "HUMAN_MISSION_AUTHORITY_DERIVED"
+APPROVED_BY_ALLOWED_VALUES = (APPROVED_BY_HUMAN, APPROVED_BY_HUMAN_MISSION_AUTHORITY_DERIVED)
+APPROVAL_KIND_DERIVED_MISSION_AUTHORITY_EVIDENCE_V0 = "DERIVED_MISSION_AUTHORITY_EVIDENCE_V0"
+_DERIVED_APPROVAL_EXTRA_BOUND_FIELDS = (
+    "approval_kind", "derived_mission_approval_evidence_id", "embedded_authority_locator")
 EXECUTION_APPROVAL_VALID        = "EXECUTION_APPROVAL_VALID"
 EXECUTION_APPROVAL_INVALID      = "EXECUTION_APPROVAL_INVALID"
 
@@ -358,8 +372,14 @@ def compute_approval_record_hash(record: dict) -> str:
     d'approbation. Utilitaire pur — ne stocke rien, ne fabrique aucune
     identité. Modifier un seul champ lié change ce hash.
     """
+    fields = _APPROVAL_BOUND_FIELDS
+    if record.get("approved_by") == APPROVED_BY_HUMAN_MISSION_AUTHORITY_DERIVED:
+        # voie dérivée uniquement : les champs additifs sont liés au hash.
+        # Les records historiques (approved_by == "HUMAN") ne les voient jamais
+        # -> hash inchangé -> compatibilité byte préservée.
+        fields = _APPROVAL_BOUND_FIELDS + _DERIVED_APPROVAL_EXTRA_BOUND_FIELDS
     payload = json.dumps(
-        {k: record.get(k) for k in _APPROVAL_BOUND_FIELDS},
+        {k: record.get(k) for k in fields},
         sort_keys=True,
     )
     return _sha16(payload)
@@ -447,18 +467,38 @@ def verify_approval_artifact(record: Optional[dict]) -> tuple[bool, Optional[str
     for f in _APPROVAL_BOUND_FIELDS:
         if f not in record:
             return False, f"APPROVAL_FIELD_MISSING:{f}"
+    if record.get("approved_by") == APPROVED_BY_HUMAN_MISSION_AUTHORITY_DERIVED:
+        for f in _DERIVED_APPROVAL_EXTRA_BOUND_FIELDS:
+            if f not in record:
+                return False, f"APPROVAL_FIELD_MISSING:{f}"
+        if record.get("approval_kind") != APPROVAL_KIND_DERIVED_MISSION_AUTHORITY_EVIDENCE_V0:
+            return False, "DERIVED_APPROVAL_KIND_INVALID"
     expected_hash = compute_approval_record_hash(record)
     if record.get("approval_record_hash") != expected_hash:
         return False, "APPROVAL_RECORD_HASH_MISMATCH"
     return True, None
 
 
-def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, Optional[str]]:
+def _validate_approval(approval: Optional[dict], envelope: dict, *,
+                       derived_authority_context=None) -> tuple[bool, Optional[str]]:
     """
     Fail-closed sur toute divergence. Une approbation valide ouvre
     seulement la porte à une TENTATIVE d'exécution — elle ne peut JAMAIS
     lever un gate de preuve (matérialité, dépendance, intégrité,
     protection).
+
+    STAGE 4F REPAIR — validation CONTEXTUELLE de l'approbation dérivée :
+      * `approved_by == HUMAN`                    → comportement historique INCHANGÉ
+        (`derived_authority_context` ignoré, jamais consulté).
+      * `approved_by == HUMAN_MISSION_AUTHORITY_DERIVED` :
+          - `derived_authority_context` ABSENT  → FAIL_CLOSED
+            (`DERIVED_APPROVAL_REQUIRES_CANONICAL_CONTEXT`) : `approved_by` +
+            structure + self-hash NE SUFFISENT PLUS. Tout appelant legacy /
+            batch / rollback non intégré Stage 4 tombe donc en échec fermé.
+          - `derived_authority_context` PRÉSENT → rechargement + re-vérif
+            CANONIQUE complète DMAE → HMA (racine humaine + révocations) →
+            DAAW → EAH exact → projection courante, + liaison EXACTE
+            DMAE ↔ approbation, via l'unique vérificateur centralisé.
     """
     ok, reason = verify_approval_artifact(approval)
     if not ok:
@@ -479,10 +519,36 @@ def _validate_approval(approval: Optional[dict], envelope: dict) -> tuple[bool, 
         return False, "APPROVAL_EXECUTION_CONTENT_MISMATCH"
     if approval.get("approval_status") != APPROVED_FOR_BOUNDED_EXECUTION:
         return False, "APPROVAL_STATUS_INVALID"
-    if approval.get("approved_by") != "HUMAN":
-        return False, "APPROVAL_NOT_HUMAN"
+    ab = approval.get("approved_by")
+    if ab not in APPROVED_BY_ALLOWED_VALUES:
+        return False, "APPROVAL_APPROVED_BY_NOT_RECOGNIZED"
     if approval.get("decision_authority") != DECISION_AUTHORITY:
         return False, "APPROVAL_WRONG_DECISION_AUTHORITY"
+    if ab == APPROVED_BY_HUMAN_MISSION_AUTHORITY_DERIVED:
+        # structure minimale (défense en profondeur — jamais suffisante seule)
+        if approval.get("approval_kind") != APPROVAL_KIND_DERIVED_MISSION_AUTHORITY_EVIDENCE_V0:
+            return False, "DERIVED_APPROVAL_KIND_INVALID"
+        if not (isinstance(approval.get("derived_mission_approval_evidence_id"), str)
+                and approval["derived_mission_approval_evidence_id"].startswith("dmae-")):
+            return False, "DERIVED_APPROVAL_EVIDENCE_ID_MISSING"
+        # STAGE 4F REPAIR — le locator canonique vient soit du paramètre explicite
+        # (chemin driver/PRE/C2), soit du champ `embedded_authority_locator` LIÉ AU
+        # HASH de l'approbation dérivée (chemin POST/rollback, qui n'ont pas de
+        # paramètre). Sans AUCUN locator : FAIL_CLOSED. Avec un locator, on
+        # RECHARGE + on VÉRIFIE l'artefact DMAE canonique et sa LIAISON EXACTE à
+        # l'approbation (une DMAE self-cohérente quelque part ne suffit pas : le
+        # gel de fraîcheur/révocation pré-mutation est fait par les
+        # consommateurs pré-mutation via verify_derived_approval_with_context).
+        loc = derived_authority_context or approval.get("embedded_authority_locator")
+        if loc is None:
+            return False, "DERIVED_APPROVAL_REQUIRES_CANONICAL_CONTEXT"
+        try:
+            import obsidia_mission_authority_pre_adapter_v0 as _PADP  # lazy : évite le cycle
+        except Exception as exc:  # noqa: BLE001
+            return False, f"DERIVED_APPROVAL_VERIFIER_UNAVAILABLE:{exc!r}"
+        ok_d, why_d = _PADP.verify_derived_approval_binding(approval, envelope, loc)
+        if not ok_d:
+            return False, f"DERIVED_APPROVAL_CANONICAL_BINDING_FAILED:{why_d}"
     return True, None
 
 

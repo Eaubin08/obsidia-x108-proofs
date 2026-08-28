@@ -272,9 +272,20 @@ def test_10_no_automatic_prepare_to_approval_path():
     sig = inspect.signature(DRV.execute_governed_remediation)
     assert "human_authorized_execution_authority_hash" in sig.parameters
     assert "human_authorization_reference" in sig.parameters
-    # both are required positional (no default)
-    for pn in ("human_authorized_execution_authority_hash", "human_authorization_reference"):
-        assert sig.parameters[pn].default is inspect.Parameter.empty
+    # Stage 4F : les deux paramètres deviennent Optional pour le dispatch de mode,
+    # mais restent EXIGÉS au runtime en mode historique PER_ACTION_HUMAN_EAH
+    # (défaut). Un appel sans EAH humain en mode historique -> rejet fermé.
+    assert DRV.DEFAULT_AUTHORITY_MODE == "PER_ACTION_HUMAN_EAH"
+    r = DRV.execute_governed_remediation(
+        "be-x", "ch-x", None, None,
+        execution_dir="/nonexistent", pre_execution_context_dir="/nonexistent",
+        selector_dir="/nonexistent", ledger_dir="/nonexistent",
+        kx108_pre_decision_dir="/nonexistent", kx108_post_decision_dir="/nonexistent",
+        test_contract_results_dir="/nonexistent", sealed_receipt_dir="/nonexistent",
+        sealed_rollback_evidence_dir="/nonexistent", rollback_result_dir="/nonexistent",
+        repo_root=".")
+    assert r["status"] == DRV.PRE_EXECUTION_REJECTED
+    assert r["reason"] == "HUMAN_AUTHORIZED_EAH_MISSING_OR_MALFORMED"
 
 
 def test_11_no_target_write_no_rollback_no_kx108_force_no_git_disposition():

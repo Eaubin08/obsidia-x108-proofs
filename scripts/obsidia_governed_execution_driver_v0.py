@@ -259,11 +259,16 @@ def prepare_governed_execution(
 #  PHASE 2 — EXECUTE  (appelée APRÈS autorisation humaine explicite de l'EAH)
 # ══════════════════════════════════════════════════════════════════════════
 
+AUTHORITY_MODE_PER_ACTION_HUMAN_EAH = "PER_ACTION_HUMAN_EAH"
+AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY = "BOUNDED_MISSION_AUTHORITY"
+DEFAULT_AUTHORITY_MODE = AUTHORITY_MODE_PER_ACTION_HUMAN_EAH
+
+
 def execute_governed_remediation(
     batch_execution_id: str,
     child_execution_id: str,
-    human_authorized_execution_authority_hash: str,
-    human_authorization_reference: str,
+    human_authorized_execution_authority_hash: "Optional[str]" = None,
+    human_authorization_reference: "Optional[str]" = None,
     *,
     execution_dir: "str | Path",
     pre_execution_context_dir: "str | Path",
@@ -277,21 +282,53 @@ def execute_governed_remediation(
     rollback_result_dir: "str | Path",
     repo_root: "str | Path",
     approval_dir: "Optional[str | Path]" = None,
+    authority_mode: str = DEFAULT_AUTHORITY_MODE,
+    mission_id: "Optional[str]" = None,
+    mission_store_dir: "Optional[str | Path]" = None,
 ) -> dict:
     """
-    Exige `human_authorized_execution_authority_hash` (non vide) ET
-    `human_authorization_reference` (provenance textuelle du tour d'autorisation
-    humain). Recharge l'enveloppe persistée, recalcule l'EAH, exige
-    recomputed == stocké == autorisé-par-l'humain AVANT de persister la
-    HumanApproval ou d'invoquer quoi que ce soit. Aucun chemin ne relie le
-    retour de `prepare_governed_execution` à cette fonction — l'appelant DOIT
-    fournir l'EAH exact revu.
+    DEUX modes d'autorisation d'exécution, JAMAIS silencieux, JAMAIS de repli
+    automatique de l'un à l'autre :
+
+    * `PER_ACTION_HUMAN_EAH` (défaut, historique — sémantique BYTE-INCHANGÉE) :
+      exige `human_authorized_execution_authority_hash` (== EAH recalculé) ET
+      `human_authorization_reference`. HumanApproval `approved_by = HUMAN`.
+
+    * `BOUNDED_MISSION_AUTHORITY` (Stage 4F, doit être choisi EXPLICITEMENT) :
+      exige `mission_id` + `mission_store_dir` ; AUCUN EAH humain par action.
+      L'évidence d'autorisation est une `DerivedMissionApprovalEvidence`
+      construite par `obsidia_mission_authority_pre_adapter_v0` après
+      rechargement + re-vérification de la chaîne CANONIQUE
+      HumanMissionAuthorization (humaine) → DerivedActionAuthorityWitness.
+      HumanApproval `approved_by = HUMAN_MISSION_AUTHORITY_DERIVED`.
+
+    Dans LES DEUX modes : KX108_PRE reste la seule décision pré-exécution
+    SOUVERAINE ; KX108_POST / D1 / D2 / C2 inchangés. En mode Stage 4F, une
+    RE-VÉRIFICATION de fraîcheur est jouée après KX108_PRE ALLOW et avant
+    toute mutation — si l'HMA a été révoquée entre-temps, aucune mutation.
     """
-    if not (isinstance(human_authorized_execution_authority_hash, str)
-            and _is_full_sha256(human_authorized_execution_authority_hash)):
-        return _pre_exec_reject("HUMAN_AUTHORIZED_EAH_MISSING_OR_MALFORMED")
-    if not (isinstance(human_authorization_reference, str) and human_authorization_reference.strip()):
-        return _pre_exec_reject("HUMAN_AUTHORIZATION_REFERENCE_REQUIRED")
+    _stage4 = (authority_mode == AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY)
+    if authority_mode not in (AUTHORITY_MODE_PER_ACTION_HUMAN_EAH,
+                              AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY):
+        return _pre_exec_reject(f"UNKNOWN_AUTHORITY_MODE:{authority_mode}")
+
+    if not _stage4:
+        # ── Mode historique : entrées EXACTES ; toute référence de mission -> ambigu ──
+        if mission_id is not None or mission_store_dir is not None:
+            return _pre_exec_reject("AMBIGUOUS_DUAL_AUTHORITY_INPUT")
+        if not (isinstance(human_authorized_execution_authority_hash, str)
+                and _is_full_sha256(human_authorized_execution_authority_hash)):
+            return _pre_exec_reject("HUMAN_AUTHORIZED_EAH_MISSING_OR_MALFORMED")
+        if not (isinstance(human_authorization_reference, str) and human_authorization_reference.strip()):
+            return _pre_exec_reject("HUMAN_AUTHORIZATION_REFERENCE_REQUIRED")
+    else:
+        # ── Mode Stage 4F : AUCUN EAH humain par action ; mission requise ──
+        if human_authorized_execution_authority_hash is not None or human_authorization_reference is not None:
+            return _pre_exec_reject("AMBIGUOUS_DUAL_AUTHORITY_INPUT")
+        if not (isinstance(mission_id, str) and mission_id):
+            return _pre_exec_reject("STAGE4_MISSION_ID_REQUIRED")
+        if mission_store_dir is None:
+            return _pre_exec_reject("STAGE4_MISSION_STORE_DIR_REQUIRED")
 
     execution_dir = Path(execution_dir)
     repo_root = Path(repo_root).resolve()
@@ -309,7 +346,7 @@ def execute_governed_remediation(
     stored_eah = envelope.get("execution_authority_hash")
     if not recomputed_eah or recomputed_eah != stored_eah:
         return _pre_exec_reject("ENVELOPE_EAH_DRIFT", recomputed=recomputed_eah, stored=stored_eah)
-    if human_authorized_execution_authority_hash != recomputed_eah:
+    if (not _stage4) and human_authorized_execution_authority_hash != recomputed_eah:
         return _pre_exec_reject("HUMAN_AUTHORIZED_EAH_MISMATCH",
                                 human_authorized=human_authorized_execution_authority_hash,
                                 current_execution_authority_hash=recomputed_eah)
@@ -339,27 +376,60 @@ def execute_governed_remediation(
         return _pre_exec_reject("PRE_EXECUTION_CONTEXT_PROTECTED_SCOPE_NOT_CLEAN")
 
     # 3. HumanApproval — persistée UNIQUEMENT ici, liée à l'EAH exact revérifié.
-    #    (approved_by="HUMAN" est le TRANSPORT de l'autorisation humaine explicite
-    #     nommant human_authorized_execution_authority_hash ; cette fonction n'est
-    #     jamais atteinte par un chemin automatique depuis PREPARE.)
-    approval_id = "appr-" + hashlib.sha256(
-        f"{batch_execution_id}:{child_execution_id}:{recomputed_eah}:{human_authorization_reference}"
-        .encode("utf-8")).hexdigest()[:32]
-    approval_record = {
-        "approval_id": approval_id,
-        "approval_schema_version": _E.SCHEMA_VERSION,
-        "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "batch_execution_id": batch_execution_id,
-        "batch_id": envelope.get("batch_id"),
-        "batch_hash": envelope.get("batch_hash"),
-        "candidate_scope_hash": envelope.get("candidate_scope_hash"),
-        "execution_authority_hash": recomputed_eah,
-        "approved_by": "HUMAN",
-        "approval_status": _E.APPROVED_FOR_BOUNDED_EXECUTION,
-        "decision_authority": DECISION_AUTHORITY,
-        "human_authorization_reference": human_authorization_reference,
-    }
-    approval_record["approval_record_hash"] = _E.compute_approval_record_hash(approval_record)
+    _dmae_freshness_kwargs = None
+    _derived_ctx = None
+    if not _stage4:
+        #    (approved_by="HUMAN" est le TRANSPORT de l'autorisation humaine explicite
+        #     nommant human_authorized_execution_authority_hash ; cette fonction n'est
+        #     jamais atteinte par un chemin automatique depuis PREPARE.)
+        approval_id = "appr-" + hashlib.sha256(
+            f"{batch_execution_id}:{child_execution_id}:{recomputed_eah}:{human_authorization_reference}"
+            .encode("utf-8")).hexdigest()[:32]
+        approval_record = {
+            "approval_id": approval_id,
+            "approval_schema_version": _E.SCHEMA_VERSION,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "batch_execution_id": batch_execution_id,
+            "batch_id": envelope.get("batch_id"),
+            "batch_hash": envelope.get("batch_hash"),
+            "candidate_scope_hash": envelope.get("candidate_scope_hash"),
+            "execution_authority_hash": recomputed_eah,
+            "approved_by": "HUMAN",
+            "approval_status": _E.APPROVED_FOR_BOUNDED_EXECUTION,
+            "decision_authority": DECISION_AUTHORITY,
+            "human_authorization_reference": human_authorization_reference,
+        }
+        approval_record["approval_record_hash"] = _E.compute_approval_record_hash(approval_record)
+        human_authorization_reference_effective = human_authorization_reference
+    else:
+        # ── Stage 4F : la DerivedMissionApprovalEvidence est construite par
+        #    l'adaptateur PRE (rechargement + re-vérification CANONIQUE HMA→DAAW).
+        #    Le driver ne fabrique JAMAIS approved_by=HUMAN_MISSION_AUTHORITY_DERIVED. ──
+        import obsidia_mission_authority_pre_adapter_v0 as _PADP  # lazy : évite le cycle d'import
+        _bd = _PADP.build_derived_mission_approval_evidence(
+            mission_id=mission_id, batch_execution_id=batch_execution_id,
+            child_execution_id=child_execution_id, execution_dir=execution_dir,
+            mission_store_dir=mission_store_dir)
+        if _bd.get("status") != _PADP.DMAE_BUILT:
+            return _pre_exec_reject(f"DERIVED_MISSION_APPROVAL_REJECTED:{_bd.get('reason')}")
+        approval_record = _bd["approval_record"]
+        approval_id = approval_record["approval_id"]
+        if approval_record.get("execution_authority_hash") != recomputed_eah:
+            return _pre_exec_reject("DERIVED_APPROVAL_EAH_MISMATCH")
+        human_authorization_reference_effective = approval_record.get("human_authorization_reference")
+        _dmae_freshness_kwargs = dict(
+            mission_id=mission_id,
+            derived_mission_approval_evidence_id=_bd["derived_mission_approval_evidence_id"],
+            batch_execution_id=batch_execution_id, child_execution_id=child_execution_id,
+            execution_dir=execution_dir, mission_store_dir=mission_store_dir)
+        # STAGE 4F REPAIR — contexte d'autorité dérivée CANONIQUE (localisation
+        # uniquement ; jamais une autorité). Sans lui, tout consommateur
+        # privilégié de l'approbation dérivée échoue fermé.
+        _derived_ctx = _PADP.build_derived_authority_context(
+            mission_id=mission_id, mission_store_dir=mission_store_dir,
+            execution_dir=execution_dir,
+            derived_mission_approval_evidence_id=_bd["derived_mission_approval_evidence_id"],
+            batch_execution_id=batch_execution_id, child_execution_id=child_execution_id)
     store_res = _E.store_approval_artifact(approval_record, execution_dir=approval_dir)
     if store_res.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
         return _pre_exec_reject(f"HUMAN_APPROVAL_STORE_FAILED:{store_res.get('status')}")
@@ -367,7 +437,8 @@ def execute_governed_remediation(
     ok_a, reason_a = _E.verify_approval_artifact(approval)
     if not ok_a:
         return _pre_exec_reject(f"HUMAN_APPROVAL_ARTIFACT_INVALID:{reason_a}")
-    ok_v, reason_v = _E._validate_approval(approval, envelope)
+    ok_v, reason_v = _E._validate_approval(
+        approval, envelope, derived_authority_context=_derived_ctx)
     if not ok_v:
         return _pre_exec_reject(f"HUMAN_APPROVAL_NOT_BOUND_TO_EXECUTION:{reason_v}")
 
@@ -376,6 +447,7 @@ def execute_governed_remediation(
         batch_execution_id, child_execution_id, approval_id,
         execution_dir=approval_dir, pre_execution_context_dir=Path(pre_execution_context_dir),
         repo_root=repo_root,
+        derived_authority_context=_derived_ctx,
     )
     if tr.get("status") != _PREADP.STATUS_READY:
         return _pre_exec_reject(f"KX108_PRE_EVIDENCE_NOT_READY:{tr.get('reason')}")
@@ -392,6 +464,22 @@ def execute_governed_remediation(
                                 kx108_pre_decision_record_id=kx108_pre_decision_record_id,
                                 kx108_pre_gate=pre_gate)
 
+    # 4bis. Stage 4F — RE-VÉRIFICATION de fraîcheur à la DERNIÈRE frontière sûre
+    #       avant mutation : recharge les révocations + la projection et rejoue
+    #       les vérificateurs Stage 4C. Une HMA révoquée entre la construction de
+    #       la DMAE et ce point -> STALE -> AUCUNE mutation. N'altère AUCUNE
+    #       sémantique KX108 / C2. (Le résidu strictement interne à
+    #       run_governed_content_apply appartient à une extension C2 future
+    #       séparément autorisée.)
+    if _stage4 and _dmae_freshness_kwargs is not None:
+        import obsidia_mission_authority_pre_adapter_v0 as _PADP  # lazy
+        _fr = _PADP.verify_derived_mission_approval_evidence_fresh(**_dmae_freshness_kwargs)
+        if _fr.get("status") != _PADP.DMAE_FRESH:
+            return _pre_exec_reject(f"DERIVED_MISSION_APPROVAL_STALE_BEFORE_MUTATION:{_fr.get('reason')}",
+                                    kx108_pre_decision_record_id=kx108_pre_decision_record_id,
+                                    kx108_pre_gate=pre_gate, no_mutation=True,
+                                    kx_pre_semantics_changed=False)
+
     # 5. Voie de remédiation UNIQUE — run_governed_content_apply (aucune écriture ici).
     result = _GA.run_governed_content_apply(
         batch_execution_id, child_execution_id, approval_id, kx108_pre_decision_record_id,
@@ -404,17 +492,21 @@ def execute_governed_remediation(
         sealed_rollback_evidence_dir=Path(sealed_rollback_evidence_dir),
         rollback_result_dir=Path(rollback_result_dir),
         repo_root=repo_root,
+        derived_authority_context=_derived_ctx,
     )
     # Le statut est déjà une issue publique GOVERNED_REMEDIATION_* — verbatim.
     out = dict(result)
     out.update({
         "phase": "EXECUTE",
         "approval_id": approval_id,
-        "human_authorization_reference": human_authorization_reference,
+        "authority_mode": authority_mode,
+        "human_authorization_reference": human_authorization_reference_effective,
         "kx108_pre_decision_record_id": kx108_pre_decision_record_id,
         "kx108_pre_gate": pre_gate,
         "execution_authority_hash": recomputed_eah,
         "driver_authored_rollback": False,
         "driver_git_disposition": False,
+        "derived_mission_approval_evidence_id": (
+            approval_record.get("derived_mission_approval_evidence_id") if _stage4 else None),
     })
     return out

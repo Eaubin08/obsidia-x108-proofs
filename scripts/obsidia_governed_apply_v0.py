@@ -84,6 +84,8 @@ def validate_governed_apply_preflight(
     selector_dir: Optional[Path] = None,
     ledger_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    *,
+    derived_authority_context=None,
 ) -> dict:
     """
     Retourne un dict {status: PREFLIGHT_PASS | PREFLIGHT_HOLD, reason, ...}.
@@ -132,7 +134,8 @@ def validate_governed_apply_preflight(
     ok_a, reason_a = _E.verify_approval_artifact(approval)
     if not ok_a:
         return _hold(f"HUMAN_APPROVAL_ARTIFACT_INVALID:{reason_a}")
-    ok_v, reason_v = _E._validate_approval(approval, envelope)
+    ok_v, reason_v = _E._validate_approval(
+        approval, envelope, derived_authority_context=derived_authority_context)
     if not ok_v:
         return _hold(f"HUMAN_APPROVAL_NOT_BOUND_TO_EXECUTION:{reason_v}")
     if approval.get("execution_authority_hash") != recomputed_eah:
@@ -394,8 +397,20 @@ def run_governed_content_apply(
     sealed_rollback_evidence_dir: Optional[Path] = None,
     rollback_result_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    derived_authority_context=None,
 ) -> dict:
-    """Chemin de PRODUCTION gouverné unique — cf. bannière ci-dessus."""
+    """Chemin de PRODUCTION gouverné unique — cf. bannière ci-dessus.
+
+    STAGE 4F REPAIR — `derived_authority_context` :
+      * ABSENT + `approved_by == HUMAN`  → chemin historique STRICTEMENT
+        inchangé (aucun verrou, aucune re-vérif d'autorité de mission).
+      * ABSENT + `approved_by` dérivé    → `_validate_approval` échoue fermé
+        (`DERIVED_APPROVAL_REQUIRES_CANONICAL_CONTEXT`).
+      * PRÉSENT → l'approbation dérivée est re-vérifiée CANONIQUEMENT à
+        l'entrée, PUIS la re-vérif finale de fraîcheur + la mutation
+        physique + la mesure post-écriture s'exécutent SOUS LE MÊME verrou
+        inter-processus (`mission_id`) que le writer de révocation HMA.
+    """
     SEV, TC, ADP, DISP, RB, WG = _c2_mod()
     root = Path(repo_root or _C._REPO_ROOT).resolve()
 
@@ -405,6 +420,7 @@ def run_governed_content_apply(
         execution_dir=execution_dir, pre_execution_context_dir=pre_execution_context_dir,
         kx108_decision_dir=kx108_decision_dir, selector_dir=selector_dir,
         ledger_dir=ledger_dir, repo_root=root,
+        derived_authority_context=derived_authority_context,
     )
     if pf.get("status") != STATUS_PASS:
         return _rej(f"PREFLIGHT_HOLD:{pf.get('reason')}", preflight=pf)
@@ -436,9 +452,15 @@ def run_governed_content_apply(
     ok_a, r_a = _E.verify_approval_artifact(approval)
     if not ok_a:
         return _rej(f"HUMAN_APPROVAL_ARTIFACT_INVALID:{r_a}")
-    ok_v, r_v = _E._validate_approval(approval, envelope)
+    ok_v, r_v = _E._validate_approval(
+        approval, envelope, derived_authority_context=derived_authority_context)
     if not ok_v or approval.get("execution_authority_hash") != current_eah:
         return _rej(f"HUMAN_APPROVAL_NOT_BOUND:{r_v}")
+    _stage4_derived = (approval.get("approved_by") == "HUMAN_MISSION_AUTHORITY_DERIVED")
+    if _stage4_derived and derived_authority_context is None:
+        return _rej("STAGE4_DERIVED_APPROVAL_WITHOUT_CANONICAL_CONTEXT")
+    if (derived_authority_context is not None) and not _stage4_derived:
+        return _rej("STAGE4_CONTEXT_WITH_NON_DERIVED_APPROVAL")
 
     pre = _DS.load_kx108_decision_record(kx108_pre_decision_record_id, kx108_decision_dir)
     ok_p, r_p = _DS.verify_kx108_decision_record(pre)
@@ -522,20 +544,56 @@ def run_governed_content_apply(
     sre_hash = sre_rec["sealed_rollback_evidence_hash"]
 
     # ── 6. MUTATION — double-check pré-état + reparse juste avant, remesure ──
-    ok_rp2, r_rp2 = WG.verify_path_reparse_safe(root, target_literal, kind="TARGET")
-    if not ok_rp2:
-        return _rej(f"TARGET_REPARSE_UNSAFE_PRE_REPLACE:{r_rp2}")
-    if _sha256_file(target_literal) != child_target_pre:
-        return _rej("TARGET_DRIFT_BEFORE_REPLACE")
+    if derived_authority_context is not None:
+        # STAGE 4F REPAIR — section critique LINÉARISÉE : la re-vérif canonique
+        # finale de fraîcheur (révocations rechargées) + la mutation physique +
+        # la mesure post-écriture s'exécutent sous le MÊME verrou inter-processus
+        # (`mission_id`) que `record_mission_authority_revocation`. Aucun autre
+        # processus ne peut committer une révocation entre le check et l'écriture.
+        try:
+            import obsidia_mission_authority_freshness_lock_v0 as _LK
+            import obsidia_mission_authority_pre_adapter_v0 as _PADP
+        except Exception as exc:  # noqa: BLE001
+            return _rej(f"STAGE4_LINEARIZATION_PRIMITIVE_UNAVAILABLE:{exc!r}")
+        _mid = (derived_authority_context or {}).get("mission_id")
+        _lroot = (derived_authority_context or {}).get("authority_lock_root")
+        if not (isinstance(_mid, str) and _mid and isinstance(_lroot, str) and _lroot):
+            return _rej("STAGE4_LOCK_CONTEXT_INCOMPLETE")
+        write_exc = None
+        try:
+            with _LK.mission_authority_lock(_mid, lock_root=_lroot):
+                ok_fr, why_fr = _PADP.verify_derived_approval_with_context(
+                    approval, envelope, derived_authority_context)
+                if not ok_fr:
+                    return _rej(f"STAGE4_AUTHORITY_STALE_UNDER_LOCK:{why_fr}")
+                ok_rp2, r_rp2 = WG.verify_path_reparse_safe(root, target_literal, kind="TARGET")
+                if not ok_rp2:
+                    return _rej(f"TARGET_REPARSE_UNSAFE_PRE_REPLACE:{r_rp2}")
+                if _sha256_file(target_literal) != child_target_pre:
+                    return _rej("TARGET_DRIFT_BEFORE_REPLACE")
+                try:
+                    wres = _C.atomic_replace_with_bytes(target_abs, src_bytes, child_target_pre)
+                except Exception as exc:  # noqa: BLE001 — toute défaillance -> remesure
+                    write_exc = repr(exc)
+                    wres = {"status": "ATOMIC_REPLACE_RAISED", "exc": write_exc}
+                measured = _sha256_file(target_literal)
+        except _LK.MissionAuthorityLockTimeout as exc:
+            return _rej(f"STAGE4_AUTHORITY_LOCK_TIMEOUT:{exc}")
+    else:
+        ok_rp2, r_rp2 = WG.verify_path_reparse_safe(root, target_literal, kind="TARGET")
+        if not ok_rp2:
+            return _rej(f"TARGET_REPARSE_UNSAFE_PRE_REPLACE:{r_rp2}")
+        if _sha256_file(target_literal) != child_target_pre:
+            return _rej("TARGET_DRIFT_BEFORE_REPLACE")
 
-    write_exc = None
-    try:
-        wres = _C.atomic_replace_with_bytes(target_abs, src_bytes, child_target_pre)
-    except Exception as exc:  # noqa: BLE001 — toute défaillance -> remesure
-        write_exc = repr(exc)
-        wres = {"status": "ATOMIC_REPLACE_RAISED", "exc": write_exc}
+        write_exc = None
+        try:
+            wres = _C.atomic_replace_with_bytes(target_abs, src_bytes, child_target_pre)
+        except Exception as exc:  # noqa: BLE001 — toute défaillance -> remesure
+            write_exc = repr(exc)
+            wres = {"status": "ATOMIC_REPLACE_RAISED", "exc": write_exc}
 
-    measured = _sha256_file(target_literal)
+        measured = _sha256_file(target_literal)
     ctx_common = {
         "batch_execution_id": batch_execution_id, "child_execution_id": child_execution_id,
         "execution_authority_hash": current_eah, "approval_id": approval_id,
