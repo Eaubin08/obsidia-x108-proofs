@@ -126,6 +126,24 @@ V_TAMPERED = "TAMPERED"
 V_STALE = "STALE"
 V_ISSUER_INVALID = "ISSUER_INVALID"
 V_STRUCTURAL_INVALID = "STRUCTURAL_INVALID"
+# CG-C2 — chaîne à 3 niveaux liée à la mission (schéma v2)
+V_REQUEST_SCOPE_EXCEEDS_MISSION = "REQUEST_SCOPE_EXCEEDS_MISSION"
+V_MISSION_SCOPE_INVALID = "MISSION_SCOPE_INVALID"
+V_MISSION_SCOPE_MISMATCH = "MISSION_SCOPE_MISMATCH"
+V_ISSUANCE_INVALID = "ISSUANCE_INVALID"
+V_ISSUANCE_MISMATCH = "ISSUANCE_MISMATCH"
+V_ISSUANCE_NOT_ELIGIBLE = "ISSUANCE_NOT_ELIGIBLE"
+V_LEASE_CLASS_NOT_IN_MISSION = "LEASE_CLASS_NOT_IN_MISSION"
+V_HUMAN_GRANT_INVALID = "HUMAN_GRANT_INVALID"
+V_HUMAN_GRANT_MISMATCH = "HUMAN_GRANT_MISMATCH"
+V_HUMAN_GRANT_SCOPE_EXPANSION = "HUMAN_GRANT_SCOPE_EXPANSION"
+
+# ── Schéma de bail ───────────────────────────────────────────────────
+#   v1 = bail CG-C (portée de mission NON liée ; INERTE, jamais exécutoire)
+#   v2 = bail CG-C2 (MissionCapabilityScope + LeaseIssuanceDecision liés par hash)
+SCHEMA_VERSION_MISSION_BOUND = 2
+_SUPPORTED_SCHEMA_VERSIONS = (SCHEMA_VERSION, SCHEMA_VERSION_MISSION_BOUND)
+LEGACY_CGC_LEASE_WITHOUT_MISSION_SCOPE = "INERT_NOT_ENFORCEABLE"
 
 _now = _RD._now
 _canon = _RD._canon
@@ -224,6 +242,15 @@ _BOUND_FIELDS = (
     "termination_condition", "issued_by", "issuer_ref", "status",
     "is_execution_authority", "is_kx_authority", "is_sovereign", "grants_tool_access",
 )
+# v2 (CG-C2) : liaisons additionnelles hachées vers la borne humaine de mission.
+_BOUND_FIELDS_V2 = _BOUND_FIELDS + (
+    "mission_capability_scope_ref", "mission_capability_scope_hash",
+    "lease_issuance_decision_ref", "lease_issuance_decision_hash",
+)
+
+
+def _bound_fields(schema_version) -> tuple:
+    return _BOUND_FIELDS_V2 if schema_version == SCHEMA_VERSION_MISSION_BOUND else _BOUND_FIELDS
 
 
 def _reject(reason: str, **extra) -> dict:
@@ -242,9 +269,17 @@ def prepare_cognitive_capability_lease(
     human_decision_ref: Optional[str] = None,
     issued_by: str = ISSUER_GATEWAY_CAPABILITY_DECISION,
     issuer_ref: Optional[str] = None,
+    mission_capability_scope: Optional[dict] = None,
+    lease_issuance_decision: Optional[dict] = None,
 ) -> dict:
     """Valide toutes les liaisons puis construit un bail INERTE, ou rejette
-    de façon fermée. Le bail construit N'ACCORDE RIEN."""
+    de façon fermée. Le bail construit N'ACCORDE RIEN.
+
+    v1 (défaut) : `mission_capability_scope` et `lease_issuance_decision` absents
+    -> bail CG-C, portée de mission NON liée, `NOT_YET_ACTIVE`, jamais exécutoire.
+    v2 (CG-C2) : les DEUX fournis -> chaîne à 3 niveaux vérifiée
+    `LEASE <= REQUESTED <= MISSION_ALLOWED`, liaisons hachées, binding `ACTIVE`.
+    Toujours INERTE : `grants_tool_access=False`, `lease_enforcement_active=False`."""
     if lease_class not in _LEASE_CLASSES:
         return _reject(f"UNKNOWN_LEASE_CLASS:{lease_class}")
     if issued_by in _FORBIDDEN_ISSUERS or issued_by not in _AUTHORIZED_ISSUERS:
@@ -297,9 +332,59 @@ def prepare_cognitive_capability_lease(
         # INCOMPLET, jamais un droit large silencieux.
         pass  # autorisé comme candidat inerte incomplet ; jamais élargi
 
+    # ── CG-C2 : liaison optionnelle à la borne humaine de mission ──
+    _v2 = mission_capability_scope is not None or lease_issuance_decision is not None
+    _mcs_ref = _mcs_hash = _lidec_ref = _lidec_hash = None
+    if _v2:
+        if mission_capability_scope is None or lease_issuance_decision is None:
+            return _reject("MISSION_SCOPE_AND_ISSUANCE_DECISION_MUST_BE_PAIRED")
+        import obsidia_mission_capability_scope_v0 as _MCS
+        ok_m, why_m = _MCS.verify_mission_capability_scope(mission_capability_scope)
+        if not ok_m:
+            return _reject(f"MISSION_CAPABILITY_SCOPE_INVALID:{why_m}")
+        if mission_capability_scope.get("mission_submission_id") != msid:
+            return _reject("MISSION_CAPABILITY_SCOPE_MISSION_MISMATCH")
+        if lease_class not in mission_capability_scope.get("allowed_lease_classes", []):
+            return _reject(f"LEASE_CLASS_NOT_IN_MISSION_SCOPE:{lease_class}")
+        ok_i, why_i = _MCS.verify_lease_issuance_decision(lease_issuance_decision)
+        if not ok_i:
+            return _reject(f"LEASE_ISSUANCE_DECISION_INVALID:{why_i}")
+        if lease_issuance_decision.get("outcome") != _MCS.LEASE_ELIGIBLE_INERT:
+            return _reject(f"LEASE_ISSUANCE_NOT_ELIGIBLE:{lease_issuance_decision.get('outcome')}")
+        if lease_issuance_decision.get("mission_capability_scope_ref") != \
+           mission_capability_scope["mission_capability_scope_id"]:
+            return _reject("ISSUANCE_DECISION_MCS_MISMATCH")
+        if lease_issuance_decision.get("mission_capability_scope_hash") != \
+           mission_capability_scope["scope_record_hash"]:
+            return _reject("ISSUANCE_DECISION_MCS_HASH_MISMATCH")
+        if lease_issuance_decision.get("capability_request_id") != cap_id:
+            return _reject("ISSUANCE_DECISION_REQUEST_MISMATCH")
+        if lease_issuance_decision.get("route_decision_ref") != route_decision.get("route_decision_id"):
+            return _reject("ISSUANCE_DECISION_ROUTE_MISMATCH")
+        if lease_issuance_decision.get("proposed_lease_class") != lease_class:
+            return _reject("ISSUANCE_DECISION_CLASS_MISMATCH")
+        # CG-C2 repair : la décision d'émission DOIT lier le même HumanCapabilityGrant que la MCS.
+        if lease_issuance_decision.get("human_capability_grant_ref") != \
+           mission_capability_scope.get("human_capability_grant_id"):
+            return _reject("ISSUANCE_DECISION_HUMAN_GRANT_MISMATCH")
+        if lease_issuance_decision.get("human_capability_grant_hash") != \
+           mission_capability_scope.get("human_capability_grant_hash"):
+            return _reject("ISSUANCE_DECISION_HUMAN_GRANT_HASH_MISMATCH")
+        _msc = mission_capability_scope["capability_scope"]
+        le_rm, extra_rm = scope_le(req_scope, _msc)
+        if not le_rm:
+            return _reject(f"REQUEST_SCOPE_EXCEEDS_MISSION_SCOPE:{extra_rm}")
+        le_lm, extra_lm = scope_le(scope, _msc)      # transitif via LEASE<=REQUEST déjà vérifié
+        if not le_lm:
+            return _reject(f"LEASE_SCOPE_EXCEEDS_MISSION_SCOPE:{extra_lm}")
+        _mcs_ref = mission_capability_scope["mission_capability_scope_id"]
+        _mcs_hash = mission_capability_scope["scope_record_hash"]
+        _lidec_ref = lease_issuance_decision["lease_issuance_decision_id"]
+        _lidec_hash = lease_issuance_decision["issuance_decision_record_hash"]
+
     env = mission_submission.get("envelope_refs") or {}
     core = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": SCHEMA_VERSION_MISSION_BOUND if _v2 else SCHEMA_VERSION,
         "domain_tag": LEASE_DOMAIN_TAG,
         "lease_class": lease_class,
         "mission_submission_id": msid,
@@ -324,12 +409,18 @@ def prepare_cognitive_capability_lease(
         "is_sovereign": False,
         "grants_tool_access": False,
     }
-    rh = _sha(_canon({k: core.get(k) for k in _BOUND_FIELDS}))
+    if _v2:
+        core["mission_capability_scope_ref"] = _mcs_ref
+        core["mission_capability_scope_hash"] = _mcs_hash
+        core["lease_issuance_decision_ref"] = _lidec_ref
+        core["lease_issuance_decision_hash"] = _lidec_hash
+    bf = _bound_fields(core["schema_version"])
+    rh = _sha(_canon({k: core.get(k) for k in bf}))
     core["lease_record_hash"] = rh
     core["lease_id"] = "cclease-" + rh[:32]
     core["created_at"] = _now()
     core["revocation_state"] = "NONE"
-    core["mission_capability_scope_binding"] = MISSION_CAPABILITY_SCOPE_BINDING
+    core["mission_capability_scope_binding"] = "ACTIVE" if _v2 else MISSION_CAPABILITY_SCOPE_BINDING
     core["lease_enforcement_active"] = False
     core["engineering_lease"] = (lease_class == ENGINEERING_LEASE)
     return {"status": STATUS_LEASE_BUILT_INERT, "reason": None, "lease": core,
@@ -349,7 +440,8 @@ def build_cognitive_capability_lease(**kw) -> Optional[dict]:
 def verify_capability_lease(lease: Optional[dict]) -> "tuple[bool, Optional[str]]":
     if not isinstance(lease, dict):
         return False, "LEASE_MISSING"
-    if lease.get("schema_version") != SCHEMA_VERSION:
+    sv = lease.get("schema_version")
+    if sv not in _SUPPORTED_SCHEMA_VERSIONS:
         return False, "SCHEMA_UNSUPPORTED"
     if lease.get("domain_tag") != LEASE_DOMAIN_TAG:
         return False, "DOMAIN_TAG_MISMATCH"
@@ -389,7 +481,27 @@ def verify_capability_lease(lease: Optional[dict]) -> "tuple[bool, Optional[str]
     le, extra = scope_le(sc, rsc)
     if not le:
         return False, f"CAPABILITY_SCOPE_EXPANSION:{extra}"
-    rh = _sha(_canon({k: lease.get(k) for k in _BOUND_FIELDS}))
+
+    # ── Discipline de version : v1 = jamais lié à la mission ; v2 = liaisons présentes ──
+    if sv == SCHEMA_VERSION_MISSION_BOUND:
+        for ref, pfx in (("mission_capability_scope_ref", "mcs-"),
+                         ("lease_issuance_decision_ref", "lidec-")):
+            if not str(lease.get(ref, "")).startswith(pfx):
+                return False, f"{ref.upper()}_MALFORMED"
+        for h in ("mission_capability_scope_hash", "lease_issuance_decision_hash"):
+            if not (isinstance(lease.get(h), str) and lease.get(h)):
+                return False, f"MISSING_REF:{h}"
+        if lease.get("mission_capability_scope_binding") != "ACTIVE":
+            return False, "MISSION_SCOPE_BINDING_NOT_ACTIVE"
+    else:
+        for f in ("mission_capability_scope_ref", "mission_capability_scope_hash",
+                  "lease_issuance_decision_ref", "lease_issuance_decision_hash"):
+            if lease.get(f) is not None:
+                return False, f"V1_LEASE_CARRIES_V2_FIELD:{f}"
+        if lease.get("mission_capability_scope_binding") not in (None, MISSION_CAPABILITY_SCOPE_BINDING):
+            return False, "V1_LEASE_CLAIMS_MISSION_BINDING"
+
+    rh = _sha(_canon({k: lease.get(k) for k in _bound_fields(sv)}))
     if lease.get("lease_record_hash") != rh:
         return False, "LEASE_RECORD_HASH_MISMATCH"
     if lease.get("lease_id") != "cclease-" + rh[:32]:
@@ -558,10 +670,22 @@ def verify_capability_lease_context(
     revocations: Optional[list] = None,
     mission_status: Optional[str] = None,   # "OPEN" | "CLOSED" | "HOLD"
     authorized_capability_scope: Optional[dict] = None,
+    mission_capability_scope: Optional[dict] = None,
+    lease_issuance_decision: Optional[dict] = None,
+    human_capability_grant: Optional[dict] = None,
+    human_capability_grant_authorization: Optional[dict] = None,
 ) -> dict:
     """Renvoie {verdict, reason, grants_tool_access: FALSE, enforcement_active: FALSE}.
-    Un verdict VALID_INERT signifie SEULEMENT : record cohérent + liaisons exactes
-    + non révoqué + mission ouverte. Il n'accorde AUCUN accès outil."""
+
+    Bail v1 (CG-C) : toujours `V_MISSION_SCOPE_UNBOUND` — legacy INERT_NOT_ENFORCEABLE,
+    quel que soit le `authorized_capability_scope` passé (§16 : pas d'activation
+    rétroactive).
+
+    Bail v2 (CG-C2) : exige `mission_capability_scope` + `lease_issuance_decision`
+    canoniques ; vérifie la chaîne à 3 niveaux
+    `LEASE <= REQUESTED <= MISSION_ALLOWED` + `outcome == LEASE_ELIGIBLE_INERT`.
+    `V_VALID_INERT` signifie SEULEMENT : record cohérent + liaisons exactes + non
+    révoqué + mission active + portée bornée. Il n'accorde AUCUN accès outil."""
     base = {"grants_tool_access": False, "enforcement_active": False,
             "lease_id": (lease or {}).get("lease_id")}
 
@@ -605,20 +729,112 @@ def verify_capability_lease_context(
         return {**base, "verdict": V_MISSION_HOLD, "reason": "mission_status"}
 
     sc, _ = normalize_scope(lease.get("capability_scope"))
-    if authorized_capability_scope is None:
-        # §16 : aucun artefact canonique de portée de capacité de mission ->
-        # le bail ne peut JAMAIS autoriser (et de toute façon grants_tool_access=False).
-        return {**base, "verdict": V_MISSION_SCOPE_UNBOUND,
-                "reason": "MISSION_CAPABILITY_SCOPE_BINDING=NOT_YET_ACTIVE"}
-    msc, why_m = normalize_scope(authorized_capability_scope)
-    if msc is None:
-        return {**base, "verdict": V_SCOPE_EXPANSION, "reason": f"mission_scope_invalid:{why_m}"}
-    le, extra = scope_le(sc, msc)
-    if not le:
-        return {**base, "verdict": V_SCOPE_EXPANSION, "reason": extra}
+    rsc, _ = normalize_scope(lease.get("requested_capability_scope"))
+
+    # ── Bail v1 legacy (CG-C) : INERT_NOT_ENFORCEABLE ; jamais de binding de
+    #    mission, jamais d'enforcement, jamais d'accès outil — quelle que soit la
+    #    portée ad-hoc passée. `V_VALID_INERT` ici == « record cohérent + dans la
+    #    portée ad-hoc fournie », PAS « exécutoire » (§16 : pas de migration
+    #    automatique accordant des droits). Le binding réel exige un bail v2. ──
+    if lease.get("schema_version") != SCHEMA_VERSION_MISSION_BOUND:
+        v1 = {**base, "mission_capability_scope_binding": "NOT_YET_ACTIVE",
+              "legacy_lease": LEGACY_CGC_LEASE_WITHOUT_MISSION_SCOPE}
+        if authorized_capability_scope is None:
+            return {**v1, "verdict": V_MISSION_SCOPE_UNBOUND,
+                    "reason": "MISSION_CAPABILITY_SCOPE_BINDING=NOT_YET_ACTIVE"}
+        msc0, why_m0 = normalize_scope(authorized_capability_scope)
+        if msc0 is None:
+            return {**v1, "verdict": V_SCOPE_EXPANSION, "reason": f"mission_scope_invalid:{why_m0}"}
+        le0, extra0 = scope_le(sc, msc0)
+        if not le0:
+            return {**v1, "verdict": V_SCOPE_EXPANSION, "reason": extra0}
+        return {**v1, "verdict": V_VALID_INERT, "reason": None,
+                "note": "bail v1 : record cohérent ; NON EXÉCUTOIRE ; aucun accès outil accordé"}
+
+    # ── Bail v2 (CG-C2) : chaîne à 3 niveaux réellement vérifiée ──
+    import obsidia_mission_capability_scope_v0 as _MCS
+    if mission_capability_scope is None or lease_issuance_decision is None:
+        return {**base, "verdict": V_MISSION_SCOPE_INVALID,
+                "reason": "mission_capability_scope_or_issuance_decision_not_supplied"}
+    ok_m, why_m = _MCS.verify_mission_capability_scope(mission_capability_scope)
+    if not ok_m:
+        return {**base, "verdict": V_MISSION_SCOPE_INVALID, "reason": why_m}
+    if mission_capability_scope["mission_capability_scope_id"] != lease.get("mission_capability_scope_ref"):
+        return {**base, "verdict": V_MISSION_SCOPE_MISMATCH, "reason": "mcs_id"}
+    if mission_capability_scope["scope_record_hash"] != lease.get("mission_capability_scope_hash"):
+        return {**base, "verdict": V_MISSION_SCOPE_MISMATCH, "reason": "mcs_hash"}
+    if mission_capability_scope.get("mission_submission_id") != lease["mission_submission_id"]:
+        return {**base, "verdict": V_MISSION_MISMATCH, "reason": "mcs_submission"}
+    ok_i, why_i = _MCS.verify_lease_issuance_decision(lease_issuance_decision)
+    if not ok_i:
+        return {**base, "verdict": V_ISSUANCE_INVALID, "reason": why_i}
+    if lease_issuance_decision.get("outcome") != _MCS.LEASE_ELIGIBLE_INERT:
+        return {**base, "verdict": V_ISSUANCE_NOT_ELIGIBLE, "reason": lease_issuance_decision.get("outcome")}
+    if lease_issuance_decision.get("lease_issuance_decision_id") != lease.get("lease_issuance_decision_ref"):
+        return {**base, "verdict": V_ISSUANCE_MISMATCH, "reason": "lidec_id"}
+    if lease_issuance_decision.get("issuance_decision_record_hash") != lease.get("lease_issuance_decision_hash"):
+        return {**base, "verdict": V_ISSUANCE_MISMATCH, "reason": "lidec_hash"}
+    if lease_issuance_decision.get("mission_capability_scope_ref") != \
+       mission_capability_scope["mission_capability_scope_id"]:
+        return {**base, "verdict": V_ISSUANCE_MISMATCH, "reason": "lidec_mcs"}
+    if lease_issuance_decision.get("capability_request_id") != lease["capability_request_id"]:
+        return {**base, "verdict": V_ISSUANCE_MISMATCH, "reason": "lidec_request"}
+    if lease["lease_class"] not in mission_capability_scope.get("allowed_lease_classes", []):
+        return {**base, "verdict": V_LEASE_CLASS_NOT_IN_MISSION, "reason": lease["lease_class"]}
+    if lease_issuance_decision.get("human_capability_grant_ref") != \
+       mission_capability_scope.get("human_capability_grant_id"):
+        return {**base, "verdict": V_ISSUANCE_MISMATCH, "reason": "lidec_grant_ref"}
+
+    # ── §10 : HumanCapabilityGrant OBLIGATOIRE + non substitué + non altéré ──
+    if human_capability_grant is None:
+        return {**base, "verdict": V_HUMAN_GRANT_INVALID, "reason": "human_capability_grant_not_supplied"}
+    ok_g, why_g = _MCS.verify_human_capability_grant(
+        human_capability_grant,
+        human_capability_grant_authorization=human_capability_grant_authorization)
+    if not ok_g:
+        return {**base, "verdict": V_HUMAN_GRANT_INVALID, "reason": why_g}
+    if human_capability_grant["human_capability_grant_id"] != \
+       mission_capability_scope.get("human_capability_grant_id"):
+        return {**base, "verdict": V_HUMAN_GRANT_MISMATCH, "reason": "grant_id"}
+    if human_capability_grant["grant_record_hash"] != \
+       mission_capability_scope.get("human_capability_grant_hash"):
+        return {**base, "verdict": V_HUMAN_GRANT_MISMATCH, "reason": "grant_hash"}
+    if human_capability_grant.get("mission_submission_id") != lease["mission_submission_id"]:
+        return {**base, "verdict": V_HUMAN_GRANT_MISMATCH, "reason": "grant_submission"}
+    if lease["lease_class"] not in human_capability_grant.get("allowed_lease_classes", []):
+        return {**base, "verdict": V_LEASE_CLASS_NOT_IN_MISSION, "reason": "class_not_in_human_grant"}
+
+    msc = mission_capability_scope["capability_scope"]
+    gsc = human_capability_grant["capability_scope"]
+    le_gm, extra_gm = scope_le(msc, gsc)          # MISSION ⊆ HUMAN_GRANT
+    if not le_gm:
+        return {**base, "verdict": V_HUMAN_GRANT_SCOPE_EXPANSION, "reason": extra_gm}
+    le_rm, extra_rm = scope_le(rsc, msc)
+    if not le_rm:
+        return {**base, "verdict": V_REQUEST_SCOPE_EXCEEDS_MISSION, "reason": extra_rm}
+    le_lm, extra_lm = scope_le(sc, msc)
+    if not le_lm:
+        return {**base, "verdict": V_SCOPE_EXPANSION, "reason": extra_lm}
+    le_lg, extra_lg = scope_le(sc, gsc)           # LEASE ⊆ HUMAN_GRANT (défense explicite)
+    if not le_lg:
+        return {**base, "verdict": V_HUMAN_GRANT_SCOPE_EXPANSION, "reason": extra_lg}
+
+    # Resserrement externe optionnel (jamais un élargissement).
+    if authorized_capability_scope is not None:
+        amsc, why_a = normalize_scope(authorized_capability_scope)
+        if amsc is None:
+            return {**base, "verdict": V_SCOPE_EXPANSION, "reason": f"authz_scope_invalid:{why_a}"}
+        le_a, extra_a = scope_le(sc, amsc)
+        if not le_a:
+            return {**base, "verdict": V_SCOPE_EXPANSION, "reason": extra_a}
 
     return {**base, "verdict": V_VALID_INERT, "reason": None,
-            "note": "record cohérent ; ENFORCEMENT INERTE ; aucun accès outil accordé"}
+            "mission_capability_scope_binding": "ACTIVE",
+            "human_capability_grant_binding": "VERIFIED_CONDITIONAL_ON_EXTERNAL_HUMAN_VERIFIER",
+            "human_origin_proof_model": "EXTERNAL_TRUST_BOUNDARY",
+            "note": "chaîne à 4 niveaux vérifiée (LEASE<=REQUEST<=MISSION<=HUMAN_GRANT ; "
+                    "chemins/opérations <= HMA) ; origine humaine = frontière de confiance "
+                    "externe (verifier hôte NON câblé ici) ; ENFORCEMENT INERTE ; aucun accès outil accordé"}
 
 
 # ══════════════════════════════════════════════════════════════════════════
