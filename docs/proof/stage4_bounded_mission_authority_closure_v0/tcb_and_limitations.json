@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "purpose": "Stage 4 V0 Trusted Computing Base and explicit limitations. Every assurance claim in this archive rests on these.",
+
+  "trusted_computing_base": [
+    { "component": "CPython interpreter + standard library runtime", "trusted_for": "correct execution of all scripts/*.py governance logic, hashlib, json, os, pathlib, subprocess, contextlib" },
+    { "component": "Operating system + filesystem semantics", "trusted_for": "os.link atomicity (write-once artifacts), directory rename/replace atomicity, byte-range advisory lock ownership and release-on-process-death (msvcrt.locking on Windows, fcntl.flock on POSIX), durability of written JSON across a process restart" },
+    { "component": "Git (system binary)", "trusted_for": "worktree isolation facts (rev-parse / status / cat-file / worktree list), local snapshot commits authored by obsidia_mission_local_snapshot_v0, branch/base identity checks. Git is a DISPOSITION/INTEGRATION record, never governance authority." },
+    { "component": "SHA-256 implementation (hashlib.sha256) and collision resistance", "trusted_for": "execution_authority_hash, plan_hash, hma_record_hash, daaw_record_hash, dmae_record_hash, approval_record_hash, decision_record_hash, revocation_record_hash, all *_id derivations (id = 'prefix-' + sha256(bound_material)[:32]). In Lean this is the CryptoInterface hypothesis bundle (not an axiom); FORMAL sha256 byte-equivalence is NOT claimed." },
+    { "component": "JSON canonicalization (json.dumps(..., sort_keys=True) / the _canon helper)", "trusted_for": "deterministic bound-material serialization so that record hashes are reproducible and tamper-evident" },
+    { "component": "GuardX108 / KX108 kernel + evidence adapters (sigma protocols)", "trusted_for": "the sovereign KX108_PRE and KX108_POST decisions and their evidence translation. Stage 4 does NOT modify KX108 kernel semantics; it feeds evidence and consumes the gate." },
+    { "component": "obsidia_governed_apply_v0 C2 write primitive + atomic_replace_with_bytes", "trusted_for": "the single governed target write, pre-state / drift double-check, SealedRollbackEvidence built+verified before the write, post-write measurement, rollback D2" },
+    { "component": "obsidia_mission_authority_freshness_lock_v0", "trusted_for": "serialization of revocation commit vs Stage 4 governed mutation via a mission_id-keyed OS lock; bounded timeout -> fail-closed; released in finally + on process death" },
+    { "component": "Process isolation assumption", "trusted_for": "different Stage 4 executions run in distinct OS processes / threads that share only the filesystem; the concurrency claims assume the OS lock is the only coordination and that a crashed holder's lock is released by the OS" },
+    { "component": "Lean 4 kernel + elaborator + toolchain (lake) + Mathlib core (propext etc.)", "trusted_for": "the 16 machine-checked invariant theorems + the 2nd central theorem being valid, axiom-free proofs; the decide-based 4D oracle's evaluation" },
+    { "component": "Runtime <-> formal projection correctness", "trusted_for": "that the Python CanonicalVector projection used by test_mission_authority_conformance_v0.py faithfully represents the same scenario given to the Lean oracle; validated only over the 17 semantic + 11 scope canonical vectors, NOT universally" },
+    { "component": "Specification correctness", "trusted_for": "that the 17 Lean *Spec definitions actually capture the intended safety properties of bounded mission authority; this is a modelling assumption, not a proven fact" }
+  ],
+
+  "limitations": {
+    "LEAN_OPERATION_CARDINALITY_V0": 1,
+    "supported_governed_operation_v0": "UPDATE_TARGET_FROM_SOURCE",
+    "MULTI_OPERATION_FORMAL_GENERALIZATION": "NOT_YET_PROVEN",
+    "stage4_closure_does_not_imply": ["CREATE authority", "DELETE authority", "MOVE authority", "RENAME authority", "multi-file governed mutation", "operation algebra"],
+    "central_theorem_17_end_to_end": "NOT_YET_PROVEN (finite canonical fixture + single-operation domain + documented TCB only)",
+    "universal_runtime_refinement": "NOT_PROVEN (Lean<->runtime conformance validated over a finite vector corpus)",
+    "formal_sha256_byte_equivalence": "NOT_CLAIMED (semantic CryptoInterface hypothesis only)",
+    "op_expansion_conformance_vector": "NOT_REPRESENTABLE at V0 (Lean Operation has one constructor)",
+    "concurrency_model": "V0 property is a total serialized COMMIT order between a canonically committed revocation and a governed mutation; a revocation REQUEST arriving after the executor owns the lock does NOT retroactively cancel an already-linearized action",
+    "claude_transport_only_enforcement": "NOT technically enforced; tool-permission / gateway enforcement is a separate future checkpoint",
+    "human_authorization_scope": "O(1) applies ONLY to a fixed exact bounded plan (exact plan_hash); NOT a claim of general or unrestricted autonomy",
+    "kx_complexity": "KX108_PRE and KX108_POST remain O(N) by design; there is deliberately no mission-level KX blanket authority",
+    "repair_loop": "no automatic repair / retry loop is introduced by Stage 4; a governed non-KEEP or quarantine stops the mission fail-closed",
+    "trust_boundary_of_stores": "whoever can write the mission store / execution store / decision stores is inside the trust boundary; the forgery defences (Fix A) require a self-consistent canonical DMAE->HMA->DAAW chain that exact-binds the execution, which a store-writer could in principle fabricate wholesale; the pre-mutation FULL canonical checks dominate and any such fabrication is a full mission reconstruction, not a lightweight forgery"
+  },
+
+  "claim_boundary_statement": "Core bounded mission authority invariants are machine-checked in Lean (16/17 invariant specs + the 2nd central theorem, axiom-free). Canonical representable semantics are validated against runtime vectors (17 semantic + 11 scope pairs, 0 divergence). Bounded multi-action Stage 4 execution (A -> B -> C) has been empirically validated against positive, negative, replay, revocation (sequential and concurrent-linearized), restart/resume and rollback tests, with a mechanical mutation-to-witness map showing 0 unaccounted mutations, under the documented V0 TCB and the single-operation (UPDATE_TARGET_FROM_SOURCE) domain. Obsidia Stage 4 is NOT claimed to be 'formally proven secure'.",
+
+  "central_theorem_17": {
+    "runtime_evidence": "MULTI_ACTION_V0_VALIDATED",
+    "runtime_refinement": "VALIDATED_V0_WITH_DOCUMENTED_TCB",
+    "proven_end_to_end": false
+  }
+}

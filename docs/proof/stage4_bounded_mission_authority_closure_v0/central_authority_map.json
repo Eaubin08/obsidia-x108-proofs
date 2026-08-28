@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "purpose": "Canonical authority edge map: HumanMissionAuthorization -> ... -> mission tip. Each edge: producer, consumer, canonical artifact, hash/reference, validation function, evidence.",
+  "root": "ONE HumanMissionAuthorization (issuer = HUMAN, EXACT_PLAN_HASH bind, human_authorization_reference required, write-once)",
+  "edges": [
+    {
+      "edge": "human reference -> HumanMissionAuthorization (HMA)",
+      "producer": "obsidia_mission_authority_integration_v0.bind_mission_authority_from_human_reference -> obsidia_mission_authority_v0.build_human_mission_authorization",
+      "consumer": "obsidia_bounded_mission_v0.bind_mission_authority (mission event MISSION_AUTHORITY_BOUND)",
+      "artifact": "bounded_missions/<mid>/authority/authorizations/hma-<sha256[:32]>.json (immutable, os.link write-once)",
+      "reference": "hma_id + hma_record_hash + plan_hash (EXACT)",
+      "validation": "obsidia_mission_authority_v0.verify_human_mission_authorization (issuer=HUMAN, domain tag, EXACT plan_hash vs genesis+plan, human_authorization_reference non-empty, revocations)",
+      "evidence": "abc_execution_dossier.json .per_action[*].hma_id/hma_record_hash/hma_issuer; test_mission_authority_v0.py; test_mission_authority_integration_v0.py"
+    },
+    {
+      "edge": "HMA -> MissionActionPlan (immutable, write-once, exact plan_hash)",
+      "producer": "obsidia_bounded_mission_v0.bind_mission_plan (Stage 3D MissionActionPlan)",
+      "consumer": "obsidia_mission_sequencer_v0.advance_bounded_mission (plan_hash drift check)",
+      "artifact": "bounded_missions/<mid>/plans/<plan_id>.json (content-bound, non-circular)",
+      "reference": "plan_id + plan_hash",
+      "validation": "obsidia_bounded_mission_v0.verify_mission_plan (+ HMA EXACT_PLAN_HASH bind)",
+      "evidence": "abc_execution_dossier.json .plan_hash; test_bounded_mission_v0.py"
+    },
+    {
+      "edge": "plan -> selected next action (deterministic dependency order)",
+      "producer": "obsidia_mission_sequencer_v0.advance_bounded_mission (execution_order + dependency_ordinals + snapshotted_action_ids)",
+      "consumer": "obsidia_bounded_mission_v0.prepare_mission_action",
+      "artifact": "mission projection (derived; no stored current_state)",
+      "reference": "action_id + ordinal",
+      "validation": "dependency satisfaction against KEPT/snapshotted set; deterministic",
+      "evidence": "abc_execution_dossier.json .per_action[*].ordinal == [0,1,2]"
+    },
+    {
+      "edge": "action -> ExecutionEnvelope + child + EAH (canonical)",
+      "producer": "obsidia_bounded_mission_v0.prepare_mission_action -> obsidia_isolated_work_unit_v0.prepare_work_unit_execution -> obsidia_governed_execution_driver_v0.prepare_governed_execution",
+      "consumer": "obsidia_mission_authority_integration_v0.derive_and_record_action_authority_witness; obsidia_governed_execution_driver_v0.execute_governed_remediation",
+      "artifact": "execution store: ExecutionEnvelope (one child per action)",
+      "reference": "batch_execution_id + child_execution_id + execution_authority_hash",
+      "validation": "obsidia_batch_execution.compute_execution_authority_hash (reused canonically; recomputed == stored at every boundary)",
+      "evidence": "abc_execution_dossier.json .per_action[*].execution_authority_hash (3 distinct); witness_checks.eah_envelope_matches"
+    },
+    {
+      "edge": "EAH + HMA -> DerivedActionAuthorityWitness (DAAW), NON_SOVEREIGN, per action",
+      "producer": "obsidia_mission_authority_integration_v0.derive_and_record_action_authority_witness -> obsidia_mission_authority_v0 derive-primitive",
+      "consumer": "obsidia_mission_authority_pre_adapter_v0 (chain verify); mission event ACTION_AUTHORITY_WITNESS_DERIVED",
+      "artifact": "bounded_missions/<mid>/action_authority_witnesses/daaw-<sha256[:32]>.json (write-once)",
+      "reference": "daaw_id + daaw_record_hash ; binds mission/plan/action/ordinal/action_base_sha/EAH/scope",
+      "validation": "obsidia_mission_authority_v0.verify_derived_action_authority_witness (DerivedFrom h, scopeLE, EAH == eahOf env, base == mission tip); idempotence key = EXACT_RECORDED_WITNESS_MATERIAL",
+      "evidence": "abc_execution_dossier.json .per_action[*].daaw_id/daaw_record_hash/daaw_sovereignty=NON_SOVEREIGN; witness_checks.daaw_eah_matches_action_eah / daaw_base_is_tip_before"
+    },
+    {
+      "edge": "DAAW chain -> DerivedMissionApprovalEvidence (DMAE), NON_SOVEREIGN",
+      "producer": "obsidia_mission_authority_pre_adapter_v0.build_derived_mission_approval_evidence (SOLE constructor; full canonical reload+reverify HMA human-root/EXACT_PLAN_HASH -> DAAW)",
+      "consumer": "PRE evidence adapter; C2 entry; C2 in-lock recheck; _validate_approval derived branch (via hash-bound embedded_authority_locator)",
+      "artifact": "bounded_missions/<mid>/derived_mission_approvals/dmae-<sha256[:32]>.json (write-once)",
+      "reference": "dmae_id + dmae_record_hash ; authority_mode = BOUNDED_MISSION_AUTHORITY",
+      "validation": "verify_derived_mission_approval_evidence (structural) + verify_derived_approval_with_context (full freshness incl. revocations) + verify_derived_approval_binding (exact DMAE <-> approval)",
+      "evidence": "abc_execution_dossier.json .per_action[*].dmae_id/dmae_record_hash/dmae_sovereignty=NON_SOVEREIGN/dmae_authority_mode; witness_checks.dmae_eah_matches_action_eah"
+    },
+    {
+      "edge": "DMAE -> HumanApproval (approved_by = HUMAN_MISSION_AUTHORITY_DERIVED)",
+      "producer": "obsidia_mission_authority_pre_adapter_v0.build_derived_mission_approval_evidence (approval_record) ; persisted by obsidia_governed_execution_driver_v0.execute_governed_remediation via obsidia_batch_execution.store_approval_artifact",
+      "consumer": "obsidia_batch_execution._validate_approval ; PRE evidence adapter ; C2 governed apply",
+      "artifact": "execution store: approval artifact appr-<sha256[:32]>.json (os.link write-once)",
+      "reference": "approval_id = appr-sha256(beid:child:eah:dmae_id)[:32] ; approval_record_hash ; human_authorization_reference == HMA root",
+      "validation": "verify_approval_artifact (structural) + _validate_approval (envelope binding + derived branch -> canonical DMAE reload/exact-bind)",
+      "evidence": "abc_execution_dossier.json .per_action[*].approval_id/approval_record_hash/approval_approved_by=HUMAN_MISSION_AUTHORITY_DERIVED/approval_human_authorization_reference; witness_checks.approval_is_derived_not_human"
+    },
+    {
+      "edge": "approval + PEC + envelope -> KX108_PRE decision (SOVEREIGN)",
+      "producer": "obsidia_kx108_pre_execution_evidence_adapter_v0.translate_pre_execution_evidence_to_tooling_build_state -> obsidia_kx108_decision_store.run_and_persist_kx108_pre_execution_decision (real KX108 kernel)",
+      "consumer": "obsidia_governed_execution_driver_v0.execute_governed_remediation (require x108_gate == ALLOW) ; obsidia_governed_apply_v0.run_governed_content_apply (re-check)",
+      "artifact": "kx108 pre decision store: kxpre-<...>.json",
+      "reference": "kx108_pre_decision_record_id + decision_record_hash ; bound to approval_id + exact EAH + PRE phase",
+      "validation": "verify_kx108_decision_record + phase == PRE + gate == ALLOW + EAH match + approval_id match",
+      "evidence": "abc_execution_dossier.json .per_action[*].kx108_pre_decision_record_id/kx108_pre_gate=ALLOW ; kx_pre_records_persisted = 3"
+    },
+    {
+      "edge": "KX108_PRE ALLOW -> C2 governed mutation (the ONLY write)",
+      "producer": "obsidia_governed_apply_v0.run_governed_content_apply (write_capability=True) -> obsidia_content_apply.atomic_replace_with_bytes",
+      "consumer": "target file (unstaged diff)",
+      "artifact": "SealedRollbackEvidence (sre-...) built+stored+verified BEFORE write ; SealedApplyReceipt (sar-...) after",
+      "reference": "sealed_rollback_evidence_id / sealed_apply_receipt_id ; target_pre_sha256 / target_post_sha256",
+      "validation": "Stage4 path: SAME mission_id lock as revocation writer; in-lock full canonical freshness reverify (revocations reloaded) -> path reparse -> target drift double-check -> atomic_replace_with_bytes -> post-write measurement",
+      "evidence": "abc_execution_dossier.json .per_action[*].outcome_status = GOVERNED_REMEDIATION_KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW ; total_governed_mutations = 3"
+    },
+    {
+      "edge": "mutation -> TestContractResult",
+      "producer": "obsidia_test_contract via obsidia_governed_apply_v0",
+      "consumer": "obsidia_governed_apply_v0 (post-write evidence + KX108_POST input)",
+      "artifact": "tcr-<...>.json",
+      "reference": "test_contract_hash (bound in EAH) + test_contract_result_id + aggregate",
+      "validation": "compute_test_contract_hash == envelope.test_contract_hash ; required checks aggregate",
+      "evidence": "canonical_abc_summary.test_contract_pass_count = 3 (all ALL_REQUIRED_PASS)"
+    },
+    {
+      "edge": "sealed evidence + TestContract -> KX108_POST decision (SOVEREIGN)",
+      "producer": "obsidia_kx108_evidence_adapter (POST evidence) -> obsidia_kx108_decision_store (POST decision)",
+      "consumer": "obsidia_post_execution_disposition_v0 (D1) -> KEEP | obsidia_governed_rollback_v0 (D2)",
+      "artifact": "kx108 post decision store: kxpost-<...>.json (cryptographically linked to KX108_PRE + sealed evidence)",
+      "reference": "kx108_post_decision_record_id ; kx108_pre_decision_record_hash link ; exact EAH ; approval_id",
+      "validation": "verify_kx108_decision_record + phase == POST + linked-to-PRE + gate",
+      "evidence": "abc_execution_dossier.json .per_action[*].kx108_post_gate = ALLOW ; kx_post_records_persisted = 3"
+    },
+    {
+      "edge": "KX108_POST ALLOW -> D1 disposition KEEP -> LocalSnapshotReceipt (Stage 3A)",
+      "producer": "obsidia_post_execution_disposition_v0 (D1 recompute) ; obsidia_mission_local_snapshot_v0.create_local_snapshot (the ONLY author of the local git commit)",
+      "consumer": "obsidia_bounded_mission_v0.record_local_snapshot (mission event ACTION_LOCAL_SNAPSHOT_COMMITTED)",
+      "artifact": "snapshot store: LocalSnapshotReceipt (immutable, NON_SOVEREIGN) + one local git commit of the single target",
+      "reference": "snapshot_receipt_id + new_commit_sha",
+      "validation": "verify_local_snapshot_receipt (canonical, reused) ; ONLY KEEP can advance ; MISSION_SNAPSHOT_IS_FINAL_GIT_ACCEPTANCE = FALSE",
+      "evidence": "abc_execution_dossier.json .per_action[*].local_snapshot_receipt_id/local_snapshot_commit_sha ; local_snapshot_count = 3"
+    },
+    {
+      "edge": "LocalSnapshotReceipt -> mission_tip advance (derived)",
+      "producer": "obsidia_bounded_mission_v0.project_mission (mission_tip_sha folded from ACTION_LOCAL_SNAPSHOT_COMMITTED events)",
+      "consumer": "next obsidia_mission_sequencer_v0.advance_bounded_mission (expected_action_base_sha = current mission_tip_sha)",
+      "artifact": "mission revision log (append-only, hash-chained)",
+      "reference": "mission_tip_sha per revision",
+      "validation": "only KEEP advances ; action_base_sha_i == mission_tip before action i ; canonical_base_sha immutable",
+      "evidence": "abc_execution_dossier.json .mission_tip_chain = [BASE, T1, T2, T3] ; witness_checks.daaw_base_is_tip_before = true for all 3"
+    }
+  ],
+  "aggregate_traceability": {
+    "UNACCOUNTED_GOVERNED_MUTATIONS": 0,
+    "MUTATION_WITHOUT_HMA_WITNESS": 0,
+    "MUTATION_WITHOUT_DAAW_WITNESS": 0,
+    "MUTATION_WITHOUT_DMAE_WITNESS": 0,
+    "MUTATION_WITHOUT_KX_PRE_ALLOW": 0,
+    "MUTATION_WITHOUT_KX_POST_EVIDENCE": 0,
+    "every_mutation_has_exactly_one": ["action identity", "exact EAH", "HMA coverage (issuer HUMAN)", "DAAW (NON_SOVEREIGN)", "DMAE (NON_SOVEREIGN)", "KX108_PRE ALLOW record", "KX108_POST ALLOW record"]
+  }
+}
