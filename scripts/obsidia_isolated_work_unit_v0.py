@@ -84,6 +84,7 @@ SUPPORTED_OPERATION = "UPDATE_TARGET_FROM_SOURCE"
 WORK_UNIT_CREATED = "WORK_UNIT_CREATED"
 WORK_UNIT_CREATE_REJECTED = "WORK_UNIT_CREATE_REJECTED"
 WORK_UNIT_PREPARE_REJECTED_UNSUPPORTED_SHAPE = "WORK_UNIT_PREPARE_REJECTED_UNSUPPORTED_SHAPE"
+WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE = "WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE"
 WORK_UNIT_DISPOSED = "WORK_UNIT_DISPOSED"
 WORK_UNIT_DISPOSE_REFUSED = "WORK_UNIT_DISPOSE_REFUSED"
 
@@ -294,11 +295,25 @@ def prepare_work_unit_execution(
     objective: str = "",
     operation: str = SUPPORTED_OPERATION,
     repository_identity: "Optional[str]" = None,
+    expected_action_base_sha: "Optional[str]" = None,
 ) -> dict:
     """
     Refuse toute forme non prouvée AVANT de déléguer, puis appelle
     `prepare_governed_execution(...)` et renvoie son résultat VERBATIM.
     Ne reproduit AUCUNE étape du driver.
+
+    `expected_action_base_sha` (Stage 3C, additif) : commit Git LOCAL EXPLICITE
+    sur lequel CETTE action gouvernée doit démarrer, potentiellement plus récent
+    que `work_unit.base_sha` (origine IMMUABLE de l'unité de travail). Vocabulaire
+    Git/work-unit générique — ce module n'importe NI ne connaît la mission, le
+    mission_tip, un plan d'action ou une autorité. `None` (défaut) ->
+    `effective_action_base_sha = work_unit.base_sha` : comportement historique
+    strictement inchangé. Fourni -> préflight fail-closed AVANT toute délégation :
+    40-hex, commit résolvant dans le dépôt, HEAD observé == cette valeur (jamais
+    "HEAD courant" découvert automatiquement), branche == work_unit.branch_name,
+    identité de dépôt (git-common-dir) correcte, et DESCEND de work_unit.base_sha
+    (sous-commande `merge-base --is-ancestor work_unit.base_sha <valeur>` -> code
+    retour 0). PEC reste strict (HEAD == base_sha, worktree propre) — non modifié.
     """
     if not isinstance(work_unit, IsolatedWorkUnit):
         return {"status": WORK_UNIT_PREPARE_REJECTED_UNSUPPORTED_SHAPE,
@@ -328,6 +343,15 @@ def prepare_work_unit_execution(
                 "target_path": target_path,
                 "decision_authority": DECISION_AUTHORITY, "target_mutated": False}
 
+    # ── Stage 3C : base d'action DYNAMIQUE explicite (préflight fail-closed) ──
+    # `work_unit.base_sha` reste l'origine IMMUABLE ; on ne la mute jamais.
+    effective_action_base_sha = work_unit.base_sha
+    if expected_action_base_sha is not None:
+        dyn_reject = _preflight_dynamic_action_base(work_unit, expected_action_base_sha)
+        if dyn_reject is not None:
+            return dyn_reject
+        effective_action_base_sha = expected_action_base_sha
+
     result = _DRV.prepare_governed_execution(
         source_git_commit=source_git_commit,
         source_historical_path=source_historical_path,
@@ -336,7 +360,7 @@ def prepare_work_unit_execution(
         execution_worktree_path=work_unit.worktree_path,
         main_worktree_path=work_unit.main_worktree_path,
         branch_name=work_unit.branch_name,
-        base_sha=work_unit.base_sha,
+        base_sha=effective_action_base_sha,
         repository_identity=repository_identity,
         objective=objective,
         ledger_dir=ledger_dir,
@@ -347,7 +371,65 @@ def prepare_work_unit_execution(
     out = dict(result)
     out["work_unit_id"] = work_unit.work_unit_id
     out["first_real_driver_caller"] = "obsidia_isolated_work_unit_v0"
+    out["effective_action_base_sha"] = effective_action_base_sha
+    out["dynamic_action_base_supplied"] = expected_action_base_sha is not None
     return out
+
+
+def _preflight_dynamic_action_base(work_unit: IsolatedWorkUnit,
+                                   expected_action_base_sha: str) -> "Optional[dict]":
+    """Vérifie un `expected_action_base_sha` EXPLICITE contre des FAITS Git
+    observés. Renvoie un dict de rejet (fail-closed, AVANT toute délégation au
+    driver) ou None si tout est vérifié. Aucune mutation Git — lecture seule."""
+    def _rej(reason: str, **extra) -> dict:
+        return {"status": WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE, "reason": reason,
+                "authority": "NON_SOVEREIGN", "decision_authority": DECISION_AUTHORITY,
+                "target_mutated": False, "expected_action_base_sha": expected_action_base_sha,
+                "work_unit_immutable_base_sha": work_unit.base_sha, **extra}
+
+    if not _is_git_commit_sha(expected_action_base_sha):
+        return _rej("EXPECTED_ACTION_BASE_SHA_NOT_A_40_HEX_GIT_COMMIT_SHA")
+
+    wt = Path(work_unit.worktree_path)
+    main = Path(work_unit.main_worktree_path)
+
+    # 1. commit résolvant vers un commit DANS ce dépôt
+    rc, _out, err = _run_git(["cat-file", "-e", f"{expected_action_base_sha}^{{commit}}"], cwd=wt)
+    if rc != 0:
+        return _rej("EXPECTED_ACTION_BASE_SHA_NOT_A_COMMIT_IN_THIS_REPOSITORY", detail=err.strip())
+
+    # 2. identité de dépôt (git-common-dir) worktree == main
+    cd_wt = _PEC._run_git(["rev-parse", "--git-common-dir"], cwd=wt)
+    cd_main = _PEC._run_git(["rev-parse", "--git-common-dir"], cwd=main)
+    if cd_wt[0] != 0 or cd_main[0] != 0:
+        return _rej("REPOSITORY_COMMON_DIR_UNREADABLE")
+    try:
+        if str((wt / cd_wt[1].strip()).resolve()) != str((main / cd_main[1].strip()).resolve()):
+            return _rej("REPOSITORY_COMMON_DIR_MISMATCH")
+    except OSError:
+        return _rej("REPOSITORY_COMMON_DIR_UNRESOLVABLE")
+
+    # 3. branche observée == branche de l'unité de travail
+    rc, br_out, _ = _PEC._run_git(["rev-parse", "--abbrev-ref", "HEAD"], cwd=wt)
+    if rc != 0 or br_out.strip() != work_unit.branch_name:
+        return _rej(f"BRANCH_MISMATCH:{br_out.strip()}")
+
+    # 4. HEAD observé == valeur EXPLICITE fournie (jamais "HEAD courant" auto-découvert)
+    rc, head_out, _ = _PEC._run_git(["rev-parse", "HEAD"], cwd=wt)
+    if rc != 0:
+        return _rej("HEAD_UNREADABLE")
+    if head_out.strip() != expected_action_base_sha:
+        return _rej(f"OBSERVED_HEAD_NOT_EQUAL_EXPECTED_ACTION_BASE_SHA:{head_out.strip()}")
+
+    # 5. la base d'action DESCEND de l'origine immuable de l'unité de travail
+    #    (`--is-ancestor X X` -> rc 0, donc l'égalité passe aussi).
+    rc, _o, _e = _run_git(
+        ["merge-base", "--is-ancestor", work_unit.base_sha, expected_action_base_sha], cwd=wt,
+    )
+    if rc != 0:
+        return _rej("EXPECTED_ACTION_BASE_SHA_DOES_NOT_DESCEND_FROM_WORK_UNIT_BASE_SHA")
+
+    return None
 
 
 # ══════════════════════════════════════════════════════════════════════════

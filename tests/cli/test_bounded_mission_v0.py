@@ -1342,7 +1342,6 @@ def test_S3B_stage3a_module_and_pec_byte_unchanged():
     r = subprocess.run(["git", "status", "--porcelain",
                         "scripts/obsidia_mission_local_snapshot_v0.py",
                         "scripts/obsidia_pre_execution_context.py",
-                        "scripts/obsidia_isolated_work_unit_v0.py",
                         "scripts/obsidia_governed_execution_driver_v0.py"],
                        cwd=str(_REPO_ROOT), capture_output=True, text=True)
     assert r.stdout.strip() == "", f"unexpected changes: {r.stdout}"

@@ -45,6 +45,7 @@ import obsidia_test_contract as TC                 # noqa: E402
 import obsidia_isolated_work_unit_v0 as WU         # noqa: E402
 import obsidia_governed_execution_driver_v0 as DRV # noqa: E402
 import obsidia_sealed_evidence_v0 as SEV           # noqa: E402
+import obsidia_mission_local_snapshot_v0 as LS     # noqa: E402  (Stage 3C — advanced-base proof)
 
 _TARGET_REL = "periphery/xdomain/wu_target_v0.txt"
 _SOURCE_REL = "periphery/xdomain/wu_source_v0.txt"
@@ -434,3 +435,276 @@ def test_static_no_bounded_mission_authority_no_preapproval():
     for pn in ("human_authorized_execution_authority_hash", "human_authorization_reference"):
         assert pn in sig.parameters
         assert sig.parameters[pn].default is inspect.Parameter.empty
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  STAGE 3C — base d'action DYNAMIQUE explicite (expected_action_base_sha)
+# ══════════════════════════════════════════════════════════════════════════
+
+_SOURCE_B_REL = "periphery/xdomain/wu_source_b_v0.txt"
+_C = b"ISOLATED_WORK_UNIT_FIXTURE\nstate: AFTER_SECOND_GOVERNED_APPLY\n"
+
+
+@pytest.fixture
+def repo3c(tmp_path):
+    main = tmp_path / "main"
+    (main / "periphery" / "xdomain").mkdir(parents=True)
+    (main / _TARGET_REL).write_bytes(_A)
+    (main / _SOURCE_REL).write_bytes(_B)
+    (main / _SOURCE_B_REL).write_bytes(_C)
+    _git(main, "init", "-q")
+    _git(main, "config", "user.email", "t@example.com")
+    _git(main, "config", "user.name", "t")
+    _git(main, "config", "commit.gpgsign", "false")
+    _git(main, "add", _TARGET_REL, _SOURCE_REL, _SOURCE_B_REL)
+    _git(main, "commit", "-q", "-m", "seed")
+    base_sha = _git(main, "rev-parse", "HEAD")
+    stores = {k: tmp_path / k for k in (
+        "ledger", "selector", "exec", "pec", "kxpre", "kxpost", "tcr",
+        "sar", "sre", "rbk", "snap")}
+    return {"root": tmp_path, "main": main, "base_sha": base_sha, "stores": stores}
+
+
+def _contract(target_rel, expected_post):
+    return TC.build_test_contract("wu-3c", "cand", "batch", target_rel, [
+        TC.build_check("post-sha", TC.CHECK_TYPE_TARGET_SHA256, target_path=target_rel,
+                       expected_target_sha256=_sha(expected_post), required=True),
+        TC.build_check("diff-scope", TC.CHECK_TYPE_DIFF_SCOPE,
+                       expected_diff_paths=[target_rel], required=True),
+    ])
+
+
+def _prep3c(env, wu, *, source_rel, expected_post, base=None):
+    s = env["stores"]
+    kw = dict(
+        work_unit=wu, source_git_commit=env["base_sha"], source_historical_path=source_rel,
+        target_path=_TARGET_REL, test_contract=_contract(_TARGET_REL, expected_post),
+        ledger_dir=s["ledger"], selector_dir=s["selector"], execution_dir=s["exec"],
+        pre_execution_context_dir=s["pec"], objective="stage3c")
+    if base is not None:
+        kw["expected_action_base_sha"] = base
+    return WU.prepare_work_unit_execution(**kw)
+
+
+def _exec3c(env, wu, prep):
+    s = env["stores"]
+    return WU.execute_work_unit_remediation(
+        work_unit=wu, batch_execution_id=prep["batch_execution_id"],
+        child_execution_id=prep["child_execution_id"],
+        human_authorized_execution_authority_hash=prep["execution_authority_hash"],
+        human_authorization_reference="human-3c",
+        execution_dir=s["exec"], pre_execution_context_dir=s["pec"], selector_dir=s["selector"],
+        ledger_dir=s["ledger"], kx108_pre_decision_dir=s["kxpre"], kx108_post_decision_dir=s["kxpost"],
+        test_contract_results_dir=s["tcr"], sealed_receipt_dir=s["sar"],
+        sealed_rollback_evidence_dir=s["sre"], rollback_result_dir=s["rbk"])
+
+
+def _snapshot_A(env, wu, prepA, exA):
+    s = env["stores"]
+    return LS.create_local_snapshot(
+        mission_id="msn-3c", action_id="act-A", ordinal=0,
+        expected_branch_name="wubr", expected_worktree_path=wu.worktree_path,
+        expected_previous_mission_tip_sha=env["base_sha"],
+        batch_execution_id=prepA["batch_execution_id"], child_execution_id=prepA["child_execution_id"],
+        execution_authority_hash=exA["execution_authority_hash"], approval_id=exA["approval_id"],
+        kx108_pre_decision_record_id=exA["kx108_pre_decision_record_id"],
+        kx108_post_decision_record_id=exA["kx108_post_decision_record_id"],
+        test_contract_result_id=exA["test_contract_result_id"],
+        sealed_apply_receipt_id=exA["sealed_apply_receipt_id"],
+        sealed_rollback_evidence_id=exA["sealed_rollback_evidence_id"],
+        target_path=_TARGET_REL,
+        execution_dir=s["exec"], kx108_pre_decision_dir=s["kxpre"], kx108_post_decision_dir=s["kxpost"],
+        test_contract_results_dir=s["tcr"], sealed_receipt_dir=s["sar"],
+        sealed_rollback_evidence_dir=s["sre"], rollback_result_dir=s["rbk"],
+        snapshot_store_dir=s["snap"])
+
+
+def _wu3c(env):
+    r = WU.create_isolated_work_unit(
+        repo_root=env["main"], base_sha=env["base_sha"], branch_name="wubr",
+        worktree_path=env["root"] / "wt_3c", work_unit_id="wu-3c-0001")
+    assert r["status"] == WU.WORK_UNIT_CREATED, r
+    return r["work_unit"]
+
+
+# ── A / B — compat historique ──────────────────────────────────────────
+
+def test_3c_A_historical_prepare_no_param(repo3c):
+    wu = _wu3c(repo3c)
+    p = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    assert p["status"] == DRV.PREPARED_AWAITING_HUMAN_APPROVAL
+    assert p["dynamic_action_base_supplied"] is False
+    assert p["effective_action_base_sha"] == repo3c["base_sha"] == wu.base_sha
+
+
+def test_3c_B_explicit_base_equals_work_unit_base(repo3c):
+    wu = _wu3c(repo3c)
+    p = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B, base=repo3c["base_sha"])
+    assert p["status"] == DRV.PREPARED_AWAITING_HUMAN_APPROVAL
+    assert p["dynamic_action_base_supplied"] is True
+    assert p["effective_action_base_sha"] == repo3c["base_sha"]
+
+
+# ── C..H — vraie 2e action gouvernée depuis une base LOCALE avancée ────
+
+def test_3c_CDEFGH_real_second_action_from_advanced_base(repo3c):
+    wu = _wu3c(repo3c)
+    # action A : cible _A -> _B, KEEP
+    pA = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    exA = _exec3c(repo3c, wu, pA)
+    assert exA["status"] == DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW
+    eah_A = exA["execution_authority_hash"]
+    # snapshot A -> HEAD avance
+    snap = _snapshot_A(repo3c, wu, pA, exA)
+    assert snap["status"] == LS.SNAPSHOT_COMMITTED
+    advanced = snap["new_commit_sha"]
+    assert _git(Path(wu.worktree_path), "rev-parse", "HEAD") == advanced
+    assert _git(Path(wu.worktree_path), "status", "--porcelain") == ""
+    # C — action B préparée depuis la base avancée
+    pB = _prep3c(repo3c, wu, source_rel=_SOURCE_B_REL, expected_post=_C, base=advanced)
+    assert pB["status"] == DRV.PREPARED_AWAITING_HUMAN_APPROVAL, pB
+    assert pB["effective_action_base_sha"] == advanced
+    # D — le PEC de B (résolu par son id EXACT) porte bien la base avancée
+    pecB_path = next(repo3c["stores"]["pec"].rglob(pB["pre_execution_context_id"] + ".json"))
+    pecB = json.loads(pecB_path.read_text(encoding="utf-8"))
+    assert pecB["base_sha"] == advanced
+    assert pecB["worktree_isolated"] is True and pecB["branch_isolated"] is True
+    # H — B observe le résultat committé par A (précondition == _B)
+    assert pecB["target_pre_sha256"] == _sha(_B)
+    # E / F — enveloppe de B liée, EAH_B != EAH_A
+    assert pB["execution_authority_hash"] != eah_A
+    assert len(pB["execution_authority_hash"]) == 64
+    # G — B s'exécute réellement à travers le rail gouverné
+    exB = _exec3c(repo3c, wu, pB)
+    assert exB["status"] == DRV.KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW, exB
+    assert exB["kx108_pre_gate"] == "ALLOW" and exB["kx108_post_gate"] == "ALLOW"
+    assert (Path(wu.worktree_path) / _TARGET_REL).read_bytes() == _C
+    # work_unit.base_sha jamais muté
+    assert wu.base_sha == repo3c["base_sha"]
+    assert _git(Path(wu.worktree_path), "rev-parse", "HEAD") == advanced  # execute ne bouge pas HEAD
+
+
+# ── I — vieille base canonique après avancée du tip : rejet ───────────
+
+def test_3c_I_stale_canonical_base_after_advance_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    pA = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    exA = _exec3c(repo3c, wu, pA)
+    snap = _snapshot_A(repo3c, wu, pA, exA)
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_B_REL, expected_post=_C, base=repo3c["base_sha"])
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"].startswith("OBSERVED_HEAD_NOT_EQUAL_EXPECTED_ACTION_BASE_SHA")
+    # aucun artefact de préparation créé au-delà de A
+    assert len(sorted(repo3c["stores"]["pec"].rglob("pec-*.json"))) == 1
+
+
+# ── J / K / L / M / N — cas fail-closed du préflight ─────────────────
+
+def test_3c_J_malformed_base_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B, base="deadbeef")
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"] == "EXPECTED_ACTION_BASE_SHA_NOT_A_40_HEX_GIT_COMMIT_SHA"
+
+
+def test_3c_K_nonexistent_base_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B, base="0" * 40)
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"] == "EXPECTED_ACTION_BASE_SHA_NOT_A_COMMIT_IN_THIS_REPOSITORY"
+
+
+def test_3c_L_non_descendant_base_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    wt = Path(wu.worktree_path)
+    # commit ORPHELIN (aucune ascendance commune avec base_sha)
+    tree = _git(wt, "write-tree")
+    orphan = _git(wt, "commit-tree", tree, "-m", "orphan")
+    _git(wt, "reset", "--hard", orphan)                 # HEAD == orphan, branche wubr, propre
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B, base=orphan)
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"] == "EXPECTED_ACTION_BASE_SHA_DOES_NOT_DESCEND_FROM_WORK_UNIT_BASE_SHA"
+
+
+def test_3c_M_head_mismatch_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    pA = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    exA = _exec3c(repo3c, wu, pA)
+    snap = _snapshot_A(repo3c, wu, pA, exA)   # HEAD == snap, mais on passe base_sha
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_B_REL, expected_post=_C, base=repo3c["base_sha"])
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"].startswith("OBSERVED_HEAD_NOT_EQUAL_EXPECTED_ACTION_BASE_SHA")
+
+
+def test_3c_N_branch_mismatch_rejected(repo3c):
+    wu = _wu3c(repo3c)
+    wt = Path(wu.worktree_path)
+    _git(wt, "checkout", "-q", "-b", "sidebranch")   # branche != wubr, HEAD inchangé
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B, base=repo3c["base_sha"])
+    assert r["status"] == WU.WORK_UNIT_PREPARE_REJECTED_DYNAMIC_ACTION_BASE
+    assert r["reason"].startswith("BRANCH_MISMATCH")
+
+
+# ── O — worktree sale à la bonne base : rejet via PEC (strictness préservée) ──
+
+def test_3c_O_dirty_dynamic_base_worktree_rejected_by_pec(repo3c):
+    wu = _wu3c(repo3c)
+    pA = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    exA = _exec3c(repo3c, wu, pA)
+    snap = _snapshot_A(repo3c, wu, pA, exA)
+    advanced = snap["new_commit_sha"]
+    # salir le worktree APRÈS le snapshot (contenu non lié)
+    (Path(wu.worktree_path) / _SOURCE_B_REL).write_bytes(b"unrelated dirty\n")
+    r = _prep3c(repo3c, wu, source_rel=_SOURCE_B_REL, expected_post=_C, base=advanced)
+    # préflight dynamique passe (HEAD ok), puis PEC refuse fermé
+    assert r["status"] in (DRV.PREPARE_REJECTED,)
+    assert "WORKTREE_DIRTY" in (r.get("reason") or "") or "DIRTY" in (r.get("reason") or "")
+
+
+# ── P — work_unit.base_sha inchangé après prepare dynamique ──────────
+
+def test_3c_P_work_unit_base_sha_immutable(repo3c):
+    wu = _wu3c(repo3c)
+    before = wu.base_sha
+    pA = _prep3c(repo3c, wu, source_rel=_SOURCE_REL, expected_post=_B)
+    exA = _exec3c(repo3c, wu, pA)
+    snap = _snapshot_A(repo3c, wu, pA, exA)
+    _prep3c(repo3c, wu, source_rel=_SOURCE_B_REL, expected_post=_C, base=snap["new_commit_sha"])
+    assert wu.base_sha == before == repo3c["base_sha"]
+
+
+# ── Q / R / S / T — audit statique d'architecture ───────────────────
+
+def test_3c_Q_checkpoint1_remains_mission_agnostic():
+    src = Path(WU.__file__).read_text(encoding="utf-8")
+    for banned in ("import obsidia_bounded_mission_v0", "obsidia_bounded_mission_v0.",
+                   "MissionActionPlan", "class BoundedMissionAuthority",
+                   "projection[", "\"mission_tip_sha\"", "record_local_snapshot("):
+        assert banned not in src, banned
+    sig = inspect.signature(WU.prepare_work_unit_execution)
+    assert "expected_action_base_sha" in sig.parameters
+    assert sig.parameters["expected_action_base_sha"].default is None
+
+
+def test_3c_R_S_T_pec_driver_kx108_not_modified():
+    r = subprocess.run(["git", "status", "--porcelain",
+                        "scripts/obsidia_pre_execution_context.py",
+                        "scripts/obsidia_governed_execution_driver_v0.py",
+                        "scripts/obsidia_kx108_decision_store.py",
+                        "scripts/obsidia_governed_apply_v0.py",
+                        "scripts/obsidia_governed_rollback_v0.py",
+                        "scripts/obsidia_bounded_mission_v0.py",
+                        "scripts/obsidia_mission_local_snapshot_v0.py"],
+                       cwd=str(_REPO_ROOT), capture_output=True, text=True)
+    assert r.stdout.strip() == "", f"unexpected changes: {r.stdout}"
+
+
+def test_3c_static_dynamic_base_prepare_no_git_mutation():
+    src = Path(WU.__file__).read_text(encoding="utf-8")
+    # le préflight n'utilise que des sous-commandes de LECTURE
+    assert '"merge-base", "--is-ancestor"' in src
+    assert '"cat-file", "-e"' in src
+    # aucune mutation Git ajoutée (les seules restent worktree add/remove + branch -d)
+    for banned in ("git commit", "git add", "git reset", "git checkout", "git clean",
+                   "git merge", "git rebase", "git cherry-pick", "git stash", "git push"):
+        assert banned not in src, banned
