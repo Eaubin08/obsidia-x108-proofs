@@ -3,7 +3,7 @@
     "obsidia": {
       "command": "python",
       "args": [
-        "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/scripts/obsidia_mcp_server.py"
+        "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_TERMINAL_BOUNDED_V1/scripts/obsidia_mcp_server.py"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8"

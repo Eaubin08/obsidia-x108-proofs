@@ -24,15 +24,13 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO_ROOT / "scripts"
-ROUTER_ROOT = Path(r"C:\Users\User\Desktop\obsidia-router")
 AUDIT_LOG = REPO_ROOT / "audit" / "obsidia_gateway_usage.jsonl"
 
 sys.path.insert(0, str(SCRIPTS))
-sys.path.insert(0, str(ROUTER_ROOT))
 
 from export_gateway_memory_index import dominant_trees, words  # noqa: E402
 from obsidia_gateway import load_semantic_index, semantic_search  # noqa: E402
-from app.router.decision import decide  # noqa: E402
+import obsidia_gateway_route_decision_v0 as _RD  # noqa: E402
 
 SEMANTIC_ENTRIES = load_semantic_index()
 
@@ -87,10 +85,12 @@ def _audit(tool: str, preview: str, avoided: bool = True) -> None:
 def call_tool(name: str, args: dict) -> dict:
     if name == "obsidia_route":
         q = args["query"]
-        d = decide(q, memory_index={})
+        d = _RD.build_route_decision(q)
         _audit(name, q)
-        return dict(FRAME, ir=d["ir"], gate=d["gate"],
-                    level=d["level"], route=d["route"], reason=d["reason"])
+        return dict(FRAME, ir=d.get("ir"), gate=d.get("gate_verdict"),
+                    level=d.get("level"), route=d.get("route_class"),
+                    reason=d.get("reason"), router_status=d.get("router_status"),
+                    fail_closed_hold=d.get("fail_closed_hold"))
     if name == "obsidia_memory_search":
         q = args["query"]
         hit = semantic_search(q, SEMANTIC_ENTRIES)
