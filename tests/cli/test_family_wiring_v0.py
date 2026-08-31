@@ -308,7 +308,18 @@ class TestRealCliE2E:
         assert data["recomputed_active_global_blockers"] == 0
         assert data["recomputed_historical_superseded"] == 3
         assert isinstance(data["recomputed_active_file_blockers"], int)
-        assert data["provenance"]["git_branch"] == "feat/terminal-runtime-repair-and-bounded-build-v1"
+        # Invariant de provenance STRUCTUREL : git_branch doit refleter la
+        # branche REELLE du depot, quelle qu'elle soit.
+        _branch_proc = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=30,
+        )
+        assert _branch_proc.returncode == 0, _branch_proc.stderr
+        _actual_branch = _branch_proc.stdout.strip()
+        assert _actual_branch, "git rev-parse a renvoye une branche vide"
+        _branch = data["provenance"]["git_branch"]
+        assert isinstance(_branch, str) and _branch.strip()
+        assert _branch == _actual_branch
 
     def test_real_terminal_e2e_unregistered_family_fails_closed(self):
         proc = subprocess.run(
