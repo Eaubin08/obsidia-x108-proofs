@@ -359,7 +359,18 @@ class TestRealCliE2E:
         assert cand["authority"] == "NON_SOVEREIGN"
         assert cand["write_capability"] is False
         assert cand["decision_authority"] == "KX108_ONLY"
-        assert cand["finding_provenance"]["git_branch"] == "feat/terminal-runtime-repair-and-bounded-build-v1"
+        # Invariant de provenance STRUCTUREL : la provenance doit
+        # refleter la branche REELLE du depot.
+        _branch_proc = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=30,
+        )
+        assert _branch_proc.returncode == 0, _branch_proc.stderr
+        _actual_branch = _branch_proc.stdout.strip()
+        assert _actual_branch, "git rev-parse a renvoye une branche vide"
+        _branch = cand["finding_provenance"]["git_branch"]
+        assert isinstance(_branch, str) and _branch.strip()
+        assert _branch == _actual_branch
         assert len(cand["finding_provenance"]["family_wiring_state_sha256"]) == 64
 
         # next_action canonique = "ARCHIVE_OR_DELETE_..." => disjonction explicite,
