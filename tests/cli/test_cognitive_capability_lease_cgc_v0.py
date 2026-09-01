@@ -457,6 +457,51 @@ def test_revocation_build_record_reload_and_context(monkeypatch, tmp_path):
     assert v["grants_tool_access"] is False
 
 
+def test_verified_revocation_reload_valid_and_empty(monkeypatch, tmp_path):
+    _, _, _, lease = _built(monkeypatch, tmp_path, L.REASONING_LEASE)
+    sd = tmp_path / "lstore"
+
+    clean = L.load_verified_lease_revocations(lease, store_dir=sd)
+    assert clean["status"] == "REVOCATION_SCAN_VERIFIED"
+    assert clean["revocations"] == []
+
+    rev = L.build_lease_revocation(lease=lease, reason="operator stop")["revocation"]
+    assert L.record_lease_revocation(rev, store_dir=sd)["status"] == "REVOCATION_RECORDED"
+
+    loaded = L.load_verified_lease_revocations(lease, store_dir=sd)
+    assert loaded["status"] == "REVOCATION_SCAN_VERIFIED"
+    assert loaded["revocations"] == [rev]
+
+
+def test_verified_revocation_reload_unreadable_fail_closed(monkeypatch, tmp_path):
+    _, _, _, lease = _built(monkeypatch, tmp_path, L.REASONING_LEASE)
+    sd = tmp_path / "lstore"
+    d = sd / "capability_leases" / "revocations"
+    d.mkdir(parents=True)
+    (d / ("cclrev-" + "0" * 32 + ".json")).write_text("{broken", encoding="utf-8")
+
+    out = L.load_verified_lease_revocations(lease, store_dir=sd)
+    assert out["status"] == "REVOCATION_SCAN_REJECTED"
+    assert out["reason"].startswith("REVOCATION_RECORD_UNREADABLE:")
+    assert out["revocations"] == []
+
+
+def test_verified_revocation_reload_tamper_fail_closed(monkeypatch, tmp_path):
+    _, _, _, lease = _built(monkeypatch, tmp_path, L.REASONING_LEASE)
+    sd = tmp_path / "lstore"
+    rev = L.build_lease_revocation(lease=lease, reason="stop")["revocation"]
+    assert L.record_lease_revocation(rev, store_dir=sd)["status"] == "REVOCATION_RECORDED"
+
+    p = sd / "capability_leases" / "revocations" / f"{rev['revocation_id']}.json"
+    p.write_text(json.dumps({**rev, "reason": "tampered"},
+                            indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    out = L.load_verified_lease_revocations(lease, store_dir=sd)
+    assert out["status"] == "REVOCATION_SCAN_REJECTED"
+    assert out["reason"].startswith("REVOCATION_RECORD_INVALID:")
+    assert out["revocations"] == []
+
+
 def test_revocation_issuer_claude_rejected(monkeypatch, tmp_path):
     _, _, _, lease = _built(monkeypatch, tmp_path, L.REASONING_LEASE)
     out = L.build_lease_revocation(lease=lease, reason="x", issued_by="CLAUDE")
