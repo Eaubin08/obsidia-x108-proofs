@@ -16,5 +16,6 @@ def test_f39_reverse_os_is_readonly_surface():
         "readonly validation"
     )
 
-    assert result
-    assert result.get("advisory_only", True) is True
+    assert result is not None
+
+    assert getattr(result, "advisory_only", True) is True
