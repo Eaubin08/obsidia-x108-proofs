@@ -863,8 +863,19 @@ def register_git_blob_source(
     )
     entry_id = ledger_entry_id(identity_key, source_hash)
 
-    if any(e.get("ledger_entry_id") == entry_id for e in existing):
-        return {"status": "ALREADY_REGISTERED", "ledger_entry_id": entry_id}
+    _persisted = next((e for e in existing if e.get("ledger_entry_id") == entry_id), None)
+    if _persisted is not None:
+        # Contrat d'idempotence : un rejeu d'inscription DOIT exposer les memes
+        # faits source immuables que la premiere inscription (cf. le retour
+        # DISCOVERED plus bas). Les valeurs proviennent de l'entree PERSISTEE,
+        # jamais d'une resynthese locale, afin de ne pas pouvoir diverger d'elle.
+        return {
+            "status": "ALREADY_REGISTERED",
+            "ledger_entry_id": entry_id,
+            "source_git_commit_sha": _persisted.get("source_git_commit_sha"),
+            "source_git_blob_sha": _persisted.get("source_git_blob_sha"),
+            "source_content_sha256": _persisted.get("source_content_sha256"),
+        }
 
     prev_entry_id: "str | None" = None
     if dedup == "SAME_PATH_NEW_CONTENT":
