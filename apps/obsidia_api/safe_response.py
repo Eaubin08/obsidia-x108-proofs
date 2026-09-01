@@ -51,6 +51,7 @@ _ISOLATED_TOKEN_RE = re.compile(
 _SOVEREIGNTY_PROTECTED: dict[str, Any] = {
     "decision_authority": "KX108_ONLY",
     "allowed_to_decide": False,
+    "allowed_to_act": False,
     "readonly": True,
     "advisory_only": True,
     "context_signal_only": True,
