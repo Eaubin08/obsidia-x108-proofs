@@ -263,6 +263,57 @@ def test_metrics_native_zero_cognition_and_cognitive_counts(tmp_path):
 #  §33 self-review invariants / §30 frozen
 # ══════════════════════════════════════════════════════════════════════════
 
+def test_public_relay_mission_reload_and_verify(tmp_path):
+    c = R.relay_submit_mission(requested_outcome="reason about module X",
+                               mission_kind=R.KIND_ENGINEERING_REASONING,
+                               store_dir=_sd(tmp_path))
+    m = R.load_relay_mission(c["relay_mission_id"], store_dir=_sd(tmp_path))
+    assert m is not None
+    ok, why = R.verify_relay_mission(m, store_dir=_sd(tmp_path))
+    assert ok is True and why is None
+    assert m["relay_mission_id"] == c["relay_mission_id"]
+    assert m["mission_submission_id"].startswith("gsub-")
+    assert m["capability_request_ref"] == c["capability_request_ref"]
+    assert m["mission_state"] == R.MISSION_WAITING_CAPABILITY
+    assert m["is_execution_authority"] is False
+    assert m["is_kx_authority"] is False
+    assert m["is_human_authority"] is False
+
+
+def test_public_relay_mission_reload_rejects_tamper(tmp_path):
+    c = R.relay_submit_mission(requested_outcome="reason",
+                               mission_kind=R.KIND_ENGINEERING_REASONING,
+                               store_dir=_sd(tmp_path))
+    p = _sd(tmp_path) / "relay_missions" / f"{c['relay_mission_id']}.json"
+    m = json.loads(p.read_text(encoding="utf-8"))
+    m["mission_submission_id"] = "gsub-" + "0" * 32
+    p.write_text(json.dumps(m, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    assert R.load_relay_mission(c["relay_mission_id"], store_dir=_sd(tmp_path)) is None
+
+
+def test_public_relay_mission_long_outcome_restart_safe(tmp_path):
+    outcome = "X" * 450
+    c = R.relay_submit_mission(requested_outcome=outcome,
+                               mission_kind=R.KIND_ENGINEERING_REASONING,
+                               store_dir=_sd(tmp_path))
+    m = R.load_relay_mission(c["relay_mission_id"], store_dir=_sd(tmp_path))
+    assert m is not None
+    assert len(m["requested_outcome"]) == 400
+    assert m["mission_submission_id"].startswith("gsub-")
+    assert m["capability_request_ref"] == c["capability_request_ref"]
+
+
+def test_public_relay_mission_rejects_capability_cross_binding_tamper(tmp_path):
+    c = R.relay_submit_mission(requested_outcome="reason",
+                               mission_kind=R.KIND_ENGINEERING_REASONING,
+                               store_dir=_sd(tmp_path))
+    p = _sd(tmp_path) / "relay_missions" / f"{c['relay_mission_id']}.json"
+    m = json.loads(p.read_text(encoding="utf-8"))
+    m["capability_request_ref"] = "gcap-" + "0" * 32
+    p.write_text(json.dumps(m, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    assert R.load_relay_mission(c["relay_mission_id"], store_dir=_sd(tmp_path)) is None
+
+
 def test_submit_capability_result_rejects_authority_producers(tmp_path):
     c = R.relay_submit_mission(requested_outcome="x", mission_kind=R.KIND_ENGINEERING_REASONING,
                                store_dir=_sd(tmp_path))
