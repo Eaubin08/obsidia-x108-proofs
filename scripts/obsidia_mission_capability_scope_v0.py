@@ -180,6 +180,10 @@ def _mcs_store(store_dir) -> Path:
     return _RD._sd(store_dir) / "mission_capability_scopes"
 
 
+def _lidec_store(store_dir) -> Path:
+    return _RD._sd(store_dir) / "lease_issuance_decisions"
+
+
 def _reject(status: str, reason: str, **extra) -> dict:
     return {"status": status, "reason": reason, "record": None,
             "grants_tool_access": False, "is_execution_authority": False,
@@ -1158,6 +1162,58 @@ def verify_lease_issuance_decision(lidec: Optional[dict]) -> "tuple[bool, Option
         return False, "LIDEC_ID_NOT_DERIVED"
     return True, None
 
+
+
+def persist_lease_issuance_decision(lidec: dict, store_dir=None) -> dict:
+    ok, why = verify_lease_issuance_decision(lidec)
+    if not ok:
+        return {"status": "LIDEC_PERSIST_REJECTED", "reason": f"STRUCTURAL:{why}"}
+    d = _lidec_store(store_dir)
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        return {"status": "LIDEC_PERSIST_REJECTED", "reason": f"MKDIR:{exc}"}
+    p = d / f"{lidec['lease_issuance_decision_id']}.json"
+    payload = json.dumps(lidec, indent=2, sort_keys=True) + "\n"
+    if p.exists():
+        try:
+            existing = p.read_text(encoding="utf-8")
+        except OSError as exc:
+            return {"status": "LIDEC_PERSIST_REJECTED", "reason": f"READ:{exc}"}
+        if existing == payload:
+            return {
+                "status": "IDEMPOTENT_ALREADY_EXISTS",
+                "lease_issuance_decision_id": lidec["lease_issuance_decision_id"],
+            }
+        return {
+            "status": "LIDEC_IMMUTABILITY_VIOLATION",
+            "lease_issuance_decision_id": lidec["lease_issuance_decision_id"],
+            "divergent_lidec_rewrite": "FAIL_CLOSED",
+        }
+    tmp = p.with_suffix(".json.tmp")
+    try:
+        tmp.write_text(payload, encoding="utf-8")
+        tmp.replace(p)
+    except OSError as exc:
+        return {"status": "LIDEC_PERSIST_REJECTED", "reason": f"WRITE:{exc}"}
+    return {
+        "status": "STORED",
+        "lease_issuance_decision_id": lidec["lease_issuance_decision_id"],
+    }
+
+
+def load_lease_issuance_decision(lidec_id: str, store_dir=None) -> Optional[dict]:
+    if not (isinstance(lidec_id, str) and lidec_id.startswith("lidec-")):
+        return None
+    p = _lidec_store(store_dir) / f"{lidec_id}.json"
+    if not p.is_file():
+        return None
+    try:
+        lidec = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    ok, _ = verify_lease_issuance_decision(lidec)
+    return lidec if ok else None
 
 # ══════════════════════════════════════════════════════════════════════════
 #  3 — CLI mince (diagnostic uniquement)
