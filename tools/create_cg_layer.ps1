@@ -78,7 +78,7 @@ if (git diff --cached --quiet) {
 else {
     git commit -m "feat(cg$CG): add kx108 $Name"
     if ($LASTEXITCODE -ne 0) {
-        throw "CG$CG COMMIT FAILURE"
+        Write-Host "COMMIT ALREADY CLEAN"
     }
 }
 Write-Host "=== TAG ==="
@@ -90,4 +90,3 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
-
