@@ -1,19 +1,17 @@
 ﻿param(
     [Parameter(Mandatory=$true)]
     [int]$CG,
+
     [Parameter(Mandatory=$true)]
     [string]$Name,
+
     [Parameter(Mandatory=$false)]
     [string]$Prefix="kx108",
+
     [Parameter(Mandatory=$false)]
     [switch]$DryRun
-)]
-    [int]$CG,
-    [Parameter(Mandatory=$true)]
-    [string]$Name,
-    [Parameter(Mandatory=$false)]
-    [string]$Prefix="kx108",`n`n    [Parameter(Mandatory=$false)]`n    [switch]$DryRun
 )
+
 $ErrorActionPreference = "Stop"
 if (
     [string]::IsNullOrWhiteSpace($Name) -or
@@ -120,3 +118,4 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
+
