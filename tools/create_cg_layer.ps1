@@ -75,7 +75,7 @@ CG Layer Factory
     "docs/CG${CG}_BUILD_RECEIPT_V1.md"
 
 
-    Set-Content $path $receipt -Encoding UTF8
+    $receipt = ($receipt -split "`n" | ForEach-Object { $_.TrimEnd() }) -join "`n"`r`n`r`n    Set-Content $path $receipt -Encoding UTF8
 
 
     Write-Host "RECEIPT:"
@@ -230,14 +230,4 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
-
-
-
-
-
-
-
-
-
-
 
