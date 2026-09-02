@@ -4,6 +4,14 @@
     [Parameter(Mandatory=$true)]
     [string]$Name,
     [Parameter(Mandatory=$false)]
+    [string]$Prefix="kx108",
+    [Parameter(Mandatory=$false)]
+    [switch]$DryRun
+)]
+    [int]$CG,
+    [Parameter(Mandatory=$true)]
+    [string]$Name,
+    [Parameter(Mandatory=$false)]
     [string]$Prefix="kx108",`n`n    [Parameter(Mandatory=$false)]`n    [switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
