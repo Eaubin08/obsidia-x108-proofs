@@ -75,7 +75,7 @@ CG Layer Factory
     "docs/CG${CG}_BUILD_RECEIPT_V1.md"
 
 
-    $receipt = ($receipt -split "`n" | ForEach-Object { $_.TrimEnd() }) -join "`n"
+    $receipt = ($receipt -split "`n" | ForEach-Object { $_.Trim() }) -join "`n"
 
     Set-Content $path $receipt -Encoding UTF8
 
