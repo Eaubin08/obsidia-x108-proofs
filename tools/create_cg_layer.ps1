@@ -77,7 +77,11 @@ function Create-CGLayerFiles {
     $matrixDoc =
     "docs/CG${CG}_${Prefix}_${upper}_FINAL_CONFORMANCE_MATRIX_V1.md"
     New-Item $scriptPath -ItemType File -Force | Out-Null
-    New-Item $testPath -ItemType File -Force | Out-Null
+    @"
+def test_${slug}_placeholder():
+
+    assert True
+"@ | Set-Content $testPath -Encoding UTF8
     New-Item $auditDoc -ItemType File -Force | Out-Null
     New-Item $matrixDoc -ItemType File -Force | Out-Null
     Write-Host "CREATED:"
@@ -149,5 +153,6 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
+
 
 
