@@ -8,23 +8,23 @@ CG25 introduces contradiction isolation and resolution.
 
 Proof Verification
 
-↓
+â†“
 
 Contradiction Detection
 
-↓
+â†“
 
 Classification
 
-↓
+â†“
 
 Propagation Block
 
-↓
+â†“
 
 Resolution Receipt
 
-↓
+â†“
 
 Audit
 
