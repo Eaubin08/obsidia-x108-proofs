@@ -4,7 +4,7 @@
     [Parameter(Mandatory=$true)]
     [string]$Name,
     [Parameter(Mandatory=$false)]
-    [string]$Prefix="kx108"
+    [string]$Prefix="kx108",`n`n    [Parameter(Mandatory=$false)]`n    [switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
 if (
@@ -12,6 +12,22 @@ if (
     $Name -eq "nom-de-la-couche"
 ) {
     throw "INVALID CG NAME: provide a real layer name"
+}
+if ($DryRun) {
+    Write-Host "=== CG$CG DRY RUN ==="
+    Write-Host "NAME:"
+    Write-Host $Name
+    Write-Host "PREFIX:"
+    Write-Host $Prefix
+    Write-Host "SCRIPT:"
+    Write-Host "scripts/kernel/${Prefix}_$($Name.ToLower().Replace("-","_"))_v1.py"
+    Write-Host "TEST:"
+    Write-Host "tests/cli/kernel/test_${Prefix}_$($Name.ToLower().Replace("-","_"))_v1.py"
+    Write-Host "DOC AUDIT:"
+    Write-Host "docs/CG${CG}_${Prefix}_$($Name.ToUpper().Replace("-","_"))_FINAL_AUDIT_V1.md"
+    Write-Host "DOC MATRIX:"
+    Write-Host "docs/CG${CG}_${Prefix}_$($Name.ToUpper().Replace("-","_"))_FINAL_CONFORMANCE_MATRIX_V1.md"
+    exit 0
 }
 function Normalize-File {
     param(
