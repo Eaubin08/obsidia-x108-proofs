@@ -212,67 +212,7 @@ CG Layer Factory
 }
 
 
-function Create-CGReceipt {
 
-    param(
-        [int]$CG,
-        [string]$Name,
-        [string]$Prefix
-    )
-
-    $commit = git rev-parse --short HEAD
-
-    $tag = "cg$CG-$Prefix-$Name-v1"
-
-    $receipt = @"
-# CG$CG BUILD RECEIPT V1
-
-## Identity
-
-CG:
-$CG
-
-Name:
-$Name
-
-Prefix:
-$Prefix
-
-
-## Git
-
-Commit:
-$commit
-
-Tag:
-$tag
-
-
-## Validation
-
-Tests:
-PASS
-
-Status:
-CLOSED
-
-
-## Generated
-
-CG Layer Factory
-"@
-
-
-    $receiptPath =
-    "docs/CG${CG}_BUILD_RECEIPT_V1.md"
-
-
-    Set-Content $receiptPath $receipt -Encoding UTF8
-
-
-    Write-Host "RECEIPT:"
-    Write-Host $receiptPath
-}
 
 Create-CGReceipt `
 -CG $CG `
@@ -288,6 +228,7 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
+
 
 
 
