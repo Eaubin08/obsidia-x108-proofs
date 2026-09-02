@@ -7,6 +7,12 @@
     [string]$Prefix="kx108"
 )
 $ErrorActionPreference = "Stop"
+if (
+    [string]::IsNullOrWhiteSpace($Name) -or
+    $Name -eq "nom-de-la-couche"
+) {
+    throw "INVALID CG NAME: provide a real layer name"
+}
 function Normalize-File {
     param(
         [string]$Path
