@@ -96,6 +96,34 @@ $docs = Get-ChildItem docs -Filter "CG$CG*" -File
 foreach ($doc in $docs) {
     Normalize-File $doc.FullName
 }
+if ($RunTests) {
+
+    $slug = $Name.ToLower().Replace("-","_")
+
+    $testPath =
+    "tests/cli/kernel/test_${Prefix}_${slug}_v1.py"
+
+
+    if (!(Test-Path $testPath)) {
+
+        throw "TEST FILE NOT FOUND: $testPath"
+
+    }
+
+
+    Write-Host "=== RUN TESTS ==="
+
+    python -m pytest $testPath -q
+
+
+    if ($LASTEXITCODE -ne 0) {
+
+        throw "CG$CG TEST FAILURE"
+
+    }
+
+}
+
 Write-Host "=== GIT CHECK ==="
 git add .
 git diff --cached --check
@@ -121,4 +149,5 @@ else {
     git tag $tag
 }
 Write-Host "CG$CG COMPLETE"
+
 
