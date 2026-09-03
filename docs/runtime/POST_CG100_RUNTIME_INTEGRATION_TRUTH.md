@@ -1,11 +1,13 @@
 # Post-CG100 Runtime Integration — Truth Report
 
-Branch: `source/cg9-cognitive-provider-binder-20260901`
-Scope: closing the AgentResult → ContextPacket → X108 runtime gap identified by CG93/CG97.
+Branch: `feat/r5-governed-runtime-e2e-20260903` (base `f62ef0ac`)
+Scope: R4 closed the agent → ContextPacket → X108 dry-run link. R5 closes the
+governed **internal** runtime cycle: a real sovereign verdict gating a real
+canonical provider execution.
 CG100 closes the numbered sequence. No CG101+ layer was created.
 
-This document states what is proven, what is integrated but dry-run, and what is
-still not integrated. No flag is raised without evidence.
+No flag is raised without evidence. An internal governed execution is **not**
+external world actuation, and the two claims are kept apart everywhere below.
 
 ---
 
@@ -13,120 +15,145 @@ still not integrated. No flag is raised without evidence.
 
 | Item | Evidence |
 |---|---|
-| Canonical `AgentResult → ContextPacket` binder | `periphery/context/agent_result_context_adapter.py`; 9 tests in `tests/periphery/test_agent_result_context_adapter.py` |
-| Canonical runtime flow agent → context → X108 | `periphery/context/agent_x108_context_flow.py`; 21 tests in `tests/periphery/test_agent_x108_context_flow.py` |
-| Real API caller wired | `POST /api/periphery/governance/agent-x108-context` in `apps/obsidia_api/routes/periphery_ops.py`; 11 tests in `tests/api/test_agent_x108_context_route.py` |
-| Provenance preserved end to end | `agent_id`, `agent_layer`, `action_id`, `evidence_refs`, `recommended_gate`, agent notes asserted against the real `AgentResult` |
-| Canonical validator + X108 context boundary pass | `validate_context_packet()` and `check_x108_context_boundary()` return `valid/passed` with zero violations on the real projection |
-| Receipt lifecycle closed | `CanonicalRuntimeReceiptFlow.run()` now calls `.complete()` on a real sealed result, `.fail()` otherwise; 8 tests in `tests/cli/providers/test_canonical_runtime_receipt_lifecycle_v1.py` |
-| Non-sovereignty invariants locked | `emits_act`, `emits_decision`, `memory_write`, `kernel_mutation`, `runtime_allowed_now` all False; `decision_authority == "KX108_ONLY"` |
-| Fail closed | Pre-gate failure reports `BLOCK` / `X108_FAIL_CLOSED` and never reaches admission; a mutated ContextPacket raises before admission |
-| CG93/CG97 assertions reconciled with fact | `scripts/kernel/kx108_runtime_link_facts_v1.py` detects the link from the filesystem; CG97 rejects a surface lying in either direction |
+| Canonical `AgentResult → ContextPacket` binder | `periphery/context/agent_result_context_adapter.py`; 9 tests |
+| Agent → context → X108 dry-run flow | `periphery/context/agent_x108_context_flow.py`; 21 tests |
+| API caller | `POST /api/periphery/governance/agent-x108-context`; 11 tests |
+| Receipt lifecycle | `.complete()` only on a real sealed result, `.fail()` otherwise; 8 tests |
+| **Governed internal runtime cycle** | `scripts/obsidia_governed_runtime_cycle_v1.py`; 27 tests in `tests/integration/test_canonical_governed_runtime_e2e_v1.py` |
+| **Real sovereign verdict** | `sigma.guard.GuardX108.decide()` via `periphery.sigma_bridge`; the dry-run stub is not consulted |
+| **Cryptographic evidence verification** | `build_os3_ticket` + `run_replay` → `replay_status == PASS`, 64-hex input/output/trace/merkle |
+| **Fail closed** | BLOCK, HOLD, tampered ticket, failed replay, no bound surface → provider invocation count `== 0` |
+| **Real provider invocation** | verified ALLOW → count `== 1`, through the real `CanonicalExecutionFlow → Orchestrator → MissionExecutionRouter` |
+| **Sealed envelope + terminal receipt** | `envelope.status == SEALED`, `receipt.status == COMPLETED`, `result_ref == runtime_id` |
+| **Readonly feedback** | `build_memory_candidate` → `memory_write_allowed == False` on every path |
+| Runtime link facts | `scripts/kernel/kx108_runtime_link_facts_v1.py` detects from disk; 5 tests |
 
 ---
 
-## B. INTEGRATED BUT DRY-RUN
+## B. INTERNAL REAL RUNTIME
 
-The whole agent → X108 path is wired to `runtime_wiring.x108_admission_stub.evaluate_dry_run()`.
+The chain actually traversed, with no core mocked:
 
-- Observable decisions are bounded to `BLOCK` / `HOLD` / `ALLOW_CONTEXT_ONLY`.
-- `ACT` is structurally unreachable: it is absent from `VALID_DRY_RUN_DECISIONS`
-  and from `ADMISSIBLE_DECISIONS`, and both are asserted.
-- `DecisionTicketDryRun.dry_run` is always True; hashes, Merkle root and replay
-  remain honest `NOT_COMPUTED` / `NOT_RUN` placeholders.
-- World action stays `dry_run_only=True`, `world_action_allowed=False`.
+```
+run_registered_agent            → real AgentResult
+agent_result_to_context_packet  → real ContextPacket (R4 binder, unchanged)
+validate_context_packet / check_x108_context_boundary
+sigma_bridge.run_bank_with_periphery → GuardX108.decide() → x108_gate
+build_os3_ticket + run_replay   → PASS
+[GATE] verified ALLOW only
+CanonicalRuntimeReceiptFlow → CanonicalExecutionFlow → Orchestrator
+    → MissionExecutionRouter → bounded sandbox handler
+    → CanonicalExecutionEnvelope.seal() → ProviderRuntimeReceipt COMPLETED
+build_memory_candidate          → readonly candidate
+```
 
-This is a real binding to a dry-run gate, not a real gate.
+`HOLD` and `BLOCK` in the tests are genuine kernel verdicts from genuinely
+degraded domain states (fraud pattern, over-commitment), never forced values.
 
----
-
-## C. NOT INTEGRATED
-
-- No real X108-gated execution path is activated
-  (`REAL_X108_GATED_EXECUTION_PATH_NOT_ACTIVATED`).
-- No real proof chain: hashing, Merkle sealing, RFC3161 anchoring and replay
-  are not computed on this path.
-- The 52 agent configurations are declarative only and are never executed
-  (HTTP 422 `AGENTS52_CONFIG_NOT_EXECUTABLE`).
-
----
-
-## D. HISTORICAL / ARCHIVE
-
-Untouched, and deliberately excluded from the canonical pytest perimeter by
-`pytest.ini` (`norecursedirs` / `addopts`), never deleted or repaired:
-
-- `proofs/V18_3_1/`, `_FREEZE/`, `freeze/`, `_source_packs/`, `.runtime_freezes/`
-- LEGACY test modules importing a removed `agents.*` layout:
-  `tests/sigma_stress_test.py`, `tests/test_agents_functional.py`,
-  `tests/test_consensus_inprocess.py`, `tests/test_sigma_v18_9.py`
-- `periphery/modules_agents/agent_registry.py`: a legacy mirror of
-  `periphery/agent_registry.py`. Verified non-divergent — same 14 agent ids
-  bound to the same callables in `periphery.agents.*` — and not imported by
-  the runtime. Left in place.
+The coordinator carries no authority: it cannot decide, cannot synthesize an
+ALLOW, cannot produce consent, cannot write memory, cannot mutate the kernel,
+and never changes `runtime_allowed_now` on the ContextPacket.
 
 ---
 
-## E. BLOCKING BEFORE RUNTIME E2E
+## C. STILL DRY-RUN
 
-1. No real execution: every decision is a dry-run stub verdict.
-2. No proof chain computed on the agent → X108 path.
-3. No X108 runtime consent mechanism; `runtime_allowed_now` is structurally False.
-
-## F. BLOCKING BEFORE GLOBAL RUNTIME
-
-4. Only 14 operational agents are wired; the remaining declared configurations
-   are documentary and require human validation.
-5. Mission / provider execution surfaces remain sandboxed with all authority
-   flags False.
-
-## G. BLOCKING BEFORE PRODUCTION
-
-6. Everything in E and F.
-7. Pre-existing unrelated debt in `tests/api/*brody*` (10 failures, present
-   before this work and untouched by it).
-8. No release, deployment or freeze authorization exists, by design.
+- `runtime_wiring/x108_admission_stub.py` — unchanged, still a dry-run stub.
+  `ALLOW_CONTEXT_ONLY` is **never** an execution authorization and is not
+  consulted by the governed cycle.
+- `SovereignTicket` / `WorldActionBus` — `dry_run_only=True`,
+  `world_action_allowed=False`.
+- `ContextPacket.runtime_allowed_now` — structurally False.
 
 ---
 
-## Flag state — none raised
+## D. NOT INTEGRATED
+
+**Canonical KX108 decision-record persistence for an agent cycle.**
+`run_and_persist_kx108_pre_execution_decision` cannot be used here: its
+binding contract (`_PRE_BINDING_CONTEXT_FIELDS`) requires remediation-rail
+artefacts — `batch_execution_id`, `child_execution_id`, an
+`execution_authority_hash` over file content, an `approval_id` for a
+HumanApproval bound to that hash, a `pre_execution_context_id` for a Git
+isolation capture, a `test_contract_hash`. An agent → provider cycle has none
+of them, and fabricating them would divert a human authorization granted for
+something else. Named as `KX108_DECISION_RECORD_PERSISTENCE_FOR_AGENT_CYCLE`
+and left unresolved rather than bypassed.
+
+Consequently `verify_kx108_decision_record()` is not applied to this cycle.
+The verification performed is the OS3 rail's (ticket + replay), which is real
+but is not the decision-record verification.
+
+Also not integrated: external world actuation; a real proof chain with
+Merkle sealing and RFC3161 anchoring on this path; the 52 declarative agent
+configurations, which stay non-executable.
+
+---
+
+## E. BLOCKING BEFORE GLOBAL RUNTIME
+
+1. No canonical decision-record persistence or verification for agent cycles (D).
+2. No `PreExecutionContext` bound to an agent cycle.
+3. Only 14 operational agents are wired; only 4 sigma domains have a canonical
+   bridge (bank, trading, ecom, gps) — any other domain fails closed.
+4. Mission and provider surfaces outside this cycle keep all authority flags False.
+
+## F. BLOCKING BEFORE PRODUCTION
+
+5. Everything in E.
+6. External world actuation is not activated and is out of scope for this pass.
+7. No release, deployment or freeze authorization exists, by design.
+8. Pre-existing unrelated debt in `tests/api/*brody*` (10 failures, predating
+   this work, untouched).
+
+---
+
+## Flag state — what R5 did and did not raise
 
 | Flag | Value | Why |
 |---|---|---|
-| `canonical_agent_context_adapter_present` | **true** | Detected as a repository fact; binder + flow both exist and are tested |
-| `runtime_end_to_end_validated` | **false** | The path ends in a dry-run stub; no real execution occurs |
-| `runtime_globally_validated` | **false** | Only one runtime link is closed |
+| `canonical_agent_context_adapter_present` | **true** | Detected on disk; binder + flow exist and are tested |
+| `governed_runtime_cycle_present` | **true** | Detected on disk; 27 E2E tests |
+| `runtime_end_to_end_validated` | **false** | 3 links of the R5-L chain are missing: `REAL_PRE_EXECUTION_CONTEXT`, `REAL_DECISION_RECORD_PERSISTED`, `REAL_DECISION_RECORD_VERIFIED` |
+| `runtime_globally_validated` | **false** | One internal cycle, four domains, no global coverage |
+| `world_action_runtime_activated` | **false** | Untouched by this pass, by mandate |
 | `runtime_allowed_now` | **false** | Structurally locked in `ContextPacket.validate_invariants()` |
-| `production_ready` | **false** | See E, F, G |
-| `release_ready` | **false** | See E, F, G |
-| `deployment_ready` | **false** | See E, F, G |
-| `final_freeze` | **false** | See E, F, G |
-| `activation_authorized` | **false** | `runtime_activation_authorized` is False in every release/freeze proof |
+| `production_ready` | **false** | See E, F |
+| `release_ready` | **false** | See E, F |
+| `deployment_ready` | **false** | See E, F |
+| `final_freeze` | **false** | See E, F |
+| `activation_authorized` | **false** | `runtime_activation_authorized` False in every release/freeze proof |
 
-An adapter existing is not a runtime being validated. The first is a fact; the
-second would require real gated execution, which does not exist here.
+Ten of the thirteen R5-L links are proven. Three are not, so the E2E flag stays
+down. A real internal governed execution is a fact; a validated runtime is not.
 
 ---
 
 ## Reproduction
 
 ```bash
-# canonical perimeter
-python -m pytest tests/cli/kernel tests/cli/providers tests/non_sovereignty \
-  tests/periphery tests/api/test_agent_x108_context_route.py \
-  tests/integration/test_full_stack_static_bank.py \
+# R5 governed internal runtime cycle
+python -m pytest tests/integration/test_canonical_governed_runtime_e2e_v1.py -q
+
+# binder / runtime / API
+python -m pytest tests/periphery/test_agent_result_context_adapter.py \
+  tests/periphery/test_agent_x108_context_flow.py \
+  tests/api/test_agent_x108_context_route.py -q
+
+# KX108 decision store and pre-execution gate
+python -m pytest tests/cli/test_kx108_pre_execution_gate_v0.py \
+  tests/test_kx108_decision_persistence_v0.py \
+  tests/cli/test_kx108_post_pre_binding_v0.py -q
+
+# governed execution / providers / non-sovereignty / bounded full stack
+python -m pytest tests/cli/test_governed_apply_preflight_v0.py \
+  tests/cli/test_governed_content_apply_c2_v0.py \
+  tests/cli/test_governed_rollback_v0.py -q
+python -m pytest tests/cli/providers tests/non_sovereignty -q
+python -m pytest tests/integration/test_full_stack_static_bank.py \
   tests/integration/test_full_stack_static_gps.py \
   tests/integration/test_full_stack_static_trading.py \
   tests/integration/test_os3_gencoin_chain.py -q
-
-# the new runtime path alone
-python -m pytest tests/periphery/test_agent_x108_context_flow.py \
-  tests/api/test_agent_x108_context_route.py \
-  tests/cli/providers/test_canonical_runtime_receipt_lifecycle_v1.py -q
-
-# manifest
-python scripts/generate_recursive_manifest.py
-python scripts/verify_recursive_manifest.py
 
 # after any world-action test run
 git restore -- audit/world_action_bus.jsonl

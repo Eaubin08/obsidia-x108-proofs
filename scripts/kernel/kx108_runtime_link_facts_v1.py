@@ -25,13 +25,33 @@ CANONICAL_AGENT_CONTEXT_FLOW_PATH = (
     "periphery/context/agent_x108_context_flow.py"
 )
 
+# The governed internal runtime cycle: a real GuardX108 verdict gating the
+# real canonical execution rail.
+GOVERNED_RUNTIME_CYCLE_PATH = (
+    "scripts/obsidia_governed_runtime_cycle_v1.py"
+)
+
 # Runtime links that remain deliberately not activated.
 MISSING_RUNTIME_LINK_ADAPTER = (
     "AGENT_RESULT_TO_CONTEXT_PACKET_CANONICAL_ADAPTER"
 )
 
+# Kept for compatibility with existing consumers. Since the governed
+# internal cycle exists, this name denotes what is still missing: a real
+# X108-gated path acting on the EXTERNAL world.
 MISSING_RUNTIME_LINK_REAL_EXECUTION = (
     "REAL_X108_GATED_EXECUTION_PATH_NOT_ACTIVATED"
+)
+
+MISSING_RUNTIME_LINK_WORLD_ACTUATION = (
+    "EXTERNAL_WORLD_ACTUATION_NOT_ACTIVATED"
+)
+
+# The agent cycle cannot produce a canonical KX108 decision record: the
+# binding contract of run_and_persist_kx108_pre_execution_decision requires
+# remediation-rail artefacts an agent cycle does not have.
+MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD = (
+    "KX108_DECISION_RECORD_PERSISTENCE_FOR_AGENT_CYCLE"
 )
 
 
@@ -46,19 +66,32 @@ def canonical_agent_context_adapter_present() -> bool:
     )
 
 
+def governed_runtime_cycle_present() -> bool:
+    """True when the governed internal runtime cycle module exists.
+
+    Presence proves one internal path exists where a real GuardX108 ALLOW
+    gates a real canonical provider execution. It proves nothing about the
+    external world, which stays dry-run.
+    """
+    return _exists(GOVERNED_RUNTIME_CYCLE_PATH)
+
+
 def missing_runtime_links() -> tuple[str, ...]:
     """
     Runtime links still absent or not activated.
 
-    The real X108-gated execution path is always listed: every observable
-    decision on this perimeter stays BLOCK / HOLD / ALLOW_CONTEXT_ONLY and
-    no world action is ever executed.
+    External world actuation is always listed: no world action is ever
+    executed on this perimeter. The canonical decision-record persistence
+    for an agent cycle is always listed too: it has no applicable binding
+    contract, and none is fabricated.
     """
     links = []
 
     if not canonical_agent_context_adapter_present():
         links.append(MISSING_RUNTIME_LINK_ADAPTER)
 
+    links.append(MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD)
+    links.append(MISSING_RUNTIME_LINK_WORLD_ACTUATION)
     links.append(MISSING_RUNTIME_LINK_REAL_EXECUTION)
 
     return tuple(links)
@@ -75,6 +108,15 @@ def runtime_link_facts() -> dict:
 
         "canonical_agent_context_flow_path":
             CANONICAL_AGENT_CONTEXT_FLOW_PATH,
+
+        "governed_runtime_cycle_present":
+            governed_runtime_cycle_present(),
+
+        "governed_runtime_cycle_path":
+            GOVERNED_RUNTIME_CYCLE_PATH,
+
+        "world_action_runtime_activated":
+            False,
 
         "missing_runtime_links":
             missing_runtime_links(),
