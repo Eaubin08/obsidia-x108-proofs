@@ -81,6 +81,7 @@ from periphery.x108_ingress.x108_context_boundary import check_x108_context_boun
 from periphery.feedback_memory_bridge_brody_readonly import build_memory_candidate
 from periphery.os3_replay_runner import run_replay
 from periphery.os3_ticket import build_os3_ticket, ticket_is_valid
+from periphery.gencoin import compute_gencoin
 from periphery.sigma_bridge import (
     run_bank_with_periphery,
     run_ecom_with_periphery,
@@ -119,6 +120,7 @@ REFUSED_DECISION_RECORD_NOT_VERIFIED = "KX108_DECISION_RECORD_NOT_VERIFIED"
 REFUSED_RECORD_GATE_MISMATCH = "DECISION_RECORD_GATE_MISMATCH"
 REFUSED_RECORD_CONTEXT_BINDING = "DECISION_RECORD_CONTEXT_BINDING_MISMATCH"
 REFUSED_EXECUTION_PLAN_BINDING = "EXECUTION_PLAN_BINDING_MISMATCH"
+REFUSED_UNSUPPORTED_DOMAIN = "UNSUPPORTED_DOMAIN_NO_CANONICAL_BRIDGE"
 
 # Conservé pour les consommateurs existants : le rail de remédiation reste
 # inapplicable à un cycle agent. R6 n'y touche pas — il ouvre un rail agent
@@ -135,6 +137,19 @@ _DOMAIN_PIPELINES: dict[str, Callable[[Any, Any], Any]] = {
     "gps": run_gps_with_periphery,
     "gps_defense_aviation": run_gps_with_periphery,
 }
+
+
+SUPPORTED_DOMAINS = tuple(sorted(_DOMAIN_PIPELINES))
+
+
+def is_supported_domain(domain: str) -> bool:
+    """A domain is supported only if a REAL canonical sigma bridge exists.
+
+    An agent never chooses its own kernel adapter: the domain carried by the
+    AgentResult is matched against this table, and anything unmatched is
+    refused before any decision is requested.
+    """
+    return domain in _DOMAIN_PIPELINES
 
 
 class GovernedRuntimeCycleError(Exception):
@@ -161,6 +176,7 @@ class GovernedRuntimeCycleResult:
     reason_code: str = ""
     severity: str = ""
     decision_engine: str = "sigma.guard.GuardX108.decide"
+    decision_rendered: bool = False
 
     # Vérification cryptographique OS3
     os3_ticket_id: str = ""
@@ -183,6 +199,9 @@ class GovernedRuntimeCycleResult:
 
     # Feedback readonly
     feedback: Optional[dict[str, Any]] = None
+
+    # Observation post-preuve Gencoin (jamais une autorité)
+    gencoin: Optional[dict[str, Any]] = None
 
     # Réentrée : contexte du cycle suivant (aucune autorité héritée)
     next_context_id: str = ""
@@ -238,6 +257,10 @@ class GovernedRuntimeCycleResult:
             raise AssertionError("CYCLE_VIOLATION: provider invoked without authorization")
         if self.execution_authorized and self.x108_gate != "ALLOW":
             raise AssertionError("CYCLE_VIOLATION: authorization without a KX108 ALLOW")
+        if self.execution_authorized and not self.decision_rendered:
+            raise AssertionError(
+                "CYCLE_VIOLATION: authorization without a rendered KX108 decision"
+            )
         if self.execution_authorized and not self.decision_record_verified:
             raise AssertionError(
                 "CYCLE_VIOLATION: authorization without a verified KX108 decision record"
@@ -266,6 +289,7 @@ class GovernedRuntimeCycleResult:
             "reason_code": self.reason_code,
             "severity": self.severity,
             "decision_engine": self.decision_engine,
+            "decision_rendered": self.decision_rendered,
             "os3_ticket_id": self.os3_ticket_id,
             "input_hash": self.input_hash,
             "output_hash": self.output_hash,
@@ -280,6 +304,7 @@ class GovernedRuntimeCycleResult:
             "runtime_id": self.runtime_id,
             "receipt": self.receipt,
             "feedback": self.feedback,
+            "gencoin": self.gencoin,
             "next_context_id": self.next_context_id,
             "next_context_recommended_gate": self.next_context_recommended_gate,
             "next_context_inherits_authority": self.next_context_inherits_authority,
@@ -410,10 +435,23 @@ def run_governed_runtime_cycle(
         result.assert_non_sovereign()
         return result
 
+    # ── 2bis. Domaine : bridge canonique réel, sinon refus fail-closed ───
+    #
+    # Le refus n'est PAS une décision : aucun verdict n'est rendu, aucun
+    # record n'est produit, x108_gate garde sa valeur de refus par défaut
+    # et decision_rendered reste False.
+    if not is_supported_domain(packet.domain):
+        result.execution_authorization_reason = (
+            f"{REFUSED_UNSUPPORTED_DOMAIN}:{packet.domain}"
+        )
+        result.assert_non_sovereign()
+        return result
+
     # ── 3. Décision KX108 SOUVERAINE réelle (GuardX108) ──────────────────
     pipeline = resolve_domain_pipeline(packet.domain)
     envelope = pipeline(domain_state, packet)
 
+    result.decision_rendered = True
     result.x108_gate = getattr(envelope, "x108_gate", "BLOCK")
     result.decision_id = getattr(envelope, "decision_id", "")
     result.trace_id = getattr(envelope, "trace_id", "")
@@ -580,6 +618,32 @@ def run_governed_runtime_cycle(
     feedback = build_memory_candidate(ticket, packet, action)
     feedback.assert_no_write()
     result.feedback = feedback.to_dict()
+
+    # ── 7bis. Observation Gencoin — POST-PREUVE, jamais une autorité ─────
+    #
+    # Appelée après que la décision et l'exécution soient terminées. Elle
+    # lit le gate déjà rendu et calcule une valeur candidate ; elle ne peut
+    # ni modifier x108_gate, ni autoriser une exécution, ni transformer un
+    # HOLD/BLOCK en ALLOW. mint_allowed reste une propriété du calcul de
+    # valeur, jamais une permission d'agir.
+    mint = compute_gencoin(action, packet, ticket)
+    result.gencoin = {
+        "action_id": mint.action_id,
+        "os3_ticket_id": mint.os3_ticket_id,
+        "observed_x108_gate": mint.x108_gate,
+        "proof_valid": mint.proof_valid,
+        "gross_value": mint.gross_value,
+        "total_debt": mint.total_debt,
+        "gencoin_candidate": mint.gencoin_candidate,
+        "mint_allowed": mint.mint_allowed,
+        "is_authority": False,
+        "can_change_gate": False,
+        "emits_act": False,
+    }
+
+    # Le gate observé par Gencoin est celui déjà rendu — jamais l'inverse.
+    if result.gencoin["observed_x108_gate"] != result.x108_gate:
+        raise AssertionError("CYCLE_VIOLATION: gencoin observed a different gate")
 
     # ── 8. Réentrée : contexte du cycle suivant ──────────────────────────
     #
