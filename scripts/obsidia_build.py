@@ -48,6 +48,15 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from obsidia_candidate_patch_v1 import (
+    CandidatePatchSpec,
+    CANDIDATE_PATCH_MODE,
+    apply_candidate_patch,
+    bind_candidate_to_objective,
+    check_candidate_patch,
+    load_candidate_patch_file,
+)
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VERSION = "0.2.0"
 DECISION_AUTHORITY = "KX108_ONLY"
@@ -431,7 +440,7 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
         "  decision_authority = KX108_ONLY  |  auto_commit = NEVER",
         sep,
         f"  session_id        : {plan['session_id']}",
-        f"  objective         : {plan['objective']}",
+        f"  objective         : {plan.get('display_objective', plan['objective'])}",
         f"  domain            : {plan['domain']}",
         f"  risk              : {plan['risk']}",
         f"  base_sha          : {plan['base_sha']}",
@@ -489,6 +498,49 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
             lines[-1:-1] = scope_lines
         else:
             lines.extend(scope_lines)
+
+    if plan.get("candidate_patch_mode"):
+        candidate_meta = [
+            "",
+            f"  candidate_patch_mode : {plan.get('candidate_patch_mode')}",
+            f"  candidate_patch_hash : {plan.get('candidate_patch_hash')}",
+            "  candidate_patch_files:",
+        ]
+
+        candidate_meta.extend(
+            f"    {f}"
+            for f in plan.get(
+                "candidate_patch_files",
+                [],
+            )
+        )
+
+        # Placer les métadonnées avant la zone approval.
+        approval_index = next(
+            (
+                i for i, line in enumerate(lines)
+                if "TOKEN D'APPROBATION REQUIS" in line
+            ),
+            len(lines),
+        )
+
+        lines[approval_index:approval_index] = (
+            candidate_meta
+        )
+
+        source = plan.get(
+            "candidate_patch_source"
+        )
+
+        if source:
+            candidate_cmd = (
+                f'      --candidate-patch "{source}"'
+            )
+
+            if lines and lines[-1] == sep:
+                lines[-1:-1] = [candidate_cmd]
+            else:
+                lines.append(candidate_cmd)
 
     return "\n".join(lines)
 
@@ -669,6 +721,7 @@ def cmd_execute(
     repo_root: Path | None = None,
     state_dir: Path | None = None,
     explicit_scope: list[str] | None = None,
+    candidate_patch_spec: CandidatePatchSpec | None = None,
 ) -> int:
     """
     Phase 2 -- valide token, regenere plan, execute.
@@ -757,6 +810,22 @@ def cmd_execute(
         "scope_mode":          plan.get("scope_mode"),
         "approved_scope_hash": plan.get("approved_scope_hash"),
         "plan_authority_hash": plan.get("plan_authority_hash"),
+        "candidate_patch_mode": (
+            candidate_patch_spec.mode
+            if candidate_patch_spec
+            else None
+        ),
+        "candidate_patch_hash": (
+            candidate_patch_spec.sha256
+            if candidate_patch_spec
+            else None
+        ),
+        "candidate_patch_files": (
+            list(candidate_patch_spec.files)
+            if candidate_patch_spec
+            else []
+        ),
+        "candidate_patch_apply": None,
         "actual_touched_files": [],
         "new_files":           [],
         "deleted_files":       [],
@@ -842,7 +911,78 @@ def cmd_execute(
     print("\n  [4/10] Application patch synthetique dans le worktree...")
     patch_applied_files: list[str] = []
 
-    if SYNTHETIC_TARGET in approved_scope:
+    if candidate_patch_spec is not None:
+        print(
+            "\n  [4/10-REAL] Application candidate.patch "
+            "dans le worktree..."
+        )
+
+        # Defense-in-depth: exact files must still equal approved scope.
+        if sorted(candidate_patch_spec.files) != sorted(approved_scope):
+            receipt["first_failure"] = (
+                "CANDIDATE_APPROVED_SCOPE_MISMATCH"
+            )
+            receipt["candidate_patch_apply"] = {
+                "ok": False,
+                "phase": "PRE_APPLY_SCOPE_BINDING",
+            }
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+            print(
+                "  [BLOCKED] CANDIDATE_APPROVED_SCOPE_MISMATCH"
+            )
+            return 2
+
+        result = apply_candidate_patch(
+            candidate_patch_spec,
+            worktree_path,
+        )
+
+        receipt["candidate_patch_apply"] = result
+
+        if not result.get("ok"):
+            receipt["first_failure"] = (
+                "REAL_CANDIDATE_PATCH_APPLY_FAILED:"
+                + str(result.get("phase"))
+            )
+            receipt["timestamps"]["blocked_at"] = (
+                datetime.now(timezone.utc).isoformat()
+            )
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+            print(
+                "  [BLOCKED] candidate.patch non applicable: "
+                + str(result.get("message", ""))
+            )
+            return 2
+
+        patch_applied_files.extend(
+            candidate_patch_spec.files
+        )
+
+        receipt["obsidure_note"] = (
+            "REAL_CANDIDATE_PATCH_APPLIED_BY_BOUNDED_BUILD"
+        )
+
+        print(
+            "  [OK] real candidate applied: "
+            + ", ".join(candidate_patch_spec.files)
+        )
+        print(
+            "  [OK] candidate_sha256: "
+            + candidate_patch_spec.sha256
+        )
+
+    if (
+        candidate_patch_spec is None
+        and SYNTHETIC_TARGET in approved_scope
+    ):
         tgt = worktree_path / SYNTHETIC_TARGET
 
         # Seed: si la cible est absente du worktree (fichier non versionne),
@@ -891,7 +1031,16 @@ def cmd_execute(
             else:
                 print(f"  [WARN] Marqueur deja present dans {SYNTHETIC_TARGET}")
     else:
-        print("  [NOTE] Cible synthetique hors scope -- patch non applicable")
+        if candidate_patch_spec is not None:
+            print(
+                "  [NOTE] Candidate reel fourni — "
+                "harness synthetique bypassed"
+            )
+        else:
+            print(
+                "  [NOTE] Cible synthetique hors scope -- "
+                "patch non applicable"
+            )
 
     # ── [5/10] Controle scope reel ──────────────────────────────────────────
     print("\n  [5/10] Controle scope reel...")
@@ -1176,7 +1325,13 @@ def cmd_execute(
     if overall_ok and kx108_status not in ("BLOCK",):
         print()
         print("  Pour committer manuellement apres revue humaine:")
-        print(f'    git -C "{worktree_path}" add {SYNTHETIC_TARGET}')
+        manual_files = " ".join(
+            f'"{f}"'
+            for f in approved_scope
+        )
+        print(
+            f'    git -C "{worktree_path}" add -- {manual_files}'
+        )
         print(
             f'    git -C "{worktree_path}" commit -m '
             f'"build({domain}): {objective[:40]} [session={session_id}]"'
@@ -2281,6 +2436,16 @@ def main(argv: list[str]) -> int:
         ),
     )
 
+    parser.add_argument(
+        "--candidate-patch",
+        metavar="PATH",
+        default="",
+        help=(
+            "Unified diff reel. Son SHA-256 et ses fichiers "
+            "sont lies a l'identite d'approbation."
+        ),
+    )
+
     args = parser.parse_args(argv)
 
     # R8-A
@@ -2333,27 +2498,109 @@ def main(argv: list[str]) -> int:
             REPO_ROOT, OBSIDIA_BUILD_STATE_DIR,
         )
 
-    if not objective:
+    candidate_patch_spec = None
+    authority_objective = objective
+    effective_scope = list(args.scope) if args.scope else None
+
+    if args.candidate_patch:
+        try:
+            candidate_patch_spec = load_candidate_patch_file(
+                args.candidate_patch,
+                REPO_ROOT,
+            )
+        except ValueError as exc:
+            print(f"[ERROR] {exc}")
+            return 2
+
+        # Si --scope est également fourni, il doit être EXACTEMENT
+        # le scope dérivé du patch. Aucun élargissement.
+        if args.scope:
+            requested = sorted(
+                x.replace("\\", "/")
+                for x in args.scope
+            )
+            derived = sorted(
+                candidate_patch_spec.files
+            )
+
+            if requested != derived:
+                print(
+                    "[ERROR] CANDIDATE_SCOPE_MISMATCH "
+                    f"requested={requested} derived={derived}"
+                )
+                return 2
+
+        effective_scope = list(
+            candidate_patch_spec.files
+        )
+
+        ok, msg = check_candidate_patch(
+            candidate_patch_spec,
+            REPO_ROOT,
+        )
+
+        if not ok:
+            print(
+                "[ERROR] CANDIDATE_PATCH_NOT_APPLICABLE "
+                f"{msg}"
+            )
+            return 2
+
+        authority_objective = bind_candidate_to_objective(
+            objective,
+            candidate_patch_spec,
+        )
+
+    if not authority_objective:
         parser.print_help()
         return 1
 
     if args.approve:
+
+        # Preserve the exact pre-R8-B call contract when no real
+        # candidate exists. Existing callers/mocks must not suddenly
+        # receive a new keyword argument containing None.
+        if candidate_patch_spec is None:
+            return cmd_execute(
+                authority_objective,
+                args.approve,
+                REPO_ROOT,
+                OBSIDIA_BUILD_STATE_DIR,
+                explicit_scope=effective_scope,
+            )
+
         return cmd_execute(
-            objective,
+            authority_objective,
             args.approve,
             REPO_ROOT,
             OBSIDIA_BUILD_STATE_DIR,
-            explicit_scope=(args.scope or None),
+            explicit_scope=effective_scope,
+            candidate_patch_spec=candidate_patch_spec,
         )
 
-    if args.scope:
+    if effective_scope:
 
         plan = compute_plan(
-            objective,
+            authority_objective,
             get_base_sha(REPO_ROOT),
             REPO_ROOT,
-            explicit_scope=args.scope,
+            explicit_scope=effective_scope,
         )
+
+        if candidate_patch_spec is not None:
+            plan["candidate_patch_mode"] = (
+                candidate_patch_spec.mode
+            )
+            plan["candidate_patch_hash"] = (
+                candidate_patch_spec.sha256
+            )
+            plan["candidate_patch_files"] = list(
+                candidate_patch_spec.files
+            )
+            plan["candidate_patch_source"] = (
+                candidate_patch_spec.source_path
+            )
+            plan["display_objective"] = objective
 
         print(
             format_plan_proposed(
