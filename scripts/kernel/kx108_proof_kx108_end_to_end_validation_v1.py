@@ -9,8 +9,14 @@ Validates the current proof-level chain through:
 
 This is PROOF E2E validation only.
 
-The canonical AgentResult -> ContextPacket runtime link is still absent,
-therefore runtime_end_to_end_validated MUST remain False.
+Post-CG100 the canonical AgentResult -> ContextPacket runtime link EXISTS
+and is wired into the X108 dry-run admission path. That link alone does not
+validate the runtime: every observable decision on this perimeter remains
+BLOCK / HOLD / ALLOW_CONTEXT_ONLY and no real X108-gated execution path is
+activated, therefore runtime_end_to_end_validated MUST remain False.
+
+The reported adapter presence must match the detected repository fact --
+claiming it absent when present, or present when absent, is rejected.
 
 This layer MUST NOT claim:
 - real global runtime validation;
@@ -21,11 +27,18 @@ This layer MUST NOT claim:
 """
 
 
+from scripts.kernel.kx108_runtime_link_facts_v1 import (
+    MISSING_RUNTIME_LINK_REAL_EXECUTION,
+    canonical_agent_context_adapter_present,
+    missing_runtime_links,
+)
+
+
 class KX108ProofEndToEndValidation:
 
-    MISSING_RUNTIME_LINK = (
-        "AGENT_RESULT_TO_CONTEXT_PACKET_CANONICAL_ADAPTER"
-    )
+    # Kept for compatibility: the single blocker still standing in the way
+    # of a real runtime end-to-end claim.
+    MISSING_RUNTIME_LINK = MISSING_RUNTIME_LINK_REAL_EXECUTION
 
     def __init__(self):
         self.validation_authority = False
@@ -111,11 +124,11 @@ class KX108ProofEndToEndValidation:
                 )
                 is True,
 
-            "canonical_adapter_not_claimed_present":
+            "canonical_adapter_presence_is_factual":
                 agent_decision_flow.get(
                     "canonical_agent_context_adapter_present"
                 )
-                is False,
+                is canonical_agent_context_adapter_present(),
 
             "envelope_not_created_by_agent":
                 agent_canonical_envelope.get(
@@ -235,6 +248,12 @@ class KX108ProofEndToEndValidation:
             "missing_runtime_link":
                 self.MISSING_RUNTIME_LINK,
 
+            "missing_runtime_links":
+                missing_runtime_links(),
+
+            "canonical_agent_context_adapter_present":
+                canonical_agent_context_adapter_present(),
+
             "production_ready":
                 False,
 
@@ -288,6 +307,12 @@ class KX108ProofEndToEndValidation:
 
             "missing_runtime_link":
                 self.MISSING_RUNTIME_LINK,
+
+            "missing_runtime_links":
+                missing_runtime_links(),
+
+            "canonical_agent_context_adapter_present":
+                canonical_agent_context_adapter_present(),
 
             "production_ready":
                 False,

@@ -3,15 +3,25 @@ CG93 KX108 Proof Agent Decision Flow V1.
 
 Closes the current agent-to-decision boundary.
 
-No canonical AgentResult -> ContextPacket adapter exists on this proof path,
-therefore this layer MUST NOT fabricate direct X108 submission.
+This layer MUST NOT fabricate a direct X108 submission and MUST NOT build
+a ContextPacket of its own.
+
+Post-CG100 the canonical AgentResult -> ContextPacket adapter DOES exist in
+the runtime (periphery/context/agent_result_context_adapter.py, run into
+X108 by periphery/context/agent_x108_context_flow.py). Its presence is
+reported here as a detected repository fact, never as a caller claim, and
+it does not make this proof path a decision path.
 
 Agents do not decide.
 
-Any future canonical adapter may only enter the existing X108 dry-run path,
-whose observable decisions remain:
+The canonical adapter only enters the existing X108 dry-run path, whose
+observable decisions remain:
 BLOCK, HOLD, ALLOW_CONTEXT_ONLY.
 """
+
+from scripts.kernel.kx108_runtime_link_facts_v1 import (
+    canonical_agent_context_adapter_present,
+)
 
 _ALLOWED_X108_DRY_RUN_DECISIONS = (
     "BLOCK",
@@ -163,7 +173,7 @@ class KX108ProofAgentDecisionFlow:
                 True,
 
             "canonical_agent_context_adapter_present":
-                False,
+                canonical_agent_context_adapter_present(),
 
             "observed_x108_decision":
                 (

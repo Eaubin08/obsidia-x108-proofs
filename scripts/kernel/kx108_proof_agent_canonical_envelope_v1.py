@@ -4,7 +4,8 @@ CG94 KX108 Proof Agent Canonical Envelope V1.
 Validates separation between the bounded agent-decision proof surface
 and an already-produced CanonicalDecisionEnvelope.
 
-There is no canonical AgentResult -> ContextPacket adapter on this path.
+The canonical AgentResult -> ContextPacket adapter now exists in the
+runtime, but it binds context only and is not on this envelope path.
 
 Therefore:
 - the agent does not create the canonical decision envelope;

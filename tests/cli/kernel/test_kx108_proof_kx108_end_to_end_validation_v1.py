@@ -1,6 +1,11 @@
 from scripts.kernel.kx108_proof_kx108_end_to_end_validation_v1 import (
     KX108ProofEndToEndValidation,
 )
+from scripts.kernel.kx108_runtime_link_facts_v1 import (
+    MISSING_RUNTIME_LINK_ADAPTER,
+    MISSING_RUNTIME_LINK_REAL_EXECUTION,
+    canonical_agent_context_adapter_present,
+)
 
 
 def safe(status_key, status):
@@ -39,7 +44,9 @@ def surfaces():
         "agent_decision_created": False,
         "x108_submitted_here": False,
         "requires_canonical_context_adapter": True,
-        "canonical_agent_context_adapter_present": False,
+        # Must mirror the real repository state, not a hardcoded claim.
+        "canonical_agent_context_adapter_present":
+            canonical_agent_context_adapter_present(),
     })
 
     envelope = safe(
@@ -99,7 +106,12 @@ def test_runtime_end_to_end_remains_false():
 
     assert (
         result["missing_runtime_link"]
-        == "AGENT_RESULT_TO_CONTEXT_PACKET_CANONICAL_ADAPTER"
+        == MISSING_RUNTIME_LINK_REAL_EXECUTION
+    )
+
+    assert (
+        MISSING_RUNTIME_LINK_REAL_EXECUTION
+        in result["missing_runtime_links"]
     )
 
 
@@ -166,3 +178,45 @@ def test_proof_e2e_is_not_release_or_authority():
     assert result["memory_write"] is False
     assert result["kernel_mutation"] is False
     assert result["emits_act"] is False
+
+
+def test_canonical_adapter_presence_must_match_the_repository_fact():
+    """A surface lying about the adapter — either way — is rejected."""
+    values = list(surfaces())
+
+    values[1]["canonical_agent_context_adapter_present"] = (
+        not canonical_agent_context_adapter_present()
+    )
+
+    result = (
+        KX108ProofEndToEndValidation()
+        .validate(*values)
+    )
+
+    assert (
+        result["kx108_end_to_end_validation_status"]
+        == "REJECTED"
+    )
+    assert (
+        result["checks"]["canonical_adapter_presence_is_factual"]
+        is False
+    )
+    assert result["runtime_end_to_end_validated"] is False
+
+
+def test_present_adapter_does_not_raise_any_runtime_flag():
+    """The canonical adapter exists; nothing about that validates the runtime."""
+    result = (
+        KX108ProofEndToEndValidation()
+        .validate(*surfaces())
+    )
+
+    assert result["canonical_agent_context_adapter_present"] is True
+    assert MISSING_RUNTIME_LINK_ADAPTER not in result["missing_runtime_links"]
+
+    assert result["runtime_end_to_end_validated"] is False
+    assert result["runtime_globally_validated"] is False
+    assert result["production_ready"] is False
+    assert result["release_ready"] is False
+    assert result["deployment_ready"] is False
+    assert result["final_freeze"] is False

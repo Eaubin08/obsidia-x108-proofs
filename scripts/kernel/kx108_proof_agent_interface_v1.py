@@ -4,8 +4,9 @@ CG85 KX108 Proof Agent Interface V1.
 Validates the real periphery agent interface.
 
 There is intentionally no implicit AgentResult -> ContextPacket conversion
-here because no canonical adapter for that conversion exists in the current
-runtime surface.
+here. That conversion is explicit and canonical, and lives in
+periphery/context/agent_result_context_adapter.py; this interface proof
+never performs it.
 
 The agent remains a peripheral signal producer only.
 """
