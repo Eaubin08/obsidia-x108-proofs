@@ -1,13 +1,19 @@
 # Post-CG100 Runtime Integration — Truth Report
 
-Branch: `feat/r5-governed-runtime-e2e-20260903` (base `f62ef0ac`)
-Scope: R4 closed the agent → ContextPacket → X108 dry-run link. R5 closes the
-governed **internal** runtime cycle: a real sovereign verdict gating a real
-canonical provider execution.
+Branch: `feat/r5-governed-runtime-e2e-20260903`
+State: R4 bound the agent to a ContextPacket; R5 reached a real sovereign
+verdict and a real bounded execution; R6 closed the governed **internal**
+chain with a persisted and verified KX108 decision record and a feedback
+re-entry that inherits nothing.
+
 CG100 closes the numbered sequence. No CG101+ layer was created.
 
-No flag is raised without evidence. An internal governed execution is **not**
-external world actuation, and the two claims are kept apart everywhere below.
+Two claims are kept strictly apart everywhere in this document:
+
+| Claim | Value |
+|---|---|
+| `INTERNAL_PROVIDER_EXECUTION` | **real** — governed, gated, verified |
+| `EXTERNAL_WORLD_ACTUATION` | **false / dry-run** — untouched |
 
 ---
 
@@ -15,107 +21,123 @@ external world actuation, and the two claims are kept apart everywhere below.
 
 | Item | Evidence |
 |---|---|
-| Canonical `AgentResult → ContextPacket` binder | `periphery/context/agent_result_context_adapter.py`; 9 tests |
-| Agent → context → X108 dry-run flow | `periphery/context/agent_x108_context_flow.py`; 21 tests |
+| `AgentResult -> ContextPacket` binder | `periphery/context/agent_result_context_adapter.py`; 9 tests |
+| Agent -> context -> X108 dry-run flow | `periphery/context/agent_x108_context_flow.py`; 21 tests |
 | API caller | `POST /api/periphery/governance/agent-x108-context`; 11 tests |
 | Receipt lifecycle | `.complete()` only on a real sealed result, `.fail()` otherwise; 8 tests |
-| **Governed internal runtime cycle** | `scripts/obsidia_governed_runtime_cycle_v1.py`; 27 tests in `tests/integration/test_canonical_governed_runtime_e2e_v1.py` |
-| **Real sovereign verdict** | `sigma.guard.GuardX108.decide()` via `periphery.sigma_bridge`; the dry-run stub is not consulted |
-| **Cryptographic evidence verification** | `build_os3_ticket` + `run_replay` → `replay_status == PASS`, 64-hex input/output/trace/merkle |
-| **Fail closed** | BLOCK, HOLD, tampered ticket, failed replay, no bound surface → provider invocation count `== 0` |
-| **Real provider invocation** | verified ALLOW → count `== 1`, through the real `CanonicalExecutionFlow → Orchestrator → MissionExecutionRouter` |
-| **Sealed envelope + terminal receipt** | `envelope.status == SEALED`, `receipt.status == COMPLETED`, `result_ref == runtime_id` |
-| **Readonly feedback** | `build_memory_candidate` → `memory_write_allowed == False` on every path |
-| Runtime link facts | `scripts/kernel/kx108_runtime_link_facts_v1.py` detects from disk; 5 tests |
+| Governed internal runtime cycle | `scripts/obsidia_governed_runtime_cycle_v1.py`; 27 tests |
+| Agent pre-execution context | `scripts/obsidia_agent_pre_execution_context_v1.py`; immutable, append-only, self-verifying |
+| Execution-plan digest (anti-TOCTOU) | Substituting context, provider, capability, mission or payload breaks the binding |
+| KX108 agent decision record | `decision_phase=AGENT_PRE_EXECUTION` in the canonical store; `kxagent-*`; persisted, then `verify_kx108_decision_record` passes |
+| Feedback re-entry | `periphery/context/feedback_result_context_adapter.py`; 15 tests |
+| Runtime link facts | `scripts/kernel/kx108_runtime_link_facts_v1.py`; 7 tests |
 
 ---
 
-## B. INTERNAL REAL RUNTIME
+## B. REAL INTERNAL GOVERNED RUNTIME
 
-The chain actually traversed, with no core mocked:
+The chain actually traversed, with no core component mocked:
 
 ```
-run_registered_agent            → real AgentResult
-agent_result_to_context_packet  → real ContextPacket (R4 binder, unchanged)
+run_registered_agent                -> real AgentResult
+agent_result_to_context_packet      -> real ContextPacket
 validate_context_packet / check_x108_context_boundary
-sigma_bridge.run_bank_with_periphery → GuardX108.decide() → x108_gate
-build_os3_ticket + run_replay   → PASS
-[GATE] verified ALLOW only
-CanonicalRuntimeReceiptFlow → CanonicalExecutionFlow → Orchestrator
-    → MissionExecutionRouter → bounded sandbox handler
-    → CanonicalExecutionEnvelope.seal() → ProviderRuntimeReceipt COMPLETED
-build_memory_candidate          → readonly candidate
+create_agent_pre_execution_context  -> frozen facts + execution_plan_digest
+  store -> reload -> verify_agent_pre_execution_context_record
+sigma_bridge.run_<domain>_with_periphery -> GuardX108.decide() -> x108_gate
+persist_kx108_agent_pre_execution_decision
+  store -> reload -> verify_kx108_decision_record          [ALL VERIFIED]
+build_os3_ticket + run_replay       -> PASS
+[GATE] verified record + ALLOW + context binding + plan binding
+CanonicalRuntimeReceiptFlow -> CanonicalExecutionFlow -> Orchestrator
+  -> MissionExecutionRouter -> bounded sandbox handler
+  -> CanonicalExecutionEnvelope.seal() -> ProviderRuntimeReceipt COMPLETED
+build_memory_candidate              -> readonly candidate
+feedback_result_to_context_packet   -> next ContextPacket
+  -> fresh GuardX108 verdict, fresh record, fresh gate at t1
 ```
 
-`HOLD` and `BLOCK` in the tests are genuine kernel verdicts from genuinely
-degraded domain states (fraud pattern, over-commitment), never forced values.
+Properties proven by test, not asserted:
 
-The coordinator carries no authority: it cannot decide, cannot synthesize an
-ALLOW, cannot produce consent, cannot write memory, cannot mutate the kernel,
-and never changes `runtime_allowed_now` on the ContextPacket.
+- The gate reads the verdict from the **verified record on disk**, never from
+  the in-memory object.
+- `HOLD` and `BLOCK` are genuine kernel verdicts from genuinely degraded
+  domain states; both verify as records and both still refuse, with a provider
+  invocation count of zero.
+- Tampering the gate, `decision_id`, `trace_id` or either binding hash breaks
+  verification. A HOLD record cannot be rewritten into an ALLOW.
+- A previous ALLOW is transported as `previous_x108_gate`, a historical fact.
+  t1 obtains its own decision, its own record and its own gate.
+- A real failed execution raises a real `BLOCK_CANDIDATE`; on a state already
+  carrying one contradiction the kernel really flips ALLOW to BLOCK, with the
+  healthy-feedback control on the same state staying ALLOW.
+
+Scope: `INTERNAL_BOUNDED_PROVIDER_EXECUTION` — a local deterministic handler
+with no observable side effect outside the process.
 
 ---
 
 ## C. STILL DRY-RUN
 
-- `runtime_wiring/x108_admission_stub.py` — unchanged, still a dry-run stub.
-  `ALLOW_CONTEXT_ONLY` is **never** an execution authorization and is not
-  consulted by the governed cycle.
+- `runtime_wiring/x108_admission_stub.py` — unchanged. `ALLOW_CONTEXT_ONLY` is
+  never an execution authorization and is not consulted by the governed cycle.
 - `SovereignTicket` / `WorldActionBus` — `dry_run_only=True`,
   `world_action_allowed=False`.
-- `ContextPacket.runtime_allowed_now` — structurally False.
+- `ContextPacket.runtime_allowed_now` — structurally False, including on the
+  feedback re-entry packet.
 
 ---
 
 ## D. NOT INTEGRATED
 
-**Canonical KX108 decision-record persistence for an agent cycle.**
-`run_and_persist_kx108_pre_execution_decision` cannot be used here: its
-binding contract (`_PRE_BINDING_CONTEXT_FIELDS`) requires remediation-rail
-artefacts — `batch_execution_id`, `child_execution_id`, an
-`execution_authority_hash` over file content, an `approval_id` for a
-HumanApproval bound to that hash, a `pre_execution_context_id` for a Git
-isolation capture, a `test_contract_hash`. An agent → provider cycle has none
-of them, and fabricating them would divert a human authorization granted for
-something else. Named as `KX108_DECISION_RECORD_PERSISTENCE_FOR_AGENT_CYCLE`
-and left unresolved rather than bypassed.
-
-Consequently `verify_kx108_decision_record()` is not applied to this cycle.
-The verification performed is the OS3 rail's (ticket + replay), which is real
-but is not the decision-record verification.
-
-Also not integrated: external world actuation; a real proof chain with
-Merkle sealing and RFC3161 anchoring on this path; the 52 declarative agent
-configurations, which stay non-executable.
+- **External world actuation.** No world action is executed. The internal rail
+  says nothing about it and must not be generalized to it.
+- **The remediation rail remains inapplicable to an agent cycle**, by design
+  and untouched: its binding contract still requires `batch_execution_id`,
+  `child_execution_id`, an `execution_authority_hash` over file content, an
+  `approval_id` bound to it, a Git `pre_execution_context_id` and a
+  `test_contract_hash`. None are fabricated for an agent cycle, and none were
+  made optional. R6 opened a **separate** rail instead.
+- **Human consent for irreversible operations.** The agent rail proves KX108
+  authority over a bounded internal execution only. Any external or
+  irreversible operation keeps its own consent rail.
+- No RFC3161 anchoring or Merkle sealing on the agent path beyond the OS3
+  ticket and its replay.
+- The 52 declarative agent configurations stay non-executable.
 
 ---
 
-## E. BLOCKING BEFORE GLOBAL RUNTIME
+## E. BLOCKING GLOBAL RUNTIME
 
-1. No canonical decision-record persistence or verification for agent cycles (D).
-2. No `PreExecutionContext` bound to an agent cycle.
-3. Only 14 operational agents are wired; only 4 sigma domains have a canonical
-   bridge (bank, trading, ecom, gps) — any other domain fails closed.
-4. Mission and provider surfaces outside this cycle keep all authority flags False.
+1. External world actuation is not activated.
+2. Only 14 operational agents are wired, and only 4 sigma domains have a
+   canonical bridge (bank, trading, ecom, gps); any other domain fails closed.
+3. Mission and provider surfaces outside this cycle keep all authority flags
+   False.
+4. Only the internal bounded execution scope is covered; no rail exists for an
+   irreversible internal operation.
 
-## F. BLOCKING BEFORE PRODUCTION
+## F. BLOCKING PRODUCTION
 
 5. Everything in E.
-6. External world actuation is not activated and is out of scope for this pass.
+6. No consent rail for external or irreversible execution.
 7. No release, deployment or freeze authorization exists, by design.
-8. Pre-existing unrelated debt in `tests/api/*brody*` (10 failures, predating
-   this work, untouched).
+8. Pre-existing unrelated debt: `tests/api/*brody*` (10 failures) and
+   `tests/integration/test_f23a4_8_connectors_alignment.py` (1 failure), both
+   predating this work and untouched by it.
 
 ---
 
-## Flag state — what R5 did and did not raise
+## G. FLAG STATE
 
 | Flag | Value | Why |
 |---|---|---|
 | `canonical_agent_context_adapter_present` | **true** | Detected on disk; binder + flow exist and are tested |
 | `governed_runtime_cycle_present` | **true** | Detected on disk; 27 E2E tests |
-| `runtime_end_to_end_validated` | **false** | 3 links of the R5-L chain are missing: `REAL_PRE_EXECUTION_CONTEXT`, `REAL_DECISION_RECORD_PERSISTED`, `REAL_DECISION_RECORD_VERIFIED` |
-| `runtime_globally_validated` | **false** | One internal cycle, four domains, no global coverage |
+| `agent_decision_record_rail_present` | **true** | Frozen context + feedback adapter + `AGENT_PRE_EXECUTION` phase in the canonical store |
+| `runtime_internal_end_to_end_validated` | **true** | All 14 links of `INTERNAL_E2E_REQUIRED_LINKS` proven on one continuous chain, and HOLD/BLOCK never execute |
+| `runtime_end_to_end_validated` | **false** | Historical flag with a wider meaning than an internal runtime; its consumers (CG97) are unchanged |
+| `runtime_globally_validated` | **false** | One cycle, four domains, no global coverage |
 | `world_action_runtime_activated` | **false** | Untouched by this pass, by mandate |
 | `runtime_allowed_now` | **false** | Structurally locked in `ContextPacket.validate_invariants()` |
 | `production_ready` | **false** | See E, F |
@@ -124,23 +146,28 @@ configurations, which stay non-executable.
 | `final_freeze` | **false** | See E, F |
 | `activation_authorized` | **false** | `runtime_activation_authorized` False in every release/freeze proof |
 
-Ten of the thirteen R5-L links are proven. Three are not, so the E2E flag stays
-down. A real internal governed execution is a fact; a validated runtime is not.
+A governed internal execution is a fact. A validated global runtime is not,
+and an actuated world is not.
 
 ---
 
 ## Reproduction
 
 ```bash
-# R5 governed internal runtime cycle
+# R6 - decision record rail and feedback re-entry
+python -m pytest tests/integration/test_canonical_governed_runtime_decision_record_v1.py \
+  tests/integration/test_canonical_governed_runtime_feedback_reentry_v1.py -q
+
+# R5 - governed internal cycle
 python -m pytest tests/integration/test_canonical_governed_runtime_e2e_v1.py -q
 
-# binder / runtime / API
-python -m pytest tests/periphery/test_agent_result_context_adapter.py \
-  tests/periphery/test_agent_x108_context_flow.py \
-  tests/api/test_agent_x108_context_route.py -q
+# runtime facts
+python -m pytest tests/cli/kernel/test_kx108_runtime_link_facts_v1.py -q
 
-# KX108 decision store and pre-execution gate
+# binder / runtime / API
+python -m pytest tests/periphery tests/api/test_agent_x108_context_route.py -q
+
+# KX108 decision store and remediation pre-execution gate (unchanged)
 python -m pytest tests/cli/test_kx108_pre_execution_gate_v0.py \
   tests/test_kx108_decision_persistence_v0.py \
   tests/cli/test_kx108_post_pre_binding_v0.py -q

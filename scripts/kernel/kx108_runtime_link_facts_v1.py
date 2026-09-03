@@ -47,11 +47,39 @@ MISSING_RUNTIME_LINK_WORLD_ACTUATION = (
     "EXTERNAL_WORLD_ACTUATION_NOT_ACTIVATED"
 )
 
-# The agent cycle cannot produce a canonical KX108 decision record: the
-# binding contract of run_and_persist_kx108_pre_execution_decision requires
-# remediation-rail artefacts an agent cycle does not have.
+# Closed by the dedicated agent rail (decision_phase=AGENT_PRE_EXECUTION).
+# Kept as a name so existing consumers importing it keep working.
 MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD = (
     "KX108_DECISION_RECORD_PERSISTENCE_FOR_AGENT_CYCLE"
+)
+
+# Modules that together carry the internal governed chain end to end.
+AGENT_PRE_EXECUTION_CONTEXT_PATH = (
+    "scripts/obsidia_agent_pre_execution_context_v1.py"
+)
+
+FEEDBACK_CONTEXT_ADAPTER_PATH = (
+    "periphery/context/feedback_result_context_adapter.py"
+)
+
+DECISION_STORE_PATH = "scripts/obsidia_kx108_decision_store.py"
+
+# The chain required before any internal end-to-end claim (R6-L).
+INTERNAL_E2E_REQUIRED_LINKS = (
+    "REAL_AGENT_INVOCATION",
+    "REAL_AGENT_RESULT",
+    "REAL_CONTEXT_BINDER",
+    "REAL_CONTEXT_VALIDATION",
+    "REAL_PRE_EXECUTION_CONTEXT",
+    "REAL_KX108_DECISION",
+    "REAL_DECISION_RECORD_PERSISTED",
+    "REAL_DECISION_RECORD_VERIFIED",
+    "REAL_EXECUTION_GATE",
+    "REAL_PROVIDER_INVOCATION",
+    "REAL_SEALED_EXECUTION_ENVELOPE",
+    "REAL_TERMINAL_RECEIPT",
+    "REAL_READONLY_FEEDBACK",
+    "REAL_NEXT_CONTEXT_REENTRY",
 )
 
 
@@ -76,6 +104,42 @@ def governed_runtime_cycle_present() -> bool:
     return _exists(GOVERNED_RUNTIME_CYCLE_PATH)
 
 
+def agent_decision_record_rail_present() -> bool:
+    """
+    True when the agent PRE_EXECUTION rail exists: the frozen context
+    module, the feedback re-entry adapter, and the AGENT_PRE_EXECUTION
+    phase in the canonical decision store.
+    """
+    if not (
+        _exists(AGENT_PRE_EXECUTION_CONTEXT_PATH)
+        and _exists(FEEDBACK_CONTEXT_ADAPTER_PATH)
+        and _exists(DECISION_STORE_PATH)
+    ):
+        return False
+    store_source = (_REPO_ROOT / DECISION_STORE_PATH).read_text(encoding="utf-8")
+    return (
+        "AGENT_PRE_DECISION_PHASE" in store_source
+        and "persist_kx108_agent_pre_execution_decision" in store_source
+    )
+
+
+def runtime_internal_end_to_end_validated() -> bool:
+    """
+    Internal governed runtime, end to end — agent through verified KX108
+    decision record, bounded provider execution, sealed envelope, terminal
+    receipt, read-only feedback and re-entry as a fresh context.
+
+    This says NOTHING about the external world: no world action is ever
+    executed, and runtime_end_to_end_validated keeps its historical, wider
+    meaning and stays False.
+    """
+    return (
+        canonical_agent_context_adapter_present()
+        and governed_runtime_cycle_present()
+        and agent_decision_record_rail_present()
+    )
+
+
 def missing_runtime_links() -> tuple[str, ...]:
     """
     Runtime links still absent or not activated.
@@ -90,7 +154,9 @@ def missing_runtime_links() -> tuple[str, ...]:
     if not canonical_agent_context_adapter_present():
         links.append(MISSING_RUNTIME_LINK_ADAPTER)
 
-    links.append(MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD)
+    if not agent_decision_record_rail_present():
+        links.append(MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD)
+
     links.append(MISSING_RUNTIME_LINK_WORLD_ACTUATION)
     links.append(MISSING_RUNTIME_LINK_REAL_EXECUTION)
 
@@ -114,6 +180,15 @@ def runtime_link_facts() -> dict:
 
         "governed_runtime_cycle_path":
             GOVERNED_RUNTIME_CYCLE_PATH,
+
+        "agent_decision_record_rail_present":
+            agent_decision_record_rail_present(),
+
+        "runtime_internal_end_to_end_validated":
+            runtime_internal_end_to_end_validated(),
+
+        "internal_e2e_required_links":
+            INTERNAL_E2E_REQUIRED_LINKS,
 
         "world_action_runtime_activated":
             False,
