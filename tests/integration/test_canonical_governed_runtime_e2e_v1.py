@@ -44,8 +44,11 @@ from obsidia_governed_runtime_cycle_v1 import (  # noqa: E402
     REFUSED_NO_EXECUTION_SURFACE,
     REFUSED_REPLAY_NOT_PASS,
     REFUSED_TICKET_INVALID,
+    REFUSED_UNSUPPORTED_DOMAIN,
     GovernedRuntimeCycleError,
     authorize_execution_from_verified_kx108,
+    is_supported_domain,
+    resolve_domain_pipeline,
     run_governed_runtime_cycle,
 )
 
@@ -495,8 +498,13 @@ def test_25_decision_record_is_persisted_on_the_dedicated_agent_rail(surface):
     assert result.to_dict()["decision_record_verified"] is True
 
 
-def test_26_unknown_domain_has_no_pipeline_and_fails_closed(surface):
-    flow, provider, _tmp = surface
+def test_26_unsupported_domain_is_refused_without_any_decision(surface):
+    """
+    R7-C: an unsupported domain is refused before any verdict is requested.
+    The refusal is not a decision: nothing is rendered, nothing is recorded,
+    and the provider is never reached.
+    """
+    flow, provider, tmp_path = surface
     action = ActionCandidate(
         action_id="r5_unknown_domain",
         domain="not_a_canonical_domain",
@@ -508,15 +516,34 @@ def test_26_unknown_domain_has_no_pipeline_and_fails_closed(surface):
         payload={},
     )
 
-    with pytest.raises(GovernedRuntimeCycleError, match="NO_CANONICAL_DOMAIN_PIPELINE"):
-        run_governed_runtime_cycle(
-            AGENT_ID,
-            action,
-            _bank_state(),
-            execution_surface=flow,
-            mission_id="m",
-            provider_id=PROVIDER_ID,
-            capability="analysis",
-        )
+    result = run_governed_runtime_cycle(
+        AGENT_ID,
+        action,
+        _bank_state(),
+        execution_surface=flow,
+        mission_id="m",
+        provider_id=PROVIDER_ID,
+        capability="analysis",
+        agent_context_store_dir=tmp_path / "agent_contexts",
+        decision_store_dir=tmp_path / "kx108_decisions",
+    )
 
+    assert result.execution_authorization_reason.startswith(
+        REFUSED_UNSUPPORTED_DOMAIN
+    )
+    assert result.decision_rendered is False
+    assert result.decision_id == ""
+    assert result.decision_record_persisted is False
+    assert result.execution_authorized is False
+    assert result.provider_invoked is False
     assert provider.invocations == 0
+    result.assert_non_sovereign()
+
+
+def test_27_resolving_an_unsupported_domain_directly_still_raises():
+    """The direct resolver keeps its strict contract for programmatic callers."""
+    with pytest.raises(GovernedRuntimeCycleError, match="NO_CANONICAL_DOMAIN_PIPELINE"):
+        resolve_domain_pipeline("not_a_canonical_domain")
+
+    assert is_supported_domain("bank") is True
+    assert is_supported_domain("not_a_canonical_domain") is False
