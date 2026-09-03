@@ -140,15 +140,16 @@ def _holding_state() -> BankState:
 
 
 @pytest.fixture
-def surface():
+def surface(tmp_path):
+    """Stores are per-test: the canonical rails write outside the repo."""
     provider = BoundedSandboxProvider()
     flow = CanonicalRuntimeReceiptFlow()
     flow.register_provider(PROVIDER_ID, provider)
-    return flow, provider
+    return flow, provider, tmp_path
 
 
 def _run(surface_pair, state=None, action_id="r5_gov_001", with_surface=True):
-    flow, provider = surface_pair
+    flow, provider, tmp_path = surface_pair
     return (
         run_governed_runtime_cycle(
             AGENT_ID,
@@ -159,6 +160,8 @@ def _run(surface_pair, state=None, action_id="r5_gov_001", with_surface=True):
             provider_id=PROVIDER_ID,
             capability="analysis",
             execution_payload={"scope": "bounded"},
+            agent_context_store_dir=tmp_path / "agent_contexts",
+            decision_store_dir=tmp_path / "kx108_decisions",
         ),
         provider,
     )
@@ -342,7 +345,7 @@ def test_14_verified_allow_invokes_the_provider_exactly_once(surface):
 
 def test_15_execution_traverses_the_real_canonical_flow(surface):
     """The router really dispatched to the registered provider."""
-    flow, provider = surface
+    flow, provider, _tmp = surface
     result, _ = _run(surface, action_id="r5_flow_001")
 
     assert result.flow_status == "COMPLETED"
@@ -473,23 +476,27 @@ def test_24_a_new_cycle_never_inherits_the_previous_allow(surface):
 # ── Blocker: canonical decision-record persistence is not applicable ────────
 
 
-def test_25_decision_record_persistence_is_an_explicit_named_blocker(surface):
+def test_25_decision_record_is_persisted_on_the_dedicated_agent_rail(surface):
     """
-    The cycle never claims a persisted KX108 record it cannot legitimately
-    produce, and never fabricates the remediation-rail binding artefacts.
+    R6 closed what R5 had to leave open: the cycle now persists and verifies
+    a real KX108 record on its own agent rail, without ever fabricating the
+    remediation rail's binding artefacts.
     """
     result, _ = _run(surface, action_id="r5_blocker_001")
 
-    assert result.decision_record_persisted is False
+    assert result.decision_record_persisted is True
+    assert result.decision_record_verified is True
+    assert result.decision_record_id.startswith("kxagent-")
+
+    # The remediation rail stays inapplicable and is never diverted.
     assert (
-        result.decision_record_persistence_blocker
-        == DECISION_RECORD_PERSISTENCE_BLOCKER
+        result.remediation_rail_blocker == DECISION_RECORD_PERSISTENCE_BLOCKER
     )
-    assert result.to_dict()["decision_record_persisted"] is False
+    assert result.to_dict()["decision_record_verified"] is True
 
 
 def test_26_unknown_domain_has_no_pipeline_and_fails_closed(surface):
-    flow, provider = surface
+    flow, provider, _tmp = surface
     action = ActionCandidate(
         action_id="r5_unknown_domain",
         domain="not_a_canonical_domain",
