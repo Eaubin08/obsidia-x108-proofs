@@ -2,46 +2,37 @@ from scripts.kernel.kx108_proof_execution_runtime_v1 import (
     KX108ProofExecutionRuntime,
 )
 
+from scripts.providers.canonical_execution_flow_v1 import (
+    CanonicalExecutionFlow,
+)
+
+
+def fake_provider(**kwargs):
+
+    return {
+        "runtime_id":
+            "runtime-cg73",
+
+        "provider":
+            "brody",
+    }
+
 
 def flow_output():
 
-    return {
-        "flow_status":
-            "COMPLETED",
+    flow = CanonicalExecutionFlow()
 
-        "execution": {
-            "session": {
-                "status":
-                    "COMPLETED",
-            },
+    flow.register_provider(
+        "brody",
+        fake_provider,
+    )
 
-            "envelope": {
-                "provider_id":
-                    "brody",
-
-                "runtime_id":
-                    "runtime-cg73",
-
-                "status":
-                    "SEALED",
-
-                "decision_authority":
-                    False,
-
-                "execution_authority":
-                    False,
-
-                "memory_write":
-                    False,
-
-                "kernel_mutation":
-                    False,
-
-                "emits_act":
-                    False,
-            },
-        },
-    }
+    return flow.run(
+        mission_id="mission-cg73",
+        provider_id="brody",
+        capability="analysis",
+        payload={},
+    )
 
 
 def test_execution_runtime_validated():
