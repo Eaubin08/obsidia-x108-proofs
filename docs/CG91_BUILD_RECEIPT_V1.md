@@ -1,4 +1,4 @@
-﻿# CG91 BUILD RECEIPT V1
+# CG91 BUILD RECEIPT V1
 
 ## Identity
 

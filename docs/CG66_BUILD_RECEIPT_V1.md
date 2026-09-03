@@ -1,4 +1,4 @@
-﻿# CG66 BUILD RECEIPT V1
+# CG66 BUILD RECEIPT V1
 
 ## Identity
 
