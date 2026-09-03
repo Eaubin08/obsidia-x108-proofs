@@ -88,6 +88,13 @@ from periphery.sigma_bridge import (
     run_trading_with_periphery,
 )
 
+from periphery.context import (
+    feedback_result_context_adapter as _FEEDBACK_ADAPTER,
+)
+
+import obsidia_agent_pre_execution_context_v1 as _APEC
+import obsidia_kx108_decision_store as _DS
+
 DECISION_AUTHORITY = "KX108_ONLY"
 CYCLE_BOUNDARY = "GOVERNED_INTERNAL_RUNTIME_CYCLE_V1"
 
@@ -105,8 +112,18 @@ REFUSED_TICKET_GATE_MISMATCH = "OS3_TICKET_GATE_MISMATCH"
 REFUSED_REPLAY_NOT_PASS = "OS3_REPLAY_NOT_PASS"
 REFUSED_NO_EXECUTION_SURFACE = "NO_BOUND_EXECUTION_SURFACE_PROVIDED"
 REFUSED_CONTEXT_INVALID = "CONTEXT_PRE_GATE_FAIL_CLOSED"
+REFUSED_AGENT_CONTEXT_NOT_PERSISTED = "AGENT_PRE_EXECUTION_CONTEXT_NOT_PERSISTED"
+REFUSED_AGENT_CONTEXT_NOT_VERIFIED = "AGENT_PRE_EXECUTION_CONTEXT_NOT_VERIFIED"
+REFUSED_DECISION_RECORD_NOT_PERSISTED = "KX108_DECISION_RECORD_NOT_PERSISTED"
+REFUSED_DECISION_RECORD_NOT_VERIFIED = "KX108_DECISION_RECORD_NOT_VERIFIED"
+REFUSED_RECORD_GATE_MISMATCH = "DECISION_RECORD_GATE_MISMATCH"
+REFUSED_RECORD_CONTEXT_BINDING = "DECISION_RECORD_CONTEXT_BINDING_MISMATCH"
+REFUSED_EXECUTION_PLAN_BINDING = "EXECUTION_PLAN_BINDING_MISMATCH"
 
-# Blocker nommé — jamais contourné.
+# Conservé pour les consommateurs existants : le rail de remédiation reste
+# inapplicable à un cycle agent. R6 n'y touche pas — il ouvre un rail agent
+# dédié (decision_phase=AGENT_PRE_EXECUTION) partageant les primitives
+# cryptographiques génériques du magasin canonique.
 DECISION_RECORD_PERSISTENCE_BLOCKER = (
     "KX108_PRE_EXECUTION_RECORD_BINDING_NOT_APPLICABLE_TO_AGENT_CYCLE"
 )
@@ -167,9 +184,28 @@ class GovernedRuntimeCycleResult:
     # Feedback readonly
     feedback: Optional[dict[str, Any]] = None
 
-    # Persistance canonique — blocker factuel
+    # Réentrée : contexte du cycle suivant (aucune autorité héritée)
+    next_context_id: str = ""
+    next_context_recommended_gate: str = ""
+    next_context_inherits_authority: bool = False
+
+    # Rail agent PRE_EXECUTION canonique (R6)
+    agent_pre_execution_context_id: str = ""
+    agent_pre_execution_context_record_hash: str = ""
+    agent_pre_execution_context_verified: bool = False
+    execution_plan_digest: str = ""
+    execution_plan_binding_verified: bool = False
+
+    # Decision record canonique persisté + vérifié
+    decision_record_id: str = ""
+    decision_record_hash: str = ""
     decision_record_persisted: bool = False
-    decision_record_persistence_blocker: str = DECISION_RECORD_PERSISTENCE_BLOCKER
+    decision_record_verified: bool = False
+    decision_record_verify_reason: str = ""
+    decision_phase: str = ""
+
+    # Le rail de remédiation reste inapplicable — jamais détourné.
+    remediation_rail_blocker: str = DECISION_RECORD_PERSISTENCE_BLOCKER
 
     # Invariants verrouillés
     decision_authority: str = DECISION_AUTHORITY
@@ -202,6 +238,18 @@ class GovernedRuntimeCycleResult:
             raise AssertionError("CYCLE_VIOLATION: provider invoked without authorization")
         if self.execution_authorized and self.x108_gate != "ALLOW":
             raise AssertionError("CYCLE_VIOLATION: authorization without a KX108 ALLOW")
+        if self.execution_authorized and not self.decision_record_verified:
+            raise AssertionError(
+                "CYCLE_VIOLATION: authorization without a verified KX108 decision record"
+            )
+        if self.next_context_inherits_authority:
+            raise AssertionError(
+                "CYCLE_VIOLATION: next context must never inherit authority"
+            )
+        if self.execution_authorized and not self.execution_plan_binding_verified:
+            raise AssertionError(
+                "CYCLE_VIOLATION: authorization without a verified execution plan binding"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -232,8 +280,23 @@ class GovernedRuntimeCycleResult:
             "runtime_id": self.runtime_id,
             "receipt": self.receipt,
             "feedback": self.feedback,
+            "next_context_id": self.next_context_id,
+            "next_context_recommended_gate": self.next_context_recommended_gate,
+            "next_context_inherits_authority": self.next_context_inherits_authority,
+            "agent_pre_execution_context_id": self.agent_pre_execution_context_id,
+            "agent_pre_execution_context_record_hash":
+                self.agent_pre_execution_context_record_hash,
+            "agent_pre_execution_context_verified":
+                self.agent_pre_execution_context_verified,
+            "execution_plan_digest": self.execution_plan_digest,
+            "execution_plan_binding_verified": self.execution_plan_binding_verified,
+            "decision_record_id": self.decision_record_id,
+            "decision_record_hash": self.decision_record_hash,
             "decision_record_persisted": self.decision_record_persisted,
-            "decision_record_persistence_blocker": self.decision_record_persistence_blocker,
+            "decision_record_verified": self.decision_record_verified,
+            "decision_record_verify_reason": self.decision_record_verify_reason,
+            "decision_phase": self.decision_phase,
+            "remediation_rail_blocker": self.remediation_rail_blocker,
             "decision_authority": self.decision_authority,
             "emits_act": self.emits_act,
             "memory_write": self.memory_write,
@@ -291,6 +354,12 @@ def run_governed_runtime_cycle(
     provider_id: str = "",
     capability: str = "",
     execution_payload: Optional[dict[str, Any]] = None,
+    agent_context_store_dir: Optional[Path] = None,
+    decision_store_dir: Optional[Path] = None,
+    source_packet: Any = None,
+    source_context: Any = None,
+    source_agent_id: str = "",
+    source_agent_layer: str = "",
 ) -> GovernedRuntimeCycleResult:
     """
     Exécute un cycle gouverné interne complet.
@@ -300,20 +369,34 @@ def run_governed_runtime_cycle(
     KX108 ALLOW vérifiée n'ait été obtenue. Absent, le cycle s'arrête
     proprement au gate sans jamais dégrader la décision.
     """
-    # ── 1. Agent réel -> AgentResult réel ────────────────────────────────
-    agent_result = run_registered_agent(agent_id, action)
-    agent_result.assert_non_sovereign()
-    packet = agent_result.packet
+    # ── 1-2. Source du cycle ─────────────────────────────────────────────
+    #
+    # Soit un agent réel (cycle t0), soit un contexte de feedback déjà
+    # construit par l'adaptateur canonique de réentrée (cycle t1+). Dans
+    # les deux cas la suite est IDENTIQUE : aucune autorité n'est héritée,
+    # une décision KX108 neuve est exigée.
+    if source_packet is not None and source_context is not None:
+        packet = source_packet
+        packet.assert_non_sovereign()
+        context = source_context
+        cycle_agent_id = source_agent_id or "FEEDBACK_REENTRY"
+        cycle_agent_layer = source_agent_layer or "FEEDBACK_MEMORY"
+        projection = _FEEDBACK_ADAPTER.context_packet_validation_projection(context)
+    else:
+        agent_result = run_registered_agent(agent_id, action)
+        agent_result.assert_non_sovereign()
+        packet = agent_result.packet
+        context = agent_result_to_context_packet(agent_result)
+        cycle_agent_id = agent_result.agent_id
+        cycle_agent_layer = agent_result.layer.value
+        projection = context_packet_validation_projection(context)
 
-    # ── 2. Binder R4 : ContextPacket canonique issu de CE AgentResult ────
-    context = agent_result_to_context_packet(agent_result)
-    projection = context_packet_validation_projection(context)
     validation = validate_context_packet(projection)
     boundary = check_x108_context_boundary(projection)
 
     result = GovernedRuntimeCycleResult(
-        agent_id=agent_result.agent_id,
-        agent_layer=agent_result.layer.value,
+        agent_id=cycle_agent_id,
+        agent_layer=cycle_agent_layer,
         action_id=packet.action_id,
         domain=packet.domain,
         context_id=context.context_id,
@@ -337,6 +420,105 @@ def run_governed_runtime_cycle(
     result.reason_code = getattr(envelope, "reason_code", "")
     result.severity = getattr(envelope, "severity", "")
 
+    # ── 3bis. Contexte pré-exécution agent FIGÉ + plan d'exécution ───────
+    #
+    # Construit AVANT que la décision ne soit liée, il fige ce qui sera
+    # réellement exécuté. Il n'autorise rien par lui-même.
+    agent_context = _APEC.create_agent_pre_execution_context(
+        agent_id=cycle_agent_id,
+        agent_layer=cycle_agent_layer,
+        action_id=packet.action_id,
+        domain=packet.domain,
+        context_packet_id=context.context_id,
+        context_packet_boundary=context.boundary,
+        mission_id=mission_id,
+        provider_id=provider_id,
+        capability=capability,
+        payload=execution_payload,
+        evidence_refs=list(packet.evidence_refs),
+        recommended_gate=packet.recommended_gate,
+    )
+
+    store_ctx = _APEC.store_agent_pre_execution_context_record(
+        agent_context, agent_context_store_dir
+    )
+    if store_ctx.get("status") not in (
+        _APEC.STATUS_STORED,
+        _APEC.STATUS_IDEMPOTENT_EXISTING_IDENTICAL,
+    ):
+        result.execution_authorization_reason = REFUSED_AGENT_CONTEXT_NOT_PERSISTED
+        result.assert_non_sovereign()
+        return result
+
+    reloaded_ctx = _APEC.load_agent_pre_execution_context_record(
+        agent_context["context_id"], agent_context_store_dir
+    )
+    ctx_ok, ctx_reason = _APEC.verify_agent_pre_execution_context_record(reloaded_ctx)
+
+    result.agent_pre_execution_context_id = agent_context["context_id"]
+    result.agent_pre_execution_context_record_hash = agent_context["context_record_hash"]
+    result.agent_pre_execution_context_verified = ctx_ok
+    result.execution_plan_digest = agent_context["execution_plan_digest"]
+
+    if not ctx_ok:
+        result.execution_authorization_reason = (
+            f"{REFUSED_AGENT_CONTEXT_NOT_VERIFIED}:{ctx_reason}"
+        )
+        result.assert_non_sovereign()
+        return result
+
+    # ── 3ter. Decision record canonique : persisté puis vérifié ──────────
+    #
+    # L'objet enveloppe du kernel est transmis tel quel : le magasin le
+    # sérialise sans perte et refuse tout ce qui n'est pas une dataclass
+    # produite par le kernel. Aucun champ souverain ne transite par ici.
+    persisted = _DS.persist_kx108_agent_pre_execution_decision(
+        envelope,
+        {
+            "agent_pre_execution_context_id": reloaded_ctx["context_id"],
+            "agent_pre_execution_context_record_hash": reloaded_ctx["context_record_hash"],
+            "agent_execution_plan_digest": reloaded_ctx["execution_plan_digest"],
+            "agent_execution_scope": reloaded_ctx["execution_scope"],
+            "agent_id": reloaded_ctx["agent_id"],
+            "action_id": reloaded_ctx["action_id"],
+            "context_packet_id": reloaded_ctx["context_packet_id"],
+        },
+        store_dir=decision_store_dir,
+    )
+
+    decision_record = persisted.get("record")
+    result.decision_record_id = persisted.get("decision_record_id", "") or ""
+    result.decision_phase = persisted.get("decision_phase", "") or ""
+    result.decision_record_persisted = bool(decision_record)
+    result.decision_record_verified = bool(persisted.get("verify_ok"))
+    result.decision_record_verify_reason = persisted.get("verify_reason") or (
+        persisted.get("reason") or ""
+    )
+    if decision_record:
+        result.decision_record_hash = decision_record.get("decision_record_hash", "")
+
+    if not result.decision_record_persisted:
+        result.execution_authorization_reason = REFUSED_DECISION_RECORD_NOT_PERSISTED
+        result.assert_non_sovereign()
+        return result
+
+    if not result.decision_record_verified:
+        result.execution_authorization_reason = (
+            f"{REFUSED_DECISION_RECORD_NOT_VERIFIED}:{result.decision_record_verify_reason}"
+        )
+        result.assert_non_sovereign()
+        return result
+
+    # Le verdict retenu est celui du record VÉRIFIÉ, jamais l'objet en mémoire.
+    if decision_record.get("x108_gate") != result.x108_gate:
+        result.execution_authorization_reason = REFUSED_RECORD_GATE_MISMATCH
+        result.assert_non_sovereign()
+        return result
+    if decision_record.get("agent_pre_execution_context_id") != reloaded_ctx["context_id"]:
+        result.execution_authorization_reason = REFUSED_RECORD_CONTEXT_BINDING
+        result.assert_non_sovereign()
+        return result
+
     # ── 4. Évidence OS3 + vérification cryptographique par rejeu ─────────
     ticket = build_os3_ticket(action, packet, envelope)
     replay = run_replay(ticket, action, packet, envelope)
@@ -357,7 +539,25 @@ def run_governed_runtime_cycle(
 
     # ── 6. Exécution réelle bornée — jamais atteinte sans ALLOW vérifié ──
     if authorized:
-        if execution_surface is None:
+        # Anti-TOCTOU : le plan réellement sur le point d'être invoqué doit
+        # être BIT POUR BIT celui figé avant la décision. Substitution de
+        # provider, capability, payload, mission ou contexte -> refus.
+        plan_ok, plan_reason = _APEC.verify_execution_plan_binding(
+            reloaded_ctx,
+            context_packet_id=context.context_id,
+            mission_id=mission_id,
+            provider_id=provider_id,
+            capability=capability,
+            payload=execution_payload,
+        )
+        result.execution_plan_binding_verified = plan_ok
+
+        if not plan_ok:
+            result.execution_authorized = False
+            result.execution_authorization_reason = (
+                f"{REFUSED_EXECUTION_PLAN_BINDING}:{plan_reason}"
+            )
+        elif execution_surface is None:
             result.execution_authorized = False
             result.execution_authorization_reason = REFUSED_NO_EXECUTION_SURFACE
         else:
@@ -381,5 +581,62 @@ def run_governed_runtime_cycle(
     feedback.assert_no_write()
     result.feedback = feedback.to_dict()
 
+    # ── 8. Réentrée : contexte du cycle suivant ──────────────────────────
+    #
+    # Construit à partir des seuls faits observés. Le verdict précédent y
+    # figure comme FAIT historique, jamais comme permission : ce contexte
+    # devra repasser par le validateur, la frontière X108 et une décision
+    # GuardX108 neuve.
+    next_context = _FEEDBACK_ADAPTER.feedback_result_to_context_packet(result)
+    next_context.validate_invariants()
+
+    result.next_context_id = next_context.context_id
+    result.next_context_recommended_gate = next_context.payload[
+        "derived_recommended_gate"
+    ]
+    result.next_context_inherits_authority = False
+
     result.assert_non_sovereign()
     return result
+
+
+def run_governed_feedback_cycle(
+    previous_result: GovernedRuntimeCycleResult,
+    action: ActionCandidate,
+    domain_state: Any,
+    *,
+    execution_surface: Any = None,
+    mission_id: str = "",
+    provider_id: str = "",
+    capability: str = "",
+    execution_payload: Optional[dict[str, Any]] = None,
+    agent_context_store_dir: Optional[Path] = None,
+    decision_store_dir: Optional[Path] = None,
+) -> GovernedRuntimeCycleResult:
+    """
+    Re-enter the loop from a finished cycle (t1 after t0).
+
+    The previous verdict is transported as evidence only. This cycle
+    obtains its OWN GuardX108 verdict, its OWN persisted and verified
+    decision record, and its OWN execution gate. A previous ALLOW grants
+    nothing here.
+    """
+    next_packet = _FEEDBACK_ADAPTER.feedback_result_to_peripheral_signal(previous_result)
+    next_context = _FEEDBACK_ADAPTER.feedback_result_to_context_packet(previous_result)
+
+    return run_governed_runtime_cycle(
+        "",
+        action,
+        domain_state,
+        execution_surface=execution_surface,
+        mission_id=mission_id,
+        provider_id=provider_id,
+        capability=capability,
+        execution_payload=execution_payload,
+        agent_context_store_dir=agent_context_store_dir,
+        decision_store_dir=decision_store_dir,
+        source_packet=next_packet,
+        source_context=next_context,
+        source_agent_id="FEEDBACK_REENTRY",
+        source_agent_layer="FEEDBACK_MEMORY",
+    )
