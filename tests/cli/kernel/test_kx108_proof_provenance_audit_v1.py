@@ -97,4 +97,7 @@ def test_authority():
 
 def test_kernel():
 
-    assert True
+    audit = KX108ProofProvenanceAudit()
+
+    assert audit.memory_write is False
+    assert audit.kernel_mutation is False

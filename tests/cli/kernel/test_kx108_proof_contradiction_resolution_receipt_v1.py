@@ -67,4 +67,7 @@ def test_authority():
 
 def test_kernel():
 
-    assert True
+    builder = KX108ContradictionResolutionReceiptBuilder()
+
+    assert builder.memory_write is False
+    assert builder.kernel_mutation is False

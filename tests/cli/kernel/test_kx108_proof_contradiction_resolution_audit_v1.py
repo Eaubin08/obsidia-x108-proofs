@@ -66,9 +66,21 @@ def test_checks():
 
 def test_safe():
 
-    assert True
+    result = (
+        KX108ProofContradictionResolutionAudit()
+        .audit({})
+    )
+
+    assert "authority_disabled" in result["checks"]
+    assert result["checks"]["authority_disabled"] is False
 
 
 def test_closed():
 
-    assert True
+    result = (
+        KX108ProofContradictionResolutionAudit()
+        .audit({})
+    )
+
+    assert isinstance(result["checks"], dict)
+    assert all(result["checks"].values()) is False

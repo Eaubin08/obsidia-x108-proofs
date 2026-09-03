@@ -74,4 +74,11 @@ def test_status():
 
 def test_closed():
 
-    assert True
+    result = (
+        KX108ProofContradictionResolver()
+        .resolve({})
+    )
+
+    assert result["contradiction_detected"] is False
+    assert result["authority"] is False
+    assert result["kernel_mutation"] is False

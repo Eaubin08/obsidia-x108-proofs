@@ -65,9 +65,18 @@ def test_identity():
 
 def test_kernel():
 
-    assert True
+    audit = KX108ProofVerificationAudit()
+
+    assert audit.memory_write is False
+    assert audit.kernel_mutation is False
 
 
 def test_closed():
 
-    assert True
+    result = (
+        KX108ProofVerificationAudit()
+        .audit({})
+    )
+
+    assert isinstance(result["checks"], dict)
+    assert all(result["checks"].values()) is False
