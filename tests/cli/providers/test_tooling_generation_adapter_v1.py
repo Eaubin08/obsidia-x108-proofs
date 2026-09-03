@@ -89,9 +89,18 @@ def _make_repo(
         parents=True
     )
 
-    target.write_text(
-        OLD_SOURCE,
-        encoding="utf-8",
+    # Exact physical fixture bytes.
+    #
+    # Path.write_text() uses platform newline translation on Windows,
+    # which turns OLD_SOURCE "\n" into physical CRLF and makes the
+    # hash/source expectation platform-dependent.
+    #
+    # C3a intentionally binds the exact physical checkout bytes, so
+    # the fixture itself must choose its bytes explicitly.
+    target.write_bytes(
+        OLD_SOURCE.encode(
+            "utf-8"
+        )
     )
 
     _run(
@@ -476,6 +485,12 @@ def test_invalid_target_rejected(
             "PROVIDER_OUTPUT_TOO_LARGE",
         ),
     ],
+
+    ids=(
+        "empty",
+        "markdown-fence",
+        "too-large",
+    ),
 )
 def test_invalid_provider_output_rejected(
     tmp_path,
