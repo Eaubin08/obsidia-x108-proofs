@@ -61,6 +61,7 @@ from periphery.context.context_packet_sanitizer import sanitize_context_packet
 from periphery.context.context_packet_validator import validate_context_packet
 from periphery.context.context_packet_exporter import export_context_packet
 from periphery.x108_ingress.readonly_context_ingress import ingest_readonly_context
+from periphery.context.agent_x108_context_flow import run_agent_x108_context_flow
 
 # ── Gencoin sandbox extensions ────────────────────────────────────────────────
 from periphery.gencoin_sandbox.avdr_phase_mapper import map_avdr_phase
@@ -533,23 +534,43 @@ async def periphery_list_agents():
     return safe_backend_response({"agents": agents, "count": len(agents), **_BOUNDARY}, source="REAL_BACKEND")
 
 
+def _resolve_operational_agent(agent_id: str) -> None:
+    """Resolution order (§6): operational → agents52 → unknown. No dispatch before classification."""
+    if agent_id in set(list_agents()):
+        return
+    if agent_id in set(list_agent52_configs()):
+        raise HTTPException(
+            status_code=422,
+            detail=f"AGENTS52_CONFIG_NOT_EXECUTABLE:{agent_id}",
+        )
+    raise HTTPException(
+        status_code=404,
+        detail=f"UNKNOWN_OPERATIONAL_AGENT:{agent_id}",
+    )
+
+
 @router.post("/governance/agent-run")
 async def periphery_agent_run(body: AgentRunPayload):
-    # Resolution order (§6): operational → agents52 → unknown. No dispatch before classification.
-    if body.agent_id not in set(list_agents()):
-        if body.agent_id in set(list_agent52_configs()):
-            raise HTTPException(
-                status_code=422,
-                detail=f"AGENTS52_CONFIG_NOT_EXECUTABLE:{body.agent_id}",
-            )
-        raise HTTPException(
-            status_code=404,
-            detail=f"UNKNOWN_OPERATIONAL_AGENT:{body.agent_id}",
-        )
+    _resolve_operational_agent(body.agent_id)
     a = _make_action(body.action)
     result = run_registered_agent(body.agent_id, a)
     result.assert_non_sovereign()
     return safe_backend_response({"agent_id": result.agent_id, "layer": str(result.layer), **_pkt(result.packet), **_BOUNDARY}, source="REAL_BACKEND")
+
+
+@router.post("/governance/agent-x108-context")
+async def periphery_agent_x108_context(body: AgentRunPayload):
+    """
+    Canonical runtime path: AgentResult -> ContextPacket -> X108 dry-run admission.
+
+    Read-only. Dry-run only. Decision is limited to BLOCK / HOLD /
+    ALLOW_CONTEXT_ONLY and is produced by the X108 admission path, never here.
+    """
+    _resolve_operational_agent(body.agent_id)
+    a = _make_action(body.action)
+    flow = run_agent_x108_context_flow(body.agent_id, a)
+    flow.assert_non_sovereign()
+    return safe_backend_response({**flow.to_dict(), **_BOUNDARY}, source="REAL_BACKEND")
 
 
 @router.post("/governance/agent-spec-check")
