@@ -161,6 +161,47 @@ _POST_PRE_LINKED_SEALED_IDENTITY_SEED_FIELDS = (
 )
 
 
+# ── AGENT_RUNTIME_PRE_EXECUTION_DECISION_V1 — support additif de phase ──────
+#
+# Une décision AGENT_PRE_EXECUTION est rendue AVANT l'invocation d'un
+# provider interne borné, dans un cycle agent -> ContextPacket -> provider.
+# Elle n'a NI HumanApproval, NI execution_authority_hash de contenu, NI
+# isolation Git, NI test contract : ces artefacts appartiennent au rail de
+# remédiation et n'existent pas pour un cycle agent. Fabriquer ces champs
+# reviendrait à détourner une autorisation accordée pour autre chose, ce
+# qui est interdit — d'où un jeu de liaison DÉDIÉ, qui lie ce que le cycle
+# agent possède réellement : son contexte pré-exécution figé et le digest
+# du plan d'exécution sur lequel KX108 se prononce.
+#
+# Rétro-compatibilité STRICTE : aucun record existant ne porte cette
+# phase, donc _record_bound_fields_for retombe exactement comme avant pour
+# PRE / POST-lié / POST legacy. Le rail de remédiation est INCHANGÉ :
+# aucun de ses champs n'est rendu optionnel, ici ou ailleurs.
+AGENT_PRE_DECISION_PHASE = "AGENT_PRE_EXECUTION"
+
+_AGENT_PRE_BINDING_CONTEXT_FIELDS = (
+    "agent_pre_execution_context_id", "agent_pre_execution_context_record_hash",
+    "agent_execution_plan_digest", "agent_execution_scope",
+    "agent_id", "action_id", "context_packet_id",
+)
+
+_AGENT_PRE_RECORD_BOUND_FIELDS = (
+    "decision_record_schema_version", "decision_record_id", "created_at",
+    "decision_phase",
+    "agent_pre_execution_context_id", "agent_pre_execution_context_record_hash",
+    "agent_execution_plan_digest", "agent_execution_scope",
+    "agent_id", "action_id", "context_packet_id",
+    "decision_id", "trace_id", "domain",
+    "x108_gate", "reason_code", "severity", "market_verdict",
+    "contradictions", "unknowns", "risk_flags",
+    "decision_authority", "canonical_envelope",
+)
+
+_AGENT_PRE_IDENTITY_SEED_FIELDS = (
+    _AGENT_PRE_BINDING_CONTEXT_FIELDS + ("decision_phase", "canonical_envelope")
+)
+
+
 def decision_phase_of(record: "Optional[dict]") -> str:
     """Phase d'un enregistrement de décision KX108.
 
@@ -172,10 +213,13 @@ def decision_phase_of(record: "Optional[dict]") -> str:
 
 
 def _record_bound_fields_for(record: dict) -> tuple:
-    """PRE => _PRE_RECORD_BOUND_FIELDS ;
+    """AGENT_PRE => _AGENT_PRE_RECORD_BOUND_FIELDS ;
+    PRE => _PRE_RECORD_BOUND_FIELDS ;
     POST explicitement lié à une décision PRE => _POST_PRE_LINKED_RECORD_BOUND_FIELDS ;
     sinon (schéma POST historique, decision_phase absent) => _RECORD_BOUND_FIELDS d'origine."""
     phase = record.get("decision_phase")
+    if phase == AGENT_PRE_DECISION_PHASE:
+        return _AGENT_PRE_RECORD_BOUND_FIELDS
     if phase == PRE_DECISION_PHASE:
         return _PRE_RECORD_BOUND_FIELDS
     if phase == POST_DECISION_PHASE and record.get("kx108_pre_decision_record_id"):
@@ -473,6 +517,103 @@ def run_and_persist_kx108_pre_execution_decision(
     return {
         "decision_record_id": record["decision_record_id"],
         "decision_phase": PRE_DECISION_PHASE,
+        "x108_gate": record["x108_gate"],
+        "store_result": store_result,
+        "record": reloaded,
+        "verify_ok": verify_ok,
+        "verify_reason": verify_reason,
+    }
+
+
+# ── AGENT_PRE_EXECUTION (cycle agent interne borné) ─────────────────────────
+
+def _compute_agent_pre_decision_record_identity(seed: dict) -> str:
+    """Identité CONTENU d'une décision agent — préfixe distinct (kxagent-)
+    de PRE (kxpre-), POST legacy (kxd-) et POST-lié (kxpost-)."""
+    payload = json.dumps(
+        {k: seed.get(k) for k in _AGENT_PRE_IDENTITY_SEED_FIELDS},
+        sort_keys=True,
+        default=str,
+    )
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"kxagent-{digest[:32]}"
+
+
+def _validate_agent_pre_binding_context(binding_context: dict) -> Optional[str]:
+    """Jeu de liaison agent — n'exige JAMAIS approval_id / execution_authority_hash
+    / test_contract_hash : ces artefacts appartiennent au rail de remédiation.
+    Fail-closed sur tout champ absent."""
+    for f in _AGENT_PRE_BINDING_CONTEXT_FIELDS:
+        if not binding_context.get(f):
+            return f"AGENT_PRE_BINDING_CONTEXT_FIELD_MISSING:{f}"
+    return None
+
+
+def persist_kx108_agent_pre_execution_decision(
+    decision_envelope,
+    agent_pre_binding_context: dict,
+    store_dir: Optional[Path] = None,
+) -> dict:
+    """
+    Sérialise sans perte une décision KX108 DÉJÀ RENDUE sur un cycle agent,
+    la lie au contexte pré-exécution figé et au digest du plan d'exécution,
+    publie atomiquement, recharge et vérifie.
+
+    Ce module ne décide RIEN : `decision_envelope` DOIT être l'objet
+    CanonicalDecisionEnvelope réellement produit par sigma.guard.GuardX108
+    .decide() — il est accepté comme dataclass, jamais comme dict d'appelant,
+    précisément pour qu'un x108_gate ne puisse pas être fabriqué en chemin.
+    L'appelant ne fournit aucun champ souverain : gate, reason_code,
+    severity, contradictions, unknowns, risk_flags et l'enveloppe complète
+    sont lus depuis l'objet du kernel.
+
+    Portée : exécution INTERNE bornée. Ce chemin ne dit rien d'une actuation
+    monde externe ni d'une opération irréversible.
+    """
+    if dataclasses.is_dataclass(decision_envelope) and not isinstance(decision_envelope, type):
+        envelope = dataclasses.asdict(decision_envelope)
+    else:
+        return {"status": "REJECTED", "reason": "DECISION_ENVELOPE_NOT_A_KERNEL_DATACLASS"}
+
+    binding_error = _validate_agent_pre_binding_context(agent_pre_binding_context)
+    if binding_error:
+        return {"status": "REJECTED", "reason": binding_error}
+
+    if envelope.get("x108_gate") not in VALID_X108_GATES:
+        return {"status": "REJECTED", "reason": "X108_GATE_INVALID"}
+
+    record: dict = {
+        "decision_record_schema_version": SCHEMA_VERSION,
+        "created_at": _now(),
+        "decision_phase": AGENT_PRE_DECISION_PHASE,
+        **{k: agent_pre_binding_context[k] for k in _AGENT_PRE_BINDING_CONTEXT_FIELDS},
+        "decision_id": envelope.get("decision_id"),
+        "trace_id": envelope.get("trace_id"),
+        "domain": envelope.get("domain"),
+        "x108_gate": envelope.get("x108_gate"),
+        "reason_code": envelope.get("reason_code"),
+        "severity": envelope.get("severity"),
+        "market_verdict": envelope.get("market_verdict"),
+        "contradictions": list(envelope.get("contradictions") or []),
+        "unknowns": list(envelope.get("unknowns") or []),
+        "risk_flags": list(envelope.get("risk_flags") or []),
+        "decision_authority": DECISION_AUTHORITY,
+        "canonical_envelope": envelope,
+    }
+
+    identity_seed = {k: record[k] for k in _AGENT_PRE_BINDING_CONTEXT_FIELDS}
+    identity_seed["decision_phase"] = AGENT_PRE_DECISION_PHASE
+    identity_seed["canonical_envelope"] = envelope
+    record["decision_record_id"] = _compute_agent_pre_decision_record_identity(identity_seed)
+    record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
+
+    store_result = store_kx108_decision_record(record, store_dir)
+    reloaded = load_kx108_decision_record(record["decision_record_id"], store_dir)
+    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+
+    return {
+        "decision_record_id": record["decision_record_id"],
+        "decision_phase": AGENT_PRE_DECISION_PHASE,
         "x108_gate": record["x108_gate"],
         "store_result": store_result,
         "record": reloaded,
