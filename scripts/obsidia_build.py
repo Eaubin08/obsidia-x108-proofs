@@ -437,6 +437,9 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
         f"  base_sha          : {plan['base_sha']}",
         f"  stack_status      : {stack_status}",
         f"  manifest_hash     : {plan['manifest_hash']}",
+        f"  scope_mode        : {plan.get('scope_mode')}",
+        f"  approved_scope_hash: {plan.get('approved_scope_hash')}",
+        f"  plan_authority_hash: {plan.get('plan_authority_hash')}",
         f"  worktree_proposal : {plan['worktree_proposal']}",
         f"  branch_proposal   : {plan['branch_proposal']}",
         "",
@@ -468,6 +471,25 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
         f"      --approve {token}",
         sep,
     ]
+    if (
+        plan.get("scope_mode")
+        == SCOPE_MODE_EXPLICIT_CHILD_TARGET
+    ):
+        scope_lines = [
+            f'      --scope "{scope_path}"'
+            for scope_path
+            in plan.get(
+                "approved_scope_proposal",
+                [],
+            )
+        ]
+
+        # Conserver le séparateur comme dernière ligne.
+        if lines and lines[-1] == sep:
+            lines[-1:-1] = scope_lines
+        else:
+            lines.extend(scope_lines)
+
     return "\n".join(lines)
 
 
@@ -2220,7 +2242,7 @@ def main(argv: list[str]) -> int:
     )
     parser.add_argument(
         "objective", nargs="?", default="",
-        help="Objectif de build (texte libre, max 200 chars)",
+        help="Objectif de build (texte libre; --objective-file pour multi-ligne)",
     )
     parser.add_argument(
         "--approve",
@@ -2238,7 +2260,72 @@ def main(argv: list[str]) -> int:
         "--version", action="version", version=f"obsidia_build {VERSION}",
     )
 
+    parser.add_argument(
+        "--objective-file",
+        metavar="PATH",
+        default="",
+        help=(
+            "Objectif UTF-8 depuis fichier. "
+            "Support multi-ligne et objectifs longs."
+        ),
+    )
+
+    parser.add_argument(
+        "--scope",
+        action="append",
+        default=[],
+        metavar="REPO_RELATIVE_PATH",
+        help=(
+            "Cible explicite repo-relative. Repetable. "
+            "Active EXPLICIT_CHILD_TARGET sans fallback heuristique."
+        ),
+    )
+
     args = parser.parse_args(argv)
+
+    # R8-A
+    #
+    # Le texte complet est l'identite logique.
+    # utf-8-sig absorbe uniquement un BOM de transport eventuel.
+    objective = args.objective
+
+    if args.objective_file:
+
+        if objective:
+            print(
+                "[ERROR] objective et --objective-file "
+                "sont mutuellement exclusifs."
+            )
+            return 1
+
+        objective_path = Path(
+            args.objective_file
+        ).expanduser()
+
+        if not objective_path.is_file():
+            print(
+                f"[ERROR] objective-file introuvable: "
+                f"{objective_path}"
+            )
+            return 1
+
+        try:
+            objective = objective_path.read_text(
+                encoding="utf-8-sig"
+            )
+
+        except Exception as exc:
+            print(
+                "[ERROR] lecture objective-file impossible: "
+                f"{exc}"
+            )
+            return 1
+
+        if not objective.strip():
+            print(
+                "[ERROR] objective-file vide."
+            )
+            return 1
 
     if args.resume_kx108:
         return cmd_resume_kx108(
@@ -2246,21 +2333,45 @@ def main(argv: list[str]) -> int:
             REPO_ROOT, OBSIDIA_BUILD_STATE_DIR,
         )
 
-    if not args.objective:
+    if not objective:
         parser.print_help()
-        return 1
-
-    if len(args.objective) > 200:
-        print("[ERROR] Objectif trop long (max 200 chars).")
         return 1
 
     if args.approve:
         return cmd_execute(
-            args.objective, args.approve,
-            REPO_ROOT, OBSIDIA_BUILD_STATE_DIR,
+            objective,
+            args.approve,
+            REPO_ROOT,
+            OBSIDIA_BUILD_STATE_DIR,
+            explicit_scope=(args.scope or None),
         )
 
-    return cmd_plan(args.objective, REPO_ROOT)
+    if args.scope:
+
+        plan = compute_plan(
+            objective,
+            get_base_sha(REPO_ROOT),
+            REPO_ROOT,
+            explicit_scope=args.scope,
+        )
+
+        print(
+            format_plan_proposed(
+                plan,
+                _probe_api_status(),
+            )
+        )
+
+        return (
+            0
+            if plan.get("status") == "PLAN_PROPOSED"
+            else 2
+        )
+
+    return cmd_plan(
+        objective,
+        REPO_ROOT,
+    )
 
 
 if __name__ == "__main__":

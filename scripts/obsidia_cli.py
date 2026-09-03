@@ -7784,7 +7784,10 @@ def interactive_tui_shell(registry: dict) -> int:
 
 # ─── BUILD PLAN HANDLER (aucun subprocess, import direct) ────────────────────
 
-def _handle_build_plan(objective: str) -> str:
+def _handle_build_plan(
+    objective: str,
+    explicit_scope: list[str] | None = None,
+) -> str:
     """
     Appelle obsidia_build.compute_plan et formate le resultat.
     Aucun subprocess. Aucune mutation. Retourne le texte PLAN_PROPOSED.
@@ -7806,7 +7809,11 @@ def _handle_build_plan(objective: str) -> str:
             _sys.path.insert(0, _scripts_dir)
         _mod = importlib.import_module("obsidia_build")
         _base_sha = _mod.get_base_sha()
-        _plan = _mod.compute_plan(objective, _base_sha)
+        _plan = _mod.compute_plan(
+            objective,
+            _base_sha,
+            explicit_scope=explicit_scope,
+        )
         _stack = _mod._probe_api_status()
         return _mod.format_plan_proposed(_plan, _stack)
     except ImportError as exc:
@@ -8211,6 +8218,45 @@ def _dispatch_build(rest: str) -> str:
         return _handle_build_plan(objective="")
     subcmd = parts[0].lower()
     subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    # R8-A
+    #
+    # PLAN explicite uniquement.
+    #
+    # build target scripts/foo.py :: objectif
+    #
+    # Le terminal:
+    # - ne mute rien
+    # - ne lance aucun subprocess
+    # - ne décide rien
+    if subcmd in ("target", "scope", "file"):
+
+        if "::" not in subarg:
+            return (
+                "GUIDE: build target "
+                "<repo-relative-path> :: <objectif>\n"
+                "PLAN_PROPOSED uniquement."
+            )
+
+        target, objective = subarg.split(
+            "::",
+            1,
+        )
+
+        target = target.strip()
+        objective = objective.strip()
+
+        if not target or not objective:
+            return (
+                "GUIDE: build target "
+                "<repo-relative-path> :: <objectif>\n"
+                "path et objectif obligatoires."
+            )
+
+        return _handle_build_plan(
+            objective=objective,
+            explicit_scope=[target],
+        )
     if subcmd == "list":
         return _handle_build_list()
     if subcmd in ("status", "inspect", "resume", "review", "cleanup"):
