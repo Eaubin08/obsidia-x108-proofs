@@ -36,6 +36,8 @@ Phase 2 (apres approbation humaine):
 
 from __future__ import annotations
 
+import shlex
+
 import argparse
 import hashlib
 import json
@@ -1347,6 +1349,362 @@ def cmd_execute(
 # Reprise bornee KX108 -- apres BLOCKED_KX108_UNAVAILABLE
 # =============================================================================
 
+
+def _is_real_candidate_receipt(
+    receipt: dict,
+) -> bool:
+    """R8-B1+ real candidate receipt discriminator."""
+
+    return (
+        receipt.get(
+            "candidate_patch_mode"
+        )
+        == CANDIDATE_PATCH_MODE
+    )
+
+
+def _resume_legacy_ignorable_files(
+    receipt: dict,
+) -> set[str]:
+    """
+    Legacy only.
+
+    REAL_UNIFIED_DIFF_V1 receives zero synthetic scope exception.
+    """
+
+    if _is_real_candidate_receipt(
+        receipt
+    ):
+        return set()
+
+    return {
+        SYNTHETIC_TEST_PY,
+    }
+
+
+def _legacy_resume_diff_hash_compatible(
+    worktree_path: Path,
+    session_id: str,
+) -> bool:
+    """
+    Historical Windows line-ending compatibility only.
+
+    Forbidden as evidence for REAL_UNIFIED_DIFF_V1.
+    """
+
+    target = (
+        worktree_path
+        / SYNTHETIC_TARGET
+    )
+
+    if not target.exists():
+        return False
+
+    try:
+        content = target.read_text(
+            encoding="utf-8"
+        )
+
+    except Exception:
+        return False
+
+    return (
+        f"{SYNTHETIC_MARKER}: {session_id}"
+        in content
+    )
+
+
+def _legacy_resume_run_test(
+    worktree_path: Path,
+) -> tuple[bool, str, str]:
+    """
+    Historical synthetic fixture validator.
+    """
+
+    command = (
+        "python -m pytest "
+        f"{SYNTHETIC_TEST_PY} -q"
+    )
+
+    target = (
+        worktree_path
+        / SYNTHETIC_TEST_PY
+    )
+
+    if not target.exists():
+        return (
+            False,
+            command,
+            "LEGACY_SYNTHETIC_TEST_ABSENT",
+        )
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            str(target),
+            "-q",
+        ],
+        cwd=worktree_path,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+    message = (
+        proc.stdout
+        or proc.stderr
+        or ""
+    )
+
+    return (
+        proc.returncode == 0,
+        command,
+        message[-1000:],
+    )
+
+
+def _resume_recorded_pytest_argv(
+    command: str,
+) -> list[str]:
+    """
+    Convertit une preuve tests_commands du receipt en argv borné.
+
+    Autorisé:
+      python -m pytest ...
+      python.exe -m pytest ...
+      python3 -m pytest ...
+      pytest ...
+
+    Refus:
+      shell
+      scripts génériques
+      commandes arbitraires
+    """
+
+    if (
+        not isinstance(
+            command,
+            str,
+        )
+        or not command.strip()
+    ):
+        raise ValueError(
+            "RESUME_TEST_COMMAND_EMPTY"
+        )
+
+    forbidden = (
+        "\x00",
+        "\n",
+        "\r",
+        ";",
+        "&&",
+        "||",
+        "|",
+        ">",
+        "<",
+        "`",
+    )
+
+    if any(
+        token in command
+        for token in forbidden
+    ):
+        raise ValueError(
+            "RESUME_TEST_COMMAND_METACHAR_REJECTED"
+        )
+
+    try:
+        parts = shlex.split(
+            command,
+            posix=True,
+        )
+
+    except ValueError as exc:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_PARSE_FAILED"
+        ) from exc
+
+    if not parts:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_EMPTY"
+        )
+
+    executable = (
+        parts[0]
+        .replace("\\", "/")
+        .rsplit("/", 1)[-1]
+        .lower()
+    )
+
+    python_names = {
+        "python",
+        "python.exe",
+        "python3",
+        "python3.exe",
+    }
+
+    pytest_names = {
+        "pytest",
+        "pytest.exe",
+    }
+
+    if executable in python_names:
+
+        if (
+            len(parts) < 4
+            or parts[1:3]
+            != [
+                "-m",
+                "pytest",
+            ]
+        ):
+            raise ValueError(
+                "RESUME_TEST_COMMAND_NOT_PYTEST"
+            )
+
+        pytest_args = parts[3:]
+
+    elif executable in pytest_names:
+
+        if len(parts) < 2:
+            raise ValueError(
+                "RESUME_TEST_COMMAND_NO_TARGET"
+            )
+
+        pytest_args = parts[1:]
+
+    else:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_NOT_PYTEST"
+        )
+
+    if not pytest_args:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_NO_TARGET"
+        )
+
+    return [
+        sys.executable,
+        "-m",
+        "pytest",
+        *pytest_args,
+    ]
+
+
+def _resume_real_candidate_tests(
+    receipt: dict,
+    worktree_path: Path,
+) -> tuple[
+    bool,
+    list[dict],
+    str | None,
+]:
+    """
+    Rejoue uniquement les tests enregistrés par la Phase 2
+    de cette même session.
+
+    Le receipt n'acquiert aucune autorité shell:
+    chaque command repasse par _resume_recorded_pytest_argv.
+    """
+
+    commands = receipt.get(
+        "tests_commands"
+    )
+
+    if (
+        not isinstance(
+            commands,
+            list,
+        )
+        or not commands
+    ):
+        return (
+            False,
+            [],
+            "RESUME_REAL_CANDIDATE_TEST_EVIDENCE_MISSING",
+        )
+
+    results: list[dict] = []
+
+    for command in commands:
+
+        try:
+            argv = (
+                _resume_recorded_pytest_argv(
+                    command
+                )
+            )
+
+        except ValueError as exc:
+
+            return (
+                False,
+                results,
+                str(exc),
+            )
+
+        try:
+            proc = subprocess.run(
+                argv,
+                cwd=worktree_path,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+
+        except subprocess.TimeoutExpired:
+
+            return (
+                False,
+                results,
+                "RESUME_REAL_CANDIDATE_TEST_TIMEOUT",
+            )
+
+        message = (
+            proc.stdout
+            or proc.stderr
+            or ""
+        )
+
+        result = {
+            "command": command,
+            "argv": argv[1:],
+            "returncode": (
+                proc.returncode
+            ),
+            "ok": (
+                proc.returncode
+                == 0
+            ),
+            "msg": (
+                message[-2000:]
+            ),
+        }
+
+        results.append(
+            result
+        )
+
+        if proc.returncode != 0:
+
+            return (
+                False,
+                results,
+                (
+                    "RESUME_REAL_CANDIDATE_TEST_FAILED:"
+                    + command
+                ),
+            )
+
+    return (
+        True,
+        results,
+        None,
+    )
+
+
 def cmd_resume_kx108(
     session_id: str,
     repo_root: Path | None = None,
@@ -1453,16 +1811,56 @@ def cmd_resume_kx108(
     rc, newf_out, _ = _git(["ls-files", "--others", "--exclude-standard"], worktree_path)
     untracked = [f.strip() for f in newf_out.splitlines() if f.strip()]
 
+    legacy_ignorable = (
+        _resume_legacy_ignorable_files(
+            receipt
+        )
+    )
+
     scope_drift = [
-        f for f in staged_files + untracked
-        if f not in approved_scope
-        and f != SYNTHETIC_TEST_PY
-        and "__pycache__" not in f
-        and not f.endswith(".pyc")
+        f
+        for f in (
+            staged_files
+            + untracked
+        )
+        if (
+            f not in approved_scope
+            and f not in legacy_ignorable
+            and "__pycache__" not in f
+            and not f.endswith(".pyc")
+        )
     ]
+
     if scope_drift:
-        print(f"  [BLOCKED_RESUME] SCOPE_DRIFT: {scope_drift}")
+        print(
+            f"  [BLOCKED_RESUME] "
+            f"SCOPE_DRIFT: {scope_drift}"
+        )
+
+        receipt[
+            "first_failure"
+        ] = (
+            f"RESUME_SCOPE_DRIFT:"
+            f"{scope_drift}"
+        )
+
+        receipt.setdefault(
+            "timestamps",
+            {},
+        )[
+            "resume_blocked_at"
+        ] = datetime.now(
+            timezone.utc
+        ).isoformat()
+
+        _write_receipt(
+            sdir,
+            session_id,
+            receipt,
+        )
+
         return 2
+
     print(f"  [OK] Scope inchange: {staged_files}")
 
     # ── [R6] Recalculer diff_hash ────────────────────────────────────────────
@@ -1470,21 +1868,80 @@ def cmd_resume_kx108(
     rc, diff_staged_text, _ = _git(["diff", "--staged"], worktree_path)
     current_diff_hash = hashlib.sha256(diff_staged_text.encode("utf-8")).hexdigest()[:16]
     if current_diff_hash != receipt_diff_hash:
-        # Note: divergence possible entre modes de capture (line endings Windows).
-        # On accepte si le diff montre les memes fichiers et le marqueur attendu.
-        marker_present = False
-        tgt = worktree_path / SYNTHETIC_TARGET
-        if tgt.exists():
-            marker_present = f"{SYNTHETIC_MARKER}: {session_id}" in tgt.read_text(encoding="utf-8")
-        if not marker_present:
-            print(f"  [BLOCKED_RESUME] diff_hash diverge ET marqueur absent:")
-            print(f"    receipt : {receipt_diff_hash}")
-            print(f"    actuel  : {current_diff_hash}")
+
+        if _is_real_candidate_receipt(
+            receipt
+        ):
+            print(
+                "  [BLOCKED_RESUME] "
+                "REAL_CANDIDATE_DIFF_HASH_MISMATCH"
+            )
+
+            print(
+                f"    receipt : "
+                f"{receipt_diff_hash}"
+            )
+
+            print(
+                f"    actuel  : "
+                f"{current_diff_hash}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = (
+                "RESUME_REAL_CANDIDATE_DIFF_HASH_MISMATCH"
+            )
+
+            receipt.setdefault(
+                "timestamps",
+                {},
+            )[
+                "resume_blocked_at"
+            ] = datetime.now(
+                timezone.utc
+            ).isoformat()
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
             return 2
-        print(f"  [WARN] diff_hash diverge (line-endings Windows) mais marqueur valide")
-        print(f"    receipt : {receipt_diff_hash}  actuel: {current_diff_hash}")
+
+        legacy_ok = (
+            _legacy_resume_diff_hash_compatible(
+                worktree_path,
+                session_id,
+            )
+        )
+
+        if not legacy_ok:
+            print(
+                "  [BLOCKED_RESUME] "
+                "legacy diff_hash diverge "
+                "et marqueur absent"
+            )
+
+            return 2
+
+        print(
+            "  [WARN] legacy diff_hash "
+            "compatibilite line-endings"
+        )
+
+        print(
+            f"    receipt : "
+            f"{receipt_diff_hash}  "
+            f"actuel: {current_diff_hash}"
+        )
+
     else:
-        print(f"  [OK] diff_hash confirme: {current_diff_hash}")
+        print(
+            f"  [OK] diff_hash confirme: "
+            f"{current_diff_hash}"
+        )
 
     # ── [R7] Verifier fichiers proteges ─────────────────────────────────────
     print("\n  [R7] Verification fichiers proteges...")
@@ -1519,26 +1976,99 @@ def cmd_resume_kx108(
         return 2
     print("  [OK] commit_status = NOT_COMMITTED")
 
-    # ── [R10] Relancer le test cible ─────────────────────────────────────────
-    print("\n  [R10] Relancement du test cible...")
-    test_cmd = f"python -m pytest {SYNTHETIC_TEST_PY} -q"
-    tst_path = worktree_path / SYNTHETIC_TEST_PY
-    if not tst_path.exists():
-        print(f"  [BLOCKED_RESUME] Fichier test absent du worktree: {tst_path}")
-        return 2
-
-    wt_test_path = str(worktree_path / SYNTHETIC_TEST_PY)
-    r_t = subprocess.run(
-        [sys.executable, "-m", "pytest", wt_test_path, "-q"],
-        capture_output=True, text=True,
-        cwd=worktree_path, timeout=60,
+    # ── [R10] Relancer preuves tests ─────────────────────────────────────────
+    print(
+        "\n  [R10] "
+        "Relancement preuves tests..."
     )
-    if r_t.returncode != 0:
-        print(f"  [BLOCKED_RESUME] Test cible en echec: {r_t.stdout[-200:]}")
-        receipt["first_failure"] = f"RESUME_TEST_FAILED: {test_cmd}"
-        _write_receipt(sdir, session_id, receipt)
-        return 2
-    print(f"  [OK] Test cible: PASS")
+
+    if _is_real_candidate_receipt(
+        receipt
+    ):
+
+        (
+            resume_tests_ok,
+            resume_test_results,
+            resume_test_error,
+        ) = _resume_real_candidate_tests(
+            receipt,
+            worktree_path,
+        )
+
+        receipt[
+            "resume_tests_results"
+        ] = resume_test_results
+
+        if not resume_tests_ok:
+
+            print(
+                "  [BLOCKED_RESUME] "
+                f"{resume_test_error}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = resume_test_error
+
+            receipt.setdefault(
+                "timestamps",
+                {},
+            )[
+                "resume_blocked_at"
+            ] = datetime.now(
+                timezone.utc
+            ).isoformat()
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
+            return 2
+
+        print(
+            "  [OK] "
+            f"{len(resume_test_results)} "
+            "preuve(s) pytest rejouee(s)"
+        )
+
+    else:
+
+        (
+            legacy_test_ok,
+            legacy_test_command,
+            legacy_test_message,
+        ) = _legacy_resume_run_test(
+            worktree_path
+        )
+
+        if not legacy_test_ok:
+
+            print(
+                "  [BLOCKED_RESUME] "
+                "legacy test failed: "
+                f"{legacy_test_message[-200:]}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = (
+                "RESUME_TEST_FAILED:"
+                + legacy_test_command
+            )
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
+            return 2
+
+        print(
+            "  [OK] legacy test: PASS"
+        )
 
     # ── [R11] Relancer les gates ─────────────────────────────────────────────
     print("\n  [R11] Gates reelles (re-verification)...")
