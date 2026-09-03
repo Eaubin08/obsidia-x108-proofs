@@ -64,6 +64,49 @@ FEEDBACK_CONTEXT_ADAPTER_PATH = (
 
 DECISION_STORE_PATH = "scripts/obsidia_kx108_decision_store.py"
 
+# Multi-domain proof surfaces.
+MULTIDOMAIN_PROOF_PATH = (
+    "tests/integration/test_canonical_governed_runtime_multidomain_v1.py"
+)
+
+CROSS_DOMAIN_ISOLATION_PROOF_PATH = (
+    "tests/integration/test_canonical_governed_runtime_cross_domain_isolation_v1.py"
+)
+
+PROVIDER_SURFACE_PROOF_PATH = (
+    "tests/integration/test_canonical_governed_runtime_provider_surface_v1.py"
+)
+
+SIGMA_BRIDGE_PATH = "periphery/sigma_bridge.py"
+
+# Domains carrying a REAL canonical sigma bridge, with the gates each one
+# can actually reach through its real agents. Recorded as observed, never
+# engineered: gps and trading have no agent emitting a contradiction, so
+# BLOCK is unreachable from those domains; ecom's state contract cannot
+# satisfy its own proof agent, so it stays on HOLD.
+CANONICAL_DOMAIN_GATE_REACHABILITY = {
+    "bank": ("ALLOW", "HOLD", "BLOCK"),
+    "gps_defense_aviation": ("ALLOW", "HOLD"),
+    "trading": ("ALLOW", "HOLD"),
+    "ecom": ("HOLD",),
+}
+
+# The links required before any INTERNAL GLOBAL runtime claim (R7-J).
+REQUIRED_GLOBAL_RUNTIME_LINKS = (
+    "MULTI_DOMAIN_RUNTIME",
+    "COMMON_CANONICAL_CYCLE",
+    "DOMAIN_ISOLATION",
+    "REAL_KX108_PER_DOMAIN",
+    "DECISION_RECORD_PER_DOMAIN",
+    "CROSS_DOMAIN_ANTI_SUBSTITUTION",
+    "COMMON_EXECUTION_GATE",
+    "COMMON_RECEIPT_LIFECYCLE",
+    "COMMON_FEEDBACK_REENTRY",
+    "PROVIDER_REGISTRY_BOUNDING",
+    "NON_SOVEREIGNTY_GLOBAL",
+    "FAIL_CLOSED_UNSUPPORTED_DOMAIN",
+)
+
 # The chain required before any internal end-to-end claim (R6-L).
 INTERNAL_E2E_REQUIRED_LINKS = (
     "REAL_AGENT_INVOCATION",
@@ -140,6 +183,44 @@ def runtime_internal_end_to_end_validated() -> bool:
     )
 
 
+def multi_domain_runtime_present() -> bool:
+    """
+    True when several REAL canonical domains run on the single governed
+    cycle, with cross-domain isolation and the real provider surface proven.
+
+    Presence is read from disk; the behaviour itself is proven by the named
+    suites, which run the real bridges, the real kernel and the real store.
+    """
+    if not (
+        _exists(MULTIDOMAIN_PROOF_PATH)
+        and _exists(CROSS_DOMAIN_ISOLATION_PROOF_PATH)
+        and _exists(PROVIDER_SURFACE_PROOF_PATH)
+        and _exists(SIGMA_BRIDGE_PATH)
+    ):
+        return False
+
+    bridge_source = (_REPO_ROOT / SIGMA_BRIDGE_PATH).read_text(encoding="utf-8")
+    return all(
+        f"def run_{name}_with_periphery" in bridge_source
+        for name in ("bank", "trading", "ecom", "gps")
+    )
+
+
+def runtime_internal_globally_validated() -> bool:
+    """
+    Internal runtime, globally: the same canonical cycle carries several
+    real domains and several real internal providers, isolated from one
+    another, each with its own verified KX108 decision record.
+
+    This says NOTHING about external actuation. runtime_globally_validated
+    keeps its historical, wider meaning and stays False.
+    """
+    return (
+        runtime_internal_end_to_end_validated()
+        and multi_domain_runtime_present()
+    )
+
+
 def missing_runtime_links() -> tuple[str, ...]:
     """
     Runtime links still absent or not activated.
@@ -189,6 +270,18 @@ def runtime_link_facts() -> dict:
 
         "internal_e2e_required_links":
             INTERNAL_E2E_REQUIRED_LINKS,
+
+        "multi_domain_runtime_present":
+            multi_domain_runtime_present(),
+
+        "canonical_domain_gate_reachability":
+            CANONICAL_DOMAIN_GATE_REACHABILITY,
+
+        "runtime_internal_globally_validated":
+            runtime_internal_globally_validated(),
+
+        "required_global_runtime_links":
+            REQUIRED_GLOBAL_RUNTIME_LINKS,
 
         "world_action_runtime_activated":
             False,

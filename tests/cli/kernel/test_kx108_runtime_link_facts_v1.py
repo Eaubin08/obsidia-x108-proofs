@@ -10,15 +10,19 @@ from pathlib import Path
 from scripts.kernel.kx108_runtime_link_facts_v1 import (
     AGENT_PRE_EXECUTION_CONTEXT_PATH,
     FEEDBACK_CONTEXT_ADAPTER_PATH,
+    CANONICAL_DOMAIN_GATE_REACHABILITY,
     GOVERNED_RUNTIME_CYCLE_PATH,
     INTERNAL_E2E_REQUIRED_LINKS,
+    REQUIRED_GLOBAL_RUNTIME_LINKS,
     MISSING_RUNTIME_LINK_ADAPTER,
     MISSING_RUNTIME_LINK_AGENT_DECISION_RECORD,
     MISSING_RUNTIME_LINK_WORLD_ACTUATION,
     agent_decision_record_rail_present,
     canonical_agent_context_adapter_present,
     governed_runtime_cycle_present,
+    multi_domain_runtime_present,
     runtime_internal_end_to_end_validated,
+    runtime_internal_globally_validated,
     missing_runtime_links,
     runtime_link_facts,
 )
@@ -86,3 +90,31 @@ def test_facts_never_carry_authority():
     assert facts["memory_write"] is False
     assert facts["kernel_mutation"] is False
     assert facts["emits_act"] is False
+
+
+def test_multi_domain_runtime_is_detected_with_real_bridges():
+    assert multi_domain_runtime_present() is True
+    assert runtime_link_facts()["multi_domain_runtime_present"] is True
+
+
+def test_domain_gate_reachability_is_recorded_honestly():
+    """Only bank can BLOCK; ecom can only HOLD. Recorded, not engineered."""
+    assert CANONICAL_DOMAIN_GATE_REACHABILITY["bank"] == ("ALLOW", "HOLD", "BLOCK")
+    assert CANONICAL_DOMAIN_GATE_REACHABILITY["gps_defense_aviation"] == ("ALLOW", "HOLD")
+    assert CANONICAL_DOMAIN_GATE_REACHABILITY["trading"] == ("ALLOW", "HOLD")
+    assert CANONICAL_DOMAIN_GATE_REACHABILITY["ecom"] == ("HOLD",)
+
+
+def test_internal_global_validation_does_not_raise_the_historical_flags():
+    facts = runtime_link_facts()
+
+    assert runtime_internal_globally_validated() is True
+    assert facts["runtime_internal_globally_validated"] is True
+    assert len(REQUIRED_GLOBAL_RUNTIME_LINKS) == 12
+
+    # An internal global runtime is not a globally validated runtime, and is
+    # certainly not an actuated world.
+    assert facts["runtime_globally_validated"] is False
+    assert facts["runtime_end_to_end_validated"] is False
+    assert facts["world_action_runtime_activated"] is False
+    assert facts["runtime_allowed_now"] is False
