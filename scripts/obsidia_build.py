@@ -1110,21 +1110,91 @@ def cmd_execute(
                 wt_parts.append(str(worktree_path / p))
             else:
                 wt_parts.append(p)
-        r_t = subprocess.run(
-            wt_parts, capture_output=True, text=True,
-            cwd=worktree_path, timeout=120,
+        from bounded_execution_policy_v1 import (
+            budget_for_test_command,
+            run_bounded_command,
+        )
+
+        test_budget = budget_for_test_command(
+            test_cmd
+        )
+
+        r_t = run_bounded_command(
+            wt_parts,
+            cwd=worktree_path,
+            budget=test_budget,
+            run_callable=subprocess.run,
         )
         ok = r_t.returncode == 0
         lbl = "OK" if ok else "FAIL"
         print(f"  [{lbl}] {test_cmd}")
         out_tail = (r_t.stdout or r_t.stderr or "")[-300:]
+        bounded_status = getattr(
+            r_t,
+            "bounded_status",
+            "",
+        )
+
         receipt["tests_results"][test_cmd] = {
-            "ok": ok, "exit": r_t.returncode, "output_tail": out_tail,
+            "ok": ok,
+            "exit": r_t.returncode,
+            "output_tail": out_tail,
+            "bounded_status": bounded_status,
+            "elapsed_seconds": getattr(
+                r_t,
+                "elapsed_seconds",
+                None,
+            ),
+            "progress_events": getattr(
+                r_t,
+                "progress_events",
+                None,
+            ),
+            "budget_label": getattr(
+                r_t,
+                "budget_label",
+                "",
+            ),
+            "hard_deadline_seconds": getattr(
+                r_t,
+                "hard_deadline_seconds",
+                None,
+            ),
+            "idle_deadline_seconds": getattr(
+                r_t,
+                "idle_deadline_seconds",
+                None,
+            ),
         }
         if not ok:
             tests_ok = False
             if first_failure is None:
-                first_failure = f"TEST_FAILED: {test_cmd}"
+
+                if (
+                    bounded_status
+                    == "TIMEOUT_NO_PROGRESS"
+                ):
+
+                    first_failure = (
+                        "TEST_TIMEOUT_NO_PROGRESS: "
+                        f"{test_cmd}"
+                    )
+
+                elif (
+                    bounded_status
+                    == "TIMEOUT_HARD_LIMIT"
+                ):
+
+                    first_failure = (
+                        "TEST_TIMEOUT_HARD_LIMIT: "
+                        f"{test_cmd}"
+                    )
+
+                else:
+
+                    first_failure = (
+                        f"TEST_FAILED: {test_cmd}"
+                    )
             print(f"    {out_tail}")
             print(f"  [first_failure] {first_failure}")
             break  # premier echec: arret des tests et des gates suivantes
