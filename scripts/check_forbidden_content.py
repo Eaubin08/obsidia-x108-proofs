@@ -20,6 +20,10 @@ EXCLUDE_DIRS = {
     "_source_packs",
 }
 
+ALLOWED_EXACT_PATHS = {
+    "apps/obsidia_api/brody_secret_scrubber.py",
+}
+
 ALLOWED_FILES = {
     ".env.example",
 }
@@ -49,6 +53,10 @@ for root, dirs, files in os.walk("."):
         fname = f.lower()
 
         if f in ALLOWED_FILES:
+            continue
+
+        repo_rel = path[2:] if path.startswith("./") else path
+        if repo_rel in ALLOWED_EXACT_PATHS:
             continue
 
         if any(fragment in path for fragment in ALLOWED_PATH_FRAGMENTS):
