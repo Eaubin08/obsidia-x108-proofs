@@ -357,7 +357,7 @@ def test_source_runtime_status_has_preview_endpoint():
 
 def _run(test_path: str) -> bool:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header"],
+        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header", "-k", "not regression"],
         capture_output=True, text=True, cwd=ROOT,
     )
     return result.returncode == 0

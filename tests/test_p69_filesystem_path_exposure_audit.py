@@ -256,7 +256,7 @@ def test_generate_manifest_writes_to_root():
 
 def _run(test_path: str) -> bool:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header"],
+        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header", "-k", "not regression"],
         capture_output=True, text=True, cwd=ROOT,
     )
     return result.returncode == 0

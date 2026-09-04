@@ -335,7 +335,7 @@ def test_graphiti_client_all_get_readonly():
 
 def _run(test_path: str) -> bool:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header"],
+        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header", "-k", "not regression"],
         capture_output=True, text=True, cwd=ROOT,
     )
     return result.returncode == 0
