@@ -118,6 +118,154 @@ def parse_candidate_patch_files(text: str) -> tuple[str, ...]:
     return tuple(files)
 
 
+
+def _parse_candidate_patch_add_files(
+    text: str,
+) -> frozenset[str]:
+    """Return paths proven to be strict regular-file ADD sections.
+
+    This does not broaden rename/copy/binary semantics. Those remain
+    rejected by parse_candidate_patch_files() before this helper runs.
+
+    ADD V1 contract:
+    - same a/path and b/path in the diff header;
+    - exactly one ``new file mode 100644`` marker;
+    - old side exactly ``/dev/null``;
+    - new side exactly ``b/<repo-relative-path>``;
+    - no delete marker;
+    - no symlink/executable/special mode.
+
+    A target that is merely absent is never enough to infer ADD.
+    """
+
+    lines = text.splitlines()
+
+    starts = [
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("diff --git ")
+    ]
+
+    starts.append(
+        len(lines)
+    )
+
+    add_files: set[str] = set()
+
+    for pos in range(
+        len(starts) - 1
+    ):
+
+        start = starts[pos]
+        end = starts[pos + 1]
+
+        section = lines[
+            start:end
+        ]
+
+        if not section:
+            continue
+
+        parts = section[0].split()
+
+        if len(parts) != 4:
+            # The canonical parser owns this error.
+            continue
+
+        left = parts[2]
+        right = parts[3]
+
+        if (
+            not left.startswith("a/")
+            or not right.startswith("b/")
+        ):
+            continue
+
+        left_path = _safe_repo_relative(
+            left[2:]
+        )
+
+        right_path = _safe_repo_relative(
+            right[2:]
+        )
+
+        if left_path != right_path:
+            # Rename remains owned/rejected by canonical parser.
+            continue
+
+        new_mode_lines = [
+            line
+            for line in section
+            if line.startswith(
+                "new file mode "
+            )
+        ]
+
+        old_dev_null = (
+            "--- /dev/null"
+            in section
+        )
+
+        looks_like_add = (
+            bool(
+                new_mode_lines
+            )
+            or old_dev_null
+        )
+
+        if not looks_like_add:
+            continue
+
+        if (
+            new_mode_lines
+            != [
+                "new file mode 100644"
+            ]
+        ):
+            raise ValueError(
+                "CANDIDATE_ADD_MODE_UNSUPPORTED:"
+                + right_path
+            )
+
+        if not old_dev_null:
+            raise ValueError(
+                "CANDIDATE_ADD_MALFORMED:"
+                + right_path
+            )
+
+        if (
+            f"+++ b/{right_path}"
+            not in section
+        ):
+            raise ValueError(
+                "CANDIDATE_ADD_MALFORMED:"
+                + right_path
+            )
+
+        if (
+            "+++ /dev/null"
+            in section
+            or any(
+                line.startswith(
+                    "deleted file mode "
+                )
+                for line in section
+            )
+        ):
+            raise ValueError(
+                "CANDIDATE_ADD_MALFORMED:"
+                + right_path
+            )
+
+        add_files.add(
+            right_path
+        )
+
+    return frozenset(
+        add_files
+    )
+
+
 def load_candidate_patch_file(
     path: str | Path,
     repo_root: str | Path,
@@ -147,6 +295,7 @@ def load_candidate_patch_file(
         raise ValueError("CANDIDATE_PATCH_NOT_UTF8") from exc
 
     files = parse_candidate_patch_files(text)
+    add_files = _parse_candidate_patch_add_files(text)
 
     root = Path(repo_root).resolve()
 
@@ -158,8 +307,16 @@ def load_candidate_patch_file(
         except ValueError as exc:
             raise ValueError("CANDIDATE_ESCAPES_REPO") from exc
 
-        # V1 = modification de fichiers existants uniquement.
-        if not target.is_file():
+        if rel in add_files:
+            # Absence is admissible only because the unified diff itself
+            # proved a strict regular-file ADD section.
+            if target.exists():
+                raise ValueError(
+                    f"CANDIDATE_ADD_TARGET_ALREADY_EXISTS:{rel}"
+                )
+        elif not target.is_file():
+            # MODIFY / DELETE preserve the existing V1 precondition:
+            # the pre-image must be an existing regular file.
             raise ValueError(
                 f"CANDIDATE_TARGET_NOT_EXISTING_FILE:{rel}"
             )
