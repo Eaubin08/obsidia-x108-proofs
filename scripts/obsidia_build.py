@@ -855,6 +855,12 @@ def cmd_execute(
     receipt["timestamps"]["start"] = datetime.now(timezone.utc).isoformat()
     first_failure: str | None = None
 
+    # R8_RECEIPT_ORDER_FIX_V3:
+    # Materialize the truthful approved session receipt before Git
+    # exposes feat/build-* or BUILD_* topology.
+    # KX108 remains PENDING; no commit/push/merge is authorized here.
+    _write_receipt(sdir, session_id, receipt)
+
     # ── [1/10] Creer le worktree ─────────────────────────────────────────────
     print("  [1/10] Creation worktree...")
     if worktree_path.exists():
