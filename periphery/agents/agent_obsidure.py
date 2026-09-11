@@ -1,4 +1,4 @@
-"""
+﻿"""
 periphery/agents/agent_obsidure.py  —  v2.0 CLI STANDALONE
 =============================================================
 Agent Obsidure — CO_PILOTE_CODE (#6) × CI_REPO_SURGEON (#7)
@@ -224,7 +224,9 @@ class StabilizationResult:
     """
     attempts: int
     max_attempts: int
-    final_status: str          # STABILIZED | MAX_ATTEMPTS_REACHED | TRIVIALLY_PASSED
+    # STABILIZED | MAX_ATTEMPTS_REACHED | TRIVIALLY_PASSED
+    # | ESCALATED_TO_EXTERNAL_REPAIR (échec non évolutif — boucle court-circuitée)
+    final_status: str
     errors_history: List[Dict[str, Any]] = field(default_factory=list)
     passed: bool = False
 
@@ -246,6 +248,7 @@ class ErrorContext:
     protected_path: str = ""
     mutation_directive: str = "RETRY_DIFFERENT_APPROACH"
     recommended_strategy: str = "SEMANTIC"  # progression Lean ou CLEAN_PERIPHERAL / RESTRUCTURE_BOUNDARY
+    target_hint: str = ""              # chemin repo concerné (réparation sémantique)
 
 
 @dataclass
@@ -282,6 +285,7 @@ class PatchProposal:
     next_run_plan: Optional[Dict[str, Any]] = None
     math_memory_context_pack: Optional[Dict[str, Any]] = None
     lean_capability_classification: Optional[Dict[str, Any]] = None
+    repair_request: Optional[Dict[str, Any]] = None   # émis si le cycle échoue
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     receipt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -363,6 +367,11 @@ class OSTradClient:
             if _api_intent and _api_intent.lower() not in ("unknown", "", "none")
             else _local_intent(text)
         )
+        # Le backend nomme "analysis" ce que le cycle AVDR appelle AUDIT_ONLY.
+        # Sans ce mapping, _objective_requires_artifact() exigerait un artefact
+        # pour un simple audit et le cycle echouerait a tort.
+        if _resolved_intent.strip().lower() == "analysis":
+            _resolved_intent = "AUDIT_ONLY"
 
         return OSTradResult(
             detected_language=detected_language,
@@ -436,13 +445,72 @@ def _extract_paths_from_text(text: str) -> List[str]:
     return [p for p in found if "." in p or "/" in p][:8]
 
 
-def _build_math_context_from_repo() -> MathematicalContext:
+def _build_math_context_from_repo(objective: str = "") -> MathematicalContext:
     """
     Lit en READ-ONLY les fichiers Lean scellés et le kernel sealed.
     LECTURE LÉGALE — ces chemins ne sont JAMAIS ajoutés au backup.
     Appelé depuis _gather_mathematical_context() de l'agent.
     """
     ctx = MathematicalContext()
+
+    # Domain-specific Lean context ? Navier-Stokes.
+    # READ-ONLY: these files are context sources only.
+    objective_norm = objective.lower().replace("\\", "/")
+    if (
+        "navierstokes" in objective_norm
+        or "navier-stokes" in objective_norm
+        or "navier_stokes" in objective_norm
+    ):
+        navier_sources = [
+            (
+                REPO_ROOT
+                / "proofs" / "lean" / "Obsidia"
+                / "NavierStokes" / "Definitions.lean"
+            ),
+            (
+                REPO_ROOT
+                / "proofs" / "lean" / "Obsidia"
+                / "NavierStokes" / "AntiPumpingSpecs.lean"
+            ),
+        ]
+
+        chunks: List[str] = []
+
+        for source_path in navier_sources:
+            if not source_path.exists():
+                continue
+
+            try:
+                raw = source_path.read_text(
+                    encoding="utf-8",
+                    errors="replace",
+                )
+
+                chunks.append(raw)
+
+                rel = source_path.relative_to(REPO_ROOT).as_posix()
+                ctx.source_files_read.append(rel)
+
+                for m in re.finditer(
+                    r"^(?:theorem|def|lemma|structure)\s+(\w+)",
+                    raw,
+                    re.MULTILINE,
+                ):
+                    name = m.group(1)
+                    if name not in ctx.lean_theorem_names:
+                        ctx.lean_theorem_names.append(name)
+
+            except Exception:
+                continue
+
+        if chunks:
+            ctx.lean_metrics_def = "\n\n".join(chunks)[:12000]
+            ctx.lean_temporal_def = ""
+            ctx.lean_import_header = (
+                "import Obsidia.NavierStokes.AntiPumpingSpecs"
+            )
+
+        return ctx
 
     # — Kernel : extraire les lignes décisionnelles ALLOW / HOLD / BLOCK —
     kernel_path = REPO_ROOT / "server.kernel.sealed.cjs"
@@ -499,6 +567,55 @@ _FORBIDDEN_IN_GENERATED_CODE: Tuple[str, ...] = (
 )
 
 
+_ARTIFACT_INTENTS: Tuple[str, ...] = (
+    "PYTHON_PATCH_PROPOSAL",
+    "CREATE_PATCH",
+    "LEAN_SANDBOX",
+    "GENERAL_PATCH",
+    "SRL_ORGANIZE",
+    "code_debug",
+)
+
+_ARTIFACT_OBJECTIVE_MARKERS: Tuple[str, ...] = (
+    "CRÉE", "CREE", "CREATE", "GÉNÈRE", "GENERE", "GENERATE",
+    "ÉCRIS", "ECRIS", "WRITE", "AJOUTE", "ADD",
+    "RÉPARE", "REPARE", "REPAIR", "CORRIGE", "FIX", "PATCH",
+    "MODIFIE", "MODIFY", "REFACTOR", "IMPLÉMENTE", "IMPLEMENTE", "IMPLEMENT",
+)
+
+
+def _objective_requires_artifact(
+    objective: str,
+    os_trad: Optional["OSTradResult"] = None,
+) -> bool:
+    """
+    True si l'objectif exige la production d'au moins un artefact (patch).
+
+    Généralise l'ancien garde Lean-only : un cycle qui doit produire un fichier
+    et n'en produit aucun est un ÉCHEC, quelle que soit la route. Zéro erreur
+    de conformité sur zéro patch n'est jamais une stabilisation.
+
+    AUDIT_ONLY est la seule intention explicitement sans artefact.
+    """
+    obj_up = str(objective or "").upper()
+
+    intent = str(getattr(os_trad, "intent", "") or "")
+    if intent == "AUDIT_ONLY":
+        return False
+
+    if intent in _ARTIFACT_INTENTS:
+        return True
+
+    if any(m in obj_up for m in _ARTIFACT_OBJECTIVE_MARKERS):
+        return True
+
+    # Cible de fichier explicite dans l'objectif → un artefact est attendu.
+    if re.search(r"[\w/\-\.]+\.(?:lean|py|json|md|yaml|yml|toml)\b", obj_up, re.IGNORECASE):
+        return True
+
+    return False
+
+
 def _test_patches_conformity(
     patches: List[Dict[str, Any]],
     lean_result: Optional[Dict[str, Any]],
@@ -551,7 +668,27 @@ def _test_patches_conformity(
                     })
             continue
 
+        # ── Cible existante non réparable par la route interne ─────────────
+        # Ce n'est pas un patch applicable : c'est un constat d'incapacité.
+        # Il DOIT remonter comme violation pour empêcher un STABILIZED menteur.
+        if action == "SEMANTIC_REPAIR_REQUIRED":
+            errors.append({
+                "type": "SEMANTIC_REPAIR_REQUIRED",
+                "path": path,
+                "details": (
+                    f"'{path}' existe déjà. La route interne ne sait produire qu'un stub, "
+                    "ce qui écraserait le fichier. Réparation sémantique déléguée au "
+                    "moteur de raisonnement externe (RepairRequest)."
+                ),
+            })
+            continue
+
         # ── Python périphérique : vérifier zone de sortie et extension ─────
+        # Puis TOMBER dans l'analyse statique commune ci-dessous.
+        # (Cette branche faisait auparavant `continue`, en contradiction avec
+        #  son propre commentaire : les patches Python n'étaient donc jamais
+        #  contrôlés pour mots-clés interdits, références protégées en écriture
+        #  ni réplication de la logique du Kernel.)
         if action == "CREATE_PYTHON_PERIPHERAL":
             _ALLOWED_PY_EXTS = {".py", ".json", ".md"}
             if not path.startswith("periphery/"):
@@ -560,13 +697,14 @@ def _test_patches_conformity(
                     "path": path,
                     "details": f"Fichier Python hors de periphery/ : '{path}'. Route PYTHON_PATCH_PROPOSAL limitée à periphery/.",
                 })
-            elif Path(path).suffix not in _ALLOWED_PY_EXTS:
+                continue
+            if Path(path).suffix not in _ALLOWED_PY_EXTS:
                 errors.append({
                     "type": "PYTHON_INVALID_EXTENSION",
                     "path": path,
                     "details": f"Extension non autorisée : '{Path(path).suffix}'. Autorisées : .py, .json, .md.",
                 })
-            continue  # analyse statique commune appliquée ci-dessous via sandbox_path
+                continue
 
         # ── Code périphérique : analyse statique ───────────────────────────
         sp = Path(patch.get("sandbox_path", ""))
@@ -894,6 +1032,37 @@ def _is_domain_kernel_invariant_objective(objective: str) -> bool:
 # 4b.  ERROR ANALYZER — cerveau réflexif de la boucle de stabilisation
 # ===========================================================================
 
+# Directive et stratégie qui signent un échec insensible à la répétition :
+# la route interne a constaté son incapacité, pas une erreur corrigible.
+_NON_EVOLVING_DIRECTIVE = "ESCALATE_TO_EXTERNAL_REPAIR"
+_NON_EVOLVING_STRATEGY = "EXTERNAL_REASONING"
+
+
+def _is_non_evolving_context(ctx: "ErrorContext") -> bool:
+    """
+    True si rejouer une tentative ne peut RIEN changer pour ce contexte.
+
+    Critère volontairement strict : il faut à la fois la directive d'escalade
+    et la stratégie externe. Toute autre erreur — build Lean, mot-clé interdit,
+    chemin protégé, réplication kernel — reste soumise à max_attempts, car sa
+    correction dépend de la génération suivante.
+    """
+    return (
+        str(getattr(ctx, "mutation_directive", "")) == _NON_EVOLVING_DIRECTIVE
+        and str(getattr(ctx, "recommended_strategy", "")) == _NON_EVOLVING_STRATEGY
+    )
+
+
+def _all_contexts_non_evolving(contexts: List["ErrorContext"]) -> bool:
+    """
+    True seulement si TOUS les contextes de la tentative sont non évolutifs.
+
+    S'il subsiste ne serait-ce qu'une erreur corrigible, la boucle continue :
+    on ne sacrifie pas une chance de stabilisation pour économiser un tour.
+    """
+    return bool(contexts) and all(_is_non_evolving_context(c) for c in contexts)
+
+
 class ErrorAnalyzer:
     """
     Convertit les erreurs brutes de _test_patches_conformity en ErrorContext.
@@ -950,6 +1119,20 @@ class ErrorAnalyzer:
             elif err_type == "KERNEL_LOGIC_REPLICA":
                 ctx.mutation_directive = "SPLIT_DECIDE_FUNCTION"
                 ctx.recommended_strategy = "RESTRUCTURE_BOUNDARY"
+
+            elif err_type in ("EMPTY_PATCH_PROPOSAL", "LEAN_EMPTY_PATCH_PROPOSAL"):
+                # Obsidure n'a rien produit alors qu'un artefact est exigé.
+                # Aucune mutation interne ne peut réparer ça : la route est
+                # incapable. On escalade vers le moteur de raisonnement externe.
+                ctx.mutation_directive = "ESCALATE_TO_EXTERNAL_REPAIR"
+                ctx.recommended_strategy = "EXTERNAL_REASONING"
+
+            elif err_type == "SEMANTIC_REPAIR_REQUIRED":
+                # Le fichier cible existe déjà : générer un stub l'écraserait.
+                # Obsidure ne sait pas réparer sémantiquement — escalade.
+                ctx.target_hint = err.get("path", "")
+                ctx.mutation_directive = "ESCALATE_TO_EXTERNAL_REPAIR"
+                ctx.recommended_strategy = "EXTERNAL_REASONING"
 
             contexts.append(ctx)
 
@@ -2110,6 +2293,35 @@ def _generate_python_peripheral_patches(
         out = sandbox_dir / rel
         out.parent.mkdir(parents=True, exist_ok=True)
         ext = Path(rel).suffix.lower()
+
+        # ── Le fichier existe déjà dans le repo ? ──────────────────────────
+        # Générer un stub l'écraserait. Obsidure ne sait pas réparer
+        # sémantiquement un fichier existant : il copie la base dans la sandbox
+        # et déclare l'incapacité. Le cycle ne pourra pas se stabiliser, ce qui
+        # déclenche l'escalade vers le moteur de raisonnement externe.
+        existing = REPO_ROOT / rel
+        if existing.is_file():
+            try:
+                base_content = existing.read_text(encoding="utf-8", errors="replace")
+            except Exception as exc:  # lecture impossible — on le dit
+                base_content = f"# [OBSIDURE] lecture impossible : {exc}\n"
+            out.write_text(base_content, encoding="utf-8")
+            patches.append({
+                "path": rel,
+                "action": "SEMANTIC_REPAIR_REQUIRED",
+                "diff_summary": (
+                    f"Cible existante (T{attempt}) — aucun stub émis. "
+                    f"Réparation sémantique hors capacité de la route PYTHON_PATCH_PROPOSAL."
+                ),
+                "rationale": objective[:150],
+                "domain": "PYTHON",
+                "sandbox_path": str(out),
+                "base_repo_path": str(existing),
+                "base_sha256": _sha256(existing) if existing.is_file() else "",
+            })
+            continue
+
+        # ── Cible neuve : stub périphérique (comportement historique) ──────
         if ext == ".py":
             content = _python_peripheral_stub(rel, objective, attempt)
         elif ext == ".json":
@@ -2863,6 +3075,18 @@ def _build_math_memory_context_pack(objective: str) -> Dict[str, Any]:
 
         selected: List[Dict[str, Any]] = []
 
+        # Research excerpts have their own provenance and are not proof axioms.
+        research = provider.research_context(objective)
+        if research is not None:
+            return {
+                "readonly": True, "source": "OBSIDURE_RESEARCH_ROOT",
+                "provider": "ObsidureMathMemoryProvider",
+                "status": research["availability"], "total_ids_seen": len(all_ids),
+                "selected_count": 1 if research["source_evidence"] else 0,
+                "selected_items": [research] if research["source_evidence"] else [],
+                "source_errors": research["source_errors"], "boundary": boundary_info,
+            }
+
         # Chercher d'abord des ids exacts mentionnés dans l'objectif
         for pid in all_ids:
             if pid in objective:
@@ -2967,6 +3191,7 @@ def persist_proposal(proposal: PatchProposal) -> Path:
         "next_run_plan": proposal.next_run_plan,
         "math_memory_context_pack": proposal.math_memory_context_pack,
         "lean_capability_classification": proposal.lean_capability_classification,
+        "repair_request": proposal.repair_request,
     }
     (proposal_dir / "proposal.json").write_text(
         json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -3173,6 +3398,8 @@ class AgentObsidure:
         self._srl = SRLManager()
         self._domain_brancher = DomainBrancher()
         self._math_ctx: Optional[MathematicalContext] = None
+        self._last_error_contexts: List[ErrorContext] = []
+        self._last_repair_request: Optional[Any] = None
         PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
         self._log("Agent Obsidure v2.0 initialisé.")
         self._log(f"OS_TRAD_REVERSE cible : {api_base}")
@@ -3195,7 +3422,7 @@ class AgentObsidure:
         Appelé automatiquement en Phase A avant la génération Lean.
         """
         self._log("  Lecture contexte mathématique (read-only)…")
-        ctx = _build_math_context_from_repo()
+        ctx = _build_math_context_from_repo(objective)
         if ctx.source_files_read:
             self._log(f"  Contexte math lu depuis : {ctx.source_files_read}")
             if ctx.lean_theorem_names:
@@ -3298,8 +3525,11 @@ class AgentObsidure:
 
         lean_sb: LeanSandbox = LeanSandbox(sandbox_dir)
 
-        # Mémoire cumulative des erreurs entre les tentatives
+        # Mémoire cumulative des erreurs entre les tentatives.
+        # Exposée sur l'instance (même référence) pour que la Phase R puisse
+        # construire un RepairRequest à partir des ErrorContext RÉELS.
         all_error_contexts: List[ErrorContext] = []
+        self._last_error_contexts = all_error_contexts
         iteration_memories: List[IterationMemory] = []
         errors_history:     List[Dict[str, Any]] = []
         patches:            List[Dict[str, Any]] = []
@@ -3319,11 +3549,22 @@ class AgentObsidure:
             )
 
             # ── Test de conformité contre les lois du Kernel ──────────────
+            objective_low = str(objective).lower()
+            explicit_lean_request = (
+                ".lean" in objective_low
+                or "lean_sandbox" in objective_low
+                or bool(re.search(r"\b(theorem|théorème|lemma|lemme)\b", objective_low))
+            )
             lean_expected_attempt = (
                 lean_result is not None
-                or ".lean" in str(objective).lower()
-                or "lean" in str(objective).lower()
+                or explicit_lean_request
                 or any(str(getattr(ctx, "error_type", "")).startswith("LEAN_") for ctx in all_error_contexts)
+            )
+
+            # Garde général : un objectif qui exige un artefact et n'en produit
+            # aucun est un ÉCHEC — indépendamment de la route (Lean, Python, autre).
+            artifact_expected = lean_expected_attempt or _objective_requires_artifact(
+                objective, os_trad
             )
 
             if lean_expected_attempt and not patches:
@@ -3333,6 +3574,16 @@ class AgentObsidure:
                     "details": (
                         "Solve loop produced no patch during a Lean-expected attempt. "
                         "A stabilized Lean cycle must emit at least one CREATE_LEAN_PERIPHERAL patch."
+                    ),
+                }]
+            elif artifact_expected and not patches:
+                attempt_raw_errors = [{
+                    "type": "EMPTY_PATCH_PROPOSAL",
+                    "path": "",
+                    "details": (
+                        "Solve loop produced no patch while the objective requires an artifact "
+                        f"(intent={os_trad.intent!r}). Zero conformity errors on zero patch is NOT "
+                        "a stabilization — external repair reasoning is required."
                     ),
                 }]
             else:
@@ -3374,6 +3625,31 @@ class AgentObsidure:
                 if ctx.lean_error_line:
                     self._log(f"    Lean: {ctx.lean_error_line[:80]}", level="WARN")
 
+            # ── Short-circuit : échec structurellement non évolutif ────────
+            # Certains échecs ne dépendent d'aucun état qui puisse changer
+            # entre deux tentatives (la route interne est incapable, point).
+            # Rejouer T2..T5 produirait cinq fois le même ErrorContext — c'est
+            # exactement ce qu'on observe dans rr_2dfcf0c52e45. On sort dès T1.
+            #
+            # Les erreurs réellement susceptibles d'évoluer (build Lean,
+            # mots-clés interdits, réplication kernel, chemins protégés)
+            # conservent l'intégralité de max_attempts.
+            if new_contexts and _all_contexts_non_evolving(new_contexts):
+                self._log(
+                    f"  [T{attempt}] Échec non évolutif "
+                    f"({', '.join(sorted({c.error_type for c in new_contexts}))}) — "
+                    f"boucle court-circuitée, {max_attempts - attempt} tentative(s) épargnée(s).",
+                    level="WARN",
+                )
+                self._log("  Escalade vers le moteur de raisonnement externe (RepairRequest).", level="WARN")
+                return patches, lean_result, sandbox_dir, StabilizationResult(
+                    attempts=attempt,
+                    max_attempts=max_attempts,
+                    final_status="ESCALATED_TO_EXTERNAL_REPAIR",
+                    errors_history=errors_history,
+                    passed=False,
+                )
+
             # ── Objectif évolué — reformulé avec le contexte d'échec ──────
             current_objective = _error_analyzer.derive_evolved_objective(
                 base_objective=objective,
@@ -3408,6 +3684,114 @@ class AgentObsidure:
             passed=False,
         )
 
+    # ── PONT DE RÉPARATION EXTERNE ───────────────────────────────────────
+
+    def _maybe_build_repair_request(
+        self,
+        objective: str,
+        os_trad: OSTradResult,
+        patches: List[Dict[str, Any]],
+        stabilization: Optional[StabilizationResult],
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Émet un RepairRequest si — et seulement si — le cycle a réellement échoué.
+
+        Deux conditions déclenchantes, toutes deux fondées sur des faits :
+          1. la stabilisation n'est pas passée ;
+          2. aucun artefact n'a été produit alors que l'objectif en exige un.
+
+        Le RepairRequest est persisté sous _PATCH_PROPOSALS/_repair_requests/.
+        Il n'est PAS une décision et ne déclenche aucune application.
+        """
+        stabilized = bool(getattr(stabilization, "passed", False))
+        artifact_missing = _objective_requires_artifact(objective, os_trad) and not patches
+
+        if stabilized and not artifact_missing:
+            self._last_repair_request = None
+            return None
+
+        try:
+            from periphery.agents.obsidure_repair_bridge import (
+                build_repair_request_from_cycle,
+                persist_repair_request,
+            )
+        except Exception as exc:
+            self._log(f"  Pont de réparation indisponible : {exc}", level="WARN")
+            return None
+
+        try:
+            request = build_repair_request_from_cycle(
+                objective=objective,
+                os_trad=os_trad,
+                stabilization=stabilization,
+                error_contexts=list(self._last_error_contexts),
+                patches=patches,
+                origin="OBSIDURE",
+            )
+            path = persist_repair_request(request)
+            self._last_repair_request = request
+            self._log(
+                f"  RepairRequest émis : {request.request_id} "
+                f"(failure_mode={request.failure_mode}, cibles={len(request.repo_targets)})",
+                level="WARN",
+            )
+            self._log(f"  Déposé : {path}", level="WARN")
+            return request.to_dict()
+        except Exception as exc:
+            self._log(f"  Émission RepairRequest échouée : {exc}", level="ERROR")
+            return None
+
+    def evaluate_repair_proposal(
+        self,
+        proposal_source: Any,
+        run_tests: bool = True,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Teste EN SANDBOX un RepairProposal produit par un moteur externe.
+
+        `proposal_source` accepte un RepairProposal, un dict, ou un chemin JSON.
+        Retourne le RepairVerdict sérialisé. N'applique jamais rien : la
+        décision d'appliquer reste humaine (HUMAN_APPROVED_WRITE).
+        """
+        try:
+            from periphery.agents.obsidure_repair_bridge import (
+                load_repair_proposal,
+                resume_objective_from_verdict,
+                test_repair_proposal,
+            )
+            from periphery.agents.obsidure_repair_contract import (
+                RepairProposal as _RP,
+                repair_proposal_from_dict,
+            )
+        except Exception as exc:
+            self._log(f"  Pont de réparation indisponible : {exc}", level="ERROR")
+            return None
+
+        if isinstance(proposal_source, _RP):
+            proposal = proposal_source
+        elif isinstance(proposal_source, dict):
+            proposal = repair_proposal_from_dict(proposal_source)
+        else:
+            proposal = load_repair_proposal(Path(str(proposal_source)))
+
+        verdict = test_repair_proposal(
+            proposal,
+            request=self._last_repair_request,
+            run_tests=run_tests,
+        )
+        self._log(
+            f"  RepairVerdict : {verdict.status} "
+            f"({len(verdict.compiled_files)} fichier(s) compilé(s), "
+            f"{len(verdict.errors)} erreur(s))",
+            level="INFO" if verdict.status == "PASS" else "WARN",
+        )
+        resume = resume_objective_from_verdict(verdict, self._last_repair_request)
+        if resume:
+            self._log(f"  Objectif initial reprenable : {resume[:90]}")
+        else:
+            self._log("  Objectif NON reprenable — la réparation ne tient pas.", level="WARN")
+        return verdict.to_dict()
+
     # ── R — RÉINTÉGRATION ────────────────────────────────────────────────
 
     def phase_r_reintegration(
@@ -3424,7 +3808,11 @@ class AgentObsidure:
         self._log("Phase R : émission PATCH_PROPOSAL…")
 
         if stabilization:
-            status_label = "STABILIZED" if stabilization.passed else "MAX_ATTEMPTS_REACHED"
+            # Refléter le statut réel : un échec court-circuité n'est pas un
+            # épuisement des tentatives, et le dire faux masquerait l'économie.
+            status_label = stabilization.final_status or (
+                "STABILIZED" if stabilization.passed else "MAX_ATTEMPTS_REACHED"
+            )
             self._log(f"  Stabilisation : {status_label} ({stabilization.attempts}/{stabilization.max_attempts} tentative(s))")
 
         domain = _detect_domain(objective, os_trad)
@@ -3466,6 +3854,13 @@ class AgentObsidure:
                 level="WARN",
             )
 
+        repair_request_payload = self._maybe_build_repair_request(
+            objective=objective,
+            os_trad=os_trad,
+            patches=patches,
+            stabilization=stabilization,
+        )
+
         proposal = PatchProposal(
             proposal_id=str(uuid.uuid4()),
             objective=objective,
@@ -3482,6 +3877,7 @@ class AgentObsidure:
             next_run_plan=next_plan,
             math_memory_context_pack=math_ctx,
             lean_capability_classification=lean_cap,
+            repair_request=repair_request_payload,
         )
         proposal_dir = persist_proposal(proposal)
         self._proposals.append(proposal)
@@ -3682,3 +4078,4 @@ class AgentObsidure:
     @property
     def proposals(self) -> List[PatchProposal]:
         return list(self._proposals)
+

@@ -133,4 +133,27 @@ def run_brody_real_response_pipeline(
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     })
+
+    # ── Route de réparation (additive) ───────────────────────────────────
+    # Le retrieval + hydratation ci-dessus ne diagnostique pas du code. Quand
+    # l'intent backend est `code_debug`, on émet en plus un RepairRequest
+    # structuré, exploitable par un moteur de raisonnement externe puis testable
+    # en sandbox par Obsidure. Purement additif : response_md est inchangé,
+    # aucune frontière n'est relâchée, rien n'est appliqué.
+    try:
+        from apps.obsidia_api.brody_repair_request_router import attach_repair_request
+
+        _ir_intent, _flags = "", []
+        try:
+            from apps.obsidia_api.routes.os_trad_ir_reverse import _risk_flags, _intent
+            _flags = _risk_flags(message)
+            _ir_intent = _intent(message, _flags)
+        except Exception:
+            pass  # verdict backend indisponible — détecteur textuel en repli
+
+        attach_repair_request(r, message, ir_intent=_ir_intent, risk_flags=_flags)
+    except Exception as exc:
+        r["repair_request"] = None
+        r["repair_route_status"] = f"REPAIR_ROUTE_UNAVAILABLE: {type(exc).__name__}"
+
     return r
