@@ -158,8 +158,6 @@ def build_true_response_structure_snapshot(
         "readonly": True,
         "response_only": True,
         "memory_write": False,
-        "graphiti_write": False,
-        "neo4j_write": False,
         "emits_act": False,
         "emits_verdict": False,
         "kernel_mutation": False,

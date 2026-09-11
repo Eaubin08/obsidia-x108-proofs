@@ -88,8 +88,8 @@ class TestDefaultPayload:
     def test_writes_are_false(self, default_response):
         assert default_response.get("emits_act") is False
         assert default_response.get("memory_write") is False
-        assert default_response.get("graphiti_write") is False
-        assert default_response.get("neo4j_write") is False
+        assert "graphiti_write" not in default_response
+        assert "neo4j_write" not in default_response
 
     def test_no_debug_markers_in_default(self, default_response):
         for key in default_response:
@@ -120,8 +120,8 @@ class TestCompactPayload:
     def test_writes_are_false(self, compact_response):
         assert compact_response.get("emits_act") is False
         assert compact_response.get("memory_write") is False
-        assert compact_response.get("graphiti_write") is False
-        assert compact_response.get("neo4j_write") is False
+        assert "graphiti_write" not in compact_response
+        assert "neo4j_write" not in compact_response
 
     def test_compact_mode_flag(self, compact_response):
         assert compact_response.get("compact_mode") is True
@@ -161,8 +161,8 @@ class TestDebugPayload:
     def test_writes_are_false(self, debug_response):
         assert debug_response.get("emits_act") is False
         assert debug_response.get("memory_write") is False
-        assert debug_response.get("graphiti_write") is False
-        assert debug_response.get("neo4j_write") is False
+        assert "graphiti_write" not in debug_response
+        assert "neo4j_write" not in debug_response
 
     def test_debug_markers_present(self, debug_response):
         markers = [k for k in debug_response if k.startswith("debug_")]

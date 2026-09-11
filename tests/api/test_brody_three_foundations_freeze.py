@@ -31,12 +31,12 @@ class TestFoundationA:
         assert self.snap["status"] in ("FOUNDATION_A_READY", "FOUNDATION_A_PARTIAL")
 
     def test_source_mode(self):
-        assert self.snap["source_mode"] == "EXISTING_PROJECT_MEMORY_ONLY"
+        assert self.snap["source_mode"] == "OBSIDIA_NATIVE_MEMORY"
 
     def test_available_sources_present(self):
         src = self.snap.get("available_sources", {})
         assert isinstance(src, dict)
-        for key in ("graphiti_v20", "brody_memory_doc", "context_packets", "project_ledgers"):
+        for key in ("obsidia_native_memory", "brody_memory_doc", "context_packets", "project_ledgers"):
             assert key in src
 
     def test_missing_links_is_list(self):
@@ -44,8 +44,8 @@ class TestFoundationA:
 
     def test_no_write(self):
         assert self.snap["memory_write"] is False
-        assert self.snap["graphiti_write"] is False
-        assert self.snap["neo4j_write"] is False
+        assert "graphiti_write" not in self.snap
+        assert "neo4j_write" not in self.snap
 
     def test_decision_authority(self):
         assert self.snap["decision_authority"] == "KX108_ONLY"

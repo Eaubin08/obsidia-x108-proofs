@@ -1,7 +1,7 @@
 """
 brody_point_cloud_21d_selector — V3 Block 1
 Active 21D selector engine. Transforms prompt into a 21-axis vector
-and selects active_layers, forbidden_layers, budget, graphiti_allowed.
+and selects active_layers, forbidden_layers, and budget.
 No IO. No ACT. No decision. DECISION_AUTHORITY=KX108_ONLY.
 """
 from __future__ import annotations
@@ -24,7 +24,6 @@ _ALL_LAYERS = [
     "OS_reverse_layer",
     "projection_layer",
     "reflex_layer",
-    "graphiti_topk_layer",
     "memory_selector_layer",
     "domain_bank_layer",
     "domain_trading_layer",
@@ -224,7 +223,6 @@ class BrodyPointCloud21DSelector:
         if vector[2] < 0.5:
             vote("authority_layer", 3)
             vote("reflex_layer", 2)
-            forbidden.add("graphiti_topk_layer")
             forbidden.add("symbolic_layer")
 
         # Axis 3 → reversibility block
@@ -255,8 +253,6 @@ class BrodyPointCloud21DSelector:
         # Axis 13 → memory needed
         if vector[13] >= 0.7:
             vote("memory_selector_layer", 2)
-            if not is_adv:
-                vote("graphiti_topk_layer", 1)
 
         # Axis 14 → symbolic
         if vector[14] >= 0.3:
@@ -274,9 +270,6 @@ class BrodyPointCloud21DSelector:
         if vector[17] < 0.5:
             vote("bio_animal_coherence_layer", 2)
 
-        # Axis 18 → energy budget (high cost → block graphiti)
-        if vector[18] > _MAX_BUDGET * 0.7:
-            forbidden.add("graphiti_topk_layer")
 
         # Axis 19 → path coherence (low = recalibrate)
         if vector[19] < 0.4:
@@ -342,7 +335,6 @@ class BrodyPointCloud21DSelector:
 
         budget_used = _MICRO_CORE_BUDGET
         _LAYER_COSTS = {
-            "graphiti_topk_layer": 4096,
             "OS_reverse_layer": 2048,
             "domain_bank_layer": 2048,
             "domain_trading_layer": 2048,
@@ -371,22 +363,6 @@ class BrodyPointCloud21DSelector:
 
         return selected, budget_used
 
-    def _graphiti_gate(
-        self, vector: dict, mc: dict, active_layers: list[str], is_adv: bool
-    ) -> bool:
-        """
-        Graphiti allowed only when ALL 5 conditions are met.
-        Never on adversarial.
-        """
-        if is_adv:
-            return False
-        cond1 = not is_adv
-        cond2 = "graphiti_topk_layer" in active_layers
-        cond3 = vector[13] >= 0.7
-        cond4 = float(mc.get("bio_animal_signal", {}).get("memory_relevance_signal", 0.0)) >= 0.7
-        cond5 = vector[18] <= _MAX_BUDGET * 0.7
-        return all([cond1, cond2, cond3, cond4, cond5])
-
     # ── Public API ─────────────────────────────────────────────────────────────
 
     def compute_vector(
@@ -409,6 +385,8 @@ class BrodyPointCloud21DSelector:
 
         # Step 2 — apply axis rules → votes + forbidden
         votes, forbidden = self._apply_axis_rules(vector, mc, bal)
+        votes = {layer: weight for layer, weight in votes.items() if layer in _ALL_LAYERS}
+        forbidden = {layer for layer in forbidden if layer in _ALL_LAYERS}
 
         # Step 3 — budget enforcement
         budget_available = _MAX_BUDGET - _MICRO_CORE_BUDGET
@@ -418,10 +396,6 @@ class BrodyPointCloud21DSelector:
             votes, forbidden, budget_available, bal.get("balances", {})
         )
 
-        # Step 5 — graphiti gate
-        graphiti_allowed = self._graphiti_gate(vector, mc, active_layers, is_adv)
-        if not graphiti_allowed and "graphiti_topk_layer" in active_layers:
-            active_layers.remove("graphiti_topk_layer")
 
         # Step 6 — forbidden layers (cleaned, no duplicates)
         forbidden_clean = sorted(set(forbidden) - set(active_layers))
@@ -447,8 +421,6 @@ class BrodyPointCloud21DSelector:
             risk_flags.append("HOLD_REQUIRED_IRREVERSIBLE")
         if vector[4] >= 0.5:
             risk_flags.append("INVARIANT_PRESSURE_HIGH")
-        if graphiti_allowed:
-            risk_flags.append("GRAPHITI_ALLOWED")
 
         return {
             "selector_version": "V3_BLOCK_1",
@@ -462,7 +434,6 @@ class BrodyPointCloud21DSelector:
             "active_layers": active_layers,
             "forbidden_layers": forbidden_clean,
             "budget_estimate": budget_used,
-            "graphiti_allowed": graphiti_allowed,
             "memory_packet_required": memory_packet_required,
             "domain_packet_required": domain_packet_required,
             "domain_detected": domain_detected,

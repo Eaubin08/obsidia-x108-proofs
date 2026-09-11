@@ -15,6 +15,7 @@ from apps.obsidia_api.brody_memory_readonly_packet import (
 from apps.obsidia_api.brody_cognitive_micro_core import run_micro_core
 from apps.obsidia_api.brody_balance_engine import BrodyBalanceEngine
 from apps.obsidia_api.brody_point_cloud_21d_selector import BrodyPointCloud21DSelector
+from apps.obsidia_api.brody_memzum_activation_adapter import evaluate_memzum_activation
 from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard
 from apps.obsidia_api.brody_context_budget import compute_context_budget
 from apps.obsidia_api.brody_v3_fastpath_response import evaluate_fastpath
@@ -26,6 +27,9 @@ def _make_v3_packet(msg: str = "Quel est le solde de mon compte ?") -> dict:
     mc = run_micro_core(msg, session_id="test_3e", language="fr")
     bal = BrodyBalanceEngine().compute_balances(msg, mc)
     pc = BrodyPointCloud21DSelector().compute_vector(msg, mc, bal)
+    memzum = evaluate_memzum_activation(
+        micro_core=mc, balance_output=bal, point_cloud=pc,
+    )
     guard = evaluate_graphiti_guard(
         message=msg, session_id="test_3e",
         micro_core=mc, balance_output=bal, point_cloud=pc,
@@ -33,10 +37,9 @@ def _make_v3_packet(msg: str = "Quel est le solde de mon compte ?") -> dict:
     budget = compute_context_budget(
         active_layers=pc.get("active_layers", []),
         point_cloud=pc, balance_output=bal,
-        graphiti_allowed=guard.get("graphiti_allowed", False),
         is_adversarial=bool(mc.get("is_adversarial", False)),
         domain_detected=mc.get("domain_detected"),
-        memory_explicit=bool(pc.get("memory_packet_required", False)),
+        memory_explicit=bool(memzum.get("memory_required", False)),
     )
     fp = evaluate_fastpath(
         message=msg, micro_core=mc, balance_output=bal,
@@ -44,6 +47,7 @@ def _make_v3_packet(msg: str = "Quel est le solde de mon compte ?") -> dict:
     )
     return {
         "micro_core": mc, "balance_engine": bal, "point_cloud_21d": pc,
+        "memzum": memzum,
         "graphiti_guard": guard, "context_budget": budget, "fastpath": fp,
     }
 

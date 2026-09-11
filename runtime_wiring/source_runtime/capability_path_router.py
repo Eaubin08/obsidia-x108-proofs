@@ -68,8 +68,8 @@ _INTENT_KEYWORDS: Dict[str, List[str]] = {
         "privacy", "dpo", "iso 27001", "gouvernance données",
         "data governance",
     ],
-    "MEMORY_GRAPHITI": [
-        "mémoire", "memory", "graphiti", "neo4j", "graphe mémoire",
+    "MEMORY_CONTEXT": [
+        "mémoire", "memory", "graphe mémoire",
         "réintégration", "reintegration", "cognition", "brody mémoire",
         "brody memory",
     ],
@@ -98,10 +98,6 @@ _INTENT_KEYWORDS: Dict[str, List[str]] = {
         "api os-trad", "os trad translate", "translate endpoint", "ir route",
         "os reverse route", "os-trad api", "api ir",
     ],
-    "GRAPHITI_READONLY": [
-        "graphiti readonly", "graphiti v20", "graphiti client",
-        "readonly neo4j client", "graphiti read only", "graphiti connect",
-    ],
 }
 
 # ── Mapping intent → capabilities candidates ──────────────────────────────────
@@ -115,14 +111,13 @@ _INTENT_TO_CAPABILITIES: Dict[str, List[str]] = {
     "LAW_PROTOCOL": ["LAW_PROTOCOL_LOOKUP", "OS_TRAD_TRANSLATION"],
     "RSSI_SECURITY": ["RSSI_SECURITY_CONTEXT", "PROOF_AUDIT_CONTEXT"],
     "COMPLIANCE_AUDIT": ["PROOF_AUDIT_CONTEXT", "RSSI_SECURITY_CONTEXT"],
-    "MEMORY_GRAPHITI": ["MEMORY_REINTEGRATION_CONTEXT", "GRAPHITI_READONLY_CONTEXT"],
+    "MEMORY_CONTEXT": ["MEMORY_REINTEGRATION_CONTEXT"],
     "NARRATIVE_NPL": ["NPL_NARRATIVE_PROVENANCE", "PROVENANCE_TRACE"],
     # P44
     "ATLAS": ["ATLAS_CONTEXT_LOOKUP"],
     "EXTERNAL_SIGNALS": ["EXTERNAL_SIGNALS_CONTEXT"],
     "BRODY_CHAT": ["BRODY_CHAT_ENTRYPOINT"],
     "OS_TRAD_ROUTE": ["OS_TRAD_ROUTE_CONTEXT", "OS_TRAD_TRANSLATION"],
-    "GRAPHITI_READONLY": ["GRAPHITI_READONLY_CONTEXT"],
 }
 
 # ── Scoring des chemins ───────────────────────────────────────────────────────
@@ -139,7 +134,6 @@ _CAPABILITY_SCORE: Dict[str, float] = {
     "BRODY_CHAT_ENTRYPOINT": 0.78,   # P44: entrypoint primaire
     "PROOF_AUDIT_CONTEXT": 0.77,
     "MEMORY_REINTEGRATION_CONTEXT": 0.75,
-    "GRAPHITI_READONLY_CONTEXT": 0.76,  # P44: boosted > MEMORY_REINTEGRATION (0.75) pour graphiti queries
     "ATLAS_CONTEXT_LOOKUP": 0.71,    # P44: 11k entrées, advisory
     "NPL_NARRATIVE_PROVENANCE": 0.70,
     "EXTERNAL_SIGNALS_CONTEXT": 0.67, # P44: signaux temporels advisory
@@ -250,16 +244,6 @@ _CAPABILITY_PATH_TEMPLATES: Dict[str, Dict[str, Any]] = {
         "evidence_packs": [],
         "x108_decision": "ALLOW_CONTEXT_ONLY",
         "reason": "Réintégration mémoire Brody — COGNITIVE_REINTEGRATION advisory.",
-    },
-    "GRAPHITI_READONLY_CONTEXT": {
-        "modules": ["source_runtime_query", "brody_source_context_bridge", "graphiti_v20_readonly_client"],
-        "adapters": ["npl_to_context_packet", "cognitive_to_context_packet"],
-        "routes": ["/api/runtime-wiring/source-runtime/preview"],
-        "source_families": ["NARRATIVE_PROVENANCE_LAYER", "COGNITIVE_REINTEGRATION"],
-        "source_subfamilies": [],
-        "evidence_packs": [],
-        "x108_decision": "ALLOW_CONTEXT_ONLY",
-        "reason": "Graphiti readonly — graphiti_v20_readonly_client branché (P44). NPL advisory, aucune écriture graph.",
     },
     "NPL_NARRATIVE_PROVENANCE": {
         "modules": ["source_runtime_query", "brody_source_context_bridge"],

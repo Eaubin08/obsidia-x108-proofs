@@ -1,0 +1,2285 @@
+﻿**********************
+Début de la transcription Windows PowerShell
+Heure de début : 20260903120606
+Nom d'utilisateur : DESKTOP-Q5MD7J7\User
+Utilisateur runAs :  DESKTOP-Q5MD7J7\User
+Nom de la configuration : 
+Ordinateur : DESKTOP-Q5MD7J7 (Microsoft Windows NT 10.0.26200.0)
+Application hôte : C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File .\R3B_R4_PREFLIGHT_20260903.ps1
+ID de processus : 38276
+PSVersion: 5.1.26100.8894
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.8894
+BuildVersion: 10.0.26100.8894
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcription démarrée, le fichier de sortie est R3B_R4_PREFLIGHT_20260903.txt
+
+=====================================================================
+0 — BASELINE
+=====================================================================
+ROOT:
+
+
+BRANCH:
+
+
+HEAD:
+
+
+STATUS:
+
+
+RECENT COMMITS:
+
+
+=====================================================================
+1 — UNTRACKED TRUTH
+=====================================================================
+
+#####################################################################
+FILE: pytest.ini
+#####################################################################
+Path
+----
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source
+; Canonical test perimeter for obsidia-x108-proofs.
+;
+; This file formalizes what the bare `python -m pytest -q` command means. It
+; does NOT delete, repair or weaken anything: historical proofs, freezes and
+; source packs stay exactly as they are on disk and remain runnable by
+; pointing pytest at them explicitly.
+;
+; Three classes of tree exist in this repository:
+;
+;   CURRENT        tests/ (minus the legacy modules listed below) â€” the live
+;                  perimeter that must stay green.
+;   ARCHIVED_PROOF proofs/V18_3_1/, _FREEZE/, freeze/, _source_packs/,
+;                  .runtime_freezes/ â€” sealed historical proof snapshots.
+;                  They carry their own vendored trees and duplicate module
+;                  basenames, so collecting them alongside CURRENT breaks
+;                  collection. Never "repair" them to make a global run pass.
+;   LEGACY         tests/ modules importing an `agents.*` layout that no
+;                  longer exists (agents.obsidia_sigma_v130, agents.run_pipeline,
+;                  agents.TradingState). Kept as history, excluded from the
+;                  canonical run because they cannot import at all.
+
+[pytest]
+testpaths = tests
+
+norecursedirs =
+    .git
+    .runtime_freezes
+    _FREEZE
+    _source_packs
+    freeze
+    proofs/V18_3_1
+    node_modules
+    __pycache__
+
+; LEGACY modules â€” orphaned imports, excluded from the canonical perimeter.
+addopts =
+    --ignore=tests/sigma_stress_test.py
+    --ignore=tests/test_agents_functional.py
+    --ignore=tests/test_consensus_inprocess.py
+    --ignore=tests/test_sigma_v18_9.py
+
+markers =
+    regression: full regression freeze checks (P80)
+
+#####################################################################
+FILE: docs/runtime/POST_CG100_RUNTIME_INTEGRATION_TRUTH.md
+#####################################################################
+# Post-CG100 Runtime Integration â€” Truth Report
+
+Branch: `source/cg9-cognitive-provider-binder-20260901`
+Scope: closing the AgentResult â†’ ContextPacket â†’ X108 runtime gap identified by CG93/CG97.
+CG100 closes the numbered sequence. No CG101+ layer was created.
+
+This document states what is proven, what is integrated but dry-run, and what is
+still not integrated. No flag is raised without evidence.
+
+---
+
+## A. CLOSED / PROVEN
+
+| Item | Evidence |
+|---|---|
+| Canonical `AgentResult â†’ ContextPacket` binder | `periphery/context/agent_result_context_adapter.py`; 9 tests in `tests/periphery/test_agent_result_context_adapter.py` |
+| Canonical runtime flow agent â†’ context â†’ X108 | `periphery/context/agent_x108_context_flow.py`; 21 tests in `tests/periphery/test_agent_x108_context_flow.py` |
+| Real API caller wired | `POST /api/periphery/governance/agent-x108-context` in `apps/obsidia_api/routes/periphery_ops.py`; 11 tests in `tests/api/test_agent_x108_context_route.py` |
+| Provenance preserved end to end | `agent_id`, `agent_layer`, `action_id`, `evidence_refs`, `recommended_gate`, agent notes asserted against the real `AgentResult` |
+| Canonical validator + X108 context boundary pass | `validate_context_packet()` and `check_x108_context_boundary()` return `valid/passed` with zero violations on the real projection |
+| Receipt lifecycle closed | `CanonicalRuntimeReceiptFlow.run()` now calls `.complete()` on a real sealed result, `.fail()` otherwise; 8 tests in `tests/cli/providers/test_canonical_runtime_receipt_lifecycle_v1.py` |
+| Non-sovereignty invariants locked | `emits_act`, `emits_decision`, `memory_write`, `kernel_mutation`, `runtime_allowed_now` all False; `decision_authority == "KX108_ONLY"` |
+| Fail closed | Pre-gate failure reports `BLOCK` / `X108_FAIL_CLOSED` and never reaches admission; a mutated ContextPacket raises before admission |
+| CG93/CG97 assertions reconciled with fact | `scripts/kernel/kx108_runtime_link_facts_v1.py` detects the link from the filesystem; CG97 rejects a surface lying in either direction |
+
+---
+
+## B. INTEGRATED BUT DRY-RUN
+
+The whole agent â†’ X108 path is wired to `runtime_wiring.x108_admission_stub.evaluate_dry_run()`.
+
+- Observable decisions are bounded to `BLOCK` / `HOLD` / `ALLOW_CONTEXT_ONLY`.
+- `ACT` is structurally unreachable: it is absent from `VALID_DRY_RUN_DECISIONS`
+  and from `ADMISSIBLE_DECISIONS`, and both are asserted.
+- `DecisionTicketDryRun.dry_run` is always True; hashes, Merkle root and replay
+  remain honest `NOT_COMPUTED` / `NOT_RUN` placeholders.
+- World action stays `dry_run_only=True`, `world_action_allowed=False`.
+
+This is a real binding to a dry-run gate, not a real gate.
+
+---
+
+## C. NOT INTEGRATED
+
+- No real X108-gated execution path is activated
+  (`REAL_X108_GATED_EXECUTION_PATH_NOT_ACTIVATED`).
+- No real proof chain: hashing, Merkle sealing, RFC3161 anchoring and replay
+  are not computed on this path.
+- The 52 agent configurations are declarative only and are never executed
+  (HTTP 422 `AGENTS52_CONFIG_NOT_EXECUTABLE`).
+
+---
+
+## D. HISTORICAL / ARCHIVE
+
+Untouched, and deliberately excluded from the canonical pytest perimeter by
+`pytest.ini` (`norecursedirs` / `addopts`), never deleted or repaired:
+
+- `proofs/V18_3_1/`, `_FREEZE/`, `freeze/`, `_source_packs/`, `.runtime_freezes/`
+- LEGACY test modules importing a removed `agents.*` layout:
+  `tests/sigma_stress_test.py`, `tests/test_agents_functional.py`,
+  `tests/test_consensus_inprocess.py`, `tests/test_sigma_v18_9.py`
+- `periphery/modules_agents/agent_registry.py`: a legacy mirror of
+  `periphery/agent_registry.py`. Verified non-divergent â€” same 14 agent ids
+  bound to the same callables in `periphery.agents.*` â€” and not imported by
+  the runtime. Left in place.
+
+---
+
+## E. BLOCKING BEFORE RUNTIME E2E
+
+1. No real execution: every decision is a dry-run stub verdict.
+2. No proof chain computed on the agent â†’ X108 path.
+3. No X108 runtime consent mechanism; `runtime_allowed_now` is structurally False.
+
+## F. BLOCKING BEFORE GLOBAL RUNTIME
+
+4. Only 14 operational agents are wired; the remaining declared configurations
+   are documentary and require human validation.
+5. Mission / provider execution surfaces remain sandboxed with all authority
+   flags False.
+
+## G. BLOCKING BEFORE PRODUCTION
+
+6. Everything in E and F.
+7. Pre-existing unrelated debt in `tests/api/*brody*` (10 failures, present
+   before this work and untouched by it).
+8. No release, deployment or freeze authorization exists, by design.
+
+---
+
+## Flag state â€” none raised
+
+| Flag | Value | Why |
+|---|---|---|
+| `canonical_agent_context_adapter_present` | **true** | Detected as a repository fact; binder + flow both exist and are tested |
+| `runtime_end_to_end_validated` | **false** | The path ends in a dry-run stub; no real execution occurs |
+| `runtime_globally_validated` | **false** | Only one runtime link is closed |
+| `runtime_allowed_now` | **false** | Structurally locked in `ContextPacket.validate_invariants()` |
+| `production_ready` | **false** | See E, F, G |
+| `release_ready` | **false** | See E, F, G |
+| `deployment_ready` | **false** | See E, F, G |
+| `final_freeze` | **false** | See E, F, G |
+| `activation_authorized` | **false** | `runtime_activation_authorized` is False in every release/freeze proof |
+
+An adapter existing is not a runtime being validated. The first is a fact; the
+second would require real gated execution, which does not exist here.
+
+---
+
+## Reproduction
+
+```bash
+# canonical perimeter
+python -m pytest tests/cli/kernel tests/cli/providers tests/non_sovereignty \
+  tests/periphery tests/api/test_agent_x108_context_route.py \
+  tests/integration/test_full_stack_static_bank.py \
+  tests/integration/test_full_stack_static_gps.py \
+  tests/integration/test_full_stack_static_trading.py \
+  tests/integration/test_os3_gencoin_chain.py -q
+
+# the new runtime path alone
+python -m pytest tests/periphery/test_agent_x108_context_flow.py \
+  tests/api/test_agent_x108_context_route.py \
+  tests/cli/providers/test_canonical_runtime_receipt_lifecycle_v1.py -q
+
+# manifest
+python scripts/generate_recursive_manifest.py
+python scripts/verify_recursive_manifest.py
+
+# after any world-action test run
+git restore -- audit/world_action_bus.jsonl
+```
+
+=====================================================================
+2 — CG97: RUN CORRECTLY AS PYTHON MODULE
+=====================================================================
+
+#####################################################################
+FILE: scripts/kernel/kx108_proof_kx108_end_to_end_validation_v1.py
+#####################################################################
+"""
+CG97 KX108 Proof End-To-End Validation V1.
+
+Validates the current proof-level chain through:
+- bounded agent decision flow;
+- canonical-envelope separation;
+- receipt closure;
+- CG96 proof-runtime surface aggregation.
+
+This is PROOF E2E validation only.
+
+Post-CG100 the canonical AgentResult -> ContextPacket runtime link EXISTS
+and is wired into the X108 dry-run admission path. That link alone does not
+validate the runtime: every observable decision on this perimeter remains
+BLOCK / HOLD / ALLOW_CONTEXT_ONLY and no real X108-gated execution path is
+activated, therefore runtime_end_to_end_validated MUST remain False.
+
+The reported adapter presence must match the detected repository fact --
+claiming it absent when present, or present when absent, is rejected.
+
+This layer MUST NOT claim:
+- real global runtime validation;
+- production readiness;
+- release readiness;
+- deployment readiness;
+- final freeze.
+"""
+
+
+from scripts.kernel.kx108_runtime_link_facts_v1 import (
+    MISSING_RUNTIME_LINK_REAL_EXECUTION,
+    canonical_agent_context_adapter_present,
+    missing_runtime_links,
+)
+
+
+class KX108ProofEndToEndValidation:
+
+    # Kept for compatibility: the single blocker still standing in the way
+    # of a real runtime end-to-end claim.
+    MISSING_RUNTIME_LINK = MISSING_RUNTIME_LINK_REAL_EXECUTION
+
+    def __init__(self):
+        self.validation_authority = False
+        self.decision_authority = "KX108_ONLY"
+        self.execution_authority = False
+        self.memory_write = False
+        self.kernel_mutation = False
+        self.emits_act = False
+
+    def validate(
+        self,
+        global_runtime,
+        agent_decision_flow,
+        agent_canonical_envelope,
+        agent_receipt_closure,
+    ):
+        surfaces = (
+            global_runtime,
+            agent_decision_flow,
+            agent_canonical_envelope,
+            agent_receipt_closure,
+        )
+
+        inputs_valid = all(
+            isinstance(surface, dict)
+            for surface in surfaces
+        )
+
+        if not inputs_valid:
+            return self._rejected(
+                {"inputs_valid": False}
+            )
+
+        checks = {
+            "inputs_valid":
+                True,
+
+            "proof_runtime_surfaces_validated":
+                (
+                    global_runtime.get(
+                        "kx108_global_runtime_status"
+                    )
+                    == "PROOF_RUNTIME_SURFACES_VALIDATED"
+                    and global_runtime.get(
+                        "proof_runtime_surfaces_validated"
+                    )
+                    is True
+                ),
+
+            "agent_decision_boundary_validated":
+                agent_decision_flow.get(
+                    "agent_decision_flow_status"
+                )
+                == "BOUNDARY_VALIDATED",
+
+            "agent_envelope_validated":
+                agent_canonical_envelope.get(
+                    "agent_canonical_envelope_status"
+                )
+                == "VALIDATED",
+
+            "agent_receipt_closure_validated":
+                agent_receipt_closure.get(
+                    "agent_receipt_closure_status"
+                )
+                == "VALIDATED",
+
+            "agent_did_not_decide":
+                agent_decision_flow.get(
+                    "agent_decision_created"
+                )
+                is False,
+
+            "agent_did_not_submit_x108_here":
+                agent_decision_flow.get(
+                    "x108_submitted_here"
+                )
+                is False,
+
+            "canonical_context_adapter_still_required":
+                agent_decision_flow.get(
+                    "requires_canonical_context_adapter"
+                )
+                is True,
+
+            "canonical_adapter_presence_is_factual":
+                agent_decision_flow.get(
+                    "canonical_agent_context_adapter_present"
+                )
+                is canonical_agent_context_adapter_present(),
+
+            "envelope_not_created_by_agent":
+                agent_canonical_envelope.get(
+                    "agent_envelope_created_here"
+                )
+                is False,
+
+            "agent_receipt_not_generated_here":
+                agent_receipt_closure.get(
+                    "agent_receipt_generated_here"
+                )
+                is False,
+
+            "runtime_not_globally_validated":
+                global_runtime.get(
+                    "runtime_globally_validated"
+                )
+                is False,
+
+            "runtime_not_end_to_end_validated":
+                global_runtime.get(
+                    "runtime_end_to_end_validated"
+                )
+                is False,
+
+            "not_production_ready":
+                global_runtime.get(
+                    "production_ready"
+                )
+                is False,
+
+            "not_release_ready":
+                global_runtime.get(
+                    "release_ready"
+                )
+                is False,
+
+            "not_deployment_ready":
+                global_runtime.get(
+                    "deployment_ready"
+                )
+                is False,
+
+            "not_final_freeze":
+                global_runtime.get(
+                    "final_freeze"
+                )
+                is False,
+
+            "all_kx108_only":
+                all(
+                    surface.get(
+                        "decision_authority"
+                    )
+                    == "KX108_ONLY"
+                    for surface in surfaces
+                ),
+
+            "all_no_execution_authority":
+                all(
+                    surface.get(
+                        "execution_authority"
+                    )
+                    is False
+                    for surface in surfaces
+                ),
+
+            "all_no_memory_write":
+                all(
+                    surface.get(
+                        "memory_write"
+                    )
+                    is False
+                    for surface in surfaces
+                ),
+
+            "all_no_kernel_mutation":
+                all(
+                    surface.get(
+                        "kernel_mutation"
+                    )
+                    is False
+                    for surface in surfaces
+                ),
+
+            "all_no_act":
+                all(
+                    surface.get(
+                        "emits_act"
+                    )
+                    is False
+                    for surface in surfaces
+                ),
+        }
+
+        valid = all(checks.values())
+
+        if not valid:
+            return self._rejected(checks)
+
+        return {
+            "kx108_end_to_end_validation_status":
+                "PROOF_E2E_VALIDATED",
+
+            "checks":
+                checks,
+
+            "proof_end_to_end_validated":
+                True,
+
+            "runtime_end_to_end_validated":
+                False,
+
+            "runtime_globally_validated":
+                False,
+
+            "missing_runtime_link":
+                self.MISSING_RUNTIME_LINK,
+
+            "missing_runtime_links":
+                missing_runtime_links(),
+
+            "canonical_agent_context_adapter_present":
+                canonical_agent_context_adapter_present(),
+
+            "production_ready":
+                False,
+
+            "release_ready":
+                False,
+
+            "deployment_ready":
+                False,
+
+            "final_freeze":
+                False,
+
+            "new_authority_created":
+                False,
+
+            "validation_authority":
+                False,
+
+            "decision_authority":
+                "KX108_ONLY",
+
+            "execution_authority":
+                False,
+
+            "memory_write":
+                False,
+
+            "kernel_mutation":
+                False,
+
+            "emits_act":
+                False,
+        }
+
+    def _rejected(self, checks):
+        return {
+            "kx108_end_to_end_validation_status":
+                "REJECTED",
+
+            "checks":
+                checks,
+
+            "proof_end_to_end_validated":
+                False,
+
+            "runtime_end_to_end_validated":
+                False,
+
+            "runtime_globally_validated":
+                False,
+
+            "missing_runtime_link":
+                self.MISSING_RUNTIME_LINK,
+
+            "missing_runtime_links":
+                missing_runtime_links(),
+
+            "canonical_agent_context_adapter_present":
+                canonical_agent_context_adapter_present(),
+
+            "production_ready":
+                False,
+
+            "release_ready":
+                False,
+
+            "deployment_ready":
+                False,
+
+            "final_freeze":
+                False,
+
+            "new_authority_created":
+                False,
+
+            "validation_authority":
+                False,
+
+            "decision_authority":
+                "KX108_ONLY",
+
+            "execution_authority":
+                False,
+
+            "memory_write":
+                False,
+
+            "kernel_mutation":
+                False,
+
+            "emits_act":
+                False,
+        }
+
+>>> python -m scripts.kernel.kx108_proof_kx108_end_to_end_validation_v1
+
+EXIT=0
+
+=====================================================================
+3 — CG96: LOCATE REAL GLOBAL-RUNTIME IMPLEMENTATION
+=====================================================================
+CG96_CANDIDATE_COUNT=13
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\kernel\kx108_proof_kx108_global_runtime_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\kernel\__pycache__\kx108_proof_kx108_global_runtime_v1.cpython-313.pyc
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\test_global_runtime_surface_gate_p49.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\api\test_global_runtime_surface_gate_os_map_p49.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\api\__pycache__\test_global_runtime_surface_gate_os_map_p49.cpython-313-pytest-9.0.3.pyc
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\cli\kernel\test_kx108_proof_kx108_global_runtime_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\cli\kernel\__pycache__\test_kx108_proof_kx108_global_runtime_v1.cpython-313-pytest-9.0.3.pyc
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\tests\__pycache__\test_global_runtime_surface_gate_p49.cpython-313-pytest-9.0.3.pyc
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\docs\CG96_BUILD_RECEIPT_V1.md
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\docs\CG96_kx108_PROOF_KX108_GLOBAL_RUNTIME_FINAL_AUDIT_V1.md
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\docs\CG96_kx108_PROOF_KX108_GLOBAL_RUNTIME_FINAL_CONFORMANCE_MATRIX_V1.md
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\docs\real_engine\P49_GLOBAL_RUNTIME_SURFACE_100_GATE_REPORT.md
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\docs\runtime\OBSIDIA_F32_0_GLOBAL_RUNTIME_READINESS_AUDIT_20260529_020945.md
+EXACT_CG96_SCRIPT_ABSENT
+
+=====================================================================
+4 — CURRENT CANONICAL AGENT -> X108 IMPLEMENTATION
+=====================================================================
+
+#####################################################################
+FILE: periphery/context/agent_result_context_adapter.py
+#####################################################################
+"""
+Canonical AgentResult -> runtime ContextPacket adapter.
+
+Purpose:
+    Bind an already-produced non-sovereign AgentResult to the existing
+    runtime_wiring ContextPacket dry-run path.
+
+This adapter:
+- does not decide;
+- does not emit ACT;
+- does not authorize execution;
+- does not mutate the kernel;
+- does not write memory;
+- does not enable runtime execution;
+- preserves AgentResult provenance and peripheral signals.
+
+decision_authority remains KX108_ONLY.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import datetime, timezone
+from typing import Any
+
+from periphery.agent_contracts import AgentResult
+from runtime_wiring.packet_types import ContextPacket
+
+
+BOUNDARY = "AGENT_RESULT_CONTEXT_ADVISORY_ONLY"
+SOURCE_STATUS = "RUNTIME_AGENT_RESULT_READONLY"
+CLAIM_SCOPE = "RUNTIME_CONTEXT_ONLY"
+
+
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _canonical_payload(result: AgentResult) -> dict[str, Any]:
+    packet = result.packet
+
+    return {
+        "agent_id": result.agent_id,
+        "agent_layer": result.layer.value,
+        "action_id": packet.action_id,
+        "domain": packet.domain,
+        "extra_metrics": dict(packet.extra_metrics),
+        "unknowns": list(packet.unknowns),
+        "risk_flags": list(packet.risk_flags),
+        "contradictions": list(packet.contradictions),
+        "evidence_refs": list(packet.evidence_refs),
+        "recommended_gate": packet.recommended_gate,
+        "agent_notes": list(result.notes),
+        "agent_can_emit_act": packet.can_emit_act,
+        "_agent_result_bound": True,
+        "_context_signal_only": True,
+        "_allowed_to_decide": False,
+        "_allowed_to_act": False,
+        "_memory_write": False,
+        "_kernel_mutation": False,
+        "_boundary": BOUNDARY,
+        "_dry_run": True,
+    }
+
+
+def _make_context_id(result: AgentResult) -> str:
+    payload = _canonical_payload(result)
+
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        default=str,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    digest = hashlib.sha256(encoded).hexdigest()[:20]
+
+    return f"cp-agent-{digest}"
+
+
+def agent_result_to_context_packet(
+    result: AgentResult,
+) -> ContextPacket:
+    """
+    Convert one non-sovereign AgentResult into the canonical runtime
+    ContextPacket used by the existing X108 dry-run admission path.
+
+    Fail closed if the source AgentResult violates peripheral sovereignty.
+    """
+    if not isinstance(result, AgentResult):
+        raise TypeError("AGENT_RESULT_REQUIRED")
+
+    result.assert_non_sovereign()
+
+    packet = result.packet
+
+    if not result.agent_id:
+        raise ValueError("AGENT_RESULT_MISSING_AGENT_ID")
+
+    if not packet.action_id:
+        raise ValueError("AGENT_RESULT_MISSING_ACTION_ID")
+
+    if not packet.domain:
+        raise ValueError("AGENT_RESULT_MISSING_DOMAIN")
+
+    context = ContextPacket(
+        context_id=_make_context_id(result),
+        source=f"agent:{result.agent_id}",
+        source_status=SOURCE_STATUS,
+        claim_scope=CLAIM_SCOPE,
+        boundary=BOUNDARY,
+        timestamp_or_tick=_utcnow(),
+        advisory_only=True,
+        readonly=True,
+        runtime_allowed_now=False,
+        emits_act=False,
+        emits_decision=False,
+        decision_authority="KX108_ONLY",
+        labels=[
+            "AGENT_RESULT",
+            "NON_SOVEREIGN",
+            "READONLY_CONTEXT",
+            f"AGENT_LAYER:{result.layer.value}",
+        ],
+        payload=_canonical_payload(result),
+        notes=(
+            "Canonical AgentResult -> ContextPacket binding. "
+            "Context-only dry-run path; KX108_ONLY."
+        ),
+    )
+
+    context.validate_invariants()
+
+    return context
+
+
+def context_packet_validation_projection(
+    context: ContextPacket,
+) -> dict[str, Any]:
+    """
+    Project the runtime ContextPacket onto the existing context sovereignty
+    validator/boundary schema.
+
+    This does not create another authority-bearing packet.
+    """
+    context.validate_invariants()
+
+    action_id = context.payload.get("action_id")
+
+    return {
+        "packet_id": context.context_id,
+        "action_id": action_id,
+        "readonly": context.readonly,
+        "context_signal_only": True,
+        "decision_authority": context.decision_authority,
+        "allowed_to_decide": False,
+        "allowed_to_act": False,
+        "kernel_mutation": False,
+        "memory_write": False,
+        "emits_act": context.emits_act,
+        "emits_decision": context.emits_decision,
+        "runtime_allowed_now": context.runtime_allowed_now,
+        "boundary": context.boundary,
+        "source": context.source,
+    }
+
+#####################################################################
+FILE: periphery/context/agent_x108_context_flow.py
+#####################################################################
+"""
+Canonical runtime flow: registered agent -> AgentResult -> ContextPacket -> X108.
+
+This module closes the historical runtime gap identified by CG93/CG97:
+
+    run_registered_agent(...)
+      -> AgentResult
+      -> agent_result_to_context_packet(...)      (canonical binder)
+      -> context_packet_validation_projection(...)
+      -> validate_context_packet(...)
+      -> check_x108_context_boundary(...)
+      -> runtime_wiring.x108_admission_stub.evaluate_dry_run(...)
+      -> observable dry-run flow result
+
+It is an orchestration layer only. It:
+- does not decide;
+- does not emit ACT;
+- does not authorize execution;
+- does not mutate the kernel;
+- does not write memory;
+- does not enable runtime execution;
+- does not introduce a third ContextPacket model.
+
+Pre-gate failure (validator or X108 context boundary) is fail-closed: the
+flow reports BLOCK and never reaches admission. Refusing admission is not
+a peripheral decision -- no ALLOW can ever originate here.
+
+decision_authority remains KX108_ONLY.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+from periphery.agent_registry import run_registered_agent
+from periphery.common import ActionCandidate
+from periphery.agent_contracts import AgentResult
+from periphery.context.agent_result_context_adapter import (
+    agent_result_to_context_packet,
+    context_packet_validation_projection,
+)
+from periphery.context.context_packet_validator import validate_context_packet
+from periphery.x108_ingress.x108_context_boundary import check_x108_context_boundary
+from runtime_wiring.packet_types import ContextPacket
+from runtime_wiring.x108_admission_stub import evaluate_dry_run
+
+FLOW_BOUNDARY = "AGENT_TO_X108_CONTEXT_DRY_RUN_ONLY"
+PREGATE_FAIL_CLOSED = "PREGATE_FAIL_CLOSED"
+
+ADMISSIBLE_DECISIONS = frozenset({"BLOCK", "HOLD", "ALLOW_CONTEXT_ONLY"})
+
+CRITICAL_GATE_HINTS = frozenset({"HOLD", "BLOCK_CANDIDATE"})
+
+
+@dataclass
+class AgentX108ContextFlowResult:
+    """Observable, bounded proof object for one agent -> X108 dry-run pass."""
+
+    agent_id: str
+    agent_layer: str
+    action_id: str
+    context_id: str
+    x108_decision: str
+    x108_gate_status: str
+    x108_ticket_id: str
+    critical_action_requested: bool
+    context_validation: dict[str, Any] = field(default_factory=dict)
+    context_boundary: dict[str, Any] = field(default_factory=dict)
+    context_projection: dict[str, Any] = field(default_factory=dict)
+    reason_codes: list[str] = field(default_factory=list)
+    context_packet_refs: list[str] = field(default_factory=list)
+    evidence_refs: list[str] = field(default_factory=list)
+    agent_notes: list[str] = field(default_factory=list)
+    recommended_gate: str = "NONE"
+    # Locked non-sovereignty invariants
+    advisory_only: bool = True
+    readonly: bool = True
+    runtime_allowed_now: bool = False
+    emits_act: bool = False
+    emits_decision: bool = False
+    memory_write: bool = False
+    kernel_mutation: bool = False
+    decision_authority: str = "KX108_ONLY"
+    dry_run: bool = True
+    boundary: str = FLOW_BOUNDARY
+
+    @property
+    def context_admitted(self) -> bool:
+        return self.x108_decision == "ALLOW_CONTEXT_ONLY"
+
+    def assert_non_sovereign(self) -> None:
+        if self.emits_act:
+            raise AssertionError("FLOW_VIOLATION: emits_act must be False")
+        if self.emits_decision:
+            raise AssertionError("FLOW_VIOLATION: emits_decision must be False")
+        if self.memory_write:
+            raise AssertionError("FLOW_VIOLATION: memory_write must be False")
+        if self.kernel_mutation:
+            raise AssertionError("FLOW_VIOLATION: kernel_mutation must be False")
+        if self.runtime_allowed_now:
+            raise AssertionError("FLOW_VIOLATION: runtime_allowed_now must be False")
+        if not self.readonly or not self.advisory_only:
+            raise AssertionError("FLOW_VIOLATION: flow result must stay readonly advisory")
+        if self.decision_authority != "KX108_ONLY":
+            raise AssertionError("FLOW_VIOLATION: decision_authority must be KX108_ONLY")
+        if not self.dry_run:
+            raise AssertionError("FLOW_VIOLATION: dry_run must be True")
+        if self.x108_decision not in ADMISSIBLE_DECISIONS:
+            raise AssertionError(
+                "FLOW_VIOLATION: decision outside BLOCK/HOLD/ALLOW_CONTEXT_ONLY: "
+                + str(self.x108_decision)
+            )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "agent_id": self.agent_id,
+            "agent_layer": self.agent_layer,
+            "action_id": self.action_id,
+            "context_id": self.context_id,
+            "context_admitted": self.context_admitted,
+            "x108_decision": self.x108_decision,
+            "x108_gate_status": self.x108_gate_status,
+            "x108_ticket_id": self.x108_ticket_id,
+            "critical_action_requested": self.critical_action_requested,
+            "context_validation": self.context_validation,
+            "context_boundary": self.context_boundary,
+            "context_projection": self.context_projection,
+            "reason_codes": self.reason_codes,
+            "context_packet_refs": self.context_packet_refs,
+            "evidence_refs": self.evidence_refs,
+            "agent_notes": self.agent_notes,
+            "recommended_gate": self.recommended_gate,
+            "advisory_only": self.advisory_only,
+            "readonly": self.readonly,
+            "runtime_allowed_now": self.runtime_allowed_now,
+            "emits_act": self.emits_act,
+            "emits_decision": self.emits_decision,
+            "memory_write": self.memory_write,
+            "kernel_mutation": self.kernel_mutation,
+            "decision_authority": self.decision_authority,
+            "dry_run": self.dry_run,
+            "boundary": self.boundary,
+        }
+
+
+def is_critical_action(action: ActionCandidate, result: AgentResult) -> bool:
+    """
+    Conservative criticality read used to request an X108 HOLD.
+
+    Criticality is only ever an input to X108; it never produces a decision.
+    """
+    if action.irreversible:
+        return True
+    if result.packet.recommended_gate in CRITICAL_GATE_HINTS:
+        return True
+    if result.packet.contradictions:
+        return True
+    return False
+
+
+def admit_agent_context(
+    context: ContextPacket,
+    agent_result: AgentResult,
+    critical_action_requested: bool,
+) -> AgentX108ContextFlowResult:
+    """
+    Run the pre-gate + X108 dry-run admission for one already-bound ContextPacket.
+
+    Fail-closed: if the canonical validator or the X108 context boundary
+    rejects the projection, admission is never reached and BLOCK is reported.
+    """
+    projection = context_packet_validation_projection(context)
+
+    validation = validate_context_packet(projection)
+    boundary = check_x108_context_boundary(projection)
+
+    packet = agent_result.packet
+
+    common = {
+        "agent_id": agent_result.agent_id,
+        "agent_layer": agent_result.layer.value,
+        "action_id": packet.action_id,
+        "context_id": context.context_id,
+        "critical_action_requested": critical_action_requested,
+        "context_validation": validation.to_dict(),
+        "context_boundary": boundary.to_dict(),
+        "context_projection": projection,
+        "evidence_refs": list(packet.evidence_refs),
+        "agent_notes": list(agent_result.notes),
+        "recommended_gate": packet.recommended_gate,
+    }
+
+    if not validation.valid or not boundary.passed:
+        flow = AgentX108ContextFlowResult(
+            x108_decision="BLOCK",
+            x108_gate_status="X108_FAIL_CLOSED",
+            x108_ticket_id="NO_TICKET_PREGATE_FAIL_CLOSED",
+            reason_codes=[PREGATE_FAIL_CLOSED, *validation.violations, *boundary.violations],
+            context_packet_refs=[],
+            **common,
+        )
+        flow.assert_non_sovereign()
+        return flow
+
+    ticket = evaluate_dry_run(
+        [context],
+        critical_action_requested=critical_action_requested,
+    )
+    ticket.validate_invariants()
+
+    flow = AgentX108ContextFlowResult(
+        x108_decision=ticket.decision,
+        x108_gate_status=ticket.x108_gate_status,
+        x108_ticket_id=ticket.ticket_id,
+        reason_codes=list(ticket.reason_codes),
+        context_packet_refs=list(ticket.context_packet_refs),
+        **common,
+    )
+    flow.assert_non_sovereign()
+    return flow
+
+
+def run_agent_x108_context_flow(
+    agent_id: str,
+    action: ActionCandidate,
+) -> AgentX108ContextFlowResult:
+    """
+    Full canonical path: registered agent -> AgentResult -> ContextPacket -> X108.
+
+    Raises KeyError for an unknown agent and fails closed on any sovereignty
+    violation raised upstream by the agent contracts or the canonical binder.
+    """
+    result = run_registered_agent(agent_id, action)
+    result.assert_non_sovereign()
+
+    context = agent_result_to_context_packet(result)
+
+    return admit_agent_context(
+        context,
+        result,
+        critical_action_requested=is_critical_action(action, result),
+    )
+
+#####################################################################
+FILE: runtime_wiring/x108_admission_stub.py
+#####################################################################
+# runtime_wiring/x108_admission_stub.py
+# X108 admission stub â€” deterministic, dry-run only
+# Priority: BLOCK > HOLD > ALLOW_CONTEXT_ONLY (aggregate4_fail_closed)
+# Never emits ACT. No real proof chain.
+# stdlib only â€” no import from apps/, periphery/, connectors/
+
+from __future__ import annotations
+import hashlib
+from datetime import datetime, timezone
+from typing import List, Optional
+
+from .packet_types import (
+    ContextPacket,
+    DecisionTicketDryRun,
+    IntentEnvelope,
+)
+
+
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _make_ticket_id(envelope_ref: str) -> str:
+    digest = hashlib.sha256(f"DT:{envelope_ref}".encode()).hexdigest()[:16]
+    return f"dt-dryrun-{digest}"
+
+
+def _detect_boundary_violations(packets: List[ContextPacket]) -> List[str]:
+    violations = []
+    for pkt in packets:
+        if pkt.emits_act:
+            violations.append(f"VIOLATION:emits_act_true:{pkt.context_id}")
+        if pkt.emits_decision:
+            violations.append(f"VIOLATION:emits_decision_true:{pkt.context_id}")
+        if pkt.decision_authority != "KX108_ONLY":
+            violations.append(f"VIOLATION:bad_decision_authority:{pkt.context_id}")
+        if not pkt.advisory_only:
+            violations.append(f"VIOLATION:advisory_only_false:{pkt.context_id}")
+        if not pkt.readonly:
+            violations.append(f"VIOLATION:readonly_false:{pkt.context_id}")
+        if pkt.runtime_allowed_now:
+            violations.append(f"VIOLATION:runtime_allowed_now_true:{pkt.context_id}")
+    return violations
+
+
+def evaluate_dry_run(
+    packets: List[ContextPacket],
+    envelope: Optional[IntentEnvelope] = None,
+    critical_action_requested: bool = False,
+) -> DecisionTicketDryRun:
+    """
+    X108 admission stub â€” deterministic decision (BLOCK > HOLD > ALLOW_CONTEXT_ONLY).
+
+    Rule 1: boundary violation on any packet â†’ BLOCK
+    Rule 2: critical_action_requested=True â†’ HOLD
+    Rule 3/4: otherwise â†’ ALLOW_CONTEXT_ONLY
+
+    Never returns ACT. Never a real ALLOW.
+    """
+    now = _utcnow()
+    envelope_ref = envelope.intent_id if envelope else "NO_ENVELOPE_DRY_RUN"
+    ticket_id = _make_ticket_id(envelope_ref)
+    context_refs = [pkt.context_id for pkt in packets]
+
+    # Rule 1: boundary violations â†’ BLOCK
+    violations = _detect_boundary_violations(packets)
+    if violations:
+        ticket = DecisionTicketDryRun(
+            ticket_id=ticket_id,
+            intent_envelope_ref=envelope_ref,
+            decision="BLOCK",
+            reason_codes=["BOUNDARY_VIOLATION"] + violations,
+            x108_gate_status="X108_FAIL_CLOSED",
+            timestamp_or_tick=now,
+            context_packet_refs=context_refs,
+            notes="Boundary violation detected â€” fail_closed â†’ BLOCK",
+        )
+        ticket.validate_invariants()
+        return ticket
+
+    # Rule 2: critical action requested â†’ HOLD
+    if critical_action_requested:
+        reason = ["CRITICAL_ACTION_REQUIRES_HOLD", "DRY_RUN_NO_REAL_GATE"]
+        if envelope:
+            reason.append(f"INTENT:{envelope.action_candidate_type}:{envelope.criticality_level}")
+        ticket = DecisionTicketDryRun(
+            ticket_id=ticket_id,
+            intent_envelope_ref=envelope_ref,
+            decision="HOLD",
+            reason_codes=reason,
+            x108_gate_status="X108_EVALUATED_DRY_RUN",
+            timestamp_or_tick=now,
+            context_packet_refs=context_refs,
+            notes="Critical action â†’ HOLD. X108 gate required before any real execution.",
+        )
+        ticket.validate_invariants()
+        return ticket
+
+    # Rule 3 & 4: ALLOW_CONTEXT_ONLY
+    reason = ["CONTEXT_ADVISORY_ONLY", "NO_CRITICAL_ACTION", "DRY_RUN_READONLY"]
+    if envelope:
+        reason.append(f"INTENT:{envelope.action_candidate_type}")
+    ticket = DecisionTicketDryRun(
+        ticket_id=ticket_id,
+        intent_envelope_ref=envelope_ref,
+        decision="ALLOW_CONTEXT_ONLY",
+        reason_codes=reason,
+        x108_gate_status="X108_EVALUATED_DRY_RUN",
+        timestamp_or_tick=now,
+        context_packet_refs=context_refs,
+        notes="Context advisory acknowledged. ALLOW_CONTEXT_ONLY â€” no world action, no real ALLOW.",
+    )
+    ticket.validate_invariants()
+    return ticket
+
+#####################################################################
+FILE: periphery/context/context_packet_validator.py
+#####################################################################
+"""
+Context Packet Validator â€” enforces sovereignty invariants on a context packet dict.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+_REQUIRED_READONLY_FIELDS = {
+    "readonly": True,
+    "context_signal_only": True,
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": False,
+    "allowed_to_act": False,
+    "kernel_mutation": False,
+    "memory_write": False,
+}
+
+
+@dataclass
+class ContextPacketValidationResult:
+    packet_id: str
+    valid: bool
+    violations: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "packet_id": self.packet_id,
+            "valid": self.valid,
+            "violations": self.violations,
+        }
+
+
+def validate_context_packet(packet: dict[str, Any]) -> ContextPacketValidationResult:
+    packet_id = packet.get("packet_id", "unknown")
+    violations: list[str] = []
+
+    for field_name, expected in _REQUIRED_READONLY_FIELDS.items():
+        actual = packet.get(field_name)
+        if actual != expected:
+            violations.append(
+                f"INVARIANT_VIOLATED:{field_name}=={actual!r} expected {expected!r}"
+            )
+
+    return ContextPacketValidationResult(
+        packet_id=packet_id,
+        valid=len(violations) == 0,
+        violations=violations,
+    )
+
+=====================================================================
+5 — EXISTING KX108 DECISION / ACT / EXECUTION SURFACES
+=====================================================================
+
+--- DECISION SURFACES ---
+
+
+--- ACT / AUTHORIZATION SURFACES ---
+
+
+--- EXECUTION SURFACES ---
+
+
+=====================================================================
+6 — DUMP MOST RELEVANT EXECUTION/GATE FILES
+=====================================================================
+
+#####################################################################
+FILE: runtime_wiring/source_runtime/action_gateway_hold_block_sandbox.py
+#####################################################################
+"""
+P54 â€” Action Gateway Hold/Block Sandbox.
+
+Connects P53 dry-run packet to a real HOLD/BLOCK evaluation via
+runtime_wiring.x108_admission_stub.evaluate_dry_run().
+
+BLOCK > HOLD > ALLOW_CONTEXT_ONLY â€” priority order from x108_admission_stub.
+NEVER ACT. NEVER real_action_enabled. NEVER runtime_allowed_now=True.
+KX108_ONLY. emits_act=False at all times.
+
+Mapping:
+  EMAIL_SEND       â†’ BLOCK
+  BLOCKCHAIN_TX    â†’ BLOCK
+  MEMORY_WRITE     â†’ BLOCK
+  GRAPHITI_WRITE   â†’ BLOCK
+  EXTERNAL_API_CALLâ†’ BLOCK
+  FILE_MUTATION    â†’ HOLD
+  GENERAL_ACTION   â†’ HOLD
+  NO_ACTION        â†’ ALLOW_CONTEXT_ONLY
+"""
+from __future__ import annotations
+
+import hashlib
+from datetime import datetime, timezone
+
+_BOUNDARY = {
+    "readonly": True,
+    "emits_act": False,
+    "real_action_enabled": False,
+    "can_execute_real_action": False,
+    "memory_write": False,
+    "graphiti_write": False,
+    "neo4j_write": False,
+    "kernel_mutation": False,
+    "x108_mutation": False,
+    "world_action": False,
+    "decision_authority": "KX108_ONLY",
+    "runtime_allowed_now": False,
+    "x108_required_before_act": True,
+}
+
+# Sandbox verdict mapping â€” action type â†’ verdict
+_BLOCK_ACTION_TYPES = frozenset({
+    "EMAIL_SEND",
+    "BLOCKCHAIN_TX",
+    "MEMORY_WRITE",
+    "GRAPHITI_WRITE",
+    "EXTERNAL_API_CALL",
+})
+_HOLD_ACTION_TYPES = frozenset({
+    "FILE_MUTATION",
+    "GENERAL_ACTION",
+})
+
+# Action type patterns (same as P53 for consistency)
+_ACTION_PATTERNS: list[tuple[list[str], str, str]] = [
+    (["mail", "email", "envoie", "envoyer", "send mail", "send email"],
+     "EMAIL_SEND", "HIGH"),
+    (["transaction", "blockchain", "crypto", "wallet", "token", "gencoin",
+      "defi", "dÃ©fi", "on-chain", "onchain", "smart contract", "nft"],
+     "BLOCKCHAIN_TX", "CRITICAL"),
+    (["Ã©cris en mÃ©moire", "Ã©crire en mÃ©moire", "write memory", "sauvegarde mÃ©moire",
+      "memory write", "save to memory", "enregistre en mÃ©moire"],
+     "MEMORY_WRITE", "HIGH"),
+    (["graphiti write", "Ã©crire graphiti", "neo4j write", "Ã©crire neo4j",
+      "write graphiti", "write neo4j"],
+     "GRAPHITI_WRITE", "HIGH"),
+    (["appelle une api", "api externe", "appel api", "external api",
+      "webhook", "http post", "http put", "curl", "requests.post"],
+     "EXTERNAL_API_CALL", "HIGH"),
+    (["modifie ce fichier", "modify file", "file mutation", "write file",
+      "edit file", "delete file", "Ã©crire fichier"],
+     "FILE_MUTATION", "MEDIUM"),
+    (["fais une action", "exÃ©cute", "execute", "run action", "lance une action",
+      "perform action", "do action"],
+     "GENERAL_ACTION", "MEDIUM"),
+]
+
+
+def _detect_action_type(query: str) -> tuple[bool, str, str]:
+    q = query.lower()
+    for keywords, action_type, risk_class in _ACTION_PATTERNS:
+        if any(kw in q for kw in keywords):
+            return True, action_type, risk_class
+    return False, "NO_ACTION", "NONE"
+
+
+def _classify_sandbox_verdict(action_type: str) -> str:
+    if action_type in _BLOCK_ACTION_TYPES:
+        return "BLOCK"
+    if action_type in _HOLD_ACTION_TYPES:
+        return "HOLD"
+    return "ALLOW_CONTEXT_ONLY"
+
+
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _make_context_id(query: str) -> str:
+    digest = hashlib.sha256(f"P54:{query[:80]}".encode()).hexdigest()[:12]
+    return f"p54-ctx-{digest}"
+
+
+def _run_x108_evaluation(action_detected: bool, action_type: str) -> dict:
+    """
+    Call the real evaluate_dry_run() with a valid ContextPacket.
+    critical_action_requested=True for any detected action â†’ HOLD from x108 stub.
+    The sandbox then overrides to BLOCK for high-risk action types.
+    Never passes a packet with boundary violations.
+    """
+    try:
+        from runtime_wiring.x108_admission_stub import evaluate_dry_run
+        from runtime_wiring.packet_types import ContextPacket
+
+        pkt = ContextPacket(
+            context_id=_make_context_id(action_type),
+            source="P54_ACTION_GATEWAY_SANDBOX",
+            source_status="SPEC_FUTURE",
+            claim_scope="CLAIMABLE_SPEC_ONLY",
+            boundary="P54_SANDBOX_DRY_RUN",
+            timestamp_or_tick=_utcnow(),
+            advisory_only=True,
+            readonly=True,
+            runtime_allowed_now=False,
+            emits_act=False,
+            emits_decision=False,
+            decision_authority="KX108_ONLY",
+            labels=["P54", "ACTION_GATEWAY", action_type],
+            notes=f"P54 sandbox packet for action_type={action_type}",
+        )
+        pkt.validate_invariants()
+
+        ticket = evaluate_dry_run(
+            packets=[pkt],
+            envelope=None,
+            critical_action_requested=action_detected,
+        )
+
+        return {
+            "x108_evaluation_status": "EVALUATED",
+            "x108_ticket_id": ticket.ticket_id,
+            "x108_decision": ticket.decision,
+            "x108_gate_status": ticket.x108_gate_status,
+            "x108_reason_codes": ticket.reason_codes,
+            "x108_dry_run": ticket.dry_run,
+            "x108_emits_act": ticket.emits_act,
+            "x108_error": None,
+        }
+    except Exception as exc:
+        return {
+            "x108_evaluation_status": "EVALUATION_ERROR",
+            "x108_decision": "BLOCK",
+            "x108_gate_status": "X108_FAIL_CLOSED",
+            "x108_reason_codes": ["EVALUATION_ERROR", type(exc).__name__],
+            "x108_dry_run": True,
+            "x108_emits_act": False,
+            "x108_error": type(exc).__name__,
+        }
+
+
+def build_action_gateway_sandbox_state(query: str = "") -> dict:
+    """
+    Return the P54 Action Gateway Hold/Block sandbox state for a query.
+
+    Uses real runtime_wiring.x108_admission_stub.evaluate_dry_run().
+    Sandbox verdict: BLOCK > HOLD > ALLOW_CONTEXT_ONLY.
+    real_action_enabled=False, emits_act=False at all times.
+    """
+    action_detected, action_type, risk_class = _detect_action_type(query)
+    sandbox_verdict = _classify_sandbox_verdict(action_type)
+
+    # Run real X108 evaluation
+    x108_eval = _run_x108_evaluation(action_detected, action_type)
+
+    # Sandbox can override x108 HOLD to BLOCK for high-risk types
+    # (x108 stub returns HOLD for critical_action_requested=True,
+    #  sandbox adds BLOCK override for _BLOCK_ACTION_TYPES)
+    final_sandbox_verdict = sandbox_verdict  # sandbox authority wins
+
+    act_blocked_reason = "P54_SANDBOX_NO_ACT"
+    if action_type in _BLOCK_ACTION_TYPES:
+        act_blocked_reason = f"P54_SANDBOX_BLOCK_{action_type}"
+    elif action_type in _HOLD_ACTION_TYPES:
+        act_blocked_reason = f"P54_SANDBOX_HOLD_{action_type}_PENDING_KX108"
+
+    return {
+        "audit_id": "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX",
+        "audit_date": "2026-06-04",
+        # Sandbox status
+        "action_gateway_sandbox_status": "ACTIVE_HOLD_BLOCK_SANDBOX",
+        "activation_level": "LEVEL_3_HOLD_GATE_CANDIDATE",
+        "sandbox_enabled": True,
+        # Sandbox verdict
+        "sandbox_verdict": final_sandbox_verdict,
+        "act_blocked_reason": act_blocked_reason,
+        # Action detection
+        "action_request_detected": action_detected,
+        "detected_action_type": action_type,
+        "action_risk_class": risk_class,
+        # X108 evaluation
+        "x108_evaluation": x108_eval,
+        "x108_ticket_id": x108_eval.get("x108_ticket_id", ""),
+        "x108_gate_decision": x108_eval.get("x108_decision", "BLOCK"),
+        # Invariants â€” always False
+        "can_evaluate_hold_block": True,
+        "can_emit_act": False,
+        "allowed_to_act": False,
+        "p54_status": "P54_ACTION_GATEWAY_HOLD_BLOCK_SANDBOX_READY",
+        **_BOUNDARY,
+    }
+
+#####################################################################
+FILE: scripts/kernel/kx108_operational_loop_contract_v1.py
+#####################################################################
+"""
+CG14 KX108 Operational Loop Contract V1
+"""
+
+
+class KX108OperationalLoopContract:
+
+    def __init__(self):
+
+        self.observation_state = None
+        self.decision_state = None
+        self.execution_state = None
+        self.action_state = None
+        self.feedback_state = None
+
+        self.memory_write = False
+        self.kernel_mutation = False
+
+
+    def create_loop(
+        self,
+        context: dict,
+    ):
+
+        self.observation_state = context
+
+        return {
+            "loop_status": "OBSERVATION_ACCEPTED",
+            "next_state": "DECISION",
+        }
+
+
+    def update_feedback(
+        self,
+        feedback: dict,
+    ):
+
+        self.feedback_state = feedback
+
+        return {
+            "loop_status": "FEEDBACK_RECEIVED",
+            "next_state": "NEW_CONTEXT",
+        }
+
+
+    def status(self):
+
+        return {
+            "memory_write": self.memory_write,
+            "kernel_mutation": self.kernel_mutation,
+            "loop_closed": False,
+        }
+
+#####################################################################
+FILE: scripts/kernel/kx108_execution_boundary_v1.py
+#####################################################################
+"""
+CG12 KX108 Execution Boundary V1
+"""
+
+
+class KX108ExecutionBoundary:
+
+    def __init__(self):
+
+        self.execution_authority = False
+        self.memory_write = False
+        self.kernel_mutation = False
+        self.emits_act = False
+
+
+    def authorize(
+        self,
+        audit: dict,
+    ):
+
+        valid = (
+            audit.get("audit_status")
+            == "PASSED"
+        )
+
+        if valid:
+
+            return {
+                "execution_status": "EXECUTION_AUTHORIZED",
+                "decision": None,
+                "act": False,
+            }
+
+        return {
+            "execution_status": "EXECUTION_BLOCKED",
+            "decision": None,
+            "act": False,
+        }
+
+
+    def status(self):
+
+        return {
+            "execution_authority": self.execution_authority,
+            "memory_write": self.memory_write,
+            "kernel_mutation": self.kernel_mutation,
+            "emits_act": self.emits_act,
+        }
+
+#####################################################################
+FILE: scripts/kernel/kx108_act_boundary_v1.py
+#####################################################################
+"""
+CG13 KX108 ACT Boundary V1
+"""
+
+
+class KX108ACTBoundary:
+
+    def __init__(self):
+
+        self.act_authority = False
+        self.execution_authority = False
+        self.memory_write = False
+        self.kernel_mutation = False
+        self.emits_act = False
+
+
+    def evaluate(
+        self,
+        execution_audit: dict,
+    ):
+
+        valid = (
+            execution_audit.get("audit_status")
+            == "PASSED"
+        )
+
+        if valid and self.act_authority:
+
+            return {
+                "act_status": "ACT_AUTHORIZED",
+                "act": True,
+            }
+
+        return {
+            "act_status": "ACT_BLOCKED",
+            "act": False,
+        }
+
+
+    def status(self):
+
+        return {
+            "act_authority": self.act_authority,
+            "execution_authority": self.execution_authority,
+            "memory_write": self.memory_write,
+            "kernel_mutation": self.kernel_mutation,
+            "emits_act": self.emits_act,
+        }
+
+#####################################################################
+FILE: scripts/kernel/kx108_decision_gate_v1.py
+#####################################################################
+ABSENT
+
+#####################################################################
+FILE: scripts/kernel/kernel_decision_gate_v1.py
+#####################################################################
+"""
+CG10 Kernel Decision Gate V1
+"""
+
+
+class KernelDecisionGate:
+
+    def __init__(self):
+
+        self.decision_authority = False
+        self.execution_authority = False
+        self.memory_write = False
+        self.kernel_mutation = False
+        self.emits_act = False
+
+
+    def evaluate(
+        self,
+        audit_result: dict,
+    ):
+
+        audit_passed = (
+            audit_result.get("audit_status")
+            == "PASSED"
+        )
+
+        if audit_passed:
+
+            return {
+                "gate_status": "OPEN_FOR_DECISION",
+                "candidate_verified": True,
+                "decision": None,
+                "act": False,
+            }
+
+        return {
+            "gate_status": "CLOSED",
+            "candidate_verified": False,
+            "decision": None,
+            "act": False,
+        }
+
+
+    def status(self):
+
+        return {
+            "decision_authority": self.decision_authority,
+            "execution_authority": self.execution_authority,
+            "memory_write": self.memory_write,
+            "kernel_mutation": self.kernel_mutation,
+            "emits_act": self.emits_act,
+        }
+
+=====================================================================
+7 — RECEIPT LIFECYCLE / RESULT BINDING
+=====================================================================
+
+
+RECEIPT_CANDIDATES=6
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\kernel\kx108_proof_canonical_receipt_flow_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\providers\brody_runtime_receipt_adapter_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\providers\canonical_runtime_receipt_flow_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\providers\obsidure_runtime_receipt_adapter_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\providers\provider_runtime_receipt_binding_v1.py
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\scripts\providers\provider_runtime_receipt_v1.py
+
+=====================================================================
+8 — FEEDBACK -> NEW CONTEXT SURFACES
+=====================================================================
+
+#####################################################################
+FILE: periphery/feedback_memory_candidate.py
+#####################################################################
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any
+
+@dataclass
+class FeedbackMemoryCandidate:
+    action_id: str
+    source_ticket_id: str
+    memory_write_allowed: bool
+    memory_policy: str
+    candidate_payload: dict[str, Any]
+
+def build_feedback_memory_candidate(action: Any, ticket: Any, feedback: dict[str, Any], memory_status: str = "STABLE") -> FeedbackMemoryCandidate:
+    if memory_status != "STABLE":
+        policy = "FROZEN_IF_UNSTABLE"
+        allowed = False
+    else:
+        policy = "CANDIDATE_ONLY_READONLY_REVIEW_REQUIRED"
+        allowed = False
+
+    return FeedbackMemoryCandidate(
+        action_id=action.action_id,
+        source_ticket_id=getattr(ticket, "ticket_id", "UNKNOWN"),
+        memory_write_allowed=allowed,
+        memory_policy=policy,
+        candidate_payload={"feedback": feedback, "action_id": action.action_id},
+    )
+
+#####################################################################
+FILE: periphery/feedback_memory_bridge_brody_readonly.py
+#####################################################################
+from __future__ import annotations
+
+import hashlib
+import json
+import uuid
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class MemoryCandidatePacket:
+    action_id: str
+    os3_ticket_id: str
+    memory_candidate_id: str
+    status: str
+    memory_write_allowed: bool
+    reason: str
+    evidence_refs: list[str]
+    hash: str
+
+    def assert_no_write(self) -> None:
+        if self.memory_write_allowed:
+            raise AssertionError("MEMORY_WRITE_FORBIDDEN_BRIDGE_READONLY")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "action_id": self.action_id,
+            "os3_ticket_id": self.os3_ticket_id,
+            "memory_candidate_id": self.memory_candidate_id,
+            "status": self.status,
+            "memory_write_allowed": self.memory_write_allowed,
+            "reason": self.reason,
+            "evidence_refs": self.evidence_refs,
+            "hash": self.hash,
+        }
+
+
+def build_memory_candidate(
+    ticket: Any,
+    packet: Any,
+    action_candidate: Any,
+) -> MemoryCandidatePacket:
+    m = packet.extra_metrics
+    memory_status = m.get("memory_status", "STABLE")
+
+    if memory_status == "UNSTABLE":
+        status = "FROZEN"
+        reason = "MEMORY_UNSTABLE_CANDIDATE_FROZEN"
+    elif str(getattr(ticket, "x108_gate", "UNKNOWN")).upper() not in ("ALLOW",):
+        status = "REJECTED"
+        reason = f"X108_GATE_{ticket.x108_gate}_NOT_ALLOW"
+    elif not (ticket.input_hash and ticket.output_hash and ticket.trace_hash):
+        status = "REJECTED"
+        reason = "OS3_TICKET_INVALID_HASHES"
+    else:
+        status = "CANDIDATE_ONLY"
+        reason = "MEMORY_CANDIDATE_READONLY_PENDING_HUMAN_REVIEW"
+
+    candidate_id = uuid.uuid4().hex
+    evidence_refs = list(getattr(packet, "evidence_refs", [])) + [f"os3:{ticket.ticket_id}"]
+
+    payload = {
+        "action_id": action_candidate.action_id,
+        "os3_ticket_id": ticket.ticket_id,
+        "candidate_id": candidate_id,
+        "status": status,
+    }
+    h = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+
+    result = MemoryCandidatePacket(
+        action_id=action_candidate.action_id,
+        os3_ticket_id=ticket.ticket_id,
+        memory_candidate_id=candidate_id,
+        status=status,
+        memory_write_allowed=False,
+        reason=reason,
+        evidence_refs=evidence_refs,
+        hash=h,
+    )
+    result.assert_no_write()
+    return result
+
+#####################################################################
+FILE: tests/periphery/test_feedback_memory_candidate.py
+#####################################################################
+from periphery.common import ActionCandidate, PeripheralSignalPacket
+from periphery.os3_ticket import build_os3_ticket
+from periphery.feedback_memory_candidate import build_feedback_memory_candidate
+
+class DummyEnvelope:
+    def __init__(self, gate='ALLOW', reason='OK'):
+        self.x108_gate = gate
+        self.reason_code = reason
+        self.severity = 'INFO'
+        self.metrics = {}
+        self.unknowns = []
+        self.risk_flags = []
+        self.contradictions = []
+        self.evidence_refs = []
+
+
+def test_feedback_memory_candidate_never_writes():
+    action = ActionCandidate("a", "bank", "actor", "intent", "act", True, "", payload={})
+    packet = PeripheralSignalPacket("a", "bank")
+    ticket = build_os3_ticket(action, packet, DummyEnvelope("ALLOW", "OK"))
+    candidate = build_feedback_memory_candidate(action, ticket, {"ok": True})
+    assert candidate.memory_write_allowed is False
+
+#####################################################################
+FILE: tests/periphery/test_feedback_memory_bridge_readonly.py
+#####################################################################
+import pytest
+from periphery.common import ActionCandidate, PeripheralSignalPacket
+from periphery.os3_ticket import build_os3_ticket
+from periphery.feedback_memory_bridge_brody_readonly import build_memory_candidate, MemoryCandidatePacket
+
+
+def _make_action():
+    return ActionCandidate(
+        action_id="mem_test_001",
+        domain="bank",
+        actor_id="tester",
+        intent="test",
+        action_type="query",
+        irreversible=False,
+        timestamp_plan="2026-05-19T00:00:00Z",
+        payload={},
+    )
+
+
+def _make_envelope(gate="ALLOW"):
+    class E:
+        x108_gate = gate
+        reason_code = "CONFIDENCE_HIGH"
+        severity = "INFO"
+        metrics = {}
+        unknowns = []
+        risk_flags = []
+        contradictions = []
+        evidence_refs = []
+    return E()
+
+
+def test_memory_write_never_allowed():
+    action = _make_action()
+    packet = PeripheralSignalPacket(action_id=action.action_id, domain=action.domain)
+    envelope = _make_envelope()
+    ticket = build_os3_ticket(action, packet, envelope)
+    candidate = build_memory_candidate(ticket, packet, action)
+    assert candidate.memory_write_allowed is False
+
+
+def test_candidate_only_on_allow():
+    action = _make_action()
+    packet = PeripheralSignalPacket(action_id=action.action_id, domain=action.domain)
+    envelope = _make_envelope("ALLOW")
+    ticket = build_os3_ticket(action, packet, envelope)
+    candidate = build_memory_candidate(ticket, packet, action)
+    assert candidate.status == "CANDIDATE_ONLY"
+
+
+def test_rejected_on_hold():
+    action = _make_action()
+    packet = PeripheralSignalPacket(action_id=action.action_id, domain=action.domain)
+    envelope = _make_envelope("HOLD")
+    ticket = build_os3_ticket(action, packet, envelope)
+    candidate = build_memory_candidate(ticket, packet, action)
+    assert candidate.status == "REJECTED"
+    assert candidate.memory_write_allowed is False
+
+
+def test_frozen_on_unstable_memory():
+    action = _make_action()
+    packet = PeripheralSignalPacket(action_id=action.action_id, domain=action.domain)
+    packet.extra_metrics["memory_status"] = "UNSTABLE"
+    envelope = _make_envelope("ALLOW")
+    ticket = build_os3_ticket(action, packet, envelope)
+    candidate = build_memory_candidate(ticket, packet, action)
+    assert candidate.status == "FROZEN"
+    assert candidate.memory_write_allowed is False
+
+
+def test_assert_no_write_raises_if_forced():
+    pkt = MemoryCandidatePacket(
+        action_id="x",
+        os3_ticket_id="y",
+        memory_candidate_id="z",
+        status="CANDIDATE_ONLY",
+        memory_write_allowed=True,
+        reason="test",
+        evidence_refs=[],
+        hash="abc",
+    )
+    with pytest.raises(AssertionError, match="MEMORY_WRITE_FORBIDDEN"):
+        pkt.assert_no_write()
+
+
+=====================================================================
+9 — OPERATIONAL AGENT REGISTRY — REAL INVOCABLE SET
+=====================================================================
+
+#####################################################################
+FILE: periphery/agent_registry.py
+#####################################################################
+from __future__ import annotations
+
+from typing import Callable
+
+from .common import ActionCandidate
+from .agent_contracts import AgentResult
+from .agents import (
+    data_purity_agent,
+    provenance_agent,
+    brody_memory_agent,
+    eml_symbolic_agent,
+    energy_thermo_agent,
+    timeverse_agent,
+    ocs_generation_agent,
+    operational_constance_agent,
+    permission_economic_agent,
+    gencoin_value_agent,
+    os3_proof_agent,
+    action_sequence_agent,
+    feedback_memory_agent,
+    world_action_agent,
+)
+
+AGENT_REGISTRY: dict[str, Callable[[ActionCandidate], AgentResult]] = {
+    data_purity_agent.SPEC.agent_id: data_purity_agent.run,
+    provenance_agent.SPEC.agent_id: provenance_agent.run,
+    brody_memory_agent.SPEC.agent_id: brody_memory_agent.run,
+    eml_symbolic_agent.SPEC.agent_id: eml_symbolic_agent.run,
+    energy_thermo_agent.SPEC.agent_id: energy_thermo_agent.run,
+    timeverse_agent.SPEC.agent_id: timeverse_agent.run,
+    ocs_generation_agent.SPEC.agent_id: ocs_generation_agent.run,
+    operational_constance_agent.SPEC.agent_id: operational_constance_agent.run,
+    permission_economic_agent.SPEC.agent_id: permission_economic_agent.run,
+    gencoin_value_agent.SPEC.agent_id: gencoin_value_agent.run,
+    os3_proof_agent.SPEC.agent_id: os3_proof_agent.run,
+    action_sequence_agent.SPEC.agent_id: action_sequence_agent.run,
+    feedback_memory_agent.SPEC.agent_id: feedback_memory_agent.run,
+    world_action_agent.SPEC.agent_id: world_action_agent.run,
+}
+
+def list_agents() -> list[str]:
+    return sorted(AGENT_REGISTRY)
+
+def run_registered_agent(agent_id: str, action: ActionCandidate) -> AgentResult:
+    if agent_id not in AGENT_REGISTRY:
+        raise KeyError(f"UNKNOWN_AGENT:{agent_id}")
+    result = AGENT_REGISTRY[agent_id](action)
+    result.assert_non_sovereign()
+    return result
+
+OPERATIONAL_REGISTRY_EXIT=0
+
+OPERATIONAL_REGISTRY_TEST_EXIT=0
+
+=====================================================================
+10 — 52 AGENT CONFIG REGISTRY — STRUCTURAL SET
+=====================================================================
+
+#####################################################################
+FILE: periphery/agents_obsidia_config_registry.py
+#####################################################################
+"""
+Readonly configuration registry for the 52 OBSIDIA AI agent configurations.
+
+Source: periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/
+        10_AGENTS_52/agents_52.registry.json
+
+ARCHITECTURE: JSON_FIRST_READONLY_CONFIGURATION_REGISTRY
+AUTHORITY:    NON_SOVEREIGN â€” KX108_ONLY decision authority.
+
+All entries are non-decision and readonly. No agent is invoked, no model is
+called, no memory is written. Semantic validation requires a separate
+human-approved step (NEEDS_HUMAN_VALIDATION preserved for all 52 entries).
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+from dataclasses import dataclass
+from pathlib import Path
+
+_REGISTRY_REL_PARTS = (
+    "periphery",
+    "OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1",
+    "10_AGENTS_52",
+    "agents_52.registry.json",
+)
+
+# Batch 001 â€” explicit mapping from ART118.
+# Source: 118_AGENTS52_FIRST_HUMAN_VALIDATION_BATCH_PROPOSAL_REV2D.csv
+# Never derive ROW_IDs from JSON position, ordinal, name order, or list index.
+_BATCH001_TAG = "AGENTS52_BATCH001"
+_BATCH001_STATUS = "DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY"
+_OTHER_STATUS = "DOCUMENTED_SOURCE_ONLY"
+
+# ART118 explicit mapping: source_row_id â†’ agent name ("name" field in JSON)
+_BATCH001_ROW_MAP: dict[str, str] = {
+    "1811": "SECURITY_FIREWALL_ARCHITECT",
+    "1812": "POLICY_FIREWALL_AGENT",
+    "1813": "RUNTIME_ATTESTATION_AGENT",
+    "1814": "SUPPLY_CHAIN_GUARD",
+    "1815": "SECRET_GUARD",
+}
+_BATCH001_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH001_ROW_MAP.items()}
+
+# Batch 002 â€” explicit mapping from ART150.
+# Source: 150_AGENTS52_BATCH002_HUMAN_VALIDATION_PROPOSAL_REV2D.csv
+# Family: Frise / Arbres / Monde humain
+_BATCH002_TAG = "AGENTS52_BATCH002"
+_BATCH002_STATUS = "DOCUMENTED_AGENT_CONFIG_REGISTERED_READONLY"
+
+_BATCH002_ROW_MAP: dict[str, str] = {
+    "1821": "FRISE_HUMAINE",
+    "1822": "CARTOGRAPHE_34_ARBRES",
+    "1823": "HUMAN_HISTORY_MAPPER",
+    "1824": "CALIBRATION_PROCEDURALE",
+    "1825": "NUAGE_POINTS",
+}
+_BATCH002_AGENT_TO_ROW: dict[str, str] = {v: k for k, v in _BATCH002_ROW_MAP.items()}
+
+
+@dataclass(frozen=True)
+class AgentConfigEntry:
+    """Immutable configuration entry for an OBSIDIA AI agent. Never executable."""
+
+    # Core identity
+    agent_id: str
+    name: str
+    family: str
+    role: str
+    input_contract: str
+    output_contract: str
+    non_decision: bool
+    boundary: str
+    deployment: str
+    validation_status: str
+
+    # Provenance â€” relative paths only; no absolute machine paths exposed
+    source_path: str
+    source_reference: str
+    source_registry_sha256: str
+    source_row_id: str | None
+
+    # Compilation
+    compilation_batch: str | None
+    compilation_status: str
+
+    # Authority â€” always hardcoded; never sourced from JSON input
+    authority: str = "NON_SOVEREIGN"
+    readonly: bool = True
+    can_decide: bool = False
+    can_act: bool = False
+    emits_act: bool = False
+    memory_write: bool = False
+    graphiti_write: bool = False
+    neo4j_write: bool = False
+
+
+def _repo_root() -> Path:
+    # __file__ = periphery/agents_obsidia_config_registry.py
+    # .parent   = periphery/
+    # .parent   = repo root
+    return Path(__file__).resolve().parent.parent
+
+
+def _registry_path() -> Path:
+    return _repo_root().joinpath(*_REGISTRY_REL_PARTS)
+
+
+def _rel_path() -> str:
+    return "/".join(_REGISTRY_REL_PARTS)
+
+
+# Module-level cache â€” loaded once, never mutated after construction.
+_CACHE: tuple[AgentConfigEntry, ...] | None = None
+_CACHE_SHA: str = ""
+
+
+def _build_entry(raw: dict, sha256: str) -> AgentConfigEntry:
+    name: str = str(raw.get("name") or raw.get("nom") or "")
+    entry_id: str = str(raw.get("id", ""))
+    rel = _rel_path()
+
+    # Authority violation check.
+    # If JSON asserts decision or action capability, classify AUTHORITY_REVIEW_REQUIRED.
+    # Do not silently normalise a conflicting entry.
+    authority_violation = (
+        bool(raw.get("can_decide", False))
+        or bool(raw.get("can_act", False))
+        or bool(raw.get("emits_act", False))
+        or bool(raw.get("memory_write", False))
+        or not bool(raw.get("non_decision", True))
+    )
+
+    if authority_violation:
+        c_batch: str | None = None
+        row_id: str | None = None
+        c_status = "AUTHORITY_REVIEW_REQUIRED"
+    elif name in _BATCH001_AGENT_TO_ROW:
+        row_id = _BATCH001_AGENT_TO_ROW[name]
+        c_batch = _BATCH001_TAG
+        c_status = _BATCH001_STATUS
+    elif name in _BATCH002_AGENT_TO_ROW:
+        row_id = _BATCH002_AGENT_TO_ROW[name]
+        c_batch = _BATCH002_TAG
+        c_status = _BATCH002_STATUS
+    else:
+        row_id = None
+        c_batch = None
+        c_status = _OTHER_STATUS
+
+    return AgentConfigEntry(
+        agent_id=name,
+        name=name,
+        family=str(raw.get("family") or raw.get("famille") or ""),
+        role=str(raw.get("role") or ""),
+        input_contract=str(raw.get("input") or ""),
+        output_contract=str(raw.get("output") or raw.get("sortie_principale") or ""),
+        non_decision=True,  # hardcoded; JSON confirmed True for all 52 entries
+        boundary=str(raw.get("boundary") or ""),
+        deployment=str(raw.get("deployment") or raw.get("deploiement") or ""),
+        validation_status=str(raw.get("status") or "NEEDS_HUMAN_VALIDATION"),
+        source_path=rel,
+        source_reference=f"{rel}#id={entry_id}",
+        source_registry_sha256=sha256,
+        source_row_id=row_id,
+        compilation_batch=c_batch,
+        compilation_status=c_status,
+        # Authority â€” always hardcoded regardless of JSON content
+        authority="NON_SOVEREIGN",
+        readonly=True,
+        can_decide=False,
+        can_act=False,
+        emits_act=False,
+        memory_write=False,
+        graphiti_write=False,
+        neo4j_write=False,
+    )
+
+
+def load_registry() -> tuple[AgentConfigEntry, ...]:
+    """Load agents_52.registry.json; return immutable tuple. Cached after first call."""
+    global _CACHE, _CACHE_SHA
+    if _CACHE is not None:
+        return _CACHE
+    path = _registry_path()
+    raw_bytes = path.read_bytes()
+    sha256 = hashlib.sha256(raw_bytes).hexdigest()
+    raw_list: list[dict] = json.loads(raw_bytes)
+    _CACHE_SHA = sha256
+    _CACHE = tuple(_build_entry(e, sha256) for e in raw_list)
+    return _CACHE
+
+
+def validate_registry() -> dict:
+    """Validate registry integrity; return diagnostic summary."""
+    entries = load_registry()
+    batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
+    technically_compiled = batch1 + batch2
+    return {
+        "entry_count": len(entries),
+        "unique_ids": len({e.agent_id for e in entries}),
+        "all_non_decision": all(e.non_decision for e in entries),
+        "all_readonly": all(e.readonly for e in entries),
+        "all_no_act": all(not e.can_act for e in entries),
+        "all_no_decide": all(not e.can_decide for e in entries),
+        "all_no_emits_act": all(not e.emits_act for e in entries),
+        "all_no_memory_write": all(not e.memory_write for e in entries),
+        "all_no_graphiti_write": all(not e.graphiti_write for e in entries),
+        "all_no_neo4j_write": all(not e.neo4j_write for e in entries),
+        "batch001_count": len(batch1),
+        "batch002_count": len(batch2),
+        "technically_compiled_readonly_count": len(technically_compiled),
+        "documented_source_only_count": len(entries) - len(technically_compiled),
+        "other_count": len(entries) - len(batch1),
+        "validation_status_uniform": all(
+            e.validation_status == "NEEDS_HUMAN_VALIDATION" for e in entries
+        ),
+        "authority_uniform": all(e.authority == "NON_SOVEREIGN" for e in entries),
+        "source_sha256": _CACHE_SHA,
+    }
+
+
+def get_agent_config(agent_id: str) -> AgentConfigEntry:
+    """Return AgentConfigEntry for agent_id. Raises KeyError if unknown."""
+    for e in load_registry():
+        if e.agent_id == agent_id:
+            return e
+    raise KeyError(f"UNKNOWN_AGENT_CONFIG:{agent_id}")
+
+
+def list_agent_configs() -> list[str]:
+    """Return sorted list of all agent_id strings."""
+    return sorted(e.agent_id for e in load_registry())
+
+
+def list_agents_by_family(family: str) -> list[AgentConfigEntry]:
+    """Return entries matching family, sorted by agent_id."""
+    return sorted(
+        (e for e in load_registry() if e.family == family),
+        key=lambda e: e.agent_id,
+    )
+
+
+def get_registry_provenance() -> dict:
+    """Return provenance metadata: relative source path, SHA256, counts, batch info."""
+    load_registry()
+    entries = _CACHE or ()
+    batch1 = [e for e in entries if e.compilation_batch == _BATCH001_TAG]
+    batch2 = [e for e in entries if e.compilation_batch == _BATCH002_TAG]
+    return {
+        "source_path": _rel_path(),
+        "source_sha256": _CACHE_SHA,
+        "entry_count": len(entries),
+        "readonly": True,
+        "authority": "NON_SOVEREIGN",
+        "can_decide": False,
+        "can_act": False,
+        "emits_act": False,
+        "memory_write": False,
+        "batch_compiled": _BATCH001_TAG,
+        "batch_compiled_count": len(batch1),
+        "batch_compiled_agent_ids": sorted(e.agent_id for e in batch1),
+        "batch002_compiled": _BATCH002_TAG,
+        "batch002_compiled_count": len(batch2),
+        "batch002_compiled_agent_ids": sorted(e.agent_id for e in batch2),
+        "technically_compiled_readonly_count": len(batch1) + len(batch2),
+    }
+AGENTS52_REGISTRY_FILES=2
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\periphery\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\10_AGENTS_52\agents_52.registry.json
+C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-cg9-provider-source\periphery\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\19_REGISTRES_JSON\agents_52.registry.json
+
+AGENTS52_TEST_EXIT=1
+
+=====================================================================
+11 — AUTHORITY ESCALATION AUDIT — SAFE POWERSHELL QUOTING
+=====================================================================
+
+AUTHORITY_RG_EXIT=0
+
+=====================================================================
+12 — TARGETED CANONICAL RUNTIME TESTS
+=====================================================================
+RUNTIME_TEST_COUNT=5
+
+RUNTIME_TEST_EXIT=0
+
+=====================================================================
+13 — EXECUTION BOUNDARY TEST CLUSTER
+=====================================================================
+EXECUTION_TEST_COUNT=8
+
+EXECUTION_TEST_EXIT=0
+
+=====================================================================
+14 — PYTEST CURRENT COLLECTION
+=====================================================================
+
+COLLECT_EXIT=0
+
+=====================================================================
+15 — FULL CURRENT REGRESSION
+=====================================================================
+
+PS>Erreur de terminaison () : « Le pipeline a été arrêté. »
+>> Erreur de terminaison () : « Le pipeline a été arrêté. »
+>> $global:?
+True
+**********************
+Fin de la transcription Windows PowerShell
+Heure de fin : 20260905170756
+**********************

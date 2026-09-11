@@ -89,10 +89,34 @@ _CAUSAL_PATTERNS: list[str] = [
 ]
 
 _MEMORY_PATTERNS: list[str] = [
-    r"\bm[eé]moire\b", r"\bgraphiti\b", r"\bneo4j\b",
+    r"\bm[eé]moire\b",
     r"\bcandidats?\b", r"\bmes\s+sources\b", r"\bhistoriques?\b",
     r"\bbrody\s+(memory|doc)\b", r"\bsession\s+pr[eé]c[eé]dents?\b",
 ]
+
+_MEMORY_RECALL_VERB_PATTERNS: list[str] = [
+    r"\brappell(?:e|es|er|ez)\b",
+    r"\breprends?\b",
+    r"\bretrouve(?:r)?\b",
+    r"\bsouviens(?:[\s\-]+toi)?\b",
+    r"\br[eé]cup[eè]re(?:r|z)?\b",
+    r"\bremember\b",
+    r"\brecall\b",
+    r"\bretrieve\b",
+]
+
+_MEMORY_RECALL_CONTEXT_PATTERNS: list[str] = [
+    r"\bm[eé]moire\b",
+    r"\bhistoriques?\b",
+    r"\bsession\s+pr[eé]c[eé]dent(?:e|es|s)?\b",
+    r"\bcontexte\s+pr[eé]c[eé]dent(?:e|es|s)?\b",
+    r"\bconversation\s+pr[eé]c[eé]dent(?:e|es|s)?\b",
+    r"\bm[eé]moris[eé](?:e|es|s|r)?\b",
+    r"\bstored\s+(?:memory|context)\b",
+    r"\bprevious\s+(?:session|memory|context|conversation)\b",
+]
+
+_EXPLICIT_MEMORY_RECALL_SCORE = 0.85
 
 _BIO_PATTERNS: list[str] = [
     r"\bpiste\b", r"\bpistage\b", r"\binstinct\b", r"\bterrain\b",
@@ -157,6 +181,31 @@ def _count(text: str, patterns: list[str]) -> int:
     return sum(1 for p in patterns if re.search(p, text))
 
 
+def _detect_explicit_memory_recall(msg_lower: str) -> bool:
+    """
+    Detect an explicit user intent to retrieve prior context.
+
+    This is intentionally conjunctive:
+      recall verb AND memory/history/previous-context target.
+
+    A mere mention of "memory" must not activate retrieval.
+    """
+    has_recall_action = _match(
+        msg_lower,
+        _MEMORY_RECALL_VERB_PATTERNS,
+    )
+
+    has_recall_target = _match(
+        msg_lower,
+        _MEMORY_RECALL_CONTEXT_PATTERNS,
+    )
+
+    return bool(
+        has_recall_action
+        and has_recall_target
+    )
+
+
 def _detect_adversarial(msg_lower: str) -> tuple[bool, str]:
     for p in _ADVERSARIAL_PATTERNS:
         if re.search(p, msg_lower):
@@ -188,7 +237,7 @@ def _detect_weak_signals(msg_lower: str) -> list[str]:
     return found
 
 
-def _bio_animal_signal(msg_lower: str, is_adversarial: bool, memory_count: int) -> dict[str, Any]:
+def _bio_animal_signal(msg_lower: str, is_adversarial: bool, memory_count: int, explicit_memory_recall: bool = False) -> dict[str, Any]:
     bio_count = _count(msg_lower, _BIO_PATTERNS)
     weak_signals = _detect_weak_signals(msg_lower)
 
@@ -205,7 +254,7 @@ def _bio_animal_signal(msg_lower: str, is_adversarial: bool, memory_count: int) 
 
     dead_path: list[str] = []
     if is_adversarial:
-        dead_path = ["graphiti_topk_layer", "symbolic_layer", "fractal_layer"]
+        dead_path = ["memory_selector_layer", "symbolic_layer", "fractal_layer"]
 
     survival_risk = is_adversarial or _match(msg_lower, _IRREVERSIBLE_PATTERNS)
 
@@ -217,7 +266,19 @@ def _bio_animal_signal(msg_lower: str, is_adversarial: bool, memory_count: int) 
     if bio_count > 0:
         adaptive_route.append("bio_animal_coherence_layer")
 
-    memory_relevance = min(1.0, memory_count * 0.25)
+    memory_relevance = min(
+        1.0,
+        memory_count * 0.25,
+    )
+
+    # Explicit retrieval intent is structurally stronger than
+    # independent lexical mentions. It does not authorize anything:
+    # it only raises the readonly memory-relevance signal.
+    if explicit_memory_recall:
+        memory_relevance = max(
+            memory_relevance,
+            _EXPLICIT_MEMORY_RECALL_SCORE,
+        )
 
     return {
         "path_coherence_score": round(path_coherence, 3),
@@ -229,7 +290,13 @@ def _bio_animal_signal(msg_lower: str, is_adversarial: bool, memory_count: int) 
         "trace_following_score": round(trace_following, 3),
         "survival_risk_flag": survival_risk,
         "adaptive_route_suggestion": adaptive_route,
-        "memory_relevance_signal": round(memory_relevance, 3),
+        "memory_relevance_signal": round(
+            memory_relevance,
+            3,
+        ),
+        "explicit_memory_recall": bool(
+            explicit_memory_recall
+        ),
     }
 
 
@@ -311,8 +378,23 @@ def run_micro_core(
     }
 
     # ── 7. Bio animal signal ──────────────────────────────────────────────────
-    memory_count = _count(msg_lower, _MEMORY_PATTERNS)
-    bio_animal_signal = _bio_animal_signal(msg_lower, is_adversarial, memory_count)
+    memory_count = _count(
+        msg_lower,
+        _MEMORY_PATTERNS,
+    )
+
+    explicit_memory_recall = (
+        _detect_explicit_memory_recall(
+            msg_lower
+        )
+    )
+
+    bio_animal_signal = _bio_animal_signal(
+        msg_lower,
+        is_adversarial,
+        memory_count,
+        explicit_memory_recall,
+    )
 
     # ── 8. Balance signal (stub — full in BrodyBalanceEngine) ─────────────────
     balance_signal: dict[str, Any] = {
@@ -389,7 +471,6 @@ def run_micro_core(
         "latency_ms": round(elapsed_ms, 3),
         "budget_bytes": 1792,
         "io_external": False,
-        "graphiti_used": False,
         "emits_act": False,
         "decision_authority": "KX108_ONLY",
         "advisory_only": True,
@@ -415,5 +496,8 @@ def run_micro_core(
         "domain_detected": domain,
         "temporal_detected": temporal_detected,
         "proof_detected": proof_detected,
-        "memory_relevant": memory_count > 0,
+        "memory_relevant": bool(
+            memory_count > 0
+            or explicit_memory_recall
+        ),
     }

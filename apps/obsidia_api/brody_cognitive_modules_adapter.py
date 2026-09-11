@@ -28,7 +28,7 @@ _MODULES = [
     {"name": "LTCU+", "resolution": "TEST_ONLY", "covered_by": "hexaflux_transition tests", "branchable": False, "active": False},
     {"name": "Verbatia", "resolution": "FULLY_BRANCHED", "covered_by": "brody_true_voice_adapter.py", "branchable": True, "active": True},
     {"name": "Inference_Aubin", "resolution": "PARTIALLY_COVERED", "covered_by": "brody_rights_authority_matrix.py, semantic_query_router", "branchable": True, "active": True},
-    {"name": "MEMZUM", "resolution": "FULLY_BRANCHED", "covered_by": "project_memory_snapshot, session_memory_snapshot, memory_response_chain, Graphiti", "branchable": True, "active": True},
+    {"name": "MEMZUM", "resolution": "FULLY_BRANCHED", "covered_by": "project_memory_snapshot, session_memory_snapshot, memory_response_chain, OBSIDIA_NATIVE_MEMORY", "branchable": True, "active": True},
     {"name": "Capsule_Evolution", "resolution": "COVERED_BY_EXISTING_MODULE", "covered_by": "temporal_context.future_context, candidate_memory_snapshot", "branchable": True, "active": True},
     {"name": "Horloge_Cognitive", "resolution": "PROOF_ONLY", "covered_by": "Temporal*.lean (5 proofs)", "branchable": False, "active": True},
     {"name": "Cristal_Sortie", "resolution": "FULLY_BRANCHED", "covered_by": "brody_true_voice_adapter.py, brody_text_encoding.py", "branchable": True, "active": True},

@@ -1,8 +1,8 @@
 """
 brody_memory_candidate_builder — V3 Block 3B
 Readonly candidate builder. Transforms a memory_trace_packet (Block 3A)
-into a structured memory_candidate. No IO. No network. No Graphiti write.
-No Neo4j write. No canonical write. No ACT. DECISION_AUTHORITY=KX108_ONLY.
+into a structured memory_candidate. No IO. No network. Provider-neutral.
+No memory write. No canonical write. No ACT. DECISION_AUTHORITY=KX108_ONLY.
 """
 from __future__ import annotations
 
@@ -179,8 +179,7 @@ class BrodyMemoryCandidateBuilder:
     # Structural invariants — never mutable
     READONLY: bool = True
     CANONICAL_WRITE: bool = False
-    GRAPHITI_WRITE: bool = False
-    NEO4J_WRITE: bool = False
+    MEMORY_WRITE: bool = False
     KERNEL_MUTATION: bool = False
     EMITS_ACT: bool = False
     DECISION_AUTHORITY: str = "KX108_ONLY"
@@ -262,7 +261,7 @@ class BrodyMemoryCandidateBuilder:
             "path_coherence_score": round(float(trace.get("path_coherence_score", 0.0)), 4),
             "fastpath_type": trace.get("fastpath_type"),
             "fastpath_triggered": bool(trace.get("fastpath_triggered", False)),
-            "graphiti_allowed": bool(trace.get("graphiti_allowed", False)),
+            "memory_required": bool(trace.get("memory_required", False)),
         }
 
         # ── 6. Tags (propagated from trace) ───────────────────────────────────
@@ -338,8 +337,7 @@ class BrodyMemoryCandidateBuilder:
             # ── Structural invariants — ALWAYS these values ───────────────────
             "readonly": True,
             "canonical_write": False,
-            "graphiti_write": False,
-            "neo4j_write": False,
+            "memory_write": False,
             "kernel_mutation": False,
             "emits_act": False,
             "decision_authority": "KX108_ONLY",
@@ -363,8 +361,7 @@ class BrodyMemoryCandidateBuilder:
             "error": error,
             "readonly": True,
             "canonical_write": False,
-            "graphiti_write": False,
-            "neo4j_write": False,
+            "memory_write": False,
             "kernel_mutation": False,
             "emits_act": False,
             "decision_authority": "KX108_ONLY",

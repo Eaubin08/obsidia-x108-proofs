@@ -16,32 +16,51 @@ def client():
 
 # ── Test 1 : /api/brody/chat expose les champs P52 ───────────────────────────
 
+
 def test_brody_chat_exposes_p52_fields(client):
     resp = client.post(
         "/api/brody/chat",
-        json={"message": "Graphiti context pour Obsidia"},
+        json={"message": "memory context for Obsidia"},
         headers={"X-API-Key": "test"},
     )
+
     assert resp.status_code == 200
+
     data = resp.json()
-    assert "graphiti_memory_readonly_activation_status" in data, (
-        "brody/chat must return graphiti_memory_readonly_activation_status"
-    )
-    assert "graphiti_write_enabled" in data
+
+    for key in (
+        "graphiti_memory_readonly_activation_status",
+        "real_graphiti_component_found",
+        "graphiti_read_enabled",
+        "graphiti_write_enabled",
+        "graphiti_memory_context_refs",
+        "graphiti_memory_context_status",
+        "graphiti_nodes",
+        "graphiti_rels",
+    ):
+        assert key not in data
+
+    assert "real_memory_component_found" in data
+    assert "memory_read_enabled" in data
     assert "memory_write_enabled" in data
 
 
 # ── Test 2 : graphiti_write_enabled == false ──────────────────────────────────
 
-def test_brody_chat_graphiti_write_false(client):
+
+def test_brody_chat_provider_write_alias_not_exposed(client):
     resp = client.post(
         "/api/brody/chat",
-        json={"message": "query graphiti nodes"},
+        json={"message": "query memory context"},
         headers={"X-API-Key": "test"},
     )
+
     assert resp.status_code == 200
+
     data = resp.json()
-    assert data.get("graphiti_write_enabled") is False
+
+    assert "graphiti_write_enabled" not in data
+    assert data.get("memory_write_enabled") is False
 
 
 # ── Test 3 : memory_write_enabled == false ────────────────────────────────────
@@ -116,7 +135,11 @@ def test_brody_chat_action_no_act(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data.get("emits_act") is False
-    assert data.get("graphiti_write") is False or data.get("graphiti_write_enabled") is False
+    assert data.get("memory_write") is False
+    assert "graphiti_write" not in data
+    assert "graphiti_write_enabled" not in data
+    assert "neo4j_write" not in data
+    assert data.get("decision_authority") == "KX108_ONLY"
 
 
 # ── Test 9 : /api/memory/status retourne no write ────────────────────────────
@@ -131,18 +154,24 @@ def test_memory_status_no_write(client):
 
 # ── Test bonus : brody_chat retourne real_graphiti_component_found ────────────
 
-def test_brody_chat_real_component_found(client):
+
+def test_brody_chat_real_memory_component_found(client):
     resp = client.post(
         "/api/brody/chat",
-        json={"message": "graphiti composant réel"},
+        json={"message": "memory component status"},
         headers={"X-API-Key": "test"},
     )
+
     assert resp.status_code == 200
+
     data = resp.json()
-    assert "real_graphiti_component_found" in data
+
+    assert "real_graphiti_component_found" not in data
+    assert data.get("real_memory_component_found") is True
 
 
 # ── Test bonus : KX108_ONLY global ───────────────────────────────────────────
+
 
 def test_brody_chat_kx108_only(client):
     resp = client.post(
@@ -150,8 +179,11 @@ def test_brody_chat_kx108_only(client):
         json={"message": "authority check KX108"},
         headers={"X-API-Key": "test"},
     )
+
     assert resp.status_code == 200
+
     data = resp.json()
+
     assert data.get("decision_authority") == "KX108_ONLY"
-    assert data.get("graphiti_write_enabled") is False
+    assert "graphiti_write_enabled" not in data
     assert data.get("memory_write_enabled") is False

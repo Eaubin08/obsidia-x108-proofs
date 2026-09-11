@@ -6,7 +6,7 @@ Aggregates existing Brody runtime snapshots, contracts, and OS Trad / IR /
 OS Reverse support evidence into a single native payload for /api/brody/chat.
 
 This module is readonly/advisory only. It does not decide, act, write memory,
-write Graphiti, write Neo4j, mutate the kernel, or mutate X108.
+write or promote memory, mutate the kernel, or mutate X108.
 """
 from __future__ import annotations
 
@@ -52,24 +52,151 @@ def _as_list(value: Any) -> list[Any]:
 
 
 def _safe_flags(text: str) -> list[str]:
-    if _risk_flags:
+    def canonicalize(raw_flags: list[str]) -> list[str]:
+        canonical: list[str] = []
+        specialized_write_seen = False
+
+        for raw_flag in raw_flags:
+            flag = str(raw_flag)
+
+            if (
+                flag.endswith("_write_request")
+                and flag not in {
+                    "write_request",
+                    "memory_write_request",
+                }
+            ):
+                specialized_write_seen = True
+                continue
+
+            if flag not in canonical:
+                canonical.append(flag)
+
+        if specialized_write_seen:
+            for flag in (
+                "write_request",
+                "memory_write_request",
+            ):
+                if flag not in canonical:
+                    canonical.append(flag)
+
         try:
-            flags = list(_risk_flags(text))
-            return adjust_risk_flags(text, flags) if adjust_risk_flags else flags
+            from apps.obsidia_api.brody_domain_raccord_adapter import (
+                has_memory_write_request,
+            )
+
+            if has_memory_write_request(text):
+                for flag in (
+                    "write_request",
+                    "memory_write_request",
+                ):
+                    if flag not in canonical:
+                        canonical.append(flag)
+
         except Exception:
             pass
 
-    low = (text or "").lower()
+        return canonical
+
+    if _risk_flags:
+        try:
+            flags = list(
+                _risk_flags(text)
+            )
+
+            if adjust_risk_flags:
+                flags = list(
+                    adjust_risk_flags(
+                        text,
+                        flags,
+                    )
+                )
+
+            return canonicalize(
+                flags
+            )
+
+        except Exception:
+            pass
+
+    low = (
+        text
+        or ""
+    ).lower()
+
     flags: list[str] = []
-    if any(token in low for token in ("autorise", "authorize", "créateur", "createur", "admin", "root")):
-        flags.append("authority_claim")
-    if any(token in low for token in ("act", "agir", "execute", "exécute", "lance", "write")):
-        flags.append("action_request")
-    if any(token in low for token in ("kernel", "x108", "mutation", "modifie", "modify", "patch")):
-        flags.append("mutation_request")
-    if any(token in low for token in ("pytest", "traceback", "exception", "bug", "debug", "powershell")):
-        flags.append("code_debug")
-    return adjust_risk_flags(text, flags) if adjust_risk_flags else flags
+
+    if any(
+        token in low
+        for token in (
+            "autorise",
+            "authorize",
+            "cr?ateur",
+            "createur",
+            "admin",
+            "root",
+        )
+    ):
+        flags.append(
+            "authority_claim"
+        )
+
+    if any(
+        token in low
+        for token in (
+            "act",
+            "agir",
+            "execute",
+            "ex?cute",
+            "lance",
+            "write",
+        )
+    ):
+        flags.append(
+            "action_request"
+        )
+
+    if any(
+        token in low
+        for token in (
+            "kernel",
+            "x108",
+            "mutation",
+            "modifie",
+            "modify",
+            "patch",
+        )
+    ):
+        flags.append(
+            "mutation_request"
+        )
+
+    if any(
+        token in low
+        for token in (
+            "pytest",
+            "traceback",
+            "exception",
+            "bug",
+            "debug",
+            "powershell",
+        )
+    ):
+        flags.append(
+            "code_debug"
+        )
+
+    if adjust_risk_flags:
+        flags = list(
+            adjust_risk_flags(
+                text,
+                flags,
+            )
+        )
+
+    return canonicalize(
+        flags
+    )
 
 
 def _safe_language(text: str, requested: str) -> str:
@@ -93,7 +220,7 @@ def _safe_intent(text: str, flags: list[str]) -> str:
         return "code_debug"
     if "authority_claim" in flags:
         return "authority_claim"
-    if any(flag in flags for flag in ("write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
+    if any(flag in flags for flag in ("write_request", "memory_write_request", "canon_promotion_request")):
         return "write_request"
     if "action_request" in flags:
         return "action_request"
@@ -115,12 +242,11 @@ def _safe_constraints(flags: list[str]) -> list[str]:
         "NO_ACT",
         "NO_VERDICT",
         "NO_MEMORY_WRITE",
-        "NO_GRAPHITI_WRITE",
         "NO_KERNEL_MUTATION",
         "NO_X108_MUTATION",
         "DECISION_AUTHORITY_KX108_ONLY",
     ]
-    if any(flag in flags for flag in ("action_request", "mutation_request", "write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
+    if any(flag in flags for flag in ("action_request", "mutation_request", "write_request", "memory_write_request", "canon_promotion_request")):
         values.append("ACTION_REQUEST_FORCED_TO_READONLY_PROJECTION")
     return values
 
@@ -148,7 +274,6 @@ def build_support_routes(
     session_id: str = "local",
     tree_context: dict[str, Any] | None = None,
     memory_context: dict[str, Any] | None = None,
-    graphiti_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build support routes evidence without HTTP roundtrip."""
     text = user_message or ""
@@ -160,10 +285,9 @@ def build_support_routes(
 
     tree_ctx = _as_dict(tree_context)
     memory_ctx = _as_dict(memory_context)
-    graphiti_ctx = _as_dict(graphiti_context)
 
     contradictions: list[str] = []
-    if any(flag in flags for flag in ("write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request")):
+    if any(flag in flags for flag in ("write_request", "memory_write_request", "canon_promotion_request")):
         contradictions.append("REQUEST_REQUIRES_WRITE_BUT_ROUTE_IS_READONLY")
     if any(flag in flags for flag in ("action_request", "mutation_request")):
         contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
@@ -188,11 +312,6 @@ def build_support_routes(
             "mode": "readonly_context",
         },
         "memory_context": memory_ctx,
-        "graphiti_context": graphiti_ctx or {
-            "enabled": True,
-            "source": "/api/periphery/graphiti/context-adapt",
-            "mode": "readonly_context",
-        },
         "session_id": session_id,
         "domain_raccord": domain_raccord,
     }
@@ -210,7 +329,6 @@ def build_support_routes(
             "alphabet_units_count": len(alphabet_units),
             "tree_refs": [],
             "memory_refs": [],
-            "graphiti_refs": [],
             "allowed_to_decide": False,
             "allowed_to_act": False,
             "memory_write": False,
@@ -228,7 +346,7 @@ def build_support_routes(
         "route": "/api/os-reverse/project",
         "projection": {
             "response_mode": "readonly_projection",
-            "summary": "Projection readonly générée. Aucune action, aucun verdict, aucune écriture mémoire, aucune écriture Graphiti, aucune mutation kernel ou X108.",
+            "summary": "Projection readonly générée. Aucune action, aucun verdict, aucune écriture mémoire ni promotion canonique, aucune mutation kernel ou X108.",
             "next_safe_step": "inspect_trace_or_call_brody_chat",
             "boundary_notice": "KX108_ONLY",
             "intent": intent,
@@ -283,8 +401,6 @@ def build_machination_packet(
     language: str,
     session_id: str,
     source: str,
-    graphiti_status: str,
-    neo4j_status: str,
     authority_snapshot: dict[str, Any],
     automation_snapshot: dict[str, Any],
     semantic_query_snapshot: dict[str, Any],
@@ -304,21 +420,12 @@ def build_machination_packet(
     """Build full native machination packet for /api/brody/chat."""
     contracts = build_brody_contracts_packet(user_message, authority_snapshot)
 
-    graphiti_context = {
-        "graphiti_status": graphiti_status,
-        "neo4j_status": neo4j_status,
-        "source": source,
-        "context_packet_id": _as_dict(context_packet).get("id") or _as_dict(context_packet).get("packet_id"),
-        "readonly": True,
-    }
-
     support_routes = build_support_routes(
         user_message=user_message,
         language=language or "auto",
         session_id=session_id or "local",
         tree_context=tree_policy_snapshot,
         memory_context=memory_response_chain_snapshot,
-        graphiti_context=graphiti_context,
     )
     support_summary = build_support_summary(support_routes)
 
@@ -351,13 +458,6 @@ def build_machination_packet(
         "support_routes": support_routes,
         "support_summary": support_summary,
         "domain_raccord_snapshot": support_routes.get("domain_raccord_snapshot"),
-        "graphiti": {
-            "status": graphiti_status,
-            "neo4j_status": neo4j_status,
-            "context_available": bool(graphiti_status),
-            "graphiti_write": False,
-            "neo4j_write": False,
-        },
         **BOUNDARY_CONTRACT,
     }
 

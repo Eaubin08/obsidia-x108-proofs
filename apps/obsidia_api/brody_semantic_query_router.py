@@ -192,6 +192,160 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
 ]
 
 
+
+_MEMORY_RETRIEVAL_STOPWORDS = {
+    # FR ? recall action
+    "rappelle",
+    "rappeler",
+    "rappelles",
+    "reprend",
+    "reprends",
+    "retrouve",
+    "retrouver",
+    "souviens",
+    "recupere",
+    "recuperer",
+
+    # FR ? generic memory/history framing
+    "memoire",
+    "memoires",
+    "historique",
+    "historiques",
+    "session",
+    "sessions",
+    "precedent",
+    "precedente",
+    "precedents",
+    "precedentes",
+    "contexte",
+    "contextes",
+    "conversation",
+    "conversations",
+    "memorise",
+    "memorisee",
+    "memorises",
+    "memorisees",
+
+    # EN ? recall framing
+    "remember",
+    "recall",
+    "retrieve",
+    "memory",
+    "memories",
+    "previous",
+    "session",
+    "context",
+    "conversation",
+    "stored",
+
+    # Common grammatical / request words
+    "dans",
+    "depuis",
+    "avec",
+    "pour",
+    "sans",
+    "sous",
+    "chez",
+    "entre",
+    "vers",
+    "apres",
+    "avant",
+    "concernant",
+    "explique",
+    "reprends",
+    "sais",
+    "deja",
+    "tout",
+    "tous",
+    "toute",
+    "toutes",
+    "cela",
+    "celui",
+    "celle",
+    "ceux",
+    "quoi",
+    "quel",
+    "quelle",
+    "quels",
+    "quelles",
+    "about",
+    "from",
+    "with",
+    "into",
+    "what",
+    "know",
+    "already",
+    "please",
+    "use",
+}
+
+
+def build_memory_retrieval_queries(
+    user_message: str,
+    *,
+    max_candidates: int = 6,
+) -> list[str]:
+    """
+    Preserve concrete lookup targets from a memory-recall request.
+
+    This is deliberately distinct from build_semantic_query():
+
+      semantic_query
+        -> canonical topic / semantic routing
+
+      memory retrieval query
+        -> exact, compact lookup terms for the readonly memory index
+
+    No retrieval is executed here.
+    No provider identity is encoded here.
+    No decision or action authority is granted.
+    """
+    import re
+
+    normalized = _normalize_utf8(
+        str(user_message or "")
+    )
+
+    folded = _fold_accents(
+        normalized.lower()
+    )
+
+    tokens = re.findall(
+        r"[a-z0-9][a-z0-9_.-]*",
+        folded,
+    )
+
+    candidates: list[str] = []
+
+    for token in tokens:
+        token = token.strip("._-")
+
+        if not token:
+            continue
+
+        if token in _MEMORY_RETRIEVAL_STOPWORDS:
+            continue
+
+        # Ignore very small ordinary words, but preserve compact
+        # technical identifiers containing digits.
+        if (
+            len(token) < 4
+            and not any(
+                ch.isdigit()
+                for ch in token
+            )
+        ):
+            continue
+
+        if token not in candidates:
+            candidates.append(token)
+
+        if len(candidates) >= max_candidates:
+            break
+
+    return candidates
+
+
 def build_semantic_query(user_message: str) -> dict[str, Any]:
     """
     Convert raw user message to canonical semantic query for Neo4j / local index.

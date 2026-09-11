@@ -93,7 +93,7 @@ class TestBrodyResponseSchema:
         assert source, "final_answer_source is empty at top level"
 
     def test_neo4j_write_is_false(self, brody_response):
-        assert brody_response.get("neo4j_write") is False, f"neo4j_write={brody_response.get('neo4j_write')}"
+        assert "neo4j_write" not in brody_response
 
     def test_decision_authority_kx108(self, brody_response):
         assert brody_response.get("decision_authority") == "KX108_ONLY"
@@ -105,7 +105,7 @@ class TestBrodyResponseSchema:
         assert brody_response.get("memory_write") is False
 
     def test_graphiti_write_is_false(self, brody_response):
-        assert brody_response.get("graphiti_write") is False
+        assert "graphiti_write" not in brody_response
 
     def test_kernel_mutation_is_false(self, brody_response):
         assert brody_response.get("kernel_mutation") is False

@@ -124,14 +124,26 @@ def test_rssi_query_selects_rssi_or_proof_audit():
 
 # ── Test 7 : "mémoire Brody Graphiti" → MEMORY ou GRAPHITI ──────────────────
 
-def test_memory_graphiti_query_selects_memory_or_graphiti():
-    """Test 7 — "mémoire Brody Graphiti" sélectionne MEMORY_REINTEGRATION_CONTEXT ou GRAPHITI_READONLY_CONTEXT."""
-    result = route_capability_path("mémoire Brody Graphiti réintégration")
-    all_caps = _all_capability_ids_in_paths(result)
-    assert "MEMORY_REINTEGRATION_CONTEXT" in all_caps or \
-           "GRAPHITI_READONLY_CONTEXT" in all_caps, (
-        f"MEMORY_REINTEGRATION_CONTEXT / GRAPHITI_READONLY_CONTEXT manquant dans: {all_caps}"
+def test_memory_context_query_selects_memory_reintegration():
+    result = route_capability_path(
+        "memory Brody reintegration"
     )
+
+    all_caps = _all_capability_ids_in_paths(
+        result
+    )
+
+    assert (
+        "MEMORY_REINTEGRATION_CONTEXT"
+        in all_caps
+    )
+
+    assert (
+        "GRAPHITI_READONLY_CONTEXT"
+        not in all_caps
+    )
+
+
 
 
 # ── Test 8 : action request → ACTION_REQUEST_BLOCKED ─────────────────────────

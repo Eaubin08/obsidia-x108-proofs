@@ -123,7 +123,7 @@ def test_bio_animal_adversarial():
     bio = result["bio_animal_signal"]
     assert bio["survival_risk_flag"] is True
     assert bio["instinct_signal"] == "danger_adversarial"
-    assert "graphiti_topk_layer" in bio.get("dead_path_detection", [])
+    assert "memory_selector_layer" in bio.get("dead_path_detection", [])
 
 
 # ── T-MCR-11 : OS reverse signal — profondeur causale ────────────────────────
@@ -159,7 +159,7 @@ def test_hold_on_irreversible():
 def test_no_external_io():
     result = mc(NOMINAL)
     assert result["io_external"] is False
-    assert result["graphiti_used"] is False
+    assert result["io_external"] is False
 
 
 # ── T-MCR-15 : Latence < 500ms (large marge pour dry-run) ────────────────────

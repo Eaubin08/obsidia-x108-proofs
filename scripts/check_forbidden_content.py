@@ -57,7 +57,14 @@ for root, dirs, files in os.walk("."):
         if any(b in path for b in FORBIDDEN):
             violations.append(f"FORBIDDEN_DIR:{path}")
 
-        if any(s in fname for s in ["private_key", "secret", "credential", "token", "api_key"]):
+        suspicious_filename = any(
+            s in fname
+            for s in ["private_key", "secret", "credential", "token", "api_key"]
+        )
+        known_filename_false_positive = (
+            fname == "brody_secret_scrubber.py"
+        )
+        if suspicious_filename and not known_filename_false_positive:
             violations.append(f"SUSPICIOUS_FILE:{path}")
 
 if violations:

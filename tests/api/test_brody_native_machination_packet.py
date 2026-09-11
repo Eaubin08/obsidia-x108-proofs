@@ -81,13 +81,17 @@ def test_native_contracts_forbid_execution_and_writes():
     assert contracts["boundary_contract"]["allowed_to_decide"] is False
     assert contracts["boundary_contract"]["allowed_to_act"] is False
     assert contracts["boundary_contract"]["memory_write"] is False
-    assert contracts["boundary_contract"]["graphiti_write"] is False
+    assert "graphiti_write" not in contracts["boundary_contract"]
     assert contracts["boundary_contract"]["kernel_mutation"] is False
     assert contracts["boundary_contract"]["x108_mutation"] is False
 
     assert contracts["memory_contract"]["memory_write"] is False
     assert contracts["automation_contract"]["can_execute"] is False
-    assert contracts["graphiti_contract"]["graphiti_write"] is False
+    assert "graphiti_contract" not in contracts
+    assert "graphiti" not in contracts["permission_matrix"]
+    assert "neo4j" not in contracts["permission_matrix"]
+    assert contracts["memory_contract"]["memory_write"] is False
+    assert contracts["memory_contract"]["memory_commit"] is False
     assert contracts["tree_policy_contract"]["tree_decision"] is False
 
 
@@ -116,6 +120,6 @@ def test_machination_packet_contains_existing_snapshots():
     assert packet["decision_authority"] == "KX108_ONLY"
     assert packet["emits_act"] is False
     assert packet["memory_write"] is False
-    assert packet["graphiti_write"] is False
+    assert "graphiti_write" not in packet
     assert packet["kernel_mutation"] is False
     assert packet["x108_mutation"] is False

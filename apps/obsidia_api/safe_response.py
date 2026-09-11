@@ -50,10 +50,8 @@ _SOVEREIGNTY_PROTECTED: dict[str, Any] = {
     "emits_act": False,
     "emits_verdict": False,
     "memory_write": False,
-    "graphiti_write": False,
     "kernel_mutation": False,
     "x108_mutation": False,
-    "neo4j_write": False,
     "brody_decision": False,
     "real_action": False,
 }

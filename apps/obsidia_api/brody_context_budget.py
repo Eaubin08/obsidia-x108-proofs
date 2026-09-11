@@ -10,7 +10,6 @@ from typing import Any
 _GLOBAL_BUDGET = 8192
 _MICRO_CORE_BUDGET = 1792
 _AVAILABLE_BUDGET = _GLOBAL_BUDGET - _MICRO_CORE_BUDGET  # 6400
-_GRAPHITI_BUDGET = 2048  # max bytes allowed for graphiti when permitted
 _SIMPLE_TARGET = 4864    # bank/trading/gps simple — target
 
 _ALWAYS_LAYERS = frozenset({"authority_layer", "cic_core_layer"})
@@ -28,7 +27,6 @@ _LAYER_COST: dict[str, int] = {
     "fractal_layer": 1024,
     "reflex_layer": 1024,
     "memory_selector_layer": 512,
-    "graphiti_topk_layer": _GRAPHITI_BUDGET,
     "temporal_layer": 512,
     "proof_layer": 512,
     "reciprocal_layer": 512,
@@ -53,7 +51,6 @@ class BrodyContextBudget:
         active_layers: list[str],
         point_cloud: dict | None = None,
         balance_output: dict | None = None,
-        graphiti_allowed: bool = False,
         is_adversarial: bool = False,
         domain_detected: str | None = None,
         memory_explicit: bool = False,
@@ -87,15 +84,9 @@ class BrodyContextBudget:
             if l not in allowed:
                 allowed.append(l)
 
-        candidates = [l for l in active_layers if l not in _ALWAYS_LAYERS]
+        candidates = [l for l in active_layers if l not in _ALWAYS_LAYERS and l in _LAYER_COST]
 
-        # Remove graphiti if not allowed
-        if not graphiti_allowed and "graphiti_topk_layer" in candidates:
-            candidates.remove("graphiti_topk_layer")
 
-        # Remove graphiti on adversarial always
-        if is_adversarial and "graphiti_topk_layer" in candidates:
-            candidates.remove("graphiti_topk_layer")
 
         budget_used = sum(_LAYER_COST.get(l, 256) for l in allowed) + _MICRO_CORE_BUDGET
         dropped: list[str] = []
@@ -105,8 +96,6 @@ class BrodyContextBudget:
                 dropped.append(layer)
                 continue
             cost = _LAYER_COST.get(layer, 256)
-            if layer == "graphiti_topk_layer":
-                cost = min(cost, _GRAPHITI_BUDGET)
             if budget_used + cost <= _GLOBAL_BUDGET:
                 allowed.append(layer)
                 budget_used += cost
@@ -122,8 +111,6 @@ class BrodyContextBudget:
                 if al not in allowed:
                     allowed.append(al)
 
-        graphiti_in_allowed = "graphiti_topk_layer" in allowed
-        graphiti_budget = _LAYER_COST.get("graphiti_topk_layer", 0) if graphiti_in_allowed else 0
 
         return {
             "budget_version": "V3_BLOCK_2",
@@ -132,8 +119,6 @@ class BrodyContextBudget:
             "allowed_layers": allowed,
             "dropped_layers": dropped,
             "budget_bytes": budget_used,
-            "graphiti_budget": graphiti_budget,
-            "graphiti_in_budget": graphiti_in_allowed,
             "always_layers_present": all(l in allowed for l in _ALWAYS_LAYERS),
             "layers_count": len(allowed),
             "emits_act": False,
@@ -151,7 +136,6 @@ def compute_context_budget(
     active_layers: list[str],
     point_cloud: dict | None = None,
     balance_output: dict | None = None,
-    graphiti_allowed: bool = False,
     is_adversarial: bool = False,
     domain_detected: str | None = None,
     memory_explicit: bool = False,
@@ -162,7 +146,6 @@ def compute_context_budget(
             active_layers=active_layers,
             point_cloud=point_cloud,
             balance_output=balance_output,
-            graphiti_allowed=graphiti_allowed,
             is_adversarial=is_adversarial,
             domain_detected=domain_detected,
             memory_explicit=memory_explicit,
@@ -175,8 +158,6 @@ def compute_context_budget(
             "allowed_layers": list(_ALWAYS_LAYERS),
             "dropped_layers": [],
             "budget_bytes": _MICRO_CORE_BUDGET,
-            "graphiti_budget": 0,
-            "graphiti_in_budget": False,
             "always_layers_present": True,
             "layers_count": len(_ALWAYS_LAYERS),
             "emits_act": False,
