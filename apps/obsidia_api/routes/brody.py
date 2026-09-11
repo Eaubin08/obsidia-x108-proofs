@@ -373,6 +373,38 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     _fp_payload = _fp_deep(_fp_payload)
                 except Exception:
                     pass
+                # COGNITIVE_RUNTIME_JOIN_FASTPATH_V1
+                try:
+                    from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _fp_cog_join
+                    _fp_cog_receipt = _fp_cog_join(
+                        message=req.message,
+                        language=req.language,
+                        session_id=req.session_id or 'local',
+                        precomputed_micro_core=_fp_mc,
+                    )
+                    try:
+                        from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
+                        _fp_cog_receipt = _cog_deep(_fp_cog_receipt)
+                    except Exception:
+                        pass
+                    _fp_payload['cognitive_runtime_receipt'] = _fp_cog_receipt
+                except Exception as _cog_exc:
+                    _fp_payload['cognitive_runtime_receipt'] = {
+                        'status': 'BLOCKED_READONLY',
+                        'completeness': 'BLOCKED',
+                        'blocked_stage': 'FASTPATH_ROUTE_BINDING',
+                        'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
+                        'decision_authority': 'KX108_ONLY',
+                        'readonly': True,
+                        'allowed_to_decide': False,
+                        'allowed_to_act': False,
+                        'emits_act': False,
+                        'memory_write': False,
+                        'kernel_mutation': False,
+                        'x108_mutation': False,
+                        'real_execution': False,
+                        'response_governance_applied': False,
+                    }
                 return safe_backend_response(_brody_attach_cic_readonly_context_v0(_fp_payload), source="BRODY_V3_FASTPATH")
         except Exception as _fp_exc:
             _v3_preflight = {"error": str(_fp_exc), "fastpath_allowed": False, "block": "V3_BLOCK_2B"}
@@ -1138,6 +1170,43 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     except Exception:
         pass
 
+    # COGNITIVE_RUNTIME_JOIN_BACKEND_V1
+    try:
+        from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _cog_join
+        _cog_receipt = _cog_join(
+            message=req.message,
+            language=req.language,
+            session_id=req.session_id or 'local',
+            precomputed_semantic_query=semantic_query_snapshot,
+            precomputed_intent=intent,
+            authority_snapshot=authority_snapshot,
+            tree_policy_snapshot=trees_snap,
+            precomputed_reverse_os=reverse_os_bridge,
+            precomputed_tree_wrapper=_tree_signal_raw,
+        )
+        try:
+            from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
+            _cog_receipt = _cog_deep(_cog_receipt)
+        except Exception:
+            pass
+        _payload['cognitive_runtime_receipt'] = _cog_receipt
+    except Exception as _cog_exc:
+        _payload['cognitive_runtime_receipt'] = {
+            'status': 'BLOCKED_READONLY',
+            'completeness': 'BLOCKED',
+            'blocked_stage': 'BACKEND_ROUTE_BINDING',
+            'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
+            'decision_authority': 'KX108_ONLY',
+            'readonly': True,
+            'allowed_to_decide': False,
+            'allowed_to_act': False,
+            'emits_act': False,
+            'memory_write': False,
+            'kernel_mutation': False,
+            'x108_mutation': False,
+            'real_execution': False,
+            'response_governance_applied': False,
+        }
     return safe_backend_response(_brody_attach_cic_readonly_context_v0(_payload), source=r.get("source", "REAL_BACKEND"))
 
 
