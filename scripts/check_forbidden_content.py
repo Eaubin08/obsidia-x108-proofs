@@ -20,10 +20,6 @@ EXCLUDE_DIRS = {
     "_source_packs",
 }
 
-ALLOWED_EXACT_PATHS = {
-    "apps/obsidia_api/brody_secret_scrubber.py",
-}
-
 ALLOWED_FILES = {
     ".env.example",
 }
@@ -55,17 +51,20 @@ for root, dirs, files in os.walk("."):
         if f in ALLOWED_FILES:
             continue
 
-        repo_rel = path[2:] if path.startswith("./") else path
-        if repo_rel in ALLOWED_EXACT_PATHS:
-            continue
-
         if any(fragment in path for fragment in ALLOWED_PATH_FRAGMENTS):
             continue
 
         if any(b in path for b in FORBIDDEN):
             violations.append(f"FORBIDDEN_DIR:{path}")
 
-        if any(s in fname for s in ["private_key", "secret", "credential", "token", "api_key"]):
+        suspicious_filename = any(
+            s in fname
+            for s in ["private_key", "secret", "credential", "token", "api_key"]
+        )
+        known_filename_false_positive = (
+            fname == "brody_secret_scrubber.py"
+        )
+        if suspicious_filename and not known_filename_false_positive:
             violations.append(f"SUSPICIOUS_FILE:{path}")
 
 if violations:

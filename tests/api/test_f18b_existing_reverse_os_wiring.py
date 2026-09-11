@@ -56,7 +56,7 @@ def test_existing_ir_candidate_has_real_entities_constraints_and_boundary():
     assert ir["emits_act"] is False
     assert ir["emits_verdict"] is False
     assert ir["memory_write"] is False
-    assert ir["graphiti_write"] is False
+    assert "graphiti_write" not in ir
     assert ir["kernel_mutation"] is False
     assert ir["x108_mutation"] is False
     assert ir["decision_authority"] == "KX108_ONLY"
@@ -92,7 +92,7 @@ def test_existing_reverse_os_projection_reuses_repo_reverse_os():
     assert out["emits_act"] is False
     assert out["emits_verdict"] is False
     assert out["memory_write"] is False
-    assert out["graphiti_write"] is False
+    assert "graphiti_write" not in out
     assert out["kernel_mutation"] is False
     assert out["x108_mutation"] is False
     assert out["decision_authority"] == "KX108_ONLY"

@@ -39,7 +39,7 @@ def build_brody_capabilities_response(text: str | None = None) -> dict[str, Any]
         "5. Exposer les frontieres de securite : readonly, no ACT, no verdict, no write, KX108_ONLY.\n"
         "6. Aider l'operateur a inspecter une trace, comprendre une preuve, lire un paquet, ou preparer l'etape sure suivante.\n\n"
         "Limites : je suis advisory only. L'autorite de decision reste X-108. "
-        "Je ne peux pas autoriser une action, muter le kernel, ecrire Graphiti, ecrire Neo4j ou promouvoir une commande humaine."
+        "Je ne peux pas autoriser une action, muter le kernel, ecrire dans la memoire ou promouvoir une commande humaine."
     )
 
     return {
@@ -48,16 +48,12 @@ def build_brody_capabilities_response(text: str | None = None) -> dict[str, Any]
         "source": "BRODY_CAPABILITIES_INTENT",
         "voice_source": "BRODY_CAPABILITIES_INTENT",
         "voice_src": "BRODY_CAPABILITIES_INTENT",
-        "graphiti_status": "NOT_REQUIRED_FOR_CAPABILITIES_INTENT",
-        "neo4j_status": "NOT_REQUIRED_FOR_CAPABILITIES_INTENT",
         "decision_authority": "KX108_ONLY",
         "readonly": True,
         "advisory_only": True,
         "emits_act": False,
         "emits_verdict": False,
         "memory_write": False,
-        "graphiti_write": False,
-        "neo4j_write": False,
         "kernel_mutation": "NONE",
         "x108_mutation": "NONE",
         "classification": "BRODY_CAPABILITIES",

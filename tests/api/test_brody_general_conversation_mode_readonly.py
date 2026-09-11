@@ -264,8 +264,8 @@ async def test_api_dis_bonjour_maman_general_conversation_readonly():
 
     assert result.get("decision_authority") == "KX108_ONLY"
     assert result.get("memory_write") is False
-    assert result.get("graphiti_write") is False
-    assert result.get("neo4j_write") is False
+    assert "graphiti_write" not in result
+    assert "neo4j_write" not in result
     assert result.get("kernel_mutation") is False
     assert result.get("emits_act") is False
 

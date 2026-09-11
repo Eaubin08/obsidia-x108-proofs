@@ -163,13 +163,13 @@ def build_true_brody_answer(
                 if fr:
                     answer_parts.append(
                         "Je suis Brody, interface structurée readonly d'Obsidia X-108. "
-                        "Je traverse la mémoire Graphiti/Neo4j en readonly, "
+                        "Je traverse la mémoire Obsidia native en readonly, "
                         "hydrate les sources locales, et réponds par structure. "
                     )
                 else:
                     answer_parts.append(
                         "I am Brody, the structured readonly interface for Obsidia X-108. "
-                        "I traverse Graphiti/Neo4j memory in readonly mode, "
+                        "I traverse native Obsidia memory in readonly mode, "
                         "hydrate local sources, and respond by structure. "
                     )
             voice_source = voice_source or "TERMINAL_DIALOGUE_IDENTITY"
@@ -216,12 +216,12 @@ def build_true_brody_answer(
         answer_parts = []
         if fr:
             answer_parts.append(
-                "Je ne peux pas écrire en mémoire, modifier Graphiti, valider canon ou promouvoir un freeze. "
+                "Je ne peux pas écrire directement en mémoire, valider canon ou promouvoir un freeze. "
                 "Je peux seulement exposer la demande comme signal readonly et maintenir KX108_ONLY. "
             )
         else:
             answer_parts.append(
-                "I cannot write memory, mutate Graphiti, validate canon, or promote a freeze. "
+                "I cannot write memory directly, validate canon, or promote a freeze. "
                 "I can only expose this as a readonly signal and keep KX108_ONLY. "
             )
         domain_structural = str(domain_raccord.get("structural_answer") or "").strip()
@@ -250,7 +250,7 @@ def build_true_brody_answer(
 
     # 5. Project memory context
     if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
-        item_count = project.get("local_index_item_count", project.get("graphiti_index_item_count", 0))
+        item_count = project.get("local_index_item_count", project.get("record_count", 0))
         tags = project.get("top_context_tags", project.get("top_context_items", []))
         tags_str = ", ".join(tags[:5]) if tags else ""
         memory_prefix = "\n\n" if answer_parts else ""
@@ -259,7 +259,7 @@ def build_true_brody_answer(
             if item_count > 0:
                 answer_parts.append(
                     f"{memory_prefix}Je dispose de mémoire projet locale "
-                    f"({item_count} items indexés Graphiti. "
+                    f"({item_count} items indexés dans la mémoire Obsidia native. "
                     f"Tags dominants : {tags_str or 'contexte Obsidia'}). "
                 )
             else:
@@ -270,7 +270,7 @@ def build_true_brody_answer(
         else:
             answer_parts.append(
                 f"I have local project memory "
-                f"({item_count} Graphiti-indexed items). "
+                f"({item_count} Obsidia-native indexed items). "
             )
         if not voice_source:
             voice_source = "PROJECT_MEMORY"
@@ -362,15 +362,15 @@ def build_true_brody_answer(
         items_text = "\n".join(items_summary)
         if fr:
             answer_parts.append(
-                f"Index Graphiti local (hors-ligne) — requête : `{effective_q}` :\n\n"
+                f"Index de mémoire Obsidia native — requête : `{effective_q}` :\n\n"
                 + (items_text if items_text else "_Aucun titre indexé._")
-                + "\n\n_Neo4j non disponible : index local uniquement, pas de texte complet._"
+                + "\n\n_Index local uniquement : pas de texte complet disponible pour cette entrée._"
             )
         else:
             answer_parts.append(
-                f"Local Graphiti index (offline) — query: `{effective_q}` :\n\n"
+                f"Native Obsidia memory index — query: `{effective_q}` :\n\n"
                 + (items_text if items_text else "_No indexed titles._")
-                + "\n\n_Neo4j unavailable: local index only, no full text content._"
+                + "\n\n_Local index only: no full text content available for this entry._"
             )
         voice_source = "LOCAL_GRAPHITI_INDEX_FALLBACK"
     elif chain_pass and not chain_has_mat:
@@ -400,7 +400,7 @@ def build_true_brody_answer(
         if fr:
             answer_parts.append(
                 f"Erreur infrastructure chaîne mémoire : `{error_type}`. "
-                + (f"Neo4j : {neo4j}. " if neo4j else "")
+                + ("" if neo4j else "")
                 + (f"Détail : {detail}. " if detail and detail != error_type else "")
                 + "Réponse structurelle uniquement — aucun accès mémoire. "
                 "Vérifier la disponibilité du backend et de l'index local."
@@ -408,7 +408,7 @@ def build_true_brody_answer(
         else:
             answer_parts.append(
                 f"Memory chain infrastructure error: `{error_type}`. "
-                + (f"Neo4j: {neo4j}. " if neo4j else "")
+                + ("" if neo4j else "")
                 + (f"Detail: {detail}. " if detail and detail != error_type else "")
                 + "Structural response only — no memory access. "
                 "Check backend and local index availability."
@@ -437,20 +437,20 @@ def build_true_brody_answer(
                     answer_parts.append(
                         f"Aucune correspondance locale pour `{explicit_id}`. "
                         f"Requêtes tentées : {tried_str}. "
-                        "L'index local Graphiti (3267 items JSONL) ne contient pas de nœud "
+                        "L'index de mémoire Obsidia native ne contient pas d'entrée "
                         f"correspondant à cet identifiant. "
                         "Aucune correspondance exploitable dans l'index consulté ; vérifier l'état live dans le payload technique. "
                         "Pour accéder à cet identifiant : l'ajouter à l'index JSONL "
-                        "ou démarrer Neo4j pour une recherche live."
+                        "Cette référence n'est pas disponible dans l'index natif actuel."
                     )
                 else:
                     tried_str = ", ".join(f"`{q}`" for q in tried[:4]) if tried else f"`{explicit_id}`"
                     answer_parts.append(
                         f"No local match for `{explicit_id}`. "
                         f"Queries attempted: {tried_str}. "
-                        "Local Graphiti index (3267 JSONL items) has no node for this identifier. "
+                        "Native Obsidia memory index has no entry for this identifier. "
                         "No usable match in the consulted index; check live state in the technical payload. "
-                        "To access this identifier: add it to the JSONL index or start Neo4j."
+                        "To access this identifier: add it to the JSONL index This reference is not available in the current native index."
                     )
                 voice_source = "SEMANTIC_MATCH_FAILED_EXPLICIT_TAG"
             else:
@@ -716,7 +716,7 @@ def _synthesize_auditor_response_fr(
     elif topic == "OBSIDIA_BRODY_ROLE":
         lines.append(
             "Obsidia est une architecture structure-first : kernel X108 pour la decision, "
-            "Graphiti/Neo4j pour la mémoire, OS Trad pour la traduction langage humain/structure, "
+            "la mémoire Obsidia native pour le contexte mémoire, OS Trad pour la traduction langage humain/structure, "
             "Reverse OS pour la réponse naturelle. Brody est la surface de réponse du Reverse OS : "
             "consultatif, structuré, jamais décisionnaire."
         )
@@ -761,7 +761,7 @@ def _synthesize_auditor_response_fr(
             lines.append(
                 "La mémoire projet est accessible en lecture : index local de 3267 items, "
                 "candidate pipeline en CANDIDATE_ONLY, presave buffer et auto-triage prêts. "
-                "Aucune écriture n'est activée : graphiti_write=false, neo4j_write=false, "
+                "Aucune écriture n'est activée : "
                 "memory_write=false."
             )
         else:
@@ -794,7 +794,7 @@ def _synthesize_auditor_response_fr(
         lines.append(
             "Modules cognitifs mappes : "
             "AVDR (action/validation), Continuum (session/follow-up), "
-            "Verbatia (parole Brody/True Voice), MEMZUM (mémoire projet/session/Graphiti), "
+            "Verbatia (parole Brody/True Voice), MEMZUM (mémoire projet/session), "
             "Cristal_Sortie (réponse finale), Collecteur_Epiphanies (mémoire candidate), "
             "Capsule_Evolution (projection/evolution), Simulateur_Memoires (projection partielle). "
             "Horloge_Cognitive et LTCU+ sont en proof/test uniquement. "
@@ -918,7 +918,7 @@ def _strip_engine_headers(text: str) -> str:
 
 
 def _clean_title(title: str) -> str:
-    """Clean a Graphiti-indexed title: remove hash prefix, normalize."""
+    """Clean a memory-indexed title: remove hash prefix, normalize."""
     import re
     t = title.strip()
     # Remove 12-hex-char prefix e.g. "07A62B23DF20_"

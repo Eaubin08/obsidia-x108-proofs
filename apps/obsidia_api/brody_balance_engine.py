@@ -85,7 +85,7 @@ class BrodyBalanceEngine:
             "seuil_critique": 0.5,
             "cout": 256 if seuil_depasse else 0,
             "couche_a_activer": "reflex_layer" if seuil_depasse else "authority_layer",
-            "couche_a_eviter": "graphiti_topk_layer" if is_adv else None,
+            "couche_a_eviter": "memory_selector_layer" if is_adv else None,
             "seuil_depasse": seuil_depasse,
         }
 
@@ -149,7 +149,7 @@ class BrodyBalanceEngine:
             "seuil_critique": 0.7,
             "cout": raw_cost,
             "couche_a_activer": None,
-            "couche_a_eviter": "graphiti_topk_layer" if seuil_depasse else None,
+            "couche_a_eviter": None,
             "seuil_depasse": seuil_depasse,
         }
 
@@ -192,11 +192,11 @@ class BrodyBalanceEngine:
             "compression": round(1.0 - tension, 3),
             "desequilibre": round(tension, 3),
             "seuil_critique": 0.7,
-            "cout": 4096 if seuil_depasse else 0,
-            "couche_a_activer": "graphiti_topk_layer" if seuil_depasse else None,
+            "cout": 512 if seuil_depasse else 0,
+            "couche_a_activer": "memory_selector_layer" if seuil_depasse else None,
             "couche_a_eviter": None,
             "seuil_depasse": seuil_depasse,
-            "graphiti_candidate": seuil_depasse and mem_relevant,
+            "memory_selector_candidate": seuil_depasse and mem_relevant,
         }
 
     def _balance_causale(self, mc: dict) -> dict[str, Any]:

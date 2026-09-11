@@ -2,7 +2,7 @@
 
 Phase 11B.
 
-This module does not decide, act, write memory, write Graphiti, mutate the
+This module does not decide, act, write memory, mutate the
 kernel, or mutate X108. It only normalizes already-stabilized authority and
 boundary contracts into one packet for /api/brody/chat.
 """
@@ -25,8 +25,6 @@ BOUNDARY_CONTRACT: dict[str, Any] = {
     "emits_act": False,
     "emits_verdict": False,
     "memory_write": False,
-    "graphiti_write": False,
-    "neo4j_write": False,
     "kernel_mutation": False,
     "x108_mutation": False,
     "real_action": False,
@@ -51,8 +49,6 @@ FORBIDDEN_OUTPUT_CONTRACT: dict[str, Any] = {
         "kernel_patch",
         "x108_patch",
         "memory_commit",
-        "graphiti_write",
-        "neo4j_write",
     ],
     "allowed_if_redacted_or_descriptive": True,
     "note": "Conceptual mentions are allowed; sovereign emission is not.",
@@ -63,7 +59,6 @@ SIGNAL_CONTRACT: dict[str, Any] = {
         "context_signal",
         "memory_signal",
         "tree_signal",
-        "graphiti_signal",
         "semantic_signal",
         "automation_candidate",
         "ir_reduction_candidate",
@@ -80,8 +75,6 @@ SIGNAL_CONTRACT: dict[str, Any] = {
         "kernel_patch",
         "x108_patch",
         "memory_commit",
-        "graphiti_write",
-        "neo4j_write",
     ],
     "decision_authority": "KX108_ONLY",
     "context_signal_only": True,
@@ -104,8 +97,6 @@ AUTHORITY_CONTRACT: dict[str, Any] = {
     "brody_authority": "ADVISORY_ONLY",
     "operator_authority": "REQUEST_ONLY",
     "memory_authority": "CANDIDATE_ONLY",
-    "graphiti_authority": "READONLY_CONTEXT",
-    "neo4j_authority": "READONLY_CONTEXT",
     "automation_authority": "CANDIDATE_ONLY",
     "tree_authority": "CONTEXT_SIGNAL_ONLY",
     "os_trad_authority": "TRANSLATION_ONLY",
@@ -135,8 +126,6 @@ def build_permission_matrix(authority_snapshot: dict[str, Any] | None = None) ->
             "can_authorize_act": False,
             "can_emit_verdict": False,
             "can_write_memory": False,
-            "can_write_graphiti": False,
-            "can_write_neo4j": False,
             "can_mutate_kernel": False,
             "can_mutate_x108": False,
             "decision_authority": "KX108_ONLY",
@@ -156,18 +145,6 @@ def build_permission_matrix(authority_snapshot: dict[str, Any] | None = None) ->
             "can_auto_triage": False,
             "requires_memory_gate": requires_memory_gate,
             "memory_write": False,
-        },
-        "graphiti": {
-            "can_read": True,
-            "can_write": False,
-            "can_decide": False,
-            "can_mutate_kernel": False,
-            "graphiti_write": False,
-        },
-        "neo4j": {
-            "can_read": True,
-            "can_write": False,
-            "neo4j_write": False,
         },
         "automation": {
             "can_prepare": True,
@@ -235,20 +212,6 @@ def build_automation_contract(authority_snapshot: dict[str, Any] | None = None) 
         "real_action": False,
         "dry_run_only": True,
         "next_safe_step": "prepare_candidate_for_x108",
-        "decision_authority": "KX108_ONLY",
-    }
-
-
-def build_graphiti_contract() -> dict[str, Any]:
-    return {
-        "graphiti_read": True,
-        "graphiti_write": False,
-        "neo4j_read": True,
-        "neo4j_write": False,
-        "context_only": True,
-        "graphiti_decision_authority": "NONE",
-        "kernel_mutation": False,
-        "x108_mutation": False,
         "decision_authority": "KX108_ONLY",
     }
 
@@ -341,7 +304,6 @@ def build_brody_contracts_packet(
         "forbidden_output_contract": FORBIDDEN_OUTPUT_CONTRACT,
         "memory_contract": build_memory_contract(auth),
         "automation_contract": build_automation_contract(auth),
-        "graphiti_contract": build_graphiti_contract(),
         "tree_policy_contract": build_tree_policy_contract(auth),
         "translation_projection_contract": build_translation_projection_contract(),
         "audit_contract": build_audit_contract(),

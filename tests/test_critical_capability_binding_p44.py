@@ -84,18 +84,18 @@ def test_brody_chat_entrypoint_in_taxonomy():
 # Test 4 — GRAPHITI_READONLY_CONTEXT relié à graphiti_v20_readonly_client
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_graphiti_readonly_context_wires_graphiti_client():
-    """P44: GRAPHITI_READONLY_CONTEXT a graphiti_v20_readonly_client dans candidate_modules."""
-    assert "GRAPHITI_READONLY_CONTEXT" in CAPABILITY_TAXONOMY
-    cap = CAPABILITY_TAXONOMY["GRAPHITI_READONLY_CONTEXT"]
-    assert "graphiti_v20_readonly_client" in cap["candidate_modules"], (
-        "P44: graphiti_v20_readonly_client absent de candidate_modules — gap non branché"
+def test_legacy_provider_capability_is_catalog_only_during_cutover():
+    assert (
+        "GRAPHITI_READONLY_CONTEXT"
+        in CAPABILITY_TAXONOMY
     )
-    # Vérifier aussi dans le template du router
-    tmpl = _CAPABILITY_PATH_TEMPLATES.get("GRAPHITI_READONLY_CONTEXT", {})
-    assert "graphiti_v20_readonly_client" in tmpl.get("modules", []), (
-        "P44: graphiti_v20_readonly_client absent du path template GRAPHITI_READONLY_CONTEXT"
+
+    assert (
+        "GRAPHITI_READONLY_CONTEXT"
+        not in _CAPABILITY_PATH_TEMPLATES
     )
+
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -179,20 +179,58 @@ def test_brody_query_selects_brody_chat_entrypoint():
 # Test 9 — Query graphiti → GRAPHITI_READONLY_CONTEXT
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_graphiti_query_selects_graphiti_readonly_context():
-    """P44: query graphiti spécifique sélectionne GRAPHITI_READONLY_CONTEXT."""
-    result = route_capability_path(query="graphiti v20 readonly client", max_paths=5)
-    selected = result["selected_path"]
-    cap_chain = selected.get("capability_chain", [])
+def test_legacy_provider_query_cannot_select_provider_runtime():
+    result = route_capability_path(
+        query="graphiti v20 readonly client",
+        max_paths=5,
+    )
 
-    assert "GRAPHITI_READONLY_CONTEXT" in cap_chain, (
-        f"P44: GRAPHITI_READONLY_CONTEXT non sélectionné, cap_chain={cap_chain}"
+    selected = result[
+        "selected_path"
+    ]
+
+    cap_chain = selected.get(
+        "capability_chain",
+        [],
     )
-    modules = selected.get("modules", [])
-    assert "graphiti_v20_readonly_client" in modules, (
-        f"P44: graphiti_v20_readonly_client absent de modules={modules}"
+
+    modules = selected.get(
+        "modules",
+        [],
     )
-    assert selected.get("runtime_allowed_now") is False
+
+    assert (
+        "GRAPHITI_READONLY_CONTEXT"
+        not in cap_chain
+    )
+
+    assert (
+        "graphiti_v20_readonly_client"
+        not in modules
+    )
+
+    assert (
+        selected.get(
+            "runtime_allowed_now"
+        )
+        is False
+    )
+
+    assert (
+        selected.get(
+            "emits_act"
+        )
+        is False
+    )
+
+    assert (
+        selected.get(
+            "decision_authority"
+        )
+        == "KX108_ONLY"
+    )
+
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -21,7 +21,6 @@ BOUNDARY = {
     "x108_mutation": False,
     "x108_runtime_binding": False,
     "x108_merge": False,
-    "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
     "brody_role": "TERMINAL_STRUCTURAL_DIALOGUE",
     "decision_authority": "KX108_ONLY",
     "no_external_model_call": True,
@@ -145,7 +144,6 @@ def command_response(user_text):
         "x108_mutation": False,
         "x108_runtime_binding": False,
         "x108_merge": False,
-        "neo4j_role": "LIVE_GRAPH_MEMORY_SURFACE_ONLY",
         "brody_role": "TERMINAL_STRUCTURAL_DIALOGUE",
         "decision_authority": "KX108_ONLY",
         "no_external_model_call": True,
@@ -163,7 +161,7 @@ def command_response(user_text):
             "response_md": (
                 "Je suis BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_V1_1B.\n\n"
                 "Je fonctionne dans obsidia-x108-proofs.\n"
-                "Je traverse la mémoire Graphiti/Neo4j en readonly, hydrate les sources locales, "
+                "Je traverse la mémoire Obsidia native en readonly, hydrate les sources locales, "
                 "et répond dans le terminal.\n\n"
                 "Je ne suis pas KX108. Je ne décide pas. Je n'émets pas ACT. "
                 "Je ne mute pas le kernel."
@@ -189,7 +187,6 @@ def command_response(user_text):
                 "X108_MUTATION=false\n"
                 "X108_RUNTIME_BINDING=false\n"
                 "X108_MERGE=false\n"
-                "NEO4J_ROLE=LIVE_GRAPH_MEMORY_SURFACE_ONLY\n"
                 "BRODY_ROLE=TERMINAL_STRUCTURAL_DIALOGUE\n"
                 "UI=false"
             ),

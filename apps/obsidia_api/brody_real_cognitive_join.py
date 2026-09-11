@@ -63,8 +63,6 @@ BOUNDARY = {
     "emits_act": False,
     "emits_verdict": False,
     "memory_write": False,
-    "graphiti_write": False,
-    "neo4j_write": False,
     "kernel_mutation": False,
     "x108_mutation": False,
     "real_execution": False,
@@ -212,6 +210,8 @@ def run_real_cognitive_join(
     tree_policy_snapshot: dict[str, Any] | None = None,
     precomputed_reverse_os: dict[str, Any] | None = None,
     precomputed_tree_wrapper: dict[str, Any] | None = None,
+    precomputed_brody_runtime: dict[str, Any] | None = None,
+    precomputed_memory_chain: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
     signal_id = _signal_id(message, session_id)
@@ -230,12 +230,12 @@ def run_real_cognitive_join(
         "W1_RUNTIME_JOIN": "PENDING",
         "W2_X108_ADMISSION": "PENDING",
         "W3_BRODY": (
-            "SKIPPED_NOT_AVAILABLE:"
-            "REAL_BRODY_RESPONSE_ADAPTER_MISSING"
+            "SKIPPED_BY_PATH_POLICY:"
+            "NO_PRECOMPUTED_BRODY_RUNTIME"
         ),
-        "W4_GRAPHITI_MEMORY": (
-            "SKIPPED_NOT_AVAILABLE:"
-            "GRAPHITI_ADAPTER_MISSING"
+        "W4_MEMORY_RETRIEVAL": (
+            "SKIPPED_BY_PATH_POLICY:"
+            "MEMORY_RETRIEVAL_NOT_PRECOMPUTED"
         ),
         "NPL": "SKIPPED_NOT_AVAILABLE:NPL_RUNTIME_NOT_MATERIALIZED",
         "LYAPUNOV": (
@@ -535,6 +535,108 @@ def run_real_cognitive_join(
         )
 
     # --------------------------------------------------------
+    # C2A - W3 REAL BRODY RESPONSE ENRICHMENT
+    #
+    # Uses an already-executed Brody runtime result.
+    # Never executes Brody a second time.
+    # --------------------------------------------------------
+    brody_cognitive_response = None
+
+    if isinstance(precomputed_brody_runtime, dict):
+        try:
+            from apps.obsidia_api.brody_real_response_cognitive_adapter import (
+                adapt_real_brody_runtime_to_response,
+            )
+            from periphery.context.brody_cognitive_bridge import (
+                enrich_context_packet_v2_with_brody,
+            )
+
+            brody_cognitive_response = (
+                adapt_real_brody_runtime_to_response(
+                    precomputed_brody_runtime,
+                    query=message,
+                    language=language,
+                )
+            )
+
+            v2 = enrich_context_packet_v2_with_brody(
+                v2,
+                brody_cognitive_response,
+            )
+
+            components["W3_BRODY"] = (
+                "READY:REAL_RUNTIME_ADAPTER"
+            )
+
+        except Exception as exc:
+            errors.append(
+                _error(
+                    "W3_BRODY",
+                    exc,
+                )
+            )
+            components["W3_BRODY"] = errors[-1]
+
+    # --------------------------------------------------------
+    # C2B-M4B2A - W4 PROVIDER-NEUTRAL MEMORY RETRIEVAL
+    #
+    # Precomputed retrieval is context evidence only.
+    # No retrieval executes here.
+    # No memory write.
+    # No ACT.
+    # No decision authority.
+    # --------------------------------------------------------
+    memory_retrieval_applied = False
+    memory_retrieval_status = None
+
+    if isinstance(
+        precomputed_memory_chain,
+        dict,
+    ):
+        try:
+            from periphery.context.memory_retrieval_cognitive_bridge import (
+                enrich_context_packet_v2_with_memory_retrieval,
+            )
+
+            v2 = (
+                enrich_context_packet_v2_with_memory_retrieval(
+                    v2,
+                    precomputed_memory_chain,
+                )
+            )
+
+            memory_retrieval_status = str(
+                precomputed_memory_chain.get(
+                    "retrieval_status"
+                )
+                or precomputed_memory_chain.get(
+                    "status"
+                )
+                or "UNKNOWN"
+            )
+
+            components[
+                "W4_MEMORY_RETRIEVAL"
+            ] = (
+                "READY:REAL_RETRIEVAL:"
+                f"{memory_retrieval_status}"
+            )
+
+            memory_retrieval_applied = True
+
+        except Exception as exc:
+            errors.append(
+                _error(
+                    "W4_MEMORY_RETRIEVAL",
+                    exc,
+                )
+            )
+
+            components[
+                "W4_MEMORY_RETRIEVAL"
+            ] = errors[-1]
+
+    # --------------------------------------------------------
     # 9 — W5 Tree enrichment
     # --------------------------------------------------------
     if canonical_tree is not None:
@@ -671,6 +773,29 @@ def run_real_cognitive_join(
         "tree_computation_mode": tree_computation_mode,
         "brody_tree_signal_packet": tree_wrapper,
         "canonical_tree_signal_packet": canonical_tree_dict,
+
+        "brody_cognitive_response": (
+            brody_cognitive_response.to_dict()
+            if brody_cognitive_response is not None
+            else None
+        ),
+
+        "memory_response_chain_snapshot": (
+            precomputed_memory_chain
+            if isinstance(
+                precomputed_memory_chain,
+                dict,
+            )
+            else None
+        ),
+
+        "memory_retrieval_applied": (
+            memory_retrieval_applied
+        ),
+
+        "memory_retrieval_status": (
+            memory_retrieval_status
+        ),
 
         "sigma_domain_packet": sigma_result,
         "sigma_readonly_signal": (

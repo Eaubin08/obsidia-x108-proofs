@@ -4,7 +4,7 @@ Brody Structured Response Engine Adapter
 Exposes the QUERY → CONSUMER → ENGINE chain as structured_response_snapshot.
 
 Chain source (from source docs):
-  brody_context_packet_query_readonly_v1 (Neo4j query)
+  brody_context_packet_query_readonly_v1 (readonly context query)
   → context_packet_consumer_readonly     (hydration)
   → brody_local_response_engine_readonly (structured response)
   [orchestrated via terminal_structural_dialogue_readonly_v1]
@@ -17,7 +17,7 @@ Source doc refs (validated 2026-05-13):
   BRODY_NEXT_BUILD_ROADMAP_READONLY_20260513_212134 — Context packet chain = CHAIN_PASS
   BRODY_SESSION_CHECKPOINT_20260513_FINAL — état stabilisé
 
-Boundary: readonly, no Neo4j write, no Graphiti write, KX108_ONLY
+Boundary: readonly, no memory write, KX108_ONLY
 """
 from __future__ import annotations
 
@@ -27,8 +27,6 @@ from typing import Any
 _BOUNDARY: dict[str, Any] = {
     "readonly": True,
     "memory_write": False,
-    "graphiti_write": False,
-    "neo4j_write": False,
     "emits_act": False,
     "emits_verdict": False,
     "kernel_mutation": False,
@@ -50,32 +48,38 @@ def make_structured_response_snapshot(pipeline_result: dict[str, Any]) -> dict[s
     """
     Convert brody_real_response_pipeline result to structured_response_snapshot.
 
-    No duplicate Neo4j calls — repackages what the pipeline already computed.
+    No duplicate backend calls; repackages what the pipeline already computed.
     Chain: terminal_structural_dialogue → context_packet_query → local_response_engine
     """
-    probe = pipeline_result.get("graphiti_probe", {})
-    graphiti_live = probe.get("status") == "GRAPHITI_LIVE_READONLY_PASS"
     engine_status = pipeline_result.get("engine_status", "")
     material_quality = pipeline_result.get("material_quality", "")
     response_md = pipeline_result.get("response_md", "")
+    memory_query = pipeline_result.get("memory_query", "")
     selected_items = pipeline_result.get("selected_items", []) or []
     context_items_count = len(selected_items)
 
-    if graphiti_live and engine_status == "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS":
-        query_stage = "PASS"
+    response_available = bool(str(response_md).strip())
+    query_available = bool(str(memory_query).strip())
+    engine_pass = (
+        engine_status
+        == "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS"
+    )
+
+    if engine_pass and response_available:
+        query_stage = "PASS" if query_available else "NOT_REQUIRED"
         consumer_stage = "PASS"
         engine_stage = "PASS"
         status = "STRUCTURED_RESPONSE_ENGINE_PASS"
-    elif graphiti_live:
-        query_stage = "PASS"
-        consumer_stage = "PARTIAL"
-        engine_stage = "TERMINAL_FALLBACK"
+    elif response_available:
+        query_stage = "PASS" if query_available else "NOT_REQUIRED"
+        consumer_stage = "PASS"
+        engine_stage = engine_status or "TERMINAL_FALLBACK"
         status = "STRUCTURED_RESPONSE_ENGINE_PARTIAL"
     else:
-        query_stage = "UNAVAILABLE"
+        query_stage = "PASS" if query_available else "NOT_REQUIRED"
         consumer_stage = "UNAVAILABLE"
-        engine_stage = "UNAVAILABLE"
-        status = "STRUCTURED_RESPONSE_ENGINE_GRAPHITI_OFFLINE"
+        engine_stage = engine_status or "UNAVAILABLE"
+        status = "STRUCTURED_RESPONSE_ENGINE_UNAVAILABLE"
 
     if material_quality == "USABLE_MATERIAL":
         text_material_status = "HAS_MATERIAL"
@@ -83,8 +87,8 @@ def make_structured_response_snapshot(pipeline_result: dict[str, Any]) -> dict[s
         text_material_status = "PARTIAL_MATERIAL"
     elif material_quality == "LOW_MATERIAL":
         text_material_status = "LOW_MATERIAL"
-    elif graphiti_live:
-        text_material_status = "LOW_MATERIAL"
+    elif response_available:
+        text_material_status = "NO_MATERIAL"
     else:
         text_material_status = "CHAIN_UNAVAILABLE"
 
@@ -96,10 +100,7 @@ def make_structured_response_snapshot(pipeline_result: dict[str, Any]) -> dict[s
         "context_items_count": context_items_count,
         "text_material_status": text_material_status,
         "response_md": response_md,
-        "memory_query": pipeline_result.get("memory_query", ""),
-        "graphiti_status": probe.get("status", ""),
-        "graphiti_blocker": probe.get("blocker", ""),
-        "neo4j_status": pipeline_result.get("neo4j_status", ""),
+        "memory_query": memory_query,
         "selected_items": selected_items,
         "tag_counts": pipeline_result.get("tag_counts", {}),
         "chain_source": (
@@ -130,7 +131,7 @@ def chain_md_to_final_answer(chain_md: str, language: str = "fr") -> str:
         "# BRODY CONTEXT PACKET",
         "- query:", "- role:", "- memory_role:", "- decision_authority:",
         "- emits_act:", "- kernel_mutation:", "- x108_runtime_binding:",
-        "- material_quality:", "- x108_merge:", "- neo4j_role:", "- brody_role:",
+        "- material_quality:", "- x108_merge:", "- brody_role:",
     )
     _CONTENT_HEADERS = (
         "## Réponse locale",

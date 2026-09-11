@@ -38,16 +38,16 @@ def build_project_memory_snapshot(
 
     snap["foundation"] = "PROJECT_MEMORY"
     snap["status"] = runtime_status
-    snap["source_mode"] = "EXISTING_PROJECT_MEMORY_ONLY"
+    snap["source_mode"] = "OBSIDIA_NATIVE_MEMORY"
     snap["available_sources"] = {
-        "graphiti_v20": snap.get("graphiti_v20_found", False),
+        "obsidia_native_memory": snap.get("native_memory_ready", False),
         "brody_memory_doc": snap.get("brody_memory_doc_available", False),
         "context_packets": snap.get("context_packet_query_found", False),
         "project_ledgers": snap.get("candidate_ledger_found", False),
         "tree_policy": snap.get("auto_triage_found", False),
         "mmonde_or_34trees": False,
     }
-    snap["graphiti_v20"] = snap.get("graphiti_v20_found", False)
+    snap["obsidia_native_memory"] = snap.get("native_memory_ready", False)
     snap["brody_memory_doc"] = snap.get("brody_memory_doc_available", False)
     snap["context_packets"] = snap.get("context_packet_query_found", False)
     snap["project_ledgers"] = snap.get("candidate_ledger_found", False)
@@ -56,7 +56,5 @@ def build_project_memory_snapshot(
     snap["used_by_api_now"] = False
     snap["missing_links"] = snap.get("missing_links", [])
     snap["memory_write"] = False
-    snap["graphiti_write"] = False
-    snap["neo4j_write"] = False
     snap["decision_authority"] = "KX108_ONLY"
     return snap
