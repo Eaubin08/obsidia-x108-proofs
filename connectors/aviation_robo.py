@@ -9,12 +9,24 @@ import time
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 except Exception:
     pass
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None  # type: ignore
+
+try:
+    from domains.gps.gps_x108_gate import evaluate_gps_payload
+except Exception:
+    evaluate_gps_payload = None  # type: ignore
 
 
 DEFAULT_API_BASE = os.environ.get("OBSIDIA_API_BASE", "http://127.0.0.1:8000")
@@ -856,6 +868,11 @@ def build_gps_payload() -> dict[str, Any]:
             "gps_status": "ONLINE",
             "satellites_count": random.randint(8, 12),
             "signal_noise_ratio": round(random.uniform(0.80, 0.98), 2),
+            "freshness_ms": random.randint(10, 80),
+            "g_load": round(random.uniform(1.0, 1.4), 2),
+            "spoof_score": 0.0,
+            "replay_window_detected": False,
+            "sensor_attested": True,
             "gps_available": True,
             "inertial_available": True,
             "radio_available": True,
@@ -869,9 +886,58 @@ def build_gps_payload() -> dict[str, Any]:
     }
 
 
+def build_spoofed_gps_payload() -> dict[str, Any]:
+    packet = build_gps_payload()
+    payload = packet["payload"]
+    payload.update(
+        {
+            "flight_id": "AF994",
+            "trajectory_drift_score": 0.82,
+            "source_conflict_score": 0.71,
+            "spoof_score": 0.84,
+            "signal_noise_ratio": 0.41,
+            "rollback_possible": False,
+        }
+    )
+    return packet
+
+
+def build_replay_attack_payload() -> dict[str, Any]:
+    packet = build_gps_payload()
+    payload = packet["payload"]
+    payload.update(
+        {
+            "flight_id": "AF994",
+            "freshness_ms": 86_400_000,
+            "time_skew_score": 1.0,
+            "replay_window_detected": True,
+            "attestation_ready": False,
+            "sensor_attested": False,
+            "ground_speed": 612,
+            "g_load": 2.7,
+            "rollback_possible": False,
+        }
+    )
+    return packet
+
+
 def send_gps_payload(api_base: str = DEFAULT_API_BASE, timeout: int = 10):
+    if requests is None:
+        raise RuntimeError("requests is required for API sending")
     url = f"{api_base.rstrip('/')}{GPS_ENDPOINT}"
     return requests.post(url, json=build_gps_payload(), timeout=timeout)
+
+
+def evaluate_local_gate(packet: dict[str, Any] | None = None) -> dict[str, Any]:
+    if evaluate_gps_payload is None:
+        return {
+            "verdict": "HOLD",
+            "source": "LOCAL_GATE_IMPORT_FAILED",
+            "error": "domains.gps.gps_x108_gate unavailable",
+        }
+    packet = packet or build_gps_payload()
+    payload = packet.get("payload", packet)
+    return evaluate_gps_payload(payload)
 
 
 def run_flight_flow(api_base: str = DEFAULT_API_BASE, once: bool = False):
@@ -882,8 +948,16 @@ def run_flight_flow(api_base: str = DEFAULT_API_BASE, once: bool = False):
     while True:
         try:
             packet = build_gps_payload()
+            if os.environ.get("OBSIDIA_GPS_USE_X108_GATE", "0") == "1":
+                gate_result = evaluate_local_gate(packet)
+                print(
+                    _color("[AERO][P3-05]", COLORS["AERO"])
+                    + f" local_gate={gate_result.get('verdict')} source={gate_result.get('source')}"
+                )
             url = f"{api_base.rstrip('/')}{GPS_ENDPOINT}"
             _print_domain_pass("AERO", packet, url)
+            if requests is None:
+                raise RuntimeError("requests is required for API sending")
             res = requests.post(url, json=packet, headers=_headers, timeout=10)
             if res.status_code == 200:
                 data = res.json().get("data", res.json())
@@ -902,6 +976,18 @@ if __name__ == "__main__":
     import argparse as _ap
     _parser = _ap.ArgumentParser(description="Obsidia Aviation Domain Connector")
     _parser.add_argument("--once", action="store_true", help="Itération unique puis sortie")
+    _parser.add_argument("--local-gate", action="store_true", help="Exerce P3-05 localement sans appeler l'API")
+    _parser.add_argument("--spoof", action="store_true", help="Utilise un paquet AF994 spoofé pour --local-gate")
+    _parser.add_argument("--replay", action="store_true", help="Utilise un paquet AF994 rejoué pour --local-gate")
     _parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="URL de base de l'API")
     _args = _parser.parse_args()
-    run_flight_flow(api_base=_args.api_base, once=_args.once)
+    if _args.local_gate:
+        if _args.replay:
+            _packet = build_replay_attack_payload()
+        elif _args.spoof:
+            _packet = build_spoofed_gps_payload()
+        else:
+            _packet = build_gps_payload()
+        print(json.dumps(evaluate_local_gate(_packet), ensure_ascii=False, indent=2, default=str))
+    else:
+        run_flight_flow(api_base=_args.api_base, once=_args.once)
