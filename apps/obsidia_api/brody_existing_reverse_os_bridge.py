@@ -1,4 +1,4 @@
-﻿"""F18B — existing Reverse OS / IR readonly bridge.
+"""F18B — existing Reverse OS / IR readonly bridge.
 
 This module adapts the already-existing Reverse OS source:
 - repo periphery/reverse_os.py
@@ -12,6 +12,8 @@ import importlib.util
 import hashlib
 from pathlib import Path
 from typing import Any
+
+from periphery.language.lexical_calibrator import calibrate_lexical_knownness
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -163,6 +165,11 @@ def build_existing_ir_candidate(
     if intent == "action_request" or authority_snapshot.get("request_type") != "PURE_RESPONSE":
         contradictions.append("REQUEST_REQUIRES_ACTION_OR_WRITE_BUT_ROUTE_IS_READONLY")
 
+    lexical_calibration = calibrate_lexical_knownness(
+        user_message,
+        "unknown",
+    )
+
     return {
         "status": "IR_CANDIDATE_EXISTING_REVERSE_OS_BRIDGE_PASS",
         "source": "BRODY_EXISTING_REVERSE_OS_IR_BRIDGE_V1",
@@ -173,6 +180,13 @@ def build_existing_ir_candidate(
         "entities": entities,
         "constraints": constraints,
         "risk_flags": ["BOUNDARY_REQUEST"] if contradictions else [],
+        "unknowns": list(
+            lexical_calibration.get(
+                "unknowns",
+                [],
+            )
+        ),
+        "lexical_calibration": lexical_calibration,
         "contradictions": contradictions,
         "reverse_flow_reason_code": reverse_flow.get("reason_code"),
         "reverse_flow_verdict_marker": reverse_flow.get("verdict"),

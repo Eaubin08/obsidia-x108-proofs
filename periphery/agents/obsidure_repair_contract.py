@@ -279,6 +279,7 @@ class RepairVerdict:
     sandbox_dir: str = ""
     tests_executed: List[Dict[str, Any]] = field(default_factory=list)
     resume_objective: str = ""
+    tested_artifacts: List[Dict[str, Any]] = field(default_factory=list)
     boundary: Dict[str, Any] = field(default_factory=lambda: dict(REPAIR_BOUNDARY))
 
     def __post_init__(self) -> None:

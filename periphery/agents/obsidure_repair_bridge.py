@@ -123,6 +123,7 @@ def _infer_failure_mode(
 def _collect_repo_targets(
     error_contexts: List[Any],
     patches: List[Dict[str, Any]],
+    explicit_targets: Optional[List[str]] = None,
 ) -> List[str]:
     """Chemins repo réels concernés par l'échec, dédupliqués, ordre stable."""
     targets: List[str] = []
@@ -131,6 +132,9 @@ def _collect_repo_targets(
         p = str(raw or "").replace("\\", "/").strip()
         if p and p not in targets and not is_protected_repair_path(p):
             targets.append(p)
+
+    for target in explicit_targets or []:
+        _add(target)
 
     for ctx in error_contexts:
         _add(getattr(ctx, "target_hint", ""))
@@ -164,7 +168,11 @@ def build_repair_request_from_cycle(
     root = Path(repo_root) if repo_root else REPO_ROOT
     records = [ErrorContextRecord.from_obj(c) for c in ctxs]
     failure_mode = _infer_failure_mode(ctxs, pchs, stabilization)
-    repo_targets = _collect_repo_targets(ctxs, pchs)
+    repo_targets = _collect_repo_targets(
+        ctxs,
+        pchs,
+        explicit_targets=list(getattr(os_trad, "target_paths", []) or []),
+    )
 
     # Extraits réels des fichiers cibles — le moteur externe doit raisonner
     # sur le code existant, pas sur un résumé.
@@ -457,6 +465,7 @@ def test_repair_proposal(
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(cand.full_content, encoding="utf-8")
         written.append((rel, out))
+        verdict.tested_artifacts.append({"path": rel, "sha256": _sha256_file(out)})
 
         # Dérive : le fichier de base a changé depuis l'émission du request.
         base = root / rel

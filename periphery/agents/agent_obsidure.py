@@ -3400,6 +3400,17 @@ class AgentObsidure:
         self._math_ctx: Optional[MathematicalContext] = None
         self._last_error_contexts: List[ErrorContext] = []
         self._last_repair_request: Optional[Any] = None
+
+        # C278 PROPOSAL_MEANING evidence observed at the real
+        # RepairProposal -> sandbox boundary.
+        # Readonly/advisory trace only; never execution authority.
+        self._last_proposal_meaning_validation: Optional[Dict[str, Any]] = None
+
+        # Exact readonly artifacts from the latest repair evaluation.
+        # Provenance only: never execution authority or Git context.
+        self._last_repair_proposal: Optional[Any] = None
+        self._last_repair_verdict: Optional[Any] = None
+
         PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
         self._log("Agent Obsidure v2.0 initialisé.")
         self._log(f"OS_TRAD_REVERSE cible : {api_base}")
@@ -3708,6 +3719,9 @@ class AgentObsidure:
 
         if stabilized and not artifact_missing:
             self._last_repair_request = None
+            self._last_proposal_meaning_validation = None
+            self._last_repair_proposal = None
+            self._last_repair_verdict = None
             return None
 
         try:
@@ -3730,16 +3744,132 @@ class AgentObsidure:
             )
             path = persist_repair_request(request)
             self._last_repair_request = request
+            self._last_proposal_meaning_validation = None
+            self._last_repair_proposal = None
+            self._last_repair_verdict = None
             self._log(
                 f"  RepairRequest émis : {request.request_id} "
                 f"(failure_mode={request.failure_mode}, cibles={len(request.repo_targets)})",
                 level="WARN",
             )
             self._log(f"  Déposé : {path}", level="WARN")
+            # RepairRequest -> Brody reasoning interne.
+            # Aucun fallback externe automatique.
+            try:
+                from periphery.agents.obsidure_reasoning_provider import (
+                    run_reasoning_cycle,
+                )
+
+                reasoning = run_reasoning_cycle(
+                    request,
+                    allow_external=False,
+                    repo_root=REPO_ROOT,
+                )
+
+                diagnosis = reasoning.diagnosis
+                if diagnosis is not None:
+                    self._log(
+                        f"  Brody reasoning : status={diagnosis.status} "
+                        f"defect_class={diagnosis.defect_class} "
+                        f"provider={diagnosis.provider}",
+                        level="INFO",
+                    )
+
+                if reasoning.proposal is not None:
+                    self._log(
+                        "  RepairProposal interne produit -> C278 PROPOSAL_MEANING.",
+                        level="INFO",
+                    )
+                    verdict = self.evaluate_repair_proposal(
+                        reasoning.proposal,
+                        run_tests=True,
+                    )
+                    if verdict is not None:
+                        self._log(
+                            f"  RepairVerdict interne : {verdict.get('status', '?')}",
+                            level="INFO",
+                        )
+
+                elif diagnosis is not None:
+                    self._log(
+                        f"  Aucun RepairProposal interne : {diagnosis.status}",
+                        level="WARN",
+                    )
+
+            except Exception as exc:
+                self._log(
+                    f"  Brody reasoning interne indisponible : "
+                    f"{type(exc).__name__}: {exc}",
+                    level="WARN",
+                )
+
             return request.to_dict()
         except Exception as exc:
             self._log(f"  Émission RepairRequest échouée : {exc}", level="ERROR")
             return None
+
+    def get_last_repair_runtime_evidence(self) -> Dict[str, Any]:
+        """
+        Readonly snapshot of the exact latest repair-chain artifacts.
+
+        Carries:
+          - RepairRequest
+          - RepairProposal
+          - C278 PROPOSAL_MEANING evidence
+          - RepairVerdict
+
+        It carries no IsolatedWorkUnit, Git execution context, EAH,
+        HumanApproval, KX108 decision, or target-mutation authority.
+        """
+        from copy import deepcopy
+
+        def _snapshot(value: Any):
+            if value is None:
+                return None
+
+            if isinstance(value, dict):
+                return deepcopy(value)
+
+            to_dict = getattr(value, "to_dict", None)
+
+            if callable(to_dict):
+                try:
+                    return deepcopy(to_dict())
+                except Exception:
+                    return None
+
+            return None
+
+        return {
+            "status": "REPAIR_RUNTIME_EVIDENCE_SNAPSHOT",
+
+            "request": _snapshot(
+                self._last_repair_request
+            ),
+
+            "proposal": _snapshot(
+                self._last_repair_proposal
+            ),
+
+            "c278_evidence": _snapshot(
+                self._last_proposal_meaning_validation
+            ),
+
+            "verdict": _snapshot(
+                self._last_repair_verdict
+            ),
+
+            "readonly": True,
+            "authority": "NON_SOVEREIGN",
+            "decision_authority": "KX108_ONLY",
+
+            "execution_authority": False,
+            "work_unit_bound": False,
+            "human_approval_present": False,
+            "kx108_invoked": False,
+            "target_mutated": False,
+        }
+
 
     def evaluate_repair_proposal(
         self,
@@ -3753,6 +3883,11 @@ class AgentObsidure:
         Retourne le RepairVerdict sérialisé. N'applique jamais rien : la
         décision d'appliquer reste humaine (HUMAN_APPROVED_WRITE).
         """
+        # New evaluation: stale proposal/verdict must never survive
+        # parsing, C278, or sandbox failure from a later attempt.
+        self._last_repair_proposal = None
+        self._last_repair_verdict = None
+
         try:
             from periphery.agents.obsidure_repair_bridge import (
                 load_repair_proposal,
@@ -3762,6 +3897,10 @@ class AgentObsidure:
             from periphery.agents.obsidure_repair_contract import (
                 RepairProposal as _RP,
                 repair_proposal_from_dict,
+            )
+            from periphery.language.proposal_meaning_validator import (
+                EVIDENCE_CONTINUOUS,
+                validate_proposal_meaning,
             )
         except Exception as exc:
             self._log(f"  Pont de réparation indisponible : {exc}", level="ERROR")
@@ -3774,11 +3913,73 @@ class AgentObsidure:
         else:
             proposal = load_repair_proposal(Path(str(proposal_source)))
 
+        # Preserve the exact normalized proposal observed by C278
+        # and by the sandbox. Provenance only.
+        self._last_repair_proposal = proposal
+
+        # C278 PROPOSAL_MEANING:
+        # readonly continuity evidence immediately before the real
+        # Obsidure sandbox boundary.
+        #
+        # It does NOT decide or authorize execution.
+        # Only CONTINUOUS is eligible for sandbox validation.
+        self._last_proposal_meaning_validation = None
+
+        try:
+            c278_validation = validate_proposal_meaning(
+                request=self._last_repair_request,
+                proposal=proposal,
+            )
+        except Exception as exc:
+            self._log(
+                "  C278 PROPOSAL_MEANING indisponible : "
+                f"{type(exc).__name__}: {exc}",
+                level="WARN",
+            )
+            return None
+
+        if not isinstance(c278_validation, dict):
+            self._log(
+                "  C278 PROPOSAL_MEANING invalide : r?sultat non structur?.",
+                level="WARN",
+            )
+            return None
+
+        self._last_proposal_meaning_validation = c278_validation
+
+        c278_evidence = str(
+            c278_validation.get("evidence") or ""
+        )
+
+        self._log(
+            "  C278 PROPOSAL_MEANING : "
+            f"evidence={c278_evidence or 'ABSENT'} "
+            f"request_id={c278_validation.get('request_id', '')} "
+            f"proposal_id={c278_validation.get('proposal_id', '')}",
+            level=(
+                "INFO"
+                if c278_evidence == EVIDENCE_CONTINUOUS
+                else "WARN"
+            ),
+        )
+
+        if c278_evidence != EVIDENCE_CONTINUOUS:
+            self._log(
+                "  Sandbox non invoqu? : continuit? C278 non ?tablie.",
+                level="WARN",
+            )
+            return None
+
         verdict = test_repair_proposal(
             proposal,
             request=self._last_repair_request,
             run_tests=run_tests,
         )
+
+        # Exact sandbox verdict, including tested_artifacts SHA.
+        # Evidence only ? never execution authorization.
+        self._last_repair_verdict = verdict
+
         self._log(
             f"  RepairVerdict : {verdict.status} "
             f"({len(verdict.compiled_files)} fichier(s) compilé(s), "

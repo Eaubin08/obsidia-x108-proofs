@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from apps.obsidia_api.safe_response import safe_backend_response
 from apps.obsidia_api.brody_domain_raccord_adapter import adjust_risk_flags
+from periphery.language.lexical_calibrator import calibrate_lexical_knownness
 
 try:
     from periphery.language.language_router import detect_language as _detect_language_impl
@@ -295,6 +296,11 @@ async def ir_candidate(req: IRCandidateRequest):
     intent = _intent(req.text, flags)
     constraints = _constraints(flags)
 
+    lexical_calibration = calibrate_lexical_knownness(
+        req.text,
+        detected_language,
+    )
+
     contradictions: list[str] = []
     if any(flag in flags for flag in ["action_request", "mutation_request", "write_request"]):
         contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
@@ -309,6 +315,13 @@ async def ir_candidate(req: IRCandidateRequest):
         "graphiti_refs": _refs_from_context(req.graphiti_context, "graphiti"),
         "language": detected_language,
         "alphabet_units": req.alphabet_units,
+        "unknowns": list(
+            lexical_calibration.get(
+                "unknowns",
+                [],
+            )
+        ),
+        "lexical_calibration": lexical_calibration,
     }
 
     payload = {

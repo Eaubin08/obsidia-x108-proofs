@@ -85,13 +85,16 @@ class DiagnosisStatus:
     #: défaut identifiable mais hors de la capacité du provider
     NEEDS_EXTERNAL_ENGINE = "NEEDS_EXTERNAL_ENGINE"
 
+    #: specification Brody structuree, execution native Obsidure requise
+    NEEDS_NATIVE_ENGINE = "NEEDS_NATIVE_ENGINE"
+
     #: la demande ne relève pas de la réparation de code
     OUT_OF_SCOPE = "OUT_OF_SCOPE"
 
-    ALL = (PROPOSAL_READY, NEEDS_DIAGNOSTIC_CONTEXT, NEEDS_EXTERNAL_ENGINE, OUT_OF_SCOPE)
+    ALL = (PROPOSAL_READY, NEEDS_DIAGNOSTIC_CONTEXT, NEEDS_NATIVE_ENGINE, NEEDS_EXTERNAL_ENGINE, OUT_OF_SCOPE)
 
     #: statuts pour lesquels appeler propose() est légitime
-    PROPOSABLE = (PROPOSAL_READY,)
+    PROPOSABLE = (PROPOSAL_READY, NEEDS_NATIVE_ENGINE)
 
 
 @dataclass
@@ -345,6 +348,34 @@ def run_reasoning_cycle(
                 notes=f"{type(exc).__name__}: {exc}"[:400],
             )
         last_diagnosis = diagnosis
+
+        # Brody cognition completed: native Obsidure consumes
+        # the EngineeringSpec before the normal propose() phase.
+        # IMPORTANT: no return/continue here. A ready NativePlan
+        # must flow into provider.propose().
+        if diagnosis.status == DiagnosisStatus.NEEDS_NATIVE_ENGINE:
+            try:
+                from periphery.agents.obsidure_native_engineering_consumer import (
+                    consume_brody_engineering_spec,
+                )
+
+                native = consume_brody_engineering_spec(
+                    diagnosis,
+                    repo_root=repo_root,
+                )
+
+                diagnosis.findings.append({
+                    "type": "OBSIDURE_NATIVE_HANDOFF",
+                    "result": native.to_dict(),
+                })
+
+            except Exception as exc:
+                diagnosis.findings.append({
+                    "type": "OBSIDURE_NATIVE_HANDOFF_ERROR",
+                    "error": (
+                        f"{type(exc).__name__}: {exc}"
+                    )[:600],
+                })
 
         if not diagnosis.can_propose:
             continue

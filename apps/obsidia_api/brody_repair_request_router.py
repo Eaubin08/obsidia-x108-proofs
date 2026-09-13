@@ -56,6 +56,12 @@ REPAIR_ROUTER_BOUNDARY: Dict[str, Any] = dict(REPAIR_BOUNDARY)
 
 _EXCERPT_MAX_CHARS = 20000
 
+# Preserve long user objectives for downstream semantic continuity.
+#
+# 4k was too small for real debugging / repair requests containing
+# instructions + code + traceback + contextual constraints.
+_OBJECTIVE_MAX_CHARS = 65536
+
 # Intentions backend qui doivent ouvrir la route de réparation.
 _REPAIR_INTENTS = frozenset({"code_debug"})
 _REPAIR_RISK_FLAGS = frozenset({"code_debug"})
@@ -195,7 +201,11 @@ def build_repair_request_from_message(
 
     return RepairRequest(
         origin="BRODY",
-        objective=str(message or "")[:4000],
+        objective=(
+            str(message or "")[
+                :_OBJECTIVE_MAX_CHARS
+            ]
+        ),
         failure_mode=failure_mode,
         summary=summary,
         error_contexts=signals,

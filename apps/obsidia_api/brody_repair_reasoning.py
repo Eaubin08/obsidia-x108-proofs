@@ -46,6 +46,10 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from apps.obsidia_api.brody_engineering_spec import build_brody_engineering_spec
+from apps.obsidia_api.brody_code_desired_state_adapter import derive_learned_desired_state
+
+from periphery.agents.obsidure_native_repair_proposal import build_native_repair_proposal
 from periphery.agents.obsidure_reasoning_provider import (  # noqa: E402
     DiagnosisStatus,
     ReasoningProvider,
@@ -273,7 +277,17 @@ class BrodyReasoningProvider(ReasoningProvider):
 
         sources = self._collect_sources(request, root)
 
-        if not sources:
+        bounded_implementation_request = (
+            request.failure_mode == "NO_ARTIFACT_PRODUCED"
+            and bool(request.objective.strip())
+            and bool(request.repo_targets)
+        )
+
+        # An absent source is legitimate for a bounded CREATE request.
+        # EngineeringSpec/DesiredState will classify the target as CREATE.
+        # For every other diagnostic route, no inspectable source remains
+        # fail-closed as before.
+        if not sources and not bounded_implementation_request:
             diagnosis.status = DiagnosisStatus.NEEDS_DIAGNOSTIC_CONTEXT
             diagnosis.defect_class = "NO_INSPECTABLE_TARGET"
             diagnosis.missing_information = [
@@ -358,6 +372,32 @@ class BrodyReasoningProvider(ReasoningProvider):
             return diagnosis
 
         # ── Aucun défaut fonctionnel défini → on refuse d'inventer ────────
+        # Bounded implementation request -> native Obsidure handoff.
+        # Brody structures the request but generates no source here.
+        if (
+            request.failure_mode == "NO_ARTIFACT_PRODUCED"
+            and request.objective.strip()
+            and request.repo_targets
+        ):
+            engineering_spec = build_brody_engineering_spec(request, root)
+
+            learned_code_state = derive_learned_desired_state(
+                engineering_spec.to_dict()
+            )
+
+            diagnosis.status = DiagnosisStatus.NEEDS_NATIVE_ENGINE
+            diagnosis.defect_class = "IMPLEMENTATION_REQUEST"
+            diagnosis.confidence = engineering_spec.confidence
+            diagnosis.findings.append({
+                "type": "BRODY_ENGINEERING_SPEC",
+                "spec": learned_code_state.engineering_spec,
+            })
+            diagnosis.missing_information = list(engineering_spec.unknowns)
+            diagnosis.notes = (
+                "Bounded implementation request structured by Brody. "
+                "No source generated. Native Obsidure handoff required."
+            )
+            return diagnosis
         diagnosis.status = DiagnosisStatus.NEEDS_DIAGNOSTIC_CONTEXT
         diagnosis.defect_class = "UNDETERMINED"
         diagnosis.confidence = "NONE"
@@ -376,6 +416,70 @@ class BrodyReasoningProvider(ReasoningProvider):
         diagnosis: RepairDiagnosis,
         repo_root: Optional[Path] = None,
     ) -> Optional[RepairProposal]:
+        # Native Brody -> Obsidure route.
+        # The handoff has already produced a bounded NativePlan.
+        if diagnosis.status == DiagnosisStatus.NEEDS_NATIVE_ENGINE:
+
+            handoff = next(
+                (
+                    item
+                    for item in diagnosis.findings
+                    if isinstance(item, dict)
+                    and item.get("type") == "OBSIDURE_NATIVE_HANDOFF"
+                ),
+                None,
+            )
+
+            if handoff is None:
+                return None
+
+            native_result = handoff.get("result") or {}
+
+            if not isinstance(native_result, dict):
+                return None
+
+            if native_result.get("status") != "NATIVE_PLAN_READY":
+                return None
+
+            native_plan = native_result.get("native_plan")
+
+            if not isinstance(native_plan, dict):
+                return None
+
+            root = (
+                Path(repo_root)
+                if repo_root is not None
+                else _REPO_ROOT
+            )
+
+            built = build_native_repair_proposal(
+                native_plan,
+                request=request,
+                repo_root=root,
+                confidence=diagnosis.confidence,
+            )
+
+            diagnosis.findings.append({
+                "type": "OBSIDURE_NATIVE_PROPOSAL_BUILD",
+                "status": built.status,
+                "errors": list(built.errors),
+                "candidate_count": (
+                    len(built.proposal.candidate_files)
+                    if built.proposal is not None
+                    else 0
+                ),
+                "engine": (
+                    built.proposal.engine
+                    if built.proposal is not None
+                    else ""
+                ),
+            })
+
+            if built.status == "REPAIR_PROPOSAL_READY":
+                return built.proposal
+
+            return None
+
         if not diagnosis.can_propose or diagnosis.defect_class != "UNRESOLVED_NAME":
             return None
 
