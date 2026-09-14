@@ -97,6 +97,7 @@ def print_menu() -> None:
     srl      → résumé mémoire SRL
     domains  → audit des gates P3
     boundary → afficher les frontières de sécurité
+    context navier → lire les sources Navier-Stokes, sans cycle ni proposal
     quit     → quitter
   """))
 
@@ -106,6 +107,14 @@ def print_menu() -> None:
 def handle_special_command(cmd: str, agent: "AgentObsidure") -> bool:
     """Retourne True si la commande a été traitée."""
     cmd = cmd.strip().lower()
+
+    if cmd == "context navier":
+        import json
+        from periphery.agents.agent_obsidure import _build_math_memory_context_pack
+        context = _build_math_memory_context_pack("NS_ANTI_PUMPING")
+        print(json.dumps(context, ensure_ascii=False, indent=2))
+        print("Lecture documentaire uniquement; aucune preuve ni analyse automatique effectuee.")
+        return True
 
     if cmd == "status":
         print(f"  Phase courante : {C_OK(agent.phase.value)}")

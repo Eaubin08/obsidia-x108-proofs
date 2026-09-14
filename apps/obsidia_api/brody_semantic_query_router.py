@@ -126,8 +126,23 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         "memory",
         ["graphiti", "candidat", "brody", "pipeline"],
     ),
+    # PROOF_QUERY est placé AVANT OPERATOR_LOOP : "lean", "tla", "merkle" sont
+    # des marqueurs de domaine sans ambiguïté, alors que "boucle"/"opérateur"
+    # sont des mots français courants. L'ordre inverse faisait tomber toute
+    # question Lean contenant "boucle" dans OPERATOR_LOOP.
     (
-        ["operator loop", "command gate", "receipt", "handoff", "opérateur", "boucle"],
+        ["preuve", "proof", "lean", "tla", "merkle", "os3"],
+        "PROOF_QUERY",
+        "OS3 preuve Lean TLA Merkle",
+        "proof",
+        ["lean", "tla", "merkle", "os3"],
+    ),
+    # OPERATOR_LOOP n'accepte plus que des expressions composées. Les mots
+    # isolés "boucle" et "opérateur" sont trop génériques pour router seuls —
+    # ils sont traités par la règle de co-occurrence dans build_semantic_query.
+    (
+        ["operator loop", "command gate", "receipt", "handoff",
+         "boucle operateur", "boucle opérateur", "boucle de commande"],
         "OPERATOR_LOOP",
         "operator loop command gate receipt handoff",
         "operator",
@@ -139,13 +154,6 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         "Brody droits action humain X108",
         "droits",
         ["rights", "human", "x108", "action"],
-    ),
-    (
-        ["preuve", "proof", "lean", "tla", "merkle", "os3"],
-        "PROOF_QUERY",
-        "OS3 preuve Lean TLA Merkle",
-        "proof",
-        ["lean", "tla", "merkle", "os3"],
     ),
     (
         ["gencoin", "jeton", "token", "valorisation"],
@@ -260,6 +268,23 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
                 "is_canonical": True,
                 "route": "TOPIC_MATCHED",
             }
+
+    # ── Repli tardif OPERATOR_LOOP ───────────────────────────────────────
+    # "boucle" / "opérateur" employés seuls ne routent que si AUCUN topic
+    # spécifique n'a matché. Une question Lean contenant "boucle" est donc
+    # déjà partie en PROOF_QUERY plus haut.
+    import re as _re_loop
+    if _re_loop.search(r"(?<![\wÀ-ÿ])(boucle|operateur|loop)(?![\wÀ-ÿ])", folded_lower):
+        return {
+            "topic": "OPERATOR_LOOP",
+            "semantic_query": "operator loop command gate receipt handoff",
+            "primary_query": "operator",
+            "fallback_queries": ["command gate", "receipt", "handoff", "loop"],
+            "original_message": user_message,
+            "normalized_message": normalized,
+            "is_canonical": True,
+            "route": "LATE_GENERIC_MATCH",
+        }
 
     # Fallback: extract first 3 words of 4+ chars
     import re

@@ -111,6 +111,13 @@ class ObsidureMathMemoryProvider:
         """Retourne la liste de tous les ids connus."""
         return list(self._items.keys())
 
+    def research_context(self, objective: str) -> dict | None:
+        normalized = objective.casefold().replace('\\_', '_').replace('-', '_')
+        if 'navier' not in normalized and 'ns_anti_pumping' not in normalized:
+            return None
+        from periphery.agents.obsidure_research_sources import load_navier_context
+        return load_navier_context()
+
     def explain_boundary(self) -> dict:
         """
         Retourne les proprietes de securite de ce provider.
