@@ -41,6 +41,7 @@ from periphery.agents_obsidia_config_registry import (
     get_registry_provenance as get_agent52_provenance,
     list_agent_configs as list_agent52_configs,
 )
+
 from periphery.action_lifecycle import ActionLifecycleTrace, ActionPhase
 from periphery.action_sequence_governor import govern_action_sequence, ActionSequence, ActionStep
 from periphery.github.github_workflow_guard import guard_workflow_action
@@ -582,6 +583,7 @@ async def periphery_list_agents_52():
         "provenance": provenance,
         **_BOUNDARY,
     }, source="REAL_BACKEND")
+
 
 
 @router.get("/governance/agent-config/{agent_id}")
