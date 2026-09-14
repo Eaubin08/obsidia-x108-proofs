@@ -12,8 +12,9 @@ Usage:
 
 Garanties (par construction, pas par option) :
   - AUCUN subprocess : le CLI ne lance jamais de commande shell.
-  - Seul EXECUTE possible : doctor/status/sigma via HTTP GET readonly.
-  - Aucune ecriture hors de son receipt JSONL local non souverain.
+  - EXECUTE readonly reste disponible pour doctor/status/sigma via HTTP GET.
+  - `mission resume` expose le rail gouverne borne existant : <=1 mutation cible
+    par appel, sous BOUNDED_MISSION_AUTHORITY et KX108_PRE/POST.
   - Pas de --apply, --commit, --deploy, --act : ces flags n'existent pas.
   - stdlib uniquement, zero import de apps/, sigma/, periphery/.
   - decision_authority = KX108_ONLY. Le terminal ne decide rien.
@@ -53,6 +54,7 @@ from obsidia_law_registry_v1 import (  # noqa: E402
     get_terminal_law_panel_v1,
     get_terminal_law_registry_v1,
 )
+import obsidia_family_wiring as _family_wiring  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).resolve().parent / "obsidia_registry.yaml"
@@ -7242,11 +7244,12 @@ def print_shell_help(registry: dict) -> None:
     print("obsidia — terminal non souverain (decision_authority = KX108_ONLY)")
     print("Doctrine : X108 tranche. Sigma guide. Brody explique. Obsidure construit.")
     print("          Domains bridge-only. Memory readonly.")
-    print("Sorties possibles : EXECUTE (GET readonly) | COMMANDS | GUIDE | POLICY_DENY | STOP_UNKNOWN")
+    print("Sorties : readonly status/inspect + mission resume gouverne | COMMANDS | GUIDE | POLICY_DENY | STOP_UNKNOWN")
     print("Couches routables :")
     for layer, spec in (registry.get("layers") or {}).items():
         triggers = ", ".join(str(t) for t in (spec.get("triggers") or [])[:4])
         print(f"  {layer:10} [{spec.get('mode', '?')}] triggers: {triggers}, ...")
+    print("Mission : mission status <id> | mission inspect <id> | mission resume <id>")
     print("Panneau : plan \"<IN>\" | route \"<IN>\" | tools \"<IN>\" | blockers | gates | scope | next")
     print("Commandes internes : help/? , clear, exit/quit. Tout le reste = IN route.")
 
@@ -7754,6 +7757,18 @@ def interactive_tui_shell(registry: dict) -> int:
             active_right_tab = "PLAN"
             continue
 
+        # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
+        _first_tui = line.split(None, 1)
+        if _first_tui and _first_tui[0].lower() == "build":
+            _obj_tui = _first_tui[1].strip().strip('"').strip("'") if len(_first_tui) > 1 else ""
+            _build_output_tui = _dispatch_build(_obj_tui)
+            main_lines = _build_output_tui.splitlines()
+            plan_lines = ["=== BUILD ===", "", "mode: PLAN_PROPOSED",
+                          "auto_commit: NEVER", "", "AUTORITE:", "  X108=FINAL"]
+            current_layer = "TOOLING"
+            active_right_tab = "PLAN"
+            continue
+
         resp = answer_router(line, registry)
         resp["session_id"] = session_id
         write_receipt(registry, resp)
@@ -7769,10 +7784,595 @@ def interactive_tui_shell(registry: dict) -> int:
 # ─── FIN TUI LAYOUT V2 ───────────────────────────────────────────────────────
 
 
+# ─── BUILD PLAN HANDLER (aucun subprocess, import direct) ────────────────────
+
+def _handle_build_plan(objective: str) -> str:
+    """
+    Appelle obsidia_build.compute_plan et formate le resultat.
+    Aucun subprocess. Aucune mutation. Retourne le texte PLAN_PROPOSED.
+    Respect de la doctrine: stdlib uniquement, zero subprocess.
+    """
+    if not objective:
+        return (
+            "GUIDE: build \"<objectif>\"\n"
+            "  Phase 1 uniquement : PLAN_PROPOSED, zero ecriture.\n"
+            "  Phase 2 (approbation) : via PowerShell :\n"
+            "    powershell.exe -File scripts\\obsidia.ps1 build \"<obj>\" "
+            "--approve <token>"
+        )
+    try:
+        # Import dans le meme dossier que obsidia_cli.py (scripts/)
+        import importlib, sys as _sys
+        _scripts_dir = str(Path(__file__).resolve().parent)
+        if _scripts_dir not in _sys.path:
+            _sys.path.insert(0, _scripts_dir)
+        _mod = importlib.import_module("obsidia_build")
+        _base_sha = _mod.get_base_sha()
+        _plan = _mod.compute_plan(objective, _base_sha)
+        _stack = _mod._probe_api_status()
+        return _mod.format_plan_proposed(_plan, _stack)
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    except Exception as exc:
+        return f"[BUILD_ERROR] {exc}"
+
+
+def _handle_build_list() -> str:
+    """Appelle cmd_list() et retourne le texte capturé."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_build")
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    _old = sys.stdout
+    sys.stdout = _buf = _io.StringIO()
+    try:
+        _mod.cmd_list()
+    except Exception as exc:
+        sys.stdout = _old
+        return f"[BUILD_ERROR] {exc}"
+    sys.stdout = _old
+    return _buf.getvalue() or "[LIST] Aucune session."
+
+
+def _handle_build_lifecycle(subcmd: str, session_id: str, extra: str = "") -> str:
+    """Appelle cmd_<subcmd>(session_id, …) et retourne le texte capturé."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_build")
+    except ImportError as exc:
+        return f"[BUILD_UNAVAILABLE] obsidia_build non importable: {exc}"
+    _fn_map = {
+        "status":  lambda: _mod.cmd_status(session_id),
+        "inspect": lambda: _mod.cmd_inspect(session_id),
+        "resume":  lambda: _mod.cmd_resume(session_id),
+        "review":  lambda: _mod.cmd_review(session_id),
+        "abort":   lambda: _mod.cmd_abort(session_id, extra),
+        "cleanup": lambda: _mod.cmd_cleanup(session_id),
+    }
+    fn = _fn_map.get(subcmd)
+    if fn is None:
+        return f"[BUILD_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+    _old = sys.stdout
+    sys.stdout = _buf = _io.StringIO()
+    try:
+        fn()
+    except Exception as exc:
+        sys.stdout = _old
+        return f"[BUILD_ERROR] {exc}"
+    sys.stdout = _old
+    return _buf.getvalue() or f"[{subcmd.upper()}] Terminé."
+
+
+def _dispatch_batch(rest: str, raw_tokens: "list[str] | None" = None) -> str:
+    """Dispatche 'batch <subcmd> [args]' vers BATCH_SELECTOR_V0.
+
+    raw_tokens : argv brut (argv[1:] après 'batch') — tokens déjà délimités
+    par le shell/OS, préserve les espaces internes (--objective "texte
+    avec espaces"). Utilisé par 'propose' ; fallback sur la chaîne jointe
+    historique si non fourni (appels directs/tests)."""
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_batch_selector")
+    except ImportError as exc:
+        return f"[BATCH_UNAVAILABLE] obsidia_batch_selector non importable: {exc}"
+
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return (
+            "GUIDE: batch propose [--max N] [--objective TEXT] [--entries id1,id2,...] "
+            "| batch list | batch status <batch_id> "
+            "| batch inspect <batch_id> | batch candidates "
+            "| batch execution prepare <batch_id> | batch execution status <id> "
+            "| batch execution inspect <id> | batch execution list"
+        )
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    def _capture(fn):
+        _old = sys.stdout
+        sys.stdout = _buf = _io.StringIO()
+        try:
+            fn()
+        except Exception as exc:
+            sys.stdout = _old
+            return f"[BATCH_ERROR] {exc}"
+        sys.stdout = _old
+        return _buf.getvalue() or f"[{subcmd.upper()}] Termine."
+
+    if subcmd == "propose":
+        max_size = _mod.DEFAULT_MAX_BATCH_SIZE
+        objective = ""
+        entry_ids: "list[str] | None" = None
+        # argv brut (préserve les espaces internes d'un token entre
+        # guillemets, ex. --objective "First real batch pilot V0") ;
+        # fallback sur la chaîne jointe historique si non fourni.
+        tokens = list(raw_tokens[1:]) if raw_tokens is not None else subarg.split()
+        i = 0
+        cli_error: "str | None" = None
+        while i < len(tokens):
+            tok = tokens[i]
+            if tok in ("--max", "-m"):
+                if i + 1 >= len(tokens):
+                    cli_error = "--max requiert une valeur"
+                    break
+                try:
+                    max_size = int(tokens[i + 1])
+                except ValueError:
+                    cli_error = f"--max valeur invalide : {tokens[i + 1]}"
+                    break
+                i += 2
+            elif tok in ("--objective", "-o"):
+                if i + 1 >= len(tokens):
+                    cli_error = "--objective requiert une valeur"
+                    break
+                objective = tokens[i + 1]
+                i += 2
+            elif tok == "--entries":
+                # Portée explicite : liste d'entry_id séparés par des
+                # virgules — pas de fallback silencieux vers le mode
+                # GLOBAL, pas de wildcard/'*'.
+                if i + 1 >= len(tokens):
+                    cli_error = "--entries requiert une valeur (liste séparée par des virgules)"
+                    break
+                entry_ids = [e for e in tokens[i + 1].split(",") if e]
+                if not entry_ids:
+                    cli_error = "--entries : liste vide"
+                    break
+                i += 2
+            else:
+                cli_error = f"Flag inconnu : {tok}"
+                break
+        if cli_error:
+            return f"[BATCH_CLI_ERROR] {cli_error}"
+        result = _mod.propose_batch(
+            objective=objective,
+            max_batch_size=max_size,
+            candidate_entry_ids=entry_ids,
+        )
+        return json.dumps({
+            "batch_id": result["batch_id"],
+            "status": result["status"],
+            "selected_count": result["selected_count"],
+            "hold_count": result["hold_count"],
+            "excluded_count": result["excluded_count"],
+            "batch_hash": result["batch_hash"],
+            "metrics": result["metrics"],
+            "candidate_scope_mode": result.get("candidate_scope_mode"),
+            "candidate_entry_ids": result.get("candidate_entry_ids"),
+            "candidate_scope_hash": result.get("candidate_scope_hash"),
+            "scope_error": result.get("scope_error"),
+            "execution_order": result.get("execution_order"),
+            "dependency_edges": result.get("dependency_edges"),
+        }, ensure_ascii=False)
+    if subcmd == "list":
+        return _capture(lambda: _mod.cmd_batch_list())
+    if subcmd in ("status", "inspect"):
+        if not subarg:
+            return f"GUIDE: batch {subcmd} <batch_id>"
+        fn_map = {
+            "status":  lambda: _mod.cmd_batch_status(subarg),
+            "inspect": lambda: _mod.cmd_batch_inspect(subarg),
+        }
+        return _capture(fn_map[subcmd])
+    if subcmd == "candidates":
+        return _capture(lambda: _mod.cmd_batch_candidates())
+    if subcmd == "execution":
+        # BATCH_EXECUTION_ENVELOPE_V0 — prepare/status/inspect uniquement.
+        # Aucune commande 'run' exposee : le run reel n'est pas autorise
+        # par ce palier (synthetic-only, injection Python directe).
+        try:
+            import obsidia_batch_execution as _exe
+        except ImportError as exc:
+            return f"[BATCH_EXECUTION_UNAVAILABLE] obsidia_batch_execution non importable: {exc}"
+        exec_parts = subarg.strip().split(None, 1)
+        if not exec_parts:
+            return (
+                "GUIDE: batch execution prepare <batch_id> "
+                "| batch execution status <batch_execution_id> "
+                "| batch execution inspect <batch_execution_id> "
+                "| batch execution list"
+            )
+        exec_sub = exec_parts[0].lower()
+        exec_arg = exec_parts[1].strip().split()[0] if len(exec_parts) > 1 and exec_parts[1].strip() else ""
+        if exec_sub == "prepare":
+            if not exec_arg:
+                return "GUIDE: batch execution prepare <batch_id>"
+            env = _exe.prepare_execution(exec_arg)
+            return json.dumps({
+                "batch_execution_id": env.get("batch_execution_id"),
+                "batch_id": env.get("batch_id"),
+                "aggregate_status": env.get("aggregate_status"),
+                "integrity_verified": env.get("integrity_verified"),
+                "integrity_error": env.get("integrity_error"),
+                "children_count": len(env.get("children", [])),
+                "executable_candidate_count": _exe.executable_candidate_count(env),
+                "human_execution_approved": env.get("human_execution_approved"),
+                "decision_authority": env.get("decision_authority"),
+            }, ensure_ascii=False)
+        if exec_sub == "list":
+            return _capture(lambda: _exe.cmd_execution_list())
+        if exec_sub in ("status", "inspect"):
+            if not exec_arg:
+                return f"GUIDE: batch execution {exec_sub} <batch_execution_id>"
+            fn_map = {
+                "status":  lambda: _exe.cmd_execution_status(exec_arg),
+                "inspect": lambda: _exe.cmd_execution_inspect(exec_arg),
+            }
+            return _capture(fn_map[exec_sub])
+        return f"[BATCH_EXECUTION_UNKNOWN_SUBCMD] Sous-commande inconnue : {exec_sub}"
+    return f"[BATCH_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+
+
+def _dispatch_ledger(rest: str, raw_tokens: "list[str] | None" = None) -> str:
+    """Dispatche 'ledger <subcmd> [arg]' vers BRANCHING_LEDGER_V0.
+
+    raw_tokens : argv brut (argv[1:] après 'ledger'), tokens déjà
+    correctement délimités par le shell/OS — préserve les espaces internes
+    d'un token entre guillemets (chemins Windows, --reason "texte avec
+    espaces"). Utilisé par register-source ; les autres sous-commandes
+    conservent le parsing historique basé sur la chaîne jointe.
+    """
+    import io as _io
+    import importlib
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+    try:
+        _mod = importlib.import_module("obsidia_branching_ledger")
+    except ImportError as exc:
+        return f"[LEDGER_UNAVAILABLE] obsidia_branching_ledger non importable: {exc}"
+
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return (
+            "GUIDE: ledger list | ingest <session_id> | status <entry_id> "
+            "| inspect <entry_id> | history <entry_id> "
+            "| find --path <path> | find --session <session_id> "
+            "| register-source <path> [--domain D] [--target T] [--reason TEXT] "
+            "| register-git-source --commit <ref> --path <historical-path> "
+            "[--target T] [--domain D] [--reason TEXT]"
+        )
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    def _capture(fn):
+        _old = sys.stdout
+        sys.stdout = _buf = _io.StringIO()
+        try:
+            fn()
+        except Exception as exc:
+            sys.stdout = _old
+            return f"[LEDGER_ERROR] {exc}"
+        sys.stdout = _old
+        return _buf.getvalue() or f"[{subcmd.upper()}] Termine."
+
+    if subcmd == "list":
+        return _capture(lambda: _mod.cmd_ledger_list())
+    if subcmd == "ingest":
+        if not subarg:
+            return "GUIDE: ledger ingest <session_id>"
+        result = _mod.ingest_from_receipt(subarg)
+        return json.dumps(result, ensure_ascii=False)
+    if subcmd in ("status", "inspect", "history"):
+        if not subarg:
+            return f"GUIDE: ledger {subcmd} <entry_id>"
+        fn_map = {
+            "status":  lambda: _mod.cmd_ledger_status(subarg),
+            "inspect": lambda: _mod.cmd_ledger_inspect(subarg),
+            "history": lambda: _mod.cmd_ledger_history(subarg),
+        }
+        return _capture(fn_map[subcmd])
+    if subcmd == "find":
+        if subarg.startswith("--path "):
+            return _capture(lambda: _mod.cmd_ledger_find_path(subarg[7:].strip()))
+        if subarg.startswith("--session "):
+            return _capture(lambda: _mod.cmd_ledger_find_session(subarg[10:].strip()))
+        return "GUIDE: ledger find --path <path> | ledger find --session <session_id>"
+    if subcmd == "register-source":
+        # raw_tokens = argv brut (tokens deja delimites par le shell/OS) —
+        # préserve exactement les espaces internes d'un token entre
+        # guillemets. Fallback sur subarg.split() uniquement si appelé
+        # sans argv (rétro-compatibilité / appels directs en tests).
+        if raw_tokens is not None:
+            rs_tokens = list(raw_tokens[1:])
+        else:
+            rs_tokens = subarg.split()
+        if not rs_tokens:
+            return "GUIDE: ledger register-source <path> [--domain D] [--target T] [--reason TEXT]"
+        source_path = rs_tokens[0]
+        domain = None
+        target = None
+        reason: "str | None" = None
+        i = 1
+        while i < len(rs_tokens):
+            tok = rs_tokens[i]
+            if tok == "--domain":
+                if i + 1 >= len(rs_tokens):
+                    return "[LEDGER_CLI_ERROR] --domain requiert une valeur"
+                domain = rs_tokens[i + 1]
+                i += 2
+            elif tok == "--target":
+                if i + 1 >= len(rs_tokens):
+                    return "[LEDGER_CLI_ERROR] --target requiert une valeur"
+                target = rs_tokens[i + 1]
+                i += 2
+            elif tok == "--reason":
+                if raw_tokens is not None:
+                    # argv réel : le token --reason suivant est déjà le
+                    # texte complet (le shell a préservé les guillemets).
+                    if i + 1 >= len(rs_tokens):
+                        return "[LEDGER_CLI_ERROR] --reason requiert une valeur"
+                    reason = rs_tokens[i + 1]
+                    i += 2
+                else:
+                    # Fallback chaîne jointe : --reason absorbe le reste.
+                    reason = " ".join(rs_tokens[i + 1:]).strip().strip('"').strip("'") or None
+                    i = len(rs_tokens)
+            else:
+                return f"[LEDGER_CLI_ERROR] Flag inconnu : {tok}"
+        result = _mod.register_source(
+            source_path,
+            target_domain=domain,
+            target_path=target,
+            reason=reason,
+        )
+        return json.dumps(result, ensure_ascii=False)
+    if subcmd == "register-git-source":
+        # Aucun positionnel : tout est explicite via flags, pour éviter
+        # toute ambiguïté entre ref/chemin/cible (aucun checkout implicite).
+        gs_tokens = list(raw_tokens[1:]) if raw_tokens is not None else subarg.split()
+        commit_ref = None
+        historical_path = None
+        target = None
+        domain = None
+        reason: "str | None" = None
+        i = 0
+        while i < len(gs_tokens):
+            tok = gs_tokens[i]
+            if tok == "--commit":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --commit requiert une valeur"
+                commit_ref = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--path":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --path requiert une valeur"
+                historical_path = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--target":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --target requiert une valeur"
+                target = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--domain":
+                if i + 1 >= len(gs_tokens):
+                    return "[LEDGER_CLI_ERROR] --domain requiert une valeur"
+                domain = gs_tokens[i + 1]
+                i += 2
+            elif tok == "--reason":
+                if raw_tokens is not None:
+                    if i + 1 >= len(gs_tokens):
+                        return "[LEDGER_CLI_ERROR] --reason requiert une valeur"
+                    reason = gs_tokens[i + 1]
+                    i += 2
+                else:
+                    reason = " ".join(gs_tokens[i + 1:]).strip().strip('"').strip("'") or None
+                    i = len(gs_tokens)
+            else:
+                return f"[LEDGER_CLI_ERROR] Flag inconnu : {tok}"
+        if not commit_ref or not historical_path:
+            return "GUIDE: ledger register-git-source --commit <ref> --path <historical-path> [--target T] [--domain D] [--reason TEXT]"
+        result = _mod.register_git_blob_source(
+            commit_ref,
+            historical_path,
+            target_path=target,
+            target_domain=domain,
+            reason=reason,
+        )
+        return json.dumps(result, ensure_ascii=False)
+    return f"[LEDGER_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+
+
+def _dispatch_mission(rest: str) -> str:
+    """Thin CLI surface for an existing bounded mission.
+
+    status / inspect are READ_ONLY.
+    resume rehydrates the persisted WorkUnit then invokes the canonical
+    sequencer exactly once in BOUNDED_MISSION_AUTHORITY mode.
+    """
+    import importlib
+
+    _scripts_dir = str(Path(__file__).resolve().parent)
+    if _scripts_dir not in sys.path:
+        sys.path.insert(0, _scripts_dir)
+
+    try:
+        _m = importlib.import_module("obsidia_bounded_mission_v0")
+        _seq = importlib.import_module("obsidia_mission_sequencer_v0")
+        _ledger = importlib.import_module("obsidia_branching_ledger")
+        _selector = importlib.import_module("obsidia_batch_selector")
+        _be = importlib.import_module("obsidia_batch_execution")
+        _pec = importlib.import_module("obsidia_pre_execution_context")
+        _kx = importlib.import_module("obsidia_kx108_decision_store")
+        _tc = importlib.import_module("obsidia_test_contract")
+        _sev = importlib.import_module("obsidia_sealed_evidence_v0")
+        _rbk = importlib.import_module("obsidia_governed_rollback_v0")
+        _ls = importlib.import_module("obsidia_mission_local_snapshot_v0")
+    except ImportError as exc:
+        return f"[MISSION_UNAVAILABLE] bounded mission stack non importable: {exc}"
+
+    parts = rest.strip().split()
+    if not parts:
+        return (
+            "GUIDE: mission status <mission_id> | "
+            "mission inspect <mission_id> | mission resume <mission_id>"
+        )
+
+    subcmd = parts[0].lower()
+    if subcmd not in ("status", "inspect", "resume"):
+        return f"[MISSION_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
+    if len(parts) != 2:
+        return f"GUIDE: mission {subcmd} <mission_id>"
+
+    mission_id = parts[1]
+
+    proj = _m.project_mission(
+        mission_id=mission_id,
+        mission_store_dir=_m._BOUNDED_MISSION_DIR,
+        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
+    )
+
+    if subcmd == "inspect":
+        return json.dumps(proj, ensure_ascii=False, default=str)
+
+    if subcmd == "status":
+        if proj.get("status") != _m.STATUS_PROJECTION_OK:
+            return json.dumps(proj, ensure_ascii=False, default=str)
+        return json.dumps({
+            "status": proj["status"],
+            "mission_id": proj["mission_id"],
+            "current_state": proj["current_state"],
+            "revision": proj["revision"],
+            "mission_tip_sha": proj["mission_tip_sha"],
+            "active_plan_id": proj.get("active_plan_id"),
+            "plan_completed": proj.get("plan_completed"),
+            "active_hold_id": proj.get("active_hold_id"),
+            "mission_authority_mode": proj.get("mission_authority_mode"),
+            "active_hma_id": proj.get("active_hma_id"),
+            "actions_completed": proj.get("actions_completed"),
+            "actions_failed": proj.get("actions_failed"),
+            "unknowns": proj.get("unknowns"),
+            "decision_authority": "KX108_ONLY",
+            "terminal_authority": "NONE",
+        }, ensure_ascii=False, default=str)
+
+    if proj.get("status") != _m.STATUS_PROJECTION_OK:
+        return json.dumps({
+            "status": "MISSION_RESUME_REJECTED",
+            "reason": f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj.get('status')}",
+            "mission_id": mission_id,
+            "decision_authority": "KX108_ONLY",
+            "terminal_authority": "NONE",
+        }, ensure_ascii=False)
+
+    plan_id = proj.get("active_plan_id")
+    if not plan_id:
+        return json.dumps({
+            "status": "MISSION_RESUME_REJECTED",
+            "reason": "NO_ACTIVE_PLAN",
+            "mission_id": mission_id,
+            "decision_authority": "KX108_ONLY",
+            "terminal_authority": "NONE",
+        }, ensure_ascii=False)
+
+    rh = _m.rehydrate_bound_work_unit(
+        mission_id=mission_id,
+        mission_store_dir=_m._BOUNDED_MISSION_DIR,
+        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
+    )
+    if rh.get("status") != _m.STATUS_WORK_UNIT_REHYDRATED:
+        return json.dumps({
+            "status": "MISSION_RESUME_REJECTED",
+            "reason": f"WORK_UNIT_REHYDRATE_FAILED:{rh.get('reason')}",
+            "mission_id": mission_id,
+            "plan_id": plan_id,
+            "decision_authority": "KX108_ONLY",
+            "terminal_authority": "NONE",
+        }, ensure_ascii=False)
+
+    result = _seq.advance_bounded_mission(
+        mission_id=mission_id,
+        plan_id=plan_id,
+        work_unit=rh["work_unit"],
+        ledger_dir=_ledger.LEDGER_DIR,
+        selector_dir=_selector.SELECTOR_DIR,
+        execution_dir=_be.EXECUTION_DIR,
+        pre_execution_context_dir=_pec.PRE_EXECUTION_CONTEXT_DIR,
+        kx108_pre_decision_dir=_kx.KX108_DECISION_DIR,
+        kx108_post_decision_dir=_kx.KX108_DECISION_DIR,
+        test_contract_results_dir=_tc.TEST_CONTRACT_RESULT_DIR,
+        sealed_receipt_dir=_sev.SEALED_APPLY_RECEIPT_DIR,
+        sealed_rollback_evidence_dir=_sev.SEALED_ROLLBACK_EVIDENCE_DIR,
+        rollback_result_dir=_rbk.ROLLBACK_RESULT_DIR,
+        mission_store_dir=_m._BOUNDED_MISSION_DIR,
+        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
+        decision_store_dir=_m._BOUNDED_MISSION_DECISION_DIR,
+        snapshot_store_dir=_ls._BOUNDED_MISSION_SNAPSHOT_DIR,
+        authority_mode=_seq.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY,
+        human_authorized_execution_authority_hash=None,
+        human_authorization_reference=None,
+        human_mission_decision_id=None,
+    )
+
+    out = dict(result)
+    out["decision_authority"] = "KX108_ONLY"
+    out["terminal_authority"] = "NONE"
+    out["authority_mode_requested"] = _seq.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY
+    out["per_action_human_eah_supplied"] = False
+    return json.dumps(out, ensure_ascii=False, default=str)
+
+
+def _dispatch_build(rest: str) -> str:
+    """Dispatche 'build <subcmd> [arg]' vers lifecycle ou plan selon le sous-commande."""
+    parts = rest.strip().split(None, 1)
+    if not parts:
+        return _handle_build_plan(objective="")
+    subcmd = parts[0].lower()
+    subarg = parts[1].strip() if len(parts) > 1 else ""
+    if subcmd == "list":
+        return _handle_build_list()
+    if subcmd in ("status", "inspect", "resume", "review", "cleanup"):
+        if not subarg:
+            return f"GUIDE: build {subcmd} <session_id>"
+        return _handle_build_lifecycle(subcmd, subarg.split()[0])
+    if subcmd == "abort":
+        if not subarg:
+            return "GUIDE: build abort <session_id> [reason]"
+        abort_parts = subarg.split(None, 1)
+        sid = abort_parts[0]
+        reason = abort_parts[1] if len(abort_parts) > 1 else ""
+        return _handle_build_lifecycle("abort", sid, reason)
+    # Aucun sous-commande lifecycle → objectif de plan
+    return _handle_build_plan(objective=rest)
+
+
 def interactive_shell(registry: dict) -> int:
     session_id = uuid.uuid4().hex[:8]
     last_plan: dict | None = None
-    print("obsidia terminal — non souverain, readonly. X108 decide.")
+    print("obsidia terminal - non souverain. X108 decide; mission resume utilise le rail gouverne borne.")
     print(f"session {session_id} — tape 'help' pour l'aide, 'exit' pour sortir.")
     while True:
         try:
@@ -7816,6 +8416,16 @@ def interactive_shell(registry: dict) -> int:
             continue
         first = line.split(None, 1)
         cmd0 = first[0].lower()
+        # Commande mission: bounded mission status/inspect/resume.
+        if cmd0 == "mission":
+            _obj_mission = first[1].strip().strip('"').strip("\'") if len(first) > 1 else ""
+            print(_dispatch_mission(_obj_mission))
+            continue
+        # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
+        if cmd0 == "build":
+            _obj_plain = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
+            print(_dispatch_build(_obj_plain))
+            continue
         if cmd0 in ("raw", "json") or low == "doctor":
             target = line if low == "doctor" else (
                 first[1].strip().strip('"').strip("'") if len(first) > 1 else "")
@@ -8506,6 +9116,113 @@ def format_obsidure_operator_task_card_v1(card: dict) -> str:
     )
 
 
+# ----------------------------------------------------------------------------
+# TERMINAL_FAMILY_WIRING_SELF_AUDIT_V0 — "wiring status/audit/blockers <FAMILY>"
+# READ_ONLY. NON_SOVEREIGN. Aucune mutation, aucune resolution de blocker,
+# aucune invocation KX108 -- restitue l'etat canonique deja persiste et son
+# recalcul independant. Voir scripts/obsidia_family_wiring.py.
+# ----------------------------------------------------------------------------
+
+def build_family_wiring_audit_response_v1(family_id: str, registry: dict) -> dict:
+    return _family_wiring.audit_family_wiring(family_id, registry, repo_root=REPO_ROOT)
+
+
+def format_family_wiring_audit_v1(result: dict) -> str:
+    status = result.get("status")
+    if status != _family_wiring.STATUS_OK:
+        return (
+            f"FAMILLE : {result.get('family')}\n"
+            f"STATUT  : {status}\n"
+            f"(echec ferme -- aucune donnee fabriquee)"
+        )
+
+    prov = result.get("provenance", {})
+    lines = [
+        f"FAMILLE : {result['family']}  (authority={result['authority']}, decision_authority={result['decision_authority']})",
+        f"family_status        : {result['family_status']}",
+        f"fully_closed         : {result['fully_closed']}",
+        f"global_manifest_complete       : {result['global_manifest_complete']}",
+        f"global_relation_graph_complete : {result['global_relation_graph_complete']}",
+        f"global_registration_blocked    : {result['global_registration_blocked']}",
+        "",
+        f"active_file_blockers      : persisted={result['persisted_active_file_blockers']}  recomputed={result['recomputed_active_file_blockers']}",
+        f"active_global_blockers    : persisted={result['persisted_active_global_blockers']}  recomputed={result['recomputed_active_global_blockers']}",
+        f"active_total_blockers     : persisted={result['persisted_active_total_blockers']}  recomputed={result['recomputed_active_total_blockers']}",
+        f"historical_superseded     : persisted={result['persisted_historical_superseded']}  recomputed={result['recomputed_historical_superseded']}",
+        f"consistency_status        : {result['consistency_status']}",
+        "",
+        f"active_blockers : {len(result['active_blockers'])} (voir --json pour le detail complet)",
+        f"historical_superseded_blockers : {len(result['historical_superseded_blockers'])}",
+        "",
+        f"provenance.state_source_sha256 : {prov.get('state_source_sha256')}",
+        f"provenance.git_branch          : {prov.get('git_branch')}",
+        f"provenance.git_head            : {prov.get('git_head')}",
+        f"provenance.captured_at         : {prov.get('captured_at')}",
+    ]
+    return "\n".join(lines)
+
+
+# ----------------------------------------------------------------------------
+# FAMILY_WIRING_CANDIDATE_ONLY_V0 — "wiring candidate <FAMILY> <BLOCKER_ID>"
+# READ_ONLY. NON_SOVEREIGN. write_capability=false. Turns ONE currently
+# active Family Wiring blocker into a deterministic structured
+# FamilyRemediationCandidate on stdout only -- no proposal, no ledger, no
+# batch, no KX108, no HumanApproval, no target mutation, no persisted
+# artefact. The full governed remediation seam stays on HOLD.
+# ----------------------------------------------------------------------------
+
+def build_family_wiring_candidate_response_v1(family_id: str, blocker_id: str, registry: dict) -> dict:
+    return _family_wiring.build_family_remediation_candidate(
+        family_id, blocker_id, registry, repo_root=REPO_ROOT
+    )
+
+
+def format_family_wiring_candidate_v1(result: dict) -> str:
+    status = result.get("status")
+    if status != _family_wiring.STATUS_OK:
+        return (
+            f"FAMILLE           : {result.get('family_id')}\n"
+            f"BLOCKER           : {result.get('source_blocker_id')}\n"
+            f"STATUT            : {status}\n"
+            f"(echec ferme -- aucun candidat fabrique)"
+        )
+
+    prov = result.get("finding_provenance", {})
+    lines = [
+        f"FAMILLE              : {result['family_id']}  "
+        f"(authority={result['authority']}, decision_authority={result['decision_authority']}, "
+        f"write_capability={result['write_capability']})",
+        f"candidate_id         : {result['candidate_id']}",
+        f"candidate_status     : {result['candidate_status']}",
+        f"source_blocker_id    : {result['source_blocker_id']}",
+        f"target_path          : {result['target_path']}",
+        f"blocker_category     : {result['blocker_category']}",
+        f"blocker_type         : {result['blocker_type']}",
+        f"owner                : {result['owner']}",
+        f"reason               : {result['reason']}",
+        f"source_next_action   : {result['source_next_action']}",
+        f"  classification     : {result['source_next_action_classification']}",
+        f"remediation_intent   : {result['remediation_intent']}",
+        f"allowed_scope        : {result['allowed_scope']}",
+        f"forbidden_scope      : {result['forbidden_scope']}",
+        f"requires_human_review : {result['requires_human_review']}",
+        "",
+        f"finding_provenance.family_wiring_state_sha256 : {prov.get('family_wiring_state_sha256')}",
+        f"finding_provenance.source_artifact            : {prov.get('source_artifact')}",
+        f"finding_provenance.git_branch                 : {prov.get('git_branch')}",
+        f"finding_provenance.git_head                   : {prov.get('git_head')}",
+        f"finding_provenance.captured_at                : {prov.get('captured_at')}",
+    ]
+    if result["candidate_status"] == _family_wiring.CANDIDATE_STATUS_HOLD_FOR_HUMAN_REMEDIATION_CHOICE:
+        lines += [
+            "",
+            "  +-- HUMAN REMEDIATION CHOICE REQUIRED --------------------------------",
+            "  | source_next_action is NOT a single deterministic action.",
+            "  | NO archive / delete / other action has been selected by the machine.",
+            "  | This candidate is NOT an execution authorization and NOT an approval.",
+            "  +-------------------------------------------------------------------",
+        ]
+    return "\n".join(lines)
 
 
 def main(argv: list[str]) -> int:
@@ -8513,6 +9230,31 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     registry = load_registry(REGISTRY_PATH)
+    # TERMINAL_FAMILY_WIRING_SELF_AUDIT_V0 : "wiring status|audit|blockers <FAMILY>"
+    # READ_ONLY. NON_SOVEREIGN. Toutes les sous-commandes retournent le meme
+    # resultat structure (audit complet) -- alias distincts pour lisibilite
+    # d'invocation seulement, aucune semantique differente.
+    # FAMILY_WIRING_CANDIDATE_ONLY_V0 : "wiring candidate <FAMILY> <BLOCKER_ID> [--json]"
+    # READ_ONLY. NON_SOVEREIGN. Distinct from status|audit|blockers: it needs a
+    # blocker id and returns a single structured remediation candidate. No
+    # persisted artefact, no proposal/ledger/batch/KX108/approval/mutation.
+    if argv and argv[0].lower() == "wiring" and len(argv) >= 4 and argv[1].lower() == "candidate":
+        family_arg = argv[2].upper()
+        blocker_arg = argv[3]
+        resp = build_family_wiring_candidate_response_v1(family_arg, blocker_arg, registry)
+        if len(argv) > 4 and argv[4].lower() == "--json":
+            print(json.dumps(resp, indent=2, default=str))
+        else:
+            print(format_family_wiring_candidate_v1(resp))
+        return 0
+    if argv and argv[0].lower() == "wiring" and len(argv) >= 3 and argv[1].lower() in ("status", "audit", "blockers"):
+        family_arg = argv[2].upper()
+        resp = build_family_wiring_audit_response_v1(family_arg, registry)
+        if len(argv) > 3 and argv[3].lower() == "--json":
+            print(json.dumps(resp, indent=2, default=str))
+        else:
+            print(format_family_wiring_audit_v1(resp))
+        return 0
     # Skill resolver cleanup readonly : skill resolver status / skills status /
     # resolver skills / status skills / "show skills status" — resolver_authority=NONE
     _src_argv = argv[0].split() if len(argv) == 1 else argv
@@ -8655,6 +9397,26 @@ def main(argv: list[str]) -> int:
         print(text)
         return 0
     cmd0 = argv[0].lower()
+    # Commande mission: meme facade que le shell interactif.
+    if cmd0 == "mission":
+        _obj_mission = " ".join(argv[1:]).strip().strip('"').strip("\'")
+        print(_dispatch_mission(_obj_mission))
+        return 0
+    # Commande build: import direct depuis obsidia_build, aucun subprocess
+    if cmd0 == "build":
+        _obj_main = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_dispatch_build(_obj_main))
+        return 0
+    # Commande ledger: BRANCHING_LEDGER_V0, aucun subprocess
+    if cmd0 == "ledger":
+        _obj_ledger = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_dispatch_ledger(_obj_ledger, argv[1:]))
+        return 0
+    # Commande batch: BATCH_SELECTOR_V0, aucun subprocess
+    if cmd0 == "batch":
+        _obj_batch = " ".join(argv[1:]).strip().strip('"').strip("'")
+        print(_dispatch_batch(_obj_batch, argv[1:]))
+        return 0
     raw = " ".join(argv)
     if cmd0 in ("raw", "json") or normalize(raw) == "doctor":
         target = raw if normalize(raw) == "doctor" else (

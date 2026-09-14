@@ -1,5 +1,5 @@
 param(
-  [string]$Base = "http://127.0.0.1:8012"
+  [string]$Base = "http://127.0.0.1:8000"
 )
 
 $ErrorActionPreference = "Stop"

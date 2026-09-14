@@ -4,7 +4,7 @@ import hashlib
 from collections import defaultdict
 from typing import Iterable
 
-from .contracts import AgentVote, Domain, DomainAggregate
+from .contracts import AgentVote, Domain, DomainAggregate, Layer
 
 
 def _hash_ref(text: str) -> str:
@@ -128,6 +128,58 @@ def aggregate_gps_defense_aviation(votes: Iterable[AgentVote]) -> DomainAggregat
 
     return DomainAggregate(
         Domain.GPS_DEFENSE_AVIATION,
+        market_verdict,
+        confidence,
+        contradictions,
+        unknowns,
+        risk_flags,
+        evidence_refs,
+        agent_votes=votes,
+        extra_metrics=extra_metrics,
+    )
+
+
+def aggregate_tooling_build(votes: Iterable[AgentVote]) -> DomainAggregate:
+    """Agrégation formelle pour le domaine tooling_build (aggregate4 : 4 agents requis).
+
+    Pondération par couche : KERNEL (layer=6) → ×1.5 ; autres → ×1.0.
+    market_verdict souverain :
+      BUILD_BLOCK  si ≥1 contradiction
+      BUILD_HOLD   si ≥1 unknown (et 0 contradiction)
+      READY_FOR_COMMIT_REVIEW  sinon
+    """
+    votes = list(votes)
+    contradictions, unknowns, risk_flags, evidence_refs = _common(votes)
+
+    # Confiance pondérée par couche
+    weighted_sum = 0.0
+    weight_total = 0.0
+    for v in votes:
+        w = 1.5 if int(getattr(v, "layer", 1)) >= int(Layer.KERNEL) else 1.0
+        weighted_sum += v.confidence * w
+        weight_total += w
+    confidence = round(min(0.98, weighted_sum / weight_total if weight_total > 0 else 0.5), 2)
+
+    if contradictions:
+        market_verdict = "BUILD_BLOCK"
+    elif unknowns:
+        market_verdict = "BUILD_HOLD"
+    else:
+        market_verdict = "READY_FOR_COMMIT_REVIEW"
+
+    extra_metrics = {
+        "vote_count": len(votes),
+        "contradiction_count": len(contradictions),
+        "unknown_count": len(unknowns),
+        "risk_flag_count": len(risk_flags),
+        "proof_ready": True,
+        "deterministic": True,
+        "decision_authority": "KX108_ONLY",
+        "emits_act": False,
+    }
+
+    return DomainAggregate(
+        Domain.TOOLING_BUILD,
         market_verdict,
         confidence,
         contradictions,

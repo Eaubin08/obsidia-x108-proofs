@@ -90,7 +90,7 @@ Write-Host "`n=== CHECK API 8000 HEALTH ===" -ForegroundColor Cyan
 try {
     Invoke-RestMethod "http://127.0.0.1:8000/api/health" -TimeoutSec 10 | ConvertTo-Json -Depth 6
 } catch {
-    Write-Host "API 8000 NOT READY — $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "API 8000 NOT READY - $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # ============================================================
@@ -104,7 +104,7 @@ try {
         Select-Object Name |
         Format-Table -AutoSize
 } catch {
-    Write-Host "OPENAPI CHECK FAILED — $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "OPENAPI CHECK FAILED - $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # ============================================================

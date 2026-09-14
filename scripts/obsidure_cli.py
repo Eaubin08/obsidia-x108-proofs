@@ -193,7 +193,18 @@ def main() -> int:
                 apply_id = parts[1]
 
     if apply_id:
-        print(C_WARN(f"  [APPLY] Proposal cible : {apply_id}"))
+        # ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 — LEGACY_DIRECT_APPLY_DISABLED ──
+        # L'apply direct legacy (mutation canonique via AgentObsidure, hors
+        # séquence gouvernée KX108_PRE -> apply -> KX108_POST -> keep|rollback)
+        # est fermé. Utiliser scripts/obsidia_governed_apply_v0.run_governed_content_apply.
+        print(C_ERR("  LEGACY_DIRECT_APPLY_DISABLED"))
+        print(C_WARN("  L'application directe de proposals via ce CLI est désactivée "
+                     "(C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1)."))
+        print(C_WARN("  Chemin gouverné : obsidia_governed_apply_v0.run_governed_content_apply "
+                     "(KX108_PRE ALLOW + HumanApproval -> apply -> tests -> KX108_POST -> keep|rollback)."))
+        return 4
+        # Bloc historique conservé pour référence — inatteignable.
+        print(C_WARN(f"  [APPLY] Proposal cible : {apply_id}"))  # noqa
         try:
             bilan = agent.apply_proposal(apply_id)
             if bilan["applied"]:

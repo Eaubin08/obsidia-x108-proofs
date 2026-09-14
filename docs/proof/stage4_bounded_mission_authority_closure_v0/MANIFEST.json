@@ -1,0 +1,212 @@
+{
+  "manifest_schema_version": 1,
+  "purpose": "STAGE4_BOUNDED_MISSION_AUTHORITY_ASSURANCE_CLOSURE_V0",
+  "checkpoint": "STAGE_4H_ASSURANCE_ARCHIVE_AND_STAGE4_CLOSURE",
+  "created_at_note": "assurance-closure turn; no runtime or formal file modified; evidence regenerated from disposable stores",
+  "canonical_branch": "feat/terminal-runtime-repair-and-bounded-build-v1",
+  "canonical_head": "45e78c22dcec00bd379c6020f4513a62f8f7e5b6",
+  "manifest_git_as_governance_authority": false,
+  "governance_authority_note": "The persisted per-action chain (ExecutionEnvelope/EAH -> DerivedActionAuthorityWitness -> DerivedMissionApprovalEvidence -> HumanApproval(derived) -> KX108_PRE -> C2/SRE/SAR -> TestContractResult -> KX108_POST -> D1/D2 -> LocalSnapshotReceipt) IS the governance authority, rooted in exactly one HumanMissionAuthorization. Git commits are DISPOSITION/INTEGRATION records, never governance authority. KX108_PRE is the only sovereign pre-execution decision.",
+
+  "canonical_stage4_commit_chain": [
+    { "stage": "4A", "commit": "8bae14ea2a41d03feea8d43a79040163fe05c93c", "parent": "60b6fdf9e6b3b4ba7eafe32bbbb8999a09acc8eb", "subject": "feat(formal): specify bounded mission authority model", "kind": "FORMAL_SPEC_ONLY_NON_RUNTIME" },
+    { "stage": "4B", "commit": "134ed0ffc894e9f4506f10b71ed646142eb52645", "parent": "8bae14ea2a41d03feea8d43a79040163fe05c93c", "subject": "feat(governance): prove bounded mission authority invariants", "kind": "FORMAL_PROOFS_ONLY" },
+    { "stage": "4C", "commit": "1b40aafd624263fd8ef59ca69250370a3eb7d1b0", "parent": "134ed0ffc894e9f4506f10b71ed646142eb52645", "subject": "feat(governance): add inert bounded mission authority verifier", "kind": "INERT_RUNTIME_OBJECTS_AND_VERIFIERS" },
+    { "stage": "4D", "commit": "616356f9c1814b5e3aa2771f90cb1c6e515b4c9f", "parent": "1b40aafd624263fd8ef59ca69250370a3eb7d1b0", "subject": "test(formal): validate mission authority lean runtime conformance", "kind": "LEAN_RUNTIME_CANONICAL_VECTOR_CONFORMANCE" },
+    { "stage": "4E", "commit": "090af9b3240afe7c58d21b95d48c6f1db5ed7526", "parent": "616356f9c1814b5e3aa2771f90cb1c6e515b4c9f", "subject": "feat(governance): derive mission action authority witnesses", "kind": "AUTOMATIC_PER_ACTION_DAAW_DERIVATION_EVIDENCE_ONLY" },
+    { "stage": "4F", "commit": "ca0b623d49dd75eff402bea89e115b7ef804c9bb", "parent": "090af9b3240afe7c58d21b95d48c6f1db5ed7526", "subject": "feat(governance): activate bounded mission authority pre-execution", "kind": "DERIVED_APPROVAL_PRE_INTEGRATION_PLUS_REVOCATION_MUTATION_LINEARIZATION" },
+    { "stage": "4G", "commit": "45e78c22dcec00bd379c6020f4513a62f8f7e5b6", "parent": "ca0b623d49dd75eff402bea89e115b7ef804c9bb", "subject": "feat(governance): execute bounded multi-action missions under mission authority", "kind": "SEQUENCER_EXECUTION_INTEGRATION_MULTI_ACTION_MISSION" }
+  ],
+
+  "formal_inventory": {
+    "lean_root": "proofs/lean/Obsidia/MissionAuthority/",
+    "files": [
+      "Types.lean", "Scope.lean", "MissionAuthorization.lean", "ActionWitness.lean",
+      "Transition.lean", "Invariants.lean", "Refinement.lean", "Proofs.lean",
+      "ConformanceVectors.lean", "MissionAuthority.lean"
+    ],
+    "invariant_specs_defined_4A": 17,
+    "invariant_specs_proven_as_theorems_4B": 16,
+    "second_central_theorem_proven_4B": "DerivedScopeSubsetHumanAuthorizedScope",
+    "central_theorem_17": "EveryMutationHasHumanMissionAndKXWitnessSpec",
+    "central_theorem_17_proven_end_to_end": false,
+    "sorry_admit_custom_axiom_count_in_4A_4B_safety_theorems": 0,
+    "axiom_freedom_note": "All 16 invariant theorems + the 2nd central theorem report 'does not depend on any axioms'. The 4D conformance oracle is an EVALUATOR (decide/DecidableEq) that transitively uses the Lean core builtin propext; it is not a theorem and does not weaken the 4A/4B safety theorems, which remain axiom-free.",
+    "lean_operation_cardinality_v0": 1,
+    "lean_operation_supported_v0": "UPDATE_TARGET_FROM_SOURCE",
+    "multi_operation_formal_generalization": "NOT_YET_PROVEN",
+    "crypto_interface_note": "Collision resistance of sha256 / execution_authority_hash binding is a CryptoInterface HYPOTHESIS bundle (structure fields), never declared as an axiom. Unused by the 16 proven invariant theorems.",
+    "lake_build_result": { "Obsidia.MissionAuthority": "PASS", "Obsidia": "PASS_26_JOBS", "pre_and_post_stage4h": true }
+  },
+
+  "runtime_inventory": {
+    "authority_objects_and_verifiers": "scripts/obsidia_mission_authority_v0.py",
+    "automatic_daaw_derivation": "scripts/obsidia_mission_authority_integration_v0.py",
+    "derived_approval_pre_adapter": "scripts/obsidia_mission_authority_pre_adapter_v0.py",
+    "revocation_mutation_linearization_lock": "scripts/obsidia_mission_authority_freshness_lock_v0.py",
+    "bounded_mission_state_and_projection": "scripts/obsidia_bounded_mission_v0.py",
+    "multi_action_sequencer": "scripts/obsidia_mission_sequencer_v0.py",
+    "governed_execution_driver": "scripts/obsidia_governed_execution_driver_v0.py",
+    "c2_governed_apply": "scripts/obsidia_governed_apply_v0.py",
+    "kx108_pre_evidence_adapter": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+    "kx108_post_evidence_adapter": "scripts/obsidia_kx108_evidence_adapter.py",
+    "governed_rollback_d2": "scripts/obsidia_governed_rollback_v0.py",
+    "local_snapshot_stage3a": "scripts/obsidia_mission_local_snapshot_v0.py",
+    "isolated_work_unit_bridge": "scripts/obsidia_isolated_work_unit_v0.py",
+    "runtime_stage4_authority_semantics_changed_by_4h": false
+  },
+
+  "stage4d_conformance": {
+    "semantic_vector_matches": 17,
+    "semantic_vector_mismatches": 0,
+    "scope_pair_matches": 11,
+    "scope_pair_mismatches": 0,
+    "all_canonical_vector_matches": true,
+    "known_v0_limitation": "op_expansion vector NOT_REPRESENTABLE because Lean Operation cardinality = 1; preserved for future CREATE/DELETE/MOVE/RENAME.",
+    "test": "tests/cli/test_mission_authority_conformance_v0.py",
+    "oracle": "proofs/lean/Obsidia/MissionAuthority/ConformanceVectors.lean"
+  },
+
+  "full_runtime_regression": {
+    "command": "pytest tests/cli/",
+    "result": "498 passed / 4 skipped / 0 failed",
+    "total_failed": 0,
+    "stage4_specific_test_files": [
+      "tests/cli/test_mission_authority_v0.py",
+      "tests/cli/test_mission_authority_conformance_v0.py",
+      "tests/cli/test_mission_authority_integration_v0.py",
+      "tests/cli/test_mission_authority_pre_integration_v0.py",
+      "tests/cli/test_mission_authority_seam_repair_v0.py",
+      "tests/cli/test_stage4_multi_action_mission_v0.py",
+      "tests/cli/test_bounded_mission_v0.py",
+      "tests/cli/test_mission_sequencer_v0.py",
+      "tests/cli/test_isolated_work_unit_v0.py",
+      "tests/cli/test_mission_local_snapshot_v0.py"
+    ]
+  },
+
+  "canonical_abc_summary": {
+    "dossier_file": "abc_execution_dossier.json",
+    "advance_call_count": 4,
+    "total_governed_mutations": 3,
+    "max_mutations_per_advance_call": 1,
+    "human_mission_authorization_count": 1,
+    "per_action_human_eah_approval_count": 0,
+    "distinct_execution_envelope_count": 3,
+    "distinct_eah_count": 3,
+    "distinct_daaw_count": 3,
+    "distinct_dmae_count": 3,
+    "kx108_pre_allow_count": 3,
+    "kx108_post_allow_count": 3,
+    "keep_count": 3,
+    "local_snapshot_count": 3,
+    "mission_tip_chain": "BASE -> T1 -> T2 -> T3",
+    "canonical_base_immutable": true,
+    "only_keep_advances_mission_tip": true,
+    "final_target_equals_state_C": true,
+    "MUTATION_WITHOUT_HMA_WITNESS": 0,
+    "MUTATION_WITHOUT_DAAW_WITNESS": 0,
+    "MUTATION_WITHOUT_DMAE_WITNESS": 0,
+    "MUTATION_WITHOUT_KX_PRE_ALLOW": 0,
+    "MUTATION_WITHOUT_KX_POST_EVIDENCE": 0,
+    "UNACCOUNTED_GOVERNED_MUTATIONS": 0
+  },
+
+  "human_and_kx_claims": {
+    "human_authorization_complexity": "O(1)_FOR_FIXED_BOUNDED_PLAN",
+    "human_authorization_claim_wording": "ONE human mission authorization for ONE fixed exact bounded plan (exact plan_hash). NOT a claim of unrestricted or general autonomy.",
+    "kx_pre_per_action": true,
+    "kx_post_per_action": true,
+    "kx_decision_complexity": "O(N)",
+    "kx_decision_authority": "KX108_ONLY",
+    "mission_level_kx_blanket_authority": false,
+    "hma_sovereign": false,
+    "daaw_sovereign": false,
+    "dmae_sovereign": false,
+    "mission_sequencer_sovereign": false,
+    "kx108_pre_sovereign": true,
+    "derived_approval_bypasses_kx_pre": false
+  },
+
+  "revocation_assurance": {
+    "revocation_mutation_relation": "LINEARIZED",
+    "model": "SERIALIZED_COMMIT_ORDER",
+    "lock": "OS cross-process byte-range lock (Windows msvcrt.locking / POSIX fcntl.flock), key = mission_id, bounded timeout -> FAIL_CLOSED, crash-safe (OS-owned), released in finally",
+    "revocation_before_next_action": "no mutation; A KEEP preserved; C not executed; PLAN_BLOCKED",
+    "concurrent_revocation_vs_mutation": "the revocation writer and the Stage4 C2 critical section (final full canonical freshness recheck + atomic_replace_with_bytes + post-write measurement) acquire the SAME mission_id lock",
+    "NO_EXECUTION_WHERE_COMMITTED_REVOCATION_PRECEDES_MUTATION": true,
+    "claim_boundary": "A revocation REQUEST arriving after the executor already owns the lock does NOT retroactively cancel an already-linearized action. The V0 property is a total serialized COMMIT order between a canonically committed revocation and a governed mutation.",
+    "evidence_tests": [
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_revocation_between_actions_blocks_b",
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_revocation_during_b_c2_is_linearized",
+      "tests/cli/test_mission_authority_seam_repair_v0.py::test_revocation_first_no_mutation",
+      "tests/cli/test_mission_authority_seam_repair_v0.py::test_executor_first_mutation_linearized_before_revocation",
+      "tests/cli/test_mission_authority_seam_repair_v0.py::test_original_race_closed"
+    ]
+  },
+
+  "restart_assurance": {
+    "no_in_memory_authority_dependency": true,
+    "restart_mid_mission": "after A KEEP + snapshot T1, a fresh disk projection recovers active_hma_id, tip == T1, A recognised complete, B selected fresh; B and C then complete to PLAN_EXECUTION_COMPLETE",
+    "restart_after_prepared_daaw": "B prepared + DAAW persisted, not executed; disk reload reuses the SAME canonical DAAW, no divergent duplicate, no per-action human EAH requested; B then executes",
+    "evidence_tests": [
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_restart_resume_mid_mission",
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_restart_after_prepared_daaw_no_duplicate_witness"
+    ]
+  },
+
+  "historical_compatibility": {
+    "historical_stage3_path_changed": false,
+    "silent_stage4_activation": false,
+    "stage4_to_stage3_autofallback": false,
+    "note": "Without authority_mode=BOUNDED_MISSION_AUTHORITY, advance_bounded_mission keeps the Stage 3D rhythm and stops at MISSION_AWAITING_HUMAN_EAH_APPROVAL, even for a mission that carries a bound HMA. compute_approval_record_hash is byte-identical for approved_by == HUMAN.",
+    "evidence_tests": [
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_historical_stage3_mission_unchanged",
+      "tests/cli/test_stage4_multi_action_mission_v0.py::test_historical_mission_with_hma_still_awaits_eah",
+      "tests/cli/test_mission_sequencer_v0.py"
+    ]
+  },
+
+  "central_theorem_17": {
+    "formal_statement": "For every governed target mutation gm produced by a valid trace, there exist a HumanMissionAuthorization h with issuer = HUMAN and an ActionWitness w such that WellFormedMutation(eahOf, gm, h, w, plan, proj) holds; WellFormedMutation requires ActionWitnessValid (which requires NOT revoked in proj, within budget, action in exact plan, action_base == mission tip, exact EAH binding, scope subset) AND kxPre.phase = PRE AND kxPre.gate = ALLOW AND kxPre.authority = KX108_ONLY bound to the exact envelope.",
+    "runtime_refinement_argument": "abc_execution_dossier.json mechanically maps each of the 3 physical mutations to exactly one (action_id, EAH, HMA id/hash with issuer HUMAN, DAAW id/hash with sovereignty NON_SOVEREIGN, DMAE id/hash, KX108_PRE ALLOW record, KX108_POST ALLOW record). Aggregate witness invariants are all 0 / true: MUTATION_WITHOUT_{HMA,DAAW,DMAE,KX_PRE_ALLOW,KX_POST_EVIDENCE} = 0, UNACCOUNTED_GOVERNED_MUTATIONS = 0.",
+    "assurance_level": "RUNTIME_TEST_VALIDATED + REAL_EXECUTION_VALIDATED for the finite canonical A->B->C fixture and the represented single-operation V0 domain, under the documented V0 TCB. This is NOT a universal machine-checked end-to-end refinement.",
+    "central_theorem_17_runtime_evidence": "MULTI_ACTION_V0_VALIDATED",
+    "central_theorem_17_runtime_refinement": "VALIDATED_V0_WITH_DOCUMENTED_TCB",
+    "central_theorem_17_proven_end_to_end": false,
+    "what_is_missing_for_end_to_end": "A machine-checked proof that the runtime ProducedBy relation faithfully refines the Lean Event/Step transition model for ALL traces (not a finite vector set), plus formal treatment of sha256/EAH byte-equivalence rather than the current semantic CryptoInterface hypothesis, plus multi-operation generalization (Lean Operation cardinality is 1)."
+  },
+
+  "assurance_layer_map_file": "formal_runtime_assurance_map.json",
+  "central_authority_map_file": "central_authority_map.json",
+  "attack_matrix_file": "attack_matrix.json",
+  "tcb_and_limitations_file": "tcb_and_limitations.json",
+  "closure_dossier_file": "CLOSURE_DOSSIER.md",
+
+  "claude_orchestration": {
+    "stage4g_runtime_depends_on_claude_orchestration": false,
+    "claude_role_transport_only_technically_enforced": false,
+    "note": "Runtime Stage 4 execution lives entirely in obsidia_mission_sequencer_v0 + obsidia_bounded_mission_v0 + obsidia_isolated_work_unit_v0 + the committed rail. Hard technical enforcement of CLAUDE_ROLE = TRANSPORT_INTERFACE_ONLY (tool permissions / gateway) is a SEPARATE future architecture checkpoint, not part of Stage 4."
+  },
+
+  "future_work_outside_stage4": [
+    "Stage 5 Governed Operation Algebra (CREATE / DELETE / MOVE / RENAME + multi-operation formal generalization)",
+    "UNKNOWN / resource-resolution wiring",
+    "Claude / LLM Gateway",
+    "Cognitive Capability Lease",
+    "Hard technical enforcement of CLAUDE_ROLE = TRANSPORT_INTERFACE_ONLY"
+  ],
+
+  "stage4h_scope": {
+    "runtime_authority_semantics_changed": false,
+    "formal_files_modified": [],
+    "new_runtime_authority_features": [],
+    "new_governed_operations": [],
+    "new_autonomy_features": [],
+    "merkle_seal_json_touched": false,
+    "audit_world_action_bus_touched": false
+  },
+
+  "hash_manifest_file": "HASH_MANIFEST.txt",
+  "hash_manifest_note": "sha256 of every other file in this archive directory, LF-normalized via the scoped .gitattributes; deterministic; recompute with: python -c to iterate sorted files."
+}

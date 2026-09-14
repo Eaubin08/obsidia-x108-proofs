@@ -43,9 +43,17 @@ def map_memory_world(shazam: ShazamCognitifResult) -> MemoryWorldContext:
     trees = get_all_trees()
     id_to_domain = {t.id: t.domain for t in trees}
 
+    # Use canonical TREE_IDs (1-based) for domain lookup.
+    # dominant_tree_ids is the correct source; fall back to dim+1 for callers
+    # that construct DominantTreeResult without populating dominant_tree_ids
+    # (e.g. periphery_ops /cognitive/memory-world-map endpoint).
+    tree_ids = shazam.dominant_result.dominant_tree_ids
+    if not tree_ids:
+        tree_ids = [dim + 1 for dim in shazam.dominant_result.dominant_ids]
+
     active_domains = []
-    for tid in shazam.dominant_result.dominant_ids:
-        domain = id_to_domain.get(tid, "unknown")
+    for tree_id in tree_ids:
+        domain = id_to_domain.get(tree_id, "unknown")
         if domain not in active_domains:
             active_domains.append(domain)
 

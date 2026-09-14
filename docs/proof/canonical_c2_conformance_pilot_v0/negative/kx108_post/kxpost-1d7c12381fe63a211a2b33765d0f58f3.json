@@ -1,0 +1,261 @@
+{
+  "decision_record_schema_version": 1,
+  "created_at": "2026-08-27T12:08:03.761402+00:00",
+  "decision_phase": "POST_EXECUTION",
+  "batch_execution_id": "57420e49466cbd17",
+  "child_execution_id": "fe26f5ab458b7cbf",
+  "execution_authority_hash": "ec7e1ac4ebfb6256eec786e2e9fb4b22a701fd5dc698b12f113b49cb00229e10",
+  "approval_id": "appr-588b43e080a537ea42c5ce661678bdef",
+  "test_contract_hash": "c8178e0851ac7fc19e94b8bb911ff724af958cc37c41fa90585f615862d7ad3a",
+  "test_result_id": "tcr-874879a85312201faeb0fdb80112f8f5",
+  "test_result_record_hash": "f5b35c487748bfd3c48cf8649bba52ab7064e3345c228c1a944e7eb587827ade",
+  "kx108_input_translation_hash": "687155bd83144981dda4fa4a0f4bb40d13549aa3658e7d30ec4d11694ef391c8",
+  "kx108_pre_decision_record_id": "kxpre-59f76e6cd9338e106de3c2052bc2a05e",
+  "kx108_pre_decision_record_hash": "f5de9a3721bf52b116b567b8dee6d7a4a3383dab8d23464ec7317a96e11cacb8",
+  "decision_id": "tooling_build-d60e6f93af42",
+  "trace_id": "8f2fd05f-3868-4581-a48a-203c1db835a7",
+  "domain": "tooling_build",
+  "x108_gate": "BLOCK",
+  "reason_code": "CONTRADICTION_THRESHOLD_REACHED",
+  "severity": "S4",
+  "market_verdict": "BUILD_BLOCK",
+  "contradictions": [
+    "GATE_FAILURE",
+    "GATE_FAILURE",
+    "GATE_FAILURE",
+    "GATE_FAILURE"
+  ],
+  "unknowns": [
+    "TICKET_NOT_READY"
+  ],
+  "risk_flags": [
+    "TESTS_AND_GATES_FAILED",
+    "TESTS_AND_GATES_FAILED"
+  ],
+  "decision_authority": "KX108_ONLY",
+  "canonical_envelope": {
+    "domain": "tooling_build",
+    "market_verdict": "BUILD_BLOCK",
+    "confidence": 0.75,
+    "confidence_integrity": 0.75,
+    "confidence_governance": 0.95,
+    "confidence_readiness": 0.84,
+    "confidence_scope": "integrity",
+    "governance_scope": "x108_decision_robustness",
+    "readiness_scope": "harmonic_integrity_governance",
+    "contradictions": [
+      "GATE_FAILURE",
+      "GATE_FAILURE",
+      "GATE_FAILURE",
+      "GATE_FAILURE"
+    ],
+    "unknowns": [
+      "TICKET_NOT_READY"
+    ],
+    "risk_flags": [
+      "TESTS_AND_GATES_FAILED",
+      "TESTS_AND_GATES_FAILED"
+    ],
+    "x108_gate": "BLOCK",
+    "reason_code": "CONTRADICTION_THRESHOLD_REACHED",
+    "severity": "S4",
+    "decision_id": "tooling_build-d60e6f93af42",
+    "trace_id": "8f2fd05f-3868-4581-a48a-203c1db835a7",
+    "ticket_required": false,
+    "ticket_id": null,
+    "attestation_ref": "f47a4c0fece28d9545a703d9",
+    "source": "canonical_framework",
+    "evidence_refs": [
+      "b9cf08dff231b084",
+      "5accb8894085b8c9",
+      "6db37279434e6fcb",
+      "d4bc4efa761aea37",
+      "meta:UnknownsAgent",
+      "meta:ConflictResolutionAgent",
+      "meta:PolicyScopeAgent",
+      "meta:TicketReadinessAgent",
+      "meta:TraceIntegrityAgent",
+      "meta:AttestationReadinessAgent",
+      "meta:HumanOverrideEligibilityAgent",
+      "meta:SeverityClassifierAgent",
+      "meta:ReplayConsistencyAgent",
+      "meta:ProofConsistencyAgent"
+    ],
+    "metrics": {
+      "vote_count": 4,
+      "contradiction_count": 1,
+      "unknown_count": 0,
+      "risk_flag_count": 1,
+      "proof_ready": true,
+      "deterministic": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false
+    },
+    "raw_engine": {
+      "domain": "tooling_build",
+      "agent_votes": [
+        "ScopeIntegrityAgent",
+        "TestGateAgent",
+        "SessionIntegrityAgent",
+        "CommitGuardAgent"
+      ],
+      "vote_count": 4,
+      "agent_vote_details": [
+        {
+          "agent_id": "ScopeIntegrityAgent",
+          "vote": "READY_FOR_COMMIT_REVIEW",
+          "proposed_verdict": "READY_FOR_COMMIT_REVIEW",
+          "selected_vote": "HOLD",
+          "normalized_vote_for_aggregate4": "HOLD",
+          "confidence": 0.95,
+          "domain": "tooling_build",
+          "layer": 1,
+          "claim": "scope integrity",
+          "severity_hint": 0,
+          "contradictions": [],
+          "unknowns": [],
+          "risk_flags": [],
+          "evidence_refs": [],
+          "serialization_note": "json_safe_p3i7",
+          "aggregate4_invalid_legacy_vote": false,
+          "aggregate4_domain_enum_rejected": false,
+          "aggregate4_false_act_surface_blocked": false,
+          "aggregate4_selected_vote_source": "non_trusted_peripheral",
+          "aggregate4_proof_surface_only": true,
+          "aggregate4_does_not_authorize_action": true
+        },
+        {
+          "agent_id": "TestGateAgent",
+          "vote": "BUILD_BLOCK",
+          "proposed_verdict": "BUILD_BLOCK",
+          "selected_vote": "HOLD",
+          "normalized_vote_for_aggregate4": "HOLD",
+          "confidence": 0.05,
+          "domain": "tooling_build",
+          "layer": 2,
+          "claim": "test gate",
+          "severity_hint": 4,
+          "contradictions": [
+            "GATE_FAILURE"
+          ],
+          "unknowns": [],
+          "risk_flags": [
+            "TESTS_AND_GATES_FAILED"
+          ],
+          "evidence_refs": [],
+          "serialization_note": "json_safe_p3i7",
+          "aggregate4_invalid_legacy_vote": false,
+          "aggregate4_domain_enum_rejected": false,
+          "aggregate4_false_act_surface_blocked": false,
+          "aggregate4_selected_vote_source": "non_trusted_peripheral",
+          "aggregate4_proof_surface_only": true,
+          "aggregate4_does_not_authorize_action": true
+        },
+        {
+          "agent_id": "SessionIntegrityAgent",
+          "vote": "READY_FOR_COMMIT_REVIEW",
+          "proposed_verdict": "READY_FOR_COMMIT_REVIEW",
+          "selected_vote": "HOLD",
+          "normalized_vote_for_aggregate4": "HOLD",
+          "confidence": 0.92,
+          "domain": "tooling_build",
+          "layer": 3,
+          "claim": "session integrity",
+          "severity_hint": 0,
+          "contradictions": [],
+          "unknowns": [],
+          "risk_flags": [],
+          "evidence_refs": [],
+          "serialization_note": "json_safe_p3i7",
+          "aggregate4_invalid_legacy_vote": false,
+          "aggregate4_domain_enum_rejected": false,
+          "aggregate4_false_act_surface_blocked": false,
+          "aggregate4_selected_vote_source": "non_trusted_peripheral",
+          "aggregate4_proof_surface_only": true,
+          "aggregate4_does_not_authorize_action": true
+        },
+        {
+          "agent_id": "CommitGuardAgent",
+          "vote": "READY_FOR_COMMIT_REVIEW",
+          "proposed_verdict": "READY_FOR_COMMIT_REVIEW",
+          "selected_vote": "HOLD",
+          "normalized_vote_for_aggregate4": "HOLD",
+          "confidence": 0.97,
+          "domain": "tooling_build",
+          "layer": 6,
+          "claim": "commit guard",
+          "severity_hint": 0,
+          "contradictions": [],
+          "unknowns": [],
+          "risk_flags": [],
+          "evidence_refs": [],
+          "serialization_note": "json_safe_p3i7",
+          "aggregate4_invalid_legacy_vote": false,
+          "aggregate4_domain_enum_rejected": false,
+          "aggregate4_false_act_surface_blocked": false,
+          "aggregate4_selected_vote_source": "trusted_kernel",
+          "aggregate4_proof_surface_only": true,
+          "aggregate4_does_not_authorize_action": true
+        }
+      ],
+      "consensus": {
+        "rule": "aggregate4",
+        "threshold": "3/4",
+        "voters_expected": 4,
+        "supermajority_min": 3,
+        "source": "P3G_MAX_CONSENSUS_SCORE_CONTRACT",
+        "proof_scope": "aggregate4 over exactly 4 voters",
+        "authority": "PROOF_SURFACE_ONLY",
+        "does_not_override_x108_gate": true,
+        "does_not_authorize_action": true,
+        "agent_vote_details_exposed": true,
+        "agent_vote_source": "AgentVote.vote / AgentVote.proposed_verdict / AgentVote.confidence",
+        "voters_observed": 4,
+        "raw_vote_counts": {
+          "READY_FOR_COMMIT_REVIEW": 3,
+          "BUILD_BLOCK": 1
+        },
+        "proposed_verdict_counts": {
+          "READY_FOR_COMMIT_REVIEW": 3,
+          "BUILD_BLOCK": 1
+        },
+        "normalized_vote_counts": {
+          "HOLD": 4
+        },
+        "observation_ratio": {
+          "display_only": true,
+          "authority": "NONE",
+          "warning": "Observation ratio is not a Kernel decision and not a Lean aggregate4 proof.",
+          "threshold_ratio": 0.75,
+          "voters_observed": 4,
+          "max_decision": "HOLD",
+          "max_count": 4,
+          "ratio": 1.0,
+          "ratio_threshold_met": true
+        },
+        "formal_result_status": "APPLIED_EXACTLY_4_VOTERS",
+        "formal_result": {
+          "final_decision": "HOLD",
+          "votes": {
+            "HOLD": 4
+          },
+          "supermajority": true,
+          "threshold": "3/4",
+          "fail_closed": false,
+          "reason": "3/4 supermajority reached"
+        },
+        "aggregate4_proof_surface_only": true,
+        "aggregate4_does_not_authorize_action": true,
+        "aggregate4_false_act_surface_blocked_count": 0,
+        "aggregate4_invalid_legacy_votes_count": 0,
+        "aggregate4_domain_enum_rejected_count": 0
+      }
+    }
+  },
+  "sealed_apply_receipt_id": "sar-7058c70bb319294dc18807d2b96afad3",
+  "sealed_apply_receipt_hash": "e12b316243a669a2fee41bdb48c0842d6ac18f259713d3f945bfefafdca97dc0",
+  "sealed_rollback_evidence_id": "sre-6ece1d558c11cf58c9ed18123163960b",
+  "sealed_rollback_evidence_hash": "21c7d3f258452cee1fdd44b4129767dd1d3b7e22eadb71c3502f264c680a532f",
+  "decision_record_id": "kxpost-1d7c12381fe63a211a2b33765d0f58f3",
+  "decision_record_hash": "06ef09c8fd64c5721cc07086e84152f75b6a0b82effabba7b6597bcd8994b44c"
+}

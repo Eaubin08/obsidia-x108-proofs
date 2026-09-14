@@ -1,0 +1,400 @@
+{
+  "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
+  "artifact_role": "PROVISIONAL_CAMPAIGN_ARTIFACT_REGISTRY_V1",
+  "global_manifest_complete": true,
+  "global_relation_graph_complete": true,
+  "global_registration_blocked": false,
+  "campaign": "AGENTS_FILE_WIRING",
+  "authority": "NON_SOVEREIGN",
+  "can_decide": false,
+  "can_act": false,
+  "emits_act": false,
+  "memory_write": false,
+  "model_calls": 0,
+  "runtime_consumed": false,
+  "generated_at": "2026-08-03",
+  "active_version": "V1",
+  "global_artifacts": {
+    "GLOBAL_CAMPAIGN_STATE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "artifact_id": "AGENTS_FILE_WIRING_GLOBAL_STATE_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_ARTIFACT_INDEX": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "artifact_id": "AGENTS_FILE_WIRING_ARTIFACT_INDEX_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1"
+    },
+    "GLOBAL_FILE_MANIFEST": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "wave_file_manifests",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "note": "SUPERSEDED_2026: prior ART193-ART200 requirement was a historical accounting error (see agents_file_wiring_global_state.json#blocker_matrix_v1, BLK-GLOBAL-002). wave_file_manifests aggregates all 10 wave indices (1924 gross / 1757 unique paths) and constitutes the family-level file manifest."
+    },
+    "GLOBAL_RELATION_GRAPH": {
+      "path": "periphery/agents/agents_file_wiring_artifact_index.json",
+      "role_section": "relation_graph",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "note": "SUPERSEDED_2026: prior ART193-ART200 requirement was a historical accounting error (see agents_file_wiring_global_state.json#blocker_matrix_v1, BLK-GLOBAL-003). relation_graph contains 10/10 wave nodes and accounts for all 4 unique secondary relation paths (2 as edges, 2 in GLOBAL_UNRESOLVED_QUEUE)."
+    },
+    "GLOBAL_UNRESOLVED_QUEUE": {
+      "path": "periphery/agents/wave005_unresolved_queue.json",
+      "artifact_id": "AGENTS_FILE_WIRING_UNRESOLVED_QUEUE_V1",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 2,
+      "current_note": "2 secondary relations (workflow_governance_readonly) requiring future review. 0 primary unresolved."
+    },
+    "GLOBAL_BLOCKER_QUEUE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "role_section": "blocker_queue",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 0
+    },
+    "GLOBAL_ORPHAN_CONFIRMED_QUEUE": {
+      "path": "periphery/agents/agents_file_wiring_global_state.json",
+      "role_section": "orphan_confirmed_queue",
+      "exists": true,
+      "tracked": true,
+      "active_version": "V1",
+      "current_total": 0
+    }
+  },
+  "wave_file_manifests": {
+    "WAVE001": {
+      "path": "periphery/agents/operational_agent_document_index.json",
+      "index_id": "PYTHON_OPERATIONAL_AGENT_DOCUMENT_INDEX_V1",
+      "files_indexed": 167,
+      "status": "CLOSED"
+    },
+    "WAVE002": {
+      "path": "periphery/agents/operational_source_catalog.json",
+      "manifest_id": "PYTHON_OPERATIONAL_AGENT_SYSTEM_WAVE002_V1",
+      "files_indexed": 167,
+      "status": "CLOSED"
+    },
+    "WAVE003": {
+      "path": "periphery/agents/agent_source_pack_documentation.index.json",
+      "index_id": "AGENT_SOURCE_PACK_DOCUMENTATION_INDEX_V1",
+      "files_indexed": 680,
+      "status": "CLOSED"
+    },
+    "WAVE004": {
+      "path": "periphery/agents/agent_test_and_proof_system.index.json",
+      "index_id": "AGENT_TEST_AND_PROOF_SYSTEM_INDEX_V1",
+      "files_indexed": 8,
+      "status": "CLOSED"
+    },
+    "WAVE005_F": {
+      "path": "periphery/agents/brody_legacy_archive_tooling_review.index.json",
+      "index_id": "BRODY_LEGACY_ARCHIVE_TOOLING_REVIEW_INDEX_V1",
+      "files_indexed": 66,
+      "md_artifacts": 45,
+      "json_artifacts": 8,
+      "txt_artifacts": 7,
+      "py_source_modules": 4,
+      "tsx_modules": 1,
+      "ts_modules": 1,
+      "not_executable_artifacts": 62,
+      "not_a_test_modules": 2,
+      "executable_passes": 2,
+      "status": "AGENTS_FILE_WIRING_WAVE005_F_CLOSED",
+      "files_with_explicit_blocker": 0,
+      "primary_files_with_proved_relation": 66,
+      "primary_files_unresolved": 0,
+      "note": "Closes Brody primary census. 902 total = W5A+W5B+W5C+W5D+W5E+W5F."
+    },
+    "WAVE005_E": {
+      "path": "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "index_id": "BRODY_DOCUMENTATION_ARCHITECTURE_REPORTS_INDEX_V1",
+      "files_indexed": 124,
+      "md_artifacts": 97,
+      "json_artifacts": 15,
+      "txt_artifacts": 11,
+      "py_source_modules": 1,
+      "not_executable_artifacts": 123,
+      "executable_tests": 0,
+      "status": "AGENTS_FILE_WIRING_WAVE005_E_CLOSED",
+      "files_with_explicit_blocker": 0,
+      "primary_files_with_proved_relation": 124,
+      "primary_files_unresolved": 0,
+      "relation_and_provenance_gate": "WAVE005_E_RELATION_AND_PROVENANCE_GATE_V1_PASSED"
+    },
+    "WAVE005_D": {
+      "path": "periphery/agents/brody_memory_interface_and_specs.index.json",
+      "index_id": "BRODY_MEMORY_INTERFACE_AND_SPECS_INDEX_V1",
+      "files_indexed": 507,
+      "memory_interface_modules": 496,
+      "governance_rule_artifacts": 11,
+      "source_py_modules": 160,
+      "not_executable_artifacts": 347,
+      "executable_tests": 0,
+      "status": "AGENTS_FILE_WIRING_WAVE005_D_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 5,
+      "primary_files_with_proved_relation": 501,
+      "primary_files_unresolved": 0
+    },
+    "WAVE005_C": {
+      "path": "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "index_id": "BRODY_PROTOCOLS_CONNECTORS_SCRIPTS_INDEX_V1",
+      "files_indexed": 51,
+      "protocol_source_modules": 3,
+      "development_tooling_modules": 23,
+      "test_files": 25,
+      "executable_passes": 24,
+      "executable_fails": 1,
+      "status": "AGENTS_FILE_WIRING_WAVE005_C_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 2
+    },
+    "WAVE005_B": {
+      "path": "periphery/agents/brody_integration_runtime_api_system.index.json",
+      "index_id": "BRODY_INTEGRATION_RUNTIME_API_SYSTEM_INDEX_V1",
+      "files_indexed": 144,
+      "source_files": 70,
+      "test_files": 74,
+      "executable_passes": 66,
+      "executable_fails": 8,
+      "status": "AGENTS_FILE_WIRING_WAVE005_B_PARTIALLY_BLOCKED",
+      "files_with_explicit_blocker": 9
+    },
+    "WAVE005_A": {
+      "path": "periphery/agents/brody_governance_element_system.index.json",
+      "index_id": "BRODY_GOVERNANCE_ELEMENT_SYSTEM_INDEX_V1",
+      "files_indexed": 11,
+      "local_reconciliation_matrix": {
+        "path": "periphery/agents/brody_governance_scope_reconciliation.index.json",
+        "artifact_role": "WAVE005_A_LOCAL_SCOPE_RECONCILIATION_MATRIX",
+        "index_id": "BRODY_GOVERNANCE_SCOPE_RECONCILIATION_INDEX_V1",
+        "is_global_file_manifest": false,
+        "is_global_relation_graph": false,
+        "note": "Local scope view for Wave005_A only. prior_wave_intersections = LOCAL_SCOPE_RELATION_VIEW, not global graph."
+      },
+      "status": "CLOSED_LOCALLY_GLOBAL_REGISTRATION_BLOCKED",
+      "scope_complete": false
+    }
+  },
+  "wave_status_registry": {
+    "wave_slices_registered": [
+      "WAVE001",
+      "WAVE002",
+      "WAVE003",
+      "WAVE004",
+      "WAVE005_A",
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D",
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "wave_slices_closed": [
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "wave_slices_fully_closed": [
+      "WAVE001",
+      "WAVE002",
+      "WAVE003",
+      "WAVE004"
+    ],
+    "wave_slices_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "wave_slices_global_registration_blocked": []
+  },
+  "campaign_metadata_registry": {
+    "total": 26,
+    "included_in_brody_primary": 0,
+    "included_in_primary_partition": 0,
+    "note": "26 = 23(W5A-W5E meta) + 3(W5F meta). Wave005_F adds index, validator, tests.",
+    "wave005_a_metadata": [
+      "periphery/agents/brody_governance_element_system.index.json",
+      "periphery/agents/brody_governance_element_system.py",
+      "tests/periphery/test_brody_governance_element_system.py",
+      "periphery/agents/brody_governance_scope_reconciliation.index.json",
+      "periphery/agents/brody_governance_scope_reconciliation.py",
+      "periphery/agents/wave005_campaign_state.json",
+      "periphery/agents/wave005_unresolved_queue.json",
+      "tests/periphery/test_brody_governance_scope_reconciliation.py",
+      "periphery/agents/agents_file_wiring_artifact_index.json",
+      "periphery/agents/agents_file_wiring_global_state.json",
+      "tests/periphery/test_agents_file_wiring_global_artifacts.py"
+    ],
+    "wave005_b_metadata": [
+      "periphery/agents/brody_integration_runtime_api_system.index.json",
+      "periphery/agents/brody_integration_runtime_api_system.py",
+      "tests/periphery/test_brody_integration_runtime_api_system.py"
+    ],
+    "wave005_c_metadata": [
+      "periphery/agents/brody_protocols_connectors_scripts.index.json",
+      "periphery/agents/brody_protocols_connectors_scripts.py",
+      "tests/periphery/test_brody_protocols_connectors_scripts.py"
+    ],
+    "wave005_d_metadata": [
+      "periphery/agents/brody_memory_interface_and_specs.index.json",
+      "periphery/agents/brody_memory_interface_and_specs.py",
+      "tests/periphery/test_brody_memory_interface_and_specs.py"
+    ],
+    "wave005_e_metadata": [
+      "periphery/agents/brody_documentation_architecture_reports.index.json",
+      "periphery/agents/brody_documentation_architecture_reports.py",
+      "tests/periphery/test_brody_documentation_architecture_reports.py"
+    ],
+    "wave005_f_metadata": [
+      "periphery/agents/brody_legacy_archive_tooling_review.index.json",
+      "periphery/agents/brody_legacy_archive_tooling_review.py",
+      "tests/periphery/test_brody_legacy_archive_tooling_review.py"
+    ]
+  },
+  "relation_graph": {
+    "graph_id": "AGENTS_FILE_WIRING_INTER_WAVE_RELATIONS_V1",
+    "graph_scope": "GLOBAL_INTER_WAVE",
+    "nodes": [
+      {
+        "wave": "WAVE001",
+        "subsystem": "AGENTS52_CONFIGURATION_SYSTEM",
+        "files": 167
+      },
+      {
+        "wave": "WAVE002",
+        "subsystem": "PYTHON_OPERATIONAL_AGENT_SYSTEM",
+        "files": 167
+      },
+      {
+        "wave": "WAVE003",
+        "subsystem": "AGENT_SOURCE_PACK_DOCUMENTATION",
+        "files": 680
+      },
+      {
+        "wave": "WAVE004",
+        "subsystem": "AGENT_TEST_AND_PROOF_SYSTEM",
+        "files": 8
+      },
+      {
+        "wave": "WAVE005_A",
+        "subsystem": "BRODY_GOVERNANCE_ELEMENT_SYSTEM",
+        "files": 11
+      },
+      {
+        "wave": "WAVE005_B",
+        "subsystem": "BRODY_INTEGRATION_RUNTIME_AND_API_SYSTEM",
+        "files": 144
+      },
+      {
+        "wave": "WAVE005_C",
+        "subsystem": "BRODY_PROTOCOLS_CONNECTORS_AND_SCRIPTS",
+        "files": 51
+      },
+      {
+        "wave": "WAVE005_D",
+        "subsystem": "BRODY_MEMORY_INTERFACE_AND_SPECS",
+        "files": 506,
+        "all_matrix_rows": 507,
+        "secondary_relation_rows": 1
+      },
+      {
+        "wave": "WAVE005_E",
+        "subsystem": "BRODY_DOCUMENTATION_ARCHITECTURE_AND_REPORTS",
+        "files": 124
+      },
+      {
+        "wave": "WAVE005_F",
+        "subsystem": "BRODY_LEGACY_ARCHIVE_TOOLING_AND_REVIEW",
+        "files": 66,
+        "note": "Closes Brody primary census at 902 files."
+      }
+    ],
+    "edges": [
+      {
+        "from_wave": "WAVE001",
+        "to_wave": "WAVE005_A",
+        "relation_type": "SECONDARY_RELATION",
+        "paths": [
+          "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+        ],
+        "primary_owner": "WAVE001",
+        "secondary_owner": "WAVE005_A"
+      },
+      {
+        "from_wave": "WAVE002",
+        "to_wave": "WAVE005_A",
+        "relation_type": "SECONDARY_RELATION",
+        "paths": [
+          "periphery/agents/brody_memory_agent.py",
+          "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+        ],
+        "primary_owner": "WAVE002",
+        "secondary_owner": "WAVE005_A"
+      }
+    ],
+    "documented_catalog_overlaps": {
+      "WAVE001_WAVE002": {
+        "overlap_paths_count": 167,
+        "note": "167 paths indexed in both WAVE001 (AGENTS52_CONFIGURATION_SYSTEM) and WAVE002 (PYTHON_OPERATIONAL_AGENT_SYSTEM). Same physical files, different documentary perspectives. Intentional and documented — not silent.",
+        "type": "INTENTIONAL_DUAL_PERSPECTIVE"
+      }
+    },
+    "silent_double_count": 0,
+    "cross_wave_primary_overlaps": 0
+  },
+  "unique_primary_paths_accounted": 1757,
+  "unique_primary_note": "Recalculated: 1757 = 1691(W1-W5E_unique) + 66(W5F). W1xW2 overlap=167. W5F overlap with prior=0. SILENT_DOUBLE_COUNT=0.",
+  "wave005_global_reconciliation": {
+    "brody_primary_census_complete": true,
+    "brody_primary_total": 902,
+    "subwave_closed": [
+      "WAVE005_E",
+      "WAVE005_F"
+    ],
+    "subwave_partially_blocked": [
+      "WAVE005_B",
+      "WAVE005_C",
+      "WAVE005_D"
+    ],
+    "subwave_global_registration_blocked": [
+      "WAVE005_A"
+    ],
+    "subwave_blockers_total": 16,
+    "wave005_fully_closed": false,
+    "wave005_global_status": "AGENTS_FILE_WIRING_WAVE005_PRIMARY_CENSUS_COMPLETE_GLOBAL_REGISTRATION_SUPERSEDED_FILE_BLOCKERS_REMAIN"
+  },
+  "agents_family_reconciliation": {
+    "family_status": "AGENTS_FILE_WIRING_FAMILY_PRIMARY_ACCOUNTING_COMPLETE_GLOBAL_ACCOUNTING_SUPERSEDED_FILE_BLOCKERS_REMAIN",
+    "agents_primary_accounting_complete": true,
+    "agents_family_fully_closed": false,
+    "agents_family_file_blockers": 16,
+    "agents_family_global_blockers": 0,
+    "agents_family_historical_superseded_global_blockers": 3,
+    "modules_start_decision": "AUTHORIZED_WITH_PERSISTED_AGENTS_BLOCKERS",
+    "generated_at": "2026-08-05",
+    "secondary_paths_unique": 4,
+    "secondary_paths_unique_list": [
+      "periphery/agents/brody_memory_agent.py",
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1",
+      "periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py",
+      "periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py"
+    ],
+    "secondary_duplicate_paths": [
+      "periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/run_brody_agent_readonly_session_test_packet_v1.ps1"
+    ],
+    "frozen_census_contradiction": false,
+    "secondary_relation_total_final": 4,
+    "global_blocker_root_causes": [
+      "ART193_ART200_ABSENT"
+    ],
+    "global_blockers_share_root_cause": true,
+    "silent_double_count": 0
+  }
+}

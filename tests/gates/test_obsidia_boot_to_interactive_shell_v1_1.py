@@ -386,24 +386,24 @@ def test_17_cli_not_modified():
 
 
 def test_18_registry_not_modified():
-    """obsidia_registry.yaml ne doit pas avoir ete touche dans ce lot."""
+    """L'execution du plan de boot ne doit pas muter obsidia_registry.yaml.
+
+    Oracle direct (bytes avant/apres l'execution testee) plutot qu'une
+    propreté globale du worktree Git : un registry legitimement modifie
+    par un developpeur avant le lancement des tests ne doit pas faire
+    echouer ce test, seule une mutation causee par le comportement
+    boot/start-plan lui-meme le doit.
+    """
     assert _REG.exists(), "scripts/obsidia_registry.yaml introuvable"
-    result = subprocess.run(
-        ["git", "diff", "--name-only", "HEAD", "--", "scripts/obsidia_registry.yaml"],
-        capture_output=True, text=True,
-        cwd=str(_REPO_ROOT)
+    before = _REG.read_bytes()
+    subprocess.run(
+        _powershell_command(_PS1, "--print-start-plan"),
+        capture_output=True, text=True, timeout=30
     )
-    # Un diff vide signifie pas de modification depuis HEAD
-    # On accepte aussi les modifications pre-existantes committees
-    # Ce qui compte : ce lot n'a pas touche ce fichier
-    # On verifie le diff unstaged uniquement
-    result2 = subprocess.run(
-        ["git", "diff", "--name-only", "--", "scripts/obsidia_registry.yaml"],
-        capture_output=True, text=True,
-        cwd=str(_REPO_ROOT)
-    )
-    assert "obsidia_registry.yaml" not in result2.stdout, (
-        "obsidia_registry.yaml a ete modifie - SCOPE_VIOLATION"
+    after = _REG.read_bytes()
+    assert before == after, (
+        "scripts/obsidia_registry.yaml a ete modifie par l'execution du "
+        "plan de boot -- RUNTIME_MUTATION"
     )
 
 

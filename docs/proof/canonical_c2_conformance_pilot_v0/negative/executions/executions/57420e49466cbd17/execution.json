@@ -1,0 +1,87 @@
+{
+  "batch_execution_id": "57420e49466cbd17",
+  "schema_version": "V0",
+  "created_at": "2026-08-27T12:01:29.745027+00:00",
+  "batch_id": "1c21b719e8823ece",
+  "batch_hash": "fba79282e4d72280",
+  "batch_hash_version": 2,
+  "candidate_scope_hash": "3b0c66efa71e1de7",
+  "human_execution_approved": false,
+  "decision_authority": "KX108_ONLY",
+  "execution_order": [
+    "8cf3e77616a8b03b"
+  ],
+  "dependency_edges": [],
+  "children": [
+    {
+      "child_execution_id": "fe26f5ab458b7cbf",
+      "batch_execution_id": "57420e49466cbd17",
+      "candidate_entry_id": "8cf3e77616a8b03b",
+      "source_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_source_v0.txt",
+      "source_hash": "53fa38dd86c3701b",
+      "source_kind": "GIT_BLOB",
+      "source_git_commit_sha": "d25dbd5a0c2f8da6eddc7132e241de2a58bc1a09",
+      "source_git_blob_sha": "c3c464024b852afb4f7db99f6ca754acad5aa296",
+      "source_git_historical_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_source_v0.txt",
+      "source_repository_identity": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_C2_PILOT_2A_NEG",
+      "source_content_sha256": "53fa38dd86c3701b38c12667606f06e1123b1687264bf680572da90043e2b34a",
+      "target_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt",
+      "target_pre_hash": "8526a8f54067416f",
+      "target_pre_sha256": "8526a8f54067416f1f28ec07396ce1c7c34ec79adbc4ffd0a2d0923ee19a0b1d",
+      "operation_type": "UPDATE_TARGET_FROM_SOURCE",
+      "operation_reason": null,
+      "materiality_status": "MEANINGFUL_DELTA",
+      "materiality_detail": {
+        "reason": "target_content_differs",
+        "target_pre_hash": "8526a8f54067416f",
+        "target_pre_sha256": "8526a8f54067416f1f28ec07396ce1c7c34ec79adbc4ffd0a2d0923ee19a0b1d"
+      },
+      "dependencies": [],
+      "dependency_status": "NOT_APPLICABLE",
+      "execution_position": 0,
+      "session_id": null,
+      "proposal_id": null,
+      "kx108_decision": null,
+      "execution_status": "PLANNED",
+      "decision_authority": "KX108_ONLY",
+      "precondition_integrity_hash": "c95fb3a81bacfd23"
+    }
+  ],
+  "aggregate_status": "BATCH_PLANNED",
+  "risk_flags": [],
+  "unknowns": [],
+  "source_batch_ref": {
+    "batch_id": "1c21b719e8823ece",
+    "batch_hash": "fba79282e4d72280"
+  },
+  "integrity_verified": true,
+  "integrity_error": null,
+  "execution_approval_status": null,
+  "execution_approval_id": null,
+  "test_contract": {
+    "test_contract_schema_version": 1,
+    "contract_id": "c2-conformance-negative-v0",
+    "candidate_entry_id": "cand",
+    "batch_id": null,
+    "target_path": "tests/fixtures/governed_c2_conformance_pilot/pilot_target_v0.txt",
+    "checks": [
+      {
+        "check_id": "no-change-expected",
+        "check_type": "DIFF_SCOPE_EXACT",
+        "argv": null,
+        "cwd_policy": "REPO_ROOT",
+        "expected_exit_code": 0,
+        "required": true,
+        "timeout_seconds": 60,
+        "target_path": null,
+        "expected_target_sha256": null,
+        "expected_diff_paths": []
+      }
+    ],
+    "decision_authority": "KX108_ONLY"
+  },
+  "test_contract_hash": "c8178e0851ac7fc19e94b8bb911ff724af958cc37c41fa90585f615862d7ad3a",
+  "pre_execution_context_id": "pec-5f7b35f95483a4ac15e16b2f820cadfc",
+  "pre_execution_context_record_hash": "ce7d1a3d78e33bd0b29ace89c78490497b0e10f0d229ee984029f7f953f2d2b7",
+  "execution_authority_hash": "ec7e1ac4ebfb6256eec786e2e9fb4b22a701fd5dc698b12f113b49cb00229e10"
+}

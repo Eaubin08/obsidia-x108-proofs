@@ -21,6 +21,7 @@ class Severity(IntEnum):
 class Domain(Enum):
     BANK = "bank"; TRADING = "trading"; ECOM = "ecom"
     GPS_DEFENSE_AVIATION = "gps_defense_aviation"; META = "meta"
+    TOOLING_BUILD = "tooling_build"
 
 class SourceTag(Enum):
     CANONICAL = "canonical"; CANONICAL_FRAMEWORK = "canonical_framework"
@@ -497,3 +498,89 @@ class TradingState(UniversalBase):
 @dataclass
 class EcomState(UniversalBase):
     session_id: str = "debug-session"
+
+
+@dataclass
+class ToolingBuildState(UniversalBase):
+    """État d'une session de build bornée soumise au Kernel X-108 pour décision ACT/HOLD/BLOCK.
+
+    Contrat canonique KX108_TOOLING_BUILD_DOMAIN_ADAPTER_V0.
+    decision_authority = KX108_ONLY — jamais auto-commit, auto-push, auto-merge.
+    """
+    # Identification de session
+    session_id: str = "UNKNOWN"
+    objective: str = ""
+    base_sha: str = ""
+    manifest_hash: str = ""
+    diff_hash: str = ""
+
+    # Scope déclaré vs réel
+    approved_scope: List[str] = field(default_factory=list)
+    actual_touched_files: List[str] = field(default_factory=list)
+    new_files: List[str] = field(default_factory=list)
+    deleted_files: List[str] = field(default_factory=list)
+
+    # Statuts de protection et d'approbation
+    protected_scope_status: str = "UNKNOWN"   # "CLEAN" | "VIOLATED" | "UNKNOWN"
+    human_approval_status: str = "UNKNOWN"    # "APPROVED" | "PENDING" | "MISSING" | "UNKNOWN"
+    obsidure_status: str = "UNKNOWN"          # "CLEAN" | "DEGRADED" | "UNKNOWN"
+
+    # Isolation
+    worktree_isolated: bool = False
+    branch_isolated: bool = False
+
+    # Garde-fous d'irréversibilité (doivent être True pour passer CommitGuard)
+    auto_commit_disabled: bool = True
+    auto_push_disabled: bool = True
+    auto_merge_disabled: bool = True
+
+    # Résultats tests et gates
+    tests_results: str = "UNKNOWN"   # "PASS" | "FAIL" | "PARTIAL" | "UNKNOWN"
+    gates_results: str = "UNKNOWN"   # "PASS" | "FAIL" | "PARTIAL" | "UNKNOWN"
+    first_failure: str = ""
+
+    # Statut des opérations git (doit être NOT_COMMITTED / NOT_PUSHED / NOT_MERGED)
+    commit_status: str = "UNKNOWN"
+    push_status: str = "UNKNOWN"
+    merge_status: str = "UNKNOWN"
+
+    # Pré-conditions déclarées par l'appelant
+    unknowns: List[str] = field(default_factory=list)
+    contradictions: List[str] = field(default_factory=list)
+    risk_flags: List[str] = field(default_factory=list)
+
+    # Autorité de décision (constante)
+    decision_authority: str = "KX108_ONLY"
+
+    def __init__(self, **kwargs):
+        self.session_id = kwargs.get("session_id", "UNKNOWN")
+        self.objective = kwargs.get("objective", "")
+        self.base_sha = kwargs.get("base_sha", "")
+        self.manifest_hash = kwargs.get("manifest_hash", "")
+        self.diff_hash = kwargs.get("diff_hash", "")
+        self.approved_scope = list(kwargs.get("approved_scope", []) or [])
+        self.actual_touched_files = list(kwargs.get("actual_touched_files", []) or [])
+        self.new_files = list(kwargs.get("new_files", []) or [])
+        self.deleted_files = list(kwargs.get("deleted_files", []) or [])
+        self.protected_scope_status = kwargs.get("protected_scope_status", "UNKNOWN")
+        self.human_approval_status = kwargs.get("human_approval_status", "UNKNOWN")
+        self.obsidure_status = kwargs.get("obsidure_status", "UNKNOWN")
+        self.worktree_isolated = bool(kwargs.get("worktree_isolated", False))
+        self.branch_isolated = bool(kwargs.get("branch_isolated", False))
+        self.auto_commit_disabled = bool(kwargs.get("auto_commit_disabled", True))
+        self.auto_push_disabled = bool(kwargs.get("auto_push_disabled", True))
+        self.auto_merge_disabled = bool(kwargs.get("auto_merge_disabled", True))
+        self.tests_results = kwargs.get("tests_results", "UNKNOWN")
+        self.gates_results = kwargs.get("gates_results", "UNKNOWN")
+        self.first_failure = kwargs.get("first_failure", "")
+        self.commit_status = kwargs.get("commit_status", "UNKNOWN")
+        self.push_status = kwargs.get("push_status", "UNKNOWN")
+        self.merge_status = kwargs.get("merge_status", "UNKNOWN")
+        self.unknowns = list(kwargs.get("unknowns", []) or [])
+        self.contradictions = list(kwargs.get("contradictions", []) or [])
+        self.risk_flags = list(kwargs.get("risk_flags", []) or [])
+        self.decision_authority = kwargs.get("decision_authority", "KX108_ONLY")
+        obsidia_log(
+            f"ToolingBuildState active: session={self.session_id} "
+            f"| approval={self.human_approval_status} | worktree={self.worktree_isolated}"
+        )

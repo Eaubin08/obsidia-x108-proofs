@@ -38,9 +38,35 @@ BRODY_CHAT_PATH = os.environ.get("OBSIDIA_BRODY_CHAT_PATH", "/api/brody/chat")
 BRODY_POST_ALLOWED = os.environ.get("OBSIDIA_GATEWAY_ALLOW_BRODY_POST") == "1"
 AUDIT_LOG = REPO_ROOT / "audit" / "obsidia_gateway_usage.jsonl"
 
-sys.path.insert(0, str(ROUTER_ROOT))
-from app.router.decision import decide          # noqa: E402
-from app.adapters import brody_stub             # noqa: E402
+# CG-B — la dépendance au router externe passe par la frontière canonique
+# `obsidia_gateway_route_decision_v0` : router ABSENT / EXCEPTION / DÉCISION
+# MALFORMÉE -> HOLD STRUCTURÉ (jamais de repli implicite vers un LLM).
+# Import du router et de brody_stub rendus PARESSEUX (fail-closed, pas
+# fail-open : l'import du module gateway ne casse plus si le router manque).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import obsidia_gateway_route_decision_v0 as _RD   # noqa: E402
+
+
+def _decide_or_none(raw: str, memory_index: dict):
+    """Frontière router. Retourne (router_decision | None, status)."""
+    return _RD.router_decide(raw, memory_index)
+
+
+class _BrodyStubFallback:
+    @staticmethod
+    def answer(ir, topic):
+        return {"text": ("[brody structural indisponible — router/adapters non "
+                         "colocalisés dans ce worktree]")}
+
+
+def _brody_stub():
+    try:
+        if str(ROUTER_ROOT) not in sys.path:
+            sys.path.insert(0, str(ROUTER_ROOT))
+        from app.adapters import brody_stub as _bs   # type: ignore
+        return _bs
+    except Exception:
+        return _BrodyStubFallback
 
 
 # --- Level 2 semantique : Shazam 34 arbres + index canonique exporte ---------
@@ -341,7 +367,26 @@ def call_claude(raw: str, decision: dict) -> str:
 
 
 def handle(raw: str, memory_index: dict, counters: dict) -> str:
-    d = decide(raw, memory_index=memory_index)
+    # CG-B — frontière router FAIL-CLOSED : router ABSENT / EXCEPTION /
+    # DÉCISION MALFORMÉE -> HOLD STRUCTURÉ, 0 appel LLM, RouteReceipt émis.
+    # Aucun repli implicite vers Claude / un LLM par défaut.
+    router_d, router_status = _decide_or_none(raw, memory_index)
+    if router_status != _RD.ROUTER_OK:
+        rdec = _RD.build_route_decision(raw, memory_index)
+        _RD.build_route_receipt(
+            rdec, requested_outcome=raw, selected_route=rdec["route_class"],
+            reason=rdec["reason"], model_call_used=False, model_call_avoided=True,
+            result_status=f"{router_status}_STRUCTURED_HOLD")
+        counters["llm_calls_avoided"] += 1
+        counters["last_route"] = f"router_hold:{router_status.lower()}"
+        audit_log({"request_preview": raw[:120],
+                   "route": counters["last_route"], "level": 0,
+                   "model_call_avoided": True, "router_status": router_status})
+        return (f"HOLD — {router_status}. Le routeur déterministe n'est pas "
+                "disponible dans ce worktree (colocalisation différée). Aucun "
+                "LLM n'a été appelé, rien n'a été exécuté. Décision humaine "
+                "requise pour avancer.")
+    d = router_d
     route, level = d.get("route"), d.get("level", 0)
     llm_called = False
 
@@ -372,7 +417,7 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
         else:
             remote = call_brody(raw) if brody_alive() else None
             answer = remote or ("[brody structural]\n"
-                                + brody_stub.answer(d["ir"], d["topic"])["text"])
+                                + _brody_stub().answer(d["ir"], d.get("topic"))["text"])
     elif route == "obsidure_route_only":
         prop = run_obsidure_proposal(raw)
         if prop:
@@ -394,7 +439,7 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
         else:
             remote = call_brody(raw) if brody_alive() else None
             answer = remote or ("[brody structural]\n"
-                                + brody_stub.answer(d["ir"], d["topic"])["text"])
+                                + _brody_stub().answer(d["ir"], d.get("topic"))["text"])
     else:  # fireworks / escalade -> claude, sauf si la memoire suffit
         hit = semantic_search(raw, SEMANTIC_ENTRIES)
         if hit:
@@ -440,6 +485,32 @@ def handle(raw: str, memory_index: dict, counters: dict) -> str:
 
     audit_log({"request_preview": raw[:120], "route": route, "level": level,
                "model_call_avoided": not llm_called})
+    # CG-B — RouteReceipt canonique NON SOUVERAIN (en plus du log legacy).
+    try:
+        _rc, _hum, _unk = _RD._map_route_class(d)
+        _rd_core = {
+            "schema_version": _RD.SCHEMA_VERSION, "domain_tag": _RD.ROUTE_DECISION_DOMAIN_TAG,
+            "decision_authority": "KX108_ONLY", "is_execution_authority": False,
+            "is_kx_authority": False, "is_sovereign": False,
+            "requested_outcome_preview": raw[:200], "router_status": _RD.ROUTER_OK,
+            "fail_closed_hold": False, "route_class": _rc,
+            "router_route": d.get("route"),
+            "gate_verdict": ((d.get("gate") or {}).get("verdict") or None),
+            "ir": {k: (d.get("ir") or {}).get(k) for k in ("intent_type", "target_layer", "action", "risk")},
+            "level": level, "reason": d.get("reason") or f"router_route={d.get('route')}",
+            "human_authority_required": _hum, "unknown": _unk,
+        }
+        _rh = _RD._sha256_hex(_RD._canon(_rd_core))
+        _rd_core["route_decision_hash"] = _rh
+        _rd_core["route_decision_id"] = "rdec-" + _rh[:32]
+        _RD.build_route_receipt(
+            _rd_core, requested_outcome=raw, selected_route=route,
+            reason=_rd_core["reason"], native_capability=d.get("route"),
+            provider=("claude" if llm_called else None),
+            model_call_used=llm_called, model_call_avoided=not llm_called,
+            result_status=("LLM_ANSWERED" if llm_called else "ROUTED_NO_LLM"))
+    except Exception:
+        pass  # le receipt ne bloque jamais la reponse (KX108_ONLY, advisory)
     counters["last_route"] = route
     return answer
 

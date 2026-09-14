@@ -356,10 +356,18 @@ class OSTradClient:
                 return [str(raw)] if raw else []
             return [x.get("text", str(x)) if isinstance(x, dict) else str(x) for x in raw]
 
+        # Si l'API retourne "unknown" ou vide, _local_intent() prend le relais.
+        _api_intent = str(ir.get("intent", ""))
+        _resolved_intent = (
+            _api_intent
+            if _api_intent and _api_intent.lower() not in ("unknown", "", "none")
+            else _local_intent(text)
+        )
+
         return OSTradResult(
             detected_language=detected_language,
             alphabet_units=_to_str_list(alphabet_units),
-            intent=str(ir.get("intent", _local_intent(text))),
+            intent=_resolved_intent,
             risk_flags=_to_str_list(risk_flags),
             constraints=_to_str_list(ir.get("constraints", [])),
             contradictions=_to_str_list(ir.get("contradictions", [])),
@@ -2143,6 +2151,20 @@ def _python_peripheral_stub(rel: str, objective: str, attempt: int) -> str:
         '"""\n'
     )
 
+    # ── Détection version-bump (ex: CONST_NAME de v0 a v1) ──────────────
+    # Produit la constante cible dans le stub si l'objectif la référence.
+    _bump = re.search(
+        r"([A-Z_]+)\s+de\s+\S+\s+[àa]\s+(\S+)",
+        objective,
+        re.IGNORECASE,
+    )
+    _version_constants = ""
+    if _bump:
+        _const_name = _bump.group(1).upper()
+        _new_val = re.sub(r"[^a-zA-Z0-9_.]", "", _bump.group(2))
+        if _const_name and _new_val and re.match(r"^[A-Z][A-Z0-9_]+$", _const_name):
+            _version_constants = f'\n{_const_name} = "{_new_val}"\n'
+
     # ── Détection mode enrichi ──────────────────────────────────────────
     _ENRICHED_TRIGGERS = (
         "IMPORTE", "IMPORT", "VERIFIE", "VERIFY", "ASSERT",
@@ -2155,7 +2177,8 @@ def _python_peripheral_stub(rel: str, objective: str, attempt: int) -> str:
         return (
             header
             + "from __future__ import annotations\n"
-            + "from typing import Any, Dict\n\n\n"
+            + "from typing import Any, Dict\n"
+            + _version_constants + "\n\n"
             + f"def {module_name}_init() -> Dict[str, Any]:\n"
             + '    """Stub généré — à compléter selon MATH_MEMORY_INDEX.json."""\n'
             + f'    return {{"module": "{module_name}", "status": "STUB", "route": "PYTHON_PATCH_PROPOSAL"}}\n'
@@ -3470,13 +3493,51 @@ class AgentObsidure:
 
     # ── APPLY PROPOSAL ───────────────────────────────────────────────────
 
-    def apply_proposal(self, proposal_id: str) -> Dict[str, Any]:
+    @staticmethod
+    def _governed_write_guard():
+        """Import paresseux de la garde d'écriture gouvernée partagée
+        (scripts/obsidia_governed_write_guard_v0.py). Isolé ici pour ne pas
+        imposer d'import scripts/ au chargement de la couche periphery."""
+        import sys as _sys
+        _scripts = str(Path(__file__).resolve().parents[2] / "scripts")
+        if _scripts not in _sys.path:
+            _sys.path.insert(0, _scripts)
+        import obsidia_governed_write_guard_v0 as _wg
+        return _wg
+
+    def apply_proposal(
+        self,
+        proposal_id: str,
+        target_root: Optional[Path] = None,
+        proposals_dir: Optional[Path] = None,
+    ) -> Dict[str, Any]:
         """
         HUMAN_APPROVED_WRITE : copie les fichiers sandbox vers leur destination finale.
         Ne touche jamais kernel / proofs / sealed / V18.
         Retourne un bilan {applied, skipped, errors}.
+
+        target_root    : racine de destination alternative (worktree isolé).
+            Par défaut = REPO_ROOT (comportement original).
+            OBSIDURE_BOUNDED_APPLY_V1 passe le worktree de session ici.
+        proposals_dir  : répertoire racine des proposals.
+            Par défaut = PROPOSALS_DIR du module (comportement original).
+            Permet l'isolation dans les tests sans monkeypatching global.
         """
-        proposal_dir = REPO_ROOT / "_PATCH_PROPOSALS" / proposal_id
+        effective_root: Path = target_root if target_root is not None else REPO_ROOT
+        effective_proposals: Path = proposals_dir if proposals_dir is not None else PROPOSALS_DIR
+
+        # ── C2_D_ATOMIC_PRODUCTION_ACTIVATION_V1 — FAIL_CLOSED_FOR_CANONICAL_REPO_MUTATION ──
+        # apply_proposal() ne peut JAMAIS muter le dépôt canonique Obsidia
+        # (ni un worktree lié, ni un magasin canonique). Aucune variable
+        # d'environnement ne lève ce refus. Une racine NON-canonique isolée
+        # n'est acceptée que si TOUTES les gardes structurelles passent
+        # (OBSIDIA_GOVERNED_TEST_MODE=1 nécessaire mais jamais suffisant).
+        _wg = self._governed_write_guard()
+        _wg.assert_isolated_non_canonical_write_root(
+            effective_root, effective_proposals,
+        )
+
+        proposal_dir = effective_proposals / proposal_id
         proposal_json = proposal_dir / "proposal.json"
         if not proposal_json.exists():
             raise FileNotFoundError(f"Proposal introuvable : {proposal_json}")
@@ -3489,7 +3550,6 @@ class AgentObsidure:
         for patch in data.get("patches", []):
             rel_path   = patch.get("path", "")
             sandbox    = patch.get("sandbox_path", "")
-            action     = patch.get("action", "")
 
             if _is_protected(rel_path):
                 skipped.append({"path": rel_path, "reason": "PROTECTED"})
@@ -3501,7 +3561,8 @@ class AgentObsidure:
                 self._log(f"  ERREUR sandbox absent : {rel_path}", level="ERROR")
                 continue
 
-            dst = REPO_ROOT / rel_path
+            # Confinement + sûreté lien/reparse par fichier, juste avant la copie.
+            dst = _wg.assert_destination_confined(effective_root, rel_path)
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(sandbox, dst)
             applied.append(rel_path)
@@ -3518,6 +3579,7 @@ class AgentObsidure:
             "skipped": skipped,
             "errors": errors,
             "status": "APPLIED" if not errors else "APPLIED_WITH_ERRORS",
+            "target_root": str(effective_root),
         }
         self._log(f"\n  Bilan apply : {len(applied)} appliqué(s), {len(skipped)} ignoré(s), {len(errors)} erreur(s).")
         return bilan
