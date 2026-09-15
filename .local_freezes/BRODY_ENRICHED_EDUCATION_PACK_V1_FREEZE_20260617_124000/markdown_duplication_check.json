@@ -1,0 +1,29 @@
+{
+  "audit": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT",
+  "check": "C_MARKDOWN_DUPLICATION",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "files": [
+    {"file": "BRODY_V1_CANONICAL_CORE.md",               "lines": 286, "h2_count": 14, "sep_count": 14, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_PROJECT_STORYLINE.md",             "lines": 141, "h2_count":  8, "sep_count":  8, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_MACHINATION_OBSIDIA_X108.md",      "lines": 179, "h2_count": 10, "sep_count": 10, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_REAL_DOMAINS.md",                  "lines": 204, "h2_count":  8, "sep_count":  8, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_RND_CONTEXTUAL_MEMORY.md",         "lines": 185, "h2_count":  7, "sep_count":  7, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md",  "lines": 168, "h2_count": 10, "sep_count": 11, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_FORBIDDEN_BELIEFS.md",             "lines": 238, "h2_count":  8, "sep_count": 16, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"},
+    {"file": "BRODY_V1_EDUCATION_MODULES.md",             "lines": 339, "h2_count":  8, "sep_count":  8, "tool_contamination": false, "dup_h2": false, "excessive_separators": false, "status": "PASS"}
+  ],
+  "patterns_searched": [
+    "Write(", "Bash(", "Allowed by auto mode", "ctrl+o", "claude-sonnet",
+    "<antml_function_calls>", "</antml_function_calls>", "ToolResult", "antml:invoke"
+  ],
+  "note_on_forbidden_beliefs_sep_count": "16 separateurs dans BRODY_V1_FORBIDDEN_BELIEFS.md — justifie par la structure multi-categories (A-F, chacune avec sous-sections separees). Non excessif.",
+  "note_on_deferred_sep_count": "11 separateurs dans BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md — justifie par 7 quarantaines + preambule + synthese. Non excessif.",
+  "summary": {
+    "files_checked": 8,
+    "files_clean": 8,
+    "tool_contamination_found": false,
+    "duplicate_h2_found": false,
+    "excessive_separators_found": false,
+    "verdict": "PASS"
+  }
+}

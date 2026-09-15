@@ -2,7 +2,18 @@
 
 > Index généré le 2026-09-15 à partir de `main` (5d27d003). **Aucun document n'a été déplacé** : ce guide les organise par couche et chaque lien pointe vers l'emplacement actuel du fichier.
 
-Ce guide répond à trois questions : **comment une demande traverse Obsidia**, **quelle couche fait quoi**, et **où trouver les documents et le code de chaque couche**.
+## Commencer ici
+
+| Guide | Pour comprendre |
+|---|---|
+| **[Comprendre Obsidia](COMPRENDRE_OBSIDIA.md)** | ce qu'est Obsidia, d'où il vient, à quoi il répond, sa philosophie, ce qu'il ne prétend pas |
+| **[Trajets de la donnée](TRAJETS.md)** | comment Brody répond, comment le savoir devient mémoire, comment une action est autorisée, comment fonctionne OS Trad, pourquoi tout marche sans entraînement |
+| **[Entraînement, éducation, naissance](EDUCATION.md)** | Oxygen et « une seule naissance », organes et micro-agents, du savoir au réflexe, pack éducatif, curriculum, corpus mathématique, état réel |
+| **[Sécurité](SECURITE.md)** | les couches de sécurité, de l'autorité isolée au scan de secrets |
+
+Ce guide-ci répond à trois questions : **comment une demande traverse Obsidia**, **quelle couche fait quoi**, et **où trouver les documents et le code de chaque couche**.
+
+> **Deux lignes de code.** Une partie de la stack actuelle (mémoire native, MEMZUM, calibration du langage, jonction cognitive) vit sur la branche `integration/harness-runtime-binder-v1`, pas encore fusionnée dans `main`. Les liens marqués **(H)** y pointent.
 
 ## Obsidia en une phrase
 
@@ -38,7 +49,9 @@ Entrée ─▶ Traduction (OS Trad / IR) ─▶ Plan & capacités ─▶ Organes
 | Organe | Peut | Ne peut pas |
 |---|---|---|
 | Brody | comprendre, relier, reformuler, consulter la mémoire, utiliser des outils bornés | décider, être la mémoire |
-| Mémoire / Graphiti | conserver sessions, traces, contextes, candidats | devenir automatiquement une vérité canonique |
+| Mémoire native + MEMZUM | MEMZUM dit s'il faut de la mémoire ; la mémoire native restitue ce qui a été validé | écrire pendant une conversation, devenir automatiquement une vérité canonique |
+| Oxygen *(vision)* | porter l'identité, la naissance, la biographie et la mémoire éducative | agir, décider : l'autorité reste à X-108 |
+| Micro-agents | chercher, comparer, filtrer, tester, produire un receipt dans leur périmètre | posséder une identité, une biographie ou une souveraineté |
 | Sigma | détecter contradictions et dérives, guider, expliquer | trancher à la place de X-108 |
 | Obsidure | inspecter, proposer un patch, tester en sandbox, produire une preuve | commit, push ou promouvoir seul |
 | Domaines | comprendre leur terrain et le traduire | créer leur propre loi, être l'autorité finale |

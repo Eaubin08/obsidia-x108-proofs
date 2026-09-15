@@ -1,0 +1,34 @@
+{
+  "audit": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT",
+  "check": "B_JSON_PARSE",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "files": [
+    {
+      "file": "BRODY_V1_SOURCE_TRACEABILITY.json",
+      "valid": true,
+      "error": null,
+      "top_keys": ["pack", "generated_at", "branch", "head_commit", "audit_trail"],
+      "status": "PASS"
+    },
+    {
+      "file": "BRODY_V1_ENTRY_GATE.json",
+      "valid": true,
+      "error": null,
+      "top_keys": ["gate_id", "pack", "version", "generated_at", "head_commit"],
+      "status": "PASS"
+    },
+    {
+      "file": "BRODY_ENRICHED_EDUCATION_PACK_V1_VERDICT.json",
+      "valid": true,
+      "error": null,
+      "top_keys": ["verdict_id", "verdict", "generated_at", "pack_dir", "branch"],
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "json_files_expected": 3,
+    "json_files_valid": 3,
+    "json_files_invalid": 0,
+    "verdict": "PASS"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "audit": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT",
+  "check": "E_ENTRY_GATE",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "gate_file": "BRODY_V1_ENTRY_GATE.json",
+  "checks": [
+    {"id": "E01", "label": "gate_decision = PASS_WITH_CONDITIONS",             "value": "PASS_WITH_CONDITIONS",                                         "verdict": "PASS"},
+    {"id": "E02", "label": "dry-run requis avant ingestion",                    "value": "BRODY_ENRICHED_EDUCATION_PACK_V1_DRY_RUN (apres validation humaine)", "verdict": "PASS"},
+    {"id": "E03", "label": "MCP bloque sans validation humaine",                "value": "blocked_operations contient MCP",                              "verdict": "PASS"},
+    {"id": "E04", "label": "runtime adapter bloque sans validation humaine",    "value": "blocked_operations contient 'Brody runtime adapter update'",    "verdict": "PASS"},
+    {"id": "E05", "label": "memory_write = false",                              "value": false,                                                           "verdict": "PASS"},
+    {"id": "E06", "label": "canonical_write = false",                           "value": false,                                                           "verdict": "PASS"},
+    {"id": "E07", "label": "authority = NONE",                                  "value": "NONE",                                                          "verdict": "PASS"},
+    {"id": "E08", "label": "decision_authority = KX108_ONLY",                  "value": "KX108_ONLY",                                                    "verdict": "PASS"},
+    {"id": "E09", "label": "preconditions PRE_01 a PRE_10 all PASS",           "value": "10/10 PASS",                                                    "verdict": "PASS"}
+  ],
+  "blocked_operations_verified": [
+    "MCP audit (periphery/mcp/) -> VALIDATION_HUMAINE_REQUISE",
+    "Brody runtime adapter update -> VALIDATION_HUMAINE_REQUISE",
+    "git add / git commit / git push -> INTERDIT sans autorisation explicite",
+    "Ingestion dans Graphiti/Neo4j -> INTERDIT sans validation humaine",
+    "Lancement Path Compute -> INTERDIT sans validation humaine",
+    "Web scraping reel -> INTERDIT (WEB_SCRAPE_QUARANTINED)",
+    "NCP fetch reel -> INTERDIT (ncp_active=False)"
+  ],
+  "summary": {
+    "checks_total": 9,
+    "checks_pass": 9,
+    "checks_fail": 0,
+    "verdict": "PASS"
+  }
+}

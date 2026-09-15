@@ -12,11 +12,15 @@ Couche **conceptuelle** : elle ne s'exécute pas dans le trajet, elle définit l
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [EDUCATION.md](../EDUCATION.md) (le corpus mathématique)
+
 ## Où est son code aujourd'hui
 
 **Points d'entrée connus :**
 
-- [periphery/math_core/](../../periphery/math_core) · math core
+- [periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json](../../periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json) · corpus math : 134 éléments
+- [periphery/obsidure_math_memory_readonly/MATH_MEMORY_LEAN_CLOSURE_MAP.json](../../periphery/obsidure_math_memory_readonly/MATH_MEMORY_LEAN_CLOSURE_MAP.json) · fermeture Lean 134/134
+- [periphery/math_core/](../../periphery/math_core) · maths exécutables : Φ, Ω, Lyapunov, partition BLOCK/HOLD/ALLOW
 
 D'après le registre de fonctionnalités V3, **55 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :
 

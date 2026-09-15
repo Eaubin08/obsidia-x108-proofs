@@ -12,7 +12,17 @@ Couche **transverse** : elle encadre toutes les étapes plutôt qu'une seule.
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [SECURITE.md](../SECURITE.md) (les couches de sécurité)
+
 ## Où est son code aujourd'hui
+
+**Points d'entrée connus :**
+
+- [tests/non_sovereignty/](../../tests/non_sovereignty) · 35 tests de non-souveraineté
+- [apps/obsidia_api/brody_secret_scrubber.py](../../apps/obsidia_api/brody_secret_scrubber.py) · détection et nettoyage des secrets
+- [.github/workflows/secret-scan.yml](../../.github/workflows/secret-scan.yml) · scan de secrets en CI : TruffleHog, Gitleaks
+- [scripts/gates/obsidia_kernel_boundary_check.py](../../scripts/gates/obsidia_kernel_boundary_check.py) · gate de frontière du noyau
+- [SECURITY.md](../../SECURITY.md) · signalement de vulnérabilité
 
 D'après le registre de fonctionnalités V3, **33 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :
 

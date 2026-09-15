@@ -1,0 +1,10 @@
+783e664 feat(cic): bind ncp and scraping readonly contexts
+4a3152f feat(cic): add scraping readonly local stub
+0ea27b9 feat(cic): add ncp readonly local stub
+e085b13 feat(cic): add readonly receipt replay packet
+46149b5 fix(brody): scrub original_message in chat responses
+a8b535c fix(cic): expose canonical_write false on Brody fastpath
+a281630 feat(cic): attach readonly context to Brody runtime responses
+9daabd3 fix(cic): include Brody readonly context adapter
+dc70859 feat(cic): add readonly causal context pack
+53b2419 fix(brody): scrub contextual secret token sequences

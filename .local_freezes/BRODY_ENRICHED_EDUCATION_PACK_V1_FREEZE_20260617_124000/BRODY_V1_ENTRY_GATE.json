@@ -1,0 +1,142 @@
+{
+  "gate_id": "BRODY_V1_ENTRY_GATE",
+  "pack": "BRODY_ENRICHED_EDUCATION_PACK_V1",
+  "version": "V1",
+  "generated_at": "2026-06-17T11:40:57Z",
+  "head_commit": "783e664",
+  "branch": "sec1-neo4j-secret-rotation-cleanup",
+
+  "purpose": "Gate d'entree pour l'ingestion conditionnelle du Pack Brody V1 dans un contexte Brody ou dry-run.",
+
+  "preconditions": [
+    {
+      "id": "PRE_01",
+      "label": "Commit verifie",
+      "check": "git show 783e664 --stat retourne cic_readonly_pack_provider.py + ncp + scraping",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_02",
+      "label": "Tests unitaires PASS",
+      "check": "92/92 tests PASS (pytest_output_92_PASS.txt dans freeze V0)",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_03",
+      "label": "E2E PASS",
+      "check": "44/44 checks POST /api/brody/chat (CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0)",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_04",
+      "label": "ncp_context present et conforme",
+      "check": "ncp_active=False, fetch=False, crawl=False, authority=NONE",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_05",
+      "label": "scraping_context present et conforme",
+      "check": "scraping_active=False, external_http=False, quarantine_policy=WEB_SCRAPE_QUARANTINED",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_06",
+      "label": "CIC Receipt stable",
+      "check": "receipt_id=CIC_RCP_489413558D392A28 reproductible",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_07",
+      "label": "Claims cleanup done",
+      "check": "COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_V0 verdict = DONE_WITH_DEFERRED_ITEMS",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_08",
+      "label": "Corrections C14 et C19 appliquees dans Pack V1",
+      "check": "BRODY_V1_CANONICAL_CORE.md et BRODY_V1_EDUCATION_MODULES.md disent 16 etapes",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_09",
+      "label": "sigma/contracts.broken-ragnarok.py exclu",
+      "check": "Aucune reference dans les 9 fichiers VALIDATED du Pack V1",
+      "status": "PASS"
+    },
+    {
+      "id": "PRE_10",
+      "label": "Pack V1 complet (11/11 fichiers)",
+      "check": "Tous les fichiers attendus presents dans BRODY_ENRICHED_EDUCATION_PACK_V1_20260617_114057/",
+      "status": "PASS"
+    }
+  ],
+
+  "invariants_at_ingestion": {
+    "decision_authority": "KX108_ONLY",
+    "advisory_only": true,
+    "memory_write": false,
+    "kernel_mutation": false,
+    "emits_act": false,
+    "emits_verdict": false,
+    "readonly": true,
+    "context_signal_only": true,
+    "ncp_active": false,
+    "scraping_active": false,
+    "canonical_write": false,
+    "authority": "NONE"
+  },
+
+  "ingestion_rules": [
+    "BRODY_V1_CANONICAL_CORE.md  -> ingerer en premier, priorite maximale",
+    "BRODY_V1_FORBIDDEN_BELIEFS.md -> ingerer en second, appliquer sans exception",
+    "BRODY_V1_EDUCATION_MODULES.md -> ingerer pour contexte pedagogique",
+    "BRODY_V1_PROJECT_STORYLINE.md -> ingerer pour contexte historique",
+    "BRODY_V1_MACHINATION_OBSIDIA_X108.md -> ingerer pour architecture",
+    "BRODY_V1_REAL_DOMAINS.md -> ingerer pour domaines",
+    "BRODY_V1_RND_CONTEXTUAL_MEMORY.md -> ingerer avec SYNTHESIS_ONLY flag actif",
+    "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md -> NE PAS ingerer sans validation humaine",
+    "BRODY_V1_SOURCE_TRACEABILITY.json -> reference seulement, ne pas exposer a l'utilisateur final",
+    "BRODY_V1_ENTRY_GATE.json -> lecture seule, ne pas exposer a l'utilisateur final",
+    "BRODY_ENRICHED_EDUCATION_PACK_V1_VERDICT.json -> lecture seule, ne pas exposer a l'utilisateur final"
+  ],
+
+  "blocked_operations": [
+    "MCP audit (periphery/mcp/) -> VALIDATION_HUMAINE_REQUISE",
+    "Brody runtime adapter update -> VALIDATION_HUMAINE_REQUISE",
+    "git add / git commit / git push -> INTERDIT sans autorisation explicite",
+    "Ingestion dans Graphiti/Neo4j -> INTERDIT sans validation humaine",
+    "Lancement Path Compute -> INTERDIT sans validation humaine",
+    "Web scraping reel -> INTERDIT (WEB_SCRAPE_QUARANTINED)",
+    "NCP fetch reel -> INTERDIT (ncp_active=False)"
+  ],
+
+  "deferred_items": [
+    {
+      "id": "DEF_C13b",
+      "label": "Nombre total agents (47+ hors top 5)",
+      "blocker": "OBSIDIA_TOUS_LES_AGENTS.docx non committe dans repo",
+      "action_required": "Lecture manuelle du .docx par Etienne"
+    },
+    {
+      "id": "DEF_W02",
+      "label": "Double Brain architecture details",
+      "blocker": "periphery/bdf/ non lu dans cette session",
+      "action_required": "Audit cible periphery/bdf/ lors d'une session ulterieure"
+    },
+    {
+      "id": "DEF_MCP",
+      "label": "MCP permission matrix",
+      "blocker": "Validation humaine requise avant tout audit",
+      "action_required": "Autorisation explicite d'Etienne"
+    }
+  ],
+
+  "gate_decision": "PASS_WITH_CONDITIONS",
+  "conditions": [
+    "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md doit rester en quarantaine jusqu'a deblocage des items DEF_*",
+    "Dry-run V1 requis avant toute ingestion Brody de production",
+    "Validation humaine requise avant Phase 4 MCP"
+  ],
+
+  "next_step_authorized": "BRODY_ENRICHED_EDUCATION_PACK_V1_DRY_RUN (apres validation humaine)"
+}

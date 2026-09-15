@@ -12,6 +12,8 @@ La famille Tree34 : taxonomie, activation et modèles de flux. Elle n'a jamais d
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [EDUCATION.md](../EDUCATION.md) (le curriculum des 34 arbres)
+
 ## Où est son code aujourd'hui
 
 **Points d'entrée connus :**

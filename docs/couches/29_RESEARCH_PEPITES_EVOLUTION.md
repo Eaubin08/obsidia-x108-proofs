@@ -12,6 +12,8 @@ Couche **transverse** : elle encadre toutes les étapes plutôt qu'une seule.
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [EDUCATION.md](../EDUCATION.md) (la vision Oxygen)
+
 ## Où est son code aujourd'hui
 
 D'après le registre de fonctionnalités V3, **309 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :

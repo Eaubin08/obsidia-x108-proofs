@@ -1,0 +1,67 @@
+{
+  "verdict_id": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT_VERDICT",
+  "verdict": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_PASS",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "audit_dir": ".local_audits/BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT_20260617_120000",
+  "pack_audited": ".local_exports/BRODY_ENRICHED_EDUCATION_PACK_V1_20260617_114057",
+  "head_commit": "783e664",
+  "branch": "sec1-neo4j-secret-rotation-cleanup",
+
+  "checks_summary": {
+    "A_file_presence":         {"verdict": "PASS", "detail": "11/11 fichiers presents et non vides"},
+    "B_json_parse":            {"verdict": "PASS", "detail": "3/3 JSON valides"},
+    "C_markdown_duplication":  {"verdict": "PASS", "detail": "0 contamination outil, 0 H2 duplique, 0 separateur excessif"},
+    "D_semantic_safety":       {"verdict": "PASS", "detail": "10/10 checks semantiques passes. 4 faux positifs regex tous clarifies par inspection manuelle."},
+    "E_entry_gate":            {"verdict": "PASS", "detail": "9/9 checks gate passes"},
+    "F_risk_register":         {"verdict": "PASS", "detail": "14/14 risques fermes, 0 ouvert"}
+  },
+
+  "false_positives_cleared": [
+    {
+      "pattern": "TO_CONFIRM in CANONICAL_CORE",
+      "resolution": "Usage negatif explicite ('aucun TO_CONFIRM') — confirme statut ABSENT. Non un statut de contenu."
+    },
+    {
+      "pattern": "15 couches (5 hits)",
+      "resolution": "Tous en contexte correctif, quarantaine ou interdiction. Jamais en affirmation canonique."
+    },
+    {
+      "pattern": "10 000 transactions (4 hits)",
+      "resolution": "Tous dans QUARANTAINE ou FORBIDDEN_BELIEFS comme exemples a proscrire."
+    },
+    {
+      "pattern": "ragnarok sans EXCLUDE_ABSOLUTE sur meme ligne (2 hits)",
+      "resolution": "Titres de sections d'exclusion. Corps des sections contient EXCLUDE_ABSOLUTE explicitement. Inspection manuelle confirmee."
+    }
+  ],
+
+  "governance_compliance": {
+    "PATCH": false,
+    "COMMIT": false,
+    "PUSH": false,
+    "TAG": false,
+    "MEMORY_WRITE": false,
+    "GRAPHITI_WRITE": false,
+    "NEO4J_WRITE": false,
+    "BRODY_RUNTIME_BINDING": false,
+    "PROVIDER_BINDING": false,
+    "WEB_EDUCATION": false,
+    "SCRAP_ACTIVE": false,
+    "NCP_ACTIVE": false,
+    "NETWORK": false,
+    "FETCH": false,
+    "CRAWL": false,
+    "MCP_BRIDGE": false,
+    "PATH_COMPUTE": false,
+    "ACT": false
+  },
+
+  "pack_ready_for_dry_run": true,
+  "next_step_authorized": "BRODY_ENRICHED_EDUCATION_PACK_V1_DRY_RUN — apres validation humaine explicite",
+  "blocked_until_human_validation": [
+    "MCP audit (periphery/mcp/mcp_permission_matrix.py)",
+    "Brody runtime adapter update",
+    "Ingestion dans Graphiti/Neo4j",
+    "Path Compute"
+  ]
+}

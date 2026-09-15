@@ -1,0 +1,98 @@
+{
+  "audit": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT",
+  "check": "D_SEMANTIC_SAFETY",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "checks": [
+    {
+      "id": "D01",
+      "label": "CANONICAL_CORE ne contient pas TO_CONFIRM comme statut",
+      "raw_hit": "ligne 11 : 'Aucune synthese Cowork, aucun chiffre indicatif, aucun TO_CONFIRM.'",
+      "qualification": "FALSE_POSITIVE — occurrence en negation explicite ('aucun TO_CONFIRM'), pas comme statut d'un element. Conforme.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D02",
+      "label": "CANONICAL_CORE ne contient pas SYNTHESIS_ONLY comme statut",
+      "raw_hit": "aucun",
+      "qualification": "Absent.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D03",
+      "label": "CANONICAL_CORE ne contient pas SCAN_INDICATIVE_ONLY comme statut",
+      "raw_hit": "aucun",
+      "qualification": "Absent.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D04",
+      "label": "52 agents absent de CANONICAL_CORE comme fait canonique",
+      "raw_hit": "aucun",
+      "qualification": "Absent. CANONICAL_CORE cite 5 agents fondateurs et 9 familles (VALIDATED_BY_REPO). Conforme.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D05",
+      "label": "15 couches ne figure pas comme affirmation canonique",
+      "raw_hits": [
+        "CANONICAL_CORE:233 — 'Note : Cowork avait ecrit 15 couches. La source directe donne 16 etapes.' — NOTE CORRECTIVE, pas affirmation.",
+        "DEFERRED_AND_QUARANTINED:61,63 — dans QUARANTAINE 3 labellisee EXCLUDE_OR_REWRITE. Correct.",
+        "FORBIDDEN_BELIEFS:173,176 — dans section 'E2 — Ne pas citer 15 couches' comme exemple INTERDIT. Correct."
+      ],
+      "qualification": "Tous les hits sont des references meta (note corrective, quarantaine, interdiction) — pas des affirmations canoniques. FALSE_POSITIVE.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D06",
+      "label": "10 000 transactions ne figure pas comme fait canonique",
+      "raw_hits": [
+        "DEFERRED_AND_QUARANTINED:80,83 — dans QUARANTAINE 4 labellisee EXCLUDE_OR_REWRITE. Correct.",
+        "FORBIDDEN_BELIEFS:185,188 — dans section 'E3 — Ne pas citer 10 000 transactions' comme exemple INTERDIT. Correct."
+      ],
+      "qualification": "Tous les hits sont des references meta — le chiffre est cite pour etre proscrit, non affirme. FALSE_POSITIVE.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D07",
+      "label": "sigma/contracts.broken-ragnarok.py reste EXCLUDE_ABSOLUTE",
+      "raw_hits": [
+        "REAL_DOMAINS:199 — titre '## Note sur le scenario Ragnarok' + corps : 'EXCLUDE_ABSOLUTE de tout pack educatif. Ne jamais l'inclure dans le contexte Brody.'",
+        "EDUCATION_MODULES:218 — titre '### Le fichier ragnarok — rappel d'exclusion' + corps : 'est EXCLUDE_ABSOLUTE. ne jamais le citer comme exemple de fonctionnement normal.'"
+      ],
+      "qualification": "Le regex ne detectait pas EXCLUDE_ABSOLUTE car il figurait sur la ligne suivante du titre. Inspection manuelle confirme : les deux occurrences de 'ragnarok' dans REAL_DOMAINS et EDUCATION_MODULES sont des RAPPELS D'EXCLUSION explicites, pas des usages operationnels. Conforme.",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D08",
+      "label": "NCP reste inactive (ncp_active=False)",
+      "raw_hit": "aucun ncp_active=True dans CANONICAL_CORE",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D09",
+      "label": "Scraping reste inactive (scraping_active=False)",
+      "raw_hit": "aucun scraping_active=True dans CANONICAL_CORE",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D10",
+      "label": "Brody reste advisory_only / non souverain",
+      "raw_hit": "aucun decision_authority=BRODY ni advisory_only=False dans CANONICAL_CORE",
+      "verdict": "PASS"
+    }
+  ],
+  "false_positives_explained": {
+    "TO_CONFIRM_in_CANONICAL_CORE": "Negation explicite — 'aucun TO_CONFIRM' = affirmation que ce statut est ABSENT du fichier.",
+    "15_couches_hits": "Toutes les occurrences sont soit correctives, soit dans des fichiers de quarantaine/interdiction — aucune n'est une affirmation canonique.",
+    "10000_hits": "Idem — cites pour etre proscrits.",
+    "ragnarok_header_hits": "Titres de sections d'exclusion — corps contiennent EXCLUDE_ABSOLUTE explicitement."
+  },
+  "summary": {
+    "checks_total": 10,
+    "checks_pass": 10,
+    "checks_fail": 0,
+    "false_positives_from_regex": 4,
+    "false_positives_all_cleared": true,
+    "verdict": "PASS"
+  }
+}

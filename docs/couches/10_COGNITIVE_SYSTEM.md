@@ -4,7 +4,7 @@
 
 ## À quoi sert cette couche
 
-Brody comprend, relie, reformule et consulte la mémoire, mais ne décide pas. Obsidure construit sous gouvernance (patch candidat, sandbox, test, preuve) et ne promeut rien seul. Les agents conseillent.
+Brody est l'organe d'intégration sémantique, un moteur de contexte et pas un LLM : son micro-core (14 signaux), son balance engine (11 tensions) et son point cloud 21D analysent chaque demande avant d'assembler une réponse « True Voice » à partir de sources locales. Il comprend, contextualise, relie et décompose, mais ne décide pas et ne porte pas l'identité, qui appartient à Oxygen. Obsidure construit sous gouvernance (patch candidat, sandbox, test, preuve) et ne promeut rien seul. Les agents conseillent.
 
 ## Où elle intervient dans le trajet d'une demande
 
@@ -12,14 +12,24 @@ Brody comprend, relie, reformule et consulte la mémoire, mais ne décide pas. O
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [TRAJETS.md](../TRAJETS.md) (comment Brody répond, étape par étape) · [EDUCATION.md](../EDUCATION.md) (Brody organe, Oxygen identité)
+
 Cette couche joue un rôle clé dans **le trajet 1 (cognition)** : voir [TRAJETS.md](../TRAJETS.md), qui explique aussi pourquoi Obsidia fonctionne sans entraînement.
 
 ## Où est son code aujourd'hui
 
 **Points d'entrée connus :**
 
+- [apps/obsidia_api/routes/brody.py](../../apps/obsidia_api/routes/brody.py) · route /api/brody/chat : le pipeline complet
+- [apps/obsidia_api/brody_cognitive_micro_core.py](../../apps/obsidia_api/brody_cognitive_micro_core.py) · micro-core : 14 signaux, détection adversariale et irréversibilité
+- [apps/obsidia_api/brody_balance_engine.py](../../apps/obsidia_api/brody_balance_engine.py) · balance engine : 11 tensions
+- [apps/obsidia_api/brody_point_cloud_21d_selector.py](../../apps/obsidia_api/brody_point_cloud_21d_selector.py) · point cloud 21D : couches actives et budget
+- [apps/obsidia_api/brody_true_voice_adapter.py](../../apps/obsidia_api/brody_true_voice_adapter.py) · réponse True Voice
+- [apps/obsidia_api/brody_pre_reasoning_adapter.py](https://github.com/Eaubin08/obsidia-x108-proofs/blob/integration/harness-runtime-binder-v1/apps/obsidia_api/brody_pre_reasoning_adapter.py) **(H)** · pré-raisonnement : Reverse OS et C265 → C274
 - [periphery/brody_memory_readonly/](../../periphery/brody_memory_readonly) · Brody : mémoire en lecture seule
 - [periphery/agents/](../../periphery/agents) · agents
+
+*(H) : présent sur la branche `integration/harness-runtime-binder-v1`, pas encore dans `main`.*
 
 D'après le registre de fonctionnalités V3, **821 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :
 

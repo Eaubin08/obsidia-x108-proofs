@@ -1,0 +1,190 @@
+{
+  "pack": "BRODY_ENRICHED_EDUCATION_PACK_V1",
+  "generated_at": "2026-06-17T11:40:57Z",
+  "branch": "sec1-neo4j-secret-rotation-cleanup",
+  "head_commit": "783e664",
+  "audit_trail": [
+    {
+      "audit_id": "CIC_PROVIDER_BINDING_NCP_SCRAP_PATCH_V0_FREEZE",
+      "freeze_dir": ".local_freezes/CIC_PROVIDER_BINDING_NCP_SCRAP_PATCH_V0_FREEZE_20260617_102927",
+      "files": 11,
+      "verdict": "CIC_PROVIDER_BINDING_NCP_SCRAP_PATCH_V0_FREEZE_OK"
+    },
+    {
+      "audit_id": "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0",
+      "audit_dir": ".local_audits/CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0_20260617_104727",
+      "checks": "44/44 PASS",
+      "verdict": "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_PASS"
+    },
+    {
+      "audit_id": "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0_FREEZE",
+      "freeze_dir": ".local_freezes/CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0_FREEZE_20260617_105121",
+      "files": 10,
+      "verdict": "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0_FREEZE_OK"
+    },
+    {
+      "audit_id": "COWORK_BRODY_EDUCATION_ZIP_RECONCILIATION_V0",
+      "audit_dir": ".local_audits/COWORK_BRODY_EDUCATION_ZIP_RECONCILIATION_V0_20260617_110232",
+      "zip_sha256": "0f7c8a035e69a5b0e6f8d58f3e6af8c8107e9e5978a552731a546bbfb60f9bc4",
+      "zip_path": "obsidia-x108-proofs/_BRODY_RND_V0_OUTPUTS/education brody.zip",
+      "zip_files": 14,
+      "claims_audited": 20,
+      "verdict": "COWORK_BRODY_EDUCATION_ZIP_RECONCILIATION_DONE_WITH_WARNINGS"
+    },
+    {
+      "audit_id": "COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_V0",
+      "audit_dir": ".local_audits/COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_V0_20260617_112832",
+      "claims_total": 21,
+      "claims_validated": 15,
+      "claims_excluded": 2,
+      "claims_deferred": 4,
+      "verdict": "COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_DONE_WITH_DEFERRED_ITEMS"
+    }
+  ],
+  "sources_by_file": {
+    "BRODY_V1_CANONICAL_CORE.md": {
+      "status": "VALIDATED_BY_REPO",
+      "sources": [
+        "apps/obsidia_api/cic/cic_readonly_pack_provider.py",
+        "apps/obsidia_api/cic/cic_ncp_readonly_stub.py",
+        "apps/obsidia_api/cic/cic_scraping_readonly_stub.py",
+        "apps/obsidia_api/cic/cic_receipt_pack.py",
+        "sigma/contracts.py",
+        "proofs/lean/",
+        "formal/tla/X108.tla",
+        "periphery/world_calls/",
+        "agents/registry.md",
+        "docs/KERNEL_OVERVIEW.md",
+        "PUBLIC_STATUS.md"
+      ],
+      "key_commit": "783e664"
+    },
+    "BRODY_V1_PROJECT_STORYLINE.md": {
+      "status": "VALIDATED_BY_REPO + HISTORIC_USEFUL",
+      "sources": [
+        "PUBLIC_STATUS.md",
+        "git log (commits 99e966a, 783e664)",
+        "BRODY_PROJECT_HISTORY.md (ZIP Cowork — HISTORIC_USEFUL)"
+      ]
+    },
+    "BRODY_V1_MACHINATION_OBSIDIA_X108.md": {
+      "status": "VALIDATED_BY_REPO",
+      "sources": [
+        "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md",
+        "docs/KERNEL_OVERVIEW.md",
+        "apps/obsidia_api/cic/cic_readonly_pack_provider.py",
+        "apps/obsidia_api/cic/cic_receipt_pack.py",
+        "periphery/world_calls/",
+        "docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md"
+      ]
+    },
+    "BRODY_V1_REAL_DOMAINS.md": {
+      "status": "VALIDATED_BY_REPO + HISTORIC_USEFUL",
+      "sources": [
+        "sigma/domains/bank_agents.py",
+        "sigma/domains/trading_agents.py",
+        "sigma/domains/gps_defense_aviation_agents.py",
+        "sigma/domains/ecom_agents.py",
+        "sigma/domains/meta_agents.py",
+        "sigma/examples/bank_normal.json",
+        "sigma/examples/bank_suspicious.json",
+        "sigma/examples/bank_blocked.json",
+        "sigma/examples/trading_normal.json",
+        "sigma/examples/ecom_normal.json",
+        "docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md",
+        "docs/blockchain/NO_PRIVATE_KEY_POLICY_V1.md"
+      ]
+    },
+    "BRODY_V1_RND_CONTEXTUAL_MEMORY.md": {
+      "status": "HISTORIC_USEFUL + SYNTHESIS_ONLY + RND_TO_CONFIRM",
+      "sources": [
+        "ZIP Cowork education brody.zip (SHA256: 0f7c8a035e69a5b0e6f8d58f3e6af8c8107e9e5978a552731a546bbfb60f9bc4)",
+        "agents/registry.md (pour top 5 + 9 familles)"
+      ],
+      "warning": "Contenu Cowork — chaque affirmation DOIT être vérifiée contre source repo avant citation comme fait"
+    },
+    "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md": {
+      "status": "QUARANTAINE",
+      "sources": [
+        ".local_audits/COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_V0_20260617_112832/claims_demoted_or_deferred.json",
+        "sigma/tests/test_bank_replay_pack_10k.py (lu pour C19 — EXCLUDE_OR_REWRITE)",
+        "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md (lu pour C14 — EXCLUDE_OR_REWRITE)",
+        "agents/registry.md (lu pour C13 — split C13a VALIDATED + C13b TO_CONFIRM)"
+      ]
+    },
+    "BRODY_V1_FORBIDDEN_BELIEFS.md": {
+      "status": "RÈGLES OPÉRATIONNELLES",
+      "sources": [
+        "BRODY_RESPONSE_CONTRACT_V1 (invariants contrat)",
+        "apps/obsidia_api/cic/cic_readonly_pack_provider.py (authority=NONE)",
+        "apps/obsidia_api/cic/cic_ncp_readonly_stub.py (ncp_active=False)",
+        "apps/obsidia_api/cic/cic_scraping_readonly_stub.py (quarantine_policy)",
+        ".local_audits/COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_V0_20260617_112832/claims_demoted_or_deferred.json"
+      ]
+    },
+    "BRODY_V1_EDUCATION_MODULES.md": {
+      "status": "VALIDATED_BY_REPO",
+      "sources": [
+        "docs/KERNEL_OVERVIEW.md",
+        "PUBLIC_STATUS.md",
+        "proofs/lean/",
+        "formal/tla/X108.tla",
+        "sigma/contracts.py",
+        "sigma/domains/",
+        "sigma/examples/",
+        "apps/obsidia_api/cic/cic_readonly_pack_provider.py",
+        "apps/obsidia_api/cic/cic_receipt_pack.py",
+        "periphery/world_calls/",
+        "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md",
+        "docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md"
+      ]
+    }
+  },
+  "claim_verdicts_summary": {
+    "VALIDATED_BY_REPO": 15,
+    "HISTORIC_USEFUL": 2,
+    "SYNTHESIS_ONLY": 1,
+    "TO_CONFIRM_EXTERNAL_DOCX": 1,
+    "SCAN_INDICATIVE_ONLY": 0,
+    "EXCLUDE_OR_REWRITE": 2,
+    "EXCLUDE_ABSOLUTE": 1,
+    "total": 22
+  },
+  "corrections_applied": [
+    {
+      "claim_id": "C14",
+      "original": "Stack constitutionnel = 15 couches",
+      "corrected": "16 etapes (INPUT -> Feedback)",
+      "source": "docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md"
+    },
+    {
+      "claim_id": "C19",
+      "original": "10 000 transactions testees en CI",
+      "corrected": "test CI execute --cases 10 (non 10000)",
+      "source": "sigma/tests/test_bank_replay_pack_10k.py"
+    }
+  ],
+  "exclusions_applied": [
+    {
+      "file": "sigma/contracts.broken-ragnarok.py",
+      "reason": "EXCLUDE_ABSOLUTE - fichier intentionnellement casse, test de mode echec total"
+    }
+  ],
+  "cic_receipt_canonical": {
+    "receipt_id": "CIC_RCP_489413558D392A28",
+    "invocation_hash": "489413558d392a285f0ba234e44c40e29db38b59758b50fdf9cf067d032ed306",
+    "source": "apps/obsidia_api/cic/cic_receipt_pack.py",
+    "stability": "STABLE_ACROSS_CALLS (meme input = meme hash)"
+  },
+  "e2e_verification": {
+    "tests_unit": "92/92 PASS",
+    "checks_e2e": "44/44 PASS",
+    "ncp_context_present": true,
+    "scraping_context_present": true,
+    "ncp_active": false,
+    "scraping_active": false,
+    "side_load_strategy": "SIDE_LOAD",
+    "canonical_write": false,
+    "authority": "NONE"
+  }
+}

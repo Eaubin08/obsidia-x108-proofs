@@ -1,0 +1,21 @@
+ M .claude/settings.json
+ M .claude/settings.local.json
+ M apps/obsidia-workbench/src/App.tsx
+ M apps/obsidia-workbench/src/api/obsidiaClient.ts
+ M apps/obsidia-workbench/vite.config.ts
+ M apps/obsidia_api/brody_real_response_pipeline.py
+ M apps/obsidia_api/main.py
+ M audit/world_action_bus.jsonl
+ M docs/runtime/F11A_LIVE_CHAT_ATTEMPTS.json
+ M docs/runtime/F11A_LIVE_CHAT_SMOKE_RESULT.json
+ M scripts/run_brody_memory_intake_dry_run.ps1
+ M scripts/run_brody_terminal_enriched.ps1
+ M sigma/contracts.py
+?? .local_audits/
+?? .local_exports/
+?? .local_freezes/
+[...untracked files — voir git status complet pour liste exhaustive]
+
+NOTE: Les fichiers du pack Brody V1 (.local_exports/, .local_audits/, .local_freezes/)
+sont des artefacts locaux non committés. Aucun patch/commit/push/tag n'a été effectué.
+HEAD reste sur commit 783e664 (branch: sec1-neo4j-secret-rotation-cleanup).

@@ -1,0 +1,25 @@
+{
+  "audit": "BRODY_ENRICHED_EDUCATION_PACK_V1_INTEGRITY_AUDIT",
+  "check": "A_FILE_PRESENCE",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "pack_dir": ".local_exports/BRODY_ENRICHED_EDUCATION_PACK_V1_20260617_114057",
+  "files": [
+    {"order": 1,  "file": "BRODY_V1_CANONICAL_CORE.md",                    "exists": true, "size_bytes": 9273,  "empty": false, "status": "PASS"},
+    {"order": 2,  "file": "BRODY_V1_PROJECT_STORYLINE.md",                 "exists": true, "size_bytes": 4938,  "empty": false, "status": "PASS"},
+    {"order": 3,  "file": "BRODY_V1_MACHINATION_OBSIDIA_X108.md",          "exists": true, "size_bytes": 5664,  "empty": false, "status": "PASS"},
+    {"order": 4,  "file": "BRODY_V1_REAL_DOMAINS.md",                      "exists": true, "size_bytes": 6870,  "empty": false, "status": "PASS"},
+    {"order": 5,  "file": "BRODY_V1_RND_CONTEXTUAL_MEMORY.md",             "exists": true, "size_bytes": 7417,  "empty": false, "status": "PASS"},
+    {"order": 6,  "file": "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md",      "exists": true, "size_bytes": 6349,  "empty": false, "status": "PASS"},
+    {"order": 7,  "file": "BRODY_V1_FORBIDDEN_BELIEFS.md",                 "exists": true, "size_bytes": 7248,  "empty": false, "status": "PASS"},
+    {"order": 8,  "file": "BRODY_V1_EDUCATION_MODULES.md",                 "exists": true, "size_bytes": 11219, "empty": false, "status": "PASS"},
+    {"order": 9,  "file": "BRODY_V1_SOURCE_TRACEABILITY.json",             "exists": true, "size_bytes": 7440,  "empty": false, "status": "PASS"},
+    {"order": 10, "file": "BRODY_V1_ENTRY_GATE.json",                      "exists": true, "size_bytes": 5180,  "empty": false, "status": "PASS"},
+    {"order": 11, "file": "BRODY_ENRICHED_EDUCATION_PACK_V1_VERDICT.json", "exists": true, "size_bytes": 4813,  "empty": false, "status": "PASS"}
+  ],
+  "summary": {
+    "files_expected": 11,
+    "files_present": 11,
+    "files_empty": 0,
+    "verdict": "PASS"
+  }
+}

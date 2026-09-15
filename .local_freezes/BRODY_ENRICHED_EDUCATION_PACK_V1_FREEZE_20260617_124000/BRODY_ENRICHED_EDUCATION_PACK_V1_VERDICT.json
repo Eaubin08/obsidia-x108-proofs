@@ -1,0 +1,168 @@
+{
+  "verdict_id": "BRODY_ENRICHED_EDUCATION_PACK_V1_VERDICT",
+  "verdict": "BRODY_ENRICHED_EDUCATION_PACK_V1_READY_FOR_DRY_RUN",
+  "generated_at": "2026-06-17T11:40:57Z",
+  "pack_dir": ".local_exports/BRODY_ENRICHED_EDUCATION_PACK_V1_20260617_114057",
+  "branch": "sec1-neo4j-secret-rotation-cleanup",
+  "head_commit": "783e664",
+  "session_governance": {
+    "mode": "READ_ONLY / BUILD_LOCAL_PACK_ONLY",
+    "layer": "BRODY + EDUCATION",
+    "patch": false,
+    "commit": false,
+    "push": false,
+    "tag": false,
+    "mcp_audit": false,
+    "graphiti_write": false,
+    "memory_write": false,
+    "kernel_mutation": false
+  },
+
+  "files_produced": [
+    {
+      "order": 1,
+      "file": "BRODY_V1_CANONICAL_CORE.md",
+      "status": "VALIDATED_BY_REPO",
+      "lines": "~250"
+    },
+    {
+      "order": 2,
+      "file": "BRODY_V1_PROJECT_STORYLINE.md",
+      "status": "VALIDATED_BY_REPO + HISTORIC_USEFUL",
+      "lines": "~140"
+    },
+    {
+      "order": 3,
+      "file": "BRODY_V1_MACHINATION_OBSIDIA_X108.md",
+      "status": "VALIDATED_BY_REPO",
+      "lines": "~180"
+    },
+    {
+      "order": 4,
+      "file": "BRODY_V1_REAL_DOMAINS.md",
+      "status": "VALIDATED_BY_REPO + HISTORIC_USEFUL",
+      "lines": "~205"
+    },
+    {
+      "order": 5,
+      "file": "BRODY_V1_RND_CONTEXTUAL_MEMORY.md",
+      "status": "HISTORIC_USEFUL + SYNTHESIS_ONLY + RND_TO_CONFIRM",
+      "lines": "~185"
+    },
+    {
+      "order": 6,
+      "file": "BRODY_V1_DEFERRED_AND_QUARANTINED_RND.md",
+      "status": "QUARANTAINE — ne pas ingerer sans validation humaine",
+      "lines": "~170"
+    },
+    {
+      "order": 7,
+      "file": "BRODY_V1_FORBIDDEN_BELIEFS.md",
+      "status": "REGLES OPERATIONNELLES — appliquer sans exception",
+      "lines": "~170"
+    },
+    {
+      "order": 8,
+      "file": "BRODY_V1_EDUCATION_MODULES.md",
+      "status": "VALIDATED_BY_REPO",
+      "lines": "~290"
+    },
+    {
+      "order": 9,
+      "file": "BRODY_V1_SOURCE_TRACEABILITY.json",
+      "status": "REFERENCE / AUDIT",
+      "lines": "~140"
+    },
+    {
+      "order": 10,
+      "file": "BRODY_V1_ENTRY_GATE.json",
+      "status": "GATE — PASS_WITH_CONDITIONS",
+      "lines": "~100"
+    },
+    {
+      "order": 11,
+      "file": "BRODY_ENRICHED_EDUCATION_PACK_V1_VERDICT.json",
+      "status": "CE FICHIER",
+      "lines": "~150"
+    }
+  ],
+
+  "audit_chain": [
+    "CIC_PROVIDER_BINDING_NCP_SCRAP_PATCH_V0_FREEZE_OK",
+    "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_PASS (44/44)",
+    "CIC_PROVIDER_BINDING_NCP_SCRAP_API_E2E_V0_FREEZE_OK",
+    "COWORK_BRODY_EDUCATION_ZIP_RECONCILIATION_DONE_WITH_WARNINGS",
+    "COWORK_BRODY_EDUCATION_CLAIMS_CLEANUP_DONE_WITH_DEFERRED_ITEMS"
+  ],
+
+  "corrections_applied": [
+    "C14: 15 couches -> 16 etapes (source: docs/architecture/OBSIDIA_FULL_AGENTIC_CONSTITUTIONAL_STACK_V0.md)",
+    "C19: 10000 transactions -> --cases 10 en CI (source: sigma/tests/test_bank_replay_pack_10k.py)"
+  ],
+
+  "exclusions_enforced": [
+    "sigma/contracts.broken-ragnarok.py: EXCLUDE_ABSOLUTE dans tout le pack",
+    "Chiffres de scan: SCAN_INDICATIVE_ONLY, non cites comme faits",
+    "Modules Cowork: SYNTHESIS_ONLY, non cites comme sources d'autorite"
+  ],
+
+  "deferred_non_blocking": [
+    "C13b: nombre total agents (TO_CONFIRM_EXTERNAL_DOCX)",
+    "W02: Double Brain details (RND_TO_CONFIRM)",
+    "MCP audit: VALIDATION_HUMAINE_REQUISE",
+    "Path Compute: VALIDATION_HUMAINE_REQUISE"
+  ],
+
+  "pack_completeness": {
+    "files_expected": 11,
+    "files_produced": 11,
+    "all_files_present": true
+  },
+
+  "content_integrity": {
+    "validated_by_repo_files": 4,
+    "historic_useful_mixed_files": 2,
+    "synthesis_rnd_mixed_files": 1,
+    "quarantine_files": 1,
+    "operational_rules_files": 1,
+    "reference_json_files": 2,
+    "forbidden_content_included": false,
+    "ragnarok_excluded": true,
+    "network_calls_made": false,
+    "memory_writes_made": false,
+    "kernel_mutations_made": false
+  },
+
+  "governance_compliance": {
+    "DECISION_AUTHORITY": "KX108_ONLY",
+    "authority_in_cic": "NONE",
+    "ncp_active": false,
+    "scraping_active": false,
+    "canonical_write": false,
+    "advisory_only": true,
+    "context_signal_only": true
+  },
+
+  "next_steps": [
+    {
+      "step": "DRY_RUN_V1",
+      "label": "Dry-run Pack V1 dans contexte Brody isole",
+      "status": "BLOCKED",
+      "blocker": "VALIDATION_HUMAINE_REQUISE"
+    },
+    {
+      "step": "MCP_PHASE_4",
+      "label": "Audit periphery/mcp/mcp_permission_matrix.py",
+      "status": "BLOCKED",
+      "blocker": "VALIDATION_HUMAINE_REQUISE"
+    },
+    {
+      "step": "BRODY_RUNTIME_ADAPTER",
+      "label": "Mise a jour adapter Brody pour Pack V1",
+      "status": "BLOCKED",
+      "blocker": "VALIDATION_HUMAINE_REQUISE"
+    }
+  ],
+
+  "final_verdict": "BRODY_ENRICHED_EDUCATION_PACK_V1_READY_FOR_DRY_RUN"
+}

@@ -12,6 +12,8 @@ Le juge unique (KX108_ONLY). Il évalue avant exécution et rend ACT, HOLD ou BL
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [SECURITE.md](../SECURITE.md) (l'autorité isolée)
+
 Cette couche joue un rôle clé dans **le trajet 3 (action)** : voir [TRAJETS.md](../TRAJETS.md), qui explique aussi pourquoi Obsidia fonctionne sans entraînement.
 
 ## Où est son code aujourd'hui

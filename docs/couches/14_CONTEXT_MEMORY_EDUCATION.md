@@ -4,7 +4,7 @@
 
 ## À quoi sert cette couche
 
-La continuité : sessions, projets, traces, Graphiti et Neo4j, paquets de contexte, promotion gouvernée. Une mémoire n'est jamais automatiquement une vérité canonique.
+La continuité. La mémoire est la **mémoire native Obsidia** : un index local de 3 267 enregistrements, lu sans réseau, activé seulement quand **MEMZUM** juge qu'il en faut. L'ancien index Graphiti a été migré avec parité vérifiée. Elle couvre aussi les sessions, les projets, les paquets de contexte et le pack éducatif. Les mémoires sont séparées (brut, session, projet, expérience candidate, canon validé, biographie, mémoire éducative) pour que l'éducation ne devienne pas corruption. Une mémoire n'est jamais automatiquement une vérité canonique : la promotion passe par une validation humaine.
 
 ## Où elle intervient dans le trajet d'une demande
 
@@ -13,14 +13,23 @@ La continuité : sessions, projets, traces, Graphiti et Neo4j, paquets de contex
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [TRAJETS.md](../TRAJETS.md) (le trajet du savoir et la mémoire native) · [EDUCATION.md](../EDUCATION.md) (entraînement, éducation, naissance)
+
 Cette couche joue un rôle clé dans **le trajet 2 (savoir)** : voir [TRAJETS.md](../TRAJETS.md), qui explique aussi pourquoi Obsidia fonctionne sans entraînement.
 
 ## Où est son code aujourd'hui
 
 **Points d'entrée connus :**
 
+- [_obsidia_native_memory/OBSIDIA_NATIVE_MEMORY_INDEX_V1](https://github.com/Eaubin08/obsidia-x108-proofs/blob/integration/harness-runtime-binder-v1/_obsidia_native_memory/OBSIDIA_NATIVE_MEMORY_INDEX_V1) **(H)** · index de la mémoire native (3 267 enregistrements)
+- [apps/obsidia_api/brody_memzum_activation_adapter.py](https://github.com/Eaubin08/obsidia-x108-proofs/blob/integration/harness-runtime-binder-v1/apps/obsidia_api/brody_memzum_activation_adapter.py) **(H)** · MEMZUM : faut-il de la mémoire ?
+- [apps/obsidia_api/brody_obsidia_native_memory.py](https://github.com/Eaubin08/obsidia-x108-proofs/blob/integration/harness-runtime-binder-v1/apps/obsidia_api/brody_obsidia_native_memory.py) **(H)** · lecture locale de la mémoire native
+- [periphery/brody_memory_readonly/](../../periphery/brody_memory_readonly) · chaîne du savoir : capture → tri → validation humaine → écriture gardée → relecture
+- [apps/obsidia_api/brody_education_pack_v1_readonly_adapter.py](../../apps/obsidia_api/brody_education_pack_v1_readonly_adapter.py) · injection du pack éducatif Brody V1
 - [periphery/memory/](../../periphery/memory) · mémoire
 - [.graph-memory/](../../.graph-memory) · mémoire graphe
+
+*(H) : présent sur la branche `integration/harness-runtime-binder-v1`, pas encore dans `main`.*
 
 D'après le registre de fonctionnalités V3, **89 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :
 

@@ -4,7 +4,7 @@
 
 ## À quoi sert cette couche
 
-La traduction de toute entrée (demande humaine, code, document, événement) en représentation unifiée (Unified Input IR) et le routage.
+OS Trad reçoit la langue vivante, reconstruit l'intention (entités, relations, contraintes, temporalité, ambiguïtés), stabilise le sens et le transforme en IR. Avec Reverse OS, c'est un **interlangage multidirectionnel** : humain ↔ glyphe ↔ géométrie ↔ math ↔ code ↔ IR ↔ lisible par le noyau. La vérité n'est dans aucune langue : elle est dans `IR_L2 + CONTRAT_COGNITIF_L2_5`. La couche comprend la calibration C265 → C278, qui empêche le sens de glisser. OS Trad ne porte pas l'identité.
 
 ## Où elle intervient dans le trajet d'une demande
 
@@ -12,13 +12,21 @@ La traduction de toute entrée (demande humaine, code, document, événement) en
 
 Voir le trajet complet : [guide général](../README.md).
 
+**Guides à lire pour cette couche :** [TRAJETS.md](../TRAJETS.md) (§ 4 : OS Trad, le langage commun)
+
 Cette couche joue un rôle clé dans **le trajet 1 (cognition)** : voir [TRAJETS.md](../TRAJETS.md), qui explique aussi pourquoi Obsidia fonctionne sans entraînement.
 
 ## Où est son code aujourd'hui
 
 **Points d'entrée connus :**
 
-- [periphery/language/](../../periphery/language) · langage
+- [_source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/interlanguage_transduction_v1.md](../../_source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/interlanguage_transduction_v1.md) · règle canonique de l'interlangage
+- [apps/obsidia_api/routes/os_trad_ir_reverse.py](../../apps/obsidia_api/routes/os_trad_ir_reverse.py) · routes /api/os-trad/translate, /api/ir/candidate, /api/os-reverse/project
+- [periphery/language/](../../periphery/language) · routage de langue et calibration
+- [periphery/language/pre_reasoning_calibrator.py](https://github.com/Eaubin08/obsidia-x108-proofs/blob/integration/harness-runtime-binder-v1/periphery/language/pre_reasoning_calibrator.py) **(H)** · calibration C265 → C274
+- [periphery/reverse_os/](../../periphery/reverse_os) · projections Reverse OS
+
+*(H) : présent sur la branche `integration/harness-runtime-binder-v1`, pas encore dans `main`.*
 
 D'après le registre de fonctionnalités V3, **30 fichier(s)** du dépôt relèvent de cette couche. Principaux emplacements :
 
