@@ -2,19 +2,31 @@
 
 > Guide rédigé le 2026-09-15. Chaque étape renvoie au fichier qui l'exécute. Les principes sont cités depuis le [README](../README.md) ; le reste est lu dans le code.
 >
-> **Branche de référence.** La mémoire native, MEMZUM, le cœur cognitif de Brody et la couche langage vivent sur la branche [`integration/harness-runtime-binder-v1`](https://github.com/Eaubin08/obsidia-x108-proofs/tree/integration/harness-runtime-binder-v1), qui n'est pas encore fusionnée dans `main`. Les liens marqués **(H)** pointent vers cette branche.
+> **Branches de référence.** La mémoire native, MEMZUM, le cœur cognitif de Brody et la couche langage vivent dans Binder (`integration/harness-runtime-binder-v1`) et, pour le cutover le plus avancé Native Memory / retrait Graphiti-Neo4j, dans M4D4 (`obsidia-main-direct-20260914`, `5d27d003 + index staged`). Les liens marqués **(H)** pointent encore vers Binder tant que M4D4 n'est pas publié proprement. Voir aussi [État réel 2026-09-15](ETAT_REEL_2026_09_15.md).
 
 À lire avant : [Comprendre Obsidia](COMPRENDRE_OBSIDIA.md). À lire après : [Entraînement, éducation, naissance](EDUCATION.md) et [Sécurité](SECURITE.md).
 
-Obsidia fait circuler l'information sur **trois trajets** qui se croisent :
+Obsidia fait circuler l'information sur **six trajets** qui se croisent. L'audit du 2026-09-15 ajoute une couche amont et une couche aval : avant la donnée, le monde produit des signaux situés ; après l'action, une conséquence vérifiée peut devenir expérience.
 
 | Trajet | Question | Nature |
 |---|---|---|
 | [1. La cognition](#1-le-trajet-de-la-cognition--comment-brody-répond) | Comment une demande devient une réponse ? | aller simple, en lecture seule |
 | [2. Le savoir](#2-le-trajet-du-savoir--comment-une-information-devient-mémoire) | Comment une information devient mémoire fiable ? | boucle lente, validée par un humain |
 | [3. L'action](#3-le-trajet-de-laction--comment-une-proposition-touche-le-réel) | Comment une proposition peut toucher le réel ? | passe obligatoirement par X-108 |
+| [4. OS Trad](#4-os-trad--le-langage-commun) | Comment la langue vivante devient IR stable ? | traduction, calibration, reprojection |
+| [5. Math](#5-le-trajet-mathématique--comment-le-corpus-guide-une-réponse) | Comment une question mathématique mobilise le corpus ? | retrieval, statuts, preuves, inconnues |
+| [6. Monde physique](#6-le-trajet-physique--comment-un-signal-entre-dans-obsidia) | Comment GPS/RF et signaux deviennent observation gouvernée ? | capteurs, temps, provenance, anti-replay |
 
-Puis : [4. OS Trad, le langage commun](#4-os-trad--le-langage-commun) et [5. Pourquoi ça fonctionne sans entraînement](#5-pourquoi-ça-fonctionne-sans-entraînement).
+Puis : [7. Pourquoi ça fonctionne sans entraînement](#7-pourquoi-ça-fonctionne-sans-entraînement) et [8. Conséquence et expérience](#8-conséquence-et-expérience--boucle-future).
+
+Vue longue :
+
+```text
+monde → phénomène → signal → observation située → provenance
+→ représentation → savoir → mémoire → cognition → intention
+→ décision → action → conséquence → vérification → expérience
+→ correction → éducation future d'Oxygen
+```
 
 ```text
                  ┌───────────── 2. SAVOIR (boucle lente, validée par l'humain) ─────────────┐
@@ -85,6 +97,43 @@ message
 
 Couches : [10 · Cognition](couches/10_COGNITIVE_SYSTEM.md), [11 · Sigma](couches/11_HIGH_PERIPHERY_MACHINERY.md), [12 · Langage](couches/12_LANGUAGE_OS_TRAD_IR.md), [14 · Mémoire](couches/14_CONTEXT_MEMORY_EDUCATION.md).
 
+### 1.4 Causalité de la réponse actuelle
+
+Dans le chemin M4D4 audité, la réponse Brody doit être attribuée à la stack locale :
+
+```text
+message -> micro-core -> balances -> point cloud 21D -> MEMZUM
+-> Native Memory / sources / corpus -> adapters -> moteur local
+-> True Voice -> réponse
+```
+
+Statut :
+
+```text
+NO_LLM_PROVIDER_CALLED
+NO_NEURAL_INFERENCE_CAUSAL_PATH
+LOCAL_STRUCTURAL_RESPONSE_GENERATION
+```
+
+La formulation canonique est donc : **Brody répond déjà sans appel à un LLM externe et sans entraînement neuronal personnel massif, grâce aux corpus, à Native Memory, aux règles, aux routes, aux scores, au micro-core, aux balances, au point cloud 21D, à MEMZUM et à True Voice.**
+
+### 1.5 Ce que Brody reçoit vraiment
+
+Brody ne reçoit pas seulement une phrase. Dans le chemin actuel, il reçoit un ensemble de structures déjà travaillées :
+
+| Structure | Contenu | Effet |
+|---|---|---|
+| message nettoyé | texte utilisateur sans secret exploitable | réduit les fuites |
+| signaux micro-core | autorité, réversibilité, mémoire, projection, invariant | indique le type de demande |
+| balances | tensions et priorités | amplifie les risques ou les besoins |
+| point cloud 21D | axes de domaine, risque, preuve, mémoire, trajectoire | choisit les couches utiles |
+| trace OS Trad / IR | intention, langue, unknowns, projection | stabilise le sens |
+| contexte mémoire | fragments natifs retrouvés et scorés | rappelle sans décider |
+| contexte source | source packs, preuves, docs, statuts | donne la matière vérifiable |
+| mesures Sigma | mismatch, contradiction, dérive | signale ce qui ne tient pas |
+
+La réponse finale n'est donc pas une improvisation. Elle est une composition contrainte : ce que Brody peut dire dépend de ce que ces structures transportent, de ce qu'elles interdisent et de ce que True Voice peut formuler sans sortir du cadre.
+
 ---
 
 ## 2. Le trajet du savoir — comment une information devient mémoire
@@ -120,7 +169,7 @@ Chaque étape est un module séparé de [`periphery/brody_memory_readonly/`](../
 | 6 | **Vérification** | On vérifie ce qui a été appliqué et on rejoue les requêtes pour détecter une régression. | `post_…_apply_verify_readonly`, `memory_replay_query_regression_readonly` |
 | 7 | **Relecture** | La mémoire validée est servie en **paquets de contexte** au moteur de réponse local, puis à Brody (trajet 1, étape 5). | `context_packet_query_readonly`, `context_packet_consumer_readonly`, `local_response_engine_readonly` |
 
-*Les noms de modules des étapes 4 à 6 contiennent encore le mot « graphiti » : c'est un héritage de l'ancienne cible. La lecture se fait aujourd'hui sur la mémoire native (§ 2.1).*
+*Les noms de modules des étapes 4 à 6 contiennent encore le mot « graphiti » : c'est un héritage de l'ancienne cible. Dans le cutover M4D4 audité le 2026-09-15, la lecture produit passe par Native Memory Obsidia ; Graphiti/Neo4j doivent être classés legacy, migration evidence, signature compatibility ou helper neutralisé sauf preuve d'un callsite actif.*
 
 **La boucle :** ce qui est validé aujourd'hui est relu par Brody demain. **Le système apprend en accumulant de la mémoire validée, pas en modifiant un modèle.**
 
@@ -131,6 +180,69 @@ Chaque étape est un module séparé de [`periphery/brody_memory_readonly/`](../
 - le **corpus mathématique** (134 éléments, tous rattachés à Lean) ; voir [Entraînement, éducation, naissance § 7.2](EDUCATION.md) ;
 - le **pack éducatif Brody V1** ; voir [Entraînement, éducation, naissance § 8.1](EDUCATION.md) ;
 - les **spécifications** ([`specs/`](../specs/)), les **contrats** ([`runtime_contracts/`](../runtime_contracts/)) et les **preuves** ([couche 24](couches/24_FORMAL_METHODS.md), [couche 25](couches/25_OS3_PROOF_REPLAY_ATTESTATION.md)).
+
+### 2.3 Ce qui entre, ce qui devient savoir, ce qui reste hypothèse
+
+Tout ce qui entre dans Obsidia ne devient pas du savoir. Une source peut rester a plusieurs statuts :
+
+| Statut | Exemple | Ce que le système peut en faire |
+|---|---|---|
+| document brut | note, mail, rapport, fichier | le citer comme source, pas comme vérité |
+| fragment extrait | passage découpé avec origine | l'indexer et le retrouver |
+| candidat | information utile mais non validée | la proposer a la revue humaine |
+| connaissance exploitable | élément validé avec provenance et statut | l'utiliser comme contexte |
+| hypothèse | piste de recherche ou relation probable | la garder séparée du canon |
+| résultat testé | sortie de test ou dry-run | l'affirmer seulement dans son périmètre |
+| preuve formelle | propriété Lean/TLA bornée | soutenir un invariant précis |
+| expérience validée | conséquence observée puis acceptée | nourrir la future éducation d'Oxygen |
+
+Une information est donc transformée par étapes :
+
+```text
+source -> identification -> provenance -> statut -> extraction
+-> découpage -> normalisation -> indexation -> tags / relations
+-> retrieval -> scoring -> sélection -> hydratation
+-> contexte -> réponse ou proposition -> candidat mémoire
+-> validation -> promotion éventuelle -> nouvelle consultation
+```
+
+Cette chaîne répond a une question essentielle : **qu'est-ce qui est gardé ?** Ce qui est gardé n'est pas forcément canonique. Une trace peut être conservée comme archive, preuve historique, hypothèse, contre-exemple, leçon d'attaque ou source documentaire. Ce qui est rejeté peut aussi produire une leçon : pourquoi c'était faux, dangereux, insuffisant, non sourcé ou périmé.
+
+### 2.4 Comment une information est retrouvée
+
+La récupération n'est pas seulement une recherche de mots. Elle combine plusieurs indices selon les surfaces disponibles :
+
+- mots et noms propres ;
+- tags ;
+- domaine ;
+- statut ;
+- fraîcheur ;
+- provenance ;
+- relations ;
+- similarité avec la demande ;
+- besoin mémoire calculé par MEMZUM ;
+- budget de contexte choisi par le point cloud 21D.
+
+Le résultat n'est pas "la vérité". C'est un paquet de contexte. Il doit encore être lu par Brody, comparé aux règles, limité par les domaines, éventuellement contredit par Sigma, puis formulé par True Voice.
+
+### 2.5 Pourquoi la mémoire ne devient pas autorité
+
+Une mémoire peut rappeler une trace, mais elle ne peut pas décider. Cette séparation protège le système contre trois erreurs :
+
+1. prendre une ancienne trace pour une vérité actuelle ;
+2. transformer une hypothèse personnelle en preuve ;
+3. laisser une conversation s'auto-promouvoir en canon.
+
+Le bon vocabulaire est donc :
+
+```text
+mémoire = contexte retrouvé
+connaissance = information validée dans un périmètre
+hypothèse = piste non prouvée
+test = observation reproductible bornée
+preuve = propriété démontrée dans un cadre formel
+autorité = X-108 uniquement pour le passage au réel
+```
 
 ---
 
@@ -149,6 +261,38 @@ possible → admissible → autorisé → réel
 5. Seul un `ACT` passe au *réel*, par une frontière bornée, et l'action est scellée et rejouable ([couche 25](couches/25_OS3_PROOF_REPLAY_ATTESTATION.md)).
 
 Dans la route Brody, cette chaîne ne s'exerce aujourd'hui qu'en **sandbox** : passerelle HOLD/BLOCK (P54) et bus d'action en dry-run (P53). **Brody n'émet jamais d'ACT.**
+
+### 3.1 Du contexte à la proposition
+
+Une réponse devient proposition seulement si elle contient une transformation possible : modifier un fichier, appeler un outil, changer une règle, déclencher une opération, publier une information, agir sur un compte, une trajectoire ou une infrastructure.
+
+```text
+réponse explicative
+-> option candidate
+-> proposition structurée
+-> périmètre
+-> risque
+-> preuves attendues
+-> rollback possible ou non
+```
+
+La proposition doit alors porter ses limites : ce qui est connu, ce qui manque, ce qui est reversible, ce qui touche au réel, ce qui nécessite permission, ce qui doit rester dry-run.
+
+### 3.2 Pourquoi HOLD est souvent le bon résultat
+
+`HOLD` n'est pas un échec. C'est l'état correct quand le système comprend assez pour voir un risque, mais pas assez pour agir.
+
+| Manque | Conséquence correcte |
+|---|---|
+| provenance absente | HOLD |
+| fraîcheur insuffisante | HOLD |
+| contradiction entre sources | HOLD ou BLOCK |
+| action irréversible sans rollback | HOLD |
+| permission absente | BLOCK |
+| preuve hors périmètre | HOLD |
+| autorité usurpée | BLOCK |
+
+L'action n'est donc pas refusée par prudence vague. Elle est retenue parce qu'une transformation précise manque : preuve, permission, fraîcheur, causalité, réversibilité ou autorité.
 
 ---
 
@@ -191,15 +335,147 @@ entrée → traduction OS Trad → candidat IR → projection Reverse → projec
 
 ### 4.4 Où OS Trad intervient dans Brody
 
-- À l'**étape 2** (pré-raisonnement), Brody projette le message par le Reverse OS et produit une trace de traduction (`translation_trace`) et un candidat IR (`ir_candidate`).
+- À l'**étape 2** (pré-raisonnement), Brody consomme une projection produite par le Reverse OS et transporte une trace de traduction (`translation_trace`) et un candidat IR (`ir_candidate`).
 - Le **composeur de machination** agrège Brody et les preuves OS Trad / IR / Reverse en une seule réponse native ([`brody_machination_composer.py`](../apps/obsidia_api/brody_machination_composer.py)).
 - Le **Workbench** affiche le pipeline ([`osTradPipeline.ts`](../apps/obsidia-workbench/src/lib/osTradPipeline.ts)).
 
 Couche : [12 · Langage, OS Trad, IR](couches/12_LANGUAGE_OS_TRAD_IR.md).
 
+### 4.5 La différence simple entre OS Trad et Brody
+
+OS Trad transforme la langue en representation. Brody transforme une representation contextualisee en interaction.
+
+| | OS Trad | Brody |
+|---|---|---|
+| Reçoit | langue, symboles, termes ambigus | message, IR, contexte, mémoire, signaux |
+| Cherche | sens stable, entités, relations, unknowns | réponse située, clarification, proposition |
+| Produit | IR, trace, projection, candidat | réponse structurée, contexte formulé, True Voice |
+| Limite | ne décide pas, ne prouve pas | ne décide pas, n'écrit pas, n'agit pas |
+
+Sans OS Trad, Brody risque de manipuler seulement des formulations. Avec OS Trad, la demande peut devenir une structure : intention, objets, contraintes, ambiguïtés, statut, public, action possible ou refus nécessaire.
+
 ---
 
-## 5. Pourquoi ça fonctionne sans entraînement
+## 5. Le trajet mathématique — comment le corpus guide une réponse
+
+Le corpus math n'est pas un simple dossier de notes. Il fournit de la matière structurée : définitions, problèmes, statuts, dépendances, freezes, sources, candidats, inconnues et obligations de preuve.
+
+Trajet attendu pour une question comme "explique la stratégie autour de Riemann" :
+
+```text
+question mathématique
+-> détection du domaine math / Obsidure
+-> construction d'une requête ciblée
+-> ouverture de l'index math
+-> recherche par tags, noms, objets et statuts
+-> scoring / ranking
+-> sélection de fragments
+-> hydratation des extraits
+-> context pack math
+-> Obsidure / Brody
+-> True Voice
+-> réponse avec statut : documentaire, calculé, testé, candidat, inconnu ou prouvé
+```
+
+Ce que le corpus apporte concrètement :
+
+| Élément | Effet dans la réponse |
+|---|---|
+| nom du problème, par exemple Riemann ou Navier-Stokes | évite de mélanger deux domaines |
+| statut épistémique | distingue problème ouvert, candidat, résultat testé, preuve formelle |
+| sources et freezes | donne la provenance et empêche de présenter une piste comme vérité acquise |
+| relations et dépendances | relie une méthode à ses lemmes, tests, contraintes et inconnues |
+| contexte pack | transforme des fragments en contexte consommable par Brody ou Obsidure |
+
+Le corpus fournit déjà une partie de la structure intellectuelle d'Étienne. Le corps mathématique futur vise à utiliser primitives, contraintes et invariants pour reconstruire un chemin vers une réponse absente du corpus, mais il ne faut pas le raconter comme moteur général déjà fermé.
+
+### 5.1 Les mathématiques guident aussi les réponses non mathématiques
+
+Le corpus math et les mécanismes mathématiques ne servent pas seulement a parler de Riemann ou Navier-Stokes. Ils imposent une discipline générale :
+
+| Discipline mathématique | Effet hors math |
+|---|---|
+| définition stricte | évite de changer le sens d'un mot en cours de route |
+| invariant | interdit certaines conclusions même si elles semblent utiles |
+| contrainte | borne une action, un domaine ou une réponse |
+| contre-exemple | empêche une généralisation trop rapide |
+| statut épistémique | distingue fait, hypothèse, candidat, test, preuve |
+| seuil | déclenche HOLD/BLOCK quand une mesure est insuffisante |
+| dépendance | montre qu'une conclusion dépend d'un lemme ou d'une source |
+
+En banque, cela aide a distinguer alerte et fraude prouvée. En GPS, signal et position fiable. En sécurité, capacité technique et autorité. En entreprise, symptôme, cause probable et preuve de cause.
+
+Distinction absolue :
+
+```text
+corpus documentaire
+!= mémoire
+!= calcul exécuté
+!= résultat testé
+!= preuve formelle
+!= vérité universelle
+```
+
+## 6. Le trajet physique — comment un signal entre dans Obsidia
+
+La physique n'est pas seulement un domaine supplémentaire : elle représente l'entrée du réel dans Obsidia.
+
+```text
+monde -> phénomène -> capteur -> signal -> mesure
+-> observation située -> provenance -> DomainState -> décision
+```
+
+Déjà réel ou partiel : bus de signaux, GPS, RF, inertiel, timestamps, fraîcheur, attestation, anti-replay, conflits entre sources, provenance physique.
+
+Futur ou incomplet : protocole temporel uniforme (`observed_at`, `received_at`, `processed_at`, `decided_at`, `executed_at`, `verified_at`), fusion multimodale générale, BodyState, Physical Signal World Model, boucle physique générale action -> conséquence -> expérience.
+
+Distinction à conserver :
+
+```text
+RÉCIT ≠ REPRÉSENTATION ≠ SIMULATION ≠ MESURE ≠ PHÉNOMÈNE ≠ CAUSALITÉ PROUVÉE
+```
+
+### 6.1 Exemple GPS/RF
+
+Un signal GPS/RF n'est pas une vérité brute. Il doit passer par plusieurs questions :
+
+```text
+signal reçu
+-> capteur identifié
+-> horodatage
+-> fraîcheur
+-> attestation
+-> comparaison trajectoire attendue / trajectoire observée
+-> conflit éventuel entre sources
+-> DomainState
+-> gate de réalité
+-> HOLD/BLOCK si incohérent ou insuffisant
+```
+
+Une dérive de trajectoire après un signal RF hostile peut être un indice. Elle n'est pas automatiquement une preuve causale. Le système doit conserver : ce qui a été observé, quand, par quel capteur, avec quelle incertitude, quelles sources corroborent, quelles sources contredisent et quelle décision a été retenue.
+
+### 6.2 Multimodalité : le principe commun
+
+La future multimodalité ne consiste pas a ajouter "plus de fichiers". Chaque modalité doit devenir une représentation comparable :
+
+| Modalité | Transformation attendue |
+|---|---|
+| texte | tokens, intention, entités, relations, unknowns |
+| voix / son | signal, intonation, horodatage, source, incertitude |
+| image / vidéo | objets, mouvement, scène, provenance, frame time |
+| GNSS / RF | position, puissance, fraîcheur, attestation, conflit |
+| inertiel / pression | mouvement, force, trajectoire, calibration |
+| signaux corporels | état observé, incertitude, contexte, consentement |
+
+```text
+signal brut -> caractéristiques -> horodatage -> provenance
+-> calibration -> incertitude -> représentation commune
+-> fusion éventuelle -> contexte cognitif
+```
+
+`BodyState`, la fusion multimodale générale et le `Physical Signal World Model` restent **FUTURE_ARCHITECTURE** ou partiels. Ils ne doivent pas être racontés comme runtime actif.
+
+## 7. Pourquoi ça fonctionne sans entraînement
 
 Obsidia n'est pas un modèle qu'on entraîne. C'est une **architecture qui organise du savoir écrit et validé et des règles prouvées**.
 
@@ -209,32 +485,32 @@ Attention au vocabulaire : l'**entraînement** donne des capacités aux organes 
 
 Six raisons, toutes vérifiables :
 
-### 5.1 C'est une règle du projet, pas un accident
+### 7.1 C'est une règle du projet, pas un accident
 
 Le pack éducatif de Brody l'écrit en toutes lettres (règles D1 et D2 de `BRODY_V1_FORBIDDEN_BELIEFS.md`) :
 
 > **D1** — *« Brody n'est pas un modèle fine-tuné sur des données Obsidia. Son contexte est assemblé à chaque appel depuis des sources locales readonly. »*
 > **D2** — *« Chaque appel Brody est stateless sur le plan de l'apprentissage. Le contexte de chaque appel est assemblé depuis le CIC. »*
 
-### 5.2 Le savoir est dans des fichiers, pas dans des poids
+### 7.2 Le savoir est dans des fichiers, pas dans des poids
 
 Obsidia sait ce qui est **écrit et validé** : mémoire native (3 267 enregistrements), source packs, corpus math, pack éducatif, spécifications, preuves. Pour qu'il sache une chose nouvelle, **on l'ajoute et on la valide** (trajet 2). Il n'y a rien à réentraîner.
 
 > *« Le modèle peut évoluer ou être remplacé. La continuité cognitive reste dans Obsidia. »* — README § 6.12
 
-### 5.3 Le raisonnement est calculé, pas appris
+### 7.3 Le raisonnement est calculé, pas appris
 
 Le micro-core, les 11 balances, le point cloud 21D, MEMZUM et la calibration C265 → C278 sont du **code déterministe** : motifs, seuils, priorités, axes. Ils donnent la même réponse à la même entrée, et on peut les lire, les tester et les corriger. Il n'y a pas de poids opaques à ajuster.
 
-### 5.4 La structure passe avant l'inférence
+### 7.4 La structure passe avant l'inférence
 
 ```text
-forme du problème → intention → domaine → risque → capacité → preuve attendue → inférence éventuelle
+forme du problème → intention → domaine → risque → capacité → preuve attendue → réponse locale structurée
 ```
 
-L'inférence n'arrive qu'**à la fin, et seulement si nécessaire** (README § 10.1).
+Dans le chemin Brody/M4D4 audité, cette dernière étape est une **génération locale structurée** : `NO_LLM_PROVIDER_CALLED`, `NO_NEURAL_INFERENCE_CAUSAL_PATH`, `LOCAL_STRUCTURAL_RESPONSE_GENERATION`.
 
-### 5.5 Obsidia se demande d'abord s'il faut appeler un modèle
+### 7.5 Obsidia se demande d'abord s'il faut appeler un modèle
 
 > *« Un modèle doit-il réellement être appelé ? »* — README § 8.4
 
@@ -242,18 +518,32 @@ L'inférence n'arrive qu'**à la fin, et seulement si nécessaire** (README § 1
 - La mémoire et la réponse sont **« provider-neutral »** : le moteur de réponse local est prioritaire.
 - Dans l'orchestrateur, le fournisseur de modèle vaut **`NOT_REQUESTED`** par défaut, et **`DISABLED_BY_POLICY`** même s'il est demandé ([`brody_full_runtime_orchestrator.py`](../apps/obsidia_api/brody_full_runtime_orchestrator.py)).
 - Le benchmark [OIE V0.7](audits/OBSIDIA_OIE_OBSIDIA_VS_GEMINI_POWER_METRICS_V0_7.md) mesure 4 appels de modèle évités sur 7 familles de tâches. *C'est un dry-run sur des valeurs figées.*
+- Dans le chemin M4D4 audité ici, aucun callsite LLM causal n'est retenu pour expliquer la réponse courante.
 
-### 5.6 La décision est déterministe et prouvée
+### 7.6 La décision est déterministe et prouvée
 
 Le noyau X-108 **n'utilise aucune IA générative**. Il applique des invariants vérifiés en Lean 4 et en TLA+. Une règle prouvée n'a pas à apprendre : elle doit rester **la même**. Le corpus math qui nourrit les réponses est lui aussi fermé côté Lean (134/134) ; voir [Entraînement, éducation, naissance § 7.2](EDUCATION.md).
 
 ### Attribuer chaque résultat
 
-Quand une réponse est bonne, il faut savoir d'où elle vient : `corpus ≠ retrieval ≠ Obsidure ≠ Brody ≠ LLM ≠ calcul ≠ template ≠ preuve`.
+Quand une réponse est bonne, il faut savoir d'où elle vient : `corpus ≠ retrieval ≠ Native Memory ≠ contexte de session ≠ règle ≠ score ≠ micro-core ≠ balance ≠ point cloud 21D ≠ MEMZUM ≠ domaine ≠ adapter ≠ template ≠ moteur local ≠ True Voice ≠ calcul ≠ preuve`.
 
 ### Ce que ça ne veut pas dire
 
-- **Un LLM peut être branché**, mais comme un organe parmi d'autres, jamais comme le cerveau ni comme l'autorité (README § 8.1).
+- **Un modèle probabiliste n'explique pas le chemin Brody/M4D4 audité.** Si un autre chemin en branchait un jour un modèle, il devrait être isolé, prouvé par callsite et traité comme organe périphérique, jamais comme cerveau ni autorité.
 - **État réel au 14 septembre 2026** : entraînement durable de Brody = 0, fine-tuning = 0, apprentissage persistant autonome non démontré. Le progrès vient de la machinerie, des routes, du corpus, des règles et des contextes réinjectés (voir le § 9 d'[Entraînement, éducation, naissance](EDUCATION.md)).
 - **La qualité dépend de ce qui est écrit et validé.** Pour une question sur un sujet que ni la mémoire, ni les sources, ni le corpus ne contiennent, Brody n'invente pas : il répond avec ce qu'il a et signale les inconnues.
 - La stack est en **reconstruction canonique** ; la V0.1 n'est pas publiée (README, « État du projet »).
+
+## 8. Conséquence et expérience — boucle future
+
+Pour une action irréversible, Obsidia doit aller plus loin qu'une bonne réponse :
+
+```text
+proposition -> admissibilité -> X-108 -> action bornée
+-> receipt -> observation de conséquence -> comparaison avec l'intention
+-> contradiction éventuelle -> leçon candidate -> validation humaine
+-> expérience future d'Oxygen
+```
+
+Aujourd'hui, cette boucle est surtout doctrinale, sandbox ou dry-run. Elle ne doit pas être présentée comme production physique générale. Le principe est toutefois central : une action ne devient pas seulement une ligne de log ; elle doit produire une conséquence vérifiable, puis éventuellement une expérience validée.

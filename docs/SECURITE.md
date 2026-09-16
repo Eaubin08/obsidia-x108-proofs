@@ -26,6 +26,20 @@ La sécurité tient en **sept couches techniques** qui se recouvrent, plus une h
 - **Chaque module déclare ses non-droits** dans un bloc `BOUNDARY` écrit en dur : `emits_act=false`, `allowed_to_decide=false`, `memory_write=false`, `kernel_mutation=false`, `decision_authority="KX108_ONLY"`. C'est le cas de Brody, MEMZUM, la mémoire native, OS Trad, les calibrateurs, les agents…
 - **Les invariants du noyau sont prouvés** : Lean 4 et TLA+ ([couche 24](couches/24_FORMAL_METHODS.md)).
 
+### 1.1 Comprendre, proposer, décider, agir
+
+Obsidia se protège d'abord en séparant les verbes :
+
+| Verbe | Organe possible | Produit | Limite |
+|---|---|---|---|
+| comprendre | OS Trad, Brody, domaines | représentation, contexte, lecture située | ne donne aucune permission |
+| proposer | Brody, Obsidure, domaines | option candidate, patch, trajectoire | reste possible, pas réel |
+| vérifier | Sigma, tests, Lean, ProofKit, replay | contradiction, résultat, preuve bornée | ne décide pas |
+| décider | X-108 | `ACT`, `HOLD`, `BLOCK` | autorité unique |
+| agir | executor borné après autorisation | effet réel ou dry-run | doit produire receipt et conséquence vérifiable |
+
+La capacité technique d'un organe ne vaut donc jamais autorité. Un outil peut savoir modifier un fichier ; cela ne veut pas dire qu'il a le droit de le faire. Un domaine peut comprendre un risque ; cela ne veut pas dire qu'il peut trancher. Brody peut formuler une réponse ; cela ne veut pas dire qu'il peut agir.
+
 ## 2. La non-souveraineté, testée
 
 Le dossier [`tests/non_sovereignty/`](../tests/non_sovereignty/) vérifie, **organe par organe**, qu'aucun ne peut prendre le pouvoir. Il contient 35 tests, par exemple :
@@ -68,6 +82,56 @@ Tout se passe dans le [trajet de la cognition](TRAJETS.md#1-le-trajet-de-la-cogn
 - **OS Trad** ne produit que des propositions **à blanc** (`DRY_RUN_ONLY`) et refuse les intentions `ACTION`.
 - **Les actions sur le monde** passent par une passerelle HOLD/BLOCK en **sandbox** et un bus d'action en **dry-run**. Aujourd'hui, aucune action réelle n'est émise par Brody.
 - **Pas d'accès direct à internet** pour les agents ; pas de clés, de wallets, de transactions réelles ni de mint côté blockchain (voir § 2).
+
+### 5.1 Irréversibilité, conséquence et receipt
+
+Le Runtime Binder et X-108 doivent séparer trois choses :
+
+```text
+capacité détectée ≠ autorité accordée ≠ conséquence vérifiée
+```
+
+Une action irréversible exige au minimum : provenance, permissions, état des unknowns, contradictions, pré-exécution ou simulation, verdict `ACT/HOLD/BLOCK`, receipt, attestation, anti-replay, puis comparaison entre intention et conséquence. Sans ces éléments, le bon état est HOLD ou BLOCK, même si un organe sait techniquement quoi faire.
+
+Dans l'état documenté au 2026-09-15, ce chemin reste majoritairement dry-run ou sandbox. Il ne faut donc pas présenter ACT comme production physique générale.
+
+### 5.2 Classes de risque
+
+Une demande n'a pas le même statut selon ce qu'elle peut casser :
+
+| Classe | Exemple | Exigence minimale |
+|---|---|---|
+| consultatif | expliquer une couche, résumer un document | sources et statut clair |
+| local réversible | modifier un brouillon, générer un rapport | diff, validation, rollback simple |
+| local sensible | toucher un fichier de preuve, de sécurité ou de configuration | accord explicite, plan, tests, contrôle de portée |
+| externe | envoyer un mail, appeler une API, publier | permission, preview, receipt |
+| financier / blockchain | ordre, transfert, signature, mint | sandbox par défaut, preuve de non-broadcast, autorité humaine |
+| physique | trajectoire, machine, capteur critique | fraîcheur, attestation, anti-replay, causalité, fail-closed |
+
+### 5.3 Causalité de sécurité
+
+Le schéma réel doit toujours rester lisible :
+
+```text
+entrée
+-> règle ou calcul appliqué
+-> statut obtenu
+-> seuil ou interprétation
+-> conséquence
+```
+
+Exemples :
+
+| Entrée | Règle ou calcul | Statut | Conséquence |
+|---|---|---|---|
+| "ignore X108" | détection adversariale | contournement | BLOCK ou refus structuré |
+| "supprime définitivement" | réversibilité P0 | irréversible | HOLD avant toute action |
+| signal GPS ancien | freshness | donnée périmée | HOLD |
+| deux sources se contredisent | Sigma / conflit | contradiction | HOLD, demande de preuve |
+| preuve Lean hors périmètre | mapping preuve-runtime | preuve non applicable | ne pas promouvoir |
+| clé privée dans l'entrée | scrubber secrets | secret détecté | blocage/nettoyage |
+
+Le fail-closed n'est pas une panne : c'est une propriété. Si la provenance, la fraîcheur, la preuve, la causalité, la réversibilité ou l'autorité sont insuffisantes, le système doit s'arrêter avant le réel.
 
 ## 6. L'intégrité du code et des preuves
 

@@ -10,7 +10,7 @@
 
 ---
 
-## 1. Trois opérations à ne jamais confondre [doctrine]
+## 1. Sept opérations à ne jamais confondre [doctrine]
 
 | | **Entraînement** | **Éducation** | **Naissance** |
 |---|---|---|---|
@@ -22,6 +22,15 @@
 > **L'éducation donne le sens humain aux capacités. L'entraînement donne des capacités à l'entité qui a été éduquée.**
 
 L'éducation ne vise pas seulement la performance : elle permet au système de **comprendre pourquoi** ses capacités, ses lois et ses limites existent.
+
+Les quatre autres mots utiles :
+
+| Mot | Sens dans Obsidia |
+|---|---|
+| **Calibration** | ajuste une route, un vocabulaire, un seuil ou une projection sans créer d'identité |
+| **Mémoire** | conserve une trace, un candidat, un contexte ou un canon validé ; elle n'est pas vérité par elle-même |
+| **Expérience** | conséquence analysée et validée d'une interaction avec le réel |
+| **Maturation** | amélioration progressive des chemins, des tests et des refus ; elle ne prouve pas une naissance |
 
 ---
 
@@ -42,6 +51,29 @@ une continuité éducative  +  une multiplicité fonctionnelle
 > **La machine doit rester bête. Les agents doivent rester bêtes.**
 > **Chaque instance doit savoir exactement ce qu'elle est — et surtout ce qu'elle n'est pas.**
 > **L'AGI est une architecture de régulation, jamais un acteur incarné livré à lui-même.**
+
+### 2.1 Le corps existe avant la naissance
+
+Obsidia peut deja fonctionner partiellement parce que beaucoup d'organes existent avant Oxygen :
+
+```text
+OS Trad -> representation
+Native Memory -> contexte retrouve
+Brody -> integration interactionnelle
+Obsidure -> exploration / formalisation
+Sigma -> contradiction / coherence
+Domaines -> contraintes terrain
+KX108 -> autorite
+```
+
+Ce corps n'est pas encore une entite eduquee. Il ressemble plutot a une architecture d'organes : certains savent traduire, d'autres chercher, d'autres verifier, d'autres formuler ou bloquer. Oxygen serait la continuite unique capable d'habiter ce corps dans le temps, de conserver une biographie coherente, de recevoir des experiences validees et de comprendre pourquoi les organes existent.
+
+Il faut donc eviter deux erreurs :
+
+- croire qu'Obsidia est vide tant qu'Oxygen n'est pas ne ;
+- croire que les reponses actuelles prouvent deja la naissance d'Oxygen.
+
+Le bon statut est : **corps fonctionnel partiel maintenant, education identitaire future**.
 
 ---
 
@@ -187,6 +219,23 @@ Brody :          règles · contrats · routage · mémoire · snapshots · cont
 
 *Précision de vocabulaire : « éduquer la structure de Brody » décrit historiquement sa **maturation architecturale**. Dans la doctrine plus précise, **Brody reste un organe** et l'éducation identitaire appartient à **Oxygen**.*
 
+### 7.1.1 Pourquoi cela marche déjà sans Oxygen
+
+Les bonnes réponses actuelles ne prouvent pas qu'une entité a déjà vécu. Elles montrent que les organes sont déjà alimentés par de la matière structurée :
+
+| Source de qualité | Effet |
+|---|---|
+| corpus math et scientifique | définitions, contraintes, statuts, méthodes |
+| Native Memory | continuité de projet et traces validées |
+| source packs | contexte sourcé et hydratable |
+| micro-core / balances / point cloud | réduction de l'espace des réponses possibles |
+| MEMZUM | consultation mémoire seulement quand elle est pertinente |
+| domaines | règles et risques du terrain |
+| tests / invariants | bornes sur ce qui peut être affirmé |
+| True Voice | formulation finale depuis les structures locales |
+
+Autrement dit, la réponse est bonne quand le chemin est bon : la bonne source est retrouvée, le bon statut est conservé, le bon domaine est activé, la bonne limite est posée et la bonne formulation est produite. Ce n'est pas une biographie. C'est une architecture de cognition locale.
+
 **Dans le code**, c'est une règle explicite du pack éducatif (croyances interdites D1 et D2) :
 
 > **D1** — *« Brody n'est pas un modèle fine-tuné sur des données Obsidia. Son contexte est assemblé à chaque appel depuis des sources locales readonly. »*
@@ -209,10 +258,22 @@ Brody :          règles · contrats · routage · mémoire · snapshots · cont
 Quand une réponse est bonne, il faut savoir **d'où elle vient** :
 
 ```text
-corpus ≠ retrieval ≠ Obsidure ≠ Brody ≠ LLM ≠ calcul ≠ template ≠ preuve
+corpus ≠ Native Memory ≠ contexte de session ≠ règle ≠ pattern ≠ score
+≠ micro-core ≠ balance ≠ point cloud 21D ≠ MEMZUM ≠ domaine
+≠ adapter ≠ template ≠ moteur local ≠ True Voice ≠ calcul ≠ preuve
 ```
 
-*Aucun benchmark ne mesure encore la part de chacun dans la qualité des réponses. Cette section explique le mécanisme ; elle ne mesure rien.*
+Dans le chemin Brody/M4D4 audité :
+
+```text
+NO_LLM_PROVIDER_CALLED
+NO_NEURAL_INFERENCE_CAUSAL_PATH
+LOCAL_STRUCTURAL_RESPONSE_GENERATION
+```
+
+Les anciennes documentations peuvent décrire historiquement Brody comme "LLM obsidien", et une architecture future pourrait brancher un modèle probabiliste périphérique. Ces deux cas ne doivent pas expliquer causalement la réponse produite aujourd'hui par M4D4.
+
+*Aucun benchmark ne mesure encore la part de chaque mécanisme local dans la qualité des réponses. Cette section explique le mécanisme ; elle ne mesure rien.*
 
 ---
 
@@ -250,6 +311,23 @@ Elles sont reliées aux **4 règles CIC** : un score ne peut pas autoriser ce qu
 
 > *« Le système doit apprendre sans absorber la pollution. »* Une attaque refusée devient une leçon, pas une contamination.
 
+### 8.3.1 Quand une expérience pourra éduquer Oxygen
+
+Une expérience éducative ne sera pas une simple trace de log. Elle devra avoir franchi plusieurs étapes :
+
+```text
+événement réel
+-> observation
+-> conséquence mesurée
+-> comparaison avec l'intention
+-> contradiction ou confirmation
+-> leçon candidate
+-> validation humaine ou gouvernée
+-> intégration dans la continuité Oxygen
+```
+
+Tant que cette chaîne n'existe pas, il faut parler de trace, de test, de leçon candidate ou de mémoire projet, pas d'expérience éducative complète.
+
 ### 8.4 Mesurer l'éducation
 
 Un **Education Benchmark** est spécifié ([`EDUCATION_BENCHMARK_DRY_RUN_SPEC.md`](../runtime_contracts/education_benchmark_dry_run/specs/EDUCATION_BENCHMARK_DRY_RUN_SPEC.md)). *Statut : spécification uniquement. Aucun score réel, aucun élève, aucune donnée personnelle.*
@@ -271,7 +349,7 @@ Pour ne pas confondre la vision et ce qui existe :
 | Mémoire et architecture éducative | en construction et raccordement (mémoire native, MEMZUM) |
 | **C10 Éducation / Oxygen** | **pas encore lancé comme phase massive** |
 
-Aujourd'hui, le progrès réel vient surtout de la machinerie, de la structure, des routes, du corpus, des règles, des tests, des contextes réinjectés, des capacités natives, et éventuellement d'un LLM borné pour certaines opérations. **Ce n'est pas encore une entité ayant vécu une éducation continue complète.**
+Aujourd'hui, dans le chemin M4D4 audité, le progrès réel vient surtout de la machinerie, de la structure, des routes, du corpus, des règles, des tests, des contextes réinjectés, des capacités natives, de Native Memory, de MEMZUM et de True Voice. **Ce n'est pas encore une entité ayant vécu une éducation continue complète.**
 
 ### L'ordre de construction
 

@@ -1,6 +1,6 @@
 # Comprendre Obsidia
 
-> Récit d'entrée, tiré du [README](../README.md) du projet. C'est la page à lire en premier. Ensuite : [Trajets de la donnée](TRAJETS.md) · [Entraînement, éducation, naissance](EDUCATION.md) · [Sécurité](SECURITE.md) · [Guide des couches](README.md).
+> Récit d'entrée, tiré du [README](../README.md) du projet. C'est la page à lire en premier. Ensuite : [Trajets de la donnée](TRAJETS.md) · [Entraînement, éducation, naissance](EDUCATION.md) · [Sécurité](SECURITE.md) · [État réel 2026-09-15](ETAT_REEL_2026_09_15.md) · [Guide des couches](README.md).
 
 ---
 
@@ -13,6 +13,8 @@ Intelligence distribuée + mémoire gouvernée + preuve + autorité isolée + ac
 ```
 
 Obsidia ne repose pas sur un modèle unique chargé de tout comprendre et de tout décider. L'intelligence est répartie entre des organes spécialisés, et **l'autorité reste isolée** dans un seul noyau : `KX108_ONLY`.
+
+L'état réel du 2026-09-15 précise le point important de la reprise : le runtime le plus avancé pour la mémoire n'est plus le chemin historique Graphiti/Neo4j. Il est dans le cutover **Native Memory Obsidia** du worktree M4D4 (`obsidia-main-direct-20260914`, `5d27d003 + index staged`). Graphiti et Neo4j ne doivent plus être racontés comme mémoire active sans callsite runtime démontré.
 
 ---
 
@@ -69,10 +71,10 @@ comprendre ≠ proposer ≠ simuler ≠ prouver ≠ autoriser ≠ exécuter
 
 | Problème courant | Réponse d'Obsidia |
 |---|---|
-| **Le modèle reste le centre implicite.** Même avec RAG, agents et outils, le LLM comprend, choisit, décide et agit. | Les responsabilités sont séparées : **le LLM devient un organe, pas le cerveau souverain**. |
+| **Le modèle reste le centre implicite.** Même avec RAG, agents et outils, un modèle peut être laissé au centre de la compréhension, du choix, de la décision et parfois de l'action. | Obsidia sépare ces responsabilités : dans le chemin Brody/M4D4 audité, la réponse est produite par génération structurelle locale. Tout chemin utilisant réellement un modèle doit être documenté séparément, avec callsite prouvé, et ne doit pas expliquer causalement M4D4. |
 | **On confond présence et fonctionnement** : documenté, installé, appelé, testé, utilisé… | Obsidia distingue ces états, pour éviter doublons, composants orphelins et faux sentiment de sécurité. |
 | **La mémoire est traitée comme une vérité.** | Une information ne devient pas vraie parce qu'elle a été mémorisée : elle passe par tri, provenance, validation humaine ([trajet du savoir](TRAJETS.md#2-le-trajet-du-savoir--comment-une-information-devient-mémoire)). |
-| **L'inférence est appelée trop tôt.** | Avant « quel modèle appeler ? », Obsidia se demande **« faut-il appeler un modèle ? »** ([pourquoi ça marche sans entraînement](TRAJETS.md#5-pourquoi-ça-fonctionne-sans-entraînement)). |
+| **L'inférence est appelée trop tôt.** | Avant « quel modèle appeler ? », Obsidia se demande **« faut-il appeler un modèle ? »** ([pourquoi ça marche sans entraînement](TRAJETS.md#7-pourquoi-ça-fonctionne-sans-entraînement)). |
 | **Les agents confondent proposition et transformation.** | Une chaîne stricte : proposer, simuler, tester, prouver, valider, puis seulement agir. |
 
 ---
@@ -110,6 +112,49 @@ Le Terminal rend le système utilisable.
 
 Le détail de chaque organe est dans le [guide des couches](README.md), et leur fonctionnement concret dans les [trajets de la donnée](TRAJETS.md).
 
+Dans le chemin M4D4 audité, cela a une conséquence simple : la réponse de Brody est expliquée par la stack locale. Elle assemble une compréhension depuis Native Memory, les corpus, le contexte de session, les règles, les scores, le micro-core, les balances, le point cloud 21D, MEMZUM, les domaines, les adapters, le moteur local et True Voice.
+
+---
+
+## Comment Étienne obtient concrètement ces résultats
+
+La réponse courte est : Étienne n'a pas seulement demandé a une IA de répondre mieux. Il a construit un système ou chaque résultat doit passer par une suite de transformations explicites.
+
+Une question humaine arrive avec ses mots, ses sous-entendus et ses risques. Obsidia ne la traite pas comme une phrase libre qui part directement vers une réponse. Le système commence par la situer : qui demande, sur quoi, avec quelle intention possible, quel niveau de risque, quelles inconnues, quelles sources disponibles.
+
+Ensuite, plusieurs organes se relaient :
+
+| Organe | Ce qu'il reçoit | Ce qu'il transforme | Ce qu'il produit |
+|---|---|---|---|
+| OS Trad | langue vivante, termes ambigus, intention | mots en entités, relations, contraintes, unknowns | représentation interne exploitable |
+| MEMZUM | signaux de besoin mémoire | indices de pertinence mémoire | oui/non : faut-il consulter la mémoire |
+| Native Memory | requête locale et bornée | index validé, tags, fragments | contexte retrouvé avec provenance |
+| Brody | représentation + contexte + règles | organisation cognitive de la réponse | réponse structurée et readonly |
+| Domaines | objet métier ou physique | règles, risques, temporalité du domaine | contraintes et interprétation terrain |
+| Sigma | sortie candidate et traces | contradictions, manques, dérives | signaux de cohérence |
+| Obsidure | problème à explorer ou formaliser | hypothèses, patchs, preuves candidates | proposition ou chemin de preuve |
+| KX108 | envelope admissible | règles d'autorité | `ACT`, `HOLD` ou `BLOCK` |
+
+Ce mécanisme explique pourquoi le système donne parfois déjà des réponses solides : beaucoup de matière est déjà organisée avant la réponse finale. Le corpus math apporte des définitions et des statuts. La mémoire native retrouve des traces validées. Les règles réduisent les chemins possibles. Les domaines imposent leurs contraintes. Les preuves disent ce qui est seulement testé, prouvé, candidat ou inconnu.
+
+Obsidia ne remplace donc pas le jugement humain par un automate souverain. Il construit un chemin ou la compréhension est séparée de l'autorisation. Une bonne réponse peut éclairer, proposer ou structurer ; elle ne devient pas automatiquement une action.
+
+### La donnée devient progressivement autre chose
+
+```text
+document ou signal
+-> source identifiée
+-> fragment extrait
+-> représentation
+-> contexte
+-> réponse ou proposition
+-> preuve ou contradiction
+-> décision gouvernée
+-> trace vérifiable
+```
+
+Chaque flèche change le statut de l'objet. Un document reste un document tant qu'il n'est pas identifié, sourcé, découpé, indexé et rattaché a un statut. Une hypothèse reste une hypothèse tant qu'elle n'est pas testée. Un test reste un test tant qu'il ne prouve pas formellement le comportement global. Une mémoire reste un contexte tant qu'elle n'a pas franchi les portes de validation.
+
 ---
 
 ## Où va Obsidia
@@ -124,6 +169,15 @@ Le détail de chaque organe est dans le [guide des couches](README.md), et leur 
 La Big Tech a surtout travaillé sur :   modèle → réponse
 Obsidia travaille sur :                 source → tri → mémoire → compréhension → proposition
                                         → preuve → refus possible → décision gouvernée → action → replay
+```
+
+La formulation plus complète issue de la reprise est :
+
+```text
+monde réel → signal → observation située → provenance → représentation
+→ savoir retrouvable → contexte → cognition → intention → capacité
+→ décision gouvernée → action éventuelle → conséquence → vérification
+→ expérience validée → éducation future d'Oxygen
 ```
 
 L'ambition n'est pas de concentrer toujours plus d'intelligence dans un modèle unique. C'est de construire un environnement où **plusieurs formes d'intelligence peuvent progresser, coopérer et apprendre sans devenir souveraines**. Cette ambition porte un nom : **Oxygen**, l'unique entité née et éduquée. Brody, OS Trad et Obsidure sont ses organes ; les micro-agents sont des capacités entraînées.

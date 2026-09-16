@@ -5,6 +5,10 @@
 > **État du projet au 17 juillet 2026**
 >
 > Obsidia possède déjà un noyau, des preuves, des runtimes, des mémoires, des domaines et plusieurs organes fonctionnels. La première version produit, **Obsidia V0.1**, n’est pas encore publiée. Le travail actuel consiste à reconstruire une version canonique, connectée, testée et explicable de la stack locale maximale.
+>
+> **État documenté au 15 septembre 2026**
+>
+> La documentation pédagogique se lit depuis [`docs/README.md`](docs/README.md). L’état runtime détaillé est séparé dans [`docs/ETAT_REEL_2026_09_15.md`](docs/ETAT_REEL_2026_09_15.md) : M4D4 Native Memory est un état local staged non encore canonique GitHub, Binder/GPS/corpus math restent des surfaces séparées, et Oxygen, BodyState ainsi que le Physical Signal World Model sont des trajectoires futures. Les preuves techniques et le narratif public doivent rester distincts.
 
 ## Sommaire
 
@@ -66,6 +70,18 @@ KX108_ONLY
 ```
 
 Aucun modèle, agent, domaine, système de mémoire, moteur de preuve ou couche d’optimisation ne devient souverain.
+
+Pour lire Obsidia sans se perdre, il faut toujours poser la meme question :
+
+```text
+Qui recoit quoi ?
+Que transforme-t-il ?
+Quelle structure produit-il ?
+Qui la consomme ensuite ?
+Quelle autorite limite le passage au reel ?
+```
+
+Une phrase humaine n'est donc pas "comprise" par magie. Elle devient d'abord une entree situee, avec une source, un moment, une intention possible, des ambiguites et des inconnues. OS Trad stabilise cette entree en representation exploitable. Brody assemble le contexte autorise. La memoire native restitue ce qui a ete valide. Les domaines traduisent leur terrain. Sigma detecte les contradictions. Obsidure peut proposer ou formaliser. X-108 reste le seul organe qui peut autoriser un passage au reel.
 
 ## 2. L’origine du projet
 
@@ -502,7 +518,7 @@ Obsidia ne remplace pas le métier. Il construit les organes permettant au méti
 
 ### 8.1 Le modèle reste souvent le centre implicite
 
-Même avec du RAG, des agents, une mémoire et des outils, le modèle reste souvent chargé de comprendre, choisir, raisonner, décider, expliquer et parfois agir. Obsidia sépare ces responsabilités. Le LLM devient un organe du système, pas son cerveau souverain.
+Même avec du RAG, des agents, une mémoire et des outils, le modèle reste souvent chargé de comprendre, choisir, raisonner, décider, expliquer et parfois agir. Obsidia sépare ces responsabilités. Dans le chemin Brody/M4D4 audité, aucun provider LLM externe n'est appelé : la réponse vient des structures, corpus, scores, mémoire native, moteurs locaux et True Voice.
 
 ### 8.2 Les organisations confondent présence et fonctionnement
 
@@ -573,7 +589,7 @@ forme du problème
 → risque
 → capacité
 → preuve attendue
-→ inférence éventuelle
+→ réponse locale structurée ou organe externe explicitement prouvé
 ```
 
 ### 10.2 Intelligence distribuée
@@ -640,7 +656,7 @@ ce qui existe
 |---|---|---|
 | X-108 / Kernel | Invariants, décisions bornées, HOLD/BLOCK, tests, preuves, receipts et replay | Fondation la plus stabilisée |
 | Brody | Routes conversationnelles, contexte, mémoire, protections, vues opérateur et liens avec Sigma | Réel, intégration globale à reconfirmer |
-| Mémoire / Graphiti | Lectures readonly, mémoire de projet et de session, candidats, sas BRUT/RAW | Réel, certains flux doivent être reconnectés |
+| Mémoire native / héritage Graphiti | Lectures readonly, mémoire de projet et de session, candidats, sas BRUT/RAW ; l'audit du 15 septembre 2026 pointe M4D4 Native Memory comme chemin mémoire le plus avancé | Réel, M4D4 staged non encore canonique GitHub |
 | Sigma | Monitoring, dispatcher, registry multidomaine, bridges, rapports et intégrations API | Réel, Peripheral Mesh inégalement fermé |
 | Obsidure | Cycle AVDR, propositions de code, sandbox, tests et attente de validation humaine | Réel, forge V0.1 encore incomplète |
 | Lean / ProofKit | Corpus formel, manifests, rapports, contrôles et preuves | Réel, mapping preuve-runtime à renforcer |
@@ -671,7 +687,7 @@ Le projet possède déjà des tests Python, des preuves Lean, des modèles forme
 
 ### Des surfaces readonly réelles
 
-Plusieurs composants ont été fermés historiquement en readonly ou dry-run : Brody, Graphiti, mémoire, World Action Bus, domaines, Sigma et Terminal.
+Plusieurs composants ont été fermés historiquement en readonly ou dry-run : Brody, l'ancien périmètre Graphiti, la mémoire, World Action Bus, domaines, Sigma et Terminal. Dans l'état M4D4 documenté au 15 septembre 2026, Graphiti/Neo4j sont à lire comme héritage, migration ou compatibilité, pas comme chemin produit actif sans callsite runtime prouvé.
 
 ### Plusieurs domaines démontrables
 
@@ -815,7 +831,7 @@ PLAN ET CAPACITÉS
 ORGANES SPÉCIALISÉS
 │
 ├─ Brody
-├─ Mémoire / Graphiti
+├─ Mémoire native / héritage Graphiti
 ├─ Domaines
 ├─ Obsidure
 ├─ Sigma
@@ -852,6 +868,20 @@ ACTION CONTRÔLÉE
 
 Toutes les demandes ne parcourent pas toute la chaîne. Une tâche simple peut être résolue localement. Une consultation readonly peut s’arrêter avant X-108. Une action critique doit franchir les frontières nécessaires.
 
+### 16.1 Le cycle causal en mots simples
+
+Une demande entre dans Obsidia comme un fragment humain ou technique : phrase, fichier, signal, rapport, test, ticket ou observation. Elle ne devient pas tout de suite une reponse ni une action.
+
+1. **Entrer.** La source est identifiee : qui parle, quel fichier, quel signal, quel moment, quelle fraicheur.
+2. **Representer.** OS Trad et l'IR separent mots, intention, entites, relations, contraintes, ambiguite et unknowns.
+3. **Contextualiser.** MEMZUM, Native Memory, les corpus, les source packs et les context packets apportent seulement le contexte autorise.
+4. **Interpreter.** Brody, les domaines et les organes cognitifs organisent une lecture situee : ce qui est connu, douteux, dangereux, incomplet ou actionnable.
+5. **Verifier.** Sigma, tests, ProofKit, Lean, receipts et replay bornent ce qui peut etre affirme.
+6. **Gouverner.** Si une action est en jeu, X-108 juge avant execution : `ACT`, `HOLD` ou `BLOCK`.
+7. **Tracer.** Toute sortie importante doit pouvoir etre rattachee a ses sources, statuts, preuves, decisions et consequences.
+
+Cette separation explique pourquoi Obsidia peut produire une bonne reponse sans education massive d'Oxygen : le corps contient deja des routes, des regles, des corpus, des tests, des domaines et des limites d'autorite. Oxygen est la future continuite educative ; il n'est pas la condition necessaire pour que les organes actuels fonctionnent deja.
+
 ## 17. Les principaux organes
 
 ### X-108
@@ -862,9 +892,9 @@ X-108 est la frontière d’autorité. Il protège le passage entre candidat, d�
 
 Brody est le moteur conversationnel et cognitif propriétaire d’Obsidia. Il peut comprendre, relier, reformuler, synthétiser, expliquer, consulter la mémoire et utiliser des outils bornés. Brody n’est pas la mémoire. Brody ne décide pas.
 
-### Mémoire / Graphiti
+### Mémoire native / héritage Graphiti
 
-La mémoire assure la continuité. Elle conserve sessions, projets, relations, traces, candidats, événements et contextes. Une mémoire n’est jamais automatiquement une vérité canonique.
+La mémoire assure la continuité. Elle conserve sessions, projets, relations, traces, candidats, événements et contextes. Une mémoire n’est jamais automatiquement une vérité canonique. Dans la reprise du 15 septembre 2026, le chemin le plus avancé est Native Memory dans M4D4 ; Graphiti/Neo4j restent des références historiques, de migration ou de compatibilité tant qu'un callsite runtime actif n'est pas démontré.
 
 ### Sigma
 

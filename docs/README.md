@@ -7,13 +7,34 @@
 | Guide | Pour comprendre |
 |---|---|
 | **[Comprendre Obsidia](COMPRENDRE_OBSIDIA.md)** | ce qu'est Obsidia, d'où il vient, à quoi il répond, sa philosophie, ce qu'il ne prétend pas |
-| **[Trajets de la donnée](TRAJETS.md)** | comment Brody répond, comment le savoir devient mémoire, comment une action est autorisée, comment fonctionne OS Trad, pourquoi tout marche sans entraînement |
+| **[Trajets de la donnée](TRAJETS.md)** | comment Brody répond, comment le savoir devient mémoire, comment une action est autorisée, comment fonctionnent OS Trad, le corpus math et les signaux physiques |
 | **[Entraînement, éducation, naissance](EDUCATION.md)** | Oxygen et « une seule naissance », organes et micro-agents, du savoir au réflexe, pack éducatif, curriculum, corpus mathématique, état réel |
 | **[Sécurité](SECURITE.md)** | les couches de sécurité, de l'autorité isolée au scan de secrets |
+| **[État réel 2026-09-15](ETAT_REEL_2026_09_15.md)** | reprise d'audit multi-worktrees : M4D4 staged, Native Memory, retrait Graphiti/Neo4j, GPS/RF, corpus math, Oxygen futur |
 
 Ce guide-ci répond à trois questions : **comment une demande traverse Obsidia**, **quelle couche fait quoi**, et **où trouver les documents et le code de chaque couche**.
 
-> **Deux lignes de code.** Une partie de la stack actuelle (mémoire native, MEMZUM, calibration du langage, jonction cognitive) vit sur la branche `integration/harness-runtime-binder-v1`, pas encore fusionnée dans `main`. Les liens marqués **(H)** y pointent.
+> **Deux lignes de code.** Une partie de la stack actuelle (mémoire native, MEMZUM, calibration du langage, jonction cognitive) vit sur la branche `integration/harness-runtime-binder-v1`, pas encore fusionnée dans `main`. L'audit du 2026-09-15 indique aussi que le cutover le plus avancé Native Memory / retrait Graphiti-Neo4j est dans le worktree M4D4 `obsidia-main-direct-20260914`, référence `5d27d003 + index staged`. Les liens marqués **(H)** pointent vers Binder tant que M4D4 n'est pas publié proprement.
+
+## Parcours de lecture recommandé
+
+| Si tu veux... | Lis |
+|---|---|
+| comprendre l'idee sans entrer dans le code | [Comprendre Obsidia](COMPRENDRE_OBSIDIA.md) |
+| voir comment une entree devient contexte, reponse, action ou preuve | [Trajets de la donnée](TRAJETS.md) |
+| comprendre pourquoi Brody fonctionne deja sans naissance d'Oxygen | [Entraînement, éducation, naissance](EDUCATION.md) puis [Trajets § 7](TRAJETS.md#7-pourquoi-ça-fonctionne-sans-entraînement) |
+| savoir ce qui est actif, staged, partiel, futur ou legacy | [État réel 2026-09-15](ETAT_REEL_2026_09_15.md) |
+| verifier pourquoi une proposition ne peut pas devenir action automatiquement | [Sécurité](SECURITE.md) |
+| retrouver les couches et les dossiers | ce guide, puis les fichiers dans [couches/](couches/) |
+
+Le fil commun est toujours le meme :
+
+```text
+source -> representation -> contexte -> cognition -> proposition
+-> verification -> autorite -> action eventuelle -> receipt
+```
+
+Chaque page doit etre lue avec deux niveaux : le recit explique la machine a quelqu'un qui decouvre Obsidia ; les encarts techniques disent ce qui est code, staged, teste, partiel ou futur.
 
 ## Obsidia en une phrase
 
@@ -44,6 +65,19 @@ Entrée ─▶ Traduction (OS Trad / IR) ─▶ Plan & capacités ─▶ Organes
       ─▶ Preuves (tests, Lean, replay) ─▶ Frontière ─▶ X-108 : ACT | HOLD | BLOCK ─▶ Action bornée + sceau
 ```
 
+### Ce que produit chaque grande étape
+
+| Étape | Reçoit | Produit | Limite |
+|---|---|---|---|
+| Entrée | texte, fichier, signal, événement | source située avec provenance et temporalité | une source n'est pas encore une vérité |
+| OS Trad / IR | langage humain ou technique | intention, entités, relations, unknowns, représentation intermédiaire | ne décide pas et ne prouve pas |
+| Contexte | mémoire, corpus, source packs, session | fragments hydratés, statuts, références | le contexte n'autorise rien |
+| Brody | représentation + contexte | réponse structurée, proposition ou clarification | pas d'ACT, pas d'écriture canonique |
+| Domaines | objets métier ou physiques | contraintes, risques, traductions domaine | le domaine ne crée pas sa loi |
+| Sigma / preuves | sortie candidate, tests, traces | contradictions, preuves bornées, manques | une preuve n'est pas une autorisation |
+| X-108 | envelope admissible | `ACT`, `HOLD` ou `BLOCK` | autorité unique, fail-closed |
+| Receipts | action ou décision | trace vérifiable et rejouable | ne transforme pas une action en succès métier automatiquement |
+
 ### Qui a le droit de faire quoi
 
 | Organe | Peut | Ne peut pas |
@@ -64,11 +98,13 @@ Source : [README § 17](../README.md#17-les-principaux-organes).
 
 Le trajet ci-dessus est la vue d'ensemble. Le guide **[TRAJETS.md](TRAJETS.md)** détaille, fichier par fichier, les trois circulations réelles :
 
-- **[La cognition](TRAJETS.md#1-le-trajet-de-la-cognition--ce-qui-se-passe-quand-on-parle-à-brody)** : ce que fait `/brody/chat`, du filtre de secrets à la réponse True Voice, en lecture seule ;
+- **[La cognition](TRAJETS.md#1-le-trajet-de-la-cognition--comment-brody-répond)** : ce que fait `/brody/chat`, du filtre de secrets à la réponse True Voice, en lecture seule ;
 - **[Le savoir](TRAJETS.md#2-le-trajet-du-savoir--comment-une-information-devient-mémoire)** : capture, tri, **validation humaine**, essai à blanc, écriture manuelle gardée, vérification, relecture ;
 - **[L'action](TRAJETS.md#3-le-trajet-de-laction--comment-une-proposition-touche-le-réel)** : possible, admissible, autorisé par X-108, puis réel.
+- **[Les mathématiques](TRAJETS.md#5-le-trajet-mathématique--comment-le-corpus-guide-une-réponse)** : corpus, retrieval, statuts, context pack et distinction entre piste, calcul, test et preuve ;
+- **[Le monde physique](TRAJETS.md#6-le-trajet-physique--comment-un-signal-entre-dans-obsidia)** : GPS/RF, timestamps, provenance, anti-replay, causalité non automatique ;
 
-Et surtout : **[pourquoi ça fonctionne déjà sans entraînement](TRAJETS.md#4-pourquoi-ça-fonctionne-déjà-sans-entraînement)**. Le savoir est dans des fichiers validés, pas dans les poids d'un modèle ; la structure passe avant l'inférence ; le modèle n'est appelé que si c'est nécessaire ; la décision est déterministe et prouvée.
+Et surtout : **[pourquoi ça fonctionne déjà sans entraînement](TRAJETS.md#7-pourquoi-ça-fonctionne-sans-entraînement)**. Dans le chemin M4D4 audité, Brody répond sans appel LLM externe : le savoir vient des fichiers validés, de Native Memory, des corpus, des règles, des scores, du micro-core, des balances, du point cloud 21D, de MEMZUM, des adapters, du moteur local et de True Voice.
 
 ## Les domaines
 
