@@ -200,3 +200,88 @@ def test_jarvis_v0_does_not_import_sovereign_or_memory_layers():
 
     for token in banned:
         assert token not in combined, token
+
+def test_openjarvis_shadow_adapter_rejects_unknown_capability(tmp_path):
+    adapter = O.OpenJarvisShadowAdapter(
+        source_root=str(tmp_path),
+        expected_commit="0" * 40,
+    )
+
+    out = adapter.execute(
+        capability_id="SHELL_EXECUTE",
+        payload={},
+    )
+
+    assert out["status"] == "CAPABILITY_NOT_ALLOWED"
+    assert out["is_execution_authority"] is False
+    assert out["scope_expanded"] is False
+
+
+def test_openjarvis_shadow_adapter_requires_exact_source_identity(tmp_path):
+    repo = tmp_path / "oj"
+    repo.mkdir()
+
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "test@example.invalid")
+    _git(repo, "config", "user.name", "Test")
+    (repo / "x.txt").write_text("x\n", encoding="utf-8")
+    _git(repo, "add", "x.txt")
+    _git(repo, "commit", "-m", "x")
+
+    adapter = O.OpenJarvisShadowAdapter(
+        source_root=str(repo),
+        expected_commit="0" * 40,
+    )
+
+    out = adapter.execute(
+        capability_id="OPENJARVIS_RUNTIME_HANDSHAKE",
+        payload={},
+    )
+
+    assert out["status"] == "OPENJARVIS_SOURCE_IDENTITY_MISMATCH"
+    assert out["is_execution_authority"] is False
+
+
+def test_real_openjarvis_shadow_handshake_when_configured():
+    import os
+
+    source = os.environ.get("OBSIDIA_OPENJARVIS_SOURCE")
+    expected = os.environ.get("OBSIDIA_OPENJARVIS_COMMIT")
+
+    if not source or not expected:
+        import pytest
+        pytest.skip("real OpenJarvis source not configured")
+
+    adapter = O.OpenJarvisShadowAdapter(
+        source_root=source,
+        expected_commit=expected,
+    )
+
+    out = adapter.execute(
+        capability_id="OPENJARVIS_RUNTIME_HANDSHAKE",
+        payload={},
+    )
+
+    assert out["status"] == "OPENJARVIS_SHADOW_HANDSHAKE_OK"
+
+    assert out["actual_commit"] == expected
+    assert out["source_dirty"] is False
+
+    assert out["agent_execution_enabled"] is False
+    assert out["tool_execution_enabled"] is False
+    assert out["scheduler_enabled"] is False
+    assert out["memory_enabled"] is False
+
+    assert out["is_execution_authority"] is False
+    assert out["is_kx_authority"] is False
+    assert out["scope_expanded"] is False
+    assert out["memory_written"] is False
+
+    surfaces = out["probe_evidence"]["module_availability"]
+
+    assert surfaces["openjarvis"] is True
+    assert surfaces["agents"] is True
+    assert surfaces["agent_executor"] is True
+    assert surfaces["agent_scheduler"] is True
+    assert surfaces["tools"] is True
+    assert surfaces["mcp"] is True
