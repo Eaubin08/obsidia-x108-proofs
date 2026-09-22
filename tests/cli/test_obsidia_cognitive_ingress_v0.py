@@ -50,6 +50,22 @@ def decide(raw, memory_index=None):
             },
         }
 
+    if "BRODY_LOCAL" in raw:
+        return {
+            "route": "brody",
+            "level": 1,
+            "reason": "LOCAL_BRODY_SUFFICIENT",
+            "ir": {
+                "intent_type": "question",
+                "target_layer": "reasoning",
+                "action": "answer",
+                "risk": "low",
+            },
+            "gate": {
+                "verdict": "ALLOW",
+            },
+        }
+
     if "CODE_LOCAL" in raw:
         return {
             "route": "obsidure_route_only",
@@ -88,6 +104,58 @@ def decide(raw, memory_index=None):
     )
 
     return root
+
+
+
+@pytest.fixture(autouse=True)
+def _stub_native_brody_runtime(
+    monkeypatch,
+):
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    def fake_run_full_brody_runtime(
+        *,
+        message,
+        session_id="local",
+        language="fr",
+        allow_provider=False,
+        allow_memory_candidate=False,
+        allow_manual_apply=False,
+        x108_root=None,
+    ):
+        assert allow_provider is False
+        assert allow_memory_candidate is False
+        assert allow_manual_apply is False
+
+        return {
+            "action_id": "brody_test_runtime",
+            "language": language,
+            "timestamp": "2026-09-22T00:00:00+00:00",
+            "readonly": True,
+            "response_only": True,
+            "memory_decision": False,
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "emits_act": False,
+            "emits_verdict": False,
+            "kernel_mutation": False,
+            "x108_mutation": False,
+            "memory_write": False,
+            "graphiti_write": False,
+            "neo4j_write": False,
+            "real_action": False,
+            "decision_authority": "KX108_ONLY",
+            "provider_status": "NOT_REQUESTED",
+            "source": "REAL_BRODY_LOCAL_ENGINE_ONLY",
+            "response": "Local Brody readonly candidate.",
+            "response_md": "Local Brody readonly candidate.",
+        }
+
+    monkeypatch.setattr(
+        ingress,
+        "run_full_brody_runtime",
+        fake_run_full_brody_runtime,
+    )
 
 
 def _clean_import_cache():
@@ -278,7 +346,7 @@ def test_explicit_remote_route_marks_llm_required_but_does_not_call(
 
     assert (
         result["next_stage"]
-        == "LLM_PROVIDER_GATE"
+        == "LOCAL_MODEL_GATE"
     )
 
     receipt = result[
@@ -436,3 +504,88 @@ def test_source_contains_no_model_execution_primitive():
 
     for token in forbidden:
         assert token not in source
+
+
+def test_native_brody_runs_before_model_gate(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text=(
+            "BRODY_LOCAL explain "
+            "this structured request"
+        ),
+        session_id="test-native-brody",
+    )
+
+    brody = result["brody_stage"]
+
+    assert brody["attempted"] is True
+    assert brody["candidate_available"] is True
+    assert brody["boundary_ok"] is True
+    assert brody["provider_status"] == "NOT_REQUESTED"
+
+    assert result["llm_activation"]["required"] is False
+    assert result["llm_activation"]["activated"] is False
+    assert result["llm_activation"]["tokens_spent"] == 0
+
+    assert result["next_stage"] == "LOCAL_STACK_RESULT"
+
+    components = (
+        result["cognitive_join"].get("components")
+        or {}
+    )
+
+    assert (
+        components.get("W3_BRODY")
+        == "READY:REAL_RUNTIME_ADAPTER"
+    )
+
+
+def test_remote_route_runs_brody_before_local_model_gate(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex analysis",
+        session_id="test-brody-before-qwen",
+    )
+
+    assert result["brody_stage"]["attempted"] is True
+    assert result["brody_stage"]["boundary_ok"] is True
+
+    assert result["llm_activation"]["required"] is True
+    assert result["llm_activation"]["activated"] is False
+    assert result["llm_activation"]["tokens_spent"] == 0
+
+    assert result["next_stage"] == "LOCAL_MODEL_GATE"

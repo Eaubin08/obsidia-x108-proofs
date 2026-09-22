@@ -21,6 +21,10 @@ from apps.obsidia_api.brody_real_cognitive_join import (
     run_real_cognitive_join,
 )
 
+from apps.obsidia_api.brody_full_runtime_orchestrator import (
+    run_full_brody_runtime,
+)
+
 from apps.obsidia_api.routes import (
     os_trad_ir_reverse as OS_TRAD,
 )
@@ -40,6 +44,27 @@ REMOTE_MODEL_ROUTES = frozenset(
     {
         "fireworks",
     }
+)
+
+
+BRODY_NATIVE_ROUTES = frozenset(
+    {
+        "brody",
+        "fireworks",
+    }
+)
+
+_BRODY_REQUIRED_FALSE = (
+    "allowed_to_decide",
+    "allowed_to_act",
+    "emits_act",
+    "emits_verdict",
+    "memory_write",
+    "graphiti_write",
+    "neo4j_write",
+    "kernel_mutation",
+    "x108_mutation",
+    "real_action",
 )
 
 
@@ -234,6 +259,168 @@ def _llm_activation_from_route(
     }
 
 
+
+def _run_native_brody_stage(
+    *,
+    text: str,
+    language: str,
+    session_id: str,
+    route_decision: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+
+    route = str(
+        route_decision.get("router_route")
+        or ""
+    )
+
+    stage = {
+        "attempted": False,
+        "route": route or None,
+        "status": "SKIPPED",
+        "candidate_available": False,
+        "boundary_ok": None,
+        "boundary_violation": False,
+        "provider_status": "NOT_CALLED",
+        "source": None,
+        "response_hash": None,
+        "response_chars": 0,
+        "authority": "NONE",
+        "decision_authority": DECISION_AUTHORITY,
+        "model_call_used": False,
+        "tokens_remote": 0,
+        "reason": "ROUTE_DOES_NOT_REQUIRE_BRODY",
+    }
+
+    if route not in BRODY_NATIVE_ROUTES:
+        return stage, None
+
+    stage["attempted"] = True
+
+    try:
+        runtime = run_full_brody_runtime(
+            message=text,
+            session_id=session_id,
+            language=language,
+            allow_provider=False,
+            allow_memory_candidate=False,
+            allow_manual_apply=False,
+        )
+
+    except Exception as exc:
+        stage.update(
+            status="FAILED",
+            boundary_ok=True,
+            provider_status="NOT_REQUESTED",
+            reason=(
+                "BRODY_RUNTIME_EXCEPTION:"
+                + type(exc).__name__
+                + ":"
+                + str(exc)[:240]
+            ),
+        )
+
+        return stage, None
+
+    if not isinstance(runtime, dict):
+        stage.update(
+            status="FAILED",
+            boundary_ok=False,
+            boundary_violation=True,
+            reason="BRODY_RUNTIME_NOT_DICT",
+        )
+
+        return stage, None
+
+    violations = []
+
+    if runtime.get("readonly") is not True:
+        violations.append("READONLY_REQUIRED")
+
+    if (
+        runtime.get("decision_authority")
+        != DECISION_AUTHORITY
+    ):
+        violations.append(
+            "DECISION_AUTHORITY_MISMATCH"
+        )
+
+    for key in _BRODY_REQUIRED_FALSE:
+        if runtime.get(key) is not False:
+            violations.append(
+                key.upper() + "_MUST_BE_FALSE"
+            )
+
+    provider_status = str(
+        runtime.get("provider_status")
+        or "UNKNOWN"
+    )
+
+    if provider_status not in {
+        "NOT_REQUESTED",
+        "DISABLED_BY_POLICY",
+    }:
+        violations.append(
+            "UNSAFE_PROVIDER_STATUS:"
+            + provider_status
+        )
+
+    if violations:
+        stage.update(
+            status="BOUNDARY_VIOLATION",
+            boundary_ok=False,
+            boundary_violation=True,
+            provider_status=provider_status,
+            reason="|".join(violations),
+        )
+
+        return stage, None
+
+    response = str(
+        runtime.get("response_md")
+        or runtime.get("response")
+        or ""
+    ).strip()
+
+    source = str(
+        runtime.get("source")
+        or ""
+    ).strip()
+
+    usable = bool(
+        response
+        and source
+        and source != "BACKEND_STUB_LAST_RESORT"
+    )
+
+    stage.update(
+        status=(
+            "CANDIDATE_AVAILABLE"
+            if usable
+            else "ABSTAINED"
+        ),
+        candidate_available=usable,
+        boundary_ok=True,
+        provider_status=provider_status,
+        source=source or None,
+        response_hash=(
+            _hash_text(response)
+            if response
+            else None
+        ),
+        response_chars=len(response),
+        reason=(
+            "BRODY_NATIVE_CANDIDATE_AVAILABLE"
+            if usable
+            else "BRODY_NATIVE_NO_USABLE_CANDIDATE"
+        ),
+    )
+
+    return (
+        stage,
+        runtime if usable else None,
+    )
+
+
 def run_cognitive_ingress(
     *,
     text: str,
@@ -299,10 +486,47 @@ def run_cognitive_ingress(
     # We only prove whether one would be justified.
     # --------------------------------------------------------
 
+    brody_stage, brody_runtime = (
+        _run_native_brody_stage(
+            text=text,
+            language=(
+                os_trad["language"]
+                if os_trad["language"] != "unknown"
+                else "fr"
+            ),
+            session_id=session_id,
+            route_decision=route_decision,
+        )
+    )
+
     llm_activation = (
         _llm_activation_from_route(
             route_decision,
             text,
+        )
+    )
+
+    llm_activation["brody_attempted"] = bool(
+        brody_stage["attempted"]
+    )
+
+    llm_activation["brody_candidate_available"] = bool(
+        brody_stage["candidate_available"]
+    )
+
+    if brody_stage["boundary_violation"]:
+        llm_activation["required"] = False
+        llm_activation["reason"] = (
+            "BRODY_BOUNDARY_VIOLATION_FAIL_CLOSED"
+        )
+
+    next_stage = (
+        "HUMAN_REVIEW"
+        if brody_stage["boundary_violation"]
+        else (
+            "LOCAL_MODEL_GATE"
+            if llm_activation["required"]
+            else "LOCAL_STACK_RESULT"
         )
     )
 
@@ -335,6 +559,9 @@ def run_cognitive_ingress(
                 session_id=session_id,
                 precomputed_intent=(
                     os_trad["intent"]
+                ),
+                precomputed_brody_runtime=(
+                    brody_runtime
                 ),
             )
         )
@@ -405,6 +632,11 @@ def run_cognitive_ingress(
             tools_or_organs_used=[
                 "OS_TRAD",
                 "AMD_ROUTER_GATE",
+                *(
+                    ["BRODY_NATIVE_RUNTIME"]
+                    if brody_stage["attempted"]
+                    else []
+                ),
                 "BRODY_REAL_COGNITIVE_JOIN",
                 "CONTEXT_PACKET_V2",
                 "W1_RUNTIME_JOIN",
@@ -467,6 +699,10 @@ def run_cognitive_ingress(
             llm_activation
         ),
 
+        "brody_stage": (
+            brody_stage
+        ),
+
         "cognitive_join": (
             cognitive_join
         ),
@@ -489,11 +725,7 @@ def run_cognitive_ingress(
 
         "route_receipt": receipt,
 
-        "next_stage": (
-            "LLM_PROVIDER_GATE"
-            if llm_activation["required"]
-            else "LOCAL_STACK_RESULT"
-        ),
+        "next_stage": next_stage,
 
         **BOUNDARY,
     }
