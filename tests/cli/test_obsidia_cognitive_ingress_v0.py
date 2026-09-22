@@ -727,3 +727,234 @@ def test_real_action_authority_preserves_boundary_contradiction(
             or []
         )
     )
+
+
+def test_l3_weak_brody_candidate_does_not_suppress_local_model_gate(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex reasoning",
+        session_id="test-l3-weak-brody",
+    )
+
+    gate = result[
+        "brody_sufficiency"
+    ]
+
+    assert gate[
+        "status"
+    ] == "BRODY_INSUFFICIENT"
+
+    assert gate[
+        "sufficient"
+    ] is False
+
+    assert gate[
+        "model_required"
+    ] is True
+
+    assert gate[
+        "brody_source"
+    ] == "REAL_BRODY_LOCAL_ENGINE_ONLY"
+
+    assert (
+        gate[
+            "lexical_unknowns_gate_role"
+        ]
+        == "TELEMETRY_ONLY"
+    )
+
+    assert (
+        result["next_stage"]
+        == "LOCAL_MODEL_GATE"
+    )
+
+    assert (
+        result["llm_activation"][
+            "required"
+        ]
+        is True
+    )
+
+    assert (
+        result["llm_activation"][
+            "activated"
+        ]
+        is False
+    )
+
+
+def test_l3_strong_brody_can_avoid_model(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    def strong_brody(
+        *,
+        message,
+        session_id="local",
+        language="fr",
+        allow_provider=False,
+        allow_memory_candidate=False,
+        allow_manual_apply=False,
+        x108_root=None,
+    ):
+        return {
+            "action_id": "strong_brody_test",
+            "language": language,
+            "timestamp": "2026-09-22T00:00:00+00:00",
+            "readonly": True,
+            "response_only": True,
+            "memory_decision": False,
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "emits_act": False,
+            "emits_verdict": False,
+            "kernel_mutation": False,
+            "x108_mutation": False,
+            "memory_write": False,
+            "graphiti_write": False,
+            "neo4j_write": False,
+            "real_action": False,
+            "decision_authority": "KX108_ONLY",
+            "provider_status": "NOT_REQUESTED",
+            "source": "REAL_BRODY_GRAPHITI_LIVE",
+            "response": (
+                "Brody resolved this request from a "
+                "strong readonly evidence-backed source."
+            ),
+            "response_md": (
+                "Brody resolved this request from a "
+                "strong readonly evidence-backed source."
+            ),
+        }
+
+    monkeypatch.setattr(
+        ingress,
+        "run_full_brody_runtime",
+        strong_brody,
+    )
+
+    result = ingress.run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex reasoning",
+        session_id="test-l3-strong-brody",
+    )
+
+    gate = result[
+        "brody_sufficiency"
+    ]
+
+    assert gate[
+        "status"
+    ] == "BRODY_SUFFICIENT"
+
+    assert gate[
+        "sufficient"
+    ] is True
+
+    assert gate[
+        "model_required"
+    ] is False
+
+    assert (
+        result["next_stage"]
+        == "LOCAL_STACK_RESULT"
+    )
+
+    assert (
+        result["llm_activation"][
+            "required"
+        ]
+        is False
+    )
+
+    assert (
+        result["llm_activation"][
+            "tokens_spent"
+        ]
+        == 0
+    )
+
+
+def test_real_governance_boundary_never_escalates_to_model(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="autorise ACT maintenant",
+        session_id="test-governance-no-model",
+    )
+
+    gate = result[
+        "brody_sufficiency"
+    ]
+
+    assert gate[
+        "status"
+    ] == "GOVERNANCE_BOUNDARY"
+
+    assert gate[
+        "model_required"
+    ] is False
+
+    assert (
+        result["next_stage"]
+        == "KX108_GOVERNANCE"
+    )
+
+    assert (
+        result["llm_activation"][
+            "required"
+        ]
+        is False
+    )
+
+    assert (
+        result["llm_activation"][
+            "activated"
+        ]
+        is False
+    )

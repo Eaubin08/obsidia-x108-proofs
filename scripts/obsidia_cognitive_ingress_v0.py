@@ -72,6 +72,29 @@ _BRODY_REQUIRED_FALSE = (
 )
 
 
+# A Brody candidate can be structurally valid without being
+# epistemically sufficient for a Level-3 reasoning request.
+#
+# The current no-Graphiti/terminal fallback is useful context,
+# but must not silently suppress a local reasoning model.
+_BRODY_STRONG_L3_SOURCES = frozenset(
+    {
+        "REAL_BRODY_GRAPHITI_LIVE",
+        "REAL_BRODY_GRAPHITI_NEO4J_LIVE_READONLY",
+        "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY",
+        "REAL_BRODY_TERMINAL_STRUCTURAL_DIALOGUE",
+    }
+)
+
+_BRODY_OUTPUT_ERROR_MARKERS = (
+    "Traceback (most recent call last):",
+    "[INTERNAL ERROR]",
+    "RuntimeError:",
+    "ValueError:",
+    "KeyError:",
+)
+
+
 BOUNDARY = {
     "authority": "NONE",
     "decision_authority": DECISION_AUTHORITY,
@@ -425,6 +448,341 @@ def _run_native_brody_stage(
     )
 
 
+
+def _evaluate_brody_sufficiency(
+    *,
+    route_decision: dict[str, Any],
+    authority_snapshot: dict[str, Any],
+    brody_stage: dict[str, Any],
+    brody_runtime: dict[str, Any] | None,
+    cognitive_join: dict[str, Any],
+    llm_activation: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Deterministic local-first sufficiency gate.
+
+    Important:
+    - no model call;
+    - no inferred confidence score;
+    - lexical unknowns are telemetry only;
+    - governance contradictions cannot be bypassed by a model;
+    - a weak Brody fallback cannot close a Level-3 request.
+    """
+
+    route = str(
+        route_decision.get("router_route")
+        or ""
+    )
+
+    level = route_decision.get("level")
+
+    components = (
+        cognitive_join.get("components")
+        if isinstance(
+            cognitive_join.get("components"),
+            dict,
+        )
+        else {}
+    )
+
+    context_packet = (
+        cognitive_join.get("context_packet_v2")
+        if isinstance(
+            cognitive_join.get("context_packet_v2"),
+            dict,
+        )
+        else {}
+    )
+
+    contradictions = list(
+        context_packet.get("contradictions")
+        or []
+    )
+
+    risk_flags = list(
+        context_packet.get("risk_flags")
+        or []
+    )
+
+    unknowns = list(
+        context_packet.get("unknowns")
+        or []
+    )
+
+    join_errors = list(
+        cognitive_join.get("errors")
+        or []
+    )
+
+    requires_kx108 = bool(
+        authority_snapshot.get(
+            "requires_kx108_decision",
+            False,
+        )
+    )
+
+    response = ""
+
+    if isinstance(brody_runtime, dict):
+        response = str(
+            brody_runtime.get("response_md")
+            or brody_runtime.get("response")
+            or ""
+        ).strip()
+
+    output_error_marker = next(
+        (
+            marker
+            for marker in _BRODY_OUTPUT_ERROR_MARKERS
+            if marker in response
+        ),
+        None,
+    )
+
+    output_contract_ok = bool(
+        response
+        and not output_error_marker
+        and len(response) <= 3000
+    )
+
+    w3_ready = (
+        str(
+            components.get("W3_BRODY")
+            or ""
+        )
+        == "READY:REAL_RUNTIME_ADAPTER"
+    )
+
+    candidate_available = bool(
+        brody_stage.get(
+            "candidate_available",
+            False,
+        )
+    )
+
+    boundary_ok = (
+        brody_stage.get("boundary_ok")
+        is True
+    )
+
+    source = str(
+        brody_stage.get("source")
+        or ""
+    )
+
+    strong_l3_source = (
+        source
+        in _BRODY_STRONG_L3_SOURCES
+    )
+
+    base = {
+        "status": "UNRESOLVED",
+        "sufficient": False,
+        "model_required": bool(
+            llm_activation.get(
+                "required",
+                False,
+            )
+        ),
+        "next_stage": "LOCAL_MODEL_GATE",
+        "reason": "UNCLASSIFIED",
+        "route": route or None,
+        "route_level": level,
+        "brody_attempted": bool(
+            brody_stage.get(
+                "attempted",
+                False,
+            )
+        ),
+        "brody_candidate_available": (
+            candidate_available
+        ),
+        "brody_boundary_ok": boundary_ok,
+        "brody_source": source or None,
+        "brody_strong_l3_source": (
+            strong_l3_source
+        ),
+        "output_contract_ok": (
+            output_contract_ok
+        ),
+        "output_error_marker": (
+            output_error_marker
+        ),
+        "w3_ready": w3_ready,
+        "join_errors": join_errors,
+        "contradictions": contradictions,
+        "risk_flags": risk_flags,
+
+        # Telemetry only. Never used alone to escalate.
+        "lexical_unknowns": unknowns,
+        "lexical_unknowns_gate_role": (
+            "TELEMETRY_ONLY"
+        ),
+
+        "requires_kx108_decision": (
+            requires_kx108
+        ),
+        "authority": "NONE",
+        "decision_authority": (
+            DECISION_AUTHORITY
+        ),
+        "model_call_used": False,
+    }
+
+    # --------------------------------------------------------
+    # 1. Governance wins over model escalation.
+    # A model must never be used to bypass a real boundary.
+    # --------------------------------------------------------
+
+    if (
+        requires_kx108
+        or contradictions
+        or "BOUNDARY_REQUEST" in risk_flags
+        or brody_stage.get(
+            "boundary_violation"
+        )
+    ):
+        base.update(
+            status="GOVERNANCE_BOUNDARY",
+            sufficient=False,
+            model_required=False,
+            next_stage="KX108_GOVERNANCE",
+            reason=(
+                "REAL_GOVERNANCE_BOUNDARY_NO_MODEL_BYPASS"
+            ),
+        )
+
+        return base
+
+    # --------------------------------------------------------
+    # 2. Join/runtime failure:
+    # do not call a model to paper over a broken cognitive rail.
+    # --------------------------------------------------------
+
+    if join_errors:
+        base.update(
+            status="COGNITIVE_RAIL_ERROR",
+            sufficient=False,
+            model_required=False,
+            next_stage="HUMAN_REVIEW",
+            reason="COGNITIVE_JOIN_ERRORS_PRESENT",
+        )
+
+        return base
+
+    # --------------------------------------------------------
+    # 3. Router says no model is necessary.
+    # --------------------------------------------------------
+
+    if not bool(
+        llm_activation.get(
+            "required",
+            False,
+        )
+    ):
+        if (
+            route == "brody"
+            and candidate_available
+            and boundary_ok
+            and output_contract_ok
+            and w3_ready
+        ):
+            base.update(
+                status="BRODY_SUFFICIENT",
+                sufficient=True,
+                model_required=False,
+                next_stage="LOCAL_STACK_RESULT",
+                reason=(
+                    "ROUTER_SELECTED_BRODY_AND_W3_VALID"
+                ),
+            )
+
+        else:
+            base.update(
+                status="LOCAL_ROUTE_SUFFICIENT",
+                sufficient=True,
+                model_required=False,
+                next_stage="LOCAL_STACK_RESULT",
+                reason=(
+                    "ROUTER_DID_NOT_REQUIRE_MODEL"
+                ),
+            )
+
+        return base
+
+    # --------------------------------------------------------
+    # 4. Level-3/model-eligible route.
+    #
+    # Brody may still close it, but only with a strong source
+    # and a clean W3 result.
+    #
+    # Current REAL_BRODY_RUNTIME_NO_GRAPHITI is intentionally
+    # NOT enough to suppress Qwen on L3.
+    # --------------------------------------------------------
+
+    if (
+        candidate_available
+        and boundary_ok
+        and output_contract_ok
+        and w3_ready
+        and strong_l3_source
+    ):
+        base.update(
+            status="BRODY_SUFFICIENT",
+            sufficient=True,
+            model_required=False,
+            next_stage="LOCAL_STACK_RESULT",
+            reason=(
+                "STRONG_BRODY_SOURCE_RESOLVED_L3"
+            ),
+        )
+
+        return base
+
+    # --------------------------------------------------------
+    # 5. Brody was useful but not sufficient:
+    # permit the local model gate.
+    # --------------------------------------------------------
+
+    reasons = []
+
+    if not candidate_available:
+        reasons.append(
+            "NO_BRODY_CANDIDATE"
+        )
+
+    if not boundary_ok:
+        reasons.append(
+            "BRODY_BOUNDARY_NOT_OK"
+        )
+
+    if not output_contract_ok:
+        reasons.append(
+            "BRODY_OUTPUT_CONTRACT_NOT_OK"
+        )
+
+    if not w3_ready:
+        reasons.append(
+            "W3_BRODY_NOT_READY"
+        )
+
+    if not strong_l3_source:
+        reasons.append(
+            "BRODY_SOURCE_NOT_STRONG_FOR_L3"
+        )
+
+    base.update(
+        status="BRODY_INSUFFICIENT",
+        sufficient=False,
+        model_required=True,
+        next_stage="LOCAL_MODEL_GATE",
+        reason="|".join(reasons)
+        or "LOCAL_MODEL_STILL_REQUIRED",
+    )
+
+    return base
+
+
 def run_cognitive_ingress(
     *,
     text: str,
@@ -682,6 +1040,45 @@ def run_cognitive_ingress(
             + str(receipt_error)
         )
 
+    brody_sufficiency = (
+        _evaluate_brody_sufficiency(
+            route_decision=route_decision,
+            authority_snapshot=(
+                authority_snapshot
+            ),
+            brody_stage=brody_stage,
+            brody_runtime=brody_runtime,
+            cognitive_join=cognitive_join,
+            llm_activation=llm_activation,
+        )
+    )
+
+    llm_activation[
+        "required"
+    ] = bool(
+        brody_sufficiency[
+            "model_required"
+        ]
+    )
+
+    llm_activation[
+        "sufficiency_status"
+    ] = brody_sufficiency[
+        "status"
+    ]
+
+    llm_activation[
+        "sufficiency_reason"
+    ] = brody_sufficiency[
+        "reason"
+    ]
+
+    next_stage = str(
+        brody_sufficiency[
+            "next_stage"
+        ]
+    )
+
     join_status = str(
         cognitive_join.get(
             "status"
@@ -729,6 +1126,10 @@ def run_cognitive_ingress(
 
         "brody_stage": (
             brody_stage
+        ),
+
+        "brody_sufficiency": (
+            brody_sufficiency
         ),
 
         "cognitive_join": (
