@@ -212,6 +212,7 @@ def run_real_cognitive_join(
     precomputed_tree_wrapper: dict[str, Any] | None = None,
     precomputed_brody_runtime: dict[str, Any] | None = None,
     precomputed_memory_chain: dict[str, Any] | None = None,
+    precomputed_model_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
     signal_id = _signal_id(message, session_id)
@@ -236,6 +237,10 @@ def run_real_cognitive_join(
         "W4_MEMORY_RETRIEVAL": (
             "SKIPPED_BY_PATH_POLICY:"
             "MEMORY_RETRIEVAL_NOT_PRECOMPUTED"
+        ),
+        "W4B_LOCAL_MODEL_EVIDENCE": (
+            "SKIPPED_BY_PATH_POLICY:"
+            "MODEL_EVIDENCE_NOT_PRECOMPUTED"
         ),
         "NPL": "SKIPPED_NOT_AVAILABLE:NPL_RUNTIME_NOT_MATERIALIZED",
         "LYAPUNOV": (
@@ -639,6 +644,62 @@ def run_real_cognitive_join(
     # --------------------------------------------------------
     # 9 — W5 Tree enrichment
     # --------------------------------------------------------
+    # W4B ? provider-neutral model evidence.
+    #
+    # The model, if any, has already executed elsewhere.
+    # This join does not invoke inference.
+    # Evidence remains context only; KX108 remains authority.
+    model_evidence_applied = False
+    model_evidence_status = None
+
+    if isinstance(
+        precomputed_model_evidence,
+        dict,
+    ):
+        try:
+            from periphery.context.model_evidence_cognitive_bridge import (
+                enrich_context_packet_v2_with_model_evidence,
+            )
+
+            v2 = (
+                enrich_context_packet_v2_with_model_evidence(
+                    v2,
+                    precomputed_model_evidence,
+                )
+            )
+
+            model_evidence_status = (
+                "ACCEPTED_READONLY_EVIDENCE"
+            )
+
+            provider = str(
+                precomputed_model_evidence.get(
+                    "provider"
+                )
+                or "UNKNOWN"
+            )
+
+            components[
+                "W4B_LOCAL_MODEL_EVIDENCE"
+            ] = (
+                "READY:EVIDENCE:"
+                + provider
+            )
+
+            model_evidence_applied = True
+
+        except Exception as exc:
+            errors.append(
+                _error(
+                    "W4B_LOCAL_MODEL_EVIDENCE",
+                    exc,
+                )
+            )
+
+            components[
+                "W4B_LOCAL_MODEL_EVIDENCE"
+            ] = errors[-1]
+
     if canonical_tree is not None:
         try:
             v2 = enrich_context_packet_v2_with_tree_signal(
@@ -795,6 +856,23 @@ def run_real_cognitive_join(
 
         "memory_retrieval_status": (
             memory_retrieval_status
+        ),
+
+        "local_model_evidence_snapshot": (
+            precomputed_model_evidence
+            if isinstance(
+                precomputed_model_evidence,
+                dict,
+            )
+            else None
+        ),
+
+        "local_model_evidence_applied": (
+            model_evidence_applied
+        ),
+
+        "local_model_evidence_status": (
+            model_evidence_status
         ),
 
         "sigma_domain_packet": sigma_result,
