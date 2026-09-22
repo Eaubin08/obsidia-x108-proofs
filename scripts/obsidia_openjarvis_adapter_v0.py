@@ -1516,3 +1516,738 @@ class OpenJarvisObsidiaSelfBuildPilotAdapter:
                 result.content
             ),
         }
+
+
+# ======================================================================
+# JARVIS ADVANCED V0.6
+# DISTINCT OPENJARVIS -> OBSIDIA COGNITIVE PILOT
+#
+# OpenJarvis is a pilot surface only.
+#
+# Exactly one tool is visible:
+#     obsidia_cognitive_query
+#
+# The query text is bound outside the tool call.
+# The tool accepts ZERO parameters.
+#
+# OpenJarvis cannot choose:
+# - model activation,
+# - model/provider,
+# - Brody routing,
+# - KX108 verdict,
+# - execution authority,
+# - memory writes,
+# - action.
+#
+# Canonical cognitive path:
+#
+#     OpenJarvis
+#       -> obsidia_cognitive_query
+#       -> run_cognitive_ingress
+#       -> OS Trad
+#       -> AMD Router
+#       -> Brody
+#       -> sufficiency gate
+#       -> optional Qwen local evidence
+#       -> W1
+#       -> W2 / KX108
+#
+# Self-build pilot V0.5 remains separate.
+# ======================================================================
+
+
+class OpenJarvisObsidiaCognitivePilotAdapter:
+    """Non-sovereign OpenJarvis pilot for canonical Obsidia cognition."""
+
+    adapter_id = (
+        "OPENJARVIS_OBSIDIA_COGNITIVE_PILOT_ADAPTER_V0"
+    )
+
+    capability_id = (
+        "OPENJARVIS_OBSIDIA_COGNITIVE_PILOT"
+    )
+
+    connected = True
+    is_authority = False
+
+    def __init__(
+        self,
+        *,
+        source_root: str,
+        expected_commit: str,
+    ) -> None:
+
+        self.source_root = Path(
+            source_root
+        ).resolve(strict=False)
+
+        self.expected_commit = str(
+            expected_commit
+        ).strip().lower()
+
+    def execute(
+        self,
+        *,
+        capability_id: str,
+        payload: Mapping[str, Any],
+    ) -> dict:
+
+        import hashlib
+        import json
+
+        # ----------------------------------------------------------
+        # Capability boundary.
+        # ----------------------------------------------------------
+
+        if capability_id != self.capability_id:
+            return {
+                "status": "CAPABILITY_NOT_ALLOWED",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if not isinstance(
+            payload,
+            Mapping,
+        ):
+            return {
+                "status": "PAYLOAD_INVALID",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        # OpenJarvis may provide ONLY the user text.
+        # It cannot request a model/provider/policy.
+        allowed = {
+            "input_text",
+        }
+
+        unknown = (
+            set(payload.keys())
+            - allowed
+        )
+
+        if unknown:
+            return {
+                "status": "PAYLOAD_SCOPE_NOT_ALLOWED",
+                "adapter_id": self.adapter_id,
+                "unknown_fields": sorted(
+                    str(item)
+                    for item in unknown
+                ),
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        input_text = payload.get(
+            "input_text"
+        )
+
+        if not isinstance(
+            input_text,
+            str,
+        ):
+            return {
+                "status": "INPUT_TEXT_REQUIRED",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        bound_text = input_text.strip()
+
+        if not bound_text:
+            return {
+                "status": "INPUT_TEXT_REQUIRED",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if len(bound_text) > 50000:
+            return {
+                "status": "INPUT_TEXT_TOO_LONG",
+                "adapter_id": self.adapter_id,
+                "max_chars": 50000,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        # ----------------------------------------------------------
+        # Pinned OpenJarvis source identity.
+        # ----------------------------------------------------------
+
+        if not self.source_root.is_dir():
+            return {
+                "status": "OPENJARVIS_SOURCE_NOT_FOUND",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        before_head = _git_head(
+            self.source_root
+        )
+
+        before_dirty = _git_dirty(
+            self.source_root
+        )
+
+        if (
+            before_head
+            != self.expected_commit
+        ):
+            return {
+                "status": (
+                    "OPENJARVIS_SOURCE_IDENTITY_MISMATCH"
+                ),
+                "adapter_id": self.adapter_id,
+                "expected_commit": self.expected_commit,
+                "actual_commit": before_head,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if before_dirty is None:
+            return {
+                "status": (
+                    "OPENJARVIS_SOURCE_STATUS_UNAVAILABLE"
+                ),
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if before_dirty:
+            return {
+                "status": "OPENJARVIS_SOURCE_DIRTY",
+                "adapter_id": self.adapter_id,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        package_root = (
+            self.source_root
+            / "src"
+        )
+
+        package_root_text = str(
+            package_root
+        )
+
+        if (
+            package_root_text
+            not in sys.path
+        ):
+            sys.path.insert(
+                0,
+                package_root_text,
+            )
+
+        # Exact same OpenJarvis API proven by V0.5.
+        from openjarvis.agents.orchestrator import (
+            OrchestratorAgent,
+        )
+
+        from openjarvis.core.types import (
+            ToolResult,
+        )
+
+        from openjarvis.tools._stubs import (
+            BaseTool,
+            ToolSpec,
+        )
+
+        # ----------------------------------------------------------
+        # Obsidia binds the session deterministically.
+        #
+        # OpenJarvis cannot select or alter it.
+        # ----------------------------------------------------------
+
+        digest = hashlib.sha256(
+            (
+                self.expected_commit
+                + "\n"
+                + bound_text
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+
+        bound_session_id = (
+            "ojc-"
+            + digest
+        )
+
+        # ----------------------------------------------------------
+        # The ONLY OpenJarvis tool.
+        #
+        # ZERO tool parameters:
+        # the input is already bound by Obsidia.
+        # ----------------------------------------------------------
+
+        class ObsidiaCognitiveQueryTool(
+            BaseTool
+        ):
+            tool_id = (
+                "obsidia_cognitive_query"
+            )
+
+            @property
+            def spec(self):
+                return ToolSpec(
+                    name=self.tool_id,
+                    description=(
+                        "Submit the already-bound user text "
+                        "to canonical Obsidia cognition. "
+                        "OpenJarvis cannot choose models, "
+                        "providers, authority or actions."
+                    ),
+                    parameters={
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": False,
+                    },
+                    category="obsidia-governed",
+                    timeout_seconds=120.0,
+                    required_capabilities=[],
+                    metadata={
+                        "authority": "NONE",
+                        "decision_authority": (
+                            "KX108_ONLY"
+                        ),
+                        "input_bound": True,
+                        "tool_parameters": 0,
+                    },
+                )
+
+            def execute(
+                self,
+                **params,
+            ):
+
+                if params:
+                    return ToolResult(
+                        tool_name=self.tool_id,
+                        content=(
+                            "OBSIDIA_COGNITIVE_TOOL_"
+                            "PARAMETER_SCOPE_DENIED"
+                        ),
+                        success=False,
+                    )
+
+                # Late import:
+                # OpenJarvis never becomes the owner
+                # of Obsidia cognition.
+                from scripts.obsidia_cognitive_ingress_v0 import (
+                    run_cognitive_ingress,
+                )
+
+                result = run_cognitive_ingress(
+                    text=bound_text,
+                    session_id=(
+                        bound_session_id
+                    ),
+
+                    # Policy is bound INSIDE Obsidia integration.
+                    # OpenJarvis cannot set this field.
+                    allow_local_model=True,
+                )
+
+                if not isinstance(
+                    result,
+                    dict,
+                ):
+                    return ToolResult(
+                        tool_name=self.tool_id,
+                        content=(
+                            "OBSIDIA_COGNITIVE_RESULT_INVALID"
+                        ),
+                        success=False,
+                    )
+
+                local_model = dict(
+                    result.get(
+                        "local_model_stage"
+                    )
+                    or {}
+                )
+
+                receipt = dict(
+                    result.get(
+                        "route_receipt"
+                    )
+                    or {}
+                )
+
+                summary = {
+                    "session_id": (
+                        bound_session_id
+                    ),
+
+                    "next_stage": (
+                        result.get(
+                            "next_stage"
+                        )
+                    ),
+
+                    "kx108_admission": (
+                        result.get(
+                            "kx108_admission"
+                        )
+                    ),
+
+                    "model_attempted": bool(
+                        local_model.get(
+                            "attempted"
+                        )
+                    ),
+
+                    "model_call_used": bool(
+                        local_model.get(
+                            "model_call_used"
+                        )
+                    ),
+
+                    "model_status": (
+                        local_model.get(
+                            "status"
+                        )
+                    ),
+
+                    "finish_reason": (
+                        local_model.get(
+                            "finish_reason"
+                        )
+                    ),
+
+                    "evidence_applied": bool(
+                        local_model.get(
+                            "evidence_applied"
+                        )
+                    ),
+
+                    "receipt_status": (
+                        receipt.get(
+                            "result_status"
+                        )
+                    ),
+
+                    "real_execution": bool(
+                        result.get(
+                            "real_execution"
+                        )
+                    ),
+
+                    "authority": "NONE",
+                    "decision_authority": (
+                        "KX108_ONLY"
+                    ),
+                }
+
+                encoded = json.dumps(
+                    summary,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+
+                return ToolResult(
+                    tool_name=self.tool_id,
+                    content=encoded,
+                    success=True,
+                    metadata={
+                        "session_id": (
+                            bound_session_id
+                        ),
+                        "cognitive_result": result,
+                        "cognitive_summary": summary,
+                        "authority": "NONE",
+                        "decision_authority": (
+                            "KX108_ONLY"
+                        ),
+                    },
+                )
+
+        # ----------------------------------------------------------
+        # Deterministic OpenJarvis pilot engine.
+        #
+        # It cannot reason about tool choice because there is
+        # exactly ONE visible tool.
+        # ----------------------------------------------------------
+
+        class ObsidiaCognitivePilotEngine:
+            engine_id = (
+                "obsidia-openjarvis-cognitive-pilot-engine-v0"
+            )
+
+            _publishes_events = False
+
+            def __init__(self):
+                self.calls = 0
+
+            def generate(
+                self,
+                messages,
+                *,
+                model,
+                temperature,
+                max_tokens,
+                **kwargs,
+            ):
+                self.calls += 1
+
+                if self.calls == 1:
+                    tools = (
+                        kwargs.get("tools")
+                        or []
+                    )
+
+                    tool_names = []
+
+                    for item in tools:
+                        try:
+                            tool_names.append(
+                                item[
+                                    "function"
+                                ][
+                                    "name"
+                                ]
+                            )
+                        except Exception:
+                            pass
+
+                    if tool_names != [
+                        "obsidia_cognitive_query"
+                    ]:
+                        return {
+                            "content": (
+                                "COGNITIVE_PILOT_"
+                                "TOOL_SURFACE_MISMATCH"
+                            ),
+                            "tool_calls": [],
+                            "usage": {},
+                        }
+
+                    return {
+                        "content": "",
+                        "tool_calls": [
+                            {
+                                "id": (
+                                    "call-obsidia-cognitive"
+                                ),
+                                "name": (
+                                    "obsidia_cognitive_query"
+                                ),
+                                "arguments": "{}",
+                            }
+                        ],
+                        "usage": {},
+                    }
+
+                return {
+                    "content": (
+                        "OBSIDIA_COGNITIVE_QUERY_RETURNED"
+                    ),
+                    "tool_calls": [],
+                    "usage": {},
+                }
+
+        engine = (
+            ObsidiaCognitivePilotEngine()
+        )
+
+        tool = (
+            ObsidiaCognitiveQueryTool()
+        )
+
+        agent = OrchestratorAgent(
+            engine=engine,
+            model=(
+                "obsidia-deterministic-"
+                "cognitive-pilot-v0"
+            ),
+            tools=[tool],
+            max_turns=3,
+            temperature=0.0,
+            parallel_tools=False,
+            system_prompt=(
+                "You are an OpenJarvis pilot surface. "
+                "You have exactly one non-sovereign "
+                "Obsidia cognitive tool. "
+                "Do not select models, providers, "
+                "actions or authority."
+            ),
+        )
+
+        result = agent.run(
+            "Submit the bound request to canonical "
+            "Obsidia cognition."
+        )
+
+        # ----------------------------------------------------------
+        # Source non-mutation proof.
+        # ----------------------------------------------------------
+
+        after_head = _git_head(
+            self.source_root
+        )
+
+        after_dirty = _git_dirty(
+            self.source_root
+        )
+
+        source_mutated = (
+            after_head != before_head
+            or after_dirty is None
+            or after_dirty is True
+        )
+
+        tool_results = list(
+            result.tool_results
+            or []
+        )
+
+        one_tool = (
+            tool_results[0]
+            if len(tool_results) == 1
+            else None
+        )
+
+        cognitive_result = None
+        cognitive_summary = None
+
+        if one_tool is not None:
+            cognitive_result = (
+                one_tool.metadata.get(
+                    "cognitive_result"
+                )
+            )
+
+            cognitive_summary = (
+                one_tool.metadata.get(
+                    "cognitive_summary"
+                )
+            )
+
+        ok = (
+            result.content
+            == "OBSIDIA_COGNITIVE_QUERY_RETURNED"
+            and engine.calls == 2
+            and result.turns == 2
+            and len(tool_results) == 1
+            and one_tool is not None
+            and one_tool.tool_name
+            == "obsidia_cognitive_query"
+            and one_tool.success is True
+            and isinstance(
+                cognitive_result,
+                dict,
+            )
+            and not source_mutated
+        )
+
+        return {
+            "status": (
+                "OPENJARVIS_OBSIDIA_COGNITIVE_PILOT_OK"
+                if ok
+                else (
+                    "OPENJARVIS_OBSIDIA_"
+                    "COGNITIVE_PILOT_FAILED"
+                )
+            ),
+
+            "adapter_id": self.adapter_id,
+
+            "agent_class": (
+                "OrchestratorAgent"
+            ),
+
+            "agent_id": "orchestrator",
+
+            "engine": (
+                engine.engine_id
+            ),
+
+            "engine_calls": (
+                engine.calls
+            ),
+
+            "turns": (
+                result.turns
+            ),
+
+            "tool_results": len(
+                tool_results
+            ),
+
+            "tool_name": (
+                one_tool.tool_name
+                if one_tool is not None
+                else None
+            ),
+
+            "tool_success": (
+                one_tool.success
+                if one_tool is not None
+                else False
+            ),
+
+            "available_tool_count": 1,
+
+            "available_tools": [
+                "obsidia_cognitive_query"
+            ],
+
+            # OpenJarvis itself has no model.
+            "openjarvis_real_model_enabled": False,
+
+            # Obsidia alone may conditionally activate
+            # its governed local model.
+            "obsidia_model_policy_enabled": True,
+
+            "bound_session_id": (
+                bound_session_id
+            ),
+
+            "cognitive_summary": (
+                cognitive_summary
+            ),
+
+            "cognitive_result": (
+                cognitive_result
+            ),
+
+            "shell_tool_enabled": False,
+            "file_write_tool_enabled": False,
+            "git_commit_tool_enabled": False,
+
+            "memory_enabled": False,
+            "scheduler_enabled": False,
+
+            "external_runtime_authority": "NONE",
+
+            "is_execution_authority": False,
+            "is_kx_authority": False,
+
+            "memory_written": False,
+            "scope_expanded": False,
+
+            "source_mutated": (
+                source_mutated
+            ),
+
+            "decision_authority": (
+                "KX108_ONLY"
+            ),
+        }
