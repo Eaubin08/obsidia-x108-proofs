@@ -21,6 +21,14 @@ from apps.obsidia_api.brody_real_cognitive_join import (
     run_real_cognitive_join,
 )
 
+from apps.obsidia_api.brody_structured_response_engine_adapter import (
+    make_structured_response_snapshot,
+)
+
+from apps.obsidia_api.brody_v1_4_12a_final_answer_adapter import (
+    run_brody_v1_4_12a_final_answer,
+)
+
 from apps.obsidia_api.brody_full_runtime_orchestrator import (
     run_full_brody_runtime,
 )
@@ -1405,6 +1413,151 @@ def run_cognitive_ingress(
             + str(receipt_error)
         )
 
+    # --------------------------------------------------------
+    # 6 ? Governed human-response projection
+    #
+    # Runs only after the effective cognitive_join is known.
+    # If local Qwen evidence was accepted, cognitive_join already
+    # points at the post-model governed join.
+    #
+    # Raw model evidence is NEVER promoted directly.
+    # --------------------------------------------------------
+
+    response_language = (
+        os_trad["language"]
+        if os_trad.get("language") in ("fr", "en")
+        else "fr"
+    )
+
+    final_context_packet = (
+        cognitive_join.get("context_packet_v2")
+        if isinstance(
+            cognitive_join.get("context_packet_v2"),
+            dict,
+        )
+        else {}
+    )
+
+    final_ir_candidate = (
+        cognitive_join.get("ir_candidate")
+        if isinstance(
+            cognitive_join.get("ir_candidate"),
+            dict,
+        )
+        else {}
+    )
+
+    # Native Brody may legitimately return no runtime object
+    # for lightweight/local-sufficient paths such as greetings.
+    # Final projection treats absence as empty readonly material.
+    final_brody_runtime = (
+        brody_runtime
+        if isinstance(
+            brody_runtime,
+            dict,
+        )
+        else {}
+    )
+
+    final_response_md = str(
+        final_brody_runtime.get(
+            "response_md"
+        )
+        or final_brody_runtime.get(
+            "response"
+        )
+        or ""
+    )
+
+    try:
+        structured_response_snapshot = (
+            make_structured_response_snapshot(
+                final_brody_runtime
+            )
+        )
+    except Exception as exc:
+        structured_response_snapshot = {
+            "status": (
+                "STRUCTURED_RESPONSE_"
+                "SNAPSHOT_UNAVAILABLE"
+            ),
+            "text_material_status": (
+                "NO_MATERIAL"
+            ),
+            "response_md": "",
+            "error": (
+                type(exc).__name__
+                + ":"
+                + str(exc)[:240]
+            ),
+            "readonly": True,
+            "memory_write": False,
+            "emits_act": False,
+            "decision_authority": (
+                DECISION_AUTHORITY
+            ),
+        }
+
+    try:
+        final_answer_snapshot = (
+            run_brody_v1_4_12a_final_answer(
+                user_message=text,
+                language=response_language,
+                response_md=final_response_md,
+                context_packet=(
+                    final_context_packet
+                ),
+                ir_candidate=(
+                    final_ir_candidate
+                ),
+                memory_query=str(
+                    final_brody_runtime.get(
+                        "memory_query"
+                    )
+                    or ""
+                ),
+                risk=bool(
+                    final_brody_runtime.get(
+                        "action_risk",
+                        False,
+                    )
+                ),
+                structured_response_snapshot=(
+                    structured_response_snapshot
+                ),
+            )
+        )
+    except Exception as exc:
+        final_answer_snapshot = {
+            "status": (
+                "FINAL_ANSWER_PROJECTION_BLOCKED"
+            ),
+            "final_answer": "",
+            "error": (
+                type(exc).__name__
+                + ":"
+                + str(exc)[:240]
+            ),
+            "readonly": True,
+            "response_only": True,
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "emits_act": False,
+            "emits_verdict": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+            "decision_authority": (
+                DECISION_AUTHORITY
+            ),
+        }
+
+    surface_response = str(
+        final_answer_snapshot.get(
+            "final_answer"
+        )
+        or ""
+    ).strip()
+
     join_status = str(
         cognitive_join.get(
             "status"
@@ -1464,6 +1617,22 @@ def run_cognitive_ingress(
 
         "cognitive_join": (
             cognitive_join
+        ),
+
+        "structured_response_snapshot": (
+            structured_response_snapshot
+        ),
+
+        "final_answer_snapshot": (
+            final_answer_snapshot
+        ),
+
+        "surface_response": (
+            surface_response
+        ),
+
+        "final_response": (
+            surface_response
         ),
 
         "cognitive_components": (

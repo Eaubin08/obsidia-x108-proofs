@@ -238,13 +238,8 @@ def _surface_turn(
     final answer by this bridge.
     """
 
-    brody_text = _extract_brody_text(
-        turn
-    )
-
-    if brody_text:
-        return brody_text
-
+    # Prefer the governed final projection produced by
+    # Obsidia. Brody structural text is only a fallback.
     surface = turn.get(
         "surface_text"
     )
@@ -254,6 +249,13 @@ def _surface_turn(
 
         if surface:
             return surface
+
+    brody_text = _extract_brody_text(
+        turn
+    )
+
+    if brody_text:
+        return brody_text
 
     return (
         "OBSIDIA_GOVERNED_RESPONSE_UNAVAILABLE"

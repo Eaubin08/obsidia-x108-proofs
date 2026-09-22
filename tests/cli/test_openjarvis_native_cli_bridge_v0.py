@@ -202,8 +202,11 @@ def test_native_agent_routes_only_to_governed_session(
 
     assert (
         result.content
-        == "RÉPONSE GOUVERNÉE"
+        == "fallback-surface"
     )
+
+    # Governed final surface has presentation priority.
+    # Brody structural output remains fallback only.
 
     assert (
         result.metadata[
