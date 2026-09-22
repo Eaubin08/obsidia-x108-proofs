@@ -247,6 +247,10 @@ print(json.dumps({
 
         env = os.environ.copy()
 
+        # READ_ONLY means the probe must not even materialize Python bytecode
+        # inside the external OpenJarvis checkout.
+        env["PYTHONDONTWRITEBYTECODE"] = "1"
+
         existing = env.get("PYTHONPATH", "")
 
         env["PYTHONPATH"] = (

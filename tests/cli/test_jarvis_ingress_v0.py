@@ -285,3 +285,257 @@ def test_real_openjarvis_shadow_handshake_when_configured():
     assert surfaces["agent_scheduler"] is True
     assert surfaces["tools"] is True
     assert surfaces["mcp"] is True
+
+
+# ======================================================================
+# JARVIS V0.3 ? RELAY-FIRST OPENJARVIS SHADOW CAPABILITY
+# ======================================================================
+
+def _make_fake_openjarvis_source(tmp_path):
+    repo = tmp_path / "fake-openjarvis"
+    repo.mkdir()
+
+    package = repo / "src" / "openjarvis"
+
+    for directory in (
+        package,
+        package / "agents",
+        package / "tools",
+        package / "mcp",
+        package / "server",
+        package / "learning",
+    ):
+        directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        (directory / "__init__.py").write_text(
+            "",
+            encoding="utf-8",
+        )
+
+    (package / "__init__.py").write_text(
+        '__version__ = "test-shadow"\n',
+        encoding="utf-8",
+    )
+
+    for module in (
+        "executor.py",
+        "scheduler.py",
+        "operative.py",
+        "monitor_operative.py",
+    ):
+        (
+            package / "agents" / module
+        ).write_text(
+            "# fake OpenJarvis surface\n",
+            encoding="utf-8",
+        )
+
+    _git(repo, "init")
+    _git(
+        repo,
+        "config",
+        "user.email",
+        "jarvis-v03@example.invalid",
+    )
+    _git(
+        repo,
+        "config",
+        "user.name",
+        "Jarvis V03",
+    )
+
+    _git(repo, "add", ".")
+    _git(
+        repo,
+        "commit",
+        "-m",
+        "fake OpenJarvis runtime",
+    )
+
+    commit = _git(
+        repo,
+        "rev-parse",
+        "HEAD",
+    ).stdout.strip()
+
+    return repo, commit
+
+
+def test_openjarvis_v03_registered_non_authority():
+    import obsidia_capability_graph_v0 as G
+    import obsidia_relay_v0 as R
+    import obsidia_stack_native_routes_v0 as NAT
+
+    cap = G.get_capability(
+        "OPENJARVIS_RUNTIME_HANDSHAKE"
+    )
+
+    assert cap is not None
+    assert cap["owner"] == "OPENJARVIS_RUNTIME"
+    assert cap["route"] == "STACK_NATIVE_ROUTE"
+    assert cap["authority_class"] == "NONE"
+
+    assert cap["grants_authority"] is False
+    assert cap["is_execution_authority"] is False
+
+    resolved = R.relay_resolve_capability(
+        R.KIND_OPENJARVIS_RUNTIME_HANDSHAKE
+    )
+
+    assert (
+        resolved["capability_id"]
+        == "OPENJARVIS_RUNTIME_HANDSHAKE"
+    )
+
+    assert resolved["authority_class"] == "NONE"
+    assert resolved["grants_authority"] is False
+
+    assert (
+        "OPENJARVIS_RUNTIME_HANDSHAKE"
+        in NAT.NATIVE_CAPABILITIES
+    )
+
+
+def test_openjarvis_v03_requires_configuration(
+    tmp_path,
+    monkeypatch,
+):
+    import obsidia_stack_native_routes_v0 as NAT
+
+    monkeypatch.delenv(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        raising=False,
+    )
+
+    monkeypatch.delenv(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        raising=False,
+    )
+
+    ev = NAT.run_openjarvis_runtime_handshake(
+        "0" * 40,
+        source_root=tmp_path,
+    )
+
+    assert ev["ok"] is False
+
+    assert (
+        ev["reason"]
+        == "OPENJARVIS_RUNTIME_NOT_CONFIGURED"
+    )
+
+
+def test_openjarvis_v03_blocks_source_scope_expansion(
+    tmp_path,
+    monkeypatch,
+):
+    import obsidia_stack_native_routes_v0 as NAT
+
+    repo, commit = _make_fake_openjarvis_source(
+        tmp_path
+    )
+
+    other = tmp_path / "other"
+    other.mkdir()
+
+    monkeypatch.setenv(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        str(repo),
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        commit,
+    )
+
+    ev = NAT.run_openjarvis_runtime_handshake(
+        commit,
+        source_root=other,
+    )
+
+    assert ev["ok"] is False
+
+    assert (
+        ev["reason"]
+        == "OPENJARVIS_SOURCE_NOT_AUTHORIZED"
+    )
+
+
+def test_openjarvis_v03_e2e_relay_shadow_handshake(
+    tmp_path,
+    monkeypatch,
+):
+    import obsidia_relay_v0 as R
+
+    repo, commit = _make_fake_openjarvis_source(
+        tmp_path
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        str(repo),
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        commit,
+    )
+
+    out = R.relay_submit_mission(
+        requested_outcome=(
+            "verify pinned OpenJarvis runtime"
+        ),
+        mission_kind=(
+            R.KIND_OPENJARVIS_RUNTIME_HANDSHAKE
+        ),
+        target=commit,
+        repo_root=repo,
+        store_dir=tmp_path / "relay-store",
+    )
+
+    assert out["mission_state"] == R.MISSION_COMPLETE
+
+    assert out["metrics"]["native_route_count"] == 1
+    assert out["metrics"]["cognitive_request_count"] == 0
+
+    ev = out["native_evidence"]
+
+    assert ev["ok"] is True
+
+    assert (
+        ev["native_route_kind"]
+        == "OPENJARVIS_RUNTIME_HANDSHAKE"
+    )
+
+    assert (
+        ev["openjarvis_status"]
+        == "OPENJARVIS_SHADOW_HANDSHAKE_OK"
+    )
+
+    assert ev["expected_commit"] == commit
+    assert ev["actual_commit"] == commit
+
+    assert ev["external_runtime_authority"] == "NONE"
+
+    assert ev["agent_execution_enabled"] is False
+    assert ev["tool_execution_enabled"] is False
+    assert ev["scheduler_enabled"] is False
+    assert ev["memory_enabled"] is False
+    assert ev["memory_written"] is False
+    assert ev["scope_expanded"] is False
+    assert ev["mutated_repo"] is False
+
+    assert (
+        _git(repo, "rev-parse", "HEAD")
+        .stdout.strip()
+        == commit
+    )
+
+    assert (
+        _git(repo, "status", "--porcelain")
+        .stdout.strip()
+        == ""
+    )
