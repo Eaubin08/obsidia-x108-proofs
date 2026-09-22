@@ -1131,3 +1131,385 @@ def test_jarvis_selfbuild_phase1_rejects_dirty_repo(
     )
 
     assert ev["mutated_repo"] is False
+
+
+# ======================================================================
+# JARVIS V0.5
+# REAL OPENJARVIS ORCHESTRATOR -> ONE OBSIDIA SELF-BUILD TOOL
+# ======================================================================
+
+def test_openjarvis_v05_selfbuild_pilot_registered():
+    import obsidia_capability_graph_v0 as G
+    import obsidia_relay_v0 as R
+    import obsidia_stack_native_routes_v0 as NAT
+
+    cap = G.get_capability(
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+    )
+
+    assert cap is not None
+    assert cap["owner"] == "OPENJARVIS_RUNTIME"
+    assert cap["authority_class"] == "NONE"
+    assert cap["route"] == "STACK_NATIVE_ROUTE"
+    assert cap["read_write"] == "NONE"
+
+    assert cap["grants_authority"] is False
+    assert cap["is_execution_authority"] is False
+
+    resolved = R.relay_resolve_capability(
+        R.KIND_OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW
+    )
+
+    assert (
+        resolved["capability_id"]
+        == "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+    )
+
+    assert (
+        resolved["authority_class"]
+        == "NONE"
+    )
+
+    assert (
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+        in NAT.NATIVE_CAPABILITIES
+    )
+
+
+def test_openjarvis_v05_pilot_rejects_payload_expansion(
+    tmp_path,
+):
+    import obsidia_openjarvis_adapter_v0 as O
+
+    adapter = (
+        O.OpenJarvisObsidiaSelfBuildPilotAdapter(
+            source_root=str(
+                tmp_path
+            ),
+            expected_commit="0" * 40,
+        )
+    )
+
+    out = adapter.execute(
+        capability_id=(
+            "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+        ),
+        payload={
+            "objective": "x",
+            "target_path": "scripts/obsidia_x.py",
+            "obsidia_repo_root": str(
+                tmp_path
+            ),
+            "shell": "whoami",
+        },
+    )
+
+    assert (
+        out["status"]
+        == "PAYLOAD_SCOPE_NOT_ALLOWED"
+    )
+
+    assert out["scope_expanded"] is False
+    assert out["is_execution_authority"] is False
+
+
+def test_openjarvis_v05_real_orchestrator_single_obsidia_tool(
+    tmp_path,
+    monkeypatch,
+):
+    import os
+    import pytest
+
+    import obsidia_openjarvis_adapter_v0 as O
+
+    source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE"
+    )
+
+    commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT"
+    )
+
+    if not source or not commit:
+        pytest.skip(
+            "real OpenJarvis source not configured"
+        )
+
+    repo = _make_native_selfbuild_repo(
+        tmp_path
+    )
+
+    local = (
+        tmp_path
+        / "localappdata"
+    )
+
+    local.mkdir()
+
+    monkeypatch.setenv(
+        "LOCALAPPDATA",
+        str(local),
+    )
+
+    before = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    adapter = (
+        O.OpenJarvisObsidiaSelfBuildPilotAdapter(
+            source_root=source,
+            expected_commit=commit,
+        )
+    )
+
+    out = adapter.execute(
+        capability_id=(
+            "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+        ),
+        payload={
+            "objective": (
+                _native_selfbuild_objective()
+            ),
+            "target_path": (
+                "scripts/obsidia_selfbuild_fixture.py"
+            ),
+            "obsidia_repo_root": str(
+                repo
+            ),
+        },
+    )
+
+    assert (
+        out["status"]
+        == "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_OK"
+    )
+
+    assert out["agent_class"] == "OrchestratorAgent"
+    assert out["agent_id"] == "orchestrator"
+
+    assert (
+        out["engine"]
+        == "obsidia-openjarvis-pilot-engine-v0"
+    )
+
+    assert out["engine_calls"] == 2
+    assert out["turns"] == 2
+
+    assert out["tool_results"] == 1
+
+    assert (
+        out["tool_name"]
+        == "obsidia_self_build_phase1"
+    )
+
+    assert out["tool_success"] is True
+
+    assert (
+        out["nested_relay_mission_id"]
+        is not None
+    )
+
+    assert (
+        out["real_openjarvis_agent_code"]
+        is True
+    )
+
+    assert (
+        out["real_openjarvis_tool_executor"]
+        is True
+    )
+
+    assert out["real_model_enabled"] is False
+
+    assert (
+        out["tool_execution_enabled"]
+        is True
+    )
+
+    assert out["available_tool_count"] == 1
+
+    assert out["available_tools"] == [
+        "obsidia_self_build_phase1"
+    ]
+
+    assert out["shell_tool_enabled"] is False
+    assert out["file_write_tool_enabled"] is False
+    assert out["git_commit_tool_enabled"] is False
+
+    assert out["memory_enabled"] is False
+    assert out["scheduler_enabled"] is False
+    assert out["network_enabled"] is False
+
+    assert (
+        out["external_runtime_authority"]
+        == "NONE"
+    )
+
+    assert out["scope_expanded"] is False
+    assert out["memory_written"] is False
+    assert out["source_mutated"] is False
+
+    after = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    assert before == after == ""
+
+
+def test_openjarvis_v05_e2e_outer_relay_pilots_inner_selfbuild(
+    tmp_path,
+    monkeypatch,
+):
+    import os
+    import pytest
+
+    import obsidia_relay_v0 as R
+
+    source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE"
+    )
+
+    commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT"
+    )
+
+    if not source or not commit:
+        pytest.skip(
+            "real OpenJarvis source not configured"
+        )
+
+    repo = _make_native_selfbuild_repo(
+        tmp_path
+    )
+
+    local = (
+        tmp_path
+        / "localappdata"
+    )
+
+    local.mkdir()
+
+    monkeypatch.setenv(
+        "LOCALAPPDATA",
+        str(local),
+    )
+
+    before_head = _git(
+        repo,
+        "rev-parse",
+        "HEAD",
+    ).stdout.strip()
+
+    before_status = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    out = R.relay_submit_mission(
+        requested_outcome=(
+            _native_selfbuild_objective()
+        ),
+        mission_kind=(
+            R.KIND_OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW
+        ),
+        target=(
+            "scripts/obsidia_selfbuild_fixture.py"
+        ),
+        repo_root=repo,
+        store_dir=(
+            tmp_path
+            / "outer-relay"
+        ),
+    )
+
+    assert (
+        out["mission_state"]
+        == R.MISSION_COMPLETE
+    )
+
+    ev = out["native_evidence"]
+
+    assert ev["ok"] is True
+
+    assert (
+        ev["native_route_kind"]
+        == "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+    )
+
+    assert (
+        ev["openjarvis_status"]
+        == "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_OK"
+    )
+
+    assert (
+        ev["agent_class"]
+        == "OrchestratorAgent"
+    )
+
+    assert ev["engine_calls"] == 2
+    assert ev["turns"] == 2
+
+    assert ev["tool_results"] == 1
+
+    assert (
+        ev["tool_name"]
+        == "obsidia_self_build_phase1"
+    )
+
+    assert ev["tool_success"] is True
+
+    assert (
+        ev["nested_relay_mission_id"]
+        is not None
+    )
+
+    assert (
+        ev["real_openjarvis_agent_code"]
+        is True
+    )
+
+    assert (
+        ev["real_openjarvis_tool_executor"]
+        is True
+    )
+
+    assert ev["real_model_enabled"] is False
+
+    assert ev["available_tools"] == [
+        "obsidia_self_build_phase1"
+    ]
+
+    assert ev["shell_tool_enabled"] is False
+    assert ev["file_write_tool_enabled"] is False
+    assert ev["git_commit_tool_enabled"] is False
+
+    assert ev["memory_enabled"] is False
+    assert ev["scheduler_enabled"] is False
+
+    assert (
+        ev["external_runtime_authority"]
+        == "NONE"
+    )
+
+    assert ev["phase2_executed"] is False
+    assert ev["mutated_repo"] is False
+
+    after_head = _git(
+        repo,
+        "rev-parse",
+        "HEAD",
+    ).stdout.strip()
+
+    after_status = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    assert after_head == before_head
+    assert after_status == before_status == ""

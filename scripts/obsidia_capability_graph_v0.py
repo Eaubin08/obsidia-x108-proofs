@@ -159,6 +159,32 @@ _GRAPH: "dict[str, dict]" = {
             "Human approval token is not exposed through Relay."
         ),
     ),
+    "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW": _cap(
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW",
+        family="EXTERNAL_RUNTIME_AGENT_SHADOW",
+        owner=OWNER_OPENJARVIS_RUNTIME,
+        mode=MODE_DETERMINISTIC_BOUNDED,
+        authority_class=AUTHORITY_NONE,
+        rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={
+            "repo_root": "clean Obsidia engineering repository",
+            "target": "one explicit self-build target",
+            "requested_outcome": "bounded native solve objective",
+        },
+        availability="SHADOW_ORCHESTRATOR_SINGLE_OBSIDIA_TOOL",
+        proof_status=(
+            "REAL_OPENJARVIS_ORCHESTRATOR_SINGLE_TOOL_NO_REAL_MODEL"
+        ),
+        notes=(
+            "Runs real OpenJarvis OrchestratorAgent with one tool only: "
+            "obsidia_self_build_phase1. "
+            "The tool calls the canonical Obsidia Relay, which routes to "
+            "Brody -> Obsidure -> candidate.patch -> PLAN_PROPOSED. "
+            "No real model, shell, file_write, git_commit, scheduler, "
+            "OpenJarvis memory or direct repository mutation."
+        ),
+    ),
     "TEST_FAMILY_RUN": _cap(
         "TEST_FAMILY_RUN", family="TEST", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_DETERMINISTIC_BOUNDED, authority_class=AUTHORITY_NONE, rw=RW_NONE,
@@ -246,6 +272,7 @@ _KIND_TO_CAPABILITY = {
     "GIT_STATE_READ": "GIT_STATE_READ",
     "OPENJARVIS_RUNTIME_HANDSHAKE": "OPENJARVIS_RUNTIME_HANDSHAKE",
     "OPENJARVIS_SIMPLE_AGENT_SHADOW": "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+    "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW": "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW",
     "OBSIDIA_NATIVE_SELF_BUILD_PHASE1": "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
     "TEST_FAMILY_RUN": "TEST_FAMILY_RUN",
     "LEAN_BUILD": "LEAN_BUILD",

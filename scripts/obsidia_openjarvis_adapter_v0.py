@@ -827,3 +827,692 @@ print(
             "scope_expanded": False,
             "memory_written": False,
         }
+
+# ======================================================================
+# JARVIS ADVANCED V0.5
+# REAL OPENJARVIS ORCHESTRATOR -> ONE OBSIDIA SELF-BUILD TOOL
+# ======================================================================
+
+class OpenJarvisObsidiaSelfBuildPilotAdapter:
+    """
+    Real OpenJarvis OrchestratorAgent integration.
+
+    OpenJarvis is the persistent operational pilot only.
+
+    It receives exactly ONE executable tool:
+        obsidia_self_build_phase1
+
+    That tool does NOT write the repository directly.
+    It calls the canonical Obsidia Relay:
+
+        OpenJarvis
+          -> obsidia_self_build_phase1
+          -> Obsidia Relay
+          -> Brody
+          -> Obsidure
+          -> candidate.patch
+          -> PLAN_PROPOSED
+          -> STOP
+
+    No real model in this bootstrap.
+    No OpenJarvis memory.
+    No scheduler.
+    No shell.
+    No file_write.
+    No git_commit.
+    No Phase2.
+    """
+
+    adapter_id = (
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_ADAPTER_V0"
+    )
+
+    capability_id = (
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+    )
+
+    def __init__(
+        self,
+        *,
+        source_root: str,
+        expected_commit: str,
+    ):
+        self.source_root = Path(
+            source_root
+        ).resolve(strict=False)
+
+        self.expected_commit = str(
+            expected_commit
+        ).strip().lower()
+
+    @staticmethod
+    def _git(
+        repo: Path,
+        *args: str,
+    ):
+        import subprocess
+
+        proc = subprocess.run(
+            ["git", *args],
+            cwd=str(repo),
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+
+        return (
+            proc.returncode,
+            proc.stdout or "",
+        )
+
+    def _source_state(self):
+        rc_h, head = self._git(
+            self.source_root,
+            "rev-parse",
+            "HEAD",
+        )
+
+        rc_s, status = self._git(
+            self.source_root,
+            "status",
+            "--porcelain=v1",
+        )
+
+        return {
+            "ok": (
+                rc_h == 0
+                and rc_s == 0
+            ),
+            "head": head.strip(),
+            "status": status,
+        }
+
+    def execute(
+        self,
+        *,
+        capability_id: str,
+        payload: dict,
+    ) -> dict:
+
+        import hashlib
+        import json
+        import os
+        import sys
+
+        allowed_keys = {
+            "objective",
+            "target_path",
+            "obsidia_repo_root",
+        }
+
+        if capability_id != self.capability_id:
+            return {
+                "status": "CAPABILITY_NOT_ALLOWED",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if not isinstance(payload, dict):
+            return {
+                "status": "PAYLOAD_INVALID",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if set(payload) - allowed_keys:
+            return {
+                "status": "PAYLOAD_SCOPE_NOT_ALLOWED",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        objective = str(
+            payload.get("objective")
+            or ""
+        ).strip()
+
+        target_path = str(
+            payload.get("target_path")
+            or ""
+        ).strip()
+
+        obsidia_repo_root = Path(
+            payload.get("obsidia_repo_root")
+            or ""
+        ).resolve(strict=False)
+
+        if not objective:
+            return {
+                "status": "OBJECTIVE_REQUIRED",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if not target_path:
+            return {
+                "status": "TARGET_REQUIRED",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if not obsidia_repo_root.is_dir():
+            return {
+                "status": "OBSIDIA_REPO_REQUIRED",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        before = self._source_state()
+
+        if not before["ok"]:
+            return {
+                "status": "OPENJARVIS_SOURCE_GIT_STATE_UNAVAILABLE",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if (
+            before["head"]
+            != self.expected_commit
+        ):
+            return {
+                "status": "OPENJARVIS_SOURCE_IDENTITY_MISMATCH",
+                "actual_commit": before["head"],
+                "expected_commit": self.expected_commit,
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        if before["status"]:
+            return {
+                "status": "OPENJARVIS_SOURCE_DIRTY",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "scope_expanded": False,
+            }
+
+        package_root = (
+            self.source_root
+            / "src"
+        )
+
+        package_root_text = str(
+            package_root
+        )
+
+        if (
+            package_root_text
+            not in sys.path
+        ):
+            sys.path.insert(
+                0,
+                package_root_text,
+            )
+
+        from openjarvis.agents.orchestrator import (
+            OrchestratorAgent,
+        )
+
+        from openjarvis.core.types import (
+            ToolResult,
+        )
+
+        from openjarvis.tools._stubs import (
+            BaseTool,
+            ToolSpec,
+        )
+
+        # ----------------------------------------------------------
+        # The ONLY OpenJarvis tool.
+        # Repository path / target / objective are bound by Obsidia,
+        # not selected through arbitrary tool parameters.
+        # ----------------------------------------------------------
+
+        bound_objective = objective
+        bound_target = target_path
+        bound_repo = obsidia_repo_root
+
+        local_app = str(
+            os.environ.get(
+                "LOCALAPPDATA",
+                "",
+            )
+            or ""
+        ).strip()
+
+        state_base = (
+            Path(local_app)
+            if local_app
+            else Path.home()
+        )
+
+        digest = hashlib.sha256(
+            (
+                str(bound_repo)
+                + "\n"
+                + bound_target
+                + "\n"
+                + bound_objective
+            ).encode("utf-8")
+        ).hexdigest()[:20]
+
+        nested_store = (
+            state_base
+            / "Obsidia"
+            / "openjarvis_selfbuild_relay"
+            / digest
+        )
+
+        class ObsidiaSelfBuildPhase1Tool(
+            BaseTool
+        ):
+            tool_id = (
+                "obsidia_self_build_phase1"
+            )
+
+            @property
+            def spec(self):
+                return ToolSpec(
+                    name=(
+                        "obsidia_self_build_phase1"
+                    ),
+                    description=(
+                        "Ask canonical Obsidia to prepare "
+                        "one bounded Brody->Obsidure "
+                        "self-build candidate. "
+                        "Phase1 only; no apply."
+                    ),
+                    parameters={
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": False,
+                    },
+                    category="obsidia-governed",
+                    requires_confirmation=False,
+                    timeout_seconds=180.0,
+                    required_capabilities=[],
+                    metadata={
+                        "authority": "NONE",
+                        "phase2": False,
+                        "direct_repo_write": False,
+                    },
+                )
+
+            def execute(
+                self,
+                **params,
+            ):
+                if params:
+                    return ToolResult(
+                        tool_name=self.tool_id,
+                        content=(
+                            "OBSIDIA_TOOL_PARAMETER_SCOPE_DENIED"
+                        ),
+                        success=False,
+                    )
+
+                # Late import avoids turning OpenJarvis into
+                # the canonical runtime owner.
+                import obsidia_relay_v0 as RELAY
+
+                nested = (
+                    RELAY.relay_submit_mission(
+                        requested_outcome=(
+                            bound_objective
+                        ),
+                        mission_kind=(
+                            RELAY
+                            .KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1
+                        ),
+                        target=bound_target,
+                        repo_root=bound_repo,
+                        store_dir=nested_store,
+                    )
+                )
+
+                ev = dict(
+                    nested.get(
+                        "native_evidence"
+                    )
+                    or {}
+                )
+
+                # Never expose any human approval material.
+                summary = {
+                    "status": (
+                        nested.get(
+                            "mission_state"
+                        )
+                    ),
+                    "relay_mission_id": (
+                        nested.get(
+                            "relay_mission_id"
+                        )
+                    ),
+                    "ok": ev.get("ok"),
+                    "phase1_status": (
+                        ev.get(
+                            "phase1_status"
+                        )
+                    ),
+                    "target_path": (
+                        ev.get(
+                            "target_path"
+                        )
+                    ),
+                    "candidate_patch_hash": (
+                        ev.get(
+                            "candidate_patch_hash"
+                        )
+                    ),
+                    "plan_summary": (
+                        ev.get(
+                            "plan_summary"
+                        )
+                    ),
+                    "phase2_executed": False,
+                    "repo_mutation": (
+                        ev.get(
+                            "repo_mutation"
+                        )
+                    ),
+                    "authority": "NONE",
+                    "decision_authority": (
+                        ev.get(
+                            "decision_authority"
+                        )
+                    ),
+                }
+
+                encoded = json.dumps(
+                    summary,
+                    sort_keys=True,
+                )
+
+                if (
+                    ("HUMAN_APPROVED_" + "BUILD_SESSION=")
+                    in encoded
+                ):
+                    return ToolResult(
+                        tool_name=self.tool_id,
+                        content=(
+                            "OBSIDIA_HUMAN_TOKEN_LEAK_BLOCKED"
+                        ),
+                        success=False,
+                    )
+
+                ok = (
+                    nested.get(
+                        "mission_state"
+                    )
+                    == "MISSION_COMPLETE"
+                    and ev.get(
+                        "ok"
+                    )
+                    is True
+                    and ev.get(
+                        "phase2_executed"
+                    )
+                    is False
+                    and ev.get(
+                        "repo_mutation"
+                    )
+                    is False
+                )
+
+                return ToolResult(
+                    tool_name=self.tool_id,
+                    content=encoded,
+                    success=ok,
+                    metadata={
+                        "relay_mission_id": (
+                            nested.get(
+                                "relay_mission_id"
+                            )
+                        ),
+                        "authority": "NONE",
+                        "phase2": False,
+                    },
+                )
+
+        # ----------------------------------------------------------
+        # Deterministic engine:
+        # turn 1 -> call exactly the single Obsidia tool.
+        # turn 2 -> return final result.
+        #
+        # This proves real OpenJarvis tool-calling code without
+        # introducing model variance yet.
+        # ----------------------------------------------------------
+
+        class ObsidiaPilotEngine:
+            engine_id = (
+                "obsidia-openjarvis-pilot-engine-v0"
+            )
+
+            _publishes_events = False
+
+            def __init__(self):
+                self.calls = 0
+
+            def generate(
+                self,
+                messages,
+                *,
+                model,
+                temperature,
+                max_tokens,
+                **kwargs,
+            ):
+                self.calls += 1
+
+                if self.calls == 1:
+                    tools = (
+                        kwargs.get("tools")
+                        or []
+                    )
+
+                    tool_names = []
+
+                    for item in tools:
+                        try:
+                            tool_names.append(
+                                item["function"]["name"]
+                            )
+                        except Exception:
+                            pass
+
+                    if tool_names != [
+                        "obsidia_self_build_phase1"
+                    ]:
+                        return {
+                            "content": (
+                                "PILOT_TOOL_SURFACE_MISMATCH"
+                            ),
+                            "tool_calls": [],
+                            "usage": {},
+                        }
+
+                    return {
+                        "content": "",
+                        "tool_calls": [
+                            {
+                                "id": (
+                                    "call-obsidia-selfbuild"
+                                ),
+                                "name": (
+                                    "obsidia_self_build_phase1"
+                                ),
+                                "arguments": "{}",
+                            }
+                        ],
+                        "usage": {},
+                    }
+
+                return {
+                    "content": (
+                        "OBSIDIA_SELF_BUILD_PHASE1_RETURNED"
+                    ),
+                    "tool_calls": [],
+                    "usage": {},
+                }
+
+        engine = ObsidiaPilotEngine()
+
+        tool = ObsidiaSelfBuildPhase1Tool()
+
+        agent = OrchestratorAgent(
+            engine=engine,
+            model=(
+                "obsidia-deterministic-pilot-v0"
+            ),
+            tools=[tool],
+            max_turns=3,
+            temperature=0.0,
+            parallel_tools=False,
+            system_prompt=(
+                "You are an OpenJarvis pilot surface. "
+                "You have exactly one non-sovereign "
+                "Obsidia tool."
+            ),
+        )
+
+        result = agent.run(
+            (
+                "Prepare the bounded Obsidia "
+                "self-build Phase1 mission."
+            )
+        )
+
+        after = self._source_state()
+
+        source_mutated = (
+            not after["ok"]
+            or before["head"]
+            != after["head"]
+            or before["status"]
+            != after["status"]
+        )
+
+        tool_results = list(
+            result.tool_results
+            or []
+        )
+
+        one_tool = (
+            tool_results[0]
+            if len(tool_results) == 1
+            else None
+        )
+
+        ok = (
+            result.content
+            == "OBSIDIA_SELF_BUILD_PHASE1_RETURNED"
+            and engine.calls == 2
+            and result.turns == 2
+            and len(tool_results) == 1
+            and one_tool is not None
+            and one_tool.tool_name
+            == "obsidia_self_build_phase1"
+            and one_tool.success is True
+            and not source_mutated
+        )
+
+        nested_relay_id = None
+
+        if one_tool is not None:
+            nested_relay_id = (
+                one_tool.metadata.get(
+                    "relay_mission_id"
+                )
+            )
+
+        return {
+            "status": (
+                "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_OK"
+                if ok
+                else "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_FAILED"
+            ),
+
+            "adapter_id": self.adapter_id,
+
+            "agent_class": "OrchestratorAgent",
+            "agent_id": "orchestrator",
+
+            "engine": engine.engine_id,
+            "engine_calls": engine.calls,
+
+            "turns": result.turns,
+            "tool_results": len(
+                tool_results
+            ),
+
+            "tool_name": (
+                one_tool.tool_name
+                if one_tool is not None
+                else None
+            ),
+
+            "tool_success": (
+                one_tool.success
+                if one_tool is not None
+                else False
+            ),
+
+            "nested_relay_mission_id": (
+                nested_relay_id
+            ),
+
+            "real_openjarvis_agent_code": True,
+            "real_openjarvis_tool_executor": True,
+
+            "real_model_enabled": False,
+
+            "agent_execution_enabled": True,
+            "tool_execution_enabled": True,
+
+            "available_tool_count": 1,
+            "available_tools": [
+                "obsidia_self_build_phase1"
+            ],
+
+            "shell_tool_enabled": False,
+            "file_write_tool_enabled": False,
+            "git_commit_tool_enabled": False,
+
+            "memory_enabled": False,
+            "scheduler_enabled": False,
+            "network_enabled": False,
+
+            "is_execution_authority": False,
+            "is_kx_authority": False,
+            "is_human_authority": False,
+
+            "external_runtime_authority": "NONE",
+
+            "scope_expanded": False,
+            "memory_written": False,
+
+            "source_mutated": (
+                source_mutated
+            ),
+
+            "expected_commit": (
+                self.expected_commit
+            ),
+
+            "actual_commit": (
+                after.get("head")
+            ),
+
+            "final_content": (
+                result.content
+            ),
+        }

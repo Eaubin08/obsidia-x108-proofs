@@ -619,6 +619,202 @@ def run_openjarvis_simple_agent_shadow(
 # JARVIS / OBSIDIA NATIVE SELF-BUILD PHASE 1
 # ======================================================================
 
+# ======================================================================
+# JARVIS ADVANCED V0.5
+# REAL OPENJARVIS ORCHESTRATOR -> OBSIDIA SELF-BUILD TOOL
+# ======================================================================
+
+def run_openjarvis_obsidia_self_build_pilot_shadow(
+    objective: str,
+    target_path: str,
+    *,
+    repo_root=None,
+) -> dict:
+
+    import obsidia_openjarvis_adapter_v0 as _OJ
+
+    configured_source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        "",
+    ).strip()
+
+    configured_commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        "",
+    ).strip().lower()
+
+    if (
+        not configured_source
+        or not configured_commit
+    ):
+        return _evidence(
+            "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW",
+            False,
+            reason="OPENJARVIS_RUNTIME_NOT_CONFIGURED",
+        )
+
+    if not repo_root:
+        return _evidence(
+            "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW",
+            False,
+            reason="OBSIDIA_REPO_REQUIRED",
+        )
+
+    adapter = (
+        _OJ.OpenJarvisObsidiaSelfBuildPilotAdapter(
+            source_root=(
+                configured_source
+            ),
+            expected_commit=(
+                configured_commit
+            ),
+        )
+    )
+
+    result = adapter.execute(
+        capability_id=(
+            "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW"
+        ),
+        payload={
+            "objective": str(
+                objective
+                or ""
+            ),
+            "target_path": str(
+                target_path
+                or ""
+            ),
+            "obsidia_repo_root": str(
+                repo_root
+            ),
+        },
+    )
+
+    ok = (
+        result.get("status")
+        == "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_OK"
+        and result.get(
+            "source_mutated"
+        )
+        is False
+        and result.get(
+            "external_runtime_authority"
+        )
+        == "NONE"
+    )
+
+    return _evidence(
+        "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW",
+        ok,
+
+        reason=(
+            None
+            if ok
+            else result.get(
+                "status"
+            )
+        ),
+
+        adapter_id=result.get(
+            "adapter_id"
+        ),
+
+        openjarvis_status=result.get(
+            "status"
+        ),
+
+        agent_class=result.get(
+            "agent_class"
+        ),
+
+        agent_id=result.get(
+            "agent_id"
+        ),
+
+        engine=result.get(
+            "engine"
+        ),
+
+        engine_calls=result.get(
+            "engine_calls"
+        ),
+
+        turns=result.get(
+            "turns"
+        ),
+
+        tool_results=result.get(
+            "tool_results"
+        ),
+
+        tool_name=result.get(
+            "tool_name"
+        ),
+
+        tool_success=result.get(
+            "tool_success"
+        ),
+
+        nested_relay_mission_id=(
+            result.get(
+                "nested_relay_mission_id"
+            )
+        ),
+
+        real_openjarvis_agent_code=bool(
+            result.get(
+                "real_openjarvis_agent_code"
+            )
+        ),
+
+        real_openjarvis_tool_executor=bool(
+            result.get(
+                "real_openjarvis_tool_executor"
+            )
+        ),
+
+        real_model_enabled=False,
+
+        agent_execution_enabled=True,
+        tool_execution_enabled=True,
+
+        available_tool_count=1,
+
+        available_tools=[
+            "obsidia_self_build_phase1"
+        ],
+
+        shell_tool_enabled=False,
+        file_write_tool_enabled=False,
+        git_commit_tool_enabled=False,
+
+        memory_enabled=False,
+        scheduler_enabled=False,
+        network_enabled=False,
+
+        memory_write=False,
+        memory_written=False,
+
+        kernel_mutation=False,
+        emits_act=False,
+
+        scope_expanded=False,
+
+        phase2_executed=False,
+
+        external_runtime_authority="NONE",
+
+        mutated_repo=False,
+
+        openjarvis_source_mutated=bool(
+            result.get(
+                "source_mutated"
+            )
+        ),
+    )
+
+
+
 def run_obsidia_native_self_build_phase1(
     objective: str,
     target_path: str,
@@ -1022,6 +1218,10 @@ NATIVE_CAPABILITIES = {
     "OPENJARVIS_SIMPLE_AGENT_SHADOW": (
         "run_openjarvis_simple_agent_shadow",
         run_openjarvis_simple_agent_shadow,
+    ),
+    "OPENJARVIS_OBSIDIA_SELF_BUILD_PILOT_SHADOW": (
+        "run_openjarvis_obsidia_self_build_pilot_shadow",
+        run_openjarvis_obsidia_self_build_pilot_shadow,
     ),
     "OBSIDIA_NATIVE_SELF_BUILD_PHASE1": (
         "run_obsidia_native_self_build_phase1",
