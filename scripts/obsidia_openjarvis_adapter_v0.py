@@ -1575,6 +1575,7 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
         *,
         source_root: str,
         expected_commit: str,
+        trusted_session_id: str | None = None,
     ) -> None:
 
         self.source_root = Path(
@@ -1584,6 +1585,33 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
         self.expected_commit = str(
             expected_commit
         ).strip().lower()
+
+        # Trusted session identity is supplied by the
+        # Obsidia workspace/session binding layer.
+        #
+        # It is NOT a user/tool payload field.
+        if trusted_session_id is None:
+            self.trusted_session_id = None
+        else:
+            candidate = str(
+                trusted_session_id
+            ).strip().lower()
+
+            valid = (
+                len(candidate) == 24
+                and candidate.startswith("jws-")
+                and all(
+                    ch in "0123456789abcdef"
+                    for ch in candidate[4:]
+                )
+            )
+
+            if not valid:
+                raise ValueError(
+                    "TRUSTED_SESSION_ID_INVALID"
+                )
+
+            self.trusted_session_id = candidate
 
     def execute(
         self,
@@ -1784,10 +1812,21 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
             ).encode("utf-8")
         ).hexdigest()[:24]
 
-        bound_session_id = (
-            "ojc-"
-            + digest
-        )
+        if self.trusted_session_id is not None:
+            bound_session_id = (
+                self.trusted_session_id
+            )
+            session_binding_source = (
+                "TRUSTED_WORKSPACE_BINDING"
+            )
+        else:
+            bound_session_id = (
+                "ojc-"
+                + digest
+            )
+            session_binding_source = (
+                "DERIVED_REQUEST"
+            )
 
         # ----------------------------------------------------------
         # The ONLY OpenJarvis tool.
@@ -2218,6 +2257,10 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
 
             "bound_session_id": (
                 bound_session_id
+            ),
+
+            "session_binding_source": (
+                session_binding_source
             ),
 
             "cognitive_summary": (

@@ -41,6 +41,7 @@ def test_cognitive_pilot_rejects_policy_expansion():
         "provider",
         "authority",
         "tool",
+        "session_id",
     ):
         out = adapter.execute(
             capability_id=(
@@ -336,3 +337,136 @@ def test_cognitive_pilot_does_not_expose_selfbuild_tool(
     assert out["available_tools"] == [
         "obsidia_cognitive_query"
     ]
+
+
+
+def test_trusted_workspace_session_is_stable(
+    monkeypatch,
+):
+    from scripts import obsidia_cognitive_ingress_v0 as C
+    from scripts import obsidia_openjarvis_adapter_v0 as O
+
+    trusted = "jws-0123456789abcdef0123"
+    calls = []
+
+    def fake_ingress(
+        *,
+        text,
+        session_id,
+        memory_index=None,
+        allow_local_model=False,
+    ):
+        calls.append(
+            {
+                "text": text,
+                "session_id": session_id,
+                "allow_local_model": allow_local_model,
+            }
+        )
+
+        return {
+            "next_stage": "LOCAL_STACK_RESULT",
+            "kx108_admission": "DRY_RUN",
+            "local_model_stage": {
+                "attempted": False,
+                "model_call_used": False,
+                "status": "SKIPPED",
+                "finish_reason": None,
+                "tokens_remote": 0,
+                "evidence_applied": False,
+            },
+            "route_receipt": {
+                "result_status": "LOCAL_STACK_NO_LLM",
+                "model_call_used": False,
+            },
+            "real_execution": False,
+        }
+
+    monkeypatch.setattr(
+        C,
+        "run_cognitive_ingress",
+        fake_ingress,
+    )
+
+    adapter = O.OpenJarvisObsidiaCognitivePilotAdapter(
+        source_root=SOURCE,
+        expected_commit=COMMIT,
+        trusted_session_id=trusted,
+    )
+
+    outputs = []
+
+    for text in (
+        "premier tour de la session",
+        "deuxieme tour de la session",
+    ):
+        out = adapter.execute(
+            capability_id=(
+                "OPENJARVIS_OBSIDIA_COGNITIVE_PILOT"
+            ),
+            payload={
+                "input_text": text,
+            },
+        )
+
+        assert (
+            out["status"]
+            == "OPENJARVIS_OBSIDIA_COGNITIVE_PILOT_OK"
+        )
+
+        assert out["bound_session_id"] == trusted
+
+        assert (
+            out["session_binding_source"]
+            == "TRUSTED_WORKSPACE_BINDING"
+        )
+
+        outputs.append(out)
+
+    assert len(calls) == 2
+
+    assert [
+        call["session_id"]
+        for call in calls
+    ] == [
+        trusted,
+        trusted,
+    ]
+
+    assert all(
+        call["allow_local_model"] is True
+        for call in calls
+    )
+
+    assert (
+        outputs[0]["bound_session_id"]
+        == outputs[1]["bound_session_id"]
+    )
+
+
+def test_trusted_workspace_session_rejects_invalid_id():
+    from scripts import obsidia_openjarvis_adapter_v0 as O
+
+    for invalid in (
+        "",
+        "jws-short",
+        "ojc-0123456789abcdef0123",
+        "jws-0123456789abcdefXYZ1",
+        "jws-0123456789abcdef012345",
+    ):
+        try:
+            O.OpenJarvisObsidiaCognitivePilotAdapter(
+                source_root=SOURCE,
+                expected_commit=COMMIT,
+                trusted_session_id=invalid,
+            )
+        except ValueError as exc:
+            assert (
+                str(exc)
+                == "TRUSTED_SESSION_ID_INVALID"
+            )
+        else:
+            raise AssertionError(
+                "invalid trusted session accepted: "
+                + repr(invalid)
+            )
