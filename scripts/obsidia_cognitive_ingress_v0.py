@@ -35,6 +35,10 @@ from apps.obsidia_api.routes import (
 
 import obsidia_gateway_route_decision_v0 as ROUTER_GATE
 
+from scripts.providers.obsidia_qwen_local_evidence_v0 import (
+    run_local_qwen_evidence,
+)
+
 
 VERSION = "OBSIDIA_COGNITIVE_INGRESS_V0"
 
@@ -788,6 +792,7 @@ def run_cognitive_ingress(
     text: str,
     session_id: str = "jarvis-local",
     memory_index: dict[str, Any] | None = None,
+    allow_local_model: bool = False,
 ) -> dict[str, Any]:
     if not isinstance(text, str):
         raise TypeError(
@@ -973,72 +978,8 @@ def run_cognitive_ingress(
     # No filesystem persistence in this V0 gate.
     # --------------------------------------------------------
 
-    selected_route = (
-        route_decision.get(
-            "router_route"
-        )
-        or route_decision.get(
-            "route_class"
-        )
-        or "ROUTE_UNKNOWN"
-    )
-
-    receipt = (
-        ROUTER_GATE.build_route_receipt(
-            route_decision,
-            requested_outcome=text,
-            selected_route=str(
-                selected_route
-            ),
-            reason=str(
-                route_decision.get(
-                    "reason"
-                )
-                or "COGNITIVE_INGRESS"
-            ),
-            native_capability=(
-                "OBSIDIA_COGNITIVE_INGRESS_V0"
-            ),
-            provider=None,
-            model_call_used=False,
-            model_call_avoided=(
-                not llm_activation[
-                    "required"
-                ]
-            ),
-            result_status=(
-                "LLM_REQUIRED_NOT_CALLED"
-                if llm_activation["required"]
-                else "LOCAL_STACK_NO_LLM"
-            ),
-            tools_or_organs_used=[
-                "OS_TRAD",
-                "AMD_ROUTER_GATE",
-                *(
-                    ["BRODY_NATIVE_RUNTIME"]
-                    if brody_stage["attempted"]
-                    else []
-                ),
-                "BRODY_REAL_COGNITIVE_JOIN",
-                "CONTEXT_PACKET_V2",
-                "W1_RUNTIME_JOIN",
-                "W2_KX108_DRY_RUN",
-            ],
-            persist=False,
-        )
-    )
-
-    receipt_ok, receipt_error = (
-        ROUTER_GATE.verify_route_receipt(
-            receipt
-        )
-    )
-
-    if not receipt_ok:
-        raise RuntimeError(
-            "ROUTE_RECEIPT_INVALID:"
-            + str(receipt_error)
-        )
+    # Final route receipt is built after optional
+    # governed local-model evidence processing.
 
     brody_sufficiency = (
         _evaluate_brody_sufficiency(
@@ -1078,6 +1019,391 @@ def run_cognitive_ingress(
             "next_stage"
         ]
     )
+
+    # --------------------------------------------------------
+    # Governed local model stage.
+    #
+    # Preconditions:
+    # - Brody sufficiency says LOCAL_MODEL_GATE;
+    # - explicit caller opt-in;
+    # - Qwen adapter is loopback-only;
+    # - one call maximum;
+    # - output enters cognition only as EVIDENCE;
+    # - no remote fallback.
+    # --------------------------------------------------------
+
+    local_model_stage = {
+        "eligible": (
+            next_stage
+            == "LOCAL_MODEL_GATE"
+        ),
+        "enabled_by_caller": bool(
+            allow_local_model
+        ),
+        "attempted": False,
+        "model_call_used": False,
+        "status": "SKIPPED",
+        "provider": None,
+        "model": None,
+        "tokens_local": 0,
+        "tokens_remote": 0,
+        "finish_reason": None,
+        "evidence_applied": False,
+        "post_model_join_status": None,
+        "error": None,
+        "authority": "NONE",
+        "decision_authority": (
+            DECISION_AUTHORITY
+        ),
+        "remote_fallback": False,
+    }
+
+    if (
+        next_stage
+        == "LOCAL_MODEL_GATE"
+    ):
+        if not allow_local_model:
+            local_model_stage.update(
+                status="ELIGIBLE_NOT_ENABLED",
+            )
+
+        else:
+            qwen = run_local_qwen_evidence(
+                text=text,
+            )
+
+            local_model_stage.update(
+                attempted=bool(
+                    qwen.get(
+                        "attempted",
+                        False,
+                    )
+                ),
+                model_call_used=bool(
+                    qwen.get(
+                        "model_call_used",
+                        False,
+                    )
+                ),
+                status=str(
+                    qwen.get(
+                        "status"
+                    )
+                    or "UNKNOWN"
+                ),
+                provider=qwen.get(
+                    "provider"
+                ),
+                model=qwen.get(
+                    "model"
+                ),
+                tokens_local=int(
+                    qwen.get(
+                        "tokens_local"
+                    )
+                    or 0
+                ),
+                tokens_remote=int(
+                    qwen.get(
+                        "tokens_remote"
+                    )
+                    or 0
+                ),
+                finish_reason=qwen.get(
+                    "finish_reason"
+                ),
+                error=qwen.get(
+                    "error"
+                ),
+            )
+
+            evidence = qwen.get(
+                "evidence"
+            )
+
+            if (
+                qwen.get("status")
+                == "EVIDENCE_READY"
+                and isinstance(
+                    evidence,
+                    dict,
+                )
+            ):
+                post_model_join = (
+                    run_real_cognitive_join(
+                        message=text,
+                        language=(
+                            os_trad[
+                                "language"
+                            ]
+                            if os_trad[
+                                "language"
+                            ]
+                            != "unknown"
+                            else "fr"
+                        ),
+                        session_id=(
+                            session_id
+                            + ":local-model-evidence"
+                        ),
+                        precomputed_intent=(
+                            os_trad[
+                                "intent"
+                            ]
+                        ),
+                        authority_snapshot=(
+                            authority_snapshot
+                        ),
+                        precomputed_brody_runtime=(
+                            brody_runtime
+                        ),
+                        precomputed_model_evidence=(
+                            evidence
+                        ),
+                    )
+                )
+
+                applied = bool(
+                    post_model_join.get(
+                        "local_model_evidence_applied",
+                        False,
+                    )
+                )
+
+                local_model_stage[
+                    "evidence_applied"
+                ] = applied
+
+                local_model_stage[
+                    "post_model_join_status"
+                ] = post_model_join.get(
+                    "status"
+                )
+
+                if applied:
+                    cognitive_join = (
+                        post_model_join
+                    )
+
+                    llm_activation[
+                        "activated"
+                    ] = True
+
+                    llm_activation[
+                        "model_call_used"
+                    ] = True
+
+                    llm_activation[
+                        "provider"
+                    ] = "QWEN_LOCAL"
+
+                    llm_activation[
+                        "model"
+                    ] = qwen.get(
+                        "model"
+                    )
+
+                    llm_activation[
+                        "tokens_spent"
+                    ] = int(
+                        qwen.get(
+                            "tokens_local"
+                        )
+                        or 0
+                    )
+
+                    llm_activation[
+                        "output_role"
+                    ] = "EVIDENCE_ONLY"
+
+                    llm_activation[
+                        "required"
+                    ] = False
+
+                    llm_activation[
+                        "reason"
+                    ] = (
+                        "LOCAL_MODEL_EVIDENCE_ACCEPTED"
+                    )
+
+                    next_stage = (
+                        "LOCAL_STACK_RESULT"
+                    )
+
+                else:
+                    local_model_stage[
+                        "status"
+                    ] = (
+                        "EVIDENCE_REJECTED"
+                    )
+
+                    local_model_stage[
+                        "error"
+                    ] = (
+                        "MODEL_EVIDENCE_NOT_APPLIED"
+                    )
+
+                    next_stage = (
+                        "UNRESOLVED_LOCAL_MODEL"
+                    )
+
+            else:
+                next_stage = (
+                    "UNRESOLVED_LOCAL_MODEL"
+                )
+
+    # --------------------------------------------------------
+    # Final route receipt.
+    #
+    # This must reflect the actual model stage, not merely
+    # pre-model eligibility.
+    # --------------------------------------------------------
+
+    selected_route = (
+        route_decision.get(
+            "router_route"
+        )
+        or route_decision.get(
+            "route_class"
+        )
+        or "ROUTE_UNKNOWN"
+    )
+
+    model_was_used = bool(
+        local_model_stage[
+            "model_call_used"
+        ]
+    )
+
+    model_was_attempted = bool(
+        local_model_stage[
+            "attempted"
+        ]
+    )
+
+    if model_was_used:
+        receipt_status = (
+            "LOCAL_MODEL_EVIDENCE_ACCEPTED"
+            if local_model_stage[
+                "evidence_applied"
+            ]
+            else "LOCAL_MODEL_EVIDENCE_REJECTED"
+        )
+
+    elif (
+        next_stage
+        == "LOCAL_MODEL_GATE"
+    ):
+        receipt_status = (
+            "LLM_REQUIRED_NOT_CALLED"
+        )
+
+    elif (
+        next_stage
+        == "UNRESOLVED_LOCAL_MODEL"
+    ):
+        receipt_status = (
+            "LOCAL_MODEL_UNRESOLVED"
+        )
+
+    elif (
+        next_stage
+        == "KX108_GOVERNANCE"
+    ):
+        receipt_status = (
+            "GOVERNANCE_BOUNDARY_NO_MODEL"
+        )
+
+    else:
+        receipt_status = (
+            "LOCAL_STACK_NO_LLM"
+        )
+
+    receipt = (
+        ROUTER_GATE.build_route_receipt(
+            route_decision,
+            requested_outcome=text,
+            selected_route=str(
+                selected_route
+            ),
+            reason=str(
+                route_decision.get(
+                    "reason"
+                )
+                or "COGNITIVE_INGRESS"
+            ),
+            native_capability=(
+                "OBSIDIA_COGNITIVE_INGRESS_V0"
+            ),
+            provider=(
+                local_model_stage[
+                    "provider"
+                ]
+                if model_was_attempted
+                else None
+            ),
+            model_call_used=(
+                model_was_used
+            ),
+            model_call_avoided=(
+                not model_was_attempted
+                and next_stage
+                not in {
+                    "LOCAL_MODEL_GATE",
+                    "UNRESOLVED_LOCAL_MODEL",
+                }
+            ),
+            result_status=(
+                receipt_status
+            ),
+            tools_or_organs_used=[
+                "OS_TRAD",
+                "AMD_ROUTER_GATE",
+                *(
+                    [
+                        "BRODY_NATIVE_RUNTIME"
+                    ]
+                    if brody_stage[
+                        "attempted"
+                    ]
+                    else []
+                ),
+                *(
+                    [
+                        "QWEN_LOCAL_EVIDENCE"
+                    ]
+                    if model_was_attempted
+                    else []
+                ),
+                "BRODY_REAL_COGNITIVE_JOIN",
+                *(
+                    [
+                        "MODEL_EVIDENCE_BRIDGE"
+                    ]
+                    if local_model_stage[
+                        "evidence_applied"
+                    ]
+                    else []
+                ),
+                "CONTEXT_PACKET_V2",
+                "W1_RUNTIME_JOIN",
+                "W2_KX108_DRY_RUN",
+            ],
+            persist=False,
+        )
+    )
+
+    receipt_ok, receipt_error = (
+        ROUTER_GATE.verify_route_receipt(
+            receipt
+        )
+    )
+
+    if not receipt_ok:
+        raise RuntimeError(
+            "ROUTE_RECEIPT_INVALID:"
+            + str(receipt_error)
+        )
 
     join_status = str(
         cognitive_join.get(
@@ -1130,6 +1456,10 @@ def run_cognitive_ingress(
 
         "brody_sufficiency": (
             brody_sufficiency
+        ),
+
+        "local_model_stage": (
+            local_model_stage
         ),
 
         "cognitive_join": (

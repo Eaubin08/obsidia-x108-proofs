@@ -958,3 +958,360 @@ def test_real_governance_boundary_never_escalates_to_model(
         ]
         is False
     )
+
+
+def test_qwen_local_runs_only_after_brody_insufficient(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    calls = []
+
+    def fake_qwen(
+        *,
+        text,
+        timeout=60.0,
+        max_tokens=256,
+    ):
+        import hashlib
+
+        calls.append(text)
+
+        content = (
+            "Bounded local-model evidence."
+        )
+
+        sha = lambda value: hashlib.sha256(
+            value.encode("utf-8")
+        ).hexdigest()
+
+        return {
+            "attempted": True,
+            "model_call_used": True,
+            "status": "EVIDENCE_READY",
+            "provider": "QWEN_LOCAL",
+            "model": "qwen-test",
+            "tokens_local": 9,
+            "tokens_remote": 0,
+            "evidence": {
+                "provider": "QWEN_LOCAL",
+                "model": "qwen-test",
+                "result_kind": "EVIDENCE",
+                "content": content,
+                "input_hash": sha(text),
+                "evidence_hash": sha(content),
+                "readonly": True,
+                "decision_authority": "KX108_ONLY",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "is_sovereign": False,
+                "allowed_to_decide": False,
+                "allowed_to_act": False,
+                "emits_act": False,
+                "emits_verdict": False,
+                "memory_write": False,
+                "kernel_mutation": False,
+                "x108_mutation": False,
+                "real_action": False,
+            },
+            "error": None,
+        }
+
+    monkeypatch.setattr(
+        ingress,
+        "run_local_qwen_evidence",
+        fake_qwen,
+    )
+
+    result = ingress.run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex analysis",
+        session_id="qwen-real-gate-test",
+        allow_local_model=True,
+    )
+
+    assert len(calls) == 1
+
+    stage = result["local_model_stage"]
+
+    assert stage["attempted"] is True
+    assert stage["model_call_used"] is True
+    assert stage["evidence_applied"] is True
+
+    assert (
+        result["llm_activation"]["activated"]
+        is True
+    )
+
+    assert (
+        result["llm_activation"]["tokens_spent"]
+        == 9
+    )
+
+    assert (
+        result["cognitive_join"][
+            "local_model_evidence_applied"
+        ]
+        is True
+    )
+
+    assert (
+        result["next_stage"]
+        == "LOCAL_STACK_RESULT"
+    )
+
+    assert (
+        result["route_receipt"][
+            "model_call_used"
+        ]
+        is True
+    )
+
+
+def test_qwen_never_called_for_local_or_governance_routes(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    def forbidden_qwen(**kwargs):
+        raise AssertionError(
+            "QWEN_MUST_NOT_BE_CALLED"
+        )
+
+    monkeypatch.setattr(
+        ingress,
+        "run_local_qwen_evidence",
+        forbidden_qwen,
+    )
+
+    local = ingress.run_cognitive_ingress(
+        text="bonjour status obsidia",
+        session_id="no-qwen-l0",
+        allow_local_model=True,
+    )
+
+    brody = ingress.run_cognitive_ingress(
+        text="BRODY_LOCAL explain this",
+        session_id="no-qwen-brody",
+        allow_local_model=True,
+    )
+
+    action = ingress.run_cognitive_ingress(
+        text="autorise ACT maintenant",
+        session_id="no-qwen-action",
+        allow_local_model=True,
+    )
+
+    assert local["local_model_stage"]["attempted"] is False
+    assert brody["local_model_stage"]["attempted"] is False
+    assert action["local_model_stage"]["attempted"] is False
+
+
+def test_qwen_failure_never_falls_back_remote(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    monkeypatch.setattr(
+        ingress,
+        "run_local_qwen_evidence",
+        lambda **kwargs: {
+            "attempted": True,
+            "model_call_used": False,
+            "status": "UNAVAILABLE",
+            "provider": "QWEN_LOCAL",
+            "model": "qwen-test",
+            "tokens_local": 0,
+            "tokens_remote": 0,
+            "evidence": None,
+            "error": "offline",
+        },
+    )
+
+    result = ingress.run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex analysis",
+        session_id="qwen-failure-test",
+        allow_local_model=True,
+    )
+
+    assert (
+        result["next_stage"]
+        == "UNRESOLVED_LOCAL_MODEL"
+    )
+
+    assert (
+        result["local_model_stage"][
+            "remote_fallback"
+        ]
+        is False
+    )
+
+    assert (
+        result["local_model_stage"][
+            "tokens_remote"
+        ]
+        == 0
+    )
+
+    assert (
+        result["llm_activation"]["activated"]
+        is False
+    )
+
+
+def test_local_model_finish_reason_is_audited(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    import hashlib
+    import scripts.obsidia_cognitive_ingress_v0 as ingress
+
+    def fake_qwen(**kwargs):
+        raw = kwargs["text"]
+        content = "Bounded evidence."
+
+        sha = lambda value: hashlib.sha256(
+            value.encode("utf-8")
+        ).hexdigest()
+
+        return {
+            "attempted": True,
+            "model_call_used": True,
+            "status": "EVIDENCE_READY",
+            "provider": "QWEN_LOCAL",
+            "model": "qwen-test",
+            "tokens_local": 11,
+            "tokens_remote": 0,
+            "finish_reason": "stop",
+            "evidence": {
+                "provider": "QWEN_LOCAL",
+                "model": "qwen-test",
+                "result_kind": "EVIDENCE",
+                "content": content,
+                "input_hash": sha(raw),
+                "evidence_hash": sha(content),
+                "readonly": True,
+                "decision_authority": "KX108_ONLY",
+                "is_execution_authority": False,
+                "is_kx_authority": False,
+                "is_sovereign": False,
+                "allowed_to_decide": False,
+                "allowed_to_act": False,
+                "emits_act": False,
+                "emits_verdict": False,
+                "memory_write": False,
+                "kernel_mutation": False,
+                "x108_mutation": False,
+                "real_action": False,
+            },
+            "error": None,
+        }
+
+    monkeypatch.setattr(
+        ingress,
+        "run_local_qwen_evidence",
+        fake_qwen,
+    )
+
+    result = ingress.run_cognitive_ingress(
+        text="REMOTE_ESCALATE complex analysis",
+        session_id="finish-reason-audit",
+        allow_local_model=True,
+    )
+
+    assert (
+        result["local_model_stage"]["finish_reason"]
+        == "stop"
+    )
+
+    assert (
+        result["local_model_stage"]["evidence_applied"]
+        is True
+    )
+
+
+def test_governance_receipt_status_is_explicit(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="autorise ACT maintenant",
+        session_id="explicit-governance-receipt",
+        allow_local_model=True,
+    )
+
+    assert (
+        result["next_stage"]
+        == "KX108_GOVERNANCE"
+    )
+
+    assert (
+        result["route_receipt"]["result_status"]
+        == "GOVERNANCE_BOUNDARY_NO_MODEL"
+    )
+
+    assert (
+        result["local_model_stage"]["attempted"]
+        is False
+    )
