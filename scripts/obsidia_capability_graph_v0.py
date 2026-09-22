@@ -111,6 +111,26 @@ _GRAPH: "dict[str, dict]" = {
             "No OpenJarvis agent, tool, scheduler, memory or authority."
         ),
     ),
+    "OPENJARVIS_SIMPLE_AGENT_SHADOW": _cap(
+        "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        family="EXTERNAL_RUNTIME_AGENT_SHADOW",
+        owner=OWNER_OPENJARVIS_RUNTIME,
+        mode=MODE_DETERMINISTIC_BOUNDED,
+        authority_class=AUTHORITY_NONE,
+        rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={
+            "repo_root": "configured OpenJarvis source only",
+            "target": "input text, max 2000 chars",
+        },
+        availability="SHADOW_DETERMINISTIC_ENGINE_ONLY",
+        proof_status="V04_REAL_AGENT_CODE_NO_REAL_MODEL",
+        notes=(
+            "Executes real OpenJarvis SimpleAgent code with an "
+            "Obsidia deterministic engine. No real model, tools, memory, "
+            "scheduler, network, external effect or authority."
+        ),
+    ),
     "TEST_FAMILY_RUN": _cap(
         "TEST_FAMILY_RUN", family="TEST", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_DETERMINISTIC_BOUNDED, authority_class=AUTHORITY_NONE, rw=RW_NONE,
@@ -197,6 +217,7 @@ def graph_snapshot() -> dict:
 _KIND_TO_CAPABILITY = {
     "GIT_STATE_READ": "GIT_STATE_READ",
     "OPENJARVIS_RUNTIME_HANDSHAKE": "OPENJARVIS_RUNTIME_HANDSHAKE",
+    "OPENJARVIS_SIMPLE_AGENT_SHADOW": "OPENJARVIS_SIMPLE_AGENT_SHADOW",
     "TEST_FAMILY_RUN": "TEST_FAMILY_RUN",
     "LEAN_BUILD": "LEAN_BUILD",
     "ENGINEERING_REASONING": "ENGINEERING_REASONING",

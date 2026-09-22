@@ -539,3 +539,223 @@ def test_openjarvis_v03_e2e_relay_shadow_handshake(
         .stdout.strip()
         == ""
     )
+
+
+
+# ======================================================================
+# JARVIS V0.4 ? REAL OPENJARVIS SIMPLEAGENT / DETERMINISTIC SHADOW
+# ======================================================================
+
+def test_openjarvis_v04_capability_registered():
+    import obsidia_capability_graph_v0 as G
+    import obsidia_relay_v0 as R
+    import obsidia_stack_native_routes_v0 as NAT
+
+    cap = G.get_capability(
+        "OPENJARVIS_SIMPLE_AGENT_SHADOW"
+    )
+
+    assert cap is not None
+    assert cap["owner"] == "OPENJARVIS_RUNTIME"
+    assert cap["authority_class"] == "NONE"
+    assert cap["route"] == "STACK_NATIVE_ROUTE"
+    assert cap["mode"] == "DETERMINISTIC_BOUNDED"
+    assert cap["read_write"] == "NONE"
+
+    assert cap["grants_authority"] is False
+    assert cap["is_execution_authority"] is False
+
+    resolved = R.relay_resolve_capability(
+        R.KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW
+    )
+
+    assert (
+        resolved["capability_id"]
+        == "OPENJARVIS_SIMPLE_AGENT_SHADOW"
+    )
+
+    assert resolved["authority_class"] == "NONE"
+
+    assert (
+        "OPENJARVIS_SIMPLE_AGENT_SHADOW"
+        in NAT.NATIVE_CAPABILITIES
+    )
+
+
+def test_openjarvis_v04_adapter_rejects_payload_scope(
+    tmp_path,
+):
+    import obsidia_openjarvis_adapter_v0 as O
+
+    adapter = O.OpenJarvisSimpleAgentShadowAdapter(
+        source_root=str(tmp_path),
+        expected_commit="0" * 40,
+    )
+
+    out = adapter.execute(
+        capability_id="OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        payload={
+            "input_text": "ping",
+            "shell": "whoami",
+        },
+    )
+
+    assert out["status"] == "PAYLOAD_SCOPE_NOT_ALLOWED"
+    assert out["scope_expanded"] is False
+    assert out["is_execution_authority"] is False
+
+
+def test_openjarvis_v04_real_simple_agent_when_configured():
+    import os
+    import pytest
+
+    import obsidia_openjarvis_adapter_v0 as O
+
+    source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE"
+    )
+
+    commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT"
+    )
+
+    if not source or not commit:
+        pytest.skip(
+            "real OpenJarvis source not configured"
+        )
+
+    adapter = O.OpenJarvisSimpleAgentShadowAdapter(
+        source_root=source,
+        expected_commit=commit,
+    )
+
+    out = adapter.execute(
+        capability_id="OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        payload={
+            "input_text": "ping from Obsidia V0.4",
+        },
+    )
+
+    assert (
+        out["status"]
+        == "OPENJARVIS_SIMPLE_AGENT_SHADOW_OK"
+    )
+
+    assert out["agent_class"] == "SimpleAgent"
+    assert out["agent_id"] == "simple"
+
+    assert out["engine"] == "obsidia-shadow-engine-v0"
+    assert out["engine_calls"] == 1
+
+    assert out["turns"] == 1
+    assert out["tool_results"] == 0
+
+    assert out["real_openjarvis_agent_code"] is True
+    assert out["real_model_enabled"] is False
+
+    assert out["agent_execution_enabled"] is True
+    assert out["tool_execution_enabled"] is False
+
+    assert out["memory_enabled"] is False
+    assert out["scheduler_enabled"] is False
+    assert out["network_enabled"] is False
+
+    assert out["is_execution_authority"] is False
+    assert out["is_kx_authority"] is False
+
+    assert out["scope_expanded"] is False
+    assert out["memory_written"] is False
+    assert out["source_mutated"] is False
+
+
+def test_openjarvis_v04_e2e_relay_when_configured(
+    tmp_path,
+):
+    import os
+    import pytest
+
+    import obsidia_relay_v0 as R
+
+    source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE"
+    )
+
+    commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT"
+    )
+
+    if not source or not commit:
+        pytest.skip(
+            "real OpenJarvis source not configured"
+        )
+
+    out = R.relay_submit_mission(
+        requested_outcome=(
+            "run real OpenJarvis SimpleAgent "
+            "through deterministic Obsidia shadow engine"
+        ),
+
+        mission_kind=(
+            R.KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW
+        ),
+
+        target="ping from Relay V0.4",
+
+        repo_root=source,
+
+        store_dir=tmp_path / "relay-v04",
+    )
+
+    assert out["mission_state"] == R.MISSION_COMPLETE
+
+    assert out["metrics"]["native_route_count"] == 1
+    assert out["metrics"]["cognitive_request_count"] == 0
+    assert out["metrics"]["hold_count"] == 0
+
+    ev = out["native_evidence"]
+
+    assert ev["ok"] is True
+
+    assert (
+        ev["native_route_kind"]
+        == "OPENJARVIS_SIMPLE_AGENT_SHADOW"
+    )
+
+    assert (
+        ev["openjarvis_status"]
+        == "OPENJARVIS_SIMPLE_AGENT_SHADOW_OK"
+    )
+
+    assert ev["agent_class"] == "SimpleAgent"
+    assert ev["agent_id"] == "simple"
+
+    assert ev["engine"] == "obsidia-shadow-engine-v0"
+    assert ev["engine_calls"] == 1
+
+    assert ev["turns"] == 1
+    assert ev["tool_results"] == 0
+
+    assert ev["real_openjarvis_agent_code"] is True
+    assert ev["real_model_enabled"] is False
+
+    assert ev["agent_execution_enabled"] is True
+    assert ev["tool_execution_enabled"] is False
+
+    assert ev["memory_enabled"] is False
+    assert ev["scheduler_enabled"] is False
+    assert ev["network_enabled"] is False
+
+    assert ev["external_runtime_authority"] == "NONE"
+
+    assert ev["scope_expanded"] is False
+    assert ev["memory_written"] is False
+    assert ev["mutated_repo"] is False
+
+    status = R.relay_get_status(
+        out["relay_mission_id"],
+        store_dir=tmp_path / "relay-v04",
+    )
+
+    assert status["mission_state"] == R.MISSION_COMPLETE
+
+    assert len(status["receipt_ids"]) >= 4
