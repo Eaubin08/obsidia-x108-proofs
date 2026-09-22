@@ -19,6 +19,7 @@ Invariants (all asserted, static):
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -228,8 +229,402 @@ def run_lean_target(module: str, *, lean_root=None, timeout: float = 900.0) -> d
 
 
 # ── Table de dispatch bornée (aucune exécution depuis une chaîne libre) ──
+
+# ======================================================================
+# JARVIS V0.3 ? PINNED OPENJARVIS SHADOW RUNTIME
+# ======================================================================
+
+def run_openjarvis_runtime_handshake(
+    expected_commit: str,
+    *,
+    source_root=None,
+) -> dict:
+    """Bounded READ_ONLY identity/runtime handshake.
+
+    The caller cannot select an arbitrary Python checkout.
+    Both source_root and expected_commit must exactly match the
+    operator-provided OBSIDIA_OPENJARVIS_* configuration.
+
+    No agent, tool, scheduler, memory or authority is activated.
+    """
+
+    import obsidia_openjarvis_adapter_v0 as _OJ
+
+    requested_commit = str(
+        expected_commit or ""
+    ).strip().lower()
+
+    configured_source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        "",
+    ).strip()
+
+    configured_commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        "",
+    ).strip().lower()
+
+    if not configured_source or not configured_commit:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_RUNTIME_NOT_CONFIGURED",
+        )
+
+    if (
+        len(configured_commit) != 40
+        or any(
+            c not in "0123456789abcdef"
+            for c in configured_commit
+        )
+    ):
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_CONFIGURED_COMMIT_INVALID",
+        )
+
+    if requested_commit != configured_commit:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_COMMIT_NOT_AUTHORIZED",
+            requested_commit=requested_commit,
+            configured_commit=configured_commit,
+        )
+
+    if not source_root:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_SOURCE_REQUIRED",
+        )
+
+    requested_source = Path(
+        source_root
+    ).resolve(strict=False)
+
+    authorized_source = Path(
+        configured_source
+    ).resolve(strict=False)
+
+    if requested_source != authorized_source:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_SOURCE_NOT_AUTHORIZED",
+            requested_source=str(requested_source),
+            authorized_source=str(authorized_source),
+        )
+
+    pre_rc, pre_head = _git(
+        authorized_source,
+        ["rev-parse", "HEAD"],
+    )
+
+    pre_status_rc, pre_status = _git(
+        authorized_source,
+        ["status", "--porcelain"],
+    )
+
+    if pre_rc != 0 or pre_status_rc != 0:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_SOURCE_GIT_STATE_UNAVAILABLE",
+        )
+
+    adapter = _OJ.OpenJarvisShadowAdapter(
+        source_root=str(authorized_source),
+        expected_commit=configured_commit,
+    )
+
+    result = adapter.execute(
+        capability_id="OPENJARVIS_RUNTIME_HANDSHAKE",
+        payload={},
+    )
+
+    post_rc, post_head = _git(
+        authorized_source,
+        ["rev-parse", "HEAD"],
+    )
+
+    post_status_rc, post_status = _git(
+        authorized_source,
+        ["status", "--porcelain"],
+    )
+
+    if post_rc != 0 or post_status_rc != 0:
+        return _evidence(
+            "OPENJARVIS_RUNTIME_HANDSHAKE",
+            False,
+            reason="OPENJARVIS_POST_STATE_UNAVAILABLE",
+        )
+
+    mutated_measured = (
+        pre_head.strip() != post_head.strip()
+        or pre_status != post_status
+    )
+
+    adapter_ok = (
+        result.get("status")
+        == "OPENJARVIS_SHADOW_HANDSHAKE_OK"
+    )
+
+    ok = adapter_ok and not mutated_measured
+
+    return _evidence(
+        "OPENJARVIS_RUNTIME_HANDSHAKE",
+        ok,
+
+        reason=(
+            None
+            if ok
+            else (
+                "OPENJARVIS_EXTERNAL_STATE_MUTATED"
+                if mutated_measured
+                else result.get("status")
+            )
+        ),
+
+        adapter_id=result.get("adapter_id"),
+        openjarvis_status=result.get("status"),
+
+        expected_commit=configured_commit,
+        actual_commit=result.get("actual_commit"),
+
+        source_root=str(authorized_source),
+        source_dirty=result.get("source_dirty"),
+
+        missing_required_surfaces=list(
+            result.get("missing_required_surfaces") or []
+        ),
+
+        agent_execution_enabled=bool(
+            result.get("agent_execution_enabled")
+        ),
+
+        tool_execution_enabled=bool(
+            result.get("tool_execution_enabled")
+        ),
+
+        scheduler_enabled=bool(
+            result.get("scheduler_enabled")
+        ),
+
+        memory_enabled=bool(
+            result.get("memory_enabled")
+        ),
+
+        memory_written=bool(
+            result.get("memory_written")
+        ),
+
+        scope_expanded=bool(
+            result.get("scope_expanded")
+        ),
+
+        mutated_repo=mutated_measured,
+
+        external_runtime_authority="NONE",
+    )
+
+
+
+# ======================================================================
+# JARVIS V0.4 ? real OpenJarvis SimpleAgent, deterministic SHADOW engine
+# ======================================================================
+
+def run_openjarvis_simple_agent_shadow(
+    input_text: str,
+    *,
+    source_root=None,
+) -> dict:
+    """Run the real OpenJarvis SimpleAgent without a real model or tools."""
+
+    import obsidia_openjarvis_adapter_v0 as _OJ
+
+    configured_source = os.environ.get(
+        "OBSIDIA_OPENJARVIS_SOURCE",
+        "",
+    ).strip()
+
+    configured_commit = os.environ.get(
+        "OBSIDIA_OPENJARVIS_COMMIT",
+        "",
+    ).strip().lower()
+
+    if not configured_source or not configured_commit:
+        return _evidence(
+            "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+            False,
+            reason="OPENJARVIS_RUNTIME_NOT_CONFIGURED",
+        )
+
+    if not source_root:
+        return _evidence(
+            "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+            False,
+            reason="OPENJARVIS_SOURCE_REQUIRED",
+        )
+
+    requested_source = Path(
+        source_root
+    ).resolve(strict=False)
+
+    authorized_source = Path(
+        configured_source
+    ).resolve(strict=False)
+
+    if requested_source != authorized_source:
+        return _evidence(
+            "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+            False,
+            reason="OPENJARVIS_SOURCE_NOT_AUTHORIZED",
+        )
+
+    pre_rc, pre_head = _git(
+        authorized_source,
+        ["rev-parse", "HEAD"],
+    )
+
+    pre_status_rc, pre_status = _git(
+        authorized_source,
+        ["status", "--porcelain"],
+    )
+
+    if pre_rc != 0 or pre_status_rc != 0:
+        return _evidence(
+            "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+            False,
+            reason="OPENJARVIS_SOURCE_GIT_STATE_UNAVAILABLE",
+        )
+
+    adapter = _OJ.OpenJarvisSimpleAgentShadowAdapter(
+        source_root=str(authorized_source),
+        expected_commit=configured_commit,
+    )
+
+    result = adapter.execute(
+        capability_id="OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        payload={
+            "input_text": input_text,
+        },
+    )
+
+    post_rc, post_head = _git(
+        authorized_source,
+        ["rev-parse", "HEAD"],
+    )
+
+    post_status_rc, post_status = _git(
+        authorized_source,
+        ["status", "--porcelain"],
+    )
+
+    if post_rc != 0 or post_status_rc != 0:
+        return _evidence(
+            "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+            False,
+            reason="OPENJARVIS_POST_STATE_UNAVAILABLE",
+        )
+
+    mutated_measured = (
+        pre_head.strip() != post_head.strip()
+        or pre_status != post_status
+    )
+
+    ok = (
+        result.get("status")
+        == "OPENJARVIS_SIMPLE_AGENT_SHADOW_OK"
+        and not mutated_measured
+    )
+
+    return _evidence(
+        "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        ok,
+
+        reason=(
+            None
+            if ok
+            else (
+                "OPENJARVIS_EXTERNAL_STATE_MUTATED"
+                if mutated_measured
+                else result.get("status")
+            )
+        ),
+
+        adapter_id=result.get("adapter_id"),
+
+        openjarvis_status=result.get("status"),
+
+        expected_commit=configured_commit,
+        actual_commit=result.get("actual_commit"),
+
+        agent_class=result.get("agent_class"),
+        agent_id=result.get("agent_id"),
+
+        engine=result.get("engine"),
+        engine_calls=result.get("engine_calls"),
+
+        turns=result.get("turns"),
+        tool_results=result.get("tool_results"),
+
+        content=result.get("content"),
+        input_sha256=result.get("input_sha256"),
+
+        real_openjarvis_agent_code=bool(
+            result.get("real_openjarvis_agent_code")
+        ),
+
+        real_model_enabled=bool(
+            result.get("real_model_enabled")
+        ),
+
+        agent_execution_enabled=bool(
+            result.get("agent_execution_enabled")
+        ),
+
+        tool_execution_enabled=bool(
+            result.get("tool_execution_enabled")
+        ),
+
+        memory_enabled=bool(
+            result.get("memory_enabled")
+        ),
+
+        scheduler_enabled=bool(
+            result.get("scheduler_enabled")
+        ),
+
+        network_enabled=bool(
+            result.get("network_enabled")
+        ),
+
+        memory_written=bool(
+            result.get("memory_written")
+        ),
+
+        scope_expanded=bool(
+            result.get("scope_expanded")
+        ),
+
+        mutated_repo=mutated_measured,
+
+        external_runtime_authority="NONE",
+    )
+
+
 NATIVE_CAPABILITIES = {
     "GIT_STATE_READ": ("read_git_state", read_git_state),
+    "OPENJARVIS_RUNTIME_HANDSHAKE": (
+        "run_openjarvis_runtime_handshake",
+        run_openjarvis_runtime_handshake,
+    ),
+    "OPENJARVIS_SIMPLE_AGENT_SHADOW": (
+        "run_openjarvis_simple_agent_shadow",
+        run_openjarvis_simple_agent_shadow,
+    ),
     "TEST_FAMILY_RUN": ("run_test_family_by_id", run_test_family_by_id),
     "LEAN_BUILD": ("run_lean_by_id", run_lean_by_id),
 }

@@ -136,6 +136,8 @@ _MISSION_STATES = (MISSION_ACCEPTED, MISSION_RUNNING, MISSION_WAITING_CAPABILITY
 
 # ── Genres de mission (déterministes ; JAMAIS déduits du prompt) ────────
 KIND_GIT_STATE_READ = "GIT_STATE_READ"
+KIND_OPENJARVIS_RUNTIME_HANDSHAKE = "OPENJARVIS_RUNTIME_HANDSHAKE"
+KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW = "OPENJARVIS_SIMPLE_AGENT_SHADOW"
 KIND_TEST_FAMILY_RUN = "TEST_FAMILY_RUN"
 KIND_LEAN_BUILD = "LEAN_BUILD"
 KIND_ENGINEERING_REASONING = "ENGINEERING_REASONING"
@@ -143,10 +145,14 @@ KIND_GOVERNED_UPDATE = "GOVERNED_UPDATE_TARGET_FROM_SOURCE"
 KIND_HUMAN_DECISION = "HUMAN_DECISION"
 KIND_UNKNOWN = "UNKNOWN"
 KIND_CONVERSATION = "CONVERSATION"
-_MISSION_KINDS = (KIND_GIT_STATE_READ, KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD,
+_MISSION_KINDS = (KIND_GIT_STATE_READ, KIND_OPENJARVIS_RUNTIME_HANDSHAKE,
+                  KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW,
+                  KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD,
                   KIND_ENGINEERING_REASONING, KIND_GOVERNED_UPDATE,
                   KIND_HUMAN_DECISION, KIND_UNKNOWN, KIND_CONVERSATION)
-_NATIVE_KINDS = {KIND_GIT_STATE_READ, KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD}
+_NATIVE_KINDS = {KIND_GIT_STATE_READ, KIND_OPENJARVIS_RUNTIME_HANDSHAKE,
+                 KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW,
+                 KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD}
 _COGNITIVE_KINDS = {KIND_ENGINEERING_REASONING}
 _GOVERNED_KINDS = {KIND_GOVERNED_UPDATE}
 _HOLD_KINDS = {KIND_HUMAN_DECISION}
@@ -409,6 +415,16 @@ def _run_native(mission: dict) -> dict:
     tgt = mission.get("target")   # test_family_id | lean_target_id (NOMMÉ, jamais un chemin brut)
     if kind == KIND_GIT_STATE_READ:
         return _NAT.read_git_state(repo_root=mission.get("repo_root"))
+    if kind == KIND_OPENJARVIS_RUNTIME_HANDSHAKE:
+        return _NAT.run_openjarvis_runtime_handshake(
+            str(tgt or ""),
+            source_root=mission.get("repo_root"),
+        )
+    if kind == KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW:
+        return _NAT.run_openjarvis_simple_agent_shadow(
+            str(tgt or ""),
+            source_root=mission.get("repo_root"),
+        )
     if kind == KIND_TEST_FAMILY_RUN:
         return _NAT.run_test_family_by_id(str(tgt or ""), repo_root=mission.get("repo_root"))
     if kind == KIND_LEAN_BUILD:

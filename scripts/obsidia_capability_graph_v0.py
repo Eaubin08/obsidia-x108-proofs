@@ -39,6 +39,7 @@ KX_DECISION_AUTHORITY = "KX108_ONLY"
 
 # ── owners / authority classes / modes (vocabulaire fermé) ────────────
 OWNER_OBSIDIA_STACK = "OBSIDIA_STACK"
+OWNER_OPENJARVIS_RUNTIME = "OPENJARVIS_RUNTIME"
 OWNER_STAGE4_RAIL = "OBSIDIA_STACK/STAGE4_RAIL"
 OWNER_COGNITIVE_RESOURCE = "COGNITIVE_RESOURCE"
 OWNER_FORMAL = "OBSIDIA_STACK/FORMAL"
@@ -91,6 +92,45 @@ _GRAPH: "dict[str, dict]" = {
         route=ROUTE_NATIVE, input_shape={"repo_root": "optional path"},
         availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
         notes="obsidia_stack_native_routes_v0.read_git_state — read-only git facts."),
+    "OPENJARVIS_RUNTIME_HANDSHAKE": _cap(
+        "OPENJARVIS_RUNTIME_HANDSHAKE",
+        family="EXTERNAL_RUNTIME",
+        owner=OWNER_OPENJARVIS_RUNTIME,
+        mode=MODE_DETERMINISTIC_READ_ONLY,
+        authority_class=AUTHORITY_NONE,
+        rw=RW_READ,
+        route=ROUTE_NATIVE,
+        input_shape={
+            "repo_root": "configured OpenJarvis source only",
+            "target": "configured exact OpenJarvis SHA only",
+        },
+        availability="SHADOW_HANDSHAKE_ONLY",
+        proof_status="V02_SHADOW_HANDSHAKE_PROVED",
+        notes=(
+            "Pinned external runtime identity and surface discovery only. "
+            "No OpenJarvis agent, tool, scheduler, memory or authority."
+        ),
+    ),
+    "OPENJARVIS_SIMPLE_AGENT_SHADOW": _cap(
+        "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+        family="EXTERNAL_RUNTIME_AGENT_SHADOW",
+        owner=OWNER_OPENJARVIS_RUNTIME,
+        mode=MODE_DETERMINISTIC_BOUNDED,
+        authority_class=AUTHORITY_NONE,
+        rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={
+            "repo_root": "configured OpenJarvis source only",
+            "target": "input text, max 2000 chars",
+        },
+        availability="SHADOW_DETERMINISTIC_ENGINE_ONLY",
+        proof_status="V04_REAL_AGENT_CODE_NO_REAL_MODEL",
+        notes=(
+            "Executes real OpenJarvis SimpleAgent code with an "
+            "Obsidia deterministic engine. No real model, tools, memory, "
+            "scheduler, network, external effect or authority."
+        ),
+    ),
     "TEST_FAMILY_RUN": _cap(
         "TEST_FAMILY_RUN", family="TEST", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_DETERMINISTIC_BOUNDED, authority_class=AUTHORITY_NONE, rw=RW_NONE,
@@ -176,6 +216,8 @@ def graph_snapshot() -> dict:
 # ── Résolution : besoin de mission -> capacité -> route (PUR) ──────────
 _KIND_TO_CAPABILITY = {
     "GIT_STATE_READ": "GIT_STATE_READ",
+    "OPENJARVIS_RUNTIME_HANDSHAKE": "OPENJARVIS_RUNTIME_HANDSHAKE",
+    "OPENJARVIS_SIMPLE_AGENT_SHADOW": "OPENJARVIS_SIMPLE_AGENT_SHADOW",
     "TEST_FAMILY_RUN": "TEST_FAMILY_RUN",
     "LEAN_BUILD": "LEAN_BUILD",
     "ENGINEERING_REASONING": "ENGINEERING_REASONING",
