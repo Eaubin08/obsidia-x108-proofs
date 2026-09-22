@@ -25,6 +25,10 @@ from apps.obsidia_api.brody_full_runtime_orchestrator import (
     run_full_brody_runtime,
 )
 
+from apps.obsidia_api.brody_rights_authority_matrix import (
+    classify_request_authority,
+)
+
 from apps.obsidia_api.routes import (
     os_trad_ir_reverse as OS_TRAD,
 )
@@ -453,6 +457,23 @@ def run_cognitive_ingress(
     )
 
     # --------------------------------------------------------
+    # Canonical Brody authority classification.
+    #
+    # Mirrors /api/brody/chat.
+    # Without this snapshot Reverse OS interprets a missing
+    # request_type as non-PURE_RESPONSE and creates a false
+    # BOUNDARY_REQUEST contradiction.
+    # --------------------------------------------------------
+
+    authority_snapshot = (
+        classify_request_authority(
+            text,
+            {},
+            {},
+        )
+    )
+
+    # --------------------------------------------------------
     # 2 — Historical AMD-style pre-inference router
     #
     # Fail closed:
@@ -559,6 +580,9 @@ def run_cognitive_ingress(
                 session_id=session_id,
                 precomputed_intent=(
                     os_trad["intent"]
+                ),
+                authority_snapshot=(
+                    authority_snapshot
                 ),
                 precomputed_brody_runtime=(
                     brody_runtime
@@ -690,6 +714,10 @@ def run_cognitive_ingress(
         "input_hash": _hash_text(text),
 
         "os_trad": os_trad,
+
+        "authority_snapshot": (
+            authority_snapshot
+        ),
 
         "route_decision": (
             route_decision

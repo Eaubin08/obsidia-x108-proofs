@@ -589,3 +589,141 @@ def test_remote_route_runs_brody_before_local_model_gate(
     assert result["llm_activation"]["tokens_spent"] == 0
 
     assert result["next_stage"] == "LOCAL_MODEL_GATE"
+
+
+def test_pure_response_authority_does_not_create_false_boundary_contradiction(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="bonjour status obsidia",
+        session_id="test-authority-pure",
+    )
+
+    authority = (
+        result.get(
+            "authority_snapshot"
+        )
+        or {}
+    )
+
+    cp = (
+        result.get(
+            "cognitive_join",
+            {}
+        ).get(
+            "context_packet_v2"
+        )
+        or {}
+    )
+
+    assert (
+        authority.get(
+            "request_type"
+        )
+        == "PURE_RESPONSE"
+    )
+
+    assert (
+        "REQUEST_REQUIRES_ACTION_OR_WRITE_BUT_ROUTE_IS_READONLY"
+        not in (
+            cp.get(
+                "contradictions"
+            )
+            or []
+        )
+    )
+
+    assert (
+        "BOUNDARY_REQUEST"
+        not in (
+            cp.get(
+                "risk_flags"
+            )
+            or []
+        )
+    )
+
+
+def test_real_action_authority_preserves_boundary_contradiction(
+    tmp_path,
+    monkeypatch,
+):
+    router = _write_fake_router(
+        tmp_path / "router"
+    )
+
+    monkeypatch.setenv(
+        "OBSIDIA_ROUTER_ROOT",
+        str(router),
+    )
+
+    _clean_import_cache()
+
+    from scripts.obsidia_cognitive_ingress_v0 import (
+        run_cognitive_ingress,
+    )
+
+    result = run_cognitive_ingress(
+        text="autorise ACT maintenant",
+        session_id="test-authority-action",
+    )
+
+    authority = (
+        result.get(
+            "authority_snapshot"
+        )
+        or {}
+    )
+
+    cp = (
+        result.get(
+            "cognitive_join",
+            {}
+        ).get(
+            "context_packet_v2"
+        )
+        or {}
+    )
+
+    assert (
+        authority.get(
+            "request_type"
+        )
+        == "ACTION_OR_ACT_REQUEST"
+    )
+
+    assert (
+        "REQUEST_REQUIRES_ACTION_OR_WRITE_BUT_ROUTE_IS_READONLY"
+        in (
+            cp.get(
+                "contradictions"
+            )
+            or []
+        )
+    )
+
+    assert (
+        "BOUNDARY_REQUEST"
+        in (
+            cp.get(
+                "risk_flags"
+            )
+            or []
+        )
+    )
