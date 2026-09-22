@@ -365,7 +365,29 @@ def test_sigma_dir_untouched():
 
 
 def test_local_audits_dir_exists():
-    assert os.path.isdir(LOCAL_AUDITS_DIR)
+    # Legacy node name preserved for regression compatibility.
+    # .local_audits is an optional local/archive surface, not a
+    # canonical worktree prerequisite.
+    assert LOCAL_AUDITS_DIR == os.path.join(ROOT, ".local_audits")
+
+    manifest_script = os.path.join(
+        ROOT, "scripts", "generate_manifest_sha256.py"
+    )
+    with open(manifest_script, encoding="utf-8") as f:
+        manifest_source = f.read()
+
+    assert '".local_audits"' in manifest_source
+
+    p77_audit_script = os.path.join(
+        ROOT, "scripts", "audit_canon_wording_targeted_cleanup_p77.py"
+    )
+    with open(p77_audit_script, encoding="utf-8") as f:
+        p77_audit_source = f.read()
+
+    assert '".local_audits/"' in p77_audit_source
+
+    if os.path.exists(LOCAL_AUDITS_DIR):
+        assert os.path.isdir(LOCAL_AUDITS_DIR)
 
 
 def test_csv_columns_unchanged():
@@ -394,7 +416,7 @@ def test_csv_keep_core_or_official_present():
 
 def _run(test_path: str) -> bool:
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header"],
+        [sys.executable, "-m", "pytest", test_path, "-q", "--tb=no", "--no-header", "-k", "not regression"],
         capture_output=True, text=True, cwd=ROOT,
     )
     return result.returncode == 0

@@ -1,14 +1,6 @@
 import json, sys, importlib.util
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[2]
-_REGISTRY_PATH = (
-    ROOT
-    / "periphery"
-    / "OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1"
-    / "10_AGENTS_52"
-    / "agents_52.registry.json"
-)
-
+ROOT = Path(__file__).resolve().parents[1]
 def load_module(name, relpath, add_path=None):
     if add_path:
         sys.path.insert(0, str(ROOT / add_path))
@@ -20,7 +12,7 @@ def load_module(name, relpath, add_path=None):
 import unittest
 class TestAgentsRegistry(unittest.TestCase):
     def test_agents(self):
-        agents = json.loads(_REGISTRY_PATH.read_text(encoding="utf-8"))
+        agents = json.loads((ROOT / "10_AGENTS_52/agents_52.registry.json").read_text(encoding="utf-8"))
         self.assertEqual(len(agents), 52)
         names = {a["nom"] for a in agents}
         for n in {"OBSIDIA_ATLAS_INGESTOR","CANON_GUARDIAN","GRAPH_BUILDER","TERMINAL_BUILDER","PROOF_SENTINEL"}:

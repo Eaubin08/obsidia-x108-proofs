@@ -17,7 +17,7 @@ def _load_run_pipeline():
 
     # sigma.contracts — needs dataclass-like classes
     stub_contracts = types.ModuleType("sigma.contracts")
-    for _cls_name in ["TradingState", "BankState", "EcomState", "GpsDefenseAviationState"]:
+    for _cls_name in ["TradingState", "BankState", "EcomState", "GpsDefenseAviationState", "ToolingBuildState"]:
         _cls = dataclasses.make_dataclass(_cls_name, [])
         setattr(stub_contracts, _cls_name, _cls)
     sys.modules["sigma.contracts"] = stub_contracts
@@ -27,6 +27,7 @@ def _load_run_pipeline():
     for _fn_name in [
         "run_trading_pipeline", "run_bank_pipeline",
         "run_ecom_pipeline", "run_gps_defense_aviation_pipeline",
+        "run_tooling_build_pipeline",
     ]:
         setattr(stub_protocols, _fn_name, lambda *a, **k: dataclasses.make_dataclass("R", [])())
     sys.modules["sigma.protocols"] = stub_protocols

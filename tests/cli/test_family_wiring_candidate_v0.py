@@ -44,6 +44,22 @@ import obsidia_family_wiring as FW  # noqa: E402
 
 # --- fixtures synthetiques -------------------------------------------------
 
+
+def _current_git_branch_for_family_wiring_test() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=Path(__file__).resolve().parents[2],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert result.returncode == 0, result.stderr
+    branch = result.stdout.strip()
+    assert branch
+    return branch
+
 def _write_state(tmp_path: Path, rel: str, data: dict) -> Path:
     p = tmp_path / rel
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -359,18 +375,7 @@ class TestRealCliE2E:
         assert cand["authority"] == "NON_SOVEREIGN"
         assert cand["write_capability"] is False
         assert cand["decision_authority"] == "KX108_ONLY"
-        # Invariant de provenance STRUCTUREL : la provenance doit
-        # refleter la branche REELLE du depot.
-        _branch_proc = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=30,
-        )
-        assert _branch_proc.returncode == 0, _branch_proc.stderr
-        _actual_branch = _branch_proc.stdout.strip()
-        assert _actual_branch, "git rev-parse a renvoye une branche vide"
-        _branch = cand["finding_provenance"]["git_branch"]
-        assert isinstance(_branch, str) and _branch.strip()
-        assert _branch == _actual_branch
+        assert cand["finding_provenance"]["git_branch"] == _current_git_branch_for_family_wiring_test()
         assert len(cand["finding_provenance"]["family_wiring_state_sha256"]) == 64
 
         # next_action canonique = "ARCHIVE_OR_DELETE_..." => disjonction explicite,

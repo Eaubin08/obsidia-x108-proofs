@@ -6,7 +6,9 @@ import os
 import sys
 import importlib
 
-ENGINE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "engine"))
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+OS2_BUILDABLE_ROOT = os.path.join(REPO_ROOT, "proofs", "V18_3_1", "engine_buildable_0_9_3_1")
+ENGINE_ROOT = OS2_BUILDABLE_ROOT
 sys.path.insert(0, ENGINE_ROOT)
 
 ENGINE_MODULE_PATH = "obsidia_os2.metrics"

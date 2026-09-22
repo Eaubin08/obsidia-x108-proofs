@@ -126,8 +126,8 @@ def build_brody_full_context(
 
     # ── Missing links ─────────────────────────────────────────────────────
     missing: list[str] = []
-    if not project_memory.get("brody_memory_doc_available"):
-        missing.append("brody_memory_doc_live_not_connected")
+    if not project_memory.get("native_memory_ready"):
+        missing.append("obsidia_native_memory_not_ready")
     if not session_memory.get("session_ledger_v2_found"):
         missing.append("session_ledger_not_found_for_session_id")
     if not true_response.get("terminal_dialogue_found"):

@@ -27,6 +27,7 @@ def _make_trace(
     is_adversarial: bool = False,
     memory_relevance_score: float = 0.4,
     path_coherence_score: float = 0.75,
+    memory_required: bool = False,
     risk_flags: list | None = None,
     weak_signal_tags: list | None = None,
     dead_path_tags: list | None = None,
@@ -60,7 +61,6 @@ def _make_trace(
         "point_cloud_21d_snapshot": {
             "axes": {"axis_01_domain": 0.9, "axis_13_memory": 0.6},
             "active_layers": ["authority_layer", "cic_core_layer"],
-            "graphiti_allowed": False,
         },
         "balance_tags_snapshot": {
             "balance_memoire": {"tension": 0.6, "seuil_depasse": False, "priority": 4},
@@ -68,11 +68,10 @@ def _make_trace(
         },
         "fastpath_type": fastpath_type,
         "fastpath_triggered": fastpath_triggered,
-        "graphiti_allowed": False,
+        "memory_required": memory_required,
         "readonly": True,
         "canonical_write": False,
-        "graphiti_write": False,
-        "neo4j_write": False,
+        "memory_write": False,
         "kernel_mutation": False,
         "emits_act": False,
         "decision_authority": "KX108_ONLY",
@@ -155,18 +154,42 @@ def test_canonical_write_false():
     assert c["canonical_write"] is False
 
 
-# ── Test 5 — graphiti_write=False ────────────────────────────────────────────
 
-def test_graphiti_write_false():
+def test_candidate_has_provider_neutral_write_boundary():
     c = _build()
-    assert c["graphiti_write"] is False
+
+    assert c["readonly"] is True
+    assert c["canonical_write"] is False
+    assert c["memory_write"] is False
+    assert c["decision_authority"] == "KX108_ONLY"
 
 
-# ── Test 6 — neo4j_write=False ───────────────────────────────────────────────
 
-def test_neo4j_write_false():
-    c = _build()
-    assert c["neo4j_write"] is False
+def test_candidate_preserves_memory_required_signal():
+    trace = _make_trace(memory_required=True)
+    c = _build(trace)
+
+    def has_memory_required_true(obj):
+        if isinstance(obj, dict):
+            if obj.get("memory_required") is True:
+                return True
+            return any(
+                has_memory_required_true(v)
+                for v in obj.values()
+            )
+
+        if isinstance(obj, (list, tuple)):
+            return any(
+                has_memory_required_true(v)
+                for v in obj
+            )
+
+        return False
+
+    assert has_memory_required_true(c)
+    assert c["decision_authority"] == "KX108_ONLY"
+    assert c["allowed_to_decide"] is False
+    assert c["allowed_to_act"] is False
 
 
 # ── Test 7 — kernel_mutation=False ───────────────────────────────────────────

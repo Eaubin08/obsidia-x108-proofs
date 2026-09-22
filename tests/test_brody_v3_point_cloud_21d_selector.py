@@ -1,6 +1,6 @@
 """
 Tests — brody_point_cloud_21d_selector V3 Block 1
-21 axes, adversarial→graphiti=False, domaines, max 6 layers, no ACT.
+21 axes, adversarial safety, domaines, max 6 layers, no ACT.
 DECISION_AUTHORITY=KX108_ONLY
 """
 import sys, os
@@ -40,21 +40,37 @@ def test_21_axes_present():
         assert ax in vec, f"Axe manquant: {ax}"
 
 
-# ── T-SEL-02 : Adversarial → graphiti_allowed=False ──────────────────────────
+# -- T-SEL-02 : Adversarial selector remains provider-neutral --
 
-def test_adversarial_graphiti_false():
+def test_adversarial_selector_is_provider_neutral():
     result = pc(ADVERSARIAL)
-    assert result["graphiti_allowed"] is False
+
+    assert result["io_external"] is False
+    assert result["memory_packet_required"] is False
     assert "ADVERSARIAL_DETECTED" in result["risk_flags"]
 
+    assert "external_provider_layer" not in result.get("active_layers", [])
+    assert "external_provider_layer" not in result.get("forbidden_layers", [])
 
-# ── T-SEL-03 : Prompt nominal → graphiti par défaut False ────────────────────
+    assert result["decision_authority"] == "KX108_ONLY"
+    assert result["emits_act"] is False
 
-def test_nominal_graphiti_false_by_default():
+
+# -- T-SEL-03 : Nominal selector remains provider-neutral --
+
+def test_nominal_selector_is_provider_neutral_by_default():
     result = pc(NOMINAL)
-    # Graphiti est False sauf si memory_relevance >= 0.7 ET tension_memoire >= 0.7
-    # Sur un prompt nominal sans mémoire explicite → False
-    assert result["graphiti_allowed"] is False
+
+    assert result["io_external"] is False
+
+    assert "memory_packet_required" in result
+    assert isinstance(result["memory_packet_required"], bool)
+
+    assert "external_provider_layer" not in result.get("active_layers", [])
+    assert "external_provider_layer" not in result.get("forbidden_layers", [])
+
+    assert result["decision_authority"] == "KX108_ONLY"
+    assert result["emits_act"] is False
 
 
 # ── T-SEL-04 : Max 6 couches actives ─────────────────────────────────────────

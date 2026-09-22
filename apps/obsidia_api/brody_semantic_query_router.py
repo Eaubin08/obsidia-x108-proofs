@@ -120,14 +120,29 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         ["créateur", "cadre", "x108", "authority"],
     ),
     (
-        ["mémoire", "memoire", "graphiti", "neo4j", "candidat", "retenir", "écrire", "ecrire"],
+        ['memory', 'contextpacket', 'mémoire', 'memoire', 'graphiti', 'neo4j', 'candidat', 'retenir', 'écrire', 'ecrire'],
         "MEMORY_QUERY",
         "Brody mémoire candidate pipeline",
         "memory",
         ["graphiti", "candidat", "brody", "pipeline"],
     ),
+    # PROOF_QUERY est placé AVANT OPERATOR_LOOP : "lean", "tla", "merkle" sont
+    # des marqueurs de domaine sans ambiguïté, alors que "boucle"/"opérateur"
+    # sont des mots français courants. L'ordre inverse faisait tomber toute
+    # question Lean contenant "boucle" dans OPERATOR_LOOP.
     (
-        ["operator loop", "command gate", "receipt", "handoff", "opérateur", "boucle"],
+        ["preuve", "proof", "lean", "tla", "merkle", "os3"],
+        "PROOF_QUERY",
+        "OS3 preuve Lean TLA Merkle",
+        "proof",
+        ["lean", "tla", "merkle", "os3"],
+    ),
+    # OPERATOR_LOOP n'accepte plus que des expressions composées. Les mots
+    # isolés "boucle" et "opérateur" sont trop génériques pour router seuls —
+    # ils sont traités par la règle de co-occurrence dans build_semantic_query.
+    (
+        ["operator loop", "command gate", "receipt", "handoff",
+         "boucle operateur", "boucle opérateur", "boucle de commande"],
         "OPERATOR_LOOP",
         "operator loop command gate receipt handoff",
         "operator",
@@ -139,13 +154,6 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         "Brody droits action humain X108",
         "droits",
         ["rights", "human", "x108", "action"],
-    ),
-    (
-        ["preuve", "proof", "lean", "tla", "merkle", "os3"],
-        "PROOF_QUERY",
-        "OS3 preuve Lean TLA Merkle",
-        "proof",
-        ["lean", "tla", "merkle", "os3"],
     ),
     (
         ["gencoin", "jeton", "token", "valorisation"],
@@ -162,7 +170,7 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         ["mmonde", "world", "action bus"],
     ),
     (
-        ["ou on en est", "où on en est", "etat actuel", "état actuel", "statut actuel", "status actuel", "state actuel", "current state", "status brody", "point actuel", "recap"],
+        ['ou on en est', 'où on en est', 'etat actuel', 'état actuel', 'statut actuel', 'status actuel', 'state actuel', 'current state', 'brody status', 'status brody', 'point actuel', 'recap'],
         "CURRENT_STATE",
         "Brody Obsidia etat actuel",
         "brody",
@@ -190,6 +198,160 @@ _TOPIC_ROUTES: list[tuple[list[str], str, str, str, list[str]]] = [
         ["passe", "present", "futur", "proof"],
     ),
 ]
+
+
+
+_MEMORY_RETRIEVAL_STOPWORDS = {
+    # FR ? recall action
+    "rappelle",
+    "rappeler",
+    "rappelles",
+    "reprend",
+    "reprends",
+    "retrouve",
+    "retrouver",
+    "souviens",
+    "recupere",
+    "recuperer",
+
+    # FR ? generic memory/history framing
+    "memoire",
+    "memoires",
+    "historique",
+    "historiques",
+    "session",
+    "sessions",
+    "precedent",
+    "precedente",
+    "precedents",
+    "precedentes",
+    "contexte",
+    "contextes",
+    "conversation",
+    "conversations",
+    "memorise",
+    "memorisee",
+    "memorises",
+    "memorisees",
+
+    # EN ? recall framing
+    "remember",
+    "recall",
+    "retrieve",
+    "memory",
+    "memories",
+    "previous",
+    "session",
+    "context",
+    "conversation",
+    "stored",
+
+    # Common grammatical / request words
+    "dans",
+    "depuis",
+    "avec",
+    "pour",
+    "sans",
+    "sous",
+    "chez",
+    "entre",
+    "vers",
+    "apres",
+    "avant",
+    "concernant",
+    "explique",
+    "reprends",
+    "sais",
+    "deja",
+    "tout",
+    "tous",
+    "toute",
+    "toutes",
+    "cela",
+    "celui",
+    "celle",
+    "ceux",
+    "quoi",
+    "quel",
+    "quelle",
+    "quels",
+    "quelles",
+    "about",
+    "from",
+    "with",
+    "into",
+    "what",
+    "know",
+    "already",
+    "please",
+    "use",
+}
+
+
+def build_memory_retrieval_queries(
+    user_message: str,
+    *,
+    max_candidates: int = 6,
+) -> list[str]:
+    """
+    Preserve concrete lookup targets from a memory-recall request.
+
+    This is deliberately distinct from build_semantic_query():
+
+      semantic_query
+        -> canonical topic / semantic routing
+
+      memory retrieval query
+        -> exact, compact lookup terms for the readonly memory index
+
+    No retrieval is executed here.
+    No provider identity is encoded here.
+    No decision or action authority is granted.
+    """
+    import re
+
+    normalized = _normalize_utf8(
+        str(user_message or "")
+    )
+
+    folded = _fold_accents(
+        normalized.lower()
+    )
+
+    tokens = re.findall(
+        r"[a-z0-9][a-z0-9_.-]*",
+        folded,
+    )
+
+    candidates: list[str] = []
+
+    for token in tokens:
+        token = token.strip("._-")
+
+        if not token:
+            continue
+
+        if token in _MEMORY_RETRIEVAL_STOPWORDS:
+            continue
+
+        # Ignore very small ordinary words, but preserve compact
+        # technical identifiers containing digits.
+        if (
+            len(token) < 4
+            and not any(
+                ch.isdigit()
+                for ch in token
+            )
+        ):
+            continue
+
+        if token not in candidates:
+            candidates.append(token)
+
+        if len(candidates) >= max_candidates:
+            break
+
+    return candidates
 
 
 def build_semantic_query(user_message: str) -> dict[str, Any]:
@@ -249,7 +411,20 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
     
     # Try canonical topic routes — match on both accented and accent-folded
     for triggers, topic, query, primary, fallbacks in _TOPIC_ROUTES:
-        if any(_trigger_matches(t, normalized_lower, folded_lower) for t in triggers):
+        matched_trigger = next(
+            (
+                trigger
+                for trigger in triggers
+                if _trigger_matches(
+                    trigger,
+                    normalized_lower,
+                    folded_lower,
+                )
+            ),
+            None,
+        )
+
+        if matched_trigger is not None:
             return {
                 "topic": topic,
                 "semantic_query": query,
@@ -259,7 +434,25 @@ def build_semantic_query(user_message: str) -> dict[str, Any]:
                 "normalized_message": normalized,
                 "is_canonical": True,
                 "route": "TOPIC_MATCHED",
+                "matched_trigger": matched_trigger,
             }
+
+    # ── Repli tardif OPERATOR_LOOP ───────────────────────────────────────
+    # "boucle" / "opérateur" employés seuls ne routent que si AUCUN topic
+    # spécifique n'a matché. Une question Lean contenant "boucle" est donc
+    # déjà partie en PROOF_QUERY plus haut.
+    import re as _re_loop
+    if _re_loop.search(r"(?<![\wÀ-ÿ])(boucle|operateur|loop)(?![\wÀ-ÿ])", folded_lower):
+        return {
+            "topic": "OPERATOR_LOOP",
+            "semantic_query": "operator loop command gate receipt handoff",
+            "primary_query": "operator",
+            "fallback_queries": ["command gate", "receipt", "handoff", "loop"],
+            "original_message": user_message,
+            "normalized_message": normalized,
+            "is_canonical": True,
+            "route": "LATE_GENERIC_MATCH",
+        }
 
     # Fallback: extract first 3 words of 4+ chars
     import re

@@ -20,6 +20,10 @@ EXCLUDE_DIRS = {
     "_source_packs",
 }
 
+ALLOWED_EXACT_PATHS = {
+    "apps/obsidia_api/brody_secret_scrubber.py",
+}
+
 ALLOWED_FILES = {
     ".env.example",
 }
@@ -34,9 +38,6 @@ ALLOWED_PATH_FRAGMENTS = [
     "docs/security/",
     ".github/workflows/",
     "docs/core_import/POST_P80_SECRET_ROTATION",
-    # brody_secret_scrubber.py is a sanitisation utility — no credential content.
-    # "secret" in the filename is intentional (it scrubs secrets from outputs).
-    "apps/obsidia_api/brody_secret_scrubber.py",
 ]
 
 def norm(path: str) -> str:
@@ -54,13 +55,26 @@ for root, dirs, files in os.walk("."):
         if f in ALLOWED_FILES:
             continue
 
+        repo_rel = (
+            path[2:]
+            if path.startswith("./")
+            else path
+        )
+
+        if repo_rel in ALLOWED_EXACT_PATHS:
+            continue
+
         if any(fragment in path for fragment in ALLOWED_PATH_FRAGMENTS):
             continue
 
         if any(b in path for b in FORBIDDEN):
             violations.append(f"FORBIDDEN_DIR:{path}")
 
-        if any(s in fname for s in ["private_key", "secret", "credential", "token", "api_key"]):
+        suspicious_filename = any(
+            s in fname
+            for s in ["private_key", "secret", "credential", "token", "api_key"]
+        )
+        if suspicious_filename:
             violations.append(f"SUSPICIOUS_FILE:{path}")
 
 if violations:

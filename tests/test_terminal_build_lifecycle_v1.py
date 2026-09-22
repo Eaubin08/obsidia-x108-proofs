@@ -1059,3 +1059,331 @@ class TestSafetyHardening:
         evts = _load_lifecycle_events("sh_idem", tmp_path)
         assert len([e for e in evts if e["type"] == "CLEANED"]) == 1, "pas de second CLEANED"
         assert rp.read_text(encoding="utf-8") == content_before, "receipt.json immutable"
+
+
+# =============================================================================
+# R8_RECEIPT_ORDER_FIX_V3_REGRESSION
+# =============================================================================
+
+class TestReceiptBeforeBuildTopologyV3:
+    """
+    Any visible BUILD branch/worktree must already have
+    its durable off-repo session receipt.
+    """
+
+    def test_receipt_exists_before_worktree_add(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        repo = (
+            tmp_path
+            / "receipt_order_v3_subject"
+        )
+
+        repo.mkdir()
+
+        def sh(cmd):
+            return subprocess.run(
+                cmd,
+                cwd=str(repo),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+        sh([
+            "git",
+            "init",
+            "-b",
+            "main",
+        ])
+
+        sh([
+            "git",
+            "config",
+            "user.email",
+            "r8@example.invalid",
+        ])
+
+        sh([
+            "git",
+            "config",
+            "user.name",
+            "R8",
+        ])
+
+        proofs = (
+            repo
+            / "proofs"
+        )
+
+        proofs.mkdir()
+
+        (
+            proofs
+            / "LEAN_PROOF_SURFACE_MANIFEST.json"
+        ).write_text(
+            json.dumps({
+                "manifest_id":
+                    "R8_RECEIPT_ORDER_FIX_V3",
+
+                "total_entries":
+                    0,
+
+                "layers":
+                    {},
+
+                "decision_authority":
+                    "KX108_ONLY",
+
+                "lean_decides":
+                    False,
+
+                "runtime_bound":
+                    True,
+
+                "attestation_only":
+                    True,
+
+                "lean_ok":
+                    True,
+
+                "forbidden_ok":
+                    True,
+            }),
+            encoding="utf-8",
+        )
+
+        fixture = (
+            repo
+            / "tests"
+            / "fixtures"
+            / "terminal_build_bounded"
+        )
+
+        fixture.mkdir(
+            parents=True
+        )
+
+        (
+            fixture
+            / "target.txt"
+        ).write_text(
+            "TERMINAL_BUILD_BOUNDED_V1_TARGET_V0\n",
+            encoding="utf-8",
+        )
+
+        (
+            fixture
+            / "test_target_content.py"
+        ).write_text(
+            "from pathlib import Path\n"
+            "\n"
+            "def test_build_session_applied():\n"
+            "    p = Path(__file__).parent / 'target.txt'\n"
+            "    assert 'BUILD_SESSION_APPLIED' in "
+            "p.read_text(encoding='utf-8')\n",
+            encoding="utf-8",
+        )
+
+        sh([
+            "git",
+            "add",
+            ".",
+        ])
+
+        sh([
+            "git",
+            "commit",
+            "-m",
+            "initial",
+        ])
+
+        state_dir = (
+            tmp_path
+            / "localappdata"
+            / "Obsidia"
+            / "build_sessions"
+        )
+
+        objective = (
+            "Appliquer le marqueur synthetique "
+            "TERMINAL_BUILD_BOUNDED_V1"
+        )
+
+        sha = _OB.get_base_sha(
+            repo
+        )
+
+        plan = _OB.compute_plan(
+            objective,
+            sha,
+            repo,
+        )
+
+        sid = plan[
+            "session_id"
+        ]
+
+        receipt_path = (
+            state_dir
+            / sid
+            / "receipt.json"
+        )
+
+        branch = plan[
+            "branch_proposal"
+        ]
+
+        worktree = (
+            repo.parent
+            / plan[
+                "worktree_proposal"
+            ]
+        )
+
+        real_git = _OB._git
+
+        observed = {
+            "worktree_add":
+                False,
+        }
+
+        def guarded_git(
+            *args,
+            **kwargs,
+        ):
+            cmd = (
+                args[0]
+                if args
+                else kwargs.get(
+                    "args"
+                )
+            )
+
+            if (
+                isinstance(
+                    cmd,
+                    list,
+                )
+                and len(cmd) >= 2
+                and cmd[0] == "worktree"
+                and cmd[1] == "add"
+            ):
+                observed[
+                    "worktree_add"
+                ] = True
+
+                assert (
+                    receipt_path.exists()
+                ), (
+                    "R8_RECEIPT_ABSENT_"
+                    "BEFORE_TOPOLOGY"
+                )
+
+                receipt = json.loads(
+                    receipt_path.read_text(
+                        encoding="utf-8"
+                    )
+                )
+
+                assert (
+                    receipt["session_id"]
+                    == sid
+                )
+
+                assert (
+                    receipt["base_sha"]
+                    == sha
+                )
+
+                assert (
+                    receipt["branch"]
+                    == branch
+                )
+
+                assert (
+                    Path(
+                        receipt["worktree"]
+                    ).resolve()
+                    ==
+                    worktree.resolve()
+                )
+
+                assert (
+                    receipt[
+                        "decision_authority"
+                    ]
+                    == "KX108_ONLY"
+                )
+
+                assert (
+                    receipt[
+                        "kx108_decision"
+                    ]
+                    == "PENDING"
+                )
+
+                assert (
+                    receipt[
+                        "commit_status"
+                    ]
+                    == "NOT_COMMITTED"
+                )
+
+                assert (
+                    receipt[
+                        "push_status"
+                    ]
+                    == "NOT_PUSHED"
+                )
+
+                assert (
+                    receipt[
+                        "merge_status"
+                    ]
+                    == "NOT_MERGED"
+                )
+
+                # Controlled stop after exact ordering proof.
+                return (
+                    1,
+                    "",
+                    "R8_CONTROLLED_STOP",
+                )
+
+            return real_git(
+                *args,
+                **kwargs,
+            )
+
+        monkeypatch.setattr(
+            _OB,
+            "_git",
+            guarded_git,
+        )
+
+        rc = _OB.cmd_execute(
+            objective,
+            plan[
+                "next_human_action"
+            ],
+            repo_root=repo,
+            state_dir=state_dir,
+        )
+
+        assert (
+            observed[
+                "worktree_add"
+            ]
+            is True
+        )
+
+        assert (
+            receipt_path.exists()
+        )
+
+        assert rc == 2
+
+        assert not worktree.exists()

@@ -146,6 +146,11 @@ def build_brody_education_pack_v1_readonly_context() -> dict[str, Any]:
             "education_modules_available": False,
             "deferred_policy": "QUARANTINE_NOT_INJECTED",
             "ragnarok_policy": "EXCLUDE_ABSOLUTE",
+            "ragnarok_ref": _RAGNAROK_REF,
+            "ragnarok_note": (
+                "sigma/contracts.broken-ragnarok.py est EXCLUDE_ABSOLUTE. "
+                "Ne jamais citer comme exemple opérationnel."
+            ),
         }
 
     # Lire les verdicts JSON

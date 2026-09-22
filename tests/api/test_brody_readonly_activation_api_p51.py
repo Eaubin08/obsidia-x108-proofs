@@ -116,7 +116,8 @@ def test_brody_chat_no_write_kx108_only(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data.get("memory_write") is False
-    assert data.get("graphiti_write") is False
+    assert "graphiti_write" not in data
+    assert "neo4j_write" not in data
     assert data.get("kernel_mutation") is False
     assert data.get("decision_authority") == "KX108_ONLY"
     assert data.get("brody_no_act") is True

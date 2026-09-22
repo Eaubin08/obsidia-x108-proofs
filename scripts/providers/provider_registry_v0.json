@@ -1,0 +1,25 @@
+﻿{
+  "schema_version": 1,
+  "domain": "OBSIDIA_CG9_PROVIDER_REGISTRY",
+
+  "providers": {
+    "brody": {
+      "contract_version": "PROVIDER_CONTRACT_V0",
+      "adapter_id": "BRODY_ADAPTER_V0",
+      "status": "DECLARED",
+      "enabled": false
+    },
+    "obsidure": {
+      "contract_version": "PROVIDER_CONTRACT_V0",
+      "adapter_id": "OBSIDURE_ADAPTER_V0",
+      "status": "DECLARED",
+      "enabled": false
+    },
+    "claude": {
+      "contract_version": "PROVIDER_CONTRACT_V0",
+      "adapter_id": "CLAUDE_ADAPTER_V0",
+      "status": "DECLARED",
+      "enabled": false
+    }
+  }
+}

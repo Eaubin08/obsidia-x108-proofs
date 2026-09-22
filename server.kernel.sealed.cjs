@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.post('/kernel/ragnarok', (req, res) => {
     const domain = req.body.domain || 'bank_security_policy';
-    const data = JSON.stringify(req.body.data || req.body);
+    const data = JSON.stringify(req.body.data ?? req.body.state ?? req.body);
 
     console.log(`\x1b[35m🛰️ [INCOMING]:\x1b[0m Request for domain: ${domain}`);
 

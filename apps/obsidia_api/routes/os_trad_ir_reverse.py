@@ -15,6 +15,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from apps.obsidia_api.safe_response import safe_backend_response
+from apps.obsidia_api.brody_domain_raccord_adapter import adjust_risk_flags
+from periphery.language.lexical_calibrator import calibrate_lexical_knownness
 
 try:
     from periphery.language.language_router import detect_language as _detect_language_impl
@@ -161,7 +163,7 @@ def _risk_flags(text: str) -> list[str]:
     if any(token in low for token in ["traceback", "exception", "404", "500", "bug", "debug", "pytest", "powershell"]):
         flags.append("code_debug")
 
-    return flags
+    return adjust_risk_flags(text, flags)
 
 
 def _intent(text: str, flags: list[str]) -> str:
@@ -171,6 +173,8 @@ def _intent(text: str, flags: list[str]) -> str:
         return "code_debug"
     if "authority_claim" in flags:
         return "authority_claim"
+    if any(flag in flags for flag in ("write_request", "memory_write_request", "canon_promotion_request")):
+        return "write_request"
     if "action_request" in flags:
         return "action_request"
     if "?" in text or any(token in low for token in ["pourquoi", "comment", "what", "why", "how"]):
@@ -207,7 +211,6 @@ def _constraints(flags: list[str]) -> list[str]:
         "NO_ACT",
         "NO_VERDICT",
         "NO_MEMORY_WRITE",
-        "NO_GRAPHITI_WRITE",
         "NO_KERNEL_MUTATION",
         "NO_X108_MUTATION",
         "DECISION_AUTHORITY_KX108_ONLY",
@@ -293,6 +296,11 @@ async def ir_candidate(req: IRCandidateRequest):
     intent = _intent(req.text, flags)
     constraints = _constraints(flags)
 
+    lexical_calibration = calibrate_lexical_knownness(
+        req.text,
+        detected_language,
+    )
+
     contradictions: list[str] = []
     if any(flag in flags for flag in ["action_request", "mutation_request", "write_request"]):
         contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
@@ -307,6 +315,13 @@ async def ir_candidate(req: IRCandidateRequest):
         "graphiti_refs": _refs_from_context(req.graphiti_context, "graphiti"),
         "language": detected_language,
         "alphabet_units": req.alphabet_units,
+        "unknowns": list(
+            lexical_calibration.get(
+                "unknowns",
+                [],
+            )
+        ),
+        "lexical_calibration": lexical_calibration,
     }
 
     payload = {

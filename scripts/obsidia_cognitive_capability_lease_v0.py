@@ -658,6 +658,50 @@ def load_lease_revocations(lease_id: str, store_dir=None) -> "list[dict]":
     return out
 
 
+def load_verified_lease_revocations(lease: dict, store_dir=None) -> dict:
+    """Lecture stricte READ-ONLY du store de r?vocations.
+
+    Contrairement ? `load_lease_revocations`, aucune corruption n'est ignor?e :
+    un fichier illisible ou une r?vocation structurellement invalide rend l'?tat
+    de r?vocation ind?termin? et provoque un rejet fail-closed.
+    """
+    ok_l, why_l = verify_capability_lease(lease)
+    if not ok_l:
+        return {"status": "REVOCATION_SCAN_REJECTED",
+                "reason": f"LEASE_INVALID:{why_l}", "revocations": []}
+
+    d = _lease_store(store_dir) / "revocations"
+    if not d.is_dir():
+        return {"status": "REVOCATION_SCAN_VERIFIED",
+                "reason": None, "revocations": []}
+
+    out = []
+    for path in sorted(d.glob("cclrev-*.json")):
+        try:
+            rev = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {"status": "REVOCATION_SCAN_REJECTED",
+                    "reason": f"REVOCATION_RECORD_UNREADABLE:{path.name}",
+                    "revocations": []}
+
+        ok_r, why_r = verify_lease_revocation(rev)
+        if not ok_r:
+            return {"status": "REVOCATION_SCAN_REJECTED",
+                    "reason": f"REVOCATION_RECORD_INVALID:{path.name}:{why_r}",
+                    "revocations": []}
+
+        if rev.get("lease_id") == lease.get("lease_id"):
+            ok_bound, why_bound = verify_lease_revocation(rev, lease)
+            if not ok_bound:
+                return {"status": "REVOCATION_SCAN_REJECTED",
+                        "reason": f"REVOCATION_BINDING_INVALID:{path.name}:{why_bound}",
+                        "revocations": []}
+            out.append(rev)
+
+    return {"status": "REVOCATION_SCAN_VERIFIED",
+            "reason": None, "revocations": out}
+
+
 # ══════════════════════════════════════════════════════════════════════════
 #  6 — Vérificateur CONTEXTUEL (verdict structuré, jamais un bool effondré)
 # ══════════════════════════════════════════════════════════════════════════

@@ -36,6 +36,8 @@ Phase 2 (apres approbation humaine):
 
 from __future__ import annotations
 
+import shlex
+
 import argparse
 import hashlib
 import json
@@ -47,6 +49,15 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+
+from obsidia_candidate_patch_v1 import (
+    CandidatePatchSpec,
+    CANDIDATE_PATCH_MODE,
+    apply_candidate_patch,
+    bind_candidate_to_objective,
+    check_candidate_patch,
+    load_candidate_patch_file,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VERSION = "0.2.0"
@@ -431,12 +442,15 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
         "  decision_authority = KX108_ONLY  |  auto_commit = NEVER",
         sep,
         f"  session_id        : {plan['session_id']}",
-        f"  objective         : {plan['objective']}",
+        f"  objective         : {plan.get('display_objective', plan['objective'])}",
         f"  domain            : {plan['domain']}",
         f"  risk              : {plan['risk']}",
         f"  base_sha          : {plan['base_sha']}",
         f"  stack_status      : {stack_status}",
         f"  manifest_hash     : {plan['manifest_hash']}",
+        f"  scope_mode        : {plan.get('scope_mode')}",
+        f"  approved_scope_hash: {plan.get('approved_scope_hash')}",
+        f"  plan_authority_hash: {plan.get('plan_authority_hash')}",
         f"  worktree_proposal : {plan['worktree_proposal']}",
         f"  branch_proposal   : {plan['branch_proposal']}",
         "",
@@ -468,6 +482,68 @@ def format_plan_proposed(plan: dict, stack_status: str = "UNKNOWN") -> str:
         f"      --approve {token}",
         sep,
     ]
+    if (
+        plan.get("scope_mode")
+        == SCOPE_MODE_EXPLICIT_CHILD_TARGET
+    ):
+        scope_lines = [
+            f'      --scope "{scope_path}"'
+            for scope_path
+            in plan.get(
+                "approved_scope_proposal",
+                [],
+            )
+        ]
+
+        # Conserver le séparateur comme dernière ligne.
+        if lines and lines[-1] == sep:
+            lines[-1:-1] = scope_lines
+        else:
+            lines.extend(scope_lines)
+
+    if plan.get("candidate_patch_mode"):
+        candidate_meta = [
+            "",
+            f"  candidate_patch_mode : {plan.get('candidate_patch_mode')}",
+            f"  candidate_patch_hash : {plan.get('candidate_patch_hash')}",
+            "  candidate_patch_files:",
+        ]
+
+        candidate_meta.extend(
+            f"    {f}"
+            for f in plan.get(
+                "candidate_patch_files",
+                [],
+            )
+        )
+
+        # Placer les métadonnées avant la zone approval.
+        approval_index = next(
+            (
+                i for i, line in enumerate(lines)
+                if "TOKEN D'APPROBATION REQUIS" in line
+            ),
+            len(lines),
+        )
+
+        lines[approval_index:approval_index] = (
+            candidate_meta
+        )
+
+        source = plan.get(
+            "candidate_patch_source"
+        )
+
+        if source:
+            candidate_cmd = (
+                f'      --candidate-patch "{source}"'
+            )
+
+            if lines and lines[-1] == sep:
+                lines[-1:-1] = [candidate_cmd]
+            else:
+                lines.append(candidate_cmd)
+
     return "\n".join(lines)
 
 
@@ -647,6 +723,7 @@ def cmd_execute(
     repo_root: Path | None = None,
     state_dir: Path | None = None,
     explicit_scope: list[str] | None = None,
+    candidate_patch_spec: CandidatePatchSpec | None = None,
 ) -> int:
     """
     Phase 2 -- valide token, regenere plan, execute.
@@ -735,6 +812,22 @@ def cmd_execute(
         "scope_mode":          plan.get("scope_mode"),
         "approved_scope_hash": plan.get("approved_scope_hash"),
         "plan_authority_hash": plan.get("plan_authority_hash"),
+        "candidate_patch_mode": (
+            candidate_patch_spec.mode
+            if candidate_patch_spec
+            else None
+        ),
+        "candidate_patch_hash": (
+            candidate_patch_spec.sha256
+            if candidate_patch_spec
+            else None
+        ),
+        "candidate_patch_files": (
+            list(candidate_patch_spec.files)
+            if candidate_patch_spec
+            else []
+        ),
+        "candidate_patch_apply": None,
         "actual_touched_files": [],
         "new_files":           [],
         "deleted_files":       [],
@@ -761,6 +854,12 @@ def cmd_execute(
     }
     receipt["timestamps"]["start"] = datetime.now(timezone.utc).isoformat()
     first_failure: str | None = None
+
+    # R8_RECEIPT_ORDER_FIX_V3:
+    # Materialize the truthful approved session receipt before Git
+    # exposes feat/build-* or BUILD_* topology.
+    # KX108 remains PENDING; no commit/push/merge is authorized here.
+    _write_receipt(sdir, session_id, receipt)
 
     # ── [1/10] Creer le worktree ─────────────────────────────────────────────
     print("  [1/10] Creation worktree...")
@@ -820,7 +919,78 @@ def cmd_execute(
     print("\n  [4/10] Application patch synthetique dans le worktree...")
     patch_applied_files: list[str] = []
 
-    if SYNTHETIC_TARGET in approved_scope:
+    if candidate_patch_spec is not None:
+        print(
+            "\n  [4/10-REAL] Application candidate.patch "
+            "dans le worktree..."
+        )
+
+        # Defense-in-depth: exact files must still equal approved scope.
+        if sorted(candidate_patch_spec.files) != sorted(approved_scope):
+            receipt["first_failure"] = (
+                "CANDIDATE_APPROVED_SCOPE_MISMATCH"
+            )
+            receipt["candidate_patch_apply"] = {
+                "ok": False,
+                "phase": "PRE_APPLY_SCOPE_BINDING",
+            }
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+            print(
+                "  [BLOCKED] CANDIDATE_APPROVED_SCOPE_MISMATCH"
+            )
+            return 2
+
+        result = apply_candidate_patch(
+            candidate_patch_spec,
+            worktree_path,
+        )
+
+        receipt["candidate_patch_apply"] = result
+
+        if not result.get("ok"):
+            receipt["first_failure"] = (
+                "REAL_CANDIDATE_PATCH_APPLY_FAILED:"
+                + str(result.get("phase"))
+            )
+            receipt["timestamps"]["blocked_at"] = (
+                datetime.now(timezone.utc).isoformat()
+            )
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+            print(
+                "  [BLOCKED] candidate.patch non applicable: "
+                + str(result.get("message", ""))
+            )
+            return 2
+
+        patch_applied_files.extend(
+            candidate_patch_spec.files
+        )
+
+        receipt["obsidure_note"] = (
+            "REAL_CANDIDATE_PATCH_APPLIED_BY_BOUNDED_BUILD"
+        )
+
+        print(
+            "  [OK] real candidate applied: "
+            + ", ".join(candidate_patch_spec.files)
+        )
+        print(
+            "  [OK] candidate_sha256: "
+            + candidate_patch_spec.sha256
+        )
+
+    if (
+        candidate_patch_spec is None
+        and SYNTHETIC_TARGET in approved_scope
+    ):
         tgt = worktree_path / SYNTHETIC_TARGET
 
         # Seed: si la cible est absente du worktree (fichier non versionne),
@@ -869,7 +1039,16 @@ def cmd_execute(
             else:
                 print(f"  [WARN] Marqueur deja present dans {SYNTHETIC_TARGET}")
     else:
-        print("  [NOTE] Cible synthetique hors scope -- patch non applicable")
+        if candidate_patch_spec is not None:
+            print(
+                "  [NOTE] Candidate reel fourni — "
+                "harness synthetique bypassed"
+            )
+        else:
+            print(
+                "  [NOTE] Cible synthetique hors scope -- "
+                "patch non applicable"
+            )
 
     # ── [5/10] Controle scope reel ──────────────────────────────────────────
     print("\n  [5/10] Controle scope reel...")
@@ -937,21 +1116,91 @@ def cmd_execute(
                 wt_parts.append(str(worktree_path / p))
             else:
                 wt_parts.append(p)
-        r_t = subprocess.run(
-            wt_parts, capture_output=True, text=True,
-            cwd=worktree_path, timeout=120,
+        from bounded_execution_policy_v1 import (
+            budget_for_test_command,
+            run_bounded_command,
+        )
+
+        test_budget = budget_for_test_command(
+            test_cmd
+        )
+
+        r_t = run_bounded_command(
+            wt_parts,
+            cwd=worktree_path,
+            budget=test_budget,
+            run_callable=subprocess.run,
         )
         ok = r_t.returncode == 0
         lbl = "OK" if ok else "FAIL"
         print(f"  [{lbl}] {test_cmd}")
         out_tail = (r_t.stdout or r_t.stderr or "")[-300:]
+        bounded_status = getattr(
+            r_t,
+            "bounded_status",
+            "",
+        )
+
         receipt["tests_results"][test_cmd] = {
-            "ok": ok, "exit": r_t.returncode, "output_tail": out_tail,
+            "ok": ok,
+            "exit": r_t.returncode,
+            "output_tail": out_tail,
+            "bounded_status": bounded_status,
+            "elapsed_seconds": getattr(
+                r_t,
+                "elapsed_seconds",
+                None,
+            ),
+            "progress_events": getattr(
+                r_t,
+                "progress_events",
+                None,
+            ),
+            "budget_label": getattr(
+                r_t,
+                "budget_label",
+                "",
+            ),
+            "hard_deadline_seconds": getattr(
+                r_t,
+                "hard_deadline_seconds",
+                None,
+            ),
+            "idle_deadline_seconds": getattr(
+                r_t,
+                "idle_deadline_seconds",
+                None,
+            ),
         }
         if not ok:
             tests_ok = False
             if first_failure is None:
-                first_failure = f"TEST_FAILED: {test_cmd}"
+
+                if (
+                    bounded_status
+                    == "TIMEOUT_NO_PROGRESS"
+                ):
+
+                    first_failure = (
+                        "TEST_TIMEOUT_NO_PROGRESS: "
+                        f"{test_cmd}"
+                    )
+
+                elif (
+                    bounded_status
+                    == "TIMEOUT_HARD_LIMIT"
+                ):
+
+                    first_failure = (
+                        "TEST_TIMEOUT_HARD_LIMIT: "
+                        f"{test_cmd}"
+                    )
+
+                else:
+
+                    first_failure = (
+                        f"TEST_FAILED: {test_cmd}"
+                    )
             print(f"    {out_tail}")
             print(f"  [first_failure] {first_failure}")
             break  # premier echec: arret des tests et des gates suivantes
@@ -1154,7 +1403,13 @@ def cmd_execute(
     if overall_ok and kx108_status not in ("BLOCK",):
         print()
         print("  Pour committer manuellement apres revue humaine:")
-        print(f'    git -C "{worktree_path}" add {SYNTHETIC_TARGET}')
+        manual_files = " ".join(
+            f'"{f}"'
+            for f in approved_scope
+        )
+        print(
+            f'    git -C "{worktree_path}" add -- {manual_files}'
+        )
         print(
             f'    git -C "{worktree_path}" commit -m '
             f'"build({domain}): {objective[:40]} [session={session_id}]"'
@@ -1169,6 +1424,362 @@ def cmd_execute(
 # =============================================================================
 # Reprise bornee KX108 -- apres BLOCKED_KX108_UNAVAILABLE
 # =============================================================================
+
+
+def _is_real_candidate_receipt(
+    receipt: dict,
+) -> bool:
+    """R8-B1+ real candidate receipt discriminator."""
+
+    return (
+        receipt.get(
+            "candidate_patch_mode"
+        )
+        == CANDIDATE_PATCH_MODE
+    )
+
+
+def _resume_legacy_ignorable_files(
+    receipt: dict,
+) -> set[str]:
+    """
+    Legacy only.
+
+    REAL_UNIFIED_DIFF_V1 receives zero synthetic scope exception.
+    """
+
+    if _is_real_candidate_receipt(
+        receipt
+    ):
+        return set()
+
+    return {
+        SYNTHETIC_TEST_PY,
+    }
+
+
+def _legacy_resume_diff_hash_compatible(
+    worktree_path: Path,
+    session_id: str,
+) -> bool:
+    """
+    Historical Windows line-ending compatibility only.
+
+    Forbidden as evidence for REAL_UNIFIED_DIFF_V1.
+    """
+
+    target = (
+        worktree_path
+        / SYNTHETIC_TARGET
+    )
+
+    if not target.exists():
+        return False
+
+    try:
+        content = target.read_text(
+            encoding="utf-8"
+        )
+
+    except Exception:
+        return False
+
+    return (
+        f"{SYNTHETIC_MARKER}: {session_id}"
+        in content
+    )
+
+
+def _legacy_resume_run_test(
+    worktree_path: Path,
+) -> tuple[bool, str, str]:
+    """
+    Historical synthetic fixture validator.
+    """
+
+    command = (
+        "python -m pytest "
+        f"{SYNTHETIC_TEST_PY} -q"
+    )
+
+    target = (
+        worktree_path
+        / SYNTHETIC_TEST_PY
+    )
+
+    if not target.exists():
+        return (
+            False,
+            command,
+            "LEGACY_SYNTHETIC_TEST_ABSENT",
+        )
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            str(target),
+            "-q",
+        ],
+        cwd=worktree_path,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+    message = (
+        proc.stdout
+        or proc.stderr
+        or ""
+    )
+
+    return (
+        proc.returncode == 0,
+        command,
+        message[-1000:],
+    )
+
+
+def _resume_recorded_pytest_argv(
+    command: str,
+) -> list[str]:
+    """
+    Convertit une preuve tests_commands du receipt en argv borné.
+
+    Autorisé:
+      python -m pytest ...
+      python.exe -m pytest ...
+      python3 -m pytest ...
+      pytest ...
+
+    Refus:
+      shell
+      scripts génériques
+      commandes arbitraires
+    """
+
+    if (
+        not isinstance(
+            command,
+            str,
+        )
+        or not command.strip()
+    ):
+        raise ValueError(
+            "RESUME_TEST_COMMAND_EMPTY"
+        )
+
+    forbidden = (
+        "\x00",
+        "\n",
+        "\r",
+        ";",
+        "&&",
+        "||",
+        "|",
+        ">",
+        "<",
+        "`",
+    )
+
+    if any(
+        token in command
+        for token in forbidden
+    ):
+        raise ValueError(
+            "RESUME_TEST_COMMAND_METACHAR_REJECTED"
+        )
+
+    try:
+        parts = shlex.split(
+            command,
+            posix=True,
+        )
+
+    except ValueError as exc:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_PARSE_FAILED"
+        ) from exc
+
+    if not parts:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_EMPTY"
+        )
+
+    executable = (
+        parts[0]
+        .replace("\\", "/")
+        .rsplit("/", 1)[-1]
+        .lower()
+    )
+
+    python_names = {
+        "python",
+        "python.exe",
+        "python3",
+        "python3.exe",
+    }
+
+    pytest_names = {
+        "pytest",
+        "pytest.exe",
+    }
+
+    if executable in python_names:
+
+        if (
+            len(parts) < 4
+            or parts[1:3]
+            != [
+                "-m",
+                "pytest",
+            ]
+        ):
+            raise ValueError(
+                "RESUME_TEST_COMMAND_NOT_PYTEST"
+            )
+
+        pytest_args = parts[3:]
+
+    elif executable in pytest_names:
+
+        if len(parts) < 2:
+            raise ValueError(
+                "RESUME_TEST_COMMAND_NO_TARGET"
+            )
+
+        pytest_args = parts[1:]
+
+    else:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_NOT_PYTEST"
+        )
+
+    if not pytest_args:
+        raise ValueError(
+            "RESUME_TEST_COMMAND_NO_TARGET"
+        )
+
+    return [
+        sys.executable,
+        "-m",
+        "pytest",
+        *pytest_args,
+    ]
+
+
+def _resume_real_candidate_tests(
+    receipt: dict,
+    worktree_path: Path,
+) -> tuple[
+    bool,
+    list[dict],
+    str | None,
+]:
+    """
+    Rejoue uniquement les tests enregistrés par la Phase 2
+    de cette même session.
+
+    Le receipt n'acquiert aucune autorité shell:
+    chaque command repasse par _resume_recorded_pytest_argv.
+    """
+
+    commands = receipt.get(
+        "tests_commands"
+    )
+
+    if (
+        not isinstance(
+            commands,
+            list,
+        )
+        or not commands
+    ):
+        return (
+            False,
+            [],
+            "RESUME_REAL_CANDIDATE_TEST_EVIDENCE_MISSING",
+        )
+
+    results: list[dict] = []
+
+    for command in commands:
+
+        try:
+            argv = (
+                _resume_recorded_pytest_argv(
+                    command
+                )
+            )
+
+        except ValueError as exc:
+
+            return (
+                False,
+                results,
+                str(exc),
+            )
+
+        try:
+            proc = subprocess.run(
+                argv,
+                cwd=worktree_path,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+
+        except subprocess.TimeoutExpired:
+
+            return (
+                False,
+                results,
+                "RESUME_REAL_CANDIDATE_TEST_TIMEOUT",
+            )
+
+        message = (
+            proc.stdout
+            or proc.stderr
+            or ""
+        )
+
+        result = {
+            "command": command,
+            "argv": argv[1:],
+            "returncode": (
+                proc.returncode
+            ),
+            "ok": (
+                proc.returncode
+                == 0
+            ),
+            "msg": (
+                message[-2000:]
+            ),
+        }
+
+        results.append(
+            result
+        )
+
+        if proc.returncode != 0:
+
+            return (
+                False,
+                results,
+                (
+                    "RESUME_REAL_CANDIDATE_TEST_FAILED:"
+                    + command
+                ),
+            )
+
+    return (
+        True,
+        results,
+        None,
+    )
+
 
 def cmd_resume_kx108(
     session_id: str,
@@ -1276,16 +1887,56 @@ def cmd_resume_kx108(
     rc, newf_out, _ = _git(["ls-files", "--others", "--exclude-standard"], worktree_path)
     untracked = [f.strip() for f in newf_out.splitlines() if f.strip()]
 
+    legacy_ignorable = (
+        _resume_legacy_ignorable_files(
+            receipt
+        )
+    )
+
     scope_drift = [
-        f for f in staged_files + untracked
-        if f not in approved_scope
-        and f != SYNTHETIC_TEST_PY
-        and "__pycache__" not in f
-        and not f.endswith(".pyc")
+        f
+        for f in (
+            staged_files
+            + untracked
+        )
+        if (
+            f not in approved_scope
+            and f not in legacy_ignorable
+            and "__pycache__" not in f
+            and not f.endswith(".pyc")
+        )
     ]
+
     if scope_drift:
-        print(f"  [BLOCKED_RESUME] SCOPE_DRIFT: {scope_drift}")
+        print(
+            f"  [BLOCKED_RESUME] "
+            f"SCOPE_DRIFT: {scope_drift}"
+        )
+
+        receipt[
+            "first_failure"
+        ] = (
+            f"RESUME_SCOPE_DRIFT:"
+            f"{scope_drift}"
+        )
+
+        receipt.setdefault(
+            "timestamps",
+            {},
+        )[
+            "resume_blocked_at"
+        ] = datetime.now(
+            timezone.utc
+        ).isoformat()
+
+        _write_receipt(
+            sdir,
+            session_id,
+            receipt,
+        )
+
         return 2
+
     print(f"  [OK] Scope inchange: {staged_files}")
 
     # ── [R6] Recalculer diff_hash ────────────────────────────────────────────
@@ -1293,21 +1944,80 @@ def cmd_resume_kx108(
     rc, diff_staged_text, _ = _git(["diff", "--staged"], worktree_path)
     current_diff_hash = hashlib.sha256(diff_staged_text.encode("utf-8")).hexdigest()[:16]
     if current_diff_hash != receipt_diff_hash:
-        # Note: divergence possible entre modes de capture (line endings Windows).
-        # On accepte si le diff montre les memes fichiers et le marqueur attendu.
-        marker_present = False
-        tgt = worktree_path / SYNTHETIC_TARGET
-        if tgt.exists():
-            marker_present = f"{SYNTHETIC_MARKER}: {session_id}" in tgt.read_text(encoding="utf-8")
-        if not marker_present:
-            print(f"  [BLOCKED_RESUME] diff_hash diverge ET marqueur absent:")
-            print(f"    receipt : {receipt_diff_hash}")
-            print(f"    actuel  : {current_diff_hash}")
+
+        if _is_real_candidate_receipt(
+            receipt
+        ):
+            print(
+                "  [BLOCKED_RESUME] "
+                "REAL_CANDIDATE_DIFF_HASH_MISMATCH"
+            )
+
+            print(
+                f"    receipt : "
+                f"{receipt_diff_hash}"
+            )
+
+            print(
+                f"    actuel  : "
+                f"{current_diff_hash}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = (
+                "RESUME_REAL_CANDIDATE_DIFF_HASH_MISMATCH"
+            )
+
+            receipt.setdefault(
+                "timestamps",
+                {},
+            )[
+                "resume_blocked_at"
+            ] = datetime.now(
+                timezone.utc
+            ).isoformat()
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
             return 2
-        print(f"  [WARN] diff_hash diverge (line-endings Windows) mais marqueur valide")
-        print(f"    receipt : {receipt_diff_hash}  actuel: {current_diff_hash}")
+
+        legacy_ok = (
+            _legacy_resume_diff_hash_compatible(
+                worktree_path,
+                session_id,
+            )
+        )
+
+        if not legacy_ok:
+            print(
+                "  [BLOCKED_RESUME] "
+                "legacy diff_hash diverge "
+                "et marqueur absent"
+            )
+
+            return 2
+
+        print(
+            "  [WARN] legacy diff_hash "
+            "compatibilite line-endings"
+        )
+
+        print(
+            f"    receipt : "
+            f"{receipt_diff_hash}  "
+            f"actuel: {current_diff_hash}"
+        )
+
     else:
-        print(f"  [OK] diff_hash confirme: {current_diff_hash}")
+        print(
+            f"  [OK] diff_hash confirme: "
+            f"{current_diff_hash}"
+        )
 
     # ── [R7] Verifier fichiers proteges ─────────────────────────────────────
     print("\n  [R7] Verification fichiers proteges...")
@@ -1342,26 +2052,99 @@ def cmd_resume_kx108(
         return 2
     print("  [OK] commit_status = NOT_COMMITTED")
 
-    # ── [R10] Relancer le test cible ─────────────────────────────────────────
-    print("\n  [R10] Relancement du test cible...")
-    test_cmd = f"python -m pytest {SYNTHETIC_TEST_PY} -q"
-    tst_path = worktree_path / SYNTHETIC_TEST_PY
-    if not tst_path.exists():
-        print(f"  [BLOCKED_RESUME] Fichier test absent du worktree: {tst_path}")
-        return 2
-
-    wt_test_path = str(worktree_path / SYNTHETIC_TEST_PY)
-    r_t = subprocess.run(
-        [sys.executable, "-m", "pytest", wt_test_path, "-q"],
-        capture_output=True, text=True,
-        cwd=worktree_path, timeout=60,
+    # ── [R10] Relancer preuves tests ─────────────────────────────────────────
+    print(
+        "\n  [R10] "
+        "Relancement preuves tests..."
     )
-    if r_t.returncode != 0:
-        print(f"  [BLOCKED_RESUME] Test cible en echec: {r_t.stdout[-200:]}")
-        receipt["first_failure"] = f"RESUME_TEST_FAILED: {test_cmd}"
-        _write_receipt(sdir, session_id, receipt)
-        return 2
-    print(f"  [OK] Test cible: PASS")
+
+    if _is_real_candidate_receipt(
+        receipt
+    ):
+
+        (
+            resume_tests_ok,
+            resume_test_results,
+            resume_test_error,
+        ) = _resume_real_candidate_tests(
+            receipt,
+            worktree_path,
+        )
+
+        receipt[
+            "resume_tests_results"
+        ] = resume_test_results
+
+        if not resume_tests_ok:
+
+            print(
+                "  [BLOCKED_RESUME] "
+                f"{resume_test_error}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = resume_test_error
+
+            receipt.setdefault(
+                "timestamps",
+                {},
+            )[
+                "resume_blocked_at"
+            ] = datetime.now(
+                timezone.utc
+            ).isoformat()
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
+            return 2
+
+        print(
+            "  [OK] "
+            f"{len(resume_test_results)} "
+            "preuve(s) pytest rejouee(s)"
+        )
+
+    else:
+
+        (
+            legacy_test_ok,
+            legacy_test_command,
+            legacy_test_message,
+        ) = _legacy_resume_run_test(
+            worktree_path
+        )
+
+        if not legacy_test_ok:
+
+            print(
+                "  [BLOCKED_RESUME] "
+                "legacy test failed: "
+                f"{legacy_test_message[-200:]}"
+            )
+
+            receipt[
+                "first_failure"
+            ] = (
+                "RESUME_TEST_FAILED:"
+                + legacy_test_command
+            )
+
+            _write_receipt(
+                sdir,
+                session_id,
+                receipt,
+            )
+
+            return 2
+
+        print(
+            "  [OK] legacy test: PASS"
+        )
 
     # ── [R11] Relancer les gates ─────────────────────────────────────────────
     print("\n  [R11] Gates reelles (re-verification)...")
@@ -2220,7 +3003,7 @@ def main(argv: list[str]) -> int:
     )
     parser.add_argument(
         "objective", nargs="?", default="",
-        help="Objectif de build (texte libre, max 200 chars)",
+        help="Objectif de build (texte libre; --objective-file pour multi-ligne)",
     )
     parser.add_argument(
         "--approve",
@@ -2238,7 +3021,82 @@ def main(argv: list[str]) -> int:
         "--version", action="version", version=f"obsidia_build {VERSION}",
     )
 
+    parser.add_argument(
+        "--objective-file",
+        metavar="PATH",
+        default="",
+        help=(
+            "Objectif UTF-8 depuis fichier. "
+            "Support multi-ligne et objectifs longs."
+        ),
+    )
+
+    parser.add_argument(
+        "--scope",
+        action="append",
+        default=[],
+        metavar="REPO_RELATIVE_PATH",
+        help=(
+            "Cible explicite repo-relative. Repetable. "
+            "Active EXPLICIT_CHILD_TARGET sans fallback heuristique."
+        ),
+    )
+
+    parser.add_argument(
+        "--candidate-patch",
+        metavar="PATH",
+        default="",
+        help=(
+            "Unified diff reel. Son SHA-256 et ses fichiers "
+            "sont lies a l'identite d'approbation."
+        ),
+    )
+
     args = parser.parse_args(argv)
+
+    # R8-A
+    #
+    # Le texte complet est l'identite logique.
+    # utf-8-sig absorbe uniquement un BOM de transport eventuel.
+    objective = args.objective
+
+    if args.objective_file:
+
+        if objective:
+            print(
+                "[ERROR] objective et --objective-file "
+                "sont mutuellement exclusifs."
+            )
+            return 1
+
+        objective_path = Path(
+            args.objective_file
+        ).expanduser()
+
+        if not objective_path.is_file():
+            print(
+                f"[ERROR] objective-file introuvable: "
+                f"{objective_path}"
+            )
+            return 1
+
+        try:
+            objective = objective_path.read_text(
+                encoding="utf-8-sig"
+            )
+
+        except Exception as exc:
+            print(
+                "[ERROR] lecture objective-file impossible: "
+                f"{exc}"
+            )
+            return 1
+
+        if not objective.strip():
+            print(
+                "[ERROR] objective-file vide."
+            )
+            return 1
 
     if args.resume_kx108:
         return cmd_resume_kx108(
@@ -2246,21 +3104,127 @@ def main(argv: list[str]) -> int:
             REPO_ROOT, OBSIDIA_BUILD_STATE_DIR,
         )
 
-    if not args.objective:
+    candidate_patch_spec = None
+    authority_objective = objective
+    effective_scope = list(args.scope) if args.scope else None
+
+    if args.candidate_patch:
+        try:
+            candidate_patch_spec = load_candidate_patch_file(
+                args.candidate_patch,
+                REPO_ROOT,
+            )
+        except ValueError as exc:
+            print(f"[ERROR] {exc}")
+            return 2
+
+        # Si --scope est également fourni, il doit être EXACTEMENT
+        # le scope dérivé du patch. Aucun élargissement.
+        if args.scope:
+            requested = sorted(
+                x.replace("\\", "/")
+                for x in args.scope
+            )
+            derived = sorted(
+                candidate_patch_spec.files
+            )
+
+            if requested != derived:
+                print(
+                    "[ERROR] CANDIDATE_SCOPE_MISMATCH "
+                    f"requested={requested} derived={derived}"
+                )
+                return 2
+
+        effective_scope = list(
+            candidate_patch_spec.files
+        )
+
+        ok, msg = check_candidate_patch(
+            candidate_patch_spec,
+            REPO_ROOT,
+        )
+
+        if not ok:
+            print(
+                "[ERROR] CANDIDATE_PATCH_NOT_APPLICABLE "
+                f"{msg}"
+            )
+            return 2
+
+        authority_objective = bind_candidate_to_objective(
+            objective,
+            candidate_patch_spec,
+        )
+
+    if not authority_objective:
         parser.print_help()
         return 1
 
-    if len(args.objective) > 200:
-        print("[ERROR] Objectif trop long (max 200 chars).")
-        return 1
-
     if args.approve:
+
+        # Preserve the exact pre-R8-B call contract when no real
+        # candidate exists. Existing callers/mocks must not suddenly
+        # receive a new keyword argument containing None.
+        if candidate_patch_spec is None:
+            return cmd_execute(
+                authority_objective,
+                args.approve,
+                REPO_ROOT,
+                OBSIDIA_BUILD_STATE_DIR,
+                explicit_scope=effective_scope,
+            )
+
         return cmd_execute(
-            args.objective, args.approve,
-            REPO_ROOT, OBSIDIA_BUILD_STATE_DIR,
+            authority_objective,
+            args.approve,
+            REPO_ROOT,
+            OBSIDIA_BUILD_STATE_DIR,
+            explicit_scope=effective_scope,
+            candidate_patch_spec=candidate_patch_spec,
         )
 
-    return cmd_plan(args.objective, REPO_ROOT)
+    if effective_scope:
+
+        plan = compute_plan(
+            authority_objective,
+            get_base_sha(REPO_ROOT),
+            REPO_ROOT,
+            explicit_scope=effective_scope,
+        )
+
+        if candidate_patch_spec is not None:
+            plan["candidate_patch_mode"] = (
+                candidate_patch_spec.mode
+            )
+            plan["candidate_patch_hash"] = (
+                candidate_patch_spec.sha256
+            )
+            plan["candidate_patch_files"] = list(
+                candidate_patch_spec.files
+            )
+            plan["candidate_patch_source"] = (
+                candidate_patch_spec.source_path
+            )
+            plan["display_objective"] = objective
+
+        print(
+            format_plan_proposed(
+                plan,
+                _probe_api_status(),
+            )
+        )
+
+        return (
+            0
+            if plan.get("status") == "PLAN_PROPOSED"
+            else 2
+        )
+
+    return cmd_plan(
+        objective,
+        REPO_ROOT,
+    )
 
 
 if __name__ == "__main__":

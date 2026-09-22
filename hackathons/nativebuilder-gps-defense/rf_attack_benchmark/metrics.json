@@ -1,7 +1,7 @@
 {
   "artifact": "metrics",
-  "status": "NOT_COMPUTED_GNSS_SDR_BLOCKED_WITH_REAL_HOSTILE_RF",
-  "rf_anomaly_detected": null,
+  "status": "PARTIAL_COMPUTED_NO_PVT_NO_ATTACK_CLASSIFICATION",
+  "rf_anomaly_detected": true,
   "attack_correctly_classified": null,
   "x108_governance_decision": "HOLD",
   "detection_rate": null,
@@ -24,7 +24,6 @@
     "HOLD": 1,
     "BLOCK": 0
   },
-  "receipt_coverage": 0,
-  "reproducibility": "NOT_RUN",
-  "blocker": "FGI hostile RF is present and hash-verified, but GNSS-SDR/receiver execution is blocked before observables/PVT generation."
+  "receipt_coverage": 1,
+  "reproducibility": "PARTIAL_TWO_CONFIG_ATTEMPTS_ONE_FULL_RUN"
 }

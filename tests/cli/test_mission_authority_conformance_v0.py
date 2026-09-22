@@ -35,6 +35,29 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _SCRIPTS = _REPO_ROOT / "scripts"
 _LEAN_DIR = _REPO_ROOT / "proofs" / "lean"
+_LEAN_OBSIDIA_BUILT = False
+
+def _ensure_lean_obsidia_built() -> None:
+    """Materialize declared Obsidia Lean library before generated oracle imports."""
+    global _LEAN_OBSIDIA_BUILT
+    if _LEAN_OBSIDIA_BUILT:
+        return
+
+    result = subprocess.run(
+        ["lake", "build", "Obsidia"],
+        cwd=str(_LEAN_DIR),
+        capture_output=True,
+        text=True,
+        timeout=400,
+    )
+    assert result.returncode == 0, (
+        "Lean Obsidia library prebuild failed:\n"
+        + result.stdout
+        + "\n"
+        + result.stderr
+    )
+    _LEAN_OBSIDIA_BUILT = True
+
 for _p in (str(_SCRIPTS), str(_REPO_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
@@ -296,6 +319,7 @@ def _lean_literal(cv: dict) -> str:
 
 
 def _run_lean_oracle(cvs: list) -> dict:
+    _ensure_lean_obsidia_built()
     literals = ",\n  ".join(_lean_literal(cv) for cv in cvs)
     script = (
         "import Obsidia.MissionAuthority.ConformanceVectors\n"
@@ -558,6 +582,7 @@ _SCOPE_PAIRS = [
 
 
 def test_scope_le_conformance():
+    _ensure_lean_obsidia_built()
     reg = _Reg()
     lines = []
     py_results = {}

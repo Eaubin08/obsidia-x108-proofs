@@ -49,7 +49,7 @@ def test_triage_zone_valid():
     snap = _memory_snap()
     triage = snap["auto_triage"]
     assert triage["enabled"] is True
-    assert triage["zone"] in ("CRISTAL", "TRANSITION", "NEANT")
+    assert triage["zone"] in ("ACTIVE", "SEMI_ACTIVE", "GHOST_SIDE_TABLE", "BOUNDARY_ALERT_NON_DECISIONAL")
 
 
 def test_triage_memory_intake_always_false():

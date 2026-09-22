@@ -15,7 +15,7 @@ def test_authority_question_answers_kx108_first():
     assert snap["write_boundary_required"] is False
     assert snap["structural_answer"].startswith("KX108 décide.")
     assert "Brody ne décide pas" in snap["structural_answer"]
-    assert "Graphiti ne décide pas" in snap["structural_answer"]
+    assert "La mémoire ne décide pas" in snap["structural_answer"]
 
 
 def test_brody_cannot_decide_instead_of_x108_is_authority_question():
@@ -38,7 +38,7 @@ def test_jarvis_readonly_runtime_architecture_is_combined_not_repetitive():
     assert snap["write_boundary_required"] is False
     assert "ARCHITECTURE_EXPLANATION" in snap["domains"]
     assert "Mode Jarvis readonly" in answer
-    assert "Graphiti V20 est gelé" in answer
+    assert "mémoire Obsidia native est disponible" in answer
     assert "Autorité : KX108_ONLY" in answer
     assert "Lecture architecture :" not in answer
     assert "Lecture de l'état runtime" not in answer

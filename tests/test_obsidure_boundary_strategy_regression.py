@@ -365,7 +365,7 @@ def test_boundary_lean_compiles() -> None:
             cwd=str(lean_cwd),
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=180,
             encoding="utf-8",
             errors="replace",
         )

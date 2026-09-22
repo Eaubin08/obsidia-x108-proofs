@@ -12,9 +12,8 @@ Usage:
 
 Garanties (par construction, pas par option) :
   - AUCUN subprocess : le CLI ne lance jamais de commande shell.
-  - EXECUTE readonly reste disponible pour doctor/status/sigma via HTTP GET.
-  - `mission resume` expose le rail gouverne borne existant : <=1 mutation cible
-    par appel, sous BOUNDED_MISSION_AUTHORITY et KX108_PRE/POST.
+  - Seul EXECUTE possible : doctor/status/sigma via HTTP GET readonly.
+  - Aucune ecriture hors de son receipt JSONL local non souverain.
   - Pas de --apply, --commit, --deploy, --act : ces flags n'existent pas.
   - stdlib uniquement, zero import de apps/, sigma/, periphery/.
   - decision_authority = KX108_ONLY. Le terminal ne decide rien.
@@ -7244,12 +7243,11 @@ def print_shell_help(registry: dict) -> None:
     print("obsidia — terminal non souverain (decision_authority = KX108_ONLY)")
     print("Doctrine : X108 tranche. Sigma guide. Brody explique. Obsidure construit.")
     print("          Domains bridge-only. Memory readonly.")
-    print("Sorties : readonly status/inspect + mission resume gouverne | COMMANDS | GUIDE | POLICY_DENY | STOP_UNKNOWN")
+    print("Sorties possibles : EXECUTE (GET readonly) | COMMANDS | GUIDE | POLICY_DENY | STOP_UNKNOWN")
     print("Couches routables :")
     for layer, spec in (registry.get("layers") or {}).items():
         triggers = ", ".join(str(t) for t in (spec.get("triggers") or [])[:4])
         print(f"  {layer:10} [{spec.get('mode', '?')}] triggers: {triggers}, ...")
-    print("Mission : mission status <id> | mission inspect <id> | mission resume <id>")
     print("Panneau : plan \"<IN>\" | route \"<IN>\" | tools \"<IN>\" | blockers | gates | scope | next")
     print("Commandes internes : help/? , clear, exit/quit. Tout le reste = IN route.")
 
@@ -7786,7 +7784,10 @@ def interactive_tui_shell(registry: dict) -> int:
 
 # ─── BUILD PLAN HANDLER (aucun subprocess, import direct) ────────────────────
 
-def _handle_build_plan(objective: str) -> str:
+def _handle_build_plan(
+    objective: str,
+    explicit_scope: list[str] | None = None,
+) -> str:
     """
     Appelle obsidia_build.compute_plan et formate le resultat.
     Aucun subprocess. Aucune mutation. Retourne le texte PLAN_PROPOSED.
@@ -7808,7 +7809,11 @@ def _handle_build_plan(objective: str) -> str:
             _sys.path.insert(0, _scripts_dir)
         _mod = importlib.import_module("obsidia_build")
         _base_sha = _mod.get_base_sha()
-        _plan = _mod.compute_plan(objective, _base_sha)
+        _plan = _mod.compute_plan(
+            objective,
+            _base_sha,
+            explicit_scope=explicit_scope,
+        )
         _stack = _mod._probe_api_status()
         return _mod.format_plan_proposed(_plan, _stack)
     except ImportError as exc:
@@ -8206,145 +8211,6 @@ def _dispatch_ledger(rest: str, raw_tokens: "list[str] | None" = None) -> str:
     return f"[LEDGER_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
 
 
-def _dispatch_mission(rest: str) -> str:
-    """Thin CLI surface for an existing bounded mission.
-
-    status / inspect are READ_ONLY.
-    resume rehydrates the persisted WorkUnit then invokes the canonical
-    sequencer exactly once in BOUNDED_MISSION_AUTHORITY mode.
-    """
-    import importlib
-
-    _scripts_dir = str(Path(__file__).resolve().parent)
-    if _scripts_dir not in sys.path:
-        sys.path.insert(0, _scripts_dir)
-
-    try:
-        _m = importlib.import_module("obsidia_bounded_mission_v0")
-        _seq = importlib.import_module("obsidia_mission_sequencer_v0")
-        _ledger = importlib.import_module("obsidia_branching_ledger")
-        _selector = importlib.import_module("obsidia_batch_selector")
-        _be = importlib.import_module("obsidia_batch_execution")
-        _pec = importlib.import_module("obsidia_pre_execution_context")
-        _kx = importlib.import_module("obsidia_kx108_decision_store")
-        _tc = importlib.import_module("obsidia_test_contract")
-        _sev = importlib.import_module("obsidia_sealed_evidence_v0")
-        _rbk = importlib.import_module("obsidia_governed_rollback_v0")
-        _ls = importlib.import_module("obsidia_mission_local_snapshot_v0")
-    except ImportError as exc:
-        return f"[MISSION_UNAVAILABLE] bounded mission stack non importable: {exc}"
-
-    parts = rest.strip().split()
-    if not parts:
-        return (
-            "GUIDE: mission status <mission_id> | "
-            "mission inspect <mission_id> | mission resume <mission_id>"
-        )
-
-    subcmd = parts[0].lower()
-    if subcmd not in ("status", "inspect", "resume"):
-        return f"[MISSION_UNKNOWN_SUBCMD] Sous-commande inconnue : {subcmd}"
-    if len(parts) != 2:
-        return f"GUIDE: mission {subcmd} <mission_id>"
-
-    mission_id = parts[1]
-
-    proj = _m.project_mission(
-        mission_id=mission_id,
-        mission_store_dir=_m._BOUNDED_MISSION_DIR,
-        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
-    )
-
-    if subcmd == "inspect":
-        return json.dumps(proj, ensure_ascii=False, default=str)
-
-    if subcmd == "status":
-        if proj.get("status") != _m.STATUS_PROJECTION_OK:
-            return json.dumps(proj, ensure_ascii=False, default=str)
-        return json.dumps({
-            "status": proj["status"],
-            "mission_id": proj["mission_id"],
-            "current_state": proj["current_state"],
-            "revision": proj["revision"],
-            "mission_tip_sha": proj["mission_tip_sha"],
-            "active_plan_id": proj.get("active_plan_id"),
-            "plan_completed": proj.get("plan_completed"),
-            "active_hold_id": proj.get("active_hold_id"),
-            "mission_authority_mode": proj.get("mission_authority_mode"),
-            "active_hma_id": proj.get("active_hma_id"),
-            "actions_completed": proj.get("actions_completed"),
-            "actions_failed": proj.get("actions_failed"),
-            "unknowns": proj.get("unknowns"),
-            "decision_authority": "KX108_ONLY",
-            "terminal_authority": "NONE",
-        }, ensure_ascii=False, default=str)
-
-    if proj.get("status") != _m.STATUS_PROJECTION_OK:
-        return json.dumps({
-            "status": "MISSION_RESUME_REJECTED",
-            "reason": f"MISSION_NOT_PROJECTABLE:{proj.get('reason') or proj.get('status')}",
-            "mission_id": mission_id,
-            "decision_authority": "KX108_ONLY",
-            "terminal_authority": "NONE",
-        }, ensure_ascii=False)
-
-    plan_id = proj.get("active_plan_id")
-    if not plan_id:
-        return json.dumps({
-            "status": "MISSION_RESUME_REJECTED",
-            "reason": "NO_ACTIVE_PLAN",
-            "mission_id": mission_id,
-            "decision_authority": "KX108_ONLY",
-            "terminal_authority": "NONE",
-        }, ensure_ascii=False)
-
-    rh = _m.rehydrate_bound_work_unit(
-        mission_id=mission_id,
-        mission_store_dir=_m._BOUNDED_MISSION_DIR,
-        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
-    )
-    if rh.get("status") != _m.STATUS_WORK_UNIT_REHYDRATED:
-        return json.dumps({
-            "status": "MISSION_RESUME_REJECTED",
-            "reason": f"WORK_UNIT_REHYDRATE_FAILED:{rh.get('reason')}",
-            "mission_id": mission_id,
-            "plan_id": plan_id,
-            "decision_authority": "KX108_ONLY",
-            "terminal_authority": "NONE",
-        }, ensure_ascii=False)
-
-    result = _seq.advance_bounded_mission(
-        mission_id=mission_id,
-        plan_id=plan_id,
-        work_unit=rh["work_unit"],
-        ledger_dir=_ledger.LEDGER_DIR,
-        selector_dir=_selector.SELECTOR_DIR,
-        execution_dir=_be.EXECUTION_DIR,
-        pre_execution_context_dir=_pec.PRE_EXECUTION_CONTEXT_DIR,
-        kx108_pre_decision_dir=_kx.KX108_DECISION_DIR,
-        kx108_post_decision_dir=_kx.KX108_DECISION_DIR,
-        test_contract_results_dir=_tc.TEST_CONTRACT_RESULT_DIR,
-        sealed_receipt_dir=_sev.SEALED_APPLY_RECEIPT_DIR,
-        sealed_rollback_evidence_dir=_sev.SEALED_ROLLBACK_EVIDENCE_DIR,
-        rollback_result_dir=_rbk.ROLLBACK_RESULT_DIR,
-        mission_store_dir=_m._BOUNDED_MISSION_DIR,
-        hold_store_dir=_m._BOUNDED_MISSION_HOLD_DIR,
-        decision_store_dir=_m._BOUNDED_MISSION_DECISION_DIR,
-        snapshot_store_dir=_ls._BOUNDED_MISSION_SNAPSHOT_DIR,
-        authority_mode=_seq.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY,
-        human_authorized_execution_authority_hash=None,
-        human_authorization_reference=None,
-        human_mission_decision_id=None,
-    )
-
-    out = dict(result)
-    out["decision_authority"] = "KX108_ONLY"
-    out["terminal_authority"] = "NONE"
-    out["authority_mode_requested"] = _seq.AUTHORITY_MODE_BOUNDED_MISSION_AUTHORITY
-    out["per_action_human_eah_supplied"] = False
-    return json.dumps(out, ensure_ascii=False, default=str)
-
-
 def _dispatch_build(rest: str) -> str:
     """Dispatche 'build <subcmd> [arg]' vers lifecycle ou plan selon le sous-commande."""
     parts = rest.strip().split(None, 1)
@@ -8352,6 +8218,45 @@ def _dispatch_build(rest: str) -> str:
         return _handle_build_plan(objective="")
     subcmd = parts[0].lower()
     subarg = parts[1].strip() if len(parts) > 1 else ""
+
+    # R8-A
+    #
+    # PLAN explicite uniquement.
+    #
+    # build target scripts/foo.py :: objectif
+    #
+    # Le terminal:
+    # - ne mute rien
+    # - ne lance aucun subprocess
+    # - ne décide rien
+    if subcmd in ("target", "scope", "file"):
+
+        if "::" not in subarg:
+            return (
+                "GUIDE: build target "
+                "<repo-relative-path> :: <objectif>\n"
+                "PLAN_PROPOSED uniquement."
+            )
+
+        target, objective = subarg.split(
+            "::",
+            1,
+        )
+
+        target = target.strip()
+        objective = objective.strip()
+
+        if not target or not objective:
+            return (
+                "GUIDE: build target "
+                "<repo-relative-path> :: <objectif>\n"
+                "path et objectif obligatoires."
+            )
+
+        return _handle_build_plan(
+            objective=objective,
+            explicit_scope=[target],
+        )
     if subcmd == "list":
         return _handle_build_list()
     if subcmd in ("status", "inspect", "resume", "review", "cleanup"):
@@ -8372,7 +8277,7 @@ def _dispatch_build(rest: str) -> str:
 def interactive_shell(registry: dict) -> int:
     session_id = uuid.uuid4().hex[:8]
     last_plan: dict | None = None
-    print("obsidia terminal - non souverain. X108 decide; mission resume utilise le rail gouverne borne.")
+    print("obsidia terminal — non souverain, readonly. X108 decide.")
     print(f"session {session_id} — tape 'help' pour l'aide, 'exit' pour sortir.")
     while True:
         try:
@@ -8416,11 +8321,6 @@ def interactive_shell(registry: dict) -> int:
             continue
         first = line.split(None, 1)
         cmd0 = first[0].lower()
-        # Commande mission: bounded mission status/inspect/resume.
-        if cmd0 == "mission":
-            _obj_mission = first[1].strip().strip('"').strip("\'") if len(first) > 1 else ""
-            print(_dispatch_mission(_obj_mission))
-            continue
         # Commande build: import direct, aucun subprocess (doctrine obsidia_cli)
         if cmd0 == "build":
             _obj_plain = first[1].strip().strip('"').strip("'") if len(first) > 1 else ""
@@ -9397,11 +9297,6 @@ def main(argv: list[str]) -> int:
         print(text)
         return 0
     cmd0 = argv[0].lower()
-    # Commande mission: meme facade que le shell interactif.
-    if cmd0 == "mission":
-        _obj_mission = " ".join(argv[1:]).strip().strip('"').strip("\'")
-        print(_dispatch_mission(_obj_mission))
-        return 0
     # Commande build: import direct depuis obsidia_build, aucun subprocess
     if cmd0 == "build":
         _obj_main = " ".join(argv[1:]).strip().strip('"').strip("'")

@@ -687,6 +687,27 @@ def test_issuance_decision_tamper_fail_closed(env, monkeypatch, tmp_path):
         assert MCS.verify_lease_issuance_decision(bad)[0] is False
 
 
+
+def test_issuance_decision_write_once_and_reload(env, monkeypatch, tmp_path):
+    *_, dec = _issue(env, monkeypatch, tmp_path)
+    sd = tmp_path / "cgb_store"
+    assert MCS.persist_lease_issuance_decision(dec, store_dir=sd)["status"] == "STORED"
+    assert MCS.persist_lease_issuance_decision(dec, store_dir=sd)["status"] == "IDEMPOTENT_ALREADY_EXISTS"
+
+    p = sd / "lease_issuance_decisions" / f"{dec['lease_issuance_decision_id']}.json"
+    p.write_text(
+        json.dumps({**dec, "reason": "hand-edited"}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    r = MCS.persist_lease_issuance_decision(dec, store_dir=sd)
+    assert r["status"] == "LIDEC_IMMUTABILITY_VIOLATION"
+    assert r["divergent_lidec_rewrite"] == "FAIL_CLOSED"
+
+    p.write_text(json.dumps(dec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    assert MCS.load_lease_issuance_decision(
+        dec["lease_issuance_decision_id"], store_dir=sd
+    ) == dec
+
 # ══════════════════════════════════════════════════════════════════════════
 #  Bail v2 — chaîne à 4 niveaux
 # ══════════════════════════════════════════════════════════════════════════
@@ -801,20 +822,50 @@ def test_v2_restart_reload_full_human_chain(env, monkeypatch, tmp_path):
     h, ms, cr, rd, grant, mcs, dec, out = _v2_lease(env, monkeypatch, tmp_path)
     lease = out["lease"]
     sd = tmp_path / "cgb_store"
+
+    # Rebuild the exact HCGA material bound into this default V2 grant, then
+    # prove the HCG really points to that canonical authorization by ID + hash.
+    hcga = _hcga(h, ms)
+    assert hcga["human_capability_grant_authorization_id"] == \
+        grant["human_capability_grant_authorization_id"]
+    assert hcga["authorization_record_hash"] == \
+        grant["human_capability_grant_authorization_hash"]
+
+    assert MCS.persist_human_capability_grant_authorization(
+        hcga, store_dir=sd)["status"] == "STORED"
     assert MCS.persist_human_capability_grant(grant, store_dir=sd)["status"] == "STORED"
     assert MCS.persist_mission_capability_scope(mcs, store_dir=sd)["status"] == "STORED"
+    assert MCS.persist_lease_issuance_decision(dec, store_dir=sd)["status"] == "STORED"
     assert L.persist_capability_lease(lease, store_dir=sd)["status"] == "STORED"
-    gid, mid, lid = (grant["human_capability_grant_id"],
-                     mcs["mission_capability_scope_id"], lease["lease_id"])
-    del grant, mcs, lease
+
+    aid = hcga["human_capability_grant_authorization_id"]
+    gid = grant["human_capability_grant_id"]
+    mid = mcs["mission_capability_scope_id"]
+    did = dec["lease_issuance_decision_id"]
+    lid = lease["lease_id"]
+
+    del hcga, grant, mcs, dec, lease
+
+    ra = MCS.load_human_capability_grant_authorization(aid, store_dir=sd)
     rg = MCS.load_human_capability_grant(gid, store_dir=sd)
     rm = MCS.load_mission_capability_scope(mid, store_dir=sd)
+    rli = MCS.load_lease_issuance_decision(did, store_dir=sd)
     rl = L.load_capability_lease(lid, store_dir=sd)
-    assert rg is not None and rm is not None and rl is not None
+
+    assert ra is not None and rg is not None and rm is not None
+    assert rli is not None and rl is not None
+
     v = L.verify_capability_lease_context(
-        lease=rl, mission_submission=ms, capability_request=cr, route_decision=rd,
-        mission_capability_scope=rm, lease_issuance_decision=dec,
-        human_capability_grant=rg, mission_status="OPEN")
+        lease=rl,
+        mission_submission=ms,
+        capability_request=cr,
+        route_decision=rd,
+        mission_capability_scope=rm,
+        lease_issuance_decision=rli,
+        human_capability_grant=rg,
+        human_capability_grant_authorization=ra,
+        mission_status="OPEN",
+    )
     assert v["verdict"] == L.V_VALID_INERT
     assert v["grants_tool_access"] is False
 

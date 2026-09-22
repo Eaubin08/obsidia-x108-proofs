@@ -1,7 +1,7 @@
 """
 brody_memory_trace_extractor — V3 Block 3A
 Readonly dry-run trace extractor. Transforms a Brody interaction into a
-structured memory_trace_packet. No IO. No network. No Graphiti. No Neo4j.
+structured memory_trace_packet. No IO. No network. Provider-neutral.
 No ACT. No canonical write. DECISION_AUTHORITY=KX108_ONLY.
 """
 from __future__ import annotations
@@ -167,9 +167,12 @@ def _compute_memory_relevance_score(
     path_c = float(micro_core.get("path_coherence_score", 0.5))
     score += 0.2 * path_c
 
-    # graphiti_allowed signal
-    graphiti_allowed = bool(point_cloud.get("graphiti_allowed", False))
-    score += 0.2 if graphiti_allowed else 0.0
+    # provider-neutral memory activation signal
+    # Memory relevance must not depend on any retrieval provider.
+    memory_packet_required = bool(
+        point_cloud.get("memory_packet_required", False)
+    )
+    score += 0.2 if memory_packet_required else 0.0
 
     return round(min(1.0, max(0.0, score)), 4)
 
@@ -188,7 +191,7 @@ def _build_point_cloud_snapshot(point_cloud: dict) -> dict:
     return {
         "axes": dict(point_cloud.get("axes", {})),
         "active_layers": list(point_cloud.get("active_layers", []))[:6],
-        "graphiti_allowed": bool(point_cloud.get("graphiti_allowed", False)),
+        "memory_packet_required": bool(point_cloud.get("memory_packet_required", False)),
         "memory_packet_required": bool(point_cloud.get("memory_packet_required", False)),
         "domain_detected": point_cloud.get("domain_detected"),
     }
@@ -219,8 +222,7 @@ class BrodyMemoryTraceExtractor:
     # Structural invariants — never mutable
     READONLY: bool = True
     CANONICAL_WRITE: bool = False
-    GRAPHITI_WRITE: bool = False
-    NEO4J_WRITE: bool = False
+    MEMORY_WRITE: bool = False
     KERNEL_MUTATION: bool = False
     EMITS_ACT: bool = False
     DECISION_AUTHORITY: str = "KX108_ONLY"
@@ -279,7 +281,7 @@ class BrodyMemoryTraceExtractor:
         micro_core: dict = v3_dryrun_packet.get("micro_core", {})
         balance_output: dict = v3_dryrun_packet.get("balance_engine", {})
         point_cloud: dict = v3_dryrun_packet.get("point_cloud_21d", {})
-        graphiti_guard: dict = v3_dryrun_packet.get("graphiti_guard", {})
+        memzum: dict = v3_dryrun_packet.get("memzum", {})
         context_budget: dict = v3_dryrun_packet.get("context_budget", {})
         fastpath: dict = v3_dryrun_packet.get("fastpath", {})
 
@@ -292,7 +294,7 @@ class BrodyMemoryTraceExtractor:
         path_coherence: float = float(micro_core.get("path_coherence_score", 0.5))
         latency_ms: float = float(micro_core.get("latency_ms", 0.0))
         invariant_violations: list = list(micro_core.get("invariant_violations", []))
-        graphiti_allowed: bool = bool(graphiti_guard.get("graphiti_allowed", False))
+        memory_required: bool = bool(memzum.get("memory_required", False))
 
         # ── 3. Fastpath info ──────────────────────────────────────────────────
         fastpath_type: str | None = fastpath.get("fastpath_type") if fastpath else None
@@ -357,8 +359,8 @@ class BrodyMemoryTraceExtractor:
         useful_path_tags: list[str] = []
         if not is_adversarial and path_coherence >= 0.6 and not risk_flags:
             useful_path_tags.append(f"coherent_path:{round(path_coherence, 3)}")
-        if graphiti_allowed:
-            useful_path_tags.append("graphiti_allowed")
+        if memory_required:
+            useful_path_tags.append("memory_required")
         if fastpath_type and "adversarial" not in (fastpath_type or ""):
             useful_path_tags.append(f"fastpath:{fastpath_type}")
 
@@ -416,14 +418,13 @@ class BrodyMemoryTraceExtractor:
             "fastpath_type": fastpath_type,
             "fastpath_triggered": fastpath_triggered,
 
-            # Graphiti
-            "graphiti_allowed": graphiti_allowed,
+            # Provider-neutral memory activation
+            "memory_required": memory_required,
 
             # ── Invariant fields — ALWAYS these values ────────────────────────
             "readonly": True,
             "canonical_write": False,
-            "graphiti_write": False,
-            "neo4j_write": False,
+            "memory_write": False,
             "kernel_mutation": False,
             "emits_act": False,
             "decision_authority": "KX108_ONLY",
@@ -449,10 +450,10 @@ class BrodyMemoryTraceExtractor:
             "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
             "source_type": "error",
             "error": error,
+            "memory_required": False,
             "readonly": True,
             "canonical_write": False,
-            "graphiti_write": False,
-            "neo4j_write": False,
+            "memory_write": False,
             "kernel_mutation": False,
             "emits_act": False,
             "decision_authority": "KX108_ONLY",

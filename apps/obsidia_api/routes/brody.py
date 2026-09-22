@@ -12,8 +12,11 @@ from apps.obsidia_api.brody_v1_4_12a_final_answer_adapter import (
 )
 from apps.obsidia_api.brody_rights_authority_matrix import classify_request_authority
 from apps.obsidia_api.brody_safe_snapshot import safe_call_snapshot, empty_snapshot
-from apps.obsidia_api.brody_semantic_query_router import build_semantic_query
-from apps.obsidia_api.brody_memory_response_chain_adapter import build_memory_response_chain
+from apps.obsidia_api.brody_semantic_query_router import (
+    build_semantic_query,
+    build_memory_retrieval_queries,
+)
+from apps.obsidia_api.brody_native_memory_response_adapter import build_native_memory_response
 from apps.obsidia_api.brody_candidate_memory_adapter import build_candidate_memory_snapshot
 from apps.obsidia_api.brody_operator_loop_adapter import build_operator_loop_snapshot
 from apps.obsidia_api.brody_tree_policy_adapter import build_tree_policy_snapshot
@@ -247,8 +250,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                 "decision_authority": "KX108_ONLY",
                 "readonly": True, "advisory_only": True,
                 "emits_act": False, "allowed_to_act": False, "allowed_to_decide": False,
-                "canonical_write": False, "graphiti_write": False, "neo4j_write": False,
-                "kernel_mutation": False, "human_validation_required": True,
+                "canonical_write": False,                 "kernel_mutation": False, "human_validation_required": True,
                 "v3_memory_readonly_packet": _pk_pkt,
                 "private_key_blocked": True,
             }
@@ -269,21 +271,19 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             from apps.obsidia_api.brody_cognitive_micro_core import run_micro_core as _fp_mc_fn
             from apps.obsidia_api.brody_balance_engine import BrodyBalanceEngine as _fp_BE
             from apps.obsidia_api.brody_point_cloud_21d_selector import BrodyPointCloud21DSelector as _fp_SEL
-            from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard as _fp_guard_fn
+            from apps.obsidia_api.brody_memzum_activation_adapter import evaluate_memzum_activation as _fp_memzum_fn
             from apps.obsidia_api.brody_context_budget import compute_context_budget as _fp_budget_fn
             from apps.obsidia_api.brody_v3_fastpath_response import evaluate_fastpath as _fp_eval_fn
             _fp_mc = _fp_mc_fn(req.message, session_id=req.session_id or "", language=req.language)
             _fp_bal = _fp_BE().compute_balances(req.message, _fp_mc)
             _fp_pc = _fp_SEL().compute_vector(req.message, _fp_mc, _fp_bal)
-            _fp_guard = _fp_guard_fn(
-                message=req.message, session_id=req.session_id or "",
+            _fp_memzum = _fp_memzum_fn(
                 micro_core=_fp_mc, balance_output=_fp_bal, point_cloud=_fp_pc,
             )
-            _fp_has_mem = bool(_fp_pc.get("memory_packet_required", False))
+            _fp_has_mem = bool(_fp_memzum.get("memory_required", False))
             _fp_budget = _fp_budget_fn(
                 active_layers=_fp_pc.get("active_layers", []),
                 point_cloud=_fp_pc, balance_output=_fp_bal,
-                graphiti_allowed=_fp_guard.get("graphiti_allowed", False),
                 is_adversarial=bool(_fp_mc.get("is_adversarial", False)),
                 domain_detected=_fp_mc.get("domain_detected"),
                 memory_explicit=_fp_has_mem,
@@ -291,23 +291,41 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             _fp_result = _fp_eval_fn(
                 message=req.message, micro_core=_fp_mc,
                 balance_output=_fp_bal, point_cloud=_fp_pc,
-                graphiti_guard=_fp_guard, context_budget=_fp_budget,
+                context_budget=_fp_budget,
                 compact_mode=bool(req.compact),
             )
             _v3_preflight = {
                 "micro_core": _fp_mc,
                 "balance_engine": _fp_bal,
                 "point_cloud_21d": _fp_pc,
-                "graphiti_guard": _fp_guard,
+                "memzum": _fp_memzum,
                 "context_budget": _fp_budget,
                 "fastpath": _fp_result,
-                "graphiti_allowed": _fp_guard.get("graphiti_allowed", False),
                 "decision_authority": "KX108_ONLY",
                 "emits_act": False,
                 "advisory_only": True,
                 "block": "V3_BLOCK_2B",
             }
             if _fp_result.get("fastpath_allowed", False):
+                # BRODY_COMPACT_FASTPATH_PUBLIC_CONTRACT_V1
+                # Restore compact contract before early return.
+                # Local deterministic classification only; no external IO.
+                if req.compact:
+                    try:
+                        _fp_semantic = build_semantic_query(
+                            normalize_brody_text(req.message)
+                        )
+                        _fp_topic = (
+                            str(_fp_semantic.get("topic") or "").strip()
+                            if isinstance(_fp_semantic, dict)
+                            else ""
+                        )
+                    except Exception:
+                        _fp_topic = ""
+
+                    if not _fp_topic:
+                        _fp_topic = "GENERAL"
+
                 _fp_payload = {
                     "response": _fp_result["response_text"],
                     "final_answer": _fp_result["response_text"],
@@ -316,7 +334,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     "emits_act": False,
                     "advisory_only": True,
                     "memory_write": False,
-                    "graphiti_write": False,
                     "kernel_mutation": False,
                     "x108_mutation": False,
                     "no_canonical_write": True,
@@ -326,6 +343,11 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     "fastpath_type": _fp_result.get("fastpath_type"),
                     "v3_dryrun_packet": _v3_preflight,
                 }
+                if req.compact:
+                    _fp_payload["topic"] = _fp_topic
+                    _fp_payload["compact_mode"] = True
+                    _fp_payload["deep_snapshots_omitted"] = True
+                    _fp_payload["debug_payload_omitted"] = True
                 # V3 RUNTIME_DISSIPATION — runtime_cost_map fastpath (Phase A)
                 try:
                     from apps.obsidia_api.brody_runtime_cost_map import fastpath_cost_map as _fp_rcm
@@ -373,6 +395,38 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     _fp_payload = _fp_deep(_fp_payload)
                 except Exception:
                     pass
+                # COGNITIVE_RUNTIME_JOIN_FASTPATH_V1
+                try:
+                    from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _fp_cog_join
+                    _fp_cog_receipt = _fp_cog_join(
+                        message=req.message,
+                        language=req.language,
+                        session_id=req.session_id or 'local',
+                        precomputed_micro_core=_fp_mc,
+                    )
+                    try:
+                        from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
+                        _fp_cog_receipt = _cog_deep(_fp_cog_receipt)
+                    except Exception:
+                        pass
+                    _fp_payload['cognitive_runtime_receipt'] = _fp_cog_receipt
+                except Exception as _cog_exc:
+                    _fp_payload['cognitive_runtime_receipt'] = {
+                        'status': 'BLOCKED_READONLY',
+                        'completeness': 'BLOCKED',
+                        'blocked_stage': 'FASTPATH_ROUTE_BINDING',
+                        'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
+                        'decision_authority': 'KX108_ONLY',
+                        'readonly': True,
+                        'allowed_to_decide': False,
+                        'allowed_to_act': False,
+                        'emits_act': False,
+                        'memory_write': False,
+                        'kernel_mutation': False,
+                        'x108_mutation': False,
+                        'real_execution': False,
+                        'response_governance_applied': False,
+                    }
                 return safe_backend_response(_brody_attach_cic_readonly_context_v0(_fp_payload), source="BRODY_V3_FASTPATH")
         except Exception as _fp_exc:
             _v3_preflight = {"error": str(_fp_exc), "fastpath_allowed": False, "block": "V3_BLOCK_2B"}
@@ -426,10 +480,215 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             semantic_query_snapshot["primary_query"] = fw
             semantic_query_snapshot["semantic_query"] = fw
 
-    memory_response_chain = ({} if _dissipation_lazy else
-        safe_call_snapshot("memory_response_chain", build_memory_response_chain,
-            user_message=req.message, semantic_query=semantic_query_snapshot.get("semantic_query", req.message),
-            language=req.language))
+    # C2B-M4B2B - product memory activation.
+    #
+    # Reuse an existing V3 compact/debug preflight when available.
+    # Otherwise compute:
+    # micro_core -> balances -> 21D -> MEMZUM
+    #
+    # MEMZUM only answers whether memory context is required.
+    # It does not retrieve, write, decide, or ACT.
+    _memory_activation_preflight: dict = {}
+
+    if isinstance(_v3_preflight, dict):
+        _memory_activation_preflight = {
+            "micro_core": _v3_preflight.get(
+                "micro_core",
+                {},
+            ),
+            "balance_engine": _v3_preflight.get(
+                "balance_engine",
+                {},
+            ),
+            "point_cloud_21d": _v3_preflight.get(
+                "point_cloud_21d",
+                {},
+            ),
+            "memzum": _v3_preflight.get(
+                "memzum",
+                {},
+            ),
+            "source": "V3_PREFLIGHT_REUSE",
+        }
+
+    _memory_memzum = (
+        _memory_activation_preflight.get(
+            "memzum",
+            {},
+        )
+        if isinstance(
+            _memory_activation_preflight,
+            dict,
+        )
+        else {}
+    )
+
+    if not (
+        isinstance(_memory_memzum, dict)
+        and _memory_memzum
+    ):
+        try:
+            from apps.obsidia_api.brody_cognitive_micro_core import (
+                run_micro_core as _memory_mc_fn,
+            )
+            from apps.obsidia_api.brody_balance_engine import (
+                BrodyBalanceEngine as _memory_balance_cls,
+            )
+            from apps.obsidia_api.brody_point_cloud_21d_selector import (
+                BrodyPointCloud21DSelector as _memory_pc_cls,
+            )
+            from apps.obsidia_api.brody_memzum_activation_adapter import (
+                evaluate_memzum_activation as _memory_memzum_fn,
+            )
+
+            _memory_mc = _memory_mc_fn(
+                req.message,
+                session_id=req.session_id or "",
+                language=req.language,
+            )
+
+            _memory_bal = (
+                _memory_balance_cls()
+                .compute_balances(
+                    req.message,
+                    _memory_mc,
+                )
+            )
+
+            _memory_pc = (
+                _memory_pc_cls()
+                .compute_vector(
+                    req.message,
+                    _memory_mc,
+                    _memory_bal,
+                )
+            )
+
+            _memory_memzum = _memory_memzum_fn(
+                micro_core=_memory_mc,
+                balance_output=_memory_bal,
+                point_cloud=_memory_pc,
+            )
+
+            _memory_activation_preflight = {
+                "micro_core": _memory_mc,
+                "balance_engine": _memory_bal,
+                "point_cloud_21d": _memory_pc,
+                "memzum": _memory_memzum,
+                "source": "PRODUCT_MEMORY_ACTIVATION",
+                "readonly": True,
+                "memory_write": False,
+                "allowed_to_decide": False,
+                "allowed_to_act": False,
+                "emits_act": False,
+                "kernel_mutation": False,
+                "x108_mutation": False,
+                "decision_authority": "KX108_ONLY",
+            }
+
+        except Exception as exc:
+            _memory_activation_preflight = {
+                "status": "DEGRADED",
+                "error": (
+                    f"{type(exc).__name__}:"
+                    f"{str(exc)[:240]}"
+                ),
+                "micro_core": {},
+                "balance_engine": {},
+                "point_cloud_21d": {},
+                "memzum": {},
+                "source": "PRODUCT_MEMORY_ACTIVATION_FAILED",
+                "readonly": True,
+                "memory_write": False,
+                "allowed_to_decide": False,
+                "allowed_to_act": False,
+                "emits_act": False,
+                "kernel_mutation": False,
+                "x108_mutation": False,
+                "decision_authority": "KX108_ONLY",
+            }
+
+    _memory_memzum = (
+        _memory_activation_preflight.get(
+            "memzum",
+            {},
+        )
+        if isinstance(
+            _memory_activation_preflight,
+            dict,
+        )
+        else {}
+    )
+
+    _memory_required = bool(
+        _memory_memzum.get(
+            "memory_required",
+            False,
+        )
+        if isinstance(
+            _memory_memzum,
+            dict,
+        )
+        else False
+    )
+
+    _memory_retrieval_queries = (
+        build_memory_retrieval_queries(
+            req.message
+        )
+        if _memory_required
+        else []
+    )
+
+    _memory_semantic_query = str(
+        (
+            _memory_retrieval_queries[0]
+            if _memory_retrieval_queries
+            else None
+        )
+        or semantic_query_snapshot.get(
+            "semantic_query"
+        )
+        or semantic_query_snapshot.get(
+            "primary_query"
+        )
+        or req.message
+    ).strip()
+
+    # Additive audit surface only. The canonical semantic query
+    # remains unchanged for every other runtime consumer.
+    semantic_query_snapshot[
+        "memory_retrieval_queries"
+    ] = list(
+        _memory_retrieval_queries
+    )
+
+    semantic_query_snapshot[
+        "memory_retrieval_query"
+    ] = (
+        _memory_semantic_query
+        if _memory_required
+        else ""
+    )
+
+    # Historical variable name intentionally preserved so all downstream
+    # response consumers retain their existing generic snapshot contract.
+    memory_response_chain = (
+        {}
+        if _dissipation_lazy
+        else safe_call_snapshot(
+            "memory_response_chain",
+            build_native_memory_response,
+            user_message=req.message,
+            semantic_query=(
+                _memory_semantic_query
+                or req.message
+            ),
+            memory_required=_memory_required,
+            limit=5,
+            max_items=3,
+        )
+    )
 
     brody_full_context = ({} if _dissipation_lazy else
         safe_call_snapshot("brody_full_context", build_brody_full_context,
@@ -487,6 +746,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
 
     # BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
     _source_pack_ctx = _brody_apply_organism_overlay_v2c(req.message, _source_pack_ctx)
+
+    # Readonly presentation signal only.
+    # This carries no decision/action authority. It prevents the final
+    # presentation layer from masking a causal unresolved-symbol result.
+    if isinstance(brody_full_context, dict):
+        brody_full_context = dict(brody_full_context)
+        brody_full_context["pre_reasoning_response_source"] = str(
+            r.get("source") or ""
+        )
 
     true_voice_snapshot = ({} if _dissipation_lazy else
         safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
@@ -767,9 +1035,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         user_message=req.message,
         language=r.get("language", req.language),
         session_id=req.session_id or "local",
-        source=r.get("source", "REAL_BRODY_RUNTIME_NO_GRAPHITI"),
-        graphiti_status=r.get("graphiti_status", ""),
-        neo4j_status=r.get("neo4j_status", ""),
+        source=r.get("source", "REAL_BRODY_RUNTIME"),
         authority_snapshot=authority_snapshot,
         automation_snapshot=automation_snapshot,
         semantic_query_snapshot=semantic_query_snapshot,
@@ -802,15 +1068,10 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "emits_verdict": False,
         "response_only": True,
         "memory_write": False,
-        "graphiti_write": False,
-        "neo4j_write": False,
         "kernel_mutation": False,
         "x108_mutation": False,
         "language": r.get("language", req.language),
-        "source": r.get("source", "REAL_BRODY_RUNTIME_NO_GRAPHITI"),
-        "graphiti_status": r.get("graphiti_status", ""),
-        "graphiti_blocker": r.get("graphiti_blocker", ""),
-        "neo4j_status": r.get("neo4j_status", ""),
+        "source": r.get("source", "REAL_BRODY_RUNTIME"),
         "memory_query": r.get("memory_query", ""),
         "action_risk": action_risk,
         "context_packet": context_packet,
@@ -889,7 +1150,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         ),
         "brody_can_execute_actions": False,
         "brody_can_write_memory": False,
-        "brody_can_write_graphiti": False,
         "brody_action_request_blocked": _brody_readonly_state.get("action_request_blocked", False),
         "brody_action_status": _brody_readonly_state.get("action_status", "NO_ACTION_IN_QUERY"),
         "os_map_summary": _brody_readonly_state.get("os_map_summary", {}),
@@ -908,21 +1168,9 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "brody_no_write": True,
         "brody_kx108_only": True,
         # P52 — Graphiti / Memory readonly activation
-        "graphiti_memory_readonly_activation_status": _graphiti_memory_state.get(
-            "graphiti_memory_readonly_activation_status", "MISSING_REAL_COMPONENT"
-        ),
-        "real_graphiti_component_found": _graphiti_memory_state.get("real_component_found", False),
         "real_memory_component_found": _graphiti_memory_state.get("memory_real_module", False),
-        "graphiti_read_enabled": _graphiti_memory_state.get("graphiti_read_enabled", False),
         "memory_read_enabled": _graphiti_memory_state.get("memory_read_enabled", False),
-        "graphiti_write_enabled": False,
         "memory_write_enabled": False,
-        "graphiti_memory_context_refs": _graphiti_memory_state.get("graphiti_memory_context_refs", []),
-        "graphiti_memory_context_status": _graphiti_memory_state.get(
-            "graphiti_memory_context_status", "MISSING_REAL_COMPONENT"
-        ),
-        "graphiti_nodes": _graphiti_memory_state.get("graphiti_nodes", 0),
-        "graphiti_rels": _graphiti_memory_state.get("graphiti_rels", 0),
         # P53 — World Action Bus dry-run activation
         "world_action_bus_dry_run_status": _world_action_bus_state.get(
             "world_action_bus_dry_run_status", "MISSING_REAL_COMPONENT"
@@ -1009,20 +1257,17 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             _mc = _pf.get("micro_core", {})
             _bal = _pf.get("balance_engine", {})
             _pc = _pf.get("point_cloud_21d", {})
-            _guard = _pf.get("graphiti_guard", {})
+            _memzum = _pf.get("memzum", {})
             _budget = _pf.get("context_budget", {})
             _fp_res = _pf.get("fastpath", {})
             _payload["v3_dryrun_packet"] = {
                 "micro_core": _mc, "balance_engine": _bal,
-                "point_cloud_21d": _pc, "graphiti_guard": _guard,
+                "point_cloud_21d": _pc, "memzum": _memzum,
                 "context_budget": _budget,
                 "fastpath": _fp_res,
                 "active_layers": _budget.get("allowed_layers", _pc.get("active_layers", [])),
                 "forbidden_layers": _pc.get("forbidden_layers", []),
                 "dropped_layers": _budget.get("dropped_layers", []),
-                "graphiti_allowed": _guard.get("graphiti_allowed", False),
-                "guard_reason": _guard.get("reason", ""),
-                "guard_flags": _guard.get("guard_flags", []),
                 "budget_bytes": _budget.get("budget_bytes", 1792),
                 "budget_estimate": _pc.get("budget_estimate", 1792),
                 "budget_scenario": _budget.get("scenario", ""),
@@ -1040,22 +1285,81 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                 from apps.obsidia_api.brody_cognitive_micro_core import run_micro_core
                 from apps.obsidia_api.brody_balance_engine import BrodyBalanceEngine
                 from apps.obsidia_api.brody_point_cloud_21d_selector import BrodyPointCloud21DSelector
-                from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard
+                from apps.obsidia_api.brody_memzum_activation_adapter import evaluate_memzum_activation
                 from apps.obsidia_api.brody_context_budget import compute_context_budget
                 from apps.obsidia_api.brody_v3_fastpath_response import evaluate_fastpath
 
-                _mc = run_micro_core(req.message, session_id=req.session_id or "", language=req.language)
-                _bal = BrodyBalanceEngine().compute_balances(req.message, _mc)
-                _pc = BrodyPointCloud21DSelector().compute_vector(req.message, _mc, _bal)
-                _guard = evaluate_graphiti_guard(
-                    message=req.message, session_id=req.session_id or "",
-                    micro_core=_mc, balance_output=_bal, point_cloud=_pc,
+                _ma = (
+                    _memory_activation_preflight
+                    if isinstance(
+                        _memory_activation_preflight,
+                        dict,
+                    )
+                    else {}
                 )
-                _has_explicit_mem = bool(_pc.get("memory_packet_required", False))
+
+                _mc = _ma.get(
+                    "micro_core",
+                    {},
+                )
+
+                _bal = _ma.get(
+                    "balance_engine",
+                    {},
+                )
+
+                _pc = _ma.get(
+                    "point_cloud_21d",
+                    {},
+                )
+
+                _memzum = _ma.get(
+                    "memzum",
+                    {},
+                )
+
+                if not (
+                    isinstance(_mc, dict)
+                    and _mc
+                    and isinstance(_bal, dict)
+                    and _bal
+                    and isinstance(_pc, dict)
+                    and _pc
+                    and isinstance(_memzum, dict)
+                    and _memzum
+                ):
+                    _mc = run_micro_core(
+                        req.message,
+                        session_id=req.session_id or "",
+                        language=req.language,
+                    )
+
+                    _bal = (
+                        BrodyBalanceEngine()
+                        .compute_balances(
+                            req.message,
+                            _mc,
+                        )
+                    )
+
+                    _pc = (
+                        BrodyPointCloud21DSelector()
+                        .compute_vector(
+                            req.message,
+                            _mc,
+                            _bal,
+                        )
+                    )
+
+                    _memzum = evaluate_memzum_activation(
+                        micro_core=_mc,
+                        balance_output=_bal,
+                        point_cloud=_pc,
+                    )
+                _has_explicit_mem = bool(_memzum.get("memory_required", False))
                 _budget = compute_context_budget(
                     active_layers=_pc.get("active_layers", []),
                     point_cloud=_pc, balance_output=_bal,
-                    graphiti_allowed=_guard.get("graphiti_allowed", False),
                     is_adversarial=bool(_mc.get("is_adversarial", False)),
                     domain_detected=_mc.get("domain_detected"),
                     memory_explicit=_has_explicit_mem,
@@ -1063,19 +1367,16 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                 _fp_res = evaluate_fastpath(
                     message=req.message, micro_core=_mc,
                     balance_output=_bal, point_cloud=_pc,
-                    graphiti_guard=_guard, context_budget=_budget,
+                    context_budget=_budget,
                 )
                 _payload["v3_dryrun_packet"] = {
                     "micro_core": _mc, "balance_engine": _bal,
-                    "point_cloud_21d": _pc, "graphiti_guard": _guard,
+                    "point_cloud_21d": _pc, "memzum": _memzum,
                     "context_budget": _budget,
                     "fastpath": _fp_res,
                     "active_layers": _budget.get("allowed_layers", _pc.get("active_layers", [])),
                     "forbidden_layers": _pc.get("forbidden_layers", []),
                     "dropped_layers": _budget.get("dropped_layers", []),
-                    "graphiti_allowed": _guard.get("graphiti_allowed", False),
-                    "guard_reason": _guard.get("reason", ""),
-                    "guard_flags": _guard.get("guard_flags", []),
                     "budget_bytes": _budget.get("budget_bytes", 1792),
                     "budget_estimate": _pc.get("budget_estimate", 1792),
                     "budget_scenario": _budget.get("scenario", ""),
@@ -1138,6 +1439,63 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     except Exception:
         pass
 
+    # COGNITIVE_RUNTIME_JOIN_BACKEND_V1
+    try:
+        from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _cog_join
+        _cog_receipt = _cog_join(
+            message=req.message,
+            language=req.language,
+            session_id=req.session_id or 'local',
+            precomputed_semantic_query=semantic_query_snapshot,
+            precomputed_intent=intent,
+            authority_snapshot=authority_snapshot,
+            tree_policy_snapshot=trees_snap,
+            precomputed_reverse_os=reverse_os_bridge,
+            precomputed_tree_wrapper=_tree_signal_raw,
+            precomputed_micro_core=(
+                _memory_activation_preflight.get(
+                    "micro_core"
+                )
+                if isinstance(
+                    _memory_activation_preflight,
+                    dict,
+                )
+                else None
+            ),
+            precomputed_brody_runtime=r,
+            precomputed_memory_chain=(
+                memory_response_chain
+                if isinstance(
+                    memory_response_chain,
+                    dict,
+                )
+                and memory_response_chain
+                else None
+            ),
+        )
+        try:
+            from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
+            _cog_receipt = _cog_deep(_cog_receipt)
+        except Exception:
+            pass
+        _payload['cognitive_runtime_receipt'] = _cog_receipt
+    except Exception as _cog_exc:
+        _payload['cognitive_runtime_receipt'] = {
+            'status': 'BLOCKED_READONLY',
+            'completeness': 'BLOCKED',
+            'blocked_stage': 'BACKEND_ROUTE_BINDING',
+            'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
+            'decision_authority': 'KX108_ONLY',
+            'readonly': True,
+            'allowed_to_decide': False,
+            'allowed_to_act': False,
+            'emits_act': False,
+            'memory_write': False,
+            'kernel_mutation': False,
+            'x108_mutation': False,
+            'real_execution': False,
+            'response_governance_applied': False,
+        }
     return safe_backend_response(_brody_attach_cic_readonly_context_v0(_payload), source=r.get("source", "REAL_BACKEND"))
 
 

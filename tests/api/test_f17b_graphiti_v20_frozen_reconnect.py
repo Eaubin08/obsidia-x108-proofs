@@ -37,12 +37,11 @@ def test_chain_result_has_v20_primary_status_and_boundary():
 
 
 def test_probe_separates_neo4j_blocker_from_v20_effective_status():
-    assert "GRAPHITI_V20_FROZEN_READONLY_PASS" in PIPE
-    assert "neo4j_blocker" in PIPE
-    assert "live_neo4j_dependency" in PIPE
-    assert "GRAPHITI_LIVE_BLOCKED" not in PIPE
-    assert "GRAPHITI_V20_FROZEN_READONLY_PASS" in FULL
-    assert "GRAPHITI_LIVE_BLOCKED" not in FULL
+    # F17B remains historical proof; live Brody runtime is now provider-neutral.
+    assert "Provider-neutral readonly response pipeline." in PIPE
+    assert "_probe_graphiti" not in PIPE
+    assert "GRAPHITI_V20_FROZEN_READONLY_PASS" not in PIPE
+    assert 'decision_authority": "KX108_ONLY"' in PIPE
 
 
 def test_build_memory_chain_uses_v20_http_when_neo4j_unavailable(monkeypatch, tmp_path):
@@ -111,27 +110,8 @@ def test_local_jsonl_still_used_if_v20_empty(monkeypatch, tmp_path):
 
 
 def test_probe_v20_pass_with_missing_password_when_8011_open(monkeypatch):
-    monkeypatch.delenv("NEO4J_PASSWORD", raising=False)
-
-    class FakeSocket:
-        def settimeout(self, seconds):
-            pass
-
-        def connect(self, addr):
-            host, port = addr
-            if port not in (7688, 8011):
-                raise OSError("unexpected port")
-
-        def close(self):
-            pass
-
-    monkeypatch.setattr(pipeline.socket, "socket", lambda: FakeSocket())
-    result = pipeline._probe_graphiti()
-
-    assert result["status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS"
-    assert result["effective_status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS"
-    assert result["neo4j_status"] == "NEO4J_BLOCKED"
-    assert result["v20_status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS"
-    assert result["live_neo4j_dependency"] is False
-    assert result["graphiti_write"] is False
-    assert result["decision_authority"] == "KX108_ONLY"
+    # The old socket/provider probe was intentionally retired by M4.
+    assert not hasattr(pipeline, "_probe_graphiti")
+    assert "Provider-neutral readonly response pipeline." in PIPE
+    assert "memory_write" in PIPE
+    assert "KX108_ONLY" in PIPE

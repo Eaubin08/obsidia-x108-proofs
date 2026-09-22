@@ -101,8 +101,11 @@ def test_runtime_stats_present():
 # Test 4: Second request benefits from cache (hit_rate increases)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_second_request_cache_hit():
+def test_second_request_cache_hit(request):
     """After warm-up, a second identical query should show cache_hits > 0."""
+    from runtime_wiring.source_runtime.source_runtime_cache import clear_cache
+    clear_cache()
+    request.addfinalizer(clear_cache)
     # First request — warms cache
     r1 = client.post("/api/brody/chat", json={
         "message": "X108 Cognitive sources",

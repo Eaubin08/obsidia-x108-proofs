@@ -450,6 +450,7 @@ function Print-StartPlan {
     Write-Host ""
     Write-Host "  COMPORTEMENT 'obsidia' / 'obsidia start' :" -ForegroundColor Cyan
     Write-Host "  ---------------------------------------------------------------"
+    Write-Host "  SHELL     : Enter-ObsidiaInteractiveShell -> obsidia_cli.py --tui"
     Write-Host "  A  Test-ObsidiaStackRunning -> si UP : boot skip, entre dans obsidia>"
     Write-Host "  B  Si DOWN : lance les services core suivants :"
     $plan = @(

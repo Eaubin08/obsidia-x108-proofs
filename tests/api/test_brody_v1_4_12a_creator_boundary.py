@@ -98,5 +98,12 @@ def test_memory_query_sovereignty(memory_response):
 
 def test_memory_query_graphiti_status_reported(memory_response):
     # Must report graphiti status (even if OFFLINE)
-    gs = memory_response.get("graphiti_status", "")
-    assert gs != "", "graphiti_status not reported"
+    # M4 provider-neutral contract: Native Memory owns live memory retrieval.
+    chain = memory_response.get("memory_response_chain_snapshot", {})
+    assert chain.get("source_mode") == "OBSIDIA_NATIVE_MEMORY"
+    assert chain.get("memory_write") is False
+    assert chain.get("decision_authority") == "KX108_ONLY"
+    assert memory_response.get("memory_write") is False
+    assert memory_response.get("decision_authority") == "KX108_ONLY"
+    assert "graphiti_status" not in memory_response
+    assert "neo4j_status" not in memory_response

@@ -617,7 +617,8 @@ class TestHumanApprovalGate:
 
         result = run_execution(env["batch_execution_id"], approval_id, executor, ed, tmp_path)
         assert called == []
-        assert "APPROVAL_NOT_HUMAN" in result["execution_approval_status"]
+        assert EXECUTION_APPROVAL_INVALID in result["execution_approval_status"]
+        assert "APPROVAL_APPROVED_BY_NOT_RECOGNIZED" in result["execution_approval_status"]
 
     def test_wrong_decision_authority_zero_calls(self, tmp_path):
         env, ed = self._planned_envelope(tmp_path)

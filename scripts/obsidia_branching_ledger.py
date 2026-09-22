@@ -863,19 +863,8 @@ def register_git_blob_source(
     )
     entry_id = ledger_entry_id(identity_key, source_hash)
 
-    _persisted = next((e for e in existing if e.get("ledger_entry_id") == entry_id), None)
-    if _persisted is not None:
-        # Contrat d'idempotence : un rejeu d'inscription DOIT exposer les memes
-        # faits source immuables que la premiere inscription (cf. le retour
-        # DISCOVERED plus bas). Les valeurs proviennent de l'entree PERSISTEE,
-        # jamais d'une resynthese locale, afin de ne pas pouvoir diverger d'elle.
-        return {
-            "status": "ALREADY_REGISTERED",
-            "ledger_entry_id": entry_id,
-            "source_git_commit_sha": _persisted.get("source_git_commit_sha"),
-            "source_git_blob_sha": _persisted.get("source_git_blob_sha"),
-            "source_content_sha256": _persisted.get("source_content_sha256"),
-        }
+    if any(e.get("ledger_entry_id") == entry_id for e in existing):
+        return {"status": "ALREADY_REGISTERED", "ledger_entry_id": entry_id}
 
     prev_entry_id: "str | None" = None
     if dedup == "SAME_PATH_NEW_CONTENT":
@@ -957,6 +946,190 @@ def register_git_blob_source(
         "source_git_blob_sha": blob_sha,
         "source_content_sha256": content_sha256_full,
     }
+
+
+# ─── Source filesystem réelle (FILESYSTEM_FILE + source_content_sha256 complet) ─────
+#
+# register_source() tronque à 16 chars (source_hash) et ne stocke pas
+# source_content_sha256 (64 hex) — insuffisant pour la chaîne d'exécution
+# canonique qui exige un SHA256 complet pour lier l'EAH.
+#
+# register_filesystem_source() lit les octets ELLE-MÊME, calcule le SHA256
+# ELLE-MÊME (jamais de confiance au SHA fourni par l'appelant) et stocke
+# source_content_sha256 (64 hex). Si l'appelant fournit expected_content_sha256,
+# la fonction VÉRIFIE que sa propre valeur calculée correspond — fail closed
+# en cas de divergence.
+
+def register_filesystem_source(
+    source_path: "str | Path",
+    target_path: "str | None" = None,
+    target_domain: "str | None" = None,
+    reason: "str | None" = None,
+    provenance_refs: "dict | None" = None,
+    dependency_refs: "list | None" = None,
+    expected_content_sha256: "str | None" = None,
+    repo_root: "Path | None" = None,
+    ledger_dir: "Path | None" = None,
+) -> dict:
+    """
+    Enregistre un fichier filesystem comme source canonique avec
+    source_content_sha256 COMPLET (64 hex) calculé depuis les octets réels.
+
+    Contrairement à register_source() (source_hash tronqué 16 chars),
+    cette fonction garantit la liaison complète dans l'EAH.
+
+    Fail-closed :
+    - fichier absent / non-lisible / lien symbolique -> REJECTED
+    - cible protégée -> REJECTED_PROTECTED
+    - expected_content_sha256 fourni mais ne correspond pas -> REJECTED
+    """
+    raw_path = Path(source_path)
+    try:
+        if raw_path.is_symlink():
+            return {
+                "status": "REJECTED",
+                "reason": "FILESYSTEM_SOURCE_SYMLINK_REJECTED",
+                "source_path": str(source_path),
+            }
+        p = raw_path.resolve()
+    except OSError as exc:
+        return {
+            "status": "REJECTED",
+            "reason": "FILESYSTEM_SOURCE_RESOLVE_FAILED:" + str(exc),
+            "source_path": str(source_path),
+        }
+
+    if not p.exists() or not p.is_file():
+        return {"status": "REJECTED", "reason": "FILESYSTEM_SOURCE_NOT_FOUND",
+                "source_path": str(source_path)}
+
+    if _is_protected_resolved(p):
+        return {"status": "REJECTED_PROTECTED", "reason": "protected_path",
+                "source_path": str(p)}
+
+    try:
+        raw_bytes = p.read_bytes()
+    except OSError as exc:
+        return {"status": "REJECTED",
+                "reason": "FILESYSTEM_SOURCE_UNREADABLE:" + str(exc)}
+
+    # SHA256 calculé depuis les octets réels — jamais depuis une valeur fournie
+    content_sha256_full = hashlib.sha256(raw_bytes).hexdigest()  # 64 chars, authoritative
+
+    # Assertion optionnelle : si l'appelant fournit un expected, vérifier
+    if expected_content_sha256 and expected_content_sha256 != content_sha256_full:
+        return {
+            "status": "REJECTED",
+            "reason": "FILESYSTEM_SOURCE_CONTENT_SHA256_MISMATCH",
+            "expected_content_sha256": expected_content_sha256,
+            "actual_content_sha256": content_sha256_full,
+        }
+
+    source_hash = content_sha256_full[:16]  # compatibilité sémantique Ledger
+
+    root = repo_root or _REPO_ROOT
+    normalized_path = _normalize_source_path(p)
+    identity_path = target_path or normalized_path
+
+    existing = _load_entries(ledger_dir)
+    dedup = classify_dedup(existing, identity_path, source_hash)
+
+    identity_key = (
+        "DISCOVERED_FILESYSTEM:" + str(p) + ":" + content_sha256_full
+        + ":" + (target_path or "NO_TARGET")
+    )
+    entry_id = ledger_entry_id(identity_key, source_hash)
+
+    existing_entry = next(
+        (e for e in existing if e.get("ledger_entry_id") == entry_id),
+        None,
+    )
+    if existing_entry is not None:
+        return {
+            "status": "ALREADY_REGISTERED",
+            "ledger_entry_id": entry_id,
+            "source_content_sha256": content_sha256_full,
+            "source_path": existing_entry.get("source_path"),
+            "source_kind": existing_entry.get("source_kind") or SOURCE_KIND_FILESYSTEM,
+            "source_repository_identity": existing_entry.get("source_repository_identity"),
+        }
+
+    prev_entry_id: "str | None" = None
+    if dedup == "SAME_PATH_NEW_CONTENT":
+        same_path = [e for e in existing if _effective_identity_path(e) == identity_path]
+        if same_path:
+            prev_entry_id = same_path[-1]["ledger_entry_id"]
+
+    entry: dict = {
+        "ledger_entry_id": entry_id,
+        "entry_schema_version": SCHEMA_VERSION,
+        "timestamp": _now(),
+
+        "source_kind": SOURCE_KIND_FILESYSTEM,
+        "source_type": "FILESYSTEM_FILE_SOURCE",
+        "source_path": normalized_path,
+        "source_hash": source_hash,
+        "source_content_sha256": content_sha256_full,
+        "source_repository_identity": str(root.resolve()),
+
+        "target_path": target_path,
+        "target_domain": target_domain,
+
+        "session_id": None,
+        "branch": None,
+        "worktree": None,
+        "base_sha": None,
+
+        "objective": reason,
+
+        "proposal_id": None,
+        "proposal_hash": None,
+
+        "approved_scope": [],
+        "proposal_files": [],
+        "actual_modified_files": [],
+
+        "test_evidence_ref": None,
+        "gate_evidence_ref": None,
+
+        "kx108_decision": None,
+        "next_human_action": "REVIEW_SOURCE_CANDIDATE",
+
+        "lifecycle_status": "DISCOVERED",
+        "commit_sha": None,
+
+        "provenance_refs": provenance_refs or {},
+        "dependency_refs": dependency_refs or [],
+
+        "dedup_classification": dedup,
+        "prev_entry_id": prev_entry_id,
+
+        "status": "DISCOVERED",
+        "unknowns": [],
+        "risk_flags": [],
+
+        "decision_authority": DECISION_AUTHORITY,
+    }
+
+    _append_entry(entry, ledger_dir)
+    _append_event({
+        "event_type": "DISCOVERED_FILESYSTEM",
+        "ledger_entry_id": entry_id,
+        "source_path": normalized_path,
+        "source_content_sha256": content_sha256_full,
+        "timestamp": _now(),
+        "dedup": dedup,
+    }, ledger_dir)
+
+    return {
+        "status": "DISCOVERED",
+        "ledger_entry_id": entry_id,
+        "source_content_sha256": content_sha256_full,
+        "source_path": entry.get("source_path"),
+        "source_kind": entry.get("source_kind"),
+        "source_repository_identity": entry.get("source_repository_identity"),
+    }
+
 
 
 # ─── Commandes lecture ───────────────────────────────────────────────────────

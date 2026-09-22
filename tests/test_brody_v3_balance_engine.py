@@ -84,8 +84,8 @@ def test_adversarial_balance_exponentielle():
     assert exp["tension"] >= 0.8
     assert exp["amplification"] > 5.0  # exp(0.9 * 2.3) ≈ 8.17
     coord = result["coordinator"]
-    # graphiti doit être évité
-    assert "graphiti_topk_layer" in coord["layers_to_avoid"]
+    # memory_selector_layer doit rester born?e sur entr?e adversariale
+    assert "memory_selector_layer" in coord["layers_to_avoid"]
 
 
 # ── T-BAL-06 : Coordinator produit au max 6 couches actives ──────────────────

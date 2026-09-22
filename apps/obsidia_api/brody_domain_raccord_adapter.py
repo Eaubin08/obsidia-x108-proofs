@@ -262,7 +262,7 @@ def adjust_risk_flags(text: str, flags: list[str]) -> list[str]:
         values = [f for f in values if f != "action_request"]
 
     if has_memory_write_request(text):
-        for f in ("write_request", "memory_write_request", "graphiti_write_request", "canon_promotion_request"):
+        for f in ("write_request", "memory_write_request", "canon_promotion_request"):
             if f not in values:
                 values.append(f)
 
@@ -284,7 +284,7 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
 
     if "AUTHORITY_DECISION_EXPLANATION" in domains:
         parts.append(
-            "KX108 décide. Brody ne décide pas. Graphiti ne décide pas. Reverse OS ne décide pas. "
+            "KX108 décide. Brody ne décide pas. La mémoire ne décide pas. Reverse OS ne décide pas. "
             "Thermo ne décide pas. Gencoin ne décide pas. "
             "Brody lit, structure, projette et explique en readonly ; l'autorité d'action reste KX108/humain."
         )
@@ -297,30 +297,30 @@ def _domain_text_fr(domains: list[str], text: str) -> str:
         prefix = "Mode Jarvis readonly : " if jarvis_mode else "État système readonly : "
         parts.append(
             prefix
-            + "Brody observe le runtime sans écrire. Graphiti V20 est gelé en lecture seule ; "
-            "Neo4j est consulté en readonly ; OS Trad lit l'intention ; IR Candidate la stabilise ; "
+            + "Brody observe le runtime sans écrire. la mémoire Obsidia native est disponible en lecture seule ; "
+            "OS Trad lit l'intention ; IR Candidate la stabilise ; "
             "Reverse OS la rend lisible ; Thermo mesure la cohérence temporelle ; "
             "Gencoin projette une valeur cognitive non monétaire ; le Dashboard F2→F20 expose les preuves. "
             "Autorité : KX108_ONLY. Aucune décision, aucune écriture, aucune mutation."
         )
     elif runtime_state:
         parts.append(
-            "État runtime readonly : modules actifs, mémoire candidate, Graphiti V20 gelé, "
+            "État runtime readonly : modules actifs, mémoire candidate, mémoire Obsidia native disponible, "
             "IR Candidate, Reverse OS, Thermo, Gencoin et Dashboard runtime sont lisibles sans écriture. "
             "Autorité : KX108_ONLY. write_boundary_required=false."
         )
     elif architecture:
         parts.append(
             "Architecture readonly : OS Trad traduit l'intention ; IR Candidate stabilise ; "
-            "Reverse OS reprojette en langage humain ; Graphiti enrichit en contexte ; "
+            "Reverse OS reprojette en langage humain ; la mémoire Obsidia native enrichit en contexte ; "
             "les contrats bornent Brody ; les 34 arbres orientent la lecture. "
             "Brody explique la structure, mais ne remplace jamais KX108."
         )
 
     if "MEMORY_WRITE_CANON_FREEZE" in domains:
         parts.append(
-            "La demande touche une écriture mémoire / Graphiti / canonisation. "
-            "Brody ne peut pas écrire, valider canon, promouvoir un freeze ou modifier Graphiti. "
+            "La demande touche une écriture mémoire / canonisation. "
+            "Brody ne peut pas écrire, valider canon, promouvoir un freeze ou modifier directement la mémoire. "
             "Le raccord actif doit rester une projection readonly : signaler la demande, exposer le refus, "
             "et laisser toute autorité à KX108/humain."
         )

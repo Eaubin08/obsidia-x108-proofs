@@ -135,7 +135,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_balance_engine.py",
-      "sha256": "08beebf3dcf2abaa830876f7a3ba6165196eda648324047b3b51cc445d013264",
+      "sha256": "d08d8a6a8416004d7d2b43ca6bb4b9a9b7715fc729ee4bbd6d9fb81dbc7fbe35",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -171,7 +171,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_capabilities_intent.py",
-      "sha256": "4f14e0341a57ea726cd810bff02dcccb5300a177971191d6a1f8b123db3011f0",
+      "sha256": "1ee2b2eaa93882f6655160b20e87058cfb88f38ffc9700140831ccd6fecce7e6",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -195,7 +195,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_cognitive_micro_core.py",
-      "sha256": "174c3e0ea6c6f077e981243422d272b1535bf86f294ebc357e68c36778091ffe",
+      "sha256": "72f576e704203518881cb0e2bb2ac19fd73a54e410077119890e7868dca5e786",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -207,7 +207,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_cognitive_modules_adapter.py",
-      "sha256": "fb3a930a2423e702e347b0ce639a2af45147660764d923a9da69d0197a98391d",
+      "sha256": "993d0681059b015e51baa7c7b6aa7a6f20457fcd31433fe870d2d4dd81bf4935",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -219,7 +219,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_context_budget.py",
-      "sha256": "c4bc767b9963631b8b66dff5df6b5677de6a9117485e27ec6667a033efaae923",
+      "sha256": "c9cdc00bc8063a14bb4eda32cf45770ee359d9709a9235403d1acf6c1d07439f",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -231,7 +231,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_contracts_packet.py",
-      "sha256": "e77a88ae5e1ea1d9898a00677eb2040321fdc61df54069f40e19130f108e9278",
+      "sha256": "8a394345dc09fd8f57685ef7ab2bb16023305471ff47936ffe9e6b41655c3835",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -243,7 +243,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_domain_raccord_adapter.py",
-      "sha256": "599f0649db6b6dc0093663dc2ff0bf95287161b8ac1ab2f10fe730f98a634a2d",
+      "sha256": "01cca1d0e93410d839728762d5686e1755c63738a189d42bfb3370ee25c689df",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -255,7 +255,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_education_pack_v1_readonly_adapter.py",
-      "sha256": "ffdcda437a76b712e5f52c74d8b2fa4ef86dada753397089058d5490679ab275",
+      "sha256": "76754243e67675309add9e6bdabe8114fffa41f64bce0b8f4b573eabe69ce612",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -267,7 +267,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_existing_reverse_os_bridge.py",
-      "sha256": "952dfbfb134c8fe05c47a188118825fb1f635cea19f276a57cbb44762975b869",
+      "sha256": "204202319653e1d04f8bbaea5902fdc322ee66a860043bb7be1140e07a3f1edb",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -303,7 +303,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_full_runtime_reconnect.py",
-      "sha256": "0a8d6fe922ac88007a996188bc3ebabcca402c6fc2aa6d0257d17a98f9fab258",
+      "sha256": "23bc9c0102a8fe86d9cb5bd9d3970f4a0ba2af39c61e8d865f549322f631bced",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -363,7 +363,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_machination_composer.py",
-      "sha256": "a17522ca91db7c1c4fca2d04b7b79255bcc4b6c032a198882d76ad7419fbf616",
+      "sha256": "d6be03c66b66fad9faa44676dc9cf561bcd107ab45bcf8684bff1bdcb1d30299",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -375,7 +375,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_memory_candidate_builder.py",
-      "sha256": "1bae70a0ae14ff7edc47de54b4efbb631877d0b49c2f7b011a5e2f5e90585b40",
+      "sha256": "dda72478bdb004e6e88fa5b5611d489f6d3508a268c13130fc32f177cc794a04",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -459,7 +459,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_memory_trace_extractor.py",
-      "sha256": "2454502491595db2d6f9973fa3ca583b5ab0984ebcec72b96da752e782903f9d",
+      "sha256": "dea92952a2357f7f27846bc3637b0690eff255482c49e6109c631a8e3aac4c4b",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -495,7 +495,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_point_cloud_21d_selector.py",
-      "sha256": "3b25d7af15ef71bd2a6b27635bf7b17c954a93d1fc4c0c4c7680124d118fe78e",
+      "sha256": "1c564dbd2be61c91b8f0d5eb8554124a6518fcc685e6a00b4c09adf4c939882e",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -507,7 +507,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_project_memory_adapter.py",
-      "sha256": "50313fadeb08d4a80edfaa9187997191ea511adbdd9ca3fe7e3c5e3aa82afac5",
+      "sha256": "a9bc06e7278f1a72c7355bded4c88223ab367fb8a3e07c6c84e4196da8b04af5",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -519,7 +519,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_project_memory_runtime.py",
-      "sha256": "1b1bd391762a033796e855d9ea9d497a6c18833d316d490f1b65ac535c1e0571",
+      "sha256": "81b802d647776318d77e98011fca4717513078c9d41a7427d0b9d0564855d0fd",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -543,7 +543,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_real_response_pipeline.py",
-      "sha256": "f35ec112ad4315066bbe1bc1b074d48b665edee7e8df28abd49e55102fa15b50",
+      "sha256": "44920d64cb10cb88c183ab420139be4e6da8dad29ca44fe38d9fdf221979c4a7",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -627,7 +627,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_semantic_query_router.py",
-      "sha256": "3197dc8fd12301d6782aaa74c4e96e25c9d3b0a18aa00d9c3fcbb2f896763fbf",
+      "sha256": "774dfe980e3ddc1bdf3b9297d9c90a5137b5c5fca8d766f7f346ac27c49b1b90",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -675,7 +675,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_structured_response_engine_adapter.py",
-      "sha256": "015713e7e1b9678f178e4278e2dc23d8bdeba035065fedfc49733114b0b7dfa9",
+      "sha256": "79e1bf0488f852883cc4040f0bdf7a9e9e8b94b075ba0ba2152ba236d6d16ddd",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -771,7 +771,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_true_response_structure_adapter.py",
-      "sha256": "2a56196c7ca29381372470be5ef86b9aa2e6de7067d5ac7decaba6386d97177f",
+      "sha256": "6d1fef9aaaa1e1515c19b76cee9816892e45a8156f35271b0d98c4fb6022846d",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -795,7 +795,7 @@
     },
     {
       "path": "apps/obsidia_api/brody_true_voice_adapter.py",
-      "sha256": "9329842cbccf88cff682fdf0ab5fabab3f0d9204951f62568760ea89bf112d82",
+      "sha256": "2e55216ecdd8e2a09d98472c9634036ca726d654340aeec4deb34847772bc170",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -831,7 +831,7 @@
     },
     {
       "path": "apps/obsidia_api/routes/brody.py",
-      "sha256": "c2ff425ffb8a416e61e70f7e832e89fb5271bf93160b4c780526347282d289e1",
+      "sha256": "a01b28a85ab8ed258a7f4166b28342ccf96b8964ef11946bef166e4687d383c9",
       "role": "API_PROTOCOL_SOURCE_MODULE",
       "canonicality_status": "CANONICAL",
       "relation_type": "API_PROTOCOL_LINKED_TO_GOVERNANCE_INDEX",
@@ -951,7 +951,7 @@
     },
     {
       "path": "tests/api/test_brody_automation_orchestrator.py",
-      "sha256": "23fce1bc412d4d7fd8f22a70cf778b0ce3f34bfb15b9dcc85bc62caf253f64dd",
+      "sha256": "4905e65abfc59750773d6e443d912debe27f473d3179889f48a0e1d17111f196",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1014,7 +1014,7 @@
     },
     {
       "path": "tests/api/test_brody_chat_readonly.py",
-      "sha256": "4e5c0d29ad1f5631bc4e2270615b1ebac75a83403d8d49a37ad01ce96e1c1b57",
+      "sha256": "632d00d23e8b1efe16a35a0dfe8329306c3edb08a5865700a7100399162165a6",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1269,7 +1269,7 @@
     },
     {
       "path": "tests/api/test_brody_general_conversation_mode_readonly.py",
-      "sha256": "bdf2d58b778338dc7ca268f692b13983a79e73d17969d2606337a1e44dc4693b",
+      "sha256": "ebe9da4f5e8ff3fa7322a28381a15d5d89daa6336c646302a3ecfbf0a86c471e",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1332,7 +1332,7 @@
     },
     {
       "path": "tests/api/test_brody_memory_candidate_automation.py",
-      "sha256": "1417bc5dfb4857aa9e5bd824086fe9381051ea38238f95727b798917d8156878",
+      "sha256": "388cb2c09df3a3f07828dbe73f4df5ae54fceb7eb804bf9d08e4211f33cc549b",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1407,7 +1407,7 @@
     },
     {
       "path": "tests/api/test_brody_native_machination_packet.py",
-      "sha256": "5747c5584fa03efdbdbe876649b26caa4d898ee82b811888eb102166544b6972",
+      "sha256": "79e254c8a792e7f757ddbdf02c11281669b4988e776d0990350d3c39841db741",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1419,7 +1419,7 @@
     },
     {
       "path": "tests/api/test_brody_no_invented_metrics.py",
-      "sha256": "0023df21e7ee6e9cbad6b6a73e20148482b73960afd2b0ebe86c071bd642cb59",
+      "sha256": "fe2a5ddb92bfbda6feadde098e9856339a15c3acb4c08f7c1ba25451628254fd",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1482,7 +1482,7 @@
     },
     {
       "path": "tests/api/test_brody_payload_packetization.py",
-      "sha256": "fd5e99b0f4764a9feadd06c9ce487367ffd1d45e7adb0703ce9cc4a996fa362d",
+      "sha256": "37bc25a89f23ba2fc653632f6a33a2c1c7bcf7d49ea62a6631e932d9e7f25d84",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1497,7 +1497,7 @@
     },
     {
       "path": "tests/api/test_brody_readonly_activation_api_p51.py",
-      "sha256": "32c42021dcf4b81b85834e4423662b022d46430ffddd4b2da1b14a76bab65471",
+      "sha256": "a458db679a7b6ac04221db21c382f60e64cd41a19341527c4ee1bb50f7748ec5",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1509,7 +1509,7 @@
     },
     {
       "path": "tests/api/test_brody_response_quality_fr.py",
-      "sha256": "ea695d352666fd94e63b9d254237e2991adcc3ad93631341ef9dcebf4175b916",
+      "sha256": "be55372298b63d16f8d449bfa5783afd8a7648ece592dcda46246f734f51d416",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1524,7 +1524,7 @@
     },
     {
       "path": "tests/api/test_brody_response_schema_utf8.py",
-      "sha256": "ebb9826fe65d0132b7c2b90d49ca7f2f54adf975fa72b67e285f433327f9dd91",
+      "sha256": "e619fb65eac90087ded7b41990167542f64db0ef69b05f342d52f11a1bf65c66",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1536,7 +1536,7 @@
     },
     {
       "path": "tests/api/test_brody_response_source_not_frontend_mock.py",
-      "sha256": "f1bb8f5776ecd90777d2a23f97c292b4740304a9d84978ad2ad02a0ad7fca514",
+      "sha256": "54ad74eb26af0e07ee6b9186d402994aa278cd277331c63ac1c130e1921b5952",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1587,7 +1587,7 @@
     },
     {
       "path": "tests/api/test_brody_semantic_advisory_utf8_runtime.py",
-      "sha256": "037ce1fb20b05c37324b25bfe25cef2301c40879759a01aac382135843d35457",
+      "sha256": "2f5703dbc3129bcf7947248ebf6ce4cbba5e7e6cf2d284acc24e2e0081c41b90",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1647,7 +1647,7 @@
     },
     {
       "path": "tests/api/test_brody_source_pack_context_p28.py",
-      "sha256": "378604839561fcac1cd0c41acdb489afce4c7d1afd8b2e5fa94168e529dc1b9a",
+      "sha256": "379e64c863bb14f742ec4f90ad4f837b39f67e40057e07b6d4f357729eb394ff",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1659,7 +1659,7 @@
     },
     {
       "path": "tests/api/test_brody_structured_response_engine_adapter.py",
-      "sha256": "10589b6dac5b30dc728765780dc96ba6c0b0dcc8277b55554281979289d375ce",
+      "sha256": "4401754095575c2340c68aa1e7fc7ad50106b8eaa139f053515f850d6ac98a2a",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1683,7 +1683,7 @@
     },
     {
       "path": "tests/api/test_brody_three_foundations_freeze.py",
-      "sha256": "50add46f5f2e58bf0734b1beea2cd32bdc083d3e73ffeed9b44485143166e91b",
+      "sha256": "6d85eb4c7094dbc5d73005a53ef422c3c0e50fd8233e78d636915a6ecdbb98d3",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1743,7 +1743,7 @@
     },
     {
       "path": "tests/api/test_brody_v1_4_12a_creator_boundary.py",
-      "sha256": "acb3ba0ddf12ed73485e2d2d75be4bb0705c1b6a1a80d91ab2f565d9fa664230",
+      "sha256": "b4c5fd8258079d05f9a7260c5387eb3dbfdd2d9de57c42b17b6fd614b3b3091f",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",
@@ -1767,7 +1767,7 @@
     },
     {
       "path": "tests/api/test_f17c_brody_source_label.py",
-      "sha256": "a725178f0c96af53fa84ea04bf0fbb05983785a4623f74898909678e7a4e9e07",
+      "sha256": "871d08a1b29b7d55341e2ab12ed4127031d54007c66d2fce293ecc8cc4f98cdb",
       "role": "EXECUTABLE_UNIT_TEST",
       "canonicality_status": "CANONICAL",
       "relation_type": "EXECUTABLE_TEST_LINKED_TO_SOURCE_COMPONENT",

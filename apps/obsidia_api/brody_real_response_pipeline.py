@@ -2,7 +2,7 @@
 BRODY REAL RESPONSE PIPELINE - V5B+
 Prioritizes: local_response_engine > terminal_structural_dialogue.
 Never returns raw tuples. Always returns response_md string.
-Auto-loads .env.graphiti.local for NEO4J_PASSWORD.
+Provider-neutral readonly response pipeline.
 """
 from __future__ import annotations
 import json, sys, uuid, os, socket
@@ -10,9 +10,28 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from apps.obsidia_api.brody_pre_reasoning_adapter import (
+    build_brody_pre_reasoning_snapshot,
+)
+
+from periphery.language.pre_response_calibrator import (
+    calibrate_pre_response,
+)
+
+from periphery.language.pre_action_calibrator import (
+    calibrate_pre_action,
+)
+
+from periphery.language.final_sense_halo import (
+    build_final_sense_halo,
+)
+
+from periphery.language.action_meaning_validator import (
+    validate_action_meaning,
+)
+
 _TERMINAL = None
 _LOCAL_ENGINE = None
-_CONTEXT_QUERY = None
 _HYDRATION = None
 
 def _si(mod_path: str) -> Any | None:
@@ -22,87 +41,14 @@ def _si(mod_path: str) -> Any | None:
 P = "periphery.brody_memory_readonly."
 
 def _load():
-    global _TERMINAL, _LOCAL_ENGINE, _CONTEXT_QUERY, _HYDRATION
+    global _TERMINAL, _LOCAL_ENGINE, _HYDRATION
     _TERMINAL = _TERMINAL or _si(P + "terminal_structural_dialogue_readonly.brody_terminal_structural_dialogue_readonly_v1")
     _LOCAL_ENGINE = _LOCAL_ENGINE or _si(P + "local_response_engine_readonly.brody_local_response_engine_readonly_v1")
-    _CONTEXT_QUERY = _CONTEXT_QUERY or _si(P + "context_packet_query_readonly.brody_context_packet_query_readonly_v1")
     _HYDRATION = _HYDRATION or _si(P + "content_hydration_readonly.brody_content_hydration_readonly_v1")
 
 
-def _probe_graphiti() -> dict[str, Any]:
-    result = {
-        "status": "GRAPHITI_UNAVAILABLE",
-        "effective_status": "GRAPHITI_UNAVAILABLE",
-        "neo4j_status": "NEO4J_UNKNOWN",
-        "v20_status": "GRAPHITI_V20_UNKNOWN",
-        "port_7688_open": False,
-        "port_8011_open": False,
-        "blocker": "",
-        "neo4j_blocker": "",
-        "run_command": "",
-        "live_neo4j_dependency": False,
-        "readonly": True,
-        "decision_authority": "KX108_ONLY",
-        "graphiti_write": False,
-        "memory_write": False,
-        "emits_act": False,
-        "emits_verdict": False,
-        "kernel_mutation": False,
-        "x108_mutation": False,
-    }
-    for port, key in [(7688, "port_7688_open"), (8011, "port_8011_open")]:
-        try:
-            s = socket.socket(); s.settimeout(1)
-            s.connect(('127.0.0.1', port)); s.close()
-            result[key] = True
-        except Exception:
-            pass
-
-    neo4j_blockers = []
-    if not os.environ.get("NEO4J_PASSWORD"):
-        neo4j_blockers.append("NEO4J_PASSWORD not set")
-    if not result["port_7688_open"]:
-        neo4j_blockers.append("Neo4j port 7688 closed")
-
-    if not neo4j_blockers:
-        result["neo4j_status"] = "NEO4J_LIVE_READONLY_AVAILABLE"
-    else:
-        result["neo4j_status"] = "NEO4J_BLOCKED"
-        result["neo4j_blocker"] = " | ".join(neo4j_blockers)
-
-    if result["port_8011_open"]:
-        result["v20_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
-    else:
-        result["v20_status"] = "GRAPHITI_V20_FROZEN_UNAVAILABLE"
-
-    if result["neo4j_status"] == "NEO4J_LIVE_READONLY_AVAILABLE":
-        result["status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
-        result["effective_status"] = "GRAPHITI_NEO4J_LIVE_READONLY_PASS"
-        result["live_neo4j_dependency"] = True
-    elif result["v20_status"] == "GRAPHITI_V20_FROZEN_READONLY_PASS":
-        result["status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
-        result["effective_status"] = "GRAPHITI_V20_FROZEN_READONLY_PASS"
-        result["blocker"] = result["neo4j_blocker"]
-        result["live_neo4j_dependency"] = False
-    else:
-        result["status"] = "GRAPHITI_UNAVAILABLE"
-        result["effective_status"] = "GRAPHITI_UNAVAILABLE"
-        blockers = list(neo4j_blockers)
-        if not result["port_8011_open"]:
-            blockers.append("ObsidiaShell port 8011 closed")
-        result["blocker"] = " | ".join(blockers)
-        result["run_command"] = "Start ObsidiaShell Graphiti V20 on 8011 or set NEO4J_PASSWORD for live Neo4j."
-    return result
 
 
-def _source_label_from_graphiti_probe(probe: dict[str, Any]) -> str:
-    """Return honest runtime source label from effective Graphiti status."""
-    status = str(probe.get("status") or probe.get("effective_status") or "")
-    if status == "GRAPHITI_NEO4J_LIVE_READONLY_PASS":
-        return "REAL_BRODY_GRAPHITI_NEO4J_LIVE_READONLY"
-    if status == "GRAPHITI_V20_FROZEN_READONLY_PASS":
-        return "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY"
-    return "REAL_BRODY_RUNTIME_NO_GRAPHITI"
 
 
 SOV: dict[str, Any] = {
@@ -110,7 +56,7 @@ SOV: dict[str, Any] = {
     "memory_decision": False, "allowed_to_decide": False, "allowed_to_act": False,
     "emits_act": False, "emits_verdict": False, "emits_allow_hold_block": False,
     "kernel_mutation": False, "x108_mutation": False,
-    "memory_write": False, "graphiti_write": False, "neo4j_write": False, "real_action": False,
+    "memory_write": False, "real_action": False,
     "decision_authority": "KX108_ONLY",
 }
 
@@ -131,8 +77,70 @@ def run_brody_real_response_pipeline(
     r["language"] = language
     r["timestamp"] = datetime.now(timezone.utc).isoformat()
 
-    r["graphiti_probe"] = _probe_graphiti()
-    graphiti_live = r["graphiti_probe"]["status"] in ("GRAPHITI_NEO4J_LIVE_READONLY_PASS", "GRAPHITI_V20_FROZEN_READONLY_PASS")
+    # ------------------------------------------------------------
+    # PRE-REASONING CAUSAL GATE
+    #
+    # Cognitive guidance only:
+    # - no HOLD/BLOCK/ALLOW
+    # - no memory retrieval
+    # - no provider
+    # - no ACT
+    #
+    # It exists before response generation so an unresolved symbol
+    # cannot be silently treated as a known concept by the responder.
+    # ------------------------------------------------------------
+
+    pre_reasoning_snapshot = (
+        build_brody_pre_reasoning_snapshot(
+            user_message=message,
+            language=language,
+            intent="pure_response",
+            authority_snapshot={
+                "request_type": "PURE_RESPONSE",
+            },
+        )
+    )
+
+    r["pre_reasoning_snapshot"] = (
+        pre_reasoning_snapshot
+    )
+
+    reasoning_directive = (
+        pre_reasoning_snapshot.get(
+            "reasoning_directive",
+            {},
+        )
+    )
+
+    if not isinstance(
+        reasoning_directive,
+        dict,
+    ):
+        reasoning_directive = {}
+
+    resolution_required = bool(
+        reasoning_directive.get(
+            "resolution_required",
+            False,
+        )
+    )
+
+    resolution_targets = [
+        str(value).strip()
+        for value in reasoning_directive.get(
+            "resolution_targets",
+            [],
+        )
+        if str(value).strip()
+    ]
+
+    # Preserve historical terminal commands.
+    is_terminal_command = (
+        str(message or "")
+        .lstrip()
+        .startswith(":")
+    )
+
 
     memory_query = message
     action_risk = False
@@ -142,55 +150,48 @@ def run_brody_real_response_pipeline(
         try: action_risk = bool(_TERMINAL.is_action_risk(message))
         except: pass
 
-    neo4j_packet = None
-    # V3 Block 2 — graphiti guard: block generic/adversarial prompts before Graphiti call
-    _graphiti_guard_status: dict = {}
-    try:
-        from apps.obsidia_api.brody_graphiti_guard import evaluate_graphiti_guard as _eval_guard
-        _graphiti_guard_status = _eval_guard(
-            message=message,
-            session_id=session_id,
-        )
-        if not _graphiti_guard_status.get("graphiti_allowed", False):
-            graphiti_live = False
-    except Exception:
-        pass  # guard unavailable — existing graphiti_live logic applies
-    r["graphiti_guard_status"] = _graphiti_guard_status
-
-    if _CONTEXT_QUERY and graphiti_live:
-        try: neo4j_packet = _CONTEXT_QUERY.query_neo4j(memory_query, limit)
-        except: graphiti_live = False
 
     response_md = ""
     engine_used = False
-    source = _source_label_from_graphiti_probe(r["graphiti_probe"])
+    source = "REAL_BRODY_RUNTIME"
     material_quality = ""
     selected_items: list = []
     tag_counts: dict = {}
 
-    if _LOCAL_ENGINE and neo4j_packet and graphiti_live:
-        try:
-            ctx_packet = neo4j_packet if isinstance(neo4j_packet, dict) else {"items": [], "query": memory_query}
-            if not isinstance(ctx_packet, dict):
-                ctx_packet = {"items": [], "query": memory_query}
-            ctx_packet.setdefault("readonly", True)
-            ctx_packet.setdefault("memory_write", False)
-            ctx_packet.setdefault("emits_act", False)
-            ctx_packet.setdefault("kernel_mutation", False)
-            ctx_packet.setdefault("decision_authority", "KX108_ONLY")
-            obj = {"context_packet": ctx_packet, "query": memory_query, "text": message,
-                   "memory_write": False, "emits_act": False, "kernel_mutation": False,
-                   "decision_authority": "KX108_ONLY"}
-            engine_result = _LOCAL_ENGINE.build_response(obj, max_items=max_items)
-            if isinstance(engine_result, dict):
-                response_md = engine_result.get("response_md", "")
-                material_quality = engine_result.get("material_quality", "")
-                selected_items = engine_result.get("selected_items", [])
-                tag_counts = engine_result.get("tag_counts", {})
-                if response_md:
-                    source = "REAL_BRODY_GRAPHITI_LIVE"
-                    engine_used = True
-        except: pass
+    # C274 is not sovereign and emits no verdict.
+    #
+    # Its only causal effect here is epistemic:
+    # do not let the responder assert an unresolved symbol as known.
+    if (
+        resolution_required
+        and resolution_targets
+        and not is_terminal_command
+    ):
+        targets_text = ", ".join(
+            resolution_targets
+        )
+
+        if language == "fr":
+            response_md = (
+                "Je ne peux pas traiter "
+                f"? {targets_text} ? "
+                "comme un concept connu : "
+                "ce symbole reste non r?solu "
+                "avant raisonnement."
+            )
+        else:
+            response_md = (
+                "I cannot treat "
+                f'"{targets_text}" '
+                "as a known concept: "
+                "this symbol remains unresolved "
+                "before reasoning."
+            )
+
+        source = (
+            "PRE_REASONING_UNRESOLVED_SYMBOL"
+        )
+
 
     if not response_md and _TERMINAL:
         try:
@@ -210,7 +211,7 @@ def run_brody_real_response_pipeline(
                         response_md = terminal_result.get("response_text", str(terminal_result))
                 else:
                     response_md = str(terminal_result)
-                source = _source_label_from_graphiti_probe(r["graphiti_probe"])
+                source = "REAL_BRODY_RUNTIME"
         except: pass
 
     if not response_md and _TERMINAL and hasattr(_TERMINAL, 'command_response'):
@@ -223,28 +224,148 @@ def run_brody_real_response_pipeline(
         source = "BACKEND_STUB_LAST_RESORT"
         response_md = (
             "Brody est actif en mode readonly consultatif. "
-            "Graphiti Neo4j est offline (NEO4J_PASSWORD non defini, port 7688 ferme). "
+            "Mode readonly consultatif, sans dependance provider externe. "
             "X108 est la seule autorite de decision."
         ) if language == "fr" else (
             "Brody is active in readonly advisory mode. "
-            "Graphiti Neo4j is offline (NEO4J_PASSWORD not set, port 7688 closed). "
+            "Readonly advisory mode, with no external provider dependency. "
             "X108 is the sole decision authority."
+        )
+
+    # ------------------------------------------------------------
+    # C275 PRE-RESPONSE CALIBRATION
+    #
+    # The response has now been produced, but is not yet exposed.
+    # C275 verifies continuity with the epistemic constraints
+    # established by C274.
+    #
+    # It does not rewrite the candidate itself and has no
+    # decision or action authority.
+    # ------------------------------------------------------------
+
+    pre_reasoning_calibration = (
+        pre_reasoning_snapshot.get(
+            "pre_reasoning_calibration",
+            {},
+        )
+    )
+
+    if not isinstance(
+        pre_reasoning_calibration,
+        dict,
+    ):
+        pre_reasoning_calibration = {}
+
+    pre_response_calibration = (
+        calibrate_pre_response(
+            candidate_response=response_md,
+            reasoning_directive=(
+                reasoning_directive
+            ),
+            pre_reasoning_calibration=(
+                pre_reasoning_calibration
+            ),
+            language=language,
+        )
+    )
+
+    r[
+        "pre_response_calibration"
+    ] = pre_response_calibration
+
+    c275_readiness = str(
+        pre_response_calibration.get(
+            "response_readiness",
+            "",
+        )
+    )
+
+    c275_calibration_required = bool(
+        pre_response_calibration.get(
+            "calibration_required",
+            False,
+        )
+    )
+
+    # A candidate rejected by C275 cannot be surfaced unchanged.
+    #
+    # C275 itself remains advisory/non-sovereign:
+    # this runtime boundary merely refuses to expose a candidate
+    # that violates the prior epistemic calibration.
+    if (
+        c275_calibration_required
+        or c275_readiness
+        == "REQUIRES_CALIBRATION"
+    ):
+        flags = [
+            str(value).strip()
+            for value in (
+                pre_response_calibration.get(
+                    "calibration_flags",
+                    [],
+                )
+                or []
+            )
+            if str(value).strip()
+        ]
+
+        flag_text = (
+            ", ".join(flags)
+            if flags
+            else "C275_CALIBRATION_REQUIRED"
+        )
+
+        if language == "fr":
+            response_md = (
+                "La r?ponse candidate ne peut pas "
+                "?tre expos?e telle quelle : "
+                "la calibration avant r?ponse "
+                "signale une incertitude non "
+                "correctement pr?serv?e. "
+                f"Signal : {flag_text}."
+            )
+        else:
+            response_md = (
+                "The candidate response cannot be "
+                "surfaced as-is: pre-response "
+                "calibration found that prior "
+                "epistemic uncertainty was not "
+                "properly preserved. "
+                f"Signal: {flag_text}."
+            )
+
+        source = (
+            "C275_RESPONSE_CALIBRATION_REQUIRED"
         )
 
     ctx_data = {
         "packet_id": f"cp_{action_id}", "query": message,
         "memory_query": memory_query,
-        "graphiti_status": r["graphiti_probe"]["status"],
         "readonly": True,
     }
 
     r.update({
-        "response": response_md, "response_md": response_md, "source": source,
-        "memory_query": memory_query, "action_risk": action_risk,
-        "graphiti_status": r["graphiti_probe"]["status"],
-        "graphiti_blocker": r["graphiti_probe"]["blocker"],
-        "neo4j_status": "LIVE_READONLY" if r["graphiti_probe"]["port_7688_open"] else "OFFLINE_OR_UNAVAILABLE",
-        "engine_status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS" if engine_used else "TERMINAL_FALLBACK",
+        "response": response_md,
+        "response_md": response_md,
+        "source": source,
+        "response_source": source,
+        "memory_query": memory_query,
+        "action_risk": action_risk,
+        "engine_status": (
+            "C275_RESPONSE_CALIBRATION_REQUIRED"
+            if source
+            == "C275_RESPONSE_CALIBRATION_REQUIRED"
+            else (
+                "PRE_REASONING_RESOLUTION_REQUIRED"
+                if source
+                == "PRE_REASONING_UNRESOLVED_SYMBOL"
+                else (
+                    "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS"
+                    if engine_used
+                    else "TERMINAL_FALLBACK"
+                )
+            )
+        ),
         "material_quality": material_quality, "selected_items": selected_items, "tag_counts": tag_counts,
         "context_packet": ctx_data,
         "x108_boundary": {"passed": True, "status": "READONLY"},
@@ -254,4 +375,334 @@ def run_brody_real_response_pipeline(
             "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     })
+
+    # ── Route de réparation (additive) ───────────────────────────────────
+    # Le retrieval + hydratation ci-dessus ne diagnostique pas du code. Quand
+    # l'intent backend est `code_debug`, on émet en plus un RepairRequest
+    # structuré, exploitable par un moteur de raisonnement externe puis testable
+    # en sandbox par Obsidure. Purement additif : response_md est inchangé,
+    # aucune frontière n'est relâchée, rien n'est appliqué.
+    try:
+        # Preserve the historical lazy import while allowing
+        # an injected bounded adapter in tests/runtime composition.
+        _attach_repair_request = globals().get(
+            "attach_repair_request"
+        )
+
+        if not callable(
+            _attach_repair_request
+        ):
+            from apps.obsidia_api.brody_repair_request_router import (
+                attach_repair_request as _attach_repair_request,
+            )
+
+        _ir_intent, _flags = "", []
+
+        try:
+            from apps.obsidia_api.routes.os_trad_ir_reverse import (
+                _risk_flags,
+                _intent,
+            )
+
+            _flags = _risk_flags(
+                message
+            )
+
+            _ir_intent = _intent(
+                message,
+                _flags,
+            )
+
+        except Exception:
+            # Existing textual fallback remains bounded.
+            pass
+
+        # --------------------------------------------------------
+        # C276 PRE-ACTION CALIBRATION
+        #
+        # C276 does not authorize execution.
+        # It only decides whether cognitive state is sufficiently
+        # calibrated to CONSTRUCT a candidate for downstream
+        # governance.
+        # --------------------------------------------------------
+
+        c276_ir_candidate = {
+            "intent": _ir_intent,
+            "risk_flags": list(
+                _flags or []
+            ),
+            "contradictions": [],
+            "constraints": [
+                "READONLY",
+                "NO_ACT",
+                "NO_VERDICT",
+            ],
+        }
+
+        pre_action_calibration = (
+            calibrate_pre_action(
+                ir_candidate=(
+                    c276_ir_candidate
+                ),
+                reasoning_directive=(
+                    reasoning_directive
+                ),
+                pre_reasoning_calibration=(
+                    pre_reasoning_calibration
+                ),
+                pre_response_calibration=(
+                    pre_response_calibration
+                ),
+            )
+        )
+
+        r[
+            "pre_action_calibration"
+        ] = pre_action_calibration
+
+        # --------------------------------------------------------
+        # C277 FINAL SENSE HALO
+        #
+        # Consolidates C274 + C275 + C276 into a readonly,
+        # auditable cognitive snapshot.
+        #
+        # No memory lookup occurs here. memory_refs stays an empty
+        # pass-through on this harness branch.
+        # --------------------------------------------------------
+
+        final_sense_halo = (
+            build_final_sense_halo(
+                calibration_context={
+                    "pre_reasoning": (
+                        pre_reasoning_calibration
+                    ),
+                    "pre_response": (
+                        pre_response_calibration
+                    ),
+                    "pre_action": (
+                        pre_action_calibration
+                    ),
+                },
+                memory_refs=[],
+                symbolic_context={
+                    # Preserve upstream intent semantics.
+                    #
+                    # Do not perform a new intent classification here.
+                    # If the textual IR intent stayed "unknown" while
+                    # C276 already carries an action_request signal,
+                    # propagate that established upstream meaning.
+                    "intent": (
+                        str(
+                            pre_action_calibration.get(
+                                "intent",
+                                "",
+                            )
+                            or ""
+                        ).strip()
+                        or (
+                            "action_request"
+                            if (
+                                str(
+                                    _ir_intent
+                                    or ""
+                                ).strip().lower()
+                                in {
+                                    "",
+                                    "unknown",
+                                }
+                                and (
+                                    "action_request"
+                                    in list(
+                                        pre_action_calibration.get(
+                                            "risk_flags",
+                                            [],
+                                        )
+                                        or []
+                                    )
+                                )
+                            )
+                            else str(
+                                _ir_intent
+                                or "unknown"
+                            )
+                        )
+                    ),
+                    "risk_flags": list(
+                        pre_action_calibration.get(
+                            "risk_flags",
+                            _flags or [],
+                        )
+                        or []
+                    ),
+                },
+            )
+        )
+
+        r[
+            "final_sense_halo"
+        ] = final_sense_halo
+
+        c276_readiness = str(
+            pre_action_calibration.get(
+                "action_candidate_readiness",
+                "",
+            )
+        )
+
+        c276_candidate_ready = bool(
+            pre_action_calibration.get(
+                "candidate_projection_ready",
+                False,
+            )
+        )
+
+        if (
+            c276_readiness
+            == "NO_ACTION_CANDIDATE_REQUESTED"
+        ):
+            r[
+                "repair_request"
+            ] = None
+
+            r[
+                "repair_route_status"
+            ] = (
+                "NO_ACTION_CANDIDATE_REQUESTED"
+            )
+
+        elif not c276_candidate_ready:
+            # No candidate is built.
+            #
+            # This is NOT HOLD/BLOCK/ACT and is NOT a KX108
+            # decision. It is only a pre-candidate cognitive
+            # boundary.
+            r[
+                "repair_request"
+            ] = None
+
+            r[
+                "repair_route_status"
+            ] = (
+                "C276_CANDIDATE_NOT_READY"
+            )
+
+        else:
+            # C276 permits candidate construction only.
+            # Existing downstream governance remains unchanged.
+            _attach_repair_request(
+                r,
+                message,
+                ir_intent=_ir_intent,
+                risk_flags=_flags,
+            )
+
+        # --------------------------------------------------------
+        # C278 ACTION MEANING VALIDATOR
+        #
+        # C277 = consolidated cognitive meaning.
+        # RepairRequest = concrete readonly action projection.
+        #
+        # C278 compares semantic/provenance continuity only.
+        # It does NOT structurally validate a candidate,
+        # authorize execution, call Obsidure, or emit a verdict.
+        #
+        # If no projection exists, C278 remains explicitly
+        # NOT_APPLICABLE rather than inventing an action.
+        # --------------------------------------------------------
+
+        _c277_trace = (
+            final_sense_halo.get(
+                "integration_trace",
+                {},
+            )
+            if isinstance(
+                final_sense_halo,
+                dict,
+            )
+            else {}
+        )
+
+        if not isinstance(
+            _c277_trace,
+            dict,
+        ):
+            _c277_trace = {}
+
+        _c277_symbolic = (
+            _c277_trace.get(
+                "symbolic_context",
+                {},
+            )
+        )
+
+        if not isinstance(
+            _c277_symbolic,
+            dict,
+        ):
+            _c277_symbolic = {}
+
+        _c278_intent = str(
+            _c277_symbolic.get(
+                "intent",
+                "",
+            )
+            or ""
+        ).strip()
+
+        if not _c278_intent:
+            _c278_intent = str(
+                pre_action_calibration.get(
+                    "intent",
+                    "",
+                )
+                or ""
+            ).strip()
+
+        if not _c278_intent:
+            _c278_intent = str(
+                _ir_intent
+                or "unknown"
+            ).strip()
+
+        action_meaning_validation = (
+            validate_action_meaning(
+                calibration_context={
+                    "final_sense_halo": (
+                        final_sense_halo
+                    ),
+                    "action_projection": (
+                        r.get(
+                            "repair_request"
+                        )
+                    ),
+                },
+                # Harness branch does not resolve/query memory.
+                memory_refs=[],
+                symbolic_context={
+                    "intent": (
+                        _c278_intent
+                    ),
+                    "source_objective": (
+                        str(message or "")
+                    ),
+                },
+            )
+        )
+
+        r[
+            "action_meaning_validation"
+        ] = action_meaning_validation
+
+    except Exception as exc:
+        r[
+            "repair_request"
+        ] = None
+
+        r[
+            "repair_route_status"
+        ] = (
+            "REPAIR_ROUTE_UNAVAILABLE: "
+            f"{type(exc).__name__}"
+        )
+
     return r

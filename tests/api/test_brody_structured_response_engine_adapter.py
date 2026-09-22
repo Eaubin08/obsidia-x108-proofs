@@ -56,12 +56,17 @@ def _pipeline_live_low_material() -> dict:
 
 def test_offline_status():
     snap = make_structured_response_snapshot(_pipeline_offline())
-    assert snap["status"] == "STRUCTURED_RESPONSE_ENGINE_GRAPHITI_OFFLINE"
+    assert snap["status"] == "STRUCTURED_RESPONSE_ENGINE_UNAVAILABLE"
+    assert snap["readonly"] is True
+    assert snap["memory_write"] is False
+    assert snap["decision_authority"] == "KX108_ONLY"
 
 
 def test_offline_query_stage_unavailable():
     snap = make_structured_response_snapshot(_pipeline_offline())
-    assert snap["query_stage"] == "UNAVAILABLE"
+    assert snap["query_stage"] == "NOT_REQUIRED"
+    assert snap["readonly"] is True
+    assert snap["memory_write"] is False
 
 
 def test_offline_material_status_chain_unavailable():
@@ -111,10 +116,11 @@ def test_boundary_readonly():
         snap = make_structured_response_snapshot(pipeline)
         assert snap["readonly"] is True
         assert snap["memory_write"] is False
-        assert snap["graphiti_write"] is False
-        assert snap["neo4j_write"] is False
         assert snap["emits_act"] is False
+        assert snap["kernel_mutation"] is False
         assert snap["decision_authority"] == "KX108_ONLY"
+        assert "graphiti_write" not in snap
+        assert "neo4j_write" not in snap
 
 
 def test_source_doc_refs_present():

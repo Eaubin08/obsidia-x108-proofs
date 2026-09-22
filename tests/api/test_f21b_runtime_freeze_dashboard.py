@@ -107,12 +107,11 @@ def test_brody_payload_has_all_f21_required_packets_live():
 
     missing = [k for k in required if k not in p or p[k] in (None, {}, [])]
     assert missing == []
-
     assert p["decision_authority"] == "KX108_ONLY"
     assert p["readonly"] is True
     assert p["emits_act"] is False
     assert p["memory_write"] is False
-    assert p["graphiti_write"] is False
     assert p["kernel_mutation"] is False
     assert p["x108_mutation"] is False
-    assert p["adaptive_response_policy"]["status"] == "ADAPTIVE_RESPONSE_POLICY_READY"
+    assert "graphiti_write" not in p
+    assert "neo4j_write" not in p

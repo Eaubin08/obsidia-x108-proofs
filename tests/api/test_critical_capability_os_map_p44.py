@@ -123,27 +123,51 @@ def test_os_map_brody_query_selects_brody_chat_entrypoint():
 # Test 4 — Query graphiti → GRAPHITI_READONLY_CONTEXT + graphiti_v20_readonly_client
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_os_map_graphiti_query_selects_graphiti_readonly():
-    """P44 API: os-map/query graphiti → GRAPHITI_READONLY_CONTEXT + client module."""
-    r = client.post("/api/runtime-wiring/os-map/query", json={
-        "query": "graphiti v20 readonly client",
-        "max_paths": 5,
-    })
+def test_os_map_legacy_provider_query_cannot_select_provider_runtime():
+    r = client.post(
+        "/api/runtime-wiring/os-map/query",
+        json={
+            "query":
+                "graphiti v20 readonly client",
+            "max_paths": 5,
+        },
+    )
+
     assert r.status_code == 200
+
     data = r.json()
 
-    _assert_boundary_safe(data, "graphiti query")
-
-    selected = data.get("selected_runtime_path", {})
-    cap_chain = selected.get("capability_chain", [])
-    modules = data.get("selected_modules", [])
-
-    assert "GRAPHITI_READONLY_CONTEXT" in cap_chain, (
-        f"P44: GRAPHITI_READONLY_CONTEXT non sélectionné, cap_chain={cap_chain}"
+    _assert_boundary_safe(
+        data,
+        "legacy provider query",
     )
-    assert "graphiti_v20_readonly_client" in modules, (
-        f"P44: graphiti_v20_readonly_client absent de modules={modules}"
+
+    selected = data.get(
+        "selected_runtime_path",
+        {},
     )
+
+    cap_chain = selected.get(
+        "capability_chain",
+        [],
+    )
+
+    modules = data.get(
+        "selected_modules",
+        [],
+    )
+
+    assert (
+        "GRAPHITI_READONLY_CONTEXT"
+        not in cap_chain
+    )
+
+    assert (
+        "graphiti_v20_readonly_client"
+        not in modules
+    )
+
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

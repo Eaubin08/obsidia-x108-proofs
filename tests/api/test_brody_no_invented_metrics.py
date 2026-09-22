@@ -117,8 +117,8 @@ def test_triage_zone_only_real_values_when_enabled():
     snap = _snap(MEMORY_CANDIDATE, "garde ça en mémoire")
     triage = snap["auto_triage"]
     if triage.get("enabled"):
-        assert triage["zone"] in ("CRISTAL", "TRANSITION", "NEANT"), \
-            "zone must be one of the 3 values from adapted_rules in triage manifest"
+        assert triage["zone"] in ("ACTIVE", "SEMI_ACTIVE", "GHOST_SIDE_TABLE", "BOUNDARY_ALERT_NON_DECISIONAL"), \
+            "zone must be one of the SRL Taxonomy V2 values"
 
 
 def test_triage_zone_not_run_when_disabled():

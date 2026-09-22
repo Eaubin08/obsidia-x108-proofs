@@ -43,7 +43,7 @@ def load_registry_cached() -> List[SourceFileRegistryEntry]:
         return _registry_cache
     from runtime_wiring.source_registry.registry_loader import load_registry_json
     _registry_cache = load_registry_json()
-    _registry_loaded_at = now
+    _registry_loaded_at = time.monotonic()
     _stats_misses += 1
     return _registry_cache
 
@@ -57,7 +57,7 @@ def is_pack_available_cached(source_zip: str) -> bool:
             return result
     from runtime_wiring.source_runtime.source_pack_resolver import is_source_pack_available
     result = is_source_pack_available(source_zip)
-    _pack_avail_cache[source_zip] = (result, now)
+    _pack_avail_cache[source_zip] = (result, time.monotonic())
     return result
 
 

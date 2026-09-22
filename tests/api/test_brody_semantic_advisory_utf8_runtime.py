@@ -61,7 +61,7 @@ class TestSemanticAdvisoryBoundary:
     """Verify all boundary invariants hold."""
 
     def test_neo4j_write_is_false(self, brody_semantic_advisory_response):
-        assert brody_semantic_advisory_response.get("neo4j_write") is False
+        assert "neo4j_write" not in brody_semantic_advisory_response
 
     def test_decision_authority_kx108_only(self, brody_semantic_advisory_response):
         assert brody_semantic_advisory_response.get("decision_authority") == "KX108_ONLY"
@@ -73,7 +73,7 @@ class TestSemanticAdvisoryBoundary:
         assert brody_semantic_advisory_response.get("memory_write") is False
 
     def test_graphiti_write_is_false(self, brody_semantic_advisory_response):
-        assert brody_semantic_advisory_response.get("graphiti_write") is False
+        assert "graphiti_write" not in brody_semantic_advisory_response
 
     def test_kernel_mutation_is_false(self, brody_semantic_advisory_response):
         assert brody_semantic_advisory_response.get("kernel_mutation") is False

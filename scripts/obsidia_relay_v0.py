@@ -186,6 +186,159 @@ def _load(store_dir, mid: str) -> Optional[dict]:
         return None
 
 
+def verify_relay_mission(
+    mission: Optional[dict], *, store_dir=None,
+    expected_relay_mission_id: Optional[str] = None,
+) -> "tuple[bool, Optional[str]]":
+    """V?rifie READ-ONLY une RelayMission V0 et ses liaisons CG-B persist?es.
+
+    Aucun droit, aucune ex?cution, aucune autorit?. Le relay_mission_id historique
+    n'est reconstructible que lorsque requested_outcome n'a pas ?t? tronqu? ?
+    400 caract?res ; au-del?, la v?rification repose sur les cross-bindings
+    persist?s MissionSubmission / RouteDecision / CapabilityRequest.
+    """
+    if not isinstance(mission, dict):
+        return False, "RELAY_MISSION_MISSING"
+    if mission.get("schema_version") != SCHEMA_VERSION:
+        return False, "SCHEMA_UNSUPPORTED"
+    if mission.get("domain_tag") != RELAY_DOMAIN_TAG:
+        return False, "DOMAIN_TAG_MISMATCH"
+    if mission.get("mission_kind") not in _MISSION_KINDS:
+        return False, "MISSION_KIND_INVALID"
+    if mission.get("mission_state") not in _MISSION_STATES:
+        return False, "MISSION_STATE_INVALID"
+
+    mid = mission.get("relay_mission_id")
+    msid = mission.get("mission_submission_id")
+    rdid = mission.get("route_decision_id")
+    created = mission.get("created_at")
+    outcome = mission.get("requested_outcome")
+
+    if not (isinstance(mid, str) and mid.startswith("rmis-")):
+        return False, "RELAY_MISSION_ID_MALFORMED"
+    if expected_relay_mission_id is not None and mid != expected_relay_mission_id:
+        return False, "RELAY_MISSION_ID_LOOKUP_MISMATCH"
+    if not (isinstance(msid, str) and msid.startswith("gsub-")):
+        return False, "MISSION_SUBMISSION_ID_MALFORMED"
+    if not (isinstance(rdid, str) and rdid.startswith("rdec-")):
+        return False, "ROUTE_DECISION_ID_MALFORMED"
+    if not (isinstance(created, str) and created):
+        return False, "CREATED_AT_MISSING"
+    if not (isinstance(outcome, str) and outcome.strip()):
+        return False, "REQUESTED_OUTCOME_MISSING"
+
+    # Historique Relay V0 : l'ID a ?t? calcul? sur l'outcome COMPLET alors que
+    # le record persiste seulement [:400]. Pour <400, identit? reconstructible.
+    # Pour ==400, aucune fausse preuve : on s'appuie sur les cross-bindings CG-B.
+    if len(outcome) < 400:
+        expected_mid = "rmis-" + _sha(_canon({
+            "o": outcome,
+            "k": mission["mission_kind"],
+            "s": msid,
+            "t": created,
+        }))[:32]
+        if mid != expected_mid:
+            return False, "RELAY_MISSION_ID_NOT_DERIVED"
+
+    for b in ("is_execution_authority", "is_kx_authority", "is_human_authority"):
+        if mission.get(b) is not False:
+            return False, f"RELAY_MISSION_CLAIMS_AUTHORITY:{b}"
+    if mission.get("claude_authority") != "NONE":
+        return False, "CLAUDE_AUTHORITY_NOT_NONE"
+    if mission.get("stack_operation_owner") != STACK_OPERATION_OWNER:
+        return False, "STACK_OPERATION_OWNER_MISMATCH"
+    if mission.get("decision_authority") != DECISION_AUTHORITY:
+        return False, "DECISION_AUTHORITY_MISMATCH"
+
+    # Cross-binding Relay -> MissionSubmission -> RouteDecision.
+    sub = _RD.load_mission_submission(msid, store_dir=store_dir)
+    if not isinstance(sub, dict):
+        return False, "MISSION_SUBMISSION_NOT_FOUND"
+    if (
+        sub.get("schema_version") != _RD.SCHEMA_VERSION
+        or sub.get("domain_tag") != "OBSIDIA_CGB_MISSION_SUBMISSION_V0"
+    ):
+        return False, "MISSION_SUBMISSION_INVALID"
+    if sub.get("is_execution_authority") is not False or sub.get("cg_b_inert") is not True:
+        return False, "MISSION_SUBMISSION_NOT_INERT"
+    if sub.get("mission_submission_id") != msid:
+        return False, "MISSION_SUBMISSION_ID_MISMATCH"
+    if sub.get("requested_outcome") != outcome:
+        return False, "MISSION_SUBMISSION_OUTCOME_MISMATCH"
+    sub_rd = sub.get("route_decision")
+    ok_rd, why_rd = _RD.verify_route_decision(sub_rd)
+    if not ok_rd:
+        return False, f"MISSION_ROUTE_DECISION_INVALID:{why_rd}"
+    if sub_rd.get("route_decision_id") != rdid:
+        return False, "MISSION_ROUTE_DECISION_MISMATCH"
+
+    cref = mission.get("capability_request_ref")
+    if cref is not None and not (isinstance(cref, str) and cref.startswith("gcap-")):
+        return False, "CAPABILITY_REQUEST_REF_MALFORMED"
+    if mission["mission_state"] == MISSION_WAITING_CAPABILITY and cref is None:
+        return False, "WAITING_CAPABILITY_WITHOUT_REQUEST"
+
+    if cref is not None:
+        cr = _RD.load_capability_request(cref, store_dir=store_dir)
+        if not isinstance(cr, dict):
+            return False, "CAPABILITY_REQUEST_NOT_FOUND"
+        if (
+            cr.get("schema_version") != _RD.SCHEMA_VERSION
+            or cr.get("domain_tag") != "OBSIDIA_CGB_CAPABILITY_REQUEST_V0"
+        ):
+            return False, "CAPABILITY_REQUEST_INVALID"
+        if cr.get("mission_submission_id") != msid:
+            return False, "CAPABILITY_REQUEST_MISSION_MISMATCH"
+        if (
+            cr.get("granted") is not False
+            or cr.get("grants_tool_access") is not False
+            or cr.get("cg_b_inert") is not True
+        ):
+            return False, "CAPABILITY_REQUEST_NOT_INERT"
+        cr_rd = cr.get("route_decision")
+        ok_crd, why_crd = _RD.verify_route_decision(cr_rd)
+        if not ok_crd:
+            return False, f"CAPABILITY_ROUTE_DECISION_INVALID:{why_crd}"
+        cr_core = {k: v for k, v in cr.items() if k != "capability_request_id"}
+        expected_cr = "gcap-" + _RD._sha256_hex(_RD._canon(cr_core))[:32]
+        if cref != expected_cr or cr.get("capability_request_id") != expected_cr:
+            return False, "CAPABILITY_REQUEST_ID_NOT_DERIVED"
+
+    cres = mission.get("capability_result_ref")
+    if cres is not None and not (isinstance(cres, str) and cres.startswith("crslt-")):
+        return False, "CAPABILITY_RESULT_REF_MALFORMED"
+
+    metrics = mission.get("metrics")
+    if not isinstance(metrics, dict):
+        return False, "METRICS_MISSING"
+    for name in ("native_route_count", "cognitive_request_count", "hold_count", "receipt_count"):
+        v = metrics.get(name)
+        if not (isinstance(v, int) and not isinstance(v, bool) and v >= 0):
+            return False, f"METRIC_INVALID:{name}"
+
+    for field, prefix in (("receipt_ids", "rrcpt-"), ("capability_result_ids", "crslt-")):
+        values = mission.get(field)
+        if not isinstance(values, list):
+            return False, f"{field.upper()}_INVALID"
+        if any(not (isinstance(v, str) and v.startswith(prefix)) for v in values):
+            return False, f"{field.upper()}_MALFORMED"
+
+    return True, None
+
+
+def load_relay_mission(relay_mission_id: str, store_dir=None) -> Optional[dict]:
+    """Recharge publiquement une RelayMission READ-ONLY, fail-closed."""
+    if not (isinstance(relay_mission_id, str) and relay_mission_id.startswith("rmis-")):
+        return None
+    mission = _load(store_dir, relay_mission_id)
+    ok, _ = verify_relay_mission(
+        mission,
+        store_dir=store_dir,
+        expected_relay_mission_id=relay_mission_id,
+    )
+    return mission if ok else None
+
+
 def _save(store_dir, mission: dict) -> None:
     d = _relay_store(store_dir)
     d.mkdir(parents=True, exist_ok=True)
