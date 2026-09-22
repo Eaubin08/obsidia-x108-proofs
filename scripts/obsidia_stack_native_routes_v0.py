@@ -615,6 +615,404 @@ def run_openjarvis_simple_agent_shadow(
     )
 
 
+# ======================================================================
+# JARVIS / OBSIDIA NATIVE SELF-BUILD PHASE 1
+# ======================================================================
+
+def run_obsidia_native_self_build_phase1(
+    objective: str,
+    target_path: str,
+    *,
+    repo_root=None,
+    session_id: str,
+) -> dict:
+    """
+    Native non-sovereign self-build preparation.
+
+    Canonical path:
+
+        Relay
+          -> Brody native tooling cognition
+          -> Obsidure native solve engine
+          -> ObsidiaToolingGenerator
+          -> REAL_UNIFIED_DIFF_V1 candidate.patch
+          -> Obsidia Build Phase1
+          -> PLAN_PROPOSED
+
+    No Phase2.
+    No repository mutation.
+    No human approval synthesis.
+    No approval token exposed to Relay.
+    """
+
+    from pathlib import Path
+
+    from scripts.providers.obsidia_native_tooling_session_v1 import (
+        NativeToolingTarget,
+        run_native_multi_target_phase1,
+    )
+
+    objective_text = str(
+        objective
+        or ""
+    ).strip()
+
+    target = str(
+        target_path
+        or ""
+    ).strip()
+
+    sid = str(
+        session_id
+        or ""
+    ).strip()
+
+    if not objective_text:
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_OBJECTIVE_REQUIRED",
+        )
+
+    if not target:
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_TARGET_REQUIRED",
+        )
+
+    if (
+        not sid.startswith("jsb-")
+        or len(sid) > 80
+    ):
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_SESSION_ID_INVALID",
+        )
+
+    repo = (
+        Path(repo_root)
+        if repo_root
+        else _REPO_ROOT
+    ).resolve()
+
+    pre_head_rc, pre_head = _git(
+        repo,
+        [
+            "rev-parse",
+            "HEAD",
+        ],
+    )
+
+    pre_status_rc, pre_status = _git(
+        repo,
+        [
+            "status",
+            "--porcelain=v1",
+        ],
+    )
+
+    if (
+        pre_head_rc != 0
+        or pre_status_rc != 0
+    ):
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_REPO_STATE_UNAVAILABLE",
+        )
+
+    if pre_status.strip():
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_REPO_MUST_BE_CLEAN",
+        )
+
+    local = str(
+        os.environ.get(
+            "LOCALAPPDATA",
+            "",
+        )
+        or ""
+    ).strip()
+
+    external_base = (
+        Path(local)
+        if local
+        else Path.home()
+    )
+
+    artifact_root = (
+        external_base
+        / "Obsidia"
+        / "jarvis_native_selfbuild"
+        / sid
+    ).resolve()
+
+    try:
+        artifact_root.relative_to(
+            repo
+        )
+
+    except ValueError:
+        pass
+
+    else:
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason="SELF_BUILD_ARTIFACT_ROOT_INSIDE_REPO",
+        )
+
+    try:
+        result = run_native_multi_target_phase1(
+            repo_root=repo,
+            targets=[
+                NativeToolingTarget(
+                    target_path=target,
+                    objective=objective_text,
+                )
+            ],
+            artifact_root=artifact_root,
+            session_id=sid,
+        )
+
+    except Exception as exc:
+        post_head_rc, post_head = _git(
+            repo,
+            [
+                "rev-parse",
+                "HEAD",
+            ],
+        )
+
+        post_status_rc, post_status = _git(
+            repo,
+            [
+                "status",
+                "--porcelain=v1",
+            ],
+        )
+
+        mutated = (
+            post_head_rc != 0
+            or post_status_rc != 0
+            or pre_head.strip()
+            != post_head.strip()
+            or pre_status
+            != post_status
+        )
+
+        return _evidence(
+            "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+            False,
+            reason=(
+                "SELF_BUILD_PHASE1_FAILED:"
+                + type(exc).__name__
+            ),
+            failure_detail=str(exc)[:400],
+            phase2_executed=False,
+            repo_mutation=mutated,
+            mutated_repo=mutated,
+            human_approval_synthesized=False,
+            approval_token_exposed=False,
+            memory_write=False,
+            kernel_mutation=False,
+            emits_act=False,
+            scope_expanded=False,
+            kx108_invoked=False,
+        )
+
+    post_head_rc, post_head = _git(
+        repo,
+        [
+            "rev-parse",
+            "HEAD",
+        ],
+    )
+
+    post_status_rc, post_status = _git(
+        repo,
+        [
+            "status",
+            "--porcelain=v1",
+        ],
+    )
+
+    mutated = (
+        post_head_rc != 0
+        or post_status_rc != 0
+        or pre_head.strip()
+        != post_head.strip()
+        or pre_status
+        != post_status
+    )
+
+    plan = dict(
+        result.get("plan")
+        or {}
+    )
+
+    generations = list(
+        result.get("generations")
+        or []
+    )
+
+    generation = (
+        generations[0]
+        if generations
+        else {}
+    )
+
+    plan_summary = {
+        "session_id": plan.get(
+            "session_id"
+        ),
+        "domain": plan.get(
+            "domain"
+        ),
+        "risk": plan.get(
+            "risk"
+        ),
+        "scope_mode": plan.get(
+            "scope_mode"
+        ),
+        "candidate_files": list(
+            plan.get(
+                "candidate_files"
+            )
+            or []
+        ),
+        "candidate_patch_mode": plan.get(
+            "candidate_patch_mode"
+        ),
+        "candidate_patch_hash": plan.get(
+            "candidate_patch_hash"
+        ),
+        "candidate_patch_source": plan.get(
+            "candidate_patch_source"
+        ),
+        "human_approval_required": True,
+        "approval_token_exposed": False,
+    }
+
+    ok = (
+        result.get("status")
+        == "PLAN_PROPOSED"
+        and result.get(
+            "phase2_executed"
+        )
+        is False
+        and result.get(
+            "repo_mutation"
+        )
+        is False
+        and result.get(
+            "world_action"
+        )
+        is False
+        and result.get(
+            "producer_authority"
+        )
+        == "NONE"
+        and result.get(
+            "backend_authority"
+        )
+        == "NONE"
+        and result.get(
+            "decision_authority"
+        )
+        == DECISION_AUTHORITY
+        and plan.get(
+            "scope_mode"
+        )
+        == "EXPLICIT_CHILD_TARGET"
+        and plan.get(
+            "candidate_files"
+        )
+        == [target]
+        and not mutated
+    )
+
+    return _evidence(
+        "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+        ok,
+
+        reason=(
+            None
+            if ok
+            else "SELF_BUILD_PHASE1_CONTRACT_MISMATCH"
+        ),
+
+        phase1_status=result.get(
+            "status"
+        ),
+
+        session_contract=result.get(
+            "session_contract"
+        ),
+
+        self_build_session_id=result.get(
+            "session_id"
+        ),
+
+        target_path=target,
+
+        producer_id=generation.get(
+            "provider_id"
+        ),
+
+        model_id=generation.get(
+            "model_id"
+        ),
+
+        solve_attempts=list(
+            generation.get(
+                "solve_attempts"
+            )
+            or []
+        ),
+
+        source_artifact_path=generation.get(
+            "source_artifact_path"
+        ),
+
+        candidate_patch_hash=result.get(
+            "candidate_patch_hash"
+        ),
+
+        plan_summary=plan_summary,
+
+        artifact_root=str(
+            artifact_root
+        ),
+
+        phase2_executed=False,
+        human_approval_synthesized=False,
+        approval_token_exposed=False,
+
+        producer_authority="NONE",
+        backend_authority="NONE",
+
+        memory_write=False,
+        memory_written=False,
+
+        kernel_mutation=False,
+        emits_act=False,
+
+        scope_expanded=False,
+        kx108_invoked=False,
+
+        world_action=False,
+
+        repo_mutation=mutated,
+        mutated_repo=mutated,
+    )
+
+
+
 NATIVE_CAPABILITIES = {
     "GIT_STATE_READ": ("read_git_state", read_git_state),
     "OPENJARVIS_RUNTIME_HANDSHAKE": (
@@ -624,6 +1022,10 @@ NATIVE_CAPABILITIES = {
     "OPENJARVIS_SIMPLE_AGENT_SHADOW": (
         "run_openjarvis_simple_agent_shadow",
         run_openjarvis_simple_agent_shadow,
+    ),
+    "OBSIDIA_NATIVE_SELF_BUILD_PHASE1": (
+        "run_obsidia_native_self_build_phase1",
+        run_obsidia_native_self_build_phase1,
     ),
     "TEST_FAMILY_RUN": ("run_test_family_by_id", run_test_family_by_id),
     "LEAN_BUILD": ("run_lean_by_id", run_lean_by_id),

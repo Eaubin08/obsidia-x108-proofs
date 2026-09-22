@@ -131,6 +131,34 @@ _GRAPH: "dict[str, dict]" = {
             "scheduler, network, external effect or authority."
         ),
     ),
+    "OBSIDIA_NATIVE_SELF_BUILD_PHASE1": _cap(
+        "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
+        family="SELF_BUILD",
+        owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_BOUNDED,
+        authority_class=AUTHORITY_NONE,
+        rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={
+            "repo_root": "explicit repository root",
+            "target": "exact tracked tooling target",
+            "requested_outcome": (
+                "bounded native solve objective "
+                "with NATIVE_SOLVE_JSON"
+            ),
+        },
+        availability="AVAILABLE",
+        proof_status=(
+            "BRODY_OBSIDURE_PHASE1_PLAN_PROPOSED_NO_REPO_MUTATION"
+        ),
+        notes=(
+            "Native Brody -> Obsidure -> candidate.patch -> "
+            "Obsidia Build Phase1 only. "
+            "Artifacts are external to the repository. "
+            "No Phase2/apply/commit/push/merge. "
+            "Human approval token is not exposed through Relay."
+        ),
+    ),
     "TEST_FAMILY_RUN": _cap(
         "TEST_FAMILY_RUN", family="TEST", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_DETERMINISTIC_BOUNDED, authority_class=AUTHORITY_NONE, rw=RW_NONE,
@@ -218,6 +246,7 @@ _KIND_TO_CAPABILITY = {
     "GIT_STATE_READ": "GIT_STATE_READ",
     "OPENJARVIS_RUNTIME_HANDSHAKE": "OPENJARVIS_RUNTIME_HANDSHAKE",
     "OPENJARVIS_SIMPLE_AGENT_SHADOW": "OPENJARVIS_SIMPLE_AGENT_SHADOW",
+    "OBSIDIA_NATIVE_SELF_BUILD_PHASE1": "OBSIDIA_NATIVE_SELF_BUILD_PHASE1",
     "TEST_FAMILY_RUN": "TEST_FAMILY_RUN",
     "LEAN_BUILD": "LEAN_BUILD",
     "ENGINEERING_REASONING": "ENGINEERING_REASONING",

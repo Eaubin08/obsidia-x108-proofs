@@ -759,3 +759,375 @@ def test_openjarvis_v04_e2e_relay_when_configured(
     assert status["mission_state"] == R.MISSION_COMPLETE
 
     assert len(status["receipt_ids"]) >= 4
+
+
+# ======================================================================
+# JARVIS / OBSIDIA NATIVE SELF-BUILD PHASE 1
+# ======================================================================
+
+def _make_native_selfbuild_repo(tmp_path):
+    repo = (
+        tmp_path
+        / "native-selfbuild-repo"
+    )
+
+    repo.mkdir()
+
+    _git(
+        repo,
+        "init",
+    )
+
+    _git(
+        repo,
+        "config",
+        "user.email",
+        "selfbuild@example.invalid",
+    )
+
+    _git(
+        repo,
+        "config",
+        "user.name",
+        "Self Build Test",
+    )
+
+    scripts = (
+        repo
+        / "scripts"
+    )
+
+    scripts.mkdir()
+
+    target = (
+        scripts
+        / "obsidia_selfbuild_fixture.py"
+    )
+
+    target.write_text(
+        '"""Self-build fixture."""\n'
+        "\n"
+        "from __future__ import annotations\n"
+        "\n"
+        "VALUE = 1\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    _git(
+        repo,
+        "add",
+        "scripts/obsidia_selfbuild_fixture.py",
+    )
+
+    _git(
+        repo,
+        "commit",
+        "-m",
+        "self-build fixture",
+    )
+
+    return repo
+
+
+def _native_selfbuild_objective():
+    import json
+
+    spec = {
+        "strategies": [
+            {
+                "op": (
+                    "insert_comment_after_docstring"
+                ),
+                "comment": (
+                    "JARVIS NATIVE SELF BUILD "
+                    "CANDIDATE ONLY"
+                ),
+            }
+        ]
+    }
+
+    return (
+        "Prepare a bounded peripheral tooling "
+        "candidate for the Jarvis integration "
+        "surface. Candidate only. "
+        "No apply. No commit. No push. No merge.\n"
+        "NATIVE_SOLVE_JSON="
+        + json.dumps(
+            spec,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+def test_jarvis_selfbuild_phase1_capability_registered():
+    import obsidia_capability_graph_v0 as G
+    import obsidia_relay_v0 as R
+    import obsidia_stack_native_routes_v0 as NAT
+
+    cap = G.get_capability(
+        "OBSIDIA_NATIVE_SELF_BUILD_PHASE1"
+    )
+
+    assert cap is not None
+    assert cap["owner"] == "OBSIDIA_STACK"
+    assert cap["authority_class"] == "NONE"
+    assert cap["route"] == "STACK_NATIVE_ROUTE"
+    assert cap["grants_authority"] is False
+    assert cap["is_execution_authority"] is False
+
+    resolved = R.relay_resolve_capability(
+        R.KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1
+    )
+
+    assert (
+        resolved["capability_id"]
+        == "OBSIDIA_NATIVE_SELF_BUILD_PHASE1"
+    )
+
+    assert resolved["authority_class"] == "NONE"
+
+    assert (
+        "OBSIDIA_NATIVE_SELF_BUILD_PHASE1"
+        in NAT.NATIVE_CAPABILITIES
+    )
+
+
+def test_jarvis_selfbuild_phase1_e2e_no_repo_mutation(
+    tmp_path,
+    monkeypatch,
+):
+    import json
+
+    import obsidia_relay_v0 as R
+
+    repo = _make_native_selfbuild_repo(
+        tmp_path
+    )
+
+    local = (
+        tmp_path
+        / "localappdata"
+    )
+
+    local.mkdir()
+
+    monkeypatch.setenv(
+        "LOCALAPPDATA",
+        str(local),
+    )
+
+    before_head = _git(
+        repo,
+        "rev-parse",
+        "HEAD",
+    ).stdout.strip()
+
+    before_status = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    assert before_status == ""
+
+    out = R.relay_submit_mission(
+        requested_outcome=(
+            _native_selfbuild_objective()
+        ),
+        mission_kind=(
+            R.KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1
+        ),
+        target=(
+            "scripts/obsidia_selfbuild_fixture.py"
+        ),
+        repo_root=repo,
+        store_dir=(
+            tmp_path
+            / "relay-store"
+        ),
+    )
+
+    assert (
+        out["mission_state"]
+        == R.MISSION_COMPLETE
+    )
+
+    assert (
+        out["metrics"]["native_route_count"]
+        == 1
+    )
+
+    assert (
+        out["metrics"]["cognitive_request_count"]
+        == 0
+    )
+
+    ev = out["native_evidence"]
+
+    assert ev["ok"] is True
+
+    assert (
+        ev["native_route_kind"]
+        == "OBSIDIA_NATIVE_SELF_BUILD_PHASE1"
+    )
+
+    assert (
+        ev["phase1_status"]
+        == "PLAN_PROPOSED"
+    )
+
+    assert ev["phase2_executed"] is False
+
+    assert (
+        ev["human_approval_synthesized"]
+        is False
+    )
+
+    assert (
+        ev["approval_token_exposed"]
+        is False
+    )
+
+    assert ev["producer_authority"] == "NONE"
+    assert ev["backend_authority"] == "NONE"
+
+    assert ev["decision_authority"] == "KX108_ONLY"
+
+    assert ev["memory_write"] is False
+    assert ev["memory_written"] is False
+
+    assert ev["kernel_mutation"] is False
+    assert ev["emits_act"] is False
+
+    assert ev["scope_expanded"] is False
+    assert ev["kx108_invoked"] is False
+    assert ev["world_action"] is False
+
+    assert ev["repo_mutation"] is False
+    assert ev["mutated_repo"] is False
+
+    plan = ev["plan_summary"]
+
+    assert (
+        plan["scope_mode"]
+        == "EXPLICIT_CHILD_TARGET"
+    )
+
+    assert (
+        plan["candidate_files"]
+        == [
+            "scripts/obsidia_selfbuild_fixture.py"
+        ]
+    )
+
+    assert (
+        plan["human_approval_required"]
+        is True
+    )
+
+    assert (
+        plan["approval_token_exposed"]
+        is False
+    )
+
+    serialized = json.dumps(
+        ev,
+        sort_keys=True,
+    )
+
+    assert (
+        "HUMAN_APPROVED_BUILD_SESSION="
+        not in serialized
+    )
+
+    assert "next_human_action" not in serialized
+
+    patch_path = Path(
+        plan["candidate_patch_source"]
+    )
+
+    assert patch_path.is_file()
+
+    assert (
+        "JARVIS NATIVE SELF BUILD CANDIDATE ONLY"
+        in patch_path.read_text(
+            encoding="utf-8"
+        )
+    )
+
+    after_head = _git(
+        repo,
+        "rev-parse",
+        "HEAD",
+    ).stdout.strip()
+
+    after_status = _git(
+        repo,
+        "status",
+        "--porcelain=v1",
+    ).stdout
+
+    assert after_head == before_head
+    assert after_status == before_status
+
+
+def test_jarvis_selfbuild_phase1_rejects_dirty_repo(
+    tmp_path,
+    monkeypatch,
+):
+    import obsidia_relay_v0 as R
+
+    repo = _make_native_selfbuild_repo(
+        tmp_path
+    )
+
+    monkeypatch.setenv(
+        "LOCALAPPDATA",
+        str(
+            tmp_path
+            / "localappdata"
+        ),
+    )
+
+    (
+        repo
+        / "dirty.txt"
+    ).write_text(
+        "dirty\n",
+        encoding="utf-8",
+    )
+
+    out = R.relay_submit_mission(
+        requested_outcome=(
+            _native_selfbuild_objective()
+        ),
+        mission_kind=(
+            R.KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1
+        ),
+        target=(
+            "scripts/obsidia_selfbuild_fixture.py"
+        ),
+        repo_root=repo,
+        store_dir=(
+            tmp_path
+            / "relay-store"
+        ),
+    )
+
+    assert (
+        out["mission_state"]
+        == R.MISSION_FAILED
+    )
+
+    ev = out["native_evidence"]
+
+    assert ev["ok"] is False
+
+    assert (
+        ev["reason"]
+        == "SELF_BUILD_REPO_MUST_BE_CLEAN"
+    )
+
+    assert ev["mutated_repo"] is False

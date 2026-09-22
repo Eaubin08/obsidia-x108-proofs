@@ -138,6 +138,7 @@ _MISSION_STATES = (MISSION_ACCEPTED, MISSION_RUNNING, MISSION_WAITING_CAPABILITY
 KIND_GIT_STATE_READ = "GIT_STATE_READ"
 KIND_OPENJARVIS_RUNTIME_HANDSHAKE = "OPENJARVIS_RUNTIME_HANDSHAKE"
 KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW = "OPENJARVIS_SIMPLE_AGENT_SHADOW"
+KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1 = "OBSIDIA_NATIVE_SELF_BUILD_PHASE1"
 KIND_TEST_FAMILY_RUN = "TEST_FAMILY_RUN"
 KIND_LEAN_BUILD = "LEAN_BUILD"
 KIND_ENGINEERING_REASONING = "ENGINEERING_REASONING"
@@ -147,11 +148,13 @@ KIND_UNKNOWN = "UNKNOWN"
 KIND_CONVERSATION = "CONVERSATION"
 _MISSION_KINDS = (KIND_GIT_STATE_READ, KIND_OPENJARVIS_RUNTIME_HANDSHAKE,
                   KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW,
+                  KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1,
                   KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD,
                   KIND_ENGINEERING_REASONING, KIND_GOVERNED_UPDATE,
                   KIND_HUMAN_DECISION, KIND_UNKNOWN, KIND_CONVERSATION)
 _NATIVE_KINDS = {KIND_GIT_STATE_READ, KIND_OPENJARVIS_RUNTIME_HANDSHAKE,
                  KIND_OPENJARVIS_SIMPLE_AGENT_SHADOW,
+                  KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1,
                  KIND_TEST_FAMILY_RUN, KIND_LEAN_BUILD}
 _COGNITIVE_KINDS = {KIND_ENGINEERING_REASONING}
 _GOVERNED_KINDS = {KIND_GOVERNED_UPDATE}
@@ -425,6 +428,35 @@ def _run_native(mission: dict) -> dict:
             str(tgt or ""),
             source_root=mission.get("repo_root"),
         )
+    if kind == KIND_OBSIDIA_NATIVE_SELF_BUILD_PHASE1:
+        relay_id = str(
+            mission.get("relay_mission_id")
+            or ""
+        )
+
+        session_id = (
+            "jsb-"
+            + relay_id.replace(
+                "rmis-",
+                "",
+            )[:20]
+        )
+
+        return _NAT.run_obsidia_native_self_build_phase1(
+            objective=(
+                mission.get("requested_outcome")
+                or ""
+            ),
+            target_path=str(
+                tgt
+                or ""
+            ),
+            repo_root=mission.get(
+                "repo_root"
+            ),
+            session_id=session_id,
+        )
+
     if kind == KIND_TEST_FAMILY_RUN:
         return _NAT.run_test_family_by_id(str(tgt or ""), repo_root=mission.get("repo_root"))
     if kind == KIND_LEAN_BUILD:
