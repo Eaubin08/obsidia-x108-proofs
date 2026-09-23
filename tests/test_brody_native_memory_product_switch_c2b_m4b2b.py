@@ -145,6 +145,10 @@ def test_deep_signal_producers_execute_once_before_c1():
         'safe_call_snapshot(\n            "memory_response_chain"'
     ) == 1
 
+    assert normal_path.count(
+        'safe_call_snapshot(\n        "tree_signal_packet"'
+    ) == 1
+
     assert src.count(
         "# COGNITIVE_RUNTIME_JOIN_BACKEND_V1"
     ) == 1
@@ -457,6 +461,38 @@ def test_live_route_native_memory_reaches_w4_w1_w2():
         assert (
             "MEMZUM_STATE_AVAILABLE:True"
             in packet.get("context_items", [])
+        )
+
+        tree = receipt.get(
+            "tree_34d_signal_snapshot",
+            {},
+        )
+
+        assert isinstance(tree, dict)
+        assert tree.get("status") == "READY:COMPACT_34D"
+        assert tree.get("tree_count") == 34
+        assert tree.get("vector_length") == 34
+
+        assert (
+            "TREE_34D_STATE_AVAILABLE:True"
+            in packet.get("context_items", [])
+        )
+        assert (
+            "TREE_34D_VECTOR_LENGTH:34"
+            in packet.get("context_items", [])
+        )
+        assert (
+            "TREE_DOMINANT_STATE_AVAILABLE:True"
+            in packet.get("context_items", [])
+        )
+
+        assert "brody:tree_34d" in packet.get(
+            "source_refs",
+            [],
+        )
+        assert "brody:tree_34d:activation_vector" in packet.get(
+            "source_refs",
+            [],
         )
 
     finally:

@@ -7,6 +7,7 @@ from apps.obsidia_api.brody_real_cognitive_join import (
     TREE_PROVENANCE,
     run_real_cognitive_join,
 )
+from apps.obsidia_api.brody_tree_signal_packet import build_tree_signal_packet
 
 
 def test_real_cognitive_join_readonly_invariants():
@@ -58,6 +59,153 @@ def test_real_cognitive_join_tree_provenance_is_not_promoted():
     }
 
     assert "REAL_SEMANTIC_TREE_TRUTH" not in str(r)
+
+
+def test_tree_34d_state_enters_c1_and_context_packet():
+    tree_wrapper = build_tree_signal_packet(
+        activations=[
+            0.0,
+            0.0,
+            0.0,
+            *([0.7] * 3),
+            *([0.0] * 28),
+        ],
+    )
+
+    r = run_real_cognitive_join(
+        message="Inspecte les 34 arbres en readonly",
+        language="fr",
+        session_id="c1-unit-tree34",
+        precomputed_tree_wrapper=tree_wrapper,
+    )
+
+    tree = r["tree_34d_signal_snapshot"]
+    assert tree["status"] == "READY:COMPACT_34D"
+    assert tree["tree_count"] == 34
+    assert tree["vector_length"] == 34
+    assert len(tree["activation_vector_34d"]) == 34
+    assert (
+        tree["tree_order"]
+        == "canonical_tree_registry_id_1_to_34"
+    )
+
+    dominant = tree["dominant_state"]
+    assert dominant["dominant_ids_0_based"] == [3, 4, 5]
+    assert dominant["dominant_tree_ids"] == [4, 5, 6]
+    assert dominant["dominant_weights"] == {
+        "4": 0.7,
+        "5": 0.7,
+        "6": 0.7,
+    }
+
+    packet = r["context_packet_v2"]
+    assert "TREE_34D_STATE_AVAILABLE:True" in packet["context_items"]
+    assert "TREE_34D_VECTOR_LENGTH:34" in packet["context_items"]
+    assert "TREE_DOMINANT_STATE_AVAILABLE:True" in packet["context_items"]
+    assert "brody:tree_34d" in packet["source_refs"]
+    assert "brody:tree_34d:activation_vector" in packet["source_refs"]
+
+    assert r["decision_authority"] == "KX108_ONLY"
+    assert r["memory_write"] is False
+    assert r["emits_act"] is False
+
+
+def test_tree_shazam_and_memory_world_are_context_only():
+    tree_wrapper = build_tree_signal_packet(
+        activations=[
+            0.0,
+            0.0,
+            *([0.8] * 3),
+            *([0.0] * 29),
+        ],
+    )
+
+    r = run_real_cognitive_join(
+        message="Inspecte Shazam sans decision",
+        language="fr",
+        session_id="c1-unit-tree-shazam",
+        precomputed_tree_wrapper=tree_wrapper,
+    )
+
+    tree = r["tree_34d_signal_snapshot"]
+    shazam = tree["shazam_state"]
+    memory_world = tree["memory_world_context"]
+
+    assert shazam["available"] is True
+    assert shazam["patterns_detected"] == [
+        "LANGUAGE_PATTERN_DETECTED",
+    ]
+    assert shazam["context_signal_only"] is True
+    assert shazam["can_decide"] is False
+    assert shazam["can_emit_act"] is False
+
+    assert memory_world["available"] is True
+    assert memory_world["context_signal_only"] is True
+    assert memory_world["can_decide"] is False
+    assert memory_world["can_emit_act"] is False
+
+    packet = r["context_packet_v2"]
+    assert "TREE_SHAZAM_STATE_AVAILABLE:True" in packet["context_items"]
+    assert (
+        "TREE_MEMORY_WORLD_CONTEXT_AVAILABLE:True"
+        in packet["context_items"]
+    )
+    assert "brody:tree_34d:shazam" in packet["source_refs"]
+    assert "brody:tree_34d:memory_world" in packet["source_refs"]
+
+
+def test_tree_34d_material_effect_at_context_packet():
+    a = build_tree_signal_packet(
+        activations=[0.8, 0.0, 0.0] + [0.0] * 31,
+    )
+    b = build_tree_signal_packet(
+        activations=[0.0, 0.0, 0.0, 0.8, 0.8] + [0.0] * 29,
+    )
+
+    result_a = run_real_cognitive_join(
+        message="Comparer les arbres",
+        language="fr",
+        session_id="c1-unit-tree-effect-a",
+        precomputed_tree_wrapper=a,
+    )
+    result_b = run_real_cognitive_join(
+        message="Comparer les arbres",
+        language="fr",
+        session_id="c1-unit-tree-effect-b",
+        precomputed_tree_wrapper=b,
+    )
+
+    assert (
+        result_a["tree_34d_signal_snapshot"]
+        != result_b["tree_34d_signal_snapshot"]
+    )
+    assert (
+        result_a["context_packet_v2"]["dominant_trees"]
+        != result_b["context_packet_v2"]["dominant_trees"]
+    )
+
+
+def test_tree_malformed_vector_degrades_without_authority():
+    malformed = {
+        "tree_signal_packet": {
+            "activation_vector": {
+                "activations": [1.0, 0.5],
+            },
+        },
+    }
+
+    r = run_real_cognitive_join(
+        message="Inspecte arbre invalide",
+        language="fr",
+        session_id="c1-unit-tree-malformed",
+        precomputed_tree_wrapper=malformed,
+    )
+
+    assert r["completeness"] == "DEGRADED"
+    assert r["tree_34d_signal_snapshot"]["status"] == "UNAVAILABLE"
+    assert r["decision_authority"] == "KX108_ONLY"
+    assert r["memory_write"] is False
+    assert r["emits_act"] is False
 
 
 def test_real_cognitive_join_runs_real_data_purity_agent():

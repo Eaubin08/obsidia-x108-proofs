@@ -350,6 +350,197 @@ def _deep_signal_projection(
     }
 
 
+def _tree_34d_projection(
+    *,
+    tree_wrapper: dict[str, Any] | None = None,
+    canonical_tree: dict[str, Any] | None = None,
+    tree_provenance: str = TREE_PROVENANCE,
+    computation_mode: str = "UNAVAILABLE",
+) -> dict[str, Any]:
+    wrapper = (
+        dict(tree_wrapper)
+        if isinstance(tree_wrapper, dict)
+        else {}
+    )
+    packet = wrapper.get("tree_signal_packet", wrapper)
+    if not isinstance(packet, dict):
+        packet = {}
+
+    canonical = (
+        dict(canonical_tree)
+        if isinstance(canonical_tree, dict)
+        else {}
+    )
+
+    activation_vector = (
+        packet.get("activation_vector", {})
+        if isinstance(packet.get("activation_vector"), dict)
+        else {}
+    )
+    activations = activation_vector.get("activations", [])
+    vector_34d = [
+        _as_float(value)
+        for value in activations
+        if _as_float(value) is not None
+    ] if isinstance(activations, list) else []
+
+    dominant_wrapper = (
+        packet.get("dominant_trees", {})
+        if isinstance(packet.get("dominant_trees"), dict)
+        else {}
+    )
+    dominant_ids_source = (
+        canonical.get("dominant_ids")
+        if isinstance(canonical.get("dominant_ids"), list)
+        else dominant_wrapper.get("dominant_ids")
+    )
+    dominant_ids = (
+        list(dominant_ids_source)
+        if isinstance(dominant_ids_source, list)
+        else []
+    )
+    dominant_tree_ids = [dim + 1 for dim in dominant_ids if isinstance(dim, int)]
+    dominant_names_source = (
+        canonical.get("dominant_trees")
+        if isinstance(canonical.get("dominant_trees"), list)
+        else dominant_wrapper.get("dominant_trees")
+    )
+    dominant_names = (
+        list(dominant_names_source)
+        if isinstance(dominant_names_source, list)
+        else []
+    )
+    dominant_weights = {
+        str(dim + 1): vector_34d[dim]
+        for dim in dominant_ids
+        if isinstance(dim, int)
+        and 0 <= dim < len(vector_34d)
+    }
+
+    shazam = (
+        packet.get("shazam", {})
+        if isinstance(packet.get("shazam"), dict)
+        else {
+            "patterns_detected": canonical.get(
+                "patterns_detected",
+                [],
+            ),
+            "context_signal_only": canonical.get(
+                "context_signal_only",
+                True,
+            ),
+            "can_decide": canonical.get("can_decide", False),
+            "can_emit_act": canonical.get("can_emit_act", False),
+        }
+    )
+    memory_world = (
+        packet.get("memory_world", {})
+        if isinstance(packet.get("memory_world"), dict)
+        else {
+            "active_domains": canonical.get("active_domains", []),
+            "memory_relevance": canonical.get("memory_relevance"),
+            "world_relevance": canonical.get("world_relevance"),
+            "context_signal_only": canonical.get(
+                "context_signal_only",
+                True,
+            ),
+            "can_decide": canonical.get("can_decide", False),
+            "can_emit_act": canonical.get("can_emit_act", False),
+        }
+    )
+    metrics = (
+        packet.get("metrics", {})
+        if isinstance(packet.get("metrics"), dict)
+        else {}
+    )
+
+    vector_available = len(vector_34d) == 34
+    shazam_patterns = (
+        list(shazam.get("patterns_detected", []))
+        if isinstance(shazam.get("patterns_detected"), list)
+        else []
+    )
+    active_domains = (
+        list(memory_world.get("active_domains", []))
+        if isinstance(memory_world.get("active_domains"), list)
+        else []
+    )
+
+    return {
+        "status": (
+            "READY:COMPACT_34D"
+            if vector_available
+            else "UNAVAILABLE"
+        ),
+        "role": "CONTEXT_WEIGHTING_COGNITIVE_ORIENTATION",
+        "version": packet.get("version") or canonical.get("version"),
+        "provenance": tree_provenance,
+        "computation_mode": computation_mode,
+        "tree_count": packet.get("tree_count") or 34,
+        "vector_length": len(vector_34d),
+        "activation_vector_34d": vector_34d,
+        "tree_order": "canonical_tree_registry_id_1_to_34",
+        "dominant_state": {
+            "dominant_ids_0_based": dominant_ids,
+            "dominant_tree_ids": dominant_tree_ids,
+            "dominant_tree_names": dominant_names,
+            "dominant_count": (
+                canonical.get("dominant_count")
+                if canonical.get("dominant_count") is not None
+                else dominant_wrapper.get("dominant_count")
+            ),
+            "dominant_weights": dominant_weights,
+            "theta": dominant_wrapper.get("theta") or packet.get("theta"),
+        },
+        "shazam_state": {
+            "available": bool(shazam),
+            "patterns_detected": shazam_patterns,
+            "pattern_count": len(shazam_patterns),
+            "context_signal_only": bool(
+                shazam.get("context_signal_only", True)
+            ),
+            "can_decide": bool(shazam.get("can_decide", False)),
+            "can_emit_act": bool(shazam.get("can_emit_act", False)),
+        },
+        "memory_world_context": {
+            "available": bool(memory_world),
+            "active_domains": active_domains,
+            "memory_relevance": _as_float(
+                memory_world.get("memory_relevance")
+            ),
+            "world_relevance": _as_float(
+                memory_world.get("world_relevance")
+            ),
+            "context_signal_only": bool(
+                memory_world.get("context_signal_only", True)
+            ),
+            "can_decide": bool(memory_world.get("can_decide", False)),
+            "can_emit_act": bool(memory_world.get("can_emit_act", False)),
+        },
+        "metrics": {
+            "activation_sum": _as_float(metrics.get("activation_sum")),
+            "activation_density": _as_float(
+                metrics.get("activation_density")
+            ),
+            "memory_relevance": _as_float(
+                metrics.get("memory_relevance")
+            ),
+            "world_relevance": _as_float(
+                metrics.get("world_relevance")
+            ),
+        },
+        "readonly": True,
+        "context_signal_only": True,
+        "advisory_only": True,
+        "allowed_to_decide": False,
+        "allowed_to_act": False,
+        "memory_write": False,
+        "emits_act": False,
+        "kernel_mutation": False,
+        "decision_authority": "KX108_ONLY",
+    }
+
+
 def _blocked_receipt(
     *,
     signal_id: str,
@@ -643,6 +834,13 @@ def run_real_cognitive_join(
             errors.append(_error("TREE_CANONICAL", exc))
             components["TREE_34D_SHAZAM_MEMORY_WORLD"] = errors[-1]
 
+    tree_34d_signal = _tree_34d_projection(
+        tree_wrapper=tree_wrapper,
+        canonical_tree=canonical_tree_dict,
+        tree_provenance=TREE_PROVENANCE,
+        computation_mode=tree_computation_mode,
+    )
+
     # --------------------------------------------------------
     # 8 — Build ContextPacketV2 base
     # --------------------------------------------------------
@@ -721,6 +919,41 @@ def run_real_cognitive_join(
                 f"reason={memzum_snapshot.get('reason')}"
             )
 
+    if isinstance(tree_34d_signal, dict) and tree_34d_signal.get(
+        "status"
+    ) == "READY:COMPACT_34D":
+        dominant_state = tree_34d_signal.get("dominant_state", {})
+        shazam_state = tree_34d_signal.get("shazam_state", {})
+        memory_world_context = tree_34d_signal.get(
+            "memory_world_context",
+            {},
+        )
+        context_items.extend(
+            [
+                "TREE_34D_STATE_AVAILABLE:True",
+                (
+                    "TREE_34D_VECTOR_LENGTH:"
+                    f"{tree_34d_signal.get('vector_length')}"
+                ),
+                (
+                    "TREE_DOMINANT_STATE_AVAILABLE:"
+                    f"{bool(dominant_state)}"
+                ),
+                (
+                    "TREE_DOMINANT_COUNT:"
+                    f"{dominant_state.get('dominant_count')}"
+                ),
+                (
+                    "TREE_SHAZAM_STATE_AVAILABLE:"
+                    f"{bool(shazam_state.get('available'))}"
+                ),
+                (
+                    "TREE_MEMORY_WORLD_CONTEXT_AVAILABLE:"
+                    f"{bool(memory_world_context.get('available'))}"
+                ),
+            ]
+        )
+
     shazam_dict = (
         canonical_tree_dict.get("shazam", {})
         if isinstance(canonical_tree_dict, dict)
@@ -771,6 +1004,17 @@ def run_real_cognitive_join(
                 "brody:semantic_query",
                 "brody:micro_core",
                 "brody:reverse_os",
+                *(
+                    [
+                        "brody:tree_34d",
+                        "brody:tree_34d:activation_vector",
+                        "brody:tree_34d:shazam",
+                        "brody:tree_34d:memory_world",
+                    ]
+                    if tree_34d_signal.get("status")
+                    == "READY:COMPACT_34D"
+                    else []
+                ),
                 *(
                     [
                         "brody:balance_engine",
@@ -1114,6 +1358,7 @@ def run_real_cognitive_join(
 
         "tree_provenance": TREE_PROVENANCE,
         "tree_computation_mode": tree_computation_mode,
+        "tree_34d_signal_snapshot": tree_34d_signal,
         "brody_tree_signal_packet": tree_wrapper,
         "canonical_tree_signal_packet": canonical_tree_dict,
 
