@@ -1,7 +1,7 @@
 {
   "schema_name": "OBSIDIA_COGNITIVE_CONVERGENCE_MASTER_REGISTRY",
   "schema_version": "1.0.0",
-  "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
+  "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
   "canonical_rule": "Register rediscovered cognitive/semantic/knowledge blocks immediately, preserve uncertainty, and never invent a runtime hook.",
   "status_enum": [
     "ACTIVE_CONNECTED",
@@ -1573,7 +1573,7 @@
       "secondary_types": [],
       "summary": "Tracked semantic/language component with evidence in apps/obsidia_api/brody_semantic_query_router.py.",
       "role": "Prepares or routes meaning before response formation.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
       "current_code_status": "not_assessed",
       "implementation_exists": true,
@@ -1590,15 +1590,18 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
+      "producer": "build_semantic_query",
       "current_consumers": [
-        "Brody pipeline"
+        "Brody route",
+        "C1 cognitive join"
       ],
       "current_inputs": [],
-      "current_outputs": [],
+      "current_outputs": [
+        "semantic_query_snapshot"
+      ],
       "connection_state": "partial_or_unresolved",
-      "target_layer": "Brody route",
-      "target_hook": "semantic query snapshot",
+      "target_layer": "C1",
+      "target_hook": "run_real_cognitive_join(precomputed_semantic_query=semantic_query_snapshot)",
       "target_hook_status": "PROVEN",
       "target_layer_candidate": null,
       "target_reason": null,
@@ -1620,9 +1623,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Map whether this should feed C1 directly or remain response-pipeline context.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Keep the existing Brody route -> C1 semantic-query binding. Do not create a second semantic-query path.",
+      "notes": [
+        "V4-A proved that routes/brody.py builds semantic_query_snapshot and passes the same snapshot to C1 as precomputed_semantic_query."
+      ]
     },
     {
       "id": "semantic_plan",
@@ -1637,7 +1642,7 @@
       "role": "Prepares or routes meaning before response formation.",
       "status": "ACTIVE_PARTIAL",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4A_AUDITED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
@@ -1653,15 +1658,17 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
+      "producer": "build_brody_semantic_plan",
       "current_consumers": [
-        "Brody pipeline"
+        "Obsidure native engineering consumer"
       ],
       "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": "Brody response pipeline",
-      "target_hook": "semantic plan snapshot",
+      "current_outputs": [
+        "semantic_plan"
+      ],
+      "connection_state": "partial",
+      "target_layer": "Obsidure engineering/build path",
+      "target_hook": "obsidure_native_engineering_consumer -> semantic_plan",
       "target_hook_status": "PROVEN",
       "target_layer_candidate": null,
       "target_reason": null,
@@ -1672,10 +1679,11 @@
       "superseded_by": [],
       "overlaps_with": [],
       "do_not_connect_to": [
+        "C1 as an unproven duplicate semantic layer",
         "KX108 authority",
+        "direct ACT emission",
         "kernel mutation",
-        "memory write",
-        "direct ACT emission"
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -1683,9 +1691,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Map whether this should feed C1 directly or remain response-pipeline context.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Keep semantic_plan on the Obsidure engineering/build path. Do not inject it into C1 without new runtime evidence.",
+      "notes": [
+        "V4-A found runtime semantic_plan usage in brody_semantic_plan.py and obsidure_native_engineering_consumer.py, not in the normal Brody -> C1 response path."
+      ]
     },
     {
       "id": "semantic_representation",
@@ -1728,9 +1738,11 @@
       "target_hook": null,
       "target_hook_status": "UNRESOLVED",
       "target_layer_candidate": null,
-      "target_reason": "Candidate insertion point is suggested by current consumers; exact hook needs audit.",
-      "required_audit": "Prove compact non-sovereign payload and current caller count.",
-      "blockers": [],
+      "target_reason": "V4-A did not prove a distinct semantic_representation runtime stage on the normal Brody -> C1 path.",
+      "required_audit": "Determine whether this is a historical/parallel abstraction already covered by semantic_query + Reverse OS + C265-C274.",
+      "blockers": [
+        "No distinct normal-path runtime stage proven"
+      ],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
@@ -1738,10 +1750,12 @@
         "ssr"
       ],
       "do_not_connect_to": [
+        "C1 until distinct material contribution is proven",
         "KX108 authority",
+        "canonical C1 path without distinct material-effect proof",
+        "direct ACT emission",
         "kernel mutation",
-        "memory write",
-        "direct ACT emission"
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -1749,16 +1763,18 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Map whether this should feed C1 directly or remain response-pipeline context.",
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Historical/parallel identity audit only. Not a blocker for the canonical Brody -> C1 -> response path.",
       "notes": [
-        "SSR / Semantic Signal Representation remains a separate historical/documented entry until runtime equivalence with semantic_representation is proven."
+        "SSR / Semantic Signal Representation remains a separate historical/documented entry until runtime equivalence with semantic_representation is proven.",
+        "V4 established that the canonical runtime path does not require a distinct semantic_representation stage: semantic_query, canonical intent, Reverse OS/IR and C265-C278 already cover the proven runtime continuity. Keep this identity unresolved until a distinct material contribution is demonstrated."
       ]
     },
     {
       "id": "intention",
-      "canonical_name": "intention",
+      "canonical_name": "canonical intent",
       "aliases": [
+        "canonical intent",
         "intent",
         "intention signal"
       ],
@@ -1766,9 +1782,9 @@
       "secondary_types": [],
       "summary": "Tracked semantic/language component with evidence in apps/obsidia_api/brody_capabilities_intent.py.",
       "role": "Prepares or routes meaning before response formation.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4A_AUDITED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
@@ -1776,32 +1792,41 @@
       "audit_refs": [],
       "source_locations": [],
       "code_locations": [
-        "apps/obsidia_api/brody_capabilities_intent.py",
-        "periphery/language/language_router.py"
+        "apps/obsidia_api/routes/brody.py",
+        "apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py",
+        "apps/obsidia_api/brody_real_cognitive_join.py"
       ],
       "test_locations": [
         "tests/test_brody_pre_reasoning_adapter.py"
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
+      "producer": "_detect_intent",
       "current_consumers": [
-        "Brody pipeline"
+        "Brody route",
+        "C1 cognitive join",
+        "V1.4.12A"
       ],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1 or capability router",
-      "target_reason": "Candidate insertion point is suggested by current consumers; exact hook needs audit.",
-      "required_audit": "Prove compact non-sovereign payload and current caller count.",
+      "current_inputs": [
+        "user message"
+      ],
+      "current_outputs": [
+        "intent"
+      ],
+      "connection_state": "connected",
+      "target_layer": "C1",
+      "target_hook": "run_real_cognitive_join(precomputed_intent=intent)",
+      "target_hook_status": "PROVEN",
+      "target_layer_candidate": null,
+      "target_reason": null,
+      "required_audit": null,
       "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
-      "overlaps_with": [],
+      "overlaps_with": [
+        "brody_capabilities_intent"
+      ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
@@ -1814,9 +1839,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Map whether this should feed C1 directly or remain response-pipeline context.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Preserve the canonical _detect_intent -> C1 path and keep it separate from specialized capability-query recognition.",
+      "notes": [
+        "V4-A proved that routes/brody.py computes intent via _detect_intent and passes it to C1 as precomputed_intent."
+      ]
     },
     {
       "id": "cognitive_layer_router",
@@ -1829,14 +1856,16 @@
       "secondary_types": [],
       "summary": "Tracked semantic/language component with evidence in runtime_wiring/source_runtime/capability_path_router.py.",
       "role": "Prepares or routes meaning before response formation.",
-      "status": "PARTIAL_NEEDS_RECONCILIATION",
+      "status": "SOURCE_FOUND_IMPLEMENTATION_UNKNOWN",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
-      "implementation_exists": true,
+      "current_code_status": "IDENTITY_NOT_RUNTIME_PROVEN",
+      "implementation_exists": false,
       "runtime_reachable": false,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY"
+      ],
       "source_locations": [],
       "code_locations": [
         "runtime_wiring/source_runtime/capability_path_router.py",
@@ -1848,41 +1877,45 @@
       "documentation_locations": [],
       "historical_locations": [],
       "producer": null,
-      "current_consumers": [
-        "Brody pipeline"
-      ],
+      "current_consumers": [],
       "current_inputs": [],
       "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
+      "connection_state": "unresolved",
       "target_layer": null,
       "target_hook": null,
       "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1",
-      "target_reason": "Candidate insertion point is suggested by current consumers; exact hook needs audit.",
-      "required_audit": "Prove compact non-sovereign payload and current caller count.",
+      "target_layer_candidate": null,
+      "target_reason": "V4-A found zero runtime occurrences and zero tests under the Cognitive Layer Router identity. Candidate files represent other routing mechanisms and must not be treated as proof of this component.",
+      "required_audit": "Determine whether Cognitive Layer Router is only a historical name/alias for capability_path_router or brody_cognitive_modules_adapter, or whether a distinct implementation exists elsewhere.",
       "blockers": [
-        "Exact C1 hook unresolved",
-        "Runtime producer/caller path not yet proven"
+        "No distinct runtime symbol/caller proven",
+        "No test under this component identity"
       ],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
-      "overlaps_with": [],
+      "overlaps_with": [
+        "capability_path_router",
+        "brody_cognitive_modules_adapter"
+      ],
       "do_not_connect_to": [
+        "C1 until distinct runtime identity is proven",
         "KX108 authority",
+        "direct ACT emission",
         "kernel mutation",
-        "memory write",
-        "direct ACT emission"
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "CODE_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit actual producer, payload shape, caller count, and exact compact C1 hook before any wiring.",
-      "notes": []
+      "evidence_strength": "AUDIT_PROVEN",
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Identity archaeology only; determine whether this historical name maps to an existing router. Do not wire into C1.",
+      "notes": [
+        "V4 closure: zero distinct runtime caller/test was proven under this component identity. It is not required by the current canonical semantic continuity path."
+      ]
     },
     {
       "id": "cic",
@@ -1897,7 +1930,7 @@
       "role": "Prepares or routes meaning before response formation.",
       "status": "ACTIVE_PARTIAL",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4A_AUDITED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
@@ -1914,29 +1947,33 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
+      "producer": "build_brody_cic_packet / inject_cic_into_runtime_packet",
       "current_consumers": [
-        "Brody pipeline"
+        "Brody readonly response payload/debug surface"
       ],
       "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "Brody/C1 readonly context",
-      "target_reason": "Candidate insertion point is suggested by current consumers; exact hook needs audit.",
-      "required_audit": "Prove compact non-sovereign payload and current caller count.",
+      "current_outputs": [
+        "cic_readonly_context",
+        "cic_runtime_binding"
+      ],
+      "connection_state": "partial",
+      "target_layer": "Brody readonly payload",
+      "target_hook": "_brody_attach_cic_readonly_context_v0 -> cic_readonly_context",
+      "target_hook_status": "PROVEN",
+      "target_layer_candidate": null,
+      "target_reason": null,
+      "required_audit": null,
       "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
       "overlaps_with": [],
       "do_not_connect_to": [
+        "C1 merely because CIC exists",
         "KX108 authority",
+        "direct ACT emission",
         "kernel mutation",
-        "memory write",
-        "direct ACT emission"
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -1944,9 +1981,12 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Map whether this should feed C1 directly or remain response-pipeline context.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Preserve readonly/debug binding. No C1 promotion without new material-effect evidence.",
+      "notes": [
+        "V4 closure: current CIC binding is explicitly readonly/debug. No evidence justifies promotion into C1.",
+        "V4-A route evidence labels the current CIC attachment Display/debug-only CIC binding."
+      ]
     },
     {
       "id": "c265",
@@ -1959,14 +1999,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_reasoning_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_reasoning_calibrator.py",
@@ -1986,7 +2034,7 @@
       "current_outputs": [
         "pre_reasoning_snapshot.C265"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "pre_reasoning_snapshot.C265",
       "target_hook_status": "PROVEN",
@@ -2001,8 +2049,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2010,9 +2059,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: known_concept_ids and lexical provenance are local semantic/context evidence. known_concept_ids has no material control effect on reasoning_mode and requires no C1 projection."
+      ]
     },
     {
       "id": "c266",
@@ -2025,14 +2076,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_reasoning_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_reasoning_calibrator.py"
@@ -2050,7 +2109,7 @@
       "current_outputs": [
         "pre_reasoning_snapshot.C266"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "pre_reasoning_snapshot.C266",
       "target_hook_status": "PROVEN",
@@ -2065,8 +2124,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2074,9 +2134,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: symbolic_alignment is derived from unresolved unknown state (PARTIAL vs ALIGNED). It is useful locally but does not justify a duplicate C1 projection."
+      ]
     },
     {
       "id": "c273",
@@ -2089,14 +2151,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_reasoning_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_reasoning_calibrator.py"
@@ -2114,7 +2184,7 @@
       "current_outputs": [
         "pre_reasoning_snapshot.C273"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "pre_reasoning_snapshot.C273",
       "target_hook_status": "PROVEN",
@@ -2129,8 +2199,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2138,9 +2209,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: divergence is built from unresolved lexical/IR unknowns. C1 already carries unknowns/contradictions/risk channels; no duplicate C1 computation is required."
+      ]
     },
     {
       "id": "c274",
@@ -2153,14 +2226,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_reasoning_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_reasoning_calibrator.py",
@@ -2180,7 +2261,7 @@
       "current_outputs": [
         "pre_reasoning_snapshot.C274"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "pre_reasoning_snapshot.C274",
       "target_hook_status": "PROVEN",
@@ -2195,8 +2276,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2204,9 +2286,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: reasoning_readiness is derived from unknowns and contradictions. CALIBRATED_WITH_UNCERTAINTY therefore adds no irreducible C1 information."
+      ]
     },
     {
       "id": "c275",
@@ -2218,14 +2302,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_response_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_response_calibrator.py",
@@ -2245,7 +2337,7 @@
       "current_outputs": [
         "real_response_pipeline.c275"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "real_response_pipeline.c275",
       "target_hook_status": "PROVEN",
@@ -2260,8 +2352,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2269,9 +2362,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: pre-response calibration remains on the proven response pipeline and consumes the bounded pre-reasoning state. No direct C1 projection is required."
+      ]
     },
     {
       "id": "c276",
@@ -2283,14 +2378,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/pre_action_calibrator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/pre_action_calibrator.py",
@@ -2310,7 +2413,7 @@
       "current_outputs": [
         "real_response_pipeline.c276"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "real_response_pipeline.c276",
       "target_hook_status": "PROVEN",
@@ -2325,8 +2428,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2334,9 +2438,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: pre-action calibration remains advisory and candidate-only. It does not authorize execution and must remain separated from KX108/Binder authority."
+      ]
     },
     {
       "id": "c277",
@@ -2349,14 +2455,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/final_sense_halo.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/final_sense_halo.py",
@@ -2376,7 +2490,7 @@
       "current_outputs": [
         "real_response_pipeline.c277"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "real_response_pipeline.c277",
       "target_hook_status": "PROVEN",
@@ -2391,8 +2505,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2400,9 +2515,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: final sense halo consolidates C274/C275/C276 for downstream semantic continuity. Its existing pipeline location is intentional."
+      ]
     },
     {
       "id": "c278",
@@ -2415,14 +2532,22 @@
       "secondary_types": [],
       "summary": "Semantic continuity stage evidenced by periphery/language/action_meaning_validator.py and targeted tests.",
       "role": "Readonly continuity/calibration stage; never a sovereign decision.",
-      "status": "ACTIVE_PARTIAL",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "V4_SEMANTIC_CONTINUITY_CLOSED",
       "implementation_exists": true,
       "runtime_reachable": true,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY",
+        "V4-B_REGISTRY_RECONCILIATION",
+        "V4-C_PRE_REASONING_C1_TRANSPORT",
+        "V4-D_C274_UNIQUE_INFORMATION",
+        "V4-E_SYMBOLIC_ALIGNMENT_DEDUP",
+        "V4-F_C265_UNIQUE_DATA",
+        "V4-G_KNOWN_CONCEPT_IDS_MATERIAL_EFFECT"
+      ],
       "source_locations": [],
       "code_locations": [
         "periphery/language/action_meaning_validator.py",
@@ -2442,7 +2567,7 @@
       "current_outputs": [
         "real_response_pipeline.c278"
       ],
-      "connection_state": "connected_in_response_pipeline",
+      "connection_state": "connected",
       "target_layer": "Brody response pipeline",
       "target_hook": "real_response_pipeline.c278",
       "target_hook_status": "PROVEN",
@@ -2457,8 +2582,9 @@
       "do_not_connect_to": [
         "KX108 authority",
         "direct ACT emission",
-        "memory write",
-        "downstream validator bypass"
+        "downstream validator bypass",
+        "duplicate direct C1 computation",
+        "memory write"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
@@ -2466,9 +2592,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "CODE_AND_TEST_PROVEN",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Audit compact C1 projection if any stage is promoted before C1.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "V4 CLOSED. Preserve the current proven pipeline hook; do not rewire or duplicate into C1.",
+      "notes": [
+        "V4 closure: action/proposal meaning validation is an existing semantic-continuity gate used by response/Obsidure paths. It must not become decision authority."
+      ]
     },
     {
       "id": "reverse_os",
@@ -2658,9 +2786,11 @@
       "emits_act": false,
       "kernel_mutation": false,
       "evidence_strength": "DOCUMENTED_ONLY",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Keep separated from KX108 authority; audit exact hook before wiring.",
-      "notes": []
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Keep as documented provenance. Do not create runtime SSR solely to satisfy historical architecture documents.",
+      "notes": [
+        "V4 closure: no runtime SSR stage is required to complete the current semantic path."
+      ]
     },
     {
       "id": "lu_mh",
@@ -4805,6 +4935,79 @@
       "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
       "next_action": "Keep boundary readonly and update registry after any dependency/provenance audit.",
       "notes": []
+    },
+    {
+      "id": "brody_capabilities_intent",
+      "canonical_name": "Brody capabilities intent",
+      "aliases": [
+        "Brody capabilities intent",
+        "capabilities intent",
+        "capability query intent"
+      ],
+      "component_type": "CAPABILITY",
+      "secondary_types": [
+        "SEMANTIC_LAYER"
+      ],
+      "summary": "Specialized Brody capability-query recognition/response path. Distinct from the canonical _detect_intent value passed into C1.",
+      "role": "Recognizes capability-oriented Brody requests without becoming the canonical cognitive intent or decision authority.",
+      "status": "ACTIVE_PARTIAL",
+      "current_generation": "current",
+      "current_code_status": "V4A_AUDITED",
+      "implementation_exists": true,
+      "runtime_reachable": true,
+      "current_runtime_path": "apps/obsidia_api/routes/brody.py -> brody_capabilities_intent",
+      "already_audited": true,
+      "audit_refs": [
+        "V4-A_SEMANTIC_CONTINUITY"
+      ],
+      "source_locations": [],
+      "code_locations": [
+        "apps/obsidia_api/brody_capabilities_intent.py",
+        "apps/obsidia_api/routes/brody.py"
+      ],
+      "test_locations": [],
+      "documentation_locations": [],
+      "historical_locations": [],
+      "producer": "is_brody_capabilities_query / build_brody_capabilities_response",
+      "current_consumers": [
+        "Brody capability response path"
+      ],
+      "current_inputs": [
+        "user message"
+      ],
+      "current_outputs": [
+        "capability-query classification / response"
+      ],
+      "connection_state": "partial",
+      "target_layer": "Brody capability response path",
+      "target_hook": "is_brody_capabilities_query / build_brody_capabilities_response",
+      "target_hook_status": "PROVEN",
+      "target_layer_candidate": null,
+      "target_reason": null,
+      "required_audit": "Add dedicated integration-test evidence if this path is later promoted from ACTIVE_PARTIAL.",
+      "blockers": [],
+      "dependencies": [],
+      "supersedes": [],
+      "superseded_by": [],
+      "overlaps_with": [
+        "intention"
+      ],
+      "do_not_connect_to": [
+        "canonical C1 intent slot as a duplicate classifier",
+        "KX108 authority",
+        "direct ACT emission"
+      ],
+      "authority": "KX108_ONLY",
+      "readonly": true,
+      "memory_write": false,
+      "emits_act": false,
+      "kernel_mutation": false,
+      "evidence_strength": "CODE_PROVEN",
+      "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+      "next_action": "Keep distinct from canonical intent. Do not route this specialized classifier into C1 as a second intent.",
+      "notes": [
+        "V4-A separated specialized capability-query intent from the canonical _detect_intent path."
+      ]
     }
   ]
 }
