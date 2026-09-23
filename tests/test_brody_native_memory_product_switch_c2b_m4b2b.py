@@ -99,6 +99,56 @@ def test_c2_receives_product_precomputed_inputs():
         in src
     )
 
+    assert (
+        "precomputed_balance_signal=("
+        in src
+    )
+
+    assert (
+        "precomputed_point_cloud_21d=("
+        in src
+    )
+
+    assert (
+        "precomputed_memzum_activation=("
+        in src
+    )
+
+
+def test_deep_signal_producers_execute_once_before_c1():
+    src = _src()
+    start = src.index(
+        "# C2B-M4B2B - product memory activation."
+    )
+    end = src.index(
+        "# COGNITIVE_RUNTIME_JOIN_BACKEND_V1"
+    )
+    normal_path = src[start:end]
+
+    assert normal_path.count(
+        "_memory_mc_fn("
+    ) == 1
+
+    assert normal_path.count(
+        ".compute_balances("
+    ) == 1
+
+    assert normal_path.count(
+        ".compute_vector("
+    ) == 1
+
+    assert normal_path.count(
+        "_memory_memzum_fn("
+    ) == 1
+
+    assert normal_path.count(
+        'safe_call_snapshot(\n            "memory_response_chain"'
+    ) == 1
+
+    assert src.count(
+        "# COGNITIVE_RUNTIME_JOIN_BACKEND_V1"
+    ) == 1
+
 
 def test_backend_c1_projection_precedes_human_synthesis():
     src = _src()
@@ -356,6 +406,57 @@ def test_live_route_native_memory_reaches_w4_w1_w2():
                 "kernel_mutation"
             )
             is False
+        )
+
+        deep = projection.get(
+            "deep_cognitive_signal_snapshot",
+            {},
+        )
+
+        assert isinstance(deep, dict)
+        assert deep
+
+        assert deep.get("available") == {
+            "balance": True,
+            "point_cloud_21d": True,
+            "memzum": True,
+        }
+
+        receipt_deep = receipt.get(
+            "deep_cognitive_signal_snapshot",
+            {},
+        )
+        assert deep == receipt_deep
+
+        packet = receipt.get(
+            "context_packet_v2",
+            {},
+        )
+
+        assert "brody:balance_engine" in packet.get(
+            "source_refs",
+            [],
+        )
+        assert "brody:point_cloud_21d" in packet.get(
+            "source_refs",
+            [],
+        )
+        assert "brody:memzum_activation" in packet.get(
+            "source_refs",
+            [],
+        )
+
+        assert (
+            "BALANCE_STATE_AVAILABLE:True"
+            in packet.get("context_items", [])
+        )
+        assert (
+            "POINT_CLOUD_21D_AVAILABLE:True"
+            in packet.get("context_items", [])
+        )
+        assert (
+            "MEMZUM_STATE_AVAILABLE:True"
+            in packet.get("context_items", [])
         )
 
     finally:

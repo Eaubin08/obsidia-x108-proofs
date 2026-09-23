@@ -711,6 +711,36 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     )
                     else None
                 ),
+                precomputed_balance_signal=(
+                    _memory_activation_preflight.get(
+                        "balance_engine"
+                    )
+                    if isinstance(
+                        _memory_activation_preflight,
+                        dict,
+                    )
+                    else None
+                ),
+                precomputed_point_cloud_21d=(
+                    _memory_activation_preflight.get(
+                        "point_cloud_21d"
+                    )
+                    if isinstance(
+                        _memory_activation_preflight,
+                        dict,
+                    )
+                    else None
+                ),
+                precomputed_memzum_activation=(
+                    _memory_activation_preflight.get(
+                        "memzum"
+                    )
+                    if isinstance(
+                        _memory_activation_preflight,
+                        dict,
+                    )
+                    else None
+                ),
                 precomputed_brody_runtime=r,
                 precomputed_memory_chain=(
                     memory_response_chain
@@ -774,6 +804,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         "completeness": _cog_receipt.get("completeness") if isinstance(_cog_receipt, dict) else "UNAVAILABLE",
         "context_packet_v2": _c1_context_packet,
         "ir_candidate": _c1_ir_candidate,
+        "deep_cognitive_signal_snapshot": (
+            _cog_receipt.get("deep_cognitive_signal_snapshot", {})
+            if isinstance(_cog_receipt, dict)
+            and isinstance(
+                _cog_receipt.get("deep_cognitive_signal_snapshot"),
+                dict,
+            )
+            else {}
+        ),
         "kx108_admission": _cog_receipt.get("kx108_admission") if isinstance(_cog_receipt, dict) else None,
         "decision_ticket_dry_run": _cog_receipt.get("decision_ticket_dry_run") if isinstance(_cog_receipt, dict) else None,
         "components": _cog_receipt.get("components", {}) if isinstance(_cog_receipt, dict) else {},

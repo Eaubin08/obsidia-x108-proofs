@@ -175,6 +175,181 @@ def _micro_context(
     return _uniq(risk_flags), _uniq(unknowns)
 
 
+def _as_float(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return round(float(value), 3)
+    return None
+
+
+def _deep_signal_projection(
+    *,
+    balance_signal: dict[str, Any] | None = None,
+    point_cloud_21d: dict[str, Any] | None = None,
+    memzum_activation: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    balance = (
+        dict(balance_signal)
+        if isinstance(balance_signal, dict)
+        else {}
+    )
+    point_cloud = (
+        dict(point_cloud_21d)
+        if isinstance(point_cloud_21d, dict)
+        else {}
+    )
+    memzum = (
+        dict(memzum_activation)
+        if isinstance(memzum_activation, dict)
+        else {}
+    )
+
+    coordinator = (
+        balance.get("coordinator", {})
+        if isinstance(balance.get("coordinator"), dict)
+        else {}
+    )
+    balances = (
+        balance.get("balances", {})
+        if isinstance(balance.get("balances"), dict)
+        else {}
+    )
+    balance_memoire = (
+        balances.get("balance_memoire", {})
+        if isinstance(balances.get("balance_memoire"), dict)
+        else {}
+    )
+
+    vector = (
+        point_cloud.get("vector_21d", {})
+        if isinstance(point_cloud.get("vector_21d"), dict)
+        else {}
+    )
+    dominant_axes = point_cloud.get("dominant_axes", [])
+    active_layers = point_cloud.get("active_layers", [])
+    forbidden_layers = point_cloud.get("forbidden_layers", [])
+
+    activation_basis = (
+        memzum.get("activation_basis", {})
+        if isinstance(memzum.get("activation_basis"), dict)
+        else {}
+    )
+
+    available = {
+        "balance": bool(balance),
+        "point_cloud_21d": bool(point_cloud),
+        "memzum": bool(memzum),
+    }
+
+    return {
+        "status": (
+            "READY:PRECOMPUTED"
+            if any(available.values())
+            else "SKIPPED_OPTIONAL_NOT_PROVIDED"
+        ),
+        "available": available,
+        "balance_snapshot": {
+            "role": "WEIGHTING_COGNITIVE_STATE",
+            "version": balance.get("balance_engine_version"),
+            "balances_count": balance.get("balances_count"),
+            "dominant_balance": coordinator.get("dominant_balance"),
+            "top3_balances": coordinator.get("top3_balances", []),
+            "layers_to_activate": coordinator.get(
+                "layers_to_activate",
+                [],
+            ),
+            "layers_to_avoid": coordinator.get("layers_to_avoid", []),
+            "balance_risk_level": _as_float(
+                coordinator.get("balance_risk_level")
+            ),
+            "balance_memoire_tension": _as_float(
+                balance_memoire.get("tension")
+            ),
+            "advisory_only": True,
+            "decision_authority": "KX108_ONLY",
+        },
+        "point_cloud_21d_snapshot": {
+            "role": "SELECTION_COGNITIVE_POSITION_GATING",
+            "version": point_cloud.get("selector_version"),
+            "dimensions": point_cloud.get("dimensions"),
+            "dominant_axes": (
+                list(dominant_axes)
+                if isinstance(dominant_axes, list)
+                else []
+            ),
+            "active_layers": (
+                list(active_layers)
+                if isinstance(active_layers, list)
+                else []
+            ),
+            "forbidden_layers": (
+                list(forbidden_layers)
+                if isinstance(forbidden_layers, list)
+                else []
+            ),
+            "memory_packet_required": bool(
+                point_cloud.get("memory_packet_required", False)
+            ),
+            "domain_packet_required": bool(
+                point_cloud.get("domain_packet_required", False)
+            ),
+            "compact_vector_21d": {
+                str(key): _as_float(value)
+                for key, value in vector.items()
+                if _as_float(value) is not None
+            },
+            "advisory_only": True,
+            "decision_authority": "KX108_ONLY",
+        },
+        "memzum_activation_snapshot": {
+            "role": "MEMORY_GATE_CONTEXT_PROVENANCE",
+            "module": memzum.get("module"),
+            "version": memzum.get("version"),
+            "status": memzum.get("status"),
+            "memory_required": bool(memzum.get("memory_required", False)),
+            "reason": memzum.get("reason"),
+            "activation_basis": {
+                "memory_packet_required": bool(
+                    activation_basis.get(
+                        "memory_packet_required",
+                        False,
+                    )
+                ),
+                "axis_13_memory": _as_float(
+                    activation_basis.get("axis_13_memory")
+                ),
+                "memory_relevance_signal": _as_float(
+                    activation_basis.get(
+                        "memory_relevance_signal"
+                    )
+                ),
+                "balance_memoire_tension": _as_float(
+                    activation_basis.get(
+                        "balance_memoire_tension"
+                    )
+                ),
+                "domain_detected": activation_basis.get(
+                    "domain_detected"
+                ),
+                "intent_type": activation_basis.get("intent_type"),
+                "is_adversarial": bool(
+                    activation_basis.get("is_adversarial", False)
+                ),
+            },
+            "advisory_only": True,
+            "memory_write": False,
+            "decision_authority": "KX108_ONLY",
+        },
+        "readonly": True,
+        "context_signal_only": True,
+        "allowed_to_decide": False,
+        "allowed_to_act": False,
+        "memory_write": False,
+        "emits_act": False,
+        "kernel_mutation": False,
+        "decision_authority": "KX108_ONLY",
+    }
+
+
 def _blocked_receipt(
     *,
     signal_id: str,
@@ -212,6 +387,9 @@ def run_real_cognitive_join(
     precomputed_tree_wrapper: dict[str, Any] | None = None,
     precomputed_brody_runtime: dict[str, Any] | None = None,
     precomputed_memory_chain: dict[str, Any] | None = None,
+    precomputed_balance_signal: dict[str, Any] | None = None,
+    precomputed_point_cloud_21d: dict[str, Any] | None = None,
+    precomputed_memzum_activation: dict[str, Any] | None = None,
     precomputed_model_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
@@ -223,6 +401,7 @@ def run_real_cognitive_join(
         "SEMANTIC_QUERY": "PENDING",
         "INTENT": "PENDING",
         "MICRO_CORE": "PENDING",
+        "DEEP_COGNITIVE_SIGNALS": "PENDING",
         "REVERSE_OS": "PENDING",
         "TREE_34D_SHAZAM_MEMORY_WORLD": "PENDING",
         "SIGMA": "PENDING",
@@ -304,6 +483,17 @@ def run_real_cognitive_join(
         micro = {}
 
     micro_risks, micro_unknowns = _micro_context(micro)
+
+    deep_cognitive_signal = _deep_signal_projection(
+        balance_signal=precomputed_balance_signal,
+        point_cloud_21d=precomputed_point_cloud_21d,
+        memzum_activation=precomputed_memzum_activation,
+    )
+    components["DEEP_COGNITIVE_SIGNALS"] = (
+        deep_cognitive_signal.get("status")
+        if isinstance(deep_cognitive_signal, dict)
+        else "SKIPPED_OPTIONAL_NOT_PROVIDED"
+    )
 
     # --------------------------------------------------------
     # 4 — Reverse OS
@@ -470,6 +660,67 @@ def run_real_cognitive_join(
         f"REVERSE_OS:{reverse_os.get('status', 'UNAVAILABLE')}",
     ]
 
+    if isinstance(deep_cognitive_signal, dict):
+        availability = deep_cognitive_signal.get("available", {})
+        if isinstance(availability, dict):
+            if any(bool(value) for value in availability.values()):
+                context_items.extend(
+                    [
+                        (
+                            "BALANCE_STATE_AVAILABLE:"
+                            f"{bool(availability.get('balance'))}"
+                        ),
+                        (
+                            "POINT_CLOUD_21D_AVAILABLE:"
+                            f"{bool(availability.get('point_cloud_21d'))}"
+                        ),
+                        (
+                            "MEMZUM_STATE_AVAILABLE:"
+                            f"{bool(availability.get('memzum'))}"
+                        ),
+                    ]
+                )
+
+        balance_snapshot = deep_cognitive_signal.get(
+            "balance_snapshot",
+            {},
+        )
+        if isinstance(balance_snapshot, dict) and availability.get(
+            "balance"
+        ):
+            context_items.append(
+                "BALANCE_DOMINANT:"
+                f"{balance_snapshot.get('dominant_balance')}"
+            )
+
+        point_snapshot = deep_cognitive_signal.get(
+            "point_cloud_21d_snapshot",
+            {},
+        )
+        if isinstance(point_snapshot, dict) and availability.get(
+            "point_cloud_21d"
+        ):
+            context_items.append(
+                "POINT_CLOUD_21D_SELECTION:"
+                f"dimensions={point_snapshot.get('dimensions')};"
+                f"active_layers={len(point_snapshot.get('active_layers', []))};"
+                f"memory_packet_required="
+                f"{bool(point_snapshot.get('memory_packet_required'))}"
+            )
+
+        memzum_snapshot = deep_cognitive_signal.get(
+            "memzum_activation_snapshot",
+            {},
+        )
+        if isinstance(memzum_snapshot, dict) and availability.get(
+            "memzum"
+        ):
+            context_items.append(
+                "MEMZUM_GATE:"
+                f"memory_required={bool(memzum_snapshot.get('memory_required'))};"
+                f"reason={memzum_snapshot.get('reason')}"
+            )
+
     shazam_dict = (
         canonical_tree_dict.get("shazam", {})
         if isinstance(canonical_tree_dict, dict)
@@ -520,6 +771,36 @@ def run_real_cognitive_join(
                 "brody:semantic_query",
                 "brody:micro_core",
                 "brody:reverse_os",
+                *(
+                    [
+                        "brody:balance_engine",
+                    ]
+                    if deep_cognitive_signal.get(
+                        "available",
+                        {},
+                    ).get("balance")
+                    else []
+                ),
+                *(
+                    [
+                        "brody:point_cloud_21d",
+                    ]
+                    if deep_cognitive_signal.get(
+                        "available",
+                        {},
+                    ).get("point_cloud_21d")
+                    else []
+                ),
+                *(
+                    [
+                        "brody:memzum_activation",
+                    ]
+                    if deep_cognitive_signal.get(
+                        "available",
+                        {},
+                    ).get("memzum")
+                    else []
+                ),
             ],
             risk_flags=risk_flags,
             unknowns=unknowns,
@@ -826,6 +1107,7 @@ def run_real_cognitive_join(
         "semantic_query_snapshot": semantic,
         "intent": intent,
         "micro_core_trace": micro,
+        "deep_cognitive_signal_snapshot": deep_cognitive_signal,
         "reverse_os_projection": reverse_os,
 
         "domain_detected": domain,
