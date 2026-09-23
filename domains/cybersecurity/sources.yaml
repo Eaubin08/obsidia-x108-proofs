@@ -1,3 +1,32 @@
-status: NOT_YET_DEFINED
-sources: []
-note: "CURRENT SOURCES: NONE / NOT YET AUDITED"
+status: AUDITED_REFERENCE_SET
+source_type: repo_reference
+sources:
+  - "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md"
+  - "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md"
+  - "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md"
+  - "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md"
+  - "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
+source_classes:
+  "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md": REPO_ARCHITECTURE_SOURCE
+  "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md": REPO_SPEC_SOURCE
+  "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md": REPO_SPEC_SOURCE
+  "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md": REPO_CONTRACT_SKELETON
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": REPO_AUDIT_SOURCE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE_AUDIT
+source_roles:
+  "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md": security_by_admission_architecture_and_claim_boundary
+  "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md": sandbox_isolation_and_violation_policy
+  "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md": incident_lifecycle_and_audit_direction
+  "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md": advisory_security_evidence_boundary
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": network_egress_and_connector_risk_audit
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": audited_domain_concept_inventory
+boundaries:
+  - "SOURCE != TRUST"
+  - "THREAT_MODEL != PROTECTION_PROOF"
+  - "SECURITY_EVIDENCE != CERTIFICATION"
+  - "DETECTION != AUTHORITY"
+  - "INCIDENT_RESPONSE != EXECUTION_PERMISSION"
+  - "ISOLATION_CAPABILITY != PERMISSION"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Audited Cybersecurity design/reference sources only. No Cybersecurity UDIP runtime or certification is declared active by this file."

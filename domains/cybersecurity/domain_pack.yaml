@@ -2,11 +2,19 @@ domain_id: cybersecurity
 domain_name: "Cybersecurity"
 udip_version: V0
 status: NEW_DOMAIN_SCAFFOLD
-source_type: none
+source_type: repo_reference
 legacy_sources:
-  []
+  - "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md"
+  - "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md"
+  - "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md"
+  - "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md"
+  - "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
 extensions:
   - detection
+  - threat_evidence
+  - security_evidence_advisory
   - response
+  - incident_response
   - isolation_boundaries
 implementation_state: SCAFFOLD_ONLY

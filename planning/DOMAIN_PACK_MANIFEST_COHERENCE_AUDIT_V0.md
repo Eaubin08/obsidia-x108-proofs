@@ -39,7 +39,7 @@ The important debt is class 2.
 | Bank | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | GPS / Defense / Aviation | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
-| Cybersecurity | DOCS_AHEAD_OF_MANIFEST | README has sourced architecture; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
+| Cybersecurity | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share detection/evidence/response/isolation perimeter | audited repo references | empty by design | domain-specific profile documented | audit object candidates next |
 | Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Telecom | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share network + physical-signal perimeter | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Legal / Compliance | DOCS_AHEAD_OF_MANIFEST | README has strong compliance corpus; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
@@ -99,41 +99,46 @@ The README remains explicit that Ecom is `PARTIAL_REFERENCE` and identifies miss
 
 No manifest promotion is justified yet.
 
-## 5. Cybersecurity — docs ahead of manifest
+## 5. Cybersecurity — source/perimeter synchronized
+
+Cybersecurity now has an audited repository reference set.
 
 Current manifest:
 
 ```yaml
-status: NEW_DOMAIN_SCAFFOLD
-source_type: none
-legacy_sources: []
+source_type: repo_reference
 extensions:
   - detection
+  - threat_evidence
+  - security_evidence_advisory
   - response
+  - incident_response
   - isolation_boundaries
 implementation_state: SCAFFOLD_ONLY
 ```
 
-But the source audit found real repository material:
+The source set distinguishes:
 
-- `docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md`
-- `periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md`
-- `periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md`
-- `runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md`
-- `docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md`
+- architecture/doctrine;
+- validated or to-validate specs;
+- contract skeleton;
+- audit source.
 
-Verdict:
+Current state:
 
 ```text
-README = sourced conceptual architecture
-domain_pack = scaffold with declared perimeter
-sources.yaml = stale/empty
-object_map = correctly empty
+README = synchronized
+domain_pack = synchronized
+sources = synchronized
+conformance profile = documented
+object_map = intentionally empty
+runtime = not implemented
+tests = not implemented
 ```
 
-Recommended next step:
+Next action for Cybersecurity is a READ_ONLY object-model candidate audit.
 
-Update **source mapping only** after defining the correct source classification. Do not build the object map yet.
+The audit must keep security-transverse mechanisms separate from actual Cybersecurity-owned objects.
 
 ## 6. Energy / Critical Infrastructure — source/perimeter synchronized
 
@@ -350,12 +355,12 @@ Do not update all manifests at once.
 Recommended order:
 
 ```text
-1. Cybersecurity source mapping
+1. Cybersecurity object-model candidate audit
 2. Legal/Compliance source mapping
 3. source_type vocabulary / classification
 4. remaining sources.yaml updates
 5. remaining domain_pack extension updates where justified
-6. mature Telecom/Energy object candidates before mapping
+6. mature Telecom/Energy/Cybersecurity object candidates before mapping
 7. object maps only after object-level evidence freeze
 8. remaining domain-specific conformance profiles
 9. tests

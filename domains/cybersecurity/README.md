@@ -1,106 +1,102 @@
 # Cybersecurity
 
-> Domain Pack de sécurité défensive et de gouvernance des incidents.
+> Domain Pack de sécurité défensive, preuve de sécurité et gouvernance des incidents.
 >
 > **UDIP status : `NEW_DOMAIN_SCAFFOLD`**  
+> **Source type : `repo_reference`**  
 > **Implementation state : `SCAFFOLD_ONLY`**  
 > **Authority : `KX108_ONLY`**
 
 ## 1. Vision
 
-Cybersecurity n'est pas conçu comme un “agent sécurité” qui détecterait une menace puis déciderait quoi faire.
+Cybersecurity n'est pas conçu comme un agent de sécurité souverain qui détecte une menace puis décide seul de la réponse.
 
-La matière existante d'Obsidia pousse vers une architecture différente :
+Le corpus existant pousse vers une architecture de ce type :
 
 ```text
 signal / événement / violation
 → qualification de risque
-→ evidence / threat context
-→ isolation ou containment candidate
-→ DomainSignal
-→ gouvernance
+→ threat / evidence context
+→ containment / response candidate
+→ Cybersecurity DomainSignal
+→ CanonicalDomainContract
+→ GovernancePayload
 → KX108
-→ permission séparée si action
+→ ACT / HOLD / BLOCK
+→ Binder si conséquence
+→ capacité de réponse autorisée
 → incident receipt / replay / audit
 ```
 
-Le domaine peut donc détecter, contextualiser, proposer un confinement ou une réponse, mais il ne devient jamais l'autorité qui exécute cette réponse.
+Le domaine peut détecter, classifier, enrichir, proposer et documenter.
 
-## 2. Matière réelle déjà présente
+Il ne possède ni l'autorité finale, ni une permission implicite d'isoler, d'écrire ou d'agir.
 
-La vision est soutenue par plusieurs couches existantes :
+## 2. Statut réel
 
-- [Security by Threat Obsolescence](../../docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md) : admission structurée, fail-closed, provenance, anti-replay, receipts ;
-- [Sandbox Policy](../../periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md) : environnement contraint, outils permis/interdits, trace des violations ;
-- [Incident Response Protocol](../../periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md) : cycle OPEN → CONTAINED → ANALYZED → RESOLVED → ARCHIVED ;
-- [RSSI Evidence Only](../../runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md) : contrôles, risk assessment et threat model comme preuves advisory, jamais comme autorité ;
-- [Network Egress & Connectors Audit](../../docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md) : classification des sorties réseau et connecteurs actifs.
+Le pack reste :
 
-Ces sources ne constituent pas encore un runtime Cybersecurity UDIP. Elles définissent toutefois un socle conceptuel beaucoup plus riche que le simple scaffold.
+- `status: NEW_DOMAIN_SCAFFOLD` ;
+- `source_type: repo_reference` ;
+- `implementation_state: SCAFFOLD_ONLY`.
 
-## 3. Périmètre déclaré
+Cette synchronisation reconnaît un **corpus repository audité**.
 
-`domain_pack.yaml` déclare trois extensions :
+Elle ne signifie pas :
 
-- `detection` ;
-- `response` ;
-- `isolation_boundaries`.
+- runtime Cybersecurity UDIP branché ;
+- détection active universelle ;
+- incident response automatisé ;
+- certification sécurité ;
+- object map implémenté ;
+- tests de conformance Cybersecurity démontrés.
 
-Elles sont cohérentes avec le corpus existant.
+`object_map.yaml` reste volontairement vide.
 
-## 4. Principe central
+## 3. Sources auditées
 
-La sécurité ne doit pas dépendre d'un modèle qui “comprend” qu'une entrée est malveillante.
+### Architecture / doctrine
 
-Une partie du corpus Obsidia inverse la charge :
+- [Security by Threat Obsolescence](../../docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md)
 
-```text
-ancien modèle :
-prouver que l'entrée est mauvaise
-
-modèle gouverné :
-l'entrée doit prouver qu'elle est admissible
-```
-
-Cette doctrine est particulièrement forte pour les systèmes critiques, mais elle reste une direction architecturale, pas une certification de sécurité universelle.
-
-## 5. Threat model et evidence
-
-Le Domain Pack doit distinguer :
+Cette note formalise notamment :
 
 ```text
-threat model
-≠ protection effective
-
-security evidence
-≠ certification
-
-risk score
-≠ decision
-
-incident candidate
-≠ action
+non-canonical input
+→ no execution authority
 ```
 
-Le contrat `RSSI_EVIDENCE_ONLY` est un bon modèle : une preuve de sécurité peut enrichir un ticket, un ContextPacket ou un BoundaryContract, mais elle ne peut produire ALLOW/BLOCK par elle-même.
+avec :
 
-## 6. Isolation
+- provenance ;
+- fraîcheur ;
+- anti-replay ;
+- cohérence ;
+- fail-closed ;
+- receipts / replay ;
+- séparation domaine / autorité.
 
-La Sandbox Policy fournit une base transversale :
+Elle contient aussi des claims industriels qui restent soumis à son propre claim boundary.
+
+### Isolation / Sandbox
+
+- [Sandbox Policy](../../periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md)
+
+La spec définit une exécution contrainte avec notamment :
 
 - `no_write` ;
-- outils explicitement autorisés ;
+- outils autorisés ;
 - outils interdits ;
 - réseau borné ;
-- limites coût/durée/appels ;
+- limites coût / durée / appels ;
 - trace complète ;
-- violation événementialisée.
+- événements de violation.
 
-Dans un futur Domain Pack Cybersecurity, l'isolation peut devenir une **capacité de réponse proposée**, jamais une autorité implicite.
+### Incident Response
 
-## 7. Incident response
+- [Incident Response Protocol](../../periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md)
 
-Le protocole historique décrit un cycle d'incident structuré :
+Cycle documenté :
 
 ```text
 OPEN
@@ -110,67 +106,284 @@ OPEN
 → ARCHIVED
 ```
 
+La source est `FORMALISÉ_À_VALIDER`.
+
+Elle fournit donc une direction structurée, pas une garantie de runtime actif.
+
+### Evidence-only security boundary
+
+- [RSSI Evidence Only](../../runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md)
+
+Ce contrat est `CONTRACT_SKELETON_ONLY`.
+
+Il impose notamment :
+
+```text
+security control
+!= automatic correction
+
+threat model
+!= effective protection
+
+security evidence
+!= certification
+
+RSSI evidence
+!= decision authority
+```
+
+### Network / connector audit
+
+- [P70 Network Egress & Connectors Audit](../../docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md)
+
+P70 classe les surfaces réseau et les connecteurs, dont :
+
+- no egress ;
+- readonly/dry-run ;
+- localhost review ;
+- active connector review ;
+- external market egress ;
+- blocked/proof-only.
+
+P70 est un **audit transversal** utile à Cybersecurity.
+
+Il ne devient pas un modèle d'objets Cybersecurity.
+
+## 4. Périmètre V0
+
+Le Domain Pack reconnaît maintenant six extensions documentaires :
+
+### Detection / Evidence
+
+- `detection`
+- `threat_evidence`
+- `security_evidence_advisory`
+
+### Response / Containment
+
+- `response`
+- `incident_response`
+- `isolation_boundaries`
+
+Ces extensions décrivent le périmètre de conception.
+
+Elles ne valent ni runtime, ni permission d'action, ni certification.
+
+## 5. Security by admission
+
+Une partie importante du corpus inverse le problème classique :
+
+```text
+ancien modèle :
+le système doit prouver que l'entrée est malveillante
+
+modèle gouverné :
+l'entrée doit prouver qu'elle est admissible
+```
+
+Le pack Cybersecurity doit préserver cette distinction sans sur-promettre.
+
+Cela ne signifie pas que toutes les attaques disparaissent.
+
+Cela signifie qu'une entrée non admissible ne doit pas acquérir d'autorité simplement parce qu'elle existe ou qu'un modèle la comprend.
+
+## 6. Detection
+
+Une future couche Detection peut produire :
+
+- événement de sécurité ;
+- anomalie ;
+- violation candidate ;
+- risk flags ;
+- contradictions ;
+- evidence refs ;
+- threat context.
+
+Elle ne peut pas produire une décision finale.
+
+```text
+DETECTION != AUTHORITY
+```
+
+## 7. Threat model / evidence
+
+Les sources imposent :
+
+```text
+THREAT_MODEL != PROTECTION_PROOF
+SECURITY_CASE != EXECUTED_TEST
+CONTROLS_MAP != GUARANTEED_COVERAGE
+SECURITY_EVIDENCE != CERTIFICATION
+EVIDENCE != AUTHORITY
+```
+
+Les preuves de sécurité peuvent enrichir :
+
+- `OS3EvidenceTicket` ;
+- `BoundaryContract` ;
+- `ContextPacket` ;
+- reason codes ;
+- audit surfaces.
+
+Elles ne doivent pas générer ALLOW/BLOCK à elles seules.
+
+## 8. Isolation
+
+La Sandbox Policy fournit une base de confinement :
+
+```text
+sandbox policy
+→ explicit allowed capabilities
+→ violation trace
+→ evidence / ticket consequence
+→ governed response
+```
+
+Une sandbox peut limiter une capacité.
+
+Elle ne devient pas pour autant l'autorité générale du système.
+
+Dans le Domain Pack Cybersecurity, `isolation_boundaries` signifie donc :
+
+- expliciter ce qui peut être isolé ;
+- documenter les capacités ;
+- produire une conséquence traçable ;
+- ne jamais confondre capacité d'isolation et permission d'isoler.
+
+## 9. Incident Response
+
+La source historique définit :
+
+```text
+OPEN
+CONTAINED
+ANALYZED
+RESOLVED
+ARCHIVED
+```
+
 avec :
 
 - timeline ;
-- audit ;
 - classification ;
+- audit ;
 - signatures ;
-- impossibilité de réécrire la trace après coup.
+- impossibilité de réécrire la trace ;
+- séparation actions humaines / automatiques.
 
-Ce mécanisme est fortement pertinent pour le domaine, même si la spec source reste `FORMALISÉ_À_VALIDER`.
+Cette structure est suffisamment forte pour justifier l'extension `incident_response`.
 
-## 8. Point de branchement cible
+Mais le Domain Pack ne revendique pas encore l'implémentation de cette machine d'état.
+
+## 10. Network / connector security
+
+P70 fournit des catégories de risque et de contrôle réseau.
+
+Ces catégories peuvent alimenter Cybersecurity sous forme de :
+
+- evidence ;
+- risk flags ;
+- connector posture ;
+- egress exposure ;
+- review requirements.
+
+Elles ne doivent pas devenir des objets Cybersecurity canoniques sans audit supplémentaire.
+
+## 11. Point de branchement cible
 
 ```text
 security source
-→ detector / monitor
-→ risk + evidence
+→ detector / monitor / audit source
+→ evidence + risk + contradiction
 → Cybersecurity DomainSignal
 → CanonicalDomainContract
 → GovernancePayload
 → KX108
 → ACT / HOLD / BLOCK
-→ Binder si containment/action
-→ execution capability
-→ incident receipt
-→ replay / audit
+→ Binder si conséquence
+→ containment / response capability
+→ ExecutionOutcome
+→ Incident Receipt
+→ Replay / Audit
 ```
 
-## 9. Non-souveraineté
+## 12. Non-souveraineté
 
-Invariants :
+Invariants Cybersecurity :
 
 ```text
 DOMAIN != AUTHORITY
-THREAT_MODEL != VERDICT
+DETECTION != AUTHORITY
+THREAT_MODEL != PROTECTION_PROOF
+SECURITY_EVIDENCE != CERTIFICATION
 EVIDENCE != AUTHORITY
-DETECTION != RESPONSE_PERMISSION
+INCIDENT != EXECUTION_PERMISSION
+CONTAINMENT_CAPABILITY != PERMISSION
+ISOLATION != DECISION
+RESPONSE_CANDIDATE != ACTION
 KX108_ONLY
 ```
 
-## 10. État réel du pack
+## 13. Source model
 
-Malgré ce corpus riche :
+Le pack utilise `source_type: repo_reference`.
 
-- `sources.yaml` reste `NOT_YET_DEFINED` ;
-- `object_map.yaml` n'est pas implémenté ;
-- `conformance.md` reste `SCAFFOLD ONLY` ;
-- les fichiers de `migration_snapshot/` contiennent beaucoup de matière transverse/générique.
+### REPO_ARCHITECTURE_SOURCE
 
-Il serait donc faux de présenter Cybersecurity comme déjà intégré.
+- `docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md`
 
-## 11. Sources
+### REPO_SPEC_SOURCE
 
-Voir aussi :
+- `periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md`
+- `periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md`
 
-- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
-- [UDIP V0](../../docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md)
-- [Domain Pack Standard](../../udip/DOMAIN_PACK_STANDARD.md)
+### REPO_CONTRACT_SKELETON
 
-## 12. Prochaine étape
+- `runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md`
 
-Construire un vrai object map autour d'objets tels que :
+### REPO_AUDIT_SOURCE
+
+- `docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md`
+- `planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md`
+
+## 14. Conformance
+
+Le profil Cybersecurity impose désormais au niveau documentaire :
+
+```text
+DETECTION != AUTHORITY
+THREAT_MODEL != PROTECTION_PROOF
+SECURITY_EVIDENCE != CERTIFICATION
+INCIDENT_RESPONSE != EXECUTION_PERMISSION
+ISOLATION_CAPABILITY != PERMISSION
+KX108_ONLY
+```
+
+Les tests correspondants restent à créer.
+
+Voir [conformance.md](conformance.md).
+
+## 15. Manques
+
+Le pack reste incomplet sur :
+
+- object map ;
+- objets Cybersecurity canoniques ;
+- DomainSignal Cybersecurity natif ;
+- detector/monitor adapter ;
+- containment adapter ;
+- Binder path ;
+- Incident Receipt concret ;
+- replay domaine ;
+- tests Cybersecurity ;
+- démonstration de non-contournement ;
+- séparation finale entre sécurité transverse Obsidia et sémantique réellement propre au Domain Pack.
+
+## 16. Prochaine étape
+
+Le prochain geste ne doit pas être du runtime.
+
+Il faut faire un **object-model candidate audit READ_ONLY** afin de classer les candidats déjà cités dans la documentation :
 
 ```text
 security_event
@@ -181,4 +394,4 @@ containment_candidate
 security_boundary
 ```
 
-puis démontrer que ces objets peuvent être gouvernés sans donner d'autorité au domaine.
+avant toute écriture dans `object_map.yaml`.
