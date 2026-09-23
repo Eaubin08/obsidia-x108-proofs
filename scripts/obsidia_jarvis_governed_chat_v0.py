@@ -61,6 +61,7 @@ OPENJARVIS_PROVIDER_SELECTION = False
 OPENJARVIS_AUTHORITY = "NONE"
 
 J8_GOVERNED_HUMAN_SURFACE_V0 = True
+J9_HUMAN_APPROVAL_SHORTCUT_V0 = True
 
 GOVERNED_PREPARE_COMMAND = "/governed-prepare"
 GOVERNED_STATUS_COMMAND = "/governed-status"
@@ -676,22 +677,57 @@ class GovernedJarvisChatSession:
             real_execution=False,
         )
 
-    def _authorize_governed_from_json(
+    def _default_governed_execute_request(
         self,
-        path_text: str,
-    ) -> dict[str, Any]:
-        try:
-            payload = (
-                self._load_governed_json(
-                    path_text,
-                    label="GOVERNED_AUTHORIZE",
-                )
-            )
-        except GovernedJarvisChatError as exc:
-            return self._governed_rejection_turn(
-                str(exc)
+        relay_mission_id: str,
+    ) -> dict[str, str]:
+        """
+        Build deterministic runtime evidence stores for the
+        already-prepared Relay mission.
+
+        This creates PATHS only. It does not execute, authorize,
+        mutate, or call KX108.
+        """
+        mission_id = str(
+            relay_mission_id or ""
+        ).strip()
+
+        if not mission_id:
+            raise GovernedJarvisChatError(
+                "RELAY_MISSION_ID_REQUIRED"
             )
 
+        root = (
+            self._governed_relay_store_dir()
+            / "governed_execution_runtime"
+            / mission_id
+        )
+
+        return {
+            "kx108_pre_decision_dir":
+                str(root / "kx108_pre"),
+            "kx108_post_decision_dir":
+                str(root / "kx108_post"),
+            "test_contract_results_dir":
+                str(root / "test_contract_results"),
+            "sealed_receipt_dir":
+                str(root / "sealed_receipts"),
+            "sealed_rollback_evidence_dir":
+                str(root / "sealed_rollback_evidence"),
+            "rollback_result_dir":
+                str(root / "rollback_results"),
+        }
+
+    def _authorize_governed_payload(
+        self,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Sole chat-level transport into Relay J7.
+
+        The chat validates/forwards explicit human intent.
+        Relay/J7/J5 remain owners of execution governance.
+        """
         allowed = {
             "relay_mission_id",
             "human_authorized_execution_authority_hash",
@@ -744,12 +780,18 @@ class GovernedJarvisChatSession:
                 "RELAY_MISSION_ID_REQUIRED"
             )
 
+        mission_id = mission_id.strip()
+
         if not self._is_full_sha256(
             supplied_eah
         ):
             return self._governed_rejection_turn(
                 "EXACT_64_HEX_EAH_REQUIRED"
             )
+
+        supplied_eah = (
+            supplied_eah.strip()
+        )
 
         if not (
             isinstance(
@@ -790,7 +832,7 @@ class GovernedJarvisChatSession:
             dict,
         ):
             if (
-                mission_id.strip()
+                mission_id
                 != pending.get(
                     "relay_mission_id"
                 )
@@ -800,7 +842,7 @@ class GovernedJarvisChatSession:
                 )
 
             if (
-                supplied_eah.strip()
+                supplied_eah
                 != pending.get(
                     "execution_authority_hash"
                 )
@@ -809,10 +851,11 @@ class GovernedJarvisChatSession:
                     "PENDING_EAH_MISMATCH"
                 )
 
+        # Sole transport into the already-proven J7 seam.
         result = (
             _RELAY.relay_respond_to_hold(
                 relay_mission_id=(
-                    mission_id.strip()
+                    mission_id
                 ),
                 human_decision_ref=(
                     human_ref.strip()
@@ -824,7 +867,7 @@ class GovernedJarvisChatSession:
                     self._governed_relay_store_dir()
                 ),
                 human_authorized_execution_authority_hash=(
-                    supplied_eah.strip()
+                    supplied_eah
                 ),
                 governed_execute_request=(
                     execute_request
@@ -852,7 +895,7 @@ class GovernedJarvisChatSession:
                 "GOVERNED UPDATE RESULT",
                 (
                     "mission="
-                    + mission_id.strip()
+                    + mission_id
                 ),
                 (
                     "state="
@@ -920,6 +963,129 @@ class GovernedJarvisChatSession:
             real_execution=real_execution,
         )
 
+    def _authorize_governed_from_json(
+        self,
+        path_text: str,
+    ) -> dict[str, Any]:
+        try:
+            payload = (
+                self._load_governed_json(
+                    path_text,
+                    label="GOVERNED_AUTHORIZE",
+                )
+            )
+        except GovernedJarvisChatError as exc:
+            return self._governed_rejection_turn(
+                str(exc)
+            )
+
+        return self._authorize_governed_payload(
+            payload
+        )
+
+    def _authorize_pending_governed_eah(
+        self,
+        supplied_eah: str,
+    ) -> dict[str, Any]:
+        """
+        Human-friendly explicit authorization.
+
+        `/governed-authorize <64-hex-EAH>` is itself the explicit
+        human act. Natural language still cannot authorize.
+        """
+        pending = (
+            self.pending_governed_mission
+        )
+
+        if not isinstance(
+            pending,
+            dict,
+        ):
+            return self._governed_rejection_turn(
+                "NO_PENDING_GOVERNED_MISSION"
+            )
+
+        mission_id = pending.get(
+            "relay_mission_id"
+        )
+
+        expected_eah = pending.get(
+            "execution_authority_hash"
+        )
+
+        if not (
+            isinstance(
+                mission_id,
+                str,
+            )
+            and mission_id.strip()
+        ):
+            return self._governed_rejection_turn(
+                "PENDING_RELAY_MISSION_ID_INVALID"
+            )
+
+        if not self._is_full_sha256(
+            expected_eah
+        ):
+            return self._governed_rejection_turn(
+                "PENDING_EAH_INVALID"
+            )
+
+        if not self._is_full_sha256(
+            supplied_eah
+        ):
+            return self._governed_rejection_turn(
+                "EXACT_64_HEX_EAH_REQUIRED"
+            )
+
+        supplied_eah = (
+            supplied_eah.strip()
+        )
+
+        if (
+            supplied_eah
+            != expected_eah
+        ):
+            return self._governed_rejection_turn(
+                "PENDING_EAH_MISMATCH"
+            )
+
+        mission_id = (
+            mission_id.strip()
+        )
+
+        human_ref = (
+            "human-j9-surface:"
+            + self.session_id
+            + ":"
+            + mission_id
+            + ":"
+            + supplied_eah[:16]
+        )
+
+        payload = {
+            "relay_mission_id":
+                mission_id,
+            "human_authorized_execution_authority_hash":
+                supplied_eah,
+            "human_decision_ref":
+                human_ref,
+            "resolution":
+                (
+                    "Human explicitly authorized "
+                    "the exact displayed EAH through "
+                    "/governed-authorize."
+                ),
+            "governed_execute_request":
+                self._default_governed_execute_request(
+                    mission_id
+                ),
+        }
+
+        return self._authorize_governed_payload(
+            payload
+        )
+
     def _handle_governed_command(
         self,
         bound_text: str,
@@ -940,8 +1106,10 @@ class GovernedJarvisChatSession:
                 surface_text=(
                     "Governed commands:\n"
                     "/governed-prepare <prepare.json>\n"
-                    "/governed-status <relay_mission_id>\n"
-                    "/governed-authorize <authorization.json>\n\n"
+                    "/governed-status [relay_mission_id]\n"
+                    "/governed-authorize <exact-EAH>\n"
+                    "/governed-authorize <authorization.json> "
+                    "(advanced)\n\n"
                     "Natural-language yes/approve/go "
                     "never authorizes execution."
                 ),
@@ -969,6 +1137,28 @@ class GovernedJarvisChatSession:
                 )
             )
 
+        if text == GOVERNED_STATUS_COMMAND:
+            pending = (
+                self.pending_governed_mission
+            )
+
+            if not isinstance(
+                pending,
+                dict,
+            ):
+                return self._governed_rejection_turn(
+                    "NO_PENDING_GOVERNED_MISSION"
+                )
+
+            return self._status_governed(
+                str(
+                    pending.get(
+                        "relay_mission_id",
+                        "",
+                    )
+                )
+            )
+
         if text.startswith(
             GOVERNED_STATUS_COMMAND + " "
         ):
@@ -983,13 +1173,24 @@ class GovernedJarvisChatSession:
         if text.startswith(
             GOVERNED_AUTHORIZE_COMMAND + " "
         ):
+            argument = text[
+                len(
+                    GOVERNED_AUTHORIZE_COMMAND
+                ):
+            ].strip()
+
+            if self._is_full_sha256(
+                argument
+            ):
+                return (
+                    self._authorize_pending_governed_eah(
+                        argument
+                    )
+                )
+
             return (
                 self._authorize_governed_from_json(
-                    text[
-                        len(
-                            GOVERNED_AUTHORIZE_COMMAND
-                        ):
-                    ].strip()
+                    argument
                 )
             )
 
