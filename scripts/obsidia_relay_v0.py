@@ -35,6 +35,9 @@ from pathlib import Path
 from typing import Optional
 
 _SCRIPTS = Path(__file__).resolve().parent
+_ROOT = _SCRIPTS.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
@@ -42,6 +45,7 @@ import obsidia_gateway_route_decision_v0 as _RD          # CG-B relay substrate 
 import obsidia_stack_native_routes_v0 as _NAT           # stack-native bounded capabilities
 import obsidia_capability_graph_v0 as _CG               # runtime capability graph (lookup only)
 import obsidia_pretool_shadow_v0 as _SHADOW             # CG-D receipts helpers (diagnostic reuse)
+import obsidia_jarvis_governed_mutation_v0 as _J5       # J5 PREPARE-only seam
 
 SCHEMA_VERSION = 1
 RELAY_DOMAIN_TAG = "OBSIDIA_RELAY_MISSION_V0"
@@ -75,6 +79,29 @@ DO_NOT_USE_MORE_PROBABILISTIC_INTELLIGENCE_THAN_NECESSARY = True
 DO_NOT_DEGRADE_CONVERSATIONAL_EXPERIENCE_TO_SAVE_TOKENS = True
 MULTI_OPERATION_GENERALIZATION = "NOT_YET_PROVEN"
 MAX_GOVERNED_MUTATION_OPERATION_V0 = "UPDATE_TARGET_FROM_SOURCE"
+
+_GOVERNED_UPDATE_REQUEST_FIELDS = frozenset({
+    "proposal",
+    "execution_worktree_path",
+    "main_worktree_path",
+    "branch_name",
+    "base_sha",
+    "ledger_dir",
+    "selector_dir",
+    "execution_dir",
+    "pre_execution_context_dir",
+    "repository_identity",
+})
+
+_FORBIDDEN_PREPARE_INPUT_FIELDS = frozenset({
+    "HumanApproval",
+    "approval",
+    "approval_id",
+    "execution_authority_hash",
+    "human_approval",
+    "human_authorization_reference",
+    "human_authorized_execution_authority_hash",
+})
 
 # ── PROPOSITION de profil de permission hôte repo-local (NON activé) ────
 #  Discovery only (§22). Ne mute PAS ~/.claude. À placer dans un
@@ -482,6 +509,190 @@ def _run_native(mission: dict) -> dict:
     return _NAT._evidence("UNSUPPORTED_NATIVE_KIND", False, kind=kind)
 
 
+def _find_forbidden_prepare_input(value, *, path: str = "$") -> Optional[str]:
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            key_text = str(key)
+            if key_text in _FORBIDDEN_PREPARE_INPUT_FIELDS:
+                return f"{path}.{key_text}"
+            found = _find_forbidden_prepare_input(
+                nested,
+                path=f"{path}.{key_text}",
+            )
+            if found:
+                return found
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            found = _find_forbidden_prepare_input(
+                nested,
+                path=f"{path}[{index}]",
+            )
+            if found:
+                return found
+    return None
+
+
+def _fail_governed_prepare(store_dir, mission: dict, reason: str) -> dict:
+    mission["mission_state"] = MISSION_FAILED
+    mission["failure_reason"] = reason
+    mission["governed_prepare_only"] = True
+    mission["governed_auto_execute"] = False
+    _emit_receipt(
+        store_dir,
+        mission,
+        "GOVERNED_UPDATE_PREPARE_FAILED",
+        {
+            "reason": reason,
+            "prepare_only": True,
+            "auto_execute": False,
+            "jarvis_authority": "NONE",
+            "decision_authority": DECISION_AUTHORITY,
+        },
+    )
+    return mission
+
+
+def _prepare_governed_update(store_dir, mission: dict) -> dict:
+    request = mission.get("governed_update_request")
+    if not isinstance(request, dict):
+        mission["mission_state"] = MISSION_HOLD
+        mission["hold_reason"] = "HUMAN_EAH_AUTHORIZATION_REQUIRED"
+        mission["resource_selected"] = RESOURCE_HUMAN
+        mission["governed_apply_route"] = "STAGE4_GOVERNED_RAIL"
+        mission["governed_apply_operation"] = MAX_GOVERNED_MUTATION_OPERATION_V0
+        mission["governed_apply_relay_builds_envelope"] = False
+        mission["metrics"]["hold_count"] += 1
+        _emit_receipt(store_dir, mission, "HOLD_OPENED",
+                      {"reason": "HUMAN_EAH_AUTHORIZATION_REQUIRED",
+                       "governed_apply_route": "STAGE4_GOVERNED_RAIL",
+                       "operation": MAX_GOVERNED_MUTATION_OPERATION_V0,
+                       "relay_constructs_envelope": False,
+                       "relay_mints_eah_or_hma": False})
+        return mission
+
+    forbidden = _find_forbidden_prepare_input(request)
+    if forbidden:
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "FORBIDDEN_PREPARE_AUTHORITY_FIELD:" + forbidden,
+        )
+
+    unknown = set(request) - _GOVERNED_UPDATE_REQUEST_FIELDS
+    if unknown:
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "GOVERNED_UPDATE_REQUEST_SCOPE_NOT_ALLOWED:"
+            + ",".join(sorted(unknown)),
+        )
+
+    proposal = request.get("proposal")
+    if not isinstance(proposal, dict):
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "J3_PROPOSAL_REQUIRED",
+        )
+
+    cap = mission.get("capability_resolution") or {}
+    if proposal.get("capability") != cap.get("capability_id"):
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "CAPABILITY_SUBSTITUTION_REJECTED",
+        )
+
+    payload = proposal.get("payload")
+    target_path = payload.get("target_path") if isinstance(payload, dict) else None
+    if not (isinstance(mission.get("target"), str) and mission["target"]):
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "GOVERNED_UPDATE_TARGET_REQUIRED",
+        )
+    if mission["target"] != target_path:
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "GOVERNED_UPDATE_TARGET_DRIFT",
+        )
+
+    try:
+        prepared = _J5.prepare_jarvis_governed_mutation(
+            proposal,
+            execution_worktree_path=request["execution_worktree_path"],
+            main_worktree_path=request["main_worktree_path"],
+            branch_name=request["branch_name"],
+            base_sha=request["base_sha"],
+            ledger_dir=request["ledger_dir"],
+            selector_dir=request["selector_dir"],
+            execution_dir=request["execution_dir"],
+            pre_execution_context_dir=request[
+                "pre_execution_context_dir"
+            ],
+            repository_identity=request.get("repository_identity"),
+        )
+    except KeyError as exc:
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "GOVERNED_UPDATE_REQUEST_FIELD_REQUIRED:" + str(exc),
+        )
+    except Exception as exc:
+        return _fail_governed_prepare(
+            store_dir,
+            mission,
+            "J5_PREPARE_FAILED:" + type(exc).__name__ + ":" + str(exc)[:200],
+        )
+
+    mission["mission_state"] = MISSION_HOLD
+    mission["hold_reason"] = "HUMAN_EAH_AUTHORIZATION_REQUIRED"
+    mission["resource_selected"] = RESOURCE_HUMAN
+    mission["governed_apply_route"] = "J5_PREPARE_ONLY"
+    mission["governed_prepare_only"] = True
+    mission["governed_auto_execute"] = False
+    mission["governed_prepare_result"] = prepared
+    mission["execution_authority_hash"] = prepared.get(
+        "execution_authority_hash"
+    )
+    mission["human_authorization_required"] = True
+    mission["target_mutated"] = prepared.get("target_mutated")
+    mission["kx108_invocations"] = prepared.get("kx108_invocations")
+    mission["human_approval_created"] = prepared.get(
+        "human_approval_created"
+    )
+    mission["human_authorization_consumed"] = prepared.get(
+        "human_authorization_consumed"
+    )
+    mission["jarvis_authority"] = prepared.get("jarvis_authority")
+    mission["decision_authority"] = prepared.get(
+        "decision_authority",
+        DECISION_AUTHORITY,
+    )
+    mission["metrics"]["hold_count"] += 1
+    _emit_receipt(
+        store_dir,
+        mission,
+        "GOVERNED_UPDATE_PREPARED_AWAITING_HUMAN_EAH",
+        {
+            "execution_authority_hash": mission["execution_authority_hash"],
+            "human_authorization_required": True,
+            "prepare_only": True,
+            "auto_execute": False,
+            "target_mutated": mission["target_mutated"],
+            "kx108_invocations": mission["kx108_invocations"],
+            "human_approval_created": mission["human_approval_created"],
+            "human_authorization_consumed": (
+                mission["human_authorization_consumed"]
+            ),
+            "jarvis_authority": mission["jarvis_authority"],
+            "decision_authority": mission["decision_authority"],
+        },
+    )
+    return mission
+
+
 def _resolve(store_dir, mission: dict) -> dict:
     """Une passe de résolution. Ordre §8 : native → local evidence → bounded
     domain → formal → cognitive → HUMAN/HOLD. V0 implémente native + cognitive
@@ -543,20 +754,7 @@ def _resolve(store_dir, mission: dict) -> dict:
     #  NE forge PAS l'EAH/HMA, NE touche PAS KX108_PRE/POST. UPDATE_TARGET_FROM_SOURCE
     #  UNIQUEMENT (pas de CREATE/DELETE/MOVE/RENAME — Stage 5).
     if kind in _GOVERNED_KINDS:
-        mission["mission_state"] = MISSION_HOLD
-        mission["hold_reason"] = "HUMAN_EAH_AUTHORIZATION_REQUIRED"
-        mission["resource_selected"] = RESOURCE_HUMAN
-        mission["governed_apply_route"] = "STAGE4_GOVERNED_RAIL"
-        mission["governed_apply_operation"] = MAX_GOVERNED_MUTATION_OPERATION_V0
-        mission["governed_apply_relay_builds_envelope"] = False
-        mission["metrics"]["hold_count"] += 1
-        _emit_receipt(store_dir, mission, "HOLD_OPENED",
-                      {"reason": "HUMAN_EAH_AUTHORIZATION_REQUIRED",
-                       "governed_apply_route": "STAGE4_GOVERNED_RAIL",
-                       "operation": MAX_GOVERNED_MUTATION_OPERATION_V0,
-                       "relay_constructs_envelope": False,
-                       "relay_mints_eah_or_hma": False})
-        return mission
+        return _prepare_governed_update(store_dir, mission)
 
     # 3 — autorité humaine requise / genre inconnu -> HOLD (jamais LLM)
     reason = ("HUMAN_AUTHORITY_REQUIRED" if kind in _HOLD_KINDS else "UNKNOWN_AUTHORITY")
@@ -574,7 +772,8 @@ def _resolve(store_dir, mission: dict) -> dict:
 
 def relay_submit_mission(*, requested_outcome: str, mission_kind: str,
                          target: Optional[str] = None, repo_root=None, lean_root=None,
-                         store_dir=None) -> dict:
+                         store_dir=None,
+                         governed_update_request: Optional[dict] = None) -> dict:
     if not (isinstance(requested_outcome, str) and requested_outcome.strip()):
         return {"status": "RELAY_REJECTED", "reason": "REQUESTED_OUTCOME_REQUIRED"}
     if mission_kind not in _MISSION_KINDS:
@@ -591,6 +790,7 @@ def relay_submit_mission(*, requested_outcome: str, mission_kind: str,
         "target": target,
         "repo_root": str(repo_root) if repo_root else None,
         "lean_root": str(lean_root) if lean_root else None,
+        "governed_update_request": governed_update_request,
         "mission_submission_id": sub["mission_submission_id"],
         "route_decision_id": (sub.get("route_decision") or {}).get("route_decision_id"),
         "mission_state": MISSION_ACCEPTED,
@@ -623,6 +823,32 @@ def relay_submit_mission(*, requested_outcome: str, mission_kind: str,
             "capability_request_ref": mission["capability_request_ref"],
             "hold_reason": mission.get("hold_reason"),
             "native_evidence": mission.get("native_evidence"),
+            "execution_authority_hash": mission.get("execution_authority_hash"),
+            "human_authorization_required": mission.get(
+                "human_authorization_required",
+                False,
+            ),
+            "governed_prepare_only": mission.get(
+                "governed_prepare_only",
+                False,
+            ),
+            "governed_auto_execute": mission.get(
+                "governed_auto_execute",
+                False,
+            ),
+            "target_mutated": mission.get("target_mutated"),
+            "kx108_invocations": mission.get("kx108_invocations"),
+            "human_approval_created": mission.get(
+                "human_approval_created"
+            ),
+            "human_authorization_consumed": mission.get(
+                "human_authorization_consumed"
+            ),
+            "jarvis_authority": mission.get("jarvis_authority", "NONE"),
+            "decision_authority": mission.get(
+                "decision_authority",
+                DECISION_AUTHORITY,
+            ),
             "claude_authority": "NONE"}
 
 
