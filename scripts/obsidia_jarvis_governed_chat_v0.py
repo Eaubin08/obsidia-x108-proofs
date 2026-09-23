@@ -51,6 +51,12 @@ except ImportError:
     import obsidia_relay_v0 as _RELAY
 
 
+try:
+    from scripts import obsidia_jarvis_governed_prepare_builder_v0 as _J9B5
+except ImportError:
+    import obsidia_jarvis_governed_prepare_builder_v0 as _J9B5
+
+
 SCHEMA_VERSION = "OBSIDIA_GOVERNED_JARVIS_CHAT_V0"
 
 AUTHORITY = "NONE"
@@ -62,8 +68,10 @@ OPENJARVIS_AUTHORITY = "NONE"
 
 J8_GOVERNED_HUMAN_SURFACE_V0 = True
 J9_HUMAN_APPROVAL_SHORTCUT_V0 = True
+J9_B5_CANDIDATE_PREPARE_SURFACE_V0 = True
 
 GOVERNED_PREPARE_COMMAND = "/governed-prepare"
+GOVERNED_PREPARE_CANDIDATE_COMMAND = "/governed-prepare-candidate"
 GOVERNED_STATUS_COMMAND = "/governed-status"
 GOVERNED_AUTHORIZE_COMMAND = "/governed-authorize"
 GOVERNED_HELP_COMMAND = "/governed-help"
@@ -424,6 +432,226 @@ class GovernedJarvisChatSession:
                 f"reason={reason}\n"
                 "No action was executed."
             ),
+            relay_result=result,
+            real_execution=False,
+        )
+
+    def _prepare_governed_candidate(
+        self,
+        path_text: str,
+    ) -> dict[str, Any]:
+        """
+        Preferred J9 prepare path.
+
+        Existing Obsidure candidate.patch -> J9-B5 builder -> J6 HOLD.
+        No JSON assembly required by the human.
+        """
+        raw = str(
+            path_text or ""
+        ).strip()
+
+        if (
+            len(raw) >= 2
+            and raw[0] == raw[-1]
+            and raw[0] in ("'", '"')
+        ):
+            raw = raw[1:-1].strip()
+
+        if not raw:
+            return self._governed_rejection_turn(
+                "CANDIDATE_PATCH_PATH_REQUIRED"
+            )
+
+        candidate_path = Path(
+            raw
+        ).expanduser()
+
+        if not candidate_path.is_file():
+            return self._governed_rejection_turn(
+                "CANDIDATE_PATCH_NOT_FOUND"
+            )
+
+        operation_key = (
+            self.session_id
+            + ":turn:"
+            + str(
+                self.turn_count + 1
+            )
+        )
+
+        try:
+            bundle = (
+                _J9B5.prepare_governed_candidate(
+                    repo_root=(
+                        self.workspace
+                    ),
+                    candidate_patch_path=(
+                        candidate_path
+                    ),
+                    requested_outcome=(
+                        "prepare governed Obsidure "
+                        "candidate "
+                        + candidate_path.name
+                    ),
+                    relay_store_dir=(
+                        self._governed_relay_store_dir()
+                    ),
+                    runtime_root=(
+                        self._governed_relay_store_dir()
+                        / "j9b5_runtime"
+                    ),
+                    operation_key=(
+                        operation_key
+                    ),
+                )
+            )
+        except (
+            _J9B5.GovernedPrepareBuilderError
+        ) as exc:
+            return self._governed_rejection_turn(
+                str(exc)
+            )
+
+        if (
+            bundle.get("status")
+            != (
+                "J9_B5_PREPARED_"
+                "AWAITING_HUMAN_EAH"
+            )
+        ):
+            return self._governed_rejection_turn(
+                str(
+                    bundle.get(
+                        "reason",
+                        bundle.get(
+                            "status",
+                            "J9_B5_PREPARE_FAILED",
+                        ),
+                    )
+                )
+            )
+
+        result = bundle[
+            "relay_result"
+        ]
+
+        mission_id = result.get(
+            "relay_mission_id"
+        )
+
+        eah = result.get(
+            "execution_authority_hash"
+        )
+
+        if not (
+            isinstance(
+                mission_id,
+                str,
+            )
+            and mission_id.strip()
+            and self._is_full_sha256(
+                eah
+            )
+        ):
+            return self._governed_rejection_turn(
+                "J9_B5_RELAY_IDENTITY_INVALID"
+            )
+
+        self.pending_governed_mission = {
+            "relay_mission_id":
+                mission_id,
+            "execution_authority_hash":
+                eah,
+            "target":
+                bundle.get(
+                    "target_path"
+                ),
+            "execution_worktree_path":
+                bundle.get(
+                    "execution_worktree_path"
+                ),
+            "branch_name":
+                bundle.get(
+                    "branch_name"
+                ),
+            "candidate_patch_sha256":
+                bundle.get(
+                    "candidate_patch_sha256"
+                ),
+            "source_git_commit":
+                bundle.get(
+                    "source_git_commit"
+                ),
+        }
+
+        surface = "\n".join(
+            [
+                "GOVERNED CANDIDATE PREPARED",
+                (
+                    "mission="
+                    + mission_id
+                ),
+                (
+                    "target="
+                    + str(
+                        bundle.get(
+                            "target_path"
+                        )
+                    )
+                ),
+                (
+                    "candidate_sha256="
+                    + str(
+                        bundle.get(
+                            "candidate_patch_sha256"
+                        )
+                    )
+                ),
+                (
+                    "execution_worktree="
+                    + str(
+                        bundle.get(
+                            "execution_worktree_path"
+                        )
+                    )
+                ),
+                (
+                    "branch="
+                    + str(
+                        bundle.get(
+                            "branch_name"
+                        )
+                    )
+                ),
+                (
+                    "state="
+                    + str(
+                        result.get(
+                            "mission_state"
+                        )
+                    )
+                ),
+                (
+                    "EAH="
+                    + str(eah)
+                ),
+                "",
+                "NO ACTION WAS EXECUTED.",
+                "NO KX108 WAS INVOKED.",
+                "NO HUMAN APPROVAL WAS CREATED.",
+                "",
+                (
+                    "Authorize only this exact action with:"
+                ),
+                (
+                    "/governed-authorize "
+                    + str(eah)
+                ),
+            ]
+        )
+
+        return self._governed_turn(
+            surface_text=surface,
             relay_result=result,
             real_execution=False,
         )
@@ -1105,7 +1333,8 @@ class GovernedJarvisChatSession:
             return self._governed_turn(
                 surface_text=(
                     "Governed commands:\n"
-                    "/governed-prepare <prepare.json>\n"
+                    "/governed-prepare-candidate <candidate.patch>\n"
+                    "/governed-prepare <prepare.json> (advanced)\n"
                     "/governed-status [relay_mission_id]\n"
                     "/governed-authorize <exact-EAH>\n"
                     "/governed-authorize <authorization.json> "
@@ -1122,6 +1351,19 @@ class GovernedJarvisChatSession:
                         DECISION_AUTHORITY,
                 },
                 real_execution=False,
+            )
+
+        if text.startswith(
+            GOVERNED_PREPARE_CANDIDATE_COMMAND + " "
+        ):
+            return (
+                self._prepare_governed_candidate(
+                    text[
+                        len(
+                            GOVERNED_PREPARE_CANDIDATE_COMMAND
+                        ):
+                    ].strip()
+                )
             )
 
         if text.startswith(
