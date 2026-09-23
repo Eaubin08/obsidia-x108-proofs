@@ -29,7 +29,9 @@ Main debt:
 - UDIP-native adaptation;
 - real object map;
 - explicit wrapper around historical execution surfaces;
-- domain-specific conformance tests.
+- meaningful authority/Binder/broker tests.
+
+Domain-specific conformance profile: documented.
 
 ## 2. Bank
 
@@ -51,8 +53,10 @@ Main debt:
 
 - Core-neutral object map;
 - native UDIP adaptation;
-- domain-specific conformance;
+- meaningful authority/Binder/payment tests;
 - no runtime migration claimed.
+
+Domain-specific conformance profile: documented.
 
 ## 3. GPS / Defense / Aviation
 
@@ -72,8 +76,10 @@ Main debt:
 
 - Core-neutral object map;
 - conditional physical-extension mapping;
-- domain-specific conformance;
+- Binder/execution proof beyond current Reality Gate/receipt evidence;
 - no runtime migration claimed.
+
+Domain-specific conformance profile: documented.
 
 ## 4. Ecom
 
@@ -104,6 +110,9 @@ Known missing domain pieces:
 - payment adapter;
 - refund mechanism;
 - shipment / fulfillment adapter.
+
+Domain-specific conformance profile: documented.
+Existing meaningful evidence: Ecom Sigma bridge rejects `can_emit_act=True`.
 
 ## 5. Cybersecurity
 

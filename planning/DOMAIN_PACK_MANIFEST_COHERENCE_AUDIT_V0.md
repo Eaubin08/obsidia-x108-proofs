@@ -256,12 +256,19 @@ The earlier audit statement that â€œall packs use the same generic conformanceâ€
 - Telecom;
 - Legal / Compliance.
 
-### Generic scaffold conformance remains for:
+### Domain-specific conformance profiles now exist for:
 
 - Trading;
 - Bank;
 - GPS / Defense / Aviation;
 - Ecom;
+- Cybersecurity;
+- Energy / Critical Infrastructure;
+- Telecom;
+- Legal / Compliance.
+
+### Generic scaffold conformance remains for:
+
 - Industry / Maintenance;
 - BTP / Construction;
 - Logistics / Supply Chain;
@@ -271,7 +278,7 @@ The earlier audit statement that â€œall packs use the same generic conformanceâ€
 - Health;
 - HR.
 
-This is acceptable at the current `SCAFFOLD_ONLY` stage, but the four historical/reference domains are the next obvious conformance-debt candidates if work continues.
+This leaves generic conformance only on source-poor or intentionally undeveloped scaffolds.
 
 ## 10. Object-map state
 
@@ -289,13 +296,16 @@ For the remaining domains, object models are either reference-only or not yet gr
 
 ## 11. Remaining real debt
 
-### A. Reference-domain conformance
+### A. Meaningful proof tests for reference domains
 
-Trading, Bank, GPS and Ecom still use generic scaffold `conformance.md`.
+Trading, Bank, GPS and Ecom now have domain-specific conformance profiles.
 
-They have enough historical context to justify future domain-specific profiles.
+Remaining debt is test depth, not profile definition:
 
-This is documentation/test debt, not a runtime defect.
+- Trading full-stack static test is currently placeholder-only;
+- Bank full-stack static test is currently placeholder-only;
+- GPS has substantive Reality Gate/receipt tests but still lacks full UDIP/Binder promotion proof;
+- Ecom has a substantive non-sovereignty bridge test but lacks payment/fulfillment execution proof.
 
 ### B. Object maturity
 
@@ -320,11 +330,10 @@ The remaining source-poor domains require actual business/field evidence before 
 
 ```text
 1. freeze current documentation baseline
-2. domain-specific conformance profiles for Trading / Bank / GPS / Ecom
+2. meaningful domain tests where conformance evidence is weak
 3. object-schema maturation only where evidence improves
-4. meaningful non-sovereignty / non-overclaim tests
-5. only then consider object_map promotion
-6. runtime implementation remains a separate later phase
+4. object_map promotion only after object-level proof
+5. runtime implementation remains a separate later phase
 ```
 
 ## 13. Final verdict
