@@ -11,9 +11,16 @@ source_classes:
   "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md": REPO_ARCHITECTURE_SOURCE
   "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md": REPO_SPEC_SOURCE
   "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md": REPO_SPEC_SOURCE
-  "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md": REPO_CONTRACT_SKELETON
+  "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md": REPO_CONTRACT_SOURCE
   "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": REPO_AUDIT_SOURCE
-  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE_AUDIT
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_AUDIT_SOURCE
+source_maturity:
+  "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md": REFERENCE_ONLY
+  "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md": VALIDATED_SPEC
+  "periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md": TO_VALIDATE
+  "runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md": CONTRACT_SKELETON_ONLY
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": AUDIT_REFERENCE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": AUDIT_REFERENCE
 source_roles:
   "docs/investor/SECURITY_BY_THREAT_OBSOLESCENCE_OBSIDIA_X108.md": security_by_admission_architecture_and_claim_boundary
   "periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md": sandbox_isolation_and_violation_policy
@@ -29,4 +36,4 @@ boundaries:
   - "INCIDENT_RESPONSE != EXECUTION_PERMISSION"
   - "ISOLATION_CAPABILITY != PERMISSION"
   - "REFERENCE != RUNTIME_DEPENDENCY"
-note: "Audited Cybersecurity design/reference sources only. No Cybersecurity UDIP runtime or certification is declared active by this file."
+note: "Audited Cybersecurity reference sources only. Source maturity describes artifacts, not Domain Pack runtime maturity."

@@ -8,12 +8,19 @@ sources:
   - "internal://suite pepite implementé 02.7"
   - "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18"
 source_classes:
-  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": REPO_SOURCE
-  "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": REPO_SOURCE
-  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": REPO_AUDIT_SOURCE
+  "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": REPO_SPEC_SOURCE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_AUDIT_SOURCE
   "internal://Physical Signal World Model": INTERNAL_CONCEPT_SOURCE
   "internal://suite pepite implementé 02.7": INTERNAL_CONCEPT_SOURCE
   "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18": INTERNAL_CONCEPT_SOURCE
+source_maturity:
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": AUDIT_REFERENCE
+  "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": REFERENCE_ONLY
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": AUDIT_REFERENCE
+  "internal://Physical Signal World Model": INTERNAL_CONCEPT_ONLY
+  "internal://suite pepite implementé 02.7": INTERNAL_CONCEPT_ONLY
+  "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18": INTERNAL_CONCEPT_ONLY
 source_roles:
   "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": network_egress_and_connector_reference
   "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": gateway_temporal_prefilter_reference
@@ -26,4 +33,4 @@ boundaries:
   - "REFERENCE != RUNTIME_DEPENDENCY"
   - "SIGNAL != TRUTH"
   - "INTERNAL_CONCEPT_SOURCE != CANONICAL_IMPLEMENTATION"
-note: "Audited design/reference sources only. No Telecom runtime code is declared migrated or active by this file."
+note: "Audited design/reference sources only. Source maturity describes artifacts, not Telecom runtime maturity."

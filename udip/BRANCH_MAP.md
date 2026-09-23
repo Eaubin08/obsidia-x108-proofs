@@ -18,6 +18,7 @@ obsidia-x108-proofs/
 │   ├── README.md
 │   ├── BRANCH_MAP.md
 │   ├── DOMAIN_PACK_STANDARD.md
+│   ├── SOURCE_TAXONOMY_V0.md
 │   ├── domain_registry.yaml
 │   └── provenance/
 │       ├── MIGRATION_COMPACTION_V0.md
@@ -89,6 +90,10 @@ Cette carte. Elle décrit la topologie de la branche.
 ### `udip/DOMAIN_PACK_STANDARD.md`
 
 Contrat documentaire et structurel d'un Domain Pack.
+
+### `udip/SOURCE_TAXONOMY_V0.md`
+
+Taxonomie canonique de provenance : composition du source set, classe de chaque artefact, maturité de chaque source et rôle domaine.
 
 ### `udip/provenance/`
 

@@ -8,12 +8,19 @@ sources:
   - "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md"
   - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
 source_classes:
-  "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": REPO_CONTRACT_SKELETON
-  "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": REPO_SPEC_RUNTIME_INACTIVE
-  "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md": REPO_SPEC_RUNTIME_INACTIVE
-  "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md": REPO_SPEC_TO_FORMALIZE_OR_PROVE
-  "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md": REPO_SPEC_TO_VALIDATE
-  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE_AUDIT
+  "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": REPO_CONTRACT_SOURCE
+  "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": REPO_SPEC_SOURCE
+  "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md": REPO_SPEC_SOURCE
+  "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md": REPO_SPEC_SOURCE
+  "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md": REPO_SPEC_SOURCE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_AUDIT_SOURCE
+source_maturity:
+  "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": CONTRACT_SKELETON_ONLY
+  "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": RUNTIME_INACTIVE
+  "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md": RUNTIME_INACTIVE
+  "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md": TO_FORMALIZE_OR_PROVE
+  "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md": TO_VALIDATE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": AUDIT_REFERENCE
 source_roles:
   "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": privacy_readiness_claim_scope_and_human_gate_reference
   "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": compliance_scope_and_risk_advisory_reference
@@ -30,4 +37,4 @@ boundaries:
   - "PROCESSING_RISK != PROCESSING_AUTHORIZATION"
   - "AUDIT_EXPORT_TARGET != LEGAL_ADMISSIBILITY_PROVEN"
   - "REFERENCE != RUNTIME_DEPENDENCY"
-note: "Audited Legal/Compliance reference sources only. No legal compliance, certification, processing authorization, or legal-advice status is declared by this file."
+note: "Audited Legal/Compliance reference sources only. Source maturity describes artifacts, not legal or runtime status."

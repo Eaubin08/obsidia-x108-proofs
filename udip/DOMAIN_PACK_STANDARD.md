@@ -200,6 +200,19 @@ Règles :
 
 `sources.yaml` décrit l'origine, pas la vérité.
 
+La taxonomie canonique est définie dans [`SOURCE_TAXONOMY_V0.md`](SOURCE_TAXONOMY_V0.md).
+
+Les quatre axes doivent rester séparés :
+
+```text
+source_type     = composition globale du source set
+source_classes  = nature de chaque artefact
+source_maturity = maturité/statut de chaque artefact
+source_roles    = raison pour laquelle le domaine le référence
+```
+
+La présence de code, d'une spec ou d'un test ne promeut jamais le Domain Pack.
+
 Quand le domaine dépend de données physiques ou hostiles, `SourceProvenance` peut devoir être complété par une extension de type `RealityAuthenticity`. Les deux notions ne doivent pas être fusionnées.
 
 ## 7. Contrat des dossiers

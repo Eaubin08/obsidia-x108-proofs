@@ -1,6 +1,47 @@
 status: REFERENCE_ONLY
+source_type: repo_partial_reference
 sources:
-  - "sigma/domains/ecom_agents.py"
+  - "docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md"
   - "examples/ecom_normal.json"
-  - "tests Ecom if present"
-note: "Source mapping only. No code copied or migrated."
+  - "sigma/domains/ecom_agents.py"
+  - "sigma/examples/ecom_normal.json"
+  - "specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md"
+  - "specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md"
+  - "tests/integration/test_sigma_bridge_ecom.py"
+  - "tests/run_combinatorial_ecom_report.json"
+  - "tests/run_combinatorial_ecom.py"
+source_classes:
+  "docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md": REPO_ARCHITECTURE_SOURCE
+  "examples/ecom_normal.json": REPO_FIXTURE_SOURCE
+  "sigma/domains/ecom_agents.py": REPO_CODE_SOURCE
+  "sigma/examples/ecom_normal.json": REPO_FIXTURE_SOURCE
+  "specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md": REPO_SPEC_SOURCE
+  "specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md": REPO_SPEC_SOURCE
+  "tests/integration/test_sigma_bridge_ecom.py": REPO_TEST_SOURCE
+  "tests/run_combinatorial_ecom_report.json": REPO_TEST_SOURCE
+  "tests/run_combinatorial_ecom.py": REPO_TEST_SOURCE
+source_maturity:
+  "docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md": REFERENCE_ONLY
+  "examples/ecom_normal.json": REFERENCE_ONLY
+  "sigma/domains/ecom_agents.py": IMPLEMENTED_REFERENCE_CODE
+  "sigma/examples/ecom_normal.json": REFERENCE_ONLY
+  "specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md": REFERENCE_ONLY
+  "specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md": REFERENCE_ONLY
+  "tests/integration/test_sigma_bridge_ecom.py": REFERENCE_ONLY
+  "tests/run_combinatorial_ecom_report.json": REFERENCE_ONLY
+  "tests/run_combinatorial_ecom.py": REFERENCE_ONLY
+source_roles:
+  "docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md": canonical_domain_registry_reference
+  "examples/ecom_normal.json": nominal_ecom_fixture
+  "sigma/domains/ecom_agents.py": historical_ecom_agents_reference
+  "sigma/examples/ecom_normal.json": sigma_nominal_ecom_fixture
+  "specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md": agentic_commerce_guard_reference
+  "specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md": intent_only_boundary_reference
+  "tests/integration/test_sigma_bridge_ecom.py": ecom_sigma_bridge_test_reference
+  "tests/run_combinatorial_ecom_report.json": ecom_combinatorial_test_report_reference
+  "tests/run_combinatorial_ecom.py": ecom_combinatorial_test_harness_reference
+boundaries:
+  - "SOURCE != TRUST"
+  - "PARTIAL_REFERENCE != COMPLETE_DOMAIN"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Exact source paths recovered from ECOM_MIGRATION_MANIFEST.md. Ecom remains PARTIAL_REFERENCE and SCAFFOLD_ONLY."

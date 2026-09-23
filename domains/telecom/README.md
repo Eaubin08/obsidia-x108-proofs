@@ -230,7 +230,7 @@ La canonicalisation doit conserver son origine et empêcher une sémantique Tele
 
 Le pack utilise `source_type: mixed_reference` parce que deux classes de matière sont reconnues.
 
-### REPO_SOURCE
+### REPO_AUDIT_SOURCE
 
 Sources présentes dans ce dépôt et directement auditables :
 
@@ -249,6 +249,14 @@ Sources de conception internes consultées lors de l'audit, mais non importées 
 Ces documents peuvent justifier une direction de conception.
 
 Ils ne deviennent pas des dépendances runtime.
+
+### Maturité des sources
+
+La nature et la maturité sont séparées selon [SOURCE_TAXONOMY_V0](../../udip/SOURCE_TAXONOMY_V0.md).
+
+- P70 → `REPO_AUDIT_SOURCE` + `AUDIT_REFERENCE` ;
+- C471 → `REPO_SPEC_SOURCE` + `REFERENCE_ONLY` ;
+- notes Physical Signal → `INTERNAL_CONCEPT_SOURCE` + `INTERNAL_CONCEPT_ONLY`.
 
 ## 10. Non-souveraineté
 

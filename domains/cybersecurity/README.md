@@ -337,7 +337,7 @@ Le pack utilise `source_type: repo_reference`.
 - `periphery/specs/Spec_03__Sandbox_Policy_isolation_et_gouvernance_P21_P30.md`
 - `periphery/specs/Spec_18__Incident_Response_Protocol_P150_P154_valider_V4.md`
 
-### REPO_CONTRACT_SKELETON
+### REPO_CONTRACT_SOURCE
 
 - `runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md`
 
@@ -345,6 +345,16 @@ Le pack utilise `source_type: repo_reference`.
 
 - `docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md`
 - `planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md`
+
+### Maturité des sources
+
+La nature et la maturité sont désormais séparées selon [SOURCE_TAXONOMY_V0](../../udip/SOURCE_TAXONOMY_V0.md).
+
+Exemples Cybersecurity :
+
+- Sandbox Policy → `REPO_SPEC_SOURCE` + `VALIDATED_SPEC` ;
+- Incident Response → `REPO_SPEC_SOURCE` + `TO_VALIDATE` ;
+- RSSI boundary → `REPO_CONTRACT_SOURCE` + `CONTRACT_SKELETON_ONLY`.
 
 ## 14. Conformance
 

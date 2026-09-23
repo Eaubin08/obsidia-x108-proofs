@@ -1,6 +1,23 @@
 status: REFERENCE_ONLY
+source_type: repo_reference
 sources:
   - "domain_packets/gps_defense_aviation_decisional_form_v0.yaml"
   - "domains/gps/"
   - "sigma/domains/gps_defense_aviation_agents.py"
-note: "Source mapping only. No code copied or migrated."
+source_classes:
+  "domain_packets/gps_defense_aviation_decisional_form_v0.yaml": REPO_SPEC_SOURCE
+  "domains/gps/": REPO_DOMAIN_SOURCE
+  "sigma/domains/gps_defense_aviation_agents.py": REPO_CODE_SOURCE
+source_maturity:
+  "domain_packets/gps_defense_aviation_decisional_form_v0.yaml": REFERENCE_ONLY
+  "domains/gps/": REFERENCE_ONLY
+  "sigma/domains/gps_defense_aviation_agents.py": IMPLEMENTED_REFERENCE_CODE
+source_roles:
+  "domain_packets/gps_defense_aviation_decisional_form_v0.yaml": decisional_form_reference
+  "domains/gps/": historical_gps_domain_surface
+  "sigma/domains/gps_defense_aviation_agents.py": historical_gps_agents_reference
+boundaries:
+  - "SOURCE != TRUST"
+  - "SOURCE_PROVENANCE != REALITY_AUTHENTICITY"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Reference mapping only. Historical GPS/Defense/Aviation maturity does not imply UDIP Domain Pack maturity."

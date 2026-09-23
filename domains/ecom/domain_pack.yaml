@@ -4,9 +4,15 @@ udip_version: V0
 status: PARTIAL_REFERENCE
 source_type: repo_partial_reference
 legacy_sources:
-  - "sigma/domains/ecom_agents.py"
+  - "docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md"
   - "examples/ecom_normal.json"
-  - "tests Ecom if present"
+  - "sigma/domains/ecom_agents.py"
+  - "sigma/examples/ecom_normal.json"
+  - "specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md"
+  - "specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md"
+  - "tests/integration/test_sigma_bridge_ecom.py"
+  - "tests/run_combinatorial_ecom_report.json"
+  - "tests/run_combinatorial_ecom.py"
 extensions:
   - customer
   - order_intent

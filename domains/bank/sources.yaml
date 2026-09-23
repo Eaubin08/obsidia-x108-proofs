@@ -1,8 +1,30 @@
 status: REFERENCE_ONLY
+source_type: repo_reference
 sources:
   - "domain_packets/bank_decisional_form_v0.yaml"
   - "domains/bank/"
   - "sigma/domains/bank_agents.py"
   - "examples/bank_normal.json"
   - "examples/bank_suspicious.json"
-note: "Source mapping only. No code copied or migrated."
+source_classes:
+  "domain_packets/bank_decisional_form_v0.yaml": REPO_SPEC_SOURCE
+  "domains/bank/": REPO_DOMAIN_SOURCE
+  "sigma/domains/bank_agents.py": REPO_CODE_SOURCE
+  "examples/bank_normal.json": REPO_FIXTURE_SOURCE
+  "examples/bank_suspicious.json": REPO_FIXTURE_SOURCE
+source_maturity:
+  "domain_packets/bank_decisional_form_v0.yaml": REFERENCE_ONLY
+  "domains/bank/": REFERENCE_ONLY
+  "sigma/domains/bank_agents.py": IMPLEMENTED_REFERENCE_CODE
+  "examples/bank_normal.json": REFERENCE_ONLY
+  "examples/bank_suspicious.json": REFERENCE_ONLY
+source_roles:
+  "domain_packets/bank_decisional_form_v0.yaml": decisional_form_reference
+  "domains/bank/": historical_bank_domain_surface
+  "sigma/domains/bank_agents.py": historical_bank_agents_reference
+  "examples/bank_normal.json": nominal_bank_fixture
+  "examples/bank_suspicious.json": suspicious_bank_fixture
+boundaries:
+  - "SOURCE != TRUST"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Reference mapping only. Historical Bank maturity does not imply UDIP Domain Pack maturity."

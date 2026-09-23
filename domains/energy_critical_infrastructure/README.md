@@ -259,7 +259,7 @@ Le pack utilise `source_type: mixed_reference`.
 - `docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md`
 - `specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md`
 
-### REPO_TEST_PLACEHOLDER
+### REPO_TEST_SOURCE
 
 - `tests/non_sovereignty/test_energy_cannot_authorize.py`
 
@@ -267,6 +267,16 @@ Le pack utilise `source_type: mixed_reference`.
 
 - `internal://THERMO_COMPUTE_LAYER`
 - `internal://Energy sandbox/freeze/stress history`
+
+### Maturité des sources
+
+La nature et la maturité des sources sont séparées selon [SOURCE_TAXONOMY_V0](../../udip/SOURCE_TAXONOMY_V0.md).
+
+En particulier :
+
+- code Thermo réel → `REPO_CODE_SOURCE` + `IMPLEMENTED_REFERENCE_CODE` ;
+- test `assert True` → `REPO_TEST_SOURCE` + `PLACEHOLDER_ONLY` ;
+- notes internes → `INTERNAL_CONCEPT_SOURCE` + `INTERNAL_CONCEPT_ONLY`.
 
 ## 12. Point de branchement cible
 

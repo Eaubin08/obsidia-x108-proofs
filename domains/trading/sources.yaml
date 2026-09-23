@@ -1,7 +1,26 @@
 status: REFERENCE_ONLY
+source_type: external_reference
 sources:
   - "external://OBSIDIA_TRADING"
   - "domains/trading/"
   - "domain_packets/trading_decisional_form_v0.yaml"
   - "sigma/domains/trading_agents.py"
-note: "Source mapping only. No code copied or migrated."
+source_classes:
+  "external://OBSIDIA_TRADING": EXTERNAL_REPOSITORY_SOURCE
+  "domains/trading/": REPO_DOMAIN_SOURCE
+  "domain_packets/trading_decisional_form_v0.yaml": REPO_SPEC_SOURCE
+  "sigma/domains/trading_agents.py": REPO_CODE_SOURCE
+source_maturity:
+  "external://OBSIDIA_TRADING": EXTERNAL_REFERENCE
+  "domains/trading/": REFERENCE_ONLY
+  "domain_packets/trading_decisional_form_v0.yaml": REFERENCE_ONLY
+  "sigma/domains/trading_agents.py": IMPLEMENTED_REFERENCE_CODE
+source_roles:
+  "external://OBSIDIA_TRADING": primary_trading_reference_repository
+  "domains/trading/": historical_in_repo_domain_surface
+  "domain_packets/trading_decisional_form_v0.yaml": decisional_form_reference
+  "sigma/domains/trading_agents.py": historical_trading_agents_reference
+boundaries:
+  - "SOURCE != TRUST"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Source mapping only. No code copied or migrated by this file."

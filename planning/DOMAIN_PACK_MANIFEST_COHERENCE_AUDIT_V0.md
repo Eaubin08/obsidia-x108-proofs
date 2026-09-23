@@ -365,13 +365,11 @@ Do not update all manifests at once.
 Recommended order:
 
 ```text
-1. source_type vocabulary / classification
-2. remaining sources.yaml updates
-3. remaining domain_pack extension updates where justified
-4. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
-5. object maps only after object-level evidence freeze
-6. remaining domain-specific conformance profiles
-7. meaningful non-sovereignty / non-overclaim tests
+1. remaining domain_pack extension updates only where new evidence justifies them
+2. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
+3. object maps only after object-level evidence freeze
+4. remaining domain-specific conformance profiles
+5. meaningful non-sovereignty / non-overclaim tests
 ```
 
 ## 15. Final verdict
@@ -392,4 +390,8 @@ rich source evidence
 
 That is a healthy intermediate state.
 
-The next task is **manifest synchronization by evidence**, not implementation.
+The source taxonomy is now frozen in `udip/SOURCE_TAXONOMY_V0.md`.
+
+All Domain Pack `sources.yaml` files now expose a canonical `source_type`; non-empty source sets additionally classify artifact nature, maturity and role where evidence exists.
+
+The next task remains **synchronization by evidence**, not implementation.

@@ -344,26 +344,37 @@ KX108_ONLY
 
 Le pack utilise `source_type: repo_reference`.
 
-### REPO_CONTRACT_SKELETON
+### REPO_CONTRACT_SOURCE
 
 - `runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md`
 
-### REPO_SPEC_RUNTIME_INACTIVE
+### REPO_SPEC_SOURCE
 
 - `runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md`
 - `runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md`
 
-### REPO_SPEC_TO_FORMALIZE_OR_PROVE
+### REPO_SPEC_SOURCE
 
 - `periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md`
 
-### REPO_SPEC_TO_VALIDATE
+### REPO_SPEC_SOURCE
 
 - `periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md`
 
-### REPO_SOURCE_AUDIT
+### REPO_AUDIT_SOURCE
 
 - `planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md`
+
+### Maturité des sources
+
+La nature et la maturité sont séparées selon [SOURCE_TAXONOMY_V0](../../udip/SOURCE_TAXONOMY_V0.md).
+
+Exemples :
+
+- RGPD guard → `REPO_CONTRACT_SOURCE` + `CONTRACT_SKELETON_ONLY` ;
+- Compliance/Data Governance specs → `REPO_SPEC_SOURCE` + `RUNTIME_INACTIVE` ;
+- Legal-Grade Audit Export → `REPO_SPEC_SOURCE` + `TO_FORMALIZE_OR_PROVE` ;
+- Regulatory Mapping → `REPO_SPEC_SOURCE` + `TO_VALIDATE`.
 
 ## 15. Conformance
 

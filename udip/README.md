@@ -150,6 +150,8 @@ Cette homogénéité ne signifie pas que les domaines deviennent identiques. Ell
 
 Le standard détaillé d'une fiche Domain Pack est dans [`DOMAIN_PACK_STANDARD.md`](DOMAIN_PACK_STANDARD.md).
 
+La taxonomie canonique des sources est dans [`SOURCE_TAXONOMY_V0.md`](SOURCE_TAXONOMY_V0.md).
+
 ## 7. État actuel des Domain Packs
 
 | Domaine | Statut déclaré | Source | Extensions déclarées |
@@ -161,11 +163,11 @@ Le standard détaillé d'une fiche Domain Pack est dans [`DOMAIN_PACK_STANDARD.m
 | Industry / Maintenance | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | machines, production, maintenance, sensors, operators |
 | BTP / Construction | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | terrain, plans, documents, subcontractors, planning, exceptions |
 | Logistics / Supply Chain | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | stock, warehouse, suppliers, transport, route, delivery |
-| Cybersecurity | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | detection, response, isolation_boundaries |
-| Energy / Critical Infrastructure | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | physical_infrastructure, fail_closed, real_world_execution_constraints |
+| Cybersecurity | `NEW_DOMAIN_SCAFFOLD` | repo audité | detection, threat_evidence, security_evidence_advisory, response, incident_response, isolation_boundaries |
+| Energy / Critical Infrastructure | `NEW_DOMAIN_SCAFFOLD` | repo + sources conceptuelles internes | thermo_compute, energy_efficiency, thermo_debt, sigma_truth_mismatch, physical_infrastructure, fail_closed, real_world_execution_constraints |
 | Insurance | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
-| Legal / Compliance | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
-| Telecom | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
+| Legal / Compliance | `NEW_DOMAIN_SCAFFOLD` | repo audité | compliance_scope, privacy_readiness, claim_scope, data_governance_advisory, processing_risk, retention_access_privacy_risk, human_legal_review_gate, regulatory_mapping, legal_audit_export |
+| Telecom | `NEW_DOMAIN_SCAFFOLD` | repo + sources conceptuelles internes | network_connectivity, network_egress, gateway_constraints, physical_signal_observation, signal_provenance, signal_coherence |
 | Facility Management | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
 | Administration | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
 | Health | `NEW_DOMAIN_SCAFFOLD` | aucune source auditée | aucune |
