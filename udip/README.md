@@ -251,3 +251,14 @@ plusieurs mondes
 ```
 
 Le Domain Pack comprend son monde. Le Core conserve ses frontières. KX108 reste l'autorité.
+## 14. Point d'arrêt V0
+
+Le chantier documentaire / architectural actuel est considéré terminé à son niveau V0.
+
+La branche reste une baseline de référence ; les travaux suivants doivent être ouverts comme chantiers séparés plutôt que prolongés ici sans frontière claire.
+
+Voir [planning/UDIP_NEXT_CHANTIERS_V0.md](../planning/UDIP_NEXT_CHANTIERS_V0.md).
+
+Directions prévues : proof / non-sovereignty tests, object-model maturation, runtime integration ciblée, new-domain evidence.
+
+Aucune de ces directions n'est promue automatiquement par la clôture du chantier actuel.
