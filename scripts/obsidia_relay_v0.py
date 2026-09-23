@@ -975,39 +975,464 @@ def submit_capability_result(*, relay_mission_id: str, capability_request_ref: s
             "claude_gained_authority": False, "metrics": m["metrics"]}
 
 
-def relay_respond_to_hold(*, relay_mission_id: str, human_decision_ref: str,
-                          resolution: str, store_dir=None) -> dict:
-    """HOLD first-class. La MÊME mission reprend — pas de restart, pas
-    d'expansion de portée depuis la réponse au HOLD."""
+GOVERNED_EXECUTION_KEEP_STATUS = (
+    "GOVERNED_REMEDIATION_KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW"
+)
+
+
+def relay_respond_to_hold(
+    *,
+    relay_mission_id: str,
+    human_decision_ref: str,
+    resolution: str,
+    store_dir=None,
+    human_authorized_execution_authority_hash: Optional[str] = None,
+    governed_execute_request: Optional[dict] = None,
+) -> dict:
+    """Resume the same HOLD without scope expansion.
+
+    Generic HOLDs retain their historical behavior.
+    A real J6 governed PREPARE HOLD requires the exact EAH before
+    Relay may transport the human authorization into J5 EXECUTE.
+    """
     m = _load(store_dir, relay_mission_id)
+
     if m is None:
-        return {"status": "RELAY_REJECTED", "reason": "RELAY_MISSION_NOT_FOUND"}
+        return {
+            "status": "RELAY_REJECTED",
+            "reason": "RELAY_MISSION_NOT_FOUND",
+        }
+
     if m["mission_state"] != MISSION_HOLD:
-        return {"status": "RELAY_REJECTED", "reason": f"MISSION_NOT_HELD:{m['mission_state']}"}
-    if not (isinstance(human_decision_ref, str) and human_decision_ref.strip()):
-        return {"status": "RELAY_REJECTED", "reason": "HUMAN_DECISION_REF_REQUIRED"}
-    hr = _RD.respond_to_hold(mission_submission_id=m["mission_submission_id"],
-                             human_decision_ref=human_decision_ref,
-                             resolution=resolution, store_dir=store_dir)
+        return {
+            "status": "RELAY_REJECTED",
+            "reason": "MISSION_NOT_HELD:" + str(m["mission_state"]),
+        }
+
+    if not (
+        isinstance(human_decision_ref, str)
+        and human_decision_ref.strip()
+    ):
+        return {
+            "status": "RELAY_REJECTED",
+            "reason": "HUMAN_DECISION_REF_REQUIRED",
+        }
+
+    governed_j7 = (
+        m.get("mission_kind") == KIND_GOVERNED_UPDATE
+        and m.get("hold_reason")
+        == "HUMAN_EAH_AUTHORIZATION_REQUIRED"
+        and m.get("governed_prepare_only") is True
+    )
+
+    if governed_j7:
+
+        def reject(reason: str) -> dict:
+            return {
+                "status": "RELAY_REJECTED",
+                "reason": reason,
+                "relay_mission_id": relay_mission_id,
+                "mission_state": MISSION_HOLD,
+                "same_mission_resumed": False,
+                "scope_expanded": False,
+                "governed_execute_started": False,
+                "jarvis_authority": "NONE",
+                "decision_authority": DECISION_AUTHORITY,
+                "claude_authority": "NONE",
+            }
+
+        if m.get("governed_apply_route") != "J5_PREPARE_ONLY":
+            return reject("J7_PREPARE_ROUTE_INVALID")
+
+        prepared = m.get("governed_prepare_result")
+
+        if not isinstance(prepared, dict):
+            return reject("J7_PREPARED_RESULT_REQUIRED")
+
+        if prepared.get("j5_phase") != _J5.PREPARE_PHASE:
+            return reject("J7_J5_PREPARE_PHASE_REQUIRED")
+
+        expected_eah = m.get("execution_authority_hash")
+        prepared_eah = prepared.get("execution_authority_hash")
+
+        if not (
+            isinstance(expected_eah, str)
+            and expected_eah.strip()
+        ):
+            return reject("J7_EXPECTED_EAH_REQUIRED")
+
+        if prepared_eah != expected_eah:
+            return reject("J7_PREPARED_EAH_DRIFT")
+
+        supplied_eah = human_authorized_execution_authority_hash
+
+        if not (
+            isinstance(supplied_eah, str)
+            and supplied_eah.strip()
+        ):
+            return reject(
+                "HUMAN_AUTHORIZED_EXECUTION_AUTHORITY_HASH_REQUIRED"
+            )
+
+        if supplied_eah != expected_eah:
+            return reject("HUMAN_AUTHORIZED_EAH_MISMATCH")
+
+        if not isinstance(governed_execute_request, dict):
+            return reject("GOVERNED_EXECUTE_REQUEST_REQUIRED")
+
+        allowed = {
+            "kx108_pre_decision_dir",
+            "kx108_post_decision_dir",
+            "test_contract_results_dir",
+            "sealed_receipt_dir",
+            "sealed_rollback_evidence_dir",
+            "rollback_result_dir",
+        }
+
+        required = allowed
+
+        forbidden = _find_forbidden_prepare_input(
+            governed_execute_request
+        )
+
+        if forbidden:
+            return reject(
+                "FORBIDDEN_EXECUTE_AUTHORITY_FIELD:" + forbidden
+            )
+
+        unknown = set(governed_execute_request) - allowed
+
+        if unknown:
+            return reject(
+                "GOVERNED_EXECUTE_REQUEST_SCOPE_NOT_ALLOWED:"
+                + ",".join(sorted(unknown))
+            )
+
+        missing = sorted(
+            f for f in required
+            if f not in governed_execute_request
+        )
+
+        if missing:
+            return reject(
+                "GOVERNED_EXECUTE_REQUEST_FIELD_REQUIRED:"
+                + ",".join(missing)
+            )
+
+        for field in required:
+            value = governed_execute_request.get(field)
+            if not (
+                isinstance(value, (str, Path))
+                and str(value).strip()
+            ):
+                return reject(
+                    "GOVERNED_EXECUTE_REQUEST_FIELD_INVALID:"
+                    + field
+                )
+
+        prepare_request = m.get("governed_update_request")
+
+        if not isinstance(prepare_request, dict):
+            return reject(
+                "J7_GOVERNED_PREPARE_REQUEST_REQUIRED"
+            )
+
+        runtime_fields = (
+            "execution_dir",
+            "pre_execution_context_dir",
+            "selector_dir",
+            "ledger_dir",
+            "execution_worktree_path",
+        )
+
+        for field in runtime_fields:
+            value = prepare_request.get(field)
+            if not (
+                isinstance(value, (str, Path))
+                and str(value).strip()
+            ):
+                return reject(
+                    "J7_PREPARED_RUNTIME_FIELD_REQUIRED:"
+                    + field
+                )
+
+        # Human provenance record remains INERT.
+        hr = _RD.respond_to_hold(
+            mission_submission_id=m["mission_submission_id"],
+            human_decision_ref=human_decision_ref,
+            resolution=resolution,
+            store_dir=store_dir,
+        )
+
+        hold_response_id = hr.get("hold_response_id")
+
+        if not (
+            isinstance(hold_response_id, str)
+            and hold_response_id.strip()
+        ):
+            return reject(
+                "HUMAN_HOLD_RESPONSE_RECORD_NOT_CREATED"
+            )
+
+        m["hold_response_id"] = hold_response_id
+        m["hold_human_decision_ref"] = human_decision_ref
+
+        _emit_receipt(
+            store_dir,
+            m,
+            "GOVERNED_HOLD_AUTHORIZATION_RECORDED",
+            {
+                "hold_response_id": hold_response_id,
+                "execution_authority_hash": expected_eah,
+                "scope_expanded": False,
+                "same_mission_resumed": True,
+                "human_response_grants_capability": False,
+                "human_response_starts_execution": False,
+                "relay_mints_eah_or_hma": False,
+            },
+        )
+
+        # Sole governed execution seam.
+        # Relay does not call the driver, Binder, HumanApproval,
+        # mutation primitive, or KX108 directly.
+        try:
+            result = _J5.execute_jarvis_governed_mutation(
+                prepared,
+                human_authorized_execution_authority_hash=supplied_eah,
+                human_authorization_reference=human_decision_ref,
+                execution_dir=prepare_request["execution_dir"],
+                pre_execution_context_dir=(
+                    prepare_request["pre_execution_context_dir"]
+                ),
+                selector_dir=prepare_request["selector_dir"],
+                ledger_dir=prepare_request["ledger_dir"],
+                kx108_pre_decision_dir=(
+                    governed_execute_request[
+                        "kx108_pre_decision_dir"
+                    ]
+                ),
+                kx108_post_decision_dir=(
+                    governed_execute_request[
+                        "kx108_post_decision_dir"
+                    ]
+                ),
+                test_contract_results_dir=(
+                    governed_execute_request[
+                        "test_contract_results_dir"
+                    ]
+                ),
+                sealed_receipt_dir=(
+                    governed_execute_request[
+                        "sealed_receipt_dir"
+                    ]
+                ),
+                sealed_rollback_evidence_dir=(
+                    governed_execute_request[
+                        "sealed_rollback_evidence_dir"
+                    ]
+                ),
+                rollback_result_dir=(
+                    governed_execute_request[
+                        "rollback_result_dir"
+                    ]
+                ),
+                repo_root=(
+                    prepare_request["execution_worktree_path"]
+                ),
+                # Canonical proven topology:
+                # HumanApproval shares the execution store.
+                # A distinct approval store causes the PRE adapter
+                # to lose the persisted ExecutionEnvelope.
+                approval_dir=None,
+            )
+
+        except Exception as exc:
+            m["mission_state"] = MISSION_FAILED
+            m["failure_reason"] = (
+                "J5_EXECUTE_FAILED:"
+                + type(exc).__name__
+                + ":"
+                + str(exc)[:200]
+            )
+            m["governed_execution_result"] = {
+                "status": "J5_EXECUTE_EXCEPTION",
+                "reason": m["failure_reason"],
+            }
+
+            _emit_receipt(
+                store_dir,
+                m,
+                "GOVERNED_UPDATE_EXECUTION_FAILED",
+                {
+                    "reason": m["failure_reason"],
+                    "hold_response_id": hold_response_id,
+                    "scope_expanded": False,
+                    "jarvis_authority": "NONE",
+                    "decision_authority": DECISION_AUTHORITY,
+                },
+            )
+
+            _save(store_dir, m)
+
+            return {
+                "status": "RELAY_MISSION_" + MISSION_FAILED,
+                "reason": m["failure_reason"],
+                "relay_mission_id": relay_mission_id,
+                "mission_state": MISSION_FAILED,
+                "same_mission_resumed": True,
+                "scope_expanded": False,
+                "governed_execute_started": True,
+                "jarvis_authority": "NONE",
+                "decision_authority": DECISION_AUTHORITY,
+                "claude_authority": "NONE",
+            }
+
+        if not isinstance(result, dict):
+            result = {"status": "J5_EXECUTE_INVALID_RESULT"}
+
+        m["governed_execution_result"] = result
+        m["governed_execution_status"] = result.get("status")
+        m["human_authorization_consumed"] = result.get(
+            "human_authorization_consumed"
+        )
+        m["kx108_pre_gate"] = result.get("kx108_pre_gate")
+        m["kx108_post_gate"] = result.get("kx108_post_gate")
+        m["target_mutated"] = result.get("target_mutated")
+
+        valid_keep = (
+            result.get("status")
+            == GOVERNED_EXECUTION_KEEP_STATUS
+            and result.get("j5_phase") == _J5.EXECUTE_PHASE
+            and result.get("human_authorization_consumed") is True
+            and result.get("jarvis_authority") == "NONE"
+            and result.get("decision_authority")
+            == DECISION_AUTHORITY
+        )
+
+        m["mission_state"] = (
+            MISSION_COMPLETE
+            if valid_keep
+            else MISSION_FAILED
+        )
+
+        if not valid_keep:
+            m["failure_reason"] = (
+                "GOVERNED_EXECUTION_NOT_KEEP:"
+                + str(result.get("status"))
+            )
+
+        _emit_receipt(
+            store_dir,
+            m,
+            "GOVERNED_UPDATE_EXECUTION_RESULT",
+            {
+                "governed_execution_status":
+                    result.get("status"),
+                "mission_state": m["mission_state"],
+                "execution_authority_hash": expected_eah,
+                "kx108_pre_gate":
+                    result.get("kx108_pre_gate"),
+                "kx108_post_gate":
+                    result.get("kx108_post_gate"),
+                "human_authorization_consumed":
+                    result.get(
+                        "human_authorization_consumed"
+                    ),
+                "scope_expanded": False,
+                "jarvis_authority":
+                    result.get("jarvis_authority", "NONE"),
+                "decision_authority":
+                    result.get(
+                        "decision_authority",
+                        DECISION_AUTHORITY,
+                    ),
+            },
+        )
+
+        _save(store_dir, m)
+
+        return {
+            "status":
+                "RELAY_MISSION_" + m["mission_state"],
+            "relay_mission_id": relay_mission_id,
+            "mission_state": m["mission_state"],
+            "same_mission_resumed": True,
+            "scope_expanded": False,
+            "execution_authority_hash": expected_eah,
+            "governed_execution_status":
+                result.get("status"),
+            "kx108_pre_gate":
+                result.get("kx108_pre_gate"),
+            "kx108_post_gate":
+                result.get("kx108_post_gate"),
+            "target_mutated":
+                result.get("target_mutated"),
+            "human_authorization_consumed":
+                result.get(
+                    "human_authorization_consumed"
+                ),
+            "jarvis_authority":
+                result.get("jarvis_authority", "NONE"),
+            "decision_authority":
+                result.get(
+                    "decision_authority",
+                    DECISION_AUTHORITY,
+                ),
+            "claude_authority": "NONE",
+        }
+
+    # Historical generic HOLD behavior preserved verbatim.
+    hr = _RD.respond_to_hold(
+        mission_submission_id=m["mission_submission_id"],
+        human_decision_ref=human_decision_ref,
+        resolution=resolution,
+        store_dir=store_dir,
+    )
+
     m["hold_response_id"] = hr.get("hold_response_id")
     m["hold_human_decision_ref"] = human_decision_ref
-    # la réponse au HOLD ne peut PAS élargir la portée : le mission_kind reste identique.
-    _emit_receipt(store_dir, m, "HOLD_RESOLVED",
-                  {"hold_response_id": hr.get("hold_response_id"),
-                   "scope_expanded": False, "same_mission_resumed": True})
+
+    _emit_receipt(
+        store_dir,
+        m,
+        "HOLD_RESOLVED",
+        {
+            "hold_response_id": hr.get("hold_response_id"),
+            "scope_expanded": False,
+            "same_mission_resumed": True,
+        },
+    )
+
     if m["hold_reason"] == "UNKNOWN_AUTHORITY":
-        # UNKNOWN reste non résoluble par un LLM ; la mission se clôt en
-        # FAILED sauf si la réponse humaine porte une résolution explicite.
-        m["mission_state"] = MISSION_COMPLETE if str(resolution).strip() else MISSION_FAILED
+        m["mission_state"] = (
+            MISSION_COMPLETE
+            if str(resolution).strip()
+            else MISSION_FAILED
+        )
     else:
         m["mission_state"] = MISSION_COMPLETE
-    _emit_receipt(store_dir, m, "MISSION_" + m["mission_state"],
-                  {"via": RESOURCE_HUMAN, "human_decision_ref": human_decision_ref})
+
+    _emit_receipt(
+        store_dir,
+        m,
+        "MISSION_" + m["mission_state"],
+        {
+            "via": RESOURCE_HUMAN,
+            "human_decision_ref": human_decision_ref,
+        },
+    )
+
     _save(store_dir, m)
-    return {"status": "RELAY_MISSION_" + m["mission_state"],
-            "relay_mission_id": relay_mission_id, "mission_state": m["mission_state"],
-            "same_mission_resumed": True, "scope_expanded": False,
-            "metrics": m["metrics"], "claude_authority": "NONE"}
+
+    return {
+        "status": "RELAY_MISSION_" + m["mission_state"],
+        "relay_mission_id": relay_mission_id,
+        "mission_state": m["mission_state"],
+        "same_mission_resumed": True,
+        "scope_expanded": False,
+        "metrics": m["metrics"],
+        "claude_authority": "NONE",
+    }
 
 
 def resolve_unknown(*, relay_mission_id: str, missing_fact: str,
