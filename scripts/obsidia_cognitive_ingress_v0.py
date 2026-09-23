@@ -43,6 +43,10 @@ from apps.obsidia_api.routes import (
 
 import obsidia_gateway_route_decision_v0 as ROUTER_GATE
 
+from scripts.obsidia_readonly_pc_context_adapter_v0 import (
+    build_readonly_pc_context,
+)
+
 from scripts.providers.obsidia_qwen_local_evidence_v0 import (
     run_local_qwen_evidence,
 )
@@ -801,6 +805,7 @@ def run_cognitive_ingress(
     session_id: str = "jarvis-local",
     memory_index: dict[str, Any] | None = None,
     allow_local_model: bool = False,
+    readonly_pc_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(text, str):
         raise TypeError(
@@ -937,6 +942,25 @@ def run_cognitive_ingress(
     # --------------------------------------------------------
 
     cognitive_join: dict[str, Any]
+    pc_context = (
+        readonly_pc_context
+        if isinstance(readonly_pc_context, dict)
+        else build_readonly_pc_context(
+            session_id=session_id,
+            path_candidates=[
+                str(ROOT / "scripts" / "obsidia_cli.py"),
+                str(ROOT / "scripts" / "obsidia_terminal.py"),
+            ],
+            command_samples=[
+                "git status --short",
+                "git diff --check",
+            ],
+            # Jarvis may provide richer precomputed observation.
+            # Automatic cognitive ingress must stay bounded and
+            # must not rescan runtime services on every turn.
+            include_services=False,
+        )
+    )
 
     try:
         cognitive_join = (
@@ -957,6 +981,9 @@ def run_cognitive_ingress(
                 ),
                 precomputed_brody_runtime=(
                     brody_runtime
+                ),
+                precomputed_readonly_pc_context=(
+                    pc_context
                 ),
             )
         )
@@ -1167,6 +1194,9 @@ def run_cognitive_ingress(
                         ),
                         precomputed_model_evidence=(
                             evidence
+                        ),
+                        precomputed_readonly_pc_context=(
+                            pc_context
                         ),
                     )
                 )
@@ -1613,6 +1643,10 @@ def run_cognitive_ingress(
 
         "local_model_stage": (
             local_model_stage
+        ),
+
+        "readonly_pc_context": (
+            pc_context
         ),
 
         "cognitive_join": (

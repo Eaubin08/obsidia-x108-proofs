@@ -42,6 +42,13 @@ from periphery.context.tree_signal_cognitive_bridge import (
 from sigma.evaluate import evaluate_sigma_domain
 from sigma.sigma_readonly_signal import build_sigma_readonly_signal
 
+try:
+    from scripts.obsidia_readonly_pc_context_adapter_v0 import (
+        readonly_pc_context_to_context_item,
+    )
+except Exception:
+    readonly_pc_context_to_context_item = None
+
 
 VERSION = "REAL_COGNITIVE_JOIN_C1_V1"
 RAIL_MODE = "SHADOW_READONLY_SUPERPOSED"
@@ -738,6 +745,7 @@ def run_real_cognitive_join(
     precomputed_memzum_activation: dict[str, Any] | None = None,
     precomputed_model_evidence: dict[str, Any] | None = None,
     precomputed_source_pack_context: dict[str, Any] | None = None,
+    precomputed_readonly_pc_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
     signal_id = _signal_id(message, session_id)
@@ -752,6 +760,7 @@ def run_real_cognitive_join(
         "REVERSE_OS": "PENDING",
         "TREE_34D_SHAZAM_MEMORY_WORLD": "PENDING",
         "SOURCE_ROUTING": "SKIPPED_OPTIONAL_NOT_PROVIDED",
+        "READONLY_PC_CONTEXT": "SKIPPED_OPTIONAL_NOT_PROVIDED",
         "SIGMA": "PENDING",
         "DATA_PURITY_AGENT": "PENDING",
         "CONTEXT_PACKET_V2": "PENDING",
@@ -1173,6 +1182,34 @@ def run_real_cognitive_join(
             ],
         ]
 
+    readonly_pc_context_ref: list[str] = []
+    if isinstance(precomputed_readonly_pc_context, dict):
+        if precomputed_readonly_pc_context.get("kind") == (
+            "READONLY_PC_CONTEXT"
+        ):
+            readonly_pc_context_item = None
+            if readonly_pc_context_to_context_item is not None:
+                try:
+                    readonly_pc_context_item = (
+                        readonly_pc_context_to_context_item(
+                            precomputed_readonly_pc_context,
+                        )
+                    )
+                except Exception as exc:
+                    errors.append(_error("READONLY_PC_CONTEXT", exc))
+            if readonly_pc_context_item:
+                context_items.append(readonly_pc_context_item)
+                readonly_pc_context_ref = ["jarvis:readonly_pc_context"]
+                components["READONLY_PC_CONTEXT"] = (
+                    "READY:ADVISORY_ONLY"
+                )
+            else:
+                components["READONLY_PC_CONTEXT"] = "UNAVAILABLE"
+        else:
+            components["READONLY_PC_CONTEXT"] = (
+                "SKIPPED_CONTEXT_KIND_MISMATCH"
+            )
+
     risk_flags = _uniq([
         *micro_risks,
         *ir_risks,
@@ -1209,6 +1246,7 @@ def run_real_cognitive_join(
                 "brody:micro_core",
                 "brody:reverse_os",
                 *source_refs_from_routing,
+                *readonly_pc_context_ref,
                 *(
                     [
                         "brody:tree_34d",
@@ -1606,6 +1644,15 @@ def run_real_cognitive_join(
 
         "local_model_evidence_status": (
             model_evidence_status
+        ),
+
+        "readonly_pc_context": (
+            precomputed_readonly_pc_context
+            if isinstance(
+                precomputed_readonly_pc_context,
+                dict,
+            )
+            else None
         ),
 
         "sigma_domain_packet": sigma_result,
