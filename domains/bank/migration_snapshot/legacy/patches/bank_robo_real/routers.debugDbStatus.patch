@@ -1,6 +1,0 @@
-# proof-side delta
-# target: server/routers.ts
-# status: placeholder
-# intent:
-# - add temporary route to expose db availability for local proof probes
-# - do not treat as upstream canon

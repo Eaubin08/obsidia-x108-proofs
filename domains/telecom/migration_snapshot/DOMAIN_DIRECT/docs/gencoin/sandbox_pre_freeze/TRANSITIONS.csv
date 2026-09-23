@@ -1,9 +1,0 @@
-transition,trigger,threshold,action
-START->ON,M2 actif + truth/sigma OK,theta_on + truth>=0.8 + sigma>=0.7,autorise
-ON->HOLD,chute partielle,theta_hold,maintien
-HOLD->SAFE_OFF,perte prolongee,theta_off ou timeout,arret_propre
-ON->FALSE_ON,assisted_ratio haut,>0.5,rejet
-ASSISTED_ON->REJECTED,relance excessive,seuil_R,blocage
-DECAY->HOLD,degradation controlee,Delta_G_orange,stabilisation
-HOLD->ON,recuperation,theta_on + truth_ok,reprise
-HOLD->OFF,pas de recuperation,timeout,arret
