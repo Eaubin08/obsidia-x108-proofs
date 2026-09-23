@@ -1,92 +1,78 @@
 # Legal / Compliance
 
-> Domain Pack futur pour compliance, data governance, claim-scope et audit réglementaire.
+> Domain Pack pour compliance advisory, data governance, claim-scope, privacy readiness, regulatory mapping et audit juridique vérifiable.
 >
 > **UDIP status : `NEW_DOMAIN_SCAFFOLD`**  
+> **Source type : `repo_reference`**  
 > **Implementation state : `SCAFFOLD_ONLY`**  
 > **Authority : `KX108_ONLY`**
 
 ## 1. Vision
 
-Le dossier UDIP est encore vide, mais le dépôt possède déjà un corpus compliance substantiel.
+Legal / Compliance ne doit jamais devenir un moteur qui “décide ce qui est légal”.
 
-Le point central n'est pas “Obsidia décide ce qui est légal”.
-
-La doctrine existante est au contraire :
+Le corpus existant définit plutôt une couche de **contraintes, readiness, revue, preuves et limites de claims** :
 
 ```text
-readiness
-≠ conformité finale
-
-template
-≠ avis juridique
-
-scope guard
-≠ certification
-
-compliance context
-≠ autorité
+law / policy / compliance source
+→ scope / obligation / risk extraction
+→ claim-scope boundary
+→ human/legal review requirement
+→ LegalCompliance DomainSignal
+→ CanonicalDomainContract
+→ GovernancePayload
+→ KX108
+→ human/legal gate si requis
+→ receipt / audit export
 ```
 
-Le Domain Pack Legal / Compliance devrait donc structurer les contraintes, preuves, obligations de revue et limites de claims sans produire lui-même un verdict juridique souverain.
+Le domaine peut contextualiser, signaler, structurer et exiger une revue.
 
-## 2. Corpus réel
+Il ne peut ni certifier, ni rendre un avis juridique autonome, ni autoriser un traitement de données personnelles.
 
-Sources principales :
+## 2. Statut réel
 
-- [RGPD Compliance Scope Guard](../../runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md)
-- [Compliance Scope Guard Spec](../../runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md)
-- [Data Governance Advisory Spec](../../runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md)
-- [Legal-Grade Audit Export](../../periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md)
-- [Regulatory Compliance Mapping EU/FR](../../periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md)
+Le pack reste :
 
-## 3. Scope guard
+- `status: NEW_DOMAIN_SCAFFOLD` ;
+- `source_type: repo_reference` ;
+- `implementation_state: SCAFFOLD_ONLY`.
 
-Le `COMPLIANCE_SCOPE_GUARD_SPEC` autorise à signaler :
+Cette synchronisation reconnaît un corpus repository audité.
 
-- processing risk ;
-- retention risk ;
-- access risk ;
-- privacy risk ;
-- audit-readiness context ;
-- human-review requirement.
+Elle ne signifie pas :
 
-Il interdit de certifier automatiquement :
+- conformité RGPD démontrée ;
+- certification ISO ;
+- SecNumCloud obtenu ;
+- avis juridique validé ;
+- DPO review effectuée ;
+- runtime Legal/Compliance actif ;
+- object map implémenté ;
+- export juridique opposable prouvé.
 
-- conformité RGPD ;
-- conformité légale ;
-- conformité ISO ;
-- posture sécurité ;
-- autorisation de traitement de données personnelles.
+`object_map.yaml` reste volontairement vide.
 
-C'est une base forte pour le Domain Pack.
+## 3. Source A — RGPD Compliance Scope Guard
 
-## 4. Data governance
+Source :
 
-La spec Data Governance est explicitement `advisory-only`.
+- [RGPD_COMPLIANCE_SCOPE_GUARD](../../runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md)
 
-Elle peut définir :
+Statut source :
 
-- futurs champs de packets ;
-- checklists ;
-- labels de scope ;
-- evidence refs.
+```text
+CONTRACT_SKELETON_ONLY
+COPIED_READONLY
+runtime branché = NON
+```
 
-Elle ne peut pas :
-
-- approuver un traitement ;
-- écrire en mémoire ;
-- écrire dans le graphe ;
-- exécuter un outil ;
-- contourner X108.
-
-## 5. RGPD / ISO readiness
-
-Le boundary RGPD existant fait plusieurs distinctions essentielles :
+Le contrat verrouille notamment :
 
 ```text
 GDPR_ready != GDPR_compliant_legal
 ISO27001_READY != ISO27001_CERTIFIED
+SecNumCloud_target != SecNumCloud_certified
 DPA_template != DPA_signed
 legal_template != validated_legal_advice
 ```
@@ -97,13 +83,90 @@ Il prévoit aussi :
 - minimisation ;
 - rétention ;
 - human gate ;
-- audit légal avant certaines validations.
+- compliance review ;
+- claim-scope.
 
-Ces éléments peuvent devenir de la sémantique du Domain Pack, mais leurs claims doivent rester strictement bornés.
+Cette source fournit une base majeure au Domain Pack, mais ne doit jamais être présentée comme conformité juridique effective.
 
-## 6. Legal-grade audit
+## 4. Source B — Compliance Scope Guard
 
-Une ancienne spec décrit une cible d'export tiers-vérifiable comprenant :
+Source :
+
+- [COMPLIANCE_SCOPE_GUARD_SPEC](../../runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md)
+
+Statut :
+
+```text
+Authority: KX108_ONLY
+Runtime active: false
+```
+
+La spec peut marquer :
+
+- processing risk ;
+- retention risk ;
+- access risk ;
+- privacy risk ;
+- audit-readiness context ;
+- human-review requirement.
+
+Elle ne peut pas certifier :
+
+- conformité RGPD ;
+- conformité légale ;
+- conformité ISO ;
+- security posture ;
+- autorisation de traitement personnel.
+
+Cette distinction devient un invariant du Domain Pack.
+
+## 5. Source C — Data Governance Advisory
+
+Source :
+
+- [DATA_GOVERNANCE_ADVISORY_SPEC](../../runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md)
+
+Statut :
+
+```text
+advisory-only
+Runtime active: false
+```
+
+Elle peut définir :
+
+- futurs champs de packets ;
+- checklists ;
+- scope labels ;
+- evidence refs.
+
+Elle ne peut pas :
+
+- approuver un traitement ;
+- écrire en mémoire ;
+- écrire dans le graphe ;
+- exécuter un outil ;
+- contourner X108.
+
+Donc :
+
+```text
+DATA GOVERNANCE ADVISORY != PROCESSING AUTHORIZATION
+```
+
+## 6. Source D — Legal-Grade Audit Export
+
+Source :
+
+- [Legal-Grade Audit Export](../../periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md)
+
+Statut :
+
+```text
+À_FORMALISER_OU_À_PROUVER
+```
+
+La spec décrit une cible d'export vérifiable par un tiers :
 
 - manifest ;
 - policy ;
@@ -113,77 +176,244 @@ Une ancienne spec décrit une cible d'export tiers-vérifiable comprenant :
 - violations ;
 - Merkle root ;
 - signatures ;
-- report.
+- report PDF.
 
-Cette spec est marquée `À_FORMALISER_OU_À_PROUVER`.
+Elle contient des formulations historiques fortes sur la “valeur légale”.
 
-Elle doit donc être lue comme **direction de conception**, pas comme fonctionnalité déjà garantie.
-
-## 7. Regulatory mapping
-
-La spec EU/FR est `FORMALISÉ_À_VALIDER`.
-
-Elle contient des formulations ambitieuses historiques.
-
-Le Domain Pack ne doit pas reprendre comme faits les affirmations de conformité “par construction” tant qu'une validation juridique externe n'existe pas.
-
-## 8. Point de branchement cible
+Le Domain Pack doit les traiter comme **objectif de conception à démontrer**, pas comme propriété juridique acquise.
 
 ```text
-law / policy / compliance source
+AUDIT EXPORT TARGET != LEGAL ADMISSIBILITY PROVEN
+```
+
+## 7. Source E — Regulatory Compliance Mapping EU/FR
+
+Source :
+
+- [Regulatory Compliance Mapping EU/FR](../../periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md)
+
+Statut :
+
+```text
+FORMALISÉ_À_VALIDER
+```
+
+La source contient des affirmations historiques ambitieuses telles que :
+
+- “conforme par construction” ;
+- positionnement au-dessus d'exigences high-risk ;
+- catégorie juridique défendable.
+
+Ces affirmations **ne sont pas promues en faits UDIP**.
+
+Le Domain Pack les classe comme :
+
+```text
+HISTORICAL_REGULATORY_POSITIONING_TO_VALIDATE
+```
+
+Toute revendication publique doit être soutenue séparément par revue juridique et preuves applicables.
+
+## 8. Périmètre V0
+
+Le Domain Pack reconnaît maintenant les extensions documentaires suivantes :
+
+### Scope / Readiness
+
+- `compliance_scope`
+- `privacy_readiness`
+- `claim_scope`
+
+### Data Governance
+
+- `data_governance_advisory`
+- `processing_risk`
+- `retention_access_privacy_risk`
+
+### Review / Regulation
+
+- `human_legal_review_gate`
+- `regulatory_mapping`
+
+### Audit
+
+- `legal_audit_export`
+
+Ces extensions décrivent le périmètre de conception.
+
+Elles ne valent ni conformité, ni certification, ni autorisation de traitement.
+
+## 9. Claim-scope
+
+Le Domain Pack doit distinguer :
+
+```text
+readiness
+!= compliance
+
+compliance preparation
+!= legal validation
+
+template
+!= legal advice
+
+target
+!= certification
+
+audit export
+!= legal admissibility proven
+
+regulatory mapping
+!= regulator approval
+```
+
+Le claim-scope est donc une fonction centrale du domaine.
+
+## 10. Personal data boundary
+
+Pour les données personnelles, le corpus existant exige une prudence renforcée.
+
+Les sources décrivent notamment :
+
+- registre de traitement ;
+- minimisation ;
+- rétention ;
+- revue humaine/légale ;
+- preuve documentaire ;
+- claim-scope limité.
+
+Le Domain Pack ne doit jamais convertir cette préparation en autorisation automatique.
+
+```text
+PERSONAL DATA CONTEXT != PROCESSING PERMISSION
+```
+
+## 11. Human / legal review
+
+Le corpus impose explicitement une revue humaine dans certains cas.
+
+Cette revue doit rester distincte de KX108 :
+
+```text
+KX108 authority
+!=
+human legal validation
+```
+
+KX108 peut gouverner l'admission d'une action dans l'architecture.
+
+Il ne remplace pas un avocat, un DPO, un organisme certificateur ou une autorité réglementaire.
+
+## 12. Point de branchement cible
+
+```text
+law / regulation / policy / compliance source
 → scope extraction
-→ risk / obligation / review requirement
+→ processing / retention / access / privacy risk
+→ claim-scope
+→ human/legal review requirement
 → LegalCompliance DomainSignal
-→ evidence refs
 → CanonicalDomainContract
 → GovernancePayload
 → KX108
-→ human/legal review gate si requis
-→ receipt / audit export
+→ human/legal gate si requis
+→ Binder si conséquence exécutable
+→ Receipt / Audit Export
 ```
 
-## 9. Non-souveraineté
+## 13. Non-souveraineté
+
+Invariants Legal / Compliance :
 
 ```text
-LEGAL TEMPLATE != LEGAL ADVICE
 READINESS != CERTIFICATION
+READINESS != LEGAL COMPLIANCE
+LEGAL TEMPLATE != LEGAL ADVICE
+DPA TEMPLATE != SIGNED DPA
+REGULATORY MAPPING != REGULATOR APPROVAL
 COMPLIANCE SIGNAL != LEGAL VERDICT
+PROCESSING RISK != PROCESSING AUTHORIZATION
+DATA GOVERNANCE ADVISORY != EXECUTION PERMISSION
+AUDIT EXPORT TARGET != LEGAL ADMISSIBILITY PROVEN
 POLICY != AUTHORITY
 DOMAIN != AUTHORITY
 KX108_ONLY
 ```
 
-## 10. État réel du pack
+## 14. Source model
 
-Malgré le corpus transversal :
+Le pack utilise `source_type: repo_reference`.
 
-- `source_type: none` ;
-- `extensions: []` ;
-- `sources.yaml: NOT_YET_DEFINED` ;
-- object map absent ;
-- runtime UDIP absent.
+### REPO_CONTRACT_SKELETON
 
-La priorité est donc de **raccorder proprement ce corpus existant**, pas d'inventer une nouvelle couche juridique.
+- `runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md`
 
-## 11. Sources
+### REPO_SPEC_RUNTIME_INACTIVE
 
-- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
-- [RGPD Compliance Scope Guard](../../runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md)
-- [Compliance Scope Guard Spec](../../runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md)
-- [UDIP V0](../../docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md)
+- `runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md`
+- `runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md`
 
-## 12. Prochaine étape
+### REPO_SPEC_TO_FORMALIZE_OR_PROVE
 
-Créer une taxonomie minimale :
+- `periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md`
+
+### REPO_SPEC_TO_VALIDATE
+
+- `periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md`
+
+### REPO_SOURCE_AUDIT
+
+- `planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md`
+
+## 15. Conformance
+
+Le profil Legal / Compliance impose désormais :
+
+```text
+READINESS != CERTIFICATION
+LEGAL TEMPLATE != LEGAL ADVICE
+COMPLIANCE SIGNAL != LEGAL VERDICT
+PROCESSING RISK != PROCESSING AUTHORIZATION
+REGULATORY MAPPING != REGULATOR APPROVAL
+KX108_ONLY
+```
+
+Les tests correspondants restent à créer.
+
+Voir [conformance.md](conformance.md).
+
+## 16. Manques
+
+Le pack reste incomplet sur :
+
+- object map ;
+- taxonomie canonique Legal / Compliance ;
+- DomainSignal domaine ;
+- parser / source adapters réglementaires ;
+- claim-scope runtime ;
+- human/legal review integration ;
+- audit export prouvé ;
+- tests de non-overclaim ;
+- tests de non-souveraineté ;
+- preuve de conformité réelle ;
+- validation juridique externe.
+
+## 17. Prochaine étape
+
+Le prochain geste doit être un **object-model candidate audit READ_ONLY**.
+
+Il devra classer les candidats déjà présents dans le corpus :
 
 ```text
 compliance_requirement
 processing_risk
 retention_rule
 access_rule
+privacy_risk
 review_requirement
 claim_scope
 legal_evidence_ref
+audit_export
 ```
 
-sans transformer cette taxonomie en autorité juridique.
+sans les promouvoir automatiquement dans `object_map.yaml`.

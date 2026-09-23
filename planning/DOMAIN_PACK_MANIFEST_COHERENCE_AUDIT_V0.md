@@ -42,7 +42,7 @@ The important debt is class 2.
 | Cybersecurity | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share detection/evidence/response/isolation perimeter | audited repo references | empty by design | domain-specific profile documented | audit object candidates next |
 | Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Telecom | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share network + physical-signal perimeter | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Legal / Compliance | DOCS_AHEAD_OF_MANIFEST | README has strong compliance corpus; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
+| Legal / Compliance | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share compliance/readiness/data-governance/audit perimeter | audited repo references | empty by design | domain-specific profile documented | audit object candidates next |
 | Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | HR | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | Insurance | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
@@ -227,38 +227,50 @@ Telecom object-model candidate audit is now documented in `domains/telecom/OBJEC
 
 Network egress and physical-signal sensing remain distinct internal families under one Domain Pack; they are not treated as identical semantics.
 
-## 8. Legal / Compliance — strong corpus, empty manifest
+## 8. Legal / Compliance — source/perimeter synchronized
 
-Current manifest is empty beyond `NEW_DOMAIN_SCAFFOLD`.
+Legal / Compliance now has an audited repository reference set.
 
-Real repository corpus exists:
+Current manifest includes:
 
-- `runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md`
-- `runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md`
-- `runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md`
-- `periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md`
-- `periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md`
-
-Verdict:
-
-The README correctly distinguishes:
-
-```text
-readiness != compliance
-template != legal advice
-scope guard != certification
+```yaml
+source_type: repo_reference
+extensions:
+  - compliance_scope
+  - privacy_readiness
+  - claim_scope
+  - data_governance_advisory
+  - processing_risk
+  - retention_access_privacy_risk
+  - human_legal_review_gate
+  - regulatory_mapping
+  - legal_audit_export
+implementation_state: SCAFFOLD_ONLY
 ```
 
-But the manifest does not yet acknowledge this corpus.
+The source set preserves source maturity:
 
-Recommended order:
+- contract skeleton;
+- runtime-inactive specs;
+- spec to formalize/prove;
+- spec to validate.
 
-1. map sources;
-2. decide domain extensions;
-3. preserve claim-scope labels;
-4. only then design an object map.
+Strong historical claims are not promoted to facts.
 
-No legal-certification status should be introduced.
+Current state:
+
+```text
+README = synchronized
+domain_pack = synchronized
+sources = synchronized
+conformance profile = documented
+object_map = intentionally empty
+runtime = not implemented
+tests = not implemented
+legal validation = not claimed
+```
+
+Next action for Legal / Compliance is a READ_ONLY object-model candidate audit.
 
 ## 9. Health and HR
 
@@ -356,11 +368,11 @@ Recommended order:
 
 ```text
 1. Cybersecurity object-model candidate audit
-2. Legal/Compliance source mapping
+2. Legal/Compliance object-model candidate audit
 3. source_type vocabulary / classification
 4. remaining sources.yaml updates
 5. remaining domain_pack extension updates where justified
-6. mature Telecom/Energy/Cybersecurity object candidates before mapping
+6. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
 7. object maps only after object-level evidence freeze
 8. remaining domain-specific conformance profiles
 9. tests

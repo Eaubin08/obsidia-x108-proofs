@@ -1,3 +1,33 @@
-status: NOT_YET_DEFINED
-sources: []
-note: "CURRENT SOURCES: NONE / NOT YET AUDITED"
+status: AUDITED_REFERENCE_SET
+source_type: repo_reference
+sources:
+  - "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md"
+  - "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md"
+  - "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md"
+  - "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md"
+  - "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
+source_classes:
+  "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": REPO_CONTRACT_SKELETON
+  "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": REPO_SPEC_RUNTIME_INACTIVE
+  "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md": REPO_SPEC_RUNTIME_INACTIVE
+  "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md": REPO_SPEC_TO_FORMALIZE_OR_PROVE
+  "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md": REPO_SPEC_TO_VALIDATE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE_AUDIT
+source_roles:
+  "runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md": privacy_readiness_claim_scope_and_human_gate_reference
+  "runtime_contracts/compliance_data_governance_spec/specs/COMPLIANCE_SCOPE_GUARD_SPEC.md": compliance_scope_and_risk_advisory_reference
+  "runtime_contracts/compliance_data_governance_spec/specs/DATA_GOVERNANCE_ADVISORY_SPEC.md": data_governance_advisory_reference
+  "periphery/specs/Spec_17__Legal_Grade_Audit_Export_P149.md": third_party_audit_export_design_target
+  "periphery/specs/Spec_20__Regulatory_Compliance_Mapping_EU_FR_P156_P160_valider_V4.md": historical_regulatory_mapping_to_validate
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": audited_domain_concept_inventory
+boundaries:
+  - "SOURCE != TRUST"
+  - "READINESS != CERTIFICATION"
+  - "READINESS != LEGAL_COMPLIANCE"
+  - "LEGAL_TEMPLATE != LEGAL_ADVICE"
+  - "REGULATORY_MAPPING != REGULATOR_APPROVAL"
+  - "PROCESSING_RISK != PROCESSING_AUTHORIZATION"
+  - "AUDIT_EXPORT_TARGET != LEGAL_ADMISSIBILITY_PROVEN"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Audited Legal/Compliance reference sources only. No legal compliance, certification, processing authorization, or legal-advice status is declared by this file."
