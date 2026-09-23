@@ -185,6 +185,137 @@ def test_tree_34d_material_effect_at_context_packet():
     )
 
 
+def test_source_routing_state_enters_c1_and_context_packet():
+    source_ctx = {
+        "source_pack_context_used": True,
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "x108_gate_status": "ALLOW_CONTEXT_ONLY",
+        "detected_intents": ["ATLAS"],
+        "required_capabilities": ["ATLAS_CONTEXT_LOOKUP"],
+        "selected_runtime_path": {
+            "modules": ["source_runtime_query"],
+            "adapters": ["atlas_to_context_packet"],
+            "routes": ["/api/runtime-wiring/source-runtime/preview"],
+            "source_families": ["ATLAS"],
+            "source_subfamilies": [],
+            "evidence_packs": [],
+            "x108_decision": "ALLOW_CONTEXT_ONLY",
+        },
+        "selected_source_families": ["ATLAS"],
+        "source_file_refs": ["atlas/ref-a.md", "atlas/ref-b.md"],
+        "context_summary_for_brody": "x" * 120,
+        "source_pack_entries_used": 2,
+        "hydrated_entries": [
+            {
+                "file_name": "raw.md",
+                "content_preview": "RAW ATLAS CONTENT MUST NOT ENTER C1",
+            },
+        ],
+    }
+
+    r = run_real_cognitive_join(
+        message="Inspecte atlas en readonly",
+        language="fr",
+        session_id="c1-unit-source-routing",
+        precomputed_source_pack_context=source_ctx,
+    )
+
+    source = r["source_routing_signal_snapshot"]
+    assert source["status"] == "READY:SOURCE_ROUTING_ADVISORY"
+    assert source["applied"] is True
+    assert source["source_context_authority"] == "NONE"
+    assert source["source_context_mode"] == "ADVISORY_ONLY"
+    assert source["selected_source_families"] == ["ATLAS"]
+    assert source["source_refs"] == ["atlas/ref-a.md", "atlas/ref-b.md"]
+    assert source["raw_content_included"] is False
+    assert "hydrated_entries" not in source
+    assert "content_preview" not in str(source)
+    assert "RAW ATLAS CONTENT" not in str(source)
+
+    packet = r["context_packet_v2"]
+    assert "SOURCE_ROUTING_STATE_AVAILABLE:True" in packet["context_items"]
+    assert "SOURCE_FAMILY_SELECTED:ATLAS" in packet["context_items"]
+    assert "SOURCE_CONTEXT_AUTHORITY:NONE" in packet["context_items"]
+    assert "SOURCE_X108_MODE:ALLOW_CONTEXT_ONLY" in packet["context_items"]
+    assert "brody:source_routing" in packet["source_refs"]
+    assert "source:atlas/ref-a.md" in packet["source_refs"]
+
+    assert r["decision_authority"] == "KX108_ONLY"
+    assert r["memory_write"] is False
+    assert r["emits_act"] is False
+
+
+def test_source_routing_projection_is_material_but_bounded():
+    base = {
+        "source_pack_context_used": True,
+        "x108_decision": "ALLOW_CONTEXT_ONLY",
+        "source_pack_entries_used": 1,
+        "context_summary_for_brody": "x" * 120,
+    }
+    atlas = {
+        **base,
+        "selected_source_families": ["ATLAS"],
+        "source_file_refs": ["atlas/ref.md"],
+    }
+    reverse = {
+        **base,
+        "selected_source_families": ["OS_TRAD_REVERSE_OS"],
+        "selected_source_subfamilies": ["REVERSE_OS_INTERLANGUAGE_CANON_V1"],
+        "selected_evidence_packs": ["REVERSE_OS_INTERLANGUAGE_CANON_V1"],
+        "source_file_refs": ["reverse/ref.md"],
+    }
+
+    result_a = run_real_cognitive_join(
+        message="Source routing material effect",
+        language="fr",
+        session_id="c1-unit-source-effect-a",
+        precomputed_source_pack_context=atlas,
+    )
+    result_b = run_real_cognitive_join(
+        message="Source routing material effect",
+        language="fr",
+        session_id="c1-unit-source-effect-b",
+        precomputed_source_pack_context=reverse,
+    )
+
+    source_a = result_a["source_routing_signal_snapshot"]
+    source_b = result_b["source_routing_signal_snapshot"]
+    assert source_a["material_key"] != source_b["material_key"]
+    assert (
+        result_a["context_packet_v2"]["source_refs"]
+        != result_b["context_packet_v2"]["source_refs"]
+    )
+    assert source_b["overlaps_reverse_os"] is True
+    assert source_b["overlaps_tree_34d"] is True
+
+
+def test_absent_or_refused_source_context_preserves_old_behavior():
+    absent = run_real_cognitive_join(
+        message="No source context",
+        language="fr",
+        session_id="c1-unit-source-absent",
+    )
+    assert absent["source_routing_signal_snapshot"]["applied"] is False
+    assert "brody:source_routing" not in absent["context_packet_v2"]["source_refs"]
+
+    refused = run_real_cognitive_join(
+        message="Refused source context",
+        language="fr",
+        session_id="c1-unit-source-refused",
+        precomputed_source_pack_context={
+            "source_pack_context_used": True,
+            "x108_decision": "HOLD",
+            "selected_source_families": ["ATLAS"],
+            "source_file_refs": ["atlas/ref.md"],
+        },
+    )
+    source = refused["source_routing_signal_snapshot"]
+    assert source["applied"] is False
+    assert source["allow_context_only"] is False
+    assert source["source_context_authority"] == "NONE"
+    assert "brody:source_routing" not in refused["context_packet_v2"]["source_refs"]
+
+
 def test_tree_malformed_vector_degrades_without_authority():
     malformed = {
         "tree_signal_packet": {

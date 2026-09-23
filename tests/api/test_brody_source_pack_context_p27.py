@@ -16,6 +16,8 @@ if str(_REPO_ROOT) not in sys.path:
 
 from fastapi.testclient import TestClient
 from apps.obsidia_api.main import app
+import apps.obsidia_api.brody_real_cognitive_join as cognitive_join
+import apps.obsidia_api.routes.brody as brody_route
 
 client = TestClient(app)
 
@@ -196,3 +198,119 @@ def test_p26_fields_still_present():
     ]
     for field in p26_fields:
         assert field in data, f"P26 field missing after P27: {field}"
+
+
+def test_source_pack_context_built_once_enters_c1_and_true_voice(monkeypatch):
+    calls = {
+        "source_build": 0,
+        "c1": 0,
+        "true_voice": 0,
+        "c1_ctx_id": None,
+        "true_voice_ctx_id": None,
+    }
+
+    def fake_source_context(*, query, limit=5):
+        calls["source_build"] += 1
+        return {
+            "source_pack_context_used": True,
+            "source_pack_families": ["ATLAS"],
+            "source_pack_entries_used": 1,
+            "x108_decision": "ALLOW_CONTEXT_ONLY",
+            "x108_gate_status": "ALLOW_CONTEXT_ONLY",
+            "selected_source_families": ["ATLAS"],
+            "source_file_refs": ["atlas/ref-once.md"],
+            "context_summary_for_brody": "x" * 120,
+            "no_act": True,
+            "memory_write": False,
+            "zip_extraction": False,
+            "boundary": {"emits_act": False},
+        }
+
+    def fake_c1(**kwargs):
+        calls["c1"] += 1
+        ctx = kwargs.get("precomputed_source_pack_context")
+        calls["c1_ctx_id"] = id(ctx)
+        return {
+            "status": "READY_SHADOW_READONLY",
+            "completeness": "COMPLETE",
+            "context_packet_v2": {
+                "context_items": ["SOURCE_ROUTING_STATE_AVAILABLE:True"],
+                "source_refs": [
+                    "brody:source_routing",
+                    "source:atlas/ref-once.md",
+                ],
+                "readonly": True,
+                "decision_authority": "KX108_ONLY",
+                "allowed_to_act": False,
+                "memory_write": False,
+            },
+            "source_routing_signal_snapshot": {
+                "status": "READY:SOURCE_ROUTING_ADVISORY",
+                "applied": True,
+                "selected_source_families": ["ATLAS"],
+                "source_refs": ["atlas/ref-once.md"],
+                "source_context_authority": "NONE",
+                "source_context_mode": "ADVISORY_ONLY",
+                "raw_content_included": False,
+            },
+            "reverse_os_projection": {"ir_candidate": {}},
+            "deep_cognitive_signal_snapshot": {},
+            "components": {"SOURCE_ROUTING": "READY:PRECOMPUTED:ADVISORY_ONLY"},
+            "kx108_admission": "DRY_RUN",
+            "decision_ticket_dry_run": {"decision": "ALLOW_CONTEXT_ONLY"},
+            "readonly": True,
+            "memory_write": False,
+            "emits_act": False,
+            "kernel_mutation": False,
+            "decision_authority": "KX108_ONLY",
+        }
+
+    def fake_true_voice(*, source_pack_context=None, **kwargs):
+        calls["true_voice"] += 1
+        calls["true_voice_ctx_id"] = id(source_pack_context)
+        return {
+            "final_answer": "source-pack preserved",
+            "voice_source": "SOURCE_PACK_CONTEXT",
+            "source_pack_enriched": True,
+            "source_pack_context_used": True,
+            "readonly": True,
+            "memory_write": False,
+            "emits_act": False,
+        }
+
+    monkeypatch.setattr(
+        brody_route,
+        "_build_source_pack_context",
+        fake_source_context,
+    )
+    monkeypatch.setattr(
+        cognitive_join,
+        "run_real_cognitive_join",
+        fake_c1,
+    )
+    monkeypatch.setattr(
+        brody_route,
+        "build_true_brody_answer",
+        fake_true_voice,
+    )
+
+    r = client.post("/api/brody/chat", json={
+        "message": "atlas source routing audit",
+        "language": "fr",
+        "session_id": "source-routing-once",
+    })
+
+    assert r.status_code == 200
+    data = r.json()
+    assert calls["source_build"] == 1
+    assert calls["c1"] == 1
+    assert calls["true_voice"] == 1
+    assert calls["c1_ctx_id"] == calls["true_voice_ctx_id"]
+    assert data["source_pack_context_used"] is True
+    assert data["final_answer_source_pack_enriched"] is True
+    assert data["cognitive_runtime_receipt"][
+        "source_routing_signal_snapshot"
+    ]["applied"] is True
+    assert data["brody_full_context"]["governed_cognitive_projection"][
+        "source_routing_signal_snapshot"
+    ]["selected_source_families"] == ["ATLAS"]

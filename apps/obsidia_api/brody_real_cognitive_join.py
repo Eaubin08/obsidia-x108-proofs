@@ -2,6 +2,7 @@
 
 import dataclasses
 import hashlib
+import json
 from datetime import datetime, timezone
 from typing import Any
 
@@ -83,6 +84,160 @@ def _uniq(values: list[str]) -> list[str]:
             seen.add(value)
             out.append(value)
     return out
+
+
+_SOURCE_ROUTING_REF_LIMIT = 8
+_SOURCE_ROUTING_LIST_LIMIT = 8
+
+
+def _compact_list(values: Any, limit: int = _SOURCE_ROUTING_LIST_LIMIT) -> list[str]:
+    if values is None:
+        return []
+    raw = values if isinstance(values, list) else [values]
+    out: list[str] = []
+    for value in raw:
+        if isinstance(value, dict):
+            text = (
+                value.get("path")
+                or value.get("internal_path")
+                or value.get("file_name")
+                or value.get("source")
+                or value.get("id")
+                or ""
+            )
+        else:
+            text = value
+        item = str(text).strip()
+        if item and item not in out:
+            out.append(item)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _compact_selected_path(path: Any) -> dict[str, Any]:
+    if not isinstance(path, dict):
+        return {}
+    return {
+        "modules": _compact_list(path.get("modules")),
+        "adapters": _compact_list(path.get("adapters")),
+        "routes": _compact_list(path.get("routes")),
+        "source_families": _compact_list(path.get("source_families")),
+        "source_subfamilies": _compact_list(path.get("source_subfamilies")),
+        "evidence_packs": _compact_list(path.get("evidence_packs")),
+        "x108_decision": str(path.get("x108_decision") or ""),
+    }
+
+
+def _source_routing_projection(
+    source_pack_context: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Compact already-built source-pack routing for C1; never hydrates or reads."""
+    if not isinstance(source_pack_context, dict) or not source_pack_context:
+        return {
+            "status": "UNAVAILABLE",
+            "applied": False,
+            "reason": "NO_SOURCE_PACK_CONTEXT",
+            "readonly": True,
+            "advisory_only": True,
+            "source_context_authority": "NONE",
+            "source_context_mode": "ADVISORY_ONLY",
+            "memory_write": False,
+            "emits_act": False,
+        }
+
+    x108_decision = str(
+        source_pack_context.get("x108_decision")
+        or source_pack_context.get("x108_decision_path")
+        or ""
+    )
+    used = bool(source_pack_context.get("source_pack_context_used"))
+    admitted = used and x108_decision == "ALLOW_CONTEXT_ONLY"
+
+    selected_path = _compact_selected_path(
+        source_pack_context.get("selected_runtime_path")
+    )
+    families = _compact_list(
+        source_pack_context.get("selected_source_families")
+        or source_pack_context.get("source_pack_families")
+        or selected_path.get("source_families")
+    )
+    subfamilies = _compact_list(
+        source_pack_context.get("selected_source_subfamilies")
+        or selected_path.get("source_subfamilies")
+    )
+    evidence_packs = _compact_list(
+        source_pack_context.get("selected_evidence_packs")
+        or selected_path.get("evidence_packs")
+    )
+    refs = _compact_list(
+        source_pack_context.get("source_file_refs"),
+        limit=_SOURCE_ROUTING_REF_LIMIT,
+    )
+    summary = str(
+        source_pack_context.get("context_summary_for_brody")
+        or source_pack_context.get("source_pack_context_summary")
+        or ""
+    )
+
+    material_basis = {
+        "families": families,
+        "subfamilies": subfamilies,
+        "evidence_packs": evidence_packs,
+        "refs": refs,
+        "x108_decision": x108_decision,
+    }
+    material_key = hashlib.sha256(
+        json.dumps(material_basis, sort_keys=True).encode("utf-8")
+    ).hexdigest()[:16]
+
+    return {
+        "status": (
+            "READY:SOURCE_ROUTING_ADVISORY"
+            if admitted
+            else "SKIPPED_SOURCE_CONTEXT_NOT_ADMITTED"
+        ),
+        "applied": admitted,
+        "source_pack_context_used": used,
+        "x108_decision": x108_decision,
+        "x108_gate_status": str(
+            source_pack_context.get("x108_gate_status") or ""
+        ),
+        "source_context_authority": "NONE",
+        "source_context_mode": "ADVISORY_ONLY",
+        "readonly": True,
+        "advisory_only": True,
+        "allow_context_only": admitted,
+        "selected_runtime_path": selected_path,
+        "detected_intents": _compact_list(
+            source_pack_context.get("detected_intents")
+        ),
+        "required_capabilities": _compact_list(
+            source_pack_context.get("required_capabilities")
+        ),
+        "selected_source_families": families,
+        "selected_source_subfamilies": subfamilies,
+        "selected_evidence_packs": evidence_packs,
+        "source_refs": refs,
+        "source_refs_count": len(refs),
+        "summary_available": bool(summary.strip()),
+        "summary_char_count": len(summary),
+        "entries_used": int(
+            source_pack_context.get("source_pack_entries_used") or 0
+        ),
+        "material_key": material_key,
+        "unique_role": "SOURCE_SELECTION_ROUTING_PROVENANCE",
+        "overlaps_native_memory": False,
+        "overlaps_reverse_os": bool(
+            set(families) & {"OS_TRAD_REVERSE_OS"}
+        ),
+        "overlaps_tree_34d": bool(
+            set(families) & {"OS_TRAD_REVERSE_OS"}
+        ),
+        "memory_write": False,
+        "emits_act": False,
+        "raw_content_included": False,
+    }
 
 
 def _asdict(value: Any) -> Any:
@@ -582,6 +737,7 @@ def run_real_cognitive_join(
     precomputed_point_cloud_21d: dict[str, Any] | None = None,
     precomputed_memzum_activation: dict[str, Any] | None = None,
     precomputed_model_evidence: dict[str, Any] | None = None,
+    precomputed_source_pack_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
 
     signal_id = _signal_id(message, session_id)
@@ -595,6 +751,7 @@ def run_real_cognitive_join(
         "DEEP_COGNITIVE_SIGNALS": "PENDING",
         "REVERSE_OS": "PENDING",
         "TREE_34D_SHAZAM_MEMORY_WORLD": "PENDING",
+        "SOURCE_ROUTING": "SKIPPED_OPTIONAL_NOT_PROVIDED",
         "SIGMA": "PENDING",
         "DATA_PURITY_AGENT": "PENDING",
         "CONTEXT_PACKET_V2": "PENDING",
@@ -841,6 +998,17 @@ def run_real_cognitive_join(
         computation_mode=tree_computation_mode,
     )
 
+    source_routing_signal = _source_routing_projection(
+        precomputed_source_pack_context
+    )
+    if source_routing_signal.get("applied") is True:
+        components["SOURCE_ROUTING"] = "READY:PRECOMPUTED:ADVISORY_ONLY"
+    elif isinstance(precomputed_source_pack_context, dict):
+        components["SOURCE_ROUTING"] = str(
+            source_routing_signal.get("status")
+            or "SKIPPED_SOURCE_CONTEXT_NOT_ADMITTED"
+        )
+
     # --------------------------------------------------------
     # 8 — Build ContextPacketV2 base
     # --------------------------------------------------------
@@ -969,6 +1137,42 @@ def run_real_cognitive_join(
                 if str(pattern).strip()
             )
 
+    source_refs_from_routing: list[str] = []
+    if source_routing_signal.get("applied") is True:
+        families = source_routing_signal.get("selected_source_families", [])
+        subfamilies = source_routing_signal.get(
+            "selected_source_subfamilies",
+            [],
+        )
+        evidence_packs = source_routing_signal.get(
+            "selected_evidence_packs",
+            [],
+        )
+        context_items.extend(
+            [
+                "SOURCE_ROUTING_STATE_AVAILABLE:True",
+                f"SOURCE_FAMILY_SELECTED:{','.join(families) or 'NONE'}",
+                (
+                    "SOURCE_SUBFAMILY_SELECTED:"
+                    f"{','.join(subfamilies) or 'NONE'}"
+                ),
+                (
+                    "SOURCE_EVIDENCE_PACK_AVAILABLE:"
+                    f"{bool(evidence_packs)}"
+                ),
+                "SOURCE_CONTEXT_ADVISORY_ONLY:True",
+                "SOURCE_CONTEXT_AUTHORITY:NONE",
+                "SOURCE_X108_MODE:ALLOW_CONTEXT_ONLY",
+            ]
+        )
+        source_refs_from_routing = [
+            "brody:source_routing",
+            *[
+                f"source:{ref}"
+                for ref in source_routing_signal.get("source_refs", [])
+            ],
+        ]
+
     risk_flags = _uniq([
         *micro_risks,
         *ir_risks,
@@ -1004,6 +1208,7 @@ def run_real_cognitive_join(
                 "brody:semantic_query",
                 "brody:micro_core",
                 "brody:reverse_os",
+                *source_refs_from_routing,
                 *(
                     [
                         "brody:tree_34d",
@@ -1352,6 +1557,7 @@ def run_real_cognitive_join(
         "intent": intent,
         "micro_core_trace": micro,
         "deep_cognitive_signal_snapshot": deep_cognitive_signal,
+        "source_routing_signal_snapshot": source_routing_signal,
         "reverse_os_projection": reverse_os,
 
         "domain_detected": domain,

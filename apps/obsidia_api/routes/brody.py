@@ -686,6 +686,20 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         if isinstance(_tree_signal_raw, dict) else {}
     )
 
+    # V3-A/B: build source-pack context once before C1, then reuse it for
+    # compact C1 projection and full True Voice enrichment.
+    _source_pack_ctx: dict = {}
+    if _build_source_pack_context is not None:
+        _source_pack_ctx = safe_call_snapshot(
+            "source_pack_context",
+            _build_source_pack_context,
+            query=req.message,
+            limit=5,
+        )
+
+    # BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
+    _source_pack_ctx = _brody_apply_organism_overlay_v2c(req.message, _source_pack_ctx)
+
     _cog_receipt: dict = {}
     # COGNITIVE_RUNTIME_JOIN_BACKEND_V1
     if not _dissipation_lazy:
@@ -751,6 +765,7 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
                     and memory_response_chain
                     else None
                 ),
+                precomputed_source_pack_context=_source_pack_ctx,
             )
         except Exception as _cog_exc:
             _cog_receipt = {
@@ -809,6 +824,15 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             if isinstance(_cog_receipt, dict)
             and isinstance(
                 _cog_receipt.get("deep_cognitive_signal_snapshot"),
+                dict,
+            )
+            else {}
+        ),
+        "source_routing_signal_snapshot": (
+            _cog_receipt.get("source_routing_signal_snapshot", {})
+            if isinstance(_cog_receipt, dict)
+            and isinstance(
+                _cog_receipt.get("source_routing_signal_snapshot"),
                 dict,
             )
             else {}
@@ -873,19 +897,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             build_action_gateway_sandbox_state,
             query=req.message,
         )
-
-    # P27: Source pack context built BEFORE True Voice so it can enrich final_answer
-    _source_pack_ctx: dict = {}
-    if _build_source_pack_context is not None:
-        _source_pack_ctx = safe_call_snapshot(
-            "source_pack_context",
-            _build_source_pack_context,
-            query=req.message,
-            limit=5,
-        )
-
-    # BRODY_SOURCE_ROUTING_DENSITY_V2C_REAL_CTX
-    _source_pack_ctx = _brody_apply_organism_overlay_v2c(req.message, _source_pack_ctx)
 
     true_voice_snapshot = ({} if _dissipation_lazy else
         safe_call_snapshot("true_voice_snapshot", build_true_brody_answer,
