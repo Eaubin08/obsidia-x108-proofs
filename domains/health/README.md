@@ -1,22 +1,64 @@
-# Health  STATUS: SCAFFOLD ONLY. No business architecture is claimed yet.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Health
 
-## Proven / Known Elements
+> Domain Pack Health — vision à construire.
+>
+> **UDIP status : `NEW_DOMAIN_SCAFFOLD`**  
+> **Implementation state : `SCAFFOLD_ONLY`**
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## État réel
 
-## Missing / Not Implemented
+Aucun corpus médical/clinique suffisamment spécifique n'a été trouvé pour justifier un README métier détaillé.
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+Le dépôt contient toutefois des mécanismes transverses potentiellement nécessaires à un futur domaine Health :
 
-## UDIP Boundary
+- contexte humain ;
+- consentement ;
+- provenance ;
+- RGPD / data governance ;
+- human review ;
+- non-souveraineté ;
+- evidence / receipts.
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+Ces mécanismes ne sont **pas** un modèle médical.
 
-## Possible Domain Extensions
+## Vision candidate
 
-- none defined yet
+Un futur Health pack devrait probablement séparer :
+
+```text
+observation de santé
+≠ interprétation
+≠ recommandation
+≠ autorisation
+≠ action clinique
+```
+
+et préserver systématiquement :
+
+- source ;
+- date / fraîcheur ;
+- incertitude ;
+- consentement ;
+- evidence refs ;
+- limites du modèle.
+
+Cette section est une **vision cible prudente**, pas une architecture existante.
+
+## Sources transverses utiles
+
+- [RGPD Compliance Scope Guard](../../runtime_contracts/boundaries/RGPD_COMPLIANCE_SCOPE_GUARD.md)
+- [UDIP V0](../../docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
+
+## Manques
+
+- objets métier ;
+- sources santé ;
+- terminologie clinique ;
+- consent model domaine ;
+- object map ;
+- tests ;
+- preuves ;
+- revue métier externe.
+
+Aucune maturité Health ne doit être déduite des fichiers génériques présents dans `migration_snapshot/`.

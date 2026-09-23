@@ -1,22 +1,46 @@
-# Insurance  STATUS: SCAFFOLD ONLY. No business architecture is claimed yet.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Insurance
 
-## Proven / Known Elements
+> Domain Pack Insurance — scaffold sans architecture métier revendiquée.
+>
+> **UDIP status : `NEW_DOMAIN_SCAFFOLD`**  
+> **Implementation state : `SCAFFOLD_ONLY`**
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## État réel
 
-## Missing / Not Implemented
+L'audit conceptuel n'a pas retrouvé de corpus assurance suffisamment spécifique pour définir correctement :
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+- policy lifecycle ;
+- claim ;
+- underwriting ;
+- actuarial model ;
+- insured object ;
+- coverage ;
+- indemnification.
 
-## UDIP Boundary
+Des concepts génériques existent ailleurs — risque, fraude, evidence, compensation, claim-scope — mais ils ne doivent pas être rebaptisés “Insurance” sans travail métier réel.
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+## Vision minimale
 
-## Possible Domain Extensions
+Le futur pack devra probablement séparer :
 
-- none defined yet
+```text
+risk evidence
+≠ coverage
+≠ claim validity
+≠ compensation
+≠ payment authorization
+```
+
+mais cette structure reste à construire.
+
+## Sources
+
+- [UDIP V0](../../docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
+- [Domain Pack Standard](../../udip/DOMAIN_PACK_STANDARD.md)
+
+## Manques
+
+Pratiquement toute la sémantique domaine.
+
+Le bon prochain geste est une source métier réelle avant toute extension du scaffold.

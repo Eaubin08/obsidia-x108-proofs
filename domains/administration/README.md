@@ -1,22 +1,25 @@
-# Administration  STATUS: SCAFFOLD ONLY. No business architecture is claimed yet.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Administration
 
-## Proven / Known Elements
+> Domain Pack Administration — scaffold uniquement.
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## Statut réel
 
-## Missing / Not Implemented
+- `NEW_DOMAIN_SCAFFOLD`
+- aucune source métier auditée ;
+- aucune extension déclarée ;
+- `SCAFFOLD_ONLY`.
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+Aucun corpus administratif suffisamment spécifique n'a été trouvé.
 
-## UDIP Boundary
+Les mécanismes génériques de document, approbation, audit ou human review ne doivent pas être présentés comme une architecture Administration sans source dédiée.
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+## Sources
 
-## Possible Domain Extensions
+- [domain_pack.yaml](domain_pack.yaml)
+- [sources.yaml](sources.yaml)
+- [conformance.md](conformance.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
 
-- none defined yet
+## Prochaine étape
+
+Définir le périmètre : administration interne, service public, workflow documentaire, autorisations, ou autre — avant d'ajouter de la sémantique.

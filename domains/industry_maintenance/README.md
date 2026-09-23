@@ -1,26 +1,44 @@
-# Industry / Maintenance  STATUS: SCAFFOLD ONLY. Perimeter: machines, production, maintenance, sensors, operators.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Industry / Maintenance
 
-## Proven / Known Elements
+> Scaffold UDIP pour machines, production, maintenance, capteurs et opérateurs.
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## Statut
 
-## Missing / Not Implemented
+- `NEW_DOMAIN_SCAFFOLD`
+- `source_type: none`
+- `implementation_state: SCAFFOLD_ONLY`
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+## Périmètre déclaré
 
-## UDIP Boundary
+- machines ;
+- production ;
+- maintenance ;
+- sensors ;
+- operators.
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+Aucun corpus domaine spécifique supplémentaire n'a été retrouvé lors de l'audit conceptuel.
 
-## Possible Domain Extensions
+## Vision cible
 
-- machines
-- production
-- maintenance
-- sensors
-- operators
+```text
+machine / sensor / production state
+→ observation
+→ anomaly / maintenance signal
+→ DomainSignal
+→ KX108
+→ Binder si action
+→ intervention candidate
+```
+
+Cette chaîne est une cible documentaire, pas une implémentation.
+
+## Sources
+
+- [domain_pack.yaml](domain_pack.yaml)
+- [sources.yaml](sources.yaml)
+- [conformance.md](conformance.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
+
+## Manques
+
+Sources métier, object map, règles de maintenance, adapters, tests et preuves.

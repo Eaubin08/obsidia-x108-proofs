@@ -1,22 +1,27 @@
-# Facility Management  STATUS: SCAFFOLD ONLY. No business architecture is claimed yet.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Facility Management
 
-## Proven / Known Elements
+> Domain Pack Facility Management — scaffold uniquement.
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## Statut réel
 
-## Missing / Not Implemented
+- `NEW_DOMAIN_SCAFFOLD`
+- aucune source métier auditée ;
+- aucune extension déclarée ;
+- `SCAFFOLD_ONLY`.
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+L'audit conceptuel n'a pas trouvé de corpus bâtiment/facility suffisamment spécifique.
 
-## UDIP Boundary
+## Règle
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+Ne pas transformer les mécanismes génériques de maintenance, accès, réseau ou sécurité en “Facility Management” sans source métier.
 
-## Possible Domain Extensions
+## Sources
 
-- none defined yet
+- [domain_pack.yaml](domain_pack.yaml)
+- [sources.yaml](sources.yaml)
+- [conformance.md](conformance.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
+
+## Prochaine étape
+
+Définir d'abord les objets et sources réelles du domaine avant toute vision détaillée.

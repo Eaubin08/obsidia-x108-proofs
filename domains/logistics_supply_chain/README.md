@@ -1,27 +1,43 @@
-# Logistics / Supply Chain  STATUS: SCAFFOLD ONLY. Perimeter: stock, warehouse, suppliers, transport, route, delivery.  ## Status  NEW_DOMAIN_SCAFFOLD  ## Historical Sources 
-- NONE / NOT YET AUDITED
+# Logistics / Supply Chain
 
-## Proven / Known Elements
+> Scaffold UDIP pour stock, entrepôt, fournisseurs, transport, routes et livraison.
 
-- Domain-specific semantics stay in this domain.
-- The domain owns no authority.
-- KX108 remains the admission authority.
+## Statut
 
-## Missing / Not Implemented
+- `NEW_DOMAIN_SCAFFOLD`
+- `source_type: none`
+- `implementation_state: SCAFFOLD_ONLY`
 
-- CURRENT SOURCES: NONE / NOT YET AUDITED
-- Domain objects not defined
-- No implementation
+## Périmètre déclaré
 
-## UDIP Boundary
+- stock ;
+- warehouse ;
+- suppliers ;
+- transport ;
+- route ;
+- delivery.
 
-This scaffold is a Domain Pack boundary. It must not create a parallel authority, bypass KX108, bypass Binder for governed execution, or leak business semantics into udip/.
+Aucun corpus logistique spécifique supplémentaire n'a été retrouvé.
 
-## Possible Domain Extensions
+## Vision cible
 
-- stock
-- warehouse
-- suppliers
-- transport
-- route
-- delivery
+```text
+stock / supplier / transport event
+→ logistics state
+→ risk / exception / proposal
+→ DomainSignal
+→ KX108
+→ Binder si action
+→ execution / receipt
+```
+
+## Sources
+
+- [domain_pack.yaml](domain_pack.yaml)
+- [sources.yaml](sources.yaml)
+- [conformance.md](conformance.md)
+- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
+
+## Manques
+
+Object map, règles supply-chain, adapters, sources terrain, tests, receipt/replay spécifiques.
