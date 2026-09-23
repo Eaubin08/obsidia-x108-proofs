@@ -2,9 +2,16 @@ domain_id: telecom
 domain_name: "Telecom"
 udip_version: V0
 status: NEW_DOMAIN_SCAFFOLD
-source_type: none
+source_type: mixed_reference
 legacy_sources:
-  []
+  - "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md"
+  - "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
 extensions:
-  []
+  - network_connectivity
+  - network_egress
+  - gateway_constraints
+  - physical_signal_observation
+  - signal_provenance
+  - signal_coherence
 implementation_state: SCAFFOLD_ONLY

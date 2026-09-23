@@ -41,7 +41,7 @@ The important debt is class 2.
 | Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
 | Cybersecurity | DOCS_AHEAD_OF_MANIFEST | README has sourced architecture; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
 | Energy / Critical Infrastructure | DOCS_AHEAD_OF_MANIFEST | README has real Energy Thermo + fail-closed sources; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
-| Telecom | DOCS_AHEAD_OF_MANIFEST | README has network + physical-signal vision; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
+| Telecom | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share network + physical-signal perimeter | audited mixed references | empty by design | domain-specific profile documented | audit object map next |
 | Legal / Compliance | DOCS_AHEAD_OF_MANIFEST | README has strong compliance corpus; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
 | Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | HR | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
@@ -168,41 +168,48 @@ or two sub-contracts under one domain?
 
 Do not create an object map before resolving this boundary.
 
-## 7. Telecom — strongest manifest gap
+## 7. Telecom — source/perimeter synchronized
+
+Telecom has now completed the first manifest-synchronization step.
 
 Current manifest:
 
 ```yaml
-source_type: none
-legacy_sources: []
-extensions: []
+source_type: mixed_reference
+extensions:
+  - network_connectivity
+  - network_egress
+  - gateway_constraints
+  - physical_signal_observation
+  - signal_provenance
+  - signal_coherence
 implementation_state: SCAFFOLD_ONLY
 ```
 
-The README now has two sourced conceptual axes:
+Two internal families are explicitly preserved:
 
-1. network / connector / egress governance;
-2. Physical Signal World Model / Physical Signal Periphery.
+1. Network / Connectivity;
+2. Physical Signal Observation.
 
-Repository sources include:
+The source set distinguishes repository references from internal concept sources.
 
-- `docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md`
-- `specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml`
+This synchronization does **not** promote runtime maturity.
 
-Internal project sources also contain explicit Wi-Fi/RF/telecom/satellite/UWB/radar/SDR world-model concepts.
-
-Verdict:
+Current remaining gap:
 
 ```text
-README = real candidate vision
-manifest = empty scaffold
+README = synchronized
+domain_pack = synchronized
+sources = synchronized
+conformance profile = documented
+object_map = intentionally empty
+runtime = not implemented
+tests = not implemented
 ```
 
-This is not a runtime inconsistency because README clearly labels the vision as candidate/future.
+Next action for Telecom is a READ_ONLY object-map candidate audit.
 
-But Telecom should be the first pack where the perimeter is formally decided before updating manifests.
-
-Do not infer that network egress and physical-signal sensing are necessarily the same subdomain.
+Network egress and physical-signal sensing remain distinct internal families under one Domain Pack; they are not treated as identical semantics.
 
 ## 8. Legal / Compliance — strong corpus, empty manifest
 
@@ -332,15 +339,15 @@ Do not update all manifests at once.
 Recommended order:
 
 ```text
-1. Telecom perimeter decision
+1. Telecom object-map candidate audit
 2. Energy perimeter decision
 3. Cybersecurity source mapping
 4. Legal/Compliance source mapping
 5. source_type vocabulary / classification
-6. sources.yaml updates
-7. domain_pack extension updates where justified
-8. object maps only after source/perimeter freeze
-9. domain-specific conformance profiles
+6. remaining sources.yaml updates
+7. remaining domain_pack extension updates where justified
+8. object maps only after each source/perimeter freeze
+9. remaining domain-specific conformance profiles
 10. tests
 ```
 

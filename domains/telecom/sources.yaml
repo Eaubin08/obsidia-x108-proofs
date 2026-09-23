@@ -1,3 +1,29 @@
-status: NOT_YET_DEFINED
-sources: []
-note: "CURRENT SOURCES: NONE / NOT YET AUDITED"
+status: AUDITED_REFERENCE_SET
+source_type: mixed_reference
+sources:
+  - "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md"
+  - "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
+  - "internal://Physical Signal World Model"
+  - "internal://suite pepite implementé 02.7"
+  - "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18"
+source_classes:
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": REPO_SOURCE
+  "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": REPO_SOURCE
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE
+  "internal://Physical Signal World Model": INTERNAL_CONCEPT_SOURCE
+  "internal://suite pepite implementé 02.7": INTERNAL_CONCEPT_SOURCE
+  "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18": INTERNAL_CONCEPT_SOURCE
+source_roles:
+  "docs/core_import/P70_NETWORK_EGRESS_CONNECTORS_AUDIT.md": network_egress_and_connector_reference
+  "specs/external_signals/component_specs/C471_gateway_before_endpoint_prefilter.yaml": gateway_temporal_prefilter_reference
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": audited_domain_concept_inventory
+  "internal://Physical Signal World Model": physical_signal_world_model_concept
+  "internal://suite pepite implementé 02.7": physical_signal_periphery_and_non_sovereignty_concept
+  "internal://OBSIDIA_V5_Texte_Continu_Edition_Livre_2026-08-18": physical_signal_provenance_and_world_model_narrative
+boundaries:
+  - "SOURCE != TRUST"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+  - "SIGNAL != TRUTH"
+  - "INTERNAL_CONCEPT_SOURCE != CANONICAL_IMPLEMENTATION"
+note: "Audited design/reference sources only. No Telecom runtime code is declared migrated or active by this file."

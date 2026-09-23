@@ -231,7 +231,7 @@ Quand le domaine dépend de données physiques ou hostiles, `SourceProvenance` p
 | `energy_critical_infrastructure` | `NEW_DOMAIN_SCAFFOLD` | `none` | physical_infrastructure, fail_closed, real_world_execution_constraints | `SCAFFOLD_ONLY` |
 | `insurance` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
 | `legal_compliance` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
-| `telecom` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
+| `telecom` | `NEW_DOMAIN_SCAFFOLD` | `mixed_reference` | network_connectivity, network_egress, gateway_constraints, physical_signal_observation, signal_provenance, signal_coherence | `SCAFFOLD_ONLY` |
 | `facility_management` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
 | `administration` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
 | `health` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
