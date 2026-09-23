@@ -348,8 +348,16 @@ Le pack reste incomplet sur :
 - preuve de non-surveillance ;
 - validation des sources internes comme artefacts canoniques si elles doivent être promues.
 
-## 15. Prochaine étape
+## 15. Object-model candidate audit
 
-Le prochain geste n'est **pas** d'ajouter du runtime.
+L'audit READ_ONLY des candidats est maintenant documenté dans [OBJECT_MODEL_CANDIDATES_V0.md](OBJECT_MODEL_CANDIDATES_V0.md).
 
-Il faut construire en READ_ONLY le candidat `object_map.yaml` à partir des deux familles maintenant figées, puis décider quels objets sont réellement domaine-spécifiques et lesquels restent seulement transverses.
+Verdict :
+
+```text
+objets prêts à promouvoir = 0
+```
+
+Le `object_map.yaml` reste volontairement vide.
+
+Les prochains travaux doivent faire mûrir les candidats et leurs schémas avant toute promotion canonique.

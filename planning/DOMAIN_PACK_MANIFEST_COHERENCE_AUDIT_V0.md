@@ -40,8 +40,8 @@ The important debt is class 2.
 | GPS / Defense / Aviation | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
 | Cybersecurity | DOCS_AHEAD_OF_MANIFEST | README has sourced architecture; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
-| Energy / Critical Infrastructure | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by design | domain-specific profile documented | audit object map next |
-| Telecom | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share network + physical-signal perimeter | audited mixed references | empty by design | domain-specific profile documented | audit object map next |
+| Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
+| Telecom | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share network + physical-signal perimeter | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Legal / Compliance | DOCS_AHEAD_OF_MANIFEST | README has strong compliance corpus; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
 | Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | HR | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
@@ -177,7 +177,7 @@ meaningful authority tests = missing
 runtime UDIP integration = not claimed
 ```
 
-Next action for Energy is a READ_ONLY object-map candidate audit.
+Energy object-model candidate audit is now documented in `domains/energy_critical_infrastructure/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
 
 ## 7. Telecom — source/perimeter synchronized
 
@@ -218,7 +218,7 @@ runtime = not implemented
 tests = not implemented
 ```
 
-Next action for Telecom is a READ_ONLY object-map candidate audit.
+Telecom object-model candidate audit is now documented in `domains/telecom/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
 
 Network egress and physical-signal sensing remain distinct internal families under one Domain Pack; they are not treated as identical semantics.
 
@@ -350,16 +350,15 @@ Do not update all manifests at once.
 Recommended order:
 
 ```text
-1. Telecom object-map candidate audit
-2. Energy object-map candidate audit
-3. Cybersecurity source mapping
-4. Legal/Compliance source mapping
-5. source_type vocabulary / classification
-6. remaining sources.yaml updates
-7. remaining domain_pack extension updates where justified
-8. object maps only after each source/perimeter freeze
-9. remaining domain-specific conformance profiles
-10. tests
+1. Cybersecurity source mapping
+2. Legal/Compliance source mapping
+3. source_type vocabulary / classification
+4. remaining sources.yaml updates
+5. remaining domain_pack extension updates where justified
+6. mature Telecom/Energy object candidates before mapping
+7. object maps only after object-level evidence freeze
+8. remaining domain-specific conformance profiles
+9. tests
 ```
 
 ## 15. Final verdict

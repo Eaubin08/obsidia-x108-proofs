@@ -329,11 +329,16 @@ Le pack reste incomplet sur :
 - tests fail-closed domaine ;
 - démonstration de séparation entre advisory Thermo et action physique.
 
-## 15. Prochaine étape
+## 15. Object-model candidate audit
 
-Le prochain travail doit être un **object-map candidate audit READ_ONLY**.
+L'audit READ_ONLY des candidats est maintenant documenté dans [OBJECT_MODEL_CANDIDATES_V0.md](OBJECT_MODEL_CANDIDATES_V0.md).
 
-Il devra empêcher deux erreurs :
+Verdict :
 
-1. transformer des métriques Thermo transverses en objets métier d'infrastructure ;
-2. transformer une contrainte d'infrastructure physique en autorité locale.
+```text
+objets prêts à promouvoir = 0
+```
+
+Les métriques Energy/Thermo restent des métriques, et les objets Physical Critical Infrastructure restent sous-définis.
+
+Le `object_map.yaml` reste volontairement vide.
