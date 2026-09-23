@@ -436,12 +436,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             language=req.language, request_type=request_type,
             authority_snapshot=authority_snapshot, context_packet=context_packet, response_md=response_md))
 
-    v1412a = ({} if _dissipation_lazy else
-        safe_call_snapshot("v1412a_final_answer", run_brody_v1_4_12a_final_answer,
-            user_message=req.message, language=req.language, response_md=response_md,
-            context_packet=context_packet, ir_candidate={}, risk=action_risk,
-            structured_response_snapshot=structured_response_snapshot, freeze_metrics_snapshot=freeze_metrics_snapshot))
-
     # Normalize UTF-8 before routing
     req.message = normalize_brody_text(req.message)
     semantic_query_snapshot = build_semantic_query(req.message)
@@ -666,13 +660,144 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         )
     )
 
+    intent = _detect_intent(req.message)
+    auth_esc = intent in ("creator_claim", "action_request")
+    trees_snap = safe_call_snapshot("tree_policy", build_tree_policy_snapshot, authority_snapshot=authority_snapshot)
+
+    reverse_os_bridge = safe_call_snapshot(
+        "existing_reverse_os_bridge",
+        build_existing_reverse_os_projection,
+        user_message=req.message,
+        intent=intent,
+        semantic_query_snapshot=semantic_query_snapshot,
+        authority_snapshot=authority_snapshot,
+        tree_signal_packet={},
+        tree_policy_snapshot=trees_snap,
+    )
+
+    _tree_text = str(req.message or "")
+    _tree_signal_raw = safe_call_snapshot(
+        "tree_signal_packet",
+        build_tree_signal_packet,
+        text=_tree_text,
+    )
+    _tree_signal_packet = (
+        _tree_signal_raw.get("tree_signal_packet", {})
+        if isinstance(_tree_signal_raw, dict) else {}
+    )
+
+    _cog_receipt: dict = {}
+    # COGNITIVE_RUNTIME_JOIN_BACKEND_V1
+    if not _dissipation_lazy:
+        try:
+            from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _cog_join
+            _cog_receipt = _cog_join(
+                message=req.message,
+                language=req.language,
+                session_id=req.session_id or 'local',
+                precomputed_semantic_query=semantic_query_snapshot,
+                precomputed_intent=intent,
+                authority_snapshot=authority_snapshot,
+                tree_policy_snapshot=trees_snap,
+                precomputed_reverse_os=reverse_os_bridge,
+                precomputed_tree_wrapper=_tree_signal_raw,
+                precomputed_micro_core=(
+                    _memory_activation_preflight.get(
+                        "micro_core"
+                    )
+                    if isinstance(
+                        _memory_activation_preflight,
+                        dict,
+                    )
+                    else None
+                ),
+                precomputed_brody_runtime=r,
+                precomputed_memory_chain=(
+                    memory_response_chain
+                    if isinstance(
+                        memory_response_chain,
+                        dict,
+                    )
+                    and memory_response_chain
+                    else None
+                ),
+            )
+        except Exception as _cog_exc:
+            _cog_receipt = {
+                'status': 'BLOCKED_READONLY',
+                'completeness': 'BLOCKED',
+                'blocked_stage': 'BACKEND_ROUTE_BINDING',
+                'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
+                'decision_authority': 'KX108_ONLY',
+                'readonly': True,
+                'allowed_to_decide': False,
+                'allowed_to_act': False,
+                'emits_act': False,
+                'memory_write': False,
+                'kernel_mutation': False,
+                'x108_mutation': False,
+                'real_execution': False,
+                'response_governance_applied': False,
+            }
+
+    _c1_context_packet = (
+        _cog_receipt.get("context_packet_v2", {})
+        if isinstance(_cog_receipt, dict)
+        and isinstance(_cog_receipt.get("context_packet_v2"), dict)
+        else {}
+    )
+    _c1_ir_candidate = (
+        _cog_receipt.get("ir_candidate", {})
+        if isinstance(_cog_receipt, dict)
+        and isinstance(_cog_receipt.get("ir_candidate"), dict)
+        else {}
+    )
+    if not _c1_ir_candidate:
+        _c1_reverse_os_projection = (
+            _cog_receipt.get("reverse_os_projection", {})
+            if isinstance(_cog_receipt, dict)
+            and isinstance(_cog_receipt.get("reverse_os_projection"), dict)
+            else {}
+        )
+        _c1_ir_candidate = (
+            _c1_reverse_os_projection.get("ir_candidate", {})
+            if isinstance(_c1_reverse_os_projection.get("ir_candidate"), dict)
+            else (
+                reverse_os_bridge.get("ir_candidate", {})
+                if isinstance(reverse_os_bridge, dict)
+                and isinstance(reverse_os_bridge.get("ir_candidate"), dict)
+                else {}
+            )
+        )
+    governed_cognitive_projection = {
+        "status": _cog_receipt.get("status") if isinstance(_cog_receipt, dict) else "UNAVAILABLE",
+        "completeness": _cog_receipt.get("completeness") if isinstance(_cog_receipt, dict) else "UNAVAILABLE",
+        "context_packet_v2": _c1_context_packet,
+        "ir_candidate": _c1_ir_candidate,
+        "kx108_admission": _cog_receipt.get("kx108_admission") if isinstance(_cog_receipt, dict) else None,
+        "decision_ticket_dry_run": _cog_receipt.get("decision_ticket_dry_run") if isinstance(_cog_receipt, dict) else None,
+        "components": _cog_receipt.get("components", {}) if isinstance(_cog_receipt, dict) else {},
+        "readonly": True,
+        "memory_write": False,
+        "emits_act": False,
+        "kernel_mutation": False,
+        "decision_authority": "KX108_ONLY",
+    }
+
+    v1412a = ({} if _dissipation_lazy else
+        safe_call_snapshot("v1412a_final_answer", run_brody_v1_4_12a_final_answer,
+            user_message=req.message, language=req.language, response_md=response_md,
+            context_packet=(_c1_context_packet or context_packet), ir_candidate=_c1_ir_candidate, risk=action_risk,
+            structured_response_snapshot=structured_response_snapshot, freeze_metrics_snapshot=freeze_metrics_snapshot))
+
     brody_full_context = ({} if _dissipation_lazy else
         safe_call_snapshot("brody_full_context", build_brody_full_context,
             user_message=req.message, language=req.language, session_id=req.session_id or "local",
             context_packet=context_packet, structured_response_snapshot=structured_response_snapshot,
             freeze_metrics_snapshot=freeze_metrics_snapshot, authority_snapshot=authority_snapshot,
             automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
-            semantic_query_snapshot=semantic_query_snapshot))
+            semantic_query_snapshot=semantic_query_snapshot,
+            governed_cognitive_projection=governed_cognitive_projection))
 
     # P51 — Brody readonly activation state
     _brody_readonly_state: dict = {}
@@ -745,13 +870,9 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     final_answer = normalize_brody_text(strip_forbidden_tokens(
         enrich_final_answer_with_automation(raw_final_answer, automation_snapshot, req.language)))
 
-    intent = _detect_intent(req.message)
-    auth_esc = intent in ("creator_claim", "action_request")
-
     # Build all snapshots
     cand_snap = safe_call_snapshot("candidate_memory", build_candidate_memory_snapshot)
     oploop_snap = safe_call_snapshot("operator_loop", build_operator_loop_snapshot)
-    trees_snap = safe_call_snapshot("tree_policy", build_tree_policy_snapshot, authority_snapshot=authority_snapshot)
     ses_snap = brody_full_context.get("session_memory_snapshot", {})
     temp_snap = safe_call_snapshot("temporal_context", build_temporal_context_snapshot,
         session_memory=ses_snap, memory_chain=memory_response_chain,
@@ -781,17 +902,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
             cognitive_modules_snapshot=cog_snap,
             brody_full_context=brody_full_context,
             true_voice_snapshot=true_voice_snapshot))
-
-    reverse_os_bridge = safe_call_snapshot(
-        "existing_reverse_os_bridge",
-        build_existing_reverse_os_projection,
-        user_message=req.message,
-        intent=intent,
-        semantic_query_snapshot=semantic_query_snapshot,
-        authority_snapshot=authority_snapshot,
-        tree_signal_packet={},
-        tree_policy_snapshot=trees_snap,
-    )
 
     translation_trace = reverse_os_bridge.get("translation_trace", {})
     if isinstance(translation_trace, dict):
@@ -930,18 +1040,6 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
         },
         session_id=req.session_id or "local",
         source=r.get("source", "REAL_BACKEND"),
-    )
-
-    # Step 5B: tree signal packet — SHADOW_READONLY, built before memory guard and value layer
-    _tree_text = str(req.message or "")
-    _tree_signal_raw = safe_call_snapshot(
-        "tree_signal_packet",
-        build_tree_signal_packet,
-        text=_tree_text,
-    )
-    _tree_signal_packet = (
-        _tree_signal_raw.get("tree_signal_packet", {})
-        if isinstance(_tree_signal_raw, dict) else {}
     )
 
     # Step 6F: memory promotion guard — SHADOW_READONLY, no write, no canon promotion
@@ -1406,63 +1504,11 @@ async def brody_chat(req: BrodyChatRequest, _: None = Depends(require_api_key)):
     except Exception:
         pass
 
-    # COGNITIVE_RUNTIME_JOIN_BACKEND_V1
     try:
-        from apps.obsidia_api.brody_real_cognitive_join import run_real_cognitive_join as _cog_join
-        _cog_receipt = _cog_join(
-            message=req.message,
-            language=req.language,
-            session_id=req.session_id or 'local',
-            precomputed_semantic_query=semantic_query_snapshot,
-            precomputed_intent=intent,
-            authority_snapshot=authority_snapshot,
-            tree_policy_snapshot=trees_snap,
-            precomputed_reverse_os=reverse_os_bridge,
-            precomputed_tree_wrapper=_tree_signal_raw,
-            precomputed_micro_core=(
-                _memory_activation_preflight.get(
-                    "micro_core"
-                )
-                if isinstance(
-                    _memory_activation_preflight,
-                    dict,
-                )
-                else None
-            ),
-            precomputed_brody_runtime=r,
-            precomputed_memory_chain=(
-                memory_response_chain
-                if isinstance(
-                    memory_response_chain,
-                    dict,
-                )
-                and memory_response_chain
-                else None
-            ),
-        )
-        try:
-            from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
-            _cog_receipt = _cog_deep(_cog_receipt)
-        except Exception:
-            pass
+        from apps.obsidia_api.brody_secret_scrubber import scrub_secret_like_deep as _cog_deep
+        _payload['cognitive_runtime_receipt'] = _cog_deep(_cog_receipt)
+    except Exception:
         _payload['cognitive_runtime_receipt'] = _cog_receipt
-    except Exception as _cog_exc:
-        _payload['cognitive_runtime_receipt'] = {
-            'status': 'BLOCKED_READONLY',
-            'completeness': 'BLOCKED',
-            'blocked_stage': 'BACKEND_ROUTE_BINDING',
-            'error': f'{type(_cog_exc).__name__}:{str(_cog_exc)[:240]}',
-            'decision_authority': 'KX108_ONLY',
-            'readonly': True,
-            'allowed_to_decide': False,
-            'allowed_to_act': False,
-            'emits_act': False,
-            'memory_write': False,
-            'kernel_mutation': False,
-            'x108_mutation': False,
-            'real_execution': False,
-            'response_governance_applied': False,
-        }
     return safe_backend_response(_brody_attach_cic_readonly_context_v0(_payload), source=r.get("source", "REAL_BACKEND"))
 
 

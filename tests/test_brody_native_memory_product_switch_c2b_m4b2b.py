@@ -100,6 +100,58 @@ def test_c2_receives_product_precomputed_inputs():
     )
 
 
+def test_backend_c1_projection_precedes_human_synthesis():
+    src = _src()
+
+    memory = src.index(
+        "memory_response_chain = ("
+    )
+
+    c1 = src.index(
+        "# COGNITIVE_RUNTIME_JOIN_BACKEND_V1"
+    )
+
+    v1412a = src.index(
+        'safe_call_snapshot("v1412a_final_answer"'
+    )
+
+    full_context = src.index(
+        'safe_call_snapshot("brody_full_context"'
+    )
+
+    true_voice = src.index(
+        'safe_call_snapshot("true_voice_snapshot"'
+    )
+
+    final_selection = src.index(
+        "# Final answer priority"
+    )
+
+    assert memory < c1 < v1412a < full_context < true_voice < final_selection
+
+    assert (
+        src.count(
+            "# COGNITIVE_RUNTIME_JOIN_BACKEND_V1"
+        )
+        == 1
+    )
+
+    assert (
+        "context_packet=(_c1_context_packet or context_packet)"
+        in src
+    )
+
+    assert (
+        "ir_candidate=_c1_ir_candidate"
+        in src
+    )
+
+    assert (
+        "governed_cognitive_projection=governed_cognitive_projection"
+        in src
+    )
+
+
 def test_live_route_native_memory_reaches_w4_w1_w2():
     from fastapi.testclient import TestClient
 
@@ -240,6 +292,68 @@ def test_live_route_native_memory_reaches_w4_w1_w2():
         assert (
             receipt.get(
                 "allowed_to_act"
+            )
+            is False
+        )
+
+        full_context = data.get(
+            "brody_full_context",
+            {},
+        )
+
+        projection = full_context.get(
+            "governed_cognitive_projection",
+            {},
+        )
+
+        assert isinstance(projection, dict)
+        assert projection
+
+        assert (
+            projection.get(
+                "context_packet_v2"
+            )
+            == receipt.get(
+                "context_packet_v2"
+            )
+        )
+
+        receipt_ir_candidate = (
+            receipt.get("reverse_os_projection", {}).get("ir_candidate", {})
+            if isinstance(receipt.get("reverse_os_projection"), dict)
+            else {}
+        )
+        assert (
+            projection.get(
+                "ir_candidate"
+            )
+            == receipt_ir_candidate
+        )
+
+        assert (
+            projection.get(
+                "decision_authority"
+            )
+            == "KX108_ONLY"
+        )
+
+        assert (
+            projection.get(
+                "memory_write"
+            )
+            is False
+        )
+
+        assert (
+            projection.get(
+                "emits_act"
+            )
+            is False
+        )
+
+        assert (
+            projection.get(
+                "kernel_mutation"
             )
             is False
         )

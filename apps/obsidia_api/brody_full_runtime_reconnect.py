@@ -78,6 +78,7 @@ def build_brody_full_context(
     automation_snapshot: dict[str, Any] | None = None,
     memory_response_chain_snapshot: dict[str, Any] | None = None,
     semantic_query_snapshot: dict[str, Any] | None = None,
+    governed_cognitive_projection: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Build unified Brody full context from all existing sources.
@@ -161,6 +162,7 @@ def build_brody_full_context(
         "structured_response_snapshot": structured_response_snapshot or {},
         "memory_response_chain_snapshot": memory_response_chain_snapshot or {},
         "semantic_query_snapshot": semantic_query_snapshot or {},
+        "governed_cognitive_projection": governed_cognitive_projection or {},
         "creator_context": creator,
         "contextual_material_status": material,
         "followup_resolved": session_memory.get("followup_resolved", False),
