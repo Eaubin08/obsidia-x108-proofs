@@ -266,6 +266,9 @@ def qualify_unknowns(
     language: str = "unknown",
     lexical_unknowns: list[str] | None = None,
     semantic_query_snapshot: dict[str, Any] | None = None,
+    known_concept_ids: list[str] | None = None,
+    entities: list[dict[str, Any]] | None = None,
+    retrieval_targets: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Classify lexical unknowns without resolving new knowledge.
@@ -288,15 +291,18 @@ def qualify_unknowns(
 
     lang = _normalize(language)
 
-    if lang.startswith("fr"):
-        surface_words = _FR_SURFACE_WORDS
-    elif lang.startswith("en"):
-        surface_words = _EN_SURFACE_WORDS
-    else:
-        surface_words = (
-            _FR_SURFACE_WORDS
-            | _EN_SURFACE_WORDS
-        )
+    # Brody accepts mixed-language operator input.
+    # A declared language must not make ordinary words from another
+    # supported language causal cognitive unknowns.
+    surface_words = (
+        _FR_SURFACE_WORDS
+        | _EN_SURFACE_WORDS
+        | {
+            "dans",
+            "ceci",
+            "cela",
+        }
+    )
 
     semantic_vocabulary = (
         _semantic_vocabulary(
@@ -304,8 +310,73 @@ def qualify_unknowns(
         )
     )
 
+    # ------------------------------------------------------------
+    # Semantic continuity from already-produced IR evidence.
+    #
+    # This does NOT create knowledge.
+    # It only prevents downstream stages from forgetting concepts
+    # and entities already recognized upstream.
+    # ------------------------------------------------------------
+
+    known_context_vocabulary: set[str] = set()
+
+    for concept_id in (
+        known_concept_ids or []
+    ):
+        known_context_vocabulary.update(
+            _tokens(concept_id)
+        )
+
+    for entity in (
+        entities or []
+    ):
+        if not isinstance(entity, dict):
+            continue
+
+        known_context_vocabulary.update(
+            _tokens(
+                entity.get("entity")
+            )
+        )
+
+        known_context_vocabulary.update(
+            _tokens(
+                entity.get("source_token")
+            )
+        )
+
+    retrieval_vocabulary: set[str] = set()
+
+    for target in (
+        retrieval_targets or []
+    ):
+        retrieval_vocabulary.update(
+            _tokens(target)
+        )
+
+    canonical_memory_query = (
+        semantic.get("route")
+        == "TOPIC_MATCHED"
+        and semantic.get("is_canonical")
+        is True
+        and semantic.get("topic")
+        == "MEMORY_QUERY"
+    )
+
     surface_language_unknowns: list[str] = []
     semantically_resolved_unknowns: list[str] = []
+
+    known_context_resolved_unknowns: list[str] = []
+
+    # A retrieval target can be unknown as knowledge while still
+    # being a valid thing to search for. It must therefore remain
+    # visible without blocking reasoning before retrieval.
+    retrieval_target_unknowns: list[str] = []
+
+    # Words belonging to a canonical memory-recall frame such as
+    # "retrouve", "precedente", etc. are not epistemic unknowns.
+    route_framing_unknowns: list[str] = []
+
     unresolved_unknowns: list[str] = []
 
     for token in lexical:
@@ -322,6 +393,23 @@ def qualify_unknowns(
             semantically_resolved_unknowns.append(
                 token
             )
+            continue
+
+        if token in known_context_vocabulary:
+            known_context_resolved_unknowns.append(
+                token
+            )
+            continue
+
+        if canonical_memory_query:
+            if token in retrieval_vocabulary:
+                retrieval_target_unknowns.append(
+                    token
+                )
+            else:
+                route_framing_unknowns.append(
+                    token
+                )
             continue
 
         unresolved_unknowns.append(
@@ -347,6 +435,26 @@ def qualify_unknowns(
 
         "semantically_resolved_unknowns": (
             semantically_resolved_unknowns
+        ),
+
+        "known_context_resolved_unknowns": (
+            known_context_resolved_unknowns
+        ),
+
+        "retrieval_target_unknowns": (
+            retrieval_target_unknowns
+        ),
+
+        "route_framing_unknowns": (
+            route_framing_unknowns
+        ),
+
+        "known_concept_ids": list(
+            known_concept_ids or []
+        ),
+
+        "retrieval_targets": list(
+            retrieval_targets or []
         ),
 
         "unresolved_unknowns": (

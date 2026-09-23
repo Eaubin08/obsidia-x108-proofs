@@ -20,6 +20,7 @@ from __future__ import annotations
 from typing import Any
 
 from apps.obsidia_api.brody_semantic_query_router import (
+    build_memory_retrieval_queries,
     build_semantic_query,
 )
 
@@ -173,6 +174,56 @@ def build_brody_pre_reasoning_snapshot(
             ):
                 raw_unknowns.append(token)
 
+    known_concept_ids = list(
+        lexical_calibration.get(
+            "known_concept_ids",
+            [],
+        )
+        if isinstance(
+            lexical_calibration.get(
+                "known_concept_ids",
+                [],
+            ),
+            list,
+        )
+        else []
+    )
+
+    entities = list(
+        ir_candidate.get(
+            "entities",
+            [],
+        )
+        if isinstance(
+            ir_candidate.get(
+                "entities",
+                [],
+            ),
+            list,
+        )
+        else []
+    )
+
+    retrieval_targets: list[str] = []
+
+    if (
+        semantic_query_snapshot.get("route")
+        == "TOPIC_MATCHED"
+        and semantic_query_snapshot.get(
+            "is_canonical"
+        )
+        is True
+        and semantic_query_snapshot.get(
+            "topic"
+        )
+        == "MEMORY_QUERY"
+    ):
+        retrieval_targets = (
+            build_memory_retrieval_queries(
+                message
+            )
+        )
+
     unknown_qualification = qualify_unknowns(
         user_message=message,
         language=lang,
@@ -180,6 +231,9 @@ def build_brody_pre_reasoning_snapshot(
         semantic_query_snapshot=(
             semantic_query_snapshot
         ),
+        known_concept_ids=known_concept_ids,
+        entities=entities,
+        retrieval_targets=retrieval_targets,
     )
 
     unresolved_unknowns = list(
