@@ -379,19 +379,16 @@ Le pack reste incomplet sur :
 - démonstration de non-contournement ;
 - séparation finale entre sécurité transverse Obsidia et sémantique réellement propre au Domain Pack.
 
-## 16. Prochaine étape
+## 16. Object-model candidate audit
 
-Le prochain geste ne doit pas être du runtime.
+L'audit READ_ONLY des objets candidats est maintenant documenté dans [OBJECT_MODEL_CANDIDATES_V0.md](OBJECT_MODEL_CANDIDATES_V0.md).
 
-Il faut faire un **object-model candidate audit READ_ONLY** afin de classer les candidats déjà cités dans la documentation :
+Verdict :
 
 ```text
-security_event
-risk_finding
-threat_evidence
-incident
-containment_candidate
-security_boundary
+objets prêts à promouvoir = 0
 ```
 
-avant toute écriture dans `object_map.yaml`.
+Les candidats les plus solides sont `Incident` et `ViolationEvent`, mais leur ownership et leur schéma ne sont pas encore assez figés pour `object_map.yaml`.
+
+Le map reste volontairement vide.

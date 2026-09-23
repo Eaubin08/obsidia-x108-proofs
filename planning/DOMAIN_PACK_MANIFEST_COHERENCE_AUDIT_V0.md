@@ -39,10 +39,10 @@ The important debt is class 2.
 | Bank | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | GPS / Defense / Aviation | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
-| Cybersecurity | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share detection/evidence/response/isolation perimeter | audited repo references | empty by design | domain-specific profile documented | audit object candidates next |
+| Cybersecurity | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share detection/evidence/response/isolation perimeter | audited repo references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Telecom | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share network + physical-signal perimeter | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Legal / Compliance | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share compliance/readiness/data-governance/audit perimeter | audited repo references | empty by design | domain-specific profile documented | audit object candidates next |
+| Legal / Compliance | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share compliance/readiness/data-governance/audit perimeter | audited repo references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
 | Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | HR | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
 | Insurance | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
@@ -136,9 +136,7 @@ runtime = not implemented
 tests = not implemented
 ```
 
-Next action for Cybersecurity is a READ_ONLY object-model candidate audit.
-
-The audit must keep security-transverse mechanisms separate from actual Cybersecurity-owned objects.
+Cybersecurity object-model candidate audit is now documented in `domains/cybersecurity/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
 
 ## 6. Energy / Critical Infrastructure — source/perimeter synchronized
 
@@ -270,7 +268,7 @@ tests = not implemented
 legal validation = not claimed
 ```
 
-Next action for Legal / Compliance is a READ_ONLY object-model candidate audit.
+Legal / Compliance object-model candidate audit is now documented in `domains/legal_compliance/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
 
 ## 9. Health and HR
 
@@ -367,15 +365,13 @@ Do not update all manifests at once.
 Recommended order:
 
 ```text
-1. Cybersecurity object-model candidate audit
-2. Legal/Compliance object-model candidate audit
-3. source_type vocabulary / classification
-4. remaining sources.yaml updates
-5. remaining domain_pack extension updates where justified
-6. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
-7. object maps only after object-level evidence freeze
-8. remaining domain-specific conformance profiles
-9. tests
+1. source_type vocabulary / classification
+2. remaining sources.yaml updates
+3. remaining domain_pack extension updates where justified
+4. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
+5. object maps only after object-level evidence freeze
+6. remaining domain-specific conformance profiles
+7. meaningful non-sovereignty / non-overclaim tests
 ```
 
 ## 15. Final verdict

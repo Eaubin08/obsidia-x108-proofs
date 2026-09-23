@@ -398,22 +398,16 @@ Le pack reste incomplet sur :
 - preuve de conformité réelle ;
 - validation juridique externe.
 
-## 17. Prochaine étape
+## 17. Object-model candidate audit
 
-Le prochain geste doit être un **object-model candidate audit READ_ONLY**.
+L'audit READ_ONLY des objets candidats est maintenant documenté dans [OBJECT_MODEL_CANDIDATES_V0.md](OBJECT_MODEL_CANDIDATES_V0.md).
 
-Il devra classer les candidats déjà présents dans le corpus :
+Verdict :
 
 ```text
-compliance_requirement
-processing_risk
-retention_rule
-access_rule
-privacy_risk
-review_requirement
-claim_scope
-legal_evidence_ref
-audit_export
+objets prêts à promouvoir = 0
 ```
 
-sans les promouvoir automatiquement dans `object_map.yaml`.
+Les candidats les plus structurés sont `ClaimScope`, `AuditExport`, `RegulatoryMapping`, `ProcessingRisk` et `PrivacyRisk`, mais aucun ne possède encore un schéma canonique suffisamment figé.
+
+Le `object_map.yaml` reste volontairement vide.
