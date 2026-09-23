@@ -1,7 +1,7 @@
 {
   "schema_name": "OBSIDIA_COGNITIVE_CONVERGENCE_MASTER_REGISTRY",
   "schema_version": "1.0.0",
-  "last_verified_head": "b6c0f4be5f9dc336ebfcb6c15b8295b7f4f68da6",
+  "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
   "canonical_rule": "Register rediscovered cognitive/semantic/knowledge blocks immediately, preserve uncertainty, and never invent a runtime hook.",
   "status_enum": [
     "ACTIVE_CONNECTED",
@@ -50,7 +50,32 @@
   "validation": {
     "duplicate_ids": [],
     "ambiguous_duplicate_aliases": {},
-    "note": "Duplicate aliases are avoided except where aliases intentionally remain inside one canonical entry."
+    "note": "Duplicate aliases are avoided except where aliases intentionally remain inside one canonical entry.",
+    "v5_signal_dedup": {
+      "V5_RUNTIME_PATCH_REQUIRED": false,
+      "C1_PROJECTION_REQUIRED": false,
+      "NEW_C1_HOOKS_PROVEN": 0,
+      "DISTINCT_MATERIAL_SIGNAL_REQUIRING_NEW_HOOK": 0,
+      "classifications": {
+        "symbolic_signal": "ALREADY_ABSORBED",
+        "fractal_signal": "ALREADY_ABSORBED",
+        "temporal_signal": "ALREADY_ABSORBED",
+        "prediction_signal": "ALREADY_ABSORBED",
+        "weak_signal_path": "ALREADY_ABSORBED",
+        "symbolic_fractal_memory": "HISTORICAL/SUPERSEDED"
+      },
+      "rules": {
+        "knowledge_is_not_memory": true,
+        "memory_is_not_cognition": true,
+        "KX108_ONLY": true,
+        "memory_write": false,
+        "emits_act": false,
+        "kernel_mutation": false,
+        "no_new_C1_projection": true,
+        "no_native_memory_modification": true,
+        "no_memzum_modification": true
+      }
+    }
   },
   "local_discovery_files_found": [
     "current repo: _source_discovery/* cognitive/source/proof reports",
@@ -3096,16 +3121,18 @@
       ],
       "component_type": "COGNITIVE_SIGNAL",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "ACTIVE_PARTIAL",
+      "summary": "Runtime symbolic signal is produced by the micro-core and already absorbed through Balance / 21D into compact C1 context.",
+      "role": "Absorbed cognitive signal; not a standalone C1 projection.",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "implemented_absorbed",
       "implementation_exists": true,
       "runtime_reachable": true,
-      "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "current_runtime_path": "brody_cognitive_micro_core.symbolic_signal -> brody_balance_engine._balance_symbolique / brody_point_cloud_21d_selector symbolic axis -> ContextPacketV2 compact deep context",
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
       "code_locations": [
         "apps/obsidia_api/brody_cognitive_micro_core.py",
@@ -3118,42 +3145,57 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
-      "current_consumers": [],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "micro_core / C1",
-      "target_reason": "Symbolic material is associated with the active micro-core; audit whether a dedicated projection adds information before creating another C1 path.",
-      "required_audit": "Prove producer field, current micro-core propagation, material uniqueness, caller count, and whether any dedicated C1 projection is necessary.",
-      "blockers": [
-        "Exact dedicated hook unresolved",
-        "Potential duplicate projection of an existing micro-core signal"
+      "producer": "apps/obsidia_api/brody_cognitive_micro_core.py -> symbolic_signal",
+      "current_consumers": [
+        "brody_balance_engine._balance_symbolique",
+        "brody_point_cloud_21d_selector symbolic axis/layer",
+        "brody_real_cognitive_join compact ContextPacketV2 deep context"
       ],
+      "current_inputs": [
+        "user message symbolic-pattern match"
+      ],
+      "current_outputs": [
+        "symbolic_density",
+        "symbolic_layer_recommended",
+        "balance_symbolique",
+        "symbolic_layer vote"
+      ],
+      "connection_state": "absorbed_by_existing_compact_cognitive_path",
+      "target_layer": "micro_core -> balance / 21D -> compact C1 context",
+      "target_hook": "existing compact cognitive projection only; no dedicated C1 hook",
+      "target_hook_status": "ABSORBED_NO_DEDICATED_C1_HOOK",
+      "target_layer_candidate": null,
+      "target_reason": "V5 closed this signal as already absorbed by the active Micro-core -> Balance / 21D -> compact C1 ContextPacketV2 path. A dedicated C1 projection would duplicate existing material.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
       "overlaps_with": [
-        "micro_core"
+        "micro_core",
+        "balance_engine",
+        "point_cloud_21d"
       ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "dedicated duplicate C1 projection",
+        "raw signal promotion into C1"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Dedup audit against micro_core. Do not wire separately unless missing material effect is proven.",
-      "notes": []
+      "evidence_strength": "RUNTIME_CODE_AND_CONSUMER_CORRELATED",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Keep absorbed in the existing compact path. Do not add a dedicated C1 projection without new distinct material evidence.",
+      "notes": [
+        "V5_RUNTIME_PATCH_REQUIRED=FALSE",
+        "C1_PROJECTION_REQUIRED=FALSE"
+      ]
     },
     {
       "id": "fractal_signal",
@@ -3164,16 +3206,18 @@
       ],
       "component_type": "COGNITIVE_SIGNAL",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "PARTIAL_NEEDS_RECONCILIATION",
+      "summary": "Runtime fractal signal exists in the micro-core and is already consumed by 21D fractal-layer selection before compact C1 context.",
+      "role": "Absorbed cognitive signal; not a standalone C1 projection.",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "implemented_absorbed",
       "implementation_exists": true,
-      "runtime_reachable": false,
-      "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "runtime_reachable": true,
+      "current_runtime_path": "brody_cognitive_micro_core.fractal_signal -> brody_point_cloud_21d_selector fractal axis/layer -> ContextPacketV2 compact deep context",
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
       "code_locations": [
         "apps/obsidia_api/brody_cognitive_micro_core.py",
@@ -3186,59 +3230,78 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
-      "current_consumers": [],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1 / ContextPacketV2",
-      "target_reason": "Current code emits related readonly signals; exact C1 hook must be audited before promotion.",
-      "required_audit": "Verify caller count, payload compactness, and non-authority flags.",
-      "blockers": [
-        "Exact target hook unresolved"
+      "producer": "apps/obsidia_api/brody_cognitive_micro_core.py -> fractal_signal",
+      "current_consumers": [
+        "brody_point_cloud_21d_selector fractal axis/layer",
+        "brody_real_cognitive_join compact ContextPacketV2 deep context"
       ],
+      "current_inputs": [
+        "user message fractal-pattern match"
+      ],
+      "current_outputs": [
+        "fractal_pattern_detected",
+        "fractal_scale",
+        "fractal_layer vote"
+      ],
+      "connection_state": "absorbed_by_existing_compact_cognitive_path",
+      "target_layer": "micro_core -> balance / 21D -> compact C1 context",
+      "target_hook": "existing compact cognitive projection only; no dedicated C1 hook",
+      "target_hook_status": "ABSORBED_NO_DEDICATED_C1_HOOK",
+      "target_layer_candidate": null,
+      "target_reason": "V5 closed this signal as already absorbed by the active Micro-core -> Balance / 21D -> compact C1 ContextPacketV2 path. A dedicated C1 projection would duplicate existing material.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
-      "overlaps_with": [],
+      "overlaps_with": [
+        "micro_core",
+        "point_cloud_21d",
+        "weak_signal_path"
+      ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "dedicated duplicate C1 projection",
+        "raw signal promotion into C1"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Run targeted audit for payload shape and consumers.",
-      "notes": []
+      "evidence_strength": "RUNTIME_CODE_AND_CONSUMER_CORRELATED",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Keep absorbed in the existing compact path. Do not add a dedicated C1 projection without new distinct material evidence.",
+      "notes": [
+        "V5_RUNTIME_PATCH_REQUIRED=FALSE",
+        "C1_PROJECTION_REQUIRED=FALSE"
+      ]
     },
     {
       "id": "temporal_signal",
-      "canonical_name": "temporal signal",
+      "canonical_name": "temporal signal / temporal_detected",
       "aliases": [
         "temporal",
-        "time signal"
+        "time signal",
+        "temporal_detected"
       ],
       "component_type": "COGNITIVE_SIGNAL",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "PARTIAL_NEEDS_RECONCILIATION",
+      "summary": "Runtime temporal signal is the micro-core temporal_detected field and is already consumed by the 21D temporal axis/layer.",
+      "role": "Absorbed cognitive signal; not a standalone C1 projection.",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "implemented_absorbed",
       "implementation_exists": true,
       "runtime_reachable": true,
-      "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "current_runtime_path": "brody_cognitive_micro_core.temporal_detected -> brody_point_cloud_21d_selector temporal axis/layer -> ContextPacketV2 compact deep context",
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
       "code_locations": [
         "apps/obsidia_api/brody_cognitive_micro_core.py",
@@ -3251,59 +3314,77 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
-      "current_consumers": [],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1 / ContextPacketV2",
-      "target_reason": "Current code emits related readonly signals; exact C1 hook must be audited before promotion.",
-      "required_audit": "Verify caller count, payload compactness, and non-authority flags.",
-      "blockers": [
-        "Exact target hook unresolved"
+      "producer": "apps/obsidia_api/brody_cognitive_micro_core.py -> temporal_detected",
+      "current_consumers": [
+        "brody_point_cloud_21d_selector temporal axis/layer",
+        "brody_real_cognitive_join compact ContextPacketV2 deep context"
       ],
+      "current_inputs": [
+        "user message temporal-pattern match"
+      ],
+      "current_outputs": [
+        "temporal_detected",
+        "temporal_layer vote"
+      ],
+      "connection_state": "absorbed_by_existing_compact_cognitive_path",
+      "target_layer": "micro_core -> balance / 21D -> compact C1 context",
+      "target_hook": "existing compact cognitive projection only; no dedicated C1 hook",
+      "target_hook_status": "ABSORBED_NO_DEDICATED_C1_HOOK",
+      "target_layer_candidate": null,
+      "target_reason": "V5 closed this signal as already absorbed by the active Micro-core -> Balance / 21D -> compact C1 ContextPacketV2 path. A dedicated C1 projection would duplicate existing material.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
-      "overlaps_with": [],
+      "overlaps_with": [
+        "micro_core",
+        "point_cloud_21d"
+      ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "dedicated duplicate C1 projection",
+        "raw signal promotion into C1"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Run targeted audit for payload shape and consumers.",
-      "notes": []
+      "evidence_strength": "RUNTIME_CODE_AND_CONSUMER_CORRELATED",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Keep absorbed in the existing compact path. Do not add a dedicated C1 projection without new distinct material evidence.",
+      "notes": [
+        "V5_RUNTIME_PATCH_REQUIRED=FALSE",
+        "C1_PROJECTION_REQUIRED=FALSE"
+      ]
     },
     {
       "id": "prediction_signal",
-      "canonical_name": "prediction signal",
+      "canonical_name": "projection_not_prediction_signal",
       "aliases": [
         "prediction",
-        "forecast signal"
+        "forecast signal",
+        "projection_not_prediction_signal",
+        "prediction claim"
       ],
       "component_type": "COGNITIVE_SIGNAL",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "PARTIAL_NEEDS_RECONCILIATION",
+      "summary": "Historical prediction_signal naming is superseded by the active projection_not_prediction_signal mechanism; no second prediction signal should be created.",
+      "role": "Alias/overlap entry for the active projection-not-prediction guard.",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "implemented_absorbed",
       "implementation_exists": true,
-      "runtime_reachable": false,
-      "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "runtime_reachable": true,
+      "current_runtime_path": "brody_cognitive_micro_core.projection_not_prediction_signal -> brody_balance_engine._balance_projection / brody_point_cloud_21d_selector projection axis -> C1 risk flag MICRO_CORE:PREDICTION_CLAIM",
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
       "code_locations": [
         "apps/obsidia_api/brody_cognitive_micro_core.py",
@@ -3316,39 +3397,61 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
-      "current_consumers": [],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1 / ContextPacketV2",
-      "target_reason": "Current code emits related readonly signals; exact C1 hook must be audited before promotion.",
-      "required_audit": "Verify caller count, payload compactness, and non-authority flags.",
-      "blockers": [
-        "Exact target hook unresolved"
+      "producer": "apps/obsidia_api/brody_cognitive_micro_core.py -> projection_not_prediction_signal",
+      "current_consumers": [
+        "brody_balance_engine._balance_projection",
+        "brody_point_cloud_21d_selector projection axis/layer",
+        "brody_real_cognitive_join._micro_context risk flag MICRO_CORE:PREDICTION_CLAIM"
       ],
+      "current_inputs": [
+        "user message projection/prediction-pattern match"
+      ],
+      "current_outputs": [
+        "is_prediction_claim",
+        "projection_allowed",
+        "projection_detected",
+        "MICRO_CORE:PREDICTION_CLAIM"
+      ],
+      "connection_state": "absorbed_by_existing_compact_cognitive_path",
+      "target_layer": "micro_core -> balance / 21D -> compact C1 context",
+      "target_hook": "existing compact cognitive projection only; no dedicated C1 hook",
+      "target_hook_status": "ABSORBED_NO_DEDICATED_C1_HOOK",
+      "target_layer_candidate": null,
+      "target_reason": "V5 closed this signal as already absorbed by the active Micro-core -> Balance / 21D -> compact C1 ContextPacketV2 path. A dedicated C1 projection would duplicate existing material.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
-      "superseded_by": [],
-      "overlaps_with": [],
+      "superseded_by": [
+        "projection_not_prediction_signal"
+      ],
+      "overlaps_with": [
+        "projection_not_prediction_signal",
+        "micro_core",
+        "balance_engine",
+        "point_cloud_21d"
+      ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "dedicated duplicate C1 projection",
+        "raw signal promotion into C1",
+        "second prediction_signal component"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Run targeted audit for payload shape and consumers.",
-      "notes": []
+      "evidence_strength": "RUNTIME_CODE_AND_CONSUMER_CORRELATED",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Use projection_not_prediction_signal as the canonical runtime mechanism. Do not create a second prediction_signal component or C1 hook.",
+      "notes": [
+        "V5_RUNTIME_PATCH_REQUIRED=FALSE",
+        "C1_PROJECTION_REQUIRED=FALSE"
+      ]
     },
     {
       "id": "weak_signal_path",
@@ -3359,16 +3462,18 @@
       ],
       "component_type": "COGNITIVE_SIGNAL",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "ACTIVE_PARTIAL",
+      "summary": "Weak-signal path is produced as bio_animal_signal.weak_signal_detection and already consumed by Balance plus 21D weak-layer voting.",
+      "role": "Absorbed cognitive signal path; not a standalone C1 projection.",
+      "status": "ACTIVE_CONNECTED",
       "current_generation": "current",
-      "current_code_status": "not_assessed",
+      "current_code_status": "implemented_absorbed",
       "implementation_exists": true,
       "runtime_reachable": true,
-      "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "current_runtime_path": "bio_animal_signal.weak_signal_detection -> brody_balance_engine._balance_signal_faible / brody_point_cloud_21d_selector weak-layer voting -> ContextPacketV2 compact deep context",
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
       "code_locations": [
         "apps/obsidia_api/brody_cognitive_micro_core.py",
@@ -3381,107 +3486,133 @@
       ],
       "documentation_locations": [],
       "historical_locations": [],
-      "producer": null,
-      "current_consumers": [],
-      "current_inputs": [],
-      "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "micro_core / C1",
-      "target_reason": "Weak-signal material is associated with the active micro-core; audit whether a dedicated projection adds information before creating another C1 path.",
-      "required_audit": "Prove producer field, current micro-core propagation, material uniqueness, caller count, and whether any dedicated C1 projection is necessary.",
-      "blockers": [
-        "Exact dedicated hook unresolved",
-        "Potential duplicate projection of an existing micro-core signal"
+      "producer": "apps/obsidia_api/brody_cognitive_micro_core.py -> bio_animal_signal.weak_signal_detection",
+      "current_consumers": [
+        "brody_balance_engine._balance_signal_faible",
+        "brody_point_cloud_21d_selector weak-layer voting",
+        "brody_real_cognitive_join compact ContextPacketV2 deep context"
       ],
+      "current_inputs": [
+        "_WEAK_SIGNAL_MAP token matches"
+      ],
+      "current_outputs": [
+        "weak_signal_detection",
+        "weak_layers_detected",
+        "weak-layer active layer votes"
+      ],
+      "connection_state": "absorbed_by_existing_compact_cognitive_path",
+      "target_layer": "micro_core -> balance / 21D -> compact C1 context",
+      "target_hook": "existing compact cognitive projection only; no dedicated C1 hook",
+      "target_hook_status": "ABSORBED_NO_DEDICATED_C1_HOOK",
+      "target_layer_candidate": null,
+      "target_reason": "V5 closed this signal as already absorbed by the active Micro-core -> Balance / 21D -> compact C1 ContextPacketV2 path. A dedicated C1 projection would duplicate existing material.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
       "superseded_by": [],
       "overlaps_with": [
-        "micro_core"
+        "micro_core",
+        "balance_engine",
+        "point_cloud_21d"
       ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "dedicated duplicate C1 projection",
+        "raw signal promotion into C1"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Dedup audit against micro_core. Do not wire separately unless missing material effect is proven.",
-      "notes": []
+      "evidence_strength": "RUNTIME_CODE_AND_CONSUMER_CORRELATED",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Keep absorbed in the existing compact path. Do not add a dedicated C1 projection without new distinct material evidence.",
+      "notes": [
+        "V5_RUNTIME_PATCH_REQUIRED=FALSE",
+        "C1_PROJECTION_REQUIRED=FALSE"
+      ]
     },
     {
       "id": "symbolic_fractal_memory",
-      "canonical_name": "symbolic/fractal memory",
+      "canonical_name": "symbolic/fractal memory (historical)",
       "aliases": [
         "symbolic memory",
         "fractal memory"
       ],
-      "component_type": "COGNITIVE_SIGNAL",
+      "component_type": "DOCUMENTED_CONCEPT",
       "secondary_types": [],
-      "summary": "Signal family appears in micro-core/balance/periphery evidence but needs exact runtime boundary before new wiring.",
-      "role": "Possible pre-C1 context signal.",
-      "status": "PARTIAL_NEEDS_RECONCILIATION",
-      "current_generation": "current",
-      "current_code_status": "not_assessed",
-      "implementation_exists": true,
+      "summary": "Historical umbrella concept superseded by Native Memory as canonical memory, MEMZUM as memory gate, and separate symbolic/fractal cognitive signals.",
+      "role": "Historical/provenance concept only; not an active runtime memory.",
+      "status": "SUPERSEDED",
+      "current_generation": "historical",
+      "current_code_status": "no_active_runtime_memory",
+      "implementation_exists": false,
       "runtime_reachable": false,
       "current_runtime_path": null,
-      "already_audited": false,
-      "audit_refs": [],
+      "already_audited": true,
+      "audit_refs": [
+        "V5_SIGNAL_DEDUP_AUDIT"
+      ],
       "source_locations": [],
-      "code_locations": [
-        "apps/obsidia_api/brody_cognitive_micro_core.py",
-        "apps/obsidia_api/brody_balance_engine.py",
-        "periphery/timeverse.py"
-      ],
-      "test_locations": [
-        "tests/test_brody_real_response_pre_reasoning_causal.py",
-        "tests/periphery/test_timeverse.py"
-      ],
+      "code_locations": [],
+      "test_locations": [],
       "documentation_locations": [],
       "historical_locations": [],
       "producer": null,
       "current_consumers": [],
       "current_inputs": [],
       "current_outputs": [],
-      "connection_state": "partial_or_unresolved",
-      "target_layer": null,
-      "target_hook": null,
-      "target_hook_status": "UNRESOLVED",
-      "target_layer_candidate": "C1 / ContextPacketV2",
-      "target_reason": "Current code emits related readonly signals; exact C1 hook must be audited before promotion.",
-      "required_audit": "Verify caller count, payload compactness, and non-authority flags.",
-      "blockers": [
-        "Exact target hook unresolved"
-      ],
+      "connection_state": "historical_superseded_not_runtime_memory",
+      "target_layer": "NONE_DOCUMENT_ONLY",
+      "target_hook": "NONE_DOCUMENT_ONLY",
+      "target_hook_status": "NO_RUNTIME_HOOK_SUPERSEDED",
+      "target_layer_candidate": null,
+      "target_reason": "V5 found no active symbolic_fractal_memory runtime. Native Memory remains the canonical memory target; MEMZUM remains the memory gate; symbolic and fractal remain separate cognitive signals.",
+      "required_audit": "CLOSED_BY_V5_SIGNAL_DEDUP_AUDIT",
+      "blockers": [],
       "dependencies": [],
       "supersedes": [],
-      "superseded_by": [],
-      "overlaps_with": [],
+      "superseded_by": [
+        "native_memory",
+        "memzum",
+        "symbolic_signal",
+        "fractal_signal"
+      ],
+      "overlaps_with": [
+        "symbolic_signal",
+        "fractal_signal",
+        "native_memory",
+        "memzum"
+      ],
       "do_not_connect_to": [
         "KX108 authority",
         "kernel mutation",
         "memory write",
-        "direct ACT emission"
+        "direct ACT emission",
+        "runtime memory authority",
+        "Native Memory replacement",
+        "MEMZUM modification",
+        "dedicated C1 projection"
       ],
       "authority": "KX108_ONLY",
       "readonly": true,
       "memory_write": false,
       "emits_act": false,
       "kernel_mutation": false,
-      "evidence_strength": "DOC_AND_CODE_CORRELATED",
-      "last_verified_head": "0b230112afeb317b8f8f279c00c664a9c2bc6830",
-      "next_action": "Run targeted audit for payload shape and consumers.",
-      "notes": []
+      "evidence_strength": "AUDIT_CLASSIFICATION",
+      "last_verified_head": "3ce425fe97ef7b35fae876b6997dd36016d7e6ae",
+      "next_action": "Keep only as historical/migration provenance. Do not create a runtime memory authority, Native Memory bridge, MEMZUM modification, or C1 projection from this name.",
+      "notes": [
+        "NOT_RUNTIME_MEMORY",
+        "NATIVE_MEMORY_CANONICAL",
+        "MEMZUM_MEMORY_GATE",
+        "symbolic/fractal remain separate cognitive signals"
+      ]
     },
     {
       "id": "sigma",
