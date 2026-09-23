@@ -2,10 +2,19 @@ domain_id: energy_critical_infrastructure
 domain_name: "Energy / Critical Infrastructure"
 udip_version: V0
 status: NEW_DOMAIN_SCAFFOLD
-source_type: none
+source_type: mixed_reference
 legacy_sources:
-  []
+  - "docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md"
+  - "periphery/energy_thermo.py"
+  - "periphery/agents/energy_thermo_agent.py"
+  - "specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md"
+  - "tests/non_sovereignty/test_energy_cannot_authorize.py"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
 extensions:
+  - thermo_compute
+  - energy_efficiency
+  - thermo_debt
+  - sigma_truth_mismatch
   - physical_infrastructure
   - fail_closed
   - real_world_execution_constraints

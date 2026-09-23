@@ -1,3 +1,37 @@
-status: NOT_YET_DEFINED
-sources: []
-note: "CURRENT SOURCES: NONE / NOT YET AUDITED"
+status: AUDITED_REFERENCE_SET
+source_type: mixed_reference
+sources:
+  - "docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md"
+  - "periphery/energy_thermo.py"
+  - "periphery/agents/energy_thermo_agent.py"
+  - "specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md"
+  - "tests/non_sovereignty/test_energy_cannot_authorize.py"
+  - "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md"
+  - "internal://THERMO_COMPUTE_LAYER"
+  - "internal://Energy sandbox/freeze/stress history"
+source_classes:
+  "docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md": REPO_SPEC_SOURCE
+  "periphery/energy_thermo.py": REPO_CODE_SOURCE
+  "periphery/agents/energy_thermo_agent.py": REPO_CODE_SOURCE
+  "specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md": REPO_SPEC_SOURCE
+  "tests/non_sovereignty/test_energy_cannot_authorize.py": REPO_TEST_PLACEHOLDER
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": REPO_SOURCE_AUDIT
+  "internal://THERMO_COMPUTE_LAYER": INTERNAL_CONCEPT_SOURCE
+  "internal://Energy sandbox/freeze/stress history": INTERNAL_CONCEPT_SOURCE
+source_roles:
+  "docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md": non_sovereign_energy_governor_contract
+  "periphery/energy_thermo.py": thermo_compute_metrics_and_risk_signals
+  "periphery/agents/energy_thermo_agent.py": non_sovereign_agent_wrapper
+  "specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md": universal_fail_closed_authority_reference
+  "tests/non_sovereignty/test_energy_cannot_authorize.py": placeholder_only_not_sufficient_proof
+  "planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md": audited_domain_concept_inventory
+  "internal://THERMO_COMPUTE_LAYER": thermo_compute_concept_direction
+  "internal://Energy sandbox/freeze/stress history": historical_energy_experiment_reference
+boundaries:
+  - "SOURCE != TRUST"
+  - "CODE_PRESENT != UDIP_RUNTIME_INTEGRATED"
+  - "PLACEHOLDER_TEST != PROOF"
+  - "ENERGY_METRIC != DECISION"
+  - "BLOCK_CANDIDATE != BLOCK"
+  - "REFERENCE != RUNTIME_DEPENDENCY"
+note: "Audited Energy/Thermo references and Critical Infrastructure design sources. No Energy UDIP runtime is declared active by this file."

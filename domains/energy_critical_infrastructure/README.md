@@ -1,53 +1,178 @@
 # Energy / Critical Infrastructure
 
-> Domain Pack pour énergie, thermodynamique computationnelle et contraintes d'infrastructure critique.
+> Domain Pack pour thermodynamique computationnelle, signaux d'efficacité énergétique et contraintes d'infrastructure physique critique.
 >
 > **UDIP status : `NEW_DOMAIN_SCAFFOLD`**  
+> **Source type : `mixed_reference`**  
 > **Implementation state : `SCAFFOLD_ONLY`**  
 > **Authority : `KX108_ONLY`**
 
 ## 1. Vision
 
-Energy possède déjà plus qu'un simple mot dans un registre.
+Energy est conservé comme **un seul Domain Pack**, mais avec deux sous-contrats explicitement séparés :
 
-Deux axes conceptuels existent :
+```text
+ENERGY / CRITICAL INFRASTRUCTURE
+│
+├── A. THERMO / COMPUTE ENERGY
+│   ├── energy efficiency
+│   ├── thermo debt
+│   ├── compute / attention / recovery cost
+│   ├── useful work
+│   └── Sigma / truth mismatch
+│
+└── B. PHYSICAL CRITICAL INFRASTRUCTURE
+    ├── physical infrastructure state
+    ├── fail-closed constraints
+    ├── real-world execution constraints
+    ├── physical risk
+    └── consequence / execution boundary
+```
 
-1. **Thermo / compute energy** : mesurer coût, efficacité, dette thermodynamique, friction et mismatch ;
-2. **Critical infrastructure** : traiter les actions physiques avec fail-closed et frontières d'exécution du monde réel.
+La famille A possède déjà du code périphérique réel.
 
-Ces axes ne doivent pas être fusionnés trop vite.
+La famille B reste essentiellement une **direction architecturale à construire**.
 
-## 2. Matière réelle existante
+Les deux familles ne doivent pas être confondues.
 
-Sources fortes :
+## 2. Statut réel
 
-- [Energy Thermo Governor](../../docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md) ;
-- [Energy Thermo implementation](../../periphery/energy_thermo.py) ;
-- [Energy Thermo Agent](../../periphery/agents/energy_thermo_agent.py) ;
-- [Fail Closed Priority](../../specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md) ;
-- [Energy cannot authorize](../../tests/non_sovereignty/test_energy_cannot_authorize.py).
+Le pack reste :
 
-Le module `run_energy_thermo` calcule déjà notamment :
+- `status: NEW_DOMAIN_SCAFFOLD` ;
+- `source_type: mixed_reference` ;
+- `implementation_state: SCAFFOLD_ONLY`.
 
+Cette synchronisation reconnaît une matière de conception et du code existant.
+
+Elle ne signifie pas :
+
+- runtime Energy UDIP branché ;
+- object map implémenté ;
+- infrastructure physique pilotable ;
+- Binder Energy raccordé ;
+- conformance Energy démontrée ;
+- test de non-souveraineté suffisant.
+
+`object_map.yaml` reste volontairement vide.
+
+## 3. Famille A — Thermo / Compute Energy
+
+Sources repository principales :
+
+- [ENERGY_THERMO_GOVERNOR_V0](../../docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md)
+- [energy_thermo.py](../../periphery/energy_thermo.py)
+- [energy_thermo_agent.py](../../periphery/agents/energy_thermo_agent.py)
+
+Le code `run_energy_thermo` calcule réellement :
+
+- `pin` ;
+- `pout` ;
 - `energy_efficiency` ;
 - `thermo_debt` ;
 - `truth_score` ;
 - `sigma_score` ;
 - `sigma_truth_mismatch`.
 
-Il peut produire des risques comme :
+La dette thermodynamique est construite à partir de :
+
+```text
+energy_cost
++ compute_cost
++ attention_cost
++ recovery_cost
+- useful_work
+```
+
+Le module peut produire des signaux comme :
 
 - `ENERGY_INEFFICIENT` ;
 - `THERMO_DEBT_HIGH` ;
 - `SIGMA_TRUTH_MISMATCH` ;
+- `COLLAPSE_DISGUISED_HIGH_SIGMA`.
 
-et des recommandations `HOLD` / `BLOCK_CANDIDATE`.
+Il peut recommander :
 
-Important : il produit un `PeripheralSignalPacket`, pas une décision.
+- `HOLD` ;
+- `BLOCK_CANDIDATE`.
 
-## 3. Source conceptuelle interne
+Il ne retourne pas une décision KX108.
 
-Les notes projet historiques décrivent aussi une future `THERMO_COMPUTE_LAYER` chargée de mesurer :
+## 4. Agent non souverain
+
+`periphery/agents/energy_thermo_agent.py` déclare :
+
+```text
+agent_id = ENERGY_THERMO_AGENT
+layer = ENERGY
+description = wrapper non souverain
+```
+
+Le rôle actuel est donc clairement périphérique :
+
+```text
+ActionCandidate
+→ Energy Thermo Agent
+→ PeripheralSignalPacket / AgentResult
+→ contexte / risque / contradiction
+→ gouvernance ultérieure
+```
+
+L'agent n'est pas l'autorité de décision.
+
+## 5. Famille B — Physical Critical Infrastructure
+
+Le manifeste historique déclarait déjà :
+
+- `physical_infrastructure` ;
+- `fail_closed` ;
+- `real_world_execution_constraints`.
+
+Cette famille vise un monde différent du simple coût computationnel.
+
+Trajet cible :
+
+```text
+physical source / infrastructure state
+→ provenance / authenticity / constraints
+→ Energy DomainSignal
+→ CanonicalDomainContract
+→ GovernancePayload
+→ KX108
+→ ACT / HOLD / BLOCK
+→ Binder
+→ physical execution capability
+→ ExecutionOutcome
+→ Receipt / Replay / Proof
+```
+
+Ce trajet n'est **pas** aujourd'hui implémenté comme runtime Energy UDIP complet.
+
+## 6. Fail-closed
+
+Source :
+
+- [FAIL_CLOSED_PRIORITY_SPEC](../../specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md)
+
+La règle documentée est :
+
+```text
+BLOCK > HOLD > ALLOW
+```
+
+et l'absence de conditions suffisantes ne doit jamais produire ALLOW par défaut.
+
+Cette règle est essentielle pour un domaine d'infrastructure critique.
+
+Mais elle appartient à la gouvernance KX108, pas au Domain Pack Energy.
+
+Energy peut produire des éléments qui conduisent KX108 à considérer HOLD/BLOCK.
+
+Energy ne possède pas cette autorité.
+
+## 7. Source conceptuelle interne
+
+Les notes de projet auditées décrivent aussi une future `THERMO_COMPUTE_LAYER` mesurant notamment :
 
 - temps ;
 - énergie ;
@@ -58,97 +183,157 @@ Les notes projet historiques décrivent aussi une future `THERMO_COMPUTE_LAYER` 
 - coût d'inférence ;
 - coût de preuve.
 
-Elles citent également plusieurs anciens packs sandbox/freeze/stress Energy.
+Elles mentionnent également d'anciens packs Energy sandbox / freeze / stress.
 
-Ces références soutiennent la vision, mais ne doivent pas être transformées en état runtime sans audit des artefacts correspondants.
+Ces références sont classées comme **sources conceptuelles internes**.
 
-## 4. Périmètre déclaré
+Elles soutiennent une direction de conception, mais ne sont pas déclarées comme dépendances runtime du Domain Pack.
 
-`domain_pack.yaml` déclare :
+## 8. Extensions déclarées V0
 
-- `physical_infrastructure` ;
-- `fail_closed` ;
-- `real_world_execution_constraints`.
+Le manifeste reconnaît maintenant deux familles.
 
-Ce périmètre élargit Energy au-delà du seul coût computationnel.
+### Thermo / Compute
 
-## 5. Séparation des deux niveaux
+- `thermo_compute`
+- `energy_efficiency`
+- `thermo_debt`
+- `sigma_truth_mismatch`
 
-### A. Energy / Thermo advisory
+### Physical Critical Infrastructure
 
-```text
-action candidate
-→ energy/thermo measurement
-→ PeripheralSignalPacket
-→ risk / contradiction
-→ governed context
-→ KX108
-```
+- `physical_infrastructure`
+- `fail_closed`
+- `real_world_execution_constraints`
 
-### B. Critical infrastructure
+Ces extensions décrivent le **périmètre du Domain Pack**.
 
-```text
-physical source/state
-→ authenticity / constraints
-→ critical-infrastructure DomainSignal
-→ KX108
-→ Binder
-→ physical executor
-→ outcome / receipt / replay
-```
+Elles ne valent ni object map, ni runtime, ni preuve.
 
-Le niveau B n'est pas encore implémenté comme Domain Pack complet.
+## 9. Non-souveraineté
 
-## 6. Fail-closed
-
-La spec `FAIL_CLOSED_PRIORITY_SPEC` verrouille :
-
-```text
-BLOCK > HOLD > ALLOW
-```
-
-et interdit ALLOW par défaut en cas d'incertitude critique.
-
-Cette règle est particulièrement pertinente pour l'énergie et les infrastructures critiques, mais elle reste une règle d'autorité KX108, pas une règle possédée par le domaine.
-
-## 7. Non-souveraineté
+Invariants Energy :
 
 ```text
 ENERGY METRIC != DECISION
+ENERGY EFFICIENCY != AUTHORITY
 THERMO DEBT != BLOCK AUTHORITY
+SIGMA/TRUTH MISMATCH != FINAL VERDICT
+BLOCK_CANDIDATE != BLOCK
 PHYSICAL RISK != EXECUTION RIGHT
+FAIL_CLOSED POLICY != DOMAIN AUTHORITY
 DOMAIN != AUTHORITY
 KX108_ONLY
 ```
 
-## 8. État réel du pack
+## 10. Limite importante sur les tests actuels
 
-Le Domain Pack lui-même reste :
+Le repository contient :
 
-- `source_type: none` ;
-- `sources.yaml: NOT_YET_DEFINED` ;
-- `object_map` non implémenté ;
-- `SCAFFOLD_ONLY`.
+- [test_energy_cannot_authorize.py](../../tests/non_sovereignty/test_energy_cannot_authorize.py)
 
-La présence d'un agent Energy Thermo réel dans `periphery/` ne signifie donc pas encore “Energy UDIP intégré”.
+Mais son contenu actuel est seulement :
 
-## 9. Sources
-
-- [Domain Concept Source Audit](../../planning/DOMAIN_CONCEPT_SOURCE_AUDIT_V0.md)
-- [Energy Thermo Governor](../../docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md)
-- [Fail Closed Priority](../../specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md)
-- [UDIP V0](../../docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md)
-
-## 10. Prochaine étape
-
-Le prochain vrai travail n'est pas d'ajouter plus de métriques.
-
-Il faut décider explicitement si le Domain Pack Energy V0 couvre :
-
-```text
-A. compute / thermo energy
-B. physical energy infrastructure
-C. les deux avec deux sous-contrats séparés
+```python
+def test_non_sovereign():
+    assert True
 ```
 
-puis créer l'object map correspondant sans déplacer l'autorité hors de KX108.
+Ce fichier prouve uniquement qu'un **placeholder de test existe**.
+
+Il ne démontre pas réellement que l'agent Energy ne peut pas autoriser.
+
+Le README, le manifest et le profil de conformance ne doivent donc pas présenter ce test comme une preuve de non-souveraineté.
+
+## 11. Source model
+
+Le pack utilise `source_type: mixed_reference`.
+
+### REPO_CODE_SOURCE
+
+- `periphery/energy_thermo.py`
+- `periphery/agents/energy_thermo_agent.py`
+
+### REPO_SPEC_SOURCE
+
+- `docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md`
+- `specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md`
+
+### REPO_TEST_PLACEHOLDER
+
+- `tests/non_sovereignty/test_energy_cannot_authorize.py`
+
+### INTERNAL_CONCEPT_SOURCE
+
+- `internal://THERMO_COMPUTE_LAYER`
+- `internal://Energy sandbox/freeze/stress history`
+
+## 12. Point de branchement cible
+
+### Thermo path
+
+```text
+ActionCandidate
+→ Energy Thermo measurement
+→ PeripheralSignalPacket
+→ risk / contradiction / metrics
+→ DomainSignal candidate
+→ CanonicalDomainContract
+→ GovernancePayload
+→ KX108
+```
+
+### Critical infrastructure path
+
+```text
+physical infrastructure source
+→ state / provenance / authenticity
+→ physical risk / constraints
+→ DomainSignal
+→ CanonicalDomainContract
+→ GovernancePayload
+→ KX108
+→ Binder si conséquence
+→ execution capability
+→ Receipt / Replay
+```
+
+## 13. Conformance
+
+Le profil Energy impose désormais au niveau documentaire :
+
+```text
+ENERGY METRIC != DECISION
+THERMO DEBT != BLOCK AUTHORITY
+BLOCK_CANDIDATE != BLOCK
+PHYSICAL RISK != EXECUTION RIGHT
+KX108_ONLY
+```
+
+Les vrais tests correspondants restent à implémenter.
+
+Voir [conformance.md](conformance.md).
+
+## 14. Manques
+
+Le pack reste incomplet sur :
+
+- object map ;
+- classification exacte des objets Thermo vs Critical Infrastructure ;
+- DomainSignal Energy natif ;
+- adapter physique ;
+- provenance/authenticity pour infrastructure réelle ;
+- Binder path ;
+- receipts/replay spécifiques ;
+- tests de non-souveraineté réels ;
+- tests fail-closed domaine ;
+- démonstration de séparation entre advisory Thermo et action physique.
+
+## 15. Prochaine étape
+
+Le prochain travail doit être un **object-map candidate audit READ_ONLY**.
+
+Il devra empêcher deux erreurs :
+
+1. transformer des métriques Thermo transverses en objets métier d'infrastructure ;
+2. transformer une contrainte d'infrastructure physique en autorité locale.

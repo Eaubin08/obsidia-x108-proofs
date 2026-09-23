@@ -228,7 +228,7 @@ Quand le domaine dépend de données physiques ou hostiles, `SourceProvenance` p
 | `btp_construction` | `NEW_DOMAIN_SCAFFOLD` | `none` | terrain, plans, documents, subcontractors, planning, exceptions | `SCAFFOLD_ONLY` |
 | `logistics_supply_chain` | `NEW_DOMAIN_SCAFFOLD` | `none` | stock, warehouse, suppliers, transport, route, delivery | `SCAFFOLD_ONLY` |
 | `cybersecurity` | `NEW_DOMAIN_SCAFFOLD` | `none` | detection, response, isolation_boundaries | `SCAFFOLD_ONLY` |
-| `energy_critical_infrastructure` | `NEW_DOMAIN_SCAFFOLD` | `none` | physical_infrastructure, fail_closed, real_world_execution_constraints | `SCAFFOLD_ONLY` |
+| `energy_critical_infrastructure` | `NEW_DOMAIN_SCAFFOLD` | `mixed_reference` | thermo_compute, energy_efficiency, thermo_debt, sigma_truth_mismatch, physical_infrastructure, fail_closed, real_world_execution_constraints | `SCAFFOLD_ONLY` |
 | `insurance` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
 | `legal_compliance` | `NEW_DOMAIN_SCAFFOLD` | `none` | aucune | `SCAFFOLD_ONLY` |
 | `telecom` | `NEW_DOMAIN_SCAFFOLD` | `mixed_reference` | network_connectivity, network_egress, gateway_constraints, physical_signal_observation, signal_provenance, signal_coherence | `SCAFFOLD_ONLY` |

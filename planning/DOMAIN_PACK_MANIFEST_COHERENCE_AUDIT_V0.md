@@ -40,7 +40,7 @@ The important debt is class 2.
 | GPS / Defense / Aviation | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
 | Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
 | Cybersecurity | DOCS_AHEAD_OF_MANIFEST | README has sourced architecture; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
-| Energy / Critical Infrastructure | DOCS_AHEAD_OF_MANIFEST | README has real Energy Thermo + fail-closed sources; manifest has extensions but `source_type:none` | empty | empty | generic | sync sources first |
+| Energy / Critical Infrastructure | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by design | domain-specific profile documented | audit object map next |
 | Telecom | SOURCE_SYNCED_OBJECT_MAP_PENDING | README + manifest now share network + physical-signal perimeter | audited mixed references | empty by design | domain-specific profile documented | audit object map next |
 | Legal / Compliance | DOCS_AHEAD_OF_MANIFEST | README has strong compliance corpus; manifest has `extensions: []` | empty | empty | generic | define source/perimeter before object map |
 | Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
@@ -135,38 +135,49 @@ Recommended next step:
 
 Update **source mapping only** after defining the correct source classification. Do not build the object map yet.
 
-## 6. Energy / Critical Infrastructure — docs ahead of manifest
+## 6. Energy / Critical Infrastructure — source/perimeter synchronized
 
-Current manifest declares:
+Energy now remains one Domain Pack with two explicitly separated internal families:
 
-- physical infrastructure;
-- fail-closed;
-- real-world execution constraints.
+1. Thermo / Compute Energy;
+2. Physical Critical Infrastructure.
 
-But `sources.yaml` still says no source has been audited.
+Current manifest includes:
 
-Real repository material exists:
-
-- `docs/periphery/ENERGY_THERMO_GOVERNOR_V0.md`
-- `periphery/energy_thermo.py`
-- `periphery/agents/energy_thermo_agent.py`
-- `tests/non_sovereignty/test_energy_cannot_authorize.py`
-- `specs/01_X108_AUTHORITY/FAIL_CLOSED_PRIORITY_SPEC.md`
-
-Verdict:
-
-The extensions are directionally coherent with the README, but source mapping is stale.
-
-Important unresolved design choice:
-
-```text
-Energy Domain Pack =
-compute/thermo energy?
-physical infrastructure?
-or two sub-contracts under one domain?
+```yaml
+source_type: mixed_reference
+extensions:
+  - thermo_compute
+  - energy_efficiency
+  - thermo_debt
+  - sigma_truth_mismatch
+  - physical_infrastructure
+  - fail_closed
+  - real_world_execution_constraints
+implementation_state: SCAFFOLD_ONLY
 ```
 
-Do not create an object map before resolving this boundary.
+The source set now distinguishes repository code/specs, internal concept sources, and the current non-sovereignty test placeholder.
+
+Important correction:
+
+`tests/non_sovereignty/test_energy_cannot_authorize.py` currently contains only `assert True`.
+
+It is therefore classified as `REPO_TEST_PLACEHOLDER`, not proof of non-sovereignty.
+
+Current remaining gap:
+
+```text
+README = synchronized
+domain_pack = synchronized
+sources = synchronized
+conformance profile = documented
+object_map = intentionally empty
+meaningful authority tests = missing
+runtime UDIP integration = not claimed
+```
+
+Next action for Energy is a READ_ONLY object-map candidate audit.
 
 ## 7. Telecom — source/perimeter synchronized
 
@@ -340,7 +351,7 @@ Recommended order:
 
 ```text
 1. Telecom object-map candidate audit
-2. Energy perimeter decision
+2. Energy object-map candidate audit
 3. Cybersecurity source mapping
 4. Legal/Compliance source mapping
 5. source_type vocabulary / classification
