@@ -1,0 +1,118 @@
+﻿
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:24:    triangles = []
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:25:    for i in range(n):
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:26:        for j in 
+range(i+1, n):
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:34:    degrees = [sum(row) 
+for row in W]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:35:    mean = 
+sum(degrees)/len(degrees)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:36:    return 
+sum(abs(d-mean) for d in degrees)/len(degrees)
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:38:def 
+compute_metrics_core_fixed(W_full: List[List[float]], core_nodes: List[int],
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:39:                         
+      alpha=1.0, beta=1.0, gamma=0.5) -> Metrics:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:40:    W = [[W_full[i][j] 
+for j in core_nodes] for i in core_nodes]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:41:    T = triangle_mean(W)
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:44:    S = alpha*T + beta*H 
+- gamma*A
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:45:    return Metrics(T, H, 
+A, S)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\obsidia_os2\metrics.py:46:
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:24:    triangles = []
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:25:    for i in range(n):
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:26:        for j in range(i+1, n):
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:34:    degrees = [sum(row) for row in W]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:35:    mean = sum(degrees)/len(degrees)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:36:    return sum(abs(d-mean) for d in 
+degrees)/len(degrees)
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:38:def compute_metrics_core_fixed(W_full: 
+List[List[float]], core_nodes: List[int],
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:39:                               alpha=1.0, 
+beta=1.0, gamma=0.5) -> Metrics:
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:40:    W = [[W_full[i][j] for j in 
+core_nodes] for i in core_nodes]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:41:    T = triangle_mean(W)
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:44:    S = alpha*T + beta*H - gamma*A
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:45:    return Metrics(T, H, A, S)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_os2\metrics.py:46:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:71:            first=subset[0]; 
+others=subset[1:]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:72:            for perm in 
+permutations(others,5):
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:73:                
+ring=(first,)+perm
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:93:    s=[sum(W[i][j] for j in 
+range(n)) for i in range(n)]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:94:    sbar=sum(s)/n
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:95:    return sum(abs(si-sbar) for 
+si in s)/n
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:97:def compute_metrics(W: 
+List[List[Number]], theta_T=0.7, theta_R=0.7, theta_A=0.6,
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:98:                    alpha=1.0, 
+beta=1.0, gamma=1.0, lam=1.0) -> Metrics:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:99:    
+strong=find_strong_triangles(W, theta_T)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:100:    tmean=_mean([t.score for t 
+in strong]) if strong else 0.0
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:104:    S=alpha*tmean + beta*hstar 
+- gamma*A
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:105:    return Metrics(strong, 
+tmean, hx, A, S)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:106:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:108:    nodes=list(nodes)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:109:    return [[W[i][j] for j in 
+nodes] for i in nodes]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:110:
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:112:    nodes=list(nodes)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:113:    
+strong=[Triangle(nodes[t.i], nodes[t.j], nodes[t.k], t.score) for t in metrics.strong_triangles]
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:114:    hx=None
+> _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:120:def 
+compute_metrics_core_fixed(W_full: List[List[Number]], core_nodes: Sequence[int], **kwargs) -> Metrics:
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:121:    Wc=submatrix(W_full, 
+core_nodes)
+  _tmp_core_import\OBSIDIA_CORE_ONLY_FULL_MACHINERY\engine\os3\metrics.py:122:    m=compute_metrics(Wc, 
+**kwargs)
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:71:            first=subset[0]; 
+others=subset[1:]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:72:            for perm in 
+permutations(others,5):
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:73:                
+ring=(first,)+perm
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:93:    s=[sum(W[i][j] for j in 
+range(n)) for i in range(n)]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:94:    sbar=sum(s)/n
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:95:    return sum(abs(si-sbar) 
+for si in s)/n
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:97:def compute_metrics(W: 
+List[List[Number]], theta_T=0.7, theta_R=0.7, theta_A=0.6,
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:98:                    
+alpha=1.0, beta=1.0, gamma=1.0, lam=1.0) -> Metrics:
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:99:    
+strong=find_strong_triangles(W, theta_T)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:100:    tmean=_mean([t.score for 
+t in strong]) if strong else 0.0
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:104:    S=alpha*tmean + 
+beta*hstar - gamma*A
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:105:    return Metrics(strong, 
+tmean, hx, A, S)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:106:
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:108:    nodes=list(nodes)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:109:    return [[W[i][j] for j 
+in nodes] for i in nodes]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:110:
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:112:    nodes=list(nodes)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:113:    
+strong=[Triangle(nodes[t.i], nodes[t.j], nodes[t.k], t.score) for t in metrics.strong_triangles]
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:114:    hx=None
+> proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:120:def 
+compute_metrics_core_fixed(W_full: List[List[Number]], core_nodes: Sequence[int], **kwargs) -> Metrics:
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:121:    Wc=submatrix(W_full, 
+core_nodes)
+  proofs\V18_3_1\engine_buildable_0_9_3_1\obsidia_structural_core\metrics.py:122:    m=compute_metrics(Wc, 
+**kwargs)
+
+

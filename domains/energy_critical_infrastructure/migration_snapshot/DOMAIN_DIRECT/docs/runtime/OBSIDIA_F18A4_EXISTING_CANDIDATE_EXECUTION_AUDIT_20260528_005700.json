@@ -1,0 +1,606 @@
+{
+  "checkpoint": "F18A4_EXISTING_CANDIDATE_EXECUTION_AUDIT",
+  "mode": "READ_ONLY",
+  "timestamp": "20260528_005700",
+  "results": [
+    {
+      "label": "repo_periphery_reverse_os",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\periphery\\reverse_os.py",
+      "exists": true,
+      "size": 1046,
+      "load_ok": true,
+      "functions": [
+        "project"
+      ],
+      "classes": [],
+      "calls": [
+        {
+          "label": "repo_periphery_reverse_os.project",
+          "ok": true,
+          "output": {
+            "qui": "F18A4_AUDIT_AGENT",
+            "pourquoi": "RC_X108_REQUIRED",
+            "preuve": "F18A4_READONLY_MERKLE_PLACEHOLDER",
+            "verdict_existant": "NO_KERNEL_DECISION",
+            "dominant_trees": [
+              [
+                6,
+                0.7
+              ],
+              [
+                3,
+                0.4
+              ],
+              [
+                4,
+                0.2
+              ],
+              [
+                1,
+                0.12
+              ],
+              [
+                2,
+                0.01
+              ]
+            ],
+            "text_projection": "F18A4_AUDIT_AGENT / RC_X108_REQUIRED / preuve=F18A4_READONLY_MERKLE_PLACEHOLDER",
+            "ui_projection": {
+              "agent": "F18A4_AUDIT_AGENT",
+              "reason_code": "RC_X108_REQUIRED",
+              "verdict_existant": "NO_KERNEL_DECISION"
+            },
+            "voice_projection_stub": "Agent F18A4_AUDIT_AGENT, raison RC_X108_REQUIRED.",
+            "visual_state": {
+              "top_trees": [
+                [
+                  6,
+                  0.7
+                ],
+                [
+                  3,
+                  0.4
+                ],
+                [
+                  4,
+                  0.2
+                ],
+                [
+                  1,
+                  0.12
+                ],
+                [
+                  2,
+                  0.01
+                ]
+              ]
+            },
+            "non_decision": true
+          },
+          "output_type": "dict"
+        }
+      ]
+    },
+    {
+      "label": "repo_periphery_test_reverse_os",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\periphery\\test_reverse_os_non_decision.py",
+      "exists": true,
+      "size": 857,
+      "load_ok": true,
+      "functions": [
+        "Path",
+        "TestReverseOS",
+        "load_module"
+      ],
+      "classes": [
+        "Path",
+        "TestReverseOS"
+      ],
+      "calls": []
+    },
+    {
+      "label": "zip2_bridge_reverse_os_adapter",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\bridge\\zip2_reverse_os_real_adapter.py",
+      "exists": true,
+      "size": 4862,
+      "load_ok": true,
+      "functions": [
+        "Any",
+        "Path",
+        "build_reverse_flow",
+        "enrich_reverse_os"
+      ],
+      "classes": [
+        "Any",
+        "Path"
+      ],
+      "calls": [
+        {
+          "label": "zip2_bridge_reverse_os_adapter.build_reverse_flow",
+          "ok": true,
+          "output": {
+            "agent_name": "ZIP2_REVERSE_OS_SSR_JARVIS",
+            "reason_code": "RC_X108_REQUIRED",
+            "merkle_root": "NO_INPUT_HASH",
+            "verdict": "NO_DECISION_X108_REQUIRED",
+            "tree_vector": {
+              "TREE_01": 0.0,
+              "TREE_02": 0.0,
+              "TREE_03": 0.0,
+              "TREE_04": 0.0,
+              "TREE_05": 0.0,
+              "TREE_06": 0.0,
+              "TREE_07": 0.0,
+              "TREE_08": 0.0,
+              "TREE_09": 0.0,
+              "TREE_10": 0.0,
+              "TREE_11": 0.0,
+              "TREE_12": 1.0,
+              "TREE_13": 0.0,
+              "TREE_14": 0.0,
+              "TREE_15": 0.0,
+              "TREE_16": 0.0,
+              "TREE_17": 0.0,
+              "TREE_18": 0.0,
+              "TREE_19": 0.0,
+              "TREE_20": 0.0,
+              "TREE_21": 0.0,
+              "TREE_22": 0.0,
+              "TREE_23": 0.0,
+              "TREE_24": 0.0,
+              "TREE_25": 0.0,
+              "TREE_26": 0.0,
+              "TREE_27": 0.0,
+              "TREE_28": 0.0,
+              "TREE_29": 0.0,
+              "TREE_30": 0.0,
+              "TREE_31": 0.0,
+              "TREE_32": 0.0,
+              "TREE_33": 0.0,
+              "TREE_34": 0.0
+            },
+            "input": null,
+            "non_decision": true,
+            "decision_authority": "KX108_ONLY"
+          },
+          "output_type": "dict"
+        },
+        {
+          "label": "zip2_bridge_reverse_os_adapter.enrich_reverse_os",
+          "ok": true,
+          "output": {
+            "packet_id": "F18A4_READONLY_PACKET",
+            "query": "write Graphiti memory + canon -> DOMAIN_RACCORD_WRITE_BOUNDARY",
+            "activated_trees": [
+              "TREE_CODE_IR_PROJECTION",
+              "TREE_MEMORY_GRAPH",
+              "TREE_CANON_BOUNDARY"
+            ],
+            "requires_x108": true,
+            "non_decision": true,
+            "decision_authority": "KX108_ONLY",
+            "readonly": true,
+            "memory_write": false,
+            "graphiti_write": false,
+            "kernel_mutation": false,
+            "x108_mutation": false,
+            "emits_act": false,
+            "zip2_reverse_os": {
+              "called": true,
+              "source": "ZIP2_06_REVERSE_OS_SSR_JARVIS_REAL_FILES",
+              "reverse_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS",
+              "non_decision": true,
+              "decision_authority": "KX108_ONLY",
+              "kernel_mutation": false,
+              "canon_promotion": false,
+              "proof_claim": false,
+              "flow": {
+                "agent_name": "ZIP2_REVERSE_OS_SSR_JARVIS",
+                "reason_code": "RC_X108_REQUIRED",
+                "merkle_root": "NO_INPUT_HASH",
+                "verdict": "NO_DECISION_X108_REQUIRED",
+                "tree_vector": {
+                  "TREE_01": 0.0,
+                  "TREE_02": 0.0,
+                  "TREE_03": 0.0,
+                  "TREE_04": 0.0,
+                  "TREE_05": 0.0,
+                  "TREE_06": 0.0,
+                  "TREE_07": 0.0,
+                  "TREE_08": 0.0,
+                  "TREE_09": 0.0,
+                  "TREE_10": 0.0,
+                  "TREE_11": 0.0,
+                  "TREE_12": 1.0,
+                  "TREE_13": 0.0,
+                  "TREE_14": 0.0,
+                  "TREE_15": 0.0,
+                  "TREE_16": 0.0,
+                  "TREE_17": 0.0,
+                  "TREE_18": 0.0,
+                  "TREE_19": 0.0,
+                  "TREE_20": 0.0,
+                  "TREE_21": 0.0,
+                  "TREE_22": 0.0,
+                  "TREE_23": 0.0,
+                  "TREE_24": 0.0,
+                  "TREE_25": 0.0,
+                  "TREE_26": 0.0,
+                  "TREE_27": 0.0,
+                  "TREE_28": 0.0,
+                  "TREE_29": 0.0,
+                  "TREE_30": 0.0,
+                  "TREE_31": 0.0,
+                  "TREE_32": 0.0,
+                  "TREE_33": 0.0,
+                  "TREE_34": 0.0
+                },
+                "input": null,
+                "non_decision": true,
+                "decision_authority": "KX108_ONLY"
+              },
+              "projection": {
+                "qui": "ZIP2_REVERSE_OS_SSR_JARVIS",
+                "pourquoi": "RC_X108_REQUIRED",
+                "preuve": "NO_INPUT_HASH",
+                "verdict_existant": "NO_DECISION_X108_REQUIRED",
+                "dominant_trees": [
+                  [
+                    "TREE_12",
+                    1.0
+                  ],
+                  [
+                    "TREE_01",
+                    0.0
+                  ],
+                  [
+                    "TREE_02",
+                    0.0
+                  ],
+                  [
+                    "TREE_03",
+                    0.0
+                  ],
+                  [
+                    "TREE_04",
+                    0.0
+                  ]
+                ],
+                "text_projection": "ZIP2_REVERSE_OS_SSR_JARVIS / RC_X108_REQUIRED / preuve=NO_INPUT_HASH",
+                "ui_projection": {
+                  "agent": "ZIP2_REVERSE_OS_SSR_JARVIS",
+                  "reason_code": "RC_X108_REQUIRED",
+                  "verdict_existant": "NO_DECISION_X108_REQUIRED"
+                },
+                "voice_projection_stub": "Agent ZIP2_REVERSE_OS_SSR_JARVIS, raison RC_X108_REQUIRED.",
+                "visual_state": {
+                  "top_trees": [
+                    [
+                      "TREE_12",
+                      1.0
+                    ],
+                    [
+                      "TREE_01",
+                      0.0
+                    ],
+                    [
+                      "TREE_02",
+                      0.0
+                    ],
+                    [
+                      "TREE_03",
+                      0.0
+                    ],
+                    [
+                      "TREE_04",
+                      0.0
+                    ]
+                  ]
+                },
+                "non_decision": true
+              },
+              "semantic_reason": "Décision requiert X-108",
+              "jarvis_ui": {
+                "ui": "ZIP2_REVERSE_OS_SSR_JARVIS / RC_X108_REQUIRED / preuve=NO_INPUT_HASH"
+              },
+              "active_cognitive_reduction": [
+                [
+                  "TREE_01",
+                  0.0
+                ],
+                [
+                  "TREE_02",
+                  0.0
+                ],
+                [
+                  "TREE_03",
+                  0.0
+                ]
+              ],
+              "reverse_os_project_called": true,
+              "semantic_mapper_called": true,
+              "jarvis_projection_called": true,
+              "active_cognitive_reduction_called": true,
+              "limitations": [
+                "REVERSE_OS_REAL_FILE_CALLED_BUT_MINIMAL",
+                "JARVIS_PROJECTION_REAL_FILE_CALLED_BUT_STUB_LIGHT",
+                "ACTIVE_COGNITIVE_REDUCTION_REAL_FILE_CALLED_BUT_STUB_LIGHT",
+                "NO_DECISION_PRODUCED"
+              ]
+            },
+            "signals": [
+              "ZIP2_REVERSE_OS_REAL_V1",
+              "ZIP2_REVERSE_OS_PROJECT_CALLED_V1",
+              "ZIP2_REVERSE_OS_NON_DECISION_CONFIRMED_V1",
+              "ZIP2_JARVIS_PROJECTION_STUB_LIGHT_CONFIRMED_V1",
+              "ZIP2_ACTIVE_COGNITIVE_REDUCTION_STUB_LIGHT_CONFIRMED_V1"
+            ],
+            "canon_promotion": false,
+            "proof_claim": false,
+            "verdict": null,
+            "act": null
+          },
+          "output_type": "dict"
+        }
+      ]
+    },
+    {
+      "label": "mmonde_reverse_os",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\reverse_os.py",
+      "exists": true,
+      "size": 1046,
+      "load_ok": true,
+      "functions": [
+        "project"
+      ],
+      "classes": [],
+      "calls": [
+        {
+          "label": "mmonde_reverse_os.project",
+          "ok": true,
+          "output": {
+            "qui": "F18A4_AUDIT_AGENT",
+            "pourquoi": "RC_X108_REQUIRED",
+            "preuve": "F18A4_READONLY_MERKLE_PLACEHOLDER",
+            "verdict_existant": "NO_KERNEL_DECISION",
+            "dominant_trees": [
+              [
+                6,
+                0.7
+              ],
+              [
+                3,
+                0.4
+              ],
+              [
+                4,
+                0.2
+              ],
+              [
+                1,
+                0.12
+              ],
+              [
+                2,
+                0.01
+              ]
+            ],
+            "text_projection": "F18A4_AUDIT_AGENT / RC_X108_REQUIRED / preuve=F18A4_READONLY_MERKLE_PLACEHOLDER",
+            "ui_projection": {
+              "agent": "F18A4_AUDIT_AGENT",
+              "reason_code": "RC_X108_REQUIRED",
+              "verdict_existant": "NO_KERNEL_DECISION"
+            },
+            "voice_projection_stub": "Agent F18A4_AUDIT_AGENT, raison RC_X108_REQUIRED.",
+            "visual_state": {
+              "top_trees": [
+                [
+                  6,
+                  0.7
+                ],
+                [
+                  3,
+                  0.4
+                ],
+                [
+                  4,
+                  0.2
+                ],
+                [
+                  1,
+                  0.12
+                ],
+                [
+                  2,
+                  0.01
+                ]
+              ]
+            },
+            "non_decision": true
+          },
+          "output_type": "dict"
+        }
+      ]
+    },
+    {
+      "label": "mmonde_semantic_mapper",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\semantic_mapper.py",
+      "exists": true,
+      "size": 176,
+      "load_ok": true,
+      "functions": [
+        "map_reason_code"
+      ],
+      "classes": [],
+      "calls": [
+        {
+          "label": "mmonde_semantic_mapper.map_reason_code",
+          "ok": true,
+          "output": "Décision requiert X-108",
+          "output_type": "str"
+        }
+      ]
+    },
+    {
+      "label": "mmonde_jarvis_projection",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\jarvis_projection.py",
+      "exists": true,
+      "size": 105,
+      "load_ok": true,
+      "functions": [
+        "project_to_ui"
+      ],
+      "classes": [],
+      "calls": [
+        {
+          "label": "mmonde_jarvis_projection.project_to_ui",
+          "ok": true,
+          "output": {
+            "ui": "projection readonly"
+          },
+          "output_type": "dict"
+        }
+      ]
+    },
+    {
+      "label": "mmonde_active_cognitive_reduction",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\active_cognitive_reduction.py",
+      "exists": true,
+      "size": 116,
+      "load_ok": true,
+      "functions": [
+        "reduce"
+      ],
+      "classes": [],
+      "calls": [
+        {
+          "label": "mmonde_active_cognitive_reduction.reduce",
+          "ok": false,
+          "error": "AttributeError: 'list' object has no attribute 'items'",
+          "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\scripts\\f18a4_existing_candidate_execution_audit.py\", line 72, in safe_call\n    out = fn(*args, **kwargs)\n  File \"C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\active_cognitive_reduction.py\", line 5, in reduce\n    return list(tree_vector.items())[:top_n]\n                ^^^^^^^^^^^^^^^^^\nAttributeError: 'list' object has no attribute 'items'\n"
+        }
+      ]
+    },
+    {
+      "label": "mmonde_common_types",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\common_types.py",
+      "exists": true,
+      "size": 5778,
+      "load_ok": true,
+      "functions": [
+        "ActivationVector",
+        "AgentDescriptor",
+        "Any",
+        "BDFResponse",
+        "ContextPacket",
+        "Dict",
+        "Event",
+        "GenomeLaw",
+        "HexaFluxMutation",
+        "List",
+        "MCPRequest",
+        "NodeContinuum",
+        "ObsidiaIR",
+        "Optional",
+        "SSRProjection",
+        "ShazamOutput",
+        "SpectralHash",
+        "Tree",
+        "TreeSpace34",
+        "dataclass",
+        "field"
+      ],
+      "classes": [
+        "ActivationVector",
+        "AgentDescriptor",
+        "Any",
+        "BDFResponse",
+        "ContextPacket",
+        "Event",
+        "GenomeLaw",
+        "HexaFluxMutation",
+        "MCPRequest",
+        "NodeContinuum",
+        "ObsidiaIR",
+        "SSRProjection",
+        "ShazamOutput",
+        "SpectralHash",
+        "Tree",
+        "TreeSpace34"
+      ],
+      "calls": []
+    },
+    {
+      "label": "mmonde_obsidia_ir",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\09_MCP_BRIDGE_OBSIDIA_IR\\obsidia_ir.py",
+      "exists": true,
+      "size": 5142,
+      "load_ok": true,
+      "functions": [
+        "Any",
+        "to_ir"
+      ],
+      "classes": [
+        "Any"
+      ],
+      "calls": []
+    },
+    {
+      "label": "mmonde_demo_full_pipeline",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\20_DEMO_MINIMALE\\demo_full_pipeline.py",
+      "exists": true,
+      "size": 2792,
+      "load_ok": true,
+      "functions": [
+        "Path",
+        "load_module",
+        "main"
+      ],
+      "classes": [
+        "Path"
+      ],
+      "calls": []
+    },
+    {
+      "label": "mmonde_test_reverse_os_non_decision",
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\17_TESTS\\test_reverse_os_non_decision.py",
+      "exists": true,
+      "size": 857,
+      "load_ok": true,
+      "functions": [
+        "Path",
+        "TestReverseOS",
+        "load_module"
+      ],
+      "classes": [
+        "Path",
+        "TestReverseOS"
+      ],
+      "calls": []
+    }
+  ],
+  "boundary_eval": {
+    "contains_non_decision_true": true,
+    "contains_kx108_only": true,
+    "contains_forbidden_decision_field": false,
+    "contains_act_string": true,
+    "contains_kernel_mutation_true": false,
+    "contains_memory_write_true": false,
+    "contains_graphiti_write_true": false
+  },
+  "recommended": {
+    "reuse_strategy": "ADAPT_EXISTING_REAL_BRIDGE_NOT_NAIVE_NEW_ADAPTER",
+    "primary_candidate": "obsidia-engine-candidate/bridge/zip2_reverse_os_real_adapter.py",
+    "support_candidates": [
+      "periphery/reverse_os.py",
+      "MMONDE/06_REVERSE_OS_SSR_JARVIS/reverse_os.py",
+      "MMONDE/06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py",
+      "MMONDE/06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py",
+      "MMONDE/06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py",
+      "MMONDE/common_types.py",
+      "MMONDE/09_MCP_BRIDGE_OBSIDIA_IR/obsidia_ir.py",
+      "MMONDE/17_TESTS/test_reverse_os_non_decision.py"
+    ],
+    "note": "Do not call demo_full_pipeline.main directly in runtime because it writes demo outputs. Use it as architecture reference only."
+  }
+}

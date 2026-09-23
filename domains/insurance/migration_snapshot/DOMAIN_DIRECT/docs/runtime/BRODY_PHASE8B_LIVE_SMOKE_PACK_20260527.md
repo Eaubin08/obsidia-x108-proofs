@@ -1,0 +1,566 @@
+# BRODY_PHASE8B_LIVE_SMOKE_PACK_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Service checks
+- Brody openapi: OK code=200 length=87701 url=http://127.0.0.1:8012/openapi.json
+- Brody Graphiti status: OK code=200 length=1391 url=http://127.0.0.1:8012/api/graphiti/status
+- Brody memory status: OK code=200 length=424 url=http://127.0.0.1:8012/api/memory/status
+- Workbench: OK code=200 length=643 url=http://127.0.0.1:5173
+- Workbench engine openapi: OK code=200 length=87701 url=http://127.0.0.1:5173/api/engine/openapi.json
+- Workbench Graphiti proxy: OK code=200 length=1391 url=http://127.0.0.1:5173/api/engine/api/graphiti/status
+
+## Route smoke output
+- BRODY_ROUTES_SMOKE
+- BASE=http://127.0.0.1:8012
+- BRODY_ROUTES_SMOKE_OK
+- /api/brody/chat
+- /api/context/from-message
+- /api/graphiti/context
+- /api/graphiti/metrics
+- /api/graphiti/readiness
+- /api/graphiti/search
+- /api/graphiti/status
+- /api/memory
+- /api/memory/candidate/from-message
+- /api/memory/candidate-ledger
+- /api/memory/candidates
+- /api/memory/promotion-policy
+- /api/memory/sources
+- /api/memory/status
+- /api/periphery/brody/context-query
+- /api/periphery/brody/diffusion-mix
+- /api/periphery/brody/double-brain-route
+- /api/periphery/brody/language-route
+- /api/periphery/cognitive/memory-world-map
+- /api/periphery/context/build
+- /api/periphery/context/export
+- /api/periphery/context/ingress
+- /api/periphery/context/sanitize
+- /api/periphery/context/validate
+- /api/periphery/graphiti/context-adapt
+- /api/periphery/graphiti/freeze-snapshot/{snapshot_id}
+- /api/periphery/ingestion/memory-sources
+- /api/periphery/monitoring/brody-cli-registry
+- /api/periphery/monitoring/brody-historical-convergence
+- /api/periphery/monitoring/brody-trace-analyze
+- /api/periphery/pipeline/memory-governor
+- /api/x108/memory/candidates/append
+- /api/x108/memory/candidates/read
+- /api/x108/memory/logs/sealed
+- /api/x108/memory/replay/coherence
+- /api/x108/memory/replay/session
+
+## Capability smoke output
+- 
+- === CASE francais_utf8 ===
+- CASE_OK=francais_utf8
+- 
+- === CASE english_understanding ===
+- CASE_OK=english_understanding
+- 
+- === CASE code_debug ===
+- CASE_OK=code_debug
+- 
+- === CASE boundary ===
+- CASE_OK=boundary
+- 
+- BRODY_CAPABILITY_SMOKE_OK
+
+## Graphiti proxy smoke output
+- GRAPHITI_V20_PROXY_SMOKE
+- BASE=http://127.0.0.1:8012
+- 
+- --- GET /api/graphiti/status ---
+- {
+-     "readonly":  true,
+-     "advisory_only":  true,
+-     "emits_act":  false,
+-     "emits_verdict":  false,
+-     "decision_authority":  "KX108_ONLY",
+-     "memory_write":  false,
+-     "kernel_mutation":  false,
+-     "real_action":  false,
+-     "source":  "GRAPHITI_V20_HTTP",
+-     "timestamp":  "2026-05-27T04:59:14.015620+00:00",
+-     "graphiti_status":  "FROZEN_READONLY",
+-     "version":  "v20",
+-     "entity_count":  167,
+-     "relation_count":  477,
+-     "episode_count":  20,
+-     "indexed_episodes":  20,
+-     "failed_episodes":  0,
+-     "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+-     "live_neo4j_dependency":  false,
+-     "x108_merge_status":  "NOT_MERGED",
+-     "commit_status":  "LOCAL_ONLY",
+-     "proxy_source":  "GRAPHITI_V20_HTTP",
+-     "neo4j_write":  false,
+-     "graphiti_write":  false,
+-     "shell_payload":  {
+-                           "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+-                           "ok":  true,
+-                           "mode":  "FROZEN_READONLY",
+-                           "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+-                           "nodes":  167,
+-                           "rels":  477,
+-                           "indexed_episodes":  20,
+-                           "failed_episodes":  0,
+-                           "manifest_files":  4,
+-                           "live_neo4j_dependency":  false,
+-                           "x108_merge_status":  "NOT_MERGED",
+-                           "commit_status":  "LOCAL_ONLY",
+-                           "readonly":  true,
+-                           "advisory_only":  true,
+-                           "emits_act":  false,
+-                           "emits_verdict":  false,
+-                           "decision_authority":  "KX108_ONLY",
+-                           "memory_write":  false,
+-                           "kernel_mutation":  false,
+-                           "x108_mutation":  false,
+-                           "graphiti_write":  false,
+-                           "neo4j_write":  false,
+-                           "real_action":  false,
+-                           "proxy_source":  "GRAPHITI_V20_HTTP"
+-                       }
+- }
+- 
+- --- GET /api/graphiti/readiness ---
+- {
+-     "readonly":  true,
+-     "advisory_only":  true,
+-     "emits_act":  false,
+-     "emits_verdict":  false,
+-     "decision_authority":  "KX108_ONLY",
+-     "memory_write":  false,
+-     "kernel_mutation":  false,
+-     "real_action":  false,
+-     "source":  "GRAPHITI_V20_HTTP",
+-     "timestamp":  "2026-05-27T04:59:14.071737+00:00",
+-     "ready":  true,
+-     "mode":  "FROZEN_READONLY_READINESS",
+-     "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+-     "kernel_decision":  "NONE",
+-     "graphiti_decision":  "NONE",
+-     "allowed_to_decide":  false,
+-     "allowed_to_modify_kernel":  false,
+-     "allowed_to_modify_x108":  false,
+-     "ready_for_kernel_binding":  false,
+-     "ready_for_x108_merge":  false,
+-     "merge_gate":  "BLOCKED_FOR_NOW",
+-     "reason":  "Graphiti V20 is validated as read-only context provider, but not yet connected to kernel corpus or X108 decision flow.",
+-     "warnings":  [
+-                      "X108_CORPUS_DIRECT_COVERAGE_LOW",
+-                      "KERNEL_RELATION_COVERAGE_LOW",
+-                      "NOT_KERNEL_BOUND",
+-                      "READONLY_CONTEXT_ONLY",
+-                      "NOT_MERGED_INTO_X108"
+-                  ],
+-     "coverage":  {
+-                      "x108":  {
+-                                   "entity_count":  1,
+-                                   "relation_count":  0,
+-                                   "richness_score":  0.0667
+-                               },
+-                      "kernel":  {
+-                                     "entity_count":  5,
+-                                     "relation_count":  0,
+-                                     "richness_score":  0.3333
+-                                 },
+-                      "proof":  {
+-                                    "entity_count":  5,
+-                                    "relation_count":  3,
+-                                    "richness_score":  0.7333
+-                                },
+-                      "freeze":  {
+-                                     "entity_count":  4,
+-                                     "relation_count":  3,
+-                                     "richness_score":  0.6667
+-                                 }
+-                  },
+-     "proxy_source":  "GRAPHITI_V20_HTTP",
+-     "graphiti_write":  false,
+-     "neo4j_write":  false,
+-     "shell_payload":  {
+-                           "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+-                           "ok":  true,
+-                           "mode":  "FROZEN_READONLY_READINESS",
+-                           "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+-                           "kernel_decision":  "NONE",
+-                           "graphiti_decision":  "NONE",
+-                           "allowed_to_decide":  false,
+-                           "allowed_to_modify_kernel":  false,
+-                           "allowed_to_modify_x108":  false,
+-                           "ready_for_kernel_binding":  false,
+-                           "ready_for_x108_merge":  false,
+-                           "merge_gate":  "BLOCKED_FOR_NOW",
+-                           "reason":  "Graphiti V20 is validated as read-only context provider, but not yet connected to kernel corpus or X108 decision flow.",
+-                           "warnings":  [
+-                                            "X108_CORPUS_DIRECT_COVERAGE_LOW",
+-                                            "KERNEL_RELATION_COVERAGE_LOW",
+-                                            "NOT_KERNEL_BOUND",
+-                                            "READONLY_CONTEXT_ONLY",
+-                                            "NOT_MERGED_INTO_X108"
+-                                        ],
+-                           "coverage":  {
+-                                            "x108":  {
+-                                                         "entity_count":  1,
+-                                                         "relation_count":  0,
+-                                                         "richness_score":  0.0667
+-                                                     },
+-                                            "kernel":  {
+-                                                           "entity_count":  5,
+-                                                           "relation_count":  0,
+-                                                           "richness_score":  0.3333
+-                                                       },
+-                                            "proof":  {
+-                                                          "entity_count":  5,
+-                                                          "relation_count":  3,
+-                                                          "richness_score":  0.7333
+-                                                      },
+-                                            "freeze":  {
+-                                                           "entity_count":  4,
+-                                                           "relation_count":  3,
+-                                                           "richness_score":  0.6667
+-                                                       }
+-                                        },
+-                           "readonly":  true,
+-                           "advisory_only":  true,
+-                           "emits_act":  false,
+-                           "emits_verdict":  false,
+-                           "decision_authority":  "KX108_ONLY",
+-                           "memory_write":  false,
+-                           "kernel_mutation":  false,
+-                           "x108_mutation":  false,
+-                           "graphiti_write":  false,
+-                           "neo4j_write":  false,
+-                           "real_action":  false,
+-                           "proxy_source":  "GRAPHITI_V20_HTTP"
+-                       }
+- }
+- 
+- --- GET /api/graphiti/metrics ---
+- {
+-     "readonly":  true,
+-     "advisory_only":  true,
+-     "emits_act":  false,
+-     "emits_verdict":  false,
+-     "decision_authority":  "KX108_ONLY",
+-     "memory_write":  false,
+-     "kernel_mutation":  false,
+-     "real_action":  false,
+-     "source":  "GRAPHITI_V20_HTTP",
+-     "timestamp":  "2026-05-27T04:59:14.088844+00:00",
+-     "entity_count":  0,
+-     "relation_count":  0,
+-     "episode_count":  0,
+-     "version":  "v20",
+-     "run_id":  "v20-frozen",
+-     "proxy_source":  "GRAPHITI_V20_HTTP",
+-     "graphiti_write":  false,
+-     "neo4j_write":  false,
+-     "shell_payload":  {
+-                           "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+-                           "ok":  true,
+-                           "mode":  "FROZEN_READONLY_METRICS",
+-                           "freeze_dir":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\graphiti-lab\\.graphiti_runs\\freeze_phase0_v20_20260506_140654",
+-                           "corpus":  {
+-                                          "indexed_episodes":  20,
+-                                          "failed_episodes":  0,
+-                                          "nodes":  167,
+-                                          "rels":  477,
+-                                          "labels":  [
+-                                                         {
+-                                                             "label":  "Entity",
+-                                                             "c":  147
+-                                                         },
+-                                                         {
+-                                                             "label":  "Episodic",
+-                                                             "c":  20
+-                                                         }
+-                                                     ],
+-                                          "rel_types":  [
+-                                                            {
+-                                                                "rel_type":  "MENTIONS",
+-                                                                "c":  271
+-                                                            },
+-                                                            {
+-                                                                "rel_type":  "RELATES_TO",
+-                                                                "c":  206
+-                                                            }
+-                                                        ],
+-                                          "relation_density":  2.8563,
+-                                          "entity_episode_ratio":  8.35
+-                                      },
+-                           "search_quality":  {
+-                                                  "queries":  [
+-                                                                  {
+-                                                                      "query":  "X-108",
+-                                                                      "entity_count":  1,
+-                                                                      "relation_count":  0,
+-                                                                      "richness_score":  0.0667,
+-                                                                      "kernel_decision":  "NONE",
+-                                                                      "graphiti_decision":  "NONE"
+-                                                                  },
+-                                                                  {
+-                                                                      "query":  "CANON",
+-                                                                      "entity_count":  5,
+-                                                                      "relation_count":  2,
+-                                                                      "richness_score":  0.6,
+-                                                                      "kernel_decision":  "NONE",
+-                                                                      "graphiti_decision":  "NONE"
+-                                                                  },
+-                                                                  {
+-                                                                      "query":  "Kernel",
+-                                                                      "entity_count":  5,
+-                                                                      "relation_count":  0,
+-                                                                      "richness_score":  0.3333,
+-                                                                      "kernel_decision":  "NONE",
+-                                                                      "graphiti_decision":  "NONE"
+-                                                                  },
+-                                                                  {
+-                                                                      "query":  "Proof",
+-                                                                      "entity_count":  5,
+-                                                                      "relation_count":  3,
+-                                                                      "richness_score":  0.7333,
+-                                                                      "kernel_decision":  "NONE",
+-                                                                      "graphiti_decision":  "NONE"
+-                                                                  },
+-                                                                  {
+-                                                                      "query":  "Freeze",
+-                                                                      "entity_count":  4,
+-                                                                      "relation_count":  3,
+-                                                                      "richness_score":  0.6667,
+-                                                                      "kernel_decision":  "NONE",
+-                                                                      "graphiti_decision":  "NONE"
+-                                                                  }
+-                                                              ],
+-                                                  "empty_query_allowed":  false
+-                                              },
+-                           "integrity":  {
+-                                             "manifest_files":  4,
+-                                             "snapshot_present":  true,
+-                                             "report_present":  true,
+-                                             "manifest_present":  true,
+-                                             "live_neo4j_dependency":  false
+-                                         },
+-                           "isolation":  {
+-                                             "commit_status":  "LOCAL_ONLY",
+-                                             "x108_merge_status":  "NOT_MERGED",
+-                                             "v50_ignored":  true,
+-                                             "live_graph_ignored":  true
+-                                         },
+-                           "readonly":  true,
+-                           "advisory_only":  true,
+-                           "emits_act":  false,
+-                           "emits_verdict":  false,
+-                           "decision_authority":  "KX108_ONLY",
+-                           "memory_write":  false,
+-                           "kernel_mutation":  false,
+-                           "x108_mutation":  false,
+-                           "graphiti_write":  false,
+-                           "neo4j_write":  false,
+-                           "real_action":  false,
+-                           "proxy_source":  "GRAPHITI_V20_HTTP"
+-                       }
+- }
+- 
+- --- GET /api/graphiti/context?q=Brody&limit=5 ---
+- {
+-     "readonly":  true,
+-     "advisory_only":  true,
+-     "emits_act":  false,
+-     "emits_verdict":  false,
+-     "decision_authority":  "KX108_ONLY",
+-     "memory_write":  false,
+-     "kernel_mutation":  false,
+-     "real_action":  false,
+-     "source":  "GRAPHITI_V20_HTTP",
+-     "timestamp":  "2026-05-27T04:59:14.100619+00:00",
+-     "q":  "Brody",
+-     "results":  [
+- 
+-                 ],
+-     "count":  0,
+-     "proxy_source":  "GRAPHITI_V20_HTTP",
+-     "graphiti_role":  "READONLY_CONTEXT_PROVIDER",
+-     "kernel_decision":  "NONE",
+-     "graphiti_decision":  "NONE",
+-     "x108_merge_status":  "NOT_MERGED",
+-     "commit_status":  "LOCAL_ONLY",
+-     "live_neo4j_dependency":  false,
+-     "entity_count":  0,
+-     "relation_count":  0,
+-     "context_packet":  {
+-                            "facts":  [
+- 
+-                                      ],
+-                            "warnings":  [
+-                                             "NO_ENTITY_MATCH_IN_FROZEN_V20",
+-                                             "NO_RELATION_MATCH_IN_FROZEN_V20"
+-                                         ],
+-                            "entities":  [
+- 
+-                                         ],
+-                            "relations":  [
+- 
+-                                          ],
+-                            "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN"
+-                        },
+-     "llm_context_packet":  {
+-                                "query":  "Brody",
+-                                "mode":  "FROZEN_READONLY_CONTEXT",
+-                                "kernel_decision":  "NONE",
+-                                "graphiti_decision":  "NONE",
+-                                "graphiti_role":  "READONLY_CONTEXT_PROVIDER",
+-                                "x108_merge_status":  "NOT_MERGED",
+-                                "commit_status":  "LOCAL_ONLY",
+-                                "live_neo4j_dependency":  false,
+-                                "entity_count":  0,
+-                                "relation_count":  0,
+-                                "entities":  [
+- 
+-                                             ],
+-                                "relations":  [
+- 
+-                                              ],
+-                                "warnings":  [
+-                                                 "NO_ENTITY_MATCH_IN_FROZEN_V20",
+-                                                 "NO_RELATION_MATCH_IN_FROZEN_V20"
+-                                             ]
+-                            },
+-     "shell_payload":  {
+-                           "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN",
+-                           "ok":  true,
+-                           "mode":  "FROZEN_READONLY_CONTEXT",
+-                           "query":  "Brody",
+-                           "limit":  5,
+-                           "kernel_decision":  "NONE",
+-                           "graphiti_decision":  "NONE",
+-                           "graphiti_role":  "READONLY_CONTEXT_PROVIDER",
+-                           "x108_merge_status":  "NOT_MERGED",
+-                           "commit_status":  "LOCAL_ONLY",
+-                           "live_neo4j_dependency":  false,
+-                           "entity_count":  0,
+-                           "relation_count":  0,
+-                           "context_packet":  {
+-                                                  "facts":  [
+- 
+-                                                            ],
+-                                                  "warnings":  [
+-                                                                   "NO_ENTITY_MATCH_IN_FROZEN_V20",
+-                                                                   "NO_RELATION_MATCH_IN_FROZEN_V20"
+-                                                               ],
+-                                                  "entities":  [
+- 
+-                                                               ],
+-                                                  "relations":  [
+- 
+-                                                                ],
+-                                                  "source":  "OBSIDIA_GRAPHITI_PHASE0_V20_FROZEN"
+-                                              },
+-                           "entities":  [
+- 
+-                                        ],
+-                           "relations":  [
+- 
+-                                         ],
+-                           "visible_entities":  [
+- 
+-                                                ],
+-                           "visible_relations":  [
+- 
+-                                                 ],
+-                           "llm_context_packet":  {
+-                                                      "query":  "Brody",
+-                                                      "mode":  "FROZEN_READONLY_CONTEXT",
+-                                                      "kernel_decision":  "NONE",
+-                                                      "graphiti_decision":  "NONE",
+-                                                      "graphiti_role":  "READONLY_CONTEXT_PROVIDER",
+-                                                      "x108_merge_status":  "NOT_MERGED",
+-                                                      "commit_status":  "LOCAL_ONLY",
+-                                                      "live_neo4j_dependency":  false,
+-                                                      "entity_count":  0,
+-                                                      "relation_count":  0,
+-                                                      "entities":  [
+- 
+-                                                                   ],
+-                                                      "relations":  [
+- 
+-                                                                    ],
+-                                                      "warnings":  [
+-                                                                       "NO_ENTITY_MATCH_IN_FROZEN_V20",
+-                                                                       "NO_RELATION_MATCH_IN_FROZEN_V20"
+-                                                                   ]
+-                                                  },
+-                           "readonly":  true,
+-                           "advisory_only":  true,
+-                           "emits_act":  false,
+-                           "emits_verdict":  false,
+-                           "decision_authority":  "KX108_ONLY",
+-                           "memory_write":  false,
+-                           "kernel_mutation":  false,
+-                           "x108_mutation":  false,
+-                           "graphiti_write":  false,
+-                           "neo4j_write":  false,
+-                           "real_action":  false,
+-                           "proxy_source":  "GRAPHITI_V20_HTTP"
+-                       },
+-     "graphiti_write":  false,
+-     "neo4j_write":  false
+- }
+- 
+- --- GET /api/graphiti/search?q=Brody&limit=5 ---
+- {
+-     "readonly":  true,
+-     "advisory_only":  true,
+-     "emits_act":  false,
+-     "emits_verdict":  false,
+-     "decision_authority":  "KX108_ONLY",
+-     "memory_write":  false,
+-     "kernel_mutation":  false,
+-     "real_action":  false,
+-     "source":  "GRAPHITI_V20_HTTP",
+-     "timestamp":  "2026-05-27T04:59:14.109034+00:00",
+-     "q":  "Brody",
+-     "results":  [
+- 
+-                 ],
+-     "count":  0,
+-     "entity_count":  0,
+-     "relation_count":  0,
+-     "entities":  [
+- 
+-                  ],
+-     "relations":  [
+- 
+-                   ],
+-     "proxy_source":  "GRAPHITI_V20_HTTP",
+-     "graphiti_write":  false,
+-     "neo4j_write":  false
+- }
+- 
+- GRAPHITI_V20_PROXY_SMOKE_DONE
+
+## Pytest output
+- .........                                                                [100%]
+- 9 passed in 2.30s
+
+## Boundary readback
+- graphiti_source = GRAPHITI_V20_HTTP
+- graphiti_proxy_source = GRAPHITI_V20_HTTP
+- graphiti_decision_authority = KX108_ONLY
+- graphiti_write = False
+- neo4j_write = False
+- emits_act = False
+- emits_verdict = False
+- memory_source = REAL_BACKEND
+- memory_decision_authority = KX108_ONLY
+- memory_write = False
+- memory_readonly = True
+
+## Boundary
+- No mutation.
+- No X108 mutation.
+- No kernel mutation.
+- KX108_ONLY remains sole decision authority.

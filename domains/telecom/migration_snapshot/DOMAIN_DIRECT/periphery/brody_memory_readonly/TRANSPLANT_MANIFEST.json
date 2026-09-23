@@ -1,0 +1,55 @@
+﻿{
+    "status":  "X108_BRODY_MEMORY_READONLY_TRANSPLANT_PREPARED",
+    "date":  "20260512_213449",
+    "transplant":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449",
+    "candidate":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate",
+    "x108":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs",
+    "readonly":  true,
+    "memory_authority":  false,
+    "memory_decision":  false,
+    "allowed_to_decide":  false,
+    "emits_act":  false,
+    "kernel_binding":  false,
+    "x108_merge":  false,
+    "kernel_mutation":  false,
+    "x108_mutation":  false,
+    "decision_authority":  "KX108_ONLY",
+    "items":  [
+                  {
+                      "name":  "world_source_intake_runtime",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_world_source_intake_readonly",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\world_source_intake_runtime",
+                      "copied":  true
+                  },
+                  {
+                      "name":  "session_trace_ledger_runtime",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\zip1_sandbox_mutable\\ZIP1_X108_MUTABLE_20260508_183610\\periphery\\brody_obsidien_v1_6_3_session_trace_ledger_readonly",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\session_trace_ledger_runtime",
+                      "copied":  true
+                  },
+                  {
+                      "name":  "latest_world_intake_pointer",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\_world_intake\\CURRENT_BRODY_WORLD_SOURCE_INTAKE_READONLY.txt",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\latest_world_intake_pointer",
+                      "copied":  true
+                  },
+                  {
+                      "name":  "latest_session_ledger_pointer",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\CURRENT_BRODY_SESSION_TRACE_LEDGER_READONLY.txt",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\latest_session_ledger_pointer",
+                      "copied":  true
+                  },
+                  {
+                      "name":  "graphiti_readonly_pointer",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\CURRENT_GRAPHITI_READONLY_INDEX.txt",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\graphiti_readonly_pointer",
+                      "copied":  true
+                  },
+                  {
+                      "name":  "clean_source_pointer",
+                      "src":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\CURRENT_PROJECT_MEMORY_CLEAN_SOURCE_NO_INDEX.txt",
+                      "dst":  "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\_transplants\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\clean_source_pointer",
+                      "copied":  true
+                  }
+              ]
+}

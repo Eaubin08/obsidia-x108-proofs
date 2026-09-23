@@ -1,0 +1,3 @@
+status: REFERENCE_ONLY
+objects: []
+note: "Use legacy_sources as evidence; no UDIP object map is implemented in this scaffold."

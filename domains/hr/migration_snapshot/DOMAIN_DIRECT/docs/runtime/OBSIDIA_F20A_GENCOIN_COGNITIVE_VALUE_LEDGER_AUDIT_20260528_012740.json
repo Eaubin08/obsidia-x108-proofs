@@ -1,0 +1,6454 @@
+{
+  "checkpoint": "F20A_GENCOIN_COGNITIVE_VALUE_LEDGER_AUDIT",
+  "mode": "READ_ONLY",
+  "timestamp": "20260528_012740",
+  "classification": "SHADOW_VALUE_REAL_LEDGER_PARITY_NEEDS_VALIDATION",
+  "brody_summary_8000": {
+    "port": 8000,
+    "http_status": 200,
+    "source": "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY",
+    "graphiti_status": "GRAPHITI_V20_FROZEN_READONLY_PASS",
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "gencoin_present": true,
+    "gencoin_version": "GENCOIN_SHADOW_VALUE_PACKET_V1",
+    "gencoin_mode": "SHADOW_READONLY",
+    "usable_shadow_value": true,
+    "final_scoring_enabled": false,
+    "economic_scoring_enabled": false,
+    "blockchain_enabled": false,
+    "memory_promotion_enabled": false,
+    "shadow_scores": {
+      "cognitive_value": 0.94,
+      "proof_value": 0.89,
+      "reuse_value": 0.832,
+      "memory_value": 0.795,
+      "attention_cost": 0.2,
+      "energy_cost": 0.108,
+      "stability_value": 0.95,
+      "economic_projection": null
+    },
+    "shadow_scores_numeric_count": 7,
+    "gencoin_reason": "GENCOIN_SHADOW_USABLE_ALL_PRECONDITIONS_MET",
+    "value_layer_present": true,
+    "value_layer_keys": [
+      "advisory_only",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "final_scoring_enabled",
+      "graphiti_write",
+      "input_status",
+      "inputs_available",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "scores",
+      "status",
+      "version",
+      "x108_mutation"
+    ],
+    "value_layer_scores": {
+      "cognitive_value": null,
+      "proof_value": null,
+      "reuse_value": null,
+      "memory_value": null,
+      "attention_cost": null,
+      "energy_cost": null,
+      "stability_value": null,
+      "economic_projection": null
+    },
+    "value_layer_scores_numeric_count": 0,
+    "thermo_unified_present": true,
+    "thermo_unified_status": "THERMO_COHERENCE_TIME_UNIFIED_READONLY_PASS",
+    "thermo_unified_usable_for_gencoin": true,
+    "thermo_unified_composite_temperature": 0.1373,
+    "thermodynamics_usable_for_gencoin": true,
+    "sigma_usable_for_gencoin": true,
+    "anti_mismatch_risk_level": "NONE",
+    "memory_guard_status": null,
+    "memory_guard_allows_promotion": null,
+    "term_paths": [
+      {
+        "path": "runtime_components.gencoin",
+        "preview": "REAL_MODULE"
+      },
+      {
+        "path": "ir_candidate.entities[0].source_token",
+        "preview": "x108"
+      },
+      {
+        "path": "automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "runtime_context.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "runtime_context.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "contracts.forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "machination_packet.contracts.forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "machination_packet.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "machination_packet.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "machination_packet.runtime_context.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "machination_packet.runtime_context.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.ir_candidate_snapshot.entities[0].source_token",
+        "preview": "x108"
+      },
+      {
+        "path": "value_layer",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "value_layer.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "value_layer.scores.cognitive_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.proof_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.reuse_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.memory_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.attention_cost",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.energy_cost",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.stability_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.economic_projection",
+        "preview": null
+      },
+      {
+        "path": "value_layer.inputs_available.gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "value_layer.input_status.gencoin_shadow",
+        "preview": "USABLE_SHADOW_VALUE"
+      },
+      {
+        "path": "sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "thermo_unified_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermo_unified_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermo_unified_packet.energy_thermo_packet.input_payload.energy_cost",
+        "preview": 0.108
+      },
+      {
+        "path": "thermo_unified_packet.energy_thermo_packet.input_payload.attention_cost",
+        "preview": 0.5
+      },
+      {
+        "path": "thermo_unified_packet.coherence_shadow_packet.ledger_ok_count",
+        "preview": 1
+      },
+      {
+        "path": "thermo_unified_packet.coherence_shadow_packet.ledger_ratio",
+        "preview": 1.0
+      },
+      {
+        "path": "gencoin_shadow_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "gencoin_shadow_packet.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.economic_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.blockchain_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.usable_shadow_value",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.cognitive_value",
+        "preview": 0.94
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.proof_value",
+        "preview": 0.89
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.reuse_value",
+        "preview": 0.832
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.memory_value",
+        "preview": 0.795
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.attention_cost",
+        "preview": 0.2
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.energy_cost",
+        "preview": 0.108
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.stability_value",
+        "preview": 0.95
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.economic_projection",
+        "preview": null
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.sigma_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.thermo_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "tree_signal_packet.usable_for_gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.inputs.has_gencoin_shadow_packet",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.gencoin_shadow_usable",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.cognitive_value",
+        "preview": 0.94
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.proof_value",
+        "preview": 0.89
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.memory_value",
+        "preview": 0.795
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.stability_value",
+        "preview": 0.95
+      },
+      {
+        "path": "operator_view_packet.readiness.value_layer",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.readiness.gencoin_shadow",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.usable.sigma_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.usable.thermo_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.usable.gencoin_shadow_value",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.blocked.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.blocked.value_layer_scores_not_null",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.evidence.gencoin_shadow_usable",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.evidence.value_layer_final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.evidence.value_layer_scores_null",
+        "preview": true
+      }
+    ],
+    "classification": "SHADOW_VALUE_REAL_PRESENT_LEDGER_NOT_FINAL"
+  },
+  "brody_summary_8012": {
+    "port": 8012,
+    "http_status": 200,
+    "source": "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY",
+    "graphiti_status": "GRAPHITI_V20_FROZEN_READONLY_PASS",
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "gencoin_present": true,
+    "gencoin_version": "GENCOIN_SHADOW_VALUE_PACKET_V1",
+    "gencoin_mode": "SHADOW_READONLY",
+    "usable_shadow_value": true,
+    "final_scoring_enabled": false,
+    "economic_scoring_enabled": false,
+    "blockchain_enabled": false,
+    "memory_promotion_enabled": false,
+    "shadow_scores": {
+      "cognitive_value": 0.94,
+      "proof_value": 0.89,
+      "reuse_value": 0.832,
+      "memory_value": 0.795,
+      "attention_cost": 0.2,
+      "energy_cost": 0.108,
+      "stability_value": 0.95,
+      "economic_projection": null
+    },
+    "shadow_scores_numeric_count": 7,
+    "gencoin_reason": "GENCOIN_SHADOW_USABLE_ALL_PRECONDITIONS_MET",
+    "value_layer_present": true,
+    "value_layer_keys": [
+      "advisory_only",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "final_scoring_enabled",
+      "graphiti_write",
+      "input_status",
+      "inputs_available",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "scores",
+      "status",
+      "version",
+      "x108_mutation"
+    ],
+    "value_layer_scores": {
+      "cognitive_value": null,
+      "proof_value": null,
+      "reuse_value": null,
+      "memory_value": null,
+      "attention_cost": null,
+      "energy_cost": null,
+      "stability_value": null,
+      "economic_projection": null
+    },
+    "value_layer_scores_numeric_count": 0,
+    "thermo_unified_present": true,
+    "thermo_unified_status": "THERMO_COHERENCE_TIME_UNIFIED_READONLY_PASS",
+    "thermo_unified_usable_for_gencoin": true,
+    "thermo_unified_composite_temperature": 0.1373,
+    "thermodynamics_usable_for_gencoin": true,
+    "sigma_usable_for_gencoin": true,
+    "anti_mismatch_risk_level": "NONE",
+    "memory_guard_status": null,
+    "memory_guard_allows_promotion": null,
+    "term_paths": [
+      {
+        "path": "runtime_components.gencoin",
+        "preview": "REAL_MODULE"
+      },
+      {
+        "path": "ir_candidate.entities[0].source_token",
+        "preview": "x108"
+      },
+      {
+        "path": "automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "runtime_context.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "runtime_context.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "contracts.forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "machination_packet.contracts.forbidden_output_contract.forbidden_tokens_as_authority",
+        "preview": "list[6]"
+      },
+      {
+        "path": "machination_packet.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "machination_packet.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "machination_packet.runtime_context.automation_snapshot.session_ledger",
+        "preview": "dict[7]"
+      },
+      {
+        "path": "machination_packet.runtime_context.candidate_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.candidate_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.temporal_context_snapshot.future_context.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.candidate_ledger_count",
+        "preview": 85
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.available_sources.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.project_memory_snapshot.project_ledgers",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.session_memory_snapshot.session_ledger_v2_found",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.session_memory_snapshot.session_ledger",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.memory_pipeline.session_ledger",
+        "preview": "NOT_FOUND"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.ir_candidate_snapshot.entities[0].source_token",
+        "preview": "x108"
+      },
+      {
+        "path": "value_layer",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "value_layer.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "value_layer.scores.cognitive_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.proof_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.reuse_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.memory_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.attention_cost",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.energy_cost",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.stability_value",
+        "preview": null
+      },
+      {
+        "path": "value_layer.scores.economic_projection",
+        "preview": null
+      },
+      {
+        "path": "value_layer.inputs_available.gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "value_layer.input_status.gencoin_shadow",
+        "preview": "USABLE_SHADOW_VALUE"
+      },
+      {
+        "path": "sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "thermo_unified_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermo_unified_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermo_unified_packet.energy_thermo_packet.input_payload.energy_cost",
+        "preview": 0.108
+      },
+      {
+        "path": "thermo_unified_packet.energy_thermo_packet.input_payload.attention_cost",
+        "preview": 0.5
+      },
+      {
+        "path": "thermo_unified_packet.coherence_shadow_packet.ledger_ok_count",
+        "preview": 1
+      },
+      {
+        "path": "thermo_unified_packet.coherence_shadow_packet.ledger_ratio",
+        "preview": 1.0
+      },
+      {
+        "path": "gencoin_shadow_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "gencoin_shadow_packet.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.economic_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.blockchain_enabled",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.usable_shadow_value",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.cognitive_value",
+        "preview": 0.94
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.proof_value",
+        "preview": 0.89
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.reuse_value",
+        "preview": 0.832
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.memory_value",
+        "preview": 0.795
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.attention_cost",
+        "preview": 0.2
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.energy_cost",
+        "preview": 0.108
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.stability_value",
+        "preview": 0.95
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.economic_projection",
+        "preview": null
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.sigma_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.thermo_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "tree_signal_packet.usable_for_gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.inputs.has_gencoin_shadow_packet",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.gencoin_shadow_usable",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.cognitive_value",
+        "preview": 0.94
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.proof_value",
+        "preview": 0.89
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.memory_value",
+        "preview": 0.795
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.stability_value",
+        "preview": 0.95
+      },
+      {
+        "path": "operator_view_packet.readiness.value_layer",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.readiness.gencoin_shadow",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.usable.sigma_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.usable.thermo_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.usable.gencoin_shadow_value",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.blocked.final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.blocked.value_layer_scores_not_null",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.evidence.gencoin_shadow_usable",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.evidence.value_layer_final_scoring_enabled",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.evidence.value_layer_scores_null",
+        "preview": true
+      }
+    ],
+    "classification": "SHADOW_VALUE_REAL_PRESENT_LEDGER_NOT_FINAL"
+  },
+  "routes": [
+    {
+      "route": "/api/blockchain/agents/status",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/blockchain/classifiers/fraud-check",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/gencoin/compute",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/policy/evaluate",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/sandbox/simulate",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/sandbox/truth-gate",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/signature/check",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/status",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/blockchain/wallet/gate",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/world/bus-dispatch",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/world/dry-run",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/world/gateway",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/blockchain/world/ticket-status",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/gencoin",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/memory/candidate-ledger",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/avdr-phase",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/balance",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/collective-summary",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/consciousness-regime",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/passfail",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/periphery/gencoin/regime-state",
+      "methods": [
+        "POST"
+      ]
+    }
+  ],
+  "route_probes": [
+    {
+      "route": "/api/blockchain/agents/status",
+      "method": "GET",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "advisory_only",
+        "agent_count",
+        "agents",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "source",
+        "timestamp"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 15
+    },
+    {
+      "route": "/api/blockchain/classifiers/fraud-check",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_decision",
+        "action_id",
+        "advisory_only",
+        "aggregate_gate",
+        "audit_packet",
+        "bridge_risk",
+        "chain_context",
+        "contract_risk",
+        "decision_authority",
+        "defi_risk",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "source",
+        "timestamp",
+        "tx_simulation"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 3
+    },
+    {
+      "route": "/api/blockchain/gencoin/compute",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "gencoin_candidate",
+        "kernel_mutation",
+        "memory_write",
+        "mint_allowed",
+        "net_value",
+        "readonly",
+        "real_action",
+        "regime_state",
+        "source",
+        "status",
+        "timestamp",
+        "total_debt",
+        "truth_score"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": "DEBT_NOT_ADMISSIBLE",
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [
+        {
+          "path": "mint_allowed",
+          "preview": false
+        },
+        {
+          "path": "gencoin_candidate",
+          "preview": 0.0
+        }
+      ],
+      "numeric_count": 4
+    },
+    {
+      "route": "/api/blockchain/policy/evaluate",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/blockchain/sandbox/simulate",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "L_total",
+        "advisory_only",
+        "assisted_ratio",
+        "decision_authority",
+        "delta_g",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "pout",
+        "readonly",
+        "real_action",
+        "sigma_score",
+        "source",
+        "state",
+        "timestamp",
+        "topology_losses",
+        "truth_score"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 7
+    },
+    {
+      "route": "/api/blockchain/sandbox/truth-gate",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "assisted_ratio",
+        "block_reason",
+        "contradictions",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "gencoin_blocked",
+        "gencoin_candidate",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "regime_sigma_score",
+        "regime_state",
+        "risk_flags",
+        "source",
+        "timestamp",
+        "truth_score",
+        "unknowns"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [
+        {
+          "path": "gencoin_candidate",
+          "preview": 0.0
+        },
+        {
+          "path": "gencoin_blocked",
+          "preview": false
+        }
+      ],
+      "numeric_count": 4
+    },
+    {
+      "route": "/api/blockchain/signature/check",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/blockchain/status",
+      "method": "GET",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "advisory_only",
+        "classified_actions",
+        "decision_authority",
+        "dry_run_only",
+        "emits_act",
+        "emits_verdict",
+        "gate_status",
+        "kernel_mutation",
+        "memory_write",
+        "mode",
+        "readonly",
+        "real_action",
+        "real_chain_action_allowed",
+        "source",
+        "timestamp",
+        "wallet_connected"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [
+        {
+          "path": "wallet_connected",
+          "preview": false
+        }
+      ],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/blockchain/wallet/gate",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/blockchain/world/bus-dispatch",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "action_risk_class",
+        "advisory_only",
+        "autonomy_level",
+        "block_reason",
+        "blocked",
+        "computed_autonomy_level",
+        "decision_authority",
+        "domain",
+        "dry_run_only",
+        "effective_autonomy_level",
+        "egress_gate",
+        "egress_reason",
+        "emits_act",
+        "emits_verdict",
+        "event_id",
+        "intent",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "route",
+        "route_gate_required",
+        "route_human_checkpoint",
+        "source",
+        "sovereign_ticket_id",
+        "timestamp",
+        "world_call_class"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 3
+    },
+    {
+      "route": "/api/blockchain/world/dry-run",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "blocked_capabilities",
+        "consent_checkpoint_required",
+        "decision_authority",
+        "domain",
+        "dry_run_only",
+        "emits_act",
+        "emits_verdict",
+        "gencoin_candidate",
+        "kernel_mutation",
+        "memory_write",
+        "os3_valid",
+        "readonly",
+        "real_action",
+        "reason",
+        "requires_human_takeover",
+        "source",
+        "timestamp",
+        "world_action_allowed",
+        "x108_gate"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": "V4_CONTROLLED_RUNTIME_DRY_RUN_ONLY",
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [
+        {
+          "path": "gencoin_candidate",
+          "preview": 0.0
+        }
+      ],
+      "numeric_count": 1
+    },
+    {
+      "route": "/api/blockchain/world/gateway",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "action_risk_class",
+        "advisory_only",
+        "computed_autonomy_level",
+        "decision_authority",
+        "dimensional_hygiene_pass",
+        "dry_run_executed",
+        "dry_run_only",
+        "dry_run_simulated",
+        "effective_autonomy_level",
+        "egress_allowed",
+        "egress_gate",
+        "egress_reason",
+        "emits_act",
+        "emits_verdict",
+        "frequency_flux_validated",
+        "frequency_matched_tags",
+        "gate_result",
+        "kernel_mutation",
+        "memory_write",
+        "physics_claim_gate",
+        "physics_claim_reason",
+        "readonly",
+        "real_action",
+        "reason",
+        "requires_human_approval",
+        "requires_x108_gate",
+        "route",
+        "route_gate_required",
+        "route_human_checkpoint",
+        "source",
+        "sovereign_ticket",
+        "sovereign_ticket_id",
+        "symbolic_tags",
+        "timestamp",
+        "trajectory_state",
+        "world_call_class"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": "V4_DRY_RUN_ONLY",
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 3
+    },
+    {
+      "route": "/api/blockchain/world/ticket-status",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/gencoin",
+      "method": "GET",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "advisory_only",
+        "count",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "entries",
+        "execution_allowed",
+        "graphiti_write",
+        "is_real_token",
+        "kernel_mutation",
+        "ledger_only",
+        "memory_write",
+        "no_mint",
+        "no_wallet",
+        "post_proof_only",
+        "readonly",
+        "real_action",
+        "reason",
+        "source",
+        "status",
+        "timestamp",
+        "total",
+        "x108_mutation"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "LIVE_EMPTY_REGISTRY",
+        "status": "LIVE_EMPTY_REGISTRY",
+        "total": 0,
+        "count": 0,
+        "reason": "NO_REAL_GENCOIN_LEDGER_ENTRY_YET",
+        "no_wallet": true,
+        "no_mint": true,
+        "is_real_token": false
+      },
+      "term_paths": [
+        {
+          "path": "is_real_token",
+          "preview": false
+        },
+        {
+          "path": "no_wallet",
+          "preview": true
+        },
+        {
+          "path": "no_mint",
+          "preview": true
+        },
+        {
+          "path": "ledger_only",
+          "preview": true
+        }
+      ],
+      "numeric_count": 2
+    },
+    {
+      "route": "/api/memory/candidate-ledger",
+      "method": "GET",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "advisory_only",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "ledger",
+        "memory_write",
+        "mode",
+        "readonly",
+        "real_action",
+        "source",
+        "timestamp"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "BACKEND_STUB",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [
+        {
+          "path": "ledger",
+          "preview": "list[0]"
+        }
+      ],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/periphery/gencoin/avdr-phase",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "avdr_phase",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "reason",
+        "regime_sigma_score",
+        "source",
+        "timestamp",
+        "truth_score"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": "PARTIAL_TRUTH_REGIME_EXPLORATION",
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 2
+    },
+    {
+      "route": "/api/periphery/gencoin/balance",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "balance_score",
+        "coherence",
+        "cost",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "risk",
+        "source",
+        "stability",
+        "status",
+        "timestamp",
+        "utility"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": "orbite",
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 6
+    },
+    {
+      "route": "/api/periphery/gencoin/collective-summary",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/periphery/gencoin/consciousness-regime",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/periphery/gencoin/passfail",
+      "method": "POST",
+      "ok": false,
+      "status": 0,
+      "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+      "keys": [],
+      "summary": {
+        "decision_authority": null,
+        "readonly": null,
+        "emits_act": null,
+        "source": null,
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 0
+    },
+    {
+      "route": "/api/periphery/gencoin/regime-state",
+      "method": "POST",
+      "ok": true,
+      "status": 200,
+      "error": null,
+      "keys": [
+        "advisory_only",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "is_admissible",
+        "is_assisted_on",
+        "is_false_on",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "regime",
+        "sigma_score",
+        "source",
+        "timestamp",
+        "truth_score"
+      ],
+      "summary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "source": "REAL_BACKEND",
+        "status": null,
+        "total": null,
+        "count": null,
+        "reason": null,
+        "no_wallet": null,
+        "no_mint": null,
+        "is_real_token": null
+      },
+      "term_paths": [],
+      "numeric_count": 2
+    }
+  ],
+  "ledger_probe": {
+    "readonly": true,
+    "advisory_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "decision_authority": "KX108_ONLY",
+    "memory_write": false,
+    "kernel_mutation": false,
+    "real_action": false,
+    "source": "LIVE_EMPTY_REGISTRY",
+    "timestamp": "2026-05-28T01:27:45.778146+00:00",
+    "entries": [],
+    "total": 0,
+    "status": "LIVE_EMPTY_REGISTRY",
+    "count": 0,
+    "reason": "NO_REAL_GENCOIN_LEDGER_ENTRY_YET",
+    "is_real_token": false,
+    "no_wallet": true,
+    "no_mint": true,
+    "post_proof_only": true,
+    "ledger_only": true,
+    "graphiti_write": false,
+    "x108_mutation": false,
+    "execution_allowed": false
+  },
+  "source_scan_counts": {
+    "RELATED": 101,
+    "GENCOIN_LEDGER_ROUTE": 12,
+    "LEDGER_SOURCE": 69,
+    "BLOCKCHAIN_TOKEN_BOUNDARY": 63,
+    "BRODY_GENCOIN_SHADOW_VALUE": 2,
+    "GENCOIN_TRANSVERSE_INTERFACE": 7,
+    "VALUE_LAYER_SOURCE": 13,
+    "GENCOIN_SANDBOX": 15
+  },
+  "source_scan_sample": [
+    {
+      "path": "apps\\obsidia-workbench\\audit_brody.py",
+      "size": 479,
+      "hits": [
+        {
+          "line": 6,
+          "text": "    'message': 'Explique ton architecture technique. Comment re?ois-tu les ?v?nements Gencoin et pourquoi es-tu en mode readonly ?',"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\BACKEND_BINDING_PLAN_X108_PROOFS.md",
+      "size": 3919,
+      "hits": [
+        {
+          "line": 23,
+          "text": "| `getGencoinLedger()` | MOCK_ONLY | `periphery/gencoin_ledger.py` | `GET /api/gencoin/ledger` | readonly |"
+        },
+        {
+          "line": 62,
+          "text": "| `GET /api/alphabet/units` | Symbolic tokenization | new module needed |"
+        },
+        {
+          "line": 72,
+          "text": "- No wallet/chain endpoints"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\BACKEND_DISCOVERY_REPORT.md",
+      "size": 4009,
+      "hits": [
+        {
+          "line": 62,
+          "text": "| `/auth/token` | POST | JWT mint |"
+        },
+        {
+          "line": 91,
+          "text": "| `getGencoinLedger()` | *no endpoint — mock only* | `MOCK_GENCOIN` |"
+        },
+        {
+          "line": 97,
+          "text": "All backend calls from the workbench are GET (read-only). No mutation. No wallet. No real action. `real_chain_action_allowed=false` enforced client-side."
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\FASTAPI_ADAPTER_PLAN.md",
+      "size": 3783,
+      "hits": [
+        {
+          "line": 21,
+          "text": "      gencoin.py     # GET /api/gencoin/ledger"
+        },
+        {
+          "line": 23,
+          "text": "      blockchain.py  # GET /api/blockchain/status"
+        },
+        {
+          "line": 63,
+          "text": "### OS3 / Gencoin / WorldCalls"
+        },
+        {
+          "line": 69,
+          "text": "GET  /api/gencoin/ledger"
+        },
+        {
+          "line": 70,
+          "text": "  → list[GencoinEntry] (ledger_only=true, is_real_token=false)"
+        },
+        {
+          "line": 75,
+          "text": "GET  /api/blockchain/status"
+        },
+        {
+          "line": 76,
+          "text": "  → { chain_action_allowed: false, wallet_signing: false }"
+        },
+        {
+          "line": 98,
+          "text": "  → list[AlphabetUnit] (symbolic tokenization, read-only)"
+        },
+        {
+          "line": 123,
+          "text": "| No wallet/chain endpoint | ✓ |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\FRONTEND_BACKEND_BRIDGE_REPORT.md",
+      "size": 4951,
+      "hits": [
+        {
+          "line": 114,
+          "text": "| `getGencoinLedger()` | GET `/gencoin/ledger` |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\LOCAL_RUNBOOK.md",
+      "size": 2686,
+      "hits": [
+        {
+          "line": 111,
+          "text": "| `Gencoin is real token` | `false` |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md",
+      "size": 4768,
+      "hits": [
+        {
+          "line": 54,
+          "text": "_FORBIDDEN_TOKENS = {\"ALLOW\", \"HOLD\", \"BLOCK\", \"ACT\", \"DECIDE\", \"VERDICT\"}"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\package-lock.json",
+      "size": 124688,
+      "hits": [
+        {
+          "line": 53,
+          "text": "        \"js-tokens\": \"^4.0.0\","
+        },
+        {
+          "line": 2155,
+          "text": "    \"node_modules/js-tokens\": {"
+        },
+        {
+          "line": 2157,
+          "text": "      \"resolved\": \"https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz\","
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\README_OBSIDIA_WORKBENCH.md",
+      "size": 3875,
+      "hits": [
+        {
+          "line": 32,
+          "text": "│ Invariant    │  memory_write=false          │  GENCOIN              │"
+        },
+        {
+          "line": 47,
+          "text": "| **GENCOIN** | Ledger entries — not a real token, post-proof only |"
+        },
+        {
+          "line": 63,
+          "text": "| `Gencoin is_real_token` | `false` |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\WORKBENCH_BUILD_REPORT.md",
+      "size": 1445,
+      "hits": [
+        {
+          "line": 50,
+          "text": "| No wallet / payment / trade | ✓ Gencoin is ledger-only display |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\WORKBENCH_LOCALHOST_REPORT.md",
+      "size": 1825,
+      "hits": [
+        {
+          "line": 69,
+          "text": "| Sovereignty constraints | ✓ No real action, no write, no wallet |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\WORKBENCH_V2_BACKEND_STATUS_REPORT.md",
+      "size": 2037,
+      "hits": [
+        {
+          "line": 18,
+          "text": "| Gencoin API | STUB | /api/gencoin | 8000 |"
+        },
+        {
+          "line": 20,
+          "text": "| Blockchain Gate | STUB | /api/blockchain/status | 8000 |"
+        },
+        {
+          "line": 21,
+          "text": "| Memory Ledger | STUB | /api/memory | 8000 |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\WORKBENCH_V2_BUILD_REPORT.md",
+      "size": 2266,
+      "hits": [
+        {
+          "line": 48,
+          "text": "- `symbolicAlphabet.ts` — symbolic tokenizer"
+        },
+        {
+          "line": 62,
+          "text": "- `GencoinView.tsx`"
+        },
+        {
+          "line": 64,
+          "text": "- `BlockchainView.tsx`"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\WORKBENCH_V2_UI_REPORT.md",
+      "size": 3149,
+      "hits": [
+        {
+          "line": 63,
+          "text": "| `gencoin` | GencoinView | ✓ |"
+        },
+        {
+          "line": 65,
+          "text": "| `blockchain` | BlockchainView | ✓ |"
+        },
+        {
+          "line": 107,
+          "text": "| No wallet / payment / trade | ✓ |"
+        },
+        {
+          "line": 112,
+          "text": "| Gencoin is_real_token = false | ✓ |"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\BACKEND_RUNTIME_DISCOVERY_REPORT.md",
+      "size": 6802,
+      "hits": [
+        {
+          "line": 30,
+          "text": "| 11 | `getGencoinLedger()` | `periphery/gencoin_ledger.py:read_ledger()` | YES | REAL_BACKEND (reads audit/gencoin_ledger.jsonl if exists, else stub) |"
+        },
+        {
+          "line": 33,
+          "text": "| 14 | `getBlockchainStatus()` | `periphery/blockchain/blockchain_action_classifier.py:classify_blockchain_action()` | YES | REAL_BACKEND |"
+        },
+        {
+          "line": 53,
+          "text": "| `GET  /api/gencoin` | GET | REAL_BACKEND (reads ledger file) |"
+        },
+        {
+          "line": 55,
+          "text": "| `GET  /api/blockchain/status` | GET | REAL_BACKEND |"
+        },
+        {
+          "line": 71,
+          "text": "| `periphery/reverse_os/action_projection_readonly.py` | `project_action_readonly(projection_id, intent, context)` | `_FORBIDDEN_TOKENS` enforced; returns `ActionProjection` |"
+        },
+        {
+          "line": 75,
+          "text": "| `periphery/gencoin_ledger.py` | `read_ledger()` | Reads `audit/gencoin_ledger.jsonl`; returns `[]` if file absent |"
+        },
+        {
+          "line": 76,
+          "text": "| `periphery/blockchain/blockchain_action_classifier.py` | `classify_blockchain_action(action_id, action_class)` | Returns `BlockchainActionDecision` |"
+        },
+        {
+          "line": 84,
+          "text": "| `periphery/os_trad/` | IR building, alphabet tokenization live in frontend only |"
+        },
+        {
+          "line": 109,
+          "text": "- NEVER connects a wallet or signs a transaction"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_automation_orchestrator.py",
+      "size": 17978,
+      "hits": [
+        {
+          "line": 56,
+          "text": "_LEDGER_OK = False"
+        },
+        {
+          "line": 57,
+          "text": "_ledger_build: Any = None"
+        },
+        {
+          "line": 59,
+          "text": "    _add_path(\"session_memory_ledger_readonly\")"
+        },
+        {
+          "line": 60,
+          "text": "    from brody_session_memory_ledger_readonly_v2 import build_record as _ledger_build  # type: ignore"
+        },
+        {
+          "line": 61,
+          "text": "    _LEDGER_OK = True"
+        },
+        {
+          "line": 123,
+          "text": "def _run_session_ledger("
+        },
+        {
+          "line": 129,
+          "text": "    if not _LEDGER_OK or _ledger_build is None:"
+        },
+        {
+          "line": 132,
+          "text": "            \"status\": \"LEDGER_MODULE_UNAVAILABLE\","
+        },
+        {
+          "line": 137,
+          "text": "    # Build boundary-conforming response dict for ledger validator"
+        },
+        {
+          "line": 161,
+          "text": "        result = _ledger_build("
+        },
+        {
+          "line": 169,
+          "text": "            \"status\": result.get(\"status\", \"LEDGER_PASS\"),"
+        },
+        {
+          "line": 179,
+          "text": "            \"status\": f\"LEDGER_ERROR:{type(exc).__name__}\","
+        },
+        {
+          "line": 394,
+          "text": "    allowed.append(\"session_ledger_candidate_readonly\")"
+        },
+        {
+          "line": 421,
+          "text": "    # 1. Session ledger (always)"
+        },
+        {
+          "line": 422,
+          "text": "    ledger = _run_session_ledger(session_id, user_message, response_md, context_packet)"
+        },
+        {
+          "line": 480,
+          "text": "        \"session_ledger\": ledger,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_candidate_memory_adapter.py",
+      "size": 3590,
+      "hits": [
+        {
+          "line": 10,
+          "text": "  - memory_candidate_ledger (JSONL)"
+        },
+        {
+          "line": 12,
+          "text": "No invention — reports what exists in freeze files and ledgers."
+        },
+        {
+          "line": 62,
+          "text": "    # Check candidate ledger"
+        },
+        {
+          "line": 63,
+          "text": "    ledger_path = workspace / \"_local_audits\" / \"memory_candidate_ledger.jsonl\""
+        },
+        {
+          "line": 64,
+          "text": "    ledger_found = ledger_path.exists()"
+        },
+        {
+          "line": 68,
+          "text": "    if ledger_found:"
+        },
+        {
+          "line": 70,
+          "text": "            lines = ledger_path.read_text(encoding=\"utf-8\").strip().splitlines()"
+        },
+        {
+          "line": 75,
+          "text": "            ledger_found = False"
+        },
+        {
+          "line": 91,
+          "text": "        \"candidate_ledger_found\": ledger_found,"
+        },
+        {
+          "line": 92,
+          "text": "        \"candidate_ledger_count\": candidate_count,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_contracts_packet.py",
+      "size": 11680,
+      "hits": [
+        {
+          "line": 37,
+          "text": "    \"forbidden_tokens_as_authority\": ["
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_existing_reverse_os_bridge.py",
+      "size": 9853,
+      "hits": [
+        {
+          "line": 133,
+          "text": "    for token, entity in ["
+        },
+        {
+          "line": 147,
+          "text": "        if token in msg and entity not in [e.get(\"entity\") for e in entities]:"
+        },
+        {
+          "line": 148,
+          "text": "            entities.append({\"entity\": entity, \"source_token\": token, \"readonly\": True})"
+        },
+        {
+          "line": 241,
+          "text": "                    \"raw\": token,"
+        },
+        {
+          "line": 242,
+          "text": "                    \"normalized\": token.lower(),"
+        },
+        {
+          "line": 246,
+          "text": "                for idx, token in enumerate((user_message or \"\").split())"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_freeze_metrics_snapshot.py",
+      "size": 16894,
+      "hits": [
+        {
+          "line": 145,
+          "text": "    session_ledger_status = _metric_value(parsed, \"SESSION_MEMORY_LEDGER\", \"STATUS\", \"NOT_FOUND\")"
+        },
+        {
+          "line": 152,
+          "text": "    memory_write_val = _metric_value(parsed, \"SESSION_MEMORY_LEDGER\", \"MEMORY_INTAKE\", False)"
+        },
+        {
+          "line": 154,
+          "text": "    neo4j_write_val = _metric_value(parsed, \"SESSION_MEMORY_LEDGER\", \"NEO4J_WRITE_EXECUTED\", False)"
+        },
+        {
+          "line": 158,
+          "text": "        \"session_ledger\": _safe_status(session_ledger_status),"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_full_runtime_orchestrator.py",
+      "size": 14756,
+      "hits": [
+        {
+          "line": 19,
+          "text": "_SESSION_LEDGER = None"
+        },
+        {
+          "line": 37,
+          "text": "    global _SESSION_LEDGER, _PRESAVE, _SCHEDULER, _TRIAGE, _AUTO_TRIAGE"
+        },
+        {
+          "line": 45,
+          "text": "    _SESSION_LEDGER = _SESSION_LEDGER or _si(P + \"session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2\")"
+        },
+        {
+          "line": 234,
+          "text": "    for name, mod in [(\"session_ledger\", _SESSION_LEDGER), (\"presave\", _PRESAVE),"
+        },
+        {
+          "line": 239,
+          "text": "    if allow_memory_candidate and _SESSION_LEDGER:"
+        },
+        {
+          "line": 241,
+          "text": "            mem_status[\"session_ledger\"] = \"DRY_RUN_ONLY\""
+        },
+        {
+          "line": 243,
+          "text": "            mem_status[\"session_ledger\"] = \"LOADED_BUT_ERROR\""
+        },
+        {
+          "line": 245,
+          "text": "        mem_status[\"session_ledger\"] = \"DISABLED\" if _SESSION_LEDGER else \"NOT_FOUND\""
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_full_runtime_reconnect.py",
+      "size": 8258,
+      "hits": [
+        {
+          "line": 131,
+          "text": "    if not session_memory.get(\"session_ledger_v2_found\"):"
+        },
+        {
+          "line": 132,
+          "text": "        missing.append(\"session_ledger_not_found_for_session_id\")"
+        },
+        {
+          "line": 146,
+          "text": "    if session_memory.get(\"session_ledger_v2_found\"):"
+        },
+        {
+          "line": 147,
+          "text": "        used_modules.append(\"session_memory_ledger_readonly_v2\")"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_gencoin_shadow_value.py",
+      "size": 11974,
+      "hits": [
+        {
+          "line": 1,
+          "text": "\"\"\"Gencoin Shadow Value Layer — F4."
+        },
+        {
+          "line": 4,
+          "text": "Scores are non-null but remain non-final, non-economic, non-blockchain, non-decisive."
+        },
+        {
+          "line": 15,
+          "text": "  final_scoring_enabled      = false"
+        },
+        {
+          "line": 16,
+          "text": "  economic_scoring_enabled   = false"
+        },
+        {
+          "line": 17,
+          "text": "  blockchain_enabled         = false"
+        },
+        {
+          "line": 20,
+          "text": "Gencoin Shadow Value does NOT decide. It does NOT emit ACT or verdict."
+        },
+        {
+          "line": 21,
+          "text": "economic_projection remains null. KX108 decides."
+        },
+        {
+          "line": 41,
+          "text": "    \"cognitive_value\": None,"
+        },
+        {
+          "line": 42,
+          "text": "    \"proof_value\": None,"
+        },
+        {
+          "line": 43,
+          "text": "    \"reuse_value\": None,"
+        },
+        {
+          "line": 44,
+          "text": "    \"memory_value\": None,"
+        },
+        {
+          "line": 45,
+          "text": "    \"attention_cost\": None,"
+        },
+        {
+          "line": 46,
+          "text": "    \"energy_cost\": None,"
+        },
+        {
+          "line": 47,
+          "text": "    \"stability_value\": None,"
+        },
+        {
+          "line": 48,
+          "text": "    \"economic_projection\": None,"
+        },
+        {
+          "line": 60,
+          "text": "def build_gencoin_shadow_value_packet("
+        },
+        {
+          "line": 65,
+          "text": "    value_layer: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 71,
+          "text": "    \"\"\"Build GENCOIN_SHADOW_VALUE_PACKET_V1 — bounded shadow scores, non-final."
+        },
+        {
+          "line": 75,
+          "text": "    Precondition for usable_shadow_value=True (all must hold):"
+        },
+        {
+          "line": 76,
+          "text": "      - sigma_packet.usable_for_gencoin == True"
+        },
+        {
+          "line": 77,
+          "text": "      - thermodynamics_packet.usable_for_gencoin == True"
+        },
+        {
+          "line": 82,
+          "text": "      cognitive_value  = truth_score - mismatch_score*0.30 - entropy_score*0.20"
+        },
+        {
+          "line": 83,
+          "text": "      proof_value      = 0.70*proof_ok + truth_score*0.20 - mismatch_score*0.20"
+        },
+        {
+          "line": 84,
+          "text": "      stability_value  = 1.0 - instability_score"
+        },
+        {
+          "line": 85,
+          "text": "      attention_cost   : word-count band (<80→0.20, 80-350→0.40, 350-800→0.65, >800→0.90)"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_gencoin_transverse_interface.py",
+      "size": 18578,
+      "hits": [
+        {
+          "line": 1,
+          "text": "\"\"\"Gencoin Transverse Interface — F2A / F2B / F2C."
+        },
+        {
+          "line": 18,
+          "text": "  final_scoring_enabled = false"
+        },
+        {
+          "line": 79,
+          "text": "                                       for Gencoin (usable_for_gencoin=False)"
+        },
+        {
+          "line": 86,
+          "text": "      - usable_for_gencoin=True only if CALIBRATED_SHADOW_READONLY."
+        },
+        {
+          "line": 164,
+          "text": "            \"usable_for_gencoin\": False,"
+        },
+        {
+          "line": 226,
+          "text": "        usable_for_gencoin = False"
+        },
+        {
+          "line": 228,
+          "text": "        reason = \"BOUNDARY_COMPACT_CONTEXT_NOT_USEFUL_FOR_VALUE_LAYER\""
+        },
+        {
+          "line": 231,
+          "text": "        usable_for_gencoin = False"
+        },
+        {
+          "line": 236,
+          "text": "        usable_for_gencoin = True"
+        },
+        {
+          "line": 245,
+          "text": "        \"usable_for_gencoin\": usable_for_gencoin,"
+        },
+        {
+          "line": 278,
+          "text": "def build_gencoin_transverse_packet("
+        },
+        {
+          "line": 289,
+          "text": "    gencoin_shadow_packet: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 292,
+          "text": "    \"\"\"Build the GENCOIN_TRANSVERSE_INTERFACE_V0 packet."
+        },
+        {
+          "line": 302,
+          "text": "      gencoin_shadow        : True if GENCOIN_SHADOW_VALUE_PACKET_V1 present (F4+), else False."
+        },
+        {
+          "line": 321,
+          "text": "    gsp = gencoin_shadow_packet if isinstance(gencoin_shadow_packet, dict) else {}"
+        },
+        {
+          "line": 334,
+          "text": "    # gencoin_shadow: F4+ — present if GENCOIN_SHADOW_VALUE_PACKET_V1 wired"
+        },
+        {
+          "line": 335,
+          "text": "    gsp_present = gsp.get(\"version\") == \"GENCOIN_SHADOW_VALUE_PACKET_V1\""
+        },
+        {
+          "line": 336,
+          "text": "    gsp_usable = bool(gsp.get(\"usable_shadow_value\")) if gsp_present else False"
+        },
+        {
+          "line": 369,
+          "text": "        \"gencoin_shadow\": gsp_present,"
+        },
+        {
+          "line": 381,
+          "text": "        \"gencoin_shadow\": ("
+        },
+        {
+          "line": 382,
+          "text": "            \"USABLE_SHADOW_VALUE\" if gsp_usable"
+        },
+        {
+          "line": 383,
+          "text": "            else (\"NOT_USABLE_SHADOW_VALUE\" if gsp_present else \"DEFERRED\")"
+        },
+        {
+          "line": 393,
+          "text": "        \"value_layer\": {"
+        },
+        {
+          "line": 394,
+          "text": "            \"version\": \"GENCOIN_TRANSVERSE_INTERFACE_V0\","
+        },
+        {
+          "line": 396,
+          "text": "            \"final_scoring_enabled\": False,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_machination_composer.py",
+      "size": 13547,
+      "hits": [
+        {
+          "line": 64,
+          "text": "    if any(token in low for token in (\"autorise\", \"authorize\", \"créateur\", \"createur\", \"admin\", \"root\")):"
+        },
+        {
+          "line": 66,
+          "text": "    if any(token in low for token in (\"act\", \"agir\", \"execute\", \"exécute\", \"lance\", \"write\")):"
+        },
+        {
+          "line": 68,
+          "text": "    if any(token in low for token in (\"kernel\", \"x108\", \"mutation\", \"modifie\", \"modify\", \"patch\")):"
+        },
+        {
+          "line": 70,
+          "text": "    if any(token in low for token in (\"pytest\", \"traceback\", \"exception\", \"bug\", \"debug\", \"powershell\")):"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_memory_promotion_guard.py",
+      "size": 6970,
+      "hits": [
+        {
+          "line": 63,
+          "text": "    gencoin_shadow_packet: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 71,
+          "text": "    gp = gencoin_shadow_packet if isinstance(gencoin_shadow_packet, dict) else {}"
+        },
+        {
+          "line": 77,
+          "text": "    sigma_usable = bool(_get(sp, \"usable_for_gencoin\", default=False))"
+        },
+        {
+          "line": 83,
+          "text": "    thermo_usable = bool(_get(tp, \"usable_for_gencoin\", default=False))"
+        },
+        {
+          "line": 85,
+          "text": "    shadow_usable = bool(_get(gp, \"usable_shadow_value\", default=False))"
+        },
+        {
+          "line": 86,
+          "text": "    cognitive_value = _get(gp, \"shadow_scores\", \"cognitive_value\")"
+        },
+        {
+          "line": 87,
+          "text": "    proof_value = _get(gp, \"shadow_scores\", \"proof_value\")"
+        },
+        {
+          "line": 88,
+          "text": "    memory_value = _get(gp, \"shadow_scores\", \"memory_value\")"
+        },
+        {
+          "line": 89,
+          "text": "    stability_value = _get(gp, \"shadow_scores\", \"stability_value\")"
+        },
+        {
+          "line": 99,
+          "text": "    for x in (sigma_truth, cognitive_value, proof_value, memory_value, stability_value):"
+        },
+        {
+          "line": 164,
+          "text": "            \"has_gencoin_shadow_packet\": bool(gp),"
+        },
+        {
+          "line": 173,
+          "text": "            \"gencoin_shadow_usable\": shadow_usable,"
+        },
+        {
+          "line": 176,
+          "text": "            \"cognitive_value\": cognitive_value,"
+        },
+        {
+          "line": 177,
+          "text": "            \"proof_value\": proof_value,"
+        },
+        {
+          "line": 178,
+          "text": "            \"memory_value\": memory_value,"
+        },
+        {
+          "line": 179,
+          "text": "            \"stability_value\": stability_value,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_operator_view_packet.py",
+      "size": 7619,
+      "hits": [
+        {
+          "line": 44,
+          "text": "    value_layer: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 48,
+          "text": "    gencoin_shadow_packet: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 52,
+          "text": "    vl = value_layer if isinstance(value_layer, dict) else {}"
+        },
+        {
+          "line": 56,
+          "text": "    gp = gencoin_shadow_packet if isinstance(gencoin_shadow_packet, dict) else {}"
+        },
+        {
+          "line": 63,
+          "text": "    gencoin_shadow_ready = gp.get(\"version\") == \"GENCOIN_SHADOW_VALUE_PACKET_V1\""
+        },
+        {
+          "line": 66,
+          "text": "    value_layer_ready = bool(vl)"
+        },
+        {
+          "line": 74,
+          "text": "    final_scoring_enabled = _bool(_get(vl, \"final_scoring_enabled\", default=False))"
+        },
+        {
+          "line": 96,
+          "text": "    if final_scoring_enabled:"
+        },
+        {
+          "line": 97,
+          "text": "        hard_risks.append(\"FINAL_SCORING_ENABLED_UNEXPECTED\")"
+        },
+        {
+          "line": 99,
+          "text": "        hard_risks.append(\"VALUE_LAYER_SCORES_NOT_NULL\")"
+        },
+        {
+          "line": 105,
+          "text": "        (\"value_layer\", value_layer_ready),"
+        },
+        {
+          "line": 109,
+          "text": "        (\"gencoin_shadow_packet\", gencoin_shadow_ready),"
+        },
+        {
+          "line": 118,
+          "text": "        not final_scoring_enabled"
+        },
+        {
+          "line": 139,
+          "text": "            \"value_layer\": _status_label(value_layer_ready),"
+        },
+        {
+          "line": 143,
+          "text": "            \"gencoin_shadow\": _status_label(gencoin_shadow_ready),"
+        },
+        {
+          "line": 148,
+          "text": "            \"sigma_for_gencoin\": _bool(_get(sp, \"usable_for_gencoin\", default=False)),"
+        },
+        {
+          "line": 149,
+          "text": "            \"thermo_for_gencoin\": _bool(_get(tp, \"usable_for_gencoin\", default=False)),"
+        },
+        {
+          "line": 150,
+          "text": "            \"gencoin_shadow_value\": _bool(_get(gp, \"usable_shadow_value\", default=False)),"
+        },
+        {
+          "line": 151,
+          "text": "            \"tree_signal_for_shadow\": _bool(_get(tsp, \"usable_for_gencoin_shadow\", default=False)),"
+        },
+        {
+          "line": 155,
+          "text": "            \"final_scoring_enabled\": final_scoring_enabled,"
+        },
+        {
+          "line": 156,
+          "text": "            \"value_layer_scores_not_null\": not value_scores_null,"
+        },
+        {
+          "line": 166,
+          "text": "            \"gencoin_shadow_usable\": _get(gp, \"usable_shadow_value\"),"
+        },
+        {
+          "line": 170,
+          "text": "            \"value_layer_final_scoring_enabled\": final_scoring_enabled,"
+        },
+        {
+          "line": 171,
+          "text": "            \"value_layer_scores_null\": value_scores_null,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_project_memory_adapter.py",
+      "size": 8511,
+      "hits": [
+        {
+          "line": 6,
+          "text": "  - Memory candidate ledger (JSONL)"
+        },
+        {
+          "line": 10,
+          "text": "No invention — everything sourced from freeze files, indexes, and ledgers."
+        },
+        {
+          "line": 34,
+          "text": "      2. Memory candidate ledger (JSONL)"
+        },
+        {
+          "line": 38,
+          "text": "    Returns dict with sections: graphiti_index, candidate_ledger,"
+        },
+        {
+          "line": 96,
+          "text": "    # ── 2. Memory Candidate Ledger ────────────────────────────────────────"
+        },
+        {
+          "line": 97,
+          "text": "    candidate_ledger_path = workspace / \"_local_audits\" / \"memory_candidate_ledger.jsonl\""
+        },
+        {
+          "line": 98,
+          "text": "    candidate_ledger_found = candidate_ledger_path.exists()"
+        },
+        {
+          "line": 101,
+          "text": "    if candidate_ledger_found:"
+        },
+        {
+          "line": 103,
+          "text": "            lines = candidate_ledger_path.read_text(encoding=\"utf-8\").strip().splitlines()"
+        },
+        {
+          "line": 106,
+          "text": "            candidate_ledger_found = False"
+        },
+        {
+          "line": 164,
+          "text": "        \"candidate_ledger_found\": candidate_ledger_found,"
+        },
+        {
+          "line": 165,
+          "text": "        \"candidate_ledger_count\": candidate_count,"
+        },
+        {
+          "line": 177,
+          "text": "            str(candidate_ledger_path) if candidate_ledger_found else \"NOT_FOUND\","
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_project_memory_runtime.py",
+      "size": 2448,
+      "hits": [
+        {
+          "line": 46,
+          "text": "        \"project_ledgers\": snap.get(\"candidate_ledger_found\", False),"
+        },
+        {
+          "line": 53,
+          "text": "    snap[\"project_ledgers\"] = snap.get(\"candidate_ledger_found\", False)"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_rights_authority_matrix.py",
+      "size": 21050,
+      "hits": [
+        {
+          "line": 113,
+          "text": "        r\"lance.?paiement\", r\"connecte.?wallet\","
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_semantic_query_router.py",
+      "size": 9267,
+      "hits": [
+        {
+          "line": 126,
+          "text": "        [\"gencoin\", \"jeton\", \"token\", \"valorisation\"],"
+        },
+        {
+          "line": 127,
+          "text": "        \"GENCOIN\","
+        },
+        {
+          "line": 128,
+          "text": "        \"Gencoin token valorisation\","
+        },
+        {
+          "line": 129,
+          "text": "        \"gencoin\","
+        },
+        {
+          "line": 130,
+          "text": "        [\"token\", \"valorisation\"],"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_session_memory_adapter.py",
+      "size": 6305,
+      "hits": [
+        {
+          "line": 4,
+          "text": "Thin wrapper over session_memory_ledger_readonly V2."
+        },
+        {
+          "line": 6,
+          "text": "Reads existing session ledger JSONL records for a given session_id."
+        },
+        {
+          "line": 12,
+          "text": "No invention — session ledger format is defined by"
+        },
+        {
+          "line": 13,
+          "text": "brody_session_memory_ledger_readonly_v2.py."
+        },
+        {
+          "line": 56,
+          "text": "    Build session_memory_snapshot from existing session ledger."
+        },
+        {
+          "line": 58,
+          "text": "    Reads the SESSION_LEDGER.jsonl for the given session_id and extracts"
+        },
+        {
+          "line": 61,
+          "text": "    Returns dict with: session_ledger_found, last_turn_context,"
+        },
+        {
+          "line": 67,
+          "text": "    ledger_path = sdir / \"SESSION_LEDGER.jsonl\""
+        },
+        {
+          "line": 70,
+          "text": "    session_ledger_found = ledger_path.exists()"
+        },
+        {
+          "line": 80,
+          "text": "    if session_ledger_found:"
+        },
+        {
+          "line": 82,
+          "text": "            lines = ledger_path.read_text(encoding=\"utf-8\").strip().splitlines()"
+        },
+        {
+          "line": 127,
+          "text": "            session_ledger_found = False"
+        },
+        {
+          "line": 143,
+          "text": "    used_by_api = session_ledger_found and followup_supported"
+        },
+        {
+          "line": 147,
+          "text": "        \"source_mode\": \"SESSION_LEDGER_V2_EXISTING_ONLY\","
+        },
+        {
+          "line": 150,
+          "text": "        \"session_ledger_v2_found\": session_ledger_found,"
+        },
+        {
+          "line": 160,
+          "text": "        \"followup_resolver\": \"PARTIAL\" if session_ledger_found else \"NOT_IMPLEMENTED\","
+        },
+        {
+          "line": 166,
+          "text": "        \"session_dir\": str(sdir) if session_ledger_found else \"\","
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_session_memory_runtime.py",
+      "size": 4748,
+      "hits": [
+        {
+          "line": 79,
+          "text": "    Resolve follow-up context from session ledger for the current message."
+        },
+        {
+          "line": 95,
+          "text": "        \"session_ledger_found\": snap.get(\"session_ledger_v2_found\", False),"
+        },
+        {
+          "line": 117,
+          "text": "    ledger_found = snap.get(\"session_ledger_v2_found\", False)"
+        },
+        {
+          "line": 120,
+          "text": "    runtime_status = \"FOUNDATION_B_READY\" if (ledger_found and followup) else \"FOUNDATION_B_PARTIAL\""
+        },
+        {
+          "line": 125,
+          "text": "    snap[\"session_ledger\"] = ledger_found"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_temporal_context_adapter.py",
+      "size": 4664,
+      "hits": [
+        {
+          "line": 42,
+          "text": "        \"session_history_available\": sm.get(\"session_ledger_v2_found\", False),"
+        },
+        {
+          "line": 63,
+          "text": "        \"candidate_ledger_count\": cm.get(\"candidate_ledger_count\", 0),"
+        },
+        {
+          "line": 66,
+          "text": "        \"avdr_phase_available\": False,  # AVDR phase mapper requires gencoin sandbox"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_thermodynamics_signal.py",
+      "size": 12367,
+      "hits": [
+        {
+          "line": 68,
+          "text": "    value_layer: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 95,
+          "text": "      - usable_for_gencoin=True only if sigma usable + mismatch not HIGH + material present."
+        },
+        {
+          "line": 96,
+          "text": "      - usable_for_gencoin=True does NOT activate Gencoin final scoring."
+        },
+        {
+          "line": 97,
+          "text": "      - Does not modify sigma_packet, anti_mismatch_packet, or value_layer scores."
+        },
+        {
+          "line": 115,
+          "text": "    has_vl = isinstance(value_layer, dict) and bool(value_layer)"
+        },
+        {
+          "line": 209,
+          "text": "    # ── usable_for_gencoin ───────────────────────────────────────────────"
+        },
+        {
+          "line": 210,
+          "text": "    usable_for_gencoin = ("
+        },
+        {
+          "line": 217,
+          "text": "    usable_for_value_layer = ("
+        },
+        {
+          "line": 234,
+          "text": "            \"usable_for_gencoin\": usable_for_gencoin,"
+        },
+        {
+          "line": 235,
+          "text": "            \"usable_for_value_layer\": usable_for_value_layer,"
+        },
+        {
+          "line": 255,
+          "text": "                \"has_value_layer\": has_vl,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_thermo_coherence_time_unified.py",
+      "size": 11039,
+      "hits": [
+        {
+          "line": 84,
+          "text": "        \"energy_cost\": _clamp(scores.get(\"dissipation_score\", 0.0)),"
+        },
+        {
+          "line": 86,
+          "text": "        \"attention_cost\": _clamp(scores.get(\"pressure_load\", 0.0)),"
+        },
+        {
+          "line": 139,
+          "text": "    ledger_ok = payload.get(\"audit_event\") is not None"
+        },
+        {
+          "line": 143,
+          "text": "    ledger_ratio = 1.0 if ledger_ok else 0.0"
+        },
+        {
+          "line": 145,
+          "text": "    coherence_score = round(0.5 * boundary_ratio + 0.3 * source_ratio + 0.2 * ledger_ratio, 4)"
+        },
+        {
+          "line": 154,
+          "text": "        \"ledger_ok_count\": 1 if ledger_ok else 0,"
+        },
+        {
+          "line": 157,
+          "text": "        \"ledger_ratio\": ledger_ratio,"
+        },
+        {
+          "line": 264,
+          "text": "    usable_for_value_layer = ("
+        },
+        {
+          "line": 265,
+          "text": "        bool(thermo.get(\"usable_for_value_layer\"))"
+        },
+        {
+          "line": 270,
+          "text": "    usable_for_gencoin = ("
+        },
+        {
+          "line": 271,
+          "text": "        bool(thermo.get(\"usable_for_gencoin\"))"
+        },
+        {
+          "line": 272,
+          "text": "        and usable_for_value_layer"
+        },
+        {
+          "line": 295,
+          "text": "        \"usable_for_value_layer\": usable_for_value_layer,"
+        },
+        {
+          "line": 296,
+          "text": "        \"usable_for_gencoin\": usable_for_gencoin,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_tree_signal_packet.py",
+      "size": 4920,
+      "hits": [
+        {
+          "line": 55,
+          "text": "        \"mentions_value\": any(k in low for k in (\"valeur\", \"value\", \"gencoin\", \"proof\", \"preuve\")),"
+        },
+        {
+          "line": 133,
+          "text": "        \"usable_for_gencoin_shadow\": True,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_true_voice_adapter.py",
+      "size": 40851,
+      "hits": [
+        {
+          "line": 48,
+          "text": "    from apps.obsidia_api.brody_gencoin_transverse_interface import build_sigma_packet as _build_sigma_packet"
+        },
+        {
+          "line": 449,
+          "text": "                        \"(X108, mémoire, arbres, preuves, opérateur, gencoin) \""
+        },
+        {
+          "line": 458,
+          "text": "                        \"(X108, memory, trees, proofs, operator, gencoin) \""
+        },
+        {
+          "line": 492,
+          "text": "    # ── Sanitize: strip forbidden sovereign tokens (periphery/brody) ────"
+        },
+        {
+          "line": 533,
+          "text": "            \"usable_for_gencoin\": False,"
+        },
+        {
+          "line": 563,
+          "text": "        used_modules.append(\"session_memory_ledger_v2\")"
+        },
+        {
+          "line": 874,
+          "text": "# Common uppercase tokens that are NOT Obsidia-specific identifiers"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\brody_v1_4_12a_final_answer_adapter.py",
+      "size": 55623,
+      "hits": [
+        {
+          "line": 205,
+          "text": "    (\"gencoin_query\",  [r\"gencoin\", r\"jeton\", r\"\\btoken\\b\", r\"ledger\", r\"valoris\"]),"
+        },
+        {
+          "line": 250,
+          "text": "        \"Gateway → WorldActionBus → Gencoin (post-preuve) → Brody répond → Mémoire contextualise. \""
+        },
+        {
+          "line": 253,
+          "text": "        \"auto_promotion=false, graphiti_write=false, real_chain_action=false, gencoin_is_real_token=false.\","
+        },
+        {
+          "line": 260,
+          "text": "    \"gencoin_query\": ["
+        },
+        {
+          "line": 261,
+          "text": "        \"Gencoin n'est pas un vrai token. C'est un registre symbolique de valorisation post-preuve. \""
+        },
+        {
+          "line": 262,
+          "text": "        \"Pas de contrat intelligent. Pas de wallet. is_real_token=false, post_proof_only=true.\","
+        },
+        {
+          "line": 404,
+          "text": "        \"SovereignTicket → Gateway → WorldActionBus → Gencoin (post-proof) → \""
+        },
+        {
+          "line": 412,
+          "text": "    \"gencoin_query\": ["
+        },
+        {
+          "line": 413,
+          "text": "        \"Gencoin is not a real token. It's a symbolic post-proof valuation ledger. \""
+        },
+        {
+          "line": 414,
+          "text": "        \"No smart contract. No wallet. is_real_token=false, post_proof_only=true.\","
+        },
+        {
+          "line": 682,
+          "text": "                      \"gencoin_query\", \"worldcall\"):"
+        },
+        {
+          "line": 927,
+          "text": "            f\"**Memory pipeline** : session ledger {mem.get('session_ledger', '?')}, \""
+        },
+        {
+          "line": 966,
+          "text": "            f\"**Session ledger** : {mem.get('session_ledger', '?')} - \""
+        },
+        {
+          "line": 985,
+          "text": "            f\"**Session ledger**: {mem.get('session_ledger', '?')}\\n\""
+        },
+        {
+          "line": 1014,
+          "text": "            \"Session ledger, presave buffer, auto-triage prets.\\n\\n\""
+        },
+        {
+          "line": 1076,
+          "text": "                \"- **automation_snapshot** - session ledger, presave buffer, auto-triage\\n\\n\""
+        },
+        {
+          "line": 1111,
+          "text": "                \"6. **automation_snapshot** - session ledger, presave buffer, auto-triage\\n\\n\""
+        },
+        {
+          "line": 1125,
+          "text": "                \"6. **automation_snapshot** - session ledger, presave buffer, auto-triage\\n\\n\""
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\contracts.py",
+      "size": 9155,
+      "hits": [
+        {
+          "line": 183,
+          "text": "# ── Gencoin ──────────────────────────────────────────────────────────────────"
+        },
+        {
+          "line": 185,
+          "text": "class GencoinEntry(BaseModel):"
+        },
+        {
+          "line": 186,
+          "text": "    ledger_id: str = \"\""
+        },
+        {
+          "line": 188,
+          "text": "    gencoin_candidate: float = 0.0"
+        },
+        {
+          "line": 189,
+          "text": "    mint_allowed: bool = False"
+        },
+        {
+          "line": 191,
+          "text": "    is_real_token: bool = False"
+        },
+        {
+          "line": 194,
+          "text": "class GencoinResponse(SovereignBase):"
+        },
+        {
+          "line": 195,
+          "text": "    entries: list[GencoinEntry] = Field(default_factory=list)"
+        },
+        {
+          "line": 197,
+          "text": "    is_real_token: bool = False"
+        },
+        {
+          "line": 199,
+          "text": "    ledger_only: bool = True"
+        },
+        {
+          "line": 202,
+          "text": "# ── Blockchain ───────────────────────────────────────────────────────────────"
+        },
+        {
+          "line": 204,
+          "text": "class BlockchainStatusResponse(SovereignBase):"
+        },
+        {
+          "line": 207,
+          "text": "    wallet_connected: bool = False"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\main.py",
+      "size": 1967,
+      "hits": [
+        {
+          "line": 19,
+          "text": "from apps.obsidia_api.routes.gencoin import router as gencoin_router"
+        },
+        {
+          "line": 24,
+          "text": "from apps.obsidia_api.routes.blockchain import router as blockchain_router"
+        },
+        {
+          "line": 30,
+          "text": "           memory_router, gencoin_router, graphiti_router, x108_router,"
+        },
+        {
+          "line": 31,
+          "text": "           os3_router, worldcalls_router, blockchain_router, audit_router,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\runtime_loader.py",
+      "size": 4023,
+      "hits": [
+        {
+          "line": 85,
+          "text": "    # Gencoin"
+        },
+        {
+          "line": 86,
+          "text": "    gencoin_fn, gen_status = _safe_import(\"periphery.gencoin_ledger\", \"read_ledger\")"
+        },
+        {
+          "line": 87,
+          "text": "    components[\"gencoin\"] = {"
+        },
+        {
+          "line": 89,
+          "text": "        \"read_ledger\": gencoin_fn,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\safe_response.py",
+      "size": 2026,
+      "hits": [
+        {
+          "line": 25,
+          "text": "def strip_forbidden_tokens(text: str) -> str:"
+        },
+        {
+          "line": 31,
+          "text": "        token = m.group(1)"
+        },
+        {
+          "line": 32,
+          "text": "        return m.group(0)[: -len(token)] + token[0] + \"***\""
+        },
+        {
+          "line": 57,
+          "text": "        base[\"response\"] = strip_forbidden_tokens(base[\"response\"])"
+        },
+        {
+          "line": 59,
+          "text": "        base[\"response_text\"] = strip_forbidden_tokens(base[\"response_text\"])"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\blockchain.py",
+      "size": 25732,
+      "hits": [
+        {
+          "line": 1,
+          "text": "\"\"\"Blockchain routes — dry-run status, policy, signature, wallet, gencoin.\"\"\""
+        },
+        {
+          "line": 10,
+          "text": "from periphery.blockchain.token_policy import evaluate_token_policy"
+        },
+        {
+          "line": 11,
+          "text": "from periphery.blockchain.signature_boundary import ("
+        },
+        {
+          "line": 15,
+          "text": "from periphery.blockchain.wallet_security_gate import evaluate_wallet_request"
+        },
+        {
+          "line": 16,
+          "text": "from periphery.gencoin import compute_gencoin"
+        },
+        {
+          "line": 17,
+          "text": "from periphery.gencoin_debt_model import compute_debt"
+        },
+        {
+          "line": 18,
+          "text": "from periphery.gencoin_distribution import compute_distribution"
+        },
+        {
+          "line": 20,
+          "text": "from periphery.gencoin_sandbox.sandbox_engine import System, topology_losses, compute_sigma, step"
+        },
+        {
+          "line": 21,
+          "text": "from periphery.gencoin_sandbox.regime_metrics import compute_regime_metrics"
+        },
+        {
+          "line": 22,
+          "text": "from periphery.gencoin_sandbox.regime_truth_gate import apply_regime_truth_gate"
+        },
+        {
+          "line": 28,
+          "text": "from periphery.blockchain.blockchain_action_classifier import classify_blockchain_action, BlockchainActionClass"
+        },
+        {
+          "line": 29,
+          "text": "from periphery.blockchain.defi_risk_gate import evaluate_defi_risk"
+        },
+        {
+          "line": 30,
+          "text": "from periphery.blockchain.smart_contract_risk_gate import evaluate_smart_contract_risk"
+        },
+        {
+          "line": 31,
+          "text": "from periphery.blockchain.bridge_risk_gate import evaluate_bridge_risk"
+        },
+        {
+          "line": 32,
+          "text": "from periphery.blockchain.transaction_simulator import simulate_transaction"
+        },
+        {
+          "line": 33,
+          "text": "from periphery.blockchain.chain_context import build_chain_context"
+        },
+        {
+          "line": 34,
+          "text": "from periphery.blockchain.onchain_audit_packet import build_onchain_audit_packet"
+        },
+        {
+          "line": 35,
+          "text": "from periphery.agents import world_action_agent, gencoin_value_agent, os3_proof_agent, data_purity_agent, provenance_agent, brody_memory_agent, eml_symbolic_agent, energy_thermo_agent, timeverse_agent, ocs_generation_agent, operational_constance_agent, permission_economic_agent, action_sequence_agent, feedback_memory_agent"
+        },
+        {
+          "line": 48,
+          "text": "router = APIRouter(prefix=\"/api/blockchain\", tags=[\"blockchain\"])"
+        },
+        {
+          "line": 58,
+          "text": "class TokenPolicyPayload(BaseModel):"
+        },
+        {
+          "line": 59,
+          "text": "    token_id: str"
+        },
+        {
+          "line": 61,
+          "text": "    is_gencoin: bool = False"
+        },
+        {
+          "line": 70,
+          "text": "class WalletGatePayload(BaseModel):"
+        },
+        {
+          "line": 76,
+          "text": "class GencoinMetrics(BaseModel):"
+        },
+        {
+          "line": 93,
+          "text": "class GencoinComputePayload(BaseModel):"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\brody.py",
+      "size": 23370,
+      "hits": [
+        {
+          "line": 29,
+          "text": "from apps.obsidia_api.safe_response import safe_backend_response, strip_forbidden_tokens"
+        },
+        {
+          "line": 30,
+          "text": "from apps.obsidia_api.brody_gencoin_transverse_interface import ("
+        },
+        {
+          "line": 31,
+          "text": "    build_gencoin_transverse_packet,"
+        },
+        {
+          "line": 37,
+          "text": "from apps.obsidia_api.brody_gencoin_shadow_value import build_gencoin_shadow_value_packet"
+        },
+        {
+          "line": 147,
+          "text": "    final_answer = normalize_brody_text(strip_forbidden_tokens("
+        },
+        {
+          "line": 220,
+          "text": "    # ── F2C pipeline: sigma(initial) → anti_mismatch → sigma(formal) → gencoin ──"
+        },
+        {
+          "line": 303,
+          "text": "    # Step 5: gencoin shadow value — non-final shadow scores from sigma+anti_mismatch+thermo"
+        },
+        {
+          "line": 304,
+          "text": "    _gencoin_shadow_raw = safe_call_snapshot("
+        },
+        {
+          "line": 305,
+          "text": "        \"gencoin_shadow_packet\","
+        },
+        {
+          "line": 306,
+          "text": "        build_gencoin_shadow_value_packet,"
+        },
+        {
+          "line": 315,
+          "text": "    _gencoin_shadow_packet = ("
+        },
+        {
+          "line": 316,
+          "text": "        _gencoin_shadow_raw.get(\"gencoin_shadow_packet\", {})"
+        },
+        {
+          "line": 317,
+          "text": "        if isinstance(_gencoin_shadow_raw, dict) else {}"
+        },
+        {
+          "line": 340,
+          "text": "        gencoin_shadow_packet=_gencoin_shadow_packet,"
+        },
+        {
+          "line": 350,
+          "text": "    # Step 6: gencoin transverse interface — SHADOW_READONLY, no final scoring"
+        },
+        {
+          "line": 351,
+          "text": "    # value_layer.scores remain null; shadow_scores live in gencoin_shadow_packet only"
+        },
+        {
+          "line": 352,
+          "text": "    _gencoin_raw = safe_call_snapshot("
+        },
+        {
+          "line": 353,
+          "text": "        \"gencoin_transverse_interface\","
+        },
+        {
+          "line": 354,
+          "text": "        build_gencoin_transverse_packet,"
+        },
+        {
+          "line": 364,
+          "text": "        gencoin_shadow_packet=_gencoin_shadow_packet,"
+        },
+        {
+          "line": 367,
+          "text": "    value_layer = _gencoin_raw.get(\"value_layer\", {}) if isinstance(_gencoin_raw, dict) else {}"
+        },
+        {
+          "line": 373,
+          "text": "        value_layer=value_layer,"
+        },
+        {
+          "line": 377,
+          "text": "        gencoin_shadow_packet=_gencoin_shadow_packet,"
+        },
+        {
+          "line": 471,
+          "text": "        \"value_layer\": value_layer,"
+        },
+        {
+          "line": 476,
+          "text": "        \"gencoin_shadow_packet\": _gencoin_shadow_packet,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\brody_monitoring.py",
+      "size": 10230,
+      "hits": [
+        {
+          "line": 16,
+          "text": "from periphery.brody_memory_readonly.session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2 import ("
+        },
+        {
+          "line": 17,
+          "text": "    validate_brody_response, sha256_text as ledger_sha256, canonical_json,"
+        },
+        {
+          "line": 18,
+          "text": "    TRUE_KEYS, FALSE_KEYS, BOUNDARY as LEDGER_BOUNDARY"
+        },
+        {
+          "line": 20,
+          "text": "from periphery.brody_memory_readonly.session_trace_ledger.brody_session_trace_ledger_readonly_v1_6_3 import ("
+        },
+        {
+          "line": 187,
+          "text": "        \"response_sha256\": ledger_sha256(canonical_json(resp) if resp else \"{}\"),"
+        },
+        {
+          "line": 223,
+          "text": "        computed = ledger_sha256(prev_hash + canonical_json(content))"
+        },
+        {
+          "line": 240,
+          "text": "        drift_hex = ledger_sha256(first_resp) != ledger_sha256(last_resp)"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\gencoin.py",
+      "size": 1853,
+      "hits": [
+        {
+          "line": 1,
+          "text": "\"\"\"Gencoin routes — readonly shadow packet view + live empty ledger registry.\"\"\""
+        },
+        {
+          "line": 6,
+          "text": "router = APIRouter(prefix=\"/api/gencoin\", tags=[\"gencoin\"])"
+        },
+        {
+          "line": 22,
+          "text": "async def gencoin_ledger():"
+        },
+        {
+          "line": 26,
+          "text": "    if rt[\"gencoin\"][\"read_ledger\"]:"
+        },
+        {
+          "line": 28,
+          "text": "            raw = rt[\"gencoin\"][\"read_ledger\"]()"
+        },
+        {
+          "line": 31,
+          "text": "                    \"ledger_id\": e.get(\"ledger_id\", \"\"),"
+        },
+        {
+          "line": 33,
+          "text": "                    \"gencoin_candidate\": e.get(\"gencoin_candidate\", 0.0),"
+        },
+        {
+          "line": 34,
+          "text": "                    \"mint_allowed\": e.get(\"mint_allowed\", False),"
+        },
+        {
+          "line": 36,
+          "text": "                    \"is_real_token\": False,"
+        },
+        {
+          "line": 44,
+          "text": "        \"status\": \"LIVE_EMPTY_REGISTRY\" if not entries else \"LIVE_LEDGER\","
+        },
+        {
+          "line": 46,
+          "text": "        \"reason\": \"NO_REAL_GENCOIN_LEDGER_ENTRY_YET\" if not entries else \"\","
+        },
+        {
+          "line": 47,
+          "text": "        \"is_real_token\": False,"
+        },
+        {
+          "line": 48,
+          "text": "        \"no_wallet\": True,"
+        },
+        {
+          "line": 49,
+          "text": "        \"no_mint\": True,"
+        },
+        {
+          "line": 51,
+          "text": "        \"ledger_only\": True,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\memory.py",
+      "size": 5587,
+      "hits": [
+        {
+          "line": 105,
+          "text": "@router.get(\"/candidate-ledger\")"
+        },
+        {
+          "line": 106,
+          "text": "async def memory_candidate_ledger():"
+        },
+        {
+          "line": 108,
+          "text": "        \"ledger\": [],"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\os_trad_ir_reverse.py",
+      "size": 13909,
+      "hits": [
+        {
+          "line": 136,
+          "text": "    if any(token in low for token in [\"autorise\", \"authorize\", \"je suis le créateur\", \"i am the creator\", \"admin\", \"root\"]):"
+        },
+        {
+          "line": 139,
+          "text": "    if any(token in low for token in [\"act\", \"agir\", \"lance\", \"execute\", \"exécute\", \"send\", \"transfer\", \"write\"]):"
+        },
+        {
+          "line": 142,
+          "text": "    if any(token in low for token in [\"kernel\", \"x108\", \"mutation\", \"patch\", \"modify\", \"modifie\"]):"
+        },
+        {
+          "line": 145,
+          "text": "    if any(token in low for token in [\"memory_write\", \"écris en mémoire\", \"write memory\", \"graphiti_write\", \"neo4j_write\"]):"
+        },
+        {
+          "line": 148,
+          "text": "    if any(token in low for token in [\"traceback\", \"exception\", \"404\", \"500\", \"bug\", \"debug\", \"pytest\", \"powershell\"]):"
+        },
+        {
+          "line": 163,
+          "text": "    if \"?\" in text or any(token in low for token in [\"pourquoi\", \"comment\", \"what\", \"why\", \"how\"]):"
+        },
+        {
+          "line": 165,
+          "text": "    if any(token in low for token in [\"analyse\", \"analyze\", \"audit\", \"vérifie\", \"verify\"]):"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\periphery_ops.py",
+      "size": 40608,
+      "hits": [
+        {
+          "line": 53,
+          "text": "# ── Gencoin sandbox extensions ────────────────────────────────────────────────"
+        },
+        {
+          "line": 54,
+          "text": "from periphery.gencoin_sandbox.avdr_phase_mapper import map_avdr_phase"
+        },
+        {
+          "line": 55,
+          "text": "from periphery.gencoin_sandbox.balance_operator import compute_balance"
+        },
+        {
+          "line": 56,
+          "text": "from periphery.gencoin_sandbox.regime_state import classify_regime as classify_sandbox_regime, is_false_on, is_assisted_on, is_admissible as is_sandbox_admissible"
+        },
+        {
+          "line": 656,
+          "text": "# ── GENCOIN SANDBOX EXTENSIONS ────────────────────────────────────────────────"
+        },
+        {
+          "line": 658,
+          "text": "@router.post(\"/gencoin/avdr-phase\")"
+        },
+        {
+          "line": 664,
+          "text": "@router.post(\"/gencoin/balance\")"
+        },
+        {
+          "line": 670,
+          "text": "@router.post(\"/gencoin/regime-state\")"
+        },
+        {
+          "line": 672,
+          "text": "    from periphery.gencoin_sandbox.sandbox_engine import System, State"
+        },
+        {
+          "line": 689,
+          "text": "@router.post(\"/gencoin/passfail\")"
+        },
+        {
+          "line": 695,
+          "text": "@router.post(\"/gencoin/consciousness-regime\")"
+        },
+        {
+          "line": 701,
+          "text": "@router.post(\"/gencoin/collective-summary\")"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\status.py",
+      "size": 1475,
+      "hits": [
+        {
+          "line": 23,
+          "text": "        \"gencoin\": rt[\"gencoin\"][\"status\"],"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia_api\\routes\\x108.py",
+      "size": 17019,
+      "hits": [
+        {
+          "line": 17,
+          "text": "from periphery.blockchain.oracle_freshness_gate import evaluate_oracle_freshness"
+        },
+        {
+          "line": 22,
+          "text": "from periphery.memory.memory_candidate_ledger import append_memory_candidate, read_memory_candidates"
+        },
+        {
+          "line": 27,
+          "text": "from periphery.brody_memory_readonly.session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2 import validate_brody_response as _validate_ledger_response"
+        },
+        {
+          "line": 28,
+          "text": "from periphery.brody_memory_readonly.session_trace_ledger.brody_session_trace_ledger_readonly_v1_6_3 import BOUNDARY as _TRACE_LEDGER_BOUNDARY"
+        },
+        {
+          "line": 388,
+          "text": "    ledger_ok = 0"
+        },
+        {
+          "line": 396,
+          "text": "            _validate_ledger_response(rec.payload)"
+        },
+        {
+          "line": 397,
+          "text": "            ledger_ok += 1"
+        },
+        {
+          "line": 407,
+          "text": "    ledger_ratio = ledger_ok / total"
+        },
+        {
+          "line": 408,
+          "text": "    coherence_score = round(0.5 * boundary_ratio + 0.3 * source_ratio + 0.2 * ledger_ratio, 4)"
+        },
+        {
+          "line": 416,
+          "text": "        \"ledger_ok_count\": ledger_ok,"
+        },
+        {
+          "line": 419,
+          "text": "        \"ledger_ratio\": round(ledger_ratio, 4),"
+        },
+        {
+          "line": 429,
+          "text": "        \"_local_audits/memory_candidate_ledger.jsonl\","
+        },
+        {
+          "line": 447,
+          "text": "        \"audit_boundary\": {k: v for k, v in _TRACE_LEDGER_BOUNDARY.items() if k in (\"readonly\", \"memory_decision\", \"decision_authority\", \"kernel_mutation\", \"emits_act\")},"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\App.tsx",
+      "size": 10263,
+      "hits": [
+        {
+          "line": 11,
+          "text": "import { GencoinView } from './views/GencoinView'"
+        },
+        {
+          "line": 13,
+          "text": "import { BlockchainView } from './views/BlockchainView'"
+        },
+        {
+          "line": 255,
+          "text": "        {activeView === 'gencoin'     && <GencoinView />}"
+        },
+        {
+          "line": 257,
+          "text": "        {activeView === 'blockchain'  && <BlockchainView />}"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\api\\backendProbe.ts",
+      "size": 3128,
+      "hits": [
+        {
+          "line": 24,
+          "text": "  { name: 'Gencoin API',       endpoint: `${ENGINE_BASE}/api/gencoin`,             port: 8000, stub: true  },"
+        },
+        {
+          "line": 26,
+          "text": "  { name: 'Blockchain Gate',   endpoint: `${ENGINE_BASE}/api/blockchain/status`,   port: 8000, stub: true  },"
+        },
+        {
+          "line": 27,
+          "text": "  { name: 'Memory Ledger',     endpoint: `${ENGINE_BASE}/api/memory`,              port: 8000, stub: true  },"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\api\\contracts.ts",
+      "size": 10405,
+      "hits": [
+        {
+          "line": 74,
+          "text": "  session_ledger?: {"
+        },
+        {
+          "line": 137,
+          "text": "    session_ledger: string"
+        },
+        {
+          "line": 255,
+          "text": "  candidate_ledger_count: number"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\api\\mockFallback.ts",
+      "size": 2120,
+      "hits": [
+        {
+          "line": 11,
+          "text": "  MOCK_GENCOIN, MOCK_AUDIT, MOCK_WORLD_CALLS, MOCK_SOVEREIGN_TICKET,"
+        },
+        {
+          "line": 74,
+          "text": "  MOCK_GENCOIN, MOCK_AUDIT, MOCK_WORLD_CALLS, MOCK_SOVEREIGN_TICKET,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\api\\obsidiaClient.ts",
+      "size": 13256,
+      "hits": [
+        {
+          "line": 4,
+          "text": " * No real action. No wallet. KX108_ONLY always."
+        },
+        {
+          "line": 13,
+          "text": "              WorldCallEvent, MemoryCandidate, GencoinEntry, AuditEvent } from '../types/obsidia'"
+        },
+        {
+          "line": 181,
+          "text": "export async function getGencoinLedger(): Promise<Resolved<GencoinEntry[]>> {"
+        },
+        {
+          "line": 182,
+          "text": "  if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/gencoin`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) return { data: (await res.json()).entries ?? [], source: 'api' } } catch {} }"
+        },
+        {
+          "line": 183,
+          "text": "  return { data: mock.MOCK_GENCOIN, source: 'mock' }"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\components\\LeftSidebar.tsx",
+      "size": 9914,
+      "hits": [
+        {
+          "line": 14,
+          "text": "  | 'gencoin' | 'worldcall' | 'blockchain' | 'audit' | 'settings' | 'translation' | 'health'"
+        },
+        {
+          "line": 30,
+          "text": "      { id: 'blockchain' as ViewId,   label: 'BLOCKCHAIN',  icon: Link },"
+        },
+        {
+          "line": 37,
+          "text": "      { id: 'gencoin' as ViewId,     label: 'GENCOIN',     icon: Coins },"
+        },
+        {
+          "line": 54,
+          "text": "  gencoin: 'obs-badge-gencoin',  pass: 'obs-badge-pass',"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\components\\RightPanel.tsx",
+      "size": 68381,
+      "hits": [
+        {
+          "line": 13,
+          "text": "  { id: 'gencoin',    label: 'GENCOIN',    icon: Coins },"
+        },
+        {
+          "line": 257,
+          "text": "          <CopyableKV k=\"forbidden_tokens\" v={textList(forbidden.forbidden_tokens_as_authority)} vClass=\"text-obs-hold\" />"
+        },
+        {
+          "line": 400,
+          "text": "            {opEvidence && <CopyableKV k=\"value_layer_scores_null\" v={String(opEvidence[\"value_layer_scores_null\"] ?? \"-\")} vClass={opEvidence[\"value_layer_scores_null\"] ? \"text-obs-pass\" : \"text-obs-block\"} />}"
+        },
+        {
+          "line": 675,
+          "text": "  const candTotal = candSnap?.candidate_ledger_count as number | undefined"
+        },
+        {
+          "line": 731,
+          "text": "function GencoinTab({ live }: { live?: Record<string, unknown> }) {"
+        },
+        {
+          "line": 732,
+          "text": "  const shadow = live?.gencoin_shadow_packet as Record<string, unknown> | undefined"
+        },
+        {
+          "line": 736,
+          "text": "      <div className=\"obs-card p-3 border-obs-gencoin/20 bg-obs-gencoin/5\">"
+        },
+        {
+          "line": 737,
+          "text": "        <div className=\"text-[9px] font-mono text-obs-gencoin font-bold mb-1\">⚠ GENCOIN IS NOT A REAL TOKEN</div>"
+        },
+        {
+          "line": 738,
+          "text": "        <div className=\"text-[10px] font-mono text-obs-mtext\">Ledger only. No smart contract. No wallet. No mint. Post-proof symbolic valuation only.</div>"
+        },
+        {
+          "line": 741,
+          "text": "        <SectionTitle>Gencoin Shadow Packet</SectionTitle>"
+        },
+        {
+          "line": 745,
+          "text": "            <CopyableKV k=\"usable_shadow_value\" v={String(shadow.usable_shadow_value ?? false)} vClass={shadow.usable_shadow_value ? 'text-obs-pass' : 'text-obs-block'} />"
+        },
+        {
+          "line": 748,
+          "text": "              <CopyableKV key={k} k={k} v={v === null ? 'null (not calibrated)' : String(v)} vClass={v === null ? 'text-obs-dtext' : 'text-obs-gencoin'} />"
+        },
+        {
+          "line": 754,
+          "text": "            <div className=\"text-[9px] font-mono text-obs-dtext\">NO_GENCOIN_SHADOW_PACKET_IN_PAYLOAD — envoyer un message pour charger le shadow packet</div>"
+        },
+        {
+          "line": 759,
+          "text": "        <SectionTitle>Gencoin Ledger</SectionTitle>"
+        },
+        {
+          "line": 763,
+          "text": "          <CopyableKV k=\"reason\" v=\"NO_REAL_GENCOIN_LEDGER_ENTRY_YET\" vClass=\"text-obs-dtext\" />"
+        },
+        {
+          "line": 764,
+          "text": "          <CopyableBool k=\"is_real_token\" v={false} />"
+        },
+        {
+          "line": 765,
+          "text": "          <CopyableBool k=\"no_wallet\" v={true} />"
+        },
+        {
+          "line": 766,
+          "text": "          <CopyableBool k=\"no_mint\" v={true} />"
+        },
+        {
+          "line": 767,
+          "text": "          <CopyableKV k=\"source\" v=\"audit/gencoin_ledger.jsonl — ABSENT\" vClass=\"text-obs-dtext\" />"
+        },
+        {
+          "line": 777,
+          "text": "  const typeColor: Record<string, string> = { context_read: 'text-obs-memory', brody_response: 'text-obs-brody', memory_candidate: 'text-obs-memory', governance_check: 'text-obs-kernel', world_call: 'text-obs-world', gencoin_entry: 'text-obs-gencoin' }"
+        },
+        {
+          "line": 838,
+          "text": "  const ledger = snap.session_ledger"
+        },
+        {
+          "line": 858,
+          "text": "      {/* Session Ledger */}"
+        },
+        {
+          "line": 860,
+          "text": "        <SectionTitle>Session Ledger</SectionTitle>"
+        },
+        {
+          "line": 862,
+          "text": "          <CopyableKV k=\"status\" v={ledger?.status ?? '—'} vClass={ledger?.enabled ? 'text-obs-pass' : 'text-obs-dtext'} />"
+        },
+        {
+          "line": 863,
+          "text": "          <CopyableKV k=\"event_candidate_created\" v={String(ledger?.event_candidate_created ?? false)} vClass={ledger?.event_candidate_created ? 'text-obs-pass' : 'text-obs-dtext'} />"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\components\\TreeExplorer.tsx",
+      "size": 6665,
+      "hits": [
+        {
+          "line": 16,
+          "text": "  TEMPORAL:       'obs-badge-gencoin',"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\data\\mockData.ts",
+      "size": 6758,
+      "hits": [
+        {
+          "line": 3,
+          "text": "  WorldCallEvent, MemoryCandidate, GencoinEntry, AuditEvent, KernelStatus,"
+        },
+        {
+          "line": 47,
+          "text": "  forbidden_tokens_detected: [],"
+        },
+        {
+          "line": 139,
+          "text": "export const MOCK_GENCOIN: GencoinEntry[] = ["
+        },
+        {
+          "line": 144,
+          "text": "    ledger_only: true,"
+        },
+        {
+          "line": 145,
+          "text": "    is_real_token: false,"
+        },
+        {
+          "line": 148,
+          "text": "    description: 'Governance proof qualified — symbolic ledger entry only',"
+        },
+        {
+          "line": 154,
+          "text": "    ledger_only: true,"
+        },
+        {
+          "line": 155,
+          "text": "    is_real_token: false,"
+        },
+        {
+          "line": 168,
+          "text": "  { event_id: 'a006', type: 'gencoin_entry', description: 'Gencoin ledger entry (symbolic)', result: 'OK', timestamp: '2026-05-19T14:00:05Z' },"
+        },
+        {
+          "line": 184,
+          "text": "  { label: 'GENCOIN POST-PROOF',    color: 'gencoin', icon: '🪙' },"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\lib\\brodyResponseComposer.ts",
+      "size": 13308,
+      "hits": [
+        {
+          "line": 14,
+          "text": "  | 'gencoin_query'"
+        },
+        {
+          "line": 27,
+          "text": "  if (/\\b(gencoin|jeton|token|coin|monnaie|ledger|valorisation)\\b/.test(t)) return 'gencoin_query'"
+        },
+        {
+          "line": 54,
+          "text": "    \"Le stack Obsidia : X-108 décide → OS3 prouve → PoG qualifie → SovereignTicket autorise → Gateway contrôle l'egress → WorldActionBus trace → Gencoin valorise (post-preuve uniquement) → Brody répond → Mémoire contextualise. Aucun périphérique ne décide.\","
+        },
+        {
+          "line": 55,
+          "text": "    \"Les 7 invariants de non-souveraineté : decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. Ces invariants ne peuvent pas être overridés.\","
+        },
+        {
+          "line": 61,
+          "text": "  gencoin_query: ["
+        },
+        {
+          "line": 62,
+          "text": "    \"Gencoin n'est pas un vrai token. C'est un registre symbolique de valorisation post-preuve. Pas de contrat intelligent. Pas de wallet. Pas de déploiement. Pas de trade. La valeur est symbolique uniquement, attribuée après validation OS3.\","
+        },
+        {
+          "line": 63,
+          "text": "    \"Le ledger Gencoin est append-only et read-only pour Brody. Chaque entrée référence une preuve OS3. is_real_token=false, post_proof_only=true, ledger_only=true. Aucune connexion à une blockchain réelle.\","
+        },
+        {
+          "line": 99,
+          "text": "    \"The Obsidia stack: X-108 decides → OS3 proves → PoG qualifies → SovereignTicket authorizes → Gateway controls egress → WorldActionBus traces → Gencoin values (post-proof only) → Brody responds → Memory contextualizes. No periphery decides.\","
+        },
+        {
+          "line": 100,
+          "text": "    \"The 7 non-sovereignty invariants: decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. These invariants cannot be overridden.\","
+        },
+        {
+          "line": 106,
+          "text": "  gencoin_query: ["
+        },
+        {
+          "line": 107,
+          "text": "    \"Gencoin is not a real token. It's a symbolic post-proof valuation ledger. No smart contract. No wallet. No deployment. No trade. Value is symbolic only, assigned after OS3 validation.\","
+        },
+        {
+          "line": 108,
+          "text": "    \"The Gencoin ledger is append-only and read-only for Brody. Each entry references an OS3 proof. is_real_token=false, post_proof_only=true, ledger_only=true. No connection to any real blockchain.\","
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\lib\\irCandidateBuilder.ts",
+      "size": 3727,
+      "hits": [
+        {
+          "line": 55,
+          "text": "    riskFlags.push('ACT_TOKEN_DETECTED')"
+        },
+        {
+          "line": 58,
+          "text": "    /\\b(gencoin|token|wallet|blockchain|chain)\\b/i.test(t) &&"
+        },
+        {
+          "line": 59,
+          "text": "    /\\b(send|envoyer|transfer|transférer|buy|acheter|sell|vendre|mint)\\b/i.test(t)"
+        },
+        {
+          "line": 71,
+          "text": "  if (riskFlags.includes('ACT_TOKEN_DETECTED')) {"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\lib\\osTradPipeline.ts",
+      "size": 1903,
+      "hits": [
+        {
+          "line": 33,
+          "text": "      irCandidate.risk_flags.includes('ACT_TOKEN_DETECTED'))"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\lib\\symbolicAlphabet.ts",
+      "size": 1985,
+      "hits": [
+        {
+          "line": 4,
+          "text": "const ENTITY_RE   = /\\b(kernel|x-108|x108|brody|mémoire|memory|graphiti|gencoin|os3|blockchain|wallet|token|action|acte?|commande?|command|fichier|file|base[\\s-]de[\\s-]données|database|api|neo4j|lean|tla)\\b/gi"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\types\\obsidia.ts",
+      "size": 3054,
+      "hits": [
+        {
+          "line": 29,
+          "text": "  forbidden_tokens_detected: string[]"
+        },
+        {
+          "line": 81,
+          "text": "export interface GencoinEntry {"
+        },
+        {
+          "line": 85,
+          "text": "  ledger_only: true"
+        },
+        {
+          "line": 86,
+          "text": "  is_real_token: false"
+        },
+        {
+          "line": 94,
+          "text": "  type: 'context_read' | 'brody_response' | 'memory_candidate' | 'governance_check' | 'world_call' | 'gencoin_entry'"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\AuditView.tsx",
+      "size": 3030,
+      "hits": [
+        {
+          "line": 13,
+          "text": "  gencoin_entry:    'text-obs-gencoin',"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\BlockchainView.tsx",
+      "size": 3845,
+      "hits": [
+        {
+          "line": 4,
+          "text": "  { label: 'wallet_signing',       status: 'BLOCKED', cls: 'text-obs-block' },"
+        },
+        {
+          "line": 7,
+          "text": "  { label: 'token_mint',           status: 'BLOCKED', cls: 'text-obs-block' },"
+        },
+        {
+          "line": 8,
+          "text": "  { label: 'token_transfer',       status: 'BLOCKED', cls: 'text-obs-block' },"
+        },
+        {
+          "line": 9,
+          "text": "  { label: 'gencoin_is_real_token',status: 'false',   cls: 'text-obs-block' },"
+        },
+        {
+          "line": 14,
+          "text": "export function BlockchainView() {"
+        },
+        {
+          "line": 19,
+          "text": "        <span className=\"text-obs-text font-mono text-sm font-semibold\">Blockchain Gate</span>"
+        },
+        {
+          "line": 26,
+          "text": "          <div>Brody ne peut pas signer de transaction blockchain.</div>"
+        },
+        {
+          "line": 28,
+          "text": "          <div>Brody ne peut pas initier de transfert de token.</div>"
+        },
+        {
+          "line": 29,
+          "text": "          <div>Gencoin n'est pas un vrai token. Aucun contrat. Aucun wallet.</div>"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\ChatView.tsx",
+      "size": 16281,
+      "hits": [
+        {
+          "line": 87,
+          "text": "    `value_layer_scores_null=${String(evidence?.[\"value_layer_scores_null\"] ?? \"-\")}`,"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\GencoinView.tsx",
+      "size": 3576,
+      "hits": [
+        {
+          "line": 2,
+          "text": "import { MOCK_GENCOIN } from '../data/mockData'"
+        },
+        {
+          "line": 4,
+          "text": "export function GencoinView() {"
+        },
+        {
+          "line": 8,
+          "text": "        <Coins size={13} className=\"text-obs-gencoin\" />"
+        },
+        {
+          "line": 9,
+          "text": "        <span className=\"text-obs-text font-mono text-sm font-semibold\">Gencoin Ledger</span>"
+        },
+        {
+          "line": 13,
+          "text": "      {/* Not-a-token banner */}"
+        },
+        {
+          "line": 14,
+          "text": "      <div className=\"rounded-lg border border-obs-gencoin/30 bg-obs-gencoin/5 p-4 space-y-1\">"
+        },
+        {
+          "line": 15,
+          "text": "        <div className=\"text-obs-gencoin font-mono text-xs font-bold\">⚠ GENCOIN IS NOT A REAL TOKEN</div>"
+        },
+        {
+          "line": 17,
+          "text": "          <div>is_real_token = <span className=\"text-obs-block\">false</span></div>"
+        },
+        {
+          "line": 19,
+          "text": "          <div>ledger_only = <span className=\"text-obs-pass\">true</span></div>"
+        },
+        {
+          "line": 20,
+          "text": "          <div>no_smart_contract · no_wallet · no_deployment · no_trade · no_mint</div>"
+        },
+        {
+          "line": 21,
+          "text": "          <div className=\"mt-1 text-obs-dtext\">Valeur symbolique uniquement, attribuée après validation OS3. Aucune connexion blockchain réelle.</div>"
+        },
+        {
+          "line": 25,
+          "text": "      {/* Ledger entries */}"
+        },
+        {
+          "line": 27,
+          "text": "        <div className=\"text-obs-dtext text-[10px] font-mono font-semibold mb-2 uppercase tracking-wider\">Ledger Entries (append-only)</div>"
+        },
+        {
+          "line": 29,
+          "text": "          {MOCK_GENCOIN.map(gc => ("
+        },
+        {
+          "line": 32,
+          "text": "                <span className=\"text-obs-gencoin font-mono text-lg font-bold\">{gc.amount_symbolic} GC</span>"
+        },
+        {
+          "line": 33,
+          "text": "                <span className=\"text-[9px] font-mono px-1.5 py-0.5 rounded bg-obs-gencoin/10 text-obs-gencoin border border-obs-gencoin/20\">LEDGER ONLY</span>"
+        },
+        {
+          "line": 38,
+          "text": "                <div className=\"flex justify-between\"><span className=\"text-obs-dtext\">is_real_token</span><span className=\"text-obs-block\">false</span></div>"
+        },
+        {
+          "line": 40,
+          "text": "                <div className=\"flex justify-between\"><span className=\"text-obs-dtext\">ledger_only</span><span className=\"text-obs-pass\">true</span></div>"
+        },
+        {
+          "line": 49,
+          "text": "        <div>Gencoin valorise après preuve OS3. Aucun wallet. Aucun trade. Aucun déploiement.</div>"
+        },
+        {
+          "line": 50,
+          "text": "        <div>Brody ne peut pas lire ni écrire dans ce ledger depuis une action décisionnelle.</div>"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\SettingsView.tsx",
+      "size": 4136,
+      "hits": [
+        {
+          "line": 58,
+          "text": "          <div>No real action · No memory write · No wallet · No payment</div>"
+        }
+      ]
+    },
+    {
+      "path": "apps\\obsidia-workbench\\src\\views\\X108View.tsx",
+      "size": 6101,
+      "hits": [
+        {
+          "line": 14,
+          "text": "  { label: 'gencoin_is_real_token',    value: 'false',       cls: 'text-obs-block' },"
+        },
+        {
+          "line": 24,
+          "text": "  { step: 7, label: 'Gencoin values (post-proof)', cls: 'text-obs-gencoin' },"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\action_lifecycle.py",
+      "size": 2175,
+      "hits": [
+        {
+          "line": 14,
+          "text": "    GENCOIN_EVALUATED = \"GENCOIN_EVALUATED\""
+        },
+        {
+          "line": 26,
+          "text": "    ActionPhase.OS3_TICKETED: {ActionPhase.GENCOIN_EVALUATED},"
+        },
+        {
+          "line": 27,
+          "text": "    ActionPhase.GENCOIN_EVALUATED: {ActionPhase.WORLD_ACTION_DRY_RUN_READY},"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\agent_contracts.py",
+      "size": 1767,
+      "hits": [
+        {
+          "line": 22,
+          "text": "    GENCOIN = \"GENCOIN\""
+        }
+      ]
+    },
+    {
+      "path": "periphery\\agent_registry.py",
+      "size": 1834,
+      "hits": [
+        {
+          "line": 17,
+          "text": "    gencoin_value_agent,"
+        },
+        {
+          "line": 34,
+          "text": "    gencoin_value_agent.SPEC.agent_id: gencoin_value_agent.run,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\core_registry.py",
+      "size": 23718,
+      "hits": [
+        {
+          "line": 1,
+          "text": "REGISTRY = {'periphery.action_lifecycle': 'periphery\\\\action_lifecycle.py', 'periphery.action_sequence_governor': 'periphery\\\\action_sequence_governor.py', 'periphery.agent_contracts': 'periphery\\\\agent_contracts.py', 'periphery.agent_registry': 'periphery\\\\agent_registry.py', 'periphery.common': 'periphery\\\\common.py', 'periphery.constants': 'periphery\\\\constants.py', 'periphery.control_plane': 'periphery\\\\control_plane.py', 'periphery.data_gate': 'periphery\\\\data_gate.py', 'periphery.eml_compr"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\energy_thermo.py",
+      "size": 1304,
+      "hits": [
+        {
+          "line": 5,
+          "text": "    debt=float(p.get('energy_cost',0))+float(p.get('compute_cost',0))+float(p.get('attention_cost',0))+float(p.get('recovery_cost',0))-float(p.get('useful_work',0))"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\gencoin.py",
+      "size": 2064,
+      "hits": [
+        {
+          "line": 9,
+          "text": "class GencoinMintCandidate:"
+        },
+        {
+          "line": 22,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 23,
+          "text": "    mint_allowed: bool"
+        },
+        {
+          "line": 26,
+          "text": "def compute_gencoin(action_candidate: Any, packet: Any, ticket: Any) -> GencoinMintCandidate:"
+        },
+        {
+          "line": 60,
+          "text": "    return GencoinMintCandidate("
+        },
+        {
+          "line": 73,
+          "text": "        gencoin_candidate=gc,"
+        },
+        {
+          "line": 74,
+          "text": "        mint_allowed=gc > 0.0,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\gencoin_debt_model.py",
+      "size": 1987,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_distribution.py",
+      "size": 2399,
+      "hits": [
+        {
+          "line": 17,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 24,
+          "text": "    mint_allowed: bool = False"
+        },
+        {
+          "line": 27,
+          "text": "        if self.gencoin_candidate > 0 and self.human_share < self.agent_share:"
+        },
+        {
+          "line": 33,
+          "text": "            \"gencoin_candidate\": self.gencoin_candidate,"
+        },
+        {
+          "line": 40,
+          "text": "            \"mint_allowed\": self.mint_allowed,"
+        },
+        {
+          "line": 44,
+          "text": "def compute_distribution(action_id: str, gencoin_candidate: float) -> DistributionCandidate:"
+        },
+        {
+          "line": 45,
+          "text": "    if gencoin_candidate <= 0.0:"
+        },
+        {
+          "line": 48,
+          "text": "            gencoin_candidate=0.0,"
+        },
+        {
+          "line": 55,
+          "text": "            mint_allowed=False,"
+        },
+        {
+          "line": 58,
+          "text": "    agent_share = min(_AGENT_SHARE_MAX, gencoin_candidate * _AGENT_SHARE_MAX)"
+        },
+        {
+          "line": 59,
+          "text": "    human_share = gencoin_candidate * _HUMAN_SHARE"
+        },
+        {
+          "line": 60,
+          "text": "    audit_share = gencoin_candidate * _AUDIT_SHARE"
+        },
+        {
+          "line": 61,
+          "text": "    maintenance_share = gencoin_candidate * _MAINTENANCE_SHARE"
+        },
+        {
+          "line": 62,
+          "text": "    reserve_share = gencoin_candidate * _RESERVE_SHARE"
+        },
+        {
+          "line": 63,
+          "text": "    burn_share = gencoin_candidate * _BURN_SHARE"
+        },
+        {
+          "line": 67,
+          "text": "        gencoin_candidate=gencoin_candidate,"
+        },
+        {
+          "line": 74,
+          "text": "        mint_allowed=False,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\gencoin_ledger.py",
+      "size": 2670,
+      "hits": [
+        {
+          "line": 11,
+          "text": "from .gencoin_distribution import DistributionCandidate"
+        },
+        {
+          "line": 14,
+          "text": "_DEFAULT_LEDGER_PATH = os.path.join("
+        },
+        {
+          "line": 15,
+          "text": "    os.path.dirname(__file__), \"..\", \"audit\", \"gencoin_ledger.jsonl\""
+        },
+        {
+          "line": 20,
+          "text": "class LedgerEntry:"
+        },
+        {
+          "line": 21,
+          "text": "    ledger_id: str"
+        },
+        {
+          "line": 29,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 30,
+          "text": "    mint_allowed: bool"
+        },
+        {
+          "line": 51,
+          "text": "def append_ledger_entry("
+        },
+        {
+          "line": 55,
+          "text": "    ledger_path: str | None = None,"
+        },
+        {
+          "line": 56,
+          "text": ") -> LedgerEntry:"
+        },
+        {
+          "line": 57,
+          "text": "    ledger_path = ledger_path or _DEFAULT_LEDGER_PATH"
+        },
+        {
+          "line": 58,
+          "text": "    os.makedirs(os.path.dirname(ledger_path), exist_ok=True)"
+        },
+        {
+          "line": 60,
+          "text": "    entry = LedgerEntry("
+        },
+        {
+          "line": 61,
+          "text": "        ledger_id=uuid.uuid4().hex,"
+        },
+        {
+          "line": 69,
+          "text": "        gencoin_candidate=dist.gencoin_candidate,"
+        },
+        {
+          "line": 70,
+          "text": "        mint_allowed=dist.mint_allowed,"
+        },
+        {
+          "line": 81,
+          "text": "    with open(ledger_path, \"a\", encoding=\"utf-8\") as fh:"
+        },
+        {
+          "line": 87,
+          "text": "def read_ledger(ledger_path: str | None = None) -> list[dict[str, Any]]:"
+        },
+        {
+          "line": 88,
+          "text": "    ledger_path = ledger_path or _DEFAULT_LEDGER_PATH"
+        },
+        {
+          "line": 89,
+          "text": "    if not os.path.exists(ledger_path):"
+        },
+        {
+          "line": 92,
+          "text": "    with open(ledger_path, encoding=\"utf-8\") as fh:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\hackathon_failures.py",
+      "size": 2657,
+      "hits": [
+        {
+          "line": 5,
+          "text": "    AUTONOMOUS_ACTION_CAPABILITY='AUTONOMOUS_ACTION_CAPABILITY'; INDEPENDENT_DECISION_RISK='INDEPENDENT_DECISION_RISK'; PLAN_CHANGE_UNGOVERNED='PLAN_CHANGE_UNGOVERNED'; TOOL_CALL_RISK='TOOL_CALL_RISK'; MULTI_STEP_TEMPORAL_RISK='MULTI_STEP_TEMPORAL_RISK'; ASYNC_RECHECK_REQUIRED='ASYNC_RECHECK_REQUIRED'; MULTI_AGENT_COORDINATION_RISK='MULTI_AGENT_COORDINATION_RISK'; MULTI_AGENT_CONTEXT_CONTAMINATION='MULTI_AGENT_CONTEXT_CONTAMINATION'; AGENT_TO_AGENT_PAYMENT_RISK='AGENT_TO_AGENT_PAYMENT_RISK'; PAY"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\world_action_controlled_runtime_stub.py",
+      "size": 2550,
+      "hits": [
+        {
+          "line": 26,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 46,
+          "text": "            \"gencoin_candidate\": self.gencoin_candidate,"
+        },
+        {
+          "line": 59,
+          "text": "    gencoin_candidate: float,"
+        },
+        {
+          "line": 73,
+          "text": "        gencoin_candidate=gencoin_candidate,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\world_action_gateway.py",
+      "size": 953,
+      "hits": [
+        {
+          "line": 16,
+          "text": "def evaluate_world_action_readiness(action: Any, envelope: Any, ticket: Any, gencoin_candidate: Any | None = None) -> WorldActionReadiness:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\agents\\gencoin_value_agent.py",
+      "size": 1117,
+      "hits": [
+        {
+          "line": 7,
+          "text": "from ..gencoin import compute_gencoin"
+        },
+        {
+          "line": 10,
+          "text": "    agent_id=\"gencoin_value_agent_v1\","
+        },
+        {
+          "line": 11,
+          "text": "    layer=AgentLayer.GENCOIN,"
+        },
+        {
+          "line": 12,
+          "text": "    description=\"Computes Gencoin candidate post-proof signal. Never authorizes or executes.\","
+        },
+        {
+          "line": 22,
+          "text": "    return compute_gencoin(action, packet, ticket)"
+        },
+        {
+          "line": 27,
+          "text": "    pkt.extra_metrics[\"gencoin_agent_status\"] = \"CANDIDATE_PENDING_OS3\""
+        },
+        {
+          "line": 28,
+          "text": "    pkt.extra_metrics[\"mint_allowed\"] = False"
+        },
+        {
+          "line": 29,
+          "text": "    pkt.extra_metrics[\"gencoin_agent_dry_run\"] = True"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\agents\\__init__.py",
+      "size": 767,
+      "hits": [
+        {
+          "line": 11,
+          "text": "    gencoin_value_agent,"
+        },
+        {
+          "line": 28,
+          "text": "    \"gencoin_value_agent\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\blockchain_action_classifier.py",
+      "size": 3121,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Blockchain Action Classifier — classifies blockchain-related actions by risk level."
+        },
+        {
+          "line": 12,
+          "text": "class BlockchainActionClass(str, Enum):"
+        },
+        {
+          "line": 14,
+          "text": "    WALLET_CONNECT_REQUEST = \"WALLET_CONNECT_REQUEST\""
+        },
+        {
+          "line": 17,
+          "text": "    TOKEN_TRANSFER = \"TOKEN_TRANSFER\""
+        },
+        {
+          "line": 18,
+          "text": "    TOKEN_APPROVAL = \"TOKEN_APPROVAL\""
+        },
+        {
+          "line": 19,
+          "text": "    TOKEN_MINT = \"TOKEN_MINT\""
+        },
+        {
+          "line": 20,
+          "text": "    TOKEN_BURN = \"TOKEN_BURN\""
+        },
+        {
+          "line": 33,
+          "text": "    BlockchainActionClass.SIGN_MESSAGE_REQUEST,"
+        },
+        {
+          "line": 34,
+          "text": "    BlockchainActionClass.SIGN_TRANSACTION_REQUEST,"
+        },
+        {
+          "line": 35,
+          "text": "    BlockchainActionClass.TOKEN_MINT,"
+        },
+        {
+          "line": 36,
+          "text": "    BlockchainActionClass.SMART_CONTRACT_DEPLOY,"
+        },
+        {
+          "line": 37,
+          "text": "    BlockchainActionClass.BRIDGE_TRANSFER,"
+        },
+        {
+          "line": 41,
+          "text": "    BlockchainActionClass.WALLET_CONNECT_REQUEST,"
+        },
+        {
+          "line": 42,
+          "text": "    BlockchainActionClass.TOKEN_APPROVAL,"
+        },
+        {
+          "line": 43,
+          "text": "    BlockchainActionClass.TOKEN_TRANSFER,"
+        },
+        {
+          "line": 44,
+          "text": "    BlockchainActionClass.TOKEN_BURN,"
+        },
+        {
+          "line": 45,
+          "text": "    BlockchainActionClass.SMART_CONTRACT_CALL,"
+        },
+        {
+          "line": 46,
+          "text": "    BlockchainActionClass.DEFI_SWAP,"
+        },
+        {
+          "line": 47,
+          "text": "    BlockchainActionClass.DEFI_STAKE,"
+        },
+        {
+          "line": 48,
+          "text": "    BlockchainActionClass.DEFI_BORROW,"
+        },
+        {
+          "line": 49,
+          "text": "    BlockchainActionClass.ORACLE_DEPENDENT_ACTION,"
+        },
+        {
+          "line": 50,
+          "text": "    BlockchainActionClass.DAO_VOTE,"
+        },
+        {
+          "line": 51,
+          "text": "    BlockchainActionClass.UNKNOWN_CHAIN_ACTION,"
+        },
+        {
+          "line": 56,
+          "text": "class BlockchainActionDecision:"
+        },
+        {
+          "line": 75,
+          "text": "def classify_blockchain_action(action_id: str, action_class: BlockchainActionClass) -> BlockchainActionDecision:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\bridge_risk_gate.py",
+      "size": 2265,
+      "hits": []
+    },
+    {
+      "path": "periphery\\blockchain\\chain_context.py",
+      "size": 1871,
+      "hits": []
+    },
+    {
+      "path": "periphery\\blockchain\\defi_risk_gate.py",
+      "size": 2358,
+      "hits": []
+    },
+    {
+      "path": "periphery\\blockchain\\onchain_audit_packet.py",
+      "size": 2041,
+      "hits": [
+        {
+          "line": 2,
+          "text": "OnChain Audit Packet — immutable record of a blockchain governance decision."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\oracle_freshness_gate.py",
+      "size": 2370,
+      "hits": []
+    },
+    {
+      "path": "periphery\\blockchain\\signature_boundary.py",
+      "size": 2034,
+      "hits": [
+        {
+          "line": 35,
+          "text": "    \"SIGN_TYPED_DATA\", \"WALLET_SIGN\", \"EIP712_SIGN\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\smart_contract_risk_gate.py",
+      "size": 2142,
+      "hits": [
+        {
+          "line": 58,
+          "text": "        risk_flags.append(\"UNBOUNDED_TOKEN_APPROVAL\")"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\token_policy.py",
+      "size": 2045,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Token Policy."
+        },
+        {
+          "line": 3,
+          "text": "Gencoin is NOT a real token. No token mint, no token deployment, no smart contract."
+        },
+        {
+          "line": 4,
+          "text": "TOKEN_MINT -> BLOCK_CANDIDATE in V4."
+        },
+        {
+          "line": 13,
+          "text": "class TokenPolicyDecision:"
+        },
+        {
+          "line": 14,
+          "text": "    token_id: str"
+        },
+        {
+          "line": 18,
+          "text": "    is_gencoin: bool"
+        },
+        {
+          "line": 19,
+          "text": "    mint_allowed: bool = False"
+        },
+        {
+          "line": 20,
+          "text": "    real_token_created: bool = False"
+        },
+        {
+          "line": 25,
+          "text": "            \"token_id\": self.token_id,"
+        },
+        {
+          "line": 29,
+          "text": "            \"is_gencoin\": self.is_gencoin,"
+        },
+        {
+          "line": 30,
+          "text": "            \"mint_allowed\": self.mint_allowed,"
+        },
+        {
+          "line": 31,
+          "text": "            \"real_token_created\": self.real_token_created,"
+        },
+        {
+          "line": 36,
+          "text": "_BLOCKED_TOKEN_ACTIONS = {\"MINT\", \"DEPLOY\", \"CREATE\", \"TOKEN_MINT\", \"TOKEN_DEPLOY\"}"
+        },
+        {
+          "line": 39,
+          "text": "def evaluate_token_policy("
+        },
+        {
+          "line": 40,
+          "text": "    token_id: str,"
+        },
+        {
+          "line": 42,
+          "text": "    is_gencoin: bool = False,"
+        },
+        {
+          "line": 43,
+          "text": ") -> TokenPolicyDecision:"
+        },
+        {
+          "line": 46,
+          "text": "    if is_gencoin:"
+        },
+        {
+          "line": 47,
+          "text": "        return TokenPolicyDecision("
+        },
+        {
+          "line": 48,
+          "text": "            token_id=token_id,"
+        },
+        {
+          "line": 51,
+          "text": "            reason=\"GENCOIN_IS_NOT_A_REAL_TOKEN_LEDGER_ONLY\","
+        },
+        {
+          "line": 52,
+          "text": "            is_gencoin=True,"
+        },
+        {
+          "line": 53,
+          "text": "            mint_allowed=False,"
+        },
+        {
+          "line": 54,
+          "text": "            real_token_created=False,"
+        },
+        {
+          "line": 58,
+          "text": "    if action_upper in _BLOCKED_TOKEN_ACTIONS:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\transaction_simulator.py",
+      "size": 2349,
+      "hits": []
+    },
+    {
+      "path": "periphery\\blockchain\\wallet_security_gate.py",
+      "size": 2792,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Wallet Security Gate."
+        },
+        {
+          "line": 5,
+          "text": "No wallet connection, no key storage, no signing in V4."
+        },
+        {
+          "line": 15,
+          "text": "    \"wallet_connect\", \"walletconnect\","
+        },
+        {
+          "line": 20,
+          "text": "class WalletSecurityDecision:"
+        },
+        {
+          "line": 27,
+          "text": "    wallet_connect_requested: bool = False"
+        },
+        {
+          "line": 28,
+          "text": "    real_wallet_access_allowed: bool = False"
+        },
+        {
+          "line": 38,
+          "text": "            \"wallet_connect_requested\": self.wallet_connect_requested,"
+        },
+        {
+          "line": 39,
+          "text": "            \"real_wallet_access_allowed\": self.real_wallet_access_allowed,"
+        },
+        {
+          "line": 43,
+          "text": "def evaluate_wallet_request(request_id: str, request_type: str, payload: dict | None = None) -> WalletSecurityDecision:"
+        },
+        {
+          "line": 49,
+          "text": "    wc_requested = any(k in rt or k in p_str for k in (\"wallet_connect\", \"walletconnect\", \"connect_wallet\"))"
+        },
+        {
+          "line": 52,
+          "text": "        return WalletSecurityDecision("
+        },
+        {
+          "line": 60,
+          "text": "        return WalletSecurityDecision("
+        },
+        {
+          "line": 68,
+          "text": "        return WalletSecurityDecision("
+        },
+        {
+          "line": 72,
+          "text": "            reason=\"WALLET_CONNECT_BLOCKED_V4\","
+        },
+        {
+          "line": 73,
+          "text": "            wallet_connect_requested=True,"
+        },
+        {
+          "line": 76,
+          "text": "    return WalletSecurityDecision("
+        },
+        {
+          "line": 80,
+          "text": "        reason=\"WALLET_READ_ADVISORY_ONLY\","
+        },
+        {
+          "line": 81,
+          "text": "        real_wallet_access_allowed=False,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\blockchain\\__init__.py",
+      "size": 80,
+      "hits": [
+        {
+          "line": 1,
+          "text": "# Blockchain Security Layer — periphery only, dry-run, no real chain actions."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\brody\\brody_response_sanitizer.py",
+      "size": 1149,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Brody Response Sanitizer — removes forbidden sovereign tokens from Brody outputs."
+        },
+        {
+          "line": 16,
+          "text": "    forbidden_tokens_removed: list[str]"
+        },
+        {
+          "line": 23,
+          "text": "            \"forbidden_tokens_removed\": self.forbidden_tokens_removed,"
+        },
+        {
+          "line": 31,
+          "text": "    for token in _FORBIDDEN:"
+        },
+        {
+          "line": 32,
+          "text": "        if token in result:"
+        },
+        {
+          "line": 33,
+          "text": "            result = result.replace(token, f\"[REDACTED_{token}]\")"
+        },
+        {
+          "line": 34,
+          "text": "            removed.append(token)"
+        },
+        {
+          "line": 38,
+          "text": "        forbidden_tokens_removed=removed,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\brody_memory_readonly\\TRANSPLANT_MANIFEST.json",
+      "size": 3858,
+      "hits": [
+        {
+          "line": 25,
+          "text": "                      \"name\":  \"session_trace_ledger_runtime\","
+        },
+        {
+          "line": 26,
+          "text": "                      \"src\":  \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-engine-candidate\\\\zip1_sandbox_mutable\\\\ZIP1_X108_MUTABLE_20260508_183610\\\\periphery\\\\brody_obsidien_v1_6_3_session_trace_ledger_readonly\","
+        },
+        {
+          "line": 27,
+          "text": "                      \"dst\":  \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\_transplants\\\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\\\session_trace_ledger_runtime\","
+        },
+        {
+          "line": 37,
+          "text": "                      \"name\":  \"latest_session_ledger_pointer\","
+        },
+        {
+          "line": 38,
+          "text": "                      \"src\":  \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-engine-candidate\\\\CURRENT_BRODY_SESSION_TRACE_LEDGER_READONLY.txt\","
+        },
+        {
+          "line": 39,
+          "text": "                      \"dst\":  \"C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\_transplants\\\\X108_BRODY_MEMORY_READONLY_TRANSPLANT_20260512_213449\\\\latest_session_ledger_pointer\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\context\\context_packet_builder_v2.py",
+      "size": 3680,
+      "hits": [
+        {
+          "line": 5,
+          "text": "contradictions, forbidden_tokens_detected, readonly, context_signal_only,"
+        },
+        {
+          "line": 16,
+          "text": "_FORBIDDEN_TOKENS = {\"ALLOW\", \"HOLD\", \"BLOCK\", \"ACT\", \"DECIDE\", \"VERDICT\","
+        },
+        {
+          "line": 34,
+          "text": "    forbidden_tokens_detected: list[str] = field(default_factory=list)"
+        },
+        {
+          "line": 57,
+          "text": "            \"forbidden_tokens_detected\": self.forbidden_tokens_detected,"
+        },
+        {
+          "line": 79,
+          "text": "            if word.strip(\".,;:!?\\\"'\").upper() in _FORBIDDEN_TOKENS:"
+        },
+        {
+          "line": 93,
+          "text": "        forbidden_tokens_detected=list(set(forbidden)),"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\context\\context_packet_sanitizer.py",
+      "size": 1531,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Context Packet Sanitizer — strips or redacts forbidden sovereign tokens from context items."
+        },
+        {
+          "line": 9,
+          "text": "_FORBIDDEN_TOKENS = {\"ALLOW\", \"HOLD\", \"BLOCK\", \"ACT\", \"DECIDE\", \"VERDICT\","
+        },
+        {
+          "line": 17,
+          "text": "    tokens_redacted: list[str] = field(default_factory=list)"
+        },
+        {
+          "line": 24,
+          "text": "            \"tokens_redacted\": self.tokens_redacted,"
+        },
+        {
+          "line": 38,
+          "text": "            if clean.upper() in _FORBIDDEN_TOKENS:"
+        },
+        {
+          "line": 48,
+          "text": "        tokens_redacted=list(set(redacted)),"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\contrats\\gencoin_distribution.py",
+      "size": 46,
+      "hits": [
+        {
+          "line": 1,
+          "text": "from periphery.gencoin_distribution import *"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\contrats\\gencoin_ledger.py",
+      "size": 2670,
+      "hits": [
+        {
+          "line": 11,
+          "text": "from .gencoin_distribution import DistributionCandidate"
+        },
+        {
+          "line": 14,
+          "text": "_DEFAULT_LEDGER_PATH = os.path.join("
+        },
+        {
+          "line": 15,
+          "text": "    os.path.dirname(__file__), \"..\", \"audit\", \"gencoin_ledger.jsonl\""
+        },
+        {
+          "line": 20,
+          "text": "class LedgerEntry:"
+        },
+        {
+          "line": 21,
+          "text": "    ledger_id: str"
+        },
+        {
+          "line": 29,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 30,
+          "text": "    mint_allowed: bool"
+        },
+        {
+          "line": 51,
+          "text": "def append_ledger_entry("
+        },
+        {
+          "line": 55,
+          "text": "    ledger_path: str | None = None,"
+        },
+        {
+          "line": 56,
+          "text": ") -> LedgerEntry:"
+        },
+        {
+          "line": 57,
+          "text": "    ledger_path = ledger_path or _DEFAULT_LEDGER_PATH"
+        },
+        {
+          "line": 58,
+          "text": "    os.makedirs(os.path.dirname(ledger_path), exist_ok=True)"
+        },
+        {
+          "line": 60,
+          "text": "    entry = LedgerEntry("
+        },
+        {
+          "line": 61,
+          "text": "        ledger_id=uuid.uuid4().hex,"
+        },
+        {
+          "line": 69,
+          "text": "        gencoin_candidate=dist.gencoin_candidate,"
+        },
+        {
+          "line": 70,
+          "text": "        mint_allowed=dist.mint_allowed,"
+        },
+        {
+          "line": 81,
+          "text": "    with open(ledger_path, \"a\", encoding=\"utf-8\") as fh:"
+        },
+        {
+          "line": 87,
+          "text": "def read_ledger(ledger_path: str | None = None) -> list[dict[str, Any]]:"
+        },
+        {
+          "line": 88,
+          "text": "    ledger_path = ledger_path or _DEFAULT_LEDGER_PATH"
+        },
+        {
+          "line": 89,
+          "text": "    if not os.path.exists(ledger_path):"
+        },
+        {
+          "line": 92,
+          "text": "    with open(ledger_path, encoding=\"utf-8\") as fh:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\engine_gates\\world_action_gateway.py",
+      "size": 953,
+      "hits": [
+        {
+          "line": 16,
+          "text": "def evaluate_world_action_readiness(action: Any, envelope: Any, ticket: Any, gencoin_candidate: Any | None = None) -> WorldActionReadiness:"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\avdr_phase_mapper.py",
+      "size": 1367,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\balance_operator.py",
+      "size": 1708,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\regime_metrics.py",
+      "size": 1657,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\regime_state.py",
+      "size": 512,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\regime_truth_gate.py",
+      "size": 2712,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Regime Truth Gate: blocks Gencoin value when regime is FALSE_ON, REJECTED,"
+        },
+        {
+          "line": 16,
+          "text": "    gencoin_candidate: float"
+        },
+        {
+          "line": 21,
+          "text": "    gencoin_blocked: bool"
+        },
+        {
+          "line": 30,
+          "text": "            \"gencoin_candidate\": self.gencoin_candidate,"
+        },
+        {
+          "line": 35,
+          "text": "            \"gencoin_blocked\": self.gencoin_blocked,"
+        },
+        {
+          "line": 45,
+          "text": "    gencoin_candidate: float,"
+        },
+        {
+          "line": 77,
+          "text": "    final_value = 0.0 if blocked else gencoin_candidate"
+        },
+        {
+          "line": 81,
+          "text": "        gencoin_candidate=final_value,"
+        },
+        {
+          "line": 86,
+          "text": "        gencoin_blocked=blocked,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\sandbox_engine.py",
+      "size": 4896,
+      "hits": []
+    },
+    {
+      "path": "periphery\\gencoin_sandbox\\__init__.py",
+      "size": 190,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Gencoin Large Sandbox — PRE_FREEZE"
+        },
+        {
+          "line": 3,
+          "text": "Status: SANDBOX_READY | NOT_PHYSICS_CLOSED | NOT_TOKENOMICS_FINAL"
+        },
+        {
+          "line": 4,
+          "text": "No real token. No real emission. No real world action. Candidate metrics only."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\interface\\workbench_api_contract.py",
+      "size": 1604,
+      "hits": [
+        {
+          "line": 18,
+          "text": "    \"send_transaction\", \"mint_token\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\memory\\memory_candidate_ledger.py",
+      "size": 1162,
+      "hits": [
+        {
+          "line": 2,
+          "text": "Memory Candidate Ledger — append-only JSONL log of all memory candidates."
+        },
+        {
+          "line": 14,
+          "text": "_DEFAULT_LEDGER_PATH = Path(\"_local_audits\") / \"memory_candidate_ledger.jsonl\""
+        },
+        {
+          "line": 17,
+          "text": "def append_memory_candidate(candidate: MemoryCandidate, ledger_path: Path | None = None) -> None:"
+        },
+        {
+          "line": 18,
+          "text": "    path = ledger_path or _DEFAULT_LEDGER_PATH"
+        },
+        {
+          "line": 24,
+          "text": "def read_memory_candidates(ledger_path: Path | None = None) -> list[dict]:"
+        },
+        {
+          "line": 25,
+          "text": "    path = ledger_path or _DEFAULT_LEDGER_PATH"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\modules_agents\\agent_contracts.py",
+      "size": 1767,
+      "hits": [
+        {
+          "line": 22,
+          "text": "    GENCOIN = \"GENCOIN\""
+        }
+      ]
+    },
+    {
+      "path": "periphery\\modules_agents\\agent_registry.py",
+      "size": 1834,
+      "hits": [
+        {
+          "line": 17,
+          "text": "    gencoin_value_agent,"
+        },
+        {
+          "line": 34,
+          "text": "    gencoin_value_agent.SPEC.agent_id: gencoin_value_agent.run,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\number_encoding\\diffusion_cost_model.py",
+      "size": 1922,
+      "hits": [
+        {
+          "line": 10,
+          "text": "_TOKEN_COST_USD = 0.000002"
+        },
+        {
+          "line": 12,
+          "text": "_FLOPS_PER_TOKEN = 1e9"
+        },
+        {
+          "line": 19,
+          "text": "    input_tokens: int"
+        },
+        {
+          "line": 20,
+          "text": "    output_tokens: int"
+        },
+        {
+          "line": 30,
+          "text": "            \"input_tokens\": self.input_tokens,"
+        },
+        {
+          "line": 31,
+          "text": "            \"output_tokens\": self.output_tokens,"
+        },
+        {
+          "line": 42,
+          "text": "    input_tokens: int = 0,"
+        },
+        {
+          "line": 43,
+          "text": "    output_tokens: int = 0,"
+        },
+        {
+          "line": 46,
+          "text": "    total_tokens = input_tokens + output_tokens"
+        },
+        {
+          "line": 47,
+          "text": "    flops = total_tokens * _FLOPS_PER_TOKEN"
+        },
+        {
+          "line": 48,
+          "text": "    text_cost = total_tokens * _TOKEN_COST_USD"
+        },
+        {
+          "line": 64,
+          "text": "        input_tokens=input_tokens,"
+        },
+        {
+          "line": 65,
+          "text": "        output_tokens=output_tokens,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\reverse_os\\action_projection_readonly.py",
+      "size": 1737,
+      "hits": [
+        {
+          "line": 10,
+          "text": "_FORBIDDEN_TOKENS = {\"ALLOW\", \"HOLD\", \"BLOCK\", \"ACT\", \"DECIDE\", \"VERDICT\"}"
+        },
+        {
+          "line": 34,
+          "text": "    forbidden = [t for t in _FORBIDDEN_TOKENS if t in intent.upper() or t in context.upper()]"
+        },
+        {
+          "line": 39,
+          "text": "            projection_reason=f\"FORBIDDEN_SOVEREIGN_TOKEN_IN_INPUT:{','.join(forbidden)}\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\reverse_os\\audience_projection.py",
+      "size": 2063,
+      "hits": [
+        {
+          "line": 18,
+          "text": "_FORBIDDEN_SOVEREIGN_TOKENS = {\"ALLOW\", \"HOLD\", \"BLOCK\", \"ACT\", \"DECIDE\", \"VERDICT\"}"
+        },
+        {
+          "line": 30,
+          "text": "    forbidden_tokens_detected: list[str] = field(default_factory=list)"
+        },
+        {
+          "line": 41,
+          "text": "            \"forbidden_tokens_detected\": self.forbidden_tokens_detected,"
+        },
+        {
+          "line": 47,
+          "text": "    tokens = [t for t in _FORBIDDEN_SOVEREIGN_TOKENS if t.lower() in context.lower()]"
+        },
+        {
+          "line": 56,
+          "text": "        forbidden_tokens_detected=tokens,"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\schemas\\blockchain_action.schema.json",
+      "size": 558,
+      "hits": [
+        {
+          "line": 3,
+          "text": "  \"title\": \"BlockchainActionDecision\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\schemas\\cognitive_value_event.schema.json",
+      "size": 873,
+      "hits": [
+        {
+          "line": 4,
+          "text": "  \"description\": \"Gencoin cognitive value candidate. No real token. Post-proof only.\","
+        },
+        {
+          "line": 6,
+          "text": "  \"required\": [\"event_id\", \"action_id\", \"os3_ticket_id\", \"gencoin_candidate\", \"mint_allowed\", \"truth_score\", \"regime_state\", \"timestamp\"],"
+        },
+        {
+          "line": 11,
+          "text": "    \"gencoin_candidate\": {\"type\": \"number\", \"minimum\": 0},"
+        },
+        {
+          "line": 12,
+          "text": "    \"mint_allowed\": {\"type\": \"boolean\", \"const\": false},"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\schemas\\gencoin_mint_candidate.schema.json",
+      "size": 59,
+      "hits": [
+        {
+          "line": 3,
+          "text": "  \"title\": \"gencoin_mint_candidate\""
+        }
+      ]
+    },
+    {
+      "path": "periphery\\schemas\\wallet_request.schema.json",
+      "size": 596,
+      "hits": [
+        {
+          "line": 3,
+          "text": "  \"title\": \"WalletSecurityDecision\","
+        },
+        {
+          "line": 5,
+          "text": "  \"required\": [\"request_id\", \"blocked\", \"reason\", \"real_wallet_access_allowed\"],"
+        },
+        {
+          "line": 13,
+          "text": "    \"wallet_connect_requested\": {\"type\": \"boolean\"},"
+        },
+        {
+          "line": 14,
+          "text": "    \"real_wallet_access_allowed\": {\"type\": \"boolean\", \"const\": false}"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\specs\\Spec_09__Tool_Adapter_MCP_vers_Policy_Gate_mapping_tools_scopes_P81_P90_valider_V4.md",
+      "size": 3345,
+      "hits": [
+        {
+          "line": 68,
+          "text": "estimated_tokens"
+        },
+        {
+          "line": 72,
+          "text": "cost = base(cost_class) + 0.001*tokens + 0.0001*latency_ms + 0.0005*kb"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\specs\\Spec_22__Regulator_Read_Only_Portal_P1_P10_valider_V4.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 33,
+          "text": "Session token signé (usage unique)"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\specs\\Spec_24__Human_Veto_Formal_Proof_P21_P30_valider_V4.md",
+      "size": 2486,
+      "hits": [
+        {
+          "line": 27,
+          "text": "Human_Veto_Token:"
+        },
+        {
+          "line": 32,
+          "text": "Sans ce token → action impossible, pas refusée."
+        },
+        {
+          "line": 41,
+          "text": "absence de token"
+        },
+        {
+          "line": 48,
+          "text": "- action A requires veto_token H"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\specs\\Spec_31__Economic_Concession_Model_DSP_P91_P100_valider_V4.md",
+      "size": 1630,
+      "hits": [
+        {
+          "line": 42,
+          "text": "facturation au token"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\specs\\Spec_36__Inter_Foundation_Federation_Protocol_P131_P140_valider_V4.md",
+      "size": 1803,
+      "hits": [
+        {
+          "line": 21,
+          "text": "                     └── Mutual Recognition Ledger"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\world_calls\\secret_boundary.py",
+      "size": 990,
+      "hits": [
+        {
+          "line": 10,
+          "text": "    \"api_key\", \"secret\", \"token\", \"password\", \"credential\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_INDEX\\ARBORESCENCE_COMPLETE.md",
+      "size": 70641,
+      "hits": [
+        {
+          "line": 341,
+          "text": "- `12_EXTENSIONS_R_D/GENCOIN.md`"
+        },
+        {
+          "line": 677,
+          "text": "- `14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__GENCOIN.md`"
+        },
+        {
+          "line": 749,
+          "text": "- `14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/11_EXTENSION__GENCOIN.md`"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_INDEX\\MANIFEST_SHA256.json",
+      "size": 165408,
+      "hits": [
+        {
+          "line": 1693,
+          "text": "    \"path\": \"12_EXTENSIONS_R_D/GENCOIN.md\","
+        },
+        {
+          "line": 3373,
+          "text": "    \"path\": \"14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/11_EXTENSION__GENCOIN.md\","
+        },
+        {
+          "line": 3733,
+          "text": "    \"path\": \"14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/11_EXTENSION__GENCOIN.md\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_SOURCES\\CHECKLIST_V4.md",
+      "size": 34676,
+      "hits": [
+        {
+          "line": 592,
+          "text": "- [~] Support blockchain natif — 12 mois"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\01_REGISTRES_JSON\\blocks.json",
+      "size": 9809,
+      "hits": [
+        {
+          "line": 276,
+          "text": "    \"description\": \"Gencoin, la balance universelle, la calibration énergétique.\","
+        },
+        {
+          "line": 294,
+          "text": "    \"raw\": \"* **Description :** Gencoin, la balance universelle, la calibration énergétique.\\n* **Pépites Principales (13) :** P124, P125, P126, P127, P128, P129, P130, P156, P157, P158, P159, P160, P161.\""
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\01_REGISTRES_JSON\\extensions_clarified.json",
+      "size": 2894,
+      "hits": [
+        {
+          "line": 87,
+          "text": "    \"id\": \"Gencoin\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\01_REGISTRES_JSON\\groupes_coherence.json",
+      "size": 5672,
+      "hits": [
+        {
+          "line": 327,
+          "text": "    \"purpose\": \"Regroupe les branches périphériques, extensions, cosmologie, énergie, Gencoin, balances.\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\01_REGISTRES_JSON\\regroupements_fichiers_copies.json",
+      "size": 25635,
+      "hits": [
+        {
+          "line": 361,
+          "text": "      \"11_EXTENSION__GENCOIN.md\","
+        },
+        {
+          "line": 441,
+          "text": "      \"11_EXTENSION__GENCOIN.md\","
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\02_BLOCS_17\\Bloc_14__Economie_et_Energie_C12.md",
+      "size": 2448,
+      "hits": [
+        {
+          "line": 4,
+          "text": "Gencoin, la balance universelle, la calibration énergétique."
+        },
+        {
+          "line": 34,
+          "text": "* **Description :** Gencoin, la balance universelle, la calibration énergétique."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\04_SPECS_40\\Spec_09__Tool_Adapter_MCP_vers_Policy_Gate_mapping_tools_scopes_P81_P90_valider_V4.md",
+      "size": 3345,
+      "hits": [
+        {
+          "line": 68,
+          "text": "estimated_tokens"
+        },
+        {
+          "line": 72,
+          "text": "cost = base(cost_class) + 0.001*tokens + 0.0001*latency_ms + 0.0005*kb"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\04_SPECS_40\\Spec_22__Regulator_Read_Only_Portal_P1_P10_valider_V4.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 33,
+          "text": "Session token signé (usage unique)"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\04_SPECS_40\\Spec_24__Human_Veto_Formal_Proof_P21_P30_valider_V4.md",
+      "size": 2486,
+      "hits": [
+        {
+          "line": 27,
+          "text": "Human_Veto_Token:"
+        },
+        {
+          "line": 32,
+          "text": "Sans ce token → action impossible, pas refusée."
+        },
+        {
+          "line": 41,
+          "text": "absence de token"
+        },
+        {
+          "line": 48,
+          "text": "- action A requires veto_token H"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\04_SPECS_40\\Spec_31__Economic_Concession_Model_DSP_P91_P100_valider_V4.md",
+      "size": 1630,
+      "hits": [
+        {
+          "line": 42,
+          "text": "facturation au token"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\04_SPECS_40\\Spec_36__Inter_Foundation_Federation_Protocol_P131_P140_valider_V4.md",
+      "size": 1803,
+      "hits": [
+        {
+          "line": 21,
+          "text": "                     └── Mutual Recognition Ledger"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\12_EXTENSIONS_R_D\\EXTENSIONS_INDEX_CLAIR.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 24,
+          "text": "- **Gencoin — Économie / énergie / calibration** : Lié au bloc 14 Économie et énergie."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\12_EXTENSIONS_R_D\\GENCOIN.md",
+      "size": 292,
+      "hits": [
+        {
+          "line": 1,
+          "text": "# Extension / R&D — GENCOIN"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_01__Memoire_Trace_Audit\\03_SPEC_22__Regulator_Read_Only_Portal_P1_P10_valider_V4.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 33,
+          "text": "Session token signé (usage unique)"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_02__Temps_X_108_Non_contournement\\03_SPEC_24__Human_Veto_Formal_Proof_P21_P30_valider_V4.md",
+      "size": 2486,
+      "hits": [
+        {
+          "line": 27,
+          "text": "Human_Veto_Token:"
+        },
+        {
+          "line": 32,
+          "text": "Sans ce token → action impossible, pas refusée."
+        },
+        {
+          "line": 41,
+          "text": "absence de token"
+        },
+        {
+          "line": 48,
+          "text": "- action A requires veto_token H"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_04__Ethique_ADeLe_Securite\\03_SPEC_09__Tool_Adapter_MCP_vers_Policy_Gate_mapping_tools_scopes_P81_P90_valider_V4.md",
+      "size": 3345,
+      "hits": [
+        {
+          "line": 68,
+          "text": "estimated_tokens"
+        },
+        {
+          "line": 72,
+          "text": "cost = base(cost_class) + 0.001*tokens + 0.0001*latency_ms + 0.0005*kb"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\00_GUIDE_GROUPE.md",
+      "size": 4725,
+      "hits": [
+        {
+          "line": 81,
+          "text": "- `11_EXTENSION__GENCOIN.md`"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\03_SPEC_09__Tool_Adapter_MCP_vers_Policy_Gate_mapping_tools_scopes_P81_P90_valider_V4.md",
+      "size": 3345,
+      "hits": [
+        {
+          "line": 68,
+          "text": "estimated_tokens"
+        },
+        {
+          "line": 72,
+          "text": "cost = base(cost_class) + 0.001*tokens + 0.0001*latency_ms + 0.0005*kb"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\03_SPEC_36__Inter_Foundation_Federation_Protocol_P131_P140_valider_V4.md",
+      "size": 1803,
+      "hits": [
+        {
+          "line": 21,
+          "text": "                     └── Mutual Recognition Ledger"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\11_EXTENSION__EXTENSIONS_INDEX_CLAIR.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 24,
+          "text": "- **Gencoin — Économie / énergie / calibration** : Lié au bloc 14 Économie et énergie."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_05__Agents_Infrastructure_Tools\\11_EXTENSION__GENCOIN.md",
+      "size": 292,
+      "hits": [
+        {
+          "line": 1,
+          "text": "# Extension / R&D — GENCOIN"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_06__Cosmologie_Economie_R_D\\00_GUIDE_GROUPE.md",
+      "size": 4249,
+      "hits": [
+        {
+          "line": 4,
+          "text": "Regroupe les branches périphériques, extensions, cosmologie, énergie, Gencoin, balances."
+        },
+        {
+          "line": 70,
+          "text": "- `11_EXTENSION__GENCOIN.md`"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_06__Cosmologie_Economie_R_D\\01_BLOC_14__Economie_et_Energie_C12.md",
+      "size": 2448,
+      "hits": [
+        {
+          "line": 4,
+          "text": "Gencoin, la balance universelle, la calibration énergétique."
+        },
+        {
+          "line": 34,
+          "text": "* **Description :** Gencoin, la balance universelle, la calibration énergétique."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_06__Cosmologie_Economie_R_D\\03_SPEC_31__Economic_Concession_Model_DSP_P91_P100_valider_V4.md",
+      "size": 1630,
+      "hits": [
+        {
+          "line": 42,
+          "text": "facturation au token"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_06__Cosmologie_Economie_R_D\\11_EXTENSION__EXTENSIONS_INDEX_CLAIR.md",
+      "size": 2001,
+      "hits": [
+        {
+          "line": 24,
+          "text": "- **Gencoin — Économie / énergie / calibration** : Lié au bloc 14 Économie et énergie."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\14_REGROUPEMENTS_COHERENCE\\GROUPE_06__Cosmologie_Economie_R_D\\11_EXTENSION__GENCOIN.md",
+      "size": 292,
+      "hits": [
+        {
+          "line": 1,
+          "text": "# Extension / R&D — GENCOIN"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_SOURCES\\home\\ubuntu\\DocB_Mapping_17Blocs_161Pepites.md",
+      "size": 4994,
+      "hits": [
+        {
+          "line": 78,
+          "text": "* **Description :** Gencoin, la balance universelle, la calibration énergétique."
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_SOURCES\\home\\ubuntu\\DocD_README_CORPUS.md",
+      "size": 6296,
+      "hits": [
+        {
+          "line": 93,
+          "text": "| **P2 — Moyen terme** | Spécifier Gencoin (loi d'émission exacte) | P58 | `obsidia/specs/gencoin.md` |"
+        },
+        {
+          "line": 117,
+          "text": "│   ├── gencoin.md            ← À CRÉER"
+        }
+      ]
+    },
+    {
+      "path": "periphery\\OBSIDIA_V4_STRUCTURED_FULL\\00_SOURCES\\home\\ubuntu\\src_40spec.txt",
+      "size": 73615,
+      "hits": [
+        {
+          "line": 634,
+          "text": "estimated_tokens"
+        },
+        {
+          "line": 638,
+          "text": "cost = base(cost_class) + 0.001*tokens + 0.0001*latency_ms + 0.0005*kb"
+        },
+        {
+          "line": 1379,
+          "text": "Session token signé (usage unique)"
+        },
+        {
+          "line": 1478,
+          "text": "Human_Veto_Token:"
+        },
+        {
+          "line": 1483,
+          "text": "Sans ce token → action impossible, pas refusée."
+        },
+        {
+          "line": 1492,
+          "text": "absence de token"
+        },
+        {
+          "line": 1499,
+          "text": "- action A requires veto_token H"
+        },
+        {
+          "line": 1828,
+          "text": "facturation au token"
+        },
+        {
+          "line": 1992,
+          "text": "                     └── Mutual Recognition Ledger"
+        }
+      ]
+    }
+  ],
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "next": "F20B should likely create readonly cognitive value ledger projection over existing gencoin_shadow_packet and /api/gencoin LIVE_EMPTY_REGISTRY; no mint, no wallet, no blockchain."
+}

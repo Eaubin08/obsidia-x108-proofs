@@ -1,0 +1,11 @@
+{
+  "tree_id": "18",
+  "nodes": [
+    {
+      "id": "T18_N01",
+      "label": "Transmission",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

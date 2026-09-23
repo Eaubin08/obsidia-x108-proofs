@@ -1,0 +1,15 @@
+domain_id: gps_defense_aviation
+domain_name: "GPS / Defense / Aviation"
+udip_version: V0
+status: EXISTING_REFERENCE
+source_type: repo_reference
+legacy_sources:
+  - "domain_packets/gps_defense_aviation_decisional_form_v0.yaml"
+  - "domains/gps/"
+  - "sigma/domains/gps_defense_aviation_agents.py"
+extensions:
+  - reality_authenticity
+  - sensor_attestation
+  - anti_replay
+  - physical_envelope
+implementation_state: SCAFFOLD_ONLY

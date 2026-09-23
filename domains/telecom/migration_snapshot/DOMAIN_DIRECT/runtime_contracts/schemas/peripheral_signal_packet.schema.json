@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obsidia/runtime_contracts/peripheral_signal_packet.schema.json",
+  "title": "PeripheralSignalPacket",
+  "description": "Signal individuel non souverain d'une périphérie. Jamais de décision. Boundary: NO_ACT_FROM_PERIPHERY.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signal_id", "signal_type", "source_module", "source_status",
+    "metric_name", "metric_value", "metric_range",
+    "advisory_only", "decision_authority", "emits_act",
+    "emits_allow_hold_block", "label", "timestamp_or_tick"
+  ],
+  "properties": {
+    "signal_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifiant unique. Immutable."
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "NPL_METRIC", "ENTROPY_METRIC", "LYAPUNOV_ADVISORY", "THERMO_DEBT",
+        "EXTERNAL_TEMPORAL", "COGNITIVE_ADVISORY", "ATLAS_SIGNAL",
+        "RSSI_EVIDENCE", "RGPD_COMPLIANCE", "GRAPH_SIGNAL", "RISK_SIGNAL", "UNKNOWN"
+      ],
+      "description": "Type de signal. Détermine le label obligatoire et la boundary applicable."
+    },
+    "source_module": {
+      "type": "string",
+      "description": "Module émetteur."
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "LEAN_PROVEN", "PYTHON_TESTED", "PYTHON_SPEC_NOT_LEAN_PROVEN",
+        "DOC_ONLY", "FUTURE_FORMAL_TARGET", "SPEC_FUTURE",
+        "SOURCE_PARTIAL", "COPIED_READONLY", "AUDITED_ONLY",
+        "SPEC_IMPORTED", "SPEC_LOCKED", "SOURCE_ONLY", "UNKNOWN_SOURCE"
+      ]
+    },
+    "metric_name": {
+      "type": "string",
+      "description": "Nom de la métrique encodée. Ex: cultural_matrix_score, L_value, thermo_debt."
+    },
+    "metric_value": {
+      "description": "Valeur du signal. Doit être dans metric_range."
+    },
+    "metric_range": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      },
+      "additionalProperties": false,
+      "description": "Plage admissible. metric_value hors range → out_of_range_flag."
+    },
+    "advisory_only": {
+      "type": "boolean",
+      "const": true
+    },
+    "decision_authority": {
+      "type": "string",
+      "enum": ["KX108_ONLY"]
+    },
+    "emits_act": {
+      "type": "boolean",
+      "const": false
+    },
+    "emits_allow_hold_block": {
+      "type": "boolean",
+      "const": false
+    },
+    "label": {
+      "type": "string",
+      "description": "Label de claim-scope obligatoire selon signal_type. Ex: NPL_ADVISORY_NOT_SOVEREIGN, PYTHON_SPEC_NOT_LEAN_PROVEN, EXTERNAL_SIGNAL_ONLY."
+    },
+    "timestamp_or_tick": {
+      "type": "string",
+      "description": "Contexte temporel. Anti-replay."
+    },
+    "context_packet_ref": {
+      "type": ["string", "null"],
+      "description": "Référence optionnelle au ContextPacket parent."
+    },
+    "runtime_status": {
+      "type": "string",
+      "enum": [
+        "SPEC_ONLY", "CONTRACT_SKELETON_ONLY", "CONTRACT_READY",
+        "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY", "FORBIDDEN_RUNTIME"
+      ],
+      "default": "CONTRACT_SKELETON_ONLY"
+    }
+  }
+}

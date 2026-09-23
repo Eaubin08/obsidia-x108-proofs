@@ -1,0 +1,15 @@
+domain_id: logistics_supply_chain
+domain_name: "Logistics / Supply Chain"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  - stock
+  - warehouse
+  - suppliers
+  - transport
+  - route
+  - delivery
+implementation_state: SCAFFOLD_ONLY

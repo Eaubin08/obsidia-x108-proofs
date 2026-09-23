@@ -1,0 +1,12 @@
+domain_id: energy_critical_infrastructure
+domain_name: "Energy / Critical Infrastructure"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  - physical_infrastructure
+  - fail_closed
+  - real_world_execution_constraints
+implementation_state: SCAFFOLD_ONLY

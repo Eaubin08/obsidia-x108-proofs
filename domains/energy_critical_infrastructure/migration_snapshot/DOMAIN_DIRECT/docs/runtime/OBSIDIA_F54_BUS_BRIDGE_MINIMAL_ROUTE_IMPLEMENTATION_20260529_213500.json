@@ -1,0 +1,130 @@
+{
+  "plan_id": "OBSIDIA_F54_BUS_BRIDGE_MINIMAL_ROUTE_IMPLEMENTATION_20260529_213500",
+  "palier": "F54",
+  "parent": "F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN",
+  "sealed_at": "20260529_213500",
+  "status": "PASS",
+  "parent_tag": "BRODY_F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "bus_bridge_status": "IMPLEMENTED_READONLY",
+  "runtime_modified": true,
+  "routes_created": true,
+  "implementation": {
+    "scope": "MINIMAL_ADDITIVE_ONLY",
+    "files_created": [
+      "apps/obsidia_api/bus/__init__.py",
+      "apps/obsidia_api/bus/state_aggregator.py",
+      "apps/obsidia_api/routes/bus.py"
+    ],
+    "files_modified": [
+      "apps/obsidia_api/main.py",
+      "tests/api/test_output_envelope_bus_stats.py",
+      "tests/api/test_output_envelope_bus_bridge.py"
+    ],
+    "files_unchanged": [
+      "apps/obsidia_api/output_envelope.py",
+      "apps/obsidia_api/safe_response.py"
+    ],
+    "routes_created": [
+      "GET /bus/stats",
+      "GET /bus/bridge"
+    ],
+    "post_bus_signal_created": false,
+    "post_bus_signal_status": "F55_plus",
+    "f52_quarantine_lifted": true,
+    "quarantine_lift_note": "F52 quarantine lifted by F54 after /bus/stats and /bus/bridge implementation."
+  },
+  "validation": {
+    "f54_target_tests": "46/46 PASS",
+    "openapi_bus_stats": true,
+    "openapi_bus_bridge": true,
+    "f47_1": "PASS",
+    "f47_1_detail": "13/13 sovereignty flags blocked under injection — KX108_ONLY preserved",
+    "f47_2": "PASS",
+    "f47_2_detail": "40 assertions: unit sanitizer + nested cr.text + e2e F36 + trap words (0 failures)",
+    "f47_3": "PASS",
+    "f47_3_detail": "12 assertions: F37 multi-domain + nested scan + internal fields preserved (0 failures)",
+    "live_smoke": {
+      "host": "127.0.0.1",
+      "port": 8011,
+      "bus_stats": {
+        "http_status": 200,
+        "json_parse": "OK",
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "neo4j_write": false,
+        "kernel_mutation": false
+      },
+      "bus_bridge": {
+        "http_status": 200,
+        "json_parse": "OK",
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "neo4j_write": false,
+        "kernel_mutation": false
+      }
+    },
+    "brody_baseline": {
+      "status": "PASS_WITH_PRE_EXISTING_FAILURES",
+      "passed": 2042,
+      "failed": 104,
+      "classification": "ALL_104_FAILURES_PRE_EXISTING_TO_F54",
+      "failure_categories": [
+        "test_brody_general_conversation_mode_readonly (32) — pre-existing brody chat contract",
+        "test_output_envelope_blockchain_fraud_check (9) — pre-existing",
+        "test_output_envelope_periphery_pipeline (8) — pre-existing",
+        "test_brody_semantic_advisory_utf8_runtime (7) — pre-existing",
+        "test_brody_payload_packetization (7) — pre-existing",
+        "test_recursive_manifest_schema (6) — pre-existing manifest schema",
+        "test_bridge_connection (6) — pre-existing periphery",
+        "test_recursive_manifest_excludes_forbidden (5) — pre-existing manifest",
+        "test_http_audit_generated_output (3) — pre-existing",
+        "test_recursive_manifest_root_hash (3) — pre-existing manifest",
+        "test_gencoin_bridge_brody_output (3) — pre-existing integration",
+        "test_brody_routing_short_circuit_resolved (3) — pre-existing",
+        "others (8) — pre-existing brody API tests"
+      ],
+      "f54_caused_failures": 0,
+      "legacy_root_excluded": true,
+      "legacy_root_exclusion_reason": "test_conscience.py: UTF-8 encoding error on source — pre-existing, out-of-scope"
+    }
+  },
+  "sovereignty": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "advisory_only": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "advisory_only": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false
+  },
+  "git": {
+    "commit": false,
+    "tag": false,
+    "push": false,
+    "status": "PENDING_USER_VALIDATION"
+  }
+}

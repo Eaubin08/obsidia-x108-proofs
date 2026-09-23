@@ -1,0 +1,1423 @@
+{
+  "checkpoint": "F18A3_TARGETED_OS_TRAD_IR_REVERSE_CANDIDATE_INSPECTION",
+  "mode": "READ_ONLY",
+  "timestamp": "20260528_005433",
+  "results": [
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\periphery\\reverse_os.py",
+      "exists": true,
+      "size": 1046,
+      "functions": [
+        {
+          "line": 2,
+          "text": "def project(flow):"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# Reverse OS / SSR minimal, non décisionnel"
+        },
+        {
+          "line": 2,
+          "text": "def project(flow):"
+        },
+        {
+          "line": 6,
+          "text": "verdict = flow.get(\"verdict\", \"NO_VERDICT\")"
+        },
+        {
+          "line": 9,
+          "text": "ranked = sorted(enumerate(tree_vector), key=lambda x: x[1], reverse=True)[:5]"
+        },
+        {
+          "line": 11,
+          "text": "ranked = sorted(tree_vector.items(), key=lambda x: x[1], reverse=True)[:5]"
+        },
+        {
+          "line": 16,
+          "text": "\"verdict_existant\": verdict,"
+        },
+        {
+          "line": 18,
+          "text": "\"text_projection\": f\"{agent} / {reason_code} / preuve={merkle_root}\","
+        },
+        {
+          "line": 19,
+          "text": "\"ui_projection\": {\"agent\": agent, \"reason_code\": reason_code, \"verdict_existant\": verdict},"
+        },
+        {
+          "line": 20,
+          "text": "\"voice_projection_stub\": f\"Agent {agent}, raison {reason_code}.\","
+        },
+        {
+          "line": 22,
+          "text": "\"non_decision\": True"
+        }
+      ],
+      "preview": "# Reverse OS / SSR minimal, non décisionnel\ndef project(flow):\n    agent = flow.get(\"agent_name\", \"UNKNOWN_AGENT\")\n    reason_code = flow.get(\"reason_code\", \"UNKNOWN_REASON\")\n    merkle_root = flow.get(\"merkle_root\", \"NO_MERKLE\")\n    verdict = flow.get(\"verdict\", \"NO_VERDICT\")\n    tree_vector = flow.get(\"tree_vector\", {})\n    if isinstance(tree_vector, list):\n        ranked = sorted(enumerate(tree_vector), key=lambda x: x[1], reverse=True)[:5]\n    else:\n        ranked = sorted(tree_vector.items(), key=lambda x: x[1], reverse=True)[:5]\n    return {\n        \"qui\": agent,\n        \"pourquoi\": reason_code,\n        \"preuve\": merkle_root,\n        \"verdict_existant\": verdict,\n        \"dominant_trees\": ranked,\n        \"text_projection\": f\"{agent} / {reason_code} / preuve={merkle_root}\",\n        \"ui_projection\": {\"agent\": agent, \"reason_code\": reason_code, \"verdict_existant\": verdict},\n        \"voice_projection_stub\": f\"Agent {agent}, raison {reason_code}.\",\n        \"visual_state\": {\"top_trees\": ranked},\n        \"non_decision\": True\n    }\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\periphery\\test_reverse_os_non_decision.py",
+      "exists": true,
+      "size": 857,
+      "functions": [
+        {
+          "line": 4,
+          "text": "def load_module(name, relpath, add_path=None):"
+        },
+        {
+          "line": 14,
+          "text": "def test_reverse_os(self):"
+        }
+      ],
+      "classes": [
+        {
+          "line": 13,
+          "text": "class TestReverseOS(unittest.TestCase):"
+        }
+      ],
+      "boundary_hits": [
+        {
+          "line": 4,
+          "text": "def load_module(name, relpath, add_path=None):"
+        },
+        {
+          "line": 13,
+          "text": "class TestReverseOS(unittest.TestCase):"
+        },
+        {
+          "line": 14,
+          "text": "def test_reverse_os(self):"
+        },
+        {
+          "line": 15,
+          "text": "mod = load_module(\"reverse_mod\", \"06_REVERSE_OS_SSR_JARVIS/reverse_os.py\")"
+        },
+        {
+          "line": 16,
+          "text": "out = mod.project({\"agent_name\":\"A\",\"reason_code\":\"R\",\"merkle_root\":\"M\",\"verdict\":\"NO_KERNEL_DECISION\",\"tree_vector\":[0.0]*34})"
+        },
+        {
+          "line": 17,
+          "text": "self.assertTrue(out[\"non_decision\"])"
+        },
+        {
+          "line": 19,
+          "text": "self.assertNotIn(\"decision\", out)"
+        }
+      ],
+      "preview": "import json, sys, importlib.util\nfrom pathlib import Path\nROOT = Path(__file__).resolve().parents[1]\ndef load_module(name, relpath, add_path=None):\n    if add_path:\n        sys.path.insert(0, str(ROOT / add_path))\n    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)\n    mod = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(mod)\n    return mod\n\nimport unittest\nclass TestReverseOS(unittest.TestCase):\n    def test_reverse_os(self):\n        mod = load_module(\"reverse_mod\", \"06_REVERSE_OS_SSR_JARVIS/reverse_os.py\")\n        out = mod.project({\"agent_name\":\"A\",\"reason_code\":\"R\",\"merkle_root\":\"M\",\"verdict\":\"NO_KERNEL_DECISION\",\"tree_vector\":[0.0]*34})\n        self.assertTrue(out[\"non_decision\"])\n        self.assertIn(\"qui\", out)\n        self.assertNotIn(\"decision\", out)\nif __name__ == \"__main__\":\n    unittest.main()\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\bridge\\zip2_reverse_os_real_adapter.py",
+      "exists": true,
+      "size": 4862,
+      "functions": [
+        {
+          "line": 13,
+          "text": "def _load_module(module_name: str, path: Path):"
+        },
+        {
+          "line": 26,
+          "text": "def _tree_vector_list(packet: dict[str, Any]) -> list[float]:"
+        },
+        {
+          "line": 49,
+          "text": "def _tree_vector_dict(packet: dict[str, Any]) -> dict[str, float]:"
+        },
+        {
+          "line": 54,
+          "text": "def build_reverse_flow(packet: dict[str, Any]) -> dict[str, Any]:"
+        },
+        {
+          "line": 72,
+          "text": "def enrich_reverse_os(packet: dict[str, Any]) -> dict[str, Any]:"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 9,
+          "text": "ZIP2_ROOT = LAB_ROOT / \"OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\" / \"OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\""
+        },
+        {
+          "line": 10,
+          "text": "REVERSE_DIR = ZIP2_ROOT / \"06_REVERSE_OS_SSR_JARVIS\""
+        },
+        {
+          "line": 13,
+          "text": "def _load_module(module_name: str, path: Path):"
+        },
+        {
+          "line": 26,
+          "text": "def _tree_vector_list(packet: dict[str, Any]) -> list[float]:"
+        },
+        {
+          "line": 38,
+          "text": "trees = set(packet.get(\"activated_trees\") or [])"
+        },
+        {
+          "line": 43,
+          "text": "if \"TREE_CODE_IR_PROJECTION\" in trees:"
+        },
+        {
+          "line": 49,
+          "text": "def _tree_vector_dict(packet: dict[str, Any]) -> dict[str, float]:"
+        },
+        {
+          "line": 54,
+          "text": "def build_reverse_flow(packet: dict[str, Any]) -> dict[str, Any]:"
+        },
+        {
+          "line": 58,
+          "text": "verdict_marker = \"NO_DECISION_X108_REQUIRED\" if requires_x108 else \"NO_DECISION_CONTEXT_ONLY\""
+        },
+        {
+          "line": 61,
+          "text": "\"agent_name\": \"ZIP2_REVERSE_OS_SSR_JARVIS\","
+        },
+        {
+          "line": 64,
+          "text": "\"verdict\": verdict_marker,"
+        },
+        {
+          "line": 67,
+          "text": "\"non_decision\": True,"
+        },
+        {
+          "line": 68,
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 72,
+          "text": "def enrich_reverse_os(packet: dict[str, Any]) -> dict[str, Any]:"
+        },
+        {
+          "line": 75,
+          "text": "reverse_mod = _load_module(\"zip2_reverse_os_real_reverse_os\", REVERSE_DIR / \"reverse_os.py\")"
+        },
+        {
+          "line": 76,
+          "text": "semantic_mod = _load_module(\"zip2_reverse_os_real_semantic_mapper\", REVERSE_DIR / \"semantic_mapper.py\")"
+        },
+        {
+          "line": 77,
+          "text": "jarvis_mod = _load_module(\"zip2_reverse_os_real_jarvis_projection\", REVERSE_DIR / \"jarvis_projection.py\")"
+        },
+        {
+          "line": 78,
+          "text": "reduction_mod = _load_module(\"zip2_reverse_os_real_active_reduction\", REVERSE_DIR / \"active_cognitive_reduction.py\")"
+        },
+        {
+          "line": 80,
+          "text": "flow = build_reverse_flow(enriched)"
+        },
+        {
+          "line": 82,
+          "text": "projection = reverse_mod.project(flow)"
+        },
+        {
+          "line": 83,
+          "text": "if not isinstance(projection, dict):"
+        },
+        {
+          "line": 84,
+          "text": "projection = {\"raw_projection\": projection}"
+        },
+        {
+          "line": 89,
+          "text": "\"text\": projection.get(\"text_projection\", \"\")"
+        },
+        {
+          "line": 94,
+          "text": "reverse_payload = {"
+        },
+        {
+          "line": 96,
+          "text": "\"source\": \"ZIP2_06_REVERSE_OS_SSR_JARVIS_REAL_FILES\","
+        },
+        {
+          "line": 97,
+          "text": "\"reverse_dir\": str(REVERSE_DIR),"
+        },
+        {
+          "line": 98,
+          "text": "\"non_decision\": True,"
+        },
+        {
+          "line": 99,
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 100,
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 104,
+          "text": "\"projection\": projection,"
+        },
+        {
+          "line": 107,
+          "text": "\"active_cognitive_reduction\": cognitive_reduction,"
+        },
+        {
+          "line": 108,
+          "text": "\"reverse_os_project_called\": True,"
+        },
+        {
+          "line": 110,
+          "text": "\"jarvis_projection_called\": True,"
+        },
+        {
+          "line": 111,
+          "text": "\"active_cognitive_reduction_called\": True,"
+        },
+        {
+          "line": 113,
+          "text": "\"REVERSE_OS_REAL_FILE_CALLED_BUT_MINIMAL\","
+        },
+        {
+          "line": 114,
+          "text": "\"JARVIS_PROJECTION_REAL_FILE_CALLED_BUT_STUB_LIGHT\","
+        },
+        {
+          "line": 115,
+          "text": "\"ACTIVE_COGNITIVE_REDUCTION_REAL_FILE_CALLED_BUT_STUB_LIGHT\","
+        },
+        {
+          "line": 116,
+          "text": "\"NO_DECISION_PRODUCED\","
+        },
+        {
+          "line": 120,
+          "text": "enriched[\"zip2_reverse_os\"] = reverse_payload"
+        },
+        {
+          "line": 124,
+          "text": "\"ZIP2_REVERSE_OS_REAL_V1\","
+        },
+        {
+          "line": 125,
+          "text": "\"ZIP2_REVERSE_OS_PROJECT_CALLED_V1\","
+        },
+        {
+          "line": 126,
+          "text": "\"ZIP2_REVERSE_OS_NON_DECISION_CONFIRMED_V1\","
+        },
+        {
+          "line": 127,
+          "text": "\"ZIP2_JARVIS_PROJECTION_STUB_LIGHT_CONFIRMED_V1\","
+        },
+        {
+          "line": 128,
+          "text": "\"ZIP2_ACTIVE_COGNITIVE_REDUCTION_STUB_LIGHT_CONFIRMED_V1\","
+        },
+        {
+          "line": 134,
+          "text": "enriched[\"non_decision\"] = True"
+        },
+        {
+          "line": 135,
+          "text": "enriched[\"decision_authority\"] = \"KX108_ONLY\""
+        },
+        {
+          "line": 136,
+          "text": "enriched[\"kernel_mutation\"] = False"
+        },
+        {
+          "line": 139,
+          "text": "enriched[\"verdict\"] = None"
+        },
+        {
+          "line": 140,
+          "text": "enriched[\"act\"] = None"
+        }
+      ],
+      "preview": "from __future__ import annotations\n\nimport importlib.util\nfrom pathlib import Path\nfrom typing import Any\n\n\nLAB_ROOT = Path(__file__).resolve().parents[1]\nZIP2_ROOT = LAB_ROOT / \"OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\" / \"OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\"\nREVERSE_DIR = ZIP2_ROOT / \"06_REVERSE_OS_SSR_JARVIS\"\n\n\ndef _load_module(module_name: str, path: Path):\n    if not path.exists():\n        raise FileNotFoundError(str(path))\n\n    spec = importlib.util.spec_from_file_location(module_name, path)\n    if spec is None or spec.loader is None:\n        raise RuntimeError(f\"Cannot load module: {path}\")\n\n    module = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(module)\n    return module\n\n\ndef _tree_vector_list(packet: dict[str, Any]) -> list[float]:\n    existing = (\n        packet.get(\"zip2_mcp_ir\", {})\n        .get(\"mcp_bridge\", {})\n        .get(\"converted\", {})\n        .get(\"tree_vector\")\n    )\n\n    if isinstance(existing, list) and len(existing) == 34:\n        return [float(x or 0.0) for x in existing]\n\n    vector = [0.0] * 34\n    trees = set(packet.get(\"activated_trees\") or [])\n\n    if \"TREE_BANK_FINANCE\" in trees:\n        vector[19] = 1.0\n\n    if \"TREE_CODE_IR_PROJECTION\" in trees:\n        vector[11] = 1.0\n\n    return vector\n\n\ndef _tree_vector_dict(packet: dict[str, Any]) -> dict[str, float]:\n    vector = _tree_vector_list(packet)\n    return {f\"TREE_{str(i + 1).zfill(2)}\": float(v) for i, v in enumerate(vector)}\n\n\ndef build_reverse_flow(packet: dict[str, Any]) -> dict[str, Any]:\n    requires_x108 = bool(packet.get(\"requires_x108\"))\n\n    reason_code = \"RC_X108_REQUIRED\" if requires_x108 else \"RC_CONTEXT_ONLY\"\n    verdict_marker = \"NO_DECISION_X108_REQUIRED\" if requires_x108 else \"NO_DECISION_CONTEXT_ONLY\"\n\n    return {\n        \"agent_name\": \"ZIP2_REVERSE_OS_SSR_JARVIS\",\n        \"reason_code\": reason_code,\n        \"merkle_root\": packet.get(\"input_hash\") or \"NO_INPUT_HASH\",\n        \"verdict\": verdict_marke"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\reports\\RAPPORT_BRANCHEMENT_ZIP2_REVERSE_OS_TO_ZIP1_X108.md",
+      "exists": true,
+      "size": 1838,
+      "functions": [],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY"
+        },
+        {
+          "line": 6,
+          "text": "NAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1"
+        },
+        {
+          "line": 12,
+          "text": "KERNEL_MUTATION=false"
+        },
+        {
+          "line": 14,
+          "text": "DECISION_LAW=Decision = KX108"
+        },
+        {
+          "line": 21,
+          "text": "-> ZIP2/15_GUARDS_NON_DECISION real guards"
+        },
+        {
+          "line": 23,
+          "text": "-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection"
+        },
+        {
+          "line": 24,
+          "text": "-> ContextPacket enriched"
+        },
+        {
+          "line": 26,
+          "text": "-> ZIP1 sigma.guard.GuardX108 real readonly"
+        },
+        {
+          "line": 27,
+          "text": "-> CanonicalDecisionEnvelope"
+        },
+        {
+          "line": 32,
+          "text": "Reverse OS real file is called:"
+        },
+        {
+          "line": 33,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/reverse_os.py"
+        },
+        {
+          "line": 36,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py"
+        },
+        {
+          "line": 38,
+          "text": "Jarvis projection real file is called:"
+        },
+        {
+          "line": 39,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py"
+        },
+        {
+          "line": 41,
+          "text": "Active cognitive reduction real file is called:"
+        },
+        {
+          "line": 42,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py"
+        },
+        {
+          "line": 46,
+          "text": "Reverse OS is currently minimal."
+        },
+        {
+          "line": 47,
+          "text": "Jarvis projection is stub-light."
+        },
+        {
+          "line": 48,
+          "text": "Active cognitive reduction is stub-light."
+        },
+        {
+          "line": 49,
+          "text": "This freeze confirms real runtime call, not deep semantic projection."
+        },
+        {
+          "line": 56,
+          "text": "- ACT"
+        }
+      ],
+      "preview": "# RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY\n\n## Status\n\nSTATUS=CANDIDATE_RUNTIME_VALIDATED_LOCAL\nNAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1\nTESTS=PASS\nPY_COMPILE=PASS\nZIP1_HASH_UNCHANGED=true\nDIRECT_KERNEL_MERGE=BLOCK\nDIRECT_CANON_PROMOTION=BLOCK\nKERNEL_MUTATION=false\nPROOF_CLAIM=false\nDECISION_LAW=Decision = KX108\n\n## Runtime path\n\nHuman input\n-> ZIP2 mmonde_context_adapter.py\n-> ZIP2/14_CONTEXT_EXPORT_X108_BOUNDARY real export\n-> ZIP2/15_GUARDS_NON_DECISION real guards\n-> ZIP2/09_MCP_BRIDGE_OBSIDIA_IR real files\n-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection\n-> ContextPacket enriched\n-> x108_gateway_adapter.py\n-> ZIP1 sigma.guard.GuardX108 real readonly\n-> CanonicalDecisionEnvelope\n-> Engine output\n\n## Branching result\n\nReverse OS real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/reverse_os.py\n\nSemantic mapper real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py\n\nJarvis projection real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py\n\nActive cognitive reduction real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py\n\n## Important limitation\n\nReverse OS is currently minimal.\nJarvis projection is stub-light.\nActive cognitive reduction is stub-light.\nThis freeze confirms real runtime call, not deep semantic projection.\n\n## ZIP2 still cannot\n\n- ALLOW\n- HOLD\n- BLOCK\n- ACT\n- mutate kernel\n- promote canon\n- claim proof\n\n## ZIP1 state\n\nZIP1 is not modified.\nZIP1 critical hash unchanged.\nRead-only runtime import only.\n\n## Current limitation\n\nThis is runtime candidate only.\nNot canon.\nNot Lean-proved as integrated composition.\nNot TLA-proved as integrated composition.\nNo repo merge.\nNo staging integration yet.\n\n## Next\n\n1. Branch Shazam real.\n2. Branch 34 trees.\n3. Branch 52 agents.\n4. Prepare staging/runtime_candidates integration."
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\reports\\RAPPORT_BRANCHEMENT_ZIP2_REVERSE_OS_TO_ZIP1_X108_REPAIR.md",
+      "exists": true,
+      "size": 2053,
+      "functions": [],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY — REPAIR"
+        },
+        {
+          "line": 6,
+          "text": "NAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1_REPAIR"
+        },
+        {
+          "line": 12,
+          "text": "KERNEL_MUTATION=false"
+        },
+        {
+          "line": 14,
+          "text": "DECISION_LAW=Decision = KX108"
+        },
+        {
+          "line": 29,
+          "text": "-> ZIP2/15_GUARDS_NON_DECISION real guards"
+        },
+        {
+          "line": 31,
+          "text": "-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection"
+        },
+        {
+          "line": 32,
+          "text": "-> ContextPacket enriched"
+        },
+        {
+          "line": 34,
+          "text": "-> ZIP1 sigma.guard.GuardX108 real readonly"
+        },
+        {
+          "line": 35,
+          "text": "-> CanonicalDecisionEnvelope"
+        },
+        {
+          "line": 40,
+          "text": "Reverse OS real file is called:"
+        },
+        {
+          "line": 41,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/reverse_os.py"
+        },
+        {
+          "line": 44,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py"
+        },
+        {
+          "line": 46,
+          "text": "Jarvis projection real file is called:"
+        },
+        {
+          "line": 47,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py"
+        },
+        {
+          "line": 49,
+          "text": "Active cognitive reduction real file is called:"
+        },
+        {
+          "line": 50,
+          "text": "- 06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py"
+        },
+        {
+          "line": 54,
+          "text": "Reverse OS is currently minimal."
+        },
+        {
+          "line": 55,
+          "text": "Jarvis projection is stub-light."
+        },
+        {
+          "line": 56,
+          "text": "Active cognitive reduction is stub-light."
+        },
+        {
+          "line": 57,
+          "text": "This freeze confirms real runtime call, not deep semantic projection."
+        },
+        {
+          "line": 64,
+          "text": "- ACT"
+        }
+      ],
+      "preview": "# RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY — REPAIR\n\n## Status\n\nSTATUS=CANDIDATE_RUNTIME_VALIDATED_LOCAL\nNAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1_REPAIR\nTESTS=PASS\nPY_COMPILE=PASS\nZIP1_HASH_UNCHANGED=true\nDIRECT_KERNEL_MERGE=BLOCK\nDIRECT_CANON_PROMOTION=BLOCK\nKERNEL_MUTATION=false\nPROOF_CLAIM=false\nDECISION_LAW=Decision = KX108\n\n## Repair\n\nFixed MCP/IR adapter import mismatch:\n- expected by runner/tests: enrich_mcp_ir\n- real function present: enrich_with_mcp_ir\n- compatibility alias added\n- runner/tests import normalized\n\n## Runtime path\n\nHuman input\n-> ZIP2 mmonde_context_adapter.py\n-> ZIP2/14_CONTEXT_EXPORT_X108_BOUNDARY real export\n-> ZIP2/15_GUARDS_NON_DECISION real guards\n-> ZIP2/09_MCP_BRIDGE_OBSIDIA_IR real files\n-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection\n-> ContextPacket enriched\n-> x108_gateway_adapter.py\n-> ZIP1 sigma.guard.GuardX108 real readonly\n-> CanonicalDecisionEnvelope\n-> Engine output\n\n## Branching result\n\nReverse OS real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/reverse_os.py\n\nSemantic mapper real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py\n\nJarvis projection real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py\n\nActive cognitive reduction real file is called:\n- 06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py\n\n## Important limitation\n\nReverse OS is currently minimal.\nJarvis projection is stub-light.\nActive cognitive reduction is stub-light.\nThis freeze confirms real runtime call, not deep semantic projection.\n\n## ZIP2 still cannot\n\n- ALLOW\n- HOLD\n- BLOCK\n- ACT\n- mutate kernel\n- promote canon\n- claim proof\n\n## ZIP1 state\n\nZIP1 is not modified.\nZIP1 critical hash unchanged.\nRead-only runtime import only.\n\n## Current limitation\n\nThis is runtime candidate only.\nNot canon.\nNot Lean-proved as integrated composition.\nNot TLA-proved as integrated composition.\nNo repo merge.\nNo staging integration yet.\n\n## Next\n\n1. Branch Shazam real.\n2. Branch 34 trees.\n3. Branch 52 agents.\n4"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\reports\\RAPPORT_BRANCHEMENT_ZIP2_DEEP_OBSIDIA_IR_TO_ZIP1_X108.md",
+      "exists": true,
+      "size": 1581,
+      "functions": [],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# RAPPORT BRANCHEMENT — ZIP2 DEEP OBSIDIA IR -> ZIP1 X108 REAL READONLY"
+        },
+        {
+          "line": 6,
+          "text": "NAME=ZIP2_DEEP_OBSIDIA_IR_TO_ZIP1_X108_REAL_READONLY_V1"
+        },
+        {
+          "line": 12,
+          "text": "KERNEL_MUTATION=false"
+        },
+        {
+          "line": 14,
+          "text": "DECISION_LAW=Decision = KX108"
+        },
+        {
+          "line": 21,
+          "text": "-> ZIP2/15_GUARDS_NON_DECISION real guards"
+        },
+        {
+          "line": 23,
+          "text": "-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection"
+        },
+        {
+          "line": 24,
+          "text": "-> ContextPacket enriched"
+        },
+        {
+          "line": 26,
+          "text": "-> ZIP1 sigma.guard.GuardX108 real readonly"
+        },
+        {
+          "line": 27,
+          "text": "-> CanonicalDecisionEnvelope"
+        },
+        {
+          "line": 32,
+          "text": "ObsidiaIR is no longer empty stub."
+        },
+        {
+          "line": 40,
+          "text": "- active_trees"
+        },
+        {
+          "line": 44,
+          "text": "- boundary non_decision"
+        },
+        {
+          "line": 45,
+          "text": "- Decision = KX108"
+        },
+        {
+          "line": 52,
+          "text": "- ACT"
+        }
+      ],
+      "preview": "# RAPPORT BRANCHEMENT — ZIP2 DEEP OBSIDIA IR -> ZIP1 X108 REAL READONLY\n\n## Status\n\nSTATUS=CANDIDATE_RUNTIME_VALIDATED_LOCAL\nNAME=ZIP2_DEEP_OBSIDIA_IR_TO_ZIP1_X108_REAL_READONLY_V1\nTESTS=PASS\nPY_COMPILE=PASS\nZIP1_HASH_UNCHANGED=true\nDIRECT_KERNEL_MERGE=BLOCK\nDIRECT_CANON_PROMOTION=BLOCK\nKERNEL_MUTATION=false\nPROOF_CLAIM=false\nDECISION_LAW=Decision = KX108\n\n## Runtime path\n\nHuman input\n-> ZIP2 mmonde_context_adapter.py\n-> ZIP2/14_CONTEXT_EXPORT_X108_BOUNDARY real export\n-> ZIP2/15_GUARDS_NON_DECISION real guards\n-> ZIP2/09_MCP_BRIDGE_OBSIDIA_IR deep IR\n-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection\n-> ContextPacket enriched\n-> x108_gateway_adapter.py\n-> ZIP1 sigma.guard.GuardX108 real readonly\n-> CanonicalDecisionEnvelope\n-> Engine output\n\n## Branching result\n\nObsidiaIR is no longer empty stub.\n\nobsidia_ir.py now returns:\n- ir_type=OBSIDIA_IR_V1\n- input_hash\n- domain\n- policy_scope\n- tree_vector length 34\n- active_trees\n- requires_x108\n- risk_flags\n- constraints\n- boundary non_decision\n- Decision = KX108\n\n## ZIP2 still cannot\n\n- ALLOW\n- HOLD\n- BLOCK\n- ACT\n- mutate kernel\n- promote canon\n- claim proof\n\n## ZIP1 state\n\nZIP1 is not modified.\nZIP1 critical hash unchanged.\nRead-only runtime import only.\n\n## Current limitation\n\nThis is runtime candidate only.\nNot canon.\nNot Lean-proved as integrated composition.\nNot TLA-proved as integrated composition.\nNo repo merge.\nNo staging integration yet.\n\n## Next\n\n1. Branch Shazam real using deep IR.\n2. Branch 34 trees real using deep IR + Shazam.\n3. Branch 52 agents.\n4. Prepare staging/runtime_candidates integration."
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\reports\\RAPPORT_BRANCHEMENT_ZIP2_34_TREES_IR_SHAZAM_TO_ZIP1_X108.md",
+      "exists": true,
+      "size": 1638,
+      "functions": [],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# RAPPORT BRANCHEMENT — ZIP2 34 TREES + IR + SHAZAM -> ZIP1 X108 REAL READONLY"
+        },
+        {
+          "line": 6,
+          "text": "NAME=ZIP2_34_TREES_IR_SHAZAM_TO_ZIP1_X108_REAL_READONLY_V1"
+        },
+        {
+          "line": 12,
+          "text": "KERNEL_MUTATION=false"
+        },
+        {
+          "line": 14,
+          "text": "DECISION_LAW=Decision = KX108"
+        },
+        {
+          "line": 21,
+          "text": "-> ZIP2/15_GUARDS_NON_DECISION real guards"
+        },
+        {
+          "line": 23,
+          "text": "-> ZIP2/05_SHAZAM_COGNITIF real activation"
+        },
+        {
+          "line": 25,
+          "text": "-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection"
+        },
+        {
+          "line": 26,
+          "text": "-> ContextPacket enriched"
+        },
+        {
+          "line": 28,
+          "text": "-> ZIP1 sigma.guard.GuardX108 real readonly"
+        },
+        {
+          "line": 29,
+          "text": "-> CanonicalDecisionEnvelope"
+        },
+        {
+          "line": 47,
+          "text": "- ACT"
+        }
+      ],
+      "preview": "# RAPPORT BRANCHEMENT — ZIP2 34 TREES + IR + SHAZAM -> ZIP1 X108 REAL READONLY\n\n## Status\n\nSTATUS=CANDIDATE_RUNTIME_VALIDATED_LOCAL\nNAME=ZIP2_34_TREES_IR_SHAZAM_TO_ZIP1_X108_REAL_READONLY_V1\nTESTS=PASS\nPY_COMPILE=PASS\nZIP1_HASH_UNCHANGED=true\nDIRECT_KERNEL_MERGE=BLOCK\nDIRECT_CANON_PROMOTION=BLOCK\nKERNEL_MUTATION=false\nPROOF_CLAIM=false\nDECISION_LAW=Decision = KX108\n\n## Runtime path\n\nHuman input\n-> ZIP2 mmonde_context_adapter.py\n-> ZIP2/14_CONTEXT_EXPORT_X108_BOUNDARY real export\n-> ZIP2/15_GUARDS_NON_DECISION real guards\n-> ZIP2/09_MCP_BRIDGE_OBSIDIA_IR deep IR\n-> ZIP2/05_SHAZAM_COGNITIF real activation\n-> ZIP2/04_ARBRES_34_TENSOR_MATRIX real canon + tensor coordinates\n-> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection\n-> ContextPacket enriched\n-> x108_gateway_adapter.py\n-> ZIP1 sigma.guard.GuardX108 real readonly\n-> CanonicalDecisionEnvelope\n-> Engine output\n\n## Branching result\n\n34 trees real runtime source:\n- 04_ARBRES_34_TENSOR_MATRIX/arbres_34.canon.json\n- 34 tensor_coordinates.json files\n\nQuarantined as secondary evidence:\n- arbres_34.raw_image.json\n- arbres_34.diff.json\n\n## ZIP2 still cannot\n\n- ALLOW\n- HOLD\n- BLOCK\n- ACT\n- mutate kernel\n- promote canon\n- claim proof\n\n## ZIP1 state\n\nZIP1 is not modified.\nZIP1 critical hash unchanged.\nRead-only runtime import only.\n\n## Current limitation\n\nThis is runtime candidate only.\nNot canon.\nNot Lean-proved as integrated composition.\nNot TLA-proved as integrated composition.\nNo repo merge.\nNo staging integration yet.\n\n## Next\n\n1. Branch 52 agents real on top of IR + Shazam + 34 trees.\n2. Prepare staging/runtime_candidates integration.\n3. Generate full candidate pack."
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\reverse_os.py",
+      "exists": true,
+      "size": 1046,
+      "functions": [
+        {
+          "line": 2,
+          "text": "def project(flow):"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# Reverse OS / SSR minimal, non décisionnel"
+        },
+        {
+          "line": 2,
+          "text": "def project(flow):"
+        },
+        {
+          "line": 6,
+          "text": "verdict = flow.get(\"verdict\", \"NO_VERDICT\")"
+        },
+        {
+          "line": 9,
+          "text": "ranked = sorted(enumerate(tree_vector), key=lambda x: x[1], reverse=True)[:5]"
+        },
+        {
+          "line": 11,
+          "text": "ranked = sorted(tree_vector.items(), key=lambda x: x[1], reverse=True)[:5]"
+        },
+        {
+          "line": 16,
+          "text": "\"verdict_existant\": verdict,"
+        },
+        {
+          "line": 18,
+          "text": "\"text_projection\": f\"{agent} / {reason_code} / preuve={merkle_root}\","
+        },
+        {
+          "line": 19,
+          "text": "\"ui_projection\": {\"agent\": agent, \"reason_code\": reason_code, \"verdict_existant\": verdict},"
+        },
+        {
+          "line": 20,
+          "text": "\"voice_projection_stub\": f\"Agent {agent}, raison {reason_code}.\","
+        },
+        {
+          "line": 22,
+          "text": "\"non_decision\": True"
+        }
+      ],
+      "preview": "# Reverse OS / SSR minimal, non décisionnel\ndef project(flow):\n    agent = flow.get(\"agent_name\", \"UNKNOWN_AGENT\")\n    reason_code = flow.get(\"reason_code\", \"UNKNOWN_REASON\")\n    merkle_root = flow.get(\"merkle_root\", \"NO_MERKLE\")\n    verdict = flow.get(\"verdict\", \"NO_VERDICT\")\n    tree_vector = flow.get(\"tree_vector\", {})\n    if isinstance(tree_vector, list):\n        ranked = sorted(enumerate(tree_vector), key=lambda x: x[1], reverse=True)[:5]\n    else:\n        ranked = sorted(tree_vector.items(), key=lambda x: x[1], reverse=True)[:5]\n    return {\n        \"qui\": agent,\n        \"pourquoi\": reason_code,\n        \"preuve\": merkle_root,\n        \"verdict_existant\": verdict,\n        \"dominant_trees\": ranked,\n        \"text_projection\": f\"{agent} / {reason_code} / preuve={merkle_root}\",\n        \"ui_projection\": {\"agent\": agent, \"reason_code\": reason_code, \"verdict_existant\": verdict},\n        \"voice_projection_stub\": f\"Agent {agent}, raison {reason_code}.\",\n        \"visual_state\": {\"top_trees\": ranked},\n        \"non_decision\": True\n    }\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\jarvis_projection.py",
+      "exists": true,
+      "size": 105,
+      "functions": [
+        {
+          "line": 4,
+          "text": "def project_to_ui(projection):"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 2,
+          "text": "# Jarvis projection stub"
+        },
+        {
+          "line": 4,
+          "text": "def project_to_ui(projection):"
+        },
+        {
+          "line": 5,
+          "text": "return {\"ui\": projection.get(\"text\", \"\")}"
+        }
+      ],
+      "preview": "\n# Jarvis projection stub\n\ndef project_to_ui(projection):\n    return {\"ui\": projection.get(\"text\", \"\")}\n\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\semantic_mapper.py",
+      "exists": true,
+      "size": 176,
+      "functions": [
+        {
+          "line": 1,
+          "text": "def map_reason_code(code):"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "def map_reason_code(code):"
+        },
+        {
+          "line": 2,
+          "text": "return {\"RC_CONTEXT_ONLY\":\"Projection contexte uniquement\",\"RC_X108_REQUIRED\":\"Décision requiert X-108\"}.get(code, \"Raison non cartographiée\")"
+        }
+      ],
+      "preview": "def map_reason_code(code):\n    return {\"RC_CONTEXT_ONLY\":\"Projection contexte uniquement\",\"RC_X108_REQUIRED\":\"Décision requiert X-108\"}.get(code, \"Raison non cartographiée\")\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\06_REVERSE_OS_SSR_JARVIS\\active_cognitive_reduction.py",
+      "exists": true,
+      "size": 116,
+      "functions": [
+        {
+          "line": 4,
+          "text": "def reduce(tree_vector, top_n=3):"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 2,
+          "text": "# Active cognitive reduction stub"
+        },
+        {
+          "line": 4,
+          "text": "def reduce(tree_vector, top_n=3):"
+        }
+      ],
+      "preview": "\n# Active cognitive reduction stub\n\ndef reduce(tree_vector, top_n=3):\n    return list(tree_vector.items())[:top_n]\n\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\17_TESTS\\test_reverse_os_non_decision.py",
+      "exists": true,
+      "size": 857,
+      "functions": [
+        {
+          "line": 4,
+          "text": "def load_module(name, relpath, add_path=None):"
+        },
+        {
+          "line": 14,
+          "text": "def test_reverse_os(self):"
+        }
+      ],
+      "classes": [
+        {
+          "line": 13,
+          "text": "class TestReverseOS(unittest.TestCase):"
+        }
+      ],
+      "boundary_hits": [
+        {
+          "line": 4,
+          "text": "def load_module(name, relpath, add_path=None):"
+        },
+        {
+          "line": 13,
+          "text": "class TestReverseOS(unittest.TestCase):"
+        },
+        {
+          "line": 14,
+          "text": "def test_reverse_os(self):"
+        },
+        {
+          "line": 15,
+          "text": "mod = load_module(\"reverse_mod\", \"06_REVERSE_OS_SSR_JARVIS/reverse_os.py\")"
+        },
+        {
+          "line": 16,
+          "text": "out = mod.project({\"agent_name\":\"A\",\"reason_code\":\"R\",\"merkle_root\":\"M\",\"verdict\":\"NO_KERNEL_DECISION\",\"tree_vector\":[0.0]*34})"
+        },
+        {
+          "line": 17,
+          "text": "self.assertTrue(out[\"non_decision\"])"
+        },
+        {
+          "line": 19,
+          "text": "self.assertNotIn(\"decision\", out)"
+        }
+      ],
+      "preview": "import json, sys, importlib.util\nfrom pathlib import Path\nROOT = Path(__file__).resolve().parents[1]\ndef load_module(name, relpath, add_path=None):\n    if add_path:\n        sys.path.insert(0, str(ROOT / add_path))\n    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)\n    mod = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(mod)\n    return mod\n\nimport unittest\nclass TestReverseOS(unittest.TestCase):\n    def test_reverse_os(self):\n        mod = load_module(\"reverse_mod\", \"06_REVERSE_OS_SSR_JARVIS/reverse_os.py\")\n        out = mod.project({\"agent_name\":\"A\",\"reason_code\":\"R\",\"merkle_root\":\"M\",\"verdict\":\"NO_KERNEL_DECISION\",\"tree_vector\":[0.0]*34})\n        self.assertTrue(out[\"non_decision\"])\n        self.assertIn(\"qui\", out)\n        self.assertNotIn(\"decision\", out)\nif __name__ == \"__main__\":\n    unittest.main()\n"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\20_DEMO_MINIMALE\\demo_full_pipeline.py",
+      "exists": true,
+      "size": 2792,
+      "functions": [
+        {
+          "line": 8,
+          "text": "def load_module(name, relpath):"
+        },
+        {
+          "line": 14,
+          "text": "def main():"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 1,
+          "text": "# Démo minimale réelle : payload -> Shazam -> arbres dominants -> NodeContinuum -> ContextPacket -> export X-108 -> Reverse OS"
+        },
+        {
+          "line": 8,
+          "text": "def load_module(name, relpath):"
+        },
+        {
+          "line": 14,
+          "text": "def main():"
+        },
+        {
+          "line": 33,
+          "text": "\"non_decision\": True"
+        },
+        {
+          "line": 39,
+          "text": "\"activated_trees\": shazam_out[\"dominant_trees\"],"
+        },
+        {
+          "line": 42,
+          "text": "\"projection\": {\"node_continuum\": node_continuum},"
+        },
+        {
+          "line": 44,
+          "text": "\"non_decision\": True,"
+        },
+        {
+          "line": 55,
+          "text": "\"verdict\": \"NO_KERNEL_DECISION\","
+        },
+        {
+          "line": 56,
+          "text": "\"tree_vector\": shazam_out[\"tree_activation\"],"
+        },
+        {
+          "line": 59,
+          "text": "reverse_mod = load_module(\"reverse_mod\", \"06_REVERSE_OS_SSR_JARVIS/reverse_os.py\")"
+        },
+        {
+          "line": 60,
+          "text": "reverse_output = reverse_mod.project(flow)"
+        },
+        {
+          "line": 64,
+          "text": "(out_dir / \"demo_reverse_os_output.json\").write_text(json.dumps(reverse_output, ensure_ascii=False, indent=2), encoding=\"utf-8\")"
+        },
+        {
+          "line": 67,
+          "text": "print(\"no ACT produced\")"
+        },
+        {
+          "line": 69,
+          "text": "print(\"X108 required for decision\")"
+        }
+      ],
+      "preview": "# Démo minimale réelle : payload -> Shazam -> arbres dominants -> NodeContinuum -> ContextPacket -> export X-108 -> Reverse OS\nimport json\nimport importlib.util\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parents[1]\n\ndef load_module(name, relpath):\n    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)\n    mod = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(mod)\n    return mod\n\ndef main():\n    trees_data = json.loads((ROOT / \"04_ARBRES_34_TENSOR_MATRIX/arbres_34.canon.json\").read_text(encoding=\"utf-8\"))\n    trees = trees_data[\"trees\"]\n    query = json.loads((Path(__file__).resolve().parent / \"demo_query.json\").read_text(encoding=\"utf-8\"))\n    payload = query[\"raw_payload\"]\n\n    import sys\n    sys.path.insert(0, str(ROOT / \"05_SHAZAM_COGNITIF\"))\n    shazam_mod = load_module(\"shazam_mod\", \"05_SHAZAM_COGNITIF/shazam_cognitif.py\")\n    shazam_out = shazam_mod.shazam(payload)\n\n    dominant_tree_ids = [int(k) for k in shazam_out[\"dominant_trees\"].keys()]\n    dominant_tree_names = [trees[i][\"name\"] for i in dominant_tree_ids if 0 <= i < len(trees)]\n\n    node_continuum = {\n        \"id\": \"NODE_CONTINUUM_DEMO_001\",\n        \"description\": \"Nœud créé par divergence/contextualisation de démo.\",\n        \"event_ids\": [],\n        \"divergence\": 0.21,\n        \"non_decision\": True\n    }\n\n    context_packet = {\n        \"query\": query[\"query\"],\n        \"events\": [],\n        \"activated_trees\": shazam_out[\"dominant_trees\"],\n        \"dominant_tree_names\": dominant_tree_names,\n        \"calibrated_links\": [],\n        \"projection\": {\"node_continuum\": node_continuum},\n        \"confidence\": 0.42,\n        \"non_decision\": True,\n        \"export_target\": \"X-108\"\n    }\n\n    export_mod = load_module(\"export_mod\", \"14_CONTEXT_EXPORT_X108_BOUNDARY/export_for_x108.py\")\n    exported_context = export_mod.export(context_packet)\n\n    flow = {\n        \"agent_name\": \"DEMO_FULL_PIPELINE\",\n        \"reason_code\": \"RC_CONTEXT_ONLY\",\n        \"merkle_root\": \"demo_me"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\common_types.py",
+      "exists": true,
+      "size": 5778,
+      "functions": [
+        {
+          "line": 54,
+          "text": "def __post_init__(self) -> None:"
+        },
+        {
+          "line": 69,
+          "text": "def __post_init__(self) -> None:"
+        }
+      ],
+      "classes": [
+        {
+          "line": 22,
+          "text": "class Tree:"
+        },
+        {
+          "line": 43,
+          "text": "class TreeSpace34:"
+        },
+        {
+          "line": 64,
+          "text": "class ActivationVector:"
+        },
+        {
+          "line": 76,
+          "text": "class Event:"
+        },
+        {
+          "line": 90,
+          "text": "class NodeContinuum:"
+        },
+        {
+          "line": 100,
+          "text": "class SpectralHash:"
+        },
+        {
+          "line": 108,
+          "text": "class ShazamOutput:"
+        },
+        {
+          "line": 119,
+          "text": "class SSRProjection:"
+        },
+        {
+          "line": 130,
+          "text": "class BDFResponse:"
+        },
+        {
+          "line": 139,
+          "text": "class HexaFluxMutation:"
+        },
+        {
+          "line": 149,
+          "text": "class MCPRequest:"
+        },
+        {
+          "line": 161,
+          "text": "class ObsidiaIR:"
+        },
+        {
+          "line": 175,
+          "text": "class ContextPacket:"
+        },
+        {
+          "line": 189,
+          "text": "class AgentDescriptor:"
+        },
+        {
+          "line": 208,
+          "text": "class GenomeLaw:"
+        }
+      ],
+      "boundary_hits": [
+        {
+          "line": 6,
+          "text": "Obsidia Mmonde / Reverse OS implementation.  These structures are"
+        },
+        {
+          "line": 9,
+          "text": "system.  None of these classes implement any decision logic."
+        },
+        {
+          "line": 22,
+          "text": "class Tree:"
+        },
+        {
+          "line": 30,
+          "text": "activation_keywords: Keywords or phrases that hint at activation."
+        },
+        {
+          "line": 38,
+          "text": "activation_keywords: List[str] = field(default_factory=list)"
+        },
+        {
+          "line": 39,
+          "text": "related_trees: List[str] = field(default_factory=list)"
+        },
+        {
+          "line": 43,
+          "text": "class TreeSpace34:"
+        },
+        {
+          "line": 47,
+          "text": "while `values` represents the activation vector associated with a"
+        },
+        {
+          "line": 54,
+          "text": "def __post_init__(self) -> None:"
+        },
+        {
+          "line": 56,
+          "text": "raise ValueError(\"TreeSpace34 must have exactly 34 dimensions\")"
+        },
+        {
+          "line": 58,
+          "text": "raise ValueError(\"Activation vector must have 34 values\")"
+        },
+        {
+          "line": 64,
+          "text": "class ActivationVector:"
+        },
+        {
+          "line": 65,
+          "text": "\"\"\"Wrapper around a list of activation values for the 34 trees.\"\"\""
+        },
+        {
+          "line": 69,
+          "text": "def __post_init__(self) -> None:"
+        },
+        {
+          "line": 71,
+          "text": "raise ValueError(\"ActivationVector must have 34 values\")"
+        },
+        {
+          "line": 76,
+          "text": "class Event:"
+        },
+        {
+          "line": 83,
+          "text": "sources: List[str] = field(default_factory=list)"
+        },
+        {
+          "line": 86,
+          "text": "tree_activations: Optional[ActivationVector] = None"
+        },
+        {
+          "line": 90,
+          "text": "class NodeContinuum:"
+        },
+        {
+          "line": 94,
+          "text": "events: List[str] = field(default_factory=list)"
+        },
+        {
+          "line": 96,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 100,
+          "text": "class SpectralHash:"
+        },
+        {
+          "line": 104,
+          "text": "features: Dict[str, float] = field(default_factory=dict)"
+        },
+        {
+          "line": 108,
+          "text": "class ShazamOutput:"
+        },
+        {
+          "line": 112,
+          "text": "tree_activation: Dict[str, float]"
+        },
+        {
+          "line": 114,
+          "text": "metadata: Dict[str, Any] = field(default_factory=dict)"
+        },
+        {
+          "line": 115,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 119,
+          "text": "class SSRProjection:"
+        },
+        {
+          "line": 120,
+          "text": "\"\"\"Output of the Reverse OS (SSR) projection layer.\"\"\""
+        },
+        {
+          "line": 122,
+          "text": "text_projection: str"
+        },
+        {
+          "line": 123,
+          "text": "ui_projection: Dict[str, Any] = field(default_factory=dict)"
+        },
+        {
+          "line": 124,
+          "text": "voice_projection: Optional[str] = None"
+        },
+        {
+          "line": 126,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 130,
+          "text": "class BDFResponse:"
+        },
+        {
+          "line": 135,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 139,
+          "text": "class HexaFluxMutation:"
+        },
+        {
+          "line": 140,
+          "text": "\"\"\"Represents a symbolic mutation produced by HexaFlux.\"\"\""
+        },
+        {
+          "line": 145,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 149,
+          "text": "class MCPRequest:"
+        },
+        {
+          "line": 161,
+          "text": "class ObsidiaIR:"
+        },
+        {
+          "line": 171,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 175,
+          "text": "class ContextPacket:"
+        },
+        {
+          "line": 176,
+          "text": "\"\"\"Packet exported to X-108 containing context and no decision.\"\"\""
+        },
+        {
+          "line": 179,
+          "text": "events: List[Event] = field(default_factory=list)"
+        },
+        {
+          "line": 180,
+          "text": "activated_trees: Dict[str, float] = field(default_factory=dict)"
+        },
+        {
+          "line": 181,
+          "text": "calibrated_links: List[Any] = field(default_factory=list)"
+        },
+        {
+          "line": 182,
+          "text": "projection: Optional[SSRProjection] = None"
+        },
+        {
+          "line": 184,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 189,
+          "text": "class AgentDescriptor:"
+        },
+        {
+          "line": 202,
+          "text": "non_decision: bool = True"
+        },
+        {
+          "line": 208,
+          "text": "class GenomeLaw:"
+        },
+        {
+          "line": 214,
+          "text": "non_decision: bool = True"
+        }
+      ],
+      "preview": "\"\"\"\ncommon_types.py\n----------------\n\nThis module defines a collection of simple dataclasses used across the\nObsidia Mmonde / Reverse OS implementation.  These structures are\nminimal and are deliberately free of business logic: they serve only as\ntyped containers for data passed between the various layers of the\nsystem.  None of these classes implement any decision logic.\n\nBy defining these types in a single place we simplify imports and\nmake it clear which pieces of the system are data-only.  Should\nadditional fields or behaviours be required in the future they can be\nadded here without affecting the rest of the codebase.\n\"\"\"\n\nfrom dataclasses import dataclass, field\nfrom typing import List, Dict, Any, Optional\n\n\n@dataclass\nclass Tree:\n    \"\"\"Representation of a single cognitive tree dimension.\n\n    Attributes:\n        id: A numeric or string identifier for the tree.\n        name: The human-readable name of the tree.\n        family: The category or family this tree belongs to (e.g. \"Cognitive\").\n        definition: A short definition of the tree's purpose.\n        activation_keywords: Keywords or phrases that hint at activation.\n        related_trees: Identifiers of other trees this one is commonly linked to.\n    \"\"\"\n\n    id: str\n    name: str\n    family: str\n    definition: str = \"\"\n    activation_keywords: List[str] = field(default_factory=list)\n    related_trees: List[str] = field(default_factory=list)\n\n\n@dataclass\nclass TreeSpace34:\n    \"\"\"Container for the 34-dimensional cognitive space.\n\n    The `dimensions` field holds the canonical names/IDs of the 34 trees\n    while `values` represents the activation vector associated with a\n    particular event or context.  Values should always be between 0 and 1.\n    \"\"\"\n\n    dimensions: List[str]\n    values: List[float]\n\n    def __post_init__(self) -> None:\n        if len(self.dimensions) != 34:\n            raise ValueError(\"TreeSpace34 must have exactly 34 dimensions\")\n        if len(self.values) != 34:\n            rai"
+    },
+    {
+      "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-engine-candidate\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\\09_MCP_BRIDGE_OBSIDIA_IR\\obsidia_ir.py",
+      "exists": true,
+      "size": 5142,
+      "functions": [
+        {
+          "line": 19,
+          "text": "def _text(value: Any) -> str:"
+        },
+        {
+          "line": 25,
+          "text": "def _sha256(text: str) -> str:"
+        },
+        {
+          "line": 29,
+          "text": "def _norm_float(value: Any, default: float = 0.0) -> float:"
+        },
+        {
+          "line": 41,
+          "text": "def _tree_vector(value: Any) -> list[float]:"
+        },
+        {
+          "line": 63,
+          "text": "def _active_tree_ids(vector: list[float], threshold: float = 0.15) -> list[str]:"
+        },
+        {
+          "line": 71,
+          "text": "def _tokens(text: str) -> list[str]:"
+        },
+        {
+          "line": 75,
+          "text": "def _requires_x108(intent: str, risk: float, policy_scope: str) -> bool:"
+        },
+        {
+          "line": 86,
+          "text": "def _kernel_mutation_requested(intent: str) -> bool:"
+        },
+        {
+          "line": 91,
+          "text": "def _constraints(intent: str, requires_x108: bool, kernel_mutation_requested: bool) -> list[str]:"
+        },
+        {
+          "line": 110,
+          "text": "def to_ir(request: dict[str, Any]) -> dict[str, Any]:"
+        }
+      ],
+      "classes": [],
+      "boundary_hits": [
+        {
+          "line": 9,
+          "text": "\"payer\", \"paiement\", \"transaction\", \"virement\", \"autoriser\","
+        },
+        {
+          "line": 10,
+          "text": "\"execute\", \"exécuter\", \"act\", \"merge\", \"modifier\", \"kernel\","
+        },
+        {
+          "line": 14,
+          "text": "KERNEL_MUTATION_TERMS = {"
+        },
+        {
+          "line": 19,
+          "text": "def _text(value: Any) -> str:"
+        },
+        {
+          "line": 25,
+          "text": "def _sha256(text: str) -> str:"
+        },
+        {
+          "line": 29,
+          "text": "def _norm_float(value: Any, default: float = 0.0) -> float:"
+        },
+        {
+          "line": 41,
+          "text": "def _tree_vector(value: Any) -> list[float]:"
+        },
+        {
+          "line": 63,
+          "text": "def _active_tree_ids(vector: list[float], threshold: float = 0.15) -> list[str]:"
+        },
+        {
+          "line": 71,
+          "text": "def _tokens(text: str) -> list[str]:"
+        },
+        {
+          "line": 75,
+          "text": "def _requires_x108(intent: str, risk: float, policy_scope: str) -> bool:"
+        },
+        {
+          "line": 81,
+          "text": "if policy_scope.upper() != \"READONLY_CONTEXT\":"
+        },
+        {
+          "line": 86,
+          "text": "def _kernel_mutation_requested(intent: str) -> bool:"
+        },
+        {
+          "line": 88,
+          "text": "return bool(words & KERNEL_MUTATION_TERMS)"
+        },
+        {
+          "line": 91,
+          "text": "def _constraints(intent: str, requires_x108: bool, kernel_mutation_requested: bool) -> list[str]:"
+        },
+        {
+          "line": 93,
+          "text": "\"NON_DECISION_IR_ONLY\","
+        },
+        {
+          "line": 94,
+          "text": "\"KX108_ONLY_DECISION_AUTHORITY\","
+        },
+        {
+          "line": 95,
+          "text": "\"KERNEL_MUTATION_FORBIDDEN\","
+        },
+        {
+          "line": 98,
+          "text": "\"READONLY_CONTEXT_SCOPE\""
+        },
+        {
+          "line": 102,
+          "text": "out.append(\"ROUTE_TO_X108_FOR_VERDICT\")"
+        },
+        {
+          "line": 104,
+          "text": "if kernel_mutation_requested:"
+        },
+        {
+          "line": 105,
+          "text": "out.append(\"KERNEL_MUTATION_REQUEST_DETECTED_BUT_BLOCKED_IN_IR\")"
+        },
+        {
+          "line": 110,
+          "text": "def to_ir(request: dict[str, Any]) -> dict[str, Any]:"
+        },
+        {
+          "line": 112,
+          "text": "ObsidiaIR V1 profond."
+        },
+        {
+          "line": 118,
+          "text": "Decision = KX108."
+        },
+        {
+          "line": 126,
+          "text": "policy_scope = _text(request.get(\"policy_scope\") or request.get(\"scope\") or \"READONLY_CONTEXT\")"
+        },
+        {
+          "line": 134,
+          "text": "kernel_mutation_requested = _kernel_mutation_requested(intent)"
+        },
+        {
+          "line": 138,
+          "text": "risk_flags.append(\"CRITICAL_ACTION_POSSIBLE\")"
+        },
+        {
+          "line": 139,
+          "text": "if kernel_mutation_requested:"
+        },
+        {
+          "line": 140,
+          "text": "risk_flags.append(\"KERNEL_MUTATION_REQUEST_IN_INPUT\")"
+        },
+        {
+          "line": 142,
+          "text": "active_trees = _active_tree_ids(vector)"
+        },
+        {
+          "line": 157,
+          "text": "\"active_trees\": active_trees,"
+        },
+        {
+          "line": 160,
+          "text": "\"constraints\": _constraints(intent, requires_x108, kernel_mutation_requested),"
+        },
+        {
+          "line": 162,
+          "text": "\"non_decision\": True,"
+        },
+        {
+          "line": 163,
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 164,
+          "text": "\"x108_required_for_verdict\": requires_x108,"
+        },
+        {
+          "line": 165,
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 169,
+          "text": "\"verdict\": None,"
+        },
+        {
+          "line": 170,
+          "text": "\"act\": None,"
+        },
+        {
+          "line": 174,
+          "text": "\"non_decision\": True,"
+        },
+        {
+          "line": 175,
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 176,
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 183,
+          "text": "\"decision_law\": \"Decision = KX108\""
+        }
+      ],
+      "preview": "from __future__ import annotations\n\nimport hashlib\nimport re\nfrom typing import Any\n\n\nCRITICAL_TERMS = {\n    \"payer\", \"paiement\", \"transaction\", \"virement\", \"autoriser\",\n    \"execute\", \"exécuter\", \"act\", \"merge\", \"modifier\", \"kernel\",\n    \"deploy\", \"production\", \"delete\", \"supprimer\"\n}\n\nKERNEL_MUTATION_TERMS = {\n    \"kernel\", \"merge\", \"canon\", \"proof\", \"lean\", \"tla\", \"production\"\n}\n\n\ndef _text(value: Any) -> str:\n    if value is None:\n        return \"\"\n    return str(value)\n\n\ndef _sha256(text: str) -> str:\n    return hashlib.sha256(text.encode(\"utf-8\")).hexdigest()\n\n\ndef _norm_float(value: Any, default: float = 0.0) -> float:\n    try:\n        x = float(value)\n    except Exception:\n        x = default\n    if x < 0.0:\n        return 0.0\n    if x > 1.0:\n        return 1.0\n    return round(x, 6)\n\n\ndef _tree_vector(value: Any) -> list[float]:\n    if isinstance(value, list):\n        out = [_norm_float(v) for v in value[:34]]\n    elif isinstance(value, dict):\n        out = [0.0] * 34\n        for k, v in value.items():\n            s = str(k).upper().replace(\"TREE_\", \"\")\n            try:\n                idx = int(s) - 1\n                if 0 <= idx < 34:\n                    out[idx] = _norm_float(v)\n            except Exception:\n                pass\n    else:\n        out = []\n\n    while len(out) < 34:\n        out.append(0.0)\n\n    return out[:34]\n\n\ndef _active_tree_ids(vector: list[float], threshold: float = 0.15) -> list[str]:\n    return [\n        f\"TREE_{i + 1:02d}\"\n        for i, score in enumerate(vector)\n        if score > threshold\n    ]\n\n\ndef _tokens(text: str) -> list[str]:\n    return re.findall(r\"[A-Za-zÀ-ÿ0-9_]+\", text.lower())\n\n\ndef _requires_x108(intent: str, risk: float, policy_scope: str) -> bool:\n    words = set(_tokens(intent))\n    if risk >= 0.75:\n        return True\n    if words & CRITICAL_TERMS:\n        return True\n    if policy_scope.upper() != \"READONLY_CONTEXT\":\n        return True\n    return False\n\n\ndef _kernel_mutation_requested(intent: str) -> bool:\n  "
+    }
+  ],
+  "decision_hint": {
+    "do_not_patch_yet": true,
+    "likely_reuse_targets": [
+      "periphery/reverse_os.py",
+      "obsidia-engine-candidate/bridge/zip2_reverse_os_real_adapter.py",
+      "MMONDE/common_types.py",
+      "MMONDE/09_MCP_BRIDGE_OBSIDIA_IR/obsidia_ir.py",
+      "MMONDE/20_DEMO_MINIMALE/demo_full_pipeline.py",
+      "MMONDE/17_TESTS/test_reverse_os_non_decision.py"
+    ],
+    "next": "Choose F18B reuse strategy after human review."
+  }
+}

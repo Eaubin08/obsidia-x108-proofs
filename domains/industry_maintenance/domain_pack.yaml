@@ -1,0 +1,14 @@
+domain_id: industry_maintenance
+domain_name: "Industry / Maintenance"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  - machines
+  - production
+  - maintenance
+  - sensors
+  - operators
+implementation_state: SCAFFOLD_ONLY

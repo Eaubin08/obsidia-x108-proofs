@@ -1,0 +1,340 @@
+metrics:
+- name: authority_boundary_clarity
+  definition: RSSI/external-signal metric for authority boundary clarity.
+  range: 0..1
+  formula: authority_boundary_clarity = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: evidence_surface_completeness
+  definition: RSSI/external-signal metric for evidence surface completeness.
+  range: 0..1
+  formula: evidence_surface_completeness = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: replay_integrity
+  definition: RSSI/external-signal metric for replay integrity.
+  range: 0..1
+  formula: replay_integrity = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: custody_integrity
+  definition: RSSI/external-signal metric for custody integrity.
+  range: 0..1
+  formula: custody_integrity = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: rssi_readability
+  definition: RSSI/external-signal metric for rssi readability.
+  range: 0..1
+  formula: rssi_readability = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: audit_exportability
+  definition: RSSI/external-signal metric for audit exportability.
+  range: 0..1
+  formula: audit_exportability = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: non_reauthoring_score
+  definition: RSSI/external-signal metric for non reauthoring score.
+  range: 0..1
+  formula: non_reauthoring_score = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: temporal_freshness_score
+  definition: RSSI/external-signal metric for temporal freshness score.
+  range: 0..1
+  formula: temporal_freshness_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: tick_canonicality
+  definition: RSSI/external-signal metric for tick canonicality.
+  range: 0..1
+  formula: tick_canonicality = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: no_float_compliance
+  definition: RSSI/external-signal metric for no float compliance.
+  range: 0..1
+  formula: no_float_compliance = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: anti_replay_strength
+  definition: RSSI/external-signal metric for anti replay strength.
+  range: 0..1
+  formula: anti_replay_strength = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: challenge_freshness
+  definition: RSSI/external-signal metric for challenge freshness.
+  range: 0..1
+  formula: challenge_freshness = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: signature_verification_confidence
+  definition: RSSI/external-signal metric for signature verification confidence.
+  range: 0..1
+  formula: signature_verification_confidence = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: stale_execution_risk
+  definition: RSSI/external-signal metric for stale execution risk.
+  range: 0..1
+  formula: stale_execution_risk = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: temporal_receipt_completeness
+  definition: RSSI/external-signal metric for temporal receipt completeness.
+  range: 0..1
+  formula: temporal_receipt_completeness = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: receipt_anchor_integrity
+  definition: RSSI/external-signal metric for receipt anchor integrity.
+  range: 0..1
+  formula: receipt_anchor_integrity = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: time_bounded_tool_call_score
+  definition: RSSI/external-signal metric for time bounded tool call score.
+  range: 0..1
+  formula: time_bounded_tool_call_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: standing_validity_score
+  definition: RSSI/external-signal metric for standing validity score.
+  range: 0..1
+  formula: standing_validity_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: continuation_legitimacy_score
+  definition: RSSI/external-signal metric for continuation legitimacy score.
+  range: 0..1
+  formula: continuation_legitimacy_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: consequence_binding_clarity
+  definition: RSSI/external-signal metric for consequence binding clarity.
+  range: 0..1
+  formula: consequence_binding_clarity = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: intent_effect_separation_score
+  definition: RSSI/external-signal metric for intent effect separation score.
+  range: 0..1
+  formula: intent_effect_separation_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: protected_consequence_clarity
+  definition: RSSI/external-signal metric for protected consequence clarity.
+  range: 0..1
+  formula: protected_consequence_clarity = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: corridor_scope_clarity
+  definition: RSSI/external-signal metric for corridor scope clarity.
+  range: 0..1
+  formula: corridor_scope_clarity = evaluate(component_evidence, boundary_state, proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: refusal_preservation_score
+  definition: RSSI/external-signal metric for refusal preservation score.
+  range: 0..1
+  formula: refusal_preservation_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface
+- name: law_state_input_replay_score
+  definition: RSSI/external-signal metric for law state input replay score.
+  range: 0..1
+  formula: law_state_input_replay_score = evaluate(component_evidence, boundary_state,
+    proof_artifacts)
+  thresholds:
+    target: 0.8
+    minimum: 0.6
+  interpretation: Higher is better except risk-oriented metrics, where the value must
+    be interpreted by its specific test case.
+  applies_to:
+  - external_timeverse
+  - external_consequence_boundary
+  - RSSI proof surface

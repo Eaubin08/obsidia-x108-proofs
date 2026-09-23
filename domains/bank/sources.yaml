@@ -1,0 +1,8 @@
+status: REFERENCE_ONLY
+sources:
+  - "domain_packets/bank_decisional_form_v0.yaml"
+  - "domains/bank/"
+  - "sigma/domains/bank_agents.py"
+  - "examples/bank_normal.json"
+  - "examples/bank_suspicious.json"
+note: "Source mapping only. No code copied or migrated."

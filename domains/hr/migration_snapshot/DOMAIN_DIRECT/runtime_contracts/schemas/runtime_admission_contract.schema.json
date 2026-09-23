@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obsidia/runtime_contracts/runtime_admission_contract.schema.json",
+  "title": "RuntimeAdmissionContract",
+  "description": "Conditions de passage SPEC_ONLY → DRY_RUN. Aucune transition directe SPEC → PROD. admission_decision_source = KX108_ONLY.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "module_name", "current_status", "requested_next_status",
+    "required_contracts", "required_schemas", "required_boundaries",
+    "required_tests", "required_proofs", "forbidden_until_satisfied",
+    "admission_decision_source", "human_gate_required"
+  ],
+  "properties": {
+    "module_name": { "type": "string" },
+    "current_status": {
+      "type": "string",
+      "enum": ["SPEC_ONLY", "CONTRACT_SKELETON_ONLY", "CONTRACT_READY", "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY"]
+    },
+    "requested_next_status": {
+      "type": "string",
+      "enum": ["CONTRACT_READY", "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY"],
+      "description": "RUNTIME_ACTIVE et PRODUCTION sont des valeurs interdites dans ce schema."
+    },
+    "required_contracts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Contrats requis pour l'admission."
+    },
+    "required_schemas": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Schemas JSON validés requis."
+    },
+    "required_boundaries": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Boundaries activées requis."
+    },
+    "required_tests": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tests futurs requis avant admission."
+    },
+    "required_proofs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Preuves requises (Python/Lean)."
+    },
+    "forbidden_until_satisfied": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actions interdites jusqu'à satisfaction des prérequis."
+    },
+    "admission_decision_source": {
+      "type": "string",
+      "enum": ["KX108_ONLY"],
+      "description": "Toujours KX108_ONLY."
+    },
+    "human_gate_required": {
+      "type": "boolean",
+      "description": "Gate humain requis avant tout passage en production."
+    },
+    "forbidden_transitions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["SPEC_ONLY->RUNTIME_ACTIVE", "SPEC_ONLY->PRODUCTION", "DRY_RUN_ONLY->ACT", "ANY->PRODUCTION_WITHOUT_HUMAN_AUDIT"],
+      "description": "Transitions interdites absolues."
+    }
+  }
+}

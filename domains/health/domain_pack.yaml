@@ -1,0 +1,10 @@
+domain_id: health
+domain_name: "Health"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  []
+implementation_state: SCAFFOLD_ONLY

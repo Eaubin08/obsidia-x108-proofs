@@ -1,0 +1,21 @@
+﻿{
+  "status": "BRODY_GRAPHITI_CANDIDATE_REVIEW_GATE_READONLY_READY",
+  "role": "GRAPHITI_CANDIDATE_REVIEW_GATE_READONLY",
+  "readonly": true,
+  "graphiti_index_write": false,
+  "memory_intake": false,
+  "memory_decision": false,
+  "allowed_to_decide": false,
+  "emits_act": false,
+  "emits_verdict": false,
+  "decision_authority": "KX108_ONLY",
+  "kernel_mutation": false,
+  "x108_runtime_binding": false,
+  "x108_merge": false,
+  "outputs": [
+    "ACCEPT_CANDIDATE",
+    "REVIEW_CANDIDATE",
+    "REJECT_CANDIDATE"
+  ],
+  "next": "VALIDATE_BRODY_GRAPHITI_CANDIDATE_REVIEW_GATE_READONLY_V1"
+}

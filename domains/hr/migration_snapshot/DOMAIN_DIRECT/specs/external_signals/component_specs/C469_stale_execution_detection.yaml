@@ -1,0 +1,97 @@
+id: C469
+name: stale_execution_detection
+family: external_timeverse
+type: guard
+source: external_category_signal
+status: spec_patch_ready
+definition: Detects delayed, expired or captured actions whose temporal window has
+  closed.
+role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+internal_components:
+- intent_created_at_tick
+- challenge_expires_at_tick
+- cycle_anchor
+- current_tick
+inputs:
+- action_intent
+- temporal_context_header
+outputs:
+- stale_execution_status
+- stale_rejection_reason
+metrics:
+- definition_completeness
+- input_output_clarity
+- integration_clarity
+- runtime_readiness
+- proof_readiness
+- testability_score
+- observability_score
+- replayability_score
+- drift_risk
+- authority_risk
+- kernel_boundary_safety
+- irreversibility_exposure
+- world_action_proximity
+- authority_boundary_clarity
+- evidence_surface_completeness
+- replay_integrity
+- custody_integrity
+- rssi_readability
+- audit_exportability
+- non_reauthoring_score
+- temporal_freshness_score
+- tick_canonicality
+- no_float_compliance
+- anti_replay_strength
+- challenge_freshness
+- signature_verification_confidence
+- stale_execution_risk
+- temporal_receipt_completeness
+- receipt_anchor_integrity
+- time_bounded_tool_call_score
+formulas:
+- stale = current_tick > challenge_expires_at_tick OR cycle_anchor_mismatch = true
+invariants:
+- stale_execution_cannot_bind
+- KX108_ONLY
+- DECISION_AUTHORITY = KX108_ONLY
+- no_external_signal_emits_ACT
+- no_external_signal_mutates_kernel
+- proof_before_consequence
+tests:
+- test_store_now_execute_later_blocked
+- test_cycle_anchor_mismatch_blocked
+proof_artifacts:
+- intent_receipt
+- effect_receipt_only_after_ACT
+- replay_pointer
+- hash_chain_packet
+- rssi_audit_report
+runtime_status: spec_only
+authority: advisory_external_signal
+kx108_boundary:
+  decision_authority: KX108_ONLY
+  can_emit_ACT: false
+  can_emit_HOLD: false
+  can_emit_BLOCK: false
+  can_emit_world_action: false
+  can_emit_kernel_mutation: false
+  can_emit_action_candidate: true
+  requires_kx108_if_action: true
+  proof_required_if_action: true
+  external_signal_only: true
+  copied_from_external_runtime: false
+  allowed_role: enrich proof/context only
+  forbidden_role: decision authority
+risks:
+- category_drift
+- external_concept_overreach
+- wrapper_reauthoring_attempt
+- decision_authority_confusion
+dependencies:
+- KX108_boundary_adapter
+- world_action_gateway_guard
+- OS3_evidence_packet
+- visible_proof_surface
+implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+  external runtime or grant authority.

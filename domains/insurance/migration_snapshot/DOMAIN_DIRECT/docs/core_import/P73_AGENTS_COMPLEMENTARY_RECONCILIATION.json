@@ -1,0 +1,1081 @@
+{
+  "audit_id": "P73",
+  "status": "P73_AGENTS_COMPLEMENTARY_RECONCILIATION_READY",
+  "mode": "AUDIT_AND_READONLY_ADAPTERS",
+  "source_patch_applied": true,
+  "files_imported_count": 0,
+  "agents_model": {
+    "keep_proof_version": "Equivalent sigma/proof superieur — ne pas importer le core",
+    "do_not_import_duplicate": "Doublon exact dans sigma/ — P62/P64 DO_NOT_IMPORT",
+    "import_doc_only": "Utile uniquement pour reference documentaire, pas de runtime load",
+    "adapt_readonly_signal": "Signal non-souverain adapte sans ecriture fichier ni action",
+    "adapt_dry_run_proposal": "Proposition dry-run avec DRY_RUN_ONLY=True (aucun en P73)",
+    "blocked_architectural_review": "Contient write/network/runtime/action — revue requise",
+    "unknown_requires_review": "Classification incertaine — revue manuelle requise"
+  },
+  "agents_scanned_count": 33,
+  "agents_matrix": [
+    {
+      "agent_name": "__init__",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/__init__.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": null,
+      "proof_equivalent_exists": false,
+      "proof_wins": false,
+      "detected_capabilities": [
+        "module_init"
+      ],
+      "detected_risks": [
+        "no_dry_run_boundary",
+        "no_kx108_authority"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Module init sans boundary DRY_RUN_ONLY. Pas de sigma equivalent direct mais import en bloc interdit.",
+      "next_action": "DO_NOT_IMPORT"
+    },
+    {
+      "agent_name": "aggregation",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/aggregation.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/aggregation.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "aggregate_trading",
+        "aggregate_bank",
+        "aggregate_ecom",
+        "hash_evidence"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DETERMINISM",
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/aggregation.py existe (6001 bytes, P56B+). Version proof integre GPS domain et P56B gamma patches. Core est anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "base",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/base.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/base.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "BaseAgent_ABC",
+        "evaluate_abstract",
+        "clamp_static"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/base.py existe (396 bytes). Identique fonctionnellement. Sigma version est la reference.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "contracts",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/contracts.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/contracts.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "Domain_enum",
+        "X108Gate_enum",
+        "AgentVote_dataclass",
+        "CanonicalDecisionEnvelope",
+        "TradingState",
+        "BankState",
+        "EcomState"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DETERMINISM",
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/contracts.py existe (19205 bytes — enrichi P56B avec GPS domain, attestation_ref, SourceTag). Core est anterieur et incomplet.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "domains/bank_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/domains/bank_agents.py",
+      "target_path": null,
+      "source_surface": "agents/domains/",
+      "equivalent_proof_path": "sigma/domains/bank_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "bank_agent_votes",
+        "fraud_detection",
+        "BankState_evaluation"
+      ],
+      "detected_risks": [
+        "domain_agent_decision_risk"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY",
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "LOW",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/domains/bank_agents.py existe (P56B, GPS+bank tests). Core est doublon anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "domains/ecom_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/domains/ecom_agents.py",
+      "target_path": null,
+      "source_surface": "agents/domains/",
+      "equivalent_proof_path": "sigma/domains/ecom_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "ecom_agent_votes",
+        "EcomState_evaluation"
+      ],
+      "detected_risks": [
+        "domain_agent_decision_risk"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "LOW",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/domains/ecom_agents.py existe. Core est doublon anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "domains/meta_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/domains/meta_agents.py",
+      "target_path": null,
+      "source_surface": "agents/domains/",
+      "equivalent_proof_path": "sigma/domains/meta_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "meta_orchestration"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/domains/meta_agents.py existe. Core est doublon anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "domains/trading_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/domains/trading_agents.py",
+      "target_path": null,
+      "source_surface": "agents/domains/",
+      "equivalent_proof_path": "sigma/domains/trading_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "trading_agent_votes",
+        "TradingState_evaluation",
+        "ccxt_optional"
+      ],
+      "detected_risks": [
+        "trading_action_risk",
+        "ccxt_dependency"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY",
+        "NETWORK_EGRESS_REVIEW_REQUIRED"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "LOW",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/domains/trading_agents.py existe (P56B, proof-validated). Core est doublon anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "guard",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/guard.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/guard.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "GuardX108_class",
+        "decide_method",
+        "ALLOW_HOLD_BLOCK"
+      ],
+      "detected_risks": [
+        "returns_final_decision",
+        "kx108_authority_claimed"
+      ],
+      "p72_invariant_constraints": [
+        "GUARD_X108_FINAL_AUTHORITY",
+        "KX108_ONLY_DECISION_AUTHORITY",
+        "DETERMINISM"
+      ],
+      "authority_status": "SOVEREIGN_IN_SIGMA",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "HIGH_IF_REPLACED",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/guard.py existe (3030 bytes, P56D post-guard-veto-only patch). Core guard.py est anterieur et non-P56D. PROOF WINS CRITIQUE.",
+      "next_action": "USE_SIGMA_VERSION_ONLY"
+    },
+    {
+      "agent_name": "obsidia_sigma_v130",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/obsidia_sigma_v130.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/obsidia_sigma_v130.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "ObsidiaSigmaMonitor_class",
+        "sigma_stability_tracking",
+        "velocity_acceleration"
+      ],
+      "detected_risks": [
+        "sigma_core_implementation"
+      ],
+      "p72_invariant_constraints": [
+        "SIGMA_POST_GUARD_VETO_ONLY",
+        "DETERMINISM"
+      ],
+      "authority_status": "SOVEREIGN_IN_SIGMA",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "HIGH_IF_REPLACED",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/obsidia_sigma_v130.py existe (11294 bytes, P56B gamma=1.0 patch). Ecraser ecrasait les corrections P56B. PROOF WINS CRITIQUE.",
+      "next_action": "USE_SIGMA_VERSION_ONLY"
+    },
+    {
+      "agent_name": "protocols",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/protocols.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/protocols.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "pipeline_protocols",
+        "routing_rules"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/protocols.py existe (2194 bytes, P56D patched). Core est anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "registry",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/registry.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/registry.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "agent_registry",
+        "domain_routing"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/registry.py existe (3703 bytes, P56B+). Core est doublon anterieur.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "run_pipeline",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/run_pipeline.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/run_pipeline.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "pipeline_runner",
+        "domain_dispatch",
+        "subprocess_call"
+      ],
+      "detected_risks": [
+        "activates_pipeline",
+        "potential_network"
+      ],
+      "p72_invariant_constraints": [
+        "GUARD_X108_FINAL_AUTHORITY",
+        "SIGMA_POST_GUARD_VETO_ONLY"
+      ],
+      "authority_status": "SOVEREIGN_IN_SIGMA",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "HIGH_IF_REPLACED",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/run_pipeline.py existe (8999 bytes, P56D post-guard-veto-only). Core est anterieur, non-P56D. PROOF WINS CRITIQUE.",
+      "next_action": "USE_SIGMA_VERSION_ONLY"
+    },
+    {
+      "agent_name": "sigma_config.json",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/sigma_config.json",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/sigma_config.json",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "sigma_configuration"
+      ],
+      "detected_risks": [
+        "config_overwrite_risk"
+      ],
+      "p72_invariant_constraints": [
+        "SIGMA_POST_GUARD_VETO_ONLY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "MEDIUM",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "sigma/sigma_config.json existe. Ecraser modifierait les parametres sigma P56B. P62: DO_NOT_IMPORT.",
+      "next_action": "DO_NOT_IMPORT"
+    },
+    {
+      "agent_name": "sigma_dashboard",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/sigma_dashboard.py",
+      "target_path": "apps/obsidia_api/agents_readonly/sigma_dashboard_readonly.py",
+      "source_surface": "agents/",
+      "equivalent_proof_path": null,
+      "proof_equivalent_exists": false,
+      "proof_wins": false,
+      "detected_capabilities": [
+        "reads_PROOFKIT_REPORT_json",
+        "generates_matplotlib_PNG",
+        "sigma_stability_visualization"
+      ],
+      "detected_risks": [
+        "plt_savefig_file_write",
+        "matplotlib_dependency",
+        "filesystem_write"
+      ],
+      "p72_invariant_constraints": [
+        "DRY_RUN_ONLY_ADAPTERS",
+        "NO_MEMORY_WRITE_WITHOUT_GATE",
+        "NO_KERNEL_MUTATION_FROM_PERIPHERY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "ADAPT_READONLY_SIGNAL",
+      "risk_level": "LOW_AFTER_ADAPTATION",
+      "decision": "ADAPT_READONLY_SIGNAL",
+      "reason": "Pas d'equivalent sigma. Fournit une visualisation de stabilite utile (AUDIT_TOOLING). Risk: plt.savefig() ecrit un fichier. Adaptation: supprimer file write, retourner data dict uniquement.",
+      "next_action": "ADAPT_WITHOUT_FILE_WRITE"
+    },
+    {
+      "agent_name": "sigma_monitor",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/sigma_monitor.py",
+      "target_path": null,
+      "source_surface": "agents/",
+      "equivalent_proof_path": "sigma/sigma_monitor.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "SigmaMonitor_class",
+        "velocity_acceleration_tracking",
+        "stability_status"
+      ],
+      "detected_risks": [
+        "time_time_stateful"
+      ],
+      "p72_invariant_constraints": [
+        "SIGMA_POST_GUARD_VETO_ONLY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "LOW",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "sigma/sigma_monitor.py existe (CLI runner sur ObsidiaSigmaMonitor P56B). Le SigmaMonitor core est plus basique. Sigma version superieure.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "utils/__init__",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/utils/__init__.py",
+      "target_path": null,
+      "source_surface": "agents/utils/",
+      "equivalent_proof_path": "sigma/utils/__init__.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "utils_init"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "NONE",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "P62: DO_NOT_IMPORT liste. sigma/utils/__init__.py existe.",
+      "next_action": "DO_NOT_IMPORT"
+    },
+    {
+      "agent_name": "utils/indicators",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/utils/indicators.py",
+      "target_path": "apps/obsidia_api/agents_readonly/indicators_readonly.py",
+      "source_surface": "agents/utils/",
+      "equivalent_proof_path": "sigma/utils/indicators.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "sma",
+        "ema",
+        "rsi",
+        "zscore",
+        "realized_volatility",
+        "bollinger"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DRY_RUN_ONLY_ADAPTERS"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "NONE",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "sigma/utils/indicators.py est IDENTIQUE (meme code, meme fonctions). Un wrapper readonly est cree pour l'API layer sans importer sigma directement.",
+      "next_action": "USE_SIGMA_VERSION_INDICATOR_READONLY_WRAPPER_FOR_API"
+    },
+    {
+      "agent_name": "python_agents/__init__",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/__init__.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": null,
+      "proof_equivalent_exists": false,
+      "proof_wins": false,
+      "detected_capabilities": [
+        "module_init"
+      ],
+      "detected_risks": [
+        "no_dry_run_boundary"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "NONE",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "P62: DO_NOT_IMPORT liste.",
+      "next_action": "DO_NOT_IMPORT"
+    },
+    {
+      "agent_name": "python_agents/aggregation",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/aggregation.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/aggregation.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "aggregate_trading",
+        "aggregate_bank",
+        "aggregate_ecom"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DETERMINISM"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "P62: KEEP_PROOF_VERSION. sigma/aggregation.py superieur (P56B+, GPS domain, 6001 bytes).",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "python_agents/base",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/base.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/base.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "BaseAgent_ABC"
+      ],
+      "detected_risks": [
+        "no_explicit_dry_run"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. python_agents/base.py potentiellement different de sigma/base.py. Revue avant merge.",
+      "next_action": "REVIEW_BEFORE_MERGE"
+    },
+    {
+      "agent_name": "python_agents/contracts",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/contracts.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/contracts.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "Domain_enum",
+        "X108Gate_enum",
+        "AgentVote"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DETERMINISM"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "P62: KEEP_PROOF_VERSION. sigma/contracts.py est la reference P56B (19205 bytes).",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "python_agents/demo_run",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/demo_run.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": null,
+      "proof_equivalent_exists": false,
+      "proof_wins": false,
+      "detected_capabilities": [
+        "demo_runner",
+        "example_pipeline"
+      ],
+      "detected_risks": [
+        "activates_pipeline_demo"
+      ],
+      "p72_invariant_constraints": [
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "LOW",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "P62: DO_NOT_IMPORT. Demo runner — pas de valeur runtime, pas de doublon utile.",
+      "next_action": "DO_NOT_IMPORT"
+    },
+    {
+      "agent_name": "python_agents/domains/bank_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/domains/bank_agents.py",
+      "target_path": null,
+      "source_surface": "python_agents/domains/",
+      "equivalent_proof_path": "sigma/domains/bank_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "bank_agent_votes"
+      ],
+      "detected_risks": [
+        "domain_decision_risk"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. Agents domaine bank peuvent retourner des verdicts. Revue architecturale requise.",
+      "next_action": "REVIEW_BEFORE_MERGE"
+    },
+    {
+      "agent_name": "python_agents/domains/ecom_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/domains/ecom_agents.py",
+      "target_path": null,
+      "source_surface": "python_agents/domains/",
+      "equivalent_proof_path": "sigma/domains/ecom_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "ecom_agent_votes"
+      ],
+      "detected_risks": [
+        "domain_decision_risk"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. Agents domaine ecom retournent verdicts. Revue requise.",
+      "next_action": "REVIEW_BEFORE_MERGE"
+    },
+    {
+      "agent_name": "python_agents/domains/meta_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/domains/meta_agents.py",
+      "target_path": null,
+      "source_surface": "python_agents/domains/",
+      "equivalent_proof_path": "sigma/domains/meta_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "meta_orchestration"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. Meta-agents orchestrent d'autres agents. Revue architecturale requise.",
+      "next_action": "REVIEW_BEFORE_MERGE"
+    },
+    {
+      "agent_name": "python_agents/domains/trading_agents",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/domains/trading_agents.py",
+      "target_path": null,
+      "source_surface": "python_agents/domains/",
+      "equivalent_proof_path": "sigma/domains/trading_agents.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "trading_agent_votes",
+        "ccxt_optional"
+      ],
+      "detected_risks": [
+        "trading_network_risk",
+        "ccxt_dependency"
+      ],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY",
+        "NETWORK_EGRESS_REVIEW_REQUIRED"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "HIGH",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. Agents trading contiennent ccxt dependency (NETWORK). Revue architecturale + dry_run gate obligatoires.",
+      "next_action": "REVIEW_BEFORE_MERGE_NETWORK_GATE_REQUIRED"
+    },
+    {
+      "agent_name": "python_agents/guard",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/guard.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/guard.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "GuardX108_class",
+        "decide_method"
+      ],
+      "detected_risks": [
+        "returns_final_decision"
+      ],
+      "p72_invariant_constraints": [
+        "GUARD_X108_FINAL_AUTHORITY",
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "SOVEREIGN_IN_SIGMA",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "HIGH_IF_REPLACED",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "P62: KEEP_PROOF_VERSION. sigma/guard.py est P56D post-guard-veto-only. PROOF WINS CRITIQUE.",
+      "next_action": "USE_SIGMA_VERSION_ONLY"
+    },
+    {
+      "agent_name": "python_agents/protocols",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/protocols.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/protocols.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "pipeline_protocols"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "KX108_ONLY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "NONE",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "P62: KEEP_PROOF_VERSION. sigma/protocols.py P56D patched.",
+      "next_action": "USE_SIGMA_VERSION"
+    },
+    {
+      "agent_name": "python_agents/registry",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/registry.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/registry.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "agent_registry",
+        "domain_routing"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "NO_PERIPHERY_DECISION_AUTHORITY"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "risk_level": "MEDIUM",
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "P62: BLOCKED. Registry orchestre la resolution des agents — peut influencer le chemin de decision. Revue requise.",
+      "next_action": "REVIEW_BEFORE_MERGE"
+    },
+    {
+      "agent_name": "python_agents/run_pipeline",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/run_pipeline.py",
+      "target_path": null,
+      "source_surface": "python_agents/",
+      "equivalent_proof_path": "sigma/run_pipeline.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "pipeline_runner",
+        "domain_dispatch"
+      ],
+      "detected_risks": [
+        "activates_pipeline"
+      ],
+      "p72_invariant_constraints": [
+        "GUARD_X108_FINAL_AUTHORITY",
+        "SIGMA_POST_GUARD_VETO_ONLY"
+      ],
+      "authority_status": "SOVEREIGN_IN_SIGMA",
+      "category": "KEEP_PROOF_VERSION",
+      "risk_level": "HIGH_IF_REPLACED",
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "P62: KEEP_PROOF_VERSION. sigma/run_pipeline.py est P56D. PROOF WINS CRITIQUE.",
+      "next_action": "USE_SIGMA_VERSION_ONLY"
+    },
+    {
+      "agent_name": "python_agents/tests/test_agents_functional",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/tests/test_agents_functional.py",
+      "target_path": null,
+      "source_surface": "python_agents/tests/",
+      "equivalent_proof_path": null,
+      "proof_equivalent_exists": false,
+      "proof_wins": false,
+      "detected_capabilities": [
+        "functional_tests",
+        "pipeline_tests"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "PYTHON_TESTED_NOT_LEAN_PROVEN"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "IMPORT_DOC_ONLY",
+      "risk_level": "NONE",
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "Fichier test du core — utile comme reference documentaire pour les tests sigma. Ne pas importer en runtime.",
+      "next_action": "REFERENCE_DOC_ONLY"
+    },
+    {
+      "agent_name": "python_agents/utils/indicators",
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/utils/indicators.py",
+      "target_path": null,
+      "source_surface": "python_agents/utils/",
+      "equivalent_proof_path": "sigma/utils/indicators.py",
+      "proof_equivalent_exists": true,
+      "proof_wins": true,
+      "detected_capabilities": [
+        "sma",
+        "ema",
+        "rsi",
+        "zscore",
+        "realized_volatility",
+        "bollinger"
+      ],
+      "detected_risks": [],
+      "p72_invariant_constraints": [
+        "DRY_RUN_ONLY_ADAPTERS"
+      ],
+      "authority_status": "NON_SOVEREIGN_SIGNAL",
+      "category": "DO_NOT_IMPORT_DUPLICATE",
+      "risk_level": "NONE",
+      "decision": "DO_NOT_IMPORT_DUPLICATE",
+      "reason": "sigma/utils/indicators.py est IDENTIQUE. Doublon exact — ne pas importer.",
+      "next_action": "DO_NOT_IMPORT"
+    }
+  ],
+  "adapted_files": [
+    {
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/sigma_dashboard.py",
+      "target_path": "apps/obsidia_api/agents_readonly/sigma_dashboard_readonly.py",
+      "adapter_action": "REMOVE_FILE_WRITE_RETURN_DATA_DICT",
+      "readonly": true,
+      "dry_run_only": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "emits_verdict": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "sigma_override": false,
+      "required_tests": [
+        "test_sigma_dashboard_readonly_boundary_constants",
+        "test_sigma_dashboard_readonly_returns_dict",
+        "test_sigma_dashboard_readonly_no_file_write"
+      ]
+    },
+    {
+      "source_path": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/utils/indicators.py",
+      "target_path": "apps/obsidia_api/agents_readonly/indicators_readonly.py",
+      "adapter_action": "READONLY_WRAPPER_NO_SIGMA_IMPORT",
+      "readonly": true,
+      "dry_run_only": true,
+      "decision_authority": "KX108_ONLY",
+      "emits_act": false,
+      "emits_verdict": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "kernel_mutation": false,
+      "sigma_override": false,
+      "required_tests": [
+        "test_indicators_readonly_boundary_constants",
+        "test_indicators_sma",
+        "test_indicators_ema",
+        "test_indicators_rsi"
+      ]
+    }
+  ],
+  "blocked_files": [
+    "__init__",
+    "python_agents/base",
+    "python_agents/domains/bank_agents",
+    "python_agents/domains/ecom_agents",
+    "python_agents/domains/meta_agents",
+    "python_agents/domains/trading_agents",
+    "python_agents/registry"
+  ],
+  "keep_proof_version": [
+    "aggregation",
+    "base",
+    "contracts",
+    "domains/bank_agents",
+    "domains/ecom_agents",
+    "domains/meta_agents",
+    "domains/trading_agents",
+    "guard",
+    "obsidia_sigma_v130",
+    "protocols",
+    "registry",
+    "run_pipeline",
+    "sigma_monitor",
+    "python_agents/aggregation",
+    "python_agents/contracts",
+    "python_agents/guard",
+    "python_agents/protocols",
+    "python_agents/run_pipeline"
+  ],
+  "do_not_import_duplicate": [
+    "sigma_config.json",
+    "utils/__init__",
+    "utils/indicators",
+    "python_agents/__init__",
+    "python_agents/demo_run",
+    "python_agents/utils/indicators"
+  ],
+  "import_doc_only": [
+    "python_agents/tests/test_agents_functional"
+  ],
+  "adapt_readonly_signal": [
+    "sigma_dashboard"
+  ],
+  "adapt_dry_run_proposal": [],
+  "blocked_requires_architectural_review": [
+    "__init__",
+    "python_agents/base",
+    "python_agents/domains/bank_agents",
+    "python_agents/domains/ecom_agents",
+    "python_agents/domains/meta_agents",
+    "python_agents/domains/trading_agents",
+    "python_agents/registry"
+  ],
+  "unknown_requires_review": [],
+  "category_counts": {
+    "KEEP_PROOF_VERSION": 18,
+    "DO_NOT_IMPORT_DUPLICATE": 6,
+    "IMPORT_DOC_ONLY": 1,
+    "ADAPT_READONLY_SIGNAL": 1,
+    "ADAPT_DRY_RUN_PROPOSAL": 0,
+    "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW": 7,
+    "UNKNOWN_REQUIRES_REVIEW": 0
+  },
+  "proof_wins": [
+    "aggregation",
+    "base",
+    "contracts",
+    "domains/bank_agents",
+    "domains/ecom_agents",
+    "domains/meta_agents",
+    "domains/trading_agents",
+    "guard",
+    "obsidia_sigma_v130",
+    "protocols",
+    "registry",
+    "run_pipeline",
+    "sigma_config.json",
+    "sigma_monitor",
+    "utils/__init__",
+    "utils/indicators",
+    "python_agents/aggregation",
+    "python_agents/base",
+    "python_agents/contracts",
+    "python_agents/domains/bank_agents",
+    "python_agents/domains/ecom_agents",
+    "python_agents/domains/meta_agents",
+    "python_agents/domains/trading_agents",
+    "python_agents/guard",
+    "python_agents/protocols",
+    "python_agents/registry",
+    "python_agents/run_pipeline",
+    "python_agents/utils/indicators"
+  ],
+  "core_candidates": [
+    "sigma_dashboard",
+    "python_agents/tests/test_agents_functional"
+  ],
+  "sigma_protected": [
+    {
+      "file": "sigma/guard.py",
+      "reason": "P56D post-guard-veto-only — autorite Guard preservee"
+    },
+    {
+      "file": "sigma/obsidia_sigma_v130.py",
+      "reason": "P56B gamma=1.0 patch — version proof confirmee"
+    },
+    {
+      "file": "sigma/run_pipeline.py",
+      "reason": "P56D patch — POST_GUARD_VETO_ONLY maintenu"
+    },
+    {
+      "file": "sigma/contracts.py",
+      "reason": "P56B GPS domain enrichi — 19205 bytes, superieur au core"
+    },
+    {
+      "file": "sigma/aggregation.py",
+      "reason": "P56B GPS domain integre — superieur au core"
+    },
+    {
+      "file": "sigma/sigma_config.json",
+      "reason": "Configuration sigma P56B — ne pas ecraser"
+    },
+    {
+      "file": "sigma/utils/indicators.py",
+      "reason": "Identique au core — sigma est la version de reference"
+    },
+    {
+      "file": "sigma/sigma_monitor.py",
+      "reason": "CLI runner ObsidiaSigmaMonitor P56B — superieur au SigmaMonitor core"
+    }
+  ],
+  "focus_findings": [
+    {
+      "file": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/guard.py",
+      "category": "PROOF_WINS_CRITICAL",
+      "reason": "GuardX108 core est anterieur a P56D. sigma/guard.py contient POST_GUARD_VETO_ONLY. Remplacer casserait P56D.",
+      "action": "KEEP_SIGMA_VERSION"
+    },
+    {
+      "file": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/obsidia_sigma_v130.py",
+      "category": "PROOF_WINS_CRITICAL",
+      "reason": "ObsidiaSigmaMonitor core est anterieur a gamma=1.0 P56B. Remplacer casserait P56B.",
+      "action": "KEEP_SIGMA_VERSION"
+    },
+    {
+      "file": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/sigma_dashboard.py",
+      "category": "ADAPT_READONLY_SIGNAL",
+      "reason": "Pas d'equivalent sigma. Utile pour AUDIT_TOOLING. Risk: plt.savefig() ecrit un fichier. Adapte en readonly (data dict uniquement).",
+      "action": "CREATED_READONLY_ADAPTER"
+    },
+    {
+      "file": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/python_agents/domains/trading_agents.py",
+      "category": "BLOCKED_NETWORK",
+      "reason": "ccxt dependency = reseau externe possible. NETWORK_EGRESS_REVIEW_REQUIRED. P70 finding porte.",
+      "action": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW"
+    },
+    {
+      "file": "_tmp_core_import/OBSIDIA_CORE_ONLY_FULL_MACHINERY/agents/utils/indicators.py",
+      "category": "IDENTICAL_DUPLICATE",
+      "reason": "sigma/utils/indicators.py est identique — meme code, memes fonctions. Ne pas importer.",
+      "action": "DO_NOT_IMPORT_DUPLICATE"
+    }
+  ],
+  "p72_invariant_constraints_applied": [
+    "NO_PERIPHERY_DECISION_AUTHORITY — aucun agent adapte ne peut prendre de decision finale",
+    "DRY_RUN_ONLY_ADAPTERS — DRY_RUN_ONLY=True obligatoire dans chaque adapter",
+    "KX108_ONLY_DECISION_AUTHORITY — seul Guard X-108 a l'autorite decisionnelle",
+    "PYTHON_TESTED_NOT_LEAN_PROVEN — un test Python n'est pas une preuve formelle Lean",
+    "NO_KERNEL_MUTATION_FROM_PERIPHERY — aucun adapter ne doit modifier le kernel ou la trace",
+    "NO_GRAPHITI_WRITE — graphiti_write=False dans chaque adapter",
+    "NO_MEMORY_WRITE_WITHOUT_GATE — memory_write=False dans chaque adapter",
+    "SIGMA_POST_GUARD_VETO_ONLY — sigma ne peut pas etre ecrase ou modifie depuis un agent"
+  ],
+  "preexisting_manifest_drift": [],
+  "preexisting_test_debt": [],
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "routes_modified": false,
+  "srl_modified": false,
+  "connectors_modified": false,
+  "source_packs_modified": false,
+  "proofs_modified": false,
+  "lean_proofs_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "neo4j_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "x108_merge_enabled": false,
+  "full_cascade_timeout_noted": true,
+  "next_step": "P74_SIGMA_SAFE_EVOLUTION"
+}

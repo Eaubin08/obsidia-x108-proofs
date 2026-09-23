@@ -1,0 +1,16 @@
+domain_id: bank
+domain_name: "Bank"
+udip_version: V0
+status: EXISTING_REFERENCE
+source_type: repo_reference
+legacy_sources:
+  - "domain_packets/bank_decisional_form_v0.yaml"
+  - "domains/bank/"
+  - "sigma/domains/bank_agents.py"
+  - "examples/bank_normal.json"
+  - "examples/bank_suspicious.json"
+extensions:
+  - fraud
+  - compliance
+  - bank_policy
+implementation_state: SCAFFOLD_ONLY

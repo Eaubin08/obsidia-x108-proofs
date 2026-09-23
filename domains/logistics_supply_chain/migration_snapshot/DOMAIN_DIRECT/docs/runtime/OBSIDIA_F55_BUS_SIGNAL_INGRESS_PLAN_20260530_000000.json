@@ -1,0 +1,207 @@
+{
+  "plan_id": "OBSIDIA_F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000",
+  "palier": "F55",
+  "parent": "F54_BUS_BRIDGE_MINIMAL_ROUTE_IMPLEMENTATION",
+  "sealed_at": "20260530_000000",
+  "status": "PASS",
+  "parent_tag": "BRODY_F54_BUS_BRIDGE_MINIMAL_ROUTE_IMPLEMENTATION_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "bus_signal_status": "PLANNED_READONLY",
+  "runtime_modified": false,
+  "routes_created": false,
+  "conceptual_model": {
+    "definition": "POST /bus/signal is the external signal ingestion endpoint of the Obsidia bus/bridge surface. It receives any structured observation arriving from outside the current runtime process boundary, classifies it by type, sanitizes all text content via F47.2, and returns a read-only observation packet. It never decides. It never acts. It never mutates. The signal becomes an observation — nothing more.",
+    "role": "external_signal_ingress_readonly",
+    "not_a": [
+      "command_endpoint",
+      "decision_surface",
+      "ACT_emitter",
+      "kernel_mutator",
+      "memory_writer",
+      "brody_decider",
+      "orchestrator",
+      "Neo4j_writer",
+      "Graphiti_writer"
+    ],
+    "is_a": [
+      "readonly_signal_ingress",
+      "observation_packager",
+      "sovereign_boundary_carrier",
+      "F47.2_sanitizer_surface",
+      "external_signal_classifier"
+    ]
+  },
+  "signal_input_model": {
+    "required_fields": ["signal_type", "signal_origin"],
+    "optional_fields": [
+      "signal_id", "signal_timestamp", "signal_payload", "source_layer",
+      "target_layer", "correlation_id", "session_id", "operator_context",
+      "evidence_refs", "declared_intent", "risk_hint"
+    ],
+    "signal_type_enum": [
+      "audit_request", "monitoring_probe", "operator_check", "ci_signal",
+      "security_scan", "graphiti_event", "sigma_signal", "brody_context_update",
+      "route_probe", "proof_probe", "unknown_signal"
+    ],
+    "risk_hint_enum": ["LOW", "MEDIUM", "HIGH"],
+    "string_max_lengths": {
+      "signal_payload": 4096,
+      "operator_context": 1024
+    },
+    "sanitization": "ALL string fields passed through sanitize_user_facing_text() (F47.2) before any exposure"
+  },
+  "signal_output_model": {
+    "envelope": "build_output_envelope() — identical to GET /bus/stats and GET /bus/bridge",
+    "signal_observation_packet": {
+      "signal_id": "uuid or provided",
+      "signal_type": "classified enum value",
+      "signal_origin": "sanitized string",
+      "signal_timestamp": "source or server ISO8601",
+      "classified_signal_type": "enum value after classification",
+      "accepted_as_observation": true,
+      "interpreted_as_command": false,
+      "routed_to_decision": false,
+      "emitted_act": false,
+      "mutation_performed": false,
+      "signal_content_readonly": "sanitized payload string",
+      "forbidden_tokens_found": false,
+      "sanitized": true,
+      "truncated": false,
+      "risk_hint": "LOW",
+      "source_layer": "sanitized or unknown",
+      "correlation_id": "provided or null"
+    }
+  },
+  "refusal_model": {
+    "http_422_conditions": [
+      "signal_type absent",
+      "signal_origin absent",
+      "body not valid JSON",
+      "body empty"
+    ],
+    "http_200_neutralizations": [
+      "ACT/DECIDE/ALLOW/HOLD/BLOCK/VERDICT tokens in payload -> [REDACTED] via F47.2",
+      "declared_intent requests mutation -> interpreted_as_command=false",
+      "declared_intent requests decision authority -> routed_to_decision=false",
+      "unrecognized signal_type -> classified as unknown_signal",
+      "invalid risk_hint -> set to unknown in packet"
+    ],
+    "unconditional_envelope_overrides": [
+      "decision_authority=KX108_ONLY",
+      "allowed_to_decide=false",
+      "advisory_only=true",
+      "readonly=true",
+      "emits_act=false",
+      "emits_verdict=false",
+      "kernel_mutation=false",
+      "x108_mutation=false",
+      "neo4j_write=false",
+      "brody_decision=false",
+      "memory_write=false",
+      "graphiti_write=false"
+    ],
+    "enforcement": "build_output_envelope() + _SOVEREIGNTY_PROTECTED overwrite (F47.1 pattern)"
+  },
+  "storage_model": {
+    "f56_default": "OPTION_A_NO_STORAGE",
+    "option_a": {
+      "description": "Return packet directly. No state written anywhere.",
+      "risk": "LOWEST",
+      "last_signal_in_bus_bridge": "remains 'none'"
+    },
+    "option_b": {
+      "description": "In-memory volatile only — process restart clears it",
+      "risk": "LOW",
+      "status": "DEFERRED_F57_PLUS",
+      "condition": "Requires explicit user validation before implementation"
+    },
+    "option_c": {
+      "description": "Persistent JSONL log append",
+      "risk": "MEDIUM",
+      "status": "DEFERRED_REQUIRES_EXPLICIT_APPROVAL"
+    }
+  },
+  "f56_prerequisites": {
+    "signal_model_pydantic": "NEEDS_CREATION -- apps/obsidia_api/bus/signal_model.py",
+    "signal_packager": "NEEDS_CREATION -- apps/obsidia_api/bus/signal_packager.py",
+    "bus_router_update": "NEEDS_UPDATE -- apps/obsidia_api/routes/bus.py (add POST /bus/signal)",
+    "test_file": "NEEDS_CREATION -- tests/api/test_output_envelope_bus_signal.py",
+    "main_py": "UNCHANGED -- bus_router already included since F54",
+    "output_envelope": "UNCHANGED",
+    "safe_response": "UNCHANGED",
+    "state_aggregator": "UNCHANGED"
+  },
+  "f56_test_plan": {
+    "new_tests": [
+      "test_bus_signal_exists_in_openapi",
+      "test_bus_signal_audit_request_returns_observation",
+      "test_bus_signal_monitoring_probe_returns_observation",
+      "test_bus_signal_security_scan_returns_observation",
+      "test_bus_signal_unknown_signal_returns_observation",
+      "test_bus_signal_act_token_neutralized",
+      "test_bus_signal_decide_token_neutralized",
+      "test_bus_signal_verdict_token_neutralized",
+      "test_bus_signal_no_mutation_fields_true",
+      "test_bus_signal_no_brody_decision",
+      "test_bus_signal_kx108_only_preserved",
+      "test_bus_signal_missing_type_returns_422",
+      "test_bus_signal_missing_origin_returns_422",
+      "test_bus_signal_interpreted_as_command_false",
+      "test_bus_signal_routed_to_decision_false"
+    ],
+    "regression_tests": [
+      "test_bus_stats_unaffected",
+      "test_bus_bridge_unaffected",
+      "test_f54_46_tests_still_pass",
+      "test_f47_validations_still_pass"
+    ]
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "advisory_only": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false,
+    "memory_write": false,
+    "graphiti_write": false
+  },
+  "f55_constraints": {
+    "no_routes_created": true,
+    "no_runtime_modified": true,
+    "no_main_py_modified": true,
+    "no_kernel_mutation": true,
+    "no_x108_mutation": true,
+    "no_neo4j_write": true,
+    "plan_only": true
+  },
+  "artifacts": [
+    "docs/runtime/OBSIDIA_F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000.json",
+    "docs/runtime/OBSIDIA_F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000.md",
+    "docs/architecture/OBSIDIA_F55_BUS_SIGNAL_INPUT_CONTRACT.md",
+    "docs/architecture/OBSIDIA_F55_BUS_SIGNAL_REFUSAL_MODEL.md",
+    "docs/demo/OBSIDIA_F55_F56_IMPLEMENTATION_DECISION.md",
+    ".runtime_freezes/F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000/MANIFEST_SHA256.json"
+  ],
+  "recommendation": {
+    "next": "F56_BUS_SIGNAL_MINIMAL_READONLY_ROUTE_IMPLEMENTATION",
+    "f56_scope": [
+      "Create apps/obsidia_api/bus/signal_model.py",
+      "Create apps/obsidia_api/bus/signal_packager.py",
+      "Update apps/obsidia_api/routes/bus.py to add POST /bus/signal",
+      "Create tests/api/test_output_envelope_bus_signal.py",
+      "Verify all F54 regression tests still pass",
+      "Verify F47.1/F47.2/F47.3 still pass"
+    ],
+    "storage_decision": "OPTION_A_NO_STORAGE (default for F56)",
+    "risk": "LOW -- additive only, main.py unchanged"
+  },
+  "patch_applied": false,
+  "commit": false,
+  "tag": false,
+  "push": false
+}

@@ -1,0 +1,459 @@
+# BRODY_PHASE8D_FALLBACK_OS_TRAD_COMPARISON_AUDIT_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Scope
+
+Compare current live Brody backend path with Workbench fallback/composer and OS Trad / Reverse OS layers.
+
+No patch in this phase.
+
+## Current canonical path
+- Workbench 5173 -> Brody API 8012 -> Graphiti V20 readonly proxy -> ObsidiaShell 8011
+
+## Files inspected
+- exists=True length=13461 path=apps/obsidia-workbench/src/lib/brodyResponseComposer.ts
+- exists=True length=1903 path=apps/obsidia-workbench/src/lib/osTradPipeline.ts
+- exists=True length=3649 path=apps/obsidia-workbench/src/lib/osReverseProjection.ts
+- exists=True length=8946 path=apps/obsidia-workbench/src/api/obsidiaClient.ts
+- exists=True length=7201 path=apps/obsidia-workbench/src/App.tsx
+- exists=True length=3128 path=apps/obsidia-workbench/src/api/backendProbe.ts
+- exists=True length=4768 path=apps/obsidia-workbench/OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md
+- exists=True length=2969 path=apps/obsidia-workbench/OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md
+- exists=True length=1151 path=periphery/brody/brody_language_router.py
+- exists=True length=1195 path=periphery/brody/brody_context_query.py
+- exists=True length=1587 path=periphery/bdf/double_brain_router.py
+- exists=True length=1560 path=periphery/bdf/llm_diffusion_mix.py
+
+## Stale/backend/fallback references
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:1: // FALLBACK ONLY. Primary Brody response source is POST /api/brody/chat (port 8000).
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:138: export function composeBrodyResponse(opts: ComposeOptions): string {
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:51: source:              'MOCK',
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:52: mode:                'MOCK',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:3: * All calls try the live Brody API on port 8012 first, then fall back to mock.
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:11: import * as mock from './mockFallback'
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:16: const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE ?? import.meta.env.VITE_BRODY_API_URL ?? 'http://127.0.0.1:8012').replace(/\/$/, '')
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:17: const USE_MOCK    = import.meta.env.VITE_USE_MOCK_FALLBACK === 'true'
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:22: export const config = { API_BASE, ENGINE_BASE, USE_MOCK, TIMEOUT_MS }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:24: async function safeFetch<T>(url: string, fallback: T): Promise<Resolved<T>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:25: if (USE_MOCK) return { data: fallback, source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:31: return { data: fallback, source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:36: return safeFetch(`${API_BASE}/health`, mock.MOCK_HEALTH)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:41: return { data: { ...mock.KERNEL_STATUS, status: h.data.status === 'healthy' ? 'ACTIVE' : 'DEGRADED', last_checked: h.data.timestamp }, source: h.source }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:45: return safeFetch(`${API_BASE}/graph/v20/frozen/status`, mock.MOCK_GRAPHITI_STATUS)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:49: return safeFetch(`${API_BASE}/graph/v20/frozen/readiness`, mock.MOCK_GRAPHITI_READINESS)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:53: return safeFetch(`${API_BASE}/graph/v20/frozen/metrics`, mock.MOCK_GRAPHITI_METRICS)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:57: const raw = await safeFetch<GraphitiContextResponse>(`${API_BASE}/graph/v20/frozen/context?q=${encodeURIComponent(q)}&limit=10`, mock.MOCK_GRAPHITI_CONTEXT)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:58: return { data: { ...mock.MOCK_CONTEXT_PACKET, query: q, context_items: raw.data.results.map(r => r.summary ?? r.fact ?? r.name ?? '') }, source: raw.source }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:73: export async function sendBrodyMessage(
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:79: if (!USE_MOCK) {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:81: const res = await fetch(`${ENGINE_BASE}/api/brody/chat`, {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:107: final_answer: `API_ERROR — HTTP ${res.status}`,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:108: response: `API_ERROR — HTTP ${res.status}`,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:110: decision_authority: 'KX108_ONLY', source: 'API_ERROR',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:115: final_answer: `API_ERROR — ${msg}`,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:116: response: `API_ERROR — ${msg}`,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:118: decision_authority: 'KX108_ONLY', source: 'API_ERROR',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:125: decision_authority: 'KX108_ONLY', source: 'FRONTEND_MOCK',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:129: export type OSTradStatus = 'LIVE_AVAILABLE' / 'MOCK_ONLY' / 'STUB' / 'NEEDS_FASTAPI_ROUTE'
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:148: const raw = await safeFetch<AuditChainResponse>(`${ENGINE_BASE}/v1/audit/chain`, mock.MOCK_AUDIT_CHAIN)
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:153: if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/os3/tickets`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) { const d = await res.json(); if (d.tickets?.length) return { data: d.tickets[0], source: 'api' } } } catch {} }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:154: return { data: mock.MOCK_OS3_TICKET, source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:158: if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/worldcalls/sovereign-tickets`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) return { data: (await res.json()).tickets ?? [], source: 'api' } } catch {} }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:159: return { data: [mock.MOCK_SOVEREIGN_TICKET], source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:163: if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/worldcalls`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) return { data: (await res.json()).calls ?? [], source: 'api' } } catch {} }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:164: return { data: mock.MOCK_WORLD_CALLS, source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:168: if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/memory/candidates`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) return { data: (await res.json()).candidates ?? [], source: 'api' } } catch {} }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:169: return { data: mock.MOCK_MEMORY_CANDIDATES, source: 'mock' }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:173: if (!USE_MOCK) { try { const res = await fetch(`${ENGINE_BASE}/api/gencoin`, { signal: AbortSignal.timeout(TIMEOUT_MS) }); if (res.ok) return { data: (await res.json()).entries ?? [], source: 'api' } } catch {} }
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:174: return { data: mock.MOCK_GENCOIN, source: 'mock' }
+- .\apps\obsidia-workbench\src\App.tsx:17: import { INITIAL_MESSAGES, KERNEL_STATUS } from './data/mockData'
+- .\apps\obsidia-workbench\src\App.tsx:18: import { getKernelStatus, sendBrodyMessage } from './api/obsidiaClient'
+- .\apps\obsidia-workbench\src\App.tsx:19: import { composeBrodyResponse } from './lib/brodyResponseComposer'
+- .\apps\obsidia-workbench\src\App.tsx:38: const s = createSession('MOCK')
+- .\apps\obsidia-workbench\src\App.tsx:88: // BACKEND-FIRST: Always call real API. Never fall back to FRONTEND_MOCK on HTTP 200.
+- .\apps\obsidia-workbench\src\App.tsx:93: const res = await sendBrodyMessage(text, lang, activeSessionId)
+- .\apps\obsidia-workbench\src\App.tsx:94: if (res.source !== 'FRONTEND_MOCK') {
+- .\apps\obsidia-workbench\src\App.tsx:95: // Real API response (including API_ERROR) — never replace with frontend mock
+- .\apps\obsidia-workbench\src\App.tsx:101: // USE_MOCK mode only — no real API call was made
+- .\apps\obsidia-workbench\src\App.tsx:103: responseText = composeBrodyResponse({ userInput: text, language: lang, translationTrace: trace })
+- .\apps\obsidia-workbench\src\App.tsx:104: backendSource = 'FRONTEND_MOCK'
+- .\apps\obsidia-workbench\src\App.tsx:131: const s = createSession('MOCK')
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:1: export type ModuleStatus = 'LIVE' / 'MOCK' / 'STUB' / 'OFFLINE' / 'ERROR'
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:13: const ENGINE_BASE = (import.meta.env.VITE_ENGINE_API_BASE  ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:14: const USE_MOCK    = import.meta.env.VITE_USE_MOCK_FALLBACK === 'true'
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:20: { name: 'X108 Engine',       endpoint: `${ENGINE_BASE}/api/x108/status`,         port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:21: { name: 'Brody Runtime',     endpoint: `${ENGINE_BASE}/api/brody/chat`,          port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:22: { name: 'ContextPacket API', endpoint: `${ENGINE_BASE}/api/context`,             port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:23: { name: 'OS3 API',           endpoint: `${ENGINE_BASE}/api/os3`,                 port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:24: { name: 'Gencoin API',       endpoint: `${ENGINE_BASE}/api/gencoin`,             port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:25: { name: 'WorldCall API',     endpoint: `${ENGINE_BASE}/api/worldcalls`,          port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:26: { name: 'Blockchain Gate',   endpoint: `${ENGINE_BASE}/api/blockchain/status`,   port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:27: { name: 'Memory Ledger',     endpoint: `${ENGINE_BASE}/api/memory`,              port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:28: { name: 'OS Trad',           endpoint: `${ENGINE_BASE}/api/os-trad/translate`,   port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:29: { name: 'IR Candidate',      endpoint: `${ENGINE_BASE}/api/ir/candidate`,        port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:30: { name: 'OS Reverse',        endpoint: `${ENGINE_BASE}/api/os-reverse/project`,  port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:46: if (USE_MOCK) {
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:49: status: 'MOCK' as ModuleStatus,
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:16: / MOCK_NEEDED / 3 /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:75: / `periphery/ir/` / **MISSING** / No IR (Intermediate Representation) module exists. Frontend mock covers this. /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:76: / `periphery/alphabet/` / **MISSING** / No symbolic alphabet module exists. Frontend mock covers this. /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:80: ## MOCK_NEEDED (frontend-only coverage)
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:82: / Function / Frontend mock / Backend status /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:84: / OS Trad pipeline / `src/lib/osTradPipeline.ts` / MOCK_ONLY /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:85: / IR Candidate builder / `src/lib/irCandidateBuilder.ts` / MOCK_ONLY /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:86: / Symbolic alphabet / `src/lib/symbolicAlphabet.ts` / MOCK_ONLY /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:87: / OS Reverse projection / `src/lib/osReverseProjection.ts` / MOCK_ONLY (maps to `reverse_os/action_projection_readonly.py` semantics) /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:9: All OS Trad / IR / OS Reverse logic runs in the browser as TypeScript mocks:
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:13: / `src/lib/symbolicAlphabet.ts` / MOCK_ONLY / new `periphery/alphabet/` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:14: / `src/lib/irCandidateBuilder.ts` / MOCK_ONLY / new `periphery/ir/` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:15: / `src/lib/osReverseProjection.ts` / MOCK_ONLY / `periphery/reverse_os/action_projection_readonly.py` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:16: / `src/lib/osTradPipeline.ts` / MOCK_ONLY / `periphery/language/language_router.py` + new `periphery/os_trad/` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:17: / `src/lib/brodyResponseComposer.ts` / MOCK_ONLY / `periphery/brody/brody_runtime_readonly.py` /
+
+## Key function/class/boundary hits
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:18: function detectIntent(text: string): Intent {
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:35: "Bonjour. Brody est en ligne — mode readonly, advisory uniquement. Kernel X-108 actif, 397 tests passing. Mémoire en CANDIDATE_ONLY. Dis-moi ce que tu cherches à comprendre ou à préparer.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:47: "Graphiti V20 est le graphe de contexte readonly. Les candidats mémoire transitent par BRODY_RUNTIME → CANDIDATE → NEEDS_REVIEW → PROMOTION_READY. La promotion manuelle requiert une décision humaine explicite. Aucune promotion automatique.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:50: "X-108 est le kernel de gouvernance souverain — la seule autorité de décision du système. OS3 prouve ses décisions via Lean 4 et TLA+. Brody l'interface, il ne le substitue pas. Statut actuel : ACTIVE, mode READONLY. 397 tests passing. Fichiers protégés : intacts.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:55: "Les 7 invariants de non-souveraineté : decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. Ces invariants ne peuvent pas être overridés.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:66: "Les WorldCalls sont les actions d'egress contrôlées par le Gateway. Mode actuel : dry-run uniquement. Le Gateway bloque toute action réelle non-dry-run. Un SovereignTicket X-108 est requis pour tout WorldCall non-READONLY.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:67: "Le SovereignTicket autorise, le Gateway exécute (ou bloque). WorldActionBus trace tout. Egress réel : bloqué dans la configuration courante. Brody ne génère pas de WorldCall — il consulte le registre readonly.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:70: "Je lis le contexte actuel : kernel X-108 actif, 397 tests passing, mémoire en CANDIDATE_ONLY, Graphiti V20 gelé. Brody est en mode advisory — pas de décision, pas d'ACT, pas d'écriture mémoire. Que cherches-tu à analyser ou à préparer ?",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:79: "Hi. I'm Brody, the advisory interface for Obsidia X-108. I read context and generate signals — I don't decide. X-108 holds sole decision authority. What can I help you analyze?",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:80: "Hello. Brody is online — readonly mode, advisory only. X-108 kernel active, 397 tests passing. Memory in CANDIDATE_ONLY mode. What are you trying to understand or prepare?",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:83: "I recognize the intent, but authorizing ACT is outside my scope. Brody is advisory-only — I emit no ACT, HOLD, or BLOCK. X-108 holds sole decision authority. I can prepare an ActionCandidate or ContextPacket for controlled passage via SovereignTicket.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:88: "Being the creator doesn't confer decision authority in this system — X-108 is the sole sovereign. Brody remains advisory. I can prepare a ContextPacket for passage through the governance chain.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:95: "X-108 is the sovereign governance kernel — the sole decision authority in the system. OS3 proves its decisions via Lean 4 and TLA+. Brody interfaces with it, never substitutes for it. Current status: ACTIVE, READONLY mode. 397 tests passing. Protected files: intact.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:96: "X-108 is the immutable decision core. No peripheral module can modify its authority. The stack: decision → proof → qualification → ticket → gateway → trace → valuation. Brody sits in the advisory response layer.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:100: "The 7 non-sovereignty invariants: decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. These invariants cannot be overridden.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:111: "WorldCalls are egress actions controlled by the Gateway. Current mode: dry-run only. Gateway blocks all non-dry-run real actions. An X-108 SovereignTicket is required for any non-READONLY WorldCall.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:112: "SovereignTicket authorizes, Gateway executes (or blocks). WorldActionBus traces everything. Real egress: blocked in current configuration. Brody doesn't generate WorldCalls — it consults the readonly registry.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:115: "Reading current context: X-108 kernel active, 397 tests passing, memory in CANDIDATE_ONLY, Graphiti V20 frozen. Brody is in advisory mode — no decision, no ACT, no memory write. What are you trying to analyze or prepare?",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:116: "I can analyze this request within the Obsidia X-108 context. Brody can structure your intent as a ContextPacket, ActionCandidate, or advisory signal. Elaborate on your request.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:124: function pick(intent: Intent, lang: DetectedLanguage): string {
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:138: export function composeBrodyResponse(opts: ComposeOptions): string {
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:141: // If OS Trad trace is available and has a meaningful projection, use it
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:142: if (translationTrace?.os_reverse_projection) {
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:143: const proj = translationTrace.os_reverse_projection
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:6: import { buildOSReverseProjection } from './osReverseProjection'
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:8: function traceId(): string {
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:12: function packetId(): string {
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:16: export function runOSTradPipeline(
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:28: const reverseProj   = buildOSReverseProjection(irCandidate, responseLang)
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:44: os_reverse_projection: reverseProj,
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:45: x108_boundary_status: 'READONLY',
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:46: readonly:            true,
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts:49: memory_write:        false,
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:14: "Une demande de création est détectée. Brody est readonly — aucune création directe. Je peux préparer une proposition structurée pour X-108.",
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:33: "I cannot make this decision — it is the exclusive scope of X-108. I can analyze the intent and prepare an advisory signal.",
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:35: "A creation request is detected. Brody is readonly — no direct creation. I can prepare a structured proposal for X-108.",
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:46: export function buildOSReverseProjection(
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:4: * No real action. No wallet. KX108_ONLY always.
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:24: async function safeFetch<T>(url: string, fallback: T): Promise<Resolved<T>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:35: export async function getBackendHealth(): Promise<Resolved<ApiHealthResponse>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:39: export async function getKernelStatus(): Promise<Resolved<KernelStatus>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:44: export async function getGraphitiStatus(): Promise<Resolved<GraphitiStatusResponse>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:48: export async function getGraphitiReadiness(): Promise<Resolved<GraphitiReadinessResponse>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:52: export async function getGraphitiMetrics(): Promise<Resolved<GraphitiMetricsResponse>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:56: export async function getContextPacket(q = 'governance'): Promise<Resolved<ContextPacket>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:66: decision_authority: string
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:67: emits_act: boolean
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:68: memory_write: boolean
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:70: readonly: boolean
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:73: export async function sendBrodyMessage(
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:84: body: JSON.stringify({ message: text, language: lang, session_id: sessionId, mode: 'readonly' }),
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:99: readonly: (data.readonly as boolean) ?? true,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:100: emits_act: (data.emits_act as boolean) ?? false,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:101: memory_write: (data.memory_write as boolean) ?? false,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:102: decision_authority: (data.decision_authority as string) ?? 'KX108_ONLY',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:109: readonly: true, emits_act: false, memory_write: false,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:110: decision_authority: 'KX108_ONLY', source: 'API_ERROR',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:117: readonly: true, emits_act: false, memory_write: false,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:118: decision_authority: 'KX108_ONLY', source: 'API_ERROR',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:123: final_answer: '', response: '', readonly: true,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:124: emits_act: false, memory_write: false,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:125: decision_authority: 'KX108_ONLY', source: 'FRONTEND_MOCK',
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:131: export async function getTranslationTrace(userInput: string): Promise<{ data: null; status: OSTradStatus }> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:135: export async function getIRCandidate(userInput: string): Promise<{ data: null; status: OSTradStatus }> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:139: export async function getOSReverseProjection(irCandidateId: string): Promise<{ data: null; status: OSTradStatus }> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:143: export async function getAlphabetUnits(userInput: string): Promise<{ data: null; status: OSTradStatus }> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:147: export async function getAuditEvents(): Promise<Resolved<AuditEvent[]>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:152: export async function getOS3Ticket(): Promise<Resolved<OS3ProofTicket>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:157: export async function getSovereignTickets(): Promise<Resolved<SovereignTicket[]>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:162: export async function getWorldCalls(): Promise<Resolved<WorldCallEvent[]>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:167: export async function getMemoryCandidates(): Promise<Resolved<MemoryCandidate[]>> {
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:172: export async function getGencoinLedger(): Promise<Resolved<GencoinEntry[]>> {
+- .\apps\obsidia-workbench\src\App.tsx:19: import { composeBrodyResponse } from './lib/brodyResponseComposer'
+- .\apps\obsidia-workbench\src\App.tsx:32: function initSession(): { sessionId: string; msgs: BrodyMessage[] } {
+- .\apps\obsidia-workbench\src\App.tsx:43: export default function App() {
+- .\apps\obsidia-workbench\src\App.tsx:75: readonly: true,
+- .\apps\obsidia-workbench\src\App.tsx:76: emits_act: false,
+- .\apps\obsidia-workbench\src\App.tsx:77: memory_write: false,
+- .\apps\obsidia-workbench\src\App.tsx:78: decision_authority: 'KX108_ONLY',
+- .\apps\obsidia-workbench\src\App.tsx:103: responseText = composeBrodyResponse({ userInput: text, language: lang, translationTrace: trace })
+- .\apps\obsidia-workbench\src\App.tsx:116: readonly: true,
+- .\apps\obsidia-workbench\src\App.tsx:117: emits_act: false,
+- .\apps\obsidia-workbench\src\App.tsx:118: memory_write: false,
+- .\apps\obsidia-workbench\src\App.tsx:119: decision_authority: 'KX108_ONLY',
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:28: { name: 'OS Trad',           endpoint: `${ENGINE_BASE}/api/os-trad/translate`,   port: 8000, stub: true  },
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:33: async function probeOne(url: string): Promise<{ ok: boolean; latencyMs: number }> {
+- .\apps\obsidia-workbench\src\api\backendProbe.ts:43: export async function probeAllModules(): Promise<ModuleProbe[]> {
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:27: / `periphery/brody/brody_language_router.py` / Brody Language Router / `BrodyLanguageRoute`, `route_brody_language()` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:28: / `periphery/brody/brody_runtime_readonly.py` / Brody Runtime (readonly) / brody response contract /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:30: / `periphery/reverse_os/action_projection_readonly.py` / OS Reverse (action) / `ActionProjection`, `project_action_readonly()` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:31: / `periphery/reverse_os/audience_projection.py` / OS Reverse (audience) / audience-based projection /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:32: / `periphery/reverse_os/format_projection.py` / OS Reverse (format) / format-based projection /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:40: def detect_language(text: str) -> str   # basic fr/en detection
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:41: def has_authority_claim(text: str) -> bool  # checks for authority markers
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:42: def route_language(text: str) -> dict   # routes with claim detection
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:47: class BrodyLanguageRoute: detected_language, routed_to, is_supported, memory_write=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:48: def route_brody_language(query_id: str, language_code: str) -> BrodyLanguageRoute
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:52: **`periphery/reverse_os/action_projection_readonly.py`:**
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:55: class ActionProjection: advisory_only=True, real_action_taken=False, can_emit_act=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:56: def project_action_readonly(projection_id, intent, context) -> ActionProjection
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:82: / Function / Frontend mock / Backend status /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:87: / OS Reverse projection / `src/lib/osReverseProjection.ts` / MOCK_ONLY (maps to `reverse_os/action_projection_readonly.py` semantics) /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:95: / `POST /api/os-trad/translate` / `periphery/language/language_router.py` + new os_trad module / NEEDS_FASTAPI_ROUTE /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:97: / `POST /api/os-reverse/project` / `periphery/reverse_os/action_projection_readonly.py` / NEEDS_FASTAPI_ROUTE /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:106: None of these modules decide. All are advisory/projection/structural.
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:111: / OS Reverse does not decide / ✓ (advisory_only=True in action_projection_readonly.py) /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:15: / `src/lib/osReverseProjection.ts` / MOCK_ONLY / `periphery/reverse_os/action_projection_readonly.py` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:17: / `src/lib/brodyResponseComposer.ts` / MOCK_ONLY / `periphery/brody/brody_runtime_readonly.py` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:26: / Brody language router / `periphery/brody/brody_language_router.py` / `route_brody_language()` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:27: / Action projection (readonly) / `periphery/reverse_os/action_projection_readonly.py` / `project_action_readonly()` — advisory_only=True /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:34: ### POST /api/os-trad/translate
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:49: "os_reverse_projection": "Je reconnais l'intention...",
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:50: "x108_boundary_status": "READONLY",
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:51: "readonly": true, "allowed_to_decide": false, "allowed_to_act": false
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:62: # Output: IRCandidate with allowed_to_decide=false, decision_authority=X108_ONLY
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:68: # Maps to: periphery/reverse_os/action_projection_readonly.py
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:70: # Output: projection string — advisory_only=True, can_emit_act=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:87: - OS Reverse ne décide pas (advisory_only=True source: `action_projection_readonly.py`)
+- .\periphery\brody\brody_language_router.py:14: class BrodyLanguageRoute:
+- .\periphery\brody\brody_language_router.py:19: memory_write: bool = False
+- .\periphery\brody\brody_language_router.py:21: def to_dict(self) -> dict[str, Any]:
+- .\periphery\brody\brody_language_router.py:27: "memory_write": self.memory_write,
+- .\periphery\brody\brody_language_router.py:31: def route_brody_language(query_id: str, language_code: str) -> BrodyLanguageRoute:
+- .\periphery\brody\brody_language_router.py:40: memory_write=False,
+- .\periphery\brody\brody_context_query.py:12: class BrodyContextQuery:
+- .\periphery\brody\brody_context_query.py:18: readonly: bool = True
+- .\periphery\brody\brody_context_query.py:19: memory_write: bool = False
+- .\periphery\brody\brody_context_query.py:21: def to_dict(self) -> dict[str, Any]:
+- .\periphery\brody\brody_context_query.py:28: "readonly": self.readonly,
+- .\periphery\brody\brody_context_query.py:29: "memory_write": self.memory_write,
+- .\periphery\brody\brody_context_query.py:33: def build_context_query(
+- .\periphery\brody\brody_context_query.py:44: readonly=True,
+- .\periphery\brody\brody_context_query.py:45: memory_write=False,
+- .\periphery\bdf\double_brain_router.py:12: class DoubleBrainRoute:
+- .\periphery\bdf\double_brain_router.py:18: advisory_only: bool = True
+- .\periphery\bdf\double_brain_router.py:19: emits_act: bool = False
+- .\periphery\bdf\double_brain_router.py:22: def to_dict(self) -> dict[str, Any]:
+- .\periphery\bdf\double_brain_router.py:29: "advisory_only": self.advisory_only,
+- .\periphery\bdf\double_brain_router.py:30: "emits_act": self.emits_act,
+- .\periphery\bdf\double_brain_router.py:35: def route_double_brain(
+- .\periphery\bdf\double_brain_router.py:57: advisory_only=True,
+- .\periphery\bdf\double_brain_router.py:58: emits_act=False,
+- .\periphery\bdf\llm_diffusion_mix.py:3: Advisory output candidate only.
+- .\periphery\bdf\llm_diffusion_mix.py:12: class DiffusionMixResult:
+- .\periphery\bdf\llm_diffusion_mix.py:19: advisory_only: bool = True
+- .\periphery\bdf\llm_diffusion_mix.py:20: emits_act: bool = False
+- .\periphery\bdf\llm_diffusion_mix.py:22: def to_dict(self) -> dict[str, Any]:
+- .\periphery\bdf\llm_diffusion_mix.py:30: "advisory_only": self.advisory_only,
+- .\periphery\bdf\llm_diffusion_mix.py:31: "emits_act": self.emits_act,
+- .\periphery\bdf\llm_diffusion_mix.py:35: def compute_diffusion_mix(
+- .\periphery\bdf\llm_diffusion_mix.py:53: advisory_only=True,
+- .\periphery\bdf\llm_diffusion_mix.py:54: emits_act=False,
+
+## Commit e9e43e4 summary
+- e9e43e4 feat(brody): wire full runtime with real project memory
+-  CURRENT_BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE.txt     |   15 +
+-  .../FREEZE_SUMMARY.md                              |   70 ++
+-  .../api_sample.json                                |   19 +
+-  .../git_diff_protected.txt                         |    1 +
+-  .../git_status.txt                                 |  172 +++
+-  .../live_results.json                              |  203 ++++
+-  .../memory_chain_proof.json                        |   10 +
+-  apps/obsidia-workbench/src/api/contracts.ts        |  384 +++++++
+-  .../src/components/RightPanel.tsx                  |  783 +++++++++++++
+-  apps/obsidia_api/brody_automation_orchestrator.py  |  464 ++++++++
+-  .../obsidia_api/brody_backend_response_composer.py |  172 +++
+-  apps/obsidia_api/brody_candidate_memory_adapter.py |  104 ++
+-  .../obsidia_api/brody_cognitive_modules_adapter.py |   79 ++
+-  apps/obsidia_api/brody_freeze_metrics_snapshot.py  |  351 ++++++
+-  .../obsidia_api/brody_full_runtime_orchestrator.py |  265 +++++
+-  apps/obsidia_api/brody_full_runtime_reconnect.py   |  180 +++
+-  .../brody_memory_response_chain_adapter.py         |  609 +++++++++++
+-  apps/obsidia_api/brody_operator_loop_adapter.py    |   80 ++
+-  apps/obsidia_api/brody_project_memory_adapter.py   |  187 ++++
+-  apps/obsidia_api/brody_project_memory_runtime.py   |   62 ++
+-  apps/obsidia_api/brody_real_response_pipeline.py   |  188 ++++
+-  apps/obsidia_api/brody_rights_authority_matrix.py  |  523 +++++++++
+-  apps/obsidia_api/brody_runtime_context_adapter.py  |  102 ++
+-  apps/obsidia_api/brody_safe_snapshot.py            |   86 ++
+-  apps/obsidia_api/brody_semantic_query_router.py    |  248 +++++
+-  apps/obsidia_api/brody_session_memory_adapter.py   |  174 +++
+-  apps/obsidia_api/brody_session_memory_runtime.py   |  135 +++
+-  apps/obsidia_api/brody_source_of_truth_adapter.py  |  257 +++++
+-  .../brody_structured_response_engine_adapter.py    |  174 +++
+-  apps/obsidia_api/brody_temporal_context_adapter.py |  123 +++
+-  apps/obsidia_api/brody_text_encoding.py            |   98 ++
+-  apps/obsidia_api/brody_tree_policy.py              |  120 ++
+-  apps/obsidia_api/brody_tree_policy_adapter.py      |   69 ++
+-  .../brody_true_response_structure_adapter.py       |  167 +++
+-  .../brody_true_response_structure_runtime.py       |   57 +
+-  apps/obsidia_api/brody_true_voice_adapter.py       |  641 +++++++++++
+-  .../brody_v1_4_12a_final_answer_adapter.py         | 1146 ++++++++++++++++++++
+-  apps/obsidia_api/routes/brody.py                   |  228 ++++
+-  periphery/brody/__init__.py                        |    1 +
+-  periphery/brody/brody_context_query.py             |   46 +
+-  periphery/brody/brody_language_router.py           |   41 +
+-  periphery/brody/brody_response_contract.py         |   44 +
+-  periphery/brody/brody_response_sanitizer.py        |   40 +
+-  periphery/brody/brody_runtime_readonly.py          |   64 ++
+-  ...brody_auto_triage_memory_intake_readonly_v1.ps1 |   50 +-
+-  .../brody_content_hydration_readonly_v1.py         |  926 ++++++++--------
+-  .../api/test_brody_authority_escalation_no_act.py  |   74 ++
+-  ..._brody_authority_escalation_response_quality.py |   49 +
+-  tests/api/test_brody_automation_orchestrator.py    |  204 ++++
+-  .../api/test_brody_automation_snapshot_payload.py  |  110 ++
+-  tests/api/test_brody_chat_french.py                |   36 +
+-  tests/api/test_brody_chat_readonly.py              |   59 +
+-  tests/api/test_brody_final_answer_capabilities.py  |  253 +++++
+-  ...brody_final_answer_freeze_sourced_live_cases.py |  183 ++++
+-  .../test_brody_final_answer_response_md_split.py   |   76 ++
+-  ..._brody_final_answer_uses_structured_response.py |  197 ++++
+-  tests/api/test_brody_followup_strict_final.py      |   90 ++
+-  .../test_brody_freeze_metrics_snapshot_runtime.py  |  161 +++
+-  tests/api/test_brody_intent_classifier_hard_fix.py |  258 +++++
+-  tests/api/test_brody_llm_obsidien_source_docs.py   |  121 +++
+-  ...dy_llm_obsidien_three_foundations_live_cases.py |  227 ++++
+-  tests/api/test_brody_low_material_text_preview.py  |   60 +
+-  .../api/test_brody_memory_candidate_automation.py  |   90 ++
+-  .../test_brody_memory_context_response_quality.py  |   36 +
+-  ..._brody_memory_response_chain_effective_query.py |   97 ++
+-  ...st_brody_memory_response_chain_status_strict.py |   87 ++
+-  tests/api/test_brody_no_invented_metrics.py        |  181 ++++
+-  tests/api/test_brody_no_placeholder_response.py    |   49 +
+-  ...dy_no_template_when_freeze_metrics_available.py |  130 +++
+-  tests/api/test_brody_operator_loop_automation.py   |   83 ++
+-  .../api/test_brody_os_trad_ir_reverse_discovery.py |   96 ++
+-  tests/api/test_brody_response_quality_fr.py        |   43 +
+-  ...test_brody_response_source_not_frontend_mock.py |   34 +
+-  tests/api/test_brody_rights_authority_matrix.py    |  273 +++++
+-  tests/api/test_brody_semantic_query_ladder.py      |   83 ++
+-  tests/api/test_brody_source_of_truth_any_input.py  |  113 ++
+-  ...est_brody_structured_response_engine_adapter.py |  226 ++++
+-  tests/api/test_brody_three_foundations_freeze.py   |  242 +++++
+-  tests/api/test_brody_three_foundations_no_500.py   |  130 +++
+-  tests/api/test_brody_tree_policy.py                |  187 ++++
+-  ...t_brody_true_voice_memory_chain_final_answer.py |  107 ++
+-  tests/api/test_brody_utf8_no_mojibake.py           |   86 ++
+-  tests/api/test_brody_v1_4_12a_creator_boundary.py  |  102 ++
+-  tests/api/test_brody_v1_4_12a_final_answer.py      |   86 ++
+-  tests/non_sovereignty/test_brody_no_act.py         |   20 +
+-  tests/non_sovereignty/test_brody_no_decision.py    |   21 +
+-  .../test_brody_response_never_emits_verdict.py     |   52 +
+-  87 files changed, 14286 insertions(+), 484 deletions(-)
+
+## Commit e9e43e4 files
+- e9e43e4 2026-05-21 feat(brody): wire full runtime with real project memory
+- CURRENT_BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE.txt
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/FREEZE_SUMMARY.md
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/api_sample.json
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/git_diff_protected.txt
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/git_status.txt
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/live_results.json
+- _local_audits/BRODY_OBSIDIEN_FULL_RUNTIME_FREEZE_20260521_003721/memory_chain_proof.json
+- apps/obsidia-workbench/src/api/contracts.ts
+- apps/obsidia-workbench/src/components/RightPanel.tsx
+- apps/obsidia_api/brody_automation_orchestrator.py
+- apps/obsidia_api/brody_backend_response_composer.py
+- apps/obsidia_api/brody_candidate_memory_adapter.py
+- apps/obsidia_api/brody_cognitive_modules_adapter.py
+- apps/obsidia_api/brody_freeze_metrics_snapshot.py
+- apps/obsidia_api/brody_full_runtime_orchestrator.py
+- apps/obsidia_api/brody_full_runtime_reconnect.py
+- apps/obsidia_api/brody_memory_response_chain_adapter.py
+- apps/obsidia_api/brody_operator_loop_adapter.py
+- apps/obsidia_api/brody_project_memory_adapter.py
+- apps/obsidia_api/brody_project_memory_runtime.py
+- apps/obsidia_api/brody_real_response_pipeline.py
+- apps/obsidia_api/brody_rights_authority_matrix.py
+- apps/obsidia_api/brody_runtime_context_adapter.py
+- apps/obsidia_api/brody_safe_snapshot.py
+- apps/obsidia_api/brody_semantic_query_router.py
+- apps/obsidia_api/brody_session_memory_adapter.py
+- apps/obsidia_api/brody_session_memory_runtime.py
+- apps/obsidia_api/brody_source_of_truth_adapter.py
+- apps/obsidia_api/brody_structured_response_engine_adapter.py
+- apps/obsidia_api/brody_temporal_context_adapter.py
+- apps/obsidia_api/brody_text_encoding.py
+- apps/obsidia_api/brody_tree_policy.py
+- apps/obsidia_api/brody_tree_policy_adapter.py
+- apps/obsidia_api/brody_true_response_structure_adapter.py
+- apps/obsidia_api/brody_true_response_structure_runtime.py
+- apps/obsidia_api/brody_true_voice_adapter.py
+- apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py
+- apps/obsidia_api/routes/brody.py
+- periphery/brody/__init__.py
+- periphery/brody/brody_context_query.py
+- periphery/brody/brody_language_router.py
+- periphery/brody/brody_response_contract.py
+- periphery/brody/brody_response_sanitizer.py
+- periphery/brody/brody_runtime_readonly.py
+- periphery/brody_memory_readonly/auto_triage_memory_intake_readonly/run_brody_auto_triage_memory_intake_readonly_v1.ps1
+- periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py
+- tests/api/test_brody_authority_escalation_no_act.py
+- tests/api/test_brody_authority_escalation_response_quality.py
+- tests/api/test_brody_automation_orchestrator.py
+- tests/api/test_brody_automation_snapshot_payload.py
+- tests/api/test_brody_chat_french.py
+- tests/api/test_brody_chat_readonly.py
+- tests/api/test_brody_final_answer_capabilities.py
+- tests/api/test_brody_final_answer_freeze_sourced_live_cases.py
+- tests/api/test_brody_final_answer_response_md_split.py
+- tests/api/test_brody_final_answer_uses_structured_response.py
+- tests/api/test_brody_followup_strict_final.py
+- tests/api/test_brody_freeze_metrics_snapshot_runtime.py
+- tests/api/test_brody_intent_classifier_hard_fix.py
+- tests/api/test_brody_llm_obsidien_source_docs.py
+- tests/api/test_brody_llm_obsidien_three_foundations_live_cases.py
+- tests/api/test_brody_low_material_text_preview.py
+- tests/api/test_brody_memory_candidate_automation.py
+- tests/api/test_brody_memory_context_response_quality.py
+- tests/api/test_brody_memory_response_chain_effective_query.py
+- tests/api/test_brody_memory_response_chain_status_strict.py
+- tests/api/test_brody_no_invented_metrics.py
+- tests/api/test_brody_no_placeholder_response.py
+- tests/api/test_brody_no_template_when_freeze_metrics_available.py
+- tests/api/test_brody_operator_loop_automation.py
+- tests/api/test_brody_os_trad_ir_reverse_discovery.py
+- tests/api/test_brody_response_quality_fr.py
+- tests/api/test_brody_response_source_not_frontend_mock.py
+- tests/api/test_brody_rights_authority_matrix.py
+- tests/api/test_brody_semantic_query_ladder.py
+- tests/api/test_brody_source_of_truth_any_input.py
+- tests/api/test_brody_structured_response_engine_adapter.py
+- tests/api/test_brody_three_foundations_freeze.py
+- tests/api/test_brody_three_foundations_no_500.py
+- tests/api/test_brody_tree_policy.py
+- tests/api/test_brody_true_voice_memory_chain_final_answer.py
+- tests/api/test_brody_utf8_no_mojibake.py
+- tests/api/test_brody_v1_4_12a_creator_boundary.py
+- tests/api/test_brody_v1_4_12a_final_answer.py
+- tests/non_sovereignty/test_brody_no_act.py
+- tests/non_sovereignty/test_brody_no_decision.py
+- tests/non_sovereignty/test_brody_response_never_emits_verdict.py
+
+## Boundary
+- Diagnostic only.
+- No patch.
+- No runtime mutation.
+- No service started.
+- KX108_ONLY remains sole decision authority.
+
+## Next
+- If stale 8000 references are comments only, patch comments later.
+- If stale 8000 references affect active probes, patch after targeted validation.
+- Add explicit smoke to distinguish REAL_BACKEND from FRONTEND_MOCK/fallback.

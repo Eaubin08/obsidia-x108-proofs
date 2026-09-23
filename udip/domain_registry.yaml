@@ -1,0 +1,22 @@
+domains:
+  - trading
+  - bank
+  - gps_defense_aviation
+  - ecom
+  - industry_maintenance
+  - btp_construction
+  - logistics_supply_chain
+  - cybersecurity
+  - energy_critical_infrastructure
+  - insurance
+  - legal_compliance
+  - telecom
+  - facility_management
+  - administration
+  - health
+  - hr
+
+cross_domain:
+  - meta
+
+note: "Inventory only. This registry carries no authority."

@@ -1,0 +1,1196 @@
+[
+  {
+    "route": "/api/blockchain/gencoin/compute",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/brody/chat",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "action_risk",
+        "advisory_only",
+        "allowed_to_act",
+        "allowed_to_decide",
+        "anti_mismatch_packet",
+        "audit_event",
+        "authority_contract",
+        "authority_snapshot",
+        "automation_snapshot",
+        "boundary_contract",
+        "brody_full_context",
+        "candidate_memory_snapshot",
+        "cognitive_modules_snapshot",
+        "context_packet",
+        "context_signal_only",
+        "contracts",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "final_answer",
+        "forbidden_output_contract",
+        "freeze_metrics_snapshot",
+        "gencoin_shadow_packet",
+        "graphiti_blocker",
+        "graphiti_status",
+        "graphiti_write",
+        "ir_candidate",
+        "kernel_contract",
+        "kernel_mutation",
+        "language",
+        "machination_packet",
+        "memory_promotion_guard_packet",
+        "memory_query",
+        "memory_response_chain_snapshot",
+        "memory_write",
+        "neo4j_status",
+        "neo4j_write",
+        "operator_loop_snapshot",
+        "operator_view_packet",
+        "permission_matrix",
+        "project_memory_snapshot",
+        "readonly",
+        "real_action",
+        "response",
+        "response_md",
+        "response_only",
+        "runtime_components",
+        "runtime_context",
+        "semantic_query_snapshot",
+        "session_memory_snapshot",
+        "sigma_packet",
+        "signal_contract",
+        "source",
+        "structured_response_snapshot",
+        "support_routes",
+        "support_summary",
+        "temporal_context_snapshot",
+        "thermodynamics_packet",
+        "timestamp",
+        "translation_trace",
+        "tree_policy_snapshot",
+        "tree_signal_packet",
+        "true_response_structure_snapshot",
+        "true_voice_snapshot",
+        "v1_4_12a_available",
+        "v1_4_12a_runtime_status",
+        "value_layer",
+        "voice_runtime",
+        "x108_boundary",
+        "x108_mutation"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.410525+00:00"
+      },
+      {
+        "path": "voice_runtime",
+        "preview": "BRODY_OBSIDIEN_V1_4_12A"
+      },
+      {
+        "path": "audit_event.timestamp",
+        "preview": "2026-05-28T01:13:08.344628+00:00"
+      },
+      {
+        "path": "v1_4_12a_runtime_status",
+        "preview": "READY"
+      },
+      {
+        "path": "runtime_components",
+        "preview": "dict[8]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.2
+      },
+      {
+        "path": "true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.2
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.timestamp",
+        "preview": "2026-05-28T01:13:08.410495+00:00"
+      },
+      {
+        "path": "machination_packet.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.2
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "value_layer.scores.energy_cost",
+        "preview": null
+      },
+      {
+        "path": "value_layer.inputs_available.sigma",
+        "preview": true
+      },
+      {
+        "path": "value_layer.inputs_available.thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "value_layer.input_status.sigma",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "value_layer.input_status.thermodynamics",
+        "preview": "STABLE"
+      },
+      {
+        "path": "sigma_packet",
+        "preview": "dict[24]"
+      },
+      {
+        "path": "sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "sigma_packet.features.anti_mismatch_formal_available",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.features.formal_mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "anti_mismatch_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "anti_mismatch_packet.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "anti_mismatch_packet.decorative_coherence_detected",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.sigma_high_but_answer_empty",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.decorative_coherence",
+        "preview": false
+      },
+      {
+        "path": "thermodynamics_packet",
+        "preview": "dict[21]"
+      },
+      {
+        "path": "thermodynamics_packet.thermodynamics_active",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.scores.coherence_temperature",
+        "preview": 0.214
+      },
+      {
+        "path": "thermodynamics_packet.scores.mismatch_heat",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.stability_state",
+        "preview": "STABLE"
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_calibration_status",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.evidence.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.evidence.anti_mismatch_risk_level",
+        "preview": "NONE"
+      },
+      {
+        "path": "gencoin_shadow_packet.shadow_scores.energy_cost",
+        "preview": 0.092
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_thermodynamics_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.sigma_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.anti_mismatch_risk_level",
+        "preview": "NONE"
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.thermo_usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.evidence.stability_state",
+        "preview": "STABLE"
+      },
+      {
+        "path": "tree_signal_packet.usable_for_gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "tree_signal_packet.usable_for_sigma",
+        "preview": true
+      },
+      {
+        "path": "tree_signal_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.risk.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "memory_promotion_guard_packet.risk.mismatch_risk",
+        "preview": "NONE"
+      },
+      {
+        "path": "memory_promotion_guard_packet.risk.thermo_state",
+        "preview": "STABLE"
+      },
+      {
+        "path": "memory_promotion_guard_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.inputs.has_thermodynamics_packet",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.sigma_usable",
+        "preview": true
+      },
+      {
+        "path": "memory_promotion_guard_packet.evidence.thermo_usable",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.readiness.sigma",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.readiness.anti_mismatch",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.readiness.thermodynamics",
+        "preview": "OK"
+      },
+      {
+        "path": "operator_view_packet.usable.sigma_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.usable.thermo_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "operator_view_packet.blocked.value_layer_scores_not_null",
+        "preview": false
+      },
+      {
+        "path": "operator_view_packet.blocked.hard_risks",
+        "preview": "list[0]"
+      },
+      {
+        "path": "operator_view_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "operator_view_packet.evidence.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "operator_view_packet.evidence.mismatch_risk",
+        "preview": "NONE"
+      },
+      {
+        "path": "operator_view_packet.evidence.stability_state",
+        "preview": "STABLE"
+      },
+      {
+        "path": "operator_view_packet.evidence.value_layer_scores_null",
+        "preview": true
+      }
+    ],
+    "numeric_count": 546,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY\",\"timestamp\":\"2026-05-28T01:13:08.410525+00:00\",\"response\":\"La couche thermodynamique sert à lire la dissipation, l'entropie et la stabilité d'un système. Dans Brody, elle reste métrique/advisory : elle peut expliquer une tension ou une perte de cohérence, jamais autoriser [REDACTED_ACT].\\n\\nÉnergie / sigma / truth_score forment un raccord d'évaluation : détecter l'écart entre forme cohérente et vérité structurelle. Ils renforcent la lecture, mais ne deviennent pas décisionnaires.\\n\\nAnti-mismatch sert à détecter les réponses belles mais fausses : false_on, decorative_coherence, collapse_disguised. Si la surface répond bien mais contredit le contrat, Brody doit ralentir et signaler la divergence.\\n\\nLe temps/X108 reste le verrou de passage : Brody peut lire le pa"
+  },
+  {
+    "route": "/api/gencoin",
+    "method": "GET",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "count",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "entries",
+        "execution_allowed",
+        "graphiti_write",
+        "is_real_token",
+        "kernel_mutation",
+        "ledger_only",
+        "memory_write",
+        "no_mint",
+        "no_wallet",
+        "post_proof_only",
+        "readonly",
+        "real_action",
+        "reason",
+        "source",
+        "status",
+        "timestamp",
+        "total",
+        "x108_mutation"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": false,
+        "kernel_mutation": false,
+        "x108_mutation": false
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.460059+00:00"
+      }
+    ],
+    "numeric_count": 2,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"LIVE_EMPTY_REGISTRY\",\"timestamp\":\"2026-05-28T01:13:08.460059+00:00\",\"entries\":[],\"total\":0,\"status\":\"LIVE_EMPTY_REGISTRY\",\"count\":0,\"reason\":\"NO_REAL_GENCOIN_LEDGER_ENTRY_YET\",\"is_real_token\":false,\"no_wallet\":true,\"no_mint\":true,\"post_proof_only\":true,\"ledger_only\":true,\"graphiti_write\":false,\"x108_mutation\":false,\"execution_allowed\":false}"
+  },
+  {
+    "route": "/api/periphery/brody/context-query",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/brody/diffusion-mix",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/brody/double-brain-route",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/brody/language-route",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/avdr-phase",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/balance",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/collective-summary",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/consciousness-regime",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/passfail",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  },
+  {
+    "route": "/api/periphery/gencoin/regime-state",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "is_admissible",
+        "is_assisted_on",
+        "is_false_on",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "regime",
+        "sigma_score",
+        "source",
+        "timestamp",
+        "truth_score"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.559905+00:00"
+      },
+      {
+        "path": "sigma_score",
+        "preview": 0.5
+      }
+    ],
+    "numeric_count": 2,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.559905+00:00\",\"regime\":\"START\",\"is_false_on\":false,\"is_assisted_on\":false,\"is_admissible\":false,\"truth_score\":0.5,\"sigma_score\":0.5}"
+  },
+  {
+    "route": "/api/periphery/monitoring/brody-cli-registry",
+    "method": "GET",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "entries",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "scripts_with_functions",
+        "scripts_with_manifest",
+        "scripts_with_ps1",
+        "source",
+        "timestamp",
+        "total_directories",
+        "total_scripts"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.787984+00:00"
+      }
+    ],
+    "numeric_count": 5,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.787984+00:00\",\"total_directories\":42,\"total_scripts\":47,\"scripts_with_functions\":43,\"scripts_with_ps1\":45,\"scripts_with_manifest\":46,\"entries\":[{\"directory\":\"periphery/brody_memory_readonly\",\"python_file\":\"brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py\",\"ps1_runners\":[],\"exposed_functions\":[\"map_canonical_topology\",\"assert_no_dimension_loss\",\"to_dict\"],\"has_argparse\":false,\"has_manifest\":false,\"has_smoke\":false,\"integration_status\":\"NOT_CONNECTED\"},{\"directory\":\"periphery/brody_memory_readonly\\\\auto_triage_memory_intake_readonly\",\"python_file\":\"brody_auto_triage_memory_intake_readonly_v1.py\",\"ps1_runners\":[\"run_brody_auto_triage_memory_intake_readonly_v1.ps1\"],\"exposed_functions\":[\"now_iso\",\"clean_text\",\"sha256_text\",\"stable_unit\",\"load_jsonl\",\"first_prese"
+  },
+  {
+    "route": "/api/periphery/monitoring/brody-historical-convergence",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "analysis_type",
+        "chain_integrity",
+        "decision_authority",
+        "drift_analysis",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "record_count",
+        "source",
+        "status",
+        "timestamp"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.797092+00:00"
+      }
+    ],
+    "numeric_count": 1,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.797092+00:00\",\"analysis_type\":\"BRODY_HISTORICAL_CONVERGENCE\",\"status\":\"EMPTY_RECORDS\",\"record_count\":0,\"chain_integrity\":null,\"drift_analysis\":\"NO_DATA\"}"
+  },
+  {
+    "route": "/api/periphery/monitoring/brody-trace-analyze",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "analysis_type",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "required_false_keys",
+        "required_true_keys",
+        "response_sha256",
+        "source",
+        "timestamp",
+        "validation"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.810750+00:00"
+      },
+      {
+        "path": "validation.false_keys_check.x108_runtime_binding",
+        "preview": "MISSING"
+      }
+    ],
+    "numeric_count": 0,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.810750+00:00\",\"analysis_type\":\"BRODY_TRACE_ANALYZE\",\"validation\":{\"status\":\"BOUNDARY_VIOLATION\",\"error\":\"BOUNDARY_TRUE_KEY_FAILED:readonly=None\",\"true_keys_check\":{\"readonly\":\"MISSING\",\"response_only\":\"MISSING\",\"no_external_model_call\":\"MISSING\",\"no_network_call\":\"MISSING\"},\"false_keys_check\":{\"memory_decision\":\"MISSING\",\"allowed_to_decide\":\"MISSING\",\"emits_act\":\"MISSING\",\"emits_allow_hold_block\":\"MISSING\",\"emits_verdict\":\"MISSING\",\"kernel_mutation\":\"MISSING\",\"x108_mutation\":\"MISSING\",\"x108_runtime_binding\":\"MISSING\",\"x108_merge\":\"MISSING\"},\"decision_authority\":\"UNSET\"},\"response_sha256\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"required_true_keys\":[\"readonly\",\"response_only\",\"no_external_model_call\",\"no_network_call\"],\"required_f"
+  },
+  {
+    "route": "/api/periphery/pipeline/energy-thermo",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "action_id",
+        "advisory_only",
+        "can_emit_act",
+        "contradictions",
+        "decision_authority",
+        "domain",
+        "emits_act",
+        "emits_verdict",
+        "evidence_refs",
+        "extra_metrics",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "recommended_gate",
+        "risk_flags",
+        "source",
+        "timestamp",
+        "unknowns"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.814528+00:00"
+      },
+      {
+        "path": "extra_metrics.energy_efficiency",
+        "preview": 1.0
+      },
+      {
+        "path": "extra_metrics.thermo_debt",
+        "preview": 0.0
+      },
+      {
+        "path": "extra_metrics.sigma_score",
+        "preview": 1.0
+      },
+      {
+        "path": "extra_metrics.sigma_truth_mismatch",
+        "preview": 0.0
+      }
+    ],
+    "numeric_count": 7,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.814528+00:00\",\"action_id\":\"pops-action\",\"domain\":\"general\",\"extra_metrics\":{\"pin\":1.0,\"pout\":1.0,\"energy_efficiency\":1.0,\"thermo_debt\":0.0,\"truth_score\":1.0,\"sigma_score\":1.0,\"sigma_truth_mismatch\":0.0},\"unknowns\":[],\"risk_flags\":[],\"contradictions\":[],\"evidence_refs\":[],\"recommended_gate\":\"NONE\",\"can_emit_act\":false}"
+  },
+  {
+    "route": "/api/x108/memory/replay/coherence",
+    "method": "POST",
+    "ok": true,
+    "status": 200,
+    "error": null,
+    "summary": {
+      "type": "dict",
+      "keys": [
+        "advisory_only",
+        "coherence_score",
+        "decision_authority",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "memory_write",
+        "readonly",
+        "real_action",
+        "record_count",
+        "session_id",
+        "source",
+        "status",
+        "timestamp"
+      ],
+      "boundary": {
+        "decision_authority": "KX108_ONLY",
+        "readonly": true,
+        "emits_act": false,
+        "emits_verdict": false,
+        "memory_write": false,
+        "graphiti_write": null,
+        "kernel_mutation": false,
+        "x108_mutation": null
+      }
+    },
+    "term_paths": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:13:08.842362+00:00"
+      },
+      {
+        "path": "coherence_score",
+        "preview": 0.0
+      }
+    ],
+    "numeric_count": 2,
+    "raw_preview": "{\"readonly\":true,\"advisory_only\":true,\"emits_act\":false,\"emits_verdict\":false,\"decision_authority\":\"KX108_ONLY\",\"memory_write\":false,\"kernel_mutation\":false,\"real_action\":false,\"source\":\"REAL_BACKEND\",\"timestamp\":\"2026-05-28T01:13:08.842362+00:00\",\"session_id\":\"f19a2_route_probe\",\"coherence_score\":0.0,\"record_count\":0,\"status\":\"NO_RECORDS\"}"
+  },
+  {
+    "route": "/api/x108/timeverse/sync",
+    "method": "POST",
+    "ok": false,
+    "status": 0,
+    "error": "HTTPError: HTTP Error 422: Unprocessable Content",
+    "summary": {
+      "type": "NoneType",
+      "preview": "None"
+    },
+    "term_paths": [],
+    "numeric_count": 0,
+    "raw_preview": ""
+  }
+]

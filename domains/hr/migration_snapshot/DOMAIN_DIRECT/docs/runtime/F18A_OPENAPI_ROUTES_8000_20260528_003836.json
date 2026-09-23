@@ -1,0 +1,24 @@
+{
+  "http_status": 200,
+  "routes": [
+    "/api/brody/chat",
+    "/api/ir/candidate",
+    "/api/os-reverse/project",
+    "/api/os-trad/translate",
+    "/api/os3/replay/{ticket_id}",
+    "/api/os3/tickets",
+    "/api/periphery/brody/context-query",
+    "/api/periphery/brody/diffusion-mix",
+    "/api/periphery/brody/double-brain-route",
+    "/api/periphery/brody/language-route",
+    "/api/periphery/monitoring/adapters/trading",
+    "/api/periphery/monitoring/brody-cli-registry",
+    "/api/periphery/monitoring/brody-historical-convergence",
+    "/api/periphery/monitoring/brody-trace-analyze",
+    "/api/periphery/os3/manifest",
+    "/api/periphery/os3/replay-compare",
+    "/api/periphery/os3/replay-run",
+    "/api/periphery/os3/ticket",
+    "/api/periphery/os3/world-action-readiness"
+  ]
+}

@@ -1,0 +1,15 @@
+domain_id: trading
+domain_name: "Trading"
+udip_version: V0
+status: EXISTING_REFERENCE
+source_type: external_reference
+legacy_sources:
+  - "external://OBSIDIA_TRADING"
+  - "domains/trading/"
+  - "domain_packets/trading_decisional_form_v0.yaml"
+  - "sigma/domains/trading_agents.py"
+extensions:
+  - market_data
+  - portfolio
+  - broker_execution
+implementation_state: SCAFFOLD_ONLY

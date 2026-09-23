@@ -1,0 +1,10 @@
+domain_id: legal_compliance
+domain_name: "Legal / Compliance"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  []
+implementation_state: SCAFFOLD_ONLY

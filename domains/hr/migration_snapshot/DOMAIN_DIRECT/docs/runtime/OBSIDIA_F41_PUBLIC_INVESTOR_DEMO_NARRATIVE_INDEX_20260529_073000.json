@@ -1,0 +1,73 @@
+{
+  "release_id": "F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_PACK",
+  "version": "F41_V1",
+  "mode": "READONLY",
+  "status": "PASS",
+  "timestamp": "20260529_073000",
+  "palier": "F41_PUBLIC_INVESTOR_DEMO_NARRATIVE_PACK",
+  "chain": "F32 → F33 → F34 → F34B → F35 → F36 → F36B → F37 → F38 → F39 → F40 → F41",
+  "head": "ff33bac",
+  "parent_tag": "BRODY_F40_RELEASE_CANDIDATE_DEMO_FREEZE_INDEX_PALIER_20260529",
+  "proof_status": "RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN",
+  "type": "NARRATIVE_DOCUMENTATION_ONLY",
+  "description": "Public investor / jury narrative pack. No new code, no new routes, no new tests. Documentation layer on top of F40 RC1.",
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "readonly": true,
+    "advisory_only": true,
+    "context_signal_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "runtime_execute": false
+  },
+  "inherited_from_f40": {
+    "tests_pass": "103/103",
+    "smoke_checks_cumulative": 474,
+    "live_server_proofs": 3,
+    "routes": 7,
+    "tags": 10,
+    "smoke_scripts": 6,
+    "freeze_dirs": 9
+  },
+  "narrative_files": [
+    {
+      "file": "docs/demo/OBSIDIA_F41_PUBLIC_INVESTOR_PITCH.md",
+      "role": "Public investor pitch — one-liner, problem, live demo, core proof, competitive positioning",
+      "sha256": "1207F37E1693B691D40ADF89C5C3439D724F0963B44199961C8D0E3C739547F4"
+    },
+    {
+      "file": "docs/demo/OBSIDIA_F41_DEMO_SCRIPT_3_5_MIN.md",
+      "role": "Oral demo script — 7 beats, ~4 minutes, live terminal commands, backup commands",
+      "sha256": "28C89A4BD550703B975CDE4098489B14621D5A06233CEE031386C02A6E03D601"
+    },
+    {
+      "file": "docs/demo/OBSIDIA_F41_WHAT_IT_PROVES_AND_DOES_NOT_PROVE.md",
+      "role": "Honest proof perimeter audit — what is proven, what is not, summary table for auditors",
+      "sha256": "E03E65D712038615FFC3E4532235249680FC505CEBA48C9647FF86ECC8C01E75"
+    },
+    {
+      "file": "docs/demo/OBSIDIA_F41_INVESTOR_JURY_FAQ.md",
+      "role": "14-question FAQ for investors and jury — fundamentals, proof, value, practical",
+      "sha256": "D0E00D65E6DEDA8BE7778BBC8C479A5FBCB0C0D6C08249D83C2513C70AD39A40"
+    }
+  ],
+  "key_claims": [
+    "Boundary enforced at module + route + response level simultaneously",
+    "103/103 unit tests pass — no regressions from F40 RC1",
+    "474 cumulative smoke checks — all forbidden_tokens_found=False",
+    "3 live-server proofs with SHA256 signatures (F34B, F36B, F38)",
+    "10 git tags — palier chain fully traceable",
+    "No formal Lean proof at this layer — proof_status=RUNTIME_SMOKE_ONLY_NOT_LEAN_PROVEN"
+  ],
+  "files_created": 4,
+  "files_modified": 0,
+  "COMMIT": "NO",
+  "TAG": "NO",
+  "PUSH": "NO"
+}

@@ -1,0 +1,6 @@
+status: REFERENCE_ONLY
+sources:
+  - "domain_packets/gps_defense_aviation_decisional_form_v0.yaml"
+  - "domains/gps/"
+  - "sigma/domains/gps_defense_aviation_agents.py"
+note: "Source mapping only. No code copied or migrated."

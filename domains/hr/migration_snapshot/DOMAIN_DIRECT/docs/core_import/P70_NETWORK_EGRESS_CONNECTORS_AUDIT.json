@@ -1,0 +1,795 @@
+{
+  "audit_id": "P70",
+  "status": "P70_NETWORK_EGRESS_CONNECTORS_AUDIT_READY",
+  "mode": "AUDIT_ONLY",
+  "source_patch_applied": false,
+  "files_imported_count": 0,
+  "network_model": {
+    "network_egress_none": "Aucune sortie r\u00e9seau. In-process uniquement. SAFE.",
+    "doc_only": "Mention de r\u00e9seau dans docs/tests uniquement. Aucun call actif.",
+    "test_only": "Appels r\u00e9seau dans tests/smoke/archive uniquement. Non runtime.",
+    "localhost_review": "POST/GET vers localhost. Non expos\u00e9 externe. Review: dry_run + boundary requis.",
+    "connector_dry_run": "Connecteur localhost avec dry_run d\u00e9clar\u00e9 et boundary KX108. SAFE si readonly.",
+    "connector_active_review": "Connecteur actif: POST localhost + while True + irreversible. Exige dry_run + KX108 guard.",
+    "graphiti_review": "Appel Graphiti localhost. Readonly OK si write flags False. Write = quarantaine P66.",
+    "neo4j_review": "Connexion bolt://localhost Neo4j. Guarded par env vars + confirmation. P66 patch\u00e9.",
+    "market_data_review": "Fetch market data externe (ccxt). Review: scope + dry_run requis avant tout usage.",
+    "trading_review": "Connecteur trading live + ccxt externe. CONNECTOR_DO_NOT_RUN sans dry_run + KX108 gate.",
+    "webhook_review": "Webhook ou POST vers URL externe. Non d\u00e9tect\u00e9 en runtime actif.",
+    "blocked": "Appels r\u00e9seau vers infrastructure inexistante ou proof only. Jamais ex\u00e9cutable en prod."
+  },
+  "scanned_files_count": 9630,
+  "network_matrix": [
+    {
+      "path": "connectors/aviation_robo.py",
+      "surface": "connectors",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.post(url, json=..., timeout=10)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000/api/periphery/monitoring/adapters/gps"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": true,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_CONNECTOR_ACTIVE_REVIEW",
+      "risk_level": "HIGH",
+      "reason": "while True + requests.post() localhost. irreversible=True dans payload. Aucun dry_run_flag. Aucune d\u00e9claration KX108_ONLY. Boucle non born\u00e9e (sleep=4s).",
+      "next_action": "ADD_DRY_RUN_FLAG_AND_KX108_GUARD_P71"
+    },
+    {
+      "path": "connectors/bank_normal_flow.py",
+      "surface": "connectors",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.post(url, json=..., timeout=10)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000/api/periphery/monitoring/adapters/bank"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": true,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_CONNECTOR_ACTIVE_REVIEW",
+      "risk_level": "HIGH",
+      "reason": "while True + requests.post() localhost. irreversible=True dans payload. Aucun dry_run_flag. Aucune d\u00e9claration KX108_ONLY. Boucle non born\u00e9e (sleep=10s).",
+      "next_action": "ADD_DRY_RUN_FLAG_AND_KX108_GUARD_P71"
+    },
+    {
+      "path": "connectors/trading_live.py",
+      "surface": "connectors",
+      "detected_imports": [
+        "requests",
+        "ccxt"
+      ],
+      "detected_calls": [
+        "requests.post(url, json=..., timeout=10)",
+        "ccxt.binance()",
+        "exchange.fetch_ticker(symbol)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000/api/periphery/monitoring/adapters/trading",
+        "EXTERNAL:ccxt.binance() market data"
+      ],
+      "methods": [
+        "POST",
+        "CCXT_TICKER"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": true,
+      "localhost_target": true,
+      "external_target": true,
+      "category": "NETWORK_EGRESS_TRADING_REVIEW",
+      "risk_level": "HIGH",
+      "reason": "while True + requests.post() localhost + ccxt.binance() EXTERNAL market data. irreversible=True. Aucun dry_run. Boucle non born\u00e9e (sleep=2s). TRADING_LIVE.",
+      "next_action": "CONNECTOR_DO_NOT_RUN_UNGUARDED_P71"
+    },
+    {
+      "path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "surface": "apps/obsidia_api",
+      "detected_imports": [
+        "urllib.request"
+      ],
+      "detected_calls": [
+        "urllib.request.urlopen(req, timeout=2.5)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8011/graph/v20/frozen/*"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_GRAPHITI_REVIEW",
+      "risk_level": "LOW",
+      "reason": "GET readonly uniquement. timeout=2.5s. Fallback BACKEND_STUB si indisponible. Tous write flags False. KX108_ONLY. SAFE si ObsidiaShell 8011 non d\u00e9marr\u00e9.",
+      "next_action": "OK_READONLY_GRAPHITI_CLIENT_CLASSIFIED"
+    },
+    {
+      "path": "periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py",
+      "surface": "periphery",
+      "detected_imports": [
+        "neo4j (via env-driven bolt://)"
+      ],
+      "detected_calls": [
+        "GraphDatabase (via bolt://localhost:7688)"
+      ],
+      "detected_urls": [
+        "bolt://localhost:7688"
+      ],
+      "methods": [
+        "BOLT"
+      ],
+      "has_timeout": false,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": true,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NEO4J_REVIEW",
+      "risk_level": "MEDIUM",
+      "reason": "bolt://localhost:7688. Guarded par MANUAL_NEO4J_WRITE_ENV + KX108_MANUAL_REVIEW_GRAPH_WRITE_OK. P66 patch\u00e9: NEO4J_PASSWORD obligatoire, fail-ferm\u00e9. Neo4j write possible si confirmation re\u00e7ue.",
+      "next_action": "OK_GATED_NEO4J_BRIDGE_P66_PATCHED"
+    },
+    {
+      "path": "periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/brody_graphiti_import_apply_guarded_manual_only_v1.py",
+      "surface": "periphery",
+      "detected_imports": [
+        "graphiti (via localhost)"
+      ],
+      "detected_calls": [
+        "graphiti_client POST (via guarded apply)"
+      ],
+      "detected_urls": [
+        "localhost graphiti apply endpoint"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": false,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": true,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_GRAPHITI_REVIEW",
+      "risk_level": "MEDIUM",
+      "reason": "QUARANTINE_FOR_SRL_PATH (P66). Apply guarded manual only. graphiti_write=True possible si gate lev\u00e9. Hors chemin SRL readonly.",
+      "next_action": "OK_QUARANTINED_P66_SRL_PATH"
+    },
+    {
+      "path": "periphery/brody_memory_readonly/graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only/brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py",
+      "surface": "periphery",
+      "detected_imports": [
+        "graphiti (via localhost)"
+      ],
+      "detected_calls": [
+        "graphiti_client POST (via guarded review apply)"
+      ],
+      "detected_urls": [
+        "localhost graphiti apply endpoint"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": false,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": true,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_GRAPHITI_REVIEW",
+      "risk_level": "MEDIUM",
+      "reason": "QUARANTINE_FOR_SRL_PATH (P66). Apply depuis review decision readonly. graphiti_write=True possible si gate lev\u00e9. Hors chemin SRL readonly.",
+      "next_action": "OK_QUARANTINED_P66_SRL_PATH"
+    },
+    {
+      "path": "sigma/graphiti_readonly_bridge.py",
+      "surface": "sigma",
+      "detected_imports": [],
+      "detected_calls": [
+        "build_sigma_graphiti_readonly_query() \u2014 in-process only"
+      ],
+      "detected_urls": [],
+      "methods": [],
+      "has_timeout": false,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NONE",
+      "risk_level": "NONE",
+      "reason": "Pure in-process. Aucun HTTP. G\u00e9n\u00e8re query candidate uniquement. graphiti_probe_mode=IN_PROCESS_ONLY.",
+      "next_action": "OK_SAFE"
+    },
+    {
+      "path": "sigma/connectors.py",
+      "surface": "sigma",
+      "detected_imports": [],
+      "detected_calls": [
+        "descriptive route constants only"
+      ],
+      "detected_urls": [
+        "/api/periphery/monitoring/sigma/bank (RELATIVE)",
+        "/api/periphery/monitoring/sigma/trading (RELATIVE)"
+      ],
+      "methods": [],
+      "has_timeout": false,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NONE",
+      "risk_level": "NONE",
+      "reason": "Descriptive connector map. Route constants relatives uniquement. Aucun appel r\u00e9seau. No network. No HTTP.",
+      "next_action": "OK_SAFE"
+    },
+    {
+      "path": "sigma/tools/run_bank_enterprise_pack.py",
+      "surface": "sigma/tools",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.get(url, timeout=30)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000/api/periphery/monitoring/sigma/bank"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_LOCALHOST_REVIEW",
+      "risk_level": "LOW",
+      "reason": "Tool script \u2014 GET readonly vers monitoring endpoint. timeout=30. Non appel\u00e9 depuis l'API. Script one-shot d'analyse sigma.",
+      "next_action": "OK_TOOL_SCRIPT_LOCALHOST_REVIEW"
+    },
+    {
+      "path": "proofs/distributed/aggregator.py",
+      "surface": "proofs",
+      "detected_imports": [
+        "urllib.request"
+      ],
+      "detected_calls": [
+        "urllib.request.urlopen(req, timeout=10)"
+      ],
+      "detected_urls": [
+        "http://node1:8000/v1/decision",
+        "http://node2:8000/v1/decision",
+        "http://node3:8000/v1/decision",
+        "http://node4:8000/v1/decision"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": true,
+      "category": "NETWORK_EGRESS_BLOCKED",
+      "risk_level": "MEDIUM",
+      "reason": "Symbolic hostnames (node1-4:8000) \u2014 proof distributed consensus. Jamais ex\u00e9cutable sans infrastructure. Class\u00e9 BLOCKED \u2014 proof repo uniquement.",
+      "next_action": "OK_PROOF_ONLY_BLOCKED_IN_RUNTIME"
+    },
+    {
+      "path": "apps/obsidia_api/routes/worldcalls.py",
+      "surface": "apps/obsidia_api/routes",
+      "detected_imports": [],
+      "detected_calls": [
+        "Path.read_text() \u2014 local file read"
+      ],
+      "detected_urls": [],
+      "methods": [],
+      "has_timeout": false,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NONE",
+      "risk_level": "NONE",
+      "reason": "Lit local audit/world_action_bus.jsonl uniquement. Aucun appel r\u00e9seau. dry_run_only=True, real_egress=False dans boundary.",
+      "next_action": "OK_SAFE"
+    },
+    {
+      "path": "scripts/smoke_f36_user_scenario_controlled_response.py",
+      "surface": "scripts",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.post() vers localhost:8000"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": true,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_LOCALHOST_REVIEW",
+      "risk_level": "LOW",
+      "reason": "Script smoke test \u2014 POSTs vers localhost uniquement. Non invoqu\u00e9 en runtime API. One-shot audit.",
+      "next_action": "OK_LOCALHOST_SMOKE_SCRIPTS_CLASSIFIED"
+    },
+    {
+      "path": "runtime_wiring/source_runtime/world_action_bus_dry_run_activation.py",
+      "surface": "runtime_wiring",
+      "detected_imports": [
+        "bus.publish_event (indirect post)"
+      ],
+      "detected_calls": [
+        "publish_event() via world_action_bus (local jsonl)"
+      ],
+      "detected_urls": [],
+      "methods": [],
+      "has_timeout": false,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NONE",
+      "risk_level": "NONE",
+      "reason": "Activation dry_run uniquement. \u00c9crit local jsonl via world_action_bus. Gel\u00e9 P56E. Aucune sortie r\u00e9seau externe.",
+      "next_action": "OK_SAFE_FROZEN_P56E"
+    },
+    {
+      "path": ".local_audits/ (smoke scripts)",
+      "surface": ".local_audits",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.post() vers localhost"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": false,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_TEST_ONLY",
+      "risk_level": "NONE",
+      "reason": "Archive locale \u2014 smoke tests pass\u00e9s. Non ex\u00e9cut\u00e9s en runtime. Classifi\u00e9 TEST_ONLY.",
+      "next_action": "OK_ARCHIVE_TEST_ONLY"
+    },
+    {
+      "path": "periphery/brody_memory_readonly/ (smoke scripts)",
+      "surface": "periphery",
+      "detected_imports": [
+        "requests"
+      ],
+      "detected_calls": [
+        "requests.post() vers localhost (smoke)"
+      ],
+      "detected_urls": [
+        "http://127.0.0.1:8000"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "has_timeout": false,
+      "has_dry_run_flag": false,
+      "has_kx108_authority": false,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": true,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_TEST_ONLY",
+      "risk_level": "NONE",
+      "reason": "Smoke scripts locaux pour les modules brody_memory_readonly. Non invoqu\u00e9s en runtime API. Test/validation locale uniquement.",
+      "next_action": "OK_SMOKE_TEST_CLASSIFIED"
+    },
+    {
+      "path": "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+      "surface": "apps/obsidia_api",
+      "detected_imports": [],
+      "detected_calls": [
+        "NEO4J_URI/NEO4J_PASSWORD env checks (no actual connect)"
+      ],
+      "detected_urls": [],
+      "methods": [],
+      "has_timeout": false,
+      "has_dry_run_flag": true,
+      "has_kx108_authority": true,
+      "emits_act": false,
+      "memory_write": false,
+      "graphiti_write": false,
+      "neo4j_write": false,
+      "live_loop": false,
+      "localhost_target": false,
+      "external_target": false,
+      "category": "NETWORK_EGRESS_NONE",
+      "risk_level": "NONE",
+      "reason": "V\u00e9rifie pr\u00e9sence env vars NEO4J_URI/NEO4J_PASSWORD. Aucune connexion r\u00e9elle. Advisory/status uniquement.",
+      "next_action": "OK_SAFE"
+    }
+  ],
+  "connector_matrix": [
+    {
+      "connector_path": "connectors/aviation_robo.py",
+      "connector_name": "aviation_robo",
+      "target": "http://127.0.0.1:8000/api/periphery/monitoring/adapters/gps",
+      "method": "POST",
+      "timeout_declared": true,
+      "dry_run_declared": false,
+      "kx108_authority_declared": false,
+      "emits_act": false,
+      "real_action_possible": true,
+      "loop_type": "while True / sleep=4s",
+      "irreversible_in_payload": true,
+      "external_egress": false,
+      "category": "CONNECTOR_ACTIVE_REVIEW",
+      "risk_level": "HIGH",
+      "next_action": "ADD_DRY_RUN_FLAG_AND_KX108_BOUNDARY_P71"
+    },
+    {
+      "connector_path": "connectors/bank_normal_flow.py",
+      "connector_name": "bank_normal_flow",
+      "target": "http://127.0.0.1:8000/api/periphery/monitoring/adapters/bank",
+      "method": "POST",
+      "timeout_declared": true,
+      "dry_run_declared": false,
+      "kx108_authority_declared": false,
+      "emits_act": false,
+      "real_action_possible": true,
+      "loop_type": "while True / sleep=10s",
+      "irreversible_in_payload": true,
+      "external_egress": false,
+      "category": "CONNECTOR_ACTIVE_REVIEW",
+      "risk_level": "HIGH",
+      "next_action": "ADD_DRY_RUN_FLAG_AND_KX108_BOUNDARY_P71"
+    },
+    {
+      "connector_path": "connectors/trading_live.py",
+      "connector_name": "trading_live",
+      "target": "http://127.0.0.1:8000/api/periphery/monitoring/adapters/trading",
+      "method": "POST",
+      "timeout_declared": true,
+      "dry_run_declared": false,
+      "kx108_authority_declared": false,
+      "emits_act": false,
+      "real_action_possible": true,
+      "loop_type": "while True / sleep=2s",
+      "irreversible_in_payload": true,
+      "external_egress": true,
+      "external_lib": "ccxt.binance() \u2014 live market data fetch",
+      "category": "CONNECTOR_DO_NOT_RUN",
+      "risk_level": "HIGH",
+      "next_action": "CONNECTOR_DO_NOT_RUN_UNGUARDED_REQUIRES_DRY_RUN_AND_KX108_P71"
+    },
+    {
+      "connector_path": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "connector_name": "graphiti_v20_readonly",
+      "target": "http://127.0.0.1:8011/graph/v20/frozen/*",
+      "method": "GET",
+      "timeout_declared": true,
+      "dry_run_declared": true,
+      "kx108_authority_declared": true,
+      "emits_act": false,
+      "real_action_possible": false,
+      "loop_type": "none",
+      "irreversible_in_payload": false,
+      "external_egress": false,
+      "category": "CONNECTOR_DRY_RUN_SAFE",
+      "risk_level": "LOW",
+      "next_action": "OK_CLASSIFIED"
+    },
+    {
+      "connector_path": "periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py",
+      "connector_name": "neo4j_brody_guide_bridge",
+      "target": "bolt://localhost:7688",
+      "method": "BOLT",
+      "timeout_declared": false,
+      "dry_run_declared": false,
+      "kx108_authority_declared": true,
+      "emits_act": false,
+      "real_action_possible": true,
+      "loop_type": "none",
+      "irreversible_in_payload": false,
+      "external_egress": false,
+      "manual_guard": "OBSIDIA_ALLOW_MANUAL_NEO4J_WRITE + KX108_MANUAL_REVIEW_GRAPH_WRITE_OK",
+      "p66_patched": true,
+      "category": "CONNECTOR_REQUIRES_AUTH_BOUNDARY",
+      "risk_level": "MEDIUM",
+      "next_action": "OK_P66_PATCHED_NEO4J_PASSWORD_FAIL_CLOSED"
+    },
+    {
+      "connector_path": "sigma/tools/run_bank_enterprise_pack.py",
+      "connector_name": "sigma_bank_enterprise_pack",
+      "target": "http://127.0.0.1:8000/api/periphery/monitoring/sigma/bank",
+      "method": "GET",
+      "timeout_declared": true,
+      "dry_run_declared": false,
+      "kx108_authority_declared": false,
+      "emits_act": false,
+      "real_action_possible": false,
+      "loop_type": "none (one-shot per case)",
+      "irreversible_in_payload": false,
+      "external_egress": false,
+      "category": "CONNECTOR_LOCALHOST_REVIEW",
+      "risk_level": "LOW",
+      "next_action": "OK_TOOL_ONLY_NOT_RUNTIME"
+    }
+  ],
+  "category_counts": {
+    "NETWORK_EGRESS_NONE": 5,
+    "NETWORK_EGRESS_GRAPHITI_REVIEW": 3,
+    "NETWORK_EGRESS_CONNECTOR_ACTIVE_REVIEW": 2,
+    "NETWORK_EGRESS_LOCALHOST_REVIEW": 2,
+    "NETWORK_EGRESS_TEST_ONLY": 2,
+    "NETWORK_EGRESS_TRADING_REVIEW": 1,
+    "NETWORK_EGRESS_NEO4J_REVIEW": 1,
+    "NETWORK_EGRESS_BLOCKED": 1
+  },
+  "connector_counts": {
+    "CONNECTOR_ACTIVE_REVIEW": 2,
+    "CONNECTOR_DO_NOT_RUN": 1,
+    "CONNECTOR_DRY_RUN_SAFE": 1,
+    "CONNECTOR_REQUIRES_AUTH_BOUNDARY": 1,
+    "CONNECTOR_LOCALHOST_REVIEW": 1
+  },
+  "network_egress_none": [
+    "sigma/graphiti_readonly_bridge.py",
+    "sigma/connectors.py",
+    "apps/obsidia_api/routes/worldcalls.py",
+    "runtime_wiring/source_runtime/world_action_bus_dry_run_activation.py",
+    "apps/obsidia_api/brody_memory_response_chain_adapter.py"
+  ],
+  "network_egress_doc_only": [],
+  "network_egress_test_only": [
+    ".local_audits/ (smoke scripts)",
+    "periphery/brody_memory_readonly/ (smoke scripts)"
+  ],
+  "network_egress_localhost_review": [
+    "sigma/tools/run_bank_enterprise_pack.py",
+    "scripts/smoke_f36_user_scenario_controlled_response.py"
+  ],
+  "network_egress_connector_dry_run": [],
+  "network_egress_connector_active_review": [
+    "connectors/aviation_robo.py",
+    "connectors/bank_normal_flow.py"
+  ],
+  "network_egress_graphiti_review": [
+    "apps/obsidia_api/graphiti_v20_readonly_client.py",
+    "periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/brody_graphiti_import_apply_guarded_manual_only_v1.py",
+    "periphery/brody_memory_readonly/graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only/brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py"
+  ],
+  "network_egress_neo4j_review": [
+    "periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py"
+  ],
+  "network_egress_market_data_review": [],
+  "network_egress_trading_review": [
+    "connectors/trading_live.py"
+  ],
+  "network_egress_webhook_review": [],
+  "network_egress_blocked": [
+    "proofs/distributed/aggregator.py"
+  ],
+  "network_egress_unknown_review": [],
+  "focus_findings": [
+    {
+      "file": "connectors/aviation_robo.py",
+      "finding": "while True + requests.post() localhost 8000 + irreversible=True. Aucun dry_run. Aucun KX108 boundary. Boucle non born\u00e9e (sleep=4s).",
+      "category": "NETWORK_EGRESS_CONNECTOR_ACTIVE_REVIEW",
+      "risk": "HIGH",
+      "action": "ADD_DRY_RUN_FLAG_AND_KX108_BOUNDARY_P71"
+    },
+    {
+      "file": "connectors/bank_normal_flow.py",
+      "finding": "while True + requests.post() localhost 8000 + irreversible=True. Aucun dry_run. Aucun KX108 boundary. Boucle non born\u00e9e (sleep=10s).",
+      "category": "NETWORK_EGRESS_CONNECTOR_ACTIVE_REVIEW",
+      "risk": "HIGH",
+      "action": "ADD_DRY_RUN_FLAG_AND_KX108_BOUNDARY_P71"
+    },
+    {
+      "file": "connectors/trading_live.py",
+      "finding": "while True + requests.post() localhost 8000 + ccxt.binance() EXTERNAL market data + irreversible=True. Aucun dry_run. TRADING_LIVE \u2014 CONNECTOR_DO_NOT_RUN sans gate.",
+      "category": "NETWORK_EGRESS_TRADING_REVIEW",
+      "risk": "HIGH",
+      "action": "CONNECTOR_DO_NOT_RUN_UNGUARDED"
+    },
+    {
+      "file": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "finding": "urllib.request GET vers 127.0.0.1:8011. timeout=2.5. Fallback BACKEND_STUB. Tous write flags False. SAFE readonly.",
+      "category": "NETWORK_EGRESS_GRAPHITI_REVIEW",
+      "risk": "LOW",
+      "action": "OK_READONLY_CLASSIFIED"
+    },
+    {
+      "file": "periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/",
+      "finding": "bolt://localhost:7688. Guarded MANUAL_NEO4J_WRITE_ENV + KX108_MANUAL_REVIEW_GRAPH_WRITE_OK. P66 patch\u00e9: fail-closed NEO4J_PASSWORD.",
+      "category": "NETWORK_EGRESS_NEO4J_REVIEW",
+      "risk": "MEDIUM",
+      "action": "OK_P66_PATCHED_MANUAL_GATE"
+    },
+    {
+      "file": "periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/ (x2)",
+      "finding": "Graphiti write possible si gate lev\u00e9. QUARANTINE_FOR_SRL_PATH P66. Hors chemin readonly.",
+      "category": "NETWORK_EGRESS_GRAPHITI_REVIEW",
+      "risk": "MEDIUM",
+      "action": "OK_QUARANTINED_P66"
+    },
+    {
+      "file": "sigma/connectors.py",
+      "finding": "Descriptive-only. Constantes de routes relatives. Aucun appel r\u00e9seau r\u00e9el.",
+      "category": "NETWORK_EGRESS_NONE",
+      "risk": "NONE",
+      "action": "OK_SAFE"
+    },
+    {
+      "file": "sigma/graphiti_readonly_bridge.py",
+      "finding": "Pure in-process. graphiti_probe_mode=IN_PROCESS_ONLY. Aucun HTTP.",
+      "category": "NETWORK_EGRESS_NONE",
+      "risk": "NONE",
+      "action": "OK_SAFE"
+    },
+    {
+      "file": "sigma/tools/run_bank_enterprise_pack.py",
+      "finding": "requests.get() localhost 8000. timeout=30. Tool script one-shot. Non runtime API.",
+      "category": "NETWORK_EGRESS_LOCALHOST_REVIEW",
+      "risk": "LOW",
+      "action": "OK_TOOL_ONLY"
+    },
+    {
+      "file": "proofs/distributed/aggregator.py",
+      "finding": "Symbolic nodes (node1-4:8000). Proof distributed consensus. Jamais ex\u00e9cutable sans infra.",
+      "category": "NETWORK_EGRESS_BLOCKED",
+      "risk": "MEDIUM",
+      "action": "OK_PROOF_ONLY_BLOCKED"
+    }
+  ],
+  "preexisting_manifest_drift": [
+    {
+      "file": "audit/world_action_bus.jsonl",
+      "status": "HASH_MISMATCH_PREEXISTING_P65"
+    },
+    {
+      "file": "proofs/PROOFKIT_REPORT.json",
+      "status": "HASH_MISMATCH_PREEXISTING_P65"
+    }
+  ],
+  "preexisting_test_debt": [
+    {
+      "test": "tests/test_invariants_against_engine.py",
+      "reason": "ModuleNotFoundError: obsidia_os2"
+    },
+    {
+      "test": "tests/sigma_stress_test.py",
+      "reason": "ModuleNotFoundError: agents.obsidia_sigma_v130"
+    },
+    {
+      "test": "tests/test_agents_functional.py",
+      "reason": "ImportError: TradingState"
+    },
+    {
+      "test": "tests/test_consensus_inprocess.py",
+      "reason": "ModuleNotFoundError: agents.run_pipeline"
+    },
+    {
+      "test": "tests/test_sigma_v18_9.py",
+      "reason": "ModuleNotFoundError: agents.obsidia_sigma_v130"
+    }
+  ],
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "routes_modified": false,
+  "srl_modified": false,
+  "connectors_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "neo4j_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "x108_merge_enabled": false,
+  "next_step": "P71_SOURCE_RUNTIME_AND_SOURCE_PACKS_DEEP_AUDIT"
+}

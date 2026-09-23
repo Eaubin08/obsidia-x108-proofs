@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obsidia/runtime_contracts/intent_envelope.schema.json",
+  "title": "IntentEnvelope",
+  "description": "Structure d'intention soumise au gateway X-108. Jamais de décision directe. Boundary: KX108_ONLY / NO_ACT.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "intent_id", "source_module", "action_candidate_type", "target_domain",
+    "irreversibility_level", "criticality_level", "context_packet_refs",
+    "requested_operation", "timestamp_or_tick_context",
+    "requires_x108", "authority", "emits_act", "source_status", "claim_scope"
+  ],
+  "properties": {
+    "intent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifiant unique de l'intention. Immutable après création."
+    },
+    "source_module": {
+      "type": "string",
+      "description": "Module périphérique émetteur de l'intention."
+    },
+    "action_candidate_type": {
+      "type": "string",
+      "enum": ["READ", "WRITE", "EXECUTE", "SIGNAL", "EMIT_CONTEXT"],
+      "description": "Type d'action candidate. Doit correspondre aux droits BoundaryContract."
+    },
+    "target_domain": {
+      "type": "string",
+      "enum": [
+        "kernel", "sigma", "graphiti", "brody", "npl",
+        "atlas", "cognitive", "gps", "gencoin", "external",
+        "memory", "os3", "agent"
+      ],
+      "description": "Domaine cible de l'intention."
+    },
+    "irreversibility_level": {
+      "type": "string",
+      "enum": ["REVERSIBLE", "PARTIALLY_REVERSIBLE", "IRREVERSIBLE"],
+      "description": "Niveau d'irréversibilité de l'action. Manquant → fail_closed."
+    },
+    "criticality_level": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "Niveau de criticité. CRITICAL → X108 gate avec tau_status obligatoire."
+    },
+    "context_packet_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "IDs des ContextPackets associés. Au moins 1 obligatoire."
+    },
+    "peripheral_signal_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs des PeripheralSignalPackets additionnels. Optionnel."
+    },
+    "requested_operation": {
+      "type": "string",
+      "description": "Description structurée de l'opération demandée. Lisible par X-108."
+    },
+    "timestamp_or_tick_context": {
+      "type": "string",
+      "description": "Contexte temporel (ISO8601 ou tick). Utilisé par External Signals anti-replay."
+    },
+    "requires_x108": {
+      "type": "boolean",
+      "const": true,
+      "description": "Toujours true. false → reject immédiat."
+    },
+    "authority": {
+      "type": "string",
+      "enum": ["KX108_ONLY"],
+      "description": "Autorité de décision. Toujours KX108_ONLY."
+    },
+    "emits_act": {
+      "type": "boolean",
+      "const": false,
+      "description": "Toujours false. true → PLAN3_BACKUP_GUARD_VIOLATION."
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "LEAN_PROVEN", "PYTHON_TESTED", "PYTHON_SPEC_NOT_LEAN_PROVEN",
+        "DOC_ONLY", "FUTURE_FORMAL_TARGET", "SPEC_FUTURE",
+        "SOURCE_PARTIAL", "COPIED_READONLY", "AUDITED_ONLY",
+        "SPEC_IMPORTED", "SPEC_LOCKED", "SOURCE_ONLY", "UNKNOWN_SOURCE"
+      ],
+      "description": "Statut formel du module source."
+    },
+    "claim_scope": {
+      "type": "string",
+      "enum": [
+        "CLAIMABLE_FORMAL", "CLAIMABLE_ADVISORY",
+        "CLAIMABLE_SPEC_ONLY", "CLAIM_FORBIDDEN", "FUTURE_FORMAL_TARGET_ONLY"
+      ],
+      "description": "Portée des claims publics autorisés."
+    },
+    "npl_labels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Labels NPL si contexte narratif. Ex: NPL_ADVISORY_NOT_SOVEREIGN."
+    },
+    "entropy_labels": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Labels entropie si signaux P107/P161. Ex: PYTHON_SPEC_NOT_LEAN_PROVEN."
+    },
+    "external_signal_flags": {
+      "type": "object",
+      "description": "Flags External Signals (anti-replay, stale, temporal_receipt). SIGNAL_ONLY.",
+      "properties": {
+        "temporal_receipt": { "type": ["string", "null"] },
+        "anti_replay_check": { "type": "string", "enum": ["PASS", "FAIL", "NOT_CHECKED"] },
+        "stale_execution_check": { "type": "string", "enum": ["PASS", "FAIL", "NOT_CHECKED"] }
+      },
+      "additionalProperties": false
+    },
+    "runtime_status": {
+      "type": "string",
+      "enum": [
+        "SPEC_ONLY", "CONTRACT_SKELETON_ONLY", "CONTRACT_READY",
+        "DRY_RUN_CANDIDATE", "DRY_RUN_ONLY", "FORBIDDEN_RUNTIME"
+      ],
+      "default": "CONTRACT_SKELETON_ONLY",
+      "description": "Statut runtime de ce contrat."
+    }
+  }
+}

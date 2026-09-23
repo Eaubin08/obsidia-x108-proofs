@@ -1,0 +1,440 @@
+{
+  "routes": {
+    "audit": {
+      "file": "apps/obsidia_api/routes/audit.py",
+      "lines": 54,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "blockchain": {
+      "file": "apps/obsidia_api/routes/blockchain.py",
+      "lines": 669,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [
+        "periphery",
+        "sigma"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": true,
+      "imports_runtime_wiring": false,
+      "imports_periphery": true,
+      "imports_proofs": false
+    },
+    "brody": {
+      "file": "apps/obsidia_api/routes/brody.py",
+      "lines": 739,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [
+        "runtime_wiring"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": true,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "brody_monitoring": {
+      "file": "apps/obsidia_api/routes/brody_monitoring.py",
+      "lines": 405,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [
+        "periphery",
+        "sigma"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": true,
+      "imports_runtime_wiring": false,
+      "imports_periphery": true,
+      "imports_proofs": false
+    },
+    "bus": {
+      "file": "apps/obsidia_api/routes/bus.py",
+      "lines": 51,
+      "binding": "ACTIVE_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "context": {
+      "file": "apps/obsidia_api/routes/context.py",
+      "lines": 30,
+      "binding": "ACTIVE_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "gencoin": {
+      "file": "apps/obsidia_api/routes/gencoin.py",
+      "lines": 53,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "graphiti": {
+      "file": "apps/obsidia_api/routes/graphiti.py",
+      "lines": 279,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "memory": {
+      "file": "apps/obsidia_api/routes/memory.py",
+      "lines": 135,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "os3": {
+      "file": "apps/obsidia_api/routes/os3.py",
+      "lines": 59,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "os_map": {
+      "file": "apps/obsidia_api/routes/os_map.py",
+      "lines": 726,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [
+        "runtime_wiring"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": true,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "os_trad_ir_reverse": {
+      "file": "apps/obsidia_api/routes/os_trad_ir_reverse.py",
+      "lines": 397,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [
+        "periphery"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": true,
+      "imports_proofs": false
+    },
+    "periphery_ops": {
+      "file": "apps/obsidia_api/routes/periphery_ops.py",
+      "lines": 1637,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [
+        "periphery",
+        "sigma"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": true,
+      "imports_runtime_wiring": false,
+      "imports_periphery": true,
+      "imports_proofs": false
+    },
+    "runtime_freeze": {
+      "file": "apps/obsidia_api/routes/runtime_freeze.py",
+      "lines": 305,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "runtime_wiring_preview": {
+      "file": "apps/obsidia_api/routes/runtime_wiring_preview.py",
+      "lines": 111,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [
+        "runtime_wiring"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": true,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "sigma_monitoring": {
+      "file": "apps/obsidia_api/routes/sigma_monitoring.py",
+      "lines": 122,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [
+        "sigma"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": true,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "source_runtime_status": {
+      "file": "apps/obsidia_api/routes/source_runtime_status.py",
+      "lines": 170,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [
+        "runtime_wiring"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": true,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "status": {
+      "file": "apps/obsidia_api/routes/status.py",
+      "lines": 63,
+      "binding": "READONLY_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "translation": {
+      "file": "apps/obsidia_api/routes/translation.py",
+      "lines": 38,
+      "binding": "ACTIVE_RUNTIME",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "worldcalls": {
+      "file": "apps/obsidia_api/routes/worldcalls.py",
+      "lines": 94,
+      "binding": "DRY_RUN_ONLY",
+      "import_sources": [],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": false,
+      "imports_proofs": false
+    },
+    "x108": {
+      "file": "apps/obsidia_api/routes/x108.py",
+      "lines": 464,
+      "binding": "ACTIVE_RUNTIME",
+      "import_sources": [
+        "periphery"
+      ],
+      "effective_write_flags": [],
+      "imports_sigma": false,
+      "imports_runtime_wiring": false,
+      "imports_periphery": true,
+      "imports_proofs": false
+    }
+  },
+  "runtime_wiring": {
+    "runtime_wiring\\contracts_loader.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 87
+    },
+    "runtime_wiring\\dry_run_packet_router.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 99
+    },
+    "runtime_wiring\\engine_bridge\\api_adapter_preview.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 134
+    },
+    "runtime_wiring\\engine_bridge\\bridge_types.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 215
+    },
+    "runtime_wiring\\engine_bridge\\readonly_engine_bridge.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 284
+    },
+    "runtime_wiring\\os3_evidence_stub.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 55
+    },
+    "runtime_wiring\\p8b_demo.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 164
+    },
+    "runtime_wiring\\packet_types.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 175
+    },
+    "runtime_wiring\\source_adapters.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 381
+    },
+    "runtime_wiring\\source_registry\\adapter_target_map.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 160
+    },
+    "runtime_wiring\\source_registry\\build_source_file_registry.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 321
+    },
+    "runtime_wiring\\source_registry\\p9c_integration_demo.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 260
+    },
+    "runtime_wiring\\source_registry\\registry_loader.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 145
+    },
+    "runtime_wiring\\source_registry\\registry_to_adapter_dry_run.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 256
+    },
+    "runtime_wiring\\source_registry\\registry_types.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 144
+    },
+    "runtime_wiring\\source_runtime\\action_gateway_hold_block_sandbox.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 211
+    },
+    "runtime_wiring\\source_runtime\\adapter_capability_map.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 203
+    },
+    "runtime_wiring\\source_runtime\\adapter_coverage_classifier.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 120
+    },
+    "runtime_wiring\\source_runtime\\brody_readonly_activation.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 145
+    },
+    "runtime_wiring\\source_runtime\\brody_source_context_bridge.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 243
+    },
+    "runtime_wiring\\source_runtime\\capability_inventory_linker.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 436
+    },
+    "runtime_wiring\\source_runtime\\capability_path_router.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 505
+    },
+    "runtime_wiring\\source_runtime\\capability_taxonomy.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 467
+    },
+    "runtime_wiring\\source_runtime\\controlled_activation_matrix.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 471
+    },
+    "runtime_wiring\\source_runtime\\global_runtime_surface_gate.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 251
+    },
+    "runtime_wiring\\source_runtime\\graphiti_memory_readonly_activation.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 205
+    },
+    "runtime_wiring\\source_runtime\\module_function_capability_map.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 264
+    },
+    "runtime_wiring\\source_runtime\\module_function_coverage_classifier.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 194
+    },
+    "runtime_wiring\\source_runtime\\os_trad_reverse_index.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 368
+    },
+    "runtime_wiring\\source_runtime\\readonly_content_loader.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 157
+    },
+    "runtime_wiring\\source_runtime\\reverse_os_interlanguage_index.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 316
+    },
+    "runtime_wiring\\source_runtime\\route_capability_map.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 123
+    },
+    "runtime_wiring\\source_runtime\\route_coverage_classifier.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 351
+    },
+    "runtime_wiring\\source_runtime\\runtime_inventory_builder.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 417
+    },
+    "runtime_wiring\\source_runtime\\runtime_inventory_graph.py": {
+      "binding": "AUDIT_ONLY",
+      "lines": 183
+    },
+    "runtime_wiring\\source_runtime\\source_context_hydrator.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 96
+    },
+    "runtime_wiring\\source_runtime\\source_family_selector.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 129
+    },
+    "runtime_wiring\\source_runtime\\source_hydration_planner.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 145
+    },
+    "runtime_wiring\\source_runtime\\source_pack_resolver.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 150
+    },
+    "runtime_wiring\\source_runtime\\source_runtime_cache.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 144
+    },
+    "runtime_wiring\\source_runtime\\source_runtime_query.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 269
+    },
+    "runtime_wiring\\source_runtime\\workbench_view_capability_map.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 186
+    },
+    "runtime_wiring\\source_runtime\\workbench_view_coverage_classifier.py": {
+      "binding": "READONLY_RUNTIME",
+      "lines": 140
+    },
+    "runtime_wiring\\source_runtime\\world_action_bus_dry_run_activation.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 195
+    },
+    "runtime_wiring\\x108_admission_stub.py": {
+      "binding": "DRY_RUN_ONLY",
+      "lines": 114
+    }
+  }
+}

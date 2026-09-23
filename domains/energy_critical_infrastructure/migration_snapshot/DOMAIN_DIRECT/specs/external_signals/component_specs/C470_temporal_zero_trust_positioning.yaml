@@ -1,0 +1,96 @@
+id: C470
+name: temporal_zero_trust_positioning
+family: external_timeverse
+type: rssi_positioning
+source: external_category_signal
+status: spec_patch_ready
+definition: 'RSSI narrative block: identity says who, temporal context says when,
+  KX108 says whether consequence may exist.'
+role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+internal_components:
+- identity_context
+- device_context
+- temporal_context
+- irreversibility_context
+inputs:
+- rssi_questionnaire
+- security_pitch
+outputs:
+- temporal_zero_trust_statement
+metrics:
+- definition_completeness
+- input_output_clarity
+- integration_clarity
+- runtime_readiness
+- proof_readiness
+- testability_score
+- observability_score
+- replayability_score
+- drift_risk
+- authority_risk
+- kernel_boundary_safety
+- irreversibility_exposure
+- world_action_proximity
+- authority_boundary_clarity
+- evidence_surface_completeness
+- replay_integrity
+- custody_integrity
+- rssi_readability
+- audit_exportability
+- non_reauthoring_score
+- temporal_freshness_score
+- tick_canonicality
+- no_float_compliance
+- anti_replay_strength
+- challenge_freshness
+- signature_verification_confidence
+- stale_execution_risk
+- temporal_receipt_completeness
+- receipt_anchor_integrity
+- time_bounded_tool_call_score
+formulas:
+- Trust = identity_valid ∧ device_valid ∧ temporal_valid ∧ KX108_authorized
+invariants:
+- marketing_statement_not_authority
+- KX108_ONLY
+- DECISION_AUTHORITY = KX108_ONLY
+- no_external_signal_emits_ACT
+- no_external_signal_mutates_kernel
+- proof_before_consequence
+tests:
+- test_positioning_no_runtime_power
+- test_ztt_requires_KX108_phrase
+proof_artifacts:
+- intent_receipt
+- effect_receipt_only_after_ACT
+- replay_pointer
+- hash_chain_packet
+- rssi_audit_report
+runtime_status: spec_only
+authority: advisory_external_signal
+kx108_boundary:
+  decision_authority: KX108_ONLY
+  can_emit_ACT: false
+  can_emit_HOLD: false
+  can_emit_BLOCK: false
+  can_emit_world_action: false
+  can_emit_kernel_mutation: false
+  can_emit_action_candidate: true
+  requires_kx108_if_action: true
+  proof_required_if_action: true
+  external_signal_only: true
+  copied_from_external_runtime: false
+  allowed_role: enrich proof/context only
+  forbidden_role: decision authority
+risks:
+- category_drift
+- external_concept_overreach
+- wrapper_reauthoring_attempt
+- decision_authority_confusion
+dependencies:
+- KX108_boundary_adapter
+- world_action_gateway_guard
+- OS3_evidence_packet
+- visible_proof_surface
+implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+  external runtime or grant authority.

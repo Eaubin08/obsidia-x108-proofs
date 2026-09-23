@@ -1,0 +1,522 @@
+# BRODY_PHASE12A_NATIVE_VOICE_SOURCE_AUDIT_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Scope
+Audit existing stabilized Brody voice components before building Phase 12 native voice composition.
+
+## Question
+Do we already have stabilized voice composition logic, or only native payload display?
+
+## Git baseline
+- ## main...origin/main
+- ?? docs/runtime/BRODY_PHASE10A_REAL_USER_TERMINAL_COMPARE_20260527.md
+- ?? docs/runtime/BRODY_PHASE10C_RIGHTPANEL_SUPPORT_VISIBILITY_AUDIT_20260527.md
+- ?? docs/runtime/BRODY_PHASE11A_BIS_ACTIVE_CONTRACTS_AUDIT_20260527.md
+- ?? docs/runtime/BRODY_PHASE11A_FULL_MACHINATION_KERNEL_CONTRACT_AUDIT_20260527.md
+- ?? docs/runtime/BRODY_PHASE11A_TER_SOURCE_ONLY_CONTRACT_AUDIT_20260527.md
+- ?? scripts/smoke_phase10_real_user_terminal_compare.ps1
+
+## Recent commits
+- ad844a9 docs: freeze Brody native full surface phase 11G
+- a2d7616 feat: expose native Brody machination in RightPanel phase 11E
+- 9785388 feat: expose native Brody machination in terminal phase 11D
+- eecf7e2 feat: add native Brody machination composition phase 11B
+- d69b5c9 feat: add terminal enriched Brody support flow phase 10E
+- 2dd4709 docs: freeze final reconnect audit phase 9B5
+- f0c9ecf feat: reconnect UI terminal support routes phase 9B4
+- d419ef6 docs: add live OS Trad IR Reverse smoke phase 9B3
+- 1e126f2 feat: add OS Trad IR Reverse backend routes phase 9B2
+- 73edf3f docs: remove BOM from phase 9B1 route contract
+- 1245817 docs: define OS Trad IR Reverse route contract phase 9B1
+- b3dccba docs: validate full surface binding phase 9B0
+
+## Server health
+- name=graphiti_v20_status status=OK code=200 length=390
+- name=graphiti_v20_context status=OK code=200 length=7741
+- name=brody_openapi status=OK code=200 length=91258
+- name=brody_graphiti_status status=OK code=200 length=1391
+- name=workbench_ui status=OK code=200 length=659
+
+## Files inspected
+- exists=True length=14622 path=apps/obsidia_api/routes/brody.py
+- exists=True length=8286 path=apps/obsidia_api/brody_real_response_pipeline.py
+- exists=False length=0 path=apps/obsidia_api/brody_native_answer_composer.py
+- exists=True length=11724 path=apps/obsidia_api/brody_machination_composer.py
+- exists=True length=11680 path=apps/obsidia_api/brody_contracts_packet.py
+- exists=True length=34649 path=apps/obsidia_api/brody_true_voice_adapter.py
+- exists=True length=8258 path=apps/obsidia_api/brody_full_runtime_reconnect.py
+- exists=False length=0 path=apps/obsidia_api/brody_structured_response_adapter.py
+- exists=True length=25344 path=apps/obsidia_api/brody_memory_response_chain_adapter.py
+- exists=True length=9267 path=apps/obsidia_api/brody_semantic_query_router.py
+- exists=True length=2319 path=apps/obsidia_api/brody_tree_policy_adapter.py
+- exists=True length=4534 path=apps/obsidia_api/brody_runtime_context_adapter.py
+- exists=True length=7862 path=periphery/brody_memory_readonly/local_response_engine_readonly/brody_local_response_engine_readonly_v1.py
+- exists=True length=9811 path=periphery/brody_memory_readonly/terminal_structural_dialogue_readonly/brody_terminal_structural_dialogue_readonly_v1.py
+- exists=True length=6665 path=periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py
+- exists=True length=16804 path=periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py
+- exists=True length=1641 path=periphery/brody/brody_response_contract.py
+- exists=True length=1767 path=periphery/agent_contracts.py
+
+## Source evidence hits
+- .\apps\obsidia_api\routes\brody.py:16: from apps.obsidia_api.brody_tree_policy_adapter import build_tree_policy_snapshot
+- .\apps\obsidia_api\routes\brody.py:25: from apps.obsidia_api.brody_machination_composer import build_machination_packet
+- .\apps\obsidia_api\routes\brody.py:74: response_md = r.get("response_md", r.get("response", ""))
+- .\apps\obsidia_api\routes\brody.py:75: context_packet = r.get("context_packet", {})
+- .\apps\obsidia_api\routes\brody.py:80: authority_snapshot = classify_request_authority(req.message, {}, context_packet)
+- .\apps\obsidia_api\routes\brody.py:86: authority_snapshot=authority_snapshot, context_packet=context_packet, response_md=response_md)
+- .\apps\obsidia_api\routes\brody.py:89: user_message=req.message, language=req.language, response_md=response_md,
+- .\apps\obsidia_api\routes\brody.py:90: context_packet=context_packet, ir_candidate={}, risk=action_risk,
+- .\apps\obsidia_api\routes\brody.py:113: context_packet=context_packet, structured_response_snapshot=structured_response_snapshot,
+- .\apps\obsidia_api\routes\brody.py:123: chain_md = memory_response_chain.get("response_md", "")
+- .\apps\obsidia_api\routes\brody.py:125: chain_has_mat = memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
+- .\apps\obsidia_api\routes\brody.py:127: # Always use true_voice for final answer — never raw response_md
+- .\apps\obsidia_api\routes\brody.py:133: raw_final_answer = v1412a_final or response_md or "Brody - reponse structurelle indisponible. KX108_ONLY."
+- .\apps\obsidia_api\routes\brody.py:144: trees_snap = safe_call_snapshot("tree_policy", build_tree_policy_snapshot, authority_snapshot=authority_snapshot)
+- .\apps\obsidia_api\routes\brody.py:152: # Project memory snapshot — from real JSONL adapter (not brody_full_context fallback)
+- .\apps\obsidia_api\routes\brody.py:168: tree_policy_snapshot=trees_snap,
+- .\apps\obsidia_api\routes\brody.py:199: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\brody.py:202: machination_packet = build_machination_packet(
+- .\apps\obsidia_api\routes\brody.py:206: source=r.get("source", "REAL_BRODY_RUNTIME_NO_GRAPHITI"),
+- .\apps\obsidia_api\routes\brody.py:207: graphiti_status=r.get("graphiti_status", ""),
+- .\apps\obsidia_api\routes\brody.py:217: tree_policy_snapshot=trees_snap,
+- .\apps\obsidia_api\routes\brody.py:221: context_packet=context_packet,
+- .\apps\obsidia_api\routes\brody.py:229: "response_md": response_md,
+- .\apps\obsidia_api\routes\brody.py:231: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\brody.py:237: "source": r.get("source", "REAL_BRODY_RUNTIME_NO_GRAPHITI"),
+- .\apps\obsidia_api\routes\brody.py:238: "graphiti_status": r.get("graphiti_status", ""),
+- .\apps\obsidia_api\routes\brody.py:241: "memory_query": r.get("memory_query", ""),
+- .\apps\obsidia_api\routes\brody.py:243: "context_packet": context_packet,
+- .\apps\obsidia_api\routes\brody.py:264: "tree_policy_snapshot": trees_snap,
+- .\apps\obsidia_api\routes\brody.py:268: "contracts": machination_packet.get("contracts", {}),
+- .\apps\obsidia_api\routes\brody.py:269: "authority_contract": machination_packet.get("contracts", {}).get("authority_contract", {}),
+- .\apps\obsidia_api\routes\brody.py:270: "permission_matrix": machination_packet.get("contracts", {}).get("permission_matrix", {}),
+- .\apps\obsidia_api\routes\brody.py:271: "kernel_contract": machination_packet.get("contracts", {}).get("kernel_contract", {}),
+- .\apps\obsidia_api\routes\brody.py:272: "boundary_contract": machination_packet.get("contracts", {}).get("boundary_contract", {}),
+- .\apps\obsidia_api\routes\brody.py:273: "signal_contract": machination_packet.get("contracts", {}).get("signal_contract", {}),
+- .\apps\obsidia_api\routes\brody.py:274: "forbidden_output_contract": machination_packet.get("contracts", {}).get("forbidden_output_contract", {}),
+- .\apps\obsidia_api\routes\brody.py:275: "machination_packet": machination_packet,
+- .\apps\obsidia_api\routes\brody.py:276: "support_routes": machination_packet.get("support_routes", {}),
+- .\apps\obsidia_api\routes\brody.py:277: "support_summary": machination_packet.get("support_summary", {}),
+- .\apps\obsidia_api\brody_real_response_pipeline.py:3: Prioritizes: local_response_engine > terminal_structural_dialogue.
+- .\apps\obsidia_api\brody_real_response_pipeline.py:4: Never returns raw tuples. Always returns response_md string.
+- .\apps\obsidia_api\brody_real_response_pipeline.py:26: _TERMINAL = _TERMINAL or _si(P + "terminal_structural_dialogue_readonly.brody_terminal_structural_dialogue_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:27: _LOCAL_ENGINE = _LOCAL_ENGINE or _si(P + "local_response_engine_readonly.brody_local_response_engine_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:28: _CONTEXT_QUERY = _CONTEXT_QUERY or _si(P + "context_packet_query_readonly.brody_context_packet_query_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:59: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:82: memory_query = message
+- .\apps\obsidia_api\brody_real_response_pipeline.py:85: try: memory_query = _TERMINAL.extract_memory_query(message) or message
+- .\apps\obsidia_api\brody_real_response_pipeline.py:90: neo4j_packet = None
+- .\apps\obsidia_api\brody_real_response_pipeline.py:92: try: neo4j_packet = _CONTEXT_QUERY.query_neo4j(memory_query, limit)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:95: response_md = ""
+- .\apps\obsidia_api\brody_real_response_pipeline.py:97: source = "REAL_BRODY_RUNTIME_NO_GRAPHITI"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:98: material_quality = ""
+- .\apps\obsidia_api\brody_real_response_pipeline.py:99: selected_items: list = []
+- .\apps\obsidia_api\brody_real_response_pipeline.py:102: if _LOCAL_ENGINE and neo4j_packet and graphiti_live:
+- .\apps\obsidia_api\brody_real_response_pipeline.py:104: ctx_packet = neo4j_packet if isinstance(neo4j_packet, dict) else {"items": [], "query": memory_query}
+- .\apps\obsidia_api\brody_real_response_pipeline.py:106: ctx_packet = {"items": [], "query": memory_query}
+- .\apps\obsidia_api\brody_real_response_pipeline.py:111: ctx_packet.setdefault("decision_authority", "KX108_ONLY")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:112: obj = {"context_packet": ctx_packet, "query": memory_query, "text": message,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:114: "decision_authority": "KX108_ONLY"}
+- .\apps\obsidia_api\brody_real_response_pipeline.py:115: engine_result = _LOCAL_ENGINE.build_response(obj, max_items=max_items)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:117: response_md = engine_result.get("response_md", "")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:118: material_quality = engine_result.get("material_quality", "")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:119: selected_items = engine_result.get("selected_items", [])
+- .\apps\obsidia_api\brody_real_response_pipeline.py:121: if response_md:
+- .\apps\obsidia_api\brody_real_response_pipeline.py:122: source = "REAL_BRODY_GRAPHITI_LIVE"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:126: if not response_md and _TERMINAL:
+- .\apps\obsidia_api\brody_real_response_pipeline.py:128: terminal_result = _TERMINAL.build_response(
+- .\apps\obsidia_api\brody_real_response_pipeline.py:129: user_text=message, memory_query=memory_query, packet={}, selected=[], command=None)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:133: response_md = str(parts[0]) if len(parts) > 0 else ""
+- .\apps\obsidia_api\brody_real_response_pipeline.py:139: response_md = terminal_result.get("response_md", "")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:140: if not response_md:
+- .\apps\obsidia_api\brody_real_response_pipeline.py:141: response_md = terminal_result.get("response_text", str(terminal_result))
+- .\apps\obsidia_api\brody_real_response_pipeline.py:143: response_md = str(terminal_result)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:144: source = "REAL_BRODY_RUNTIME_NO_GRAPHITI"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:147: if not response_md and _TERMINAL and hasattr(_TERMINAL, 'command_response'):
+- .\apps\obsidia_api\brody_real_response_pipeline.py:149: cmd = _TERMINAL.command_response(message)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:150: if cmd: response_md = str(cmd)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:153: if not response_md:
+- .\apps\obsidia_api\brody_real_response_pipeline.py:155: response_md = (
+- .\apps\obsidia_api\brody_real_response_pipeline.py:157: "Graphiti Neo4j est offline (NEO4J_PASSWORD non defini, port 7688 ferme). "
+- .\apps\obsidia_api\brody_real_response_pipeline.py:167: "memory_query": memory_query,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:168: "graphiti_status": r["graphiti_probe"]["status"],
+- .\apps\obsidia_api\brody_real_response_pipeline.py:173: "response": response_md, "response_md": response_md, "source": source,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:174: "memory_query": memory_query, "action_risk": action_risk,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:175: "graphiti_status": r["graphiti_probe"]["status"],
+- .\apps\obsidia_api\brody_real_response_pipeline.py:178: "engine_status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS" if engine_used else "TERMINAL_FALLBACK",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:179: "material_quality": material_quality, "selected_items": selected_items, "tag_counts": tag_counts,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:180: "context_packet": ctx_data,
+- .\apps\obsidia_api\brody_machination_composer.py:5: Aggregates existing Brody runtime snapshots, contracts, and OS Trad / IR /
+- .\apps\obsidia_api\brody_machination_composer.py:16: from apps.obsidia_api.brody_contracts_packet import (
+- .\apps\obsidia_api\brody_machination_composer.py:18: build_brody_contracts_packet,
+- .\apps\obsidia_api\brody_machination_composer.py:109: "DECISION_AUTHORITY_KX108_ONLY",
+- .\apps\obsidia_api\brody_machination_composer.py:125: {"kind": "boundary", "value": "KX108_ONLY", "source": "BRODY_NATIVE_COMPOSER"},
+- .\apps\obsidia_api\brody_machination_composer.py:198: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_machination_composer.py:211: "boundary_notice": "KX108_ONLY",
+- .\apps\obsidia_api\brody_machination_composer.py:229: def build_support_summary(support_routes: dict[str, Any]) -> dict[str, Any]:
+- .\apps\obsidia_api\brody_machination_composer.py:237: "source": "BRODY_NATIVE_SUPPORT_SUMMARY_V1",
+- .\apps\obsidia_api\brody_machination_composer.py:245: "boundary_notice": proj.get("boundary_notice", "KX108_ONLY"),
+- .\apps\obsidia_api\brody_machination_composer.py:250: def build_machination_packet(
+- .\apps\obsidia_api\brody_machination_composer.py:256: graphiti_status: str,
+- .\apps\obsidia_api\brody_machination_composer.py:266: tree_policy_snapshot: dict[str, Any],
+- .\apps\obsidia_api\brody_machination_composer.py:270: context_packet: dict[str, Any],
+- .\apps\obsidia_api\brody_machination_composer.py:275: contracts = build_brody_contracts_packet(user_message, authority_snapshot)
+- .\apps\obsidia_api\brody_machination_composer.py:278: "graphiti_status": graphiti_status,
+- .\apps\obsidia_api\brody_machination_composer.py:281: "context_packet_id": _as_dict(context_packet).get("id") or _as_dict(context_packet).get("packet_id"),
+- .\apps\obsidia_api\brody_machination_composer.py:289: tree_context=tree_policy_snapshot,
+- .\apps\obsidia_api\brody_machination_composer.py:293: support_summary = build_support_summary(support_routes)
+- .\apps\obsidia_api\brody_machination_composer.py:296: "source": "BRODY_NATIVE_MACHINATION_PACKET_V1",
+- .\apps\obsidia_api\brody_machination_composer.py:297: "status": "MACHINATION_PACKET_READY",
+- .\apps\obsidia_api\brody_machination_composer.py:305: "contracts": contracts,
+- .\apps\obsidia_api\brody_machination_composer.py:314: "tree_policy_snapshot": tree_policy_snapshot,
+- .\apps\obsidia_api\brody_machination_composer.py:318: "context_packet": context_packet,
+- .\apps\obsidia_api\brody_machination_composer.py:322: "support_summary": support_summary,
+- .\apps\obsidia_api\brody_machination_composer.py:324: "status": graphiti_status,
+- .\apps\obsidia_api\brody_machination_composer.py:326: "context_available": bool(graphiti_status),
+- .\apps\obsidia_api\brody_contracts_packet.py:1: """Brody native contracts packet.
+- .\apps\obsidia_api\brody_contracts_packet.py:7: boundary contracts into one packet for /api/brody/chat.
+- .\apps\obsidia_api\brody_contracts_packet.py:33: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:86: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:92: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:103: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:118: def build_permission_matrix(authority_snapshot: dict[str, Any] / None = None) -> dict[str, Any]:
+- .\apps\obsidia_api\brody_contracts_packet.py:142: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:222: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:238: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:252: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:256: def build_tree_policy_contract(authority_snapshot: dict[str, Any] / None = None) -> dict[str, Any]:
+- .\apps\obsidia_api\brody_contracts_packet.py:258: tree_policy = auth.get("tree_policy", {}) if isinstance(auth.get("tree_policy", {}), dict) else {}
+- .\apps\obsidia_api\brody_contracts_packet.py:260: "tree_count": tree_policy.get("total_trees", tree_policy.get("tree_count", 34)),
+- .\apps\obsidia_api\brody_contracts_packet.py:267: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:268: "source_tree_policy": tree_policy,
+- .\apps\obsidia_api\brody_contracts_packet.py:289: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:310: def build_brody_contracts_packet(
+- .\apps\obsidia_api\brody_contracts_packet.py:314: """Build the normalized native contracts packet for /api/brody/chat."""
+- .\apps\obsidia_api\brody_contracts_packet.py:327: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:331: "source": "BRODY_NATIVE_CONTRACTS_PACKET_V1",
+- .\apps\obsidia_api\brody_contracts_packet.py:332: "status": "CONTRACTS_PACKET_READY",
+- .\apps\obsidia_api\brody_contracts_packet.py:334: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_contracts_packet.py:337: "permission_matrix": build_permission_matrix(auth),
+- .\apps\obsidia_api\brody_contracts_packet.py:345: "tree_policy_contract": build_tree_policy_contract(auth),
+- .\apps\obsidia_api\brody_true_voice_adapter.py:6: - terminal_structural_dialogue identity (:who command)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:7: - local_response_engine response_md
+- .\apps\obsidia_api\brody_true_voice_adapter.py:16: 2. Local response engine material (when HAS_MATERIAL)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:24: - KX108_ONLY always
+- .\apps\obsidia_api\brody_true_voice_adapter.py:100: project_has_material = project.get("contextual_material_status") in ("HAS_PROJECT_MEMORY", "PARTIAL_PROJECT_MEMORY")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:105: chain_local_fallback_partial = chain.get("status") == "LOCAL_INDEX_FALLBACK_PARTIAL"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:106: chain_has_mat = chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:107: chain_response_md = chain.get("response_md", "")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:108: chain_selected_items: list[dict] = chain.get("selected_items", [])
+- .\apps\obsidia_api\brody_true_voice_adapter.py:169: "je ne décide pas. X108/KX108 reste seul décisionnaire. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:180: if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- .\apps\obsidia_api\brody_true_voice_adapter.py:222: # 7. Memory response chain — if PASS, transform response_md to natural auditor language
+- .\apps\obsidia_api\brody_true_voice_adapter.py:223: if chain_pass and chain_has_mat and chain_response_md and len(chain_response_md) > 50:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:246: selected = chain.get("selected_items", [])
+- .\apps\obsidia_api\brody_true_voice_adapter.py:247: material = chain.get("material_quality", "")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:252: user_message, chain_topic, chain_response_md, selected, item_count, material
+- .\apps\obsidia_api\brody_true_voice_adapter.py:256: user_message, chain_topic, chain_response_md, selected, item_count, material
+- .\apps\obsidia_api\brody_true_voice_adapter.py:259: elif (chain_local_fallback_partial and chain_selected_items
+- .\apps\obsidia_api\brody_true_voice_adapter.py:262: # Local Graphiti index fallback — Neo4j offline; synthesize from index metadata
+- .\apps\obsidia_api\brody_true_voice_adapter.py:267: for item in chain_selected_items[:3]:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:288: voice_source = "LOCAL_GRAPHITI_INDEX_FALLBACK"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:301: voice_source = "MEMORY_RESPONSE_CHAIN_NO_MATERIAL"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:395: user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:399: user_message, chain_topic_ctx, "", [], 0, "NO_MATERIAL"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:407: "KX108_ONLY. Pas de décision, pas d'ACT, pas d'écriture mémoire._"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:412: "KX108_ONLY. No decision, no ACT, no memory write._"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:440: used_modules.append("terminal_structural_dialogue_v1_1b")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:441: if project_has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:457: "project_memory_used": project_has_material,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:476: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:485: response_md: str,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:486: selected_items: list[dict],
+- .\apps\obsidia_api\brody_true_voice_adapter.py:496: clean_md = _strip_engine_headers(response_md)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:499: has_material = material in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and item_count > 0
+- .\apps\obsidia_api\brody_true_voice_adapter.py:509: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:515: elif topic == "34_ARBRES":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:517: "Les 34 arbres sont la grille de lecture structurelle du projet Obsidia : "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:522: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:524: f"La memoire indexe {item_count} documents sur les 34 arbres : "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:535: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:550: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:571: elif topic == "MEMORY_QUERY":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:572: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:581: "La memoire est accessible en structure mais le materiel textuel complet "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:582: "n'est pas disponible sans Neo4j live. L'index local fournit les references."
+- .\apps\obsidia_api\brody_true_voice_adapter.py:585: elif topic == "TREE_POLICY":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:587: "Les 34 arbres sont un outil de lecture et de classification, pas un outil de decision. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:592: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:614: "Tous les modules actifs sont readonly, KX108_ONLY."
+- .\apps\obsidia_api\brody_true_voice_adapter.py:623: "preuve/controle (audit, receipt, replay, KX108_ONLY). "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:629: if has_material:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:647: lines.append("X108 reste seul decideur. Je peux preparer, contextualiser, structurer — pas agir.")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:655: response_md: str,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:656: selected_items: list[dict],
+- .\apps\obsidia_api\brody_true_voice_adapter.py:662: clean_md = _strip_engine_headers(response_md)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:666: "34_ARBRES": "On the 34 trees, local memory indicates:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:676: if selected_items:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:678: for item in selected_items[:4]:
+- .\apps\obsidia_api\brody_true_voice_adapter.py:698: """Remove engine dump headers from response_md for clean display."""
+- .\apps\obsidia_api\brody_true_voice_adapter.py:711: "- material_quality:",
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:16: Boundary: readonly, KX108_ONLY, no write.
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:64: "This does NOT grant special authority — KX108_ONLY remains sole decision authority. "
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:74: context_packet: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:140: if project_memory.get("context_packet_query_found"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:141: used_modules.append("context_packet_query_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:144: if project_memory.get("local_response_engine_found"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:145: used_modules.append("local_response_engine_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:149: used_modules.append("terminal_structural_dialogue_readonly_v1_1b")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:179: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:8: → context_packet with BrodyMemoryDoc items
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:11: 3. local_response_engine.build_response(hydrated_packet)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:12: → produces structured response_md with material_quality
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:15: - periphery/brody_memory_readonly/context_packet_query_readonly/
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:17: - periphery/brody_memory_readonly/local_response_engine_readonly/
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:19: All three are freeze-sourced, READY status, KX108_ONLY.
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:21: Boundary: readonly, no Neo4j write, no Graphiti write, KX108_ONLY.
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:44: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:149: # Fallback: metadata-only JSON
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:238: 3. local_response_engine.build_response() → structured response_md
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:248: sq = _route_semantic(user_message) if user_message else {"topic": "GENERAL", "semantic_query": semantic_query or "", "primary_query": semantic_query or "", "fallback_queries": []}
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:252: fallback_qs: list[str] = sq.get("fallback_queries", [])
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:257: # ── LOCAL INDEX FALLBACK ──────────────────────────────────────────
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:262: "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:275: "local_response_engine_used": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:276: "material_quality": "CHAIN_UNAVAILABLE",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:277: "response_md": "",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:278: "response_md_length": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:279: "selected_items_count": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:280: "selected_items": [],
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:281: "final_answer_uses_response_md": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:287: # Query ladder: primary_query first, then fallbacks
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:292: for q in [primary_q] + list(fallback_qs):
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:302: "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:315: "local_response_engine_used": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:316: "material_quality": "NO_MATERIAL",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:317: "response_md": "",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:318: "response_md_length": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:319: "selected_items_count": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:320: "selected_items": [],
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:321: "final_answer_uses_response_md": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:333: periphery / "local_response_engine_readonly" / "brody_local_response_engine_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:336: # Match the exact format brody_context_packet_query_readonly_v1 produces
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:339: "status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:342: "context_packet": {
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:357: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:371: packet_for_engine = hydrated.get("context_packet", hydrated)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:379: # Engine expects context_packet.items at the same level (extract_packet → obj.get("context_packet").get("items"))
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:381: packet_for_engine.get("context_packet", {}).get("items")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:386: "context_packet": {
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:396: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:398: engine_result = engine_mod.build_response(engine_input, max_items=max_items)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:400: response_md = engine_result.get("response_md", "")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:401: material_quality = engine_result.get("material_quality", "PARTIAL_MATERIAL")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:402: selected_items = engine_result.get("selected_items", local_items[:max_items])
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:406: response_md = ""
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:407: material_quality = "PARTIAL_MATERIAL"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:408: selected_items = local_items[:max_items]
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:412: response_md = ""
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:413: material_quality = "PARTIAL_MATERIAL"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:414: selected_items = local_items[:max_items]
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:418: response_md = ""
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:419: material_quality = "PARTIAL_MATERIAL"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:420: selected_items = local_items[:max_items]
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:428: if (material_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and response_md and len(response_md) > 50)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:429: else "LOCAL_INDEX_FALLBACK_PARTIAL"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:434: "source_mode": "LOCAL_GRAPHITI_INDEX_FALLBACK",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:447: "local_response_engine_used": engine_used,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:448: "material_quality": material_quality,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:449: "response_md": response_md,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:450: "response_md_length": len(response_md),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:451: "selected_items_count": len(selected_items),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:452: "selected_items": selected_items[:3],
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:454: "final_answer_uses_response_md": bool(response_md and len(response_md) > 50),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:455: "chain_source": "local_graphiti_index→hydrate_packet→local_response_engine",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:464: periphery / "context_packet_query_readonly" / "brody_context_packet_query_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:470: periphery / "local_response_engine_readonly" / "brody_local_response_engine_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:474: return _chain_error("QUERY_MODULE_NOT_FOUND", query, "context_packet_query_readonly module not importable")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:478: return _chain_error("ENGINE_MODULE_NOT_FOUND", query, "local_response_engine_readonly module not importable")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:482: fallbacks = sq.get("fallback_queries", [])
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:487: # Step 1: Query Neo4j with ladder (primary → fallbacks)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:492: # Ladder: if 0 results, try fallbacks
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:493: for fb in fallbacks[:4]:  # Max 4 fallback attempts
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:512: "local_response_engine_used": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:513: "material_quality": "NO_MATERIAL",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:514: "response_md": "",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:515: "response_md_length": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:516: "selected_items_count": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:517: "selected_items": [],
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:518: "final_answer_uses_response_md": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:532: "context_packet": hydrated.get("context_packet", hydrated),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:538: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:540: engine_result = engine_mod.build_response(engine_input, max_items=max_items)
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:543: return _chain_error("ENGINE_RETURNED_NON_DICT", query, f"build_response returned {type(engine_result).__name__}")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:545: response_md = engine_result.get("response_md", "")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:546: material_quality = engine_result.get("material_quality", "")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:547: selected_items = engine_result.get("selected_items", [])
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:550: # Only PASS if material present and response_md valid
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:551: chain_result_status = "BRODY_MEMORY_RESPONSE_CHAIN_PASS" if (material_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and response_md and len(response_md) > 50) else "PARTIAL_QUERY_ONLY"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:563: "local_response_engine_used": True,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:564: "material_quality": material_quality,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:565: "response_md": response_md,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:566: "response_md_length": len(response_md),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:567: "selected_items_count": len(selected_items),
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:568: "selected_items": selected_items[:3],  # Keep payload small
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:570: "final_answer_uses_response_md": True,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:571: "chain_source": "query_neo4j→hydrate_packet→local_response_engine",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:600: "local_response_engine_used": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:601: "material_quality": "CHAIN_ERROR",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:602: "response_md": "",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:603: "response_md_length": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:604: "selected_items_count": 0,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:605: "selected_items": [],
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:606: "final_answer_uses_response_md": False,
+- .\apps\obsidia_api\brody_semantic_query_router.py:12: Boundary: readonly, KX108_ONLY.
+- .\apps\obsidia_api\brody_semantic_query_router.py:54: # (triggers, topic, semantic_query, primary_query, fallback_queries)
+- .\apps\obsidia_api\brody_semantic_query_router.py:63: ["34 arbres", "34_arbres", "trente-quatre arbres", "arbres obsidia", "tree policy", "arbres bloqués", "arbres safe"],
+- .\apps\obsidia_api\brody_semantic_query_router.py:64: "34_ARBRES",
+- .\apps\obsidia_api\brody_semantic_query_router.py:65: "34 arbres tree policy safe blocked",
+- .\apps\obsidia_api\brody_semantic_query_router.py:66: "34_arbres",
+- .\apps\obsidia_api\brody_semantic_query_router.py:67: ["arbres", "tree policy", "safe_trees", "blocked_action", "34 arbres"],
+- .\apps\obsidia_api\brody_semantic_query_router.py:81: ["true voice", "response structure", "local_response_engine", "terminal dialogue"],
+- .\apps\obsidia_api\brody_semantic_query_router.py:99: "MEMORY_QUERY",
+- .\apps\obsidia_api\brody_semantic_query_router.py:155: "TREE_POLICY",
+- .\apps\obsidia_api\brody_semantic_query_router.py:177: 3. Fallback: extract first 3 meaningful words
+- .\apps\obsidia_api\brody_semantic_query_router.py:180: topic, semantic_query, primary_query, fallback_queries,
+- .\apps\obsidia_api\brody_semantic_query_router.py:197: "fallback_queries": ["passe", "present", "futur", "proof"],
+- .\apps\obsidia_api\brody_semantic_query_router.py:212: "fallback_queries": ["next", "projection", "candidate", "future"],
+- .\apps\obsidia_api\brody_semantic_query_router.py:220: for triggers, topic, query, primary, fallbacks in _TOPIC_ROUTES:
+- .\apps\obsidia_api\brody_semantic_query_router.py:226: "fallback_queries": fallbacks,
+- .\apps\obsidia_api\brody_semantic_query_router.py:233: # Fallback: extract first 3 words of 4+ chars
+- .\apps\obsidia_api\brody_semantic_query_router.py:236: fallback_q = " ".join(words[:3]) if words else normalized[:60]
+- .\apps\obsidia_api\brody_semantic_query_router.py:241: "semantic_query": fallback_q,
+- .\apps\obsidia_api\brody_semantic_query_router.py:243: "fallback_queries": words[1:4] if len(words) > 1 else [],
+- .\apps\obsidia_api\brody_semantic_query_router.py:247: "route": "FALLBACK_WORD_EXTRACTION",
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:8: - brody_rights_authority_matrix.py (tree_policy field)
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:10: - 34 arbres contextual data from project memory
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:12: Boundary: readonly, KX108_ONLY.
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:25: def build_tree_policy_snapshot(
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:29: """Build tree_policy_snapshot from existing sources."""
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:34: tree_policy = au.get("tree_policy", "BLOCK")
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:40: # Check if 34 arbres references exist in project memory
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:42: audit_34_path = workspace / "docs" / "cognitive_trees"
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:43: if audit_34_path.exists():
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:45: trees_refs = [f.stem for f in list(audit_34_path.glob("*.md"))[:5]]
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:50: "status": "BRODY_TREE_POLICY_READY",
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:53: "tree_policy": tree_policy,
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:58: "total_known_trees": 34,
+- .\apps\obsidia_api\brody_tree_policy_adapter.py:68: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:10: Boundary: readonly, KX108_ONLY.
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:31: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:45: tree_policy_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:57: chain_material = chain.get("material_quality", "UNKNOWN")
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:62: trees = tree_policy_snapshot or {}
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:82: "tree_policy_snapshot": trees,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:89: "memory_material_quality": chain_material,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:95: "tree_policy_ready": trees.get("status") == "BRODY_TREE_POLICY_READY",
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:45: for key in ["hydrated_packet", "packet", "context_packet_source", "source_packet"]:
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:47: if isinstance(nested, dict) and nested.get("context_packet"):
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:50: if obj.get("context_packet"):
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:53: raise RuntimeError("NO_CONTEXT_PACKET_FOUND")
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:65: if source.get("decision_authority") and source.get("decision_authority") != "KX108_ONLY":
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:94: raw_items = packet.get("context_packet", {}).get("items", []) or []
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:95: selected = []
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:99: selected.append({
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:108: "has_material": bool(material),
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:111: return selected
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:125: def build_response(obj, max_items=6):
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:130: selected = normalize_items(packet, max_items=max_items)
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:132: material_items = [x for x in selected if x.get("has_material")]
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:134: sources_cited = all(bool(x.get("source_ref")) for x in selected)
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:135: tags = tag_map(selected)
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:137: if selected and material_count == 0:
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:139: elif material_count < max(1, len(selected) // 2):
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:140: quality = "PARTIAL_MATERIAL"
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:148: lines.append("- role: LOCAL_RESPONSE_ENGINE")
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:150: lines.append("- decision_authority: KX108_ONLY")
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:154: lines.append(f"- material_quality: {quality}")
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:191: for item in selected:
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:200: "status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS",
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:205: "results_count": len(selected),
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:207: "material_quality": quality,
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:209: "response_md": "\n".join(lines),
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:210: "selected_items": selected,
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:217: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:222: "brody_role": "LOCAL_RESPONSE_ENGINE",
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:224: "scope": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_ONLY",
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:237: response = build_response(obj, max_items=args.max_items)
+- .\periphery\brody_memory_readonly\local_response_engine_readonly\brody_local_response_engine_readonly_v1.py:247: out.write_text(response["response_md"], encoding="utf-8")
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:25: "brody_role": "TERMINAL_STRUCTURAL_DIALOGUE",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:26: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:37: ("34 arbres", "34 arbres"), ("34_arbres", "34 arbres"),
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:81: def extract_memory_query(user_text):
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:93: query_py = x108_root / "periphery" / "brody_memory_readonly" / "context_packet_query_readonly" / "brody_context_packet_query_readonly_v1.py"
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:100: selected = []
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:101: items = packet.get("context_packet", {}).get("items", []) or []
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:111: selected.append({**item, "excerpt": excerpt, "has_material": bool(excerpt)})
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:112: return selected
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:114: def build_response(user_text, memory_query, packet, selected, command=None):
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:123: body = ["RÉPONSE STRUCTURELLE.", f"Requête mémoire extraite : {memory_query}"]
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:126: for item in selected:
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:129: lines.append("\nBoundary: READONLY=true / DECISION_AUTHORITY=KX108_ONLY")
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:132: def command_response(user_text):
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:149: "brody_role": "TERMINAL_STRUCTURAL_DIALOGUE",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:150: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:162: "memory_query": "",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:163: "response_md": (
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:164: "Je suis BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_V1_1B.\n\n"
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:178: "memory_query": "",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:179: "response_md": (
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:187: "DECISION_AUTHORITY=KX108_ONLY\n"
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:193: "BRODY_ROLE=TERMINAL_STRUCTURAL_DIALOGUE\n"
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:203: "memory_query": "",
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:204: "response_md": (
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:218: command_event = command_response(text)
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:221: memory_query = extract_memory_query(text)
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:223: packet = query_mod.query_neo4j(memory_query, limit)
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:224: selected = hydrate_items(packet, max_items)
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:225: response_md, axes, risk = build_response(text, memory_query, packet, selected)
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:226: return {"user": text, "memory_query": memory_query, "response_md": response_md, "packet_results_count": packet.get("results_count", 0), **BOUNDARY}
+- .\periphery\brody_memory_readonly\terminal_structural_dialogue_readonly\brody_terminal_structural_dialogue_readonly_v1.py:242: print(f"\nbrody >\n{run_once(x108_root, u, args.limit, args.max_items, args.session_dir)['response_md']}\n")
+- .\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py:98: "status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+- .\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py:104: "context_packet": {
+- .\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py:128: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py:129: "scope": "BRODY_CONTEXT_PACKET_QUERY_READONLY_ONLY"
+- .\periphery\brody_memory_readonly\context_packet_query_readonly\brody_context_packet_query_readonly_v1.py:147: for item in packet["context_packet"]["items"]:
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:92: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:323: if packet.get("status") != "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS":
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:330: if packet.get("decision_authority") != "KX108_ONLY":
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:340: items = out.get("context_packet", {}).get("items", []) or []
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:343: print("[KX108] Détection d'un context_packet vide. Routage via le scan sécurisé anti-crash...")
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:354: if "context_packet" not in out: out["context_packet"] = {}
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:355: out["context_packet"]["items"] = items
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:398: item["decision_authority"] = "KX108_ONLY"
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:418: "decision_authority": "KX108_ONLY",
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:426: out["status"] = "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS"
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:448: lines.append("- decision_authority: KX108_ONLY")
+- .\periphery\brody_memory_readonly\content_hydration_readonly\brody_content_hydration_readonly_v1.py:452: for item in packet.get("context_packet", {}).get("items", []):
+- .\periphery\brody\brody_response_contract.py:4: decision_authority=KX108_ONLY.
+- .\periphery\brody\brody_response_contract.py:19: decision_authority: str = "KX108_ONLY"
+- .\periphery\brody\brody_response_contract.py:29: assert self.decision_authority == "KX108_ONLY", "BRODY_CONTRACT_VIOLATION:decision_authority"
+
+## Runtime rows
+- case= source= engine_status= graphiti_status= neo4j_status= material_quality= selected_items_count=0 support_intent= native_ok=False mentions_machination=False contradiction_neo4j=False decision_authority=
+
+## Response excerpts
+
+## Findings
+- Runtime boundary and native payload are stable.
+- Voice appears to mention native machination in all targeted cases.
+- Phase 12B should not recreate existing response engines.
+- Phase 12B should wrap/enrich response_md after native machination is built, using existing payload fields.
+
+## Boundary
+- Diagnostic only.
+- No patch.
+- No runtime mutation.
+- No kernel mutation.
+- No X108 mutation.
+- No memory write.
+- No Graphiti write.
+- No commit.

@@ -1,0 +1,14 @@
+{
+  "domain": "banking",
+  "decision_id": "DEC-BANK-002",
+  "trace_id": "TRACE-BANK-002",
+  "market_verdict": "BLOCK",
+  "x108_gate": "BLOCK",
+  "confidence": 0.97,
+  "reason_code": "FRAUD_RISK_HIGH",
+  "severity": "HIGH",
+  "attestation_ref": "RFC3161-BANK-002",
+  "source": "fixture",
+  "ticket_required": false,
+  "ticket_id": ""
+}

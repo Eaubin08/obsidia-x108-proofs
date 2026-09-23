@@ -1,0 +1,14 @@
+{
+  "domain": "banking",
+  "decision_id": "DEC-BANK-001",
+  "trace_id": "TRACE-BANK-001",
+  "market_verdict": "ACT",
+  "x108_gate": "ALLOW",
+  "confidence": 0.91,
+  "reason_code": "CONSENSUS_CLEAR",
+  "severity": "LOW",
+  "attestation_ref": "RFC3161-BANK-001",
+  "source": "fixture",
+  "ticket_required": true,
+  "ticket_id": "TICKET-BANK-001"
+}

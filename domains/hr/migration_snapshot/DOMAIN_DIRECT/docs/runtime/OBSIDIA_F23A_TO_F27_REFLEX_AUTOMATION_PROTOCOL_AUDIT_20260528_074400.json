@@ -1,0 +1,643 @@
+{
+  "report_id": "OBSIDIA_F23A_TO_F27_REFLEX_AUTOMATION_PROTOCOL_AUDIT_20260528_074400",
+  "timestamp": "20260528_074400",
+  "head_commit": "079ff96",
+  "head_tag": "BRODY_F22E_JARVIS_NARRATIVE_REPAIR_20260528",
+  "mode": "READ_ONLY",
+  "boundary": {
+    "KX108_ONLY": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "script_mode": "AUDIT_ONLY",
+    "patch_applied": false,
+    "commit_applied": false
+  },
+  "scope": [
+    "F23A",
+    "F23B",
+    "F23C",
+    "F24",
+    "F25",
+    "F26",
+    "F27"
+  ],
+  "concept_matrix": [
+    {
+      "area": "F23A",
+      "concept": "reflex_reducer",
+      "canonical_file": "periphery/reflex_reducer.py",
+      "mmonde_file": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/03_MEMOIRE_MONDE_COSMOS_REFLEX/reflex_reducer.py",
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Real code — RefexReducer class with reduce_reflex() method. Not imported by any API route or brody adapter."
+    },
+    {
+      "area": "F23A",
+      "concept": "avdr_core",
+      "canonical_file": "periphery/avdr.py",
+      "mmonde_file": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/12_FRICTION_AVDR_CONTINUUM/avdr.py",
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "AVDR logic present. MMONDE version is CODE_STUB. avdr_phase_mapper.py has active=False in _FUTURE_MODULES."
+    },
+    {
+      "area": "F23A",
+      "concept": "avdr_phase_mapper",
+      "canonical_file": "periphery/gencoin_sandbox/avdr_phase_mapper.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Explicitly marked active=False in _FUTURE_MODULES registry. Dormant by design."
+    },
+    {
+      "area": "F23A",
+      "concept": "brody_memory_readonly_pipeline",
+      "canonical_file": "periphery/brody_memory_readonly/",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Multiple files: auto_triage, graphiti_bridge, graphiti_import_apply, memory_pipeline_freeze. Present but not wired to active brody routes."
+    },
+    {
+      "area": "F23A",
+      "concept": "brody_automation_orchestrator",
+      "canonical_file": "apps/obsidia_api/brody_automation_orchestrator.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Orchestrator module exists. Not imported by main.py or active routes."
+    },
+    {
+      "area": "F23A",
+      "concept": "brody_memory_promotion_guard",
+      "canonical_file": "apps/obsidia_api/brody_memory_promotion_guard.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Active guard — prevents unauthorized memory promotion. Wired into brody.py route pipeline."
+    },
+    {
+      "area": "F23A",
+      "concept": "readonly_context_ingress",
+      "canonical_file": "periphery/x108_ingress/readonly_context_ingress.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "X108 ingress point for readonly context. Module exists but ingress not active in current runtime."
+    },
+    {
+      "area": "F23B",
+      "concept": "context_packet_builder",
+      "canonical_file": "periphery/context/context_packet_builder.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Real builder. Used by brody context pipeline."
+    },
+    {
+      "area": "F23B",
+      "concept": "context_packet_builder_v2",
+      "canonical_file": "periphery/context/context_packet_builder_v2.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "V2 builder — extended schema, backward compatible with v1."
+    },
+    {
+      "area": "F23B",
+      "concept": "context_packet_validator",
+      "canonical_file": "periphery/context/context_packet_validator.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Validates context packets before brody processing."
+    },
+    {
+      "area": "F23B",
+      "concept": "context_packet_exporter",
+      "canonical_file": "periphery/context/context_packet_exporter.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Exports context packets for downstream consumers."
+    },
+    {
+      "area": "F23B",
+      "concept": "context_packet_sanitizer",
+      "canonical_file": "periphery/context/context_packet_sanitizer.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Sanitizes PII and sensitive fields before packet exposure."
+    },
+    {
+      "area": "F23B",
+      "concept": "memory_source_registry",
+      "canonical_file": "periphery/memory/memory_source_registry.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Registry mapping memory sources to context packet slots."
+    },
+    {
+      "area": "F23B",
+      "concept": "brody_memory_response_chain_adapter",
+      "canonical_file": "apps/obsidia_api/brody_memory_response_chain_adapter.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Chains memory context into brody response. CODE_RUNTIME_CONNECTED."
+    },
+    {
+      "area": "F23C",
+      "concept": "worldcalls_route",
+      "canonical_file": "apps/obsidia_api/routes/worldcalls.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "World action bus route. Has boundary guard preventing unauthorized write actions."
+    },
+    {
+      "area": "F23C",
+      "concept": "os3_route",
+      "canonical_file": "apps/obsidia_api/routes/os3.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "OS3 sovereign ticket route. Boundary: KX108_ONLY, emits_act=False."
+    },
+    {
+      "area": "F23C",
+      "concept": "brody_contracts_packet",
+      "canonical_file": "apps/obsidia_api/brody_contracts_packet.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Contract enforcement packet for brody responses."
+    },
+    {
+      "area": "F23C",
+      "concept": "brody_adaptive_response_policy",
+      "canonical_file": "apps/obsidia_api/brody_adaptive_response_policy.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Adaptive policy — controls response mode under boundary constraints."
+    },
+    {
+      "area": "F23C",
+      "concept": "graphiti_v20_readonly_client",
+      "canonical_file": "apps/obsidia_api/graphiti_v20_readonly_client.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Graphiti V20 readonly client — enforces no-write boundary at client level."
+    },
+    {
+      "area": "F24",
+      "concept": "cosine_similarity",
+      "canonical_file": "periphery/cosine_similarity.py",
+      "mmonde_file": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/cosine_similarity.py",
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Pure math helper — cosine similarity. Not connected to any Clavage runtime pipeline. Required by Clavage but Clavage itself not implemented."
+    },
+    {
+      "area": "F24",
+      "concept": "clavage_core",
+      "canonical_file": null,
+      "mmonde_file": null,
+      "status": "DOC_ONLY",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "No clavage.py found. No agent_vecteur.py found. No CognitiveDeviationError or strict_parser. Clavage is DOC_ONLY — requires JAX/XLA, full ML pipeline (200+ lines). Deferred post-F22B per F22B decision record."
+    },
+    {
+      "area": "F24",
+      "concept": "agent_vecteur",
+      "canonical_file": null,
+      "mmonde_file": null,
+      "status": "DOC_ONLY",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Agent Vecteur Minimal: no standalone implementation found. Conceptual agent described in doctrinal docs only."
+    },
+    {
+      "area": "F24",
+      "concept": "sigma_contracts_broken_ragnarok",
+      "canonical_file": "sigma/contracts.broken-ragnarok.py",
+      "mmonde_file": null,
+      "status": "HISTORY_ONLY",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Contains clavage reference. Historical artifact — .broken-ragnarok suffix marks it intentionally disabled."
+    },
+    {
+      "area": "F25",
+      "concept": "sigma_contracts_agent_vote",
+      "canonical_file": "sigma/contracts.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "AgentVote.vote (HOLD/ALLOW/BLOCK) structure. readiness_scope='harmonic_integrity_governance'. No calculate_immutable_vote() — harmonic scoring partial only."
+    },
+    {
+      "area": "F25",
+      "concept": "sigma_aggregation",
+      "canonical_file": "sigma/aggregation.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Aggregation logic for sigma votes. Active in CI pipeline."
+    },
+    {
+      "area": "F25",
+      "concept": "brody_thermo_coherence_time_unified",
+      "canonical_file": "apps/obsidia_api/brody_thermo_coherence_time_unified.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Unified scoring for thermo coherence time. Emits coherence_score, not harmonic_vote directly."
+    },
+    {
+      "area": "F25",
+      "concept": "brody_anti_mismatch_signal",
+      "canonical_file": "apps/obsidia_api/brody_anti_mismatch_signal.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "truth_score signal — adjacent to harmonic vote concept. Active."
+    },
+    {
+      "area": "F25",
+      "concept": "regime_metrics",
+      "canonical_file": "periphery/gencoin_sandbox/regime_metrics.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Scoring in gencoin sandbox — active=False in FUTURE_MODULES."
+    },
+    {
+      "area": "F25",
+      "concept": "regime_truth_gate",
+      "canonical_file": "periphery/gencoin_sandbox/regime_truth_gate.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Truth gate for regime scoring — dormant alongside regime_metrics."
+    },
+    {
+      "area": "F25",
+      "concept": "calculate_immutable_vote",
+      "canonical_file": null,
+      "mmonde_file": null,
+      "status": "MISSING",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "calculate_immutable_vote() function — NOT found in sigma/contracts.py or anywhere in repo. Harmonic vote calculation is partial; function missing."
+    },
+    {
+      "area": "F26",
+      "concept": "continuum_node",
+      "canonical_file": "periphery/continuum_node.py",
+      "mmonde_file": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/03_MEMOIRE_MONDE_COSMOS_REFLEX/continuum_node.py",
+      "status": "CODE_STUB",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "NodeContinuum dataclass — real structure, not wired to runtime. Covered by session_memory_snapshot + temporal_context_snapshot per cognitive module registry (COVERED_BY_EXISTING_MODULE, active=True). No branching needed for intent classification."
+    },
+    {
+      "area": "F26",
+      "concept": "zone_latente",
+      "canonical_file": null,
+      "mmonde_file": null,
+      "status": "DOC_ONLY",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Zone Latente: doctrinal concept only. No standalone zone_latente.py found. Conceptually covered by continuum_node dormant state."
+    },
+    {
+      "area": "F26",
+      "concept": "common_types_continuum",
+      "canonical_file": "periphery/common_types.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "common_types.py contains type definitions referenced by continuum structures. Active as shared type module."
+    },
+    {
+      "area": "F27",
+      "concept": "shazam_cognitif_core",
+      "canonical_file": "periphery/shazam_cognitif.py",
+      "mmonde_file": "periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/shazam_cognitif.py",
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "BLOCKED by missing dependency: 'from spectral_hash import extract_features' — spectral_hash is not installed. Code exists but cannot be imported. ImportError on startup if wired."
+    },
+    {
+      "area": "F27",
+      "concept": "shazam_cognitif_cognitive_trees",
+      "canonical_file": "periphery/cognitive_trees/shazam_cognitif.py",
+      "mmonde_file": null,
+      "status": "CODE_DORMANT",
+      "active": false,
+      "wired_to_runtime": false,
+      "notes": "Same module under cognitive_trees/ path. Same spectral_hash blocking dependency."
+    },
+    {
+      "area": "F27",
+      "concept": "no_shazam_act",
+      "canonical_file": "periphery/no_shazam_act.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Guard preventing Shazam from triggering ACT tokens. Active — enforces doctrinal 'Shazam is context-only, never action' constraint."
+    },
+    {
+      "area": "F27",
+      "concept": "shazam_cognitif_test",
+      "canonical_file": "tests/periphery/test_shazam_cognitif_context_only.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": false,
+      "notes": "Test confirming context-only constraint. Passes with spectral_hash mocked. Validates no_shazam_act guard."
+    },
+    {
+      "area": "F27",
+      "concept": "brody_tree_signal_packet",
+      "canonical_file": "apps/obsidia_api/brody_tree_signal_packet.py",
+      "mmonde_file": null,
+      "status": "CODE_RUNTIME_CONNECTED",
+      "active": true,
+      "wired_to_runtime": true,
+      "notes": "Tree signal packet — adjacent to Shazam concept (cognitive style intent). Active in brody runtime. Does NOT require spectral_hash."
+    }
+  ],
+  "concept_matrix_total": 38,
+  "status_counts": {
+    "CODE_DORMANT": 11,
+    "CODE_RUNTIME_CONNECTED": 21,
+    "DOC_ONLY": 3,
+    "HISTORY_ONLY": 1,
+    "MISSING": 1,
+    "CODE_STUB": 1
+  },
+  "area_summary": {
+    "F23A": {
+      "total": 7,
+      "connected": 1,
+      "dormant": 6,
+      "stub": 0,
+      "doc_only": 0,
+      "missing": 0,
+      "history_only": 0
+    },
+    "F23B": {
+      "total": 7,
+      "connected": 7,
+      "dormant": 0,
+      "stub": 0,
+      "doc_only": 0,
+      "missing": 0,
+      "history_only": 0
+    },
+    "F23C": {
+      "total": 5,
+      "connected": 5,
+      "dormant": 0,
+      "stub": 0,
+      "doc_only": 0,
+      "missing": 0,
+      "history_only": 0
+    },
+    "F24": {
+      "total": 4,
+      "connected": 0,
+      "dormant": 1,
+      "stub": 0,
+      "doc_only": 2,
+      "missing": 0,
+      "history_only": 1
+    },
+    "F25": {
+      "total": 7,
+      "connected": 4,
+      "dormant": 2,
+      "stub": 0,
+      "doc_only": 0,
+      "missing": 1,
+      "history_only": 0
+    },
+    "F26": {
+      "total": 3,
+      "connected": 1,
+      "dormant": 0,
+      "stub": 1,
+      "doc_only": 1,
+      "missing": 0,
+      "history_only": 0
+    },
+    "F27": {
+      "total": 5,
+      "connected": 3,
+      "dormant": 2,
+      "stub": 0,
+      "doc_only": 0,
+      "missing": 0,
+      "history_only": 0
+    }
+  },
+  "cross_dependency_map": [
+    {
+      "from": "F23A/reflex_reducer",
+      "to": "F23B/context_packet_builder",
+      "type": "CONSUMES",
+      "status": "DORMANT_LINK",
+      "notes": "reflex_reducer would consume context packets to decide reduction — link dormant because reflex_reducer not wired."
+    },
+    {
+      "from": "F23B/context_packet_builder",
+      "to": "F23C/brody_contracts_packet",
+      "type": "FEEDS",
+      "status": "ACTIVE",
+      "notes": "Context packet output feeds into contracts packet for boundary enforcement."
+    },
+    {
+      "from": "F23C/worldcalls_route",
+      "to": "F23A/brody_memory_promotion_guard",
+      "type": "GUARDED_BY",
+      "status": "ACTIVE",
+      "notes": "World action bus calls checked by memory promotion guard before execution."
+    },
+    {
+      "from": "F24/cosine_similarity",
+      "to": "F27/shazam_cognitif_core",
+      "type": "REQUIRED_BY",
+      "status": "DORMANT_LINK",
+      "notes": "Clavage uses cosine_similarity; Shazam Cognitif is in same MMONDE module (05_SHAZAM_COGNITIF). Both dormant."
+    },
+    {
+      "from": "F25/sigma_contracts_agent_vote",
+      "to": "F25/sigma_aggregation",
+      "type": "CONSUMED_BY",
+      "status": "ACTIVE",
+      "notes": "AgentVote structs aggregated by sigma/aggregation.py in CI pipeline."
+    },
+    {
+      "from": "F26/continuum_node",
+      "to": "F23A/reflex_reducer",
+      "type": "DOCTRINAL_PAIR",
+      "status": "BOTH_DORMANT",
+      "notes": "Continuum and Reflex are paired doctrinal concepts (03_MEMOIRE_MONDE_COSMOS_REFLEX). Both dormant/stub."
+    },
+    {
+      "from": "F27/no_shazam_act",
+      "to": "F23C/brody_adaptive_response_policy",
+      "type": "ENFORCES",
+      "status": "ACTIVE",
+      "notes": "no_shazam_act guard enforces no-ACT boundary; adaptive response policy is the runtime enforcement surface."
+    },
+    {
+      "from": "F23A/avdr_core",
+      "to": "F26/continuum_node",
+      "type": "FRICTION_PAIR",
+      "status": "BOTH_DORMANT",
+      "notes": "AVDR and Continuum are paired in 12_FRICTION_AVDR_CONTINUUM. Both not wired to runtime."
+    }
+  ],
+  "recommended_order": [
+    {
+      "priority": 1,
+      "area": "F23C",
+      "rationale": "Already active. Audit only — validate boundary contract completeness. No patch needed.",
+      "patch_candidate": false,
+      "risk": "NONE"
+    },
+    {
+      "priority": 2,
+      "area": "F23B",
+      "rationale": "Context pack family fully active. Audit complete — no gap found. Monitor for v2→v1 compatibility drift.",
+      "patch_candidate": false,
+      "risk": "NONE"
+    },
+    {
+      "priority": 3,
+      "area": "F25",
+      "rationale": "Sigma vote structure present. Gap: calculate_immutable_vote() missing. Low-risk addition — sigma layer only.",
+      "patch_candidate": true,
+      "risk": "LOW",
+      "patch_note": "Add calculate_immutable_vote() to sigma/contracts.py. Would complete harmonic vote scoring."
+    },
+    {
+      "priority": 4,
+      "area": "F23A",
+      "rationale": "brody_memory_promotion_guard is active. brody_automation_orchestrator + reflex_reducer dormant. Wire orchestrator first; reflex_reducer requires context pack integration.",
+      "patch_candidate": true,
+      "risk": "MEDIUM",
+      "patch_note": "Wire brody_automation_orchestrator.py into a non-critical automation route. Requires explicit user validation."
+    },
+    {
+      "priority": 5,
+      "area": "F27",
+      "rationale": "Shazam Cognitif blocked by missing spectral_hash package. Unblocking requires pip install of spectral_hash (or stub). brody_tree_signal_packet is active and covers adjacent functionality.",
+      "patch_candidate": true,
+      "risk": "MEDIUM",
+      "patch_note": "Install spectral_hash or write stub. Then wire shazam_cognitif.py under no_shazam_act guard."
+    },
+    {
+      "priority": 6,
+      "area": "F26",
+      "rationale": "Continuum is CODE_STUB. Covered by session_memory_snapshot. Not urgent — doctrinal coverage already satisfied.",
+      "patch_candidate": false,
+      "risk": "LOW",
+      "patch_note": "Wire NodeContinuum to temporal_context_snapshot if needed. Low risk but low urgency."
+    },
+    {
+      "priority": 7,
+      "area": "F24",
+      "rationale": "Clavage requires JAX/XLA + full ML pipeline (200+ lines). DOC_ONLY status confirmed. Explicitly deferred post-F22B.",
+      "patch_candidate": false,
+      "risk": "HIGH",
+      "patch_note": "DEFERRED. Do not implement until full ML environment validated and separate F-series approval received."
+    }
+  ],
+  "risk_matrix": [
+    {
+      "area": "F23A",
+      "risk": "MEDIUM",
+      "reason": "brody_automation_orchestrator not guarded by memory_promotion_guard when dormant. If accidentally imported, could bypass write boundary.",
+      "mitigation": "Keep dormant until explicit wire approved. Confirm guard integration in any future wire commit."
+    },
+    {
+      "area": "F23B",
+      "risk": "LOW",
+      "reason": "context_packet_builder_v2 diverges from v1 schema. Risk of drift if downstream consumers not updated.",
+      "mitigation": "Run context_packet_validator on both versions in CI."
+    },
+    {
+      "area": "F23C",
+      "risk": "NONE",
+      "reason": "All boundary guards active and tested.",
+      "mitigation": "No mitigation needed. Monitor worldcalls.py for new route additions."
+    },
+    {
+      "area": "F24",
+      "risk": "HIGH",
+      "reason": "Clavage implementation would introduce JAX/XLA ML dependency — risk of environment incompatibility, new attack surface.",
+      "mitigation": "Do not implement without isolated environment validation and full F-series approval."
+    },
+    {
+      "area": "F25",
+      "risk": "LOW",
+      "reason": "calculate_immutable_vote() missing but sigma structure is sound. Gap is additive only.",
+      "mitigation": "Add function, run sigma tests, verify no side effects on existing AgentVote consumers."
+    },
+    {
+      "area": "F26",
+      "risk": "LOW",
+      "reason": "Continuum stub — if prematurely wired, could conflict with session_memory_snapshot coverage.",
+      "mitigation": "Wire only after confirming no duplicate temporal context emission."
+    },
+    {
+      "area": "F27",
+      "risk": "MEDIUM",
+      "reason": "spectral_hash missing — any attempt to import shazam_cognitif.py will raise ImportError at module level.",
+      "mitigation": "Wrap import with try/except until spectral_hash installed. Verify no_shazam_act guard active before wiring."
+    }
+  ]
+}

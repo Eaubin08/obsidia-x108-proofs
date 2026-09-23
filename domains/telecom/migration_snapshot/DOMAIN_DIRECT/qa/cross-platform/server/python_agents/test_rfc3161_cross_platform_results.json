@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-04-22T07:28:09.587830",
+  "tsa_availability": {
+    "digicert": {
+      "name": "DigiCert",
+      "url": "http://timestamp.digicert.com",
+      "available": false,
+      "error": "b''"
+    },
+    "sectigo": {
+      "name": "Sectigo",
+      "url": "http://timestamp.sectigo.com",
+      "available": false,
+      "error": "b''"
+    },
+    "globalsign": {
+      "name": "GlobalSign",
+      "url": "http://timestamp.globalsign.com/tsa",
+      "available": false,
+      "error": "b''"
+    },
+    "apple": {
+      "name": "Apple",
+      "url": "http://timestamp.apple.com/ts01",
+      "available": false,
+      "error": "b''"
+    },
+    "freetsa": {
+      "name": "FreeTSA",
+      "url": "http://freetsa.org/tsr",
+      "available": false,
+      "error": "b''"
+    }
+  },
+  "compatibility_matrix": {
+    "rfc3161": {
+      "openssl_available": true,
+      "ts_command_available": true,
+      "tsa_endpoints_available": 0,
+      "total_tsa_endpoints": 5
+    },
+    "tla": {
+      "tlc_available": false,
+      "tlc_version": "unknown"
+    },
+    "sigma": {
+      "obsidia_sigma_v130_available": false,
+      "sigma_monitor_available": false
+    }
+  },
+  "summary": {
+    "rfc3161_status": "ready",
+    "tla_status": "incomplete",
+    "sigma_status": "incomplete",
+    "overall_status": "development"
+  },
+  "openssl_compatibility": {
+    "version": "OpenSSL 4.0.0 14 Apr 2026 (Library: OpenSSL 4.0.0 14 Apr 2026)",
+    "available": true,
+    "ts_command": true
+  },
+  "tlc_compatibility": {
+    "available": false
+  },
+  "sigma_compatibility": {
+    "obsidia_sigma_v130": false,
+    "sigma_monitor": false
+  }
+}

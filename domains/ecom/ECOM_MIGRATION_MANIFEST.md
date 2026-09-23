@@ -1,0 +1,2239 @@
+# ECOM MIGRATION MANIFEST
+
+Mode: APPLY
+Scope: ECOM raw migration snapshot
+Generated: 2026-09-22T14:38:44
+Snapshot path: domains/ecom/migration_snapshot/
+Total copied: 9
+
+## TYPE_COUNTS
+- CODE: 1
+- TEST: 3
+- DOC: 3
+- FIXTURE: 2
+- CONFIG: 0
+- PROOF: 0
+- ADAPTER: 0
+- PIPELINE: 0
+- LEGACY: 0
+- UNKNOWN: 0
+
+## COPIED_SOURCES
+### docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md
+- SOURCE PATH: docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md
+- TARGET PATH: domains/ecom/migration_snapshot/docs/docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md
+- TYPE: DOC
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### examples/ecom_normal.json
+- SOURCE PATH: examples/ecom_normal.json
+- TARGET PATH: domains/ecom/migration_snapshot/fixtures/examples/ecom_normal.json
+- TYPE: FIXTURE
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### sigma/domains/ecom_agents.py
+- SOURCE PATH: sigma/domains/ecom_agents.py
+- TARGET PATH: domains/ecom/migration_snapshot/code/sigma/domains/ecom_agents.py
+- TYPE: CODE
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### sigma/examples/ecom_normal.json
+- SOURCE PATH: sigma/examples/ecom_normal.json
+- TARGET PATH: domains/ecom/migration_snapshot/fixtures/sigma/examples/ecom_normal.json
+- TYPE: FIXTURE
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md
+- SOURCE PATH: specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md
+- TARGET PATH: domains/ecom/migration_snapshot/docs/specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md
+- TYPE: DOC
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md
+- SOURCE PATH: specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md
+- TARGET PATH: domains/ecom/migration_snapshot/docs/specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md
+- TYPE: DOC
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### tests/integration/test_sigma_bridge_ecom.py
+- SOURCE PATH: tests/integration/test_sigma_bridge_ecom.py
+- TARGET PATH: domains/ecom/migration_snapshot/tests/tests/integration/test_sigma_bridge_ecom.py
+- TYPE: TEST
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### tests/run_combinatorial_ecom_report.json
+- SOURCE PATH: tests/run_combinatorial_ecom_report.json
+- TARGET PATH: domains/ecom/migration_snapshot/tests/tests/run_combinatorial_ecom_report.json
+- TYPE: TEST
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+### tests/run_combinatorial_ecom.py
+- SOURCE PATH: tests/run_combinatorial_ecom.py
+- TARGET PATH: domains/ecom/migration_snapshot/tests/tests/run_combinatorial_ecom.py
+- TYPE: TEST
+- COPY STATUS: COPIED
+- ORIGINAL UNCHANGED: YES
+
+## EXPECTED_BUT_NOT_FOUND
+
+- compensation mechanism
+- customer identity model
+- execution result
+- order lifecycle
+- payment adapter
+- refund mechanism
+- shipment / fulfillment adapter
+
+## SHARED_DEPENDENCIES
+
+- _runtime_wiring_preflight/P11A_UI_RESPONSE.html — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P39_SERVER_MATRIX_CHECK.ps1 — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/p40_live_matrix.py — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P43_UNCONNECTED_RUNTIME_SURFACE_MAP.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P45_FULL_ROUTE_COVERAGE_MAP.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P45_ROUTE_INVENTORY_RAW.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P46_WORKBENCH_VIEW_INVENTORY_RAW.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P47_MODULE_FUNCTION_INVENTORY_RAW.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P48_ADAPTER_INVENTORY_RAW.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P53_REAL_WORLD_ACTION_BUS_DISCOVERY.json — Shared/generic dependency, not Ecom-owned.
+- _runtime_wiring_preflight/P54_REAL_ACTION_GATEWAY_DISCOVERY.json — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F03_RSSI_RGPD_CANON_REPAIR_20260602_155630/F03_RSSI_RGPD_ZIP_INTERNAL_INVENTORY_STRICT.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F03_RSSI_RGPD_IMPORT_AUDIT_20260602_155234/F03_RSSI_RGPD_ZIP_INTERNAL_INVENTORY.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F06_ATLAS_CANON_REPAIR_20260602_160517/F06_ATLAS_ZIP_INTERNAL_INVENTORY_CANON_DEDUPED.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F06_ATLAS_IMPORT_AUDIT_20260602_160052/F06_ATLAS_ZIP_INTERNAL_INVENTORY.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F07_COGNITIVE_IMPORT_AUDIT_20260602_154536/F07_COGNITIVE_ZIP_INTERNAL_INVENTORY.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F10_COMPLIANCE_DATA_GOVERNANCE_IMPORT_AUDIT_20260602_160941/F10_COMPLIANCE_DATA_GOVERNANCE_ZIP_INTERNAL_INVENTORY_DEDUPED.csv — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_NEXT_PHASE_RECOMMENDATION.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_RAW_COMMAND_LOG.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_ZIP_INTERNAL_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_NEXT_PHASE_RECOMMENDATION.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_RAW_COMMAND_LOG.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_XLSX_SHEET_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_INVARIANT_GRAPH_AUDIT_V1/THEOREM_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_NPL_PACK_AUDIO_ENTROPY_AUDIT_V1/NPL_PACK_FILE_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_NPL_PACK_AUDIO_ENTROPY_AUDIT_V1/NPL_PACK_TO_EXISTING_SPECS_MAP.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_P107_P161_FORMAL_TARGET_AUDIT_V1/RAW_P107_P161_SEARCH_LOG.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_SOURCE_DISCOVERY_MAP_V1/RAW_SEARCH_LOG.md — Shared/generic dependency, not Ecom-owned.
+- _source_discovery/OBSIDIA_SOURCE_DISCOVERY_MAP_V1/SOURCE_DISCOVERY_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/agents_readonly/indicators_readonly.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/agents_readonly/sigma_dashboard_readonly.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/audit_middleware.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/auth.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_adaptive_response_policy.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_anti_mismatch_signal.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_automation_orchestrator.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_backend_response_composer.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_balance_engine.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_bridge_lifecycle.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_candidate_memory_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_capabilities_intent.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_cic_context_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_cognitive_micro_core.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_cognitive_modules_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_context_budget.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_contracts_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_domain_raccord_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_education_pack_v1_readonly_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_existing_reverse_os_bridge.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_freeze_metrics_snapshot.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_full_runtime_orchestrator.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_full_runtime_reconnect.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_gencoin_cognitive_ledger.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_gencoin_shadow_value.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_gencoin_transverse_interface.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_graphiti_guard.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_machination_composer.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_candidate_builder.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_education_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_human_validation_gate.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_promotion_guard.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_readonly_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_replay_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_response_chain_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_memory_trace_extractor.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_operator_loop_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_operator_view_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_point_cloud_21d_selector.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_project_memory_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_project_memory_runtime.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_readonly_intent_guard.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_real_response_pipeline.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_reflex_diagnostic_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_repair_reasoning.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_repair_request_router.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_rights_authority_matrix.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_runtime_context_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_runtime_cost_map.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_safe_snapshot.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_secret_scrubber.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_semantic_query_router.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_session_memory_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_session_memory_runtime.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_source_of_truth_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_structured_response_engine_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_temporal_context_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_text_encoding.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_thermo_coherence_time_unified.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_thermodynamics_signal.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_tree_policy_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_tree_policy.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_tree_signal_packet.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_true_response_structure_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_true_response_structure_runtime.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_true_voice_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/brody_v3_fastpath_response.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/bus/registry.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/bus/router.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/bus/sigma_bridge.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/bus/signal_packager.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/bus/state_aggregator.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/cic/cic_domain_context.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/cic/cic_ncp_readonly_stub.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/cic/cic_readonly_pack_provider.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/cic/cic_receipt_pack.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/cic/cic_scraping_readonly_stub.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/graphiti_env_loader.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/graphiti_v20_readonly_client.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/inference_economy/cost_receipt.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/inference_economy/domain_metrics.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/inference_economy/external_comparison.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/inference_economy/meter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/main.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/os_adapters/determinism.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/os_adapters/os_trad_adapter.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/os_adapters/parse_input.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/os_adapters/svg.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/output_envelope.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/request_cost_event_writer.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/audit.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/blockchain.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/brody_monitoring.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/brody.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/bus.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/context.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/gencoin.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/graphiti.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/live_kernel_bridge.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/memory.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/os_map.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/os_trad_ir_reverse.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/os3.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/periphery_ops.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/runtime_freeze_readonly.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/runtime_freeze.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/runtime_wiring_preview.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/sigma_monitoring.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/source_runtime_status.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/status.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/translation.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/worldcalls.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/routes/x108.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/runtime_loader.py — Shared/generic dependency, not Ecom-owned.
+- apps/obsidia_api/safe_response.py — Shared/generic dependency, not Ecom-owned.
+- connectors/_decision_card_fr.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/bank_full_stack_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/blockchain_security_dryrun_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/gps_full_stack_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/memory_brody_graphiti_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/trading_full_stack_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/v3_v4_full_stack_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/v4_controlled_runtime_flow.py — Shared/generic dependency, not Ecom-owned.
+- demos/local_flows/world_call_gateway_flow.py — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/F71_34_TREES_DEEP_ACTIVATION_AUDIT.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/F74_F77_RISK_REGISTER.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/OBSIDIA_F53_BUS_BRIDGE_BOUNDARY_CONTRACT.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/OBSIDIA_F55_BUS_SIGNAL_INPUT_CONTRACT.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/OBSIDIA_X108_V4_CHECKLIST_AUDIT.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/OBSIDIA_X108_V4_FILE_MAP.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/OBSIDIA_X108_V4_GATE_STATUS.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/SIGMA_FINAL_FREEZE_INDEX_F60_TO_F68.md — Shared/generic dependency, not Ecom-owned.
+- docs/architecture/SIGMA_REMAINDER_BRANCHING_AUDIT_F66_TO_F73.md — Shared/generic dependency, not Ecom-owned.
+- docs/audits/OBSIDIA_BRANCHING_MATRIX_DRAFT_V0.csv — Shared/generic dependency, not Ecom-owned.
+- docs/audits/OBSIDIA_BRANCHING_MATRIX_SUMMARY_V0.md — Shared/generic dependency, not Ecom-owned.
+- docs/audits/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md — Shared/generic dependency, not Ecom-owned.
+- docs/audits/OBSIDIA_OIE_EXTERNAL_BENCHMARK_HARNESS_V0.md — Shared/generic dependency, not Ecom-owned.
+- docs/audits/OBSIDIA_OIE_EXTERNAL_BENCHMARK_RESULTS_V0_3.md — Shared/generic dependency, not Ecom-owned.
+- docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_AUTHORITY_MATRIX_V0.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_AUDIT_V0.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_DETAIL_REVIEW_V0.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_DETAIL_REVIEW_V0.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_MATRIX_V0.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C_PROTOCOLS_RISK_SCAN.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C_RUN_PIPELINE_RISK_SCAN.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C_SIGMA_V130_RISK_SCAN.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C0_GAMMA_AUDIT_ONLY_EXTRACT.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C0_GAMMA_CONFLICT_EXTRACT.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56A_C0_GAMMA_DIRECT_EXTRACT.txt — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_AUDIT_ONLY_P08_protocols.py.diff — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_AUDIT_ONLY_P10_obsidia_sigma_v130.py.diff — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_AUDIT_ONLY_P11_run_pipeline.py.diff — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_D_ALL_DOMAINS_CORE_RIGOR_AUDIT.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_D_ALL_DOMAINS_CORE_RIGOR_AUDIT.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_P08_P10_P11_CONFLICT_AUDIT_ONLY.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56C_P08_P10_P11_CONFLICT_AUDIT_ONLY.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56E_POST_PATCH_METRIC_REAUDIT.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P56E_POST_PATCH_METRIC_REAUDIT.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P57_CORE_MACHINERY_INVENTORY.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P57_CORE_TO_PROOF_IMPORT_PLAN.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P57_CORE_TO_PROOF_IMPORT_PLAN.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P58_CORE_IMPORT_TRIAGE_OPERATIONAL_PATH_AWARE.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P58_CORE_IMPORT_TRIAGE_OPERATIONAL_PATH_AWARE.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P62_MANUAL_REVIEW_DEFERRED.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P63_GLOBAL_FUSION_REALITY_AUDIT.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P64_FUSION_CONTINUITY_LEDGER.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P64_FUSION_CONTINUITY_LEDGER.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P68_API_AUTH_ROUTE_EXPOSURE_AUDIT.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P69_FILESYSTEM_PATH_EXPOSURE_AUDIT.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P73_AGENTS_COMPLEMENTARY_RECONCILIATION.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P73_AGENTS_COMPLEMENTARY_RECONCILIATION.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P74_SIGMA_SAFE_EVOLUTION.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P74_SIGMA_SAFE_EVOLUTION.md — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P75_RUNTIME_CORE_RISK_REVIEW.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P77_CANON_WORDING_TARGETED_CLEANUP.json — Shared/generic dependency, not Ecom-owned.
+- docs/core_import/P77_CANON_WORDING_TARGETED_CLEANUP.md — Shared/generic dependency, not Ecom-owned.
+- docs/gencoin/sandbox_pre_freeze/sandbox_engine.py — Shared/generic dependency, not Ecom-owned.
+- docs/gencoin/sandbox_pre_freeze/ZONES_SECURITE_CANON.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P31_OS_TRAD_REVERSE_OS_RECOVERY_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P33D_OS_TRAD_EVIDENCE_RECONCILIATION_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P34_REVERSE_OS_INTERLANGUAGE_CANONIZATION_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P37_RUNTIME_FUNCTION_INVENTORY_GRAPH_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P38_WORKBENCH_FULL_OS_MAP_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P41_RUNTIME_CAPABILITY_OSMAP_FREEZE_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P42B_CI_FAMILY_DISCOVERY_FIX_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P50_CONTROLLED_ACTIVATION_READINESS_PLAN.md — Shared/generic dependency, not Ecom-owned.
+- docs/real_engine/P51_BRODY_READONLY_CONTROLLED_ACTIVATION_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_BIS_ACTIVE_CONTRACTS_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_FULL_MACHINATION_KERNEL_CONTRACT_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_TER_SOURCE_ONLY_CONTRACT_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_BIS_NATIVE_VOICE_SOURCE_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_NATIVE_VOICE_SOURCE_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_TER_MEMORY_MATERIAL_BINDING_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E0_A_STRUCTURAL_NO_MATERIAL_PROOF_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E1_R_REPO_TERMINAL_APPLIED_ZIP_WORK_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E4_A_SEMANTIC_DRIFT_SOURCE_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E4_A2_DOMAIN_RACCORD_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/scripts/smoke_phase10_real_user_terminal_compare.ps1 — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12B_MEMORY_MATERIAL_BINDING_REPORT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12D_MEMORY_MATERIAL_BINDING_FREEZE_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12E5_POST_DOMAIN_FIRST_ADAPTIVE_REGRESSION_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12F_A_UI_SURFACE_PARITY_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12J_A_ADAPTIVE_ANSWER_SIZING_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12L_RIGHTPANEL_ADAPTIVE_SIGMA_FREEZE_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12L_RIGHTPANEL_ADAPTIVE_SIGMA_VALIDATION_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE12M_LONG_MULTI_SESSION_STRESS_RESULTS_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE8A_OLD_PATCH_CAPABILITY_ARCHAEOLOGY_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE8D_FALLBACK_OS_TRAD_COMPARISON_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE8E_TERMINAL_UI_API_ADAPTATION_MAP_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9A_CORE_SHELL_BACKEND_ARCHAEOLOGY_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9B_API_ROUTE_BINDING_PRECHECK_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9B0_FULL_SURFACE_RECONCILIATION_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9B1_OS_TRAD_IR_REVERSE_ROUTE_CONTRACT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9B2A_PREPATCH_SOURCE_SNAPSHOT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/BRODY_PHASE9B4A_UI_TERMINAL_RECONNECT_AUDIT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/CLAUDE_FAST_AUDIT_F24_F29_F30_F31_20260529_012641.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A_THERMO_COHERENCE_TIME_PAYLOAD_8000_20260528_011049.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A_THERMO_COHERENCE_TIME_PAYLOAD_8012_20260528_011049.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A2_BRODY_PAYLOAD_8000_20260528_011308.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A2_BRODY_PAYLOAD_8012_20260528_011308.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A2_ROUTE_PROBES_20260528_011308.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19A2_SOURCE_SCAN_20260528_011308.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19B_8000_THERMO_COHERENCE_TIME_UNIFIED_PAYLOAD.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F19B_8012_THERMO_COHERENCE_TIME_UNIFIED_PAYLOAD.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/F20A_SOURCE_SCAN_20260528_012740.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/LIVE_CONNECTORS_PHASE7E_SIX_DECISION_GATEWAY_AUTH_HMAC_CONCLUSION_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/LIVE_CONNECTORS_PHASE7E_TER_BIS_AUDIT_CHAIN_HANDLER_INSPECT_20260527.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_CHAT_RUNBOOK.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F11_RUNTIME_LIVE_CHAT_TREE_SIGNAL_ORDER_FREEZE_REPORT_20260527_230045.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F14_COMMAND_COPY_BUTTON_UI_FREEZE_REPORT_20260527_234834.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F15C_LIVE_SURFACE_STRICT_REPAIR_REPORT_20260528_001500.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F17A_GRAPHITI_8000_8012_REAL_PARITY_AUDIT_20260528_040000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F18A2_ZIP_LOCAL_SOURCE_AUDIT_20260528_004733.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F18A2_ZIP_LOCAL_SOURCE_AUDIT_20260528_004733.txt — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F18A3_TARGETED_CANDIDATE_INSPECTION_20260528_005433.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F18A3_TARGETED_CANDIDATE_INSPECTION_20260528_005433.txt — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F18A4_EXISTING_CANDIDATE_EXECUTION_AUDIT_20260528_005700.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F19A2_TARGETED_THERMO_COHERENCE_TIME_AUDIT_20260528_011308.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F20A_GENCOIN_COGNITIVE_VALUE_LEDGER_AUDIT_20260528_012740.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F21A_RUNTIME_FREEZE_DASHBOARD_GLOBAL_AUDIT_20260528_014852.txt — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22A_READONLY_INTENT_ALPHABET_CLAVAGE_AUDIT_20260528_050000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22A2_GIT_ARCHAEOLOGY_PROTOCOL_TRACE_AUDIT_20260528_053400.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22A3_DOCUMENT_SOURCE_TRACEABILITY_AUDIT_20260528_060000.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22A3_DOCUMENT_SOURCE_TRACEABILITY_AUDIT_20260528_060000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22B_RUNTIME_STATE_READONLY_INTENT_REPAIR_REPORT_20260528_070000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22E_A_JARVIS_NARRATIVE_SOURCE_AUDIT_20260528_051256.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F22E_A_JARVIS_NARRATIVE_SOURCE_AUDIT_20260528_051256.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A4_0_REFLEX_DIAGNOSTIC_PACKET_SOURCE_AUDIT_20260528_085837.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A4_BLOCK_CHECKPOINT_20260528_214817.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A6_0_ORCHESTRATOR_SIGMA_AWARENESS_AUDIT_20260528_220322.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23A6_0_ORCHESTRATOR_SIGMA_AWARENESS_AUDIT_20260528_220322.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F23B1_1_FOCUSED_CONTEXT_PACKET_DISCOVERY_20260528_082922.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F25A_HARMONIC_VOTE_SOURCE_AUDIT_20260528_075807.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F25A_HARMONIC_VOTE_SOURCE_AUDIT_20260528_075807.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F26_0_MONITOR_AWARENESS_AUDIT_20260528_233903.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F27_0_SHAZAM_COGNITIF_AUDIT_20260528_224620.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F27_0_SHAZAM_COGNITIF_AUDIT_20260528_224620.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F28_1_GOVERNED_OPERATOR_RUNTIME_AUDIT_20260528_230354.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F29_0_MEMORY_GRAPHITI_RECONCILIATION_AUDIT_20260529_003046.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005542.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005542.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F2A_TRANSVERSE_VALUE_INTERFACE_PREP_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F30_0_WORKFLOW_SOP_ENGINE_AUDIT_20260528_235251.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F30_0_WORKFLOW_SOP_ENGINE_AUDIT_20260528_235251.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F30_1_WORKFLOW_GOVERNANCE_V5_AUDIT_20260529_000550.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_20260529_014612.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_20260529_014612.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F31_CLEANUP_UNTRACKED_DEBT_CHECKPOINT_20260529_015747.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F32_0_GLOBAL_RUNTIME_READINESS_AUDIT_20260529_020945.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F35_0_OPERATOR_DEMO_SURFACE_AUDIT_20260529_045419.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F47_CANONICAL_HARDENING_PATCH_SEQUENCE_20260529_181500.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F51_BUS_STATS_ROUTE_DEBT_AUDIT_20260529_223000.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F51_BUS_STATS_ROUTE_DEBT_AUDIT_20260529_223000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F52_BUS_BRIDGE_QUARANTINE_20260529_230000.md — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000.json — Shared/generic dependency, not Ecom-owned.
+- docs/runtime/OBSIDIA_F59_BUS_LAYER_FINAL_FREEZE_INDEX_20260530_000000.md — Shared/generic dependency, not Ecom-owned.
+- docs/specs/OBSIDIA_TERMINAL_LARGE_DOC_READ_V2B.md — Shared/generic dependency, not Ecom-owned.
+- docs/specs/OBSIDIA_TERMINAL_PLAN_PANEL_V1.md — Shared/generic dependency, not Ecom-owned.
+- docs/specs/OBSIDIA_TERMINAL_RESPONSE_ROUTER_NL_INTENT_V2.md — Shared/generic dependency, not Ecom-owned.
+- docs/specs/OBSIDIA_TERMINAL_STACK_FREEZE_V1.md — Shared/generic dependency, not Ecom-owned.
+- formalization_specs/PEPITES_A_PROUVER.md — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/blockchain_action_classifier.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/bridge_risk_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/chain_context.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/defi_risk_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/onchain_audit_packet.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/oracle_freshness_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/signature_boundary.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/smart_contract_risk_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/token_policy.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/transaction_simulator.py — Shared/generic dependency, not Ecom-owned.
+- periphery/blockchain/wallet_security_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_debt_model.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_distribution.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_ledger.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/avdr_phase_mapper.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/balance_operator.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/regime_metrics.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/regime_state.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/regime_truth_gate.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin_sandbox/sandbox_engine.py — Shared/generic dependency, not Ecom-owned.
+- periphery/gencoin.py — Shared/generic dependency, not Ecom-owned.
+- periphery/lean_sandbox/Carte_Resonance.lean — Shared/generic dependency, not Ecom-owned.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/11_AGENTS_RUNTIME_CONTRACTS/agent_reliability.py — Shared/generic dependency, not Ecom-owned.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/11_AGENTS_RUNTIME_CONTRACTS/no_agent_act_guard.py — Shared/generic dependency, not Ecom-owned.
+- periphery/specs/os3_replay_manifest.py — Shared/generic dependency, not Ecom-owned.
+- periphery/specs/Spec_39__End_of_Life_Decommission_Protocol_P150_P154_valider_V4.md — Shared/generic dependency, not Ecom-owned.
+- periphery/specs/spectral_hash.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/adapters/sop_to_obsidia_ir_adapter.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/adapters/workflow_context_packet_adapter.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/adapters/x108_readonly_gateway_adapter.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_01_sop_extractor.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_02_risk_analyzer.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_03_compliance_mapper.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_04_evidence_builder.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_05_contradiction_replayer.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/agent_06_readonly_aggregator.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/agents/orchestrator_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/boundary.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/cli.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/constants.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/integration/periphery_ops_route_contract.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/integration/rightpanel_workbench_contract.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/models.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/operators/obsidiashell_workbench_adapter.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/primitives/critical_action_detector.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/primitives/workflow_graph_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/primitives/workflow_replay_audit.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/primitives/x108_workflow_gateway_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/routines/routine_build_workflow_packet.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/registry.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_audit_repo_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_build_obsidia_ir.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_build_workbench_view.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_detect_critical_actions.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_export_context_packet.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_generate_report_readonly.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_map_workflow_graph.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_replay_audit_trace.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/skills/skill_x108_ingress_envelope.py — Shared/generic dependency, not Ecom-owned.
+- periphery/workflow_governance_readonly/utils.py — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/atlas_scenario_spec/reports/F06_ATLAS_CANON_CHECK_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/AUDIO_ENTROPY_ADVISORY_ONLY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/COGNITIVE_REINTEGRATION_ADVISORY_ONLY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/EXTERNAL_SIGNALS_SIGNAL_ONLY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/FAIL_CLOSED_PRIORITY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/NO_ACT_FROM_PERIPHERY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/P107_P161_NOT_PROVEN_RUNTIME_AUTHORITY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/cognitive_advisory_spec/reports/PLAN_F07_COGNITIVE_IMPORT_AUDIT_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/dry_run/DRY_RUN_PIPELINE.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/education_benchmark_dry_run/reports/PLAN3_P7_EDUCATION_BENCHMARK_DRY_RUN_SPEC_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/external_signals_dry_run/specs/EXTERNAL_SIGNALS_TO_X108_DRY_RUN_PIPELINE.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/freeze_audit/PLAN3_FILE_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/post_import_freeze_audit/POST_IMPORT_FILE_INVENTORY.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/reports/PLAN3_P0_NEXT_STEPS.md — Shared/generic dependency, not Ecom-owned.
+- runtime_contracts/rssi_rgpd_compliance_spec/reports/F03_RSSI_RGPD_CANON_CHECK_REPORT.md — Shared/generic dependency, not Ecom-owned.
+- runtime_terrain_bank_trading_gps/sigma/contracts.py — Shared/generic dependency, not Ecom-owned.
+- runtime_terrain_bank_trading_gps/sigma/guard.py — Shared/generic dependency, not Ecom-owned.
+- runtime_terrain_bank_trading_gps/sigma/run_pipeline.py — Shared/generic dependency, not Ecom-owned.
+- sigma/aggregation.py — Shared/generic dependency, not Ecom-owned.
+- sigma/base.py — Shared/generic dependency, not Ecom-owned.
+- sigma/connectors.py — Shared/generic dependency, not Ecom-owned.
+- sigma/contracts.broken-ragnarok.py — Shared/generic dependency, not Ecom-owned.
+- sigma/contracts.py — Shared/generic dependency, not Ecom-owned.
+- sigma/domains/bank_agents.py — Shared/generic dependency, not Ecom-owned.
+- sigma/domains/gps_defense_aviation_agents.py — Shared/generic dependency, not Ecom-owned.
+- sigma/domains/meta_agents.py — Shared/generic dependency, not Ecom-owned.
+- sigma/domains/trading_agents.py — Shared/generic dependency, not Ecom-owned.
+- sigma/evaluate.py — Shared/generic dependency, not Ecom-owned.
+- sigma/graphiti_readonly_bridge.py — Shared/generic dependency, not Ecom-owned.
+- sigma/guard.py — Shared/generic dependency, not Ecom-owned.
+- sigma/obsidia_sigma_v130.py — Shared/generic dependency, not Ecom-owned.
+- sigma/orchestrator_preview.py — Shared/generic dependency, not Ecom-owned.
+- sigma/packets.py — Shared/generic dependency, not Ecom-owned.
+- sigma/protocols.py — Shared/generic dependency, not Ecom-owned.
+- sigma/README.md — Shared/generic dependency, not Ecom-owned.
+- sigma/registry.py — Shared/generic dependency, not Ecom-owned.
+- sigma/run_pipeline.py — Shared/generic dependency, not Ecom-owned.
+- sigma/sigma_guidance.py — Shared/generic dependency, not Ecom-owned.
+- sigma/sigma_monitor.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_adversarial_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_fuzz_scale_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_market_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_regulatory_proxy_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_scale_pack_10k.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_scale_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_security_fuzz_extended_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_truth_proxy_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_bank_world.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_gps_fail_closed.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_gps_semantics.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_gps_smoke.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_sigma_guidance.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tests/test_sigma_smoke.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/generate_bank_replay_results_doc.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/generate_bank_scale_results_doc.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_confusion_matrix_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_enterprise_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_fuzz_scale_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_regulatory_proxy_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_replay_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_robo_scenario_benchmark.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_scale_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_security_fuzz_extended_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_security_fuzz_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/tools/run_bank_truth_proxy_pack.py — Shared/generic dependency, not Ecom-owned.
+- sigma/trees_activation_readonly.py — Shared/generic dependency, not Ecom-owned.
+- sigma/utils/indicators.py — Shared/generic dependency, not Ecom-owned.
+- specs/03_ENTROPY_DISCIPLINE/P161_ENERGETIC_CALIBRATION_FORMALIZATION_TARGET.md — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_action_gateway_hold_block_sandbox_api_p54.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_activation_readiness_os_map_p50.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_adapter_coverage_os_map_p48.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_all_routes_exist.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_automation_orchestrator.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_automation_snapshot_payload.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_boundary_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_capabilities_preserved.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f10c_existing_command_packet_reconnect.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f11c_tree_signal_runtime_order.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f12c_domain_raccord_priority.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f2a_transverse_value_interface.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f2b_sigma_calibration.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f2c_anti_mismatch_formal.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f3_thermodynamics_operational.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f4_gencoin_shadow_value_layer.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f5b_tree_signal_packet.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f6a_memory_promotion_guard.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_f7b_operator_view_packet.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_final_answer_capabilities.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_final_answer_freeze_sourced_live_cases.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_final_answer_response_md_split.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_final_answer_uses_structured_response.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_freeze_metrics_snapshot_runtime.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_general_conversation_mode_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_intent_classifier_hard_fix.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_llm_obsidien_three_foundations_live_cases.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_low_material_text_preview.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_memory_candidate_automation.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_memory_graphiti_http_bounds.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_memory_intake_gate.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_memory_response_chain_effective_query.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_native_machination_packet.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_no_invented_metrics.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_no_template_when_freeze_metrics_available.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_operator_loop_automation.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_payload_packetization.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_readonly_activation_api_p51.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_response_schema_utf8.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_routing_short_circuit_resolved.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_semantic_advisory_utf8_runtime.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_semantic_query_ladder.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_source_of_truth_any_input.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_source_pack_context_p26.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_structured_response_engine_adapter.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_terminal_chat_client.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_three_foundations_no_500.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_true_voice_memory_chain_final_answer.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_utf8_no_mojibake.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_v1_4_12a_creator_boundary.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_brody_v1_4_12a_final_answer.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_capability_path_preview_p36.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f16_live_sources.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f19b_thermo_coherence_time_unified.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f22b_readonly_intent_guard.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f23a4_3_sigma_registry_repair.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f23a4_4_sigma_evaluate_dispatcher.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f23a4_6_monitoring_adapters_sigma.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f23a6_2_sigma_evaluate_endpoint.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f26_1_monitor_governed_runtime.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f27_1_tree_signal_packet.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f28_2_governed_operator_runtime.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f30_4_workflow_governance_route.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f35_1_operator_demo_workbench_surfaces.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f37_multi_domain_user_scenarios_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f38_multi_domain_live_api_route_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f63_sigma_monitoring_endpoints_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f65_sigma_bus_readonly_bridge.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f67_sigma_live_smoke_api_audit.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f72_os_trad_ir_reverse_pipeline_audit.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_f76b_auth_rate_limit_prod_hardening.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_global_runtime_surface_gate_os_map_p49.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_graphiti_memory_readonly_activation_api_p52.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_graphiti_v20_proxy_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_module_function_coverage_os_map_p47.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_os_map_api_p38.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_output_envelope_blockchain_fraud_check.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_output_envelope_bus_bridge.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_output_envelope_bus_signal.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_output_envelope_bus_stats.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_output_envelope_periphery_pipeline.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_reverse_os_interlanguage_preview_p35.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_runtime_inventory_preview_p37.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_workbench_view_coverage_os_map_p46.py — Shared/generic dependency, not Ecom-owned.
+- tests/api/test_world_action_bus_dry_run_activation_api_p53.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_active_plan_skill_resolution_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_aliases_naturels_v2.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_boot_to_interactive_shell_v1_1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_brody_bridge_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_capability_graph_v3.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_core_surface_composer_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_docx_adapter_v3.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_dynamic_panels_after_core_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_forbidden_write_check.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_full_project_cockpit_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_large_doc_read_policy.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_large_doc_read_v2b.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_lean_manifest_guard.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_lean_proof_panel_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_nl_intent_v2.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_obsidure_bridge_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_operator_task_card_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_reverse_router_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_runtime_service_map_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_sigma_non_sovereignty_check.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_surface_separation_v2.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_terminal_gate_planner_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_terminal_input_skill_resolver_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_terminal_routing_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_terminal_runtime_input_resolver_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_tui_gates_tab_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_tui_layout_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/gates/test_obsidia_unified_ir_v1.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_agents_cannot_emit_act.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_feedback_memory_no_write_v3.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_gencoin_no_authority_v3.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_graphiti_no_write.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_memory_candidate_ledger_no_promotion.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_memory_promotion_not_automatic.py — Shared/generic dependency, not Ecom-owned.
+- tests/non_sovereignty/test_world_action_no_real_act_v4.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_action_lifecycle.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_agent_contracts.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_agent_registry_v3_v4.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_agents_obsidia_config_registry.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_bridge_connection.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_false_on_blocks_gencoin.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_feedback_memory_bridge_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_gateway_dryrun_only.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_gencoin_debt_model.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_gencoin_ledger_append_only.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_gencoin.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_graphiti_readonly_bridge.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_http_audit_generated_output.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_memory_world_mapper_domain_contract.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_os3_replay_runner.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_proof_of_governance.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_world_action_controlled_runtime_stub.py — Shared/generic dependency, not Ecom-owned.
+- tests/periphery/test_world_call_classifier.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f25b_immutable_vote_minimal.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f60_sigma_registry_repair.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f61_sigma_dispatcher_readonly_evaluate.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f62_sigma_domain_packets_normalization.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f64_sigma_connectors_reconciliation.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f66_sigma_orchestrator_preview_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f70_sigma_graphiti_readonly_bridge.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f71_sigma_trees_activation_readonly.py — Shared/generic dependency, not Ecom-owned.
+- tests/sigma/test_f73_adversarial_boundary_advanced.py — Shared/generic dependency, not Ecom-owned.
+
+## DISCOVERED_BUT_NOT_COPIED
+
+- _graphiti_readonly_indexes/GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854/graphiti_readonly_records_v2.jsonl — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P11A_UI_RESPONSE.html — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P39_SERVER_MATRIX_CHECK.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/p40_live_matrix.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P43_UNCONNECTED_RUNTIME_SURFACE_MAP.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P45_FULL_ROUTE_COVERAGE_MAP.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P45_ROUTE_INVENTORY_RAW.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P46_WORKBENCH_VIEW_INVENTORY_RAW.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P47_MODULE_FUNCTION_INVENTORY_RAW.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P48_ADAPTER_INVENTORY_RAW.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P53_REAL_WORLD_ACTION_BUS_DISCOVERY.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _runtime_wiring_preflight/P54_REAL_ACTION_GATEWAY_DISCOVERY.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F03_RSSI_RGPD_CANON_REPAIR_20260602_155630/F03_RSSI_RGPD_ZIP_INTERNAL_INVENTORY_STRICT.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F03_RSSI_RGPD_IMPORT_AUDIT_20260602_155234/F03_RSSI_RGPD_ZIP_INTERNAL_INVENTORY.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F06_ATLAS_CANON_REPAIR_20260602_160517/F06_ATLAS_ZIP_INTERNAL_INVENTORY_CANON_DEDUPED.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F06_ATLAS_IMPORT_AUDIT_20260602_160052/F06_ATLAS_ZIP_INTERNAL_INVENTORY.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F07_COGNITIVE_IMPORT_AUDIT_20260602_154536/F07_COGNITIVE_ZIP_INTERNAL_INVENTORY.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F10_COMPLIANCE_DATA_GOVERNANCE_IMPORT_AUDIT_20260602_160941/F10_COMPLIANCE_DATA_GOVERNANCE_ZIP_INTERNAL_INVENTORY_DEDUPED.csv — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_NEXT_PHASE_RECOMMENDATION.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_RAW_COMMAND_LOG.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78B_SOURCE_PACKS_DEEP_DIFF_AUDIT_20260602_132021/F78B_ZIP_INTERNAL_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_NEXT_PHASE_RECOMMENDATION.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_RAW_COMMAND_LOG.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/F78C_XLSX_IMPLEMENTATION_PLAN_RECONCILIATION_20260602_133600/F78C_XLSX_SHEET_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_INVARIANT_GRAPH_AUDIT_V1/THEOREM_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_NPL_PACK_AUDIO_ENTROPY_AUDIT_V1/NPL_PACK_FILE_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_NPL_PACK_AUDIO_ENTROPY_AUDIT_V1/NPL_PACK_TO_EXISTING_SPECS_MAP.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_P107_P161_FORMAL_TARGET_AUDIT_V1/RAW_P107_P161_SEARCH_LOG.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_SOURCE_DISCOVERY_MAP_V1/RAW_SEARCH_LOG.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_discovery/OBSIDIA_SOURCE_DISCOVERY_MAP_V1/SOURCE_DISCOVERY_REPORT.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/OBSIDIA_UNIFIED_IMPLEMENTATION_BACKLOG_RICH_NO_DUPES_V1/README.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/architecture_protocoles_os_cognitif.txt — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/audience_packet_07_investor.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/audience_packet_08_non_tech.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/evidence/reverse_os_interlanguage_canon_v1.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/index/EVIDENCE_MAP.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- _source_packs/REVERSE_OS_INTERLANGUAGE_CANON_V1/support/universal_io_matrix_samples/matrix_cell_0181_code_python_dev_plain_fr.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- AGENTS.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/agents_readonly/indicators_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/agents_readonly/sigma_dashboard_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/audit_middleware.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/auth.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_adaptive_response_policy.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_anti_mismatch_signal.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_automation_orchestrator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_backend_response_composer.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_balance_engine.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_bridge_lifecycle.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_candidate_memory_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_capabilities_intent.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_cic_context_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_cognitive_micro_core.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_cognitive_modules_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_context_budget.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_contracts_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_domain_raccord_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_education_pack_v1_readonly_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_existing_reverse_os_bridge.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_freeze_metrics_snapshot.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_full_runtime_orchestrator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_full_runtime_reconnect.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_gencoin_cognitive_ledger.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_gencoin_shadow_value.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_gencoin_transverse_interface.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_graphiti_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_machination_composer.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_memory_candidate_builder.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_education_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_human_validation_gate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_promotion_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_readonly_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_replay_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_response_chain_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_memory_trace_extractor.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_operator_loop_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_operator_view_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_point_cloud_21d_selector.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_project_memory_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_project_memory_runtime.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_readonly_intent_guard.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_real_response_pipeline.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_reflex_diagnostic_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_repair_reasoning.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_repair_request_router.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_rights_authority_matrix.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_runtime_context_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_runtime_cost_map.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_safe_snapshot.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_secret_scrubber.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_semantic_query_router.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_session_memory_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_session_memory_runtime.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/brody_source_of_truth_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_structured_response_engine_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_temporal_context_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_text_encoding.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_thermo_coherence_time_unified.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_thermodynamics_signal.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_tree_policy_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_tree_policy.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_tree_signal_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_true_response_structure_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_true_response_structure_runtime.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_true_voice_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_v1_4_12a_final_answer_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/brody_v3_fastpath_response.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/bus/registry.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/bus/router.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/bus/sigma_bridge.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/bus/signal_packager.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/bus/state_aggregator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/cic/cic_domain_context.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/cic/cic_ncp_readonly_stub.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/cic/cic_readonly_pack_provider.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/cic/cic_receipt_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/cic/cic_scraping_readonly_stub.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/graphiti_env_loader.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/graphiti_v20_readonly_client.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/inference_economy/cost_receipt.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/inference_economy/domain_metrics.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/inference_economy/external_comparison.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/inference_economy/meter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/main.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/os_adapters/determinism.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/os_adapters/os_trad_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/os_adapters/parse_input.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/os_adapters/svg.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/output_envelope.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/request_cost_event_writer.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/routes/audit.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/blockchain.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/brody_monitoring.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/brody.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/bus.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/context.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/gencoin.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/graphiti.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/live_kernel_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/memory.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/os_map.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/os_trad_ir_reverse.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/os3.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/periphery_ops.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/runtime_freeze_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/runtime_freeze.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/runtime_wiring_preview.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/sigma_monitoring.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/source_runtime_status.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/status.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/translation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/worldcalls.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/routes/x108.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia_api/runtime_loader.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia_api/safe_response.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- apps/obsidia-workbench/FRONTEND_BACKEND_BRIDGE_REPORT.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/runtime_wiring_preview.html — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/api/backendProbe.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/api/obsidiaClient.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/App.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/BackendStatusPanel.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/BrodyPanel.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/LeftSidebar.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/RightPanel.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/TopBar.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/components/TreeExplorer.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/brodyResponseComposer.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/irCandidateBuilder.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/language.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/osReverseProjection.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/osTradPipeline.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/sessionStore.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/lib/symbolicAlphabet.ts — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/AuditView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/BlockchainView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/ChatView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/GencoinView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/GraphitiView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/MemoryView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/OS3View.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/OSMapView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/RuntimeWiringPreviewView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/SettingsView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/TranslationView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/WorldCallView.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/src/views/X108View.tsx — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/WORKBENCH_BUILD_REPORT.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- apps/obsidia-workbench/WORKBENCH_V2_UI_REPORT.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit_merkle.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- audit/legacy_root/audit_actif.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit/legacy_root/audit_final.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit/legacy_root/audit_merkle.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit/legacy_root/audit_metriques.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit/RUN_METRICS_PALIER_LAST.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- audit/run_palier_timing.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- CLAUDE.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/agents/context-keeper.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/agents/explorer.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/agents/proof-checker.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/agents/risk-reviewer.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/commands/freeze-check.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/commands/update-focus.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/context/MODULE_MAP.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/context/PROTECTED_SCOPE.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/context/WORKFLOW.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/hooks/obsidia_pretooluse_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/hooks/obsidia_router_prompt_hook.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- claude/memory/P1_FREEZE.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- codex/agents/context-keeper.toml — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- codex/agents/explorer.toml — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- codex/agents/proof-checker.toml — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- codex/agents/risk-reviewer.toml — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- combinatorial_coverage_layer/boundary_case_generator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- combinatorial_coverage_layer/test_vector_generator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- connectors/_decision_card_fr.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- connectors/aviation_robo.py — Belongs to another domain or mixed non-Ecom subsystem.
+- connectors/bank_normal_flow.py — Belongs to another domain or mixed non-Ecom subsystem.
+- connectors/brody_memory_readonly_flow.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- connectors/context_packet_flow.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- connectors/interface_ready_memory_flow.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- connectors/memory_feedback_candidate_flow.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- connectors/trading_live.py — Belongs to another domain or mixed non-Ecom subsystem.
+- CURRENT_BRODY_SIGMA_READONLY_CHAIN_F68.txt — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- deepseek/pastes/paste-2026-05-19-220615-7db0b03d.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- deepseek/pastes/paste-2026-05-20-000721-3f2b1ef7.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- Demo-obsidia-x108-proof/connectors/action_lifecycle_full_stack_flow.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- Demo-obsidia-x108-proof/connectors/feedback_memory_candidate_flow.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- Demo-obsidia-x108-proof/connectors/world_action_dry_run_flow.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- demos/local_flows/bank_full_stack_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/blockchain_security_dryrun_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/gps_full_stack_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/memory_brody_graphiti_flow.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- demos/local_flows/trading_full_stack_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/v3_v4_full_stack_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/v4_controlled_runtime_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- demos/local_flows/world_call_gateway_flow.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/F71_34_TREES_DEEP_ACTIVATION_AUDIT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/F74_F77_RISK_REGISTER.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/OBSIDIA_F53_BUS_BRIDGE_BOUNDARY_CONTRACT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/OBSIDIA_F55_BUS_SIGNAL_INPUT_CONTRACT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/OBSIDIA_X108_V4_CHECKLIST_AUDIT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/OBSIDIA_X108_V4_FILE_MAP.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/OBSIDIA_X108_V4_GATE_STATUS.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/SIGMA_FINAL_FREEZE_INDEX_F60_TO_F68.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/architecture/SIGMA_REMAINDER_BRANCHING_AUDIT_F66_TO_F73.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/AUDIT_GUIDE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/AUDIT_TOOLS.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/audits/OBSIDIA_BRANCHING_MATRIX_DRAFT_V0.csv — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/audits/OBSIDIA_BRANCHING_MATRIX_SUMMARY_V0.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/audits/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/audits/OBSIDIA_OIE_EXTERNAL_BENCHMARK_HARNESS_V0.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/audits/OBSIDIA_OIE_EXTERNAL_BENCHMARK_RESULTS_V0_3.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/BANK_ROBO_REAL_BATCH100_CLIENT_VALIDATION.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/BANK_SCENARIOS.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/blockchain/GENCOIN_NOT_A_TOKEN_POLICY_V1.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_AUTHORITY_MATRIX_V0.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_AUDIT_V0.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_DETAIL_REVIEW_V0.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_DETAIL_REVIEW_V0.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/OBSIDIA_CORE_PROOF_METRIC_DELTA_MATRIX_V0.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C_PROTOCOLS_RISK_SCAN.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C_RUN_PIPELINE_RISK_SCAN.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C_SIGMA_V130_RISK_SCAN.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C0_GAMMA_AUDIT_ONLY_EXTRACT.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C0_GAMMA_CONFLICT_EXTRACT.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56A_C0_GAMMA_DIRECT_EXTRACT.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_AUDIT_ONLY_P08_protocols.py.diff — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_AUDIT_ONLY_P10_obsidia_sigma_v130.py.diff — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_AUDIT_ONLY_P11_run_pipeline.py.diff — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_D_ALL_DOMAINS_CORE_RIGOR_AUDIT.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_D_ALL_DOMAINS_CORE_RIGOR_AUDIT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_P08_P10_P11_CONFLICT_AUDIT_ONLY.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56C_P08_P10_P11_CONFLICT_AUDIT_ONLY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56E_POST_PATCH_METRIC_REAUDIT.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P56E_POST_PATCH_METRIC_REAUDIT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P57_CORE_MACHINERY_INVENTORY.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P57_CORE_TO_PROOF_IMPORT_PLAN.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P57_CORE_TO_PROOF_IMPORT_PLAN.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P58_CORE_IMPORT_TRIAGE_OPERATIONAL_PATH_AWARE.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P58_CORE_IMPORT_TRIAGE_OPERATIONAL_PATH_AWARE.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P62_MANUAL_REVIEW_DEFERRED.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P63_GLOBAL_FUSION_REALITY_AUDIT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P64_FUSION_CONTINUITY_LEDGER.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P64_FUSION_CONTINUITY_LEDGER.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P68_API_AUTH_ROUTE_EXPOSURE_AUDIT.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P69_FILESYSTEM_PATH_EXPOSURE_AUDIT.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P73_AGENTS_COMPLEMENTARY_RECONCILIATION.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/core_import/P73_AGENTS_COMPLEMENTARY_RECONCILIATION.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/core_import/P74_SIGMA_SAFE_EVOLUTION.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P74_SIGMA_SAFE_EVOLUTION.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P75_RUNTIME_CORE_RISK_REVIEW.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P77_CANON_WORDING_TARGETED_CLEANUP.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/core_import/P77_CANON_WORDING_TARGETED_CLEANUP.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/demo/OBSIDIA_BRODY_GPT_V1_FINAL_README.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/demo/OBSIDIA_BRODY_GPT_V1_RELEASE_NOTES.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/demo/OBSIDIA_F46_F47_PATCH_SEQUENCE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/demo/OBSIDIA_F46_PUBLIC_READINESS_GATE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/demo/OBSIDIA_F51_BUS_STATS_DEBT_DECISION.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/demo/OBSIDIA_F60_SIGMA_REGISTRY_READINESS.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_FINAL_ANSWER_CAPABILITY_PATCH_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_NEXT_FIX_PLAN.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_NO_RAW_TUPLE_CLOSE_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_REAL_BACKEND_AUDIT_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_REAL_MODULE_DISCOVERY_FOR_API.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/BRODY_REAL_RESPONSE_MD_PIPELINE_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/FULL_TEST_MATRIX_RECONCILIATION/TEST_COUNT_RECONCILIATION_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/freeze/V5A_SINGLE_REPO_REALITY_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/gencoin/sandbox_pre_freeze/sandbox_engine.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/gencoin/sandbox_pre_freeze/ZONES_SECURITE_CANON.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/GITHUB_MCP_BENCHMARK_BACKLOG_REPORT.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/glossary/OBSIDIA_X108_GLOSSAIRE_INTEGRAL_AUDITE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/graphiti/GRAPHITI_NO_WRITE_POLICY_V1.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/graphiti/GRAPHITI_READONLY_BRIDGE_V1.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/investor/GPS_V01_CLOSURE_REPORT.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/KERNEL_OVERVIEW.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/P2_BANK_ADVERSARIAL_SCOPE.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/P2_BANK_ENTERPRISE_SCOPE.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/P2_BANK_TEST_SCOPE.md — Belongs to another domain or mixed non-Ecom subsystem.
+- docs/P2_ROADMAP.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/proposals/P4_20_PATH_FIDELITY_GUARD_PROPOSAL.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/protocols/OBSIDIA_OPERATOR_DOCTRINE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/protocols/OBSIDIA_PREMORTEM_PROTOCOL.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/README_OBSIDIA_X108_GITHUB_V2.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/real_engine/P31_OS_TRAD_REVERSE_OS_RECOVERY_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P33D_OS_TRAD_EVIDENCE_RECONCILIATION_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P34_REVERSE_OS_INTERLANGUAGE_CANONIZATION_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P37_RUNTIME_FUNCTION_INVENTORY_GRAPH_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P38_WORKBENCH_FULL_OS_MAP_REPORT.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/real_engine/P41_RUNTIME_CAPABILITY_OSMAP_FREEZE_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P42B_CI_FAMILY_DISCOVERY_FIX_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P50_CONTROLLED_ACTIVATION_READINESS_PLAN.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/real_engine/P51_BRODY_READONLY_CONTROLLED_ACTIVATION_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/release/OBSIDIA_BUS_LAYER_READONLY_RELEASE_INDEX.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_BIS_ACTIVE_CONTRACTS_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_FULL_MACHINATION_KERNEL_CONTRACT_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE11A_TER_SOURCE_ONLY_CONTRACT_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_BIS_NATIVE_VOICE_SOURCE_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_NATIVE_VOICE_SOURCE_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12A_TER_MEMORY_MATERIAL_BINDING_AUDIT_20260527.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E0_A_STRUCTURAL_NO_MATERIAL_PROOF_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E1_R_REPO_TERMINAL_APPLIED_ZIP_WORK_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E4_A_SEMANTIC_DRIFT_SOURCE_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/BRODY_PHASE12E4_A2_DOMAIN_RACCORD_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/archive/phase10_12_legacy_untracked_20260527/scripts/smoke_phase10_real_user_terminal_compare.ps1 — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12B_MEMORY_MATERIAL_BINDING_REPORT_20260527.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/BRODY_PHASE12D_MEMORY_MATERIAL_BINDING_FREEZE_20260527.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/BRODY_PHASE12E5_POST_DOMAIN_FIRST_ADAPTIVE_REGRESSION_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12F_A_UI_SURFACE_PARITY_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12J_A_ADAPTIVE_ANSWER_SIZING_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12L_RIGHTPANEL_ADAPTIVE_SIGMA_FREEZE_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12L_RIGHTPANEL_ADAPTIVE_SIGMA_VALIDATION_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE12M_LONG_MULTI_SESSION_STRESS_RESULTS_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE8A_OLD_PATCH_CAPABILITY_ARCHAEOLOGY_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE8D_FALLBACK_OS_TRAD_COMPARISON_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE8E_TERMINAL_UI_API_ADAPTATION_MAP_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9A_CORE_SHELL_BACKEND_ARCHAEOLOGY_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9B_API_ROUTE_BINDING_PRECHECK_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9B0_FULL_SURFACE_RECONCILIATION_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9B1_OS_TRAD_IR_REVERSE_ROUTE_CONTRACT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9B2A_PREPATCH_SOURCE_SNAPSHOT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/BRODY_PHASE9B4A_UI_TERMINAL_RECONNECT_AUDIT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/CLAUDE_FAST_AUDIT_F24_F29_F30_F31_20260529_012641.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/F19A_THERMO_COHERENCE_TIME_PAYLOAD_8000_20260528_011049.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19A_THERMO_COHERENCE_TIME_PAYLOAD_8012_20260528_011049.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19A2_BRODY_PAYLOAD_8000_20260528_011308.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19A2_BRODY_PAYLOAD_8012_20260528_011308.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19A2_ROUTE_PROBES_20260528_011308.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19A2_SOURCE_SCAN_20260528_011308.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19B_8000_THERMO_COHERENCE_TIME_UNIFIED_PAYLOAD.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F19B_8012_THERMO_COHERENCE_TIME_UNIFIED_PAYLOAD.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/F20A_SOURCE_SCAN_20260528_012740.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/LIVE_CONNECTORS_PHASE7E_SIX_DECISION_GATEWAY_AUTH_HMAC_CONCLUSION_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/LIVE_CONNECTORS_PHASE7E_TER_BIS_AUDIT_CHAIN_HANDLER_INSPECT_20260527.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_AGENT_OBSIDURE_MANUAL_V1.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_CHAT_RUNBOOK.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F11_RUNTIME_LIVE_CHAT_TREE_SIGNAL_ORDER_FREEZE_REPORT_20260527_230045.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F14_COMMAND_COPY_BUTTON_UI_FREEZE_REPORT_20260527_234834.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F15C_LIVE_SURFACE_STRICT_REPAIR_REPORT_20260528_001500.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F17A_GRAPHITI_8000_8012_REAL_PARITY_AUDIT_20260528_040000.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/OBSIDIA_F18A2_ZIP_LOCAL_SOURCE_AUDIT_20260528_004733.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F18A2_ZIP_LOCAL_SOURCE_AUDIT_20260528_004733.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F18A3_TARGETED_CANDIDATE_INSPECTION_20260528_005433.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F18A3_TARGETED_CANDIDATE_INSPECTION_20260528_005433.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F18A4_EXISTING_CANDIDATE_EXECUTION_AUDIT_20260528_005700.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F19A2_TARGETED_THERMO_COHERENCE_TIME_AUDIT_20260528_011308.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F20A_GENCOIN_COGNITIVE_VALUE_LEDGER_AUDIT_20260528_012740.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F21A_RUNTIME_FREEZE_DASHBOARD_GLOBAL_AUDIT_20260528_014852.txt — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22A_READONLY_INTENT_ALPHABET_CLAVAGE_AUDIT_20260528_050000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22A2_GIT_ARCHAEOLOGY_PROTOCOL_TRACE_AUDIT_20260528_053400.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22A3_DOCUMENT_SOURCE_TRACEABILITY_AUDIT_20260528_060000.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22A3_DOCUMENT_SOURCE_TRACEABILITY_AUDIT_20260528_060000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22B_RUNTIME_STATE_READONLY_INTENT_REPAIR_REPORT_20260528_070000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22E_A_JARVIS_NARRATIVE_SOURCE_AUDIT_20260528_051256.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F22E_A_JARVIS_NARRATIVE_SOURCE_AUDIT_20260528_051256.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/OBSIDIA_F23A1_MEMORY_REFLEX_ORCHESTRATOR_SOURCE_AUDIT_20260528_083733.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A3_0_EXISTING_RIGHTS_CONTRACTS_FLOW_AUDIT_20260528_084215.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A3_1_EXISTING_CONTRACT_MATRIX_SYNTHESIS_20260528_084552.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A4_0_REFLEX_DIAGNOSTIC_PACKET_SOURCE_AUDIT_20260528_085837.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A4_BLOCK_CHECKPOINT_20260528_214817.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A6_0_ORCHESTRATOR_SIGMA_AWARENESS_AUDIT_20260528_220322.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23A6_0_ORCHESTRATOR_SIGMA_AWARENESS_AUDIT_20260528_220322.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F23B1_1_FOCUSED_CONTEXT_PACKET_DISCOVERY_20260528_082922.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F25A_HARMONIC_VOTE_SOURCE_AUDIT_20260528_075807.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F25A_HARMONIC_VOTE_SOURCE_AUDIT_20260528_075807.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F26_0_MONITOR_AWARENESS_AUDIT_20260528_233903.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F27_0_SHAZAM_COGNITIF_AUDIT_20260528_224620.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F27_0_SHAZAM_COGNITIF_AUDIT_20260528_224620.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F28_1_GOVERNED_OPERATOR_RUNTIME_AUDIT_20260528_230354.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F29_0_MEMORY_GRAPHITI_RECONCILIATION_AUDIT_20260529_003046.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005542.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005542.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F2A_TRANSVERSE_VALUE_INTERFACE_PREP_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F30_0_WORKFLOW_SOP_ENGINE_AUDIT_20260528_235251.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F30_0_WORKFLOW_SOP_ENGINE_AUDIT_20260528_235251.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F30_1_WORKFLOW_GOVERNANCE_V5_AUDIT_20260529_000550.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_20260529_014612.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_20260529_014612.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F31_CLEANUP_UNTRACKED_DEBT_CHECKPOINT_20260529_015747.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F32_0_GLOBAL_RUNTIME_READINESS_AUDIT_20260529_020945.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F35_0_OPERATOR_DEMO_SURFACE_AUDIT_20260529_045419.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F44_CANONICAL_INTEGRITY_AUDIT_20260529_090000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F46_CANONICAL_HARDENING_PLAN_20260529_095000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F47_CANONICAL_HARDENING_PATCH_SEQUENCE_20260529_181500.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F51_BUS_STATS_ROUTE_DEBT_AUDIT_20260529_223000.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F51_BUS_STATS_ROUTE_DEBT_AUDIT_20260529_223000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F52_BUS_BRIDGE_QUARANTINE_20260529_230000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F55_BUS_SIGNAL_INGRESS_PLAN_20260530_000000.json — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/runtime/OBSIDIA_F59_BUS_LAYER_FINAL_FREEZE_INDEX_20260530_000000.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/source_packs/OS_TRAD_REVERSE_OS_SOURCE_CANDIDATE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/specs/OBSIDIA_TERMINAL_LARGE_DOC_READ_V2B.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/specs/OBSIDIA_TERMINAL_PLAN_PANEL_V1.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/specs/OBSIDIA_TERMINAL_RESPONSE_ROUTER_NL_INTENT_V2.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/specs/OBSIDIA_TERMINAL_STACK_FREEZE_V1.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- docs/status/P1_FREEZE_NOTE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/status/PUBLIC_REPO_CLEANUP_FREEZE_20260526.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/status/PUBLIC_STATUS.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/status/USE_CASES.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- docs/UNIVERSAL_DOMAIN_INTEGRATION_PROTOCOL_V0.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- domain_packets/bank_decisional_form_v0.yaml — Belongs to another domain or mixed non-Ecom subsystem.
+- domain_packets/trading_decisional_form_v0.yaml — Belongs to another domain or mixed non-Ecom subsystem.
+- domains/bank/bank_x108_gate.py — Belongs to another domain or mixed non-Ecom subsystem.
+- domains/bank/nuisance_registry.py — Belongs to another domain or mixed non-Ecom subsystem.
+- domains/gps/gps_x108_gate.py — Belongs to another domain or mixed non-Ecom subsystem.
+- domains/gps/nuisance_registry.py — Belongs to another domain or mixed non-Ecom subsystem.
+- examples/README.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- examples/scenarios/complete_decision_flow.json — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- formalization_specs/PEPITES_A_PROUVER.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- freeze/OBSIDIA_INFERENCE_ECONOMY_FREEZE_20260701_044702/OBSIDIA_INFERENCE_ECONOMY_AUDIT_V0.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_EXTERNAL_BENCHMARK_HARNESS_V0_FREEZE_20260701_055129/external_comparison.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_EXTERNAL_BENCHMARK_HARNESS_V0_FREEZE_20260701_055129/run_oie_external_claude_benchmark_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- freeze/OBSIDIA_OIE_EXTERNAL_BENCHMARK_HARNESS_V0_FREEZE_20260701_055129/test_oie_external_comparison.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/cost_receipt.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/domain_metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/meter.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/run_inference_economy_portfolio_benchmark_v0.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/test_inference_economy_cost_receipt.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- freeze/OBSIDIA_OIE_V01_ENGINE_FREEZE_20260701_052940/test_inference_economy_domain_metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- github/workflows/secret-scan.yml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- github/workflows/verify-proofs.yml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- github/workflows/verify.yml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- github/workflows/x108-periphery-ci.yml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- graph-memory/scripts/dry_run_scan_phase0_strict.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- graph-memory/scripts/dry_run_scan.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- hackathons/nativebuilder-gps-defense/fgi_gsrx_runtime/compatibility_shims/gsrx.m — Belongs to another domain or mixed non-Ecom subsystem.
+- hackathons/nativebuilder-gps-defense/fgi_gsrx_runtime/scripts/fgi_nav_to_observation.py — Belongs to another domain or mixed non-Ecom subsystem.
+- hackathons/nativebuilder-gps-defense/fgi_gsrx_runtime/scripts/post_chain_ir_to_kernel.py — Belongs to another domain or mixed non-Ecom subsystem.
+- hackathons/nativebuilder-gps-defense/PHYSICAL_BUILD_READINESS_REPORT.md — Belongs to another domain or mixed non-Ecom subsystem.
+- hackathons/nativebuilder-gps-defense/physical_signal_periphery.py — Belongs to another domain or mixed non-Ecom subsystem.
+- MANIFEST.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- obsidia_core/guardians/path_fidelity_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- patches/bank_robo_real/routers.getRecentTransactions.patch — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/action_lifecycle.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/action_sequence_governor.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/active_cognitive_reduction.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/adapters/bank_adapter.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/adapters/gps_adapter.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/adapters/trading_adapter.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/agent_contracts.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/agent_registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/agents_obsidia_config_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/action_sequence_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/agent_domain_integrator.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/agent_obsidure.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/agent_obsidure.py.before_navier_context — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/brody_memory_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/data_purity_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/eml_symbolic_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/energy_thermo_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/feedback_memory_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/gencoin_value_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/obsidure_math_memory_provider.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/obsidure_reasoning_provider.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/obsidure_repair_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/obsidure_repair_contract.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/obsidure_research_sources.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/ocs_generation_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/operational_constance_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/os3_proof_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/permission_economic_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/provenance_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/timeverse_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/agents/world_action_agent.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/alpha_beta_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/avdr.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/bdf_response.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/bdf/double_brain_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/bdf/llm_diffusion_mix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/benchmarks/benchmark_case_schema.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/bias/bias_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/bias/bias_trace.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/blockchain/blockchain_action_classifier.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/bridge_risk_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/chain_context.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/defi_risk_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/onchain_audit_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/oracle_freshness_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/signature_boundary.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/smart_contract_risk_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/token_policy.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/transaction_simulator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/blockchain/wallet_security_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/brody_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody_memory_readonly/auto_triage_memory_intake_readonly/brody_auto_triage_memory_intake_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/brody_agent_readonly_session_test_packet_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_candidate_components_inventory_readonly/__init__.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_candidate_components_inventory_readonly/BRODY_API_BRIDGE_CANDIDATE_COMPONENTS_INVENTORY_READONLY_MANIFEST.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_candidate_components_inventory_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_candidate_components_inventory_readonly/run_brody_api_bridge_candidate_components_inventory_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_candidate_drift_guard_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_live_drift_guard_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_bridge_live_drift_guard_readonly/run_brody_api_bridge_live_drift_guard_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_api_memory_operator_replay_clean_close_readonly/run_brody_api_memory_operator_replay_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_human_command_packet_clean_close_readonly/run_brody_human_command_packet_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_human_command_packet_readonly/brody_human_command_packet_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_human_output_receipt_validator_clean_close_readonly/run_brody_human_output_receipt_validator_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_human_output_receipt_validator_readonly/brody_human_output_receipt_validator_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_human_output_receipt_validator_readonly/run_brody_human_output_receipt_validator_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_local_command_gate_readonly/brody_local_command_gate_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_control_loop_baseline_freeze_readonly/run_brody_operator_control_loop_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_control_loop_clean_close_readonly/run_brody_operator_control_loop_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_execution_line_baseline_freeze_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_execution_line_baseline_freeze_readonly/run_brody_operator_execution_line_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_execution_protocol_readonly/run_brody_operator_execution_protocol_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_execution_receipt_clean_close_readonly/run_brody_operator_execution_receipt_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_execution_receipt_readonly/run_brody_operator_execution_receipt_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_final_baseline_freeze_readonly/run_brody_operator_final_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_handoff_line_baseline_freeze_readonly/run_brody_operator_handoff_line_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_handoff_line_clean_close_readonly/run_brody_operator_handoff_line_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_io_loop_baseline_freeze_readonly/run_brody_operator_io_loop_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_io_loop_clean_close_readonly/run_brody_operator_io_loop_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_output_validation_line_baseline_freeze_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_output_validation_line_baseline_freeze_readonly/run_brody_operator_output_validation_line_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_output_validation_line_clean_close_readonly/run_brody_operator_output_validation_line_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_supervised_handoff_clean_close_readonly/run_brody_operator_supervised_handoff_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_operator_supervised_handoff_readonly/run_brody_operator_supervised_handoff_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_x108_current_state_baseline_freeze_readonly/README_BOUNDARY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_x108_current_state_baseline_freeze_readonly/run_brody_x108_current_state_baseline_freeze_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_x108_native_runbook_clean_close_readonly/run_brody_x108_native_runbook_clean_close_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/brody_x108_native_runbook_readonly/run_brody_x108_native_runbook_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/candidate_export_for_graphiti_readonly/brody_candidate_export_for_graphiti_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231137 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/content_hydration_readonly/brody_content_hydration_readonly_v1.py.bak_safe_scan_20260520_231228 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/context_packet_consumer_readonly/brody_context_packet_consumer_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/context_packet_query_readonly/brody_context_packet_query_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_bridge_readonly/brody_graphiti_ready_export_readonly_v1_6_4.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_candidate_import_dry_run_readonly/brody_graphiti_candidate_import_dry_run_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_candidate_prep_from_post_human_triage_readonly/brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_candidate_review_gate_readonly/brody_graphiti_candidate_review_gate_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only/brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_import_apply_guarded_manual_only/brody_graphiti_import_apply_guarded_manual_only_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_import_dry_run_from_post_human_prep_readonly/brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_review_decision_apply_readonly/brody_graphiti_review_decision_apply_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/graphiti_review_gate_from_post_human_dry_run_readonly/brody_graphiti_review_gate_from_post_human_dry_run_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/local_response_engine_readonly/brody_local_response_engine_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_pipeline_freeze_report_readonly/brody_memory_pipeline_freeze_report_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_pipeline_freeze_v2_readonly/brody_memory_pipeline_freeze_v2_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_pipeline_v2_close_report_readonly/brody_memory_pipeline_v2_close_report_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_readonly_micro_smoke/brody_memory_readonly_micro_smoke_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_replay_query_regression_readonly/brody_memory_replay_query_regression_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/memory_scheduler_readonly/brody_memory_scheduler_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/post_graphiti_apply_verify_readonly/brody_post_graphiti_apply_verify_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/post_graphiti_apply_verify_readonly/run_brody_post_graphiti_apply_verify_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/post_graphiti_replay_query_regression_readonly/brody_post_graphiti_replay_query_regression_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/post_graphiti_replay_query_regression_readonly/run_brody_post_graphiti_replay_query_regression_readonly_v1.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/post_human_review_memory_triage_readonly/brody_post_human_review_memory_triage_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/project_intake_capture_buffer_readonly/brody_project_intake_capture_buffer_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/readonly_session_test/brody_readonly_session_test_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_close_decision_apply_readonly/brody_session_close_decision_apply_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_close_human_validation_gate_readonly/brody_session_close_human_validation_gate_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_memory_ledger_readonly/brody_session_memory_ledger_readonly_v2.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_presave_buffer_readonly/brody_session_presave_buffer_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_reopen_loop_readonly/brody_session_reopen_loop_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/session_trace_ledger/brody_session_trace_ledger_readonly_v1_6_3.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_boundary_readonly_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/srl_session_registry_layer_readonly/srl_taxonomy_readonly_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/taxonomy_mapper_34_8_readonly/brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/terminal_structural_dialogue_readonly/brody_terminal_structural_dialogue_readonly_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6_1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6_2.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_memory_readonly/world_source_intake/brody_world_source_intake_readonly_v1_6.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/brody_runtime/f32_full_runtime_integration_readonly_packet.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody_runtime/f33_runtime_entrypoint_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody_runtime/f36_user_scenario_controlled_response.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody_runtime/f37_multi_domain_user_scenarios_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody/brody_context_query.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody/brody_language_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody/brody_response_contract.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody/brody_response_sanitizer.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/brody/brody_runtime_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/check_incoherence.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_reduction.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_trees/dominant_trees.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_trees/memory_world_mapper.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/cognitive_trees/shazam_cognitif.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_trees/tree_activation_vector.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_trees/tree_registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cognitive_trees/tree_signal_packet.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/consciousness_regimes/collective_sandbox_summary.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/consciousness_regimes/passfail_metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/consciousness_regimes/regime_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/context/context_packet_builder_v2.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/context/context_packet_builder.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/context/context_packet_exporter.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/context/context_packet_sanitizer.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/context/context_packet_validator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/contrats/gencoin_ledger.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/control_plane.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/core_registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/cosine_similarity.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/data_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/demo_full_pipeline.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/diffusion_stub.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/distance_structured.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/dominant_tree_filter.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/education/education_score.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/eml_compression.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/energy_thermo.py — Belongs to another domain or mixed non-Ecom subsystem.
+- periphery/engine_gates/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/data_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/GROUPE_02__Temps_X_108_Non_contournement_12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/GROUPE_03__Semantique_OS4_Recit_12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/GROUPE_04__Ethique_ADeLe_Securite_12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/GROUPE_05__Agents_Infrastructure_Tools_12_ENGINE__gate_engine_v4.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/engine_gates/GROUPE_06__Cosmologie_Economie_R_D_12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/GROUPE_07__Ops_CI_CD_Validation_continue_12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/provenance_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/v4_structure/gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/engine_gates/world_action_gateway.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/event_bus.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/export_for_x108.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/failure_mapping.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/feedback_memory_bridge_brody_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/feedback_memory_candidate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/friction_symbolique.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/gardiens_fond/aeg_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/gardiens_fond/policy_scope_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/gardiens_fond/readonly_context_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/gencoin_debt_model.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_distribution.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_ledger.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/avdr_phase_mapper.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/balance_operator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/regime_metrics.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/regime_state.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/regime_truth_gate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin_sandbox/sandbox_engine.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/gencoin.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/github/github_workflow_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/graphiti/graphiti_context_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/graphiti/graphiti_freeze_snapshot_reader.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/graphiti/graphiti_readonly_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/hexaflux.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/hexaflux/ltcu_plus.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/hexaflux/transition_mapper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/ingestion/document_ingestion_pipeline.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/ingestion/hash_ingestion.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/ingestion/source_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/interface/interface_event_log.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/interface/interface_state_packet.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/interface/interface_view_contracts.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/interface/workbench_api_contract.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/jarvis_projection.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/kernel_boundary_tests.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/language/language_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/lean_sandbox/Carte_Resonance.lean — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/llm_stub.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/ltcu_plus.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/causal_chain.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/decision_ticket.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/drift_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/governance_partition.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/governed_state.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/ist.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/lyapunov.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/math_memory_index.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/math_core/multi_agent_consensus.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/obsidia_system.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/omega_space.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/phi_graph.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/proof_of_governance.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/smoke_integration.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/math_core/trust_path.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/mcp_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/mcp/mcp_permission_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/memory_governor.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/memory/memory_candidate_ledger.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/memory/memory_candidate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/memory/memory_promotion_policy.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/memory/memory_source_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/merge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/modules_agents/agent_contracts.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/agent_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/agent_reliability.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/no_agent_act_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/no_agent_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/os3_replay_runner.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/modules_agents/test_agents_52_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/no_bdf_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/no_cortex_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/no_hexaflux_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/no_memory_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/no_reverse_os_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/no_shazam_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/no_tree_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/binary_ternary_mapper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/compression_score.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/crypto_boundary.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/diffusion_cost_model.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/entropy_estimator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/radix_systems.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/number_encoding/symbolic_number_encoder.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/obsidia_ir.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/extracted_text_all.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/01_SOURCES/source_inventory.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/03_MEMOIRE_MONDE_COSMOS_REFLEX/reflex_reducer.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/04_ARBRES_34_TENSOR_MATRIX/cognitive_reduction.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/04_ARBRES_34_TENSOR_MATRIX/tensor_activation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/04_ARBRES_34_TENSOR_MATRIX/tree_space.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/cosine_similarity.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/dominant_tree_filter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/shazam_cognitif.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/spectral_hash.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/reverse_os.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/07_BDF_DOUBLE_CERVEAU/aeg_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/07_BDF_DOUBLE_CERVEAU/alpha_beta_router.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/07_BDF_DOUBLE_CERVEAU/bdf_response.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/07_BDF_DOUBLE_CERVEAU/diffusion_stub.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/07_BDF_DOUBLE_CERVEAU/llm_stub.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/08_HEXAFLUX_LTCU_MUTATIONS/hexaflux.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/08_HEXAFLUX_LTCU_MUTATIONS/ltcu_plus.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/09_MCP_BRIDGE_OBSIDIA_IR/mcp_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/09_MCP_BRIDGE_OBSIDIA_IR/obsidia_ir.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/09_MCP_BRIDGE_OBSIDIA_IR/policy_scope_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/01_CODE_REPO_CI/CARTOGRAPHE_PREUVES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/06_FRISE_ARBRES_MONDE_HUMAIN/CARTOGRAPHE_34_ARBRES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_AGI_VISION_HAUTE.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_COUCHES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_DOMAINES_TERRAIN.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_FORMULES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/CARTOGRAPHE_LOIS_PROTOCOLES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/10_AGENTS_52/07_ATLAS_OBSIDIA/GRAND_CARTOGRAPHE_OBSIDIA.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/11_AGENTS_RUNTIME_CONTRACTS/agent_reliability.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/11_AGENTS_RUNTIME_CONTRACTS/no_agent_act_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/12_FRICTION_AVDR_CONTINUUM/avdr.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/12_FRICTION_AVDR_CONTINUUM/check_incoherence.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/12_FRICTION_AVDR_CONTINUUM/friction_symbolique.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/13_GRAPHES_NUAGE_POINTS/distance_structured.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/13_GRAPHES_NUAGE_POINTS/path_finder.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/13_GRAPHES_NUAGE_POINTS/projection_phi.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/13_GRAPHES_NUAGE_POINTS/relation_graph.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/13_GRAPHES_NUAGE_POINTS/similarity_search.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/14_CONTEXT_EXPORT_X108_BOUNDARY/export_for_x108.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/14_CONTEXT_EXPORT_X108_BOUNDARY/retrieve_context.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/kernel_boundary_tests.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_agent_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_bdf_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_cortex_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_hexaflux_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_memory_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_reverse_os_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_shazam_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_tree_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/readonly_context_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/16_VISUALISATION_REVERSE_OS/top_5_tree_filter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_agents_52_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_bdf_non_decision.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_constitution_o1_o8.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_context_export.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_friction_avdr.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_hexaflux_non_decision.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_mcp_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_reverse_os_non_decision.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_shazam_cognitif.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_tree_space_34.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/20_DEMO_MINIMALE/demo_full_pipeline.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/00_SOURCES/home/ubuntu/Rapport_161_Pepites_INTEGRAL_FINAL.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/00_SOURCES/home/ubuntu/src_branche149.txt — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/01_REGISTRES_JSON/pepites.csv — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/01_REGISTRES_JSON/pepites.json — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/02_BLOCS_17/Bloc_14__Economie_et_Energie_C12.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P1__Memoire_stockage.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P13__Immuabilite_par_sceau_Merkle.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P156__Ironie_ecart_attendu_reel.md — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P41__Determinisme_D1.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/03_PEPITES_161/P43__Pas_de_BLOCK_natif_L11_3.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/04_SPECS_40/Spec_39__End_of_Life_Decommission_Protocol_P150_P154_valider_V4.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/13_ENGINE_GATES/gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/02_PEPITE_P001__Memoire_stockage.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/02_PEPITE_P013__Immuabilite_par_sceau_Merkle.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_01__Memoire_Trace_Audit/12_ENGINE__gate_engine_v4.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/02_PEPITE_P041__Determinisme_D1.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/02_PEPITE_P043__Pas_de_BLOCK_natif_L11_3.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_02__Temps_X_108_Non_contournement/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_03__Semantique_OS4_Recit/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_04__Ethique_ADeLe_Securite/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_05__Agents_Infrastructure_Tools/12_ENGINE__gate_engine_v4.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/01_BLOC_14__Economie_et_Energie_C12.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/02_PEPITE_P156__Ironie_ecart_attendu_reel.md — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_06__Cosmologie_Economie_R_D/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/03_SPEC_39__End_of_Life_Decommission_Protocol_P150_P154_valider_V4.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/OBSIDIA_V4_STRUCTURED_FULL/14_REGROUPEMENTS_COHERENCE/GROUPE_07__Ops_CI_CD_Validation_continue/12_ENGINE__gate_engine_v4.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/obsidure_math_memory_readonly/MATH_MEMORY_INDEX.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/obsidure_math_memory_readonly/METRICS_CANDIDATES.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/obsidure_math_memory_readonly/PEPITES_TRACEABILITY_MATRIX.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/obsidure_math_memory_readonly/SOURCE_LEDGER.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/ocs_generation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/operational_constance.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/os3_replay_manifest.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/os3_replay_runner.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/os3_ticket.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/path_finder.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/pepites_search_algo/P1__Memoire_stockage.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/pepites_search_algo/P13__Immuabilite_par_sceau_Merkle.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/pepites_search_algo/P156__Ironie_ecart_attendu_reel.md — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/pepites_search_algo/P41__Determinisme_D1.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/pepites_search_algo/P43__Pas_de_BLOCK_natif_L11_3.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/permission_economic.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/physics_boundary/dimensional_hygiene.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/physics_boundary/frequency_tag_mapper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/physics_boundary/symbolic_physics_claim_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/physics_boundary/unit_consistency_checker.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/projection_phi.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/provenance_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reflex_reducer_v1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reflex_reducer.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/relation_graph.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/retrieve_context.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reverse_os.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reverse_os/action_projection_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reverse_os/audience_projection.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/reverse_os/format_projection.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/semantic_mapper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/shazam_cognitif.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/sigma_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/similarity_search.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/specs/os3_replay_manifest.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/specs/Spec_39__End_of_Life_Decommission_Protocol_P150_P154_valider_V4.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/specs/spectral_hash.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/tensor_activation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_bdf_non_decision.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_constitution_o1_o8.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_context_export.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_friction_avdr.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_hexaflux_non_decision.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_mcp_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_reverse_os_non_decision.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_shazam_cognitif.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/test_tree_space_34.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/tests/test_obsidure_python_route.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/tests/test_obsidure_reasoning_e2e.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/tests/test_obsidure_repair_cycle.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/timeverse.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/top_5_tree_filter.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/tree_space.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/workflow_governance_readonly/adapters/sop_to_obsidia_ir_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/adapters/workflow_context_packet_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/adapters/x108_readonly_gateway_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/agents/agent_01_sop_extractor.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/agent_02_risk_analyzer.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/agent_03_compliance_mapper.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/agent_04_evidence_builder.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/agent_05_contradiction_replayer.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/agent_06_readonly_aggregator.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/agents/orchestrator_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/boundary.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/cli.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/constants.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/integration/brody_workflow_governance_snapshot_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/integration/periphery_ops_route_contract.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/integration/rightpanel_workbench_contract.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/models.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/operators/brody_workflow_operator_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/operators/obsidiashell_workbench_adapter.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/primitives/critical_action_detector.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/primitives/workflow_graph_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/primitives/workflow_replay_audit.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/primitives/x108_workflow_gateway_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/repo_aware/obsidia_x108_repo_map.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/routines/routine_build_workflow_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/registry.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_audit_repo_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_build_obsidia_ir.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_build_workbench_view.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- periphery/workflow_governance_readonly/skills/skill_detect_critical_actions.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_export_context_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_generate_report_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_map_workflow_graph.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_replay_audit_trace.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/skills/skill_x108_ingress_envelope.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/workflow_governance_readonly/utils.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- periphery/world_action_controlled_runtime_stub.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_action_gateway.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/action_risk_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/autonomy_level_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/egress_policy.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/obsidia_gateway.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/route_policy_x25.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/secret_boundary.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/sovereign_ticket.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/ticket_store.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/world_action_bus.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/world_call_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/world_calls/world_executor_dryrun.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/x108_ingress/readonly_context_ingress.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- periphery/x108_ingress/x108_context_boundary.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- PROOF_INDEX.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/distributed/aggregator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/lean/Obsidia/LegacyPeripheral/lean_theorem_order_error_prevention.lean — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/attestation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/audit_log.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/main.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/security.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/signing.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/api_server/worm_uploader.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/cli/obsidia_cli.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/deploy/nginx_server.conf — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/docs/openapi.yaml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/entrypoint.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/adapter.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/contract.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/demo.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/determinism.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/ir.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/sandbox.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests_advanced.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/tests.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os0/translate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/os1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/parse_input.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/obsidia_os1/x108.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/codegen.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/modules/os_trad/vendor/proof/runner.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_bus/router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/contract.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_kernel/kernel.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/contract.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/demo.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/determinism.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/ir.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/sandbox.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests_advanced.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/tests.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os0/translate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/os1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/parse_input.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os1/x108.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_os2/metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_registry/loader.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_runtime/engine_final.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_runtime/engine_runtime.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/core_split.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/svg.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/presentation_pack/OpenAPI_Contract.yaml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/tests_fusion/test_fusion_F01_F04.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/tests_kernel_v2/test_kernel_v2_parity.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/orchestrator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/engine_buildable_0_9_3_1/unified_interface/pipeline.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/root_hash_verify.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_3_1/seal_verify.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_7/checker/noncircumvention_checker.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/V18_8/checker/convergence_checker.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/verifiers/verify_all.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/verifiers/verify_merkle.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/verify_all.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- proofs/verify_merkle.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- qa/cross-platform/test_rfc3161_cross_platform.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- README.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- registries/gateway_memory_index.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- reports/CIC_HIGH_VALUE_SOURCES_20260613_013837.txt — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- research/math/prime_seeker_v1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_contracts/atlas_scenario_spec/reports/F06_ATLAS_CANON_CHECK_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/AUDIO_ENTROPY_ADVISORY_ONLY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/COGNITIVE_REINTEGRATION_ADVISORY_ONLY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/EXTERNAL_SIGNALS_SIGNAL_ONLY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/FAIL_CLOSED_PRIORITY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/NO_ACT_FROM_PERIPHERY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/P107_P161_NOT_PROVEN_RUNTIME_AUTHORITY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/boundaries/RSSI_EVIDENCE_ONLY.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/cognitive_advisory_spec/reports/PLAN_F07_COGNITIVE_IMPORT_AUDIT_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/dry_run/DRY_RUN_PIPELINE.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/education_benchmark_dry_run/reports/PLAN3_P7_EDUCATION_BENCHMARK_DRY_RUN_SPEC_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/external_signals_dry_run/specs/EXTERNAL_SIGNALS_TO_X108_DRY_RUN_PIPELINE.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/freeze_audit/PLAN3_FILE_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- runtime_contracts/post_import_freeze_audit/POST_IMPORT_FILE_INVENTORY.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- runtime_contracts/reports/PLAN3_P0_NEXT_STEPS.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_contracts/rssi_rgpd_compliance_spec/reports/F03_RSSI_RGPD_CANON_CHECK_REPORT.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_terrain_bank_trading_gps/connectors/aviation_robo.py — Belongs to another domain or mixed non-Ecom subsystem.
+- runtime_terrain_bank_trading_gps/connectors/bank_normal_flow.py — Belongs to another domain or mixed non-Ecom subsystem.
+- runtime_terrain_bank_trading_gps/connectors/trading_live.py — Belongs to another domain or mixed non-Ecom subsystem.
+- runtime_terrain_bank_trading_gps/docs/BANK_PAYLOAD_CANDIDATES.csv — Belongs to another domain or mixed non-Ecom subsystem.
+- runtime_terrain_bank_trading_gps/server.kernel.sealed.cjs — Belongs to another domain or mixed non-Ecom subsystem.
+- runtime_terrain_bank_trading_gps/sigma/contracts.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_terrain_bank_trading_gps/sigma/guard.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_terrain_bank_trading_gps/sigma/run_pipeline.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- runtime_wiring/contracts_loader.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/dry_run_packet_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/engine_bridge/api_adapter_preview.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/engine_bridge/bridge_types.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/engine_bridge/readonly_engine_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/os3_evidence_stub.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_adapters.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/adapter_target_map.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/build_source_file_registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/registry_loader.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/registry_to_adapter_dry_run.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/registry_types.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/source_file_registry.csv — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_registry/source_file_registry.json — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/action_gateway_hold_block_sandbox.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/adapter_capability_map.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/adapter_coverage_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/brody_readonly_activation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/brody_source_context_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/capability_inventory_linker.py — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/capability_path_router.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/capability_taxonomy.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/controlled_activation_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/global_runtime_surface_gate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/graphiti_memory_readonly_activation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- runtime_wiring/source_runtime/module_function_capability_map.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/module_function_coverage_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/os_trad_reverse_index.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/readonly_content_loader.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/reverse_os_interlanguage_index.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/route_capability_map.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/route_coverage_classifier.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/runtime_inventory_builder.py — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/runtime_inventory_graph.py — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_context_hydrator.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_family_selector.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_hydration_planner.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_pack_resolver.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_runtime_cache.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/source_runtime_query.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/source_runtime/workbench_view_capability_map.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- runtime_wiring/source_runtime/workbench_view_coverage_classifier.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- runtime_wiring/source_runtime/world_action_bus_dry_run_activation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- runtime_wiring/x108_admission_stub.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/_f47_test_nested_scan.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/_f47_test_sanitizer.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/anchor_merkle_root.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/apply_proposal.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_agents_complementary_reconciliation_p73.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/audit_api_auth_route_exposure_p68.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_boundary_semantic_split_p67.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_canon_wording_targeted_cleanup_p77.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_core_machinery_runtime_binding_p57.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_core_proof_metric_delta_p56a.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_decision_functions.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_event_bus_connectability.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_f45_canonical_observation_terminal_test_battery.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_filesystem_path_exposure_p69.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_full_regression_freeze_p80.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_gps_terrain_portable_reconciliation_p76.py — Belongs to another domain or mixed non-Ecom subsystem.
+- scripts/audit_invariant_graph_p72.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_network_egress_connectors_p70.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_optional_publication_readiness_recheck.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_post_p80_hardening_deviation_review.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_post_p80_publication_hardening.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_presentation_proof_public_private_split_p78.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_regression.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_rssi_evidence_pack_github_security_p79.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_runtime_core_risk_review_p75.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_sigma_safe_evolution_p74.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/audit_source_runtime_source_packs_p71.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/brody_memory_intake_gate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/brody_memory_pipeline_locator.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/brody_terminal_chat.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/calibrate_sigma.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/check_brody_live_stack.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/check_forbidden_content.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/check_traces_x108.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/export_gateway_memory_index.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f_srl_session_registry_layer_audit_v0.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f11a_live_brody_chat_smoke.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f12a_terminal_visible_assert.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f12b_quality_parity_analyze.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f12c_terminal_marker_assert.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f18a_os_trad_ir_reverse_live_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f18a2_zip_local_source_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f18a3_targeted_candidate_inspection.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f18a4_existing_candidate_execution_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f19a_thermo_coherence_time_scoring_audit.py — Belongs to another domain or mixed non-Ecom subsystem.
+- scripts/f19a2_targeted_thermo_coherence_time_audit.py — Belongs to another domain or mixed non-Ecom subsystem.
+- scripts/f20a_gencoin_cognitive_value_ledger_audit.py — Belongs to another domain or mixed non-Ecom subsystem.
+- scripts/f21a_runtime_freeze_dashboard_global_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f21b_fix_runtime_assert.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22a_readonly_intent_source_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22a2_git_archaeology_protocol_trace_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22a3_document_source_traceability_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22e_a_jarvis_narrative_source_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22e_c1_extended_chaos_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f22e_c3_ui_surface_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a_to_f27_reflex_automation_protocol_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a1_memory_reflex_orchestrator_source_audit.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f23a2_reflex_orchestrator_plan_from_real_paths.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a3_0_existing_rights_contracts_flow_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a3_1_synthesize_existing_contract_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a3_2_validate_synthesized_matrix.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a3_3_deep_metrics_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a4_0_reflex_diagnostic_packet_source_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a5_0_agents_branch_audit.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f23a5_1_agents_validation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f23a5_2_agent_governance_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23a6_0_orchestrator_sigma_awareness_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23b1_1_focused_context_packet_discovery.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f23b2_f23c_real_path_validation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f24_0_deferred_block_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f25a_harmonic_vote_source_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f26_0_monitor_awareness_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f27_0_shazam_cognitif_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f28_0_next_review_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f28_1_governed_operator_runtime_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f29_0_memory_graphiti_reconciliation_audit.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f29_0b_memory_graphiti_danger_classification.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/f29_2_neo4j_manual_guard_reaudit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f30_0_workflow_sop_engine_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f30_1_workflow_governance_v5_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f30_1b_workflow_governance_v5_danger_classification.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f30_2_copy_v5_readonly_module.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f30_3_workflow_governance_import_compile_validate.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f31_0_cleanup_untracked_debt_inventory.py — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/f35_0_operator_demo_surface_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gates/obsidia_commit_scope_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gates/obsidia_forbidden_write_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gates/obsidia_kernel_boundary_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gates/obsidia_lean_manifest_guard.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gates/obsidia_sigma_non_sovereignty_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gen_lean_proof_surface_manifest.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/gen_math_memory_closure_map.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/generate_manifest_sha256.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/generate_shim_map.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_cli.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_gateway.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_guidance_vocabulary.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_law_registry_v1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_mcp_server.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_registry.yaml — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_sigma_guidance.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia_terminal.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidia.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/obsidure_cli.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/performance/benchmark_fastpath_vs_baseline_v1.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/benchmark_oie_obsidia_vs_gemini_power_v0_7.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/obsidia_request_cost_ledger_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/oie_external_claude_benchmark_v0_receipts.json — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_canon_only_lean_closure_cost_metrics_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_complete_lean_surface_cost_metrics_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_inference_economy_portfolio_benchmark_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_live_route_real_case_cost_metrics_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_live_stack_cost_metrics_v0.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_obsidure_real_case_cost_metrics_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_oie_external_claude_benchmark_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/performance/run_with_cost_event_v0.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/run_all_proofs.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_EVIDENCE_BOARD_3_DOMAINES.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_PREUVE_TRACABILITE_3_DOMAINES.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_TABLEAU_POST_EVIDENCE_V2.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_TABLEAU_POST_EVIDENCE.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_TOTAL_METRICS_PROOF.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/RUN_AUDIT_VISUEL_3_DOMAINES.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/run_brody_api_with_graphiti_env.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/run_brody_terminal_enriched.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/run_conformance.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/run_f50_live_demo_server_orchestration_audit.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/run_GLOBAL_BRODY_DOMAINS_GRAPHITI_TERMINAL_AUDIT_AFTER_CIC_A8B535C.ps1 — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- scripts/run_nonrecursive_pytest.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/runtime/check_obsidia_stack.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_brody_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_brody_capabilities.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_brody_v1_4_12a_live.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_f34_live_route_contract_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_f36_user_scenario_controlled_response.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_f36b_true_live_uvicorn_user_scenario.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_f37_multi_domain_user_scenarios_readonly.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/smoke_f38_multi_domain_live_uvicorn_api.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/stack_status.ps1 — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/verify_threat_model.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/x108_trace_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- scripts/x108_vectors_check.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- sigma/aggregation.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/base.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/connectors.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/contracts.broken-ragnarok.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/contracts.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/domains/bank_agents.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/domains/gps_defense_aviation_agents.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/domains/meta_agents.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/domains/trading_agents.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/evaluate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/graphiti_readonly_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/guard.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/obsidia_sigma_v130.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/orchestrator_preview.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/packets.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/protocols.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/README.md — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- sigma/registry.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/run_pipeline.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/sigma_guidance.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/sigma_monitor.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_adversarial_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_fuzz_scale_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_market_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_regulatory_proxy_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_scale_pack_10k.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_scale_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_security_fuzz_extended_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_truth_proxy_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_bank_world.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_gps_fail_closed.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_gps_semantics.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_gps_smoke.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_sigma_guidance.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tests/test_sigma_smoke.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/generate_bank_replay_results_doc.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/generate_bank_scale_results_doc.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_confusion_matrix_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_enterprise_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_fuzz_scale_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_regulatory_proxy_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_replay_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_robo_scenario_benchmark.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_scale_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_security_fuzz_extended_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_security_fuzz_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/tools/run_bank_truth_proxy_pack.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/trees_activation_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- sigma/utils/indicators.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- specs/03_ENTROPY_DISCIPLINE/P161_ENERGETIC_CALIBRATION_FORMALIZATION_TARGET.md — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/_thermo_domain_stress_lib.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/ADVERSARIAL_REPORT_TEMPLATE.md — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/api/test_action_gateway_hold_block_sandbox_api_p54.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_activation_readiness_os_map_p50.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_adapter_coverage_os_map_p48.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_all_routes_exist.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_automation_orchestrator.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_automation_snapshot_payload.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_boundary_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_capabilities_preserved.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f10c_existing_command_packet_reconnect.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f11c_tree_signal_runtime_order.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f12c_domain_raccord_priority.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f2a_transverse_value_interface.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f2b_sigma_calibration.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f2c_anti_mismatch_formal.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f3_thermodynamics_operational.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f4_gencoin_shadow_value_layer.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f5b_tree_signal_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_f6a_memory_promotion_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_f7b_operator_view_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_final_answer_capabilities.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_final_answer_freeze_sourced_live_cases.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_final_answer_response_md_split.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_final_answer_uses_structured_response.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_freeze_metrics_snapshot_runtime.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_general_conversation_mode_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_intent_classifier_hard_fix.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_llm_obsidien_three_foundations_live_cases.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_low_material_text_preview.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_memory_candidate_automation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_memory_graphiti_http_bounds.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_memory_intake_gate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_memory_response_chain_effective_query.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_native_machination_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_no_invented_metrics.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_no_template_when_freeze_metrics_available.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_operator_loop_automation.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_payload_packetization.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_readonly_activation_api_p51.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_response_schema_utf8.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_routing_short_circuit_resolved.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_semantic_advisory_utf8_runtime.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_semantic_query_ladder.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_source_of_truth_any_input.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_source_pack_context_p26.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_structured_response_engine_adapter.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_terminal_chat_client.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_three_foundations_no_500.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_true_voice_memory_chain_final_answer.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_brody_utf8_no_mojibake.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_v1_4_12a_creator_boundary.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_brody_v1_4_12a_final_answer.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_capability_path_preview_p36.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f16_live_sources.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f19b_thermo_coherence_time_unified.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f22b_readonly_intent_guard.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f23a4_3_sigma_registry_repair.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f23a4_4_sigma_evaluate_dispatcher.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f23a4_6_monitoring_adapters_sigma.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f23a6_2_sigma_evaluate_endpoint.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f26_1_monitor_governed_runtime.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f27_1_tree_signal_packet.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f28_2_governed_operator_runtime.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f30_4_workflow_governance_route.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f35_1_operator_demo_workbench_surfaces.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_f37_multi_domain_user_scenarios_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f38_multi_domain_live_api_route_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f63_sigma_monitoring_endpoints_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f65_sigma_bus_readonly_bridge.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f67_sigma_live_smoke_api_audit.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f72_os_trad_ir_reverse_pipeline_audit.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_f76b_auth_rate_limit_prod_hardening.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_global_runtime_surface_gate_os_map_p49.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_graphiti_memory_readonly_activation_api_p52.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_graphiti_v20_proxy_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_module_function_coverage_os_map_p47.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_os_map_api_p38.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_output_envelope_blockchain_fraud_check.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_output_envelope_bus_bridge.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_output_envelope_bus_signal.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_output_envelope_bus_stats.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_output_envelope_periphery_pipeline.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_reverse_os_interlanguage_preview_p35.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_runtime_inventory_preview_p37.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/api/test_workbench_view_coverage_os_map_p46.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/api/test_world_action_bus_dry_run_activation_api_p53.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/attestation.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/ci/test_run_nonrecursive_pytest.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/cli/test_f20c_terminal_gencoin_ledger_display.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/gates/test_obsidia_active_plan_skill_resolution_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_aliases_naturels_v2.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_boot_to_interactive_shell_v1_1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_brody_bridge_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_capability_graph_v3.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_core_surface_composer_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_docx_adapter_v3.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_dynamic_panels_after_core_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_forbidden_write_check.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_full_project_cockpit_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_large_doc_read_policy.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_large_doc_read_v2b.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_lean_manifest_guard.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_lean_proof_panel_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_nl_intent_v2.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_obsidure_bridge_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_operator_task_card_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_reverse_router_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_runtime_service_map_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_sigma_non_sovereignty_check.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_surface_separation_v2.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_terminal_gate_planner_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_terminal_input_skill_resolver_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_terminal_routing_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_terminal_runtime_input_resolver_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_tui_gates_tab_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_tui_layout_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/gates/test_obsidia_unified_ir_v1.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/integration/test_gencoin_bridge_brody_output.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/integration/test_internal_demo_flows_dryrun.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/integration/test_v3_full_pipeline_bank.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/integration/test_v3_full_pipeline_gps.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/integration/test_v3_full_pipeline_trading.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/integration/test_v4_controlled_runtime_pipeline.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/integration/test_v4_gencoin_world_action_bus_chain.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/integration/test_v4_sovereign_ticket_os3_pog_chain.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/non_sovereignty/test_agents_cannot_emit_act.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/non_sovereignty/test_feedback_memory_no_write_v3.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/non_sovereignty/test_gencoin_no_authority_v3.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/non_sovereignty/test_graphiti_no_write.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/non_sovereignty/test_memory_candidate_ledger_no_promotion.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/non_sovereignty/test_memory_promotion_not_automatic.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/non_sovereignty/test_world_action_no_real_act_v4.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_action_lifecycle.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_agent_contracts.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_agent_registry_v3_v4.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_agents_obsidia_config_registry.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/periphery/test_bridge_connection.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_false_on_blocks_gencoin.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_feedback_memory_bridge_readonly.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/periphery/test_gateway_dryrun_only.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_gencoin_debt_model.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_gencoin_ledger_append_only.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_gencoin.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_graphiti_readonly_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/periphery/test_http_audit_generated_output.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_memory_world_mapper_domain_contract.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/periphery/test_os3_replay_runner.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_proof_of_governance.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_world_action_controlled_runtime_stub.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/periphery/test_world_call_classifier.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/run_combinatorial_bombardment.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/sigma_stress_test.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/sigma/test_f25b_immutable_vote_minimal.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f60_sigma_registry_repair.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f61_sigma_dispatcher_readonly_evaluate.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f62_sigma_domain_packets_normalization.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f64_sigma_connectors_reconciliation.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f66_sigma_orchestrator_preview_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f70_sigma_graphiti_readonly_bridge.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/sigma/test_f71_sigma_trees_activation_readonly.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/sigma/test_f73_adversarial_boundary_advanced.py — Shared or generic dependency; not Ecom-owned in Phase 1 snapshot.
+- tests/test_action_gateway_hold_block_sandbox_p54.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_adapter_coverage_p48.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_agents_functional.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_api_runtime_wiring_preview_p10d.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_education_pack_v1_readonly_adapter.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_brody_readonly_activation_p51.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_balance_engine.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_context_budget.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_fastpath_response.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_graphiti_guard.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_candidate_builder.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_education_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_human_validation_gate.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_readonly_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_replay_packet.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_memory_trace_extractor.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_brody_v3_micro_core.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_point_cloud_21d_selector.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_brody_v3_runtime_dissipation_fastpath.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_capability_path_router_p36.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_cic_domain_readonly_binding_v0.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_cic_readonly_pack_provider.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_cic_receipt_replay_v0.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_consensus_inprocess.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_consensus_local.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_consensus_split.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_controlled_activation_matrix_p50.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_core_proof_metric_delta_audit_p56a.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_cosmos_friction_eml.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_engine_bridge_p10c.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_fastpath_ab_benchmark_v1.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_full_route_coverage_p45.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_global_runtime_surface_gate_p49.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_gps_p3_09_contract_and_receipts.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_gps_physical_signal_periphery.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_gps_rf_attack_benchmark_blocked.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_gps_x108_reality_authenticity_gate.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_graphiti_memory_readonly_activation_p52.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_inference_economy_cost_receipt.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_inference_economy_domain_metrics.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_invariants_against_engine.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_merkle_collision.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_module_function_coverage_p47.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_monotonic_break.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_obsidia_terminal.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_obsidure_boundary_strategy_regression.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_obsidure_code_surveillance_theorem_set.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_obsidure_domain_kernel_invariant_template.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_obsidure_math_memory_provider.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_obsidure_memory_invariant_template.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_oie_external_comparison.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_oie_obsidia_vs_gemini_power_v0_7.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_optional_publication_readiness_recheck.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p56b_gamma_controlled_patch.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p56c_d_all_domains_core_rigor_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p56e_post_patch_metric_reaudit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p57_core_machinery_runtime_binding_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p58_core_import_triage_operational_path_aware.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p59_safe_batch_1_import.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p60_test_batch_2_import.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p61_bus_adapter_batch.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p62_manual_review_deferred.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p63_global_fusion_reality_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p64_fusion_continuity_ledger.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p65_os_adapters_unlock_bus_registry.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p66_srl_readonly_memory_layer.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_p67_boundary_semantic_split_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p68_api_auth_route_exposure_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p69_filesystem_path_exposure_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p70_network_egress_connectors_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p71_source_runtime_source_packs_deep_audit.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_p72_invariant_graph_formal_proof_alignment.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p73_agents_complementary_reconciliation.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_p74_sigma_safe_evolution.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p75_runtime_core_risk_review.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p76_gps_terrain_portable_reconciliation.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tests/test_p77_canon_wording_targeted_cleanup.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p78_presentation_proof_public_private_split.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p79_rssi_evidence_pack_github_security_audit.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_p80_full_regression_freeze.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_path_fidelity_guard_p4_20.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_post_p80_hardening_deviation_review.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_post_p80_publication_hardening.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_runtime_inventory_graph_p37.py — Ecom/commerce keyword hit but not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_runtime_wiring_p8c.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_seal_tamper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_sigma_v18_9.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_signature_tamper.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_source_registry_p9b.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_source_runtime_family_discovery_ci_p42b.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_source_runtime_p26.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_threshold_fuzz.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_top4_v2_sigma_p3t9b_canonical_metadata.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_top4_v3_guard_domain_enum_false_act.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_top4_v4_connectors_sigma_free_variable.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_unconnected_runtime_surface_audit_p43.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/test_workbench_view_coverage_p46.py — Broad term hit is generic, audit/index/runtime wiring, or non-domain reference.
+- tests/test_world_action_bus_dry_run_activation_p53.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/tests_advanced.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/tests.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tests/ui/test_chatview_copy_command_button.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tools/bank_robo_real/check_bank_robo_consistency.cjs — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/bank_robo_real/diagnose_bank_robo_db_read.cjs — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/bank_robo_real/run_bank_robo_batch_probe.ps1 — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/bank_robo_real/run_bank_robo_fault_injection.ps1 — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/brody_chat.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tools/generate_gps_v01_receipts.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/gps_v01_p4_07_receipt_manifest.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/gps_v01_replay_verifier.py — Belongs to another domain or mixed non-Ecom subsystem.
+- tools/inspection/debug_bridge.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tools/inspection/gate_debug/intercept_verdict.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tools/inspection/view_integrity.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.
+- tools/maintenance/core_registry_builder.py — Broad content hit not copied by curated Ecom-owned source rules; review in Phase 2.

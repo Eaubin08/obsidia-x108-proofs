@@ -1,0 +1,1324 @@
+family: external_timeverse
+block: TIMEVERSE_INSPIRED_TEMPORAL_SIDECAR_V1
+status: external temporal category signal; not copied; not kernel authority
+layer:
+- OS1
+- OS2
+- OS3
+role: Provide verifiable temporal context before KX108 sovereign decision.
+allowed:
+- temporal_context_header
+- tick_canonical_validation
+- anti_replay_horizon
+- temporal_challenge
+- time_bounded_tool_call_check
+- temporal_receipt_metadata
+- receipt_anchor_hash
+- stale_execution_detection
+- temporal_zero_trust_positioning
+forbidden:
+- emit ACT
+- override HOLD/BLOCK/ACT
+- mutate KX108
+- decide irreversible execution
+- become canonical time law
+- replace Obsidia replay/audit logic
+authority: KX108_ONLY
+components:
+- id: C459
+  name: timeverse_temporal_sidecar
+  family: external_timeverse
+  type: module
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Temporal sidecar inspired by Timeverse-style phase coordination. It
+    provides verifiable temporal context to KX108 without deciding.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - temporal_context_header
+  - tick_canonical_validation
+  - anti_replay_horizon
+  - temporal_challenge
+  - temporal_receipt_metadata
+  inputs:
+  - agent_request
+  - api_call_intent
+  - system_clock_context
+  - policy_version
+  outputs:
+  - temporal_context_signal
+  - temporal_validity_warning
+  - time_bounded_action_candidate
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - TemporalSidecar(x,t,p) -> temporal_context_signal
+  invariants:
+  - must_not_decide
+  - must_not_emit_ACT
+  - KX108_ONLY
+  - time_signal_is_not_authority
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_timeverse_sidecar_no_ACT
+  - test_temporal_context_required_for_action_candidate
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C460
+  name: temporal_context_header
+  family: external_timeverse
+  type: packet
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Shared temporal envelope carrying tick, phase, nonce, expiry, source
+    and signature status across agents and gateways.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - day_index
+  - phase_window
+  - tick_index
+  - cycle_anchor
+  - temporal_nonce
+  - issued_at_tick
+  - expires_at_tick
+  - signature_status
+  - anti_replay_status
+  inputs:
+  - agent_id
+  - issued_at
+  - expires_at
+  - nonce
+  - policy_version
+  outputs:
+  - temporal_header_packet
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - Header = (tick_index, phase_window, nonce, expires_at_tick, signature_status)
+  invariants:
+  - header_does_not_authorize
+  - expired_header_blocks_candidate
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_header_no_ACT
+  - test_expired_header_rejected
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C461
+  name: tick_canonical_validation
+  family: external_timeverse
+  type: guard
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Integer tick validation for critical temporal checks. It forbids float-dependent
+    temporal safety decisions.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - tick_unit
+  - tick_distance
+  - tick_window_min
+  - tick_window_max
+  - no_float
+  inputs:
+  - temporal_context_header
+  - kernel_policy
+  outputs:
+  - tick_validity_signal
+  - tick_rejection_reason
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - tick_valid = tick_window_min <= tick_distance <= tick_window_max AND no_float
+    = true
+  invariants:
+  - no_float_temporal_math
+  - tick_validation_is_prefilter_not_authority
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_no_float_required
+  - test_out_of_window_rejected
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C462
+  name: no_float_temporal_math
+  family: external_timeverse
+  type: invariant
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Invariant forbidding float ambiguity in temporal safety calculations
+    before KX108 evaluation.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - integer_tick_model
+  - canonical_duration_unit
+  - float_rejection_rule
+  inputs:
+  - elapsed_time
+  - tau
+  - tick_unit
+  outputs:
+  - integer_elapsed_time
+  - float_usage_violation
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - '∀ temporal_safety_decision: uses_integer_ticks = true'
+  invariants:
+  - no_critical_float
+  - replay_stability
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_float_elapsed_rejected
+  - test_integer_tick_replay_stable
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C463
+  name: anti_replay_horizon
+  family: external_timeverse
+  type: guard
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Nonce and signature horizon that rejects duplicated, expired or out-of-window
+    requests before they can reach action execution.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - nonce_id
+  - signature_hash
+  - horizon_start_tick
+  - horizon_end_tick
+  - replay_seen
+  - replay_count
+  - replay_status
+  inputs:
+  - temporal_header_packet
+  - signature_status
+  - nonce_cache
+  outputs:
+  - anti_replay_status
+  - replay_rejection_reason
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - IF replay_status != CLEAN THEN BLOCK_CANDIDATE
+  invariants:
+  - anti_replay_is_prefilter
+  - duplicate_nonce_cannot_bind
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_duplicate_nonce_rejected
+  - test_expired_nonce_rejected
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C464
+  name: temporal_challenge
+  family: external_timeverse
+  type: guard
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Fresh server-side challenge with TTL/ticks, bound to payload and signature,
+    used to prevent replay and stale execution.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - challenge_id
+  - challenge_nonce
+  - ttl_ticks
+  - issued_at_tick
+  - expires_at_tick
+  - payload_hash
+  inputs:
+  - action_intent_hash
+  - source_agent
+  - current_tick
+  outputs:
+  - challenge_packet
+  - challenge_validity_status
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - challenge_valid = current_tick <= expires_at_tick AND payload_hash = signed_payload_hash
+  invariants:
+  - expired_challenge_cannot_ACT
+  - challenge_does_not_authorize
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_challenge_expiry
+  - test_payload_bound_challenge
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C465
+  name: time_bounded_tool_call_check
+  family: external_timeverse
+  type: guard
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Guard ensuring tool calls are time-bounded, signed, non-replayed and
+    still subject to KX108.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - temporal_header_present
+  - signature_valid
+  - anti_replay_pass
+  - tick_window_valid
+  - kx108_decision_required
+  inputs:
+  - tool_call_intent
+  - temporal_context_header
+  outputs:
+  - tool_call_temporal_status
+  - tool_call_action_candidate
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - tool_temporal_pass = header_present ∧ signature_valid ∧ anti_replay_pass ∧ tick_window_valid
+  invariants:
+  - tool_call_temporal_pass_not_ACT
+  - KX108_required_after_pass
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_tool_call_requires_temporal_header
+  - test_tool_call_still_requires_KX108
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C466
+  name: temporal_receipt_metadata
+  family: external_timeverse
+  type: receipt
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: 'Temporal proof metadata attached to intent/effect receipts: tick window,
+    challenge id, anti-replay result and signature state.'
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - receipt_id
+  - tick_window
+  - temporal_challenge_id
+  - anti_replay_status
+  - policy_version
+  - signature_status
+  - replay_pointer
+  inputs:
+  - intent_receipt
+  - effect_receipt
+  - temporal_context_header
+  outputs:
+  - temporal_receipt_metadata_packet
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - TemporalReceipt = H(intent_hash, tick_window, challenge_id, anti_replay_status,
+    policy_version)
+  invariants:
+  - BLOCK_HOLD_intent_receipt_only
+  - ACT_allows_effect_receipt
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_temporal_metadata_present
+  - test_no_effect_receipt_before_ACT
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C467
+  name: TSAE_receipt_model
+  family: external_timeverse
+  type: receipt
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: 'RSSI-facing signed temporal audit evidence model inspired by TSAE:
+    when, where, policy, quality, signature and replay pointer.'
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - when_tick
+  - where_scope
+  - policy_version
+  - quality_floor
+  - signature_status
+  - replay_pointer
+  inputs:
+  - temporal_receipt_metadata
+  - audit_context
+  outputs:
+  - TSAE_like_temporal_evidence
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - TSAE_like = canonical_json(when, where, policy, quality, signature, replay)
+  invariants:
+  - not_Timeverse_runtime
+  - evidence_only
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_tsae_fields_present
+  - test_tsae_not_authority
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C468
+  name: receipt_anchor_hash
+  family: external_timeverse
+  type: proof
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Optional anchoring model storing only a canonical hash of a receipt
+    for durable audit evidence without making external chain dependency mandatory.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - anchor_hash
+  - receipt_type
+  - kx108_decision
+  - timestamp_tick
+  - policy_version
+  - replay_pointer
+  inputs:
+  - obsidia_receipt
+  outputs:
+  - anchor_hash_packet
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - anchor_hash = SHA256(canonical_json(obsidia_receipt))
+  invariants:
+  - anchor_hash_does_not_replace_receipt
+  - blockchain_optional
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_anchor_hash_reproducible
+  - test_anchor_hash_no_external_dependency
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C469
+  name: stale_execution_detection
+  family: external_timeverse
+  type: guard
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Detects delayed, expired or captured actions whose temporal window has
+    closed.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - intent_created_at_tick
+  - challenge_expires_at_tick
+  - cycle_anchor
+  - current_tick
+  inputs:
+  - action_intent
+  - temporal_context_header
+  outputs:
+  - stale_execution_status
+  - stale_rejection_reason
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - stale = current_tick > challenge_expires_at_tick OR cycle_anchor_mismatch = true
+  invariants:
+  - stale_execution_cannot_bind
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_store_now_execute_later_blocked
+  - test_cycle_anchor_mismatch_blocked
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C470
+  name: temporal_zero_trust_positioning
+  family: external_timeverse
+  type: rssi_positioning
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: 'RSSI narrative block: identity says who, temporal context says when,
+    KX108 says whether consequence may exist.'
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - identity_context
+  - device_context
+  - temporal_context
+  - irreversibility_context
+  inputs:
+  - rssi_questionnaire
+  - security_pitch
+  outputs:
+  - temporal_zero_trust_statement
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - Trust = identity_valid ∧ device_valid ∧ temporal_valid ∧ KX108_authorized
+  invariants:
+  - marketing_statement_not_authority
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_positioning_no_runtime_power
+  - test_ztt_requires_KX108_phrase
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.
+- id: C471
+  name: gateway_before_endpoint_prefilter
+  family: external_timeverse
+  type: architecture
+  source: external_category_signal
+  status: spec_patch_ready
+  definition: Gateway pattern placing temporal validation before critical endpoints,
+    without allowing the gateway to decide final execution.
+  role: RSSI audit enrichment / proof-surface extension; never a decision authority.
+  internal_components:
+  - agent_tool_gateway
+  - api_critical_gateway
+  - world_action_gateway
+  - temporal_prefilter
+  inputs:
+  - tool_call_intent
+  - api_call_intent
+  - world_action_candidate
+  outputs:
+  - prefiltered_action_candidate
+  - gateway_rejection_signal
+  metrics:
+  - definition_completeness
+  - input_output_clarity
+  - integration_clarity
+  - runtime_readiness
+  - proof_readiness
+  - testability_score
+  - observability_score
+  - replayability_score
+  - drift_risk
+  - authority_risk
+  - kernel_boundary_safety
+  - irreversibility_exposure
+  - world_action_proximity
+  - authority_boundary_clarity
+  - evidence_surface_completeness
+  - replay_integrity
+  - custody_integrity
+  - rssi_readability
+  - audit_exportability
+  - non_reauthoring_score
+  - temporal_freshness_score
+  - tick_canonicality
+  - no_float_compliance
+  - anti_replay_strength
+  - challenge_freshness
+  - signature_verification_confidence
+  - stale_execution_risk
+  - temporal_receipt_completeness
+  - receipt_anchor_integrity
+  - time_bounded_tool_call_score
+  formulas:
+  - request_flow = Agent/API -> TemporalGateway -> KX108 -> WorldActionGateway
+  invariants:
+  - gateway_is_prefilter_not_decider
+  - KX108_ONLY
+  - DECISION_AUTHORITY = KX108_ONLY
+  - no_external_signal_emits_ACT
+  - no_external_signal_mutates_kernel
+  - proof_before_consequence
+  tests:
+  - test_gateway_before_endpoint
+  - test_gateway_cannot_emit_ACT
+  proof_artifacts:
+  - intent_receipt
+  - effect_receipt_only_after_ACT
+  - replay_pointer
+  - hash_chain_packet
+  - rssi_audit_report
+  runtime_status: spec_only
+  authority: advisory_external_signal
+  kx108_boundary:
+    decision_authority: KX108_ONLY
+    can_emit_ACT: false
+    can_emit_HOLD: false
+    can_emit_BLOCK: false
+    can_emit_world_action: false
+    can_emit_kernel_mutation: false
+    can_emit_action_candidate: true
+    requires_kx108_if_action: true
+    proof_required_if_action: true
+    external_signal_only: true
+    copied_from_external_runtime: false
+    allowed_role: enrich proof/context only
+    forbidden_role: decision authority
+  risks:
+  - category_drift
+  - external_concept_overreach
+  - wrapper_reauthoring_attempt
+  - decision_authority_confusion
+  dependencies:
+  - KX108_boundary_adapter
+  - world_action_gateway_guard
+  - OS3_evidence_packet
+  - visible_proof_surface
+  implementation_notes: Integrate as RSSI proof/context enrichment only. Do not copy
+    external runtime or grant authority.

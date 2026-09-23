@@ -1,0 +1,883 @@
+# BRODY_PHASE11A_BIS_ACTIVE_CONTRACTS_AUDIT_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Scope
+Filtered active-code audit after noisy full Phase 11A scan.
+
+## Excluded
+- _BRODY_RECONNECT_WORK
+- _local_audits
+- _graphiti_readonly_indexes
+- audit_logs
+- .deepseek
+- sigma batches
+- build/cache/vendor folders
+
+## Active files scanned
+- .\apps\obsidia-workbench\audit_brody.py
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md
+- .\apps\obsidia-workbench\src\api\contracts.ts
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx
+- .\apps\obsidia-workbench\src\components\TreeExplorer.tsx
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx
+- .\apps\obsidia-workbench\src\views\X108View.tsx
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md
+- .\apps\obsidia_api\brody_automation_orchestrator.py
+- .\apps\obsidia_api\brody_backend_response_composer.py
+- .\apps\obsidia_api\brody_bridge_lifecycle.py
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py
+- .\apps\obsidia_api\brody_operator_loop_adapter.py
+- .\apps\obsidia_api\brody_project_memory_adapter.py
+- .\apps\obsidia_api\brody_project_memory_runtime.py
+- .\apps\obsidia_api\brody_real_response_pipeline.py
+- .\apps\obsidia_api\brody_rights_authority_matrix.py
+- .\apps\obsidia_api\brody_runtime_context_adapter.py
+- .\apps\obsidia_api\brody_safe_snapshot.py
+- .\apps\obsidia_api\brody_semantic_query_router.py
+- .\apps\obsidia_api\brody_session_memory_adapter.py
+- .\apps\obsidia_api\brody_session_memory_runtime.py
+- .\apps\obsidia_api\brody_source_of_truth_adapter.py
+- .\apps\obsidia_api\brody_structured_response_engine_adapter.py
+- .\apps\obsidia_api\brody_temporal_context_adapter.py
+- .\apps\obsidia_api\brody_text_encoding.py
+- .\apps\obsidia_api\brody_tree_policy.py
+- .\apps\obsidia_api\brody_tree_policy_adapter.py
+- .\apps\obsidia_api\brody_true_response_structure_adapter.py
+- .\apps\obsidia_api\brody_true_response_structure_runtime.py
+- .\apps\obsidia_api\brody_true_voice_adapter.py
+- .\apps\obsidia_api\brody_v1_4_12a_final_answer_adapter.py
+- .\apps\obsidia_api\contracts.py
+- .\apps\obsidia_api\graphiti_v20_readonly_client.py
+- .\apps\obsidia_api\runtime_loader.py
+- .\apps\obsidia_api\routes\brody.py
+- .\apps\obsidia_api\routes\brody_monitoring.py
+- .\apps\obsidia_api\routes\context.py
+- .\apps\obsidia_api\routes\memory.py
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py
+- .\apps\obsidia_api\routes\x108.py
+- .\docs\periphery\BANK_ADAPTER_MAPPING_V0.md
+- .\docs\periphery\BRODY_TRIADIC_MEMORY_GOVERNOR_READONLY_V1.md
+- .\docs\periphery\DATA_PURITY_FRESHNESS_GATE_V0.md
+- .\docs\periphery\GPS_ADAPTER_MAPPING_V0.md
+- .\docs\periphery\PERMISSION_ECONOMIC_CONTRACT_V0.md
+- .\docs\periphery\PROVENANCE_ANTI_MIMETIC_GATE_V0.md
+- .\docs\periphery\SIGMA_ADAPTATION_BOUNDARY_V0.md
+- .\docs\periphery\TRADING_ADAPTER_MAPPING_V0.md
+- .\docs\runtime\BRODY_CAPABILITY_CONNECTOR_PRESERVATION.md
+- .\docs\runtime\BRODY_GRAPHITI_V20_PROXY_VALIDATION_REPORT.md
+- .\docs\runtime\BRODY_PHASE10A_REAL_USER_TERMINAL_COMPARE_20260527.md
+- .\docs\runtime\BRODY_PHASE10C_RIGHTPANEL_SUPPORT_VISIBILITY_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE10E_TERMINAL_ENRICHED_VALIDATION_20260527.md
+- .\docs\runtime\BRODY_PHASE11A_FULL_MACHINATION_KERNEL_CONTRACT_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE8A_OLD_PATCH_CAPABILITY_ARCHAEOLOGY_20260527.md
+- .\docs\runtime\BRODY_PHASE8B_LIVE_SMOKE_PACK_20260527.md
+- .\docs\runtime\BRODY_PHASE8C_CAPABILITY_ORIGIN_CONCLUSION_20260527.md
+- .\docs\runtime\BRODY_PHASE8D_FALLBACK_OS_TRAD_COMPARISON_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE8E_TERMINAL_UI_API_ADAPTATION_MAP_20260527.md
+- .\docs\runtime\BRODY_PHASE8F_ADAPTATION_POSITION_FREEZE_20260527.md
+- .\docs\runtime\BRODY_PHASE9A_CORE_SHELL_BACKEND_ARCHAEOLOGY_20260527.md
+- .\docs\runtime\BRODY_PHASE9B0BIS_PAYLOAD_SCHEMA_RECHECK_20260527.md
+- .\docs\runtime\BRODY_PHASE9B0TER_VALID_PAYLOAD_REPLAY_20260527.md
+- .\docs\runtime\BRODY_PHASE9B0_FULL_SURFACE_RECONCILIATION_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B1_OS_TRAD_IR_REVERSE_ROUTE_CONTRACT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B2A_PREPATCH_SOURCE_SNAPSHOT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B2_OS_TRAD_IR_REVERSE_IMPLEMENTATION_REPORT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B3_LIVE_OS_TRAD_IR_REVERSE_SMOKE_20260527.md
+- .\docs\runtime\BRODY_PHASE9B4A_UI_TERMINAL_RECONNECT_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B4_UI_TERMINAL_RECONNECT_REPORT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B5_FINAL_RECONNECT_FREEZE_AUDIT_20260527.md
+- .\docs\runtime\BRODY_PHASE9B_API_ROUTE_BINDING_PRECHECK_20260527.md
+- .\docs\runtime\BRODY_PHASE_4_VALIDATION_REPORT.md
+- .\docs\runtime\BRODY_RECONNECT_FREEZE_20260527.md
+- .\docs\runtime\BRODY_RECONNECT_FREEZE_20260527_MANIFEST_SHA256.txt
+- .\docs\runtime\BRODY_RECONNECT_MAP.md
+- .\docs\runtime\LIVE_CONNECTORS_PHASE7E_BIS_DECISION_GATEWAY_OPENAPI_20260527.md
+- .\docs\runtime\LIVE_CONNECTORS_PHASE7E_DECISION_GATEWAY_AUDIT_20260527.md
+- .\docs\runtime\LIVE_CONNECTORS_PHASE7E_SIX_DECISION_GATEWAY_AUTH_HMAC_CONCLUSION_20260527.md
+- .\docs\runtime\LIVE_CONNECTORS_PHASE7F_DANSWER_3002_DECISION_20260527.md
+- .\periphery\agent_contracts.py
+- .\periphery\brody_bridge.py
+- .\periphery\data_gate.py
+- .\periphery\dominant_tree_filter.py
+- .\periphery\export_for_x108.py
+- .\periphery\feedback_memory_bridge_brody_readonly.py
+- .\periphery\feedback_memory_candidate.py
+- .\periphery\kernel_boundary_tests.py
+- .\periphery\memory_governor.py
+- .\periphery\no_memory_act.py
+- .\periphery\no_reverse_os_act.py
+- .\periphery\no_tree_act.py
+- .\periphery\permission_economic.py
+- .\periphery\provenance_gate.py
+- .\periphery\retrieve_context.py
+- .\periphery\reverse_os.py
+- .\periphery\test_bdf_non_decision.py
+- .\periphery\test_context_export.py
+- .\periphery\test_hexaflux_non_decision.py
+- .\periphery\test_reverse_os_non_decision.py
+- .\periphery\test_tree_space_34.py
+- .\periphery\top_5_tree_filter.py
+- .\periphery\tree_space.py
+- .\periphery\world_action_controlled_runtime_stub.py
+- .\periphery\world_action_gateway.py
+- .\periphery\adapters\bank_adapter.py
+- .\periphery\adapters\gps_adapter.py
+- .\periphery\adapters\trading_adapter.py
+- .\periphery\agents\brody_memory_agent.py
+- .\periphery\agents\feedback_memory_agent.py
+- .\periphery\agents\permission_economic_agent.py
+- .\periphery\agents\v4_roles\CANONIQUES\ROLE_014__Adapter_MCP.md
+- .\periphery\bias\bias_gate.py
+- .\periphery\blockchain\bridge_risk_gate.py
+- .\periphery\blockchain\chain_context.py
+- .\periphery\blockchain\defi_risk_gate.py
+- .\periphery\blockchain\oracle_freshness_gate.py
+- .\periphery\blockchain\signature_boundary.py
+- .\periphery\blockchain\smart_contract_risk_gate.py
+- .\periphery\blockchain\token_policy.py
+- .\periphery\blockchain\wallet_security_gate.py
+- .\periphery\brody\brody_context_query.py
+- .\periphery\brody\brody_language_router.py
+- .\periphery\brody\brody_response_contract.py
+- .\periphery\brody\brody_response_sanitizer.py
+- .\periphery\brody\brody_runtime_readonly.py
+- .\periphery\brody_memory_readonly\brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py
+- .\periphery\brody_memory_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\auto_triage_memory_intake_readonly\BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\auto_triage_memory_intake_readonly\brody_auto_triage_memory_intake_readonly_v1.py
+- .\periphery\brody_memory_readonly\auto_triage_memory_intake_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\auto_triage_memory_intake_readonly\run_brody_auto_triage_memory_intake_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_agent_readonly_session_test_packet\BRODY_AGENT_READONLY_SESSION_TEST_PACKET_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_agent_readonly_session_test_packet\brody_agent_readonly_session_test_packet_v1.py
+- .\periphery\brody_memory_readonly\brody_agent_readonly_session_test_packet\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_agent_readonly_session_test_packet\run_brody_agent_readonly_session_test_packet_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorization_packet_readonly\BRODY_API_BRIDGE_AUTHORIZATION_PACKET_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorization_packet_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorization_packet_readonly\run_brody_api_bridge_authorization_packet_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorized_runtime_precheck_readonly\BRODY_API_BRIDGE_AUTHORIZED_RUNTIME_PRECHECK_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorized_runtime_precheck_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_authorized_runtime_precheck_readonly\run_brody_api_bridge_authorized_runtime_precheck_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_build_epoch_open_readonly\BRODY_API_BRIDGE_BUILD_EPOCH_OPEN_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_build_epoch_open_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_build_epoch_open_readonly\run_brody_api_bridge_build_epoch_open_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_components_inventory_readonly\BRODY_API_BRIDGE_CANDIDATE_COMPONENTS_INVENTORY_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_components_inventory_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_components_inventory_readonly\run_brody_api_bridge_candidate_components_inventory_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_drift_guard_readonly\BRODY_API_BRIDGE_CANDIDATE_DRIFT_GUARD_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_drift_guard_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_candidate_drift_guard_readonly\run_brody_api_bridge_candidate_drift_guard_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_contract_readonly\BRODY_API_BRIDGE_CONTRACT_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_contract_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_contract_readonly\run_brody_api_bridge_contract_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_disabled_runtime_skeleton_readonly\BRODY_API_BRIDGE_DISABLED_RUNTIME_SKELETON_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_disabled_runtime_skeleton_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_disabled_runtime_skeleton_readonly\run_brody_api_bridge_disabled_runtime_skeleton_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_dry_run_readonly\BRODY_API_BRIDGE_DRY_RUN_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_dry_run_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_dry_run_readonly\run_brody_api_bridge_dry_run_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_external_access_freeze_readonly\BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_external_access_freeze_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_external_access_freeze_readonly\run_brody_api_bridge_external_access_freeze_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_live_drift_guard_readonly\BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_live_drift_guard_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_live_drift_guard_readonly\run_brody_api_bridge_live_drift_guard_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_policy_matrix_readonly\BRODY_API_BRIDGE_PROVIDER_POLICY_MATRIX_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_policy_matrix_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_policy_matrix_readonly\run_brody_api_bridge_provider_policy_matrix_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_registry_readonly\BRODY_API_BRIDGE_PROVIDER_REGISTRY_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_registry_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_provider_registry_readonly\run_brody_api_bridge_provider_registry_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_readiness_readonly\BRODY_API_BRIDGE_READINESS_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_readiness_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_readiness_readonly\run_brody_api_bridge_readiness_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_activation_gate_readonly\BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_activation_gate_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_activation_gate_readonly\run_brody_api_bridge_runtime_activation_gate_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_authorization_ledger_readonly\BRODY_API_BRIDGE_RUNTIME_AUTHORIZATION_LEDGER_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_authorization_ledger_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_authorization_ledger_readonly\run_brody_api_bridge_runtime_authorization_ledger_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_stub_readonly\BRODY_API_BRIDGE_RUNTIME_STUB_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_stub_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_bridge_runtime_stub_readonly\run_brody_api_bridge_runtime_stub_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_readonly\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_readonly\run_brody_api_memory_operator_replay_api_fix_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_V2_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\run_brody_api_memory_operator_replay_api_fix_v2_readonly.ps1
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\api_endpoints\context_canon.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\api_endpoints\context_x108.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\api_endpoints\search_brody.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_api_fix_v2_readonly\api_endpoints\search_x108.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_clean_close_readonly\BRODY_API_MEMORY_OPERATOR_REPLAY_CLEAN_CLOSE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_clean_close_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_clean_close_readonly\run_brody_api_memory_operator_replay_clean_close_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\BRODY_API_MEMORY_OPERATOR_REPLAY_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\run_brody_api_memory_operator_replay_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\smoke_brody_api_memory_operator_replay_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\reports\api_memory_operator_replay_report.json
+- .\periphery\brody_memory_readonly\brody_api_memory_operator_replay_readonly\reports\command_gate_replay_report.json
+- .\periphery\brody_memory_readonly\brody_human_command_packet_clean_close_readonly\BRODY_HUMAN_COMMAND_PACKET_CLEAN_CLOSE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_human_command_packet_clean_close_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_human_command_packet_clean_close_readonly\run_brody_human_command_packet_clean_close_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_human_command_packet_readonly\BRODY_HUMAN_COMMAND_PACKET_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_human_command_packet_readonly\brody_human_command_packet_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_human_command_packet_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_human_command_packet_readonly\run_brody_human_command_packet_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_human_command_packet_readonly\smoke_brody_human_command_packet_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_clean_close_readonly\BRODY_HUMAN_OUTPUT_RECEIPT_VALIDATOR_CLEAN_CLOSE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_clean_close_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_clean_close_readonly\run_brody_human_output_receipt_validator_clean_close_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_readonly\BRODY_HUMAN_OUTPUT_RECEIPT_VALIDATOR_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_readonly\brody_human_output_receipt_validator_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_readonly\run_brody_human_output_receipt_validator_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_human_output_receipt_validator_readonly\smoke_brody_human_output_receipt_validator_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_local_command_gate_clean_close_readonly\BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_local_command_gate_clean_close_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_local_command_gate_clean_close_readonly\run_brody_local_command_gate_clean_close_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly\BRODY_LOCAL_COMMAND_GATE_READONLY_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly\brody_local_command_gate_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly\run_brody_local_command_gate_readonly_v1.ps1
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly\smoke_brody_local_command_gate_readonly_v1.py
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair\run_brody_local_command_gate_readonly_repair_v1.ps1
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v2\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_V2_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v2\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v2\run_brody_local_command_gate_readonly_repair_v2.ps1
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v3\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_V3_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v3\README_BOUNDARY.md
+- .\periphery\brody_memory_readonly\brody_local_command_gate_readonly_repair_v3\run_brody_local_command_gate_readonly_repair_v3.ps1
+- .\periphery\brody_memory_readonly\brody_memory_context_operator_interaction_test_readonly_freeze_v1\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_FREEZE_V1_MANIFEST.json
+- .\periphery\brody_memory_readonly\brody_memory_context_operator_interaction_test_readonly_freeze_v1\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_REPORT.txt
+
+## Active contract evidence hits
+- .\apps\obsidia-workbench\audit_brody.py:6: 'message': 'Explique ton architecture technique. Comment re?ois-tu les ?v?nements Gencoin et pourquoi es-tu en mode readonly ?',
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:12: / `getKernelStatus()` / LIVE (ObsidiaShell /health) / `periphery/brody/brody_runtime_readonly.py` / `GET /api/x108/status` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:13: / `getBackendHealth()` / LIVE (ObsidiaShell /health) / ObsidiaShell core / `GET /health` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:14: / `getGraphitiStatus()` / LIVE (ObsidiaShell /graph/v20/frozen/status) / Graphiti V20 / existing / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:15: / `getGraphitiReadiness()` / LIVE (ObsidiaShell /graph/v20/frozen/readiness) / Graphiti V20 / existing / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:16: / `getGraphitiMetrics()` / LIVE (ObsidiaShell /graph/v20/frozen/metrics) / Graphiti V20 / existing / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:17: / `getContextPacket()` / LIVE (ObsidiaShell /graph/v20/frozen/context) / `periphery/context/context_packet_builder_v2.py` / existing / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:18: / `sendBrodyMessage()` / STUB (composer in frontend) / `periphery/brody/brody_runtime_readonly.py` / `POST /api/brody/chat` / advisory_only /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:19: / `getOS3Ticket()` / MOCK_ONLY / `periphery/os3_ticket.py` / `GET /api/os3/tickets` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:20: / `getSovereignTickets()` / MOCK_ONLY / `periphery/world_calls/` / `GET /api/worldcalls/sovereign` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:22: / `getMemoryCandidates()` / MOCK_ONLY / `periphery/brody_memory_readonly/` / `GET /api/memory/candidates` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:23: / `getGencoinLedger()` / MOCK_ONLY / `periphery/gencoin_ledger.py` / `GET /api/gencoin/ledger` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:24: / `getAuditEvents()` / MOCK (engine /v1/audit/chain) / `periphery/world_action_gateway.py` / `GET /api/audit/events` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:25: / `getTranslationTrace()` / STUB / periphery/language/language_router.py + new / `POST /api/os-trad/translate` / advisory_only /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:26: / `getIRCandidate()` / STUB / new periphery/ir module needed / `POST /api/ir/candidate` / allowed_to_decide=false /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:27: / `getOSReverseProjection()` / STUB / `periphery/reverse_os/action_projection_readonly.py` / `POST /api/os-reverse/project` / advisory_only /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:28: / `getAlphabetUnits()` / STUB / new periphery/alphabet module needed / `GET /api/alphabet/units` / readonly /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:61: / `POST /api/os-reverse/project` / Reverse projection / `periphery/reverse_os/action_projection_readonly.py` /
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md:74: - decision_authority = KX108_ONLY for all
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:42: → KernelStatus: id, status, readonly, tests_passing, protected_files_clean
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:49: → BrodyResponse: response, readonly=true, advisory_only=true, emits_act=false,
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:50: memory_write=false, decision_authority=X108_ONLY
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:57: → ContextPacket (readonly, context_signal_only=true)
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:67: → list[OS3ProofTicket] (readonly)
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:84: → TranslationTrace (readonly, allowed_to_decide=false, mode=LIVE)
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:89: → IRCandidate (allowed_to_decide=false, allowed_to_act=false, decision_authority=X108_ONLY)
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:94: → { projection: str, advisory_only: true, can_emit_act: false }
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:95: Maps to: periphery/reverse_os/action_projection_readonly.py
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:103: → ContextPacket (readonly, context_signal_only=true)
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md:125: / decision_authority = KX108_ONLY / ✓ /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:15: / `src/lib/osReverseProjection.ts` / MOCK_ONLY / `periphery/reverse_os/action_projection_readonly.py` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:17: / `src/lib/brodyResponseComposer.ts` / MOCK_ONLY / `periphery/brody/brody_runtime_readonly.py` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:27: / Action projection (readonly) / `periphery/reverse_os/action_projection_readonly.py` / `project_action_readonly()` — advisory_only=True /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:47: "ir_candidate": { "intent_type": "authority_escalation_request", "allowed_to_decide": false, ... },
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:50: "x108_boundary_status": "READONLY",
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:51: "readonly": true, "allowed_to_decide": false, "allowed_to_act": false
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:62: # Output: IRCandidate with allowed_to_decide=false, decision_authority=X108_ONLY
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:68: # Maps to: periphery/reverse_os/action_projection_readonly.py
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:70: # Output: projection string — advisory_only=True, can_emit_act=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md:87: - OS Reverse ne décide pas (advisory_only=True source: `action_projection_readonly.py`)
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:28: / `periphery/brody/brody_runtime_readonly.py` / Brody Runtime (readonly) / brody response contract /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:30: / `periphery/reverse_os/action_projection_readonly.py` / OS Reverse (action) / `ActionProjection`, `project_action_readonly()` /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:34: / `periphery/mcp/mcp_permission_matrix.py` / MCP Permission Matrix / permission read gate /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:47: class BrodyLanguageRoute: detected_language, routed_to, is_supported, memory_write=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:52: **`periphery/reverse_os/action_projection_readonly.py`:**
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:54: _FORBIDDEN_TOKENS = {"ALLOW", "HOLD", "BLOCK", "ACT", "DECIDE", "VERDICT"}
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:55: class ActionProjection: advisory_only=True, real_action_taken=False, can_emit_act=False
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:56: def project_action_readonly(projection_id, intent, context) -> ActionProjection
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:87: / OS Reverse projection / `src/lib/osReverseProjection.ts` / MOCK_ONLY (maps to `reverse_os/action_projection_readonly.py` semantics) /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:97: / `POST /api/os-reverse/project` / `periphery/reverse_os/action_projection_readonly.py` / NEEDS_FASTAPI_ROUTE /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md:111: / OS Reverse does not decide / ✓ (advisory_only=True in action_projection_readonly.py) /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:41: / `allowed_to_decide=false` / ✓ hardcoded /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:42: / `allowed_to_act=false` / ✓ hardcoded /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:43: / `memory_write=false` / ✓ hardcoded /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:44: / `kernel_mutation=false` / ✓ hardcoded /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:45: / `decision_authority=X108_ONLY` / ✓ hardcoded /
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md:58: / Maps to `action_projection_readonly.py` semantics / ✓ /
+- .\apps\obsidia-workbench\src\api\contracts.ts:2: * API contracts — mirrors ObsidiaShell (port 8011) + Engine API (port 8012) response shapes.
+- .\apps\obsidia-workbench\src\api\contracts.ts:35: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:67: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:68: advisory_only: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:69: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:70: graphiti_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:71: neo4j_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:72: emits_act: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:73: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:80: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:105: graphiti_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:106: neo4j_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:108: operator_loop?: {
+- .\apps\obsidia-workbench\src\api\contracts.ts:143: memory_write: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:144: graphiti_write: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:145: neo4j_write: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:148: operator_loop: {
+- .\apps\obsidia-workbench\src\api\contracts.ts:164: decision_authority: string
+- .\apps\obsidia-workbench\src\api\contracts.ts:165: emits_act: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:166: emits_verdict: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:167: kernel_mutation: boolean
+- .\apps\obsidia-workbench\src\api\contracts.ts:187: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:188: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:189: graphiti_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:190: neo4j_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:191: emits_act: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:192: emits_verdict: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:193: kernel_mutation: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:194: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:216: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:217: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:218: graphiti_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:219: neo4j_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:220: emits_act: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:221: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:224: /** Memory response chain snapshot — from brody_memory_response_chain_adapter.py */
+- .\apps\obsidia-workbench\src\api\contracts.ts:241: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:242: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:243: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:258: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:259: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:260: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:269: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:270: graphiti_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:274: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:284: emits_act: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:285: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:286: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:297: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:298: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:308: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:309: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:319: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:320: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:328: authority_snapshot: Record<string, unknown>
+- .\apps\obsidia-workbench\src\api\contracts.ts:331: memory_response_chain_snapshot: MemoryResponseChainSnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:333: automation_snapshot: Record<string, unknown>
+- .\apps\obsidia-workbench\src\api\contracts.ts:334: candidate_memory_snapshot: CandidateMemorySnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:335: operator_loop_snapshot: OperatorLoopSnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:336: tree_policy_snapshot: TreePolicySnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:348: readonly: true
+- .\apps\obsidia-workbench\src\api\contracts.ts:349: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:350: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:357: decision_authority: 'KX108_ONLY'
+- .\apps\obsidia-workbench\src\api\contracts.ts:358: emits_act: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:359: memory_write: false
+- .\apps\obsidia-workbench\src\api\contracts.ts:362: authority_snapshot: Record<string, unknown>
+- .\apps\obsidia-workbench\src\api\contracts.ts:366: memory_response_chain_snapshot: MemoryResponseChainSnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:368: automation_snapshot: Record<string, unknown>
+- .\apps\obsidia-workbench\src\api\contracts.ts:369: candidate_memory_snapshot: CandidateMemorySnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:370: operator_loop_snapshot: OperatorLoopSnapshot
+- .\apps\obsidia-workbench\src\api\contracts.ts:371: tree_policy_snapshot: TreePolicySnapshot
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx:36: <span className="obs-badge-muted">readonly=true</span>
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx:37: <span className="obs-badge-muted">emits_act=false</span>
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx:44: <span className="text-obs-dtext text-[10px] font-mono">decision_authority: <span className="text-obs-kernel">KX108_ONLY</span></span>
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx:45: <span className="text-obs-dtext text-[10px] font-mono">memory_write: <span className="text-obs-block">false</span></span>
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx:79: <span className="obs-badge-muted">context_signal_only=true</span>
+- .\apps\obsidia-workbench\src\components\TreeExplorer.tsx:101: context_signal_only=true · decision_authority=KX108_ONLY · emits_act=false
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:35: "Bonjour. Brody est en ligne — mode readonly, advisory uniquement. Kernel X-108 actif, 397 tests passing. Mémoire en CANDIDATE_ONLY. Dis-moi ce que tu cherches à comprendre ou à préparer.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:47: "Graphiti V20 est le graphe de contexte readonly. Les candidats mémoire transitent par BRODY_RUNTIME → CANDIDATE → NEEDS_REVIEW → PROMOTION_READY. La promotion manuelle requiert une décision humaine explicite. Aucune promotion automatique.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:50: "X-108 est le kernel de gouvernance souverain — la seule autorité de décision du système. OS3 prouve ses décisions via Lean 4 et TLA+. Brody l'interface, il ne le substitue pas. Statut actuel : ACTIVE, mode READONLY. 397 tests passing. Fichiers protégés : intacts.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:55: "Les 7 invariants de non-souveraineté : decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. Ces invariants ne peuvent pas être overridés.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:66: "Les WorldCalls sont les actions d'egress contrôlées par le Gateway. Mode actuel : dry-run uniquement. Le Gateway bloque toute action réelle non-dry-run. Un SovereignTicket X-108 est requis pour tout WorldCall non-READONLY.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:67: "Le SovereignTicket autorise, le Gateway exécute (ou bloque). WorldActionBus trace tout. Egress réel : bloqué dans la configuration courante. Brody ne génère pas de WorldCall — il consulte le registre readonly.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:80: "Hello. Brody is online — readonly mode, advisory only. X-108 kernel active, 397 tests passing. Memory in CANDIDATE_ONLY mode. What are you trying to understand or prepare?",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:95: "X-108 is the sovereign governance kernel — the sole decision authority in the system. OS3 proves its decisions via Lean 4 and TLA+. Brody interfaces with it, never substitutes for it. Current status: ACTIVE, READONLY mode. 397 tests passing. Protected files: intact.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:100: "The 7 non-sovereignty invariants: decision_authority=KX108_ONLY, emits_act=false, memory_write=false, auto_promotion=false, graphiti_write=false, real_chain_action=false, Gencoin is_real_token=false. These invariants cannot be overridden.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:111: "WorldCalls are egress actions controlled by the Gateway. Current mode: dry-run only. Gateway blocks all non-dry-run real actions. An X-108 SovereignTicket is required for any non-READONLY WorldCall.",
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts:112: "SovereignTicket authorizes, Gateway executes (or blocks). WorldActionBus traces everything. Real egress: blocked in current configuration. Brody doesn't generate WorldCalls — it consults the readonly registry.",
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:14: "Une demande de création est détectée. Brody est readonly — aucune création directe. Je peux préparer une proposition structurée pour X-108.",
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts:35: "A creation request is detected. Brody is readonly — no direct creation. I can prepare a structured proposal for X-108.",
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:51: <div className="text-obs-mtext">memory_write=<span className="text-obs-block">false</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:53: <div className="text-obs-mtext">graphiti_write=<span className="text-obs-block">false</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:54: <div className="text-obs-mtext">neo4j_write=<span className="text-obs-block">false</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:55: <div className="text-obs-mtext">decision_authority=<span className="text-obs-kernel">KX108_ONLY</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:68: <span className="text-obs-memory text-[9px] font-mono font-semibold">READONLY</span>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:106: <div className="flex justify-between"><span className="text-obs-dtext">mode</span><span className="text-obs-pass">READONLY BRIDGE</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:107: <div className="flex justify-between"><span className="text-obs-dtext">neo4j_write</span><span className="text-obs-block">false</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:108: <div className="flex justify-between"><span className="text-obs-dtext">graphiti_write</span><span className="text-obs-block">false</span></div>
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx:109: <div className="flex justify-between"><span className="text-obs-dtext">decision_authority</span><span className="text-obs-kernel">KX108_ONLY</span></div>
+- .\apps\obsidia-workbench\src\views\X108View.tsx:8: { label: 'decision_authority',       value: 'KX108_ONLY', cls: 'text-obs-kernel' },
+- .\apps\obsidia-workbench\src\views\X108View.tsx:9: { label: 'emits_act',                value: 'false',       cls: 'text-obs-block' },
+- .\apps\obsidia-workbench\src\views\X108View.tsx:10: { label: 'memory_write',             value: 'false',       cls: 'text-obs-block' },
+- .\apps\obsidia-workbench\src\views\X108View.tsx:12: { label: 'graphiti_write',           value: 'false',       cls: 'text-obs-block' },
+- .\apps\obsidia-workbench\src\views\X108View.tsx:67: <div className="flex justify-between gap-2"><span className="text-obs-dtext">readonly</span><span className="text-obs-pass">true</span></div>
+- .\apps\obsidia-workbench\src\views\X108View.tsx:108: <div>sigma/guard.py · sigma/contracts.py · sigma/protocols.py</div>
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:20: / 1 / `sendBrodyMessage()` / `periphery/brody/brody_runtime_readonly.py:brody_respond()` + `periphery/brody/brody_language_router.py:route_brody_language()` / YES / REAL_BACKEND /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:21: / 2 / `getTranslationTrace()` / `periphery/language/language_router.py:route_language()` + `periphery/reverse_os/action_projection_readonly.py:project_action_readonly()` / YES / REAL_BACKEND /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:23: / 4 / `getOSReverseProjection()` / `periphery/reverse_os/action_projection_readonly.py:project_action_readonly()` / YES / REAL_BACKEND /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:28: / 9 / `getX108ReadonlyStatus()` / Derived from `periphery/brody/brody_response_contract.py:BRODY_CONTRACT` + kernel constants / YES / REAL_BACKEND /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:34: / 15 / `getAuditEvents()` / `periphery/brody_memory_readonly/` + connectors — no direct aggregator / PARTIAL / BACKEND_STUB /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:66: / `periphery/brody/brody_runtime_readonly.py` / `brody_respond(query, language, context_refs, confidence)` / Returns `BrodyResponse` — validates `BRODY_CONTRACT` /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:68: / `periphery/brody/brody_response_contract.py` / `BRODY_CONTRACT.validate()` / Invariants: readonly, no ACT, no verdict /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:71: / `periphery/reverse_os/action_projection_readonly.py` / `project_action_readonly(projection_id, intent, context)` / `_FORBIDDEN_TOKENS` enforced; returns `ActionProjection` /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:87: / Audit event aggregator / Partial in `periphery/brody_memory_readonly/` but no HTTP-ready aggregator /
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md:111: - All `decision_authority = KX108_ONLY`
+- .\apps\obsidia_api\brody_automation_orchestrator.py:2: Brody Automation Layer Orchestrator — Readonly
+- .\apps\obsidia_api\brody_automation_orchestrator.py:13: - Returns automation_snapshot enriching authority_snapshot → final_answer
+- .\apps\obsidia_api\brody_automation_orchestrator.py:16: readonly=True, memory_write=False, graphiti_write=False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:17: neo4j_write=False, emits_act=False, decision_authority=KX108_ONLY
+- .\apps\obsidia_api\brody_automation_orchestrator.py:29: "readonly": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:30: "advisory_only": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:33: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:34: "allowed_to_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:35: "emits_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:36: "emits_verdict": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:37: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:38: "graphiti_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:39: "neo4j_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:40: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:41: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:44: _PERIPHERY = Path(__file__).resolve().parents[2] / "periphery" / "brody_memory_readonly"
+- .\apps\obsidia_api\brody_automation_orchestrator.py:59: _add_path("session_memory_ledger_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:60: from brody_session_memory_ledger_readonly_v2 import build_record as _ledger_build  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:69: _add_path("auto_triage_memory_intake_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:70: from brody_auto_triage_memory_intake_readonly_v1 import (  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:81: _add_path("brody_human_command_packet_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:82: from brody_human_command_packet_readonly_v1 import build_human_command_packet as _packet_build  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:97: MEMORY_WRITE_REQUEST,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:102: _MEMORY_TYPES = {MEMORY_CANDIDATE, MEMORY_WRITE_REQUEST}
+- .\apps\obsidia_api\brody_automation_orchestrator.py:103: _ACTION_TYPES = {ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST}
+- .\apps\obsidia_api\brody_automation_orchestrator.py:134: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:139: "readonly": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:144: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:145: "emits_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:147: "emits_verdict": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:148: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:149: "x108_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:154: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:174: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:181: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:226: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:227: "emits_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:229: "emits_verdict": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:230: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:231: "x108_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:235: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:264: def _run_operator_loop(
+- .\apps\obsidia_api\brody_automation_orchestrator.py:267: authority_snapshot: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:274: "human_operator_required": authority_snapshot.get("requires_human_operator", False),
+- .\apps\obsidia_api\brody_automation_orchestrator.py:310: authority_snapshot: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:313: operator_loop: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:315: allowed: list[str] = ["final_answer_advisory", "context_packet_readonly", "authority_snapshot_readonly"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:316: blocked: list[str] = ["emits_act", "kernel_mutation", "bypass_x108"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:320: blocked += ["memory_write", "graphiti_write"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:323: allowed += ["read_graphiti_readonly", "read_context_packet", "diagnostic_advisory", "explain_capabilities"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:324: blocked += ["modify_memory", "memory_write", "decide"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:327: allowed += ["context_packet_candidate", "ir_candidate_readonly", "structure_proposal", "formulate_plan_advisory"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:328: blocked += ["execute_packet", "memory_write", "graphiti_write"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:332: blocked += ["graphiti_write", "neo4j_write", "auto_promote_candidate", "memory_intake_direct"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:341: if operator_loop.get("human_command_packet_ready"):
+- .\apps\obsidia_api\brody_automation_orchestrator.py:346: blocked += ["authorize_act", "emit_act", "graphiti_write_direct", "bypass_x108_decision"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:354: "explain_brody_may_list",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:355: "explain_brody_must_not_list",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:357: "explain_kx108_decision_authority",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:360: blocked += ["decide", "emits_act", "ecrire_memoire_automatiquement", "bypass_x108"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:364: blocked += ["trigger_blocked_trees", "memory_write", "decide"]
+- .\apps\obsidia_api\brody_automation_orchestrator.py:367: allowed.append("session_ledger_candidate_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:379: authority_snapshot: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:387: Returns automation_snapshot to be added to /api/brody/chat payload.
+- .\apps\obsidia_api\brody_automation_orchestrator.py:430: "graphiti_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:431: "neo4j_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:435: operator_loop = _run_operator_loop(user_message, request_type, authority_snapshot)
+- .\apps\obsidia_api\brody_automation_orchestrator.py:439: request_type, authority_snapshot, triage, presave, operator_loop
+- .\apps\obsidia_api\brody_automation_orchestrator.py:458: "operator_loop": operator_loop,
+- .\apps\obsidia_api\brody_backend_response_composer.py:3: based on pipeline data. Advisory only. Never emits ACT. KX108_ONLY always.
+- .\apps\obsidia_api\brody_backend_response_composer.py:14: "Salut. Brody est actif en mode readonly. Je peux lire le contexte, structurer ton intention, preparer un IR Candidate ou un ContextPacket, mais je ne decide pas. L'autorite reste X108_ONLY.",
+- .\apps\obsidia_api\brody_backend_response_composer.py:30: "Je peux preparer une lecture readonly du contexte memoire. La memoire reste contextuelle, candidate-only, sans ecriture ni decision. Si Graphiti V20 est disponible, le contexte peut etre recupere en readonly ; sinon statut OFFLINE_OR_UNAVAILABLE.",
+- .\apps\obsidia_api\brody_backend_response_composer.py:34: "X-108 est le kernel de gouvernance souverain — la seule autorite de decision. OS3 prouve ses decisions via Lean 4 et TLA+. Brody l'interface, il ne le substitue pas. Statut actuel : ACTIVE, mode READONLY.",
+- .\apps\obsidia_api\brody_backend_response_composer.py:46: "Hi. Brody is active in readonly mode. I can read context, structure your intent, prepare an IR Candidate or ContextPacket, but I do not decide. Authority remains X108_ONLY.",
+- .\apps\obsidia_api\brody_backend_response_composer.py:61: "I can prepare a readonly read of memory context. Memory is contextual, candidate-only, without write or decision. If Graphiti V20 is available, context can be fetched readonly; otherwise status is OFFLINE_OR_UNAVAILABLE.",
+- .\apps\obsidia_api\brody_backend_response_composer.py:65: "X-108 is the sovereign governance kernel — the sole decision authority. OS3 proves its decisions via Lean 4 and TLA+. Brody interfaces with it, never substitutes for it. Current status: ACTIVE, READONLY mode.",
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:8: decision_authority = KX108_ONLY.
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:38: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:39: "memory_write": False,
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:40: "emits_act": False,
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:41: "graphiti_write": False,
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:42: "neo4j_write": False,
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:43: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_bridge_lifecycle.py:44: "allowed_to_act": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:4: Wraps existing freeze-sourced modules into a candidate_memory_snapshot.
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:7: - session_presave_buffer_readonly V1
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:8: - auto_triage_memory_intake_readonly V1
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:9: - graphiti_candidate_review_gate_readonly V1
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:13: All writes disabled: CANDIDATE_ONLY, memory_write=false.
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:14: Boundary: readonly, KX108_ONLY.
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:28: def build_candidate_memory_snapshot(
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:31: """Build candidate_memory_snapshot from existing freeze sources."""
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:35: presave_ptr = workspace / "CURRENT_BRODY_SESSION_PRESAVE_BUFFER_READONLY.txt"
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:42: triage_ptr = workspace / "CURRENT_BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY.txt"
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:49: review_ptr = workspace / "CURRENT_BRODY_GRAPHITI_CANDIDATE_REVIEW_GATE_READONLY.txt"
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:80: "status": "CANDIDATE_MEMORY_READY" if all_ready else "CANDIDATE_MEMORY_PARTIAL",
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:97: "memory_write": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:98: "graphiti_write": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:99: "neo4j_write": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:100: "emits_act": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:101: "emits_verdict": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:102: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py:103: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:31: {"name": "MEMZUM", "resolution": "FULLY_BRANCHED", "covered_by": "project_memory_snapshot, session_memory_snapshot, memory_response_chain, Graphiti", "branchable": True, "active": True},
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:32: {"name": "Capsule_Evolution", "resolution": "COVERED_BY_EXISTING_MODULE", "covered_by": "temporal_context.future_context, candidate_memory_snapshot", "branchable": True, "active": True},
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:35: {"name": "Collecteur_Epiphanies", "resolution": "COVERED_BY_EXISTING_MODULE", "covered_by": "candidate_memory_snapshot, presave_buffer, auto_triage", "branchable": True, "active": True},
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:36: {"name": "Simulateur_Memoires", "resolution": "PARTIALLY_COVERED", "covered_by": "memory_response_chain (replay), temporal_context.future", "branchable": True, "active": True},
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:71: "readonly": True,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:72: "memory_write": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:73: "graphiti_write": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:74: "neo4j_write": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:75: "emits_act": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:76: "emits_verdict": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:77: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py:78: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:17: Boundary: readonly, KX108_ONLY, no write, no decision.
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:102: context_packet_chain, memory_pipeline, operator_loop, x108_boundary,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:152: memory_write_val = _metric_value(parsed, "SESSION_MEMORY_LEDGER", "MEMORY_INTAKE", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:153: graphiti_write_val = _metric_value(parsed, "AUTO_TRIAGE", "GRAPHITI_INDEX_WRITE", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:154: neo4j_write_val = _metric_value(parsed, "SESSION_MEMORY_LEDGER", "NEO4J_WRITE_EXECUTED", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:164: "memory_write": bool(memory_write_val) if memory_write_val != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:165: "graphiti_write": bool(graphiti_write_val) if graphiti_write_val != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:166: "neo4j_write": bool(neo4j_write_val) if neo4j_write_val != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:208: operator_loop: dict[str, Any] = {
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:225: decision_authority = _metric_value(parsed, "OPERATOR_CONTROL_LOOP", "DECISION_AUTHORITY", "KX108_ONLY")
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:226: emits_act = _metric_value(parsed, "OPERATOR_CONTROL_LOOP", "EMITS_ACT", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:227: emits_verdict = _metric_value(parsed, "OPERATOR_CONTROL_LOOP", "EMITS_VERDICT", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:228: kernel_mutation = _metric_value(parsed, "OPERATOR_CONTROL_LOOP", "KERNEL_MUTATION", False)
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:233: "decision_authority": str(decision_authority) if decision_authority != "NOT_FOUND_IN_FREEZE_SOURCES" else "KX108_ONLY",
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:234: "emits_act": bool(emits_act) if emits_act != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:235: "emits_verdict": bool(emits_verdict) if emits_verdict != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:236: "kernel_mutation": bool(kernel_mutation) if kernel_mutation != "NOT_FOUND_IN_FREEZE_SOURCES" else False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:263: "source": "CURRENT_BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY.txt",
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:284: graphiti_index_ptr = _find_pointer(parsed, "GRAPHITI_READONLY_INDEX")
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:312: "operator_loop": operator_loop,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:319: "source": "CURRENT_BRODY_X108_CURRENT_STATE_BASELINE_FREEZE_READONLY.txt",
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:322: "readonly": True,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:323: "memory_write": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:324: "graphiti_write": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:325: "neo4j_write": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:326: "emits_act": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:327: "emits_verdict": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:328: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py:329: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:3: Orchestrates all available brody_memory_readonly modules.
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:5: Never emits ACT. KX108_ONLY always.
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:40: P = "periphery.brody_memory_readonly."
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:41: _TERMINAL = _TERMINAL or _si(P + "terminal_structural_dialogue_readonly.brody_terminal_structural_dialogue_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:42: _LOCAL = _LOCAL or _si(P + "local_response_engine_readonly.brody_local_response_engine_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:43: _CONTEXT = _CONTEXT or _si(P + "context_packet_query_readonly.brody_context_packet_query_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:44: _HYDRATION = _HYDRATION or _si(P + "content_hydration_readonly.brody_content_hydration_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:45: _SESSION_LEDGER = _SESSION_LEDGER or _si(P + "session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:46: _PRESAVE = _PRESAVE or _si(P + "session_presave_buffer_readonly.brody_session_presave_buffer_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:47: _SCHEDULER = _SCHEDULER or _si(P + "memory_scheduler_readonly.brody_memory_scheduler_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:48: _TRIAGE = _TRIAGE or _si(P + "post_human_review_memory_triage_readonly.brody_post_human_review_memory_triage_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:49: _AUTO_TRIAGE = _AUTO_TRIAGE or _si(P + "auto_triage_memory_intake_readonly.brody_auto_triage_memory_intake_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:50: _CANDIDATE_EXPORT = _CANDIDATE_EXPORT or _si(P + "candidate_export_for_graphiti_readonly.brody_candidate_export_for_graphiti_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:51: _IMPORT_DRY_RUN = _IMPORT_DRY_RUN or _si(P + "graphiti_import_dry_run_from_post_human_prep_readonly.brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:52: _REVIEW_GATE = _REVIEW_GATE or _si(P + "graphiti_review_gate_from_post_human_dry_run_readonly.brody_graphiti_review_gate_from_post_human_dry_run_readonly_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:53: _GUARDED_APPLY = _GUARDED_APPLY or _si(P + "graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only.brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1")
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:96: result["status"] = "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:107: "readonly": True, "response_only": True, "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:108: "memory_decision": False, "allowed_to_decide": False, "allowed_to_act": False,
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:109: "emits_act": False, "emits_verdict": False, "emits_allow_hold_block": False,
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:110: "kernel_mutation": False, "x108_mutation": False, "x108_runtime_binding": False,
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:111: "x108_merge": False, "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:112: "memory_write": False, "graphiti_write": False, "neo4j_write": False, "real_action": False,
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:140: graphiti_live = r["graphiti_probe"]["status"] == "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:237: "Brody Terminal est actif en mode readonly local. "
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:241: "Brody Terminal is active in readonly local mode. "
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:250: "readonly": True}
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py:263: "x108_boundary": {"passed": True, "status": "READONLY"},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:12: - authority_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:13: - automation_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:16: Boundary: readonly, KX108_ONLY, no write.
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:64: "This does NOT grant special authority — KX108_ONLY remains sole decision authority. "
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:77: authority_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:78: automation_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:79: memory_response_chain_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:108: "request_type": (authority_snapshot or {}).get("request_type", "PURE_RESPONSE"),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:109: "response_mode": (authority_snapshot or {}).get("response_mode", "FULL_ANSWER"),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:110: "requires_human_operator": (authority_snapshot or {}).get("requires_human_operator", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:111: "requires_kx108_decision": (authority_snapshot or {}).get("requires_kx108_decision", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:112: "requires_memory_gate": (authority_snapshot or {}).get("requires_memory_gate", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:141: used_modules.append("context_packet_query_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:143: used_modules.append("content_hydration_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:145: used_modules.append("local_response_engine_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:147: used_modules.append("session_memory_ledger_readonly_v2")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:149: used_modules.append("terminal_structural_dialogue_readonly_v1_1b")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:162: "memory_response_chain_snapshot": memory_response_chain_snapshot or {},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:172: "readonly": True,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:173: "memory_write": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:174: "graphiti_write": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:175: "neo4j_write": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:176: "emits_act": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:177: "emits_verdict": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:178: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:179: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:15: - periphery/brody_memory_readonly/context_packet_query_readonly/
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:16: - periphery/brody_memory_readonly/content_hydration_readonly/
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:17: - periphery/brody_memory_readonly/local_response_engine_readonly/
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:19: All three are freeze-sourced, READY status, KX108_ONLY.
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:21: Boundary: readonly, no Neo4j write, no Graphiti write, KX108_ONLY.
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:37: "readonly": True,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:38: "memory_write": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:39: "graphiti_write": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:40: "neo4j_write": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:41: "emits_act": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:42: "emits_verdict": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:43: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:44: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:104: / "_graphiti_readonly_indexes"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:105: / "GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:107: jsonl_path = base / "graphiti_readonly_records_v2.jsonl"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:108: json_path = base / "graphiti_readonly_index_v2.json"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:224: def build_memory_response_chain(
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:240: Returns memory_response_chain_snapshot with full metrics.
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:328: periphery = workspace / "periphery" / "brody_memory_readonly"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:330: periphery / "content_hydration_readonly" / "brody_content_hydration_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:333: periphery / "local_response_engine_readonly" / "brody_local_response_engine_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:336: # Match the exact format brody_context_packet_query_readonly_v1 produces
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:339: "status": "BRODY_CONTEXT_PACKET_QUERY_READONLY_PASS",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:350: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:351: "emits_act": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:354: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:355: "x108_mutation": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:357: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:358: "readonly": True,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:393: "memory_write": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:394: "emits_act": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:395: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:396: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:427: "BRODY_MEMORY_RESPONSE_CHAIN_PASS"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:461: periphery = workspace / "periphery" / "brody_memory_readonly"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:464: periphery / "context_packet_query_readonly" / "brody_context_packet_query_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:467: periphery / "content_hydration_readonly" / "brody_content_hydration_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:470: periphery / "local_response_engine_readonly" / "brody_local_response_engine_readonly_v1.py"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:474: return _chain_error("QUERY_MODULE_NOT_FOUND", query, "context_packet_query_readonly module not importable")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:476: return _chain_error("HYDRATION_MODULE_NOT_FOUND", query, "content_hydration_readonly module not importable")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:478: return _chain_error("ENGINE_MODULE_NOT_FOUND", query, "local_response_engine_readonly module not importable")
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:505: "source_mode": "MEMORY_RESPONSE_CHAIN",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:535: "memory_write": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:536: "emits_act": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:537: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:538: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:551: chain_result_status = "BRODY_MEMORY_RESPONSE_CHAIN_PASS" if (material_quality in ("USABLE_MATERIAL", "PARTIAL_MATERIAL") and response_md and len(response_md) > 50) else "PARTIAL_QUERY_ONLY"
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:555: "source_mode": "MEMORY_RESPONSE_CHAIN",
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py:592: "source_mode": "MEMORY_RESPONSE_CHAIN",
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:4: Wraps freeze-sourced operator loop modules into an operator_loop_snapshot.
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:7: All 7 components freeze-sourced, V1_PASS, KX108_ONLY.
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:9: Boundary: readonly, Brody cannot execute, human operates, X108 decides.
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:34: def build_operator_loop_snapshot(
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:37: """Build operator_loop_snapshot from freeze pointers."""
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:41: "command_gate": _check_ptr(workspace, "LOCAL_COMMAND_GATE_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:42: "human_command_packet": _check_ptr(workspace, "HUMAN_COMMAND_PACKET_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:43: "control_loop": _check_ptr(workspace, "OPERATOR_CONTROL_LOOP_BASELINE_FREEZE_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:44: "execution_line": _check_ptr(workspace, "OPERATOR_EXECUTION_LINE_BASELINE_FREEZE_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:45: "execution_receipt": _check_ptr(workspace, "OPERATOR_EXECUTION_RECEIPT_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:46: "handoff_line": _check_ptr(workspace, "OPERATOR_HANDOFF_LINE_BASELINE_FREEZE_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:47: "final_baseline": _check_ptr(workspace, "OPERATOR_FINAL_BASELINE_FREEZE_READONLY"),
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:68: "decision_authority_role": "KX108_ONLY",
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:72: "readonly": True,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:73: "memory_write": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:74: "graphiti_write": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:75: "neo4j_write": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:76: "emits_act": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:77: "emits_verdict": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:78: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_operator_loop_adapter.py:79: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_project_memory_adapter.py:5: - Graphiti readonly index (JSON snapshot when Neo4j offline)
+- .\apps\obsidia_api\brody_project_memory_adapter.py:11: Boundary: readonly, KX108_ONLY, no write.
+- .\apps\obsidia_api\brody_project_memory_adapter.py:33: 1. Graphiti readonly index V2 (JSON snapshot)
+- .\apps\obsidia_api\brody_project_memory_adapter.py:43: # ── 1. Graphiti Readonly Index — prefer JSONL (has text_excerpt) ─────────
+- .\apps\obsidia_api\brody_project_memory_adapter.py:45: workspace / "_graphiti_readonly_indexes"
+- .\apps\obsidia_api\brody_project_memory_adapter.py:46: / "GRAPHITI_READONLY_INDEX_V2_FUSION_20260512_224854"
+- .\apps\obsidia_api\brody_project_memory_adapter.py:48: jsonl_path = graphiti_base / "graphiti_readonly_records_v2.jsonl"
+- .\apps\obsidia_api\brody_project_memory_adapter.py:49: json_path = graphiti_base / "graphiti_readonly_index_v2.json"
+- .\apps\obsidia_api\brody_project_memory_adapter.py:60: from apps.obsidia_api.brody_memory_response_chain_adapter import (
+- .\apps\obsidia_api\brody_project_memory_adapter.py:179: "readonly": True,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:180: "memory_write": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:181: "graphiti_write": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:182: "neo4j_write": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:183: "emits_act": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:184: "emits_verdict": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:185: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_project_memory_adapter.py:186: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_project_memory_runtime.py:11: Boundary: readonly, KX108_ONLY, no write.
+- .\apps\obsidia_api\brody_project_memory_runtime.py:47: "tree_policy": snap.get("auto_triage_found", False),
+- .\apps\obsidia_api\brody_project_memory_runtime.py:54: snap["tree_policy"] = snap.get("auto_triage_found", False)
+- .\apps\obsidia_api\brody_project_memory_runtime.py:58: snap["memory_write"] = False
+- .\apps\obsidia_api\brody_project_memory_runtime.py:59: snap["graphiti_write"] = False
+- .\apps\obsidia_api\brody_project_memory_runtime.py:60: snap["neo4j_write"] = False
+- .\apps\obsidia_api\brody_project_memory_runtime.py:61: snap["decision_authority"] = "KX108_ONLY"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:22: P = "periphery.brody_memory_readonly."
+- .\apps\obsidia_api\brody_real_response_pipeline.py:26: _TERMINAL = _TERMINAL or _si(P + "terminal_structural_dialogue_readonly.brody_terminal_structural_dialogue_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:27: _LOCAL_ENGINE = _LOCAL_ENGINE or _si(P + "local_response_engine_readonly.brody_local_response_engine_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:28: _CONTEXT_QUERY = _CONTEXT_QUERY or _si(P + "context_packet_query_readonly.brody_context_packet_query_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:29: _HYDRATION = _HYDRATION or _si(P + "content_hydration_readonly.brody_content_hydration_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:46: result["status"] = "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:54: "readonly": True, "response_only": True, "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:55: "memory_decision": False, "allowed_to_decide": False, "allowed_to_act": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:56: "emits_act": False, "emits_verdict": False, "emits_allow_hold_block": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:57: "kernel_mutation": False, "x108_mutation": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:58: "memory_write": False, "graphiti_write": False, "neo4j_write": False, "real_action": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:59: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:80: graphiti_live = r["graphiti_probe"]["status"] == "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:107: ctx_packet.setdefault("readonly", True)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:108: ctx_packet.setdefault("memory_write", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:109: ctx_packet.setdefault("emits_act", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:110: ctx_packet.setdefault("kernel_mutation", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:111: ctx_packet.setdefault("decision_authority", "KX108_ONLY")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:113: "memory_write": False, "emits_act": False, "kernel_mutation": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:114: "decision_authority": "KX108_ONLY"}
+- .\apps\obsidia_api\brody_real_response_pipeline.py:156: "Brody est actif en mode readonly consultatif. "
+- .\apps\obsidia_api\brody_real_response_pipeline.py:160: "Brody is active in readonly advisory mode. "
+- .\apps\obsidia_api\brody_real_response_pipeline.py:169: "readonly": True,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:177: "neo4j_status": "LIVE_READONLY" if r["graphiti_probe"]["port_7688_open"] else "OFFLINE_OR_UNAVAILABLE",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:178: "engine_status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS" if engine_used else "TERMINAL_FALLBACK",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:181: "x108_boundary": {"passed": True, "status": "READONLY"},
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:6: - BRODY_REAL_ARCHITECTURE_MAP_READONLY (2026-05-13)
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:7: - CURRENT_BRODY_HUMAN_COMMAND_PACKET_READONLY.txt
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:8: - CURRENT_BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY.txt
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:9: - T13_T34_SIGNAL_DISCOVERY_READONLY (2026-05-14)
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:11: - X108_boundary___kernel_decision_authority.json
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:40: MEMORY_WRITE_REQUEST      = "MEMORY_WRITE_REQUEST"
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:44: # ── Tree policy (source: T13_T34_SIGNAL_DISCOVERY_READONLY_20260514) ─────────
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:45: _TREE_POLICY: dict[str, Any] = {
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:53: "blocked_memory_reason": "BLOCKED_DIRECT_MEMORY_WRITE — T24 Arbre de la Memoire",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:60: "source": "T13_T34_SIGNAL_DISCOVERY_READONLY_20260514_025500",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:99: (MEMORY_WRITE_REQUEST, [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:254: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:261: "brody_must_not": ["decider", "emettre_act", "ecrire_memoire"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:262: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:263: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:264: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:269: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:274: "expliquer_role_kx108_decision_authority",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:277: "expliquer_automation_snapshot",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:280: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:288: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:289: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:290: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:295: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:296: "lire_graphiti_readonly",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:304: "brody_must_not": ["modifier_memoire", "decider", "emettre_act"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:305: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:306: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:307: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:312: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:319: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:325: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:326: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:327: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:332: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:338: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:344: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:345: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:346: "requires_memory_gate": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:351: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:353: "classifier_readonly_git_mutation_external",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:357: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:362: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:363: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:364: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:369: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:370: "GET_only_si_allowlist_et_operator_loop",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:374: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:380: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:381: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:382: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:387: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:393: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:401: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:402: "requires_kx108_decision": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:403: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:407: MEMORY_WRITE_REQUEST: {
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:408: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:413: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:419: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:420: "requires_kx108_decision": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:421: "requires_memory_gate": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:426: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:428: "activer_signaux_contextuels_readonly",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:432: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:437: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:438: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:439: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:444: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:451: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:456: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:457: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:458: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:471: "matrix": {k: dict(v, tree_policy=_TREE_POLICY, decision_authority="KX108_ONLY")
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:473: "tree_policy": _TREE_POLICY,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:474: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:475: "readonly": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:476: "advisory_only": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:477: "emits_act": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:478: "memory_write": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:481: "BRODY_REAL_ARCHITECTURE_MAP_READONLY_20260513",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:482: "CURRENT_BRODY_HUMAN_COMMAND_PACKET_READONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:483: "CURRENT_BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:484: "T13_T34_SIGNAL_DISCOVERY_READONLY_20260514",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:486: "X108_boundary_kernel_decision_authority",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:514: "brody_may": caps["brody_may"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:515: "brody_must_not": caps["brody_must_not"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:516: "requires_human_operator": caps["requires_human_operator"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:517: "requires_kx108_decision": caps["requires_kx108_decision"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:518: "requires_memory_gate": caps["requires_memory_gate"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:520: "tree_policy": _TREE_POLICY,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:522: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:10: Boundary: readonly, KX108_ONLY.
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:23: "readonly": True,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:24: "memory_write": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:25: "graphiti_write": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:26: "neo4j_write": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:27: "emits_act": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:28: "emits_verdict": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:29: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:30: "x108_mutation": False,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:31: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:37: authority_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:40: memory_response_chain_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:42: automation_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:43: candidate_memory_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:44: operator_loop_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_runtime_context_adapter.py:45: tree_policy_snapshot: dict[str, Any] / None = None,
+
+## Interpretation target
+- Identify reusable active contract sources.
+- Identify missing native packet fields in /api/brody/chat.
+- Prepare Phase 11B without duplicating old contracts.
+
+## Boundary
+- Diagnostic only.
+- No patch.
+- No runtime mutation.
+- No kernel mutation.
+- No X108 mutation.
+- No memory write.
+- No Graphiti write.

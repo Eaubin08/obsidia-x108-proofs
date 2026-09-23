@@ -1,0 +1,598 @@
+{
+  "report_id": "OBSIDIA_F27_0_SHAZAM_COGNITIF_AUDIT_20260528_224620",
+  "phase": "F27.0",
+  "mode": "AUDIT_ONLY_NO_PATCH",
+  "commit": false,
+  "tag": false,
+  "freeze": false,
+  "head": "42140fc",
+  "tag_context": "BRODY_F23A6_SIGMA_BRODY_ORCHESTRATION_PALIER_20260528",
+  "scanned_file_count": 19,
+  "active_shazam_tree_records": 6,
+  "danger_count": 0,
+  "records": [
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/apps/obsidia_api/routes/periphery_ops.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "SigmaEvaluatePayload",
+        "ActionPayload",
+        "PartitionPayload",
+        "AgentRunPayload",
+        "AgentSpecPayload",
+        "LifecyclePayload",
+        "SequencePayload",
+        "WorkflowGuardPayload",
+        "FailureClassifyPayload",
+        "MemoryWorldPayload",
+        "ContextBuildPayload",
+        "ContextSanitizePayload",
+        "ContextValidatePayload",
+        "AVDRPayload",
+        "BalancePayload",
+        "RegimeStatePayload",
+        "PassFailPayload",
+        "CollectiveSummaryPayload",
+        "InterfaceStatePayload",
+        "InterfaceEventPayload",
+        "MCPPayload",
+        "BiasGatePayload",
+        "BiasTracePayload",
+        "SourceClassifyPayload",
+        "HashPayload",
+        "IngestDocumentPayload",
+        "OS3TicketPayload",
+        "ReplayComparePayload",
+        "WorldActionReadinessPayload",
+        "EducationScorePayload",
+        "AudienceProjectionPayload",
+        "FormatProjectionPayload",
+        "BrodyQueryPayload",
+        "BrodyLangPayload",
+        "DoubleBrainPayload",
+        "DiffusionMixPayload",
+        "GraphitiAdaptPayload",
+        "FeedbackCandidatePayload",
+        "BridgeCandidatePayload"
+      ],
+      "functions": [
+        "_make_action",
+        "_pkt"
+      ],
+      "token_hits": [
+        {
+          "line": 43,
+          "token": "memory_world",
+          "text": "from periphery.cognitive_trees.memory_world_mapper import map_memory_world"
+        },
+        {
+          "line": 43,
+          "token": "map_memory_world",
+          "text": "from periphery.cognitive_trees.memory_world_mapper import map_memory_world"
+        },
+        {
+          "line": 44,
+          "token": "ShazamCognitifResult",
+          "text": "from periphery.cognitive_trees.shazam_cognitif import ShazamCognitifResult"
+        },
+        {
+          "line": 45,
+          "token": "DominantTreeResult",
+          "text": "from periphery.cognitive_trees.dominant_trees import DominantTreeResult"
+        },
+        {
+          "line": 45,
+          "token": "dominant_trees",
+          "text": "from periphery.cognitive_trees.dominant_trees import DominantTreeResult"
+        },
+        {
+          "line": 116,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 118,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 176,
+          "token": "dominant_ids",
+          "text": "dominant_ids: list[int] = Field(default_factory=list)"
+        },
+        {
+          "line": 613,
+          "token": "memory_world",
+          "text": "async def periphery_memory_world_map(body: MemoryWorldPayload):"
+        },
+        {
+          "line": 614,
+          "token": "DominantTreeResult",
+          "text": "dominant = DominantTreeResult("
+        },
+        {
+          "line": 617,
+          "token": "dominant_ids",
+          "text": "dominant_ids=body.dominant_ids,"
+        },
+        {
+          "line": 619,
+          "token": "dominant_ids",
+          "text": "dominant_count=len(body.dominant_ids),"
+        },
+        {
+          "line": 621,
+          "token": "ShazamCognitifResult",
+          "text": "shazam = ShazamCognitifResult("
+        },
+        {
+          "line": 626,
+          "token": "memory_world",
+          "text": "ctx = map_memory_world(shazam)"
+        },
+        {
+          "line": 626,
+          "token": "map_memory_world",
+          "text": "ctx = map_memory_world(shazam)"
+        },
+        {
+          "line": 969,
+          "token": "KX108_ONLY",
+          "text": "Decision authority remains KX108_ONLY."
+        },
+        {
+          "line": 974,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": envelope,"
+        },
+        {
+          "line": 978,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 983,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 984,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 986,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/__init__.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/dominant_trees.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "DominantTreeResult"
+      ],
+      "functions": [
+        "find_dominant_trees",
+        "to_dict"
+      ],
+      "token_hits": [
+        {
+          "line": 15,
+          "token": "DominantTreeResult",
+          "text": "class DominantTreeResult:"
+        },
+        {
+          "line": 18,
+          "token": "dominant_ids",
+          "text": "dominant_ids: list[int]"
+        },
+        {
+          "line": 28,
+          "token": "dominant_ids",
+          "text": "\"dominant_ids\": self.dominant_ids,"
+        },
+        {
+          "line": 36,
+          "token": "dominant_trees",
+          "text": "def find_dominant_trees("
+        },
+        {
+          "line": 39,
+          "token": "DominantTreeResult",
+          "text": ") -> DominantTreeResult:"
+        },
+        {
+          "line": 40,
+          "token": "dominant_ids",
+          "text": "dominant_ids = [i for i, a in enumerate(vector.activations) if a >= theta]"
+        },
+        {
+          "line": 42,
+          "token": "dominant_ids",
+          "text": "for i in dominant_ids:"
+        },
+        {
+          "line": 46,
+          "token": "DominantTreeResult",
+          "text": "return DominantTreeResult("
+        },
+        {
+          "line": 49,
+          "token": "dominant_ids",
+          "text": "dominant_ids=dominant_ids,"
+        },
+        {
+          "line": 51,
+          "token": "dominant_ids",
+          "text": "dominant_count=len(dominant_ids),"
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/memory_world_mapper.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "MemoryWorldContext"
+      ],
+      "functions": [
+        "map_memory_world",
+        "to_dict"
+      ],
+      "token_hits": [
+        {
+          "line": 10,
+          "token": "ShazamCognitifResult",
+          "text": "from .shazam_cognitif import ShazamCognitifResult"
+        },
+        {
+          "line": 41,
+          "token": "ShazamCognitifResult",
+          "text": "def map_memory_world(shazam: ShazamCognitifResult) -> MemoryWorldContext:"
+        },
+        {
+          "line": 41,
+          "token": "memory_world",
+          "text": "def map_memory_world(shazam: ShazamCognitifResult) -> MemoryWorldContext:"
+        },
+        {
+          "line": 41,
+          "token": "map_memory_world",
+          "text": "def map_memory_world(shazam: ShazamCognitifResult) -> MemoryWorldContext:"
+        },
+        {
+          "line": 47,
+          "token": "dominant_ids",
+          "text": "for tid in shazam.dominant_result.dominant_ids:"
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/shazam_cognitif.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "ShazamCognitifResult"
+      ],
+      "functions": [
+        "shazam_cognitif",
+        "to_dict"
+      ],
+      "token_hits": [
+        {
+          "line": 11,
+          "token": "DominantTreeResult",
+          "text": "from .dominant_trees import find_dominant_trees, DominantTreeResult"
+        },
+        {
+          "line": 11,
+          "token": "dominant_trees",
+          "text": "from .dominant_trees import find_dominant_trees, DominantTreeResult"
+        },
+        {
+          "line": 24,
+          "token": "ShazamCognitifResult",
+          "text": "class ShazamCognitifResult:"
+        },
+        {
+          "line": 27,
+          "token": "DominantTreeResult",
+          "text": "dominant_result: DominantTreeResult"
+        },
+        {
+          "line": 36,
+          "token": "dominant_trees",
+          "text": "\"dominant_trees\": self.dominant_result.dominant_names,"
+        },
+        {
+          "line": 44,
+          "token": "ShazamCognitifResult",
+          "text": "def shazam_cognitif(vector: TreeActivationVector, theta: float = 0.15) -> ShazamCognitifResult:"
+        },
+        {
+          "line": 45,
+          "token": "dominant_trees",
+          "text": "dominant = find_dominant_trees(vector, theta=theta)"
+        },
+        {
+          "line": 46,
+          "token": "dominant_ids",
+          "text": "dominant_set = frozenset(dominant.dominant_ids)"
+        },
+        {
+          "line": 51,
+          "token": "ShazamCognitifResult",
+          "text": "return ShazamCognitifResult("
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/tree_activation_vector.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TreeActivationVector"
+      ],
+      "functions": [
+        "build_activation_vector",
+        "uniform_activation",
+        "__post_init__",
+        "to_dict"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/cognitive_trees/tree_registry.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TreeEntry"
+      ],
+      "functions": [
+        "get_all_trees",
+        "get_tree_by_id",
+        "get_trees_by_domain",
+        "to_dict"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/dominant_tree_filter.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "filter_dominant"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/no_tree_act.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "guard"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/04_ARBRES_34_TENSOR_MATRIX/tree_space.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TreeSpace34"
+      ],
+      "functions": [
+        "__init__",
+        "vector"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/dominant_tree_filter.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "filter_dominant"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/05_SHAZAM_COGNITIF/shazam_cognitif.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "shazam"
+      ],
+      "token_hits": [
+        {
+          "line": 55,
+          "token": "dominant_trees",
+          "text": "\"dominant_trees\": dominant,"
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/15_GUARDS_NON_DECISION/no_tree_act.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "guard"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/16_VISUALISATION_REVERSE_OS/top_5_tree_filter.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "filter_top5"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_tree_space_34.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TestTreeSpace34"
+      ],
+      "functions": [
+        "load_module",
+        "test_tree_space_34"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/shazam_cognitif.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "shazam"
+      ],
+      "token_hits": [
+        {
+          "line": 55,
+          "token": "dominant_trees",
+          "text": "\"dominant_trees\": dominant,"
+        }
+      ],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": true,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/test_tree_space_34.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TestTreeSpace34"
+      ],
+      "functions": [
+        "load_module",
+        "test_tree_space_34"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/top_5_tree_filter.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "filter_top5"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/tree_space.py",
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TreeSpace34"
+      ],
+      "functions": [
+        "__init__",
+        "vector"
+      ],
+      "token_hits": [],
+      "danger_hits": [],
+      "is_shazam_or_tree_related": false,
+      "danger_detected": false
+    }
+  ],
+  "danger_records": [],
+  "gaps": [
+    {
+      "id": "F27_G02",
+      "title": "No explicit tree_signal bridge detected.",
+      "target_phase": "F27.1",
+      "patch_now": false
+    }
+  ],
+  "boundary_expected": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "locked_decisions": [
+    "F27.0 is audit-only.",
+    "No runtime patch in F27.0.",
+    "Shazam/Cognitive Trees must remain context-signal only.",
+    "No tree module may emit ACT.",
+    "Decision authority remains KX108_ONLY."
+  ],
+  "next_recommended": "F27.1_TREE_SIGNAL_PACKET_AUDIT_OR_PATCH",
+  "status": "F27_0_SHAZAM_COGNITIF_AUDIT_DONE"
+}

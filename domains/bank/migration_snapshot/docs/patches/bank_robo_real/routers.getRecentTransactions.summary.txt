@@ -1,0 +1,11 @@
+Source router:    docs\sources\bank-robo-real\server\routers.ts
+Runtime router:   staging\runtime_candidates\bank_robo_real\server\routers.ts
+Patch file:       patches\bank_robo_real\routers.getRecentTransactions.patch
+Patch exit code:  1
+Source patched:   False
+Runtime patched:  True
+Upstream ref:     origin/main
+
+Interpretation:
+- patch exit code 1 = real delta exists
+- patch exit code 0 = still identical

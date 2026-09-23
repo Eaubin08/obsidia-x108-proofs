@@ -1,0 +1,178 @@
+{
+  "mission": "F22A3_DOCUMENT_SOURCE_TRACEABILITY_AUDIT",
+  "timestamp": "20260528_060000",
+  "mode": "READ_ONLY",
+  "status": "AUDIT_COMPLETE",
+
+  "docs_local_found": 15,
+  "docs_local_missing": 0,
+  "docs_local_path": "C:/Users/User/Desktop/Nouveau dossier",
+  "concepts_mapped": 67,
+  "runtime_connected_count": 13,
+  "found_under_other_name_count": 13,
+  "code_dormant_count": 12,
+  "doc_only_count": 12,
+  "code_stub_count": 7,
+  "missing_count": 10,
+  "best_reuse_candidate": "NONE_USABLE — readonly_context_guard.py is stub (return True)",
+  "patch_recommendation": "OPTION_C",
+
+  "concept_matrix": [
+    {"doc": "Doc01", "concept": "Kernel (Orchestrateur central)", "repo_path": "apps/obsidia_api/routes/x108.py + proofs/V18_3_1/", "best_function": "X108LyapunovPayload", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": "Kernel = KX108 decision engine, fully wired"},
+    {"doc": "Doc01", "concept": "Couche Sigma", "repo_path": "sigma/contracts.py + apps/obsidia_api/brody_gencoin_transverse_interface.py", "best_function": "build_sigma_packet()", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": "Sigma wired as sigma_packet in F2C pipeline"},
+    {"doc": "Doc01", "concept": "Reverse OS", "repo_path": "apps/obsidia_api/brody_existing_reverse_os_bridge.py", "best_function": "build_existing_reverse_os_projection()", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": "F18B wired reverse OS bridge"},
+    {"doc": "Doc01", "concept": "Subsumption Architecture", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "0 repo hits. Architectural principle only. Not a module."},
+    {"doc": "Doc01", "concept": "Constitution numérique (O1-O8)", "repo_path": "periphery/OBSIDIA_MMONDE.../02_CONSTITUTION_LOIS_OBSIDIENNES/ + periphery/test_constitution_o1_o8.py", "best_function": "test_constitution_o1_o8", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": "Constitution laws O1..O8 as tests only, not wired runtime"},
+    {"doc": "Doc01", "concept": "Cohérence temporelle Delta T", "repo_path": "apps/obsidia_api/routes/x108.py", "best_function": "delta_tau field in X108LyapunovPayload", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "INDIRECT", "notes": "Doc calls it Delta T, repo has delta_tau. Same concept."},
+    {"doc": "Doc01", "concept": "Agents d'Analyse / Surveillance / Gardiens", "repo_path": "periphery/gardiens_fond/ (aeg_guard.py, policy_scope_guard.py, readonly_context_guard.py)", "best_function": "guard()", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "readonly_context_guard.py exists but is stub 'return True'. NOT wired to runtime."},
+    {"doc": "Doc01", "concept": "Agents de Mémoire / Totems", "repo_path": "apps/obsidia_api/brody_cognitive_modules_adapter.py", "best_function": "MEMZUM (FULLY_BRANCHED)", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Totems → MEMZUM. Covered by project_memory, session_memory, memory_response_chain, Graphiti."},
+    {"doc": "Doc01", "concept": "Agents d'Action / Spectres", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "Spectres = action agents. KX108_ONLY forbids action agents in this repo."},
+    {"doc": "Doc01", "concept": "Moyenne Harmonique", "repo_path": "sigma/contracts.py", "best_function": "readiness_scope='harmonic_integrity_governance'", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "harmonic_integrity_governance is a label, not a compute function. Full vote protocol absent."},
+    {"doc": "Doc01", "concept": "Veto Formel Lean 4", "repo_path": "sigma/contracts.py + proofs/", "best_function": "AgentVote.vote field (HOLD/ALLOW/BLOCK)", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "Vote structure exists but calculate_immutable_vote and harmonic mean threshold not wired."},
+
+    {"doc": "Doc02", "concept": "CLAVAGE (watchdog syntaxique)", "repo_path": "periphery/.../01_SOURCES/extracted_text_all.md (doc stub only)", "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "Conceptual middleware. Python stub in doc (agent_clavage function). No standalone runtime module. F22A2 confirmed."},
+    {"doc": "Doc02", "concept": "Verbatia", "repo_path": "apps/obsidia_api/brody_true_voice_adapter.py + brody_cognitive_modules_adapter.py", "best_function": "build_true_brody_answer() — resolution=FULLY_BRANCHED", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": "F22A2 correction: RUNTIME-MAPPED. Do not touch for F22B."},
+    {"doc": "Doc02", "concept": "Verba (unité verbale)", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "Sub-unit of Clavage pipeline. No code."},
+    {"doc": "Doc02", "concept": "Entie (entité de sens)", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "Sub-unit of Clavage pipeline. No code."},
+    {"doc": "Doc02", "concept": "LU-MH", "repo_path": "periphery/.../01_SOURCES/extracted_text_all.md (doc ref)", "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "Formal lang standard. No standalone module. F22A2 confirmed."},
+    {"doc": "Doc02", "concept": "Benchmark d'alignement", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "No runtime implementation."},
+    {"doc": "Doc02", "concept": "Divergence intention/sortie", "repo_path": "apps/obsidia_api/brody_anti_mismatch_signal.py", "best_function": "build_anti_mismatch_signal()", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "INDIRECT", "notes": "Doc 'divergence intention/sortie' → repo anti-mismatch signal. Same concept."},
+    {"doc": "Doc02", "concept": "Totem de Pure Exécution", "repo_path": "apps/obsidia_api/brody_cognitive_modules_adapter.py", "best_function": "MEMZUM → FULLY_BRANCHED", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Totem = MEMZUM in cognitive modules."},
+
+    {"doc": "Doc03", "concept": "LTO-16D (Langage Total Obsidien)", "repo_path": "docs/REPO_BOUNDARY.md line 56 + extracted_text_all.md", "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "REPO_BOUNDARY.md line 85 explicitly excludes LTO-16D ('Hors périmètre public'). Referenced in extracted_text_all.md only."},
+    {"doc": "Doc03", "concept": "D1 Intention / D16 Action (16 dimensions)", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "D1→D16 confirms 'texte ≠ décision' principle baked into KX108_ONLY boundary. No separate module."},
+    {"doc": "Doc03", "concept": "Texte ≠ décision (rupture intention/action)", "repo_path": "apps/obsidia_api/routes/brody.py BOUNDARY: allowed_to_decide=False", "best_function": "BOUNDARY dict — advisory_only=True, allowed_to_decide=False", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "DIRECT", "notes": "LTO-16D 'texte ≠ décision' is the exact doctrinal basis for why readonly_intent = READ not WRITE. Validates OPTION C guard."},
+
+    {"doc": "Doc04", "concept": "LUX.CON (Protocole)", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "0 repo hits. No module. High-level protocol spec only."},
+    {"doc": "Doc04", "concept": "AEG (Auto-Ethical Gradient)", "repo_path": "periphery/gardiens_fond/aeg_guard.py + periphery/OBSIDIA_MMONDE.../07_BDF_DOUBLE_CERVEAU/aeg_guard.py", "best_function": "guard(value, threshold=0.5) — stub", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": "Two copies of aeg_guard.py, both 1-line stubs 'return value >= threshold'. Not wired to runtime."},
+    {"doc": "Doc04", "concept": "O1 Non-Action Légitime / O8 Séparation Cognition/Action", "repo_path": "periphery/test_constitution_o1_o8.py + periphery/OBSIDIA_MMONDE.../17_TESTS/test_constitution_o1_o8.py", "best_function": "test_o1_non_action / test_o8_separation (tests only)", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "Tests exist but O1/O8 laws not enforced in brody runtime pipeline."},
+    {"doc": "Doc04", "concept": "LLM propose / Obsidia dispose", "repo_path": "apps/obsidia_api/routes/brody.py + all adapters", "best_function": "advisory_only=True + decision_authority=KX108_ONLY", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Core KX108_ONLY principle. Fully wired."},
+    {"doc": "Doc04", "concept": "Friction symbolique", "repo_path": "periphery/OBSIDIA_MMONDE.../12_FRICTION_AVDR_CONTINUUM/friction_symbolique.py", "best_function": "friction(val_logique, val_diffusif)", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": "Real Python function (1-line stub). Not connected to runtime."},
+    {"doc": "Doc04", "concept": "Feedback AVDR", "repo_path": "periphery/gencoin_sandbox/avdr_phase_mapper.py", "best_function": "map_avdr_phase()", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "AVDR=EXACT_FOUND in cognitive_modules_adapter.py (active=False). Dormant."},
+
+    {"doc": "Doc05", "concept": "Agent Clavage (JAX-based)", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "JAX/XLA not present in repo Python runtime. Doc describes full implementation but no code exists."},
+    {"doc": "Doc05", "concept": "cosine_similarity / Agent Vecteur", "repo_path": "periphery/cosine_similarity.py + periphery/OBSIDIA_MMONDE.../05_SHAZAM_COGNITIF/cosine_similarity.py", "best_function": "cosine_similarity(a, b) — pure math function", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "Real implementation (math only, no ML). Not connected to Clavage runtime."},
+    {"doc": "Doc05", "concept": "strict_parser / CognitiveDeviationError / seuil 0.15", "repo_path": "periphery/OBSIDIA_MMONDE.../12_FRICTION_AVDR_CONTINUUM/check_incoherence.py", "best_function": "check(value, threshold=0.15)", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": "check_incoherence.py has threshold=0.15 matching doc spec. Stub, not runtime."},
+    {"doc": "Doc05", "concept": "LU-MH schema validation", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "No JSON schema validator for LU-MH in runtime."},
+
+    {"doc": "Doc06", "concept": "ERA formula (M+R+A/F)", "repo_path": "apps/obsidia_api/brody_cognitive_modules_adapter.py", "best_function": "ERA: resolution=DESIGN_SPEC_NOT_IMPLEMENTED", "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "Explicitly marked DESIGN_SPEC_NOT_IMPLEMENTED in cognitive_modules_adapter. By design."},
+    {"doc": "Doc06", "concept": "Pipeline cognitif", "repo_path": "apps/obsidia_api/brody_real_response_pipeline.py", "best_function": "run_brody_real_response_pipeline()", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "INDIRECT", "notes": "Full pipeline wired. The bug is in this pipeline (false classifications before domain raccord)."},
+    {"doc": "Doc06", "concept": "Métriques structurelles", "repo_path": "apps/obsidia_api/brody_gencoin_transverse_interface.py + sigma_packet", "best_function": "build_sigma_packet() + gencoin_shadow_value", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+
+    {"doc": "Doc07", "concept": "Reverse OS / Narration Jarvis", "repo_path": "apps/obsidia_api/brody_existing_reverse_os_bridge.py", "best_function": "build_existing_reverse_os_projection()", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "F18B wired. No 'Jarvis' branding but same concept (code → human narrative)."},
+    {"doc": "Doc07", "concept": "reason_codes", "repo_path": "apps/obsidia_api/brody_existing_reverse_os_bridge.py", "best_function": "reason_code = RC_X108_REQUIRED / RC_CONTEXT_ONLY", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc07", "concept": "Dictionnaire Sémantique", "repo_path": "apps/obsidia_api/brody_semantic_query_router.py", "best_function": "build_semantic_query()", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "INDIRECT", "notes": "Semantic routing = runtime Dictionnaire Sémantique."},
+    {"doc": "Doc07", "concept": "Merkle Proof lisible", "repo_path": "proofs/ + sigma/", "best_function": "proofs/V18_3_1/ Lean proofs + Merkle seal", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc07", "concept": "Spectres (agents d'action)", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "KX108_ONLY prohibits action agents. Spectres = out of scope."},
+    {"doc": "Doc07", "concept": "Totems (agents de mémoire)", "repo_path": "apps/obsidia_api/brody_cognitive_modules_adapter.py", "best_function": "MEMZUM → FULLY_BRANCHED", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+
+    {"doc": "Doc08", "concept": "Temps comme opérateur éliminatoire", "repo_path": "apps/obsidia_api/routes/x108.py", "best_function": "delta_tau in X108LyapunovPayload", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "INDIRECT", "notes": "delta_tau is the time pressure metric implementing this law."},
+    {"doc": "Doc08", "concept": "Sélection par non-effondrement / cohérence", "repo_path": "sigma/contracts.py", "best_function": "integrity scoring in KernelReadinessProof", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "INDIRECT", "notes": "Sigma integrity contracts implement this law conceptually but not wired to Brody runtime."},
+    {"doc": "Doc08", "concept": "IA opérant dans espace déjà sûr / cognition ne corrige pas structure", "repo_path": "apps/obsidia_api/routes/brody.py BOUNDARY", "best_function": "KX108_ONLY + advisory_only=True", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "DIRECT", "notes": "The law 'IA dans espace déjà sûr' = KX108_ONLY. The readonly classification bug VIOLATES this (triggers write boundary on read intent). DIRECT relevance to F22B."},
+
+    {"doc": "Doc09", "concept": "Boucle active / métriques de justesse", "repo_path": "apps/obsidia_api/brody_automation_orchestrator.py", "best_function": "run_brody_automation_layer()", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "Automation layer exists but active=False (brody_cognitive_modules: 'FUTURE_MODULES')."},
+    {"doc": "Doc09", "concept": "Sandbox cognitive", "repo_path": "periphery/gencoin_sandbox/", "best_function": "avdr_phase_mapper.py, gencoin_sandbox", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": false, "f22_relevance": "NO", "notes": "gencoin_sandbox is the runtime sandbox. Dormant."},
+
+    {"doc": "Doc10", "concept": "Shazam Cognitif", "repo_path": "periphery/shazam_cognitif.py + periphery/cognitive_trees/shazam_cognitif.py", "best_function": "shazam(payload, threshold)", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "Real code but blocked: 'from spectral_hash import extract_features' — dependency unavailable. F22A confirmed."},
+    {"doc": "Doc10", "concept": "Zone Latente / Continuum / Nœud Continuum", "repo_path": "periphery/OBSIDIA_MMONDE.../03_MEMOIRE_MONDE_COSMOS_REFLEX/continuum_node.py", "best_function": "NodeContinuum dataclass", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": "F22A2 correction: CODE-CONFIRMED-STUB. Real dataclass. Not wired to runtime. No F22B action."},
+    {"doc": "Doc10", "concept": "RAM intelligente", "repo_path": "apps/obsidia_api/brody_candidate_memory_adapter.py + brody_session_memory_adapter.py", "best_function": "build_candidate_memory_snapshot() + session_memory_snapshot", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc10", "concept": "Zone Réflexe", "repo_path": "periphery/OBSIDIA_MMONDE.../03_MEMOIRE_MONDE_COSMOS_REFLEX/reflex_reducer.py", "best_function": "ReflexReducer (stub)", "status": "CODE_STUB", "runtime_connected": false, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc10", "concept": "Emergency Gate", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "LATER", "notes": "0 repo hits. Emergency Gate would be a safety circuit-breaker. Not needed for F22B."},
+    {"doc": "Doc10", "concept": "Invariant dynamique", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": ""},
+
+    {"doc": "Doc11", "concept": "Apprentissage organique / adaptation utilisateur", "repo_path": "periphery/agents/feedback_memory_agent.py", "best_function": "FeedbackMemoryAgent", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "feedback_memory_agent exists but not active in runtime."},
+    {"doc": "Doc11", "concept": "Auto-évolution contrôlée", "repo_path": "periphery/agents/gencoin_value_agent.py", "best_function": "GencoinValueAgent", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": ""},
+
+    {"doc": "Doc12", "concept": "Sceau Cognitif Fractal / SCF_ID / TWIN_CALL / CLE_REACTIVATION", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "0 runtime hits for SCF_ID, TWIN_CALL, CLE_REACTIVATION. Concept only. No code."},
+    {"doc": "Doc12", "concept": "Traçabilité cognitive (watermark audit)", "repo_path": "audit/world_action_bus.jsonl + _local_audits/", "best_function": "audit trail JSONL", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Cognitive traceability implemented as audit JSONL trail. Not cryptographic watermark but covers audit surface."},
+
+    {"doc": "Doc13", "concept": "Harmonisation universelle / accordeur fractal", "repo_path": null, "best_function": null, "status": "DOC_ONLY", "runtime_connected": false, "f22_relevance": "NO", "notes": "Philosophical/conceptual. No runtime code."},
+    {"doc": "Doc13", "concept": "Balance Exponentielle", "repo_path": "apps/obsidia_api/brody_domain_raccord_adapter.py:327", "best_function": "_has_any(low, ('balance exponentielle',)) → domain trigger", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Balance Exponentielle detected as keyword trigger in domain raccord (routes to ENERGY_SIGMA domain). Not a compute formula."},
+    {"doc": "Doc13", "concept": "Métriques harmoniques", "repo_path": "sigma/contracts.py", "best_function": "readiness_scope='harmonic_integrity_governance'", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": ""},
+
+    {"doc": "Doc14", "concept": "Audit Board", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "Roadmap milestone 0. Not a runtime module."},
+    {"doc": "Doc14", "concept": "Trinity Stable", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "0 hits. Possibly a deployment milestone name. Not a module."},
+    {"doc": "Doc14", "concept": "Merkle seal / 8007 preuves", "repo_path": "proofs/ + sigma/", "best_function": "proofs/V18_3_1/ Lean proofs", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc14", "concept": "Sigma bridge central", "repo_path": "sigma/ + apps/obsidia_api/brody_gencoin_transverse_interface.py", "best_function": "build_sigma_packet()", "status": "CODE_RUNTIME_CONNECTED", "runtime_connected": true, "f22_relevance": "NO", "notes": ""},
+    {"doc": "Doc14", "concept": "Dashboard Jarvis / cockpit opérateur", "repo_path": "apps/obsidia_api/routes/runtime_freeze.py + brody_operator_view_packet.py", "best_function": "GET /api/runtime/freeze-dashboard (F21B)", "status": "FOUND_UNDER_OTHER_NAME", "runtime_connected": true, "f22_relevance": "NO", "notes": "Roadmap 'dashboard Jarvis' = F21B Runtime Freeze Dashboard. Fully delivered."},
+
+    {"doc": "Doc15", "concept": "calculate_immutable_vote (moyenne harmonique)", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": "No runtime implementation. sigma/contracts.py has AgentVote.vote but not the harmonic mean calculation."},
+    {"doc": "Doc15", "concept": "Veto (threshold 0.4 / VETO_TRIGGERED_BELOW)", "repo_path": "sigma/contracts.py", "best_function": "AgentVote.vote = HOLD/ALLOW/BLOCK", "status": "CODE_DORMANT", "runtime_connected": false, "f22_relevance": "NO", "notes": "Vote structure exists. Harmonic thresholds (0.4, 0.6) and REJECTED_LOW_COHERENCE are doc-only."},
+    {"doc": "Doc15", "concept": "CRITICAL_FAILURE_ZERO_SCORE / REJECTED_LOW_COHERENCE", "repo_path": null, "best_function": null, "status": "MISSING", "runtime_connected": false, "f22_relevance": "NO", "notes": ""}
+  ],
+
+  "f22b_impact": {
+    "q1_existing_module_fixes_read_write_bug": {
+      "answer": "PARTIAL",
+      "detail": "periphery/gardiens_fond/readonly_context_guard.py exists with the exact right name but is a stub 'return True'. It CANNOT fix the bug as-is.",
+      "conclusion": "A new module (brody_readonly_intent_guard.py) is needed. It cannot reuse readonly_context_guard.py directly."
+    },
+    "q2_clavage_needed_now": {
+      "answer": "NO",
+      "detail": "Clavage requires JAX/XLA, cosine similarity on embedding vectors, LU-MH schema validation, and a full ML pipeline. The bug is a 3-line regex fix.",
+      "conclusion": "Clavage is LATER (post-F22B). Not needed for intent classification fix."
+    },
+    "q3_verbatia_must_be_modified": {
+      "answer": "NO",
+      "detail": "Verbatia = FULLY_BRANCHED = brody_true_voice_adapter.py. F22A2 confirmed it is runtime-mapped and active. The bug is upstream of Verbatia (in domain raccord + risk_flags, before True Voice runs).",
+      "conclusion": "Do not touch Verbatia/brody_true_voice_adapter.py."
+    },
+    "q4_continuum_must_be_branched": {
+      "answer": "NO",
+      "detail": "Continuum (NodeContinuum dataclass) covers session continuity. brody_cognitive_modules_adapter.py already shows Continuum=COVERED_BY_EXISTING_MODULE via session_memory_snapshot + temporal_context_snapshot.",
+      "conclusion": "Continuum is already covered functionally. No branching needed for F22B."
+    },
+    "q5_harmonic_mean_needed_for_f22b": {
+      "answer": "NO",
+      "detail": "Harmonic vote (Doc15) is for multi-agent consensus on decision verdicts. F22B is about intent classification (READ vs WRITE). These are orthogonal concerns.",
+      "conclusion": "Harmonic mean is LATER. Not relevant to F22B intent guard."
+    },
+    "q6_lto16d_imposes_rule": {
+      "answer": "INDIRECT",
+      "detail": "LTO-16D D1 (Intention) → D16 (Action) 'texte ≠ décision' validates the F22B guard design. LTO-16D is explicitly excluded from this repo (REPO_BOUNDARY.md line 85).",
+      "conclusion": "LTO-16D provides doctrinal justification for Option C. No code change from it."
+    },
+    "q7_guard_minimal_best_solution": {
+      "answer": "YES — OPTION C",
+      "detail": "No existing module provides the intent disambiguation logic with word-boundary matching and RUNTIME_STATE_READONLY category. readonly_context_guard.py is a stub.",
+      "conclusion": "OPTION C: guard minimal brody_readonly_intent_guard.py + fix 3 false positive sources."
+    }
+  },
+
+  "recommendation": {
+    "option": "OPTION_C",
+    "title": "Guard minimal RUNTIME_STATE_READONLY + correctifs faux positifs",
+    "components": [
+      "NEW: apps/obsidia_api/brody_readonly_intent_guard.py — detect_readonly_runtime_state_intent()",
+      "FIX: brody_domain_raccord_adapter.py::has_memory_write_request() — word-boundary for 'ecris'",
+      "FIX: brody_v1_4_12a_final_answer_adapter.py::_QUERY_OVERRIDES — add FR terms incl. 'decris'",
+      "FIX: routes/os_trad_ir_reverse.py::_risk_flags() — word-boundary for 'act'",
+      "WIRE: routes/brody.py — expose readonly_intent_guard_packet"
+    ],
+    "why_not_a": "OPTION A (faux positifs seuls) insufficient — no RUNTIME_STATE_READONLY category means domain raccord still routes incorrectly",
+    "why_not_b": "OPTION B (reuse existing module) blocked — readonly_context_guard.py is 'return True' stub",
+    "why_not_d": "OPTION D (refactor complet) explicitly forbidden and unnecessary",
+    "doctrinal_basis": [
+      "LTO-16D D1/D16: 'texte ≠ décision' — a description request is pure cognitive intent (D1), never an action (D16)",
+      "Doc08: 'IA opérant dans espace déjà sûr' — triggering MEMORY_WRITE_CANON_FREEZE on a readonly intent violates this law",
+      "KX108_ONLY boundary: allowed_to_decide=False, advisory_only=True — enforced at BOUNDARY layer but not at intent classification"
+    ],
+    "clavage_deferred": "Clavage full implementation requires JAX/XLA/ML pipeline. Not needed for substring false positive fix.",
+    "verbatia_no_touch": "Verbatia = FULLY_BRANCHED. Touch would break existing True Voice pipeline.",
+    "continuum_no_touch": "Continuum already covered by session_memory + temporal_context.",
+    "harmonic_vote_deferred": "Harmonic vote protocol (Doc15) is for consensus scoring, orthogonal to intent classification."
+  },
+
+  "boundary": {
+    "KX108_ONLY": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+
+  "next": "STOP — WAITING_FOR_VALIDATION. No patch. No commit."
+}

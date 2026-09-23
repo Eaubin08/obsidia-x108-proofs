@@ -1,0 +1,280 @@
+OBSIDIA F18A2 ZIP + LOCAL SOURCE AUDIT
+timestamp=20260528_004733
+mode=READ_ONLY
+
+ZIPS_FOUND:
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FINAL.zip
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FINAL_LIGHT_PATCH.zip
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE.zip
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_P0P1_FIXED.zip
+C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+C:\Users\User\Downloads\OBSIDIA_V4_REGROUPEMENTS_COMPLETS.zip
+C:\Users\User\Downloads\OBSIDIA_V4_REGROUPEMENTS_V43_SOUS_DOSSIERS.zip
+
+CLASSIFICATION_COUNTS:
+CONTEXT_PACKET_TYPE_CANDIDATE=97
+CURRENT_RUNTIME_ENVELOPE_CANDIDATE=22
+DEMO_PIPELINE_CANDIDATE=23
+IR_TYPE_OR_STUB_CANDIDATE=20
+RELATED_SOURCE=3243
+REVERSE_OS_RUNTIME_CANDIDATE=45
+TEST_NON_DECISION_CANDIDATE=2
+
+TOP_CANDIDATES:
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\periphery\reverse_os.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B
+  L1: # Reverse OS / SSR minimal, non décisionnel
+  L22:         "non_decision": True
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B\periphery\test_reverse_os_non_decision.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-x108-proofs_REMOTE_A5F21C6B
+  L13: class TestReverseOS(unittest.TestCase):
+  L14:     def test_reverse_os(self):
+  L15:         mod = load_module("reverse_mod", "06_REVERSE_OS_SSR_JARVIS/reverse_os.py")
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\bridge\zip2_reverse_os_real_adapter.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L9: ZIP2_ROOT = LAB_ROOT / "OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE" / "OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1"
+  L10: REVERSE_DIR = ZIP2_ROOT / "06_REVERSE_OS_SSR_JARVIS"
+  L61:         "agent_name": "ZIP2_REVERSE_OS_SSR_JARVIS",
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\reports\RAPPORT_BRANCHEMENT_ZIP2_34_TREES_IR_SHAZAM_TO_ZIP1_X108.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L21: -> ZIP2/15_GUARDS_NON_DECISION real guards
+  L25: -> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection
+  L26: -> ContextPacket enriched
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\reports\RAPPORT_BRANCHEMENT_ZIP2_DEEP_OBSIDIA_IR_TO_ZIP1_X108.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L21: -> ZIP2/15_GUARDS_NON_DECISION real guards
+  L23: -> ZIP2/06_REVERSE_OS_SSR_JARVIS real projection
+  L24: -> ContextPacket enriched
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\reports\RAPPORT_BRANCHEMENT_ZIP2_REVERSE_OS_TO_ZIP1_X108.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L1: # RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY
+  L6: NAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1
+  L21: -> ZIP2/15_GUARDS_NON_DECISION real guards
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\reports\RAPPORT_BRANCHEMENT_ZIP2_REVERSE_OS_TO_ZIP1_X108_REPAIR.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L1: # RAPPORT BRANCHEMENT — ZIP2 REVERSE OS -> ZIP1 X108 REAL READONLY — REPAIR
+  L6: NAME=ZIP2_REVERSE_OS_TO_ZIP1_X108_REAL_READONLY_V1_REPAIR
+  L29: -> ZIP2/15_GUARDS_NON_DECISION real guards
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\_world_sources\PROJECT_MEMORY_CLEAN_SOURCE_20260512_210057\260E7CE19585_AUDIT_REVERSE_OS.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate
+  L2: # Audit Reverse OS / SSR
+  L14: - `06_REVERSE_OS_SSR_JARVIS/reverse_os.py`
+  L15: - `06_REVERSE_OS_SSR_JARVIS/sample_complete_decision_flow.json`
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\active_cognitive_reduction.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\complete_decision_flow.schema.json
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\jarvis_projection.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\README.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+  L1: # Reverse OS / SSR
+  L3: Le Reverse OS lit le flux de décision complet et le projette sans décider.
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\reverse_os.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+  L1: # Reverse OS / SSR minimal, non décisionnel
+  L22:         "non_decision": True
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\sample_complete_decision_flow.json
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\sample_reverse_output.json
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\semantics.json
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\semantic_mapper.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\06_REVERSE_OS_SSR_JARVIS\SSR.schema.json
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+  L3:   "title": "SSR",
+  L5:   "description": "Schema placeholder for SSR.",
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\17_TESTS\test_reverse_os_non_decision.py
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+  L13: class TestReverseOS(unittest.TestCase):
+  L14:     def test_reverse_os(self):
+  L15:         mod = load_module("reverse_mod", "06_REVERSE_OS_SSR_JARVIS/reverse_os.py")
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=directory
+file=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1\18_AUDIT\AUDIT_REVERSE_OS.md
+origin=C:\Users\User\Desktop\obsidia-engine-proof-core\obsidia-engine-candidate\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_FREEZE_CANDIDATE
+  L2: # Audit Reverse OS / SSR
+  L14: - `06_REVERSE_OS_SSR_JARVIS/reverse_os.py`
+  L15: - `06_REVERSE_OS_SSR_JARVIS/sample_complete_decision_flow.json`
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/sample_reverse_output.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/README.md
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+  L1: # Reverse OS / SSR
+  L3: Le Reverse OS lit le flux de décision complet et le projette sans décider.
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/SSR.schema.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+  L3:   "title": "SSR",
+  L5:   "description": "Schema placeholder for SSR.",
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/semantics.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/reverse_os.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+  L2: # Reverse OS main stub
+  L8:     return {"text": "projection", "non_decision": True}
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/active_cognitive_reduction.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/complete_decision_flow.schema.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/06_REVERSE_OS_SSR_JARVIS/sample_complete_decision_flow.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/17_TESTS/test_reverse_os_non_decision.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+  L3: from OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.06_REVERSE_OS_SSR_JARVIS.reverse_os import project
+  L5: class TestReverseOS(unittest.TestCase):
+  L6:     def test_non_decision(self):
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1/00_INDEX/MANIFEST_SHA256.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1.zip
+  L14:   "18_AUDIT/AUDIT_NON_DECISION.md": "60e1a706a6582bdef9534df5e1fbdf21c833ed53aa504df10a56db73417873b0",
+  L22:   "18_AUDIT/NON_DECISION_VERDICT.md": "9c5c53f54048f12353a7500a8d18773387cdf5d5be2e5b00452c9d813348fc73",
+  L24:   "18_AUDIT/AUDIT_REVERSE_OS.md": "901614028a40798ce27ae95ece6c3230b246217ad4df2c389584a2c88790b83d",
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/semantics.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/reverse_os.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+  L2: # Reverse OS main stub
+  L8:     return {"text": "projection", "non_decision": True}
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/README.md
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+  L1: # Reverse OS / SSR
+  L3: Le Reverse OS lit le flux de décision complet et le projette sans décider.
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/complete_decision_flow.schema.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/semantic_mapper.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/sample_complete_decision_flow.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/jarvis_projection.py
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+classification=REVERSE_OS_RUNTIME_CANDIDATE
+origin_type=zip
+file=06_REVERSE_OS_SSR_JARVIS/sample_reverse_output.json
+origin=C:\Users\User\Downloads\OBSIDIA_MMONDE_REVERSE_OS_34ARBRES_AGENTS_P2PLUS_V1_PATCHED.zip
+
+DECISION_HINT:
+Do not create F18B adapters from zero.
+Reuse/copy/adapt existing Reverse OS / IR / ContextPacket modules if present.
+V4 P14 can feed OS Trad canon, but MMONDE zip has the runtime Reverse OS candidates.

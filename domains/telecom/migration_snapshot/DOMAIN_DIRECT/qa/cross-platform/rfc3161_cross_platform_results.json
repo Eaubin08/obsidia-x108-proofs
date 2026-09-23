@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-04-25T10:43:18.308683",
+  "rfc3161_local": {
+    "openssl_available": true,
+    "openssl_version": "OpenSSL 4.0.0 14 Apr 2026 (Library: OpenSSL 4.0.0 14 Apr 2026)",
+    "ts_command": true
+  },
+  "rfc3161_network": {
+    "digicert": {
+      "name": "DigiCert",
+      "available": true,
+      "http_code_or_error": "404",
+      "probe_method": "HEAD"
+    },
+    "sectigo": {
+      "name": "Sectigo",
+      "available": true,
+      "http_code_or_error": "404",
+      "probe_method": "HEAD"
+    },
+    "globalsign": {
+      "name": "GlobalSign",
+      "available": true,
+      "http_code_or_error": "200",
+      "probe_method": "GET"
+    },
+    "freetsa": {
+      "name": "FreeTSA",
+      "available": true,
+      "http_code_or_error": "403",
+      "probe_method": "HEAD"
+    },
+    "_count_available": 4
+  },
+  "tlc": {
+    "jar_found": true,
+    "jar_path": "C:\\Users\\User\\tla2tools.jar",
+    "available": true
+  },
+  "sigma": {
+    "sigma_dir_exists": true,
+    "run_pipeline.py": true,
+    "sigma_monitor.py": true,
+    "sigma_config.json": true,
+    "contracts.py": true,
+    "run_pipeline_exitcode": 0,
+    "run_pipeline_smoke": true,
+    "sigma_monitor_exitcode": 0,
+    "sigma_monitor_smoke": true
+  },
+  "summary": {
+    "rfc3161_local": "PASS",
+    "rfc3161_network": "4/4 TSA joignables",
+    "tlc_via_jar": "PASS",
+    "sigma_public": "PASS",
+    "scope": "P1 PUBLIC - no global production-ready claim"
+  }
+}

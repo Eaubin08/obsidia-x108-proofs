@@ -1,0 +1,11 @@
+{
+  "tree_id": "22",
+  "nodes": [
+    {
+      "id": "T22_N01",
+      "label": "Transformation",
+      "status": "NEEDS_HUMAN_VALIDATION"
+    }
+  ],
+  "non_decision": true
+}

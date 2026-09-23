@@ -1,0 +1,798 @@
+{
+  "report_id": "OBSIDIA_F23A5_1_AGENTS_VALIDATION_20260528_215332",
+  "phase": "F23A5.1",
+  "mode": "VALIDATION_ONLY_NO_PATCH",
+  "commit": false,
+  "tag": false,
+  "freeze": false,
+  "head": "4c7f531",
+  "tag_context": "BRODY_F23A4_SIGMA_RUNTIME_BRIDGE_PALIER_20260528",
+  "source_audit": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/docs/runtime/OBSIDIA_F23A5_0_AGENTS_BRANCH_AUDIT_20260528_215222.json",
+  "source_audit_scanned": 115,
+  "source_audit_high_risk": 1,
+  "source_audit_no_boundary": 102,
+  "high_risk_validation": [
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/neo4j_brody_guide_bridge_readonly/brody_neo4j_guide_bridge_readonly_v1.py",
+      "name_declares_readonly": true,
+      "has_write_transaction": false,
+      "has_read_transaction": false,
+      "danger_hits": [
+        {
+          "line": 115,
+          "token": "MERGE",
+          "text": "MERGE (d:BrodyMemoryDoc {id: doc.id})"
+        },
+        {
+          "line": 116,
+          "token": "SET",
+          "text": "SET d.title = doc.title,"
+        },
+        {
+          "line": 126,
+          "token": "MERGE",
+          "text": "MERGE (t:BrodyMemoryTag {name: tag})"
+        },
+        {
+          "line": 127,
+          "token": "MERGE",
+          "text": "MERGE (d)-[:HAS_TAG]->(t)"
+        },
+        {
+          "line": 137,
+          "token": "CREATE",
+          "text": "session.run(\"CREATE CONSTRAINT brody_memory_doc_id IF NOT EXISTS FOR (d:BrodyMemoryDoc) REQUIRE d.id IS UNIQUE\")"
+        },
+        {
+          "line": 138,
+          "token": "CREATE",
+          "text": "session.run(\"CREATE CONSTRAINT brody_memory_tag_name IF NOT EXISTS FOR (t:BrodyMemoryTag) REQUIRE t.name IS UNIQUE\")"
+        }
+      ],
+      "risky_lines": [
+        {
+          "line": 115,
+          "token": "MERGE",
+          "text": "MERGE (d:BrodyMemoryDoc {id: doc.id})"
+        },
+        {
+          "line": 116,
+          "token": "SET",
+          "text": "SET d.title = doc.title,"
+        },
+        {
+          "line": 126,
+          "token": "MERGE",
+          "text": "MERGE (t:BrodyMemoryTag {name: tag})"
+        },
+        {
+          "line": 127,
+          "token": "MERGE",
+          "text": "MERGE (d)-[:HAS_TAG]->(t)"
+        }
+      ],
+      "classification": "REVIEW_REQUIRED",
+      "confirmed_violation": false
+    }
+  ],
+  "confirmed_violation_count": 0,
+  "false_positive_count": 0,
+  "no_boundary_debt_count": 102,
+  "no_boundary_policy": "AUDIT_DEBT_NOT_RUNTIME_VIOLATION",
+  "no_boundary_sample": [
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agent_contracts.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [
+        "AgentLayer",
+        "NonSovereignAgentSpec",
+        "AgentResult"
+      ],
+      "functions": [
+        "run_agent_safely",
+        "assert_safe",
+        "assert_non_sovereign"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agent_registry.py",
+      "role": "REGISTRY",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "list_agents",
+        "run_registered_agent"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/__init__.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/action_sequence_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "_run",
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/brody_memory_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/data_purity_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/eml_symbolic_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/energy_thermo_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/gencoin_value_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "compute",
+        "_run",
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/modules_a1_a24/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/ocs_generation_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/operational_constance_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/os3_proof_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "build",
+        "_run",
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/permission_economic_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/provenance_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/timeverse_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/v4_roles/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/v4_roles/CANONIQUES/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/agents/world_action_agent.py",
+      "role": "AGENT",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [
+        "_run",
+        "run"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/blockchain/bridge_risk_gate.py",
+      "role": "BRIDGE",
+      "parse_ok": true,
+      "classes": [
+        "BridgeRiskDecision"
+      ],
+      "functions": [
+        "evaluate_bridge_risk",
+        "to_dict"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_bridge.py",
+      "role": "BRIDGE",
+      "parse_ok": true,
+      "classes": [
+        "BrodyBridge"
+      ],
+      "functions": [
+        "get_bridge",
+        "__init__",
+        "stats",
+        "handle_trad_context",
+        "attach_to_bus"
+      ],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_agent_readonly_session_test_packet/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_authorization_packet_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_authorized_runtime_precheck_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_build_epoch_open_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_candidate_components_inventory_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_candidate_drift_guard_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_contract_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_disabled_runtime_skeleton_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_dry_run_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_external_access_freeze_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_live_drift_guard_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_provider_policy_matrix_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_provider_registry_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_readiness_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_runtime_activation_gate_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_runtime_authorization_ledger_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_bridge_runtime_stub_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_readonly/api_endpoints/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_readonly/reports/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_v2_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_v2_readonly/api_endpoints/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_api_fix_v2_readonly/reports/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_clean_close_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_readonly/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_readonly/api_endpoints/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_readonly/operator_receipts/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_api_memory_operator_replay_readonly/reports/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    },
+    {
+      "path": "C:/Users/User/Desktop/obsidia-engine-proof-core/obsidia-x108-proofs_REMOTE_A5F21C6B/periphery/brody_memory_readonly/brody_memory_context_operator_interaction_test_readonly_freeze_v1/__init__.py",
+      "role": "UNKNOWN",
+      "parse_ok": true,
+      "classes": [],
+      "functions": [],
+      "boundary_hits": [],
+      "danger_hits": [],
+      "sovereign_risk": false,
+      "risk_reasons": [
+        "NO_BOUNDARY_TOKEN_VISIBLE"
+      ]
+    }
+  ],
+  "locked_decisions": [
+    "F23A5.1 does not patch runtime files.",
+    "No-boundary-token records are audit debt, not automatic runtime failure.",
+    "Neo4j readonly bridge tokens are only confirmed risk if write transaction or executable write path exists.",
+    "Decision authority remains KX108_ONLY."
+  ],
+  "next_recommended": "F23A5.2_AGENT_GOVERNANCE_AUDIT",
+  "status": "F23A5_1_AGENTS_VALIDATION_DONE"
+}

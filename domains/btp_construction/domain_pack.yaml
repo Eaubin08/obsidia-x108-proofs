@@ -1,0 +1,15 @@
+domain_id: btp_construction
+domain_name: "BTP / Construction"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  - terrain
+  - plans
+  - documents
+  - subcontractors
+  - planning
+  - exceptions
+implementation_state: SCAFFOLD_ONLY

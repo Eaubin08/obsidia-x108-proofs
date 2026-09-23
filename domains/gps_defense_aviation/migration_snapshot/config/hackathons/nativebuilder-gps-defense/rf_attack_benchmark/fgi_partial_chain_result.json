@@ -1,0 +1,589 @@
+{
+  "attack_correctly_classified": null,
+  "domain_payload": {
+    "altitude": 0.0,
+    "attestation_ready": true,
+    "authorized_route_hash": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+    "brownout_score": 1.0,
+    "domain_state_hash": "8dcc3e5a44f094dcead7079b601910bc3b16f849ed4b35944a1fed1d49777b02",
+    "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+    "flow_type": "TRAJECTORY_DECISION",
+    "freshness_ms": 0.0,
+    "g_load": 1.0,
+    "gps_available": true,
+    "gps_status": "ONLINE",
+    "ground_speed": 0.0,
+    "inertial_available": false,
+    "mission_id": "FGI_SPOOFREPO_BLIND_CASE_0001",
+    "radio_available": true,
+    "replay_window_detected": false,
+    "rollback_possible": true,
+    "satellites_count": 13,
+    "sensor_attested": true,
+    "signal_noise_ratio": 0.0,
+    "source_conflict_score": 1.0,
+    "spoof_score": 1.0,
+    "time_skew_score": 0.0,
+    "trajectory_drift_score": 0.0
+  },
+  "kernel_http_evidence": {
+    "endpoint": "http://127.0.0.1:3001/kernel/ragnarok",
+    "payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.5,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 0.0,
+        "attestation_ready": true,
+        "brownout_score": 1.0,
+        "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+        "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.0,
+        "inertial_available": false,
+        "mission_id": "FGI_SPOOFREPO_BLIND_CASE_0001",
+        "nuisances": [
+          "GPS_SPOOFING",
+          "MULTI_SOURCE_CONTRADICTION",
+          "JAMMING_DETECTED"
+        ],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 13,
+        "signal_noise_ratio": 0.5,
+        "source_conflict_score": 1.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.5,
+          "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+          "fail_closed": true,
+          "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [
+            "NAVIGATION_INTEGRITY",
+            "NAVIGATION_INTEGRITY",
+            "ELECTRONIC_WARFARE"
+          ],
+          "nuisances": [
+            "GPS_SPOOFING",
+            "MULTI_SOURCE_CONTRADICTION",
+            "JAMMING_DETECTED"
+          ],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "payload_sha256": "017c26e363fa7d8ecbeefb9c25a91f140dc1ac0e5672c40a3ec9db67abf5c437",
+    "raw_response": "{\"domain\":\"gps_defense_aviation\",\"market_verdict\":\"ABORT_TRAJECTORY\",\"confidence\":0.35,\"confidence_integrity\":0.35,\"confidence_governance\":0.95,\"confidence_readiness\":0.51,\"confidence_scope\":\"integrity\",\"governance_scope\":\"x108_decision_robustness\",\"readiness_scope\":\"harmonic_integrity_governance\",\"contradictions\":[\"SOURCE_CONFLICT\",\"SOURCE_CONFLICT\",\"SOURCE_CONFLICT\",\"SOURCE_CONFLICT\"],\"unknowns\":[\"INERTIAL_MISSING\",\"BROWNOUT_ACTIVE\",\"POWER_STATE_UNCERTAIN\",\"INERTIAL_MISSING\",\"BROWNOUT_ACTIVE\",\"POWER_STATE_UNCERTAIN\",\"INERTIAL_MISSING\",\"BROWNOUT_ACTIVE\",\"POWER_STATE_UNCERTAIN\",\"INERTIAL_MISSING\",\"BROWNOUT_ACTIVE\",\"POWER_STATE_UNCERTAIN\",\"TICKET_NOT_READY\"],\"risk_flags\":[\"BROWNOUT\",\"BROWNOUT\"],\"x108_gate\":\"BLOCK\",\"reason_code\":\"CONTRADICTION_THRESHOLD_REACHED\",\"severity\":\"S4\",\"decision_id\":\"gps_defense_aviation-66532e2bf20a\",\"trace_id\":\"8b340e87-eb91-4ce1-99b0-f739dc277a65\",\"ticket_required\":false,\"ticket_id\":null,\"attestation_ref\":\"1ee09a7b89c3c4113bf6adab\",\"source\":\"canonical_framework\",\"evidence_refs\":[\"7d915b7839dbf211\",\"dc0a11715aac7cfb\",\"41796663223c12fc\",\"a4f978c39559e013\",\"6f4c91652f5c3a80\",\"43053fc000293fad\",\"meta:UnknownsAgent\",\"meta:ConflictResolutionAgent\",\"meta:PolicyScopeAgent\",\"meta:TicketReadinessAgent\",\"meta:TraceIntegrityAgent\",\"meta:AttestationReadinessAgent\",\"meta:HumanOverrideEligibilityAgent\",\"meta:SeverityClassifierAgent\",\"meta:ReplayConsistencyAgent\",\"meta:ProofConsistencyAgent\"],\"metrics\":{\"trajectory_valid_score\":0,\"recalc_score\":0.35,\"degraded_score\":0,\"abort_score\":0,\"truth_score\":0,\"sigma_score\":0.35,\"mismatch_gap\":0.35,\"proof_ready\":true,\"deterministic\":true,\"action_metadata\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null}},\"raw_engine\":{\"domain\":\"gps_defense_aviation\",\"agent_votes\":[\"SourceAvailabilityAgent\",\"TrajectoryIntegrityAgent\",\"SourceConflictAgent\",\"TimeSkewAgent\",\"BrownoutAgent\",\"GpsAttestationReadinessAgent\"],\"vote_count\":6,\"agent_vote_details\":[{\"agent_id\":\"SourceAvailabilityAgent\",\"vote\":\"RECALC_TRAJECTORY\",\"proposed_verdict\":\"RECALC_TRAJECTORY\",\"selected_vote\":\"RECALC_TRAJECTORY\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0.35,\"domain\":\"gps_defense_aviation\",\"layer\":1,\"claim\":\"source availability\",\"severity_hint\":3,\"contradictions\":[],\"unknowns\":[\"INERTIAL_MISSING\"],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":false,\"aggregate4_domain_enum_rejected\":false,\"aggregate4_false_act_surface_blocked\":false,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TrajectoryIntegrityAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"SourceConflictAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"ABORT_TRAJECTORY\",\"selected_vote\":\"ABORT_TRAJECTORY\",\"normalized_vote_for_aggregate4\":\"BLOCK\",\"confidence\":0,\"domain\":0,\"layer\":4,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[\"SOURCE_CONFLICT\"],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":false,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":false,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"TimeSkewAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":1,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"BrownoutAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"ABORT_TRAJECTORY\",\"selected_vote\":\"ABORT_TRAJECTORY\",\"normalized_vote_for_aggregate4\":\"BLOCK\",\"confidence\":0,\"domain\":0,\"layer\":4,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[\"BROWNOUT_ACTIVE\",\"POWER_STATE_UNCERTAIN\"],\"risk_flags\":[\"BROWNOUT\"],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":false,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":false,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true},{\"agent_id\":\"GpsAttestationReadinessAgent\",\"vote\":\"gps_defense_aviation\",\"proposed_verdict\":\"TRAJECTORY_VALID\",\"selected_vote\":\"TRAJECTORY_VALID\",\"normalized_vote_for_aggregate4\":\"HOLD\",\"confidence\":0,\"domain\":0.9,\"layer\":0,\"claim\":\"no_claim\",\"severity_hint\":0,\"contradictions\":[],\"unknowns\":[],\"risk_flags\":[],\"evidence_refs\":[],\"serialization_note\":\"json_safe_p3i7\",\"aggregate4_invalid_legacy_vote\":true,\"aggregate4_domain_enum_rejected\":true,\"aggregate4_false_act_surface_blocked\":true,\"aggregate4_selected_vote_source\":\"non_trusted_peripheral\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true}],\"consensus\":{\"rule\":\"aggregate4\",\"threshold\":\"3/4\",\"voters_expected\":4,\"supermajority_min\":3,\"source\":\"P3G_MAX_CONSENSUS_SCORE_CONTRACT\",\"proof_scope\":\"aggregate4 over exactly 4 voters\",\"authority\":\"PROOF_SURFACE_ONLY\",\"does_not_override_x108_gate\":true,\"does_not_authorize_action\":true,\"agent_vote_details_exposed\":true,\"agent_vote_source\":\"AgentVote.vote / AgentVote.proposed_verdict / AgentVote.confidence\",\"voters_observed\":6,\"raw_vote_counts\":{\"RECALC_TRAJECTORY\":1,\"gps_defense_aviation\":5},\"proposed_verdict_counts\":{\"RECALC_TRAJECTORY\":1,\"TRAJECTORY_VALID\":3,\"ABORT_TRAJECTORY\":2},\"normalized_vote_counts\":{\"HOLD\":4,\"BLOCK\":2},\"observation_ratio\":{\"display_only\":true,\"authority\":\"NONE\",\"warning\":\"Observation ratio is not a Kernel decision and not a Lean aggregate4 proof.\",\"threshold_ratio\":0.75,\"voters_observed\":6,\"max_decision\":\"HOLD\",\"max_count\":4,\"ratio\":0.6667,\"ratio_threshold_met\":false},\"formal_result_status\":\"NOT_APPLIED_REQUIRES_4_VOTERS\",\"formal_result\":null,\"reason\":\"aggregate4 proof scope is exactly 4 voters; live agent count differs.\",\"aggregate4_proof_surface_only\":true,\"aggregate4_does_not_authorize_action\":true,\"aggregate4_false_act_surface_blocked_count\":3,\"aggregate4_invalid_legacy_votes_count\":3,\"aggregate4_domain_enum_rejected_count\":5}},\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null,\"p3t9b_trusted_metadata_available\":false,\"p3t9b_trusted_metadata_source\":\"NONE\",\"p3t9b_caller_metadata_ignored\":true,\"p3t9b_demoted_for_missing_trusted_metadata\":false,\"p3t9b_reason_code\":\"P3T9B_NOT_APPLIED\",\"p3t9b_caller_action_meta_untrusted\":{\"irreversible\":null,\"action_type\":null,\"intent\":null,\"action_scope\":null,\"can_execute_real_action\":null,\"business_semantic_verdict\":null},\"pre_sigma_market_verdict\":\"ABORT_TRAJECTORY\",\"pre_sigma_severity\":\"S4\",\"sigma_override_policy\":\"POST_GUARD_VETO_ONLY\",\"sigma_override\":false,\"sigma_authority\":\"REPORT_ONLY\",\"sigma_step\":{\"step\":0,\"severity\":\"S4\",\"z\":1.5,\"z_t\":1.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true},\"sigma_report\":{\"pass\":true,\"status\":\"PASS\",\"steps_evaluated\":1,\"unstable_steps\":0,\"violations_total\":0,\"violation_types\":[],\"metrics\":{\"mean_velocity\":0,\"total_steps\":1,\"tau_max_used\":5,\"accel_limit_used\":0.6},\"constraints\":{\"vanishing_acceleration\":\"OK\",\"velocity_band\":\"OK\",\"coherence_stationarity\":\"OK\"},\"steps_detail\":[{\"step\":0,\"severity\":\"S4\",\"z\":1.5,\"z_t\":1.5,\"velocity\":0,\"acceleration\":0,\"stability_status\":\"STABLE\",\"violations\":[],\"coherence_ok\":true}],\"stdout\":\"V18.9 Sigma Dynamic Stability - PASS\\nSteps evaluated : 1\\nUnstable steps  : 0\\nTotal violations: 0\\nConfig source   : C:\\\\Users\\\\User\\\\Desktop\\\\obsidia-engine-proof-core\\\\obsidia-x108-proofs_REMOTE_A5F21C6B\\\\sigma\\\\sigma_config.json\\ntau_max         : 5.0\\naccel_limit     : 0.6\\nNo violations detected.\\n\"}}",
+    "raw_response_sha256": "bc316a856bd765769d54fede731e81d4504eec94137de73d7783add70cb1f4d0",
+    "status_http": 200,
+    "timestamp_ms": 1785719082173
+  },
+  "mode": "FGI_HOSTILE_RF_PARTIAL_CHAIN_NO_PVT",
+  "observation_envelope": {
+    "capture_timestamp": "2023-11-10T15:09:08Z",
+    "constellation": [
+      "G"
+    ],
+    "dataset_name": "FGI_SPOOFREPO_BLIND_CASE_0001",
+    "dataset_version": "UT_DFMC_L1_E1",
+    "domain_state_hash": "UNKNOWN",
+    "eligible_for_physical_claim": true,
+    "input_hash": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+    "license": "CC-BY-4.0",
+    "limitations": [
+      "NO_PVT_SOLUTION_COMPUTED",
+      "NO_NAV_MESSAGES_DECODED",
+      "NO_PRIVATE_SENSOR_ATTESTATION",
+      "NO_INERTIAL_CORROBORATION",
+      "NOT_ELIGIBLE_FOR_RECORDED_RF_ATTACK_PASS"
+    ],
+    "observables": {
+      "brownout_score": 1.0,
+      "cn0_by_prn_dbhz": {},
+      "cn0_dbhz": 0.0,
+      "first_fix": null,
+      "freshness_ms": 0,
+      "g_load": 1.0,
+      "inertial_available": false,
+      "loss_of_lock_count": 13,
+      "max_cn0_dbhz": 0.0,
+      "nav_message_satellites": [],
+      "position_count": 0,
+      "pvt": {},
+      "radio_available": true,
+      "replay_window_detected": false,
+      "rf_anomaly_reason_codes": [
+        "NO_PVT_SOLUTION_COMPUTED",
+        "NO_NAV_MESSAGES_DECODED",
+        "LOSS_OF_LOCK_EVENTS"
+      ],
+      "rf_anomaly_score": 1.0,
+      "run_time_seconds": 337.536,
+      "source_conflict_score": 1.0,
+      "spoof_score": 1.0,
+      "time_skew_score": 0.0,
+      "tracked_satellites": [
+        "G01",
+        "G04",
+        "G05",
+        "G08",
+        "G14",
+        "G17",
+        "G23",
+        "G24",
+        "G26",
+        "G28",
+        "G29",
+        "G30",
+        "G32"
+      ],
+      "tracking_channels": {
+        "G01": [
+          8,
+          9
+        ],
+        "G04": [
+          4
+        ],
+        "G05": [
+          7
+        ],
+        "G08": [
+          0
+        ],
+        "G14": [
+          6
+        ],
+        "G17": [
+          9
+        ],
+        "G23": [
+          1
+        ],
+        "G24": [
+          4
+        ],
+        "G26": [
+          3
+        ],
+        "G28": [
+          1
+        ],
+        "G29": [
+          2,
+          9
+        ],
+        "G30": [
+          8
+        ],
+        "G32": [
+          5
+        ]
+      },
+      "trajectory_drift_score": 0.0
+    },
+    "observables_hash": "4a10b22084a9268c96004ca17ddb62463a3e6101ed8585667a9226753954a307",
+    "observation_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+    "official_url": "https://etsin.fairdata.fi/dataset/367379a8-7d78-4b08-91f0-8027ce7a621b",
+    "parent_receipt_id": "UNKNOWN",
+    "processing_timestamp": "1785719027538",
+    "processor_config_hash": "498a211fb0292eb0891e2ecc14c2f75ecae8b8ac48c941a90a5a7877507b862c",
+    "processor_name": "obsidia-gnss-sdr-fgi-partial-normalizer",
+    "processor_version": "v0",
+    "proof_level": "RECORDED_REAL_RF",
+    "provenance": {
+      "config_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\hackathons\\nativebuilder-gps-defense\\gnss_sdr_fgi_ut_dfmc_l1e1_ifneg_runtime.conf",
+      "config_sha256": "498a211fb0292eb0891e2ecc14c2f75ecae8b8ac48c941a90a5a7877507b862c",
+      "gnss_sdr_log_sha256": "b72cfca8adeaadfc05d91566f489904faa98f4b2fa1e38dda901bb65d61c1cc5",
+      "input_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\hackathons\\nativebuilder-gps-defense\\data\\fgi-spoofrepo\\pipeline_inputs\\case_0001_l1e1_real8.dat",
+      "input_sha256": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72",
+      "observables_dat_sha256": "aa20e5a4c00ed33008fb0cfdb40f3912adff8e0cb1540478270b36cbdad0c851",
+      "parsed_stdout": {
+        "avg_cn0_dbhz": 0.0,
+        "cn0_by_prn_dbhz": {},
+        "first_fix": null,
+        "ground_speed_kt": 0.0,
+        "ground_speed_mps": 0.0,
+        "last_position": {},
+        "last_velocity_mps": {
+          "east_mps": 0.0,
+          "north_mps": 0.0,
+          "up_mps": 0.0
+        },
+        "loss_of_lock_count": 13,
+        "max_cn0_dbhz": 0.0,
+        "nav_message_satellites": [],
+        "position_count": 0,
+        "run_time_seconds": 337.536,
+        "stdout_file": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\hackathons\\nativebuilder-gps-defense\\rf_attack_benchmark\\gnss_sdr_runs\\fgi_ut_dfmc_l1e1_ifneg\\gnss_sdr_run_stdout.log",
+        "stdout_sha256": "28ab1fc3f2bc2015e10cdb414747d2cad8ceef5f919ff43dfe4e74d1d1c1ac6e",
+        "tracked_satellites": [
+          "G01",
+          "G04",
+          "G05",
+          "G08",
+          "G14",
+          "G17",
+          "G23",
+          "G24",
+          "G26",
+          "G28",
+          "G29",
+          "G30",
+          "G32"
+        ],
+        "tracking_channels": {
+          "G01": [
+            8,
+            9
+          ],
+          "G04": [
+            4
+          ],
+          "G05": [
+            7
+          ],
+          "G08": [
+            0
+          ],
+          "G14": [
+            6
+          ],
+          "G17": [
+            9
+          ],
+          "G23": [
+            1
+          ],
+          "G24": [
+            4
+          ],
+          "G26": [
+            3
+          ],
+          "G28": [
+            1
+          ],
+          "G29": [
+            2,
+            9
+          ],
+          "G30": [
+            8
+          ],
+          "G32": [
+            5
+          ]
+        }
+      },
+      "run_dir": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\hackathons\\nativebuilder-gps-defense\\rf_attack_benchmark\\gnss_sdr_runs\\fgi_ut_dfmc_l1e1_ifneg",
+      "stdout_log": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\hackathons\\nativebuilder-gps-defense\\rf_attack_benchmark\\gnss_sdr_runs\\fgi_ut_dfmc_l1e1_ifneg\\gnss_sdr_run_stdout.log",
+      "stdout_sha256": "28ab1fc3f2bc2015e10cdb414747d2cad8ceef5f919ff43dfe4e74d1d1c1ac6e"
+    },
+    "receiver": {
+      "data_type": "real_8_bit_I",
+      "front_end_center_frequency_hz": 1569030000,
+      "image": "carlesfernandez/docker-gnsssdr:latest",
+      "image_digest": "sha256:716ecd117afecaee709de202b2393a853aa48cfb38d0c76b373eae54d6adc8ff",
+      "intermediate_frequency_hz": -6390000,
+      "item_type": "byte",
+      "processor": "gnss-sdr",
+      "processor_version": "0.0.21.git-next-2a7214a4f",
+      "sampling_frequency_sps": 26000000,
+      "signal_center_frequency_hz": 1575420000
+    },
+    "satellites": [
+      "G01",
+      "G04",
+      "G05",
+      "G08",
+      "G14",
+      "G17",
+      "G23",
+      "G24",
+      "G26",
+      "G28",
+      "G29",
+      "G30",
+      "G32"
+    ],
+    "source_type": "GNSS_SDR_FGI_HOSTILE_RF_PARTIAL_RUN",
+    "synthetic": false,
+    "truth_reference": {
+      "labels_used_by_pipeline": false,
+      "route_hash": "e8da962e92cfdbcb677361ce769a54f26dc385417bac9fd618492dcd02fb2d72"
+    }
+  },
+  "p4_20_evidence": {
+    "authorized_route_ok": true,
+    "coherence_ok": false,
+    "decision_authority": "KX108_ONLY",
+    "drift_bound_ok": true,
+    "emits_verdict": false,
+    "evidence_hash": "f306e5941b86d6ed7ac2e4c32abb803b398ed362653adbeedf5ea4d1cc4b2c9a",
+    "evidence_refs": [
+      "obsidia_core/guardians/path_fidelity_guard.py",
+      "proofs/lean/Obsidia/GeneratedPeripheral/P_DomainKernel_PathFidelity_RequiresCoherence.lean"
+    ],
+    "path_fidelity_ok": false,
+    "physical_envelope_ok": true,
+    "reason_codes": [
+      "P4_20_SOURCE_COHERENCE_FAILED"
+    ],
+    "replay_consistent": true
+  },
+  "physical_gate": {
+    "decision_authority": "KX108_ONLY",
+    "eligible_for_p3_05": true,
+    "emits_verdict": false,
+    "reason_codes": [],
+    "status": "AUTHENTICATED"
+  },
+  "reason_not_pass": "GNSS-SDR produced acquisition/tracking/observables but no NAV/PVT solution; RF anomaly evidence is real but not sufficient for full spoofing benchmark closure.",
+  "recorded_rf_attack_pass": false,
+  "rf_anomaly_detected": true,
+  "truth_manifest_used_by_pipeline": false,
+  "x108_result": {
+    "domain": "gps_defense_aviation",
+    "gate_version": "v2-reality-authenticity",
+    "ir_payload": {
+      "data": {
+        "A_score": 1.0,
+        "H_score": 0.5,
+        "S": 0.7,
+        "T_mean": 0.5,
+        "altitude": 0.0,
+        "attestation_ready": true,
+        "brownout_score": 1.0,
+        "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+        "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+        "gps_available": true,
+        "gps_status": "ONLINE",
+        "ground_speed": 0.0,
+        "inertial_available": false,
+        "mission_id": "FGI_SPOOFREPO_BLIND_CASE_0001",
+        "nuisances": [
+          "GPS_SPOOFING",
+          "MULTI_SOURCE_CONTRADICTION",
+          "JAMMING_DETECTED"
+        ],
+        "radio_available": true,
+        "reality_authenticity_reasons": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "rollback_possible": true,
+        "satellites_count": 13,
+        "signal_noise_ratio": 0.5,
+        "source_conflict_score": 1.0,
+        "time_skew_score": 0.0,
+        "trajectory_drift_score": 0.0
+      },
+      "domain": "gps_defense_aviation",
+      "meta": {
+        "contract": "DOMAIN_BRIDGE_ONLY",
+        "decides_alone": false,
+        "decision_authority": "KX108_ONLY",
+        "domain_state": {
+          "audit_score": 1.0,
+          "confidence_index": 0.5,
+          "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+          "fail_closed": true,
+          "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+          "flow_type": "TRAJECTORY_DECISION",
+          "nuisance_risk_classes": [
+            "NAVIGATION_INTEGRITY",
+            "NAVIGATION_INTEGRITY",
+            "ELECTRONIC_WARFARE"
+          ],
+          "nuisances": [
+            "GPS_SPOOFING",
+            "MULTI_SOURCE_CONTRADICTION",
+            "JAMMING_DETECTED"
+          ],
+          "reality_authenticity": {
+            "anti_replay_ok": true,
+            "freshness_ms": 0.0,
+            "is_fresh": true,
+            "multisource_coherent": false,
+            "physical_envelope_ok": true,
+            "reasons": [
+              "MULTI_SOURCE_COHERENCE_FAILED"
+            ],
+            "sensor_attested": true
+          },
+          "risk_score": 0.5,
+          "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+          "threshold_s": 0.7
+        },
+        "flow_type": "TRAJECTORY_DECISION",
+        "gate_version": "v2-reality-authenticity",
+        "ir_intent": "AUDIT_ONLY",
+        "risk_class": "",
+        "zone": ""
+      }
+    },
+    "reason": "INPUT_NOT_CANONIZED_FOR_KERNEL_EXECUTION",
+    "receipt": {
+      "connector_decides": false,
+      "contract": "DOMAIN_BRIDGE_ONLY",
+      "created_at_ms": 1785719082171,
+      "decision_authority": "KX108_ONLY",
+      "domain": "gps_defense_aviation",
+      "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+      "gate": "P3-05",
+      "gate_file": "domains/gps/gps_x108_gate.py",
+      "ir_payload": {
+        "data": {
+          "A_score": 1.0,
+          "H_score": 0.5,
+          "S": 0.7,
+          "T_mean": 0.5,
+          "altitude": 0.0,
+          "attestation_ready": true,
+          "brownout_score": 1.0,
+          "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+          "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+          "gps_available": true,
+          "gps_status": "ONLINE",
+          "ground_speed": 0.0,
+          "inertial_available": false,
+          "mission_id": "FGI_SPOOFREPO_BLIND_CASE_0001",
+          "nuisances": [
+            "GPS_SPOOFING",
+            "MULTI_SOURCE_CONTRADICTION",
+            "JAMMING_DETECTED"
+          ],
+          "radio_available": true,
+          "reality_authenticity_reasons": [
+            "MULTI_SOURCE_COHERENCE_FAILED"
+          ],
+          "rollback_possible": true,
+          "satellites_count": 13,
+          "signal_noise_ratio": 0.5,
+          "source_conflict_score": 1.0,
+          "time_skew_score": 0.0,
+          "trajectory_drift_score": 0.0
+        },
+        "domain": "gps_defense_aviation",
+        "meta": {
+          "contract": "DOMAIN_BRIDGE_ONLY",
+          "decides_alone": false,
+          "decision_authority": "KX108_ONLY",
+          "domain_state": {
+            "audit_score": 1.0,
+            "confidence_index": 0.5,
+            "domain_state_hash": "1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000",
+            "fail_closed": true,
+            "flight_id": "fgi-blind-case-0001-l1e1-ifneg-partial-rf",
+            "flow_type": "TRAJECTORY_DECISION",
+            "nuisance_risk_classes": [
+              "NAVIGATION_INTEGRITY",
+              "NAVIGATION_INTEGRITY",
+              "ELECTRONIC_WARFARE"
+            ],
+            "nuisances": [
+              "GPS_SPOOFING",
+              "MULTI_SOURCE_CONTRADICTION",
+              "JAMMING_DETECTED"
+            ],
+            "reality_authenticity": {
+              "anti_replay_ok": true,
+              "freshness_ms": 0.0,
+              "is_fresh": true,
+              "multisource_coherent": false,
+              "physical_envelope_ok": true,
+              "reasons": [
+                "MULTI_SOURCE_COHERENCE_FAILED"
+              ],
+              "sensor_attested": true
+            },
+            "risk_score": 0.5,
+            "state_name": "GPS_DEFENSE_AVIATION_UNTRUSTED",
+            "threshold_s": 0.7
+          },
+          "flow_type": "TRAJECTORY_DECISION",
+          "gate_version": "v2-reality-authenticity",
+          "ir_intent": "AUDIT_ONLY",
+          "risk_class": "",
+          "zone": ""
+        }
+      },
+      "kernel_decision": {},
+      "os3_ticket": {
+        "action_id": "gps-fgi-blind-case-0001-l1e1-ifneg-partial-rf-1a3815e3fae4",
+        "contradictions": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "domain": "gps_defense_aviation",
+        "evidence_refs": [
+          "domains/gps/gps_x108_gate.py",
+          "periphery/os3_ticket.py",
+          "domain_state_hash:1a3815e3fae43b683c5e9abb99ef47560398941a7be3b236a1101152a395a000"
+        ],
+        "input_hash": "8499a005a55ed5d718d148462c3a5362412fcfdeab3e127a4721570b14f5af6a",
+        "merkle_root": "38582aec430c7633ac50f47e600b79373b27160c461c89b073f7dc8766594816",
+        "output_hash": "5fa14b84a21a5ae47c45d8914b8f2c32c2864dd33eaca0f3c7614975e804505e",
+        "reason_code": "P3_05_FAIL_CLOSED",
+        "replay_status": "NOT_RUN",
+        "risk_flags": [
+          "GPS_SPOOFING",
+          "JAMMING_DETECTED",
+          "MULTI_SOURCE_COHERENCE_FAILED",
+          "MULTI_SOURCE_CONTRADICTION"
+        ],
+        "scores": {
+          "audit_score": 1.0,
+          "confidence_index": 0.5,
+          "freshness_ms": 0.0,
+          "risk_score": 0.5
+        },
+        "severity": "S4",
+        "ticket_id": "14527504dd4346ac98ab0a18e0fa338b",
+        "trace_hash": "828d9d3b1deb140affd4413417581ebde351c4bcea212cc79cfdbee9bc14d661",
+        "unknowns": [
+          "MULTI_SOURCE_COHERENCE_FAILED"
+        ],
+        "x108_gate": "HOLD"
+      },
+      "os3_ticket_valid": true,
+      "signature_kind": "LOCAL_SHA256_DEMO_NOT_PRODUCTION_SIGNING",
+      "signed_decision_receipt_sha256": "66f65886ec87c977f3f6bb2c3ad6cf7bb77d28ea8e65860761acf838b26a11c0",
+      "source": "P3_05_FAIL_CLOSED",
+      "verdict": "HOLD"
+    },
+    "source": "REALITY_AUTHENTICITY_GATE_FAIL_CLOSED",
+    "verdict": "HOLD"
+  }
+}

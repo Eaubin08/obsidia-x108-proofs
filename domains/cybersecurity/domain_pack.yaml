@@ -1,0 +1,12 @@
+domain_id: cybersecurity
+domain_name: "Cybersecurity"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  - detection
+  - response
+  - isolation_boundaries
+implementation_state: SCAFFOLD_ONLY

@@ -1,0 +1,1256 @@
+{
+  "checkpoint": "F19A_THERMO_COHERENCE_TIME_SCORING_AUDIT",
+  "mode": "READ_ONLY",
+  "timestamp": "20260528_011049",
+  "files_created": {
+    "payload_8000": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\F19A_THERMO_COHERENCE_TIME_PAYLOAD_8000_20260528_011049.json",
+    "payload_8012": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\F19A_THERMO_COHERENCE_TIME_PAYLOAD_8012_20260528_011049.json",
+    "routes": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\F19A_OPENAPI_ROUTES_8000_20260528_011049.json",
+    "source_scan": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\F19A_SOURCE_SCAN_20260528_011049.json",
+    "report_json": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\OBSIDIA_F19A_THERMO_COHERENCE_TIME_SCORING_AUDIT_20260528_011049.json",
+    "report_txt": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\docs\\runtime\\OBSIDIA_F19A_THERMO_COHERENCE_TIME_SCORING_AUDIT_20260528_011049.txt"
+  },
+  "runtime_summary_8000": {
+    "port": 8000,
+    "http_status": 200,
+    "source": "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY",
+    "graphiti_status": "GRAPHITI_V20_FROZEN_READONLY_PASS",
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "thermodynamics_packet_present": true,
+    "thermodynamics_keys": [
+      "advisory_only",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "evidence",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "scores",
+      "stability_state",
+      "thermodynamics_active",
+      "usable_for_gencoin",
+      "usable_for_value_layer",
+      "version",
+      "x108_mutation"
+    ],
+    "sigma_packet_present": true,
+    "sigma_keys": [
+      "advisory_only",
+      "calibration_status",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "features",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "score_components",
+      "sigma_pressure",
+      "snapshot_name",
+      "source",
+      "truth_score",
+      "usable_for_gencoin",
+      "usable_for_thermodynamics",
+      "version",
+      "x108_mutation"
+    ],
+    "anti_mismatch_present": true,
+    "anti_mismatch_keys": [
+      "advisory_only",
+      "collapse_disguised_detected",
+      "decision_authority",
+      "decorative_coherence_detected",
+      "emits_act",
+      "emits_verdict",
+      "false_on_detected",
+      "graphiti_write",
+      "inputs_snapshot",
+      "kernel_mutation",
+      "memory_write",
+      "mismatch_score",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "risk_level",
+      "signals",
+      "source",
+      "structural_gap_detected",
+      "version",
+      "x108_mutation"
+    ],
+    "gencoin_shadow_present": true,
+    "gencoin_shadow_keys": [
+      "advisory_only",
+      "blockchain_enabled",
+      "decision_authority",
+      "economic_scoring_enabled",
+      "emits_act",
+      "emits_verdict",
+      "evidence",
+      "final_scoring_enabled",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_promotion_enabled",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "shadow_scores",
+      "usable_shadow_value",
+      "version",
+      "x108_mutation"
+    ],
+    "temporal_context_present": false,
+    "temporal_context_keys": [],
+    "hard_risks": [],
+    "value_layer_scores": null,
+    "value_layer_scores_null": null,
+    "score_numeric_count": 35,
+    "deep_hits_sample": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:10:49.693284+00:00"
+      },
+      {
+        "path": "voice_runtime",
+        "preview": "BRODY_OBSIDIEN_V1_4_12A"
+      },
+      {
+        "path": "audit_event.timestamp",
+        "preview": "2026-05-28T01:10:49.631283+00:00"
+      },
+      {
+        "path": "v1_4_12a_runtime_status",
+        "preview": "READY"
+      },
+      {
+        "path": "runtime_components",
+        "preview": "dict[8]"
+      },
+      {
+        "path": "runtime_components.gencoin",
+        "preview": "REAL_MODULE"
+      },
+      {
+        "path": "freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.timestamp",
+        "preview": "2026-05-28T01:10:49.693247+00:00"
+      },
+      {
+        "path": "machination_packet.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "value_layer",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "value_layer.inputs_available.sigma",
+        "preview": true
+      },
+      {
+        "path": "value_layer.inputs_available.thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "value_layer.inputs_available.gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "value_layer.input_status.sigma",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "value_layer.input_status.thermodynamics",
+        "preview": "STABLE"
+      },
+      {
+        "path": "value_layer.input_status.gencoin_shadow",
+        "preview": "USABLE_SHADOW_VALUE"
+      },
+      {
+        "path": "sigma_packet",
+        "preview": "dict[24]"
+      },
+      {
+        "path": "sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "sigma_packet.features.anti_mismatch_formal_available",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.features.formal_mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "anti_mismatch_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "anti_mismatch_packet.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "anti_mismatch_packet.decorative_coherence_detected",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.sigma_high_but_answer_empty",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.decorative_coherence",
+        "preview": false
+      },
+      {
+        "path": "thermodynamics_packet",
+        "preview": "dict[21]"
+      },
+      {
+        "path": "thermodynamics_packet.thermodynamics_active",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.scores.coherence_temperature",
+        "preview": 0.214
+      },
+      {
+        "path": "thermodynamics_packet.scores.mismatch_heat",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_calibration_status",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.evidence.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.evidence.anti_mismatch_risk_level",
+        "preview": "NONE"
+      },
+      {
+        "path": "gencoin_shadow_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_thermodynamics_packet",
+        "preview": true
+      }
+    ],
+    "classification": "PARTIAL_SIGNAL_ONLY_NEEDS_WIRING"
+  },
+  "runtime_summary_8012": {
+    "port": 8012,
+    "http_status": 200,
+    "source": "REAL_BRODY_GRAPHITI_V20_FROZEN_READONLY",
+    "graphiti_status": "GRAPHITI_V20_FROZEN_READONLY_PASS",
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "thermodynamics_packet_present": true,
+    "thermodynamics_keys": [
+      "advisory_only",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "evidence",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "scores",
+      "stability_state",
+      "thermodynamics_active",
+      "usable_for_gencoin",
+      "usable_for_value_layer",
+      "version",
+      "x108_mutation"
+    ],
+    "sigma_packet_present": true,
+    "sigma_keys": [
+      "advisory_only",
+      "calibration_status",
+      "decision_authority",
+      "emits_act",
+      "emits_verdict",
+      "features",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "score_components",
+      "sigma_pressure",
+      "snapshot_name",
+      "source",
+      "truth_score",
+      "usable_for_gencoin",
+      "usable_for_thermodynamics",
+      "version",
+      "x108_mutation"
+    ],
+    "anti_mismatch_present": true,
+    "anti_mismatch_keys": [
+      "advisory_only",
+      "collapse_disguised_detected",
+      "decision_authority",
+      "decorative_coherence_detected",
+      "emits_act",
+      "emits_verdict",
+      "false_on_detected",
+      "graphiti_write",
+      "inputs_snapshot",
+      "kernel_mutation",
+      "memory_write",
+      "mismatch_score",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "risk_level",
+      "signals",
+      "source",
+      "structural_gap_detected",
+      "version",
+      "x108_mutation"
+    ],
+    "gencoin_shadow_present": true,
+    "gencoin_shadow_keys": [
+      "advisory_only",
+      "blockchain_enabled",
+      "decision_authority",
+      "economic_scoring_enabled",
+      "emits_act",
+      "emits_verdict",
+      "evidence",
+      "final_scoring_enabled",
+      "graphiti_write",
+      "inputs",
+      "kernel_mutation",
+      "memory_promotion_enabled",
+      "memory_write",
+      "mode",
+      "neo4j_write",
+      "notes",
+      "readonly",
+      "reason",
+      "shadow_scores",
+      "usable_shadow_value",
+      "version",
+      "x108_mutation"
+    ],
+    "temporal_context_present": false,
+    "temporal_context_keys": [],
+    "hard_risks": [],
+    "value_layer_scores": null,
+    "value_layer_scores_null": null,
+    "score_numeric_count": 35,
+    "deep_hits_sample": [
+      {
+        "path": "timestamp",
+        "preview": "2026-05-28T01:10:49.791686+00:00"
+      },
+      {
+        "path": "voice_runtime",
+        "preview": "BRODY_OBSIDIEN_V1_4_12A"
+      },
+      {
+        "path": "audit_event.timestamp",
+        "preview": "2026-05-28T01:10:49.723612+00:00"
+      },
+      {
+        "path": "v1_4_12a_runtime_status",
+        "preview": "READY"
+      },
+      {
+        "path": "runtime_components",
+        "preview": "dict[8]"
+      },
+      {
+        "path": "runtime_components.gencoin",
+        "preview": "REAL_MODULE"
+      },
+      {
+        "path": "freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.timestamp",
+        "preview": "2026-05-28T01:10:49.791648+00:00"
+      },
+      {
+        "path": "machination_packet.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context",
+        "preview": "dict[38]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.temporal_context_snapshot",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.x108_boundary.x108_runtime_binding",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm",
+        "preview": "dict[6]"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.runtime_llm.runtime_freeze",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.os_trad_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.ir_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.freeze_metrics_snapshot.not_found_in_freeze_sources.reverse_os_runtime",
+        "preview": "NOT_FOUND_IN_FREEZE_SOURCES"
+      },
+      {
+        "path": "machination_packet.runtime_context.brody_full_context.missing_runtime_links",
+        "preview": "list[1]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.adaptive_response_policy.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet",
+        "preview": "dict[23]"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.anti_mismatch_formal_available",
+        "preview": false
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.features.formal_mismatch_score",
+        "preview": null
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "machination_packet.runtime_context.true_voice_snapshot.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "value_layer",
+        "preview": "dict[18]"
+      },
+      {
+        "path": "value_layer.inputs_available.sigma",
+        "preview": true
+      },
+      {
+        "path": "value_layer.inputs_available.thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "value_layer.inputs_available.gencoin_shadow",
+        "preview": true
+      },
+      {
+        "path": "value_layer.input_status.sigma",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "value_layer.input_status.thermodynamics",
+        "preview": "STABLE"
+      },
+      {
+        "path": "value_layer.input_status.gencoin_shadow",
+        "preview": "USABLE_SHADOW_VALUE"
+      },
+      {
+        "path": "sigma_packet",
+        "preview": "dict[24]"
+      },
+      {
+        "path": "sigma_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.sigma_pressure",
+        "preview": "MEDIUM"
+      },
+      {
+        "path": "sigma_packet.features.decorative_coherence_risk",
+        "preview": false
+      },
+      {
+        "path": "sigma_packet.features.anti_mismatch_formal_available",
+        "preview": true
+      },
+      {
+        "path": "sigma_packet.features.formal_mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "sigma_packet.score_components.mismatch_penalty",
+        "preview": -0.0
+      },
+      {
+        "path": "anti_mismatch_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "anti_mismatch_packet.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "anti_mismatch_packet.decorative_coherence_detected",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.sigma_high_but_answer_empty",
+        "preview": false
+      },
+      {
+        "path": "anti_mismatch_packet.signals.decorative_coherence",
+        "preview": false
+      },
+      {
+        "path": "thermodynamics_packet",
+        "preview": "dict[21]"
+      },
+      {
+        "path": "thermodynamics_packet.thermodynamics_active",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_gencoin",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.usable_for_value_layer",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.scores.coherence_temperature",
+        "preview": 0.214
+      },
+      {
+        "path": "thermodynamics_packet.scores.mismatch_heat",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.inputs.has_value_layer",
+        "preview": false
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_truth_score",
+        "preview": 0.95
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_calibration_status",
+        "preview": "CALIBRATED_SHADOW_READONLY"
+      },
+      {
+        "path": "thermodynamics_packet.evidence.sigma_usable_for_thermodynamics",
+        "preview": true
+      },
+      {
+        "path": "thermodynamics_packet.evidence.mismatch_score",
+        "preview": 0.0
+      },
+      {
+        "path": "thermodynamics_packet.evidence.anti_mismatch_risk_level",
+        "preview": "NONE"
+      },
+      {
+        "path": "gencoin_shadow_packet",
+        "preview": "dict[22]"
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_sigma_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_anti_mismatch_packet",
+        "preview": true
+      },
+      {
+        "path": "gencoin_shadow_packet.inputs.has_thermodynamics_packet",
+        "preview": true
+      }
+    ],
+    "classification": "PARTIAL_SIGNAL_ONLY_NEEDS_WIRING"
+  },
+  "routes_candidates": [
+    "/api/blockchain/gencoin/compute",
+    "/api/brody/chat",
+    "/api/gencoin",
+    "/api/periphery/brody/context-query",
+    "/api/periphery/brody/diffusion-mix",
+    "/api/periphery/brody/double-brain-route",
+    "/api/periphery/brody/language-route",
+    "/api/periphery/gencoin/avdr-phase",
+    "/api/periphery/gencoin/balance",
+    "/api/periphery/gencoin/collective-summary",
+    "/api/periphery/gencoin/consciousness-regime",
+    "/api/periphery/gencoin/passfail",
+    "/api/periphery/gencoin/regime-state",
+    "/api/periphery/monitoring/brody-cli-registry",
+    "/api/periphery/monitoring/brody-historical-convergence",
+    "/api/periphery/monitoring/brody-trace-analyze",
+    "/api/periphery/pipeline/energy-thermo",
+    "/api/x108/memory/replay/coherence",
+    "/api/x108/timeverse/sync"
+  ],
+  "source_scan_counts": {},
+  "source_scan_sample": [],
+  "preliminary_classification": {
+    "8000": "PARTIAL_SIGNAL_ONLY_NEEDS_WIRING",
+    "8012": "PARTIAL_SIGNAL_ONLY_NEEDS_WIRING"
+  },
+  "boundary_check": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "emits_act": false,
+    "memory_write": false,
+    "graphiti_write": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "next_step": "F19B should reuse existing thermo/sigma/time modules if present; otherwise create readonly scoring adapter with honest null/partial status."
+}

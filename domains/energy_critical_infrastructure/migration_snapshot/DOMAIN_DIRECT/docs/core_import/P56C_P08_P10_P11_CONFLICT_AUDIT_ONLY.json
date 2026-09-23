@@ -1,0 +1,546 @@
+{
+  "audit_id": "P56C_AUDIT_ONLY",
+  "status": "CONFLICT_AUDIT_GENERATED_PATCH_NOT_APPLIED",
+  "source_patch_authorized": false,
+  "fusion_status": "FUSION_BLOCKED_PENDING_P08_P10_P11_DECISIONS",
+  "pairs": [
+    {
+      "id": "P08",
+      "name": "protocols.py",
+      "focus": "domain/protocol extension",
+      "core": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\_tmp_core_import\\OBSIDIA_CORE_ONLY_FULL_MACHINERY\\agents\\protocols.py",
+        "exists": true,
+        "line_count": 42,
+        "byte_count": 1687,
+        "imports": [
+          "from __future__ import annotations",
+          "from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading",
+          "from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState",
+          "from .domains.bank_agents import build_bank_agents",
+          "from .domains.ecom_agents import build_ecom_agents",
+          "from .domains.meta_agents import build_meta_agents",
+          "from .domains.trading_agents import build_trading_agents",
+          "from .guard import GuardX108",
+          "from .registry import build_agent_registry"
+        ],
+        "functions": [
+          "build_agent_registry",
+          "_apply_meta_agents",
+          "run_trading_pipeline",
+          "run_bank_pipeline",
+          "run_ecom_pipeline"
+        ],
+        "classes": [],
+        "constants": [],
+        "risk_hits": []
+      },
+      "proof": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\sigma\\protocols.py",
+        "exists": true,
+        "line_count": 51,
+        "byte_count": 2143,
+        "imports": [
+          "from __future__ import annotations",
+          "from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading, aggregate_gps_defense_aviation",
+          "from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState, GpsDefenseAviationState",
+          "from .domains.bank_agents import build_bank_agents",
+          "from .domains.ecom_agents import build_ecom_agents",
+          "from .domains.meta_agents import build_meta_agents",
+          "from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents",
+          "from .domains.trading_agents import build_trading_agents",
+          "from .guard import GuardX108",
+          "from .registry import build_agent_registry"
+        ],
+        "functions": [
+          "build_agent_registry",
+          "_apply_meta_agents",
+          "run_trading_pipeline",
+          "run_bank_pipeline",
+          "run_ecom_pipeline",
+          "run_gps_defense_aviation_pipeline"
+        ],
+        "classes": [],
+        "constants": [],
+        "risk_hits": [
+          {
+            "line": 3,
+            "text": "from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading, aggregate_gps_defense_aviation"
+          },
+          {
+            "line": 8,
+            "text": "from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents"
+          },
+          {
+            "line": 45,
+            "text": "def run_gps_defense_aviation_pipeline(state: GpsDefenseAviationState) -> CanonicalDecisionEnvelope:"
+          },
+          {
+            "line": 46,
+            "text": "aggregate = aggregate_gps_defense_aviation("
+          },
+          {
+            "line": 47,
+            "text": "[a.evaluate(state) for a in build_gps_defense_aviation_agents()]"
+          }
+        ]
+      },
+      "diff_path": "docs\\core_import\\P56C_AUDIT_ONLY_P08_protocols.py.diff",
+      "added_functions": [
+        "run_gps_defense_aviation_pipeline"
+      ],
+      "removed_functions": [],
+      "added_imports": [
+        "from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading, aggregate_gps_defense_aviation",
+        "from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState, GpsDefenseAviationState",
+        "from .domains.gps_defense_aviation_agents import build_gps_defense_aviation_agents"
+      ],
+      "removed_imports": [
+        "from .aggregation import aggregate_bank, aggregate_ecom, aggregate_trading",
+        "from .contracts import BankState, CanonicalDecisionEnvelope, EcomState, TradingState"
+      ],
+      "decision": "GPS_EXTENSION_DETECTED_REQUIRES_DECISION",
+      "blocking": true,
+      "notes": [
+        "Proof adds GPS defense aviation protocol surface.",
+        "Must not overwrite core protocols automatically."
+      ]
+    },
+    {
+      "id": "P10",
+      "name": "obsidia_sigma_v130.py",
+      "focus": "sigma monitor config/path/encoding/metrics",
+      "core": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\_tmp_core_import\\OBSIDIA_CORE_ONLY_FULL_MACHINERY\\agents\\obsidia_sigma_v130.py",
+        "exists": true,
+        "line_count": 295,
+        "byte_count": 11338,
+        "imports": [
+          "json",
+          "os",
+          "time",
+          "hashlib",
+          "from pathlib import Path",
+          "from typing import List, Dict, Any, Optional"
+        ],
+        "functions": [
+          "_load_sigma_config"
+        ],
+        "classes": [
+          "ObsidiaSigmaMonitor"
+        ],
+        "constants": [
+          "SEVERITY_MAP",
+          "_DEFAULT_TAU_MIN",
+          "_DEFAULT_TAU_MAX",
+          "_DEFAULT_ACCEL_LIMIT"
+        ],
+        "risk_hits": [
+          {
+            "line": 6,
+            "text": "- Les seuils sont lus depuis agents/sigma_config.json si présent."
+          },
+          {
+            "line": 17,
+            "text": "monitor.evaluate_step(severity, risks, contras)"
+          },
+          {
+            "line": 31,
+            "text": "# Valeurs par défaut v1.4.0 (utilisées si sigma_config.json absent)"
+          },
+          {
+            "line": 37,
+            "text": "def _load_sigma_config(config_path: str = \"agents/sigma_config.json\") -> Dict[str, Any]:"
+          },
+          {
+            "line": 42,
+            "text": "p = Path(config_path)"
+          },
+          {
+            "line": 45,
+            "text": "with open(p, \"r\") as f:"
+          },
+          {
+            "line": 57,
+            "text": "Les seuils sont chargés depuis agents/sigma_config.json (si présent),"
+          },
+          {
+            "line": 67,
+            "text": "config_path: str = \"agents/sigma_config.json\","
+          },
+          {
+            "line": 70,
+            "text": "cfg = _load_sigma_config(config_path)"
+          },
+          {
+            "line": 77,
+            "text": "self.config_source = config_path if Path(config_path).exists() else \"defaults_v1.4.0\""
+          },
+          {
+            "line": 106,
+            "text": "def _to_vector(self, severity: str, risk_count: int, contra_count: int) -> float:"
+          },
+          {
+            "line": 107,
+            "text": "base = SEVERITY_MAP.get(severity, 0.0)"
+          },
+          {
+            "line": 116,
+            "text": "severity: str,"
+          },
+          {
+            "line": 125,
+            "text": "z_t = self._to_vector(severity, len(risks), len(contras))"
+          },
+          {
+            "line": 130,
+            "text": "\"severity\": severity,"
+          },
+          {
+            "line": 267,
+            "text": "path = Path(report_path)"
+          },
+          {
+            "line": 271,
+            "text": "with open(path, \"r\") as f:"
+          },
+          {
+            "line": 278,
+            "text": "with open(path, \"w\") as f:"
+          },
+          {
+            "line": 279,
+            "text": "json.dump(existing, f, indent=2)"
+          },
+          {
+            "line": 292,
+            "text": "p = Path(fp)"
+          }
+        ]
+      },
+      "proof": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\sigma\\obsidia_sigma_v130.py",
+        "exists": true,
+        "line_count": 292,
+        "byte_count": 11294,
+        "imports": [
+          "json",
+          "os",
+          "time",
+          "hashlib",
+          "from pathlib import Path",
+          "from typing import List, Dict, Any, Optional"
+        ],
+        "functions": [
+          "_load_sigma_config"
+        ],
+        "classes": [
+          "ObsidiaSigmaMonitor"
+        ],
+        "constants": [
+          "SEVERITY_MAP",
+          "_DEFAULT_TAU_MIN",
+          "_DEFAULT_TAU_MAX",
+          "_DEFAULT_ACCEL_LIMIT"
+        ],
+        "risk_hits": [
+          {
+            "line": 6,
+            "text": "- Les seuils sont lus depuis sigma/sigma_config.json si present."
+          },
+          {
+            "line": 17,
+            "text": "monitor.evaluate_step(severity, risks, contras)"
+          },
+          {
+            "line": 31,
+            "text": "# Valeurs par defaut v1.4.0 (utilisees si sigma_config.json absent)"
+          },
+          {
+            "line": 37,
+            "text": "def _load_sigma_config(config_path: str = \"sigma/sigma_config.json\") -> Dict[str, Any]:"
+          },
+          {
+            "line": 42,
+            "text": "p = Path(config_path)"
+          },
+          {
+            "line": 45,
+            "text": "with open(p, \"r\", encoding=\"utf-8\") as f:"
+          },
+          {
+            "line": 57,
+            "text": "Les seuils sont charges depuis sigma/sigma_config.json (si present),"
+          },
+          {
+            "line": 67,
+            "text": "config_path: str = \"sigma/sigma_config.json\","
+          },
+          {
+            "line": 70,
+            "text": "cfg = _load_sigma_config(config_path)"
+          },
+          {
+            "line": 77,
+            "text": "self.config_source = config_path if Path(config_path).exists() else \"defaults_v1.4.0\""
+          },
+          {
+            "line": 106,
+            "text": "def _to_vector(self, severity: str, risk_count: int, contra_count: int) -> float:"
+          },
+          {
+            "line": 107,
+            "text": "base = SEVERITY_MAP.get(severity, 0.0)"
+          },
+          {
+            "line": 116,
+            "text": "severity: str,"
+          },
+          {
+            "line": 125,
+            "text": "z_t = self._to_vector(severity, len(risks), len(contras))"
+          },
+          {
+            "line": 130,
+            "text": "\"severity\": severity,"
+          },
+          {
+            "line": 264,
+            "text": "path = Path(report_path)"
+          },
+          {
+            "line": 268,
+            "text": "with open(path, \"r\", encoding=\"utf-8\") as f:"
+          },
+          {
+            "line": 275,
+            "text": "with open(path, \"w\", encoding=\"utf-8\") as f:"
+          },
+          {
+            "line": 276,
+            "text": "json.dump(existing, f, indent=2)"
+          },
+          {
+            "line": 289,
+            "text": "p = Path(fp)"
+          }
+        ]
+      },
+      "diff_path": "docs\\core_import\\P56C_AUDIT_ONLY_P10_obsidia_sigma_v130.py.diff",
+      "added_functions": [],
+      "removed_functions": [],
+      "added_imports": [],
+      "removed_imports": [],
+      "decision": "CONFIG_PATH_CONFLICT_REQUIRES_DECISION",
+      "blocking": true,
+      "notes": [
+        "Default config path differs: core agents/sigma_config.json vs proof sigma/sigma_config.json.",
+        "Proof adds explicit UTF-8 encoding for file IO."
+      ]
+    },
+    {
+      "id": "P11",
+      "name": "run_pipeline.py",
+      "focus": "runtime pipeline behavior",
+      "core": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\_tmp_core_import\\OBSIDIA_CORE_ONLY_FULL_MACHINERY\\python_agents\\run_pipeline.py",
+        "exists": true,
+        "line_count": 59,
+        "byte_count": 1970,
+        "imports": [
+          "sys",
+          "json",
+          "dataclasses",
+          "from pathlib import Path",
+          "from python_agents.contracts import TradingState, BankState, EcomState",
+          "from python_agents.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline"
+        ],
+        "functions": [
+          "envelope_to_dict",
+          "main"
+        ],
+        "classes": [],
+        "constants": [
+          "ROOT"
+        ],
+        "risk_hits": [
+          {
+            "line": 13,
+            "text": "ROOT = Path(__file__).resolve().parent.parent"
+          },
+          {
+            "line": 26,
+            "text": "print(json.dumps({\"error\": \"Usage: run_pipeline.py <domain> <json_state>\"}), file=sys.stderr)"
+          },
+          {
+            "line": 33,
+            "text": "print(json.dumps({\"error\": f\"Invalid JSON state: {e}\"}), file=sys.stderr)"
+          },
+          {
+            "line": 47,
+            "text": "print(json.dumps({\"error\": f\"Unknown domain: {domain}. Use trading|bank|ecom\"}), file=sys.stderr)"
+          },
+          {
+            "line": 50,
+            "text": "print(json.dumps(envelope_to_dict(result)))"
+          },
+          {
+            "line": 52,
+            "text": "print(json.dumps({\"error\": f\"State construction error: {e}\"}), file=sys.stderr)"
+          },
+          {
+            "line": 55,
+            "text": "print(json.dumps({\"error\": f\"Pipeline error: {e}\"}), file=sys.stderr)"
+          }
+        ]
+      },
+      "proof": {
+        "path": "C:\\Users\\User\\Desktop\\obsidia-engine-proof-core\\obsidia-x108-proofs_REMOTE_A5F21C6B\\sigma\\run_pipeline.py",
+        "exists": true,
+        "line_count": 271,
+        "byte_count": 8053,
+        "imports": [
+          "sys",
+          "json",
+          "dataclasses",
+          "math",
+          "from pathlib import Path",
+          "from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState",
+          "from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline",
+          "from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor"
+        ],
+        "functions": [
+          "load_state",
+          "_is_plain_number",
+          "_require_number",
+          "_require_int",
+          "validate_bank_payload",
+          "apply_sigma",
+          "envelope_to_dict",
+          "main"
+        ],
+        "classes": [],
+        "constants": [
+          "ROOT",
+          "REQUIRED_BANK_FIELDS",
+          "ALLOWED_BANK_FIELDS",
+          "BANK_STRING_FIELDS",
+          "BANK_BOOL_FIELDS",
+          "BANK_INT_FIELDS",
+          "BANK_NUMERIC_FIELDS",
+          "BANK_UNIT_SCORE_FIELDS",
+          "BANK_NON_NEGATIVE_FIELDS"
+        ],
+        "risk_hits": [
+          {
+            "line": 13,
+            "text": "ROOT = Path(__file__).resolve().parent.parent"
+          },
+          {
+            "line": 18,
+            "text": "from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline"
+          },
+          {
+            "line": 41,
+            "text": "ALLOWED_BANK_FIELDS = {f.name for f in dataclasses.fields(BankState)}"
+          },
+          {
+            "line": 51,
+            "text": "JSON must be parsed before trying Path(arg).exists(), otherwise Linux can"
+          },
+          {
+            "line": 65,
+            "text": "p = Path(raw)"
+          },
+          {
+            "line": 178,
+            "text": "unknown = sorted(set(state_data.keys()) - ALLOWED_BANK_FIELDS)"
+          },
+          {
+            "line": 204,
+            "text": "severity=result_dict.get(\"severity\", \"S0\"),"
+          },
+          {
+            "line": 212,
+            "text": "result_dict[\"market_verdict\"] = \"HOLD_STABILITY_ALERT\""
+          },
+          {
+            "line": 213,
+            "text": "result_dict[\"severity\"] = \"S4\""
+          },
+          {
+            "line": 214,
+            "text": "result_dict[\"sigma_override\"] = True"
+          },
+          {
+            "line": 216,
+            "text": "result_dict[\"sigma_override\"] = False"
+          },
+          {
+            "line": 229,
+            "text": "print(json.dumps({\"error\": \"Usage: run_pipeline.py <domain> <json_state_or_json_file>\"}), file=sys.stderr)"
+          },
+          {
+            "line": 236,
+            "text": "print(json.dumps({\"error\": f\"Invalid JSON input: {e}\"}), file=sys.stderr)"
+          },
+          {
+            "line": 239,
+            "text": "sigma = ObsidiaSigmaMonitor(config_path=str(ROOT / \"sigma\" / \"sigma_config.json\"))"
+          },
+          {
+            "line": 252,
+            "text": "elif domain == \"gps_defense_aviation\":"
+          },
+          {
+            "line": 254,
+            "text": "result = run_gps_defense_aviation_pipeline(state)"
+          },
+          {
+            "line": 256,
+            "text": "print(json.dumps({\"error\": f\"Unknown domain: {domain}. Use trading|bank|ecom|gps_defense_aviation\"}), file=sys.stderr)"
+          },
+          {
+            "line": 261,
+            "text": "print(json.dumps(result_dict, ensure_ascii=False))"
+          },
+          {
+            "line": 263,
+            "text": "print(json.dumps({\"error\": f\"State validation error: {e}\"}), file=sys.stderr)"
+          },
+          {
+            "line": 266,
+            "text": "print(json.dumps({\"error\": f\"Pipeline error: {e}\"}), file=sys.stderr)"
+          }
+        ]
+      },
+      "diff_path": "docs\\core_import\\P56C_AUDIT_ONLY_P11_run_pipeline.py.diff",
+      "added_functions": [
+        "_is_plain_number",
+        "_require_int",
+        "_require_number",
+        "apply_sigma",
+        "load_state",
+        "validate_bank_payload"
+      ],
+      "removed_functions": [],
+      "added_imports": [
+        "from sigma.contracts import TradingState, BankState, EcomState, GpsDefenseAviationState",
+        "from sigma.obsidia_sigma_v130 import ObsidiaSigmaMonitor",
+        "from sigma.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline, run_gps_defense_aviation_pipeline",
+        "math"
+      ],
+      "removed_imports": [
+        "from python_agents.contracts import TradingState, BankState, EcomState",
+        "from python_agents.protocols import run_trading_pipeline, run_bank_pipeline, run_ecom_pipeline"
+      ],
+      "decision": "RUNTIME_BEHAVIOR_DELTA_REQUIRES_ADAPTER",
+      "blocking": true,
+      "notes": [
+        "Proof runner adds Sigma application layer.",
+        "Proof runner may mutate output market_verdict/severity via apply_sigma.",
+        "Do not overwrite core python_agents/run_pipeline.py."
+      ]
+    }
+  ]
+}

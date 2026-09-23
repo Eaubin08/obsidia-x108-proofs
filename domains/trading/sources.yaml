@@ -1,0 +1,7 @@
+status: REFERENCE_ONLY
+sources:
+  - "external://OBSIDIA_TRADING"
+  - "domains/trading/"
+  - "domain_packets/trading_decisional_form_v0.yaml"
+  - "sigma/domains/trading_agents.py"
+note: "Source mapping only. No code copied or migrated."

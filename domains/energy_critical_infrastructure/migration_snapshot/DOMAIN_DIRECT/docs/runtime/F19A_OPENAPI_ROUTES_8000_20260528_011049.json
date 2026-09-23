@@ -1,0 +1,24 @@
+{
+  "http_status": 200,
+  "routes": [
+    "/api/blockchain/gencoin/compute",
+    "/api/brody/chat",
+    "/api/gencoin",
+    "/api/periphery/brody/context-query",
+    "/api/periphery/brody/diffusion-mix",
+    "/api/periphery/brody/double-brain-route",
+    "/api/periphery/brody/language-route",
+    "/api/periphery/gencoin/avdr-phase",
+    "/api/periphery/gencoin/balance",
+    "/api/periphery/gencoin/collective-summary",
+    "/api/periphery/gencoin/consciousness-regime",
+    "/api/periphery/gencoin/passfail",
+    "/api/periphery/gencoin/regime-state",
+    "/api/periphery/monitoring/brody-cli-registry",
+    "/api/periphery/monitoring/brody-historical-convergence",
+    "/api/periphery/monitoring/brody-trace-analyze",
+    "/api/periphery/pipeline/energy-thermo",
+    "/api/x108/memory/replay/coherence",
+    "/api/x108/timeverse/sync"
+  ]
+}

@@ -1,0 +1,1558 @@
+# BRODY_PHASE11A_FULL_MACHINATION_KERNEL_CONTRACT_AUDIT_20260527
+
+Status: DIAGNOSTIC_ONLY
+
+## Scope
+Full audit before native Brody composition build.
+
+## Goals
+- Identify existing Brody machination layers.
+- Identify existing authority, permission, kernel, X108, boundary, Reverse OS and signal contracts.
+- Identify what is already returned by /api/brody/chat.
+- Identify what is terminal-visible.
+- Identify what is UI-visible.
+- Avoid rebuilding existing stabilized contracts.
+
+## Git baseline
+- ## main...origin/main
+- ?? docs/runtime/BRODY_PHASE10A_REAL_USER_TERMINAL_COMPARE_20260527.md
+- ?? docs/runtime/BRODY_PHASE10C_RIGHTPANEL_SUPPORT_VISIBILITY_AUDIT_20260527.md
+- ?? scripts/smoke_phase10_real_user_terminal_compare.ps1
+
+## Recent commits
+- d69b5c9 feat: add terminal enriched Brody support flow phase 10E
+- 2dd4709 docs: freeze final reconnect audit phase 9B5
+- f0c9ecf feat: reconnect UI terminal support routes phase 9B4
+- d419ef6 docs: add live OS Trad IR Reverse smoke phase 9B3
+- 1e126f2 feat: add OS Trad IR Reverse backend routes phase 9B2
+- 73edf3f docs: remove BOM from phase 9B1 route contract
+- 1245817 docs: define OS Trad IR Reverse route contract phase 9B1
+- b3dccba docs: validate full surface binding phase 9B0
+- 0639db5 docs: audit backend archaeology phase 9A
+- 59ced11 docs: freeze Brody adaptation position phase 8F
+- 6345c3b docs: map Brody capability origin phase 8
+- 2b3f768 docs: freeze live connectors phase 7G
+
+## Server matrix
+- port=8012 status=LISTEN pid=7816 process=python
+- port=8011 status=LISTEN pid=20808 process=python
+- port=5173 status=LISTEN pid=21736 process=node
+- port=7688 status=LISTEN pid=17116 process=wslrelay
+- port=7688 status=LISTEN pid=17252 process=com.docker.backend
+- port=7475 status=LISTEN pid=17116 process=wslrelay
+- port=7475 status=LISTEN pid=17252 process=com.docker.backend
+- port=8001 status=LISTEN pid=17116 process=wslrelay
+- port=8001 status=LISTEN pid=17252 process=com.docker.backend
+- port=3002 status=DOWN pid= process=
+
+## HTTP health
+- name=brody_openapi status=OK code=200 length=91258 url=http://127.0.0.1:8012/openapi.json
+- name=brody_memory_status status=OK code=200 length=424 url=http://127.0.0.1:8012/api/memory/status
+- name=brody_graphiti_status status=OK code=200 length=1391 url=http://127.0.0.1:8012/api/graphiti/status
+- name=graphiti_v20_status status=OK code=200 length=390 url=http://127.0.0.1:8011/graph/v20/frozen/status
+- name=graphiti_v20_context status=OK code=200 length=7741 url=http://127.0.0.1:8011/graph/v20/frozen/context?q=X-108&limit=3
+- name=workbench_ui status=OK code=200 length=659 url=http://127.0.0.1:5173
+
+## Files inspected
+- exists=True length=12405 path=apps/obsidia_api/routes/brody.py
+- exists=True length=13909 path=apps/obsidia_api/routes/os_trad_ir_reverse.py
+- exists=True length=40608 path=apps/obsidia_api/routes/periphery_ops.py
+- exists=True length=10975 path=apps/obsidia_api/routes/graphiti.py
+- exists=True length=5587 path=apps/obsidia_api/routes/memory.py
+- exists=True length=17019 path=apps/obsidia_api/routes/x108.py
+- exists=True length=409 path=apps/obsidia_api/routes/audit.py
+- exists=True length=21050 path=apps/obsidia_api/brody_rights_authority_matrix.py
+- exists=True length=8286 path=apps/obsidia_api/brody_real_response_pipeline.py
+- exists=True length=8258 path=apps/obsidia_api/brody_full_runtime_reconnect.py
+- exists=True length=34649 path=apps/obsidia_api/brody_true_voice_adapter.py
+- exists=True length=16622 path=apps/obsidia_api/brody_automation_orchestrator.py
+- exists=True length=9267 path=apps/obsidia_api/brody_semantic_query_router.py
+- exists=True length=25344 path=apps/obsidia_api/brody_memory_response_chain_adapter.py
+- exists=True length=3590 path=apps/obsidia_api/brody_candidate_memory_adapter.py
+- exists=True length=3112 path=apps/obsidia_api/brody_operator_loop_adapter.py
+- exists=True length=2319 path=apps/obsidia_api/brody_tree_policy_adapter.py
+- exists=True length=4664 path=apps/obsidia_api/brody_temporal_context_adapter.py
+- exists=True length=4446 path=apps/obsidia_api/brody_cognitive_modules_adapter.py
+- exists=True length=8511 path=apps/obsidia_api/brody_project_memory_adapter.py
+- exists=True length=4534 path=apps/obsidia_api/brody_runtime_context_adapter.py
+- exists=True length=2576 path=apps/obsidia_api/brody_safe_snapshot.py
+- exists=True length=16894 path=apps/obsidia_api/brody_freeze_metrics_snapshot.py
+- exists=True length=2026 path=apps/obsidia_api/safe_response.py
+- exists=True length=8139 path=tools/brody_chat.py
+- exists=True length=5546 path=scripts/run_brody_terminal_enriched.ps1
+- exists=True length=1257 path=scripts/run_brody_terminal.ps1
+- exists=True length=1256 path=scripts/run_brody_terminal_chat.ps1
+- exists=True length=9653 path=apps/obsidia-workbench/src/App.tsx
+- exists=True length=42577 path=apps/obsidia-workbench/src/components/RightPanel.tsx
+- exists=True length=13141 path=apps/obsidia-workbench/src/api/obsidiaClient.ts
+
+## OpenAPI routes
+- route=/api/brody/chat exists=True
+- route=/api/os-trad/translate exists=True
+- route=/api/ir/candidate exists=True
+- route=/api/os-reverse/project exists=True
+- route=/api/memory/status exists=True
+- route=/api/graphiti/status exists=True
+- route=/api/periphery/cognitive/trees exists=True
+- route=/api/periphery/cognitive/memory-world-map exists=True
+- route=/api/periphery/graphiti/context-adapt exists=True
+- route=/api/x108/status exists=True
+- route=/api/audit/status exists=False
+
+## /api/brody/chat live meta
+- source=REAL_BRODY_GRAPHITI_LIVE
+- graphiti_status=GRAPHITI_LIVE_READONLY_PASS
+- neo4j_status=LIVE_READONLY
+- readonly=True
+- emits_act=False
+- memory_write=False
+- graphiti_write=False
+- kernel_mutation=False
+- decision_authority=KX108_ONLY
+
+## /api/brody/chat expected field presence
+- field=authority_snapshot present=True
+- field=automation_snapshot present=True
+- field=structured_response_snapshot present=True
+- field=freeze_metrics_snapshot present=True
+- field=semantic_query_snapshot present=True
+- field=memory_response_chain_snapshot present=True
+- field=project_memory_snapshot present=True
+- field=session_memory_snapshot present=True
+- field=candidate_memory_snapshot present=True
+- field=operator_loop_snapshot present=True
+- field=tree_policy_snapshot present=True
+- field=temporal_context_snapshot present=True
+- field=cognitive_modules_snapshot present=True
+- field=runtime_context present=True
+- field=translation_trace present=True
+- field=ir_candidate present=True
+- field=support_routes present=False
+- field=support_summary present=False
+- field=machination_packet present=False
+- field=contracts present=False
+- field=authority_contract present=False
+- field=permission_matrix present=False
+- field=kernel_contract present=False
+- field=boundary_contract present=False
+- field=signal_contract present=False
+
+## Machination evidence hits
+- .\apps\obsidia_api\routes\brody.py:1: """POST /api/brody/chat — Brody runtime + V1.4.12A final_answer layer."""
+- .\apps\obsidia_api\routes\brody.py:12: from apps.obsidia_api.brody_semantic_query_router import build_semantic_query
+- .\apps\obsidia_api\routes\brody.py:13: from apps.obsidia_api.brody_memory_response_chain_adapter import build_memory_response_chain
+- .\apps\obsidia_api\routes\brody.py:14: from apps.obsidia_api.brody_candidate_memory_adapter import build_candidate_memory_snapshot
+- .\apps\obsidia_api\routes\brody.py:15: from apps.obsidia_api.brody_operator_loop_adapter import build_operator_loop_snapshot
+- .\apps\obsidia_api\routes\brody.py:16: from apps.obsidia_api.brody_tree_policy_adapter import build_tree_policy_snapshot
+- .\apps\obsidia_api\routes\brody.py:17: from apps.obsidia_api.brody_temporal_context_adapter import build_temporal_context_snapshot
+- .\apps\obsidia_api\routes\brody.py:18: from apps.obsidia_api.brody_cognitive_modules_adapter import build_cognitive_modules_snapshot
+- .\apps\obsidia_api\routes\brody.py:19: from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context
+- .\apps\obsidia_api\routes\brody.py:20: from apps.obsidia_api.brody_project_memory_adapter import build_project_memory_snapshot
+- .\apps\obsidia_api\routes\brody.py:26: from apps.obsidia_api.brody_freeze_metrics_snapshot import build_freeze_metrics_snapshot
+- .\apps\obsidia_api\routes\brody.py:28: from apps.obsidia_api.safe_response import safe_backend_response, strip_forbidden_tokens
+- .\apps\obsidia_api\routes\brody.py:74: context_packet = r.get("context_packet", {})
+- .\apps\obsidia_api\routes\brody.py:78: freeze_metrics_snapshot = build_freeze_metrics_snapshot()
+- .\apps\obsidia_api\routes\brody.py:79: authority_snapshot = classify_request_authority(req.message, {}, context_packet)
+- .\apps\obsidia_api\routes\brody.py:80: request_type = authority_snapshot.get("request_type", "PURE_RESPONSE")
+- .\apps\obsidia_api\routes\brody.py:82: automation_snapshot = safe_call_snapshot("automation_snapshot", run_brody_automation_layer,
+- .\apps\obsidia_api\routes\brody.py:85: authority_snapshot=authority_snapshot, context_packet=context_packet, response_md=response_md)
+- .\apps\obsidia_api\routes\brody.py:89: context_packet=context_packet, ir_candidate={}, risk=action_risk,
+- .\apps\obsidia_api\routes\brody.py:90: structured_response_snapshot=structured_response_snapshot, freeze_metrics_snapshot=freeze_metrics_snapshot)
+- .\apps\obsidia_api\routes\brody.py:94: semantic_query_snapshot = build_semantic_query(req.message)
+- .\apps\obsidia_api\routes\brody.py:96: for key in ("primary_query", "semantic_query", "normalized_message"):
+- .\apps\obsidia_api\routes\brody.py:97: if key in semantic_query_snapshot:
+- .\apps\obsidia_api\routes\brody.py:98: semantic_query_snapshot[key] = normalize_brody_text(str(semantic_query_snapshot[key]))
+- .\apps\obsidia_api\routes\brody.py:99: if semantic_query_snapshot.get("topic") == "GENERAL":
+- .\apps\obsidia_api\routes\brody.py:102: semantic_query_snapshot["topic"] = "FOLLOWUP"
+- .\apps\obsidia_api\routes\brody.py:103: semantic_query_snapshot["primary_query"] = fw
+- .\apps\obsidia_api\routes\brody.py:104: semantic_query_snapshot["semantic_query"] = fw
+- .\apps\obsidia_api\routes\brody.py:106: memory_response_chain = safe_call_snapshot("memory_response_chain", build_memory_response_chain,
+- .\apps\obsidia_api\routes\brody.py:107: user_message=req.message, semantic_query=semantic_query_snapshot.get("semantic_query", req.message),
+- .\apps\obsidia_api\routes\brody.py:112: context_packet=context_packet, structured_response_snapshot=structured_response_snapshot,
+- .\apps\obsidia_api\routes\brody.py:113: freeze_metrics_snapshot=freeze_metrics_snapshot, authority_snapshot=authority_snapshot,
+- .\apps\obsidia_api\routes\brody.py:114: automation_snapshot=automation_snapshot, memory_response_chain_snapshot=memory_response_chain,
+- .\apps\obsidia_api\routes\brody.py:115: semantic_query_snapshot=semantic_query_snapshot)
+- .\apps\obsidia_api\routes\brody.py:122: chain_md = memory_response_chain.get("response_md", "")
+- .\apps\obsidia_api\routes\brody.py:123: chain_pass = memory_response_chain.get("status") == "BRODY_MEMORY_RESPONSE_CHAIN_PASS"
+- .\apps\obsidia_api\routes\brody.py:124: chain_has_mat = memory_response_chain.get("material_quality") in ("USABLE_MATERIAL", "PARTIAL_MATERIAL")
+- .\apps\obsidia_api\routes\brody.py:132: raw_final_answer = v1412a_final or response_md or "Brody - reponse structurelle indisponible. KX108_ONLY."
+- .\apps\obsidia_api\routes\brody.py:134: final_answer = normalize_brody_text(strip_forbidden_tokens(
+- .\apps\obsidia_api\routes\brody.py:135: enrich_final_answer_with_automation(raw_final_answer, automation_snapshot, req.language)))
+- .\apps\obsidia_api\routes\brody.py:141: cand_snap = safe_call_snapshot("candidate_memory", build_candidate_memory_snapshot)
+- .\apps\obsidia_api\routes\brody.py:142: oploop_snap = safe_call_snapshot("operator_loop", build_operator_loop_snapshot)
+- .\apps\obsidia_api\routes\brody.py:143: trees_snap = safe_call_snapshot("tree_policy", build_tree_policy_snapshot, authority_snapshot=authority_snapshot)
+- .\apps\obsidia_api\routes\brody.py:145: temp_snap = safe_call_snapshot("temporal_context", build_temporal_context_snapshot,
+- .\apps\obsidia_api\routes\brody.py:146: session_memory=ses_snap, memory_chain=memory_response_chain,
+- .\apps\obsidia_api\routes\brody.py:147: candidate_memory=cand_snap, freeze_metrics=freeze_metrics_snapshot,
+- .\apps\obsidia_api\routes\brody.py:148: semantic_query=semantic_query_snapshot, authority=authority_snapshot)
+- .\apps\obsidia_api\routes\brody.py:149: cog_snap = safe_call_snapshot("cognitive_modules", build_cognitive_modules_snapshot, user_message=req.message)
+- .\apps\obsidia_api\routes\brody.py:152: proj_snap = safe_call_snapshot("project_memory", build_project_memory_snapshot,
+- .\apps\obsidia_api\routes\brody.py:153: freeze_metrics=freeze_metrics_snapshot)
+- .\apps\obsidia_api\routes\brody.py:155: # runtime_context — top-level envelope of all snapshots
+- .\apps\obsidia_api\routes\brody.py:157: runtime_context = safe_call_snapshot("runtime_context", build_runtime_context,
+- .\apps\obsidia_api\routes\brody.py:158: semantic_query_snapshot=semantic_query_snapshot,
+- .\apps\obsidia_api\routes\brody.py:159: authority_snapshot=authority_snapshot,
+- .\apps\obsidia_api\routes\brody.py:161: project_memory_snapshot=proj_snap,
+- .\apps\obsidia_api\routes\brody.py:162: memory_response_chain_snapshot=memory_response_chain,
+- .\apps\obsidia_api\routes\brody.py:163: freeze_metrics_snapshot=freeze_metrics_snapshot,
+- .\apps\obsidia_api\routes\brody.py:164: automation_snapshot=automation_snapshot,
+- .\apps\obsidia_api\routes\brody.py:165: candidate_memory_snapshot=cand_snap,
+- .\apps\obsidia_api\routes\brody.py:166: operator_loop_snapshot=oploop_snap,
+- .\apps\obsidia_api\routes\brody.py:167: tree_policy_snapshot=trees_snap,
+- .\apps\obsidia_api\routes\brody.py:168: temporal_context_snapshot=temp_snap,
+- .\apps\obsidia_api\routes\brody.py:169: cognitive_modules_snapshot=cog_snap,
+- .\apps\obsidia_api\routes\brody.py:178: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\brody.py:179: "emits_act": False,
+- .\apps\obsidia_api\routes\brody.py:180: "memory_write": False,
+- .\apps\obsidia_api\routes\brody.py:182: "kernel_mutation": False,
+- .\apps\obsidia_api\routes\brody.py:185: "graphiti_status": r.get("graphiti_status", ""),
+- .\apps\obsidia_api\routes\brody.py:187: "neo4j_status": r.get("neo4j_status", ""),
+- .\apps\obsidia_api\routes\brody.py:190: "context_packet": context_packet,
+- .\apps\obsidia_api\routes\brody.py:191: "x108_boundary": r.get("x108_boundary", {"passed": True, "status": "READONLY"}),
+- .\apps\obsidia_api\routes\brody.py:196: "ir_candidate": {
+- .\apps\obsidia_api\routes\brody.py:200: "allowed_to_decide": False, "allowed_to_act": False,
+- .\apps\obsidia_api\routes\brody.py:201: "memory_write": False, "kernel_mutation": False, "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\brody.py:203: "translation_trace": {
+- .\apps\obsidia_api\routes\brody.py:205: "os_trad_status": "READONLY_PASS", "alphabet_units": [],
+- .\apps\obsidia_api\routes\brody.py:206: "os_reverse_projection": {"readonly": True, "advisory_only": True},
+- .\apps\obsidia_api\routes\brody.py:207: "x108_boundary_status": "READONLY", "readonly": True,
+- .\apps\obsidia_api\routes\brody.py:208: "allowed_to_decide": False, "allowed_to_act": False,
+- .\apps\obsidia_api\routes\brody.py:209: "memory_write": False, "kernel_mutation": False, "source": "REAL_BACKEND",
+- .\apps\obsidia_api\routes\brody.py:211: "authority_snapshot": authority_snapshot,
+- .\apps\obsidia_api\routes\brody.py:212: "automation_snapshot": automation_snapshot,
+- .\apps\obsidia_api\routes\brody.py:214: "freeze_metrics_snapshot": freeze_metrics_snapshot,
+- .\apps\obsidia_api\routes\brody.py:215: "semantic_query_snapshot": semantic_query_snapshot,
+- .\apps\obsidia_api\routes\brody.py:216: "memory_response_chain_snapshot": memory_response_chain,
+- .\apps\obsidia_api\routes\brody.py:217: "project_memory_snapshot": proj_snap,
+- .\apps\obsidia_api\routes\brody.py:222: "candidate_memory_snapshot": cand_snap,
+- .\apps\obsidia_api\routes\brody.py:223: "operator_loop_snapshot": oploop_snap,
+- .\apps\obsidia_api\routes\brody.py:224: "tree_policy_snapshot": trees_snap,
+- .\apps\obsidia_api\routes\brody.py:225: "temporal_context_snapshot": temp_snap,
+- .\apps\obsidia_api\routes\brody.py:226: "cognitive_modules_snapshot": cog_snap,
+- .\apps\obsidia_api\routes\brody.py:227: "runtime_context": runtime_context,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:1: """Readonly OS Trad / IR Candidate / OS Reverse backend supporting routes.
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:6: They do not replace /api/brody/chat.
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:29: from periphery.reverse_os.action_projection_readonly import project_action_readonly
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:31: project_action_readonly = None
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:48: "readonly": True,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:49: "advisory_only": True,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:50: "allowed_to_decide": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:51: "allowed_to_act": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:52: "emits_act": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:53: "emits_verdict": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:54: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:55: "memory_write": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:58: "kernel_mutation": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:59: "x108_mutation": False,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:86: ir_candidate: dict[str, Any] = Field(default_factory=dict)
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:120: en_markers = ["hello", "explain", "what", "why", "error", "debug", "memory", "readonly"]
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:145: if any(token in low for token in ["memory_write", "écris en mémoire", "write memory", "graphiti_write", "neo4j_write"]):
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:173: {"kind": "boundary", "value": "KX108_ONLY", "source": "REAL_BACKEND"},
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:174: {"kind": "readonly", "value": True, "source": "REAL_BACKEND"},
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:192: "READONLY",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:193: "ADVISORY_ONLY",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:196: "NO_MEMORY_WRITE",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:198: "NO_KERNEL_MUTATION",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:199: "NO_X108_MUTATION",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:200: "DECISION_AUTHORITY_KX108_ONLY",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:204: values.append("ACTION_REQUEST_FORCED_TO_READONLY_PROJECTION")
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:229: @router.post("/api/os-trad/translate")
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:230: async def os_trad_translate(req: OSTradTranslateRequest):
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:245: "route": "/api/os-trad/translate",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:254: "mode": "optional_readonly_context",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:259: "mode": "optional_readonly_context",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:276: @router.post("/api/ir/candidate")
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:277: async def ir_candidate(req: IRCandidateRequest):
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:285: contradictions.append("REQUEST_REQUIRES_ACTION_BUT_ROUTE_IS_READONLY")
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:302: "route": "/api/ir/candidate",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:303: "ir_candidate": ir,
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:319: @router.post("/api/os-reverse/project")
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:320: async def os_reverse_project(req: OSReverseProjectRequest):
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:323: intent = str(req.ir_candidate.get("intent") or _intent(req.text, flags))
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:326: if project_action_readonly:
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:328: action_projection = _plain(project_action_readonly("phase9b2_reverse", intent, req.text))
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:330: action_projection = {"error": str(exc), "source": "project_action_readonly"}
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:351: summary = "Readonly projection generated. No action, verdict, memory write, Graphiti write, kernel mutation, or X108 mutation emitted."
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:353: summary = "Projection readonly générée. Aucune action, aucun verdict, aucune écriture mémoire, aucune écriture Graphiti, aucune mutation kernel ou X108."
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:358: "route": "/api/os-reverse/project",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:361: "response_mode": "readonly_projection",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:364: "boundary_notice": "KX108_ONLY",
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py:376: "periphery/reverse_os/action_projection_readonly.py",
+- .\apps\obsidia_api\routes\periphery_ops.py:32: from periphery.agent_contracts import AgentLayer, NonSovereignAgentSpec
+- .\apps\obsidia_api\routes\periphery_ops.py:47: from periphery.context.context_packet_builder import build_context_packet
+- .\apps\obsidia_api\routes\periphery_ops.py:48: from periphery.context.context_packet_sanitizer import sanitize_context_packet
+- .\apps\obsidia_api\routes\periphery_ops.py:49: from periphery.context.context_packet_validator import validate_context_packet
+- .\apps\obsidia_api\routes\periphery_ops.py:50: from periphery.context.context_packet_exporter import export_context_packet
+- .\apps\obsidia_api\routes\periphery_ops.py:51: from periphery.x108_ingress.readonly_context_ingress import ingest_readonly_context
+- .\apps\obsidia_api\routes\periphery_ops.py:67: from periphery.interface.interface_view_contracts import BRODY_VIEW_CONTRACT, MEMORY_VIEW_CONTRACT, GRAPHITI_VIEW_CONTRACT, CONTEXT_VIEW_CONTRACT
+- .\apps\obsidia_api\routes\periphery_ops.py:68: from periphery.mcp.mcp_permission_matrix import evaluate_tool_access
+- .\apps\obsidia_api\routes\periphery_ops.py:98: from periphery.graphiti.graphiti_readonly_bridge import GraphitiContextResult, query_graphiti_readonly
+- .\apps\obsidia_api\routes\periphery_ops.py:102: from periphery.feedback_memory_bridge_brody_readonly import build_memory_candidate as build_bridge_memory_candidate
+- .\apps\obsidia_api\routes\periphery_ops.py:109: "readonly": True,
+- .\apps\obsidia_api\routes\periphery_ops.py:110: "emits_act": False,
+- .\apps\obsidia_api\routes\periphery_ops.py:111: "memory_write": False,
+- .\apps\obsidia_api\routes\periphery_ops.py:112: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\periphery_ops.py:227: graphiti_status: str = "READY"
+- .\apps\obsidia_api\routes\periphery_ops.py:628: packet = build_context_packet(body.action_id, body.signals, body.status)
+- .\apps\obsidia_api\routes\periphery_ops.py:634: result = sanitize_context_packet(body.packet_id, body.context_items)
+- .\apps\obsidia_api\routes\periphery_ops.py:640: result = validate_context_packet(body.packet)
+- .\apps\obsidia_api\routes\periphery_ops.py:646: result = export_context_packet(body.packet)
+- .\apps\obsidia_api\routes\periphery_ops.py:652: ingress = ingest_readonly_context(body.action_id, {"signals": body.signals, "status": body.status})
+- .\apps\obsidia_api\routes\periphery_ops.py:722: packet = build_interface_state_packet(body.session_id, body.phase, body.memory_status, body.brody_status, body.graphiti_status)
+- .\apps\obsidia_api\routes\periphery_ops.py:741: @router.get("/interface/view-contracts")
+- .\apps\obsidia_api\routes\periphery_ops.py:742: async def periphery_view_contracts():
+- .\apps\obsidia_api\routes\periphery_ops.py:919: graphiti_result: GraphitiContextResult = query_graphiti_readonly(body.query_id, body.query, body.max_nodes)
+- .\apps\obsidia_api\routes\periphery_ops.py:952: return safe_backend_response({"error": str(exc), "memory_write_allowed": False, **_BOUNDARY}, source="REAL_BACKEND")
+- .\apps\obsidia_api\routes\graphiti.py:1: """Graphiti proxy routes — readonly only.
+- .\apps\obsidia_api\routes\graphiti.py:18: from apps.obsidia_api.graphiti_v20_readonly_client import (
+- .\apps\obsidia_api\routes\graphiti.py:33: "graphiti_status": "FROZEN_READONLY" if gs == "REAL_MODULE" else "OFFLINE_OR_UNAVAILABLE",
+- .\apps\obsidia_api\routes\graphiti.py:42: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:49: async def graphiti_status():
+- .\apps\obsidia_api\routes\graphiti.py:54: "graphiti_status": payload.get("mode", "FROZEN_READONLY"),
+- .\apps\obsidia_api\routes\graphiti.py:68: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:81: packet = payload.get("context_packet", {}) or {}
+- .\apps\obsidia_api\routes\graphiti.py:82: llm_packet = payload.get("llm_context_packet", {}) or {}
+- .\apps\obsidia_api\routes\graphiti.py:100: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:103: "graphiti_role": payload.get("graphiti_role", "READONLY_CONTEXT_PROVIDER"),
+- .\apps\obsidia_api\routes\graphiti.py:111: "context_packet": packet,
+- .\apps\obsidia_api\routes\graphiti.py:112: "llm_context_packet": llm_packet,
+- .\apps\obsidia_api\routes\graphiti.py:116: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:123: if rt["graphiti"]["query_graphiti_readonly"]:
+- .\apps\obsidia_api\routes\graphiti.py:125: r = rt["graphiti"]["query_graphiti_readonly"](query_id="api", query=q, max_nodes=limit)
+- .\apps\obsidia_api\routes\graphiti.py:138: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:143: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:171: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:176: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:186: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:191: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:212: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:228: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:242: "mode": payload.get("mode", "FROZEN_READONLY_READINESS"),
+- .\apps\obsidia_api\routes\graphiti.py:246: "allowed_to_decide": payload.get("allowed_to_decide", False),
+- .\apps\obsidia_api\routes\graphiti.py:255: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:260: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\graphiti.py:271: "readonly": True,
+- .\apps\obsidia_api\routes\graphiti.py:276: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\memory.py:16: "memory_write": False,
+- .\apps\obsidia_api\routes\memory.py:26: "mode": "readonly_candidate_only",
+- .\apps\obsidia_api\routes\memory.py:27: "memory_write": False,
+- .\apps\obsidia_api\routes\memory.py:29: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\memory.py:67: "memory_write_allowed": c.memory_write_allowed,
+- .\apps\obsidia_api\routes\memory.py:97: "memory_write_allowed": c.memory_write_allowed,
+- .\apps\obsidia_api\routes\memory.py:110: "readonly": True,
+- .\apps\obsidia_api\routes\x108.py:1: """X108 routes — readonly status, ingress, cognitive & math endpoints."""
+- .\apps\obsidia_api\routes\x108.py:26: from periphery.brody_memory_readonly.memory_replay_query_regression_readonly.brody_memory_replay_query_regression_readonly_v1 import classify_record as _classify_replay_record, assert_boundary as _assert_replay_boundary, DEFAULT_QUERIES as _REPLAY_DEFAULT_QUERIES
+- .\apps\obsidia_api\routes\x108.py:27: from periphery.brody_memory_readonly.session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2 import validate_brody_response as _validate_ledger_response
+- .\apps\obsidia_api\routes\x108.py:28: from periphery.brody_memory_readonly.session_trace_ledger.brody_session_trace_ledger_readonly_v1_6_3 import BOUNDARY as _TRACE_LEDGER_BOUNDARY
+- .\apps\obsidia_api\routes\x108.py:33: "readonly": True,
+- .\apps\obsidia_api\routes\x108.py:34: "emits_act": False,
+- .\apps\obsidia_api\routes\x108.py:35: "memory_write": False,
+- .\apps\obsidia_api\routes\x108.py:36: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\x108.py:42: activations: list[float] = Field(default_factory=lambda: [0.1] * 34)
+- .\apps\obsidia_api\routes\x108.py:357: status = "SESSION_REPLAY_READONLY_PASS" if not boundary_violations else "SESSION_REPLAY_BOUNDARY_VIOLATION"
+- .\apps\obsidia_api\routes\x108.py:420: "status": "COHERENCE_COMPUTED_READONLY",
+- .\apps\obsidia_api\routes\x108.py:447: "audit_boundary": {k: v for k, v in _TRACE_LEDGER_BOUNDARY.items() if k in ("readonly", "memory_decision", "decision_authority", "kernel_mutation", "emits_act")},
+- .\apps\obsidia_api\routes\x108.py:457: "mode": "READONLY",
+- .\apps\obsidia_api\routes\x108.py:460: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\x108.py:461: "emits_act": False,
+- .\apps\obsidia_api\routes\x108.py:462: "memory_write": False,
+- .\apps\obsidia_api\routes\x108.py:463: "kernel_mutation": False,
+- .\apps\obsidia_api\routes\x108.py:471: @router.post("/readonly-ingress")
+- .\apps\obsidia_api\routes\x108.py:472: async def x108_readonly_ingress():
+- .\apps\obsidia_api\routes\x108.py:477: "status": "READONLY",
+- .\apps\obsidia_api\routes\x108.py:479: "readonly": True,
+- .\apps\obsidia_api\routes\x108.py:480: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\routes\x108.py:481: "allowed_to_decide": False,
+- .\apps\obsidia_api\routes\x108.py:482: "allowed_to_act": False,
+- .\apps\obsidia_api\routes\audit.py:14: "readonly": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:6: - BRODY_REAL_ARCHITECTURE_MAP_READONLY (2026-05-13)
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:7: - CURRENT_BRODY_HUMAN_COMMAND_PACKET_READONLY.txt
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:8: - CURRENT_BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY.txt
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:9: - T13_T34_SIGNAL_DISCOVERY_READONLY (2026-05-14)
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:11: - X108_boundary___kernel_decision_authority.json
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:40: MEMORY_WRITE_REQUEST      = "MEMORY_WRITE_REQUEST"
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:44: # ── Tree policy (source: T13_T34_SIGNAL_DISCOVERY_READONLY_20260514) ─────────
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:45: _TREE_POLICY: dict[str, Any] = {
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:53: "blocked_memory_reason": "BLOCKED_DIRECT_MEMORY_WRITE — T24 Arbre de la Memoire",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:54: "blocked_agi": ["T30", "T31", "T32", "T33", "T34"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:60: "source": "T13_T34_SIGNAL_DISCOVERY_READONLY_20260514_025500",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:99: (MEMORY_WRITE_REQUEST, [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:122: r"utilise.?les.?arbres?", r"utilise.?les.?34.?arbres?",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:126: r"curriculum.?tree", r"34\s+arbres?",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:254: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:261: "brody_must_not": ["decider", "emettre_act", "ecrire_memoire"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:262: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:263: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:264: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:269: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:274: "expliquer_role_kx108_decision_authority",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:277: "expliquer_automation_snapshot",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:280: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:288: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:289: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:290: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:295: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:296: "lire_graphiti_readonly",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:297: "lire_context_packet",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:304: "brody_must_not": ["modifier_memoire", "decider", "emettre_act"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:305: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:306: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:307: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:312: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:313: "produire_context_packet_candidat",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:314: "produire_ir_candidate",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:319: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:325: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:326: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:327: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:332: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:338: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:344: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:345: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:346: "requires_memory_gate": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:351: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:353: "classifier_readonly_git_mutation_external",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:357: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:362: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:363: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:364: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:369: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:370: "GET_only_si_allowlist_et_operator_loop",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:374: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:380: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:381: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:382: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:387: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:391: "documenter_dans_context_packet",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:393: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:401: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:402: "requires_kx108_decision": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:403: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:407: MEMORY_WRITE_REQUEST: {
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:408: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:413: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:419: "requires_human_operator": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:420: "requires_kx108_decision": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:421: "requires_memory_gate": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:426: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:428: "activer_signaux_contextuels_readonly",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:432: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:435: "activer_T30_T34_AGI_layer",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:437: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:438: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:439: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:444: "brody_may": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:451: "brody_must_not": [
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:456: "requires_human_operator": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:457: "requires_kx108_decision": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:458: "requires_memory_gate": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:471: "matrix": {k: dict(v, tree_policy=_TREE_POLICY, decision_authority="KX108_ONLY")
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:473: "tree_policy": _TREE_POLICY,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:474: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:475: "readonly": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:476: "advisory_only": True,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:477: "emits_act": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:478: "memory_write": False,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:481: "BRODY_REAL_ARCHITECTURE_MAP_READONLY_20260513",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:482: "CURRENT_BRODY_HUMAN_COMMAND_PACKET_READONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:483: "CURRENT_BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:484: "T13_T34_SIGNAL_DISCOVERY_READONLY_20260514",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:486: "X108_boundary_kernel_decision_authority",
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:493: ir_candidate: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:494: context_packet: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:514: "brody_may": caps["brody_may"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:515: "brody_must_not": caps["brody_must_not"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:516: "requires_human_operator": caps["requires_human_operator"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:517: "requires_kx108_decision": caps["requires_kx108_decision"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:518: "requires_memory_gate": caps["requires_memory_gate"],
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:520: "tree_policy": _TREE_POLICY,
+- .\apps\obsidia_api\brody_rights_authority_matrix.py:522: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:22: P = "periphery.brody_memory_readonly."
+- .\apps\obsidia_api\brody_real_response_pipeline.py:26: _TERMINAL = _TERMINAL or _si(P + "terminal_structural_dialogue_readonly.brody_terminal_structural_dialogue_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:27: _LOCAL_ENGINE = _LOCAL_ENGINE or _si(P + "local_response_engine_readonly.brody_local_response_engine_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:28: _CONTEXT_QUERY = _CONTEXT_QUERY or _si(P + "context_packet_query_readonly.brody_context_packet_query_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:29: _HYDRATION = _HYDRATION or _si(P + "content_hydration_readonly.brody_content_hydration_readonly_v1")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:46: result["status"] = "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:54: "readonly": True, "response_only": True, "memory_role": "GUIDE_CONTEXT_NAVIGATION_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:55: "memory_decision": False, "allowed_to_decide": False, "allowed_to_act": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:56: "emits_act": False, "emits_verdict": False, "emits_allow_hold_block": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:57: "kernel_mutation": False, "x108_mutation": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:58: "memory_write": False, "graphiti_write": False, "neo4j_write": False, "real_action": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:59: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:80: graphiti_live = r["graphiti_probe"]["status"] == "GRAPHITI_LIVE_READONLY_PASS"
+- .\apps\obsidia_api\brody_real_response_pipeline.py:107: ctx_packet.setdefault("readonly", True)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:108: ctx_packet.setdefault("memory_write", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:109: ctx_packet.setdefault("emits_act", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:110: ctx_packet.setdefault("kernel_mutation", False)
+- .\apps\obsidia_api\brody_real_response_pipeline.py:111: ctx_packet.setdefault("decision_authority", "KX108_ONLY")
+- .\apps\obsidia_api\brody_real_response_pipeline.py:112: obj = {"context_packet": ctx_packet, "query": memory_query, "text": message,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:113: "memory_write": False, "emits_act": False, "kernel_mutation": False,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:114: "decision_authority": "KX108_ONLY"}
+- .\apps\obsidia_api\brody_real_response_pipeline.py:156: "Brody est actif en mode readonly consultatif. "
+- .\apps\obsidia_api\brody_real_response_pipeline.py:160: "Brody is active in readonly advisory mode. "
+- .\apps\obsidia_api\brody_real_response_pipeline.py:168: "graphiti_status": r["graphiti_probe"]["status"],
+- .\apps\obsidia_api\brody_real_response_pipeline.py:169: "readonly": True,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:175: "graphiti_status": r["graphiti_probe"]["status"],
+- .\apps\obsidia_api\brody_real_response_pipeline.py:177: "neo4j_status": "LIVE_READONLY" if r["graphiti_probe"]["port_7688_open"] else "OFFLINE_OR_UNAVAILABLE",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:178: "engine_status": "BRODY_LOCAL_RESPONSE_ENGINE_READONLY_PASS" if engine_used else "TERMINAL_FALLBACK",
+- .\apps\obsidia_api\brody_real_response_pipeline.py:180: "context_packet": ctx_data,
+- .\apps\obsidia_api\brody_real_response_pipeline.py:181: "x108_boundary": {"passed": True, "status": "READONLY"},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:7: - project_memory_snapshot (Foundation A)
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:10: - freeze_metrics_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:12: - authority_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:13: - automation_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:16: Boundary: readonly, KX108_ONLY, no write.
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:23: from apps.obsidia_api.brody_project_memory_runtime import build_project_memory_snapshot
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:64: "This does NOT grant special authority — KX108_ONLY remains sole decision authority. "
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:74: context_packet: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:76: freeze_metrics_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:77: authority_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:78: automation_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:79: memory_response_chain_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:80: semantic_query_snapshot: dict[str, Any] / None = None,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:90: project_memory = build_project_memory_snapshot(
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:91: freeze_metrics=freeze_metrics_snapshot,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:108: "request_type": (authority_snapshot or {}).get("request_type", "PURE_RESPONSE"),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:109: "response_mode": (authority_snapshot or {}).get("response_mode", "FULL_ANSWER"),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:110: "requires_human_operator": (authority_snapshot or {}).get("requires_human_operator", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:111: "requires_kx108_decision": (authority_snapshot or {}).get("requires_kx108_decision", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:112: "requires_memory_gate": (authority_snapshot or {}).get("requires_memory_gate", False),
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:116: if project_memory.get("contextual_material_status") == "HAS_PROJECT_MEMORY":
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:117: material = "HAS_PROJECT_MEMORY"
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:118: elif project_memory.get("contextual_material_status") == "PARTIAL_PROJECT_MEMORY":
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:119: material = "PARTIAL_PROJECT_MEMORY"
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:125: material = "NO_PROJECT_MEMORY"
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:129: if not project_memory.get("brody_memory_doc_available"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:140: if project_memory.get("context_packet_query_found"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:141: used_modules.append("context_packet_query_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:142: if project_memory.get("content_hydration_found"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:143: used_modules.append("content_hydration_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:144: if project_memory.get("local_response_engine_found"):
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:145: used_modules.append("local_response_engine_readonly")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:147: used_modules.append("session_memory_ledger_readonly_v2")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:149: used_modules.append("terminal_structural_dialogue_readonly_v1_1b")
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:156: "project_memory_snapshot": project_memory,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:160: "freeze_metrics_snapshot": freeze_metrics_snapshot or {},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:162: "memory_response_chain_snapshot": memory_response_chain_snapshot or {},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:163: "semantic_query_snapshot": semantic_query_snapshot or {},
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:172: "readonly": True,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:173: "memory_write": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:176: "emits_act": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:177: "emits_verdict": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:178: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py:179: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:8: - freeze_metrics_snapshot
+- .\apps\obsidia_api\brody_true_voice_adapter.py:9: - project_memory_snapshot
+- .\apps\obsidia_api\brody_true_voice_adapter.py:24: - KX108_ONLY always
+- .\apps\obsidia_api\brody_true_voice_adapter.py:34: MEMORY_WRITE_REQUEST,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:89: project = ctx.get("project_memory_snapshot", {})
+- .\apps\obsidia_api\brody_true_voice_adapter.py:92: freeze = ctx.get("freeze_metrics_snapshot", {})
+- .\apps\obsidia_api\brody_true_voice_adapter.py:100: project_has_material = project.get("contextual_material_status") in ("HAS_PROJECT_MEMORY", "PARTIAL_PROJECT_MEMORY")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:102: # Check if memory_response_chain has usable material
+- .\apps\obsidia_api\brody_true_voice_adapter.py:103: chain = ctx.get("memory_response_chain_snapshot", ctx.get("memory_response_chain", {}))
+- .\apps\obsidia_api\brody_true_voice_adapter.py:104: chain_pass = chain.get("status") == "BRODY_MEMORY_RESPONSE_CHAIN_PASS"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:141: "Je suis Brody, interface structurée readonly d'Obsidia X-108. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:142: "Je traverse la mémoire Graphiti/Neo4j en readonly, "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:147: "I am Brody, the structured readonly interface for Obsidia X-108. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:148: "I traverse Graphiti/Neo4j memory in readonly mode, "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:164: if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- .\apps\obsidia_api\brody_true_voice_adapter.py:180: if project_has_material and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- .\apps\obsidia_api\brody_true_voice_adapter.py:203: voice_source = "PROJECT_MEMORY"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:206: op = freeze.get("operator_loop", {})
+- .\apps\obsidia_api\brody_true_voice_adapter.py:244: chain_topic = chain.get("topic", ctx.get("semantic_query_snapshot", {}).get("topic", ""))
+- .\apps\obsidia_api\brody_true_voice_adapter.py:258: voice_source = "MEMORY_RESPONSE_CHAIN"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:261: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)):
+- .\apps\obsidia_api\brody_true_voice_adapter.py:301: voice_source = "MEMORY_RESPONSE_CHAIN_NO_MATERIAL"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:306: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:310: neo4j = str(chain.get("neo4j_status", ""))
+- .\apps\obsidia_api\brody_true_voice_adapter.py:334: and request_type not in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST)
+- .\apps\obsidia_api\brody_true_voice_adapter.py:338: or ctx.get("semantic_query_snapshot", {}).get("topic", "GENERAL")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:406: "\n\n_Brody — réponse structurée readonly. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:407: "KX108_ONLY. Pas de décision, pas d'ACT, pas d'écriture mémoire._"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:411: "\n\n_Brody — structured readonly response. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:412: "KX108_ONLY. No decision, no ACT, no memory write._"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:416: voice_source = "FREEZE_METRICS_AND_MATRIX"
+- .\apps\obsidia_api\brody_true_voice_adapter.py:420: # ── Sanitize: strip forbidden sovereign tokens (periphery/brody) ────
+- .\apps\obsidia_api\brody_true_voice_adapter.py:442: used_modules.append("project_memory_adapter")
+- .\apps\obsidia_api\brody_true_voice_adapter.py:445: if request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST):
+- .\apps\obsidia_api\brody_true_voice_adapter.py:457: "project_memory_used": project_has_material,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:460: "rights_action_used": request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST),
+- .\apps\obsidia_api\brody_true_voice_adapter.py:465: "action_boundary_detected": request_type in (ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST),
+- .\apps\obsidia_api\brody_true_voice_adapter.py:468: "readonly": True,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:470: "memory_write": False,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:473: "emits_act": False,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:474: "emits_verdict": False,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:475: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_true_voice_adapter.py:476: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:515: elif topic == "34_ARBRES":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:517: "Les 34 arbres sont la grille de lecture structurelle du projet Obsidia : "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:524: f"La memoire indexe {item_count} documents sur les 34 arbres : "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:541: elif topic == "OPERATOR_LOOP":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:577: "memory_write=false."
+- .\apps\obsidia_api\brody_true_voice_adapter.py:585: elif topic == "TREE_POLICY":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:587: "Les 34 arbres sont un outil de lecture et de classification, pas un outil de decision. "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:614: "Tous les modules actifs sont readonly, KX108_ONLY."
+- .\apps\obsidia_api\brody_true_voice_adapter.py:617: elif topic == "TEMPORAL_CONTEXT":
+- .\apps\obsidia_api\brody_true_voice_adapter.py:623: "preuve/controle (audit, receipt, replay, KX108_ONLY). "
+- .\apps\obsidia_api\brody_true_voice_adapter.py:666: "34_ARBRES": "On the 34 trees, local memory indicates:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:668: "OPERATOR_LOOP": "On the operator loop, the memory chain shows:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:707: "- decision_authority:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:708: "- emits_act:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:709: "- kernel_mutation:",
+- .\apps\obsidia_api\brody_true_voice_adapter.py:720: "- DECISION_AUTHORITY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:2: Brody Automation Layer Orchestrator — Readonly
+- .\apps\obsidia_api\brody_automation_orchestrator.py:13: - Returns automation_snapshot enriching authority_snapshot → final_answer
+- .\apps\obsidia_api\brody_automation_orchestrator.py:16: readonly=True, memory_write=False, graphiti_write=False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:17: neo4j_write=False, emits_act=False, decision_authority=KX108_ONLY
+- .\apps\obsidia_api\brody_automation_orchestrator.py:29: "readonly": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:30: "advisory_only": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:33: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:34: "allowed_to_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:35: "emits_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:36: "emits_verdict": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:37: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:40: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:41: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:44: _PERIPHERY = Path(__file__).resolve().parents[2] / "periphery" / "brody_memory_readonly"
+- .\apps\obsidia_api\brody_automation_orchestrator.py:59: _add_path("session_memory_ledger_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:60: from brody_session_memory_ledger_readonly_v2 import build_record as _ledger_build  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:69: _add_path("auto_triage_memory_intake_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:70: from brody_auto_triage_memory_intake_readonly_v1 import (  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:81: _add_path("brody_human_command_packet_readonly")
+- .\apps\obsidia_api\brody_automation_orchestrator.py:82: from brody_human_command_packet_readonly_v1 import build_human_command_packet as _packet_build  # type: ignore
+- .\apps\obsidia_api\brody_automation_orchestrator.py:97: MEMORY_WRITE_REQUEST,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:102: _MEMORY_TYPES = {MEMORY_CANDIDATE, MEMORY_WRITE_REQUEST}
+- .\apps\obsidia_api\brody_automation_orchestrator.py:103: _ACTION_TYPES = {ACTION_OR_ACT_REQUEST, MEMORY_WRITE_REQUEST}
+- .\apps\obsidia_api\brody_automation_orchestrator.py:127: context_packet: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:134: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:139: "readonly": True,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:144: "allowed_to_decide": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:145: "emits_act": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:147: "emits_verdict": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:148: "kernel_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:149: "x108_mutation": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:154: "decision_authority": "KX108_ONLY",
+- .\apps\obsidia_api\brody_automation_orchestrator.py:156: "memory_query": context_packet.get("query", ""),
+- .\apps\obsidia_api\brody_automation_orchestrator.py:157: "packet_results_count": len(context_packet.get("context_items", [])),
+- .\apps\obsidia_api\brody_automation_orchestrator.py:174: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:181: "memory_write": False,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:209: context_packet: dict,
+- .\apps\obsidia_api\brody_automation_orchestrator.py:222: "memory_query": context_packet.get("query", ""),
+
+## Kernel / contract files discovered
+- .codeflowignore
+- .dockerignore
+- .gitignore
+- .\AGENTS.md
+- .\bazar a branché pour la suite obsidia .docx
+- .\CLAUDE.md
+- .\LICENSE
+- .\MANIFEST.md
+- .\MANIFEST_SHA256.json
+- .\MANIFEST_SHA256_NEW.json
+- .\merkle_seal.json
+- .\package-lock.json
+- .\package.json
+- .\PROOF_INDEX.md
+- .\README.md
+- .\REPRODUCIBILITY_CHECKLIST.md
+- .\requirements.txt
+- .\SECURITY.md
+- .\server.kernel.sealed.cjs
+- .\shim_map.json
+- .\START_HERE.md
+- .\test_neo4j.py
+- .agents\skills\agent-router-obsidia\SKILL.md
+- .agents\skills\context-keeper\SKILL.md
+- .agents\skills\freeze-guardian\SKILL.md
+- .agents\skills\graph-calibrator-obsidia\SKILL.md
+- .agents\skills\module-mapper\SKILL.md
+- .agents\skills\proof-sentinel\SKILL.md
+- .agents\skills\read-only-inspector\SKILL.md
+- .agents\skills\sigma-surgeon\SKILL.md
+- .agents\skills\source-command-focus\SKILL.md
+- .agents\skills\source-command-recap\SKILL.md
+- .agents\skills\terminal-builder\SKILL.md
+- .agents\skills\token-guard\SKILL.md
+- .agents\skills\wiki-brain-bridge\SKILL.md
+- .claude\settings.json
+- .claude\settings.local.json
+- .claude\agents\context-keeper.md
+- .claude\agents\explorer.md
+- .claude\agents\proof-checker.md
+- .claude\agents\risk-reviewer.md
+- .claude\agents\sigma-checker.md
+- .claude\agents\tla-validator.md
+- .claude\commands\focus.md
+- .claude\commands\freeze-check.md
+- .claude\commands\inspect.md
+- .claude\commands\proofcheck.md
+- .claude\commands\protected.md
+- .claude\commands\recap.md
+- .claude\commands\route.md
+- .claude\commands\sigmacheck.md
+- .claude\commands\tokencheck.md
+- .claude\commands\update-focus.md
+- .claude\context\AGENTIC_ROUTING.md
+- .claude\context\CURRENT_FOCUS.md
+- .claude\context\EXTERNAL_TOOLS_POLICY.md
+- .claude\context\FRACTAL_INFERENCE.md
+- .claude\context\MODULE_MAP.md
+- .claude\context\OBSIDIA_IDENTITY.md
+- .claude\context\PROTECTED_SCOPE.md
+- .claude\context\TOKEN_POLICY.md
+- .claude\context\WORKFLOW.md
+- .claude\hooks\EXAMPLES.md
+- .claude\hooks\pre-compact-snapshot.sh
+- .claude\hooks\pre-edit-protected-warn.sh
+- .claude\hooks\session-start.sh
+- .claude\memory\P1_FREEZE.md
+- .claude\memory\RISKS.md
+- .claude\memory\SCRATCH.md
+- .claude\skills\agent-router-obsidia\SKILL.md
+- .claude\skills\context-keeper\SKILL.md
+- .claude\skills\freeze-guardian\SKILL.md
+- .claude\skills\graph-calibrator-obsidia\SKILL.md
+- .claude\skills\module-mapper\SKILL.md
+- .claude\skills\proof-sentinel\SKILL.md
+- .claude\skills\read-only-inspector\SKILL.md
+- .claude\skills\sigma-surgeon\SKILL.md
+- .claude\skills\terminal-builder\SKILL.md
+- .claude\skills\token-guard\SKILL.md
+- .claude\skills\wiki-brain-bridge\SKILL.md
+- .codex\config.toml
+- .codex\agents\context-keeper.toml
+- .codex\agents\explorer.toml
+- .codex\agents\proof-checker.toml
+- .codex\agents\risk-reviewer.toml
+- .codex\agents\sigma-checker.toml
+- .codex\agents\tla-validator.toml
+- .deepseek\pastes\paste-2026-05-19-214647-f3ed115f.md
+- .deepseek\pastes\paste-2026-05-19-220615-7db0b03d.md
+- .deepseek\pastes\paste-2026-05-20-000721-3f2b1ef7.md
+- .deepseek\pastes\paste-2026-05-20-190547-e5e13003.md
+- .deepseek\pastes\paste-2026-05-20-193835-eb7f85cb.md
+- .deepseek\pastes\paste-2026-05-20-212958-dc44f481.md
+- .deepseek\pastes\paste-2026-05-20-225314-ec45d70a.md
+- .deepseek\pastes\paste-2026-05-20-235154-c56c952b.md
+- .deepseek\pastes\paste-2026-05-21-001143-1144758b.md
+- .deepseek\pastes\paste-2026-05-21-002554-942324e0.md
+- .deepseek\pastes\paste-2026-05-21-005137-501595c3.md
+- .github\workflows\verify-proofs.yml
+- .github\workflows\x108-periphery-ci.yml
+- .graph-memory\ALLOWLIST.md
+- .graph-memory\DENYLIST.md
+- .graph-memory\DRY_RUN_PLAN.md
+- .graph-memory\README.md
+- .graph-memory\SANDBOX_POLICY.md
+- .graph-memory\graphiti-preview\episodes_report.md
+- .graph-memory\graphiti-preview\README.md
+- .graph-memory\graphiti-preview\summary.json
+- .graph-memory\reports\conditional_candidates.md
+- .graph-memory\reports\denylist_hits.md
+- .graph-memory\reports\dry_run_candidates.md
+- .graph-memory\reports\token_budget_estimate.md
+- .graph-memory\scripts\dry_run_scan.py
+- .graph-memory\scripts\dry_run_scan_phase0_strict.py
+- .\agents\registry.json
+- .\agents\registry.md
+- .\agents\bootstrap\top5_bootstrap.md
+- .\agents\prompts\CANON_GUARDIAN.md
+- .\agents\prompts\GRAPH_BUILDER.md
+- .\agents\prompts\OBSIDIA_ATLAS_INGESTOR.md
+- .\agents\prompts\PROOF_SENTINEL.md
+- .\agents\prompts\TERMINAL_BUILDER.md
+- .\agents\routing\routing_rules.md
+- .\apps\obsidia-workbench\.gitignore
+- .\apps\obsidia-workbench\audit_brody.py
+- .\apps\obsidia-workbench\BACKEND_BINDING_PLAN_X108_PROOFS.md
+- .\apps\obsidia-workbench\BACKEND_DISCOVERY_REPORT.md
+- .\apps\obsidia-workbench\BUILD_AND_RUN.ps1
+- .\apps\obsidia-workbench\eslint.config.js
+- .\apps\obsidia-workbench\FASTAPI_ADAPTER_PLAN.md
+- .\apps\obsidia-workbench\FRONTEND_BACKEND_BRIDGE_REPORT.md
+- .\apps\obsidia-workbench\index.html
+- .\apps\obsidia-workbench\LOCAL_RUNBOOK.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_BACKEND_BINDING_PLAN.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_DISCOVERY_REPORT.md
+- .\apps\obsidia-workbench\OS_TRAD_REVERSE_IR_UI_REPORT.md
+- .\apps\obsidia-workbench\package-lock.json
+- .\apps\obsidia-workbench\package.json
+- .\apps\obsidia-workbench\postcss.config.js
+- .\apps\obsidia-workbench\README.md
+- .\apps\obsidia-workbench\README_OBSIDIA_WORKBENCH.md
+- .\apps\obsidia-workbench\tailwind.config.js
+- .\apps\obsidia-workbench\tsconfig.app.json
+- .\apps\obsidia-workbench\tsconfig.json
+- .\apps\obsidia-workbench\tsconfig.node.json
+- .\apps\obsidia-workbench\vite.config.ts
+- .\apps\obsidia-workbench\WORKBENCH_BUILD_REPORT.md
+- .\apps\obsidia-workbench\WORKBENCH_LOCALHOST_REPORT.md
+- .\apps\obsidia-workbench\WORKBENCH_PATH_NORMALIZATION_REPORT.md
+- .\apps\obsidia-workbench\WORKBENCH_V2_BACKEND_STATUS_REPORT.md
+- .\apps\obsidia-workbench\WORKBENCH_V2_BUILD_REPORT.md
+- .\apps\obsidia-workbench\WORKBENCH_V2_UI_REPORT.md
+- .\apps\obsidia-workbench\public\favicon.svg
+- .\apps\obsidia-workbench\public\icons.svg
+- .\apps\obsidia-workbench\src\App.css
+- .\apps\obsidia-workbench\src\App.tsx
+- .\apps\obsidia-workbench\src\index.css
+- .\apps\obsidia-workbench\src\main.tsx
+- .\apps\obsidia-workbench\src\api\backendProbe.ts
+- .\apps\obsidia-workbench\src\api\contracts.ts
+- .\apps\obsidia-workbench\src\api\mockFallback.ts
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts
+- .\apps\obsidia-workbench\src\assets\hero.png
+- .\apps\obsidia-workbench\src\assets\react.svg
+- .\apps\obsidia-workbench\src\assets\vite.svg
+- .\apps\obsidia-workbench\src\components\BackendStatusPanel.tsx
+- .\apps\obsidia-workbench\src\components\BrodyPanel.tsx
+- .\apps\obsidia-workbench\src\components\LeftSidebar.tsx
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx
+- .\apps\obsidia-workbench\src\components\TopBar.tsx
+- .\apps\obsidia-workbench\src\components\TreeExplorer.tsx
+- .\apps\obsidia-workbench\src\data\mockData.ts
+- .\apps\obsidia-workbench\src\lib\brodyResponseComposer.ts
+- .\apps\obsidia-workbench\src\lib\irCandidateBuilder.ts
+- .\apps\obsidia-workbench\src\lib\language.ts
+- .\apps\obsidia-workbench\src\lib\osReverseProjection.ts
+- .\apps\obsidia-workbench\src\lib\osTradPipeline.ts
+- .\apps\obsidia-workbench\src\lib\sessionStore.ts
+- .\apps\obsidia-workbench\src\lib\symbolicAlphabet.ts
+- .\apps\obsidia-workbench\src\types\obsidia.ts
+- .\apps\obsidia-workbench\src\types\translation.ts
+- .\apps\obsidia-workbench\src\views\AuditView.tsx
+- .\apps\obsidia-workbench\src\views\BlockchainView.tsx
+- .\apps\obsidia-workbench\src\views\ChatView.tsx
+- .\apps\obsidia-workbench\src\views\GencoinView.tsx
+- .\apps\obsidia-workbench\src\views\GraphitiView.tsx
+- .\apps\obsidia-workbench\src\views\MemoryView.tsx
+- .\apps\obsidia-workbench\src\views\OS3View.tsx
+- .\apps\obsidia-workbench\src\views\SettingsView.tsx
+- .\apps\obsidia-workbench\src\views\TranslationView.tsx
+- .\apps\obsidia-workbench\src\views\WorldCallView.tsx
+- .\apps\obsidia-workbench\src\views\X108View.tsx
+- .\apps\obsidia_api\audit_middleware.py
+- .\apps\obsidia_api\BACKEND_RUNTIME_DISCOVERY_REPORT.md
+- .\apps\obsidia_api\brody_automation_orchestrator.py
+- .\apps\obsidia_api\brody_backend_response_composer.py
+- .\apps\obsidia_api\brody_bridge_lifecycle.py
+- .\apps\obsidia_api\brody_candidate_memory_adapter.py
+- .\apps\obsidia_api\brody_cognitive_modules_adapter.py
+- .\apps\obsidia_api\brody_freeze_metrics_snapshot.py
+- .\apps\obsidia_api\brody_full_runtime_orchestrator.py
+- .\apps\obsidia_api\brody_full_runtime_reconnect.py
+- .\apps\obsidia_api\brody_memory_response_chain_adapter.py
+- .\apps\obsidia_api\brody_operator_loop_adapter.py
+- .\apps\obsidia_api\brody_project_memory_adapter.py
+- .\apps\obsidia_api\brody_project_memory_runtime.py
+- .\apps\obsidia_api\brody_real_response_pipeline.py
+- .\apps\obsidia_api\brody_rights_authority_matrix.py
+- .\apps\obsidia_api\brody_runtime_context_adapter.py
+- .\apps\obsidia_api\brody_safe_snapshot.py
+- .\apps\obsidia_api\brody_semantic_query_router.py
+- .\apps\obsidia_api\brody_session_memory_adapter.py
+- .\apps\obsidia_api\brody_session_memory_runtime.py
+- .\apps\obsidia_api\brody_source_of_truth_adapter.py
+- .\apps\obsidia_api\brody_structured_response_engine_adapter.py
+- .\apps\obsidia_api\brody_temporal_context_adapter.py
+- .\apps\obsidia_api\brody_text_encoding.py
+- .\apps\obsidia_api\brody_tree_policy.py
+- .\apps\obsidia_api\brody_tree_policy_adapter.py
+- .\apps\obsidia_api\brody_true_response_structure_adapter.py
+- .\apps\obsidia_api\brody_true_response_structure_runtime.py
+- .\apps\obsidia_api\brody_true_voice_adapter.py
+- .\apps\obsidia_api\brody_v1_4_12a_final_answer_adapter.py
+- .\apps\obsidia_api\contracts.py
+- .\apps\obsidia_api\graphiti_env_loader.py
+- .\apps\obsidia_api\graphiti_v20_readonly_client.py
+- .\apps\obsidia_api\main.py
+- .\apps\obsidia_api\output_envelope.py
+- .\apps\obsidia_api\runtime_loader.py
+- .\apps\obsidia_api\safe_response.py
+- .\apps\obsidia_api\__init__.py
+- .\apps\obsidia_api\routes\audit.py
+- .\apps\obsidia_api\routes\blockchain.py
+- .\apps\obsidia_api\routes\brody.py
+- .\apps\obsidia_api\routes\brody_monitoring.py
+- .\apps\obsidia_api\routes\context.py
+- .\apps\obsidia_api\routes\gencoin.py
+- .\apps\obsidia_api\routes\graphiti.py
+- .\apps\obsidia_api\routes\memory.py
+- .\apps\obsidia_api\routes\os3.py
+- .\apps\obsidia_api\routes\os_trad_ir_reverse.py
+- .\apps\obsidia_api\routes\periphery_ops.py
+- .\apps\obsidia_api\routes\status.py
+- .\apps\obsidia_api\routes\translation.py
+- .\apps\obsidia_api\routes\worldcalls.py
+- .\apps\obsidia_api\routes\x108.py
+- .\apps\obsidia_api\routes\__init__.py
+- .\audit\FORMAL_STACK_VALIDATION_20260427_165549.txt
+- .\audit\FULL_REGRESSION_CHECK_20260427_151717.txt
+- .\audit\FULL_REGRESSION_CHECK_20260427_152654.txt
+
+## Kernel / contract evidence hits
+- .codeflowignore:2: _NONCANONICAL_HOLD*/**
+- .gitignore:8: artifacts/
+- .gitignore:24: # --- heavy local artifacts ---
+- .gitignore:25: artifacts/**/raw/
+- .gitignore:26: artifacts/**/tmp/
+- .gitignore:27: artifacts/**/payloads/
+- .gitignore:28: artifacts/**/exports/
+- .gitignore:29: artifacts/**/db_dumps/
+- .gitignore:65: # Build artifacts
+- .gitignore:90: # Node / package artifacts
+- .gitignore:110: # Local-only non-canonical holds
+- .gitignore:111: _NONCANONICAL_HOLD*/
+- .gitignore:130: CURRENT_X108_*
+- .gitignore:144: OBSIDIA_X108_FULL_STACK_*.zip
+- .gitignore:145: OBSIDIA_X108_V5A_*.zip
+- .gitignore:148: Demo-obsidia-x108-proof-main*.zip
+- .gitignore:161: # === LOCAL / HEAVY / SESSION ARTIFACTS ===
+- .gitignore:163: OBSIDIA_X108_FULL_STACK_V3_V4_PLUS_WORLD_GATEWAY_PATCH.zip
+- .gitignore:173: CURRENT_X108_*
+- .gitignore:184: OBSIDIA_X108_FULL_STACK_V3_V4_PLUS_WORLD_GATEWAY_PATCH.zip
+- .gitignore:198: OBSIDIA_X108_FULL_STACK_V3_V4_PLUS_WORLD_GATEWAY_PATCH.zip
+- .\AGENTS.md:4: > Read this once per session, then load only the context file matching your active layer.
+- .\AGENTS.md:10: `obsidia-x108-proofs` is the public proof / audit perimeter of the Obsidia X-108 deterministic governance kernel. It is **not** a generic software project.
+- .\AGENTS.md:22: Layer: KERNEL / SIGMA / CONNECTORS / DOCS / TOOLING / AGENTIC
+- .\AGENTS.md:42: Every task picks **one** primary layer before action. Never mix layers without explicit user request.
+- .\AGENTS.md:60: Detail → `.Codex/context/TOKEN_POLICY.md` and `.Codex/context/FRACTAL_INFERENCE.md`
+- .\AGENTS.md:71: - No "everything connects to everything" graph work — see `.Codex/context/FRACTAL_INFERENCE.md`.
+- .\AGENTS.md:73: - Every new Codex skill MUST declare its Obsidia mapping in `SKILL.md` frontmatter (`obsidia_mapping_type`, `obsidia_agents`, `obsidia_reduction`). Skills without a mapping are rejected, or carry `obsidia_mapping_type: to_verify` pending registry extraction. See `.Codex/context/AGENTIC_ROUTING.md` §7.
+- .\AGENTS.md:89: Skills live in `.Codex/skills/<name>/SKILL.md`. They activate when their description matches the user request.
+- .\AGENTS.md:96: / `freeze-guardian` / Block edits on V18, Merkle, seal, RFC3161, stable files. / `CANON_GUARDIAN` (reduced) /
+- .\AGENTS.md:102: / `module-mapper` / Maintain compact `MODULE_MAP.md`. / _to_verify_ (likely Atlas/Cartographe family) /
+- .\AGENTS.md:118: / `sigma-checker` / Sigma QA / pipeline diagnosis, no kernel edits /
+- .\bazar a branché pour la suite obsidia .docx:1270: �3ӯ����#d[饜]na��"�D�m��MLY��~e z�uX�����qX�=�fP\��DQa+ۼA.7],��a�C�T�E��q��LR��c�Cq�h�����VIú��Rt��Db[/Rv���Д%Q��T����ěN������$��r^[�`�4�ߟ�S���k�M-�͹�}��I��(\l���]ӕQ��4�5�]DWvD�c��~�r�t}��w��� N�I����j<r��ԼpjpjP�A�$Jȁ�b���hn��>�~C4��I��c,�V	Ox@��&�q���lݸ�b��}LRzD��,uHd͔���	r�I,*����4[D�����܏N^/����#�񋹀y�(��7�z��kc<]b���L��{�����Ch�G�'~��%���ذ&���S�Y�$�[�cS��5��l�P�	h}`Թ,X}�Qm����~�&
+- .\bazar a branché pour la suite obsidia .docx:4628: �'Zq߅�RAjj���/̊L�����t��Ǫ9ի\?��gffgF�}D~y��xAct]��\ifFȃ��ˢ��P����Y�!9F�-Y�Y��<��e-o�2F.Z�5r�`;
+- .\bazar a branché pour la suite obsidia .docx:10626: �K�k/R>�QC�U�N�S2�Ue�_�t���{~�\� 7��p�^�y���RLh���ٖh��Um��{K��M�?~Y�/�+�Č_��,��$xf��1�]�ş!�Ϩ��bL���B�^���`�:)��M��?���ǁx�k�O��˷�V����=�_cS�MP�n@��J�� X���o(/*��׮z<A� Ĵ�2���s��9��sb�$�ڵJ�V���㡡?�����ҟa�G�#��������r���A*�׍6��l�KS?�?�_Cf�o��f������Q�1>a�CT�؁���j/ .�{�?�e��e�BV���?�+Di�����Ы���u��Hb=Ճ����r��u���s�4�!�]��.��}	�y��{~a��\j{m�-�^\bj�Ϝ��J?[���#._�]~�����_B��'�۩W�������٭��e�\]�J�"�f���{�EOywO][0���{�Z±�w�
+- .\CLAUDE.md:4: > Read this once per session, then load only the context file matching your active layer.
+- .\CLAUDE.md:10: `obsidia-x108-proofs` is the public proof / audit perimeter of the Obsidia X-108 deterministic governance kernel. It is **not** a generic software project.
+- .\CLAUDE.md:22: Layer: KERNEL / SIGMA / CONNECTORS / DOCS / TOOLING / AGENTIC
+- .\CLAUDE.md:42: Every task picks **one** primary layer before action. Never mix layers without explicit user request.
+- .\CLAUDE.md:60: Detail → `.claude/context/TOKEN_POLICY.md` and `.claude/context/FRACTAL_INFERENCE.md`
+- .\CLAUDE.md:71: - No "everything connects to everything" graph work — see `.claude/context/FRACTAL_INFERENCE.md`.
+- .\CLAUDE.md:73: - Every new Claude Code skill MUST declare its Obsidia mapping in `SKILL.md` frontmatter (`obsidia_mapping_type`, `obsidia_agents`, `obsidia_reduction`). Skills without a mapping are rejected, or carry `obsidia_mapping_type: to_verify` pending registry extraction. See `.claude/context/AGENTIC_ROUTING.md` §7.
+- .\CLAUDE.md:89: Skills live in `.claude/skills/<name>/SKILL.md`. They activate when their description matches the user request.
+- .\CLAUDE.md:96: / `freeze-guardian` / Block edits on V18, Merkle, seal, RFC3161, stable files. / `CANON_GUARDIAN` (reduced) /
+- .\CLAUDE.md:102: / `module-mapper` / Maintain compact `MODULE_MAP.md`. / _to_verify_ (likely Atlas/Cartographe family) /
+- .\CLAUDE.md:118: / `sigma-checker` / Sigma QA / pipeline diagnosis, no kernel edits /
+- .\LICENSE:17: Pour toute demande d'audit sous NDA ou de partenariat commercial : contact@obsidia.io
+- .\MANIFEST.md:4: > **Target repo**: `obsidia-x108-proofs` (and its demo, by reuse).
+- .\MANIFEST.md:29: ├── settings.json                               permissions + env, NO active hooks
+- .\MANIFEST.md:37: │   ├── FRACTAL_INFERENCE.md
+- .\MANIFEST.md:42: ├── skills/                                     activatable behaviors
+- .\MANIFEST.md:79: │   └── snapshots/            (empty, populated by pre-compact-snapshot.sh)
+- .\MANIFEST.md:84: ├── pre-compact-snapshot.sh
+- .\MANIFEST.md:101: Minimal permissions + env. **No active hooks.** Denies `npm/pip/winget install`, `git push`, `git reset --hard`, edits to protected globs.
+- .\MANIFEST.md:109: / `MODULE_MAP.md` / Compact map of repo folders + canonical build/test commands. /
+- .\MANIFEST.md:112: / `FRACTAL_INFERENCE.md` / Zoom strategy per layer; link calibration (type/strength/evidence). /
+- .\MANIFEST.md:124: / `freeze-guardian` / YES / NO / ONLY_WITH_APPROVAL verdict on edit-safety. /
+- .\MANIFEST.md:125: / `sigma-surgeon` / Surgical Sigma edits; preserve BLOCK > HOLD > ALLOW; no kernel contamination. /
+- .\MANIFEST.md:126: / `agent-router-obsidia` / Detect intent → one primary layer + one active mode. /
+- .\MANIFEST.md:130: / `module-mapper` / Maintains compact `MODULE_MAP.md` (via diff + approval). /
+- .\MANIFEST.md:140: / `sigma-checker` / Sigma pytest diagnosis, single test file, layer impact check. /
+- .\MANIFEST.md:142: / `risk-reviewer` / Patch reviewer. APPROVE / BLOCK / NEEDS_USER_APPROVAL. /
+- .\MANIFEST.md:172: / `pre-edit-protected-warn.sh` / Warn (do NOT block) when target matches protected glob. / NO /
+- .\MANIFEST.md:173: / `pre-compact-snapshot.sh` / Snapshot `SCRATCH.md` / `CURRENT_FOCUS.md` before `/compact`. / NO /
+- .\MANIFEST.md:187: - `.claude/context/FRACTAL_INFERENCE.md`
+- .\MANIFEST.md:203: / `.claude/settings.json` / Review the `allow` and `deny` lists against your shell habits and actual workflow. Some users prefer a stricter `allow` list. /
+- .\MANIFEST.md:206: / `.claude/skills/wiki-brain-bridge/SKILL.md` / Confirm the exclusion list matches your actual protected paths if your repo has additional sensitive folders. /
+- .\MANIFEST.md:210: > Run from the parent folder of `obsidia-x108-proofs` (i.e. the folder that contains `obsidia-x108-proofs/` and where Claude wrote `claude-config/`).
+- .\MANIFEST.md:215: $dst  = ".\obsidia-x108-proofs"
+- .\MANIFEST.md:236: #   chmod +x obsidia-x108-proofs/.claude/hooks/*.sh
+- .\MANIFEST.md:250: Push-Location .\obsidia-x108-proofs
+- .\MANIFEST.md:264: # D. settings.json has NO active hooks
+- .\MANIFEST.md:266: if ($cfg.hooks.SessionStart -or $cfg.hooks.PreToolUse -or $cfg.hooks.PostToolUse -or $cfg.hooks.PreCompact -or $cfg.hooks.UserPromptSubmit -or $cfg.hooks.Stop) {
+- .\MANIFEST.md:267: Write-Warning "settings.json HAS active hooks — review before commit."
+- .\MANIFEST.md:269: "settings.json hooks: NONE active (expected)."
+- .\MANIFEST.md:284: - All **hooks** in `settings.json` are **inactive**. Hook scripts exist under `.claude/hooks/` but are not referenced. To opt-in, copy a block from `.claude/hooks/EXAMPLES.md` into `.claude/settings.local.json`.
+- .\MANIFEST.md:285: - No `mcpServers` block. Add only via explicit `EXTERNAL_TOOLS_POLICY` review.
+- .\MANIFEST.md:286: - No `npm install` / `pip install` / `winget install` is allowed by `settings.json`. Re-enable per-task only.
+- .\MANIFEST.md:294: / Subagent format may differ across Claude Code versions / LOW / Frontmatter follows current docs (`name`, `description`, `tools`, `model`). If your version differs, agents simply won't activate — they don't break anything. /
+- .\MANIFEST.md:295: / User opts to wire hooks aggressively / MEDIUM / `EXAMPLES.md` recommends only read-only / warn-only / snapshot. Anything more requires explicit user action. /
+- .\MANIFEST.md:305: 3. `/route "investigate the V18_3_1 root hash mismatch"` — confirms routing returns `Layer: KERNEL`, `Mode: PROOF_SENTINEL`.
+- .\MANIFEST.md:306: 4. `/freeze-check proofs/V18_3_1/manifest.json` — confirms `Modification allowed? ONLY_WITH_APPROVAL`.
+- .\MANIFEST.md:307: 5. `/freeze-check sigma/tests/test_pipeline.py` — confirms `Modification allowed? YES`.
+- .\MANIFEST.md:309: 7. `/update-focus first-claude-config-session` — confirms `context-keeper` agent activates.
+- .\MANIFEST.md:311: If any of these returns the wrong layer/verdict, **do not commit the package**. Re-inspect the relevant file and fix before merging.
+- .\MANIFEST.md:320: - **External services contacted**: NONE
+- .\MANIFEST.md:323: - **Active hooks**: NONE in `settings.json` (scripts available, opt-in only)
+- .\MANIFEST_SHA256.json:2: "periphery\\action_lifecycle.py": "5bc6ddd6c322aee9cc295b5316b2bc26987dffd9ca11a79ea767f56223adcac5",
+- .\MANIFEST_SHA256.json:3: "periphery\\action_sequence_governor.py": "adfe46a328715a1a3929753bffb1511979a43c1549990d87aa4e97d4ec38bcf8",
+- .\MANIFEST_SHA256.json:4: "periphery\\agent_contracts.py": "08e746614dc9db9ed987dbf00c02c175583a6e2a78e676da2251d10fdd5e9e44",
+- .\MANIFEST_SHA256.json:13: "periphery\\feedback_memory_bridge_brody_readonly.py": "ec8b1e3ccbc00571b556e6587ec72dfc4537d4af8c643a4a905d51a41749701b",
+- .\MANIFEST_SHA256.json:33: "periphery\\world_action_controlled_runtime_stub.py": "2ce0c95ea814e3be13273a6125f7e4a5befc572d916c51f1c5afb4ac9579bd93",
+- .\MANIFEST_SHA256.json:34: "periphery\\world_action_gateway.py": "28046ac790b3ef287bf04f6168e8e3535bc4d63bfd9b2781a69cce1b2ebde97d",
+- .\MANIFEST_SHA256.json:40: "periphery\\agents\\action_sequence_agent.py": "ed91b2b933531a8727088eeb20e1dda6ae0c03636c523636ae411c6f9a019592",
+- .\MANIFEST_SHA256.json:53: "periphery\\agents\\world_action_agent.py": "39aa994df367eaf7c2d12c364dce92d7e7d56d25c4aacec6af403389f4b2430a",
+- .\MANIFEST_SHA256.json:63: "periphery\\blockchain\\blockchain_action_classifier.py": "ba026cc4e0c7de18fcf03113397d55ade2a43bc72eb679c1e80fd293e27116f9",
+- .\MANIFEST_SHA256.json:64: "periphery\\blockchain\\bridge_risk_gate.py": "254a349b301a2bc4f99fcd0f5b91d0bc1d31031458755f2cbace3be33640720c",
+- .\MANIFEST_SHA256.json:65: "periphery\\blockchain\\chain_context.py": "ffc88ec57420098ccd65f82273c60c1455664bf49ac058a419a8f2baf3fba5d9",
+- .\MANIFEST_SHA256.json:66: "periphery\\blockchain\\defi_risk_gate.py": "9a5b71f7185165c1f6aba9d752ba9d20674264c0d6ac2e1c49355d13b5da1692",
+- .\MANIFEST_SHA256.json:67: "periphery\\blockchain\\onchain_audit_packet.py": "3e0a084c35dc273311960c1b5c0ecf7aee0fc77113952a3c867a7a429db168e1",
+- .\MANIFEST_SHA256.json:68: "periphery\\blockchain\\oracle_freshness_gate.py": "8dc5b03555898103ccbab07266fc4386ff81567a6f1a7dbdaaee0dd158a43049",
+- .\MANIFEST_SHA256.json:69: "periphery\\blockchain\\signature_boundary.py": "cf0c7c74799681cfa893b7dee986b8847a23f14eacc80174efbd033a39daf311",
+- .\MANIFEST_SHA256.json:70: "periphery\\blockchain\\smart_contract_risk_gate.py": "1e88e8262af0fd612a14a4b5424be6dacea55af5c22e37314e09ec525d9743d0",
+- .\MANIFEST_SHA256.json:71: "periphery\\blockchain\\token_policy.py": "1ae02dd94be330c44fae39e548dfb282b7dde4365a11ad808dd57687233a0ebe",
+- .\MANIFEST_SHA256.json:72: "periphery\\blockchain\\transaction_simulator.py": "1513e1cfde6b36577213051e771be6341374957863aee842ecb7384bb626e1a3",
+- .\MANIFEST_SHA256.json:73: "periphery\\blockchain\\wallet_security_gate.py": "099b3a8a30caca30d9b38bb6d88a22cb701cdecf94c754c440a25bc3a17ee678",
+- .\MANIFEST_SHA256.json:74: "periphery\\blockchain\\__init__.py": "e2a8aea9f516f6aa2fe932bb245ea1d8501fc6062f883c56ac13044ebc782718",
+- .\MANIFEST_SHA256.json:77: "periphery\\brody\\brody_response_contract.py": "50cb79699549effe3a289c107c39b541c589b397ae1e87e9f19145347a789c2e",
+- .\MANIFEST_SHA256.json:79: "periphery\\brody\\brody_runtime_readonly.py": "8d166a2804f409c6b2a959ae75e1e2b0b5e5bc810e67bd4f51399b4d676c5dd3",
+- .\MANIFEST_SHA256.json:81: "periphery\\brody_memory_readonly\\README_BOUNDARY.md": "52b168a3216e36f5340122d57ac1a5158104657142b660ccd8f229d58d0ddc9e",
+- .\MANIFEST_SHA256.json:82: "periphery\\brody_memory_readonly\\TRANSPLANT_MANIFEST.json": "c7a9063736920c62232b4387439c2ecdc738db973f91f5b42da1701810d6ce6c",
+- .\MANIFEST_SHA256.json:83: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\BRODY_AUTO_TRIAGE_MEMORY_INTAKE_READONLY_MANIFEST.json": "1b917ac34fa84124d138c720bd9097bd0d57da907be35023182cb922183bd4f5",
+- .\MANIFEST_SHA256.json:84: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\brody_auto_triage_memory_intake_readonly_v1.py": "3c484377d18eaf15fc5d6e854aaf9ab439c7a97bc70eab8a0cc3dcf4ae2440cc",
+- .\MANIFEST_SHA256.json:85: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\README_BOUNDARY.md": "9f0ffd559a5016d760c1bc2e9b0ba2593e060185588b67dc9ed890f7739781dc",
+- .\MANIFEST_SHA256.json:86: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\run_brody_auto_triage_memory_intake_readonly_v1.ps1": "e00d70d7d9c97007a9db134d1550f217132696abe51fe31ea1327638f69cd194",
+- .\MANIFEST_SHA256.json:87: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\BRODY_AGENT_READONLY_SESSION_TEST_PACKET_MANIFEST.json": "f01ca31b40683ac9e057b6e1082c22fa4e31e803ba76c9ad1a065a02967617e7",
+- .\MANIFEST_SHA256.json:88: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\brody_agent_readonly_session_test_packet_v1.py": "d1beb0b601dcae6d41de96d27c9206bc8887eb1cb68f2c70d410d7933a92f192",
+- .\MANIFEST_SHA256.json:89: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\README_BOUNDARY.md": "df38b7f4b52798f66547bb18966ba457d15c6b7311262c2c7aaa4e92b018b9fe",
+- .\MANIFEST_SHA256.json:90: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\run_brody_agent_readonly_session_test_packet_v1.ps1": "01e1c28e7eb50e6db44bf2d1471c58e07fdf99beebe522301c70965a768f8399",
+- .\MANIFEST_SHA256.json:91: "periphery\\brody_memory_readonly\\brody_api_bridge_authorization_packet_readonly\\BRODY_API_BRIDGE_AUTHORIZATION_PACKET_READONLY_MANIFEST.json": "74152273b59219055b5452a4935b68a154ed27327ac599034f4f3da5f156fc6f",
+- .\MANIFEST_SHA256.json:92: "periphery\\brody_memory_readonly\\brody_api_bridge_authorization_packet_readonly\\README_BOUNDARY.md": "61c90fd4256ceaae7f7f2b36398060647a13d24814d5437ae22b953c0b72a12b",
+- .\MANIFEST_SHA256.json:93: "periphery\\brody_memory_readonly\\brody_api_bridge_authorization_packet_readonly\\run_brody_api_bridge_authorization_packet_readonly_v1.ps1": "36b89224217189f20c5ebcd55481f2dd66ce5fdccc3cf2bb02c626b3f89cdce6",
+- .\MANIFEST_SHA256.json:94: "periphery\\brody_memory_readonly\\brody_api_bridge_authorized_runtime_precheck_readonly\\BRODY_API_BRIDGE_AUTHORIZED_RUNTIME_PRECHECK_READONLY_MANIFEST.json": "50efc2c12e43680ec21e145e61dcfb5b81b82604e1d9af460a524b2fb3654fb5",
+- .\MANIFEST_SHA256.json:95: "periphery\\brody_memory_readonly\\brody_api_bridge_authorized_runtime_precheck_readonly\\README_BOUNDARY.md": "b9fda6886ce8848c25d605ca20d29890cd13b0b08b8bc4b66a68c21441ca36a9",
+- .\MANIFEST_SHA256.json:96: "periphery\\brody_memory_readonly\\brody_api_bridge_authorized_runtime_precheck_readonly\\run_brody_api_bridge_authorized_runtime_precheck_readonly_v1.ps1": "b953fbc07c0fce01ba266f6ce8b99f89dcea1c471cfb0a36868c0adc1083f296",
+- .\MANIFEST_SHA256.json:97: "periphery\\brody_memory_readonly\\brody_api_bridge_build_epoch_open_readonly\\BRODY_API_BRIDGE_BUILD_EPOCH_OPEN_READONLY_MANIFEST.json": "6ee2d49e55f4f67217be40b1110d190d6525aec50201266bdaf710f0d3047af0",
+- .\MANIFEST_SHA256.json:98: "periphery\\brody_memory_readonly\\brody_api_bridge_build_epoch_open_readonly\\README_BOUNDARY.md": "35b3faf902850b579471d1409013b05ebece9492dcf9f7c4a4beedd854a5a646",
+- .\MANIFEST_SHA256.json:99: "periphery\\brody_memory_readonly\\brody_api_bridge_build_epoch_open_readonly\\run_brody_api_bridge_build_epoch_open_readonly_v1.ps1": "97a60121327c790a1445d32e3ec918244941aad32bcff3ec3091de41140844ca",
+- .\MANIFEST_SHA256.json:100: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_components_inventory_readonly\\BRODY_API_BRIDGE_CANDIDATE_COMPONENTS_INVENTORY_READONLY_MANIFEST.json": "6a8a4915b3988150e3e04209a67a42dca1b5ecd5b052e3ec89e77ff7b39501d4",
+- .\MANIFEST_SHA256.json:101: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_components_inventory_readonly\\README_BOUNDARY.md": "1e179bfa4f41b1203cadc3e0a7632ea1bcb4090c4233d96bbfa5e63bba9e552d",
+- .\MANIFEST_SHA256.json:102: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_components_inventory_readonly\\run_brody_api_bridge_candidate_components_inventory_readonly_v1.ps1": "5c465d367aefb3d53ff1be72da89cb4f9a20409b7eba592688151cd8c7335870",
+- .\MANIFEST_SHA256.json:103: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_drift_guard_readonly\\BRODY_API_BRIDGE_CANDIDATE_DRIFT_GUARD_READONLY_MANIFEST.json": "318039ae3e73329738b50cee2553938fc2dca2c50ea64847ae57e5351b713fe8",
+- .\MANIFEST_SHA256.json:104: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_drift_guard_readonly\\README_BOUNDARY.md": "783ed19686757a4d8e5eba4043c4b6d969cb0d7de57395e05caafd13206f903a",
+- .\MANIFEST_SHA256.json:105: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_drift_guard_readonly\\run_brody_api_bridge_candidate_drift_guard_readonly_v1.ps1": "75f49017acca3f2cf60fe6a9741967dd442e1d2b44f8563f69087da7a9fbc067",
+- .\MANIFEST_SHA256.json:106: "periphery\\brody_memory_readonly\\brody_api_bridge_contract_readonly\\BRODY_API_BRIDGE_CONTRACT_READONLY_MANIFEST.json": "c27895e1f101d562e82379382adb4ea594e8c023686917da90cb39f89e2fd238",
+- .\MANIFEST_SHA256.json:107: "periphery\\brody_memory_readonly\\brody_api_bridge_contract_readonly\\README_BOUNDARY.md": "339e961a570a05ce5400d44b4bd4e4bcaa7601a30be2afd7055d2928f240ef13",
+- .\MANIFEST_SHA256.json:108: "periphery\\brody_memory_readonly\\brody_api_bridge_contract_readonly\\run_brody_api_bridge_contract_readonly_v1.ps1": "3e472a84a3502d950c14c752c6fbf53b44976e756d5cf3e0c42c2f8443357bbf",
+- .\MANIFEST_SHA256.json:109: "periphery\\brody_memory_readonly\\brody_api_bridge_disabled_runtime_skeleton_readonly\\BRODY_API_BRIDGE_DISABLED_RUNTIME_SKELETON_READONLY_MANIFEST.json": "ad9b91e66b7acf63fe259eeedad384127b7dadd66b37302d6c66af1cfa390902",
+- .\MANIFEST_SHA256.json:110: "periphery\\brody_memory_readonly\\brody_api_bridge_disabled_runtime_skeleton_readonly\\README_BOUNDARY.md": "fcdc62b3ce483dc13eb7bdc3da2a00c00355b6780707a67c4c25b9af2a173c0f",
+- .\MANIFEST_SHA256.json:111: "periphery\\brody_memory_readonly\\brody_api_bridge_disabled_runtime_skeleton_readonly\\run_brody_api_bridge_disabled_runtime_skeleton_readonly_v1.ps1": "4138a04f3e0ec4634f27af58b7f67db1325e27761829acb1749eea7d6506d0e0",
+- .\MANIFEST_SHA256.json:112: "periphery\\brody_memory_readonly\\brody_api_bridge_dry_run_readonly\\BRODY_API_BRIDGE_DRY_RUN_READONLY_MANIFEST.json": "21e80a6f69bdd43e735ef3a6066c14e5cedf4711e59c33a0714b2f328c9b76ac",
+- .\MANIFEST_SHA256.json:113: "periphery\\brody_memory_readonly\\brody_api_bridge_dry_run_readonly\\README_BOUNDARY.md": "0e71d3c7d65b97be64d7e54d8dfa130f1492c671e9f61a510c06f6df0d76966f",
+- .\MANIFEST_SHA256.json:114: "periphery\\brody_memory_readonly\\brody_api_bridge_dry_run_readonly\\run_brody_api_bridge_dry_run_readonly_v1.ps1": "bf1ff6be24f3d451c42d7e11ba003f7bddf3a861b840f7ae13ff88c7ab4210c6",
+- .\MANIFEST_SHA256.json:115: "periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\BRODY_API_BRIDGE_EXTERNAL_ACCESS_FREEZE_READONLY_MANIFEST.json": "bf1cb71cea8fe268feef877c4ea68faa348f092dab8bbcd1a63be7eaa69959fc",
+- .\MANIFEST_SHA256.json:116: "periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\README_BOUNDARY.md": "9c66ded04b4a60207cbe583b64bb761c4bf99774a047e5dcd49927df6b71f0db",
+- .\MANIFEST_SHA256.json:117: "periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\run_brody_api_bridge_external_access_freeze_readonly_v1.ps1": "f34d543d7f65f5c7ac9f29036d5132d1dc9e5f399a9a98628b1268e96073296c",
+- .\MANIFEST_SHA256.json:118: "periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\BRODY_API_BRIDGE_LIVE_DRIFT_GUARD_READONLY_MANIFEST.json": "cc7d41ef43ed0024f370ed073b9688cdac509d09dd2e0799143131675fc47a8c",
+- .\MANIFEST_SHA256.json:119: "periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\README_BOUNDARY.md": "393ca1ffc70df18813f3503e5d2f53165e788c2ddf097dc163372d4f50dd4989",
+- .\MANIFEST_SHA256.json:120: "periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\run_brody_api_bridge_live_drift_guard_readonly_v1.ps1": "419511fa198cf9efffcf841f2e728ea9417217e7a01df8079628446fbca3a18c",
+- .\MANIFEST_SHA256.json:121: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_policy_matrix_readonly\\BRODY_API_BRIDGE_PROVIDER_POLICY_MATRIX_READONLY_MANIFEST.json": "7bef7c22124bd3adde83355867860240574d1fde2eaece69c16a5886c05ce4a7",
+- .\MANIFEST_SHA256.json:122: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_policy_matrix_readonly\\README_BOUNDARY.md": "22baf789f9dd48e0e1d2ee86519685fe6eee9a7267b114cbd79a1acc26216c29",
+- .\MANIFEST_SHA256.json:123: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_policy_matrix_readonly\\run_brody_api_bridge_provider_policy_matrix_readonly_v1.ps1": "4777bc6c64e1b6271edfe836b44913247ff882d6d202ca3b1ad508b8281a5f28",
+- .\MANIFEST_SHA256.json:124: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_registry_readonly\\BRODY_API_BRIDGE_PROVIDER_REGISTRY_READONLY_MANIFEST.json": "ed6b9781632d2f0d325ce6f9e5bb98d9a0cd2c1bc8e80cf5cd03567489ae262a",
+- .\MANIFEST_SHA256.json:125: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_registry_readonly\\README_BOUNDARY.md": "37e27251779c98082576fe6cc9a74a357408c991c5f11cc28c04a1bf01204e2b",
+- .\MANIFEST_SHA256.json:126: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_registry_readonly\\run_brody_api_bridge_provider_registry_readonly_v1.ps1": "2df5c52679af36ec7d98f6ae1dbec07760546228bcfcc937ca51216afbe89a38",
+- .\MANIFEST_SHA256.json:127: "periphery\\brody_memory_readonly\\brody_api_bridge_readiness_readonly\\BRODY_API_BRIDGE_READINESS_READONLY_MANIFEST.json": "2a8cf4d9c2645834daf7b2cf3f6b6b1272b4e1b0135d88017c5d1e08f33b4788",
+- .\MANIFEST_SHA256.json:128: "periphery\\brody_memory_readonly\\brody_api_bridge_readiness_readonly\\README_BOUNDARY.md": "697ec9ae9e3deb97dd600136e5b0245771646de9e9ee6850640d30a9c3fb7966",
+- .\MANIFEST_SHA256.json:129: "periphery\\brody_memory_readonly\\brody_api_bridge_readiness_readonly\\run_brody_api_bridge_readiness_readonly_v1.ps1": "3a37cf4f13e0c90688d53438e6e286402f4c66db4f5573d8767dcfaa9d19d58d",
+- .\MANIFEST_SHA256.json:130: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_activation_gate_readonly\\BRODY_API_BRIDGE_RUNTIME_ACTIVATION_GATE_READONLY_MANIFEST.json": "e657a68cd1ab0a6819f2f69e85b45e78308d9a14709b415b957101a9e000c7d1",
+- .\MANIFEST_SHA256.json:131: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_activation_gate_readonly\\README_BOUNDARY.md": "b83b142a9fc167d3f5a69dcf450dfd672512155477ab76ec0b052ad8e16d2b0c",
+- .\MANIFEST_SHA256.json:132: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_activation_gate_readonly\\run_brody_api_bridge_runtime_activation_gate_readonly_v1.ps1": "cb3096806a440d6623b88982d33ef6af0d4f62191abe5d5d11d1160ad2471e34",
+- .\MANIFEST_SHA256.json:133: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\BRODY_API_BRIDGE_RUNTIME_AUTHORIZATION_LEDGER_READONLY_MANIFEST.json": "d2f9cc3f12e8f67ff829840c07fbf49c5efd37f42347c75dac9a2260ccc3be55",
+- .\MANIFEST_SHA256.json:134: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\README_BOUNDARY.md": "cd8844b93e5075ebc391fbc98a402a7ba10c1de2755ab32162a02ad1028a86fa",
+- .\MANIFEST_SHA256.json:135: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\run_brody_api_bridge_runtime_authorization_ledger_readonly_v1.ps1": "3e32796453d433bb7c59a1cb27306361df770baecf1e1bb67383330bc031c836",
+- .\MANIFEST_SHA256.json:136: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_stub_readonly\\BRODY_API_BRIDGE_RUNTIME_STUB_READONLY_MANIFEST.json": "2146348f2d36cb6bcfbbc9fcd7d091299e5c90de8442eb269d9ac1091ee9ec50",
+- .\MANIFEST_SHA256.json:137: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_stub_readonly\\README_BOUNDARY.md": "d0ad84f21f4185dccd39cea372ecce36d4143661420fc9403c14cc0ebc6f9592",
+- .\MANIFEST_SHA256.json:138: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_stub_readonly\\run_brody_api_bridge_runtime_stub_readonly_v1.ps1": "a9087162ef141dddb8699bdf796fb4e42057709372e207dbd1b9a617b72f2f7f",
+- .\MANIFEST_SHA256.json:139: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_READONLY_MANIFEST.json": "fd1676e98c4e3105e0b08d55a8be5c045fc466b91bb653c013218476ce3c1d77",
+- .\MANIFEST_SHA256.json:140: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\README_BOUNDARY.md": "a9f2677fe5097a986245fec31709b34d3d10d519e79ca5d36ea836448ce16b74",
+- .\MANIFEST_SHA256.json:141: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\run_brody_api_memory_operator_replay_api_fix_readonly_v1.ps1": "b9288a052538bea39ae2015025aadd65c54a548cf56c2b20ed555c2bed157bd7",
+- .\MANIFEST_SHA256.json:142: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\reports\\api_fix_report.json": "a1b25f17fb040f7da9d92ff177097fae94de47d5f3ca46390ee223b23295c4b1",
+- .\MANIFEST_SHA256.json:143: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_API_FIX_V2_READONLY_MANIFEST.json": "e711f8bc7c034cc4eed69bdc5b6ae1e179cb7bb2e01b114fbd1bc3b50069c8f9",
+- .\MANIFEST_SHA256.json:144: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\README_BOUNDARY.md": "1ebca10b2b22adadf26edb32783e8a13754edd02a3c24a23b30165210396352b",
+- .\MANIFEST_SHA256.json:145: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\run_brody_api_memory_operator_replay_api_fix_v2_readonly.ps1": "4f41aa3eff802cc226a3a1e67f20dc754bb713353fe737c7fa4176b7cf7203fd",
+- .\MANIFEST_SHA256.json:146: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_canon.json": "053ec58e7065e3421be6f1bc9ea73c88ccb6d2322331e4b9d7e0db7a698d63bb",
+- .\MANIFEST_SHA256.json:147: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\context_x108.json": "c3b65ddd2403df4a9fdafd0fc317e88489b31cd1319d5fe0c5a6fae3ba9f6df1",
+- .\MANIFEST_SHA256.json:148: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\counts.json": "69480712774a4496fff0eacd4eec6a2fcbf275768bc5ae5e2e01b91259cd0b4f",
+- .\MANIFEST_SHA256.json:149: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\evidence.json": "6eacf5c80085a64c7147bd865a0bb2316ec5b90d6ba09dfeca766fd8f5e29358",
+- .\MANIFEST_SHA256.json:150: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\manifest.json": "7ae0b4112ed3afc20df4b081151d314384048285177caa16fe0866a058e586d8",
+- .\MANIFEST_SHA256.json:151: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\metrics.json": "69bc4f3d5a3fd04e1e9dd85a8c3ea88a2f0a8734fddae9290c80eff7748cba0e",
+- .\MANIFEST_SHA256.json:152: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\readiness.json": "8dae4aac4de25dd55c62e92a5c6be8b3a387bdf89c686338a1211666593bb38b",
+- .\MANIFEST_SHA256.json:153: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_brody.json": "bd1b6129360c6ac50cf9c5323de06617999426bb3fe65230c460b86d82127f83",
+- .\MANIFEST_SHA256.json:154: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\search_x108.json": "5c93a16f22d6cc7c380e8cc36bcc0e24ab97a3c2d1a387e5cca80e80b71ff9db",
+- .\MANIFEST_SHA256.json:155: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\api_endpoints\\status.json": "5b6a34fbf03e03089790ed7cb98e460472f1a10159b52140aa6f6298a56bafad",
+- .\MANIFEST_SHA256.json:156: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_v2_readonly\\reports\\api_fix_v2_report.json": "e743155f0564a6651e01360df8567e0adfc088a08bb9e6e6519a6f829c9bb268",
+- .\MANIFEST_SHA256.json:157: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_CLEAN_CLOSE_READONLY_MANIFEST.json": "5e267ab641297d499fa1c3e660c1404a6a935fa3a3ba5fe39257e61bc5a712b2",
+- .\MANIFEST_SHA256.json:158: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\README_BOUNDARY.md": "7566e057b6fc51d30d617d6831e806f283a99b7ab3c7ed12a7689245ea177bf4",
+- .\MANIFEST_SHA256.json:159: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_clean_close_readonly\\run_brody_api_memory_operator_replay_clean_close_readonly_v1.ps1": "a661b5b3153a5025fca0f45ec32260486ad9bf7cc1a0c1a569146e46ccc0a0c0",
+- .\MANIFEST_SHA256.json:160: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\BRODY_API_MEMORY_OPERATOR_REPLAY_READONLY_MANIFEST.json": "297dc0a4ee3a4e89e20571ca4fe00556d9219d3d9e3d935325a5497f04cb6355",
+- .\MANIFEST_SHA256.json:161: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\README_BOUNDARY.md": "f3f5b51a4fce769c48aca828775a76c15e2e2f7352ca4de55197a85fb9320853",
+- .\MANIFEST_SHA256.json:162: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\run_brody_api_memory_operator_replay_readonly_v1.ps1": "ec1cae32801fafe0013dc7d2d31406f2a48042d92ed55efe0ae224103216e70e",
+- .\MANIFEST_SHA256.json:163: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\smoke_brody_api_memory_operator_replay_readonly_v1.py": "c1e26d54453f40639a2aea0e18725d564dedcc195977b73c3c1d565a3739a730",
+- .\MANIFEST_SHA256.json:164: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\operator_receipts\\operator_receipt_git_status_example.json": "3b37739bcabc5b60a8aab570c7988e0879fff4872847f5ec8b9fbdc0ceae02a4",
+- .\MANIFEST_SHA256.json:165: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\api_memory_operator_replay_report.json": "3952d40096c426414d3000005155d9033d4c819b7321428de3d00e57616e6113",
+- .\MANIFEST_SHA256.json:166: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_readonly\\reports\\command_gate_replay_report.json": "a94ce22970d45942ca87553b4234903bcfa9fa6266b3410e613c8af19a381d8a",
+- .\MANIFEST_SHA256.json:167: "periphery\\brody_memory_readonly\\brody_human_command_packet_clean_close_readonly\\BRODY_HUMAN_COMMAND_PACKET_CLEAN_CLOSE_READONLY_MANIFEST.json": "35db88adc8818165aa253ea61cee91e75ce409c905f1eaa61fc7b643ab975a80",
+- .\MANIFEST_SHA256.json:168: "periphery\\brody_memory_readonly\\brody_human_command_packet_clean_close_readonly\\README_BOUNDARY.md": "3211ddcf7e463ded2a4e66ffd0b5168ee76586865f5975a5880875ad4c5ca43f",
+- .\MANIFEST_SHA256.json:169: "periphery\\brody_memory_readonly\\brody_human_command_packet_clean_close_readonly\\run_brody_human_command_packet_clean_close_readonly_v1.ps1": "e381cec702bafd3726223449869a1cabff190217823bae919e1625080868c55e",
+- .\MANIFEST_SHA256.json:170: "periphery\\brody_memory_readonly\\brody_human_command_packet_readonly\\BRODY_HUMAN_COMMAND_PACKET_READONLY_MANIFEST.json": "7d1907070e80a8fc907907cf3ecc423d1a667b002bc91de3456856563a19dca3",
+- .\MANIFEST_SHA256.json:171: "periphery\\brody_memory_readonly\\brody_human_command_packet_readonly\\brody_human_command_packet_readonly_v1.py": "9d5591392c01a53911182629a6ce6c9fd7c778df863f2977ddc346cdbb5408ae",
+- .\MANIFEST_SHA256.json:172: "periphery\\brody_memory_readonly\\brody_human_command_packet_readonly\\README_BOUNDARY.md": "b484ebf78de3a166a93153730dad89c9445dffdb04dbe7018c73630b46ef341e",
+- .\MANIFEST_SHA256.json:173: "periphery\\brody_memory_readonly\\brody_human_command_packet_readonly\\run_brody_human_command_packet_readonly_v1.ps1": "0ab507c2030441f8a9916a320a6047dc16774fe3179ec4cdb5a1a0333a7d7f1a",
+- .\MANIFEST_SHA256.json:174: "periphery\\brody_memory_readonly\\brody_human_command_packet_readonly\\smoke_brody_human_command_packet_readonly_v1.py": "68e01bd6f761f7d3dd56ace3912149e2b3cc23b033fe68701f1735c97f8ffee2",
+- .\MANIFEST_SHA256.json:175: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\BRODY_HUMAN_OUTPUT_RECEIPT_VALIDATOR_CLEAN_CLOSE_READONLY_MANIFEST.json": "0bbb6c55e43a3697e3fe872f59cecf2c8c9bcaff3c8a6f1c97f4e064400b535e",
+- .\MANIFEST_SHA256.json:176: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\README_BOUNDARY.md": "b43f7b479628921c071ada00a329de3019dac6cb00eb449cc98917a4ce953767",
+- .\MANIFEST_SHA256.json:177: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_clean_close_readonly\\run_brody_human_output_receipt_validator_clean_close_readonly_v1.ps1": "6a0b80843df3e5d29523584397af79ddadcb8a2a94ead43e52f9cee2900b4cfb",
+- .\MANIFEST_SHA256.json:178: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_readonly\\BRODY_HUMAN_OUTPUT_RECEIPT_VALIDATOR_READONLY_MANIFEST.json": "30bd02a56e834556a222c3e7ba6d22b0e26b7e101ba8d310c0af779b99b34431",
+- .\MANIFEST_SHA256.json:179: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_readonly\\brody_human_output_receipt_validator_readonly_v1.py": "563d14d472349a719812ce1316f9fdab6d8e2b56708ad37d91a6709b77bfc175",
+- .\MANIFEST_SHA256.json:180: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_readonly\\README_BOUNDARY.md": "da5cc5fe559105b0ee6882f6eeb72cf0ecdf6721b54192278deb85186bdf1d27",
+- .\MANIFEST_SHA256.json:181: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_readonly\\run_brody_human_output_receipt_validator_readonly_v1.ps1": "44c76d2cd0c22e1b932ac616bc288f1affd56383424e4d9c341c6fa9420dc8fc",
+- .\MANIFEST_SHA256.json:182: "periphery\\brody_memory_readonly\\brody_human_output_receipt_validator_readonly\\smoke_brody_human_output_receipt_validator_readonly_v1.py": "9d98df843835378fe83724e35f3ac94db1116910e5bc2b285c73c9814f40bf98",
+- .\MANIFEST_SHA256.json:183: "periphery\\brody_memory_readonly\\brody_local_command_gate_clean_close_readonly\\BRODY_LOCAL_COMMAND_GATE_CLEAN_CLOSE_READONLY_MANIFEST.json": "08e85ffa9be31339586e87dc07fccf9870dd3010c6c2208da61e6e94abf84864",
+- .\MANIFEST_SHA256.json:184: "periphery\\brody_memory_readonly\\brody_local_command_gate_clean_close_readonly\\README_BOUNDARY.md": "62e31c7d7b8f37d4f782b1be9d8cb9ec9698dcdbe7332a563265ff589135f446",
+- .\MANIFEST_SHA256.json:185: "periphery\\brody_memory_readonly\\brody_local_command_gate_clean_close_readonly\\run_brody_local_command_gate_clean_close_readonly_v1.ps1": "cabb4b3fc2b3307800d761104ac70eccf2dd59db9008497ad3d42b371f243fca",
+- .\MANIFEST_SHA256.json:186: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly\\BRODY_LOCAL_COMMAND_GATE_READONLY_MANIFEST.json": "95392745c9c540c636474b148e2bca59fb902d92dccd7ac50e4b4385ba819747",
+- .\MANIFEST_SHA256.json:187: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly\\brody_local_command_gate_readonly_v1.py": "a95c0ab46381767eddb93b37fa68e9cc95053b77001df9ca93c6973ca444775c",
+- .\MANIFEST_SHA256.json:188: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly\\README_BOUNDARY.md": "647ac8bf624e2a4ebbad08079a4cc3e2d6bc90870cd1ae47fc6b62172baa2e60",
+- .\MANIFEST_SHA256.json:189: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly\\run_brody_local_command_gate_readonly_v1.ps1": "2196509b55c53a250ca9a01c5a6c381f880ab5f5cbf9c44e91e262dccf34d769",
+- .\MANIFEST_SHA256.json:190: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly\\smoke_brody_local_command_gate_readonly_v1.py": "d83059e807013e08b5253eb57eac8c8d8701835c0e72aa764cc1e5166116a492",
+- .\MANIFEST_SHA256.json:191: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair\\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_MANIFEST.json": "32e538f6bcafacb0c96bc2b818b195dfd260bd88fd1d40a45d09fc3e63ee7085",
+- .\MANIFEST_SHA256.json:192: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair\\README_BOUNDARY.md": "99ffa4287e8f3f222462bc689004d65e44117a092f095a240a30dc6679d5cc53",
+- .\MANIFEST_SHA256.json:193: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair\\run_brody_local_command_gate_readonly_repair_v1.ps1": "20359d14a2a155d8980f1315e466f3bd320ab43dbcb28879d0bc736a8eca8ec1",
+- .\MANIFEST_SHA256.json:194: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v2\\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_V2_MANIFEST.json": "1cd5d16484f830efe536adee2c099841c9937413ad5e663971402afec2a39df1",
+- .\MANIFEST_SHA256.json:195: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v2\\README_BOUNDARY.md": "9122f5d13aa8a7f42c464c3686b03dd831948eab38c4f5c17423fefdf4db06ac",
+- .\MANIFEST_SHA256.json:196: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v2\\run_brody_local_command_gate_readonly_repair_v2.ps1": "ec0dfd087da9e65628814779a8c81c125e7c7f21b159c120aad4995d04f7419b",
+- .\MANIFEST_SHA256.json:197: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v3\\BRODY_LOCAL_COMMAND_GATE_READONLY_REPAIR_V3_MANIFEST.json": "d865019db3abac0f46c13fc8a78416a630b893c779d24dc6c5b6110e76f678c8",
+- .\MANIFEST_SHA256.json:198: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v3\\README_BOUNDARY.md": "c571732a1ade46c598063ea86cc8e0c0add00a23226e0e591acd1eaff723af44",
+- .\MANIFEST_SHA256.json:199: "periphery\\brody_memory_readonly\\brody_local_command_gate_readonly_repair_v3\\run_brody_local_command_gate_readonly_repair_v3.ps1": "92c86bda8f879ae4e4e189c19f518670d1ba73ac29eef9a4046276f56c47cdd5",
+- .\MANIFEST_SHA256.json:200: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_FREEZE_V1_MANIFEST.json": "3efc3cb39d0092169b1fa21b218eb96ec2b87d22383f6568a46ba24e51e919ff",
+- .\MANIFEST_SHA256.json:201: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_REPORT.txt": "974fdf74ffd870a77cce3317428362d1ad3f0c2fd29efef543252380bb3166ac",
+- .\MANIFEST_SHA256.json:202: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\README_BOUNDARY.md": "3399044ad736499fad68b0a104fad28934634527b6faced763a68e22edfc12ab",
+- .\MANIFEST_SHA256.json:203: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\run_brody_memory_context_operator_interaction_test_readonly_freeze_v1.ps1": "8fb8040f5ec86973e480e699c5aa3c38cc70abb5019c4e51bed5878de76c322e",
+- .\MANIFEST_SHA256.json:204: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\context_brody.json": "ea8b3592c80ef7024e06c24e7c0d4306b4e6e0b0d1cb718c9ea3f6ae3b5b9877",
+- .\MANIFEST_SHA256.json:205: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\context_canon.json": "053ec58e7065e3421be6f1bc9ea73c88ccb6d2322331e4b9d7e0db7a698d63bb",
+- .\MANIFEST_SHA256.json:206: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\context_kernel.json": "1c3eea3702744cefd79cd4169ebd80d5c10380a900373a42a1ed88bd6fd47649",
+- .\MANIFEST_SHA256.json:207: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\context_x108.json": "c3b65ddd2403df4a9fdafd0fc317e88489b31cd1319d5fe0c5a6fae3ba9f6df1",
+- .\MANIFEST_SHA256.json:208: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\counts.json": "69480712774a4496fff0eacd4eec6a2fcbf275768bc5ae5e2e01b91259cd0b4f",
+- .\MANIFEST_SHA256.json:209: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\evidence.json": "6eacf5c80085a64c7147bd865a0bb2316ec5b90d6ba09dfeca766fd8f5e29358",
+- .\MANIFEST_SHA256.json:210: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\manifest.json": "7ae0b4112ed3afc20df4b081151d314384048285177caa16fe0866a058e586d8",
+- .\MANIFEST_SHA256.json:211: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\metrics.json": "69bc4f3d5a3fd04e1e9dd85a8c3ea88a2f0a8734fddae9290c80eff7748cba0e",
+- .\MANIFEST_SHA256.json:212: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\readiness.json": "8dae4aac4de25dd55c62e92a5c6be8b3a387bdf89c686338a1211666593bb38b",
+- .\MANIFEST_SHA256.json:213: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\search_brody.json": "bd1b6129360c6ac50cf9c5323de06617999426bb3fe65230c460b86d82127f83",
+- .\MANIFEST_SHA256.json:214: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\search_canon.json": "cc96e81d1002af62ce58a1dd22d2f3369005ab538382ea43a246f8355cf4959d",
+- .\MANIFEST_SHA256.json:215: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\search_freeze.json": "dc7ceaa7f91c49c3b296735ac26eae1666260250412d9b738455d6a5744de01b",
+- .\MANIFEST_SHA256.json:216: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\search_x108.json": "5c93a16f22d6cc7c380e8cc36bcc0e24ab97a3c2d1a387e5cca80e80b71ff9db",
+- .\MANIFEST_SHA256.json:217: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\api_endpoints\\status.json": "5b6a34fbf03e03089790ed7cb98e460472f1a10159b52140aa6f6298a56bafad",
+- .\MANIFEST_SHA256.json:218: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\operator_receipts\\operator_receipt_api_status_and_git_status.json": "2f5c598b2ec14815f8095bad8ce23678a556b5a78aececbadd476474c38d75fc",
+- .\MANIFEST_SHA256.json:219: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\reports\\brody_command_gate_interaction_report.json": "bc0b7192e8128a59123de8954e3f0556e705c979f297ff41dc67aaeb50c64589",
+- .\MANIFEST_SHA256.json:220: "periphery\\brody_memory_readonly\\brody_memory_context_operator_interaction_test_readonly_freeze_v1\\reports\\BRODY_MEMORY_CONTEXT_OPERATOR_INTERACTION_TEST_READONLY_REPORT.json": "d36f3658f96b675728e38237ea665e5cdcc2a50acdf86901d300c58ccaa14d60",
+- .\MANIFEST_SHA256.json:221: "periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\BRODY_NATIVE_TERMINAL_DETECTOR_PATCH_READONLY_MANIFEST.json": "0e857d2cc854efcd54113561ba51efadc1c2c0bb02d2519d6fc7b0794865246a",
+- .\MANIFEST_SHA256.json:222: "periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\README_BOUNDARY.md": "3be15e791ac0a895844a11280348f135ed1bc7108eaa32c448f038afa3a74042",
+- .\MANIFEST_SHA256.json:223: "periphery\\brody_memory_readonly\\brody_native_terminal_detector_patch_readonly\\run_brody_native_terminal_detector_patch_readonly_v1.ps1": "5f69b6638e0e7b168daac4b1254c818dac156ad94e399e16d8e683f6c6922de5",
+- .\MANIFEST_SHA256.json:224: "periphery\\brody_memory_readonly\\brody_native_terminal_session_test_readonly\\BRODY_NATIVE_TERMINAL_SESSION_TEST_READONLY_MANIFEST.json": "c21726cd206cfffaf3585a400d83af61de7398424eb5542c49266dfdfad9982e",
+- .\MANIFEST_SHA256.json:225: "periphery\\brody_memory_readonly\\brody_native_terminal_session_test_readonly\\README_BOUNDARY.md": "1471468e67e4dc26bde9c2c955bcd95c1b17b803001feffd9515d23057379e02",
+- .\MANIFEST_SHA256.json:226: "periphery\\brody_memory_readonly\\brody_native_terminal_session_test_readonly\\run_brody_native_terminal_session_test_readonly_v1.ps1": "f77e0bce68d22b83084f84215dea619cf8da5a2565d202de2d84f3ab36630d29",
+- .\MANIFEST_SHA256.json:227: "periphery\\brody_memory_readonly\\brody_operator_control_loop_baseline_freeze_readonly\\BRODY_OPERATOR_CONTROL_LOOP_BASELINE_FREEZE_READONLY_MANIFEST.json": "731755e1fde5dfad4fc79b50376b5f68c0bc8b0d725a3fc460a97e331025ef6e",
+- .\MANIFEST_SHA256.json:228: "periphery\\brody_memory_readonly\\brody_operator_control_loop_baseline_freeze_readonly\\README_BOUNDARY.md": "4e573842aca1e71933d6dabd543a27e837704d330e65e041ed37e0efdf01b8e6",
+- .\MANIFEST_SHA256.json:229: "periphery\\brody_memory_readonly\\brody_operator_control_loop_baseline_freeze_readonly\\run_brody_operator_control_loop_baseline_freeze_readonly_v1.ps1": "be7c16c91164f4b7fd11ffd77fe8211fc87c191cf72b3182a4f242ec7077e96c",
+- .\MANIFEST_SHA256.json:230: "periphery\\brody_memory_readonly\\brody_operator_control_loop_clean_close_readonly\\BRODY_OPERATOR_CONTROL_LOOP_CLEAN_CLOSE_READONLY_MANIFEST.json": "4be98082608cace13ade6f6341ed3b6f321f3c9e577bfa0ae7907c523c51b3d1",
+- .\MANIFEST_SHA256.json:231: "periphery\\brody_memory_readonly\\brody_operator_control_loop_clean_close_readonly\\README_BOUNDARY.md": "6946b84767ca627d7a350525426dd77305b54faa638b358d66cdfee2f54259ab",
+- .\MANIFEST_SHA256.json:232: "periphery\\brody_memory_readonly\\brody_operator_control_loop_clean_close_readonly\\run_brody_operator_control_loop_clean_close_readonly_v1.ps1": "6eaec876fe87bd70a84a7369d6149914bebcf87762754a0c535fa5dd97b70a71",
+- .\MANIFEST_SHA256.json:233: "periphery\\brody_memory_readonly\\brody_operator_execution_line_baseline_freeze_readonly\\BRODY_OPERATOR_EXECUTION_LINE_BASELINE_FREEZE_READONLY_MANIFEST.json": "ea253938e78ce9c92b4f9ab082487d3b77cd9802ba3f1ab1ac204a48c85ef27d",
+- .\MANIFEST_SHA256.json:234: "periphery\\brody_memory_readonly\\brody_operator_execution_line_baseline_freeze_readonly\\README_BOUNDARY.md": "56a2d7b138622cda76763f1d8ff27b8216320585d78bffb75e25c382b133ee3c",
+- .\MANIFEST_SHA256.json:235: "periphery\\brody_memory_readonly\\brody_operator_execution_line_baseline_freeze_readonly\\run_brody_operator_execution_line_baseline_freeze_readonly_v1.ps1": "5d3ab12f521c67b9580150f2a37f6f340bd44f3867248b19f123d93e0662934d",
+- .\MANIFEST_SHA256.json:236: "periphery\\brody_memory_readonly\\brody_operator_execution_protocol_readonly\\BRODY_OPERATOR_EXECUTION_PROTOCOL_READONLY_MANIFEST.json": "dada63e032c0531bf2d73e1b88de8e1316c8db1a122dc7705ad2c5294fcc93d8",
+- .\MANIFEST_SHA256.json:237: "periphery\\brody_memory_readonly\\brody_operator_execution_protocol_readonly\\BRODY_OPERATOR_EXECUTION_PROTOCOL_READONLY_V1.json": "47f04f175da4e302288fa10ad344031a8073f800439d548408701708f03a5bd2",
+- .\MANIFEST_SHA256.json:238: "periphery\\brody_memory_readonly\\brody_operator_execution_protocol_readonly\\README_BOUNDARY.md": "1b1b742f5b97e156691228f5a0a8bde6f5d1819d1d418a2183469c27035d2374",
+- .\MANIFEST_SHA256.json:239: "periphery\\brody_memory_readonly\\brody_operator_execution_protocol_readonly\\run_brody_operator_execution_protocol_readonly_v1.ps1": "a416e71f374db08c53ad94a2a2bd5c36319f3c37754009f1982cb9266b8bccdc",
+- .\MANIFEST_SHA256.json:240: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_clean_close_readonly\\BRODY_OPERATOR_EXECUTION_RECEIPT_CLEAN_CLOSE_READONLY_MANIFEST.json": "8d4886bdeaf65e7053463fc8ded9e32b0aa252049ae724b382dc44d97247e2bb",
+- .\MANIFEST_SHA256.json:241: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_clean_close_readonly\\README_BOUNDARY.md": "20c8c5acda925fb002f74d2fa2682dc0e64b150681bd03c41b78d2baf08b645d",
+- .\MANIFEST_SHA256.json:242: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_clean_close_readonly\\run_brody_operator_execution_receipt_clean_close_readonly_v1.ps1": "890a1ddf679748beef317063be446280f6d5cd4aec547ec501ef9148ff718317",
+- .\MANIFEST_SHA256.json:243: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_readonly\\BRODY_OPERATOR_EXECUTION_RECEIPT_READONLY_MANIFEST.json": "00412bfc3a05762773bb495921bd3215a6dcf7af5b4fb9b659f4b64ff4af10e3",
+- .\MANIFEST_SHA256.json:244: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_readonly\\BRODY_OPERATOR_EXECUTION_RECEIPT_READONLY_V1.json": "018bbcac76edd106d4df80fbb23b7d00d405064e84529c241ee2815cc1fe9471",
+- .\MANIFEST_SHA256.json:245: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_readonly\\README_BOUNDARY.md": "026aa7f18a28387c75d7cef7fe0d835bdb2109384dd6b64d74efd24a27b2d284",
+- .\MANIFEST_SHA256.json:246: "periphery\\brody_memory_readonly\\brody_operator_execution_receipt_readonly\\run_brody_operator_execution_receipt_readonly_v1.ps1": "f40e80a069fb6ac38aceb5c4e18418d4ab695f80f8d2f5e6ac1d88a5fd414466",
+- .\MANIFEST_SHA256.json:247: "periphery\\brody_memory_readonly\\brody_operator_final_baseline_freeze_readonly\\BRODY_OPERATOR_FINAL_BASELINE_FREEZE_READONLY_MANIFEST.json": "a5b2ab3fe7ddac08ab0ed898fc3f6a373d978eab494f32efd106d37fea406a73",
+- .\MANIFEST_SHA256.json:248: "periphery\\brody_memory_readonly\\brody_operator_final_baseline_freeze_readonly\\README_BOUNDARY.md": "2ad5cc0404a764d68602fdac5c61a46f580d357fb4a96011c48cdfbdf0d03245",
+- .\MANIFEST_SHA256.json:249: "periphery\\brody_memory_readonly\\brody_operator_final_baseline_freeze_readonly\\run_brody_operator_final_baseline_freeze_readonly_v1.ps1": "a32b0b6954ba23f7f43df6da22fb206ef28b51314e51962b815449ae292a0317",
+- .\MANIFEST_SHA256.json:250: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_baseline_freeze_readonly\\BRODY_OPERATOR_HANDOFF_LINE_BASELINE_FREEZE_READONLY_MANIFEST.json": "45c31a9987cece58d98b966c9ca4bc7398697c4e5842761bc9c8141a247331d5",
+- .\MANIFEST_SHA256.json:251: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_baseline_freeze_readonly\\README_BOUNDARY.md": "d45b29b5f2a8072cceb2482a6696748c1d61da7189f6d59bb8ce9d3dc5214f1d",
+- .\MANIFEST_SHA256.json:252: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_baseline_freeze_readonly\\run_brody_operator_handoff_line_baseline_freeze_readonly_v1.ps1": "2ee97b9dbeb24878dd1f575a4e1d7c298eb7f828dc122eb7e5df77764cd22279",
+- .\MANIFEST_SHA256.json:253: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_clean_close_readonly\\BRODY_OPERATOR_HANDOFF_LINE_CLEAN_CLOSE_READONLY_MANIFEST.json": "9bdd951e35665425cd270ba0523d6cbca301ed9b9ba5f5480f686ea12067c619",
+- .\MANIFEST_SHA256.json:254: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_clean_close_readonly\\README_BOUNDARY.md": "b3686ccae48d4227c8b05ad5a19833de1ec7dfc1ce4541fb2412ab33c5290229",
+- .\MANIFEST_SHA256.json:255: "periphery\\brody_memory_readonly\\brody_operator_handoff_line_clean_close_readonly\\run_brody_operator_handoff_line_clean_close_readonly_v1.ps1": "64781b32c6531b95a32ad3f0e1efd0e415a0356c9a24a394d86a8a4db4f39325",
+- .\MANIFEST_SHA256.json:256: "periphery\\brody_memory_readonly\\brody_operator_io_loop_baseline_freeze_readonly\\BRODY_OPERATOR_IO_LOOP_BASELINE_FREEZE_READONLY_MANIFEST.json": "37b8d2e646080a86b3fd904c5413dcddc1837dec8558492b87fd40bbcd406439",
+- .\MANIFEST_SHA256.json:257: "periphery\\brody_memory_readonly\\brody_operator_io_loop_baseline_freeze_readonly\\README_BOUNDARY.md": "bd97eddd288bbad0dd0deab8caa14f121d87483db0a9ac63555b33442504c317",
+- .\MANIFEST_SHA256.json:258: "periphery\\brody_memory_readonly\\brody_operator_io_loop_baseline_freeze_readonly\\run_brody_operator_io_loop_baseline_freeze_readonly_v1.ps1": "249d98d86fd5a0a163bdc2b14e366cc54759d56d2e7ecdfd3b3f1e140ba32d4e",
+- .\MANIFEST_SHA256.json:259: "periphery\\brody_memory_readonly\\brody_operator_io_loop_clean_close_readonly\\BRODY_OPERATOR_IO_LOOP_CLEAN_CLOSE_READONLY_MANIFEST.json": "a224610e2bc27a4ac38caedb3e9ee3918eddef4d35f94b074c307eab963823ab",
+- .\MANIFEST_SHA256.json:260: "periphery\\brody_memory_readonly\\brody_operator_io_loop_clean_close_readonly\\README_BOUNDARY.md": "78cc99cd681bf3ad1fa65a398a3ae373e730a1b29d62a620e4d8fed7e4956260",
+- .\MANIFEST_SHA256.json:261: "periphery\\brody_memory_readonly\\brody_operator_io_loop_clean_close_readonly\\run_brody_operator_io_loop_clean_close_readonly_v1.ps1": "1666bef503db2616a260a7b37d6c956746d9ec87a127bf6fc2d1fd2cd416d462",
+- .\MANIFEST_SHA256.json:262: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_baseline_freeze_readonly\\BRODY_OPERATOR_OUTPUT_VALIDATION_LINE_BASELINE_FREEZE_READONLY_MANIFEST.json": "afadb20777828a1cd3ac5bd80a3750186bb2590c427f9158395f031e6eee5a45",
+- .\MANIFEST_SHA256.json:263: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_baseline_freeze_readonly\\README_BOUNDARY.md": "f5a55fbf2865ed1739e0e1595a7e00d678a6eb1763d1af6cf62ce99cc5e3c949",
+- .\MANIFEST_SHA256.json:264: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_baseline_freeze_readonly\\run_brody_operator_output_validation_line_baseline_freeze_readonly_v1.ps1": "23365f77d8d9eef14568596ae790f3c49da520927cfca4919fb468981595ec06",
+- .\MANIFEST_SHA256.json:265: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_clean_close_readonly\\BRODY_OPERATOR_OUTPUT_VALIDATION_LINE_CLEAN_CLOSE_READONLY_MANIFEST.json": "661ecc5f0297851eee8062722380e8a65f1e8c87b15f5c297085aa9737d3efee",
+- .\MANIFEST_SHA256.json:266: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_clean_close_readonly\\README_BOUNDARY.md": "c243bd51393b19ec74b344a35e560e1301b4fd8d34f2f866fd582831770b5c28",
+- .\MANIFEST_SHA256.json:267: "periphery\\brody_memory_readonly\\brody_operator_output_validation_line_clean_close_readonly\\run_brody_operator_output_validation_line_clean_close_readonly_v1.ps1": "478b00a45e6c29e5bc20d531b47c7288984658c4a3fcf1fa248a0625c3ecff0a",
+- .\MANIFEST_SHA256.json:268: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_clean_close_readonly\\BRODY_OPERATOR_SUPERVISED_HANDOFF_CLEAN_CLOSE_READONLY_MANIFEST.json": "5599a215e0ec2236beddfc3140a42f77d6a226ec2219e03bd53625c3813bed5c",
+- .\MANIFEST_SHA256.json:269: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_clean_close_readonly\\README_BOUNDARY.md": "2f5fa9b9ed2eee3621e907f1b6617163d174b641684dbd0e92d0809dd93f7689",
+- .\MANIFEST_SHA256.json:270: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_clean_close_readonly\\run_brody_operator_supervised_handoff_clean_close_readonly_v1.ps1": "1f5b6d4036cccd5d13996b952638cdbfe3892a964117d4e6aafaa46194f25ddb",
+- .\MANIFEST_SHA256.json:271: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_readonly\\BRODY_OPERATOR_SUPERVISED_HANDOFF_READONLY_MANIFEST.json": "224294b4298ad18326704af3572719505d55dc24354198b5b62d8968052f112c",
+- .\MANIFEST_SHA256.json:272: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_readonly\\BRODY_OPERATOR_SUPERVISED_HANDOFF_READONLY_V1.json": "e28093fa4716629c8d2141209066590e89d422b700b505e57a99a67b204b8f0d",
+- .\MANIFEST_SHA256.json:273: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_readonly\\README_BOUNDARY.md": "b1e3d9617ef0106c4729acdf3e52c2329ed55def47102f04a86ba5a47d6b3d01",
+- .\MANIFEST_SHA256.json:274: "periphery\\brody_memory_readonly\\brody_operator_supervised_handoff_readonly\\run_brody_operator_supervised_handoff_readonly_v1.ps1": "ea51e47e60bc221c7178d57260f420b7372228ca90e3fac6290450c253aae7dd",
+- .\MANIFEST_SHA256.json:275: "periphery\\brody_memory_readonly\\brody_runtime_freeze_v1_4_12a_readonly\\BRODY_RUNTIME_FREEZE_V1_4_12A_READONLY_MANIFEST.json": "8aa4de20ae0d2c000eb618d55492810cf1996df14a154bf8b84dd1e36097dd84",
+- .\MANIFEST_SHA256.json:276: "periphery\\brody_memory_readonly\\brody_runtime_freeze_v1_4_12a_readonly\\README_BOUNDARY.md": "376699d469395f66807e2072251cbe18d51bf013e649c54213aa38705a212eef",
+- .\MANIFEST_SHA256.json:277: "periphery\\brody_memory_readonly\\brody_runtime_freeze_v1_4_12a_readonly\\run_brody_runtime_freeze_v1_4_12a_readonly.ps1": "f4497b070efe2bb063e870565902d69db032f805f34be7d94319c65140a792f2",
+- .\MANIFEST_SHA256.json:278: "periphery\\brody_memory_readonly\\brody_x108_current_state_baseline_freeze_readonly\\BRODY_X108_CURRENT_STATE_BASELINE_FREEZE_READONLY_MANIFEST.json": "78a62b85bb1e202a32c6da5adcfab90deea96b1860393a4021bdc15b241f85d0",
+- .\MANIFEST_SHA256.json:279: "periphery\\brody_memory_readonly\\brody_x108_current_state_baseline_freeze_readonly\\README_BOUNDARY.md": "dbc75e5d7bd6c9c0383af6a2ad488e73573c04d32de2c8ba55f4345452026479",
+- .\MANIFEST_SHA256.json:280: "periphery\\brody_memory_readonly\\brody_x108_current_state_baseline_freeze_readonly\\run_brody_x108_current_state_baseline_freeze_readonly_v1.ps1": "4061c66c12ee5d9f4e624e57520b79ad931e32e9792e4851c2649120c1605245",
+- .\MANIFEST_SHA256.json:281: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_clean_close_readonly\\BRODY_X108_NATIVE_RUNBOOK_CLEAN_CLOSE_READONLY_MANIFEST.json": "e1a0754ad359d63b099a75dcda3ce3713ee631d532815be755e668073ea5922d",
+- .\MANIFEST_SHA256.json:282: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_clean_close_readonly\\README_BOUNDARY.md": "6573d67f45d110928bbe8e797c5a91e4aa1610456a63ce1c080de4a28d560245",
+- .\MANIFEST_SHA256.json:283: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_clean_close_readonly\\run_brody_x108_native_runbook_clean_close_readonly_v1.ps1": "1e13400ea24ce2e5eeb800da39a8729658576063d7b004316bb5606a8ea42dd6",
+- .\MANIFEST_SHA256.json:284: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\BRODY_X108_NATIVE_RUNBOOK_READONLY_MANIFEST.json": "4e99299b9001c39e4720e55b418f2f1cbc4c05fc9ed1f913a6856e05db1fb23e",
+- .\MANIFEST_SHA256.json:285: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\README_BOUNDARY.md": "64da29fe58635dd9c9101dbef7d7aa9c9987f5f6709137d3d9a1e47d56d92f4f",
+- .\MANIFEST_SHA256.json:286: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\README_RUNBOOK.md": "4f296ac2a8648d7c7f2048e33d00d6d9b64637d727a47a363fd2383cc40b5554",
+- .\MANIFEST_SHA256.json:287: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly\\run_brody_x108_native_runbook_readonly_v1.ps1": "e28f2395c9528402e3d461cb801611453be0cbe02d8bc31f58839c73dccb6987",
+- .\MANIFEST_SHA256.json:288: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair\\BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_MANIFEST.json": "fd77f1723f34abf02140655907aba847b1d9a6ea7f2f24d327665cef015ce280",
+- .\MANIFEST_SHA256.json:289: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair\\README_BOUNDARY.md": "4fbb4be56f49c68164cef3372c1f48ecae69face46dc722e570939fb80878332",
+- .\MANIFEST_SHA256.json:290: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair\\run_brody_x108_native_runbook_readonly_repair_v1.ps1": "6c1839048c790dd57bdbd0078ae561af8fdfcc5750ec385d6661fc02d9d86b3d",
+- .\MANIFEST_SHA256.json:291: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v2\\BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V2_MANIFEST.json": "5234199a58e1873dd4efd90499ae6ac825a9a0ac340a2b3295a3677400a91406",
+- .\MANIFEST_SHA256.json:292: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v2\\README_BOUNDARY.md": "35842bb82022393bde9e0675a456aa6b1d00040198e80c4548a0e9e66be79e44",
+- .\MANIFEST_SHA256.json:293: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v2\\run_brody_x108_native_runbook_readonly_repair_v2.ps1": "50b6d881ac3f720980d63d1d5a91ac376d93926de015f7c6495592c0c9cd952c",
+- .\MANIFEST_SHA256.json:294: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v3\\BRODY_X108_NATIVE_RUNBOOK_READONLY_REPAIR_V3_MANIFEST.json": "e947bfa472d2a10cfe84548f4283415fb0ce28bc6a09261dad76d735d674cd48",
+- .\MANIFEST_SHA256.json:295: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v3\\README_BOUNDARY.md": "91bde1a1b30be3f5417dd2d149826cfab141453632469448aca61a9951822fa6",
+- .\MANIFEST_SHA256.json:296: "periphery\\brody_memory_readonly\\brody_x108_native_runbook_readonly_repair_v3\\run_brody_x108_native_runbook_readonly_repair_v3.ps1": "dc9b69c85e347e2c152655afa581b753a56e06d31374128046a2d48dcd3e268e",
+- .\MANIFEST_SHA256.json:297: "periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\BRODY_X108_ONLY_BUILD_MODE_READONLY_MANIFEST.json": "cfe4bdea7511358e34063779cb66486992e0ea5d26ad528ab5d9ce5a7e9103db",
+- .\MANIFEST_SHA256.json:298: "periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\README_BOUNDARY.md": "ddc13ddfb61c0383c769dd3cc06f18623f93c0531df6b40749932cb7d8b27fce",
+- .\MANIFEST_SHA256.json:299: "periphery\\brody_memory_readonly\\brody_x108_only_build_mode_readonly\\run_brody_x108_only_build_mode_readonly_v1.ps1": "aa65b77175cbe7a540063a7417137aa5e1fad1cd5ec3ddd9dcaad1ffe16de14b",
+- .\MANIFEST_SHA256.json:300: "periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\BRODY_X108_PROOF_STATE_FREEZE_V1_MANIFEST.json": "5c5c7f2579e3594088210622056daad9f07b6ed0c7486c895e8d3b2c9908f2ea",
+- .\MANIFEST_SHA256.json:301: "periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\README_BOUNDARY.md": "9ef8a2f3a8c0f7be5e2e3325821483cabf3e2d9b262102c5e2573c57a0c4dc46",
+- .\MANIFEST_SHA256.json:302: "periphery\\brody_memory_readonly\\brody_x108_proof_state_freeze_v1\\run_brody_x108_proof_state_freeze_v1.ps1": "d3fe92b966134b3faba4b40e3a8ed0e4850851ee7845ae2b0a5289758f7baf2a",
+- .\MANIFEST_SHA256.json:303: "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\BRODY_CANDIDATE_EXPORT_FOR_GRAPHITI_READONLY_MANIFEST.json": "f2aeb19db8517a314a6482e0ce799ec8c0d1253321ffc6baa95a7b05523e4e60",
+- .\MANIFEST_SHA256.json:304: "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\brody_candidate_export_for_graphiti_readonly_v1.py": "2c64340906fb3f868cdc608b18f3690302ae4fd1d8dac8baae03db5c0d4a7245",
+- .\MANIFEST_SHA256.json:305: "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\README_BOUNDARY.md": "a93c57d7247059f4db0ff09b4c6dc4c830df98753f900b09d246027c083f7b90",
+- .\MANIFEST_SHA256.json:306: "periphery\\brody_memory_readonly\\candidate_export_for_graphiti_readonly\\run_brody_candidate_export_for_graphiti_readonly_v1.ps1": "85d34ed99feccfbd3530fa2d0f2ef674f179576b9df3a21509494de8df65ebd9",
+- .\MANIFEST_SHA256.json:307: "periphery\\brody_memory_readonly\\content_hydration_readonly\\BRODY_CONTENT_HYDRATION_READONLY_MANIFEST.json": "3363fd40835b73848c43cb49ea7d58c841089c18fa464be7c038e631271d24ea",
+- .\MANIFEST_SHA256.json:308: "periphery\\brody_memory_readonly\\content_hydration_readonly\\brody_content_hydration_readonly_v1.py": "2fa6e87e4617f0876989a08c585650a6688691b60e23c7ad1ab1965a3d56b805",
+- .\MANIFEST_SHA256.json:309: "periphery\\brody_memory_readonly\\content_hydration_readonly\\README_BOUNDARY.md": "016e8ac728f805f9d0a9879494ebf3457fda46c25097248715b80690b2a66782",
+- .\MANIFEST_SHA256.json:310: "periphery\\brody_memory_readonly\\content_hydration_readonly\\run_brody_content_hydration_readonly_v1.ps1": "74d61ae5ef32c7e6dafedfe17e2429c58dec86c3fa1980fc01c2e7b13f3d3abc",
+- .\MANIFEST_SHA256.json:311: "periphery\\brody_memory_readonly\\context_packet_consumer_readonly\\BRODY_CONTEXT_PACKET_CONSUMER_READONLY_MANIFEST.json": "8f03c079672af07b471df374bb26b48b50e3b0cc2b347fc12d798546feb8dd33",
+- .\MANIFEST_SHA256.json:312: "periphery\\brody_memory_readonly\\context_packet_consumer_readonly\\brody_context_packet_consumer_readonly_v1.py": "b9de04dcb6aa30857e50a2ea922d9a90b380c49cd6887d405005991678c28ccd",
+- .\MANIFEST_SHA256.json:313: "periphery\\brody_memory_readonly\\context_packet_consumer_readonly\\README_BOUNDARY.md": "3757f3d8ea462058fcf38a4c8760d8e5dba33f52156f047d0ef119b007a05245",
+- .\MANIFEST_SHA256.json:314: "periphery\\brody_memory_readonly\\context_packet_consumer_readonly\\run_brody_context_packet_consumer_readonly_v1.ps1": "1c658e1ab41fe4f821314bacbcb1f692cbaf12e031605bb8e6b21ea8050df338",
+- .\MANIFEST_SHA256.json:315: "periphery\\brody_memory_readonly\\context_packet_query_readonly\\BRODY_CONTEXT_PACKET_QUERY_READONLY_MANIFEST.json": "2b2be07c28b83b55efcd56178bccdda5e7b97d6a979114178cf0885580809a3a",
+- .\MANIFEST_SHA256.json:316: "periphery\\brody_memory_readonly\\context_packet_query_readonly\\brody_context_packet_query_readonly_v1.py": "7356354da44f16473ef74bcbb1a53e64f2fd4040d9e1f4ccb13927bd9f0cbd01",
+- .\MANIFEST_SHA256.json:317: "periphery\\brody_memory_readonly\\context_packet_query_readonly\\README_BOUNDARY.md": "cd1c0724a13e2be22b0e459fabbad2da66f994dcfb6d58953268cb81acd0fd86",
+- .\MANIFEST_SHA256.json:318: "periphery\\brody_memory_readonly\\context_packet_query_readonly\\run_brody_context_packet_query_readonly_v1.ps1": "1f35314662da99f711a58d329ae03501f984fbb7381a5c8f8a4b5b2ed2201976",
+- .\MANIFEST_SHA256.json:319: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\CURRENT_BRODY_GRAPHITI_READY_V164D_TAXONOMY_34_TO_8.txt": "0b3956fddbaf11bd3971975c2c82c13fad5dc05c9a2f433c415b715691e5c4d7",
+- .\MANIFEST_SHA256.json:320: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\graphiti_ready_v164d_taxonomy_hits.csv": "22cdd4ba4af31120fce6f7d58c9114263bbd6249432b53c2766ad6da7d5c52a2",
+- .\MANIFEST_SHA256.json:321: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\graphiti_ready_v164d_taxonomy_metrics.json": "b6044afa026d0309b39e2482b91e4fd0fa7d0cb3b2ab3a1e19acf99fb836ed2e",
+- .\MANIFEST_SHA256.json:322: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\graphiti_ready_v164d_taxonomy_preview.txt": "a6b5641c26383837cdd3105848f13ed611ea37ee82a598ca80183264e6c935b5",
+- .\MANIFEST_SHA256.json:323: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\README_V164D_CLOSE.md": "601a82ee071eb8288da764fcc4003e1886339fa6402cdf65a5e7423c4780645c",
+- .\MANIFEST_SHA256.json:324: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\taxonomy_34_to_8_source_authority.json": "3b6bb8fe402c42768ecad0326a0a08e1e977867d27c95bc40c9ea82059493028",
+- .\MANIFEST_SHA256.json:325: "periphery\\brody_memory_readonly\\evidence\\V164D_TAXONOMY_34_TO_8_CLOSE\\X108_GRAPHITI_TAXONOMY_V164D_CLOSE_SUMMARY.json": "6479d5f2045ffe3e3d9b217d0e12621a2e3e12ed721de415f0017de452621b41",
+- .\MANIFEST_SHA256.json:326: "periphery\\brody_memory_readonly\\graphiti_bridge_readonly\\brody_graphiti_ready_export_readonly_v1_6_4.py": "da8afdcad00089e5fb6b85bd4726ff5bc1490fe8ad4d899b11fdb6941c0ec662",
+- .\MANIFEST_SHA256.json:327: "periphery\\brody_memory_readonly\\graphiti_bridge_readonly\\BRODY_OBSIDIEN_V1_6_4_GRAPHITI_READY_EXPORT_READONLY_MANIFEST.json": "14027789ea34ef83836688ab834f4a1fc5546db104dd15188b1058c643865ff7",
+- .\MANIFEST_SHA256.json:328: "periphery\\brody_memory_readonly\\graphiti_bridge_readonly\\run_brody_graphiti_ready_export_readonly_v1_6_4.ps1": "56f235561e022af394ad193e0eeaa680a5dddb05d0fa1408e478b6399fdd9202",
+- .\MANIFEST_SHA256.json:329: "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\BRODY_GRAPHITI_CANDIDATE_IMPORT_DRY_RUN_READONLY_MANIFEST.json": "f312f9adeac2de742d42d4d17782ad8ba13fb0399b13348c4f3f35c553b81535",
+- .\MANIFEST_SHA256.json:330: "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\brody_graphiti_candidate_import_dry_run_readonly_v1.py": "d1bb75cb5e07e33cfa845f09fbfe3569cc246beae6471c3008a2e9235f1fd7e9",
+- .\MANIFEST_SHA256.json:331: "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\README_BOUNDARY.md": "615959e107ed1e817bb91e34933d6a2eb9e24e9f366c823e75becf41cac2433d",
+- .\MANIFEST_SHA256.json:332: "periphery\\brody_memory_readonly\\graphiti_candidate_import_dry_run_readonly\\run_brody_graphiti_candidate_import_dry_run_readonly_v1.ps1": "4ce88c4e61f34d57a8701c4804c77304fa9fb3b612c21858841497ae52f3db1a",
+- .\MANIFEST_SHA256.json:333: "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\BRODY_GRAPHITI_CANDIDATE_PREP_FROM_POST_HUMAN_TRIAGE_READONLY_MANIFEST.json": "2ba9526a278ad1d7972329ecdd19bc77501e042e5aaae7e332117ea6f13ae66d",
+- .\MANIFEST_SHA256.json:334: "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.py": "eedcb92f2a43b109109eb13d348d8561f38f8c87a45264acfd5dea58e8afcbd0",
+- .\MANIFEST_SHA256.json:335: "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\README_BOUNDARY.md": "22fffe6cc00272dc965f29ad1b9d3c6f16dd0a9fb123c0c3ecd9135199f362a7",
+- .\MANIFEST_SHA256.json:336: "periphery\\brody_memory_readonly\\graphiti_candidate_prep_from_post_human_triage_readonly\\run_brody_graphiti_candidate_prep_from_post_human_triage_readonly_v1.ps1": "a5a31884722412f043d27a7c5b91e1529cdba236e4efe263c50946cebc61e0a0",
+- .\MANIFEST_SHA256.json:337: "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\BRODY_GRAPHITI_CANDIDATE_REVIEW_GATE_READONLY_MANIFEST.json": "db9fc8b5384b41182cb00e43bf4f27e8b5cd8f81bea8bdc2520978b0ad66d83e",
+- .\MANIFEST_SHA256.json:338: "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\brody_graphiti_candidate_review_gate_readonly_v1.py": "e2fa512b012eb272c341e81b1149748f639e00a75cf35da98fb1ffc08a7c19ce",
+- .\MANIFEST_SHA256.json:339: "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\README_BOUNDARY.md": "e386a158128abb8688777e837f4c43397c33ebb50b45c55d603bc227d1c967da",
+- .\MANIFEST_SHA256.json:340: "periphery\\brody_memory_readonly\\graphiti_candidate_review_gate_readonly\\run_brody_graphiti_candidate_review_gate_readonly_v1.ps1": "be87c6d86f2f9ac480a2d977cca3a7a50b19c331766e72a6f0b8f00983562e6c",
+- .\MANIFEST_SHA256.json:341: "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\BRODY_GRAPHITI_GUARDED_MANUAL_APPLY_FROM_REVIEW_DECISION_READONLY_MEMORY_ONLY_MANIFEST.json": "d919e5e5dd7a2df1347385aadad94b4b6980dd0b352da7cd898f10cdd46fd128",
+- .\MANIFEST_SHA256.json:342: "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.py": "57259d8347e7aff83884fba162b0439190ca5fe874ff8f9c681b97cdc47db824",
+- .\MANIFEST_SHA256.json:343: "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\README_BOUNDARY.md": "442740c54e82d6e7479fc93b729a2c65befa73a704e9a06f1a6b28aa914c11c1",
+- .\MANIFEST_SHA256.json:344: "periphery\\brody_memory_readonly\\graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only\\run_brody_graphiti_guarded_manual_apply_from_review_decision_readonly_memory_only_v1.ps1": "1915326d021548baf32e244e34f28f2e7ea47d2343df7dd084bbca7a92eeff32",
+- .\MANIFEST_SHA256.json:345: "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\BRODY_GRAPHITI_IMPORT_APPLY_GUARDED_MANUAL_ONLY_MANIFEST.json": "4386784f7955011e978e623b4fdf9b14c7fad39559888de6fdabc1202c739e8e",
+- .\MANIFEST_SHA256.json:346: "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\brody_graphiti_import_apply_guarded_manual_only_v1.py": "4b555214077a2cf6c61e3c06c874a2c9f79b99e32df0d85ba0c14f6d61885d58",
+- .\MANIFEST_SHA256.json:347: "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\README_BOUNDARY.md": "1258f69b80eb5dad0f99f107acbcb1cb24f4d2ff60cc4bfd1697fe49f55c81fb",
+- .\MANIFEST_SHA256.json:348: "periphery\\brody_memory_readonly\\graphiti_import_apply_guarded_manual_only\\run_brody_graphiti_import_apply_guarded_manual_only_v1.ps1": "7f0d38a2189cf3e26805a9b4f7691cbc35874511680f42946e47d31389119a18",
+- .\MANIFEST_SHA256.json:349: "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\BRODY_GRAPHITI_IMPORT_DRY_RUN_FROM_POST_HUMAN_PREP_READONLY_MANIFEST.json": "c2a6102b7dbab8aa2a0c9e28a299c55c3c28c6cb2fb7cc2c9295f02c608139f7",
+- .\MANIFEST_SHA256.json:350: "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1.py": "7ddff24e88368268c009a2f91f3899b4772e971cb93773a6d83b774b0b200393",
+- .\MANIFEST_SHA256.json:351: "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\README_BOUNDARY.md": "47e1cf76ebdd74d02f719b53c2d1da4449062d026aa0ddc98d2af3ad749f9eaa",
+- .\MANIFEST_SHA256.json:352: "periphery\\brody_memory_readonly\\graphiti_import_dry_run_from_post_human_prep_readonly\\run_brody_graphiti_import_dry_run_from_post_human_prep_readonly_v1.ps1": "56cca7b54f586e530dcb5a00a3716dd5b20648c4afd28e5230703898fa00a851",
+- .\MANIFEST_SHA256.json:353: "periphery\\brody_memory_readonly\\graphiti_review_decision_apply_readonly\\BRODY_GRAPHITI_REVIEW_DECISION_APPLY_READONLY_MANIFEST.json": "d941782e20bccc97f2b76d3d674b6e114e2b55fbdb87618d31c91ae940d9e92b",
+- .\MANIFEST_SHA256.json:354: "periphery\\brody_memory_readonly\\graphiti_review_decision_apply_readonly\\brody_graphiti_review_decision_apply_readonly_v1.py": "3a9576a4501e6e6832ceb106896203bff4bdfb2ea9d27e1c43d8de2a6df38a76",
+- .\MANIFEST_SHA256.json:355: "periphery\\brody_memory_readonly\\graphiti_review_decision_apply_readonly\\README_BOUNDARY.md": "34b46e6b6fae1d08e1c4358f09179408ac06d0f2be28d181d1dc2f96c855b0fd",
+- .\MANIFEST_SHA256.json:356: "periphery\\brody_memory_readonly\\graphiti_review_decision_apply_readonly\\run_brody_graphiti_review_decision_apply_readonly_v1.ps1": "36203caf63bf8028e276c505e299e59f0bcc4d35a3e97c7bda8e00c03a670014",
+- .\MANIFEST_SHA256.json:357: "periphery\\brody_memory_readonly\\graphiti_review_gate_from_post_human_dry_run_readonly\\BRODY_GRAPHITI_REVIEW_GATE_FROM_POST_HUMAN_DRY_RUN_READONLY_MANIFEST.json": "42f58a66636af95420779e904f5c8c86840098d30e9052531d000c707e23face",
+- .\MANIFEST_SHA256.json:358: "periphery\\brody_memory_readonly\\graphiti_review_gate_from_post_human_dry_run_readonly\\brody_graphiti_review_gate_from_post_human_dry_run_readonly_v1.py": "81c9adb4c01381fa3c3e17ce80e4694234de2ddbe2e114cc0e5803f175f8682c",
+- .\MANIFEST_SHA256.json:359: "periphery\\brody_memory_readonly\\graphiti_review_gate_from_post_human_dry_run_readonly\\README_BOUNDARY.md": "17917466d19368d1ebd84bea725f3180902f996987da16406319c022fba3ddc3",
+- .\MANIFEST_SHA256.json:360: "periphery\\brody_memory_readonly\\graphiti_review_gate_from_post_human_dry_run_readonly\\run_brody_graphiti_review_gate_from_post_human_dry_run_readonly_v1.ps1": "866c6a7f65a44ed92efa5431a546084739124d9ad648fd6853dd23c6b361ca0a",
+- .\MANIFEST_SHA256.json:361: "periphery\\brody_memory_readonly\\local_response_engine_readonly\\BRODY_LOCAL_RESPONSE_ENGINE_READONLY_MANIFEST.json": "ac3e36309be028ee21f0c86bb9a76deaccf95924754d7139dc809bd29ff130d7",
+- .\MANIFEST_SHA256.json:362: "periphery\\brody_memory_readonly\\local_response_engine_readonly\\brody_local_response_engine_readonly_v1.py": "005f2c878a56e0a88ac32f3a8fea168e54b99acf2ba485447ff9afb12cafc9e6",
+- .\MANIFEST_SHA256.json:363: "periphery\\brody_memory_readonly\\local_response_engine_readonly\\README_BOUNDARY.md": "fdb0d6b8c17ebfb91389d090a8d20698a829e30f1233573532d9f50161bf38ee",
+- .\MANIFEST_SHA256.json:364: "periphery\\brody_memory_readonly\\local_response_engine_readonly\\run_brody_local_response_engine_readonly_v1.ps1": "ce582e994d611f2e140792b127b56b7dbc64242f825f4b5a7d998b2ccaf7ccfa",
+- .\MANIFEST_SHA256.json:365: "periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\MEMORY_LAYER_AUTHORITY_MODEL_READONLY_MANIFEST.json": "7b37afb9d642f5a18195e449355dc1b04897bde0a226177c448dabbcbfa39689",
+- .\MANIFEST_SHA256.json:366: "periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\README_BOUNDARY.md": "294812ab139cae9e7ae98aa1d10204aadc8c3ea3cf11705db011290adf6c909d",
+- .\MANIFEST_SHA256.json:367: "periphery\\brody_memory_readonly\\memory_layer_authority_model_readonly\\run_memory_layer_authority_model_readonly_v1.ps1": "0dc9a57cd5c7994ac30292c3b74d6a02ecbaec7fed822744df8ed48ba1b553e9",
+- .\MANIFEST_SHA256.json:368: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_report_readonly\\BRODY_MEMORY_PIPELINE_FREEZE_REPORT_READONLY_MANIFEST.json": "31446788dfb9ef0a6244701b4873c9de11c2ce2f0f1a18939508b86ed6125151",
+- .\MANIFEST_SHA256.json:369: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_report_readonly\\brody_memory_pipeline_freeze_report_readonly_v1.py": "681d7f6d01916eb5be76c45d935bdcf6ef37bf3bf40d75a5b3a5cd0982269b9e",
+- .\MANIFEST_SHA256.json:370: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_report_readonly\\README_BOUNDARY.md": "0d60285c55ef2e098f4c3e65d77f1706b98c06c4ecddbbb7d7b453bbff4d1186",
+- .\MANIFEST_SHA256.json:371: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_report_readonly\\run_brody_memory_pipeline_freeze_report_readonly_v1.ps1": "7acf96b9f9699682d70c74a4b879ead969182067ce7f3deb84821fc660f19c9f",
+- .\MANIFEST_SHA256.json:372: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\brody_memory_pipeline_freeze_v2_readonly.py": "c586d7a310221361de7310161e319fbc5189d9d8b3d50d1e6ec9073276ca00ef",
+- .\MANIFEST_SHA256.json:373: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\BRODY_MEMORY_PIPELINE_FREEZE_V2_READONLY_MANIFEST.json": "3ef15475de78307e1debeb520d46a961ab78f4a2aa080596e0fe57f74826da6c",
+- .\MANIFEST_SHA256.json:374: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\README_BOUNDARY.md": "3ea9f75127cc181638386b152911c9b2fe00634d3749ccdd705c956edbe33b8c",
+- .\MANIFEST_SHA256.json:375: "periphery\\brody_memory_readonly\\memory_pipeline_freeze_v2_readonly\\run_brody_memory_pipeline_freeze_v2_readonly.ps1": "e8f7bfd28b6a46a4ae4c92f939cc36529c1da9555f35320cb9d59e98ed39a194",
+- .\MANIFEST_SHA256.json:376: "periphery\\brody_memory_readonly\\memory_pipeline_v2_close_report_readonly\\brody_memory_pipeline_v2_close_report_readonly.py": "4a5697937737ab2f46765e41a3fa5038e567038c2f4b69429f017d23f9da9ca8",
+- .\MANIFEST_SHA256.json:377: "periphery\\brody_memory_readonly\\memory_pipeline_v2_close_report_readonly\\BRODY_MEMORY_PIPELINE_V2_CLOSE_REPORT_READONLY_MANIFEST.json": "0e384f8185bd60c1b02e035e8dd7dc7df4afa0551d0095e4b23f3401a03f04cb",
+- .\MANIFEST_SHA256.json:378: "periphery\\brody_memory_readonly\\memory_pipeline_v2_close_report_readonly\\README_BOUNDARY.md": "74b811caec4c6603f864b763da1656eb521492a557182451dbb18a3d26e7d836",
+- .\MANIFEST_SHA256.json:379: "periphery\\brody_memory_readonly\\memory_pipeline_v2_close_report_readonly\\run_brody_memory_pipeline_v2_close_report_readonly.ps1": "a89b926d59f8c5a1bafdfd6dc1a779c34e06a965d518ed201daf1578d18754cd",
+- .\MANIFEST_SHA256.json:380: "periphery\\brody_memory_readonly\\memory_readonly_micro_smoke\\BRODY_MEMORY_READONLY_MICRO_SMOKE_MANIFEST.json": "9a8f294f6b8bba498fa084b4fe23c9c61f18f904659d563be8b40a7371bf5e1f",
+- .\MANIFEST_SHA256.json:381: "periphery\\brody_memory_readonly\\memory_readonly_micro_smoke\\brody_memory_readonly_micro_smoke_v1.py": "a329742ff3908e5cbf48e299b43cf173a44d34e0dd424c9548addc26849a223a",
+- .\MANIFEST_SHA256.json:382: "periphery\\brody_memory_readonly\\memory_readonly_micro_smoke\\README_BOUNDARY.md": "cf22a077e734670e0f33ef7160676e697a8f21e15b64478686a7ed0bf21043ff",
+- .\MANIFEST_SHA256.json:383: "periphery\\brody_memory_readonly\\memory_readonly_micro_smoke\\run_brody_memory_readonly_micro_smoke_v1.ps1": "00d0baa11b732bdf6e217ec5ad41fe4e629050b5fde3b02ed2e41a857fa2f2b1",
+- .\MANIFEST_SHA256.json:384: "periphery\\brody_memory_readonly\\memory_replay_query_regression_readonly\\BRODY_MEMORY_REPLAY_QUERY_REGRESSION_READONLY_MANIFEST.json": "5661727648831caf32d94af15af2ecbb4de4c2ff605d0ba5243c9c599d4fa82f",
+- .\MANIFEST_SHA256.json:385: "periphery\\brody_memory_readonly\\memory_replay_query_regression_readonly\\brody_memory_replay_query_regression_readonly_v1.py": "4753eeb0f596939c0d1697723883030100e947cc5a0bc9bd37501c972da4755c",
+- .\MANIFEST_SHA256.json:386: "periphery\\brody_memory_readonly\\memory_replay_query_regression_readonly\\README_BOUNDARY.md": "3e839cdb9425ca69680623ea08ae9025d6f9bc9a552de715665491aaae26d3cc",
+- .\MANIFEST_SHA256.json:387: "periphery\\brody_memory_readonly\\memory_replay_query_regression_readonly\\run_brody_memory_replay_query_regression_readonly_v1.ps1": "0e727a32c3806e4d7b20a20592f73dc635348783a8e7c99a4f1c8c85b911086b",
+- .\MANIFEST_SHA256.json:388: "periphery\\brody_memory_readonly\\memory_scheduler_readonly\\BRODY_MEMORY_SCHEDULER_READONLY_MANIFEST.json": "161c597e2d43d40be6fbbb19c6048e8aa802bb3e0e88cad48fad761aba4ca923",
+- .\MANIFEST_SHA256.json:389: "periphery\\brody_memory_readonly\\memory_scheduler_readonly\\brody_memory_scheduler_readonly_v1.py": "17adc76b40b4bccc9ab5e1da865011f92920ed2ac98bac3fa26954d8a00fbd13",
+- .\MANIFEST_SHA256.json:390: "periphery\\brody_memory_readonly\\memory_scheduler_readonly\\README_BOUNDARY.md": "9d80c2fbd23293a2af69c1ad667725665ca1fa9e4922df9f6992e5a6d87d1f40",
+- .\MANIFEST_SHA256.json:391: "periphery\\brody_memory_readonly\\memory_scheduler_readonly\\run_brody_memory_scheduler_readonly_v1.ps1": "953f673684a21154e945afc5b9f81b8979275cce8c1b227b0f42292c0cc7a9bd",
+- .\MANIFEST_SHA256.json:392: "periphery\\brody_memory_readonly\\neo4j_brody_guide_bridge_readonly\\BRODY_NEO4J_GUIDE_BRIDGE_READONLY_MANIFEST.json": "cb0efda1efb3879eb42eb7307eb762bdf398b7137fb8bb2572ad213322236b12",
+- .\MANIFEST_SHA256.json:393: "periphery\\brody_memory_readonly\\neo4j_brody_guide_bridge_readonly\\brody_neo4j_guide_bridge_readonly_v1.py": "aaccaf4c0f279935fded669881889c925f5db044f0970c1bb03e3ced036f64f6",
+- .\MANIFEST_SHA256.json:394: "periphery\\brody_memory_readonly\\neo4j_brody_guide_bridge_readonly\\README_BOUNDARY.md": "83a0accb731d38c210050bb39c1b0917c868a2cf5055f9405d88b615dc1e5e1d",
+- .\MANIFEST_SHA256.json:395: "periphery\\brody_memory_readonly\\neo4j_brody_guide_bridge_readonly\\run_brody_neo4j_guide_bridge_readonly_v1.ps1": "2953d58c1b62dae4a714895bd9c1f7ac0e7ba9521b27fe395fa87cbda65fa537",
+- .\MANIFEST_SHA256.json:396: "periphery\\brody_memory_readonly\\pointers\\CURRENT_BRODY_OBSIDIEN_V1_6_3_SESSION_TRACE_LEDGER_READONLY.txt": "1afced4bb3f09f609220def34545d2c302be52a05606347b49a9af3fc67d6151",
+- .\MANIFEST_SHA256.json:397: "periphery\\brody_memory_readonly\\pointers\\CURRENT_BRODY_SESSION_TRACE_LEDGER_READONLY.txt": "8006df8e7f703d865a809ffb3396cacf7316f36754868d4263a47896044d88d6",
+- .\MANIFEST_SHA256.json:398: "periphery\\brody_memory_readonly\\pointers\\CURRENT_BRODY_WORLD_SOURCE_INTAKE_READONLY.txt": "74913ad08b5b1834cdab88375b2d3628e5ef74fe01155db1129df724135829f0",
+- .\MANIFEST_SHA256.json:399: "periphery\\brody_memory_readonly\\pointers\\CURRENT_GRAPHITI_READONLY_INDEX.txt": "9e386ff27d2543b759275b240f8d0ad06ede4e57a061a1b978cc3986fc322f95",
+- .\MANIFEST_SHA256.json:400: "periphery\\brody_memory_readonly\\pointers\\CURRENT_MEMORY_GRAPHITI_BRANCH_STATE_AUDIT.txt": "6eb835d5f11eaf24bc3816353b2beb8dafca8eac271ce105cb20d3656988de86",
+- .\MANIFEST_SHA256.json:401: "periphery\\brody_memory_readonly\\pointers\\CURRENT_PROJECT_MEMORY_CLEAN_SOURCE_NO_INDEX.txt": "fbd5e1841beb8aad5044410034af2dfb1d9e116fb89acd9fc558226602d687a0",
+- .\MANIFEST_SHA256.json:402: "periphery\\brody_memory_readonly\\post_graphiti_apply_verify_readonly\\BRODY_POST_GRAPHITI_APPLY_VERIFY_READONLY_MANIFEST.json": "18863998c47f605051a8401b20ac9e0506c5a3d879cb0a9ba59f24081bbaf506",
+- .\MANIFEST_SHA256.json:403: "periphery\\brody_memory_readonly\\post_graphiti_apply_verify_readonly\\brody_post_graphiti_apply_verify_readonly_v1.py": "7e18064bd2e1c1204bca9075ab47bd2ed350a99fc9f9895ad43e360ba4cb63f0",
+- .\MANIFEST_SHA256.json:404: "periphery\\brody_memory_readonly\\post_graphiti_apply_verify_readonly\\README_BOUNDARY.md": "03754b9f2b62eb0445ab10aa4477e47109a5a6fcf9bff129a19dbbff7a6df804",
+- .\MANIFEST_SHA256.json:405: "periphery\\brody_memory_readonly\\post_graphiti_apply_verify_readonly\\run_brody_post_graphiti_apply_verify_readonly_v1.ps1": "f351d49cdc7dbc78626390cb412448a88f2730a2a376582ec9f409b177611402",
+- .\MANIFEST_SHA256.json:406: "periphery\\brody_memory_readonly\\post_graphiti_replay_query_regression_readonly\\BRODY_POST_GRAPHITI_REPLAY_QUERY_REGRESSION_READONLY_MANIFEST.json": "8c71c361285bca87e945644dac0614abcf5693ddade8f0982ee4efb6e3b7d674",
+- .\MANIFEST_SHA256.json:407: "periphery\\brody_memory_readonly\\post_graphiti_replay_query_regression_readonly\\brody_post_graphiti_replay_query_regression_readonly_v1.py": "349853cc2a65871a9f0bc26bb885762b62fcab7932f48aaf18d5e0e4426bcd44",
+- .\MANIFEST_SHA256.json:408: "periphery\\brody_memory_readonly\\post_graphiti_replay_query_regression_readonly\\README_BOUNDARY.md": "bab4ac89e76e2f701a4da95bd5078285c7fa903dd8b43d1ee3d4ddbc890170ed",
+- .\MANIFEST_SHA256.json:409: "periphery\\brody_memory_readonly\\post_graphiti_replay_query_regression_readonly\\run_brody_post_graphiti_replay_query_regression_readonly_v1.ps1": "12894e1b275b31c425f50f3c9a5782370abb848b145158522e7c0cd05e0b5c9e",
+- .\MANIFEST_SHA256.json:410: "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\BRODY_POST_HUMAN_REVIEW_MEMORY_TRIAGE_READONLY_MANIFEST.json": "297bbbc801e0f3b09afbe067b30df505e11f5e7e656dc821922d073f5fe6fa72",
+- .\MANIFEST_SHA256.json:411: "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\brody_post_human_review_memory_triage_readonly_v1.py": "f9109156e5a03d1a7d75bedcd6bbbdfd68b21592d56e3a9fded9eee356ccd43a",
+- .\MANIFEST_SHA256.json:412: "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\README_BOUNDARY.md": "dc1ea7282fc5e394f70976fd4143c94c18a53761061bff45e8faa5a633143848",
+- .\MANIFEST_SHA256.json:413: "periphery\\brody_memory_readonly\\post_human_review_memory_triage_readonly\\run_brody_post_human_review_memory_triage_readonly_v1.ps1": "be92ce86560bede8a7fa21e773b8fc30846e132ac26c89cd23de0353594c4b1c",
+- .\MANIFEST_SHA256.json:414: "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\BRODY_PROJECT_INTAKE_CAPTURE_BUFFER_READONLY_MANIFEST.json": "89e58991c713d29e25292368b2a3a23b0829ddf15253d005222a34f063078920",
+- .\MANIFEST_SHA256.json:415: "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\brody_project_intake_capture_buffer_readonly_v1.py": "501be88d97a1978595f1e3951c8ef1cce6864573f9dbcfa56385089d5bc26ecd",
+- .\MANIFEST_SHA256.json:416: "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\README_BOUNDARY.md": "a84ef1183e40434b631779d5c2f32c7e86c72c82ad5e57cf49b454692ffe4239",
+- .\MANIFEST_SHA256.json:417: "periphery\\brody_memory_readonly\\project_intake_capture_buffer_readonly\\run_brody_project_intake_capture_buffer_readonly_v1.ps1": "c81b7b7b20290d164a6699446bc30eb5f71b5659c795f581bb6eff25bcdca87e",
+- .\MANIFEST_SHA256.json:418: "periphery\\brody_memory_readonly\\readonly_session_test\\BRODY_READONLY_SESSION_TEST_MANIFEST.json": "632ab916c712c4281638adac38f4894c0adbf04ae8ce147172f3c8344f119922",
+- .\MANIFEST_SHA256.json:419: "periphery\\brody_memory_readonly\\readonly_session_test\\brody_readonly_session_test_v1.py": "b750cc762df90b5b88a6d4aedfd5555b59f5ee694aef7fcaa589c0c54a81e259",
+- .\MANIFEST_SHA256.json:420: "periphery\\brody_memory_readonly\\readonly_session_test\\README_BOUNDARY.md": "3b6566bc0cebecee27b97be65f37f4343c59a884106f5ef901a6635e01ce6a2e",
+- .\MANIFEST_SHA256.json:421: "periphery\\brody_memory_readonly\\readonly_session_test\\run_brody_readonly_session_test_v1.ps1": "dde0846621a691b37586cda60ffb884fc9fb2160450035abcb9457cf131ff620",
+- .\MANIFEST_SHA256.json:422: "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\BRODY_SESSION_CLOSE_DECISION_APPLY_READONLY_MANIFEST.json": "55ffb12de5a5faddbb34916238291a90e223e3b8a2112afa34b50f695fa8cd2b",
+- .\MANIFEST_SHA256.json:423: "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\brody_session_close_decision_apply_readonly_v1.py": "5f1418b46d4091d166c78d1b1be4b415c7f379a32a92ebcc6d564518abadbec3",
+- .\MANIFEST_SHA256.json:424: "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\README_BOUNDARY.md": "d56e90f5206b4ec56f10bb424717579c447ca6353459572ad17bab672446aa64",
+- .\MANIFEST_SHA256.json:425: "periphery\\brody_memory_readonly\\session_close_decision_apply_readonly\\run_brody_session_close_decision_apply_readonly_v1.ps1": "12d1eccbb62026b94646d2e47c0622e2d53833c18911e0d295b0b3a35e1cc534",
+- .\MANIFEST_SHA256.json:426: "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\BRODY_SESSION_CLOSE_HUMAN_VALIDATION_GATE_READONLY_MANIFEST.json": "0454b11812493b90ef1192720043c02faa3e380fe82ca13aff812ac0c77dcea3",
+- .\MANIFEST_SHA256.json:427: "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\brody_session_close_human_validation_gate_readonly_v1.py": "ab1de215834d0b51b8ea8f2f7596420124ffac5e0011399e8f5bc97af1fd8939",
+- .\MANIFEST_SHA256.json:428: "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\README_BOUNDARY.md": "d23af38a87fa96db4ec82bedcbdf43d4079f70ec172188a50afcb298be8e0163",
+- .\MANIFEST_SHA256.json:429: "periphery\\brody_memory_readonly\\session_close_human_validation_gate_readonly\\run_brody_session_close_human_validation_gate_readonly_v1.ps1": "1de2bfaca1e804929a1c67eed5eb79f7853a47cf620910fafb26f4a78ef36c91",
+- .\MANIFEST_SHA256.json:430: "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\BRODY_SESSION_MEMORY_LEDGER_READONLY_MANIFEST.json": "909b8f7a92b3769829b8b7a35126517fe2c38c500a1243ff0a92e357fd52c755",
+- .\MANIFEST_SHA256.json:431: "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\brody_session_memory_ledger_readonly_v2.py": "3a36249aa9e0706aa495d890fcf4588f7e04cda28a265d4f03db0eb411a36283",
+- .\MANIFEST_SHA256.json:432: "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\README_BOUNDARY.md": "de6f975611faa63ab508617508d84caeb3f2fb6d8537db8381ad26e0e8cca67c",
+- .\MANIFEST_SHA256.json:433: "periphery\\brody_memory_readonly\\session_memory_ledger_readonly\\run_brody_session_memory_ledger_readonly_v2.ps1": "fe47c588d3fed0167b8f0713197aaebd48e8a78d9cd586b7bae68bb1b457677d",
+- .\MANIFEST_SHA256.json:434: "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\BRODY_SESSION_PRESAVE_BUFFER_READONLY_MANIFEST.json": "c54d08eefb884bee1bc6387ade85b0d52e643264e77739416dc5dec99ebaec24",
+- .\MANIFEST_SHA256.json:435: "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\brody_session_presave_buffer_readonly_v1.py": "3942f033692eec2853dfeef76fc7eae37a83551e45cf59f64903012b6bd219fe",
+- .\MANIFEST_SHA256.json:436: "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\README_BOUNDARY.md": "69b9e813680215d75a1b350052497b75062ecfcaa5ff92e81d739460e2aaca1a",
+- .\MANIFEST_SHA256.json:437: "periphery\\brody_memory_readonly\\session_presave_buffer_readonly\\run_brody_session_presave_buffer_readonly_v1.ps1": "2498f2d79afbe31ce55b73dade60f77eb5b117b22c0b5872f1fe5090c269bdb4",
+- .\MANIFEST_SHA256.json:438: "periphery\\brody_memory_readonly\\session_reopen_loop_readonly\\BRODY_SESSION_REOPEN_LOOP_READONLY_MANIFEST.json": "5e13da5ea4b511a4d068cb6c57c046cd6ccb40c4e34d11e1caffe5ac6a4b9324",
+- .\MANIFEST_SHA256.json:439: "periphery\\brody_memory_readonly\\session_reopen_loop_readonly\\brody_session_reopen_loop_readonly_v1.py": "b3147d8d923c893e20062aad072b3e2311fb14ce471291c0da3a9a2053220d78",
+- .\MANIFEST_SHA256.json:440: "periphery\\brody_memory_readonly\\session_reopen_loop_readonly\\README_BOUNDARY.md": "a22bc4c62e34f26542c5fc2f4cd381541368d6c22ec9a1c14514732768945e93",
+- .\MANIFEST_SHA256.json:441: "periphery\\brody_memory_readonly\\session_reopen_loop_readonly\\run_brody_session_reopen_loop_readonly_v1.ps1": "15732e9a6c40c97073b8ffe4ed5cdbe3af179f402c4a4096106e159ee8719e8b",
+- .\MANIFEST_SHA256.json:442: "periphery\\brody_memory_readonly\\session_trace_ledger\\BRODY_OBSIDIEN_V1_6_3_SESSION_TRACE_LEDGER_READONLY_MANIFEST.json": "1cec57b9615b06d77e8f51a37fe386510bf01afbf0cc4933a36d4449676f0f94",
+- .\MANIFEST_SHA256.json:443: "periphery\\brody_memory_readonly\\session_trace_ledger\\brody_session_trace_ledger_readonly_v1_6_3.py": "cfa6d5c8459947e2f21f964eb665bb4e6c64e1a5ca25494a88de7858ec82f74f",
+- .\MANIFEST_SHA256.json:444: "periphery\\brody_memory_readonly\\session_trace_ledger\\run_brody_session_trace_ledger_readonly_v1_6_3.ps1": "806535ebd7d0443ee4c7d5d6b778aa50d7e7dc58f5ad988880ada59a8271c9df",
+- .\MANIFEST_SHA256.json:445: "periphery\\brody_memory_readonly\\taxonomy_mapper_34_8_readonly\\BRODY_OBSIDIEN_V1_6_4D_TAXONOMY_34_TO_8_READONLY_MANIFEST.json": "2fcf9301194a7f5bd2ea48b934c9622499e14bc921a97413c5edfc8b7841ea35",
+- .\MANIFEST_SHA256.json:446: "periphery\\brody_memory_readonly\\taxonomy_mapper_34_8_readonly\\brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py": "96f74e342c93f9bdd8d7bf31f2712650a37633eaf1b316d0bf35b7fd09987d77",
+- .\MANIFEST_SHA256.json:447: "periphery\\brody_memory_readonly\\terminal_structural_dialogue_readonly\\BRODY_TERMINAL_STRUCTURAL_DIALOGUE_READONLY_MANIFEST.json": "60da9d988613fb64a4db20727ec5259b4d69e43304153bcb8cac0f06a1be64ad",
+- .\MANIFEST_SHA256.json:448: "periphery\\brody_memory_readonly\\terminal_structural_dialogue_readonly\\brody_terminal_structural_dialogue_readonly_v1.py": "2cbeb9bed5c99ea313625559f864bb7ccb70383c5f847367a0a1a7b2885e3a5b",
+- .\MANIFEST_SHA256.json:449: "periphery\\brody_memory_readonly\\terminal_structural_dialogue_readonly\\run_brody_terminal_structural_dialogue_readonly_v1.ps1": "28721cc2cce4ab34cdf75d4d8320625025a1d1e02b04be2fe1deafe0bd596ee4",
+- .\MANIFEST_SHA256.json:450: "periphery\\brody_memory_readonly\\world_source_intake\\BRODY_OBSIDIEN_V1_6_1_WORLD_SOURCE_INTAKE_EXTRACTORS_MANIFEST.json": "e5f4c5b901e38137671c9a00e3f94421e42297ed24bfbff7b4fa7d0560b45ab3",
+- .\MANIFEST_SHA256.json:451: "periphery\\brody_memory_readonly\\world_source_intake\\BRODY_OBSIDIEN_V1_6_2_WORLD_SOURCE_INTAKE_MOJIBAKE_CLEAN_MANIFEST.json": "cd061415c28a7dabb8c20105c9b3d8f7896858213ecf504e7a09726ed6ef8ac2",
+- .\MANIFEST_SHA256.json:452: "periphery\\brody_memory_readonly\\world_source_intake\\BRODY_OBSIDIEN_V1_6_WORLD_SOURCE_INTAKE_READONLY_MANIFEST.json": "642003400466e9d82c08efed7f5f08a7c2d683df7e5b1b0bb89788d3a4410c07",
+- .\MANIFEST_SHA256.json:453: "periphery\\brody_memory_readonly\\world_source_intake\\brody_world_source_intake_readonly_v1_6.py": "3dca875539a6258aaa20a92a2518abfc7e42088454ea49581742679eeb1a4107",
+- .\MANIFEST_SHA256.json:454: "periphery\\brody_memory_readonly\\world_source_intake\\brody_world_source_intake_readonly_v1_6_1.py": "ef7ca8137832d43798a302bb5f2aa4d62aafa8de48c3caa33b97d4353c001c82",
+- .\MANIFEST_SHA256.json:455: "periphery\\brody_memory_readonly\\world_source_intake\\brody_world_source_intake_readonly_v1_6_2.py": "368bb074a65eec40763364e49d761a7476b2d4de82353f9996c3f4b9cb870252",
+- .\MANIFEST_SHA256.json:456: "periphery\\brody_memory_readonly\\world_source_intake\\run_brody_world_source_intake_readonly_v1_6.ps1": "0f86979ad10f2209c8a308646e61bee4d1edc285dd8765ae805514cd382c9f1f",
+- .\MANIFEST_SHA256.json:457: "periphery\\brody_memory_readonly\\world_source_intake\\run_brody_world_source_intake_readonly_v1_6_1.ps1": "d5ba0294905714192fbee6aa2172d5465a3dffd3fd75f7fd909d0ad452e3666c",
+- .\MANIFEST_SHA256.json:458: "periphery\\brody_memory_readonly\\world_source_intake\\run_brody_world_source_intake_readonly_v1_6_2.ps1": "54578c2f41486a90488ef6e1fc9deffd1664fdb571ae949613c3ffd7d2fbff78",
+- .\MANIFEST_SHA256.json:462: "periphery\\cognitive_trees\\tree_activation_vector.py": "3ae1971d4001e9927c3c9eda5bad51d65ee64b4a8d848d0f0832623caa142a70",
+- .\MANIFEST_SHA256.json:469: "periphery\\context\\context_packet_builder.py": "b5c9da8ef300d9aa6db9a184d69d51aa4d02d2b80e7f29ebf9188a40db2ecafb",
+- .\MANIFEST_SHA256.json:470: "periphery\\context\\context_packet_builder_v2.py": "a5e0fad9193cb5700da7bca0124aef66c24af11bcc79a9f7ff9b62c011a95f95",
+- .\MANIFEST_SHA256.json:471: "periphery\\context\\context_packet_exporter.py": "2b80b6867b3f2163fa584658e624db0a8b68bd444774b65d31db877d33ef0712",
+- .\MANIFEST_SHA256.json:472: "periphery\\context\\context_packet_sanitizer.py": "9cfb044661022af4987afe60ce76d42fac348ad5638fad7943f29346fbcb37c6",
+- .\MANIFEST_SHA256.json:473: "periphery\\context\\context_packet_validator.py": "2d33610c94727f5c2c4e865e0a1d45bc12eeafe84cbd4d6fbe64d3d02e1ac1d5",
+- .\MANIFEST_SHA256.json:488: "periphery\\graphiti\\graphiti_readonly_bridge.py": "5335008a3771505c8d996ffbde9666ce6101e80a38512fb37d7699dfee82dc01",
+- .\MANIFEST_SHA256.json:499: "periphery\\interface\\interface_view_contracts.py": "de158fd8d70790b0619c2bd10f9919e731d856206026267f3dcc785e3230f63c",
+- .\MANIFEST_SHA256.json:500: "periphery\\interface\\workbench_api_contract.py": "68fb41dec5a125dc66a4c234a067a7257b7c5a28501cf32541cf6b36e1ed123c",
+- .\MANIFEST_SHA256.json:511: "periphery\\mcp\\mcp_permission_matrix.py": "7f38692cdeb1adec8cd07b46cc60fd508df437a0f8d3bf9383311a3ac3d219bd",
+- .\MANIFEST_SHA256.json:532: "periphery\\reverse_os\\action_projection_readonly.py": "742f9a9973a27a46ed88d0f30fdf8e7cf25aa859061ff49e81a3e64161a8073c",
+- .\MANIFEST_SHA256.json:533: "periphery\\reverse_os\\audience_projection.py": "db7c5df2e5a8aea19fee31644777ac14775c767fa8e5bcb723ed0d225decbb80",
+- .\MANIFEST_SHA256.json:534: "periphery\\reverse_os\\format_projection.py": "61e6a4309af2c06363f7d6573a23466305eafd54be3c71a54f0b39cf202d98e4",
+- .\MANIFEST_SHA256.json:535: "periphery\\reverse_os\\__init__.py": "5b182205feea17d8df0ca9de7d21108fff0b8dafca4cb359a6ee679dc7e84b6a",
+- .\MANIFEST_SHA256.json:536: "periphery\\schemas\\action_candidate.schema.json": "eb0231f6deb5d9b0d8c1a6f4a423e2f600396c04bb0a90490af2022c15ba7f65",
+- .\MANIFEST_SHA256.json:537: "periphery\\schemas\\blockchain_action.schema.json": "a8b9bc286d9be1375f50eb8ff6e96605c113a4dce9d2dab5f29eecd681c0fe2e",
+- .\MANIFEST_SHA256.json:550: "periphery\\schemas\\transaction_simulation.schema.json": "437f02457b00ad741d64f753f9fe3609f21cb35402fe31318a461faf7d9b0de2",
+- .\MANIFEST_SHA256.json:552: "periphery\\schemas\\world_action_event.schema.json": "147d418777c443085a01665098f4491289bed09f485ef2990b68012eabe539d2",
+- .\MANIFEST_SHA256.json:553: "periphery\\world_calls\\action_risk_classifier.py": "fa5169d4a27a8e1dd4ee04b142efd29c94949203d1523e0440e6f7b7ec811519",
+- .\MANIFEST_SHA256.json:561: "periphery\\world_calls\\world_action_bus.py": "9cec1f7677462e403f58e68576df8851af2d4bf073d54a5b1dca25ba33c4fb5c",
+- .\MANIFEST_SHA256.json:565: "periphery\\x108_ingress\\readonly_context_ingress.py": "425d382d1d9bdff1a1f85b836fc3c2457446229f36aa32135863896d27d05d47",
+- .\MANIFEST_SHA256.json:566: "periphery\\x108_ingress\\x108_context_boundary.py": "90a86eb97ba7f9ce38dbcd768ea4691df93c615f8a6f24598988361d10d85fdb",
+- .\MANIFEST_SHA256.json:567: "periphery\\x108_ingress\\__init__.py": "6dddcdd4108c34673b7bf5f747aa2b4f29c32f558eb539697d14b1511790bc37",
+- .\MANIFEST_SHA256.json:579: "tests\\integration\\test_v4_gencoin_world_action_bus_chain.py": "8880ac52c3f734662bed7dc92008c2dd45a4d5d96ff66025ee9f6d85d157c4a8",
+- .\MANIFEST_SHA256.json:582: "tests\\non_sovereignty\\test_agents_cannot_emit_act.py": "2bb1d365d8f0f779cb472a1a55062fbd1738f502e29dd4786857b52b9d1d9662",
+- .\MANIFEST_SHA256.json:584: "tests\\non_sovereignty\\test_brody_no_act.py": "b5c3fcf148ab4a442793d1953c0cf2cefaa2063cd83fb22bacc18cf3f755b937",
+- .\MANIFEST_SHA256.json:587: "tests\\non_sovereignty\\test_control_plane_cannot_emit_act.py": "10ae04407f70ac3e014df5f1a1dd24ec3e79074a3c54c2b7f84d77be6e039574",
+- .\MANIFEST_SHA256.json:593: "tests\\non_sovereignty\\test_memory_cannot_decide.py": "10ae04407f70ac3e014df5f1a1dd24ec3e79074a3c54c2b7f84d77be6e039574",
+- .\MANIFEST_SHA256.json:597: "tests\\non_sovereignty\\test_no_smart_contract_deploy.py": "85229cd7e6b247775e3295629d586e872f5bb311764b6db113bbeec8ffc40318",
+- .\MANIFEST_SHA256.json:601: "tests\\non_sovereignty\\test_periphery_cannot_emit_act.py": "10ae04407f70ac3e014df5f1a1dd24ec3e79074a3c54c2b7f84d77be6e039574",
+- .\MANIFEST_SHA256.json:602: "tests\\non_sovereignty\\test_sigma_cannot_bypass_x108.py": "10ae04407f70ac3e014df5f1a1dd24ec3e79074a3c54c2b7f84d77be6e039574",
+- .\MANIFEST_SHA256.json:604: "tests\\non_sovereignty\\test_world_action_gateway_dry_run.py": "5159266f6400af3cf4e395ff1cde968d49404557611a4682ab96195a7cf9ed04",
+- .\MANIFEST_SHA256.json:605: "tests\\non_sovereignty\\test_world_action_no_real_act_v4.py": "d3fdba39dc0f77bbc47f7d016b33a98a6fd749e5035bd46bf97d897de77e4f4c",
+- .\MANIFEST_SHA256.json:606: "tests\\periphery\\test_action_lifecycle.py": "0a6368fc571080053c48663997965c74c7f4e7db497010674886d247bce2dde0",
+- .\MANIFEST_SHA256.json:607: "tests\\periphery\\test_action_sequence_governor.py": "d6648a2f01b29c502606070ac7ea841e496ed5f5c5321599768e3d57e1a297e0",
+- .\MANIFEST_SHA256.json:608: "tests\\periphery\\test_agent_contracts.py": "54ae09f365aa96de983c70ee13a56d843a21c44e88cabec0e2332bda5af8ffd1",
+- .\MANIFEST_SHA256.json:613: "tests\\periphery\\test_bdf_router_no_act.py": "465a4d8cad72949d683fe519d39cb3e31d215f0932e3ba36aa75228c07f195e6",
+- .\MANIFEST_SHA256.json:615: "tests\\periphery\\test_bias_gate_blocks_unvalidated_bias.py": "209e4ef2ccd909a375d138f916669dfe3fe1cd40e800feb659e1a6171ad2ccb7",
+- .\MANIFEST_SHA256.json:616: "tests\\periphery\\test_blockchain_action_classifier.py": "259ee2433c21cc59147dad1c76b5fc71f1fc4c4305586b435886c33c2fbf81f1",
+- .\MANIFEST_SHA256.json:618: "tests\\periphery\\test_brody_response_contract.py": "fca09708574fb8cb2b6ccddca094d3d25eefc25af9c38840018b315cce1e515e",
+- .\MANIFEST_SHA256.json:619: "tests\\periphery\\test_brody_runtime_readonly.py": "423df6f5d0379a2d54f09683974606b4d351ec594f3f20dc3847987b79e10103",
+- .\MANIFEST_SHA256.json:629: "tests\\periphery\\test_dominant_trees_threshold.py": "5bacd2bfb6df26acea19f3f94e1c799e3e848fe46dcb45ebbb967e005f8ebb0c",
+- .\MANIFEST_SHA256.json:634: "tests\\periphery\\test_false_on_blocks_gencoin.py": "b447b73bf3d933d6c095895173eb8cbd20858b48f40e3c99cf33c47c4f5b066d",
+- .\MANIFEST_SHA256.json:635: "tests\\periphery\\test_feedback_memory_bridge_readonly.py": "c81b37a47c35657f0e6abaa455bf4b18d35eb4fbfbe9f661be48d530c218db3c",
+- .\MANIFEST_SHA256.json:646: "tests\\periphery\\test_graphiti_readonly_bridge.py": "3a2f94051891413e4a46e5345cf8a0f5fba9df28fe768f22adc897937dd216d5",
+- .\MANIFEST_SHA256.json:666: "tests\\periphery\\test_reverse_os_projection_readonly.py": "3c1b08b95f13e99098ff41f942cad16b3dbb086d33bb30c9adc56ed76b2a5c81",
+- .\MANIFEST_SHA256.json:669: "tests\\periphery\\test_smart_contract_risk_gate.py": "1e87a03eee2f224ab9aa0b0c0496bd4b9f23ce6bc9ad1490c9b4e5b3955ca52b",
+- .\MANIFEST_SHA256.json:674: "tests\\periphery\\test_transaction_simulator_dryrun.py": "efb2e0fd9b1d083f4e72501ccf9fe325e6623de8ec69e981f9fcba5758e2ec22",
+- .\MANIFEST_SHA256.json:675: "tests\\periphery\\test_tree_activation_vector.py": "a50bf28a12f3795c9b58d264e6e93cd8ce6cec8a5981da9503606dc7a3664b1b",
+- .\MANIFEST_SHA256.json:678: "tests\\periphery\\test_world_action_controlled_runtime_stub.py": "e008b3022dfde35f60034f9f4481ccc037357a915de3830171c55883289c2285",
+- .\MANIFEST_SHA256.json:679: "tests\\periphery\\test_world_action_gateway.py": "7b35918ee31f7e8bef181fd5dee4e335277d4a616600043ee28355348438e3aa",
+- .\MANIFEST_SHA256.json:681: "tests\\periphery\\test_x108_readonly_context_ingress_no_act.py": "56d63276ed3148e88d8ad8f180e08cdfc74517e99eb7ed5c4cb10f393292e389",
+- .\MANIFEST_SHA256.json:682: "scripts\\TEST_BRODY_MEMORY_READONLY.ps1": "09e92e3bc7c374506f7f0797442a9b35a6d4f56d75e45b972c3272b4180c5cb3",
+- .\MANIFEST_SHA256.json:683: "scripts\\TEST_CONTEXT_PACKET_FLOW.ps1": "e02aa8a93fdd7cf641b7a50be2985137ad0dfc9aba1ce54e522f7a37d4aeffed",
+- .\MANIFEST_SHA256.json:691: "docs\\civilization\\COGNITION_TO_ACTION_GOVERNANCE_V1.md": "90ba1e451056a8df8358af988441608ccc50720c17d16a13da6f445431d34468",
+- .\MANIFEST_SHA256.json:693: "connectors\\brody_memory_readonly_flow.py": "c535a312181bc836a3208ec2aca8dfe89d764199f433bc5b59332a21484405f6",
+- .\MANIFEST_SHA256.json:694: "connectors\\context_packet_flow.py": "222ce258780fc7ffb4d8c4c1a4f3493994c97f0d39d176d8e5bd489afa337c67",
+- .\MANIFEST_SHA256_NEW.json:2: "periphery\\action_lifecycle.py": "5bc6ddd6c322aee9cc295b5316b2bc26987dffd9ca11a79ea767f56223adcac5",
+- .\MANIFEST_SHA256_NEW.json:3: "periphery\\action_sequence_governor.py": "adfe46a328715a1a3929753bffb1511979a43c1549990d87aa4e97d4ec38bcf8",
+- .\MANIFEST_SHA256_NEW.json:4: "periphery\\active_cognitive_reduction.py": "8bef80f1d67fd482eeb808c3717df1f9800b54282bf3f01c2503009c1f27fa62",
+- .\MANIFEST_SHA256_NEW.json:25: "periphery\\export_for_x108.py": "ff119d952cfb0b6c793f240bd9629a9395e9e82fd34eb5009a95420e9f28c810",
+- .\MANIFEST_SHA256_NEW.json:27: "periphery\\feedback_memory_bridge_brody_readonly.py": "ec8b1e3ccbc00571b556e6587ec72dfc4537d4af8c643a4a905d51a41749701b",
+- .\MANIFEST_SHA256_NEW.json:35: "periphery\\kernel_boundary_tests.py": "87f581e7f62925e2d5c61e16c52acb7e928539122defdae589fd257d702583ff",
+- .\MANIFEST_SHA256_NEW.json:41: "periphery\\no_bdf_act.py": "1a820d04b575139cb7b81780df53fb2a69fd9847a0eb07e91bf3acdc9b7ba802",
+- .\MANIFEST_SHA256_NEW.json:42: "periphery\\no_cortex_act.py": "00d9a2c4ff10f2ee9aaf76d4038066e0a57fde2131e335b04aa0b309994b2f0b",
+- .\MANIFEST_SHA256_NEW.json:43: "periphery\\no_hexaflux_act.py": "7c1fda30a904c126d6d0323f3af834d69ae1602fda3a75a9468ee314732b97fd",
+- .\MANIFEST_SHA256_NEW.json:44: "periphery\\no_memory_act.py": "60ad5e15863a7e3a4db8f15201398c8ccd7964b75c5bb1f20312f14e4f9df910",
+- .\MANIFEST_SHA256_NEW.json:45: "periphery\\no_reverse_os_act.py": "36d147a2f4cfde2deabf5af871be91c70fbea502fe915c38d9eac9a8152abd2e",
+- .\MANIFEST_SHA256_NEW.json:46: "periphery\\no_shazam_act.py": "e661ad0a0833026f50adb14f15a86ea15f93e463221e010fd75a9fdf58fa9755",
+- .\MANIFEST_SHA256_NEW.json:47: "periphery\\no_tree_act.py": "8d9e26c4075642c9525e0c13afb7479c7f5dc74a647aa024b720449ee52bda7e",
+- .\MANIFEST_SHA256_NEW.json:59: "periphery\\reverse_os.py": "bd216a6183977d965e92e485781dcd030b3e8b97a490ec693bcbcf023505578d",
+- .\MANIFEST_SHA256_NEW.json:64: "periphery\\tensor_activation.py": "372ff55c62ca8adc3a2740b0470a5b6e19fef1bbb38422ffaaa57d9fc6c87e95",
+- .\MANIFEST_SHA256_NEW.json:71: "periphery\\test_reverse_os_non_decision.py": "99db37f4b4e36c4acd1a13f19d08da5b1da0d06472c587a7fe6764fb131fc0d8",
+- .\MANIFEST_SHA256_NEW.json:79: "periphery\\world_action_controlled_runtime_stub.py": "2ce0c95ea814e3be13273a6125f7e4a5befc572d916c51f1c5afb4ac9579bd93",
+- .\MANIFEST_SHA256_NEW.json:85: "periphery\\agents\\action_sequence_agent.py": "6496bcd80b7149970d633e063d5f5596df50ce38f80f90b37d6745a95711f719",
+- .\MANIFEST_SHA256_NEW.json:98: "periphery\\agents\\world_action_agent.py": "a1eb46b105cc0536fd4a83b64f3baf345ffff286cb9e8c8055cfe49efab57dc6",
+- .\MANIFEST_SHA256_NEW.json:111: "periphery\\blockchain\\blockchain_action_classifier.py": "ba026cc4e0c7de18fcf03113397d55ade2a43bc72eb679c1e80fd293e27116f9",
+- .\MANIFEST_SHA256_NEW.json:112: "periphery\\blockchain\\bridge_risk_gate.py": "254a349b301a2bc4f99fcd0f5b91d0bc1d31031458755f2cbace3be33640720c",
+- .\MANIFEST_SHA256_NEW.json:113: "periphery\\blockchain\\chain_context.py": "ffc88ec57420098ccd65f82273c60c1455664bf49ac058a419a8f2baf3fba5d9",
+- .\MANIFEST_SHA256_NEW.json:114: "periphery\\blockchain\\defi_risk_gate.py": "9a5b71f7185165c1f6aba9d752ba9d20674264c0d6ac2e1c49355d13b5da1692",
+- .\MANIFEST_SHA256_NEW.json:115: "periphery\\blockchain\\onchain_audit_packet.py": "3e0a084c35dc273311960c1b5c0ecf7aee0fc77113952a3c867a7a429db168e1",
+- .\MANIFEST_SHA256_NEW.json:116: "periphery\\blockchain\\oracle_freshness_gate.py": "8dc5b03555898103ccbab07266fc4386ff81567a6f1a7dbdaaee0dd158a43049",
+- .\MANIFEST_SHA256_NEW.json:117: "periphery\\blockchain\\signature_boundary.py": "cf0c7c74799681cfa893b7dee986b8847a23f14eacc80174efbd033a39daf311",
+- .\MANIFEST_SHA256_NEW.json:118: "periphery\\blockchain\\smart_contract_risk_gate.py": "1e88e8262af0fd612a14a4b5424be6dacea55af5c22e37314e09ec525d9743d0",
+- .\MANIFEST_SHA256_NEW.json:119: "periphery\\blockchain\\token_policy.py": "1ae02dd94be330c44fae39e548dfb282b7dde4365a11ad808dd57687233a0ebe",
+- .\MANIFEST_SHA256_NEW.json:120: "periphery\\blockchain\\transaction_simulator.py": "1513e1cfde6b36577213051e771be6341374957863aee842ecb7384bb626e1a3",
+- .\MANIFEST_SHA256_NEW.json:121: "periphery\\blockchain\\wallet_security_gate.py": "099b3a8a30caca30d9b38bb6d88a22cb701cdecf94c754c440a25bc3a17ee678",
+- .\MANIFEST_SHA256_NEW.json:122: "periphery\\blockchain\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:125: "periphery\\brody\\brody_response_contract.py": "50cb79699549effe3a289c107c39b541c589b397ae1e87e9f19145347a789c2e",
+- .\MANIFEST_SHA256_NEW.json:127: "periphery\\brody\\brody_runtime_readonly.py": "8d166a2804f409c6b2a959ae75e1e2b0b5e5bc810e67bd4f51399b4d676c5dd3",
+- .\MANIFEST_SHA256_NEW.json:129: "periphery\\brody_memory_readonly\\brody_taxonomy_mapper_34_8_readonly_v1_6_4d.py": "50fc778ec2066a418ff769b597e7c431810c711d03a82ba1384567df8f2bbb93",
+- .\MANIFEST_SHA256_NEW.json:130: "periphery\\brody_memory_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:131: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\brody_auto_triage_memory_intake_readonly_v1.py": "60c9180579b827555702572f311423aa0ed9f0ad9704827082d2a3fefccc1bd2",
+- .\MANIFEST_SHA256_NEW.json:132: "periphery\\brody_memory_readonly\\auto_triage_memory_intake_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:133: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\brody_agent_readonly_session_test_packet_v1.py": "d1beb0b601dcae6d41de96d27c9206bc8887eb1cb68f2c70d410d7933a92f192",
+- .\MANIFEST_SHA256_NEW.json:134: "periphery\\brody_memory_readonly\\brody_agent_readonly_session_test_packet\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:135: "periphery\\brody_memory_readonly\\brody_api_bridge_authorization_packet_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:136: "periphery\\brody_memory_readonly\\brody_api_bridge_authorized_runtime_precheck_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:137: "periphery\\brody_memory_readonly\\brody_api_bridge_build_epoch_open_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:138: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_components_inventory_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:139: "periphery\\brody_memory_readonly\\brody_api_bridge_candidate_drift_guard_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:140: "periphery\\brody_memory_readonly\\brody_api_bridge_contract_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:141: "periphery\\brody_memory_readonly\\brody_api_bridge_disabled_runtime_skeleton_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:142: "periphery\\brody_memory_readonly\\brody_api_bridge_dry_run_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:143: "periphery\\brody_memory_readonly\\brody_api_bridge_external_access_freeze_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:144: "periphery\\brody_memory_readonly\\brody_api_bridge_live_drift_guard_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:145: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_policy_matrix_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:146: "periphery\\brody_memory_readonly\\brody_api_bridge_provider_registry_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:147: "periphery\\brody_memory_readonly\\brody_api_bridge_readiness_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:148: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_activation_gate_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:149: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_authorization_ledger_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:150: "periphery\\brody_memory_readonly\\brody_api_bridge_runtime_stub_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+- .\MANIFEST_SHA256_NEW.json:151: "periphery\\brody_memory_readonly\\brody_api_memory_operator_replay_api_fix_readonly\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+
+## Terminal evidence hits
+- .\tools\brody_chat.py:4: Dialogue direct avec le moteur Obsidia via http://127.0.0.1:8012/api/brody/chat
+- .\tools\brody_chat.py:24: ENDPOINT  = f"{BASE_URL}/api/brody/chat"
+- .\tools\brody_chat.py:70: auth     = data.get("decision_authority", "KX108_ONLY")
+- .\tools\brody_chat.py:219: ENDPOINT  = f"{BASE_URL}/api/brody/chat"
+- .\scripts\run_brody_terminal_enriched.ps1:66: Write-Host "BRODY TERMINAL ENRICHED - /api/brody/chat + OS Trad + IR + OS Reverse"
+- .\scripts\run_brody_terminal_enriched.ps1:85: $chat = Post-Json "/api/brody/chat" @{
+- .\scripts\run_brody_terminal_enriched.ps1:94: $chatHasSupportRoutes = Has-Field $chat "support_routes"
+- .\scripts\run_brody_terminal_enriched.ps1:110: Write-Host "has_support_routes=$chatHasSupportRoutes"
+- .\scripts\run_brody_terminal_enriched.ps1:116: $osTrad = Post-Json "/api/os-trad/translate" @{
+- .\scripts\run_brody_terminal_enriched.ps1:137: $ir = Post-Json "/api/ir/candidate" @{
+- .\scripts\run_brody_terminal_enriched.ps1:159: $reverse = Post-Json "/api/os-reverse/project" @{
+- .\scripts\run_brody_terminal_enriched.ps1:182: Write-Host "/api/brody/chat remains primary."
+- .\scripts\run_brody_terminal.ps1:20: Write-Host "decision_authority=KX108_ONLY"
+- .\scripts\run_brody_terminal.ps1:42: $r = Invoke-WebRequest -Uri "$Base/api/brody/chat" -Method POST -ContentType "application/json; charset=utf-8" -Body $bytes -TimeoutSec 60
+
+## UI evidence hits
+- .\apps\obsidia-workbench\src\App.tsx:5: import { RightPanel } from './components/RightPanel'
+- .\apps\obsidia-workbench\src\App.tsx:53: const [lastBackendPayload, setLastBackendPayload] = useState<Record<string, unknown> / undefined>()
+- .\apps\obsidia-workbench\src\App.tsx:100: setLastBackendPayload(backendPayload)
+- .\apps\obsidia-workbench\src\App.tsx:144: source: 'REAL_BACKEND_SUPPORT',
+- .\apps\obsidia-workbench\src\App.tsx:153: support_routes: supportPayload,
+- .\apps\obsidia-workbench\src\App.tsx:155: setLastBackendPayload(backendPayload)
+- .\apps\obsidia-workbench\src\App.tsx:166: support_routes: supportPayload,
+- .\apps\obsidia-workbench\src\App.tsx:168: setLastBackendPayload(backendPayload)
+- .\apps\obsidia-workbench\src\App.tsx:176: ? ({ ...baseTrace, backend_support: supportPayload } as unknown as TranslationTrace)
+- .\apps\obsidia-workbench\src\App.tsx:242: <RightPanel lastBackendPayload={lastBackendPayload} />
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:1: // OBSIDIA-UI-IMPROVEMENT: RightPanel — clickable copy, tree_X prompts, v18 hash, git branch, refresh context
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:9: import type { AutomationSnapshot, StructuredResponseSnapshot, FreezeMetricsSnapshot } from '../api/contracts'
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:54: const tp = snap.tree_policy as Record<string, unknown> / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:63: <SectionTitle>Authority Snapshot</SectionTitle>
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:104: <div className="text-obs-dtext text-[9px] font-mono mb-0.5">tree_policy</div>
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:121: const authoritySnap = live?.authority_snapshot as Record<string, unknown> / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:122: const memChain = live?.memory_response_chain_snapshot as Record<string, unknown> / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:127: const treePol = live?.tree_policy_snapshot as Record<string, unknown> / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:138: <SectionTitle>Live Backend — Last Response</SectionTitle>
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:744: interface RightPanelProps { onSendPrompt?: (text: string) => void; lastBackendPayload?: Record<string, unknown> }
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:746: export function RightPanel({ onSendPrompt, lastBackendPayload }: RightPanelProps) {
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:748: const automationSnap = lastBackendPayload?.automation_snapshot as AutomationSnapshot / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:749: const structuredSnap = lastBackendPayload?.structured_response_snapshot as StructuredResponseSnapshot / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:750: const freezeSnap = lastBackendPayload?.freeze_metrics_snapshot as FreezeMetricsSnapshot / undefined
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:753: context:    <ContextTab onSendPrompt={onSendPrompt} live={lastBackendPayload} />,
+- .\apps\obsidia-workbench\src\components\RightPanel.tsx:757: audit:      <AuditTab live={lastBackendPayload} />,
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:6: import type { Resolved } from './contracts'
+- .\apps\obsidia-workbench\src\api\obsidiaClient.ts:10: } from './contracts'
+
+## Preliminary interpretation
+- /api/brody/chat already returns many runtime snapshots if their fields are present above.
+- Existing Brody rights/authority matrix should be reused, not duplicated.
+- Existing kernel/X108/boundary contracts must be reused if discovered above.
+- OS Trad / IR / Reverse support routes exist but are not native in /api/brody/chat unless support_routes is present above.
+- Native Brody composition should add contracts_packet, permission_matrix if missing, machination_packet, support_routes, and support_summary.
+- Terminal and UI should consume the enriched /api/brody/chat payload rather than each rebuilding the machination separately.
+
+## Boundary
+- Diagnostic only.
+- No patch.
+- No runtime mutation.
+- No kernel mutation.
+- No X108 mutation.
+- No memory write.
+- No Graphiti write.
+- No commit.

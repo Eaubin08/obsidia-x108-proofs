@@ -1,0 +1,288 @@
+{
+  "plan_id": "OBSIDIA_F53_BUS_BRIDGE_EXISTENTIAL_CONTRACT_PLAN_20260529_235000",
+  "palier": "F53",
+  "parent": "F52_BUS_BRIDGE_QUARANTINE",
+  "sealed_at": "20260529_235000",
+  "status": "PASS",
+  "head": "6d2fe96",
+  "parent_tag": "BRODY_F52_BUS_BRIDGE_QUARANTINE_PALIER_20260529",
+  "canonical_name": "BRODY_GPT_V1_READONLY_CONTROLLED_RUNTIME",
+  "bus_bridge_status": "ACTIVE_FUTURE_SURFACE",
+  "runtime_modified": false,
+  "routes_created": false,
+  "conceptual_model": {
+    "definition": "bus/bridge is the existential connective surface of the Obsidia system. It is the single interface through which the system answers the question: What does the system know right now without deciding anything? It exposes observable state across all layers -- runtime, proofs, audit, routes, memory, Graphiti, Brody context, external signals -- as a read-only packet. It never emits ACT, never takes a decision, never mutates state. It is the epistemic surface of the system, not its executive.",
+    "role": "epistemic_readonly_surface",
+    "not_a": [
+      "decision_authority",
+      "orchestrator",
+      "ACT_emitter",
+      "kernel_mutator",
+      "memory_writer",
+      "brody_decider"
+    ],
+    "is_a": [
+      "readonly_state_aggregator",
+      "observable_system_snapshot",
+      "external_signal_ingress_readonly",
+      "sovereign_boundary_carrier",
+      "audit_and_proof_mirror"
+    ]
+  },
+  "state_model": {
+    "runtime_state": {
+      "active": true,
+      "fields": [
+        "process_health",
+        "uvicorn_status",
+        "active_ports",
+        "active_routes",
+        "api_title",
+        "python_version"
+      ],
+      "source": "live uvicorn introspection + OpenAPI",
+      "readonly": true
+    },
+    "proof_state": {
+      "active": true,
+      "fields": [
+        "palier_chain",
+        "current_head",
+        "git_tags",
+        "freeze_manifests",
+        "sha256_references",
+        "last_palier"
+      ],
+      "source": "git log + .runtime_freezes/ manifests",
+      "readonly": true
+    },
+    "audit_state": {
+      "active": true,
+      "fields": [
+        "last_audit_palier",
+        "last_audit_status",
+        "last_test_run",
+        "baseline_result",
+        "f47_results",
+        "open_debts"
+      ],
+      "source": "docs/runtime/ audit artifacts",
+      "readonly": true
+    },
+    "route_state": {
+      "active": true,
+      "fields": [
+        "openapi_paths",
+        "route_count",
+        "route_health",
+        "boundary_coverage",
+        "envelope_coverage"
+      ],
+      "source": "app.openapi() + safe_backend_response() coverage",
+      "readonly": true
+    },
+    "memory_context_state": {
+      "active": true,
+      "fields": [
+        "graphiti_readiness",
+        "brody_context_available",
+        "memory_sources",
+        "advisory_surfaces"
+      ],
+      "source": "/api/graphiti/readiness + /api/memory/status",
+      "readonly": true,
+      "write": false
+    },
+    "external_signal_state": {
+      "active": true,
+      "fields": [
+        "signal_type",
+        "signal_origin",
+        "signal_timestamp",
+        "signal_content_readonly",
+        "signal_routed_to"
+      ],
+      "examples": [
+        "audit_request",
+        "monitoring_probe",
+        "operator_check",
+        "CI_signal",
+        "security_scan"
+      ],
+      "note": "External signals are ingested as read-only packets; never trigger ACT",
+      "readonly": true
+    },
+    "readiness_state": {
+      "active": true,
+      "fields": [
+        "demo_ready",
+        "all_v1_routes_up",
+        "sovereignty_flags_pass",
+        "sanitizer_active",
+        "baseline_passing"
+      ],
+      "source": "/api/periphery/demo/runtime-readiness + F50 audit",
+      "readonly": true
+    },
+    "debt_state": {
+      "active": true,
+      "fields": [
+        "open_debts",
+        "quarantined_tests",
+        "unimplemented_routes",
+        "f_palier_debt_list"
+      ],
+      "source": "F51/F52 audit artifacts",
+      "readonly": true
+    },
+    "boundary_state": {
+      "active": true,
+      "fields": [
+        "decision_authority",
+        "allowed_to_decide",
+        "emits_act",
+        "emits_verdict",
+        "kernel_mutation",
+        "neo4j_write",
+        "brody_decision"
+      ],
+      "note": "Always KX108_ONLY; bus/bridge carries boundary in every response",
+      "readonly": true
+    }
+  },
+  "external_signal_model": {
+    "definition": "An external signal is any input arriving from outside the current runtime process boundary.",
+    "signal_types": {
+      "audit_request": "Request from operator or CI to produce current audit snapshot",
+      "monitoring_probe": "Health check from external monitoring (uptime, readiness)",
+      "operator_check": "Manual operator query on system state",
+      "ci_signal": "CI pipeline requesting test or proof state",
+      "security_scan": "Security probe checking boundary flags",
+      "graphiti_event": "Graphiti memory surface emitting a context update notification",
+      "sigma_signal": "Sigma pipeline emitting an evaluation summary (readonly)"
+    },
+    "ingestion_protocol": {
+      "step_1": "Signal received by /bus/signal (future POST endpoint)",
+      "step_2": "Signal classified by type -- no interpretation",
+      "step_3": "Signal packaged as read-only observation packet",
+      "step_4": "Packet exposed via /bus/bridge response",
+      "step_5": "No ACT emitted, no mutation performed",
+      "guarantee": "The signal NEVER becomes a decision. KX108_ONLY decides."
+    }
+  },
+  "refusal_model": {
+    "bus_bridge_must_refuse": [
+      "Any request to emit ACT",
+      "Any request to decide on behalf of KX108",
+      "Any write to Neo4j, Graphiti, or memory",
+      "Any kernel mutation",
+      "Any X108 mutation",
+      "Any routing of authority to Brody",
+      "Any transformation into an orchestrator",
+      "Any interpretation of signals as commands",
+      "Any response containing ALLOW, DECIDE, VERDICT tokens in text"
+    ],
+    "enforcement": "safe_backend_response() + _SOVEREIGNTY_PROTECTED overwrite after merge"
+  },
+  "future_routes": {
+    "GET /bus/stats": {
+      "status": "PLANNED",
+      "palier": "F54",
+      "description": "Synthetic readonly state snapshot of the entire system",
+      "modes": [
+        "default",
+        "compact",
+        "debug"
+      ],
+      "fields": [
+        "runtime_state",
+        "proof_state",
+        "audit_state",
+        "route_state",
+        "readiness_state",
+        "boundary_state"
+      ],
+      "implementation": "build_output_envelope() from output_envelope.py already exists"
+    },
+    "GET /bus/bridge": {
+      "status": "PLANNED",
+      "palier": "F54",
+      "description": "Connective state exposing internal/external bridge -- last known signals, memory state, Graphiti availability",
+      "modes": [
+        "default",
+        "compact",
+        "debug"
+      ],
+      "fields": [
+        "memory_context_state",
+        "external_signal_state",
+        "debt_state",
+        "boundary_state"
+      ],
+      "implementation": "build_output_envelope() from output_envelope.py already exists"
+    },
+    "POST /bus/signal": {
+      "status": "OPTIONAL_LATER",
+      "palier": "F55+",
+      "description": "Ingest external signal as read-only observation packet",
+      "guarantee": "Never emits ACT. Returns readonly signal packet with boundary flags."
+    }
+  },
+  "test_strategy_f54": {
+    "quarantined_tests_reactivation": {
+      "action": "Remove pytestmark skip from test_output_envelope_bus_stats.py and test_output_envelope_bus_bridge.py",
+      "condition": "After /bus/stats and /bus/bridge are implemented in F54",
+      "expected_result": "46 tests should pass cleanly"
+    },
+    "new_tests_needed": [
+      "test_bus_stats_route_exists_in_openapi",
+      "test_bus_stats_boundary_all_flags",
+      "test_bus_stats_compact_mode_omits_deep_fields",
+      "test_bus_stats_debug_mode_exposes_all",
+      "test_bus_bridge_route_exists_in_openapi",
+      "test_bus_bridge_external_signal_state_readonly",
+      "test_bus_bridge_memory_context_advisory_only",
+      "test_bus_bridge_no_write_fields",
+      "test_bus_bridge_boundary_KX108_ONLY",
+      "test_bus_signal_post_returns_readonly_packet",
+      "test_bus_signal_never_emits_act",
+      "test_bus_signal_forbidden_tokens_absent_in_response"
+    ],
+    "regression_requirement": "All F50 baseline routes must continue to pass after F54 implementation"
+  },
+  "implementation_prerequisites_f54": {
+    "output_envelope_module": "EXISTS -- apps/obsidia_api/output_envelope.py",
+    "state_aggregator": "NEEDS_CREATION -- apps/obsidia_api/bus/state_aggregator.py",
+    "bus_router": "NEEDS_CREATION -- apps/obsidia_api/routes/bus.py",
+    "main_include_router": "NEEDS_UPDATE -- apps/obsidia_api/main.py to include bus router",
+    "risk": "LOW -- additive only, no existing code modified except main.py include_router"
+  },
+  "boundary": {
+    "decision_authority": "KX108_ONLY",
+    "allowed_to_decide": false,
+    "advisory_only": true,
+    "readonly": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false,
+    "neo4j_write": false,
+    "brody_decision": false
+  },
+  "recommendation": {
+    "next": "F54_BUS_BRIDGE_MINIMAL_ROUTE_IMPLEMENTATION",
+    "f54_scope": [
+      "Create apps/obsidia_api/bus/state_aggregator.py",
+      "Create apps/obsidia_api/routes/bus.py with GET /bus/stats + GET /bus/bridge",
+      "Add include_router(bus_router) in main.py",
+      "Reactivate quarantined tests (remove pytestmark skip)",
+      "Verify 46 tests pass + F50 baseline still passes"
+    ],
+    "patch_now": false,
+    "optional_f55": "POST /bus/signal after F54 validated"
+  },
+  "patch_applied": false,
+  "commit": false,
+  "tag": false,
+  "push": false
+}

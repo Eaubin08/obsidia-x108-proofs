@@ -1,0 +1,1432 @@
+{
+  "audit_id": "P62",
+  "status": "P62_MANUAL_REVIEW_CLASSIFIED",
+  "source_patch_applied": false,
+  "import_scope": "MANUAL_REVIEW_DEFERRED_ONLY",
+  "review_mode": "CLASSIFICATION_ONLY",
+  "reviewed_files": [
+    {
+      "core_path": "agents/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "bf630db8571e4e7be0edf5ce972fea04221169235e5c0a58c9eab3f0525b5155",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path defini — revue architecturale requise avant toute integration",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/base.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "6f344dcd0e3e253d0c7d1d50fb42aaa0869c47cafbc39e00e3d3d1e093e9b4b8",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — base agent a cartographier avec sigma/ avant import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/domains/bank_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "f139471ced41e635de733f295c44ca0fc4c9120f6da838b17ed4791581896d5b",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — logique domaine banque a aligner avec sigma/connectors",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/domains/ecom_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "ae4004b63b0be32297a2674a597d3366a9be1456d5d52c257e72c326482317df",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — logique domaine e-commerce a aligner avec sigma/connectors",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/domains/meta_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "00dec6c1a1fbc5ee1f9ced41313393a2745a62b73a3f57aa159e03178ea2f3f9",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — meta-agents multi-domaine, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/domains/trading_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "7265894e3e04e6f396282db630fc943827a2dbac6cc775b0e22a5640f3a45d59",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — agents trading, revue domaine financier requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/registry.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "37c2b92ff546e77f168aa323d92cd18a84f9c693998a5fc8a0b93d3f384e54da",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Aucun target_path — registry agents, doublon potentiel python_agents/registry.py",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/sigma_config.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "bd11cf7478e94bde8437db8b94ba50d8b1335636ef7d03348bf5682e911c8ed9",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Config Sigma core sans target — risque de conflit avec sigma/ proof",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/sigma_dashboard.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "a86f6dda1417cf071e33a7e938bbecb87857ffe24426fa481d7735b33aba17da",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Dashboard Sigma sans target — surface sigma, revue complete requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/sigma_monitor.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "459af51622d4926664a9bc0e4c58ffe1fdd593d1450973e9c487a03a7c9b7622",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Monitor Sigma sans target — surface sigma, revue complete requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/utils/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Fichier vide SHA=e3b0c44, aucun target — aucune valeur a importer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "agents/utils/indicators.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e0ffe9f20acbc82c1e8cbc6326776f4f852430917a86a9e00340d7c8a6603990",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Indicateurs utils sans target — doublon potentiel python_agents/utils/indicators.py",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "bf630db8571e4e7be0edf5ce972fea04221169235e5c0a58c9eab3f0525b5155",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Contenu identique a agents/__init__.py, aucun target defini",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/aggregation.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "ce129bf71d9190c62daee14d0a8ad54caf8e6b80f4408d92acc36cf330f1bc6d",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a sigma/aggregation.py patchee P56B gamma — version proof superieure",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/base.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "6f344dcd0e3e253d0c7d1d50fb42aaa0869c47cafbc39e00e3d3d1e093e9b4b8",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/base.py, aucun target — revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/contracts.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "09c68f599243ade93c31d8d5b1378e01b8d6bc6934dca80d89fe11126343438c",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a sigma/contracts.py patchee P56B — version proof superieure",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/demo_run.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d47dcb365fead76babff0af8a49776ce0c8b25d228caf8bfc29fd0c7f3273aaf",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Demo runner — pas d activation demo en prod, aucun target defini",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/domains/bank_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "f139471ced41e635de733f295c44ca0fc4c9120f6da838b17ed4791581896d5b",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/domains/bank_agents.py — revue domaine requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/domains/ecom_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "ae4004b63b0be32297a2674a597d3366a9be1456d5d52c257e72c326482317df",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/domains/ecom_agents.py — revue domaine requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/domains/meta_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "00dec6c1a1fbc5ee1f9ced41313393a2745a62b73a3f57aa159e03178ea2f3f9",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/domains/meta_agents.py — revue multi-domaine requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/domains/trading_agents.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "7265894e3e04e6f396282db630fc943827a2dbac6cc775b0e22a5640f3a45d59",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/domains/trading_agents.py — revue domaine financier requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/guard.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "5b19a0cbbf78555eff0f2cc96f8fd21867a2bfc2212a830e319678a7fff08c18",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a sigma/guard.py — version proof a conserver P58 KEEP_PROOF",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/protocols.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "224560b9752caae2bdc16a043a77524102b921203e0bbc56d5f39ca6c31a3496",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a sigma/protocols.py patchee P56B — version proof superieure",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/registry.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "37c2b92ff546e77f168aa323d92cd18a84f9c693998a5fc8a0b93d3f384e54da",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/registry.py, aucun target — doublon a arbitrer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/run_pipeline.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "6773eac8f6fc99c74bd91b91959036720bf35acd42e6d673e528171e1f853b30",
+      "target_sha256": null,
+      "execution_surface": "TERRAIN_PORTABLE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a sigma/run_pipeline.py patchee P56B — version terrain inferieure",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "python_agents/utils/indicators.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e0ffe9f20acbc82c1e8cbc6326776f4f852430917a86a9e00340d7c8a6603990",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "python_agents",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "SHA identique a agents/utils/indicators.py — doublon a arbitrer avant import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_runtime/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "bc4340debd56438777fc8fb744665e5a6fe8b4b86a598f6245b2d21e9aacb922",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/obsidia_runtime",
+      "detected_risks": [
+        "IMPORT_ENGINE_RUNTIME",
+        "IMPORT_ENGINE_FINAL"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Importe engine_runtime et engine_final — couche runtime critique, revue obligatoire",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_runtime/engine_final.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e97c60d64115b87449d0c5155e5e07875484781217ac1abf97fbf7937ec96690",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/obsidia_runtime",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Engine final runtime — risque MEDIUM, revue architecturale complete requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_runtime/engine_runtime.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "ef6938b25f6f8e029b78b75dcc05d4354616070ad3a1e4a74fae5264398285da",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/obsidia_runtime",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Engine runtime — couche execution critique, revue obligatoire avant tout import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/unified/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/unified",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Fichier vide SHA=e3b0c44 — aucune valeur a importer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/unified/orchestrator.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "17f7c73b8f8c235e22952ca0a6e31589cd6a508fb75f191e5c78b01309d30700",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/unified",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Orchestrateur unifie — couche orchestration, risque MEDIUM, revue requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/unified/pipeline.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "1de3e9dbf0fc271e97704a1cd90f4d55728521bb889c60ed94dea431f79f2588",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/unified",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Pipeline unifie — couche pipeline, risque MEDIUM, revue requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/api_server/audit_log.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "cc985dfb9e3f7486938a1801a0635b84b7d4ca5ff64597ff6b4eed7ae1476e2e",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_AFTER_ADAPTER",
+      "reason": "Audit log API — candidat utile, comparer avec apps/obsidia_api avant adaptation",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/api_server/main.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "0104c745b28882cc45ab7a2d46c22210e5769bd413529426d36b8a158d27b6a1",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "API main — equivalent proof existant, comparaison architecturale obligatoire",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/api_server/security.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "0de9fa59033c5e045fff8bf74605c8eee5ea27bebab0ad9da73d4d98ef3d32a4",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Module securite API — risque MEDIUM, revue securite obligatoire avant import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/api_server/signing.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d058a115e669834c0fbbc80a6f58dbe46b31cd1837d087becad5370c35e5e0e7",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Module signature — cryptographie critique, revue complete requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/api_server/worm_uploader.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "c52b53f73bff79b16a4aeb628abbbe4d365862444a06c12989ce5557d06dbce2",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "WORM uploader — write-path actif, ne pas importer sans revue write complete",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/cli/obsidia_cli.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "c1b077b6bd3953e6b3b241f3b0471e8914f45a7d0a80417878314429a3005bed",
+      "target_sha256": null,
+      "execution_surface": "API_REVERSE_IR",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/api_server",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "CLI Obsidia — surface API, equivalent proof a comparer avant import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "25ab66930a83420d0e24f05b6f5c706985e10ea0d0ea6d233eb09d96d59e5a22",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Init OS0 non-vide — statut inconnu, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/demo.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "53c2ec872f57245dda54f307cd109602fd661ddde00cff29e135aa94f17918bd",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Demo OS0 — pas d activation demo en prod",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/determinism.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "168fa335d75dd9aafec0ce2dd2d32a61615cc08a096cf181649261435ff36bc5",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "SAFE_READONLY_ADAPTER_CANDIDATE",
+      "reason": "Invariant determinisme OS0 — verification statique, candidat readonly sur",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/ir.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "593e8670d05ec5616eaed16191b6c918da5ef67b85461392798ac9860ad008f0",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "IR OS0 — representation intermediaire, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/sandbox.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "56833efacb71616f84e9d83f926c912e66e0ff7d20afe42d339bc4769c8e2355",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Sandbox OS0 — isolation, revue securite requise avant tout import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os0/translate.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d2cbed7fc40c35e0e955fbcb8b4868cfac15c37f480791a344b053417cb2f933",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Translate OS0 — module de traduction, revue dependances requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os1/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d11899ff5c0868c9684f9f266b9b036d68a8a60555b764017024ade2960adf26",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Init OS1 non-vide — couche observation, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os1/os1.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "049d4aa4ed35b8bb999d757385c32b9ff33ed13bb0a18da64635b4b51fcf95d6",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "OS1 — couche observation principale, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os1/parse_input.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "24de1ed54026ba402192bbfd6b4d96380e46aa4f7304b28a5bd968e0650ced05",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "SAFE_READONLY_ADAPTER_CANDIDATE",
+      "reason": "Parseur entrees OS1 — candidat readonly, pas de write ni runtime detectes",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os3/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "5b39b8630eeae0a556ef2973ca17d450dbd7f19eddece4b17fe15206922b8793",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Init OS3 non-vide — couche structurelle, revue requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os3/core_split.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "1947f9d8e7323289b412dd92cf0e9c00b27ca7c7fdb4b1556556bfb1922414f0",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Core split OS3 — division structurelle, revue architecturale requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/os3/svg.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "0e12171c9c2104b4b0e1a22c67d73b0f75d43ecfaa2a6a14d029ee75db212c76",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "SAFE_READONLY_ADAPTER_CANDIDATE",
+      "reason": "SVG output OS3 — generation graphique, aucun write ni runtime detecte",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_kernel/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "7c6f247f5b3a481ebef85c2b612c3e1b31c58b22513fa1e835f900f70269ea50",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Kernel init — module critique, revue architecturale obligatoire",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_kernel/kernel.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "61f4133be71842449da28765c62bc4d5096c7ebc812239a685fa3ceaa673c159",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Kernel principal — module critique, ne pas importer sans revue complete",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_os2/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "395204fbe76f68976c69d73b5e3d4e9d300ac2e7f72fb8d0d7a00437eb33cc1d",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Init OS2 non-vide — statut inconnu, revue requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/obsidia_os2_metrics.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "3c1d8d56c96b8213d22b1235b0165ff22450855022b55ac56ff7789775e26656",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "KEEP_PROOF_VERSION",
+      "reason": "Proof a proofs/V18_3_1 metrics OS2 gamma-patche P56E — version proof superieure",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/registry/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "60cc1c82d2140c80a42137ba92f57fd1c3d92e894b95f148fb0ef0e791397215",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Registry init non-vide — candidature couche REGISTRY inconnue",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/registry/loader.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "570dfa22942bc068ce083078e65902b718c95ea604ac0bfba1cc52c88b6eba8a",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Registry loader — candidature REGISTRY inconnue, revue requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/core_full/entrypoint.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "73be8f076f0ddf149f81a95147f67c27a73b3a03c6fa3d1ecaf52e3c00ea3eae",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "IMPORT_OBSIDIA_RUNTIME",
+        "IMPORT_ENGINE_FINAL"
+      ],
+      "decision": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW",
+      "reason": "Importe obsidia_runtime et engine_final — entrypoint critique, revue obligatoire",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/core_full/modules/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Fichier vide SHA=e3b0c44 — aucune valeur a importer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/core_full/modules/os_trad/__init__.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Fichier vide SHA=e3b0c44 — aucune valeur a importer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/core_full/modules/os_trad/adapter.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "fe4d904bf27d007f9f920694a029f06f798e7cb1e41858424a7899b2345daa8c",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/os0-os3",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_AFTER_ADAPTER",
+      "reason": "Dependance manquante bloquant P61 registry.py — importer apres review interface",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/demo/request_approved.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d2b4a231b296ada6b4904be2f4a01843973be790a1b07c882ade76c14859241b",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/demo",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Donnee demo — pas d activation demo en prod, aucun target defini",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/demo/request_initial.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "a23eb39d5a9a209bea129194488af776c8612458e858eda41f1f2933bf585b90",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/demo",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Donnee demo initiale — pas d activation demo en prod",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "engine/demo/run_demo.py",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "93d47a80c83dd9d39dbb5fbae8937b6a9e402e2c431fe3e0a5a075926c0d0e12",
+      "target_sha256": null,
+      "execution_surface": "CORE_STANDALONE",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "engine/demo",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Demo runner — pas d activation demo en prod",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "core/engine",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e87c5e7a26a2758719a6d5d39ec1602d8806801525a26941a05411a5e9cb6156",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Repertoire non fichier — chemin ambigu, revue manuelle du contenu reel requise",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": ".env.example",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "41f2e15acf50ece33190dd7e154b7dcfcffbdee83a162ab819223abb9cc7029d",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "IMPORT_GRAPHITI"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Contient variables d environnement et reference graphiti — ne pas importer",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": ".gitignore",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "8855a8b5d03d312fb667eda452d555337335bb80a6d70945f94ed608c6996d7c",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "Gitignore core — utile pour fusion avec gitignore proof, apres review differences",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "ARCHITECTURE.md",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e3463036409dab03b80b8666dd13fed903076006752d7a1bb1b9f93503c9f2e5",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "IMPORT_OBSIDIA_RUNTIME",
+        "IMPORT_ENGINE_RUNTIME",
+        "IMPORT_ENGINE_FINAL"
+      ],
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "Documentation architecture core — valeur de reference, sans code actif",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "AUDIT_GUIDE.md",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "2b66d68c13a03455adf856a8cdea37ec412d3af0655764c8843566d3a170bd00",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "Guide d audit core — document de reference, sans code actif",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "CHALLENGE_PROTOCOL.md",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "c4241e821d0b72494637a7d82998fad4099bdec74dab7dfcbd600bce14d96b01",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "Protocole challenge — document de reference, sans code actif",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "Caddyfile",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "9ea30a4b6f48e0d7f6426fb6079884d69b92897f639f0e1dcb0c3cf955062d05",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Config serveur Caddy — deploiement, pas pertinent pour proof Python",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "EXECUTION_LOG_FINAL_v120.txt",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "f9a11585f43f5c9a8f92b20c86c3bd6cc746674222e031a4773e434c9615d191",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Log execution historique v120 — archive, pas de valeur pour proof",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "EXECUTION_LOG_v1.3.0.txt",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "bd9b337c1239c9d4ea21189f7baba632c4643718e823d9c59690c737b92dba2d",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Log execution historique v1.3.0 — archive, pas de valeur pour proof",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "README.md",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "fbd79c06b88b1892d8c3b42e903f4fe1784ffa9b6e24d2ce832d80a37af43da2",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_DOC_ONLY",
+      "reason": "README core — documentation de reference, apres review differences avec proof README",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "package-lock.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "6e7da5a711c30de595f0aa78ce242906757471a84535330c31d82347cde372c7",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Lock npm — dependances npm non applicables au proof Python",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "package.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "9b0bccec4367e7e6c2829adab06a2c23775d6f92c07345ebcae370fbb49dde56",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Package npm — dependances npm non applicables au proof Python",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "requirements.txt",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "d26e228fa795476fa3ab738c5f5db76e4eeb1f40d845836d434b22004bf561f6",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "IMPORT_AFTER_ADAPTER",
+      "reason": "Dependances Python core — a comparer avec proof requirements avant tout import",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    },
+    {
+      "core_path": "tsconfig.json",
+      "target_path": "",
+      "source_exists": true,
+      "target_exists": false,
+      "source_sha256": "e93e15c3794e43a117964ea191ae985cbedea70c41d3d82b2e20aa8d07374fe4",
+      "target_sha256": null,
+      "execution_surface": "UNKNOWN_DEFER",
+      "classification": "MANUAL_REVIEW_DEFERRED",
+      "family": "requirements/package",
+      "detected_risks": [
+        "NONE"
+      ],
+      "decision": "DO_NOT_IMPORT",
+      "reason": "Config TypeScript — non applicable au proof Python",
+      "import_action": "NO_ACTION_CLASSIFICATION_ONLY"
+    }
+  ],
+  "decision_counts": {
+    "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW": 40,
+    "DO_NOT_IMPORT": 20,
+    "KEEP_PROOF_VERSION": 6,
+    "IMPORT_AFTER_ADAPTER": 3,
+    "SAFE_READONLY_ADAPTER_CANDIDATE": 3,
+    "IMPORT_DOC_ONLY": 5
+  },
+  "safe_readonly_adapter_candidates": [
+    "engine/os0/determinism.py",
+    "engine/os1/parse_input.py",
+    "engine/os3/svg.py"
+  ],
+  "import_test_only_candidates": [],
+  "import_doc_only_candidates": [
+    ".gitignore",
+    "ARCHITECTURE.md",
+    "AUDIT_GUIDE.md",
+    "CHALLENGE_PROTOCOL.md",
+    "README.md"
+  ],
+  "import_after_adapter_candidates": [
+    "engine/api_server/audit_log.py",
+    "engine/core_full/modules/os_trad/adapter.py",
+    "requirements.txt"
+  ],
+  "keep_proof_version": [
+    "python_agents/aggregation.py",
+    "python_agents/contracts.py",
+    "python_agents/guard.py",
+    "python_agents/protocols.py",
+    "python_agents/run_pipeline.py",
+    "engine/obsidia_os2_metrics.py"
+  ],
+  "do_not_import": [
+    "agents/sigma_config.json",
+    "agents/utils/__init__.py",
+    "python_agents/__init__.py",
+    "python_agents/demo_run.py",
+    "engine/unified/__init__.py",
+    "engine/api_server/worm_uploader.py",
+    "engine/os0/demo.py",
+    "engine/core_full/modules/__init__.py",
+    "engine/core_full/modules/os_trad/__init__.py",
+    "engine/demo/request_approved.json",
+    "engine/demo/request_initial.json",
+    "engine/demo/run_demo.py",
+    "core/engine",
+    ".env.example",
+    "Caddyfile",
+    "EXECUTION_LOG_FINAL_v120.txt",
+    "EXECUTION_LOG_v1.3.0.txt",
+    "package-lock.json",
+    "package.json",
+    "tsconfig.json"
+  ],
+  "blocked_requires_architectural_review": [
+    "agents/__init__.py",
+    "agents/base.py",
+    "agents/domains/bank_agents.py",
+    "agents/domains/ecom_agents.py",
+    "agents/domains/meta_agents.py",
+    "agents/domains/trading_agents.py",
+    "agents/registry.py",
+    "agents/sigma_dashboard.py",
+    "agents/sigma_monitor.py",
+    "agents/utils/indicators.py",
+    "python_agents/base.py",
+    "python_agents/domains/bank_agents.py",
+    "python_agents/domains/ecom_agents.py",
+    "python_agents/domains/meta_agents.py",
+    "python_agents/domains/trading_agents.py",
+    "python_agents/registry.py",
+    "python_agents/utils/indicators.py",
+    "engine/obsidia_runtime/__init__.py",
+    "engine/obsidia_runtime/engine_final.py",
+    "engine/obsidia_runtime/engine_runtime.py",
+    "engine/unified/orchestrator.py",
+    "engine/unified/pipeline.py",
+    "engine/api_server/main.py",
+    "engine/api_server/security.py",
+    "engine/api_server/signing.py",
+    "engine/cli/obsidia_cli.py",
+    "engine/os0/__init__.py",
+    "engine/os0/ir.py",
+    "engine/os0/sandbox.py",
+    "engine/os0/translate.py",
+    "engine/os1/__init__.py",
+    "engine/os1/os1.py",
+    "engine/os3/__init__.py",
+    "engine/os3/core_split.py",
+    "engine/obsidia_kernel/__init__.py",
+    "engine/obsidia_kernel/kernel.py",
+    "engine/obsidia_os2/__init__.py",
+    "engine/registry/__init__.py",
+    "engine/registry/loader.py",
+    "engine/core_full/entrypoint.py"
+  ],
+  "missing_sources": [],
+  "files_imported_count": 0,
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "runtime_wiring_modified": false,
+  "apps_routes_modified": false,
+  "proofs_v18_3_1_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "next_step": "P63_TERRAIN_PORTABLE_RECONCILIATION"
+}

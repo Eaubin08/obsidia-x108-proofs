@@ -1,0 +1,10 @@
+domain_id: telecom
+domain_name: "Telecom"
+udip_version: V0
+status: NEW_DOMAIN_SCAFFOLD
+source_type: none
+legacy_sources:
+  []
+extensions:
+  []
+implementation_state: SCAFFOLD_ONLY

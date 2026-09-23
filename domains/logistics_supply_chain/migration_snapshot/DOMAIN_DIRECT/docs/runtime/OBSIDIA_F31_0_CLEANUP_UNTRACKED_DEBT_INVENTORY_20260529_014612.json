@@ -1,0 +1,195 @@
+{
+  "report_id": "OBSIDIA_F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_20260529_014612",
+  "phase": "F31.0",
+  "mode": "INVENTORY_ONLY_NO_DELETE_NO_COMMIT",
+  "commit": false,
+  "tag": false,
+  "delete": false,
+  "head": "b421ae5",
+  "tag_context": "BRODY_F24_DEFERRED_BLOCK_RECONCILIATION_PALIER_20260529",
+  "status": "## main...origin/main\n?? docs/runtime/CLAUDE_FAST_AUDIT_F24_F29_F30_F31_20260529_012641.md\n?? docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212553.txt\n?? docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212627.txt\n?? docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212745.txt\n?? docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212805.txt\n?? docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075553.json\n?? docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075553.md\n?? docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075602.json\n?? docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075602.md\n?? docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212627.md\n?? docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212745.json\n?? docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212805.json\n?? docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212805.md\n?? docs/runtime/OBSIDIA_F23A6_BLOCK_CHECKPOINT_20260528_222015.md\n?? docs/runtime/OBSIDIA_F23_META_AUDIT_RESUME_CHAIN_20260528_205745.json\n?? docs/runtime/OBSIDIA_F23_META_AUDIT_RESUME_CHAIN_20260528_205745.md\n?? docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005956.json\n?? docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005956.md\n?? docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_001013.json\n?? docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_001013.md\n?? docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_002006.json\n?? docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_002006.md\n?? scripts/f23_meta_audit_resume_chain_20260528.py\n?? scripts/f23a4_2_to_f23a6_2_night_audit.py\n?? scripts/f31_0_cleanup_untracked_debt_inventory.py\n?? sigma/registry.py.bak_F23A4_3_20260528_212553\n?? sigma/registry.py.bak_F23A4_3_20260528_212627",
+  "recent_log": "b421ae5 audit: checkpoint F24 deferred block reconciliation palier\n4a4110a feat: checkpoint F29 memory graphiti manual guard palier\n1744efc feat: checkpoint F30 workflow governance v5 palier\n79f329c feat: checkpoint F26 monitor governed runtime palier\n09aad9e feat: checkpoint F28 governed operator runtime palier\neaeacd8 feat: checkpoint F27 tree signal cognitive bridge palier\n42140fc feat: checkpoint F23A6 sigma brody orchestration palier\n587018a audit: checkpoint F23A5 agent governance palier\n4c7f531 feat: freeze F23A4 sigma runtime bridge palier\n75a9a51 feat: add F23A4 reflex diagnostic packet",
+  "brody_tags": "BRODY_F20_GENCOIN_COGNITIVE_LEDGER_VISIBLE_20260528\nBRODY_F21_RUNTIME_FREEZE_DASHBOARD_F2_F20_20260528\nBRODY_F22B_RUNTIME_STATE_READONLY_INTENT_REPAIR_20260528\nBRODY_F22C_POST_FREEZE_FULL_STACK_SMOKE_20260528\nBRODY_F22D_BRODY_RESPONSE_QUALITY_AUDIT_20260528\nBRODY_F22E_JARVIS_NARRATIVE_REPAIR_20260528\nBRODY_F23A3_DOC_CLEANUP_20260528\nBRODY_F23A3_MEMORY_REFLEX_CONTRACTS_MATRIX_20260528\nBRODY_F23A4_0_REFLEX_DIAGNOSTIC_PACKET_AUDIT_20260528\nBRODY_F23A4_1_REFLEX_DIAGNOSTIC_PACKET_MINIMAL_20260528\nBRODY_F23A4_SIGMA_RUNTIME_BRIDGE_PALIER_20260528\nBRODY_F23A5_AGENT_GOVERNANCE_AUDIT_PALIER_20260528\nBRODY_F23A6_SIGMA_BRODY_ORCHESTRATION_PALIER_20260528\nBRODY_F23A_F27_REFLEX_AUTOMATION_PROTOCOL_AUDIT_20260528\nBRODY_F23BC_CONTEXT_AUTOMATION_VALIDATION_20260528\nBRODY_F24_DEFERRED_BLOCK_RECONCILIATION_PALIER_20260529\nBRODY_F25A_HARMONIC_VOTE_AUDIT_20260528\nBRODY_F25B_IMMUTABLE_VOTE_MINIMAL_20260528\nBRODY_F26_MONITOR_GOVERNED_RUNTIME_PALIER_20260528\nBRODY_F27_TREE_SIGNAL_COGNITIVE_BRIDGE_PALIER_20260528\nBRODY_F28_GOVERNED_OPERATOR_RUNTIME_PALIER_20260528\nBRODY_F29_MEMORY_GRAPHITI_MANUAL_GUARD_PALIER_20260529\nBRODY_F2A_F4_TRANSVERSE_VALUE_STACK_FREEZE_20260527",
+  "untracked_count": 27,
+  "bucket_counts": {
+    "A_KEEP_LATER_RUNTIME_EVIDENCE": 1,
+    "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT": 23,
+    "C_BACKUP_BAK_CAN_IGNORE": 2,
+    "D_NEEDS_HUMAN_REVIEW": 1
+  },
+  "records": [
+    {
+      "path": "docs/runtime/CLAUDE_FAST_AUDIT_F24_F29_F30_F31_20260529_012641.md",
+      "category": "A_KEEP_LATER_RUNTIME_EVIDENCE",
+      "action": "KEEP_OR_COMMIT_IF_USEFUL",
+      "reason": "External audit evidence from Claude Code."
+    },
+    {
+      "path": "docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212553.txt",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212627.txt",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212745.txt",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/F23A4_3_SIGMA_REGISTRY_REPAIR_TESTS_20260528_212805.txt",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075553.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075553.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075602.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_2_TO_F23A6_2_NIGHT_AUDIT_20260528_075602.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212627.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212745.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212805.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A4_3_SIGMA_REGISTRY_REPAIR_20260528_212805.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23A6_BLOCK_CHECKPOINT_20260528_222015.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23_META_AUDIT_RESUME_CHAIN_20260528_205745.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F23_META_AUDIT_RESUME_CHAIN_20260528_205745.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005956.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F29_2_NEO4J_MANUAL_GUARD_REAUDIT_20260529_005956.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_001013.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_001013.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_002006.json",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "docs/runtime/OBSIDIA_F30_3_WORKFLOW_GOVERNANCE_IMPORT_COMPILE_VALIDATE_20260529_002006.md",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Duplicate/superseded validation report not included in selected palier commit."
+    },
+    {
+      "path": "scripts/f23_meta_audit_resume_chain_20260528.py",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "scripts/f23a4_2_to_f23a6_2_night_audit.py",
+      "category": "B_ALREADY_COMMITTED_DUPLICATE_OR_OLD_REPORT",
+      "action": "ARCHIVE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Old F23/F23A runtime evidence; current paliers are already pushed."
+    },
+    {
+      "path": "scripts/f31_0_cleanup_untracked_debt_inventory.py",
+      "category": "D_NEEDS_HUMAN_REVIEW",
+      "action": "REVIEW",
+      "reason": "No rule matched."
+    },
+    {
+      "path": "sigma/registry.py.bak_F23A4_3_20260528_212553",
+      "category": "C_BACKUP_BAK_CAN_IGNORE",
+      "action": "IGNORE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Backup artifact; not needed in runtime commit."
+    },
+    {
+      "path": "sigma/registry.py.bak_F23A4_3_20260528_212627",
+      "category": "C_BACKUP_BAK_CAN_IGNORE",
+      "action": "IGNORE_OR_DELETE_AFTER_CONFIRMATION",
+      "reason": "Backup artifact; not needed in runtime commit."
+    }
+  ],
+  "locked_decisions": [
+    "F31.0 is inventory-only.",
+    "No deletion.",
+    "No git clean.",
+    "No commit.",
+    "No tag.",
+    "No runtime patch.",
+    "Human review required before deletion or archival."
+  ],
+  "next_recommended": "F31.1_CLEANUP_DECISION_APPLY_AFTER_HUMAN_REVIEW",
+  "status_label": "F31_0_CLEANUP_UNTRACKED_DEBT_INVENTORY_DONE"
+}

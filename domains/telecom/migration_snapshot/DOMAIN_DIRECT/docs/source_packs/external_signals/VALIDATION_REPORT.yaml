@@ -1,0 +1,16 @@
+pack: OBSIDIA_RSSI_EXTERNAL_SIGNALS_PATCH_V1
+status: PATCH_READY
+created_at: '2026-06-01T19:52:54'
+component_count_added: 24
+components_range: C459-C482
+authority: KX108_ONLY
+can_emit_ACT_all_false: true
+families_added:
+- external_timeverse
+- external_consequence_boundary
+required_blocks:
+- TIMEVERSE_INSPIRED_TEMPORAL_SIDECAR_V1
+- OBSIDIA_CONSEQUENCE_BOUNDARY_ENRICHMENT_V1
+merge_result_if_base_458:
+  component_count: 482
+  full_granular_file_count: 537

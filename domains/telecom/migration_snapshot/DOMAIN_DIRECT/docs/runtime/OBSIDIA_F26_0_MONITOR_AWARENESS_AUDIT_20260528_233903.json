@@ -1,0 +1,856 @@
+{
+  "report_id": "OBSIDIA_F26_0_MONITOR_AWARENESS_AUDIT_20260528_233903",
+  "phase": "F26.0",
+  "mode": "AUDIT_ONLY_NO_PATCH",
+  "commit": false,
+  "tag": false,
+  "freeze": false,
+  "head": "09aad9e",
+  "tag_context": "BRODY_F28_GOVERNED_OPERATOR_RUNTIME_PALIER_20260528",
+  "existing_count": 6,
+  "missing_count": 0,
+  "danger_count": 0,
+  "gaps_count": 4,
+  "records": [
+    {
+      "path": "apps/obsidia_api/routes/brody_monitoring.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "AdapterPayload",
+        "LTCUPayload",
+        "TransitionPayload",
+        "TraceAnalyzePayload",
+        "HistoricalConvergencePayload"
+      ],
+      "functions": [
+        "_scan_brody_registry",
+        "_action_to_dict",
+        "_packet_to_dict",
+        "_monitor_adapter_response"
+      ],
+      "token_hits": [
+        {
+          "line": 2,
+          "token": "readonly",
+          "text": "Brody CLI Registry — monitoring endpoint for brody_memory_readonly scripts."
+        },
+        {
+          "line": 6,
+          "token": "readonly",
+          "text": "- Monitoring adapters expose Sigma readonly envelope."
+        },
+        {
+          "line": 30,
+          "token": "readonly",
+          "text": "from periphery.brody_memory_readonly.session_memory_ledger_readonly.brody_session_memory_ledger_readonly_v2 import ("
+        },
+        {
+          "line": 37,
+          "token": "readonly",
+          "text": "from periphery.brody_memory_readonly.session_trace_ledger.brody_session_trace_ledger_readonly_v1_6_3 import ("
+        },
+        {
+          "line": 48,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 50,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 55,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 56,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 58,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 61,
+          "token": "readonly",
+          "text": "BRODY_ROOT = \"periphery/brody_memory_readonly\""
+        },
+        {
+          "line": 90,
+          "token": "readonly",
+          "text": "\"\"\"Walk brody_memory_readonly/ and extract CLI registry.\"\"\""
+        },
+        {
+          "line": 150,
+          "token": "domain_sigma_envelope",
+          "text": "- domain_sigma_envelope from evaluate_sigma_domain(domain, state.__dict__)"
+        },
+        {
+          "line": 157,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope = evaluate_sigma_domain(domain, state_payload)"
+        },
+        {
+          "line": 163,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": domain_sigma_envelope,"
+        },
+        {
+          "line": 171,
+          "token": "readonly",
+          "text": "\"\"\"Return full registry of brody_memory_readonly scripts.\"\"\""
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia_api/routes/periphery_ops.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "SigmaEvaluatePayload",
+        "ActionPayload",
+        "PartitionPayload",
+        "AgentRunPayload",
+        "AgentSpecPayload",
+        "LifecyclePayload",
+        "SequencePayload",
+        "WorkflowGuardPayload",
+        "FailureClassifyPayload",
+        "MemoryWorldPayload",
+        "TreeSignalPayload",
+        "ContextBuildPayload",
+        "ContextSanitizePayload",
+        "ContextValidatePayload",
+        "AVDRPayload",
+        "BalancePayload",
+        "RegimeStatePayload",
+        "PassFailPayload",
+        "CollectiveSummaryPayload",
+        "InterfaceStatePayload",
+        "InterfaceEventPayload",
+        "MCPPayload",
+        "BiasGatePayload",
+        "BiasTracePayload",
+        "SourceClassifyPayload",
+        "HashPayload",
+        "IngestDocumentPayload",
+        "OS3TicketPayload",
+        "ReplayComparePayload",
+        "WorldActionReadinessPayload",
+        "EducationScorePayload",
+        "AudienceProjectionPayload",
+        "FormatProjectionPayload",
+        "BrodyQueryPayload",
+        "BrodyLangPayload",
+        "DoubleBrainPayload",
+        "DiffusionMixPayload",
+        "GraphitiAdaptPayload",
+        "FeedbackCandidatePayload",
+        "BridgeCandidatePayload"
+      ],
+      "functions": [
+        "_make_action",
+        "_pkt"
+      ],
+      "token_hits": [
+        {
+          "line": 12,
+          "token": "operator_view_packet",
+          "text": "from apps.obsidia_api.brody_operator_view_packet import build_operator_view_packet"
+        },
+        {
+          "line": 13,
+          "token": "runtime_context",
+          "text": "from apps.obsidia_api.brody_runtime_context_adapter import build_runtime_context"
+        },
+        {
+          "line": 48,
+          "token": "tree_signal_packet",
+          "text": "from periphery.cognitive_trees.tree_signal_packet import build_tree_signal_packet"
+        },
+        {
+          "line": 55,
+          "token": "readonly",
+          "text": "from periphery.x108_ingress.readonly_context_ingress import ingest_readonly_context"
+        },
+        {
+          "line": 102,
+          "token": "readonly",
+          "text": "from periphery.graphiti.graphiti_readonly_bridge import GraphitiContextResult, query_graphiti_readonly"
+        },
+        {
+          "line": 106,
+          "token": "readonly",
+          "text": "from periphery.feedback_memory_bridge_brody_readonly import build_memory_candidate as build_bridge_memory_candidate"
+        },
+        {
+          "line": 118,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 119,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 121,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 187,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope: dict[str, Any] = Field(default_factory=dict)"
+        },
+        {
+          "line": 642,
+          "token": "tree_signal_packet",
+          "text": "packet = build_tree_signal_packet("
+        },
+        {
+          "line": 646,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope=body.domain_sigma_envelope,"
+        },
+        {
+          "line": 679,
+          "token": "readonly",
+          "text": "ingress = ingest_readonly_context(body.action_id, {\"signals\": body.signals, \"status\": body.status})"
+        },
+        {
+          "line": 946,
+          "token": "readonly",
+          "text": "graphiti_result: GraphitiContextResult = query_graphiti_readonly(body.query_id, body.query, body.max_nodes)"
+        },
+        {
+          "line": 985,
+          "token": "readonly",
+          "text": "F23A6.2 readonly Sigma evaluation endpoint."
+        },
+        {
+          "line": 990,
+          "token": "KX108_ONLY",
+          "text": "Decision authority remains KX108_ONLY."
+        },
+        {
+          "line": 995,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": envelope,"
+        },
+        {
+          "line": 997,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 999,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 1004,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 1005,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 1007,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 1020,
+          "token": "governed-runtime",
+          "text": "@router.post(\"/operator/governed-runtime\")"
+        },
+        {
+          "line": 1025,
+          "token": "readonly",
+          "text": "Aggregates existing readonly packets:"
+        },
+        {
+          "line": 1026,
+          "token": "domain_sigma_envelope",
+          "text": "- domain_sigma_envelope"
+        },
+        {
+          "line": 1027,
+          "token": "tree_signal_packet",
+          "text": "- tree_signal_packet"
+        },
+        {
+          "line": 1028,
+          "token": "operator_view_packet",
+          "text": "- operator_view_packet"
+        },
+        {
+          "line": 1029,
+          "token": "runtime_context",
+          "text": "- runtime_context"
+        },
+        {
+          "line": 1035,
+          "token": "KX108_ONLY",
+          "text": "Decision authority remains KX108_ONLY."
+        },
+        {
+          "line": 1037,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope = evaluate_sigma_domain(body.domain, body.sigma_payload)"
+        },
+        {
+          "line": 1039,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet = build_tree_signal_packet("
+        },
+        {
+          "line": 1043,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope=domain_sigma_envelope,"
+        },
+        {
+          "line": 1046,
+          "token": "operator_view_packet",
+          "text": "operator_view_packet = build_operator_view_packet("
+        },
+        {
+          "line": 1047,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope=domain_sigma_envelope,"
+        },
+        {
+          "line": 1048,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet=tree_signal_packet,"
+        },
+        {
+          "line": 1051,
+          "token": "runtime_context",
+          "text": "runtime_context = build_runtime_context("
+        },
+        {
+          "line": 1052,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope_snapshot=domain_sigma_envelope,"
+        },
+        {
+          "line": 1053,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet_snapshot=tree_signal_packet,"
+        },
+        {
+          "line": 1054,
+          "token": "operator_view_packet",
+          "text": "brody_full_context=operator_view_packet,"
+        },
+        {
+          "line": 1058,
+          "token": "GOVERNED_OPERATOR_RUNTIME_V1",
+          "text": "\"version\": \"GOVERNED_OPERATOR_RUNTIME_V1\","
+        },
+        {
+          "line": 1059,
+          "token": "READONLY_GOVERNED_OPERATOR_RUNTIME",
+          "text": "\"mode\": \"READONLY_GOVERNED_OPERATOR_RUNTIME\","
+        },
+        {
+          "line": 1061,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": domain_sigma_envelope,"
+        },
+        {
+          "line": 1062,
+          "token": "tree_signal_packet",
+          "text": "\"tree_signal_packet\": tree_signal_packet,"
+        },
+        {
+          "line": 1063,
+          "token": "operator_view_packet",
+          "text": "\"operator_view_packet\": operator_view_packet,"
+        },
+        {
+          "line": 1064,
+          "token": "runtime_context",
+          "text": "\"runtime_context\": runtime_context,"
+        },
+        {
+          "line": 1068,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 1073,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 1078,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 1079,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 1080,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_operator_view_packet.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "_get",
+        "_bool",
+        "_status_label",
+        "build_operator_view_packet"
+      ],
+      "token_hits": [
+        {
+          "line": 7,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 9,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 11,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 18,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 19,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 42,
+          "token": "operator_view_packet",
+          "text": "def build_operator_view_packet("
+        },
+        {
+          "line": 46,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 50,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 55,
+          "token": "domain_sigma_envelope",
+          "text": "dse = domain_sigma_envelope if isinstance(domain_sigma_envelope, dict) else {}"
+        },
+        {
+          "line": 59,
+          "token": "tree_signal_packet",
+          "text": "tsp = tree_signal_packet if isinstance(tree_signal_packet, dict) else {}"
+        },
+        {
+          "line": 64,
+          "token": "domain_sigma_envelope",
+          "text": "dse.get(\"domain_sigma_envelope\") is True"
+        },
+        {
+          "line": 71,
+          "token": "TREE_SIGNAL_PACKET_V1",
+          "text": "tree_ready = tsp.get(\"version\") == \"TREE_SIGNAL_PACKET_V1\""
+        },
+        {
+          "line": 114,
+          "token": "domain_sigma_envelope",
+          "text": "(\"domain_sigma_envelope\", domain_sigma_ready),"
+        },
+        {
+          "line": 118,
+          "token": "tree_signal_packet",
+          "text": "(\"tree_signal_packet\", tree_ready),"
+        },
+        {
+          "line": 170,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": dse,"
+        },
+        {
+          "line": 177,
+          "token": "emits_act",
+          "text": "\"domain_sigma_emits_act\": _get(dse, \"emits_act\"),"
+        },
+        {
+          "line": 197,
+          "token": "readonly",
+          "text": "\"Operator view is readonly.\","
+        },
+        {
+          "line": 205,
+          "token": "operator_view_packet",
+          "text": "return {\"operator_view_packet\": packet}"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "apps/obsidia_api/brody_runtime_context_adapter.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "_now",
+        "build_runtime_context"
+      ],
+      "token_hits": [
+        {
+          "line": 4,
+          "token": "runtime_context",
+          "text": "Assembles runtime_context top-level snapshot from all peripheral snapshots."
+        },
+        {
+          "line": 6,
+          "token": "runtime_context",
+          "text": "runtime_context is the single top-level envelope that the true_voice adapter"
+        },
+        {
+          "line": 10,
+          "token": "KX108_ONLY",
+          "text": "Boundary: readonly, KX108_ONLY."
+        },
+        {
+          "line": 10,
+          "token": "readonly",
+          "text": "Boundary: readonly, KX108_ONLY."
+        },
+        {
+          "line": 23,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 27,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 29,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 30,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 31,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 35,
+          "token": "runtime_context",
+          "text": "def build_runtime_context("
+        },
+        {
+          "line": 48,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope_snapshot: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 49,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet_snapshot: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 54,
+          "token": "runtime_context",
+          "text": "Assemble the top-level runtime_context from all existing snapshots."
+        },
+        {
+          "line": 68,
+          "token": "domain_sigma_envelope",
+          "text": "dse = domain_sigma_envelope_snapshot or {}"
+        },
+        {
+          "line": 69,
+          "token": "tree_signal_packet",
+          "text": "tsp = tree_signal_packet_snapshot or {}"
+        },
+        {
+          "line": 89,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope_snapshot\": dse,"
+        },
+        {
+          "line": 90,
+          "token": "tree_signal_packet",
+          "text": "\"tree_signal_packet_snapshot\": tsp,"
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "periphery/cognitive_trees/tree_signal_packet.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [
+        "TreeSignalPacket"
+      ],
+      "functions": [
+        "build_tree_signal_packet",
+        "to_dict"
+      ],
+      "token_hits": [
+        {
+          "line": 22,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope: dict[str, Any] = field(default_factory=dict)"
+        },
+        {
+          "line": 24,
+          "token": "TREE_SIGNAL_PACKET_V1",
+          "text": "version: str = \"TREE_SIGNAL_PACKET_V1\""
+        },
+        {
+          "line": 27,
+          "token": "tree_signal_packet",
+          "text": "tree_signal_packet: bool = True"
+        },
+        {
+          "line": 30,
+          "token": "readonly",
+          "text": "readonly: bool = True"
+        },
+        {
+          "line": 35,
+          "token": "emits_act",
+          "text": "emits_act: bool = False"
+        },
+        {
+          "line": 40,
+          "token": "kernel_mutation",
+          "text": "kernel_mutation: bool = False"
+        },
+        {
+          "line": 41,
+          "token": "x108_mutation",
+          "text": "x108_mutation: bool = False"
+        },
+        {
+          "line": 42,
+          "token": "KX108_ONLY",
+          "text": "decision_authority: str = \"KX108_ONLY\""
+        },
+        {
+          "line": 49,
+          "token": "tree_signal_packet",
+          "text": "\"tree_signal_packet\": self.tree_signal_packet,"
+        },
+        {
+          "line": 59,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": self.domain_sigma_envelope,"
+        },
+        {
+          "line": 61,
+          "token": "readonly",
+          "text": "\"readonly\": self.readonly,"
+        },
+        {
+          "line": 66,
+          "token": "emits_act",
+          "text": "\"emits_act\": self.emits_act,"
+        },
+        {
+          "line": 71,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": self.kernel_mutation,"
+        },
+        {
+          "line": 72,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": self.x108_mutation,"
+        },
+        {
+          "line": 77,
+          "token": "tree_signal_packet",
+          "text": "def build_tree_signal_packet("
+        },
+        {
+          "line": 82,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope: dict[str, Any] | None = None,"
+        },
+        {
+          "line": 88,
+          "token": "domain_sigma_envelope",
+          "text": "dse = domain_sigma_envelope if isinstance(domain_sigma_envelope, dict) else {}"
+        },
+        {
+          "line": 100,
+          "token": "domain_sigma_envelope",
+          "text": "domain_sigma_envelope=dse,"
+        },
+        {
+          "line": 102,
+          "token": "readonly",
+          "text": "readonly=True,"
+        },
+        {
+          "line": 107,
+          "token": "emits_act",
+          "text": "emits_act=False,"
+        },
+        {
+          "line": 112,
+          "token": "kernel_mutation",
+          "text": "kernel_mutation=False,"
+        },
+        {
+          "line": 113,
+          "token": "x108_mutation",
+          "text": "x108_mutation=False,"
+        },
+        {
+          "line": 114,
+          "token": "KX108_ONLY",
+          "text": "decision_authority=\"KX108_ONLY\","
+        }
+      ],
+      "danger_hits": []
+    },
+    {
+      "path": "sigma/evaluate.py",
+      "exists": true,
+      "parse_ok": true,
+      "parse_error": null,
+      "classes": [],
+      "functions": [
+        "_hydrate_state",
+        "_plain",
+        "_envelope_to_dict",
+        "evaluate_sigma_domain",
+        "evaluate"
+      ],
+      "token_hits": [
+        {
+          "line": 21,
+          "token": "KX108_ONLY",
+          "text": "\"decision_authority\": \"KX108_ONLY\","
+        },
+        {
+          "line": 22,
+          "token": "readonly",
+          "text": "\"readonly\": True,"
+        },
+        {
+          "line": 24,
+          "token": "emits_act",
+          "text": "\"emits_act\": False,"
+        },
+        {
+          "line": 29,
+          "token": "kernel_mutation",
+          "text": "\"kernel_mutation\": False,"
+        },
+        {
+          "line": 30,
+          "token": "x108_mutation",
+          "text": "\"x108_mutation\": False,"
+        },
+        {
+          "line": 105,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": True,"
+        },
+        {
+          "line": 137,
+          "token": "domain_sigma_envelope",
+          "text": "\"domain_sigma_envelope\": True,"
+        }
+      ],
+      "danger_hits": []
+    }
+  ],
+  "danger_records": [],
+  "gaps": [
+    {
+      "id": "F26_G02",
+      "title": "Monitor does not visibly observe tree_signal_packet.",
+      "target_phase": "F26.1",
+      "target_file": "apps/obsidia_api/routes/brody_monitoring.py",
+      "patch_now": false
+    },
+    {
+      "id": "F26_G03",
+      "title": "Monitor does not visibly observe operator_view_packet.",
+      "target_phase": "F26.1",
+      "target_file": "apps/obsidia_api/routes/brody_monitoring.py",
+      "patch_now": false
+    },
+    {
+      "id": "F26_G04",
+      "title": "Monitor does not visibly observe runtime_context.",
+      "target_phase": "F26.1",
+      "target_file": "apps/obsidia_api/routes/brody_monitoring.py",
+      "patch_now": false
+    },
+    {
+      "id": "F26_G05",
+      "title": "Monitor does not visibly observe governed operator runtime.",
+      "target_phase": "F26.1",
+      "target_file": "apps/obsidia_api/routes/brody_monitoring.py",
+      "patch_now": false
+    }
+  ],
+  "boundary_expected": {
+    "decision_authority": "KX108_ONLY",
+    "readonly": true,
+    "advisory_only": true,
+    "emits_act": false,
+    "emits_verdict": false,
+    "kernel_mutation": false,
+    "x108_mutation": false
+  },
+  "locked_decisions": [
+    "F26.0 is audit-only.",
+    "No runtime patch in F26.0.",
+    "Monitor may observe Sigma, TreeSignal, OperatorView, RuntimeContext.",
+    "Monitor must not decide.",
+    "Monitor must not emit ACT.",
+    "Decision authority remains KX108_ONLY."
+  ],
+  "next_recommended": "F26.1_MONITOR_GOVERNED_RUNTIME_PATCH_IF_GAPS",
+  "status": "F26_0_MONITOR_AWARENESS_AUDIT_DONE"
+}

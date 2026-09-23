@@ -1,0 +1,15 @@
+domain_id: ecom
+domain_name: "Ecom"
+udip_version: V0
+status: PARTIAL_REFERENCE
+source_type: repo_partial_reference
+legacy_sources:
+  - "sigma/domains/ecom_agents.py"
+  - "examples/ecom_normal.json"
+  - "tests Ecom if present"
+extensions:
+  - customer
+  - order_intent
+  - payment_provider
+  - compensation_ref
+implementation_state: SCAFFOLD_ONLY

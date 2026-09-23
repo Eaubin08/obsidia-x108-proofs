@@ -1,0 +1,298 @@
+{
+  "audit_id": "P64",
+  "status": "P64_FUSION_CONTINUITY_LEDGER_READY",
+  "mode": "LEDGER_ONLY",
+  "source_patch_applied": false,
+  "files_imported_count": 0,
+  "core_role": "RIGOR_METRICS_AND_RAW_MATERIAL",
+  "proof_role": "ADVANCED_GOVERNED_RUNTIME_AND_SIGMA",
+  "fusion_rule": "COMPARE_KEEP_SUPERIOR_ADAPT_ONLY_IF_SAFE",
+  "validated_decisions": [
+    {
+      "palier": "P56",
+      "decision": "OS2 gamma core=0.5 remplacé par proof=1.0 — PROOF_WINS_BY_OS3_AUTHORITY",
+      "detail": "P56B a aligné OS2 gamma de 0.5 vers 1.0 pour correspondre à l'autorité OS3/structural_core. Strengthening délibéré, jamais régresser.",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P56",
+      "decision": "OS3 gamma = 1.0 confirmé inchangé",
+      "detail": "proofs/V18_3_1/engine_buildable_0_9_3_1/obsidia_structural_core/metrics.py — formule S=alpha*tmean+beta*hstar-1.0*A — CONFIRMED_UNCHANGED",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P56",
+      "decision": "Sigma post-Guard veto-only — jamais promoteur",
+      "detail": "sigma/run_pipeline.py patché P56D — POST_GUARD_VETO_ONLY. Sigma ne peut qu'abaisser à HOLD_STABILITY_ALERT. Jamais promouvoir vers ACT/ALLOW. Invariants testés.",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P56",
+      "decision": "Chaîne domaines validée : State → Agents → Aggregation → MetaAgents → GuardX108 → CanonicalDecisionEnvelope",
+      "detail": "4 domaines vérifiés : bank, trading, ecom, gps_defense_aviation. KX108_ONLY. emits_act=False.",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P56",
+      "decision": "sigma_config.json identique core/proof (SHA EXACT_MATCH) — DO_NOT_IMPORT agents/sigma_config.json",
+      "detail": "tau_min=0.05, tau_max=5.0, accel_limit=0.6. Le repo proof utilise sigma/sigma_config.json, pas agents/sigma_config.json.",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P57",
+      "detail": "282 fichiers core inventoriés, zéro import. Familles: agents, engine, python_agents, os4-integration. Chaque fichier classifié par layer/family/role/import_candidate.",
+      "decision": "INVENTORY_ONLY",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P58",
+      "decision": "Lots de fusion définis : SAFE_BATCH_1(10), TEST_BATCH_2(32), BUS_ADAPTER_BATCH(4), MANUAL_REVIEW_DEFERRED(77), DO_NOT_TOUCH(30), PRIVATE_UI(6)",
+      "detail": "Flags vérifiés: runtime_allowed_now=False, memory_write=False, graphiti_write=False, act_governed=False.",
+      "status": "LOCKED"
+    },
+    {
+      "palier": "P59",
+      "decision": "10 fichiers SAFE_BATCH_1/AUDIT_TOOLING copiés dans scripts/",
+      "detail": "generate_hashes, verify_hashes, anchor_merkle_root, calibrate_sigma, check_traces_x108, run_conformance, x108_trace_check, x108_vectors_check, verify_chain_anchor, verify_threat_model.",
+      "status": "DONE"
+    },
+    {
+      "palier": "P60",
+      "decision": "32 TEST_BATCH_2 traités : 27 copiés, 4 déjà identiques, 1 bloqué SHA différent",
+      "detail": "1 bloqué : python_agents/tests/test_agents_functional.py → SHA mismatch avec tests/test_agents_functional.py. 4 identiques : evidence CSVs = data/ CSVs.",
+      "status": "DONE"
+    },
+    {
+      "palier": "P61",
+      "decision": "bus/message.py + bus/router.py adaptés DRY_RUN_ONLY. __init__.py + registry.py bloqués.",
+      "detail": "__init__.py: SHA différent, proof version supérieure. registry.py: import manquant modules.os_trad.adapter → débloqué par P65.",
+      "status": "PARTIAL — registry.py bloqué jusqu'à P65"
+    },
+    {
+      "palier": "P62",
+      "decision": "77 MANUAL_REVIEW_DEFERRED classifiés, zéro import",
+      "detail": "BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW:40, DO_NOT_IMPORT:20, KEEP_PROOF_VERSION:6, IMPORT_AFTER_ADAPTER:3, SAFE_READONLY_ADAPTER_CANDIDATE:3, IMPORT_DOC_ONLY:5",
+      "status": "DONE"
+    },
+    {
+      "palier": "P63",
+      "decision": "8 surfaces auditées : sigma complet, runtime_wiring complet, 21 routes présentes, GPS avancé, graphiti/memory isolés, wording 95% OK",
+      "detail": "sigma=58 fichiers P56B/P56E, runtime_wiring=49 fichiers, routes=21, GPS 6 agents+6 exemples+3 tests+2 connectors, graphiti_write=False/memory_write=False systématiques",
+      "status": "DONE"
+    }
+  ],
+  "surface_ledger": {
+    "metrics": {
+      "core_apporte": "OS2 gamma 0.5 (historique), formule réduite S=alpha*T+beta*H-0.5*A",
+      "proof_contient_deja": "OS2 gamma 1.0 (P56B strengthening), OS3 gamma 1.0, guard thresholds calibrés (min_confidence_allow=0.72)",
+      "decision": "KEEP_PROOF_VERSION",
+      "prochain_geste": "Ne rien importer — P56 locked. Surveillance uniquement.",
+      "risque": "HIGH si régressé, NONE si conservé"
+    },
+    "sigma": {
+      "core_apporte": "agents/* (doublons anciens, pre-P56B), python_agents/* (doublons os4-integration)",
+      "proof_contient_deja": "58 fichiers Python, 5 domaines, P56B/P56E patchés, GpsDefenseAviationState, aggregate_gps_defense_aviation, post-guard veto-only",
+      "decision": "KEEP_PROOF_VERSION — ne jamais écraser les 5 fichiers P56B protégés",
+      "prochain_geste": "P67 — extensions ciblées via connectors.py/packets.py uniquement",
+      "risque": "HIGH si écrasé, LOW si patch chirurgical"
+    },
+    "agents": {
+      "core_apporte": "agents/sigma_dashboard.py (pas d'équivalent proof), agents/utils/indicators.py (utilitaire)",
+      "proof_contient_deja": "agents/prompts/*.md, agents/registry.json, agents/registry.md, sigma/domains/* (5 domaines runtime)",
+      "decision": "IMPORT_SAFE pour sigma_dashboard + indicators — COMPARE_AND_KEEP_SUPERIOR pour tous les doublons",
+      "prochain_geste": "P66 — import sigma_dashboard + indicators après comparaison",
+      "risque": "LOW"
+    },
+    "engine_runtime": {
+      "core_apporte": "engine/obsidia_runtime/engine_final.py, engine_runtime.py, kernel.py, unified/orchestrator.py, unified/pipeline.py (runtime live complet)",
+      "proof_contient_deja": "proofs/V18_3_1/ (sealed engine proof), runtime_wiring/ (dry-run + readonly), apps/obsidia_api/ (governed API)",
+      "decision": "BLOCK_UNTIL_ARCH_REVIEW pour engine_final/engine_runtime/kernel/orchestrator/pipeline — ADAPT_READONLY_OR_DRYRUN pour os0/os1/os3/os_trad adapter (P62 candidates)",
+      "prochain_geste": "P65 — adapter os0/os1/os3 (SAFE_READONLY) + os_trad/adapter (IMPORT_AFTER_ADAPTER). P68 — risk review engine_final/kernel.",
+      "risque": "HIGH pour runtime actif, LOW pour os0/os1/os3 readonly"
+    },
+    "runtime_wiring": {
+      "core_apporte": "Aucun équivalent direct core (runtime_wiring est une surface proof-native)",
+      "proof_contient_deja": "49 fichiers : dry_run_packet_router, action_gateway_hold_block_sandbox (BLOCK>HOLD>ALLOW_CONTEXT_ONLY), global_runtime_surface_gate, readonly_engine_bridge, source_registry, source_runtime (10+ modules)",
+      "decision": "KEEP_PROOF_VERSION — ne pas modifier",
+      "prochain_geste": "Surveillance. Aucune action core ici.",
+      "risque": "NONE (complet et validé)"
+    },
+    "api_routes": {
+      "core_apporte": "engine/api_server/main.py (couvert), audit_log.py (IMPORT_AFTER_ADAPTER), worm_uploader.py (DO_NOT_IMPORT), security.py, signing.py (BLOCKED)",
+      "proof_contient_deja": "21 routes : 9 readonly, 4 dry-run, 3 contrôlées (brody POST/memory/context), 5 utilitaires. safe_backend_response() systématique.",
+      "decision": "KEEP_PROOF_VERSION — IMPORT_AFTER_ADAPTER pour audit_log.py uniquement (P68)",
+      "prochain_geste": "P68 — comparer engine/api_server/audit_log.py avec apps/ avant import éventuel",
+      "risque": "MEDIUM pour audit_log, HIGH pour worm_uploader (DO_NOT_IMPORT définitif)"
+    },
+    "bus": {
+      "core_apporte": "engine/bus/registry.py (besoin os_trad/adapter), engine/bus/__init__.py (vide — proof supérieur), engine/bus/message.py et router.py (anciens, non-DRY_RUN_ONLY)",
+      "proof_contient_deja": "apps/obsidia_api/bus/message.py (DRY_RUN_ONLY=True P61), apps/obsidia_api/bus/router.py (DRY_RUN_ONLY=True P61), apps/obsidia_api/bus/__init__.py (F54 proof version)",
+      "decision": "KEEP_PROOF_VERSION pour message/router/init — UNBLOCK registry.py via P65 (os_trad/adapter import)",
+      "prochain_geste": "P65 — adapter engine/core_full/modules/os_trad/adapter.py → débloque apps/obsidia_api/bus/registry.py",
+      "risque": "LOW après P65"
+    },
+    "gps_defense_aviation": {
+      "core_apporte": "engine/os0/determinism.py, engine/os1/parse_input.py, engine/os3/svg.py (SAFE_READONLY_ADAPTER_CANDIDATE), engine/core_full/modules/os_trad/adapter.py (IMPORT_AFTER_ADAPTER)",
+      "proof_contient_deja": "6 agents GPS (SourceAvailability, TrajectoryIntegrity, SourceConflict, TimeSkew, Brownout, AttestationReadiness), 6 exemples JSON, 3 tests intégration, connectors/aviation_robo.py, periphery/adapters/gps_adapter.py, sigma pipeline connecté",
+      "decision": "ADAPT_READONLY_OR_DRYRUN pour os0/os1/os3 — IMPORT_AFTER_ADAPTER pour os_trad/adapter",
+      "prochain_geste": "P65 (os_trad/adapter) → P69 (terrain portable GPS/allData/connectors)",
+      "risque": "LOW — GPS proof déjà très avancé"
+    },
+    "graphiti_brody_memory": {
+      "core_apporte": "Aucun fichier core à importer ici. engine/api_server/worm_uploader.py = DO_NOT_IMPORT.",
+      "proof_contient_deja": "sigma/graphiti_readonly_bridge.py (F70 readonly, no write), apps/obsidia_api/routes/graphiti.py (proxy readonly, fallback BACKEND_STUB), routes/memory.py (CANDIDATE_ONLY, auto_promotion=False), routes/brody.py (POST contrôlé API key)",
+      "decision": "KEEP_PROOF_VERSION — isolation confirmée. graphiti_write=False/memory_write=False/neo4j_write=False systématiques.",
+      "prochain_geste": "Surveillance continue. Ne jamais activer write flags. .graph-memory/ reste hors git.",
+      "risque": "NONE (isolation active et testée)"
+    },
+    "canon_wording": {
+      "core_apporte": "Aucun équivalent core pour le wording. Le wording vient du repo proof.",
+      "proof_contient_deja": "KX108_ONLY, boundary by construction, readonly, canonical, frozen, BLOCK>HOLD>ALLOW_CONTEXT_ONLY — tous justifiés techniquement. 3 termes à réviser (GLOSSAIRE.md 5ms, garantissant, KERNEL_OVERVIEW ex ante).",
+      "decision": "PATCH_TARGETED_ONLY — 3 termes ciblés dans P70",
+      "prochain_geste": "P70 — corriger GLOSSAIRE.md et KERNEL_OVERVIEW.md uniquement",
+      "risque": "LOW"
+    },
+    "presentation_support": {
+      "core_apporte": "Aucun — support présentation est produit du repo proof uniquement.",
+      "proof_contient_deja": "docs/demo/ (25 docs F39-F60), docs/civilization/ (2 docs narratifs), docs/status/PUBLIC_STATUS.md. Mélange opérateur + investisseur.",
+      "decision": "SEPARATE_PUBLIC_FROM_PROOF — docs narratifs candidats docs/public/ (P71)",
+      "prochain_geste": "P71 — séparer docs/demo/F41-series + docs/civilization/ vers docs/public/ sans suppression",
+      "risque": "LOW — aucun code impacté"
+    },
+    "tests_tooling": {
+      "core_apporte": "tests déjà importés P59-P60, adversarial tests, sigma_stress_test, test_sigma_v18_9, distributed tests, attestation",
+      "proof_contient_deja": "176 tests passants (P56E→P63), suite intégration GPS (3 tests), tests adversarial (6), sigma pipeline tests",
+      "decision": "KEEP_PROOF_VERSION — compléter avec P65-P69 tests targeted",
+      "prochain_geste": "Chaque palier P65-P72 ajoute son propre test file. Aucun import test core supplémentaire non planifié.",
+      "risque": "NONE"
+    },
+    "freeze_final": {
+      "core_apporte": "docs/core_import/* (audit records cumulatifs), proofs/V18_3_1 (SEALED — identique core et proof)",
+      "proof_contient_deja": "proofs/V18_3_1/ (Merkle seal + RFC3161), MANIFEST_SHA256_RECURSIVE.json, scripts/generate_recursive_manifest.py, scripts/verify_recursive_manifest.py",
+      "decision": "KEEP_PROOF_VERSION — proofs/V18_3_1/ est scellé, ne jamais modifier",
+      "prochain_geste": "P72 — verify_all + manifest + forbidden + pytest complet comme condition de freeze",
+      "risque": "HIGH si modifié, NONE si conservé"
+    }
+  },
+  "do_not_forget": [
+    "Ne pas écraser sigma avec core — proof wins sur 5 fichiers P56B protégés (aggregation, contracts, guard, protocols, run_pipeline)",
+    "Ne pas réintroduire l'ancien gamma OS2=0.5 — P56E locked PROOF_WINS_BY_OS3_AUTHORITY",
+    "Ne pas importer engine/obsidia_runtime/* brut — risque HIGH (runtime live, ACT non borné)",
+    "Ne pas brancher ACT hors X108 final gate — sigma post-Guard veto-only invariant verrouillé P56D",
+    "Ne pas mélanger UI privée/Gemini/PRIVATE_UI avec proof — 6 fichiers exclus P58",
+    "Ne pas activer graphiti_write / memory_write / neo4j_write — isolation vérifiée, maintenir false",
+    "Ne pas traiter docs/demo/F41 comme preuve technique — narratif investisseur, séparer en P71",
+    "Ne pas faire passe wording globale violente — 3 termes ciblés seulement (P70)",
+    "Ne pas perdre GPS terrain : connectors/aviation_robo.py + periphery/adapters/gps_adapter.py — intégration sigma déjà avancée",
+    "Ne pas oublier P61 registry.py bloqué — débloqué uniquement par engine/core_full/modules/os_trad/adapter.py (P65)",
+    "Ne pas stager .claude/settings.json — toujours exclure",
+    "Ne pas merger / rebase / squash les branches P59-P64 sans instruction explicite",
+    "Ne pas importer engine/api_server/worm_uploader.py — DO_NOT_IMPORT définitif (write WORM actif)",
+    "Ne pas importer agents/sigma_config.json — core = proof (EXACT_MATCH SHA), sigma/ utilise déjà sigma/sigma_config.json"
+  ],
+  "next_paliers": [
+    {
+      "palier": "P65",
+      "titre": "OS_ADAPTERS_TO_UNLOCK_BUS_REGISTRY",
+      "priorite": 1,
+      "objectif": "Adapter engine/os0/determinism.py, engine/os1/parse_input.py, engine/os3/svg.py (SAFE_READONLY) et engine/core_full/modules/os_trad/adapter.py (IMPORT_AFTER_ADAPTER) pour débloquer apps/obsidia_api/bus/registry.py.",
+      "entree": "P62 SAFE_READONLY_ADAPTER_CANDIDATE x3 + IMPORT_AFTER_ADAPTER x1",
+      "sortie": "4 fichiers adaptés DRY_RUN_ONLY ou READONLY — registry.py P61 débloqué",
+      "risque": "LOW-MEDIUM"
+    },
+    {
+      "palier": "P66",
+      "titre": "AGENTS_COMPLEMENTARY_RECONCILIATION",
+      "priorite": 2,
+      "objectif": "Importer agents/sigma_dashboard.py et agents/utils/indicators.py (aucun doublon proof, AUDIT_TOOLING surface).",
+      "entree": "P63 core_candidates agents",
+      "sortie": "2 fichiers importés, tests passants",
+      "risque": "LOW"
+    },
+    {
+      "palier": "P67",
+      "titre": "SIGMA_SAFE_EVOLUTION",
+      "priorite": 3,
+      "objectif": "Modifier sigma uniquement par patchs ciblés. Extension via sigma/connectors.py et sigma/packets.py. Jamais écraser les 5 fichiers P56B protégés.",
+      "entree": "P63 safe_modification_candidates sigma",
+      "sortie": "sigma étendu sans régression P56B",
+      "risque": "MEDIUM — toute modification sigma doit être diff minimal reviewé"
+    },
+    {
+      "palier": "P68",
+      "titre": "RUNTIME_CORE_RISK_REVIEW",
+      "priorite": 4,
+      "objectif": "Analyse détaillée de engine_final.py, engine_runtime.py, kernel.py, unified/orchestrator.py. Pas d'import brut — review architectural, décision BLOCK/ADAPT/PHASE.",
+      "entree": "P62 BLOCKED_REQUIRES_ARCHITECTURAL_REVIEW (engine/obsidia_runtime/*)",
+      "sortie": "Plan d'adaptation ou confirmation BLOCK définitif",
+      "risque": "HIGH si importé brut, MEDIUM si review uniquement"
+    },
+    {
+      "palier": "P69",
+      "titre": "GPS_TERRAIN_PORTABLE_RECONCILIATION",
+      "priorite": 5,
+      "objectif": "Relier GPS terrain (connectors/aviation_robo.py, periphery/adapters/gps_adapter.py) au proof sigma. Valider endpoint sigma_monitoring GPS. Ajouter tests terrain portables après P65.",
+      "entree": "P63 gps_defense_aviation terrain_existing + P65 adapters OS",
+      "sortie": "Tests terrain GPS validés, pipeline attesté bout-en-bout",
+      "risque": "LOW — GPS sigma déjà complet"
+    },
+    {
+      "palier": "P70",
+      "titre": "CANON_WORDING_TARGETED_CLEANUP",
+      "priorite": 6,
+      "objectif": "Corriger uniquement 3 termes : GLOSSAIRE.md '5 millisecondes', GLOSSAIRE.md 'garantissant la sécurité', KERNEL_OVERVIEW.md 'Décision ex ante garantie'.",
+      "entree": "P63 canon_wording replace_candidates",
+      "sortie": "3 termes corrigés, tests détection wording interdit",
+      "risque": "LOW"
+    },
+    {
+      "palier": "P71",
+      "titre": "PRESENTATION_PROOF_SEPARATION",
+      "priorite": 7,
+      "objectif": "Séparer docs narratifs/publics (docs/demo/F41-series, docs/civilization/) des preuves techniques. Créer docs/public/. Ne pas supprimer — déplacer uniquement.",
+      "entree": "P63 presentation_support should_separate",
+      "sortie": "docs/public/ créé, docs techniques conservés intacts",
+      "risque": "LOW"
+    },
+    {
+      "palier": "P72",
+      "titre": "FULL_REGRESSION_FREEZE",
+      "priorite": 8,
+      "objectif": "pytest complet P56E→P72, verify_all, check_forbidden_content, generate_recursive_manifest, verify_recursive_manifest. Freeze si tout vert.",
+      "entree": "Tous paliers P65-P71 terminés",
+      "sortie": "Suite complète verte, manifest régénéré, freeze committé",
+      "risque": "NONE — validation uniquement"
+    }
+  ],
+  "blocked_until_review": [
+    "engine/obsidia_runtime/engine_final.py — runtime live actif (HIGH)",
+    "engine/obsidia_runtime/engine_runtime.py — runtime live actif (HIGH)",
+    "engine/obsidia_kernel/kernel.py — kernel mutations (HIGH)",
+    "engine/unified/orchestrator.py — orchestration authority (MEDIUM)",
+    "engine/unified/pipeline.py — pipeline authority (MEDIUM)",
+    "engine/api_server/worm_uploader.py — write WORM (DO_NOT_IMPORT définitif)",
+    "engine/api_server/security.py — architecture review requis",
+    "engine/api_server/signing.py — architecture review requis",
+    "sigma/aggregation.py — KEEP_PROOF_VERSION (P56B gamma)",
+    "sigma/contracts.py — KEEP_PROOF_VERSION (P56B + GpsDefenseAviationState)",
+    "sigma/guard.py — KEEP_PROOF_VERSION (P56D veto boundary)",
+    "sigma/protocols.py — KEEP_PROOF_VERSION (P56B canonical decision)",
+    "sigma/run_pipeline.py — KEEP_PROOF_VERSION (P56B OS4 bridge)"
+  ],
+  "safe_next_actions": [
+    "P65 : adapter engine/os0/determinism.py, engine/os1/parse_input.py, engine/os3/svg.py en readonly wrappers",
+    "P65 : adapter engine/core_full/modules/os_trad/adapter.py DRY_RUN_ONLY pour débloquer registry.py",
+    "P66 : importer agents/sigma_dashboard.py et agents/utils/indicators.py (SAFE — aucun doublon)",
+    "P69 : valider connectors/aviation_robo.py contre sigma_monitoring GPS endpoint",
+    "P70 : corriger 3 termes dans GLOSSAIRE.md et KERNEL_OVERVIEW.md",
+    "Surveillance graphiti/memory : maintenir write=False systématique"
+  ],
+  "runtime_modified": false,
+  "sigma_modified": false,
+  "routes_modified": false,
+  "act_enabled": false,
+  "memory_write_enabled": false,
+  "graphiti_write_enabled": false,
+  "kernel_mutation_enabled": false,
+  "next_step": "P65_OR_P67_TARGETED_EXECUTION"
+}

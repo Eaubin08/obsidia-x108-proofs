@@ -1,0 +1,120 @@
+# domain_packets/gps_defense_aviation_decisional_form_v0.yaml
+# P3-09 — V3.2.2 COMPLETION
+# Formulaire décisionnel du domaine GPS/DÉFENSE/AVIATION.
+# STATUT : REVIEW_REQUIRED — à valider par l'opérateur avant activation.
+# NOTE : Seuil S par défaut à 0.7 (plus conservateur — domaine critique).
+
+domain: "gps_defense_aviation"
+version: "v0"
+integration_phase: "P3"
+kernel_endpoint: "http://127.0.0.1:3001/kernel/ragnarok"
+gate_file: "domains/gps/gps_x108_gate.py"
+
+metadata:
+  description: "Gouvernance des systèmes GPS, aviation civile et défense via Kernel X-108"
+  domain_type: "SAFETY_CRITICAL"
+  regulation: ["OACI", "EASA", "DGAC", "STANAG_NATO"]
+  created_by: "V3_2_2_COMPLETION"
+  conservatism_note: "Seuil S=0.7 — domaine à risque humain élevé, conservatisme maximal"
+
+entities:
+  - "Aircraft"
+  - "FlightPlan"
+  - "AirspaceZone"
+  - "GpsSignal"
+  - "RadarContact"
+  - "DefenseAsset"
+
+risk_classes:
+  - "NAVIGATION_INTEGRITY"
+  - "AIRSPACE_VIOLATION"
+  - "SAFETY_CRITICAL"
+  - "ELECTRONIC_WARFARE"
+  - "OPERATIONAL_DEVIATION"
+  - "REGULATORY_RESTRICTION"
+
+flow_types:
+  - "FLIGHT_PLAN"
+  - "ROUTE_UPDATE"
+  - "AIRSPACE_REQUEST"
+  - "POSITION_REPORT"
+  - "COLLISION_AVOIDANCE"
+  - "RADAR_SCAN"
+  - "DEFENSE_ALERT"
+  - "EMERGENCY"
+
+ir_mapping:
+  t_mean_source_field: "risk_score"
+  h_score_source_field: "confidence_index"
+  a_score_source_field: "audit_score"
+  default_threshold_s: 0.7  # Conservateur — domaine critique vie humaine
+
+gate:
+  class: "GpsX108Gate"
+  calls_kernel: true
+  decides_alone: false
+  fail_closed: true
+  default_verdict_on_error: "HOLD"
+  contract: "DOMAIN_BRIDGE_ONLY"
+  decision_authority: "KX108_ONLY"
+  connector_decides: false
+
+reality_authenticity_gate:
+  enabled: true
+  priority: "P0_BEFORE_KERNEL"
+  freshness_limit_ms: 1000
+  anti_replay_required: true
+  sensor_attestation_required: true
+  cic_required: true
+  multisource_required:
+    - "GNSS"
+    - "IMU"
+    - "RADIO_OR_RADAR"
+  fail_closed_on:
+    - "ORACLE_FRESHNESS_FAILED"
+    - "ANTI_REPLAY_FAILED"
+    - "CIC_ATTESTATION_FAILED"
+    - "MULTI_SOURCE_COHERENCE_FAILED"
+    - "PHYSICAL_ENVELOPE_FAILED"
+
+physical_signal_periphery:
+  gnss_inertial_fusion: true
+  source_conflict_hold_threshold: 0.35
+  trajectory_drift_hold_threshold: 0.45
+  max_velocity_kt: 520
+  max_g_load: 2.1
+  path_fidelity_guard: "P4-20"
+
+sigma_agent:
+  planned: true
+  file: "sigma/domains/gps_defense_aviation_domain_agent.py"
+  emits_verdict: false
+
+nuisances:
+  file: "domains/gps/nuisance_registry.py"
+  count: 10
+  labels:
+    - "GPS_SPOOFING"
+    - "AIRSPACE_INTRUSION"
+    - "COLLISION_RISK"
+    - "JAMMING_DETECTED"
+    - "FLIGHT_PLAN_DEVIATION"
+    - "RESTRICTED_ZONE_APPROACH"
+    - "MULTI_SOURCE_CONTRADICTION"
+    - "REPLAY_ATTACK"
+    - "CIC_ATTESTATION_FAILURE"
+    - "PATH_FIDELITY_BREACH"
+
+kernel_rule:
+  decision_authority: KX108_ONLY
+  kernel_mutation: false
+  fail_closed: true
+  mur_de_beton: true
+
+proof_stack:
+  signed_decision_receipt: "P4-07"
+  current_receipt_kind: "LOCAL_SHA256_DEMO_NOT_PRODUCTION_SIGNING"
+  formal_theorems_required:
+    - "L-02_TRAJECTORY_STATE"
+    - "L-06_PATH_FIDELITY"
+  production_status: "PROOF_INTEGRATION_REQUIRED"

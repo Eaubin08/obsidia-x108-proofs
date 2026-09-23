@@ -1,0 +1,6 @@
+status: REFERENCE_ONLY
+sources:
+  - "sigma/domains/ecom_agents.py"
+  - "examples/ecom_normal.json"
+  - "tests Ecom if present"
+note: "Source mapping only. No code copied or migrated."
