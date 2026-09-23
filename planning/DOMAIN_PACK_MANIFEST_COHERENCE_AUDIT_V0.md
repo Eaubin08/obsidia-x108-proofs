@@ -1,14 +1,14 @@
 # UDIP Domain Pack Manifest Coherence Audit V0
 
-Status: READ_ONLY AUDIT RESULT
-Baseline: 50d1c85ab8d87fcd170417489a6c2148c65db8e4
+Status: CURRENT READ_ONLY AUDIT RESULT
+Audited baseline: b7393ab0090b4f2a23fe266357c33e13237f8605
+Audit mutation: NONE
 Runtime impact: NONE
-Manifest changes: NONE
-Authority changes: NONE
+Authority impact: NONE
 
 ## 1. Purpose
 
-This audit compares, for each UDIP Domain Pack:
+This audit compares the current state of all 16 Domain Packs across:
 
 - `README.md`
 - `domain_pack.yaml`
@@ -16,382 +16,342 @@ This audit compares, for each UDIP Domain Pack:
 - `object_map.yaml`
 - `conformance.md`
 
-The goal is not to promote any domain. It is to detect documentation/manifests drift.
+It reflects the branch **after**:
+
+- migration snapshot compaction;
+- README normalization;
+- concept-source audit;
+- Telecom/Energy/Cybersecurity/Legal source synchronization;
+- object-model candidate audits;
+- source-taxonomy freeze.
 
 ## 2. Global verdict
 
 No dangerous contradiction was found.
 
-The branch currently has four coherence classes:
+Current coherence classes:
 
-1. **REFERENCE_ALIGNED** — README and manifests describe the same reference/scaffold state.
-2. **DOCS_AHEAD_OF_MANIFEST** — source audit found real conceptual material, but manifests still say `none` / empty.
-3. **DECLARED_PERIMETER_ALIGNED** — extensions are declared, but sources and object maps remain intentionally empty.
-4. **EMPTY_SCAFFOLD_ALIGNED** — README explicitly says the domain is not yet defined and manifests agree.
+### `REFERENCE_ALIGNED`
 
-The important debt is class 2.
+Historical/reference domain is consistently represented as a reference while the UDIP pack remains `SCAFFOLD_ONLY`.
+
+Domains:
+
+- Trading;
+- Bank;
+- GPS / Defense / Aviation;
+- Ecom.
+
+### `OBJECT_MODEL_CANDIDATES_HOLD`
+
+Source perimeter and domain conformance are documented, but object evidence is intentionally insufficient for promotion.
+
+Domains:
+
+- Cybersecurity;
+- Energy / Critical Infrastructure;
+- Telecom;
+- Legal / Compliance.
+
+### `DECLARED_PERIMETER_ALIGNED`
+
+Business perimeter exists in `extensions`, but no audited source/object set exists yet.
+
+Domains:
+
+- Industry / Maintenance;
+- BTP / Construction;
+- Logistics / Supply Chain.
+
+### `EMPTY_SCAFFOLD_ALIGNED`
+
+README, manifests and source files all agree that the domain is not yet grounded.
+
+Domains:
+
+- Insurance;
+- Facility Management;
+- Administration;
+- Health;
+- HR.
 
 ## 3. Matrix
 
-| Domain | Class | README vs domain_pack | sources.yaml | object_map.yaml | conformance | Action |
-|---|---|---|---|---|---|---|
-| Trading | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
-| Bank | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
-| GPS / Defense / Aviation | REFERENCE_ALIGNED | aligned | reference-only | empty by design | generic scaffold | keep |
-| Ecom | REFERENCE_ALIGNED | aligned partial reference | reference-only | empty by design | generic scaffold | keep |
-| Cybersecurity | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share detection/evidence/response/isolation perimeter | audited repo references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest separate Thermo/Compute and Physical Critical Infrastructure | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Telecom | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share network + physical-signal perimeter | audited mixed references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Legal / Compliance | OBJECT_MODEL_CANDIDATES_HOLD | README + manifest share compliance/readiness/data-governance/audit perimeter | audited repo references | empty by evidence | domain-specific profile documented | mature candidates before mapping |
-| Health | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
-| HR | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
-| Insurance | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
-| Industry / Maintenance | DECLARED_PERIMETER_ALIGNED | aligned | empty | empty | generic | keep |
-| BTP / Construction | DECLARED_PERIMETER_ALIGNED | aligned | empty | empty | generic | keep |
-| Logistics / Supply Chain | DECLARED_PERIMETER_ALIGNED | aligned | empty | empty | generic | keep |
-| Facility Management | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
-| Administration | EMPTY_SCAFFOLD_ALIGNED | cautious | empty | empty | generic | keep |
+| Domain | Coherence class | Sources | Object map | Conformance | Runtime |
+|---|---|---|---|---|---|
+| Trading | REFERENCE_ALIGNED | external/reference-only | empty reference map | generic scaffold | not promoted |
+| Bank | REFERENCE_ALIGNED | repo/reference-only | empty reference map | generic scaffold | not promoted |
+| GPS / Defense / Aviation | REFERENCE_ALIGNED | repo/reference-only | empty reference map | generic scaffold | not promoted |
+| Ecom | REFERENCE_ALIGNED | repo partial/reference-only | empty reference map | generic scaffold | not promoted |
+| Cybersecurity | OBJECT_MODEL_CANDIDATES_HOLD | audited repo set | empty by evidence | domain-specific profile | not promoted |
+| Energy / Critical Infrastructure | OBJECT_MODEL_CANDIDATES_HOLD | audited mixed set | empty by evidence | domain-specific profile | not promoted |
+| Telecom | OBJECT_MODEL_CANDIDATES_HOLD | audited mixed set | empty by evidence | domain-specific profile | not promoted |
+| Legal / Compliance | OBJECT_MODEL_CANDIDATES_HOLD | audited repo set | empty by evidence | domain-specific profile | not promoted |
+| Industry / Maintenance | DECLARED_PERIMETER_ALIGNED | none | empty | generic scaffold | not promoted |
+| BTP / Construction | DECLARED_PERIMETER_ALIGNED | none | empty | generic scaffold | not promoted |
+| Logistics / Supply Chain | DECLARED_PERIMETER_ALIGNED | none | empty | generic scaffold | not promoted |
+| Insurance | EMPTY_SCAFFOLD_ALIGNED | none | empty | generic scaffold | not promoted |
+| Facility Management | EMPTY_SCAFFOLD_ALIGNED | none | empty | generic scaffold | not promoted |
+| Administration | EMPTY_SCAFFOLD_ALIGNED | none | empty | generic scaffold | not promoted |
+| Health | EMPTY_SCAFFOLD_ALIGNED | none | empty | generic scaffold | not promoted |
+| HR | EMPTY_SCAFFOLD_ALIGNED | none | empty | generic scaffold | not promoted |
 
-## 4. Reference domains
+## 4. Source taxonomy
+
+Canonical source taxonomy is frozen in:
+
+`udip/SOURCE_TAXONOMY_V0.md`
+
+The branch now consistently separates:
+
+```text
+source_type
+source_classes
+source_maturity
+source_roles
+```
+
+Current domain-level `source_type` values are limited to:
+
+- `none`
+- `repo_reference`
+- `repo_partial_reference`
+- `external_reference`
+- `mixed_reference`
+
+No ad-hoc source type remains necessary.
+
+## 5. Reference domains
 
 ### Trading
 
 Aligned.
 
-`domain_pack.yaml` correctly declares:
+Primary external repository remains explicit.
 
-- `EXISTING_REFERENCE`
-- `external_reference`
-- Trading-specific extensions
-- `SCAFFOLD_ONLY`
-
-`sources.yaml` and `object_map.yaml` explicitly remain reference-only.
-
-README does not overclaim migration.
+No UDIP object map or native runtime integration is claimed.
 
 ### Bank
 
 Aligned.
 
-The README describes substantial historical material while preserving:
+Historical code/fixtures/specs are reference evidence only.
 
-```text
-historical maturity
-!=
-UDIP Domain Pack maturity
-```
-
-The manifest and source mapping agree.
+No UDIP runtime promotion is claimed.
 
 ### GPS / Defense / Aviation
 
 Aligned.
 
-The README develops reality authenticity, attestation, anti-replay and physical envelope because those extensions are already declared in `domain_pack.yaml`.
+The pack preserves:
 
-It still correctly states that the UDIP object map and conformance tests are not implemented.
+```text
+SourceProvenance != RealityAuthenticity
+```
+
+No physical-domain runtime promotion is claimed.
 
 ### Ecom
 
-Aligned.
+Aligned after source repair.
 
-The README remains explicit that Ecom is `PARTIAL_REFERENCE` and identifies missing business mechanisms.
-
-No manifest promotion is justified yet.
-
-## 5. Cybersecurity — source/perimeter synchronized
-
-Cybersecurity now has an audited repository reference set.
-
-Current manifest:
-
-```yaml
-source_type: repo_reference
-extensions:
-  - detection
-  - threat_evidence
-  - security_evidence_advisory
-  - response
-  - incident_response
-  - isolation_boundaries
-implementation_state: SCAFFOLD_ONLY
-```
-
-The source set distinguishes:
-
-- architecture/doctrine;
-- validated or to-validate specs;
-- contract skeleton;
-- audit source.
-
-Current state:
+The historical fuzzy source:
 
 ```text
-README = synchronized
-domain_pack = synchronized
-sources = synchronized
-conformance profile = documented
-object_map = intentionally empty
-runtime = not implemented
-tests = not implemented
+tests Ecom if present
 ```
 
-Cybersecurity object-model candidate audit is now documented in `domains/cybersecurity/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
+has been replaced by exact audited paths from `ECOM_MIGRATION_MANIFEST.md`.
 
-## 6. Energy / Critical Infrastructure — source/perimeter synchronized
+Ecom remains:
 
-Energy now remains one Domain Pack with two explicitly separated internal families:
+```text
+PARTIAL_REFERENCE
+SCAFFOLD_ONLY
+```
+
+Missing payment/refund/fulfillment/compensation mechanisms remain explicit.
+
+## 6. Rich source-synchronized domains
+
+### Cybersecurity
+
+Synchronized:
+
+- README;
+- `domain_pack.yaml`;
+- `sources.yaml`;
+- domain-specific `conformance.md`;
+- object candidate audit.
+
+Object candidates ready for promotion: **0**.
+
+### Energy / Critical Infrastructure
+
+Synchronized around two explicit families:
 
 1. Thermo / Compute Energy;
 2. Physical Critical Infrastructure.
 
-Current manifest includes:
+The current placeholder non-sovereignty test is correctly classified as `PLACEHOLDER_ONLY`.
 
-```yaml
-source_type: mixed_reference
-extensions:
-  - thermo_compute
-  - energy_efficiency
-  - thermo_debt
-  - sigma_truth_mismatch
-  - physical_infrastructure
-  - fail_closed
-  - real_world_execution_constraints
-implementation_state: SCAFFOLD_ONLY
-```
+Object candidates ready for promotion: **0**.
 
-The source set now distinguishes repository code/specs, internal concept sources, and the current non-sovereignty test placeholder.
+### Telecom
 
-Important correction:
-
-`tests/non_sovereignty/test_energy_cannot_authorize.py` currently contains only `assert True`.
-
-It is therefore classified as `REPO_TEST_PLACEHOLDER`, not proof of non-sovereignty.
-
-Current remaining gap:
-
-```text
-README = synchronized
-domain_pack = synchronized
-sources = synchronized
-conformance profile = documented
-object_map = intentionally empty
-meaningful authority tests = missing
-runtime UDIP integration = not claimed
-```
-
-Energy object-model candidate audit is now documented in `domains/energy_critical_infrastructure/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
-
-## 7. Telecom — source/perimeter synchronized
-
-Telecom has now completed the first manifest-synchronization step.
-
-Current manifest:
-
-```yaml
-source_type: mixed_reference
-extensions:
-  - network_connectivity
-  - network_egress
-  - gateway_constraints
-  - physical_signal_observation
-  - signal_provenance
-  - signal_coherence
-implementation_state: SCAFFOLD_ONLY
-```
-
-Two internal families are explicitly preserved:
+Synchronized around:
 
 1. Network / Connectivity;
 2. Physical Signal Observation.
 
-The source set distinguishes repository references from internal concept sources.
+Internal concept sources remain distinct from canonical implementation.
 
-This synchronization does **not** promote runtime maturity.
+Object candidates ready for promotion: **0**.
 
-Current remaining gap:
+### Legal / Compliance
 
-```text
-README = synchronized
-domain_pack = synchronized
-sources = synchronized
-conformance profile = documented
-object_map = intentionally empty
-runtime = not implemented
-tests = not implemented
-```
+Synchronized around:
 
-Telecom object-model candidate audit is now documented in `domains/telecom/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
+- readiness/scope;
+- privacy/data governance;
+- review requirements;
+- regulatory mapping;
+- legal-audit export targets.
 
-Network egress and physical-signal sensing remain distinct internal families under one Domain Pack; they are not treated as identical semantics.
+Historical legal/compliance claims remain maturity-bounded.
 
-## 8. Legal / Compliance — source/perimeter synchronized
+Object candidates ready for promotion: **0**.
 
-Legal / Compliance now has an audited repository reference set.
+## 7. Declared-perimeter scaffolds
 
-Current manifest includes:
-
-```yaml
-source_type: repo_reference
-extensions:
-  - compliance_scope
-  - privacy_readiness
-  - claim_scope
-  - data_governance_advisory
-  - processing_risk
-  - retention_access_privacy_risk
-  - human_legal_review_gate
-  - regulatory_mapping
-  - legal_audit_export
-implementation_state: SCAFFOLD_ONLY
-```
-
-The source set preserves source maturity:
-
-- contract skeleton;
-- runtime-inactive specs;
-- spec to formalize/prove;
-- spec to validate.
-
-Strong historical claims are not promoted to facts.
-
-Current state:
+Industry / Maintenance, BTP / Construction and Logistics / Supply Chain are internally consistent:
 
 ```text
-README = synchronized
-domain_pack = synchronized
-sources = synchronized
-conformance profile = documented
-object_map = intentionally empty
-runtime = not implemented
-tests = not implemented
-legal validation = not claimed
+declared extensions
++ source_type none
++ empty source set
++ empty object map
++ generic conformance
++ SCAFFOLD_ONLY
 ```
 
-Legal / Compliance object-model candidate audit is now documented in `domains/legal_compliance/OBJECT_MODEL_CANDIDATES_V0.md`. No candidate is currently ready for promotion; `object_map.yaml` remains empty by evidence.
+No synchronization action is justified until real domain evidence is added.
 
-## 9. Health and HR
+## 8. Empty scaffolds
 
-Both are coherent precisely because they remain conservative.
+Insurance, Facility Management, Administration, Health and HR are intentionally conservative.
 
-Their README files identify useful transverse mechanisms but explicitly say those mechanisms are not yet Health/HR business semantics.
+No domain source set is currently justified.
 
-Manifests remain empty.
+Transverse mechanisms must not be relabeled as domain semantics.
 
-Verdict: keep unchanged.
+## 9. Conformance state
 
-## 10. Insurance
+The earlier audit statement that “all packs use the same generic conformance” is no longer true.
 
-Also coherent.
-
-Generic concepts such as risk, fraud, evidence and compensation exist elsewhere, but the README refuses to relabel them as Insurance without real insurance semantics.
-
-Manifest remains empty.
-
-Verdict: keep unchanged.
-
-## 11. Industry / Maintenance, BTP, Logistics
-
-These three packs declare a business perimeter in `extensions`, but do not claim sources or object mappings.
-
-README files correctly describe the declared perimeter as a target rather than an implementation.
-
-Verdict: aligned.
-
-## 12. Facility Management and Administration
-
-True empty scaffolds.
-
-README and manifests agree that the business scope is not yet grounded.
-
-Verdict: aligned.
-
-## 13. Conformance debt
-
-All audited packs currently use the same generic `conformance.md`.
-
-This is acceptable for `SCAFFOLD_ONLY`, but it is not enough for later promotion.
-
-The first domain-specific conformance profiles should probably be written for:
+### Domain-specific conformance profiles exist for:
 
 - Cybersecurity;
 - Energy / Critical Infrastructure;
 - Telecom;
-- Legal / Compliance;
+- Legal / Compliance.
 
-after their source/perimeter manifests are synchronized.
+### Generic scaffold conformance remains for:
 
-Examples of future domain-specific checks:
+- Trading;
+- Bank;
+- GPS / Defense / Aviation;
+- Ecom;
+- Industry / Maintenance;
+- BTP / Construction;
+- Logistics / Supply Chain;
+- Insurance;
+- Facility Management;
+- Administration;
+- Health;
+- HR.
 
-### Cybersecurity
+This is acceptable at the current `SCAFFOLD_ONLY` stage, but the four historical/reference domains are the next obvious conformance-debt candidates if work continues.
+
+## 10. Object-map state
+
+No Domain Pack currently has a promoted UDIP-native object map.
+
+This is deliberate.
+
+For Telecom, Energy, Cybersecurity and Legal / Compliance:
+
+- object candidates were audited;
+- none passed the promotion gate;
+- `object_map.yaml` remains empty **by evidence**, not by oversight.
+
+For the remaining domains, object models are either reference-only or not yet grounded.
+
+## 11. Remaining real debt
+
+### A. Reference-domain conformance
+
+Trading, Bank, GPS and Ecom still use generic scaffold `conformance.md`.
+
+They have enough historical context to justify future domain-specific profiles.
+
+This is documentation/test debt, not a runtime defect.
+
+### B. Object maturity
+
+Telecom, Energy, Cybersecurity and Legal / Compliance need stronger schemas/evidence before any object promotion.
+
+### C. Meaningful tests
+
+The branch still lacks meaningful UDIP-domain tests proving:
+
+- non-sovereignty;
+- Binder separation;
+- claim-scope preservation;
+- no kernel mutation;
+- replay != execution;
+- domain signal != decision.
+
+### D. Source-poor domains
+
+The remaining source-poor domains require actual business/field evidence before expansion.
+
+## 12. Recommended next sequence
 
 ```text
-DETECTION != AUTHORITY
-THREAT_MODEL != PROTECTION_PROOF
-INCIDENT_RESPONSE != EXECUTION_PERMISSION
+1. freeze current documentation baseline
+2. domain-specific conformance profiles for Trading / Bank / GPS / Ecom
+3. object-schema maturation only where evidence improves
+4. meaningful non-sovereignty / non-overclaim tests
+5. only then consider object_map promotion
+6. runtime implementation remains a separate later phase
 ```
 
-### Energy
+## 13. Final verdict
+
+The branch is now structurally coherent.
+
+Current state:
 
 ```text
-ENERGY_METRIC != DECISION
-THERMO_DEBT != BLOCK_AUTHORITY
-PHYSICAL_RISK != EXECUTION_RIGHT
+source provenance normalized
+→ source maturity normalized
+→ domain visions documented
+→ rich source perimeters synchronized
+→ object candidates audited
+→ object maps intentionally empty
+→ all packs still SCAFFOLD_ONLY
+→ no runtime authority promoted
 ```
 
-### Telecom
+The remaining debt is no longer “where is the source?” for the rich domains.
+
+It is now:
 
 ```text
-SIGNAL != TRUTH
-NETWORK_ACCESS != AUTHORITY
-GATEWAY != DECIDER
-EGRESS_CAPABILITY != PERMISSION
+prove domain-specific conformance
++ mature object schemas
++ implement meaningful tests
 ```
 
-### Legal / Compliance
-
-```text
-READINESS != CERTIFICATION
-LEGAL_TEMPLATE != LEGAL_ADVICE
-COMPLIANCE_SIGNAL != LEGAL_VERDICT
-```
-
-These are candidate conformance constraints, not current verified tests.
-
-## 14. Recommended synchronization order
-
-Do not update all manifests at once.
-
-Recommended order:
-
-```text
-1. remaining domain_pack extension updates only where new evidence justifies them
-2. mature Telecom/Energy/Cybersecurity/Legal object candidates before mapping
-3. object maps only after object-level evidence freeze
-4. remaining domain-specific conformance profiles
-5. meaningful non-sovereignty / non-overclaim tests
-```
-
-## 15. Final verdict
-
-The documentation pass did not create architecture drift in the dangerous sense.
-
-It exposed architecture that already existed elsewhere and labeled it honestly.
-
-The current debt is now visible:
-
-```text
-rich source evidence
-→ README documented
-→ manifests not yet synchronized
-→ object maps intentionally not built
-→ no runtime promotion
-```
-
-That is a healthy intermediate state.
-
-The source taxonomy is now frozen in `udip/SOURCE_TAXONOMY_V0.md`.
-
-All Domain Pack `sources.yaml` files now expose a canonical `source_type`; non-empty source sets additionally classify artifact nature, maturity and role where evidence exists.
-
-The next task remains **synchronization by evidence**, not implementation.
+That is the correct next boundary.

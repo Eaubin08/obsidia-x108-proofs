@@ -27,18 +27,30 @@ Il est volontairement classé **référence partielle** : certaines sources et t
 
 ## 3. Sources historiques
 
-Sources déclarées :
+Le manifeste brut de migration a identifié **9 éléments** réellement associés à Ecom, désormais repris exactement dans `domain_pack.yaml` et `sources.yaml` :
 
-- `sigma/domains/ecom_agents.py` ;
-- `examples/ecom_normal.json` ;
-- `tests Ecom if present`.
+### Architecture / specs
 
-Le manifeste brut de migration a identifié **9 éléments** réellement associés à Ecom :
+- `docs/architecture/OBSIDIA_F60_SIGMA_REGISTRY_CANONICAL_DOMAINS.md`
+- `specs/09_CRITICAL_WORLDS/AGENTIC_COMMERCE_GUARD_LITE_RABATTEMENT_SPEC.md`
+- `specs/09_CRITICAL_WORLDS/BANK_TRADING_ECOM_INTENT_ONLY_SPEC.md`
 
-- 1 fichier de code ;
-- 3 tests ;
-- 3 documents ;
-- 2 fixtures.
+### Code
+
+- `sigma/domains/ecom_agents.py`
+
+### Fixtures
+
+- `examples/ecom_normal.json`
+- `sigma/examples/ecom_normal.json`
+
+### Tests / report
+
+- `tests/integration/test_sigma_bridge_ecom.py`
+- `tests/run_combinatorial_ecom.py`
+- `tests/run_combinatorial_ecom_report.json`
+
+Le vague historique `"tests Ecom if present"` a été supprimé : la provenance est maintenant basée uniquement sur des chemins exacts audités.
 
 Aucun adapter, pipeline ou proof pack propre à Ecom n'était identifié dans ce snapshot brut.
 
