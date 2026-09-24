@@ -113,9 +113,99 @@ def build_ir(raw: str) -> dict:
     """
     normalized = normalize(raw)
     words = _words(normalized)
-    target_layer = _target_layer(words)
 
-    is_action = bool(words & _ACTION_WORDS)
+    # --------------------------------------------------------
+    # Compositional action semantics.
+    #
+    # A world-action verb occurring inside an explicit
+    # negation is a constraint, not a requested operation.
+    #
+    # This is deliberately bounded to execution semantics:
+    # it does not weaken push/commit/delete/deploy/etc.
+    # --------------------------------------------------------
+
+    prepare_requested = bool(
+        words
+        & {
+            "prepare",
+            "preparer",
+        }
+    )
+
+    # Explicit execution-negation patterns.
+    #
+    # We remove only the negated span from the semantic action
+    # signal. Any later positive world action remains visible.
+    negated_execution_patterns = (
+        # FR:
+        # "sans lancer"
+        # "sans rien lancer"
+        # "sans l'executer"
+        r"\bsans\b.{0,40}?"
+        r"\b(?:execute|executer|lance|lancer|run)\b",
+
+        # FR:
+        # "ne l'execute pas"
+        # "ne surtout pas lancer"
+        r"\bne\b.{0,40}?"
+        r"\b(?:execute|executer|lance|lancer|run)\b"
+        r".{0,24}?\bpas\b",
+
+        # EN:
+        # "do not execute"
+        # "do not run"
+        r"\bdo\s+not\s+"
+        r"(?:execute|run|launch)\b",
+
+        # EN contraction.
+        r"\bdon[' ]?t\s+"
+        r"(?:execute|run|launch)\b",
+
+        # EN:
+        # "without executing"
+        r"\bwithout\s+"
+        r"(?:executing|running|launching)\b",
+    )
+
+    semantic_normalized = normalized
+    no_execute = False
+
+    for pattern in negated_execution_patterns:
+        if re.search(
+            pattern,
+            semantic_normalized,
+        ):
+            no_execute = True
+
+            semantic_normalized = re.sub(
+                pattern,
+                " ",
+                semantic_normalized,
+            )
+
+    semantic_words = _words(
+        semantic_normalized
+    )
+
+    target_layer = _target_layer(
+        semantic_words
+    )
+
+    effective_action_words = (
+        semantic_words
+        & _ACTION_WORDS
+    )
+
+    is_action = bool(
+        effective_action_words
+    )
+
+    is_prepare_no_execute = bool(
+        prepare_requested
+        and no_execute
+        and not is_action
+    )
+
     is_status = bool(words & _STATUS_WORDS)
     is_code = bool(words & _CODE_WORDS)
     is_plan = bool(words & _PLAN_WORDS)
@@ -175,7 +265,14 @@ def build_ir(raw: str) -> dict:
         and words & _CONVERSATION_MARKERS
     )
 
-    if is_action:
+    if is_prepare_no_execute:
+        intent_type, action_type, risk_level = (
+            "plan",
+            "prepare",
+            "low",
+        )
+
+    elif is_action:
         intent_type, action_type, risk_level = "world_action", "act_request", "high"
         target_layer = "world"
     elif is_current_world_evidence:
@@ -222,6 +319,11 @@ def build_ir(raw: str) -> dict:
         "no_auto_push",
         "bounded_output",
     ]
+
+    if no_execute:
+        constraints.append(
+            "no_execute"
+        )
 
     missing: list[str] = []
     if intent_type == "code_request" and not (words & {"fichier", "file", "test", "scope"}):
