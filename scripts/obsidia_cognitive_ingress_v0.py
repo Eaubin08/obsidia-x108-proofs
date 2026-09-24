@@ -595,6 +595,134 @@ def _evaluate_brody_sufficiency(
         in _BRODY_STRONG_L3_SOURCES
     )
 
+    # --------------------------------------------------------
+    # Existing semantic-closure evidence.
+    #
+    # Do NOT recompute meaning here.
+    # The real Brody response pipeline already produced
+    # pre_reasoning_snapshot before response generation.
+    # --------------------------------------------------------
+
+    pre_reasoning_snapshot = (
+        brody_runtime.get(
+            "pre_reasoning_snapshot",
+            {},
+        )
+        if isinstance(
+            brody_runtime,
+            dict,
+        )
+        else {}
+    )
+
+    if not isinstance(
+        pre_reasoning_snapshot,
+        dict,
+    ):
+        pre_reasoning_snapshot = {}
+
+    reasoning_directive = (
+        pre_reasoning_snapshot.get(
+            "reasoning_directive",
+            {},
+        )
+    )
+
+    if not isinstance(
+        reasoning_directive,
+        dict,
+    ):
+        reasoning_directive = {}
+
+    unknown_qualification = (
+        pre_reasoning_snapshot.get(
+            "unknown_qualification",
+            {},
+        )
+    )
+
+    if not isinstance(
+        unknown_qualification,
+        dict,
+    ):
+        unknown_qualification = {}
+
+    qualified_unresolved_unknowns = [
+        str(value).strip()
+        for value in unknown_qualification.get(
+            "unresolved_unknowns",
+            [],
+        )
+        if str(value).strip()
+    ]
+
+    semantic_resolution_targets = []
+
+    for value in [
+        *reasoning_directive.get(
+            "resolution_targets",
+            [],
+        ),
+        *qualified_unresolved_unknowns,
+    ]:
+        token = str(value or "").strip()
+
+        if (
+            token
+            and token
+            not in semantic_resolution_targets
+        ):
+            semantic_resolution_targets.append(
+                token
+            )
+
+    semantic_resolution_required = bool(
+        reasoning_directive.get(
+            "resolution_required",
+            False,
+        )
+        or qualified_unresolved_unknowns
+    )
+
+    route_ir = (
+        route_decision.get("ir")
+        if isinstance(
+            route_decision.get("ir"),
+            dict,
+        )
+        else {}
+    )
+
+    structural_missing = [
+        str(value).strip()
+        for value in route_ir.get(
+            "missing",
+            [],
+        )
+        if str(value).strip()
+    ]
+
+    # Not every structural hint is closure-critical.
+    #
+    # Example:
+    # target_scope may legitimately remain open for a pure
+    # code-generation request that is still model-eligible.
+    #
+    # These fields mean the request itself is not yet
+    # structurally understood enough to declare closure.
+    closure_critical_missing_names = {
+        "intent",
+        "target_layer",
+        "intention_cible",
+    }
+
+    closure_critical_missing = [
+        value
+        for value in structural_missing
+        if value.lower()
+        in closure_critical_missing_names
+    ]
+
     base = {
         "status": "UNRESOLVED",
         "sufficient": False,
@@ -633,7 +761,29 @@ def _evaluate_brody_sufficiency(
         "contradictions": contradictions,
         "risk_flags": risk_flags,
 
-        # Telemetry only. Never used alone to escalate.
+        "structural_missing": (
+            structural_missing
+        ),
+
+        "closure_critical_missing": (
+            closure_critical_missing
+        ),
+
+        "semantic_resolution_required": (
+            semantic_resolution_required
+        ),
+
+        "semantic_resolution_targets": (
+            semantic_resolution_targets
+        ),
+
+        "qualified_unresolved_unknowns": (
+            qualified_unresolved_unknowns
+        ),
+
+        # Raw ContextPacket unknowns remain telemetry only.
+        # Only Brody-qualified unresolved unknowns above
+        # become causal semantic-closure evidence.
         "lexical_unknowns": unknowns,
         "lexical_unknowns_gate_role": (
             "TELEMETRY_ONLY"
@@ -691,15 +841,76 @@ def _evaluate_brody_sufficiency(
         return base
 
     # --------------------------------------------------------
-    # 3. Router says no model is necessary.
+    # 2B. Semantic closure.
+    #
+    # OUTPUT_EXISTS != SEMANTIC_CLOSURE.
+    #
+    # Semantic/structural debt has two different causal roles:
+    #
+    # - local route:
+    #     unresolved debt prevents local closure;
+    #
+    # - explicitly model-eligible route:
+    #     unresolved debt prevents Brody from claiming local
+    #     sufficiency, but it does NOT cancel the model route
+    #     already selected by the canonical router.
+    #
+    # The model remains evidence-only and non-sovereign.
     # --------------------------------------------------------
 
-    if not bool(
+    model_route_required = bool(
         llm_activation.get(
             "required",
             False,
         )
+    )
+
+    base[
+        "model_route_required"
+    ] = model_route_required
+
+    if (
+        not model_route_required
+        and closure_critical_missing
     ):
+        base.update(
+            status=(
+                "STRUCTURAL_SEMANTIC_INCOMPLETE"
+            ),
+            sufficient=False,
+            model_required=False,
+            next_stage="HUMAN_REVIEW",
+            reason=(
+                "ROUTE_IR_CLOSURE_CRITICAL_MISSING"
+            ),
+        )
+
+        return base
+
+    if (
+        not model_route_required
+        and semantic_resolution_required
+    ):
+        base.update(
+            status=(
+                "SEMANTIC_RESOLUTION_REQUIRED"
+            ),
+            sufficient=False,
+            model_required=False,
+            next_stage="HUMAN_REVIEW",
+            reason=(
+                "BRODY_PRE_REASONING_"
+                "RESOLUTION_REQUIRED"
+            ),
+        )
+
+        return base
+
+    # --------------------------------------------------------
+    # 3. Router says no model is necessary.
+    # --------------------------------------------------------
+
+    if not model_route_required:
         if (
             route == "brody"
             and candidate_available
@@ -746,6 +957,8 @@ def _evaluate_brody_sufficiency(
         and output_contract_ok
         and w3_ready
         and strong_l3_source
+        and not closure_critical_missing
+        and not semantic_resolution_required
     ):
         base.update(
             status="BRODY_SUFFICIENT",
@@ -765,6 +978,16 @@ def _evaluate_brody_sufficiency(
     # --------------------------------------------------------
 
     reasons = []
+
+    if closure_critical_missing:
+        reasons.append(
+            "MODEL_ROUTE_STRUCTURAL_DEBT"
+        )
+
+    if semantic_resolution_required:
+        reasons.append(
+            "MODEL_ROUTE_SEMANTIC_DEBT"
+        )
 
     if not candidate_available:
         reasons.append(

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Qualification of lexical unknowns before cognitive pre-reasoning.
 
 Purpose:
@@ -67,6 +67,50 @@ _FR_SURFACE_WORDS = {
     "vous",
     "votre",
     "vos",
+}
+
+
+# Ordinary conversational/surface-language units.
+#
+# Recovered from the previously-proven unknown-qualification
+# branch. These words are not semantic knowledge entries and
+# grant no authority. Their only role is to prevent ordinary
+# language from becoming causal epistemic debt.
+_COMMON_SURFACE_WORDS = {
+    "bonjour",
+    "bonsoir",
+    "salut",
+    "coucou",
+    "hello",
+    "hey",
+    "hi",
+    "yo",
+    "merci",
+    "thank",
+    "thanks",
+    "gars",
+    "mec",
+    "source",
+    "test",
+    "context",
+    "contexte",
+    "maman",
+    "papa",
+    "mamie",
+    "papi",
+    "nickel",
+    "parfait",
+    "vient",
+    "stabiliser",
+    "reprend",
+    "reprends",
+    "peux",
+    "repondre",
+    "reponds",
+    "simplement",
+    "naturellement",
+    "revoir",
+    "bientot",
 }
 
 
@@ -297,6 +341,7 @@ def qualify_unknowns(
     surface_words = (
         _FR_SURFACE_WORDS
         | _EN_SURFACE_WORDS
+        | _COMMON_SURFACE_WORDS
         | {
             "dans",
             "ceci",

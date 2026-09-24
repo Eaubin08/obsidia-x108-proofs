@@ -186,7 +186,66 @@ def build_route_decision(raw: str, memory_index: Optional[dict] = None) -> dict:
         router_route = router_d.get("route")
         gate_verdict = ((router_d.get("gate") or {}).get("verdict") or None)
         _ir = router_d.get("ir") or {}
-        ir = {k: _ir.get(k) for k in ("intent_type", "target_layer", "action", "risk")}
+
+        action_type = (
+            _ir.get("action_type")
+            or _ir.get("action")
+        )
+
+        risk_level = (
+            _ir.get("risk_level")
+            or _ir.get("risk")
+        )
+
+        needs = (
+            dict(_ir.get("needs") or {})
+            if isinstance(
+                _ir.get("needs"),
+                dict,
+            )
+            else {}
+        )
+
+        constraints = (
+            list(_ir.get("constraints") or [])
+            if isinstance(
+                _ir.get("constraints"),
+                list,
+            )
+            else []
+        )
+
+        missing = (
+            list(_ir.get("missing") or [])
+            if isinstance(
+                _ir.get("missing"),
+                list,
+            )
+            else []
+        )
+
+        # Preserve the canonical AMD semantic contract.
+        #
+        # action/risk aliases remain temporarily for consumers
+        # that predate action_type/risk_level.
+        ir = {
+            "raw": _ir.get("raw"),
+            "normalized": _ir.get("normalized"),
+            "intent_type": _ir.get(
+                "intent_type"
+            ),
+            "target_layer": _ir.get(
+                "target_layer"
+            ),
+            "action_type": action_type,
+            "risk_level": risk_level,
+            "needs": needs,
+            "constraints": constraints,
+            "missing": missing,
+            "action": action_type,
+            "risk": risk_level,
+        }
+
         level = router_d.get("level")
         reason = router_d.get("reason") or f"router_route={router_route}"
 

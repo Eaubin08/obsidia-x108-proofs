@@ -169,6 +169,44 @@ def run_full_brody_runtime(
     # ── Layer status tracker ──────────────────────────────────────────────
     r["runtime_chain"] = {}
 
+    # --------------------------------------------------------
+    # Semantic pre-reasoning continuity.
+    #
+    # Additive transport only. The canonical Brody response
+    # pipeline already uses this same readonly pre-reasoning
+    # stage. The full runtime historically omitted it, causing
+    # cognitive ingress to lose semantic closure evidence.
+    #
+    # No retrieval.
+    # No provider.
+    # No ACT.
+    # No decision authority.
+    # --------------------------------------------------------
+
+    from apps.obsidia_api.brody_pre_reasoning_adapter import (
+        build_brody_pre_reasoning_snapshot,
+    )
+
+    pre_reasoning_snapshot = (
+        build_brody_pre_reasoning_snapshot(
+            user_message=message,
+            language=language,
+            intent="pure_response",
+            authority_snapshot={
+                "request_type": "PURE_RESPONSE",
+            },
+        )
+    )
+
+    r["pre_reasoning_snapshot"] = (
+        pre_reasoning_snapshot
+    )
+
+    r["runtime_chain"][
+        "pre_reasoning"
+    ] = "ATTACHED_READONLY"
+
+
     # ── 1. Probes ──────────────────────────────────────────────────────────
     r["graphiti_probe"] = _probe_graphiti()
     graphiti_live = r["graphiti_probe"]["status"] == "GRAPHITI_LIVE_READONLY_PASS"
