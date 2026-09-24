@@ -25,6 +25,7 @@ _FR_SURFACE_WORDS = {
     "au",
     "aux",
     "avec",
+    "beaucoup",
     "ce",
     "ces",
     "cette",

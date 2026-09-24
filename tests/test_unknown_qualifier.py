@@ -1,4 +1,4 @@
-﻿from periphery.language.unknown_qualifier import (
+from periphery.language.unknown_qualifier import (
     qualify_unknowns,
 )
 
@@ -176,3 +176,50 @@ def test_qualifier_is_non_sovereign_and_provider_free():
 
     for token in forbidden:
         assert token not in source
+
+
+
+def test_conversational_surface_modifiers_are_not_epistemic_debt():
+    fr = qualify_unknowns(
+        user_message="merci beaucoup",
+        language="fr",
+        lexical_unknowns=[
+            "merci",
+            "beaucoup",
+        ],
+        semantic_query_snapshot={},
+    )
+
+    assert (
+        fr["unresolved_unknowns"]
+        == []
+    )
+
+    assert (
+        "merci"
+        in fr[
+            "surface_language_unknowns"
+        ]
+    )
+
+    assert (
+        "beaucoup"
+        in fr[
+            "surface_language_unknowns"
+        ]
+    )
+
+    en = qualify_unknowns(
+        user_message="thank you",
+        language="en",
+        lexical_unknowns=[
+            "thank",
+            "you",
+        ],
+        semantic_query_snapshot={},
+    )
+
+    assert (
+        en["unresolved_unknowns"]
+        == []
+    )
