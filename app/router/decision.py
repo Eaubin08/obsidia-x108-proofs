@@ -127,9 +127,18 @@ def decide(raw: str, memory_index: dict | None = None,
         return decision
 
     # --- Level 1: local proprietary organ -------------------------------------
-    if ir["intent_type"] == "question" and not ir["needs"]["remote_model"]:
-        decision.update(level=1, route="brody",
-                        reason="semantic production on an already-structured request; local organ suffices")
+    if (
+        ir["intent_type"] in {"question", "conversation"}
+        and not ir["needs"]["remote_model"]
+    ):
+        decision.update(
+            level=1,
+            route="brody",
+            reason=(
+                "local semantic/conversational production; "
+                "local organ suffices"
+            ),
+        )
         return decision
 
     # --- Level 3: justified remote escalation ---------------------------------

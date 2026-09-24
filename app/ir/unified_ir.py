@@ -42,6 +42,29 @@ _AUDIT_WORDS = {
     "audit", "verifie", "verify", "check", "inspecte", "inspect", "review",
     "diagnostique", "diagnose", "coherence", "contradiction",
 }
+_CONVERSATION_MARKERS = {
+    "bonjour",
+    "bonsoir",
+    "salut",
+    "coucou",
+    "hello",
+    "hi",
+    "hey",
+    "yo",
+    "merci",
+    "thanks",
+    "thank",
+}
+
+_CONVERSATION_WORDS = (
+    _CONVERSATION_MARKERS
+    | {
+        "you",
+        "beaucoup",
+    }
+)
+
+
 _QUESTION_WORDS = {
     "explique", "explain", "pourquoi", "why", "comment", "how", "quoi",
     "what", "contexte", "context", "resume", "summarize", "summarise",
@@ -100,6 +123,15 @@ def build_ir(raw: str) -> dict:
     is_question = bool(words & _QUESTION_WORDS)
     is_reasoning = bool(words & _REASONING_WORDS)
 
+    # Pure conversational surfaces are locally answerable.
+    # The subset condition is intentional: a greeting must not
+    # erase a real question, reasoning request, or world action.
+    is_conversation = bool(
+        words
+        and words <= _CONVERSATION_WORDS
+        and words & _CONVERSATION_MARKERS
+    )
+
     if is_action:
         intent_type, action_type, risk_level = "world_action", "act_request", "high"
         target_layer = "world"
@@ -117,6 +149,9 @@ def build_ir(raw: str) -> dict:
         intent_type, action_type, risk_level = "question", "answer", "low"
         if target_layer == "unknown":
             target_layer = "brody"
+    elif is_conversation:
+        intent_type, action_type, risk_level = "conversation", "answer", "low"
+        target_layer = "brody"
     else:
         intent_type, action_type, risk_level = "unknown", "guide", "low"
         if target_layer == "brody":
@@ -128,7 +163,7 @@ def build_ir(raw: str) -> dict:
     needs = {
         "local_structure": True,
         "memory": target_layer == "memory",
-        "brody": intent_type in {"question"} or target_layer == "brody",
+        "brody": intent_type in {"question", "conversation"} or target_layer == "brody",
         "remote_model": intent_type in {"reasoning", "code_request"},
         "gate": action_type in {"act_request", "commands"} or risk_level in {"medium", "high"},
     }
