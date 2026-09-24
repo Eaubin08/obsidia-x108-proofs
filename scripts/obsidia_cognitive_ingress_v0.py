@@ -261,6 +261,11 @@ def _llm_activation_from_route(
             "ROUTER_FAIL_CLOSED_NO_LLM"
         )
 
+    elif route == "evidence_required":
+        reason = (
+            "CURRENT_WORLD_EVIDENCE_REQUIRED_NO_MODEL"
+        )
+
     elif route not in REMOTE_MODEL_ROUTES:
         reason = (
             "LOCAL_ORGAN_OR_GOVERNED_ROUTE_SUFFICIENT"
@@ -836,6 +841,67 @@ def _evaluate_brody_sufficiency(
             model_required=False,
             next_stage="HUMAN_REVIEW",
             reason="COGNITIVE_JOIN_ERRORS_PRESENT",
+        )
+
+        return base
+
+    # --------------------------------------------------------
+    # 2A. Current-world evidence closure.
+    #
+    # The router has already resolved the semantic intent.
+    # What remains open is epistemic: fresh external evidence
+    # is required to answer truthfully.
+    #
+    # A model is not an observation and Brody output cannot
+    # convert this missing evidence into semantic closure.
+    # --------------------------------------------------------
+
+    if route == "evidence_required":
+        route_ir = (
+            route_decision.get("ir")
+            if isinstance(
+                route_decision.get("ir"),
+                dict,
+            )
+            else {}
+        )
+
+        route_needs = (
+            route_ir.get("needs")
+            if isinstance(
+                route_ir.get("needs"),
+                dict,
+            )
+            else {}
+        )
+
+        if (
+            route_needs.get(
+                "current_world_evidence"
+            )
+            is not True
+        ):
+            base.update(
+                status="COGNITIVE_RAIL_ERROR",
+                sufficient=False,
+                model_required=False,
+                next_stage="HUMAN_REVIEW",
+                reason=(
+                    "EVIDENCE_ROUTE_WITHOUT_"
+                    "CURRENT_WORLD_NEED"
+                ),
+            )
+
+            return base
+
+        base.update(
+            status="EVIDENCE_REQUIRED",
+            sufficient=False,
+            model_required=False,
+            next_stage="EVIDENCE_REQUIRED",
+            reason=(
+                "CURRENT_WORLD_EVIDENCE_REQUIRED"
+            ),
         )
 
         return base
@@ -1553,6 +1619,14 @@ def run_cognitive_ingress(
                 "evidence_applied"
             ]
             else "LOCAL_MODEL_EVIDENCE_REJECTED"
+        )
+
+    elif (
+        next_stage
+        == "EVIDENCE_REQUIRED"
+    ):
+        receipt_status = (
+            "CURRENT_WORLD_EVIDENCE_REQUIRED"
         )
 
     elif (

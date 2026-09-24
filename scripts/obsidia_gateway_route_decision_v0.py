@@ -134,7 +134,7 @@ _REASONING_INTENTS = {"design", "architecture", "plan", "reason", "reasoning",
 _ENGINEERING_INTENTS = {"code_request", "code", "patch", "refactor", "implement",
                         "engineering"}
 _STACK_NATIVE_ROUTES = {"no_model_needed", "memory_hit", "semantic_memory_hit",
-                        "lean_route_only"}
+                        "lean_route_only", "evidence_required"}
 _HUMAN_AUTHORITY_ROUTES = {"denied", "hold_commands_only", "clarification_needed",
                            "os_trad_risk_hold", "domain_bridge", "kernel_bridge"}
 _ENGINEERING_ROUTES = {"obsidure_route_only", "obsidure_proposal"}
