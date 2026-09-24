@@ -29,6 +29,11 @@ from openjarvis.core.registry import (
 
 
 def test_bridge_registers_external_engine_and_agent():
+    # Registry state is process-global and OpenJarvis test fixtures may
+    # reset it between tests. Exercise the registration contract
+    # explicitly instead of relying on import-time state.
+    B.register_bridge()
+
     assert EngineRegistry.contains(
         B.ENGINE_KEY
     )
@@ -308,3 +313,8 @@ def test_local_model_evidence_is_not_promoted_directly():
         B._surface_turn(turn)
         == "governed-fallback"
     )
+
+
+def test_governed_agent_forces_server_side_web_stream():
+    assert B.ObsidiaGovernedAgent.accepts_tools is False
+    assert B.ObsidiaGovernedAgent.force_server_agent_stream is True

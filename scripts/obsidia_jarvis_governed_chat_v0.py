@@ -218,10 +218,32 @@ class GovernedJarvisChatSession:
             "OPENJARVIS_COMMIT",
         )
 
+        self.openjarvis_worktree_digest = str(
+            os.environ.get(
+                "OBSIDIA_OPENJARVIS_WORKTREE_DIGEST",
+                "",
+            )
+            or ""
+        ).strip().lower()
+
+        adapter_kwargs = {
+            "source_root":
+                self.openjarvis_source,
+            "expected_commit":
+                self.openjarvis_commit,
+            "trusted_session_id":
+                self.session_id,
+        }
+
+        if self.openjarvis_worktree_digest:
+            adapter_kwargs[
+                "trusted_worktree_digest"
+            ] = (
+                self.openjarvis_worktree_digest
+            )
+
         self.adapter = adapter_factory(
-            source_root=self.openjarvis_source,
-            expected_commit=self.openjarvis_commit,
-            trusted_session_id=self.session_id,
+            **adapter_kwargs
         )
 
         self.turn_count = 0

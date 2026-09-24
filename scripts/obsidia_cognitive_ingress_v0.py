@@ -51,6 +51,10 @@ from scripts.providers.obsidia_qwen_local_evidence_v0 import (
     run_local_qwen_evidence,
 )
 
+from periphery.context.governed_model_projection import (
+    project_governed_model_evidence,
+)
+
 
 VERSION = "OBSIDIA_COGNITIVE_INGRESS_V0"
 
@@ -1477,6 +1481,42 @@ def run_cognitive_ingress(
         else {}
     )
 
+    # Model material may reach the human-response adapter only
+    # through the post-C1/W1/W2 governed projection contract.
+    try:
+        governed_model_projection = (
+            project_governed_model_evidence(
+                user_message=text,
+                local_model_stage=(
+                    local_model_stage
+                ),
+                cognitive_join=(
+                    cognitive_join
+                ),
+            )
+        )
+    except Exception as exc:
+        governed_model_projection = {
+            "status": "BLOCKED",
+            "reason": (
+                "GOVERNED_MODEL_PROJECTION_EXCEPTION:"
+                + type(exc).__name__
+            ),
+            "content": "",
+            "readonly": True,
+            "advisory_only": True,
+            "allowed_to_decide": False,
+            "allowed_to_act": False,
+            "emits_act": False,
+            "emits_verdict": False,
+            "memory_write": False,
+            "kernel_mutation": False,
+            "decision_authority": (
+                DECISION_AUTHORITY
+            ),
+            "raw_model_direct_surface": False,
+        }
+
     # Native Brody may legitimately return no runtime object
     # for lightweight/local-sufficient paths such as greetings.
     # Final projection treats absence as empty readonly material.
@@ -1554,6 +1594,9 @@ def run_cognitive_ingress(
                 ),
                 structured_response_snapshot=(
                     structured_response_snapshot
+                ),
+                governed_model_projection=(
+                    governed_model_projection
                 ),
             )
         )
@@ -1659,6 +1702,10 @@ def run_cognitive_ingress(
 
         "final_answer_snapshot": (
             final_answer_snapshot
+        ),
+
+        "governed_model_projection": (
+            governed_model_projection
         ),
 
         "surface_response": (

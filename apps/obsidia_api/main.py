@@ -153,6 +153,7 @@ from apps.obsidia_api.routes.runtime_wiring_preview import router as runtime_wir
 from apps.obsidia_api.routes.source_runtime_status import router as source_runtime_status_router
 from apps.obsidia_api.routes.live_kernel_bridge import router as live_kernel_bridge_router
 from apps.obsidia_api.routes.os_map import router as os_map_router
+from apps.obsidia_api.routes.jarvis_governed import router as jarvis_governed_router
 
 for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_router, context_router,
            memory_router, gencoin_router, graphiti_router, x108_router,
@@ -160,7 +161,7 @@ for r in [status_router, brody_router, translation_router, os_trad_ir_reverse_ro
            periphery_ops_router, brody_monitoring_router, runtime_freeze_router, bus_router,
            sigma_monitoring_router, runtime_wiring_preview_router, source_runtime_status_router,
            live_kernel_bridge_router,
-           os_map_router]:
+           os_map_router, jarvis_governed_router]:
     app.include_router(r)
 
 

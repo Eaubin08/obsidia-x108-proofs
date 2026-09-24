@@ -249,14 +249,18 @@ def run_local_qwen_evidence(
 
     system = (
         "You are a bounded local cognitive organ inside Obsidia. "
-        "Return only useful analytical evidence for the user request. "
+        "Return only useful evidence for the user request. "
+        "Preserve explicit output constraints stated by the user. "
+        "If the user explicitly requests only code, no markdown, "
+        "no explanation, or another exact output form, obey that "
+        "format in the evidence content. "
         "You are not a decision authority. "
         "Do not authorize, execute, deploy, approve, "
         "or emit governance verdicts. "
         "Do not provide private chain-of-thought. "
-        "Give a concise conclusion, relevant evidence, "
-        "uncertainties, or hypotheses that the governed "
-        "Obsidia stack can evaluate."
+        "When no exact output format is requested, provide a concise "
+        "conclusion, relevant evidence, uncertainties, or hypotheses "
+        "that the governed Obsidia stack can evaluate."
     )
 
     body = json.dumps(

@@ -121,6 +121,188 @@ def _git_dirty(repo: Path) -> bool | None:
     return bool((result.stdout or "").strip())
 
 
+def _git_worktree_digest(
+    repo: Path,
+) -> str | None:
+    """
+    Exact development-worktree provenance.
+
+    Identity binds:
+    - pinned HEAD;
+    - tracked diff against HEAD;
+    - git porcelain state;
+    - content of every non-ignored untracked file.
+
+    This grants no authority. It only allows an explicitly trusted
+    dirty source snapshot to be identified exactly.
+    """
+
+    import hashlib
+
+    head = _git_head(
+        repo
+    )
+
+    if head is None:
+        return None
+
+    def run_git(
+        *args: str,
+    ):
+        try:
+            result = subprocess.run(
+                [
+                    "git",
+                    *args,
+                ],
+                cwd=str(repo),
+                capture_output=True,
+                text=False,
+                timeout=30,
+                shell=False,
+            )
+        except Exception:
+            return None
+
+        if result.returncode != 0:
+            return None
+
+        return bytes(
+            result.stdout
+            or b""
+        )
+
+    status = run_git(
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+    )
+
+    diff = run_git(
+        "diff",
+        "--binary",
+        "HEAD",
+        "--",
+    )
+
+    untracked = run_git(
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "-z",
+    )
+
+    if (
+        status is None
+        or diff is None
+        or untracked is None
+    ):
+        return None
+
+    digest = hashlib.sha256()
+
+    digest.update(
+        b"HEAD\0"
+    )
+
+    digest.update(
+        head.encode(
+            "ascii"
+        )
+    )
+
+    digest.update(
+        b"\0STATUS\0"
+    )
+
+    digest.update(
+        status
+    )
+
+    digest.update(
+        b"\0DIFF\0"
+    )
+
+    digest.update(
+        diff
+    )
+
+    paths = sorted(
+        path
+        for path in untracked.split(
+            b"\0"
+        )
+        if path
+    )
+
+    for raw_path in paths:
+        digest.update(
+            b"\0UNTRACKED_PATH\0"
+        )
+
+        digest.update(
+            raw_path
+        )
+
+        rel = raw_path.decode(
+            "utf-8",
+            errors="surrogateescape",
+        )
+
+        path = (
+            repo
+            / Path(rel)
+        )
+
+        try:
+            if path.is_symlink():
+                digest.update(
+                    b"\0SYMLINK\0"
+                )
+
+                target = (
+                    path.readlink()
+                )
+
+                digest.update(
+                    str(target).encode(
+                        "utf-8",
+                        errors="surrogateescape",
+                    )
+                )
+
+            elif path.is_file():
+                digest.update(
+                    b"\0FILE\0"
+                )
+
+                with path.open(
+                    "rb"
+                ) as handle:
+                    while True:
+                        chunk = handle.read(
+                            1024 * 1024
+                        )
+
+                        if not chunk:
+                            break
+
+                        digest.update(
+                            chunk
+                        )
+
+            else:
+                digest.update(
+                    b"\0MISSING_OR_OTHER\0"
+                )
+
+        except OSError:
+            return None
+
+    return digest.hexdigest()
+
+
 class OpenJarvisShadowAdapter:
     """Read-only runtime identity/capability handshake.
 
@@ -1576,6 +1758,7 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
         source_root: str,
         expected_commit: str,
         trusted_session_id: str | None = None,
+        trusted_worktree_digest: str | None = None,
     ) -> None:
 
         self.source_root = Path(
@@ -1585,6 +1768,30 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
         self.expected_commit = str(
             expected_commit
         ).strip().lower()
+
+        if trusted_worktree_digest is None:
+            self.trusted_worktree_digest = None
+        else:
+            candidate_digest = str(
+                trusted_worktree_digest
+            ).strip().lower()
+
+            valid_digest = (
+                len(candidate_digest) == 64
+                and all(
+                    ch in "0123456789abcdef"
+                    for ch in candidate_digest
+                )
+            )
+
+            if not valid_digest:
+                raise ValueError(
+                    "TRUSTED_WORKTREE_DIGEST_INVALID"
+                )
+
+            self.trusted_worktree_digest = (
+                candidate_digest
+            )
 
         # Trusted session identity is supplied by the
         # Obsidia workspace/session binding layer.
@@ -1757,14 +1964,76 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
                 "scope_expanded": False,
             }
 
+        source_provenance_mode = (
+            "PINNED_COMMIT_CLEAN"
+        )
+
+        before_worktree_digest = None
+
         if before_dirty:
-            return {
-                "status": "OPENJARVIS_SOURCE_DIRTY",
-                "adapter_id": self.adapter_id,
-                "is_execution_authority": False,
-                "is_kx_authority": False,
-                "scope_expanded": False,
-            }
+            if self.trusted_worktree_digest is None:
+                return {
+                    "status":
+                        "OPENJARVIS_SOURCE_DIRTY",
+                    "adapter_id":
+                        self.adapter_id,
+                    "is_execution_authority":
+                        False,
+                    "is_kx_authority":
+                        False,
+                    "scope_expanded":
+                        False,
+                }
+
+            before_worktree_digest = (
+                _git_worktree_digest(
+                    self.source_root
+                )
+            )
+
+            if before_worktree_digest is None:
+                return {
+                    "status": (
+                        "OPENJARVIS_WORKTREE_"
+                        "DIGEST_UNAVAILABLE"
+                    ),
+                    "adapter_id":
+                        self.adapter_id,
+                    "is_execution_authority":
+                        False,
+                    "is_kx_authority":
+                        False,
+                    "scope_expanded":
+                        False,
+                }
+
+            if (
+                before_worktree_digest
+                != self.trusted_worktree_digest
+            ):
+                return {
+                    "status": (
+                        "OPENJARVIS_WORKTREE_"
+                        "DIGEST_MISMATCH"
+                    ),
+                    "adapter_id":
+                        self.adapter_id,
+                    "expected_worktree_digest":
+                        self.trusted_worktree_digest,
+                    "actual_worktree_digest":
+                        before_worktree_digest,
+                    "is_execution_authority":
+                        False,
+                    "is_kx_authority":
+                        False,
+                    "scope_expanded":
+                        False,
+                }
+
+            source_provenance_mode = (
+                "PINNED_COMMIT_PLUS_"
+                "WORKTREE_DIGEST"
+            )
 
         package_root = (
             self.source_root
@@ -2146,11 +2415,38 @@ class OpenJarvisObsidiaCognitivePilotAdapter:
             self.source_root
         )
 
-        source_mutated = (
-            after_head != before_head
-            or after_dirty is None
-            or after_dirty is True
-        )
+        after_worktree_digest = None
+
+        if (
+            source_provenance_mode
+            == "PINNED_COMMIT_PLUS_WORKTREE_DIGEST"
+        ):
+            after_worktree_digest = (
+                _git_worktree_digest(
+                    self.source_root
+                )
+            )
+
+            source_mutated = (
+                after_head != before_head
+                or after_dirty is None
+                or after_worktree_digest is None
+                or (
+                    after_worktree_digest
+                    != before_worktree_digest
+                )
+                or (
+                    after_worktree_digest
+                    != self.trusted_worktree_digest
+                )
+            )
+
+        else:
+            source_mutated = (
+                after_head != before_head
+                or after_dirty is None
+                or after_dirty is True
+            )
 
         tool_results = list(
             result.tool_results

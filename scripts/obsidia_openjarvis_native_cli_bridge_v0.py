@@ -273,6 +273,17 @@ class ObsidiaGovernedAgent(BaseAgent):
     agent_id = AGENT_KEY
     accepts_tools = False
 
+    # OpenJarvis is only an interface for this agent.
+    # Internal cognitive providers such as Qwen must never become
+    # directly selectable models in the OpenJarvis UI/API.
+    server_model_allowlist = (
+        MODEL_ID,
+    )
+
+    # Web stream:true requests must remain behind this agent boundary.
+    # Direct OpenJarvis engine inference is intentionally forbidden.
+    force_server_agent_stream = True
+
     def __init__(
         self,
         engine: InferenceEngine,

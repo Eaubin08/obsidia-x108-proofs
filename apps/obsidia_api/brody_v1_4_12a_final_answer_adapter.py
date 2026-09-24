@@ -758,6 +758,7 @@ def run_brody_v1_4_12a_final_answer(
     risk: bool = False,
     freeze_metrics_snapshot: dict[str, Any] | None = None,
     structured_response_snapshot: dict[str, Any] | None = None,
+    governed_model_projection: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Produce final_answer using V1.4.12A detector contract.
@@ -793,12 +794,76 @@ def run_brody_v1_4_12a_final_answer(
     is_pressure = detect_critical_pressure(user_message)
     is_code = detect_code_paste(user_message) if not is_pressure else False
 
+    # Governed model material is never accepted on status alone.
+    # Re-check the non-sovereign projection boundary at the final
+    # human-response adapter before it can become visible text.
+    projection = (
+        governed_model_projection
+        if isinstance(
+            governed_model_projection,
+            dict,
+        )
+        else {}
+    )
+
+    projection_content = str(
+        projection.get("content")
+        or ""
+    ).strip()
+
+    projection_ready = (
+        projection.get("status") == "READY"
+        and bool(projection_content)
+        and projection.get("source")
+        == "VALIDATED_MODEL_EVIDENCE"
+        and projection.get("readonly") is True
+        and projection.get("advisory_only") is True
+        and projection.get("allowed_to_decide") is False
+        and projection.get("allowed_to_act") is False
+        and projection.get("emits_act") is False
+        and projection.get("emits_verdict") is False
+        and projection.get("memory_write") is False
+        and projection.get("kernel_mutation") is False
+        and projection.get("decision_authority")
+        == "KX108_ONLY"
+        and projection.get("raw_model_direct_surface")
+        is False
+    )
+
+    projection_selected = False
+
     if is_pressure:
         final_answer, md = _build_critical_pressure_response(lang)
         status_tag = "CRITICAL_PRESSURE_BOUNDARY"
+
+    elif (
+        projection_ready
+        and not risk
+        and response_mode
+        not in (
+            "ACTION_BOUNDARY",
+            "CAPABILITY_SCOPE",
+        )
+        and authority_snapshot.get(
+            "requires_kx108_decision",
+            False,
+        )
+        is not True
+    ):
+        # The visible text is the post-C1/W1/W2 governed
+        # projection, never the raw model evidence.
+        final_answer = projection_content
+        md = projection_content
+        projection_selected = True
+        status_tag = (
+            "GOVERNED_MODEL_PROJECTION_"
+            + str(response_mode)
+        )
+
     elif is_code:
         final_answer, md = _build_code_guard_response(lang)
         status_tag = "CODE_PASTE_GUARD"
+
     else:
         md = response_md or _build_response_md(user_message, lang, ctx, ir, risk)
 
@@ -864,6 +929,24 @@ def run_brody_v1_4_12a_final_answer(
         "boundary_ok": True,
         "v1412a_available": _V1412A_AVAILABLE,
         "authority_snapshot": authority_snapshot,
+        "governed_model_projection_status": (
+            projection.get("status")
+            if projection
+            else None
+        ),
+        "governed_model_projection_selected": (
+            projection_selected
+        ),
+        "governed_model_projection_source_ref": (
+            projection.get("source_ref")
+            if projection
+            else None
+        ),
+        "governed_model_projection_hash": (
+            projection.get("projection_hash")
+            if projection
+            else None
+        ),
     }
 
 
