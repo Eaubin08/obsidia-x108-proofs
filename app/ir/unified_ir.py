@@ -123,6 +123,49 @@ def build_ir(raw: str) -> dict:
     is_question = bool(words & _QUESTION_WORDS)
     is_reasoning = bool(words & _REASONING_WORDS)
 
+    # Current-world evidence is a semantic need, not model necessity.
+    #
+    # A request can be fully understandable while its truth value still
+    # depends on a fresh external observation. Keep this bounded:
+    # - physical/environmental state;
+    # - deictic presence ("X est l? ?", "X is here ?").
+    #
+    # Do not turn every factual question into a current-world request.
+    current_world_environment = bool(
+        words
+        & {
+            "dehors",
+            "outside",
+            "pleut",
+            "pluie",
+            "rain",
+            "raining",
+            "neige",
+            "snow",
+            "snowing",
+            "weather",
+            "meteo",
+            "temperature",
+        }
+    )
+
+    presence_probe = normalized.rstrip(" ?")
+
+    current_world_presence = (
+        presence_probe.endswith(" est la")
+        or presence_probe.endswith(" est ici")
+        or presence_probe.endswith(" is here")
+        or presence_probe.endswith(" are here")
+    )
+
+    is_current_world_evidence = bool(
+        "?" in normalized
+        and (
+            current_world_environment
+            or current_world_presence
+        )
+    )
+
     # Pure conversational surfaces are locally answerable.
     # The subset condition is intentional: a greeting must not
     # erase a real question, reasoning request, or world action.
@@ -134,6 +177,9 @@ def build_ir(raw: str) -> dict:
 
     if is_action:
         intent_type, action_type, risk_level = "world_action", "act_request", "high"
+        target_layer = "world"
+    elif is_current_world_evidence:
+        intent_type, action_type, risk_level = "question", "answer", "low"
         target_layer = "world"
     elif is_status:
         intent_type, action_type, risk_level = "status", "status", "low"
@@ -162,6 +208,7 @@ def build_ir(raw: str) -> dict:
 
     needs = {
         "local_structure": True,
+        "current_world_evidence": is_current_world_evidence,
         "memory": target_layer == "memory",
         "brody": intent_type in {"question", "conversation"} or target_layer == "brody",
         "remote_model": intent_type in {"reasoning", "code_request"},

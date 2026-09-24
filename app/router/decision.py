@@ -74,6 +74,27 @@ def decide(raw: str, memory_index: dict | None = None,
         decision.update(route="hold_commands_only", reason=gate["reason"])
         return decision
 
+
+    # A current-world question may be semantically understood while its
+    # answer still requires fresh external evidence. A language model is
+    # not that evidence. Preserve the open evidence need explicitly.
+    if (
+        ir.get("needs", {}).get(
+            "current_world_evidence"
+        )
+        is True
+    ):
+        decision.update(
+            level=0,
+            route="evidence_required",
+            model=None,
+            reason=(
+                "current-world evidence required; "
+                "model inference is not observation"
+            ),
+        )
+        return decision
+
     # Historical Track-1 semantic cross-check:
     # DENY/HOLD remain authoritative above. A response-producing
     # ANSWER_TASK must not become a CLARIFY dead-end solely because the
