@@ -19,6 +19,7 @@ from app.ir.unified_ir import build_ir
 from app.router.local_solvers import try_local_solvers
 from app.router.model_triage import select_model_for_request
 from app.router.semantic_topics import route_topic
+from app.semantic.task_kind import TaskKind, classify_task_kind
 
 # Fallback ladder used only when ALLOWED_MODELS is not provided (see
 # app.adapters.fireworks.allowed_models(), the single parsing authority).
@@ -41,6 +42,7 @@ def decide(raw: str, memory_index: dict | None = None,
     ir = build_ir(raw)
     gate = evaluate_gates(ir)
     topic = route_topic(raw)
+    task_kind = classify_task_kind(raw)
 
     decision: dict = {
         "ir": ir,
@@ -71,6 +73,25 @@ def decide(raw: str, memory_index: dict | None = None,
     if gate["verdict"] == "HOLD":
         decision.update(route="hold_commands_only", reason=gate["reason"])
         return decision
+
+    # Historical Track-1 semantic cross-check:
+    # DENY/HOLD remain authoritative above. A response-producing
+    # ANSWER_TASK must not become a CLARIFY dead-end solely because the
+    # legacy structural IR could not infer an internal intent.
+    if (
+        gate["verdict"] == "CLARIFY"
+        and task_kind == TaskKind.ANSWER_TASK
+    ):
+        gate = dict(gate)
+        gate.update(
+            verdict="ALLOW",
+            matched=None,
+            reason=(
+                "answer task recognized independently; "
+                "continue bounded resolution"
+            ),
+        )
+        decision["gate"] = gate
     # --- Level 1.5: local category solvers — deterministic, 0 token ----------
     # Only fires on unambiguous patterns (sentiment, simple math). The frame
     # (DENY/HOLD) has already been enforced above.
