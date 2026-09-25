@@ -152,8 +152,13 @@ def build_ir(raw: str) -> dict:
         & _ACTION_WORDS
     )
 
+    # A world action requested in any grammatical form (infinitive,
+    # indirect request "tu peux lancer ?", "il faut lancer", "je veux que
+    # tu lances") is a world action even when its surface form is not one
+    # of the legacy keywords. This can only ADD governance, never remove it.
     is_action = bool(
         effective_action_words
+        or semantics["requested_world_actions"]
     )
 
     is_prepare_no_execute = bool(

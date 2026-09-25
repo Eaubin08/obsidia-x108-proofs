@@ -97,6 +97,18 @@ def evaluate(ir: dict) -> dict:
                 "reason": f"world action '{kw}' — commands-only output, never auto-executed",
             }
 
+    # Semantically requested world action whose surface is not a legacy
+    # keyword ("lancer", "exécutez", "lances"): same HOLD, labelled with
+    # the requested verb.
+    if requested_surfaces and ir.get("action_type") == "act_request":
+        surface = _fold(requested_surfaces[0])
+        return {
+            "verdict": "HOLD",
+            "matched": surface,
+            "invariants": ["no_auto_act", "no_auto_commit", "no_auto_push"],
+            "reason": f"requested world action '{surface}' — commands-only output, never auto-executed",
+        }
+
     if (
         ir["intent_type"] == "unknown"
         or "intent" in ir.get("missing", [])

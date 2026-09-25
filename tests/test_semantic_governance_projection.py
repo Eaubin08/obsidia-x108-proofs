@@ -13,18 +13,10 @@ from app.ir.unified_ir import build_ir
 from app.router.decision import decide
 from tests.semantic_grammar_matrix import PROBES
 
-# Pre-existing gap (already present before the prototype, commit 0b348ab):
-# infinitive / indirect execution requests never reached HOLD.
-TIGHTENING_PENDING: set[str] = {
-    "modal_tu_peux_question",
-    "modal_inversion",
-    "modal_conditional_politeness",
-    "modal_obligation_devoir",
-    "modal_obligation_falloir",
-    "modal_vouloir_que",
-    "modal_vouloir_que_politeness",
-    "sequence_avant_de",
-}
+# Pre-existing gap closed: infinitive / indirect execution requests (never
+# HOLD before, commit 0b348ab) now reach HOLD. Kept empty on purpose so a
+# future relaxation must be declared here explicitly.
+TIGHTENING_PENDING: set[str] = set()
 
 GOV_PROBES = [p for p in PROBES if "gov" in p]
 
