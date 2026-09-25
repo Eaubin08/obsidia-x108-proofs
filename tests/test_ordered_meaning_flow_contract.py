@@ -12,8 +12,6 @@ from app.router.decision import decide
 from app.semantic.lattice import parse_utterance
 
 
-XFAIL_OMF = pytest.mark.xfail(strict=True, reason="OrderedMeaningFlow V0 not implemented")
-
 
 def _ordered_flow_api():
     try:
@@ -32,7 +30,6 @@ def _predicates(frame):
     return {unit.predicate: unit for unit in frame.units}
 
 
-@XFAIL_OMF
 def test_temporal_event_time_is_distinct_from_knowledge_acquisition_time():
     FlowFamily, _, derive_ordered_meaning_flows, _ = _ordered_flow_api()
     frame = parse_utterance("hier Paul a lancé le test, je viens seulement de l'apprendre")
@@ -63,7 +60,6 @@ def test_temporal_knowledge_sentences_are_not_system_execution_requests():
         assert summary["ir"]["semantics"]["requested_world_actions"] == []
 
 
-@XFAIL_OMF
 @pytest.mark.parametrize(
     "text,event_time,knowledge_time",
     [
@@ -86,7 +82,6 @@ def test_temporal_contract_freezes_event_vs_knowledge_coordinates(text, event_ti
     assert ("KNOWLEDGE_ACQUISITION_TIME", knowledge_time) in temporal_states
 
 
-@XFAIL_OMF
 def test_parce_que_creates_linguistic_causal_claim_not_validated_proof():
     FlowFamily, _, derive_ordered_meaning_flows, _ = _ordered_flow_api()
     frame = parse_utterance("le test a échoué parce que le build était cassé")
@@ -97,7 +92,6 @@ def test_parce_que_creates_linguistic_causal_claim_not_validated_proof():
     assert not any(f.relation_type == "VALIDATED_CAUSAL_PROOF" for f in causal)
 
 
-@XFAIL_OMF
 def test_reported_parce_que_creates_reported_causal_claim():
     FlowFamily, _, derive_ordered_meaning_flows, _ = _ordered_flow_api()
     frame = parse_utterance("Paul dit que le test a échoué parce que le build était cassé")
@@ -114,7 +108,6 @@ def test_temporal_succession_does_not_create_existing_causal_relation():
     assert all(kind != "CAUSES" for kind, _, _ in rels)
 
 
-@XFAIL_OMF
 @pytest.mark.parametrize(
     "text,expected_state",
     [
@@ -136,7 +129,6 @@ def test_epistemic_states_are_distinct(text, expected_state):
     assert expected_state in epistemic_states
 
 
-@XFAIL_OMF
 def test_epistemic_contradiction_preserves_old_belief_and_new_evidence():
     FlowFamily, _, derive_ordered_meaning_flows, _ = _ordered_flow_api()
     frame = parse_utterance("je croyais qu'il avait réussi, mais les logs montrent qu'il a échoué")
@@ -149,7 +141,6 @@ def test_epistemic_contradiction_preserves_old_belief_and_new_evidence():
     assert any(f.status == "superseded_candidate" for f in epistemic)
 
 
-@XFAIL_OMF
 def test_memory_lifecycle_is_descriptive_and_has_no_write_authority():
     FlowFamily, OrderedMeaningFlow, _, _ = _ordered_flow_api()
 
@@ -192,7 +183,6 @@ def test_permission_question_is_request_candidate_but_not_allow():
     assert "EXECUTE" in result["ir"]["semantics"]["requested_world_actions"]
 
 
-@XFAIL_OMF
 def test_temporal_transitivity_never_implies_causal_proof():
     FlowFamily, OrderedMeaningFlow, _, infer_family_path = _ordered_flow_api()
     flows = [
@@ -206,7 +196,6 @@ def test_temporal_transitivity_never_implies_causal_proof():
     assert causal_path.connection == "NO_PROVEN_CONNECTION"
 
 
-@XFAIL_OMF
 def test_linguistic_causal_claim_does_not_upgrade_to_validated_proof():
     FlowFamily, OrderedMeaningFlow, _, infer_family_path = _ordered_flow_api()
     flows = [
@@ -223,7 +212,6 @@ def test_linguistic_causal_claim_does_not_upgrade_to_validated_proof():
     assert proof_path.connection == "NO_PROVEN_CONNECTION"
 
 
-@XFAIL_OMF
 @pytest.mark.parametrize(
     "source_family,source_state,forbidden_family,forbidden_state",
     [
@@ -262,7 +250,6 @@ def test_cross_family_states_do_not_imply_forbidden_states(
     assert path.connection == "NO_PROVEN_CONNECTION"
 
 
-@XFAIL_OMF
 def test_confidence_does_not_imply_evidence_exists():
     FlowFamily, OrderedMeaningFlow, _, _ = _ordered_flow_api()
     flow = OrderedMeaningFlow(
