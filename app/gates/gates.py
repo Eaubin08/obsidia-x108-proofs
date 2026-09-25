@@ -109,6 +109,20 @@ def evaluate(ir: dict) -> dict:
             "reason": f"requested world action '{surface}' — commands-only output, never auto-executed",
         }
 
+    # Contract fallback: the canonical IR already classified this as a
+    # requested world action. It must not fall through to ALLOW merely
+    # because the surface is outside HOLD_KEYWORDS or the lattice lexicon.
+    if (
+        ir.get("intent_type") == "world_action"
+        and ir.get("action_type") == "act_request"
+    ):
+        return {
+            "verdict": "HOLD",
+            "matched": "IR_ACT_REQUEST",
+            "invariants": ["no_auto_act", "no_auto_commit", "no_auto_push"],
+            "reason": "requested world action from canonical IR — commands-only output, never auto-executed",
+        }
+
     if (
         ir["intent_type"] == "unknown"
         or "intent" in ir.get("missing", [])
