@@ -98,6 +98,9 @@ class PredicateUnit:
     realized: bool | None = None
     epistemic: str = "NOT_APPLICABLE"
     subject: str | None = None
+    action_agent: str = "UNKNOWN"
+    request_target: str = "NONE"
+    role: str = "OTHER"
     objects: tuple[Argument, ...] = ()
     embedded_under: str | None = None
     confidence: float = 1.0
@@ -122,6 +125,10 @@ class PredicateUnit:
         for name in ("negator", "restriction", "modality", "tense_aspect"):
             value = getattr(self, name)
             if value and value != "NONE":
+                bits.append(f"{name}={value}")
+        for name in ("action_agent", "request_target", "role"):
+            value = getattr(self, name)
+            if value and value not in {"UNKNOWN", "NONE", "OTHER"}:
                 bits.append(f"{name}={value}")
         if self.ne_expletive:
             bits.append("ne_expletive")

@@ -27,14 +27,18 @@ def _compact(u) -> dict:
         "polarity": u.polarity, "pragmatic": u.pragmatic, "negator": u.negator,
         "negation_confirmed": u.negation_confirmed, "restriction": u.restriction,
         "modality": u.modality, "tense_aspect": u.tense_aspect,
-        "epistemic": u.epistemic, "object": u.object_head,
+        "epistemic": u.epistemic, "action_agent": u.action_agent,
+        "request_target": u.request_target, "role": u.role,
+        "object": u.object_head,
     }
 
 
 def governable_summary(frame: UtteranceFrame) -> dict:
     requested = [u for u in frame.units
                  if u.predicate_class == "world_action" and u.polarity == "positive"
-                 and u.pragmatic in REQUEST_PRAGMATICS]
+                 and u.pragmatic in REQUEST_PRAGMATICS
+                 and u.role in {"REQUEST", "AMBIGUOUS_REQUEST"}
+                 and u.request_target in {"ADDRESSEE", "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"}]
     negated_execute = [u for u in frame.units
                        if u.predicate == "EXECUTE" and u.polarity == "negative"
                        and u.pragmatic == "FORBIDDEN" and u.negation_confirmed]

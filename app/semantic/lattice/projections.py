@@ -43,8 +43,9 @@ def _view(frame: UtteranceFrame, u: PredicateUnit, axis: ProjectionAxis) -> dict
                 "restriction": u.restriction, "clause": u.clause}
     if axis is ProjectionAxis.SEMANTIC:
         return {"predicate": u.predicate, "lemma": u.lemma, "class": u.predicate_class,
-                "polarity": u.polarity, "subject": u.subject, "objects": [a.head for a in u.objects],
-                "modality": u.modality}
+                "polarity": u.polarity, "subject": u.subject,
+                "action_agent": u.action_agent, "role": u.role,
+                "objects": [a.head for a in u.objects], "modality": u.modality}
     if axis is ProjectionAxis.TEMPORAL:
         order = [r.target for r in frame.relations
                  if r.kind in {k.value for k in TEMPORAL_KINDS} and r.source == u.id]
@@ -56,7 +57,8 @@ def _view(frame: UtteranceFrame, u: PredicateUnit, axis: ProjectionAxis) -> dict
     if axis is ProjectionAxis.EPISTEMIC:
         return {"epistemic": u.epistemic, "embedded_under": u.embedded_under}
     if axis is ProjectionAxis.PRAGMATIC:
-        return {"pragmatic": u.pragmatic, "politeness": u.politeness}
+        return {"pragmatic": u.pragmatic, "request_target": u.request_target,
+                "role": u.role, "politeness": u.politeness}
     if axis is ProjectionAxis.PROVENANCE:
         return {"span": u.span, "raw_surface": frame.raw[u.span[0]:u.span[1]],
                 "parser": u.provenance,
@@ -67,7 +69,9 @@ def _view(frame: UtteranceFrame, u: PredicateUnit, axis: ProjectionAxis) -> dict
         return {"evidence_needs": needs, "world_action_mentioned": u.predicate_class == "world_action"}
     if axis is ProjectionAxis.AUTHORITY:
         requested = (u.predicate_class == "world_action" and u.polarity == "positive"
-                     and u.pragmatic in {"REQUESTED", "INDIRECT_REQUEST"})
+                     and u.pragmatic in {"REQUESTED", "INDIRECT_REQUEST"}
+                     and u.role in {"REQUEST", "AMBIGUOUS_REQUEST"}
+                     and u.request_target in {"ADDRESSEE", "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"})
         return {"authority": None, "decision_authority": "KX108_ONLY", "emits_act": False,
                 "requires_gate": requested}
     return {"confidence": u.confidence,

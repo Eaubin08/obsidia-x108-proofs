@@ -351,7 +351,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             has_ne = any(x.low in {"ne", "n'"} for x in c.toks)
             prev = c.toks[-1] if c.toks else None
             embedding = (vcls.startswith("embedding") or vpred in {"WANT", "NEED"}
-                         or any(x.low == "peur" for x in c.toks))
+                         or any(x.low == "peur" for x in c.toks)
+                         or any(x.low in {"paraît", "parait"} for x in c.toks))
             comparative = any(x.low in {"plus", "moins", "mieux", "autant", "pire"}
                               for x in c.toks) and not has_ne
             if embedding:
@@ -408,7 +409,7 @@ class _Draft:
     subject: str | None = None
     subject_person: str | None = None
     inverted: bool = False
-    governed: str | None = None          # wh | prep : infinitive governed by another word
+    governed: str | None = None          # wh | prep | purpose | temporal | permission
     governor_unit: str | None = None
     governor_negated: bool = False
 
@@ -874,6 +875,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue
             if clause.conn in {"sans", "sans_que"} and n == 0:
                 prag = "FORBIDDEN"
+            elif clause.conn == "que" and parent_unit is None and n == 0 and ci > 0 and any(
+                    t.low in {"paraît", "parait"} for t in clauses[ci - 1].toks):
+                prag, epi = "REPORTED", "HEARSAY"
             elif clause.conn == "que" and parent_unit is not None and n == 0:
                 embedded_under = parent_unit.id
                 pp = parent_unit.predicate
@@ -909,6 +913,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                      u.id, evidence=clause.conn))
             elif d.governed == "wh":
                 prag, epi = ("ASKED", "UNKNOWN") if interrogative else ("EMBEDDED", "NOT_APPLICABLE")
+            elif d.governed in {"purpose", "temporal", "permission"}:
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
             elif d.governed == "prep":
                 gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
                 if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated:
@@ -917,6 +923,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 else:
                     prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                     if gov is None:
+                        d.governed = "unknown_prep"
                         ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
                 if gov is not None:
                     embedded_under = gov.id
@@ -933,16 +940,24 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag = "FORBIDDEN"
             elif prag == "FORBIDDEN" and u.polarity == "positive" and clause.conn not in {"sans", "sans_que"}:
                 prag = "REQUESTED"
-            new_units.append((replace(u, pragmatic=prag, epistemic=epi, realized=realized,
-                                      embedded_under=embedded_under), d))
+            tmp = replace(u, pragmatic=prag, epistemic=epi, realized=realized,
+                          embedded_under=embedded_under)
+            role = _role(tmp, d, prag, interrogative)
+            agent = _action_agent(tmp, d, prag)
+            target = _request_target(tmp, agent, prag, role)
+            new_units.append((replace(tmp, action_agent=agent, request_target=target,
+                                      role=role), d))
         clause.units = new_units
-        # infinitive steps after "avant de" / injunctive infinitives inherit force
+        # Temporal infinitives mention context; preserve legacy fail-closed
+        # behavior when a PREPARE request is framed as before executing.
         if clause.conn in {"avant_de", "apres"} and clause.units and main_heads:
-            prev_prag = main_heads[-1][1].pragmatic
+            prev = main_heads[-1][1]
             u, d = clause.units[0]
-            if prev_prag in {"REQUESTED", "FORBIDDEN"} and u.verb_form == "INFINITIVE":
-                clause.units[0] = (replace(u, pragmatic="REQUESTED" if u.polarity == "positive"
-                                           else "FORBIDDEN", epistemic="NOT_APPLICABLE"), d)
+            if prev.predicate == "PREPARE" and u.predicate_class == "world_action":
+                clause.units[0] = (replace(u, pragmatic="REQUESTED", epistemic="NOT_APPLICABLE",
+                                           action_agent="ADDRESSEE", request_target="ADDRESSEE",
+                                           role="REQUEST"), d)
+
         # Subordinate clauses (reason, condition, embedding...) never become the
         # host of a following "puis" / "mais": only main clauses do.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
@@ -1029,14 +1044,15 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
 
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
-    """Detect an infinitive governed by a wh-word or by a preposition after
-    another predicate ("comment lancer", "how to run", "essaie de lancer",
-    "n'oublie pas de lancer"). Such an infinitive is not injunctive."""
+    """Classify infinitive roles that mention an action without requesting it."""
+    lows = [t.low for t in clause.toks]
+    if (clause.conn in {"avant_de", "apres"} or any(x in {"après", "apres", "before", "after"} for x in lows[:d.lex_index])) and d.verb_form in {"INFINITIVE", "PARTICIPLE"}:
+        d.governed = "temporal"
+        return
     if d.verb_form != "INFINITIVE" or d.lex_index != d.head_index:
         return
-    lows = [t.low for t in clause.toks]
     j = d.lex_index - 1
-    skip = _OBJECT_CLITICS | _REFLEXIVE_CLITICS | {"ne", "n'", "pas", "rien", "jamais", "plus"}
+    skip = _OBJECT_CLITICS | _REFLEXIVE_CLITICS | {"ne", "n'", "pas", "rien", "jamais", "plus", "avoir"}
     while j >= 0 and lows[j] in skip:
         j -= 1
     if j < 0:
@@ -1045,13 +1061,82 @@ def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
                                 and lows[j - 1] in _WH_WORDS):
         d.governed = "wh"
         return
-    if lows[j] in {"de", "d'", "à", "to"} and j > 0 and lows[j - 1] != "besoin":
+    if lows[j] in {"pour", "for"}:
+        d.governed = "purpose"
+        return
+    if lows[j] in {"de", "d'", "à", "to"} and j > 0:
+        if lows[j - 1] in {"droit", "permission"}:
+            d.governed = "permission"
+            speaker = next((x for x in lows[:j] if x in _FIRST_PERSON), None)
+            if speaker is not None:
+                d.subject = speaker
+                d.subject_person = "1"
+            return
+        if lows[j - 1] == "besoin":
+            return
         d.governed = "prep"
         prior = [u for (u, dd) in clause.units if dd.lex_index < j]
         d.governor_unit = prior[-1].id if prior else None
         d.governor_negated = bool(pol.get("governor_negated")) or bool(
             prior and prior[-1].polarity == "negative")
 
+
+def _action_agent(u: PredicateUnit, d: _Draft, prag: str) -> str:
+    if d.subject_person == "1":
+        return "SPEAKER"
+    if d.subject_person == "2":
+        return "ADDRESSEE"
+    if d.subject_person == "3":
+        return "THIRD_PARTY"
+    if d.subject_person == "impersonal":
+        return "IMPERSONAL"
+    if d.subject is None and prag in {"REQUESTED", "INDIRECT_REQUEST", "FORBIDDEN"}:
+        return "ADDRESSEE"
+    return "UNKNOWN"
+
+
+def _role(u: PredicateUnit, d: _Draft, prag: str, interrogative: bool) -> str:
+    if u.polarity == "negative":
+        return "NEGATED"
+    if prag == "REPORTED":
+        return "REPORTED"
+    if prag == "BELIEVED":
+        return "BELIEVED"
+    if prag == "HYPOTHETICAL":
+        return "HYPOTHETICAL"
+    if d.governed == "wh":
+        return "EXPLANATION_CONTENT"
+    if d.governed == "purpose":
+        return "PURPOSE"
+    if d.governed == "temporal":
+        return "TEMPORAL_CONTEXT"
+    if d.governed == "permission":
+        return "PERMISSION_QUERY"
+    if d.governed == "unknown_prep":
+        return "REQUEST"
+    if prag == "REQUESTED":
+        return "REQUEST"
+    if prag == "INDIRECT_REQUEST":
+        return "AMBIGUOUS_REQUEST"
+    if d.subject_person == "1" and u.modality == "DESIRE":
+        return "DESIRE_ASSERTION"
+    if d.subject_person == "1" and (interrogative or u.modality == "ABILITY_OR_PERMISSION"):
+        return "PERMISSION_QUERY"
+    if d.subject_person == "3" and u.predicate_class == "world_action":
+        return "THIRD_PARTY_ACTION"
+    if u.predicate_class == "world_action":
+        return "MENTION"
+    return "OTHER"
+
+
+def _request_target(u: PredicateUnit, agent: str, prag: str, role: str) -> str:
+    if u.polarity != "positive" or u.predicate_class != "world_action":
+        return "NONE"
+    if role == "REQUEST" and prag in {"REQUESTED", "EMBEDDED"} and agent in {"ADDRESSEE", "UNKNOWN", "IMPERSONAL"}:
+        return "ADDRESSEE"
+    if role == "AMBIGUOUS_REQUEST" and prag == "INDIRECT_REQUEST" and agent == "ADDRESSEE":
+        return "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"
+    return "NONE"
 
 def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
                      ambiguities: list[str]) -> tuple[str, str]:
