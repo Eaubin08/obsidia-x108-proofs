@@ -9,6 +9,7 @@ The gates can stop a request before a single token is spent.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 # Requests containing these are refused outright (destructive / out of frame).
 DENY_KEYWORDS = [
@@ -23,6 +24,11 @@ HOLD_KEYWORDS = [
     "push", "commit", "deploy", "deploie", "delete", "supprime",
     "execute", "run", "lance", "install", "installe", "act", "autorise",
 ]
+
+
+def _fold(text: str) -> str:
+    folded = unicodedata.normalize("NFKD", text.lower())
+    return "".join(c for c in folded if not unicodedata.combining(c))
 
 
 def _key_match(key: str, normalized: str) -> bool:
@@ -56,6 +62,22 @@ def evaluate(ir: dict) -> dict:
         "lance",
     }
 
+    # Telemetry: when the utterance frame identifies the positively
+    # requested world action, report THAT keyword rather than an earlier
+    # negated one ("do not execute it, then run it" -> matched "run").
+    # This only chooses the label of a HOLD; it never removes one.
+    requested_surfaces = [
+        s for s in (ir.get("semantics") or {}).get("requested_action_surfaces", [])
+    ]
+    for kw in HOLD_KEYWORDS:
+        if any(_key_match(kw, _fold(s)) for s in requested_surfaces)                 and _key_match(kw, normalized):
+            return {
+                "verdict": "HOLD",
+                "matched": kw,
+                "invariants": ["no_auto_act", "no_auto_commit", "no_auto_push"],
+                "reason": f"world action '{kw}' — commands-only output, never auto-executed",
+            }
+
     for kw in HOLD_KEYWORDS:
         if (
             "no_execute"
@@ -75,7 +97,11 @@ def evaluate(ir: dict) -> dict:
                 "reason": f"world action '{kw}' — commands-only output, never auto-executed",
             }
 
-    if ir["intent_type"] == "unknown" or "intent" in ir.get("missing", []):
+    if (
+        ir["intent_type"] == "unknown"
+        or "intent" in ir.get("missing", [])
+        or "referent" in ir.get("missing", [])
+    ):
         return {
             "verdict": "CLARIFY",
             "matched": None,

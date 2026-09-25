@@ -13,6 +13,12 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from app.semantic.lattice.french_grammar import parse_utterance
+from app.semantic.lattice.ir_projection import (
+    fail_closed_summary,
+    governable_summary,
+)
+
 
 def normalize(text: str) -> str:
     """Accent-fold, lowercase, collapse whitespace. Deterministic."""
@@ -115,77 +121,27 @@ def build_ir(raw: str) -> dict:
     words = _words(normalized)
 
     # --------------------------------------------------------
-    # Compositional action semantics.
+    # Compositional action semantics (clause-scoped grammar).
     #
-    # A world-action verb occurring inside an explicit
-    # negation is a constraint, not a requested operation.
-    #
-    # This is deliberately bounded to execution semantics:
-    # it does not weaken push/commit/delete/deploy/etc.
+    # The non-sovereign lattice parses predicates, negation scope,
+    # restriction and pragmatic force. Only a CONFIRMED negated
+    # execution accompanying a positive PREPARE request, with no
+    # world action requested anywhere, may remove the negated verb
+    # from the action signal. Everything else is fail-closed.
+    # A parser failure relaxes nothing.
     # --------------------------------------------------------
+    try:
+        semantics = governable_summary(parse_utterance(raw))
+    except Exception as exc:  # pragma: no cover - defensive
+        semantics = fail_closed_summary(exc)
 
-    prepare_requested = bool(
-        words
-        & {
-            "prepare",
-            "preparer",
+    no_execute = semantics["confirmed_no_execute"]
+
+    semantic_words = set(words)
+    if semantics["execution_hold_relaxable"]:
+        semantic_words -= {
+            normalize(s) for s in semantics["negated_execute_surfaces"]
         }
-    )
-
-    # Explicit execution-negation patterns.
-    #
-    # We remove only the negated span from the semantic action
-    # signal. Any later positive world action remains visible.
-    negated_execution_patterns = (
-        # FR:
-        # "sans lancer"
-        # "sans rien lancer"
-        # "sans l'executer"
-        r"\bsans\b.{0,40}?"
-        r"\b(?:execute|executer|lance|lancer|run)\b",
-
-        # FR:
-        # "ne l'execute pas"
-        # "ne surtout pas lancer"
-        r"\bne\b.{0,40}?"
-        r"\b(?:execute|executer|lance|lancer|run)\b"
-        r".{0,24}?\bpas\b",
-
-        # EN:
-        # "do not execute"
-        # "do not run"
-        r"\bdo\s+not\s+"
-        r"(?:execute|run|launch)\b",
-
-        # EN contraction.
-        r"\bdon[' ]?t\s+"
-        r"(?:execute|run|launch)\b",
-
-        # EN:
-        # "without executing"
-        r"\bwithout\s+"
-        r"(?:executing|running|launching)\b",
-    )
-
-    semantic_normalized = normalized
-    no_execute = False
-
-    for pattern in negated_execution_patterns:
-        if re.search(
-            pattern,
-            semantic_normalized,
-        ):
-            no_execute = True
-
-            semantic_normalized = re.sub(
-                pattern,
-                " ",
-                semantic_normalized,
-            )
-
-    semantic_words = _words(
-        semantic_normalized
-    )
 
     target_layer = _target_layer(
         semantic_words
@@ -201,8 +157,7 @@ def build_ir(raw: str) -> dict:
     )
 
     is_prepare_no_execute = bool(
-        prepare_requested
-        and no_execute
+        semantics["execution_hold_relaxable"]
         and not is_action
     )
 
@@ -326,6 +281,11 @@ def build_ir(raw: str) -> dict:
         )
 
     missing: list[str] = []
+    # The only branch the frame governs (prepare + confirmed no_execute):
+    # preparing something identified only by an unresolved pronoun or a
+    # presupposed definite cannot be closed from the utterance alone.
+    if is_prepare_no_execute and semantics["prepare_referent_open"]:
+        missing.append("referent")
     if intent_type == "code_request" and not (words & {"fichier", "file", "test", "scope"}):
         missing.append("target_scope")
     if intent_type == "unknown":
@@ -343,6 +303,8 @@ def build_ir(raw: str) -> dict:
         "needs": needs,
         "constraints": constraints,
         "missing": missing,
+        # Descriptive, non-sovereign projection of the utterance frame.
+        "semantics": semantics,
     }
 
 

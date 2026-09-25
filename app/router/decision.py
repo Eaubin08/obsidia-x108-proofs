@@ -102,6 +102,8 @@ def decide(raw: str, memory_index: dict | None = None,
     if (
         gate["verdict"] == "CLARIFY"
         and task_kind == TaskKind.ANSWER_TASK
+        # An unidentified referent is not answerable by inference.
+        and "referent" not in ir.get("missing", [])
     ):
         gate = dict(gate)
         gate.update(
