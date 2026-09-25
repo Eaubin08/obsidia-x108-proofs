@@ -77,6 +77,9 @@ référence.
 `reported speech → REPORTED`, `hypothesis/condition → HYPOTHETICAL`,
 `embedded fear → FEARED`, `prevention → PREVENTED`, `belief → BELIEVED`,
 `savoir-faire/capacité assertée → ASSERTED`.
+Deux statuts techniques complètent la liste : `EMBEDDED` (infinitif régi
+par un mot non reconnu, « essaie de lancer » — traité comme requête pour
+la gouvernance, fail-closed) et `NOT_REQUIRED` (« pas besoin de confirmer »).
 Le statut pragmatique est **par prédicat**, pas par phrase : « prépare le
 script mais ne l'exécute pas » contient une requête **et** une interdiction.
 
