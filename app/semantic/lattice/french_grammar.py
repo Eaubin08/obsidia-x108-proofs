@@ -467,7 +467,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
     k = 0
     skip = {"ne", "n'", "pas", "plus", "jamais", "rien", "déjà", "deja", "bien", "not",
             "never", "surtout", "vraiment", "encore", "toujours", "le", "la", "les", "l'",
-            "y", "en", "lui", "leur"}
+            "y", "en", "lui", "leur"} | _REFLEXIVE_CLITICS
     while k < len(toks):
         if k in consumed or not _is_verb(toks, k):
             k += 1
@@ -562,8 +562,15 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
         # modal + infinitive
         if cls == "modal":
             v = _next_verb(toks, after, skip)
-            if v is not None and ("INF" in _feats(toks[v])):
-                d = _Draft(toks[v], v, k, "INFINITIVE", _tense_of(feats),
+            form = "INFINITIVE"
+            if v is not None and _pred(toks[v]) == "BE":
+                # passive under modal: "doit être lancé"
+                w = _next_verb(toks, v + 1, skip)
+                if w is not None and "PP" in _feats(toks[w]):
+                    consumed.add(v)
+                    v, form = w, "PARTICIPLE"
+            if v is not None and ("INF" in _feats(toks[v]) or form == "PARTICIPLE"):
+                d = _Draft(toks[v], v, k, form, _tense_of(feats),
                            modality=_MODALITY.get(pred), modal_tok=t,
                            politeness="COND" in feats or t.low == "could",
                            subject=subj, subject_person=person, inverted=inverted)
@@ -611,7 +618,7 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
     if j >= len(toks):
         return None, j
     t = toks[j]
-    if t.low in _WH_WORDS:
+    if t.low in _WH_WORDS or t.low in _REFLEXIVE_CLITICS:
         return None, j
     if t.low in _DEMONSTRATIVE_PRONOUNS:
         end = j + 1
