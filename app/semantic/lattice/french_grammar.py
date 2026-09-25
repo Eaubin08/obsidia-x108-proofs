@@ -62,6 +62,9 @@ _PREPOSITIONS = {"sur", "dans", "avec", "pour", "à", "a", "en", "par", "vers",
 _DEIXIS = {"ici", "là", "maintenant", "aujourd'hui", "demain", "hier",
            "here", "now", "today", "tomorrow", "yesterday"}
 _TIME_ADVERBS = _DEIXIS | {"dehors", "ensuite", "après", "apres", "avant", "tard", "tôt"}
+# Manner adverbs that must never be read as a bare (determiner-less) object.
+_MANNER_ADVERBS = {"tout", "seul", "seule", "seuls", "vite", "ensemble", "automatiquement",
+                   "directement", "immédiatement", "immediatement", "maintenant"}
 _INTERJECTIONS = {"please", "stp", "svp", "merci", "ok", "okay", "bon", "bonjour",
                   "salut", "hey", "hello", "hi", "oui", "non", "yes", "no"}
 _WH_WORDS = {"comment", "pourquoi", "quand", "où", "quoi", "combien", "how", "what",
@@ -618,7 +621,7 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
     if j >= len(toks):
         return None, j
     t = toks[j]
-    if t.low in _WH_WORDS or t.low in _REFLEXIVE_CLITICS:
+    if t.low in _WH_WORDS or t.low in _REFLEXIVE_CLITICS or t.low in _MANNER_ADVERBS:
         return None, j
     if t.low in _DEMONSTRATIVE_PRONOUNS:
         end = j + 1
@@ -940,8 +943,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if prev_prag in {"REQUESTED", "FORBIDDEN"} and u.verb_form == "INFINITIVE":
                 clause.units[0] = (replace(u, pragmatic="REQUESTED" if u.polarity == "positive"
                                            else "FORBIDDEN", epistemic="NOT_APPLICABLE"), d)
+        # Subordinate clauses (reason, condition, embedding...) never become the
+        # host of a following "puis" / "mais": only main clauses do.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que"} and clause.units:
+                               "avant_que", "a_moins_que", "car"} and clause.units:
             main_heads.append((ci, clause.units[0][0]))
 
     # ── inter-clause relations ──
