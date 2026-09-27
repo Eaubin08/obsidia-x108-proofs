@@ -51,6 +51,7 @@ class EventTargetReference:
             raise ValueError("source_predicate is required")
         kind = self.target_kind if isinstance(self.target_kind, TargetKind) else TargetKind(str(self.target_kind))
         status = self.resolution_status if isinstance(self.resolution_status, ResolutionStatus) else ResolutionStatus(str(self.resolution_status))
+        _check_target_consistency(kind, status, self.target_predicate, self.target_event)
         object.__setattr__(self, "target_kind", kind)
         object.__setattr__(self, "resolution_status", status)
         object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
@@ -69,3 +70,23 @@ class EventTargetReference:
             "confidence": dict(self.confidence),
             "metadata": dict(self.metadata),
         }
+
+
+_RESOLVED = frozenset({ResolutionStatus.RESOLVED_EXPLICIT, ResolutionStatus.RESOLVED_STRUCTURAL})
+
+
+def _check_target_consistency(
+    kind: TargetKind,
+    status: ResolutionStatus,
+    target_predicate: str | None,
+    target_event: str | None,
+) -> None:
+    """Reject target records that contradict themselves (no guessing, no repair)."""
+    if status not in _RESOLVED and target_event is not None:
+        raise ValueError(f"{status.value} reference cannot carry a target_event")
+    if kind is TargetKind.EVENT_TARGET and status in _RESOLVED and not target_event:
+        raise ValueError("resolved EVENT_TARGET requires a target_event")
+    if kind is TargetKind.EVENT_TARGET and status not in _RESOLVED:
+        raise ValueError("EVENT_TARGET must be resolved; use UNKNOWN_TARGET when unresolved")
+    if kind is TargetKind.UNKNOWN_TARGET and (status in _RESOLVED or target_predicate or target_event):
+        raise ValueError("UNKNOWN_TARGET carries no target and is never resolved")
