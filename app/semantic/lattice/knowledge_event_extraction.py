@@ -16,7 +16,7 @@ from app.semantic.lattice.event_coreference import (
     ResolutionStatus,
     TargetKind,
 )
-from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus
+from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus, occurrence_status_for
 from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.primitives import PredicateUnit, RelationKind, UtteranceFrame
 
@@ -138,7 +138,7 @@ def _knowledge_candidate(
     existing: Mapping[str, EventCandidate],
 ) -> EventCandidate:
     base = existing.get(unit.id)
-    occurrence = base.occurrence_status if base is not None else _learn_occurrence_status(unit)
+    occurrence = base.occurrence_status if base is not None else occurrence_status_for(frame, unit)
     frame_ref = base.event_ref.source_frame if base is not None else _frame_ref(frame)
     event_id = base.event_ref.event_id if base is not None else _event_id(frame_ref or _frame_ref(frame), unit.id)
     event = EventRef(
@@ -202,20 +202,6 @@ def _target_metadata() -> dict[str, Any]:
         "nearest_event_fallback": False,
         "temporal_attachment": "not_resolved_here",
     }
-
-
-def _learn_occurrence_status(unit: PredicateUnit) -> OccurrenceStatus:
-    if unit.polarity == "negative" or unit.role == "NEGATED":
-        return OccurrenceStatus.NEGATED
-    if unit.pragmatic == "HYPOTHETICAL" or unit.epistemic == "HYPOTHETICAL" or unit.role == "HYPOTHETICAL":
-        return OccurrenceStatus.HYPOTHETICAL
-    if unit.tense_aspect == "FUTURE":
-        return OccurrenceStatus.FUTURE
-    if unit.realized is True and unit.polarity == "positive":
-        return OccurrenceStatus.ASSERTED_OCCURRED
-    if unit.pragmatic == "ASSERTED":
-        return OccurrenceStatus.ASSERTED_OCCURRED
-    return OccurrenceStatus.UNKNOWN
 
 
 def _frame_ref(frame: UtteranceFrame) -> str:

@@ -27,6 +27,11 @@ _ACTION_CLASSES = frozenset({
 })
 
 
+# Speech/cognition acts whose own occurrence the speaker asserts when the
+# predicate itself is asserted (present tense included).
+_META_EVENT_PREDICATES = frozenset({"SAY", "BELIEVE", "OBSERVE", "LEARN"})
+
+
 class OccurrenceStatus(str, Enum):
     ASSERTED_OCCURRED = "ASSERTED_OCCURRED"
     NEGATED = "NEGATED"
@@ -86,11 +91,7 @@ def extract_event_candidates(
 ) -> tuple[EventCandidate, ...]:
     """Return conservative EventRef candidates for parser-backed predicates."""
 
-    conditional_sources = {
-        relation.source
-        for relation in frame.relations
-        if relation.kind == RelationKind.CONDITIONS.value
-    }
+    conditional_sources = _conditional_sources(frame)
     frame_ref = _frame_ref(frame)
     units_by_id = {unit.id: unit for unit in frame.units}
     candidates: list[EventCandidate] = []
@@ -147,11 +148,59 @@ def _event_kind(unit: PredicateUnit) -> EventKind | None:
     return None
 
 
+def occurrence_status_for(frame: UtteranceFrame, unit: PredicateUnit) -> OccurrenceStatus:
+    """Canonical occurrence classification for any parser-backed PredicateUnit.
+
+    Shared by base, observation and knowledge event extraction so that every
+    EventRef built from the same predicate gets the same occurrence status.
+    """
+    units_by_id = {candidate.id: candidate for candidate in frame.units}
+    return _occurrence_status(unit, _conditional_sources(frame), units_by_id)
+
+
+def resolve_epistemic_ancestor_occurrence(
+    unit: PredicateUnit,
+    units_by_id: Mapping[str, PredicateUnit],
+    local_status: OccurrenceStatus,
+) -> OccurrenceStatus:
+    """Apply the REPORT/BELIEF boundary to a locally derived occurrence status.
+
+    Only a status that would present the event as occurred is affected:
+    stronger local signals (conditional, negated, hypothetical, future,
+    uncertain, reported, unknown) are returned unchanged. Believed content
+    becomes UNKNOWN and reported content REPORTED; the nearest REPORT/BELIEF
+    ancestor governs, while LEARN/OBSERVE ancestors are walked through.
+    Malformed ancestry (missing parent, cycle) fails closed to UNKNOWN.
+    """
+    if local_status is not OccurrenceStatus.ASSERTED_OCCURRED:
+        return local_status
+    if unit.pragmatic == "BELIEVED" or unit.epistemic == "BELIEF" or unit.role == "BELIEVED":
+        return OccurrenceStatus.UNKNOWN
+    seen = {unit.id}
+    parent_id = unit.embedded_under
+    while parent_id is not None:
+        parent = units_by_id.get(parent_id)
+        if parent_id in seen or parent is None:
+            return OccurrenceStatus.UNKNOWN
+        kind = _event_kind(parent)
+        if kind is EventKind.REPORT:
+            return OccurrenceStatus.REPORTED
+        if kind is EventKind.BELIEF:
+            return OccurrenceStatus.UNKNOWN
+        seen.add(parent_id)
+        parent_id = parent.embedded_under
+    return local_status
+
+
 def _occurrence_status(
     unit: PredicateUnit,
     conditional_sources: set[str],
     units_by_id: Mapping[str, PredicateUnit],
 ) -> OccurrenceStatus:
+    return resolve_epistemic_ancestor_occurrence(unit, units_by_id, _local_occurrence_status(unit, conditional_sources))
+
+
+def _local_occurrence_status(unit: PredicateUnit, conditional_sources: set[str]) -> OccurrenceStatus:
     if unit.id in conditional_sources:
         return OccurrenceStatus.CONDITIONAL
     if unit.polarity == "negative" or unit.role == "NEGATED":
@@ -164,31 +213,19 @@ def _occurrence_status(
         return OccurrenceStatus.UNCERTAIN
     if unit.pragmatic == "REPORTED" or unit.epistemic in {"REPORTED", "HEARSAY"}:
         return OccurrenceStatus.REPORTED
-    # Belief is epistemic, not occurrence: believed content is never presented
-    # as occurred, but the stronger signals above are kept.
-    if _under_belief(unit, units_by_id):
-        return OccurrenceStatus.UNKNOWN
     if unit.realized is True and unit.polarity == "positive":
         return OccurrenceStatus.ASSERTED_OCCURRED
-    if unit.predicate in {"SAY", "BELIEVE"} and unit.pragmatic == "ASSERTED":
+    if unit.predicate in _META_EVENT_PREDICATES and unit.pragmatic == "ASSERTED":
         return OccurrenceStatus.ASSERTED_OCCURRED
     return OccurrenceStatus.UNKNOWN
 
 
-def _under_belief(unit: PredicateUnit, units_by_id: Mapping[str, PredicateUnit]) -> bool:
-    if unit.pragmatic == "BELIEVED" or unit.epistemic == "BELIEF" or unit.role == "BELIEVED":
-        return True
-    seen = {unit.id}
-    parent_id = unit.embedded_under
-    while parent_id is not None and parent_id not in seen:
-        parent = units_by_id.get(parent_id)
-        if parent is None:
-            return False
-        if parent.predicate == "BELIEVE" or parent.predicate_class == "embedding_believe":
-            return True
-        seen.add(parent_id)
-        parent_id = parent.embedded_under
-    return False
+def _conditional_sources(frame: UtteranceFrame) -> set[str]:
+    return {
+        relation.source
+        for relation in frame.relations
+        if relation.kind == RelationKind.CONDITIONS.value
+    }
 
 
 def _frame_ref(frame: UtteranceFrame) -> str:

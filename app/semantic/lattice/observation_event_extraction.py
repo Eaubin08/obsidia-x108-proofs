@@ -16,7 +16,7 @@ from app.semantic.lattice.event_coreference import (
     ResolutionStatus,
     TargetKind,
 )
-from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus
+from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus, occurrence_status_for
 from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.primitives import Argument, PredicateUnit, RelationKind, UtteranceFrame
 
@@ -137,7 +137,7 @@ def _observation_candidate(frame: UtteranceFrame, unit: PredicateUnit) -> EventC
             "physical_truth": False,
         },
     )
-    occurrence = _observation_occurrence_status(unit)
+    occurrence = occurrence_status_for(frame, unit)
     return EventCandidate(
         event_ref=event,
         predicate_ref=unit.id,
@@ -268,22 +268,6 @@ def _direct_entity_target(unit: PredicateUnit) -> Argument | None:
     if arg.kind in {"NP", "NEGATIVE_QUANTIFIER"}:
         return arg
     return None
-
-
-def _observation_occurrence_status(unit: PredicateUnit) -> OccurrenceStatus:
-    if unit.polarity == "negative" or unit.role == "NEGATED":
-        return OccurrenceStatus.NEGATED
-    if unit.pragmatic == "HYPOTHETICAL" or unit.epistemic == "HYPOTHETICAL" or unit.role == "HYPOTHETICAL":
-        return OccurrenceStatus.HYPOTHETICAL
-    if unit.tense_aspect == "FUTURE":
-        return OccurrenceStatus.FUTURE
-    if unit.pragmatic == "REPORTED" or unit.epistemic in {"REPORTED", "HEARSAY"}:
-        return OccurrenceStatus.REPORTED
-    if unit.realized is True and unit.polarity == "positive":
-        return OccurrenceStatus.ASSERTED_OCCURRED
-    if unit.pragmatic == "ASSERTED":
-        return OccurrenceStatus.ASSERTED_OCCURRED
-    return OccurrenceStatus.UNKNOWN
 
 
 def _frame_ref(frame: UtteranceFrame) -> str:
