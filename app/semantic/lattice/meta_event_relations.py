@@ -10,10 +10,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import AbstractSet, Any, Mapping
+from typing import AbstractSet, Any, Iterable, Mapping
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
+from app.semantic.lattice.event_extraction import extract_event_candidates
 from app.semantic.lattice.event_index import EventIndex
+from app.semantic.lattice.event_reference_resolution import resolve_explicit_event_references
+from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_event_targets
+from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
 from app.semantic.lattice.events import EventKind, EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.primitives import RelationKind, UtteranceFrame
 
@@ -53,6 +57,107 @@ def extract_belief_event_relations(frame: UtteranceFrame, event_index: EventInde
     return _extract_meta_relations(
         frame, event_index, EventKind.BELIEF, frozenset({RelationKind.BELIEVES.value}),
         EventRelationKind.BELIEVES_ABOUT,
+    )
+
+
+_NOMINAL_RELATION_BY_KIND: Mapping[EventKind, EventRelationKind] = MappingProxyType({
+    EventKind.OBSERVATION: EventRelationKind.OBSERVES,
+    EventKind.KNOWLEDGE_ACQUISITION: EventRelationKind.LEARNS_ABOUT,
+    EventKind.REPORT: EventRelationKind.REPORTS_ABOUT,
+    EventKind.BELIEF: EventRelationKind.BELIEVES_ABOUT,
+})
+
+
+def extract_nominal_reference_relations(
+    frame: UtteranceFrame,
+    event_index: EventIndex,
+    *,
+    structural_relations: Iterable[EventReferenceRelation] | None = None,
+) -> MetaEventRelationResult:
+    """Adapter: explicit nominal event reference -> typed meta-event relation.
+
+    Consumes the pure resolver output over the indexed events. Only a
+    RESOLVED_STRUCTURAL reference whose governing predicate is an indexed
+    meta-event (observation, knowledge acquisition, report, belief) becomes a
+    relation; a structural target of the same meta-event takes precedence.
+    """
+    if structural_relations is None:
+        base = extract_event_candidates(frame)
+        structural_relations = (
+            *extract_observation_event_targets(frame, base).relations,
+            *extract_knowledge_event_targets(frame, base).relations,
+            *extract_report_event_relations(frame, event_index).relations,
+            *extract_belief_event_relations(frame, event_index).relations,
+        )
+    structural_sources = {relation.source_event for relation in structural_relations}
+    resolution = resolve_explicit_event_references(frame, event_index.events())
+
+    targets: list[EventTargetReference] = []
+    relations: list[EventReferenceRelation] = []
+    skipped: dict[str, int] = {}
+    for reference in resolution.references:
+        governor_id = reference.provenance.get("governing_predicate_id")
+        governor = event_index.event_for(governor_id) if governor_id else None
+        target = event_index.by_event_id(reference.target_event) if reference.target_event else None
+        if reference.resolution_status is not ResolutionStatus.RESOLVED_STRUCTURAL or target is None:
+            reason = "reference_not_resolved"
+        elif governor is None:
+            reason = "no_governing_event"
+        elif governor.event_ref.event_kind not in _NOMINAL_RELATION_BY_KIND:
+            reason = "governor_not_meta_event"
+        elif governor.event_ref.event_id in structural_sources:
+            reason = "structural_target_precedence"
+        else:
+            reason = None
+        if reason is not None:
+            skipped[reason] = skipped.get(reason, 0) + 1
+            continue
+        provenance = dict(reference.provenance, source_predicate=governor.predicate_ref,
+                          target_rule="explicit_nominal_reference")
+        metadata = {
+            "target_rule": "explicit_nominal_reference",
+            "coreference_confidence": reference.metadata.get("coreference_confidence"),
+            "coreference_calibrated": False,
+            "source_occurrence_status": governor.occurrence_status.value,
+            "target_occurrence_status": target.occurrence_status.value,
+            "target_occurrence_promoted": False,
+            "validated_evidence": False,
+            "verified": False,
+            "truth": None,
+        }
+        targets.append(EventTargetReference(
+            source_event=governor.event_ref.event_id,
+            source_predicate=governor.predicate_ref,
+            target_kind=TargetKind.EVENT_TARGET,
+            resolution_status=ResolutionStatus.RESOLVED_STRUCTURAL,
+            target_predicate=target.predicate_ref,
+            target_event=target.event_ref.event_id,
+            provenance=provenance,
+            confidence=dict(reference.confidence),
+            metadata=metadata,
+        ))
+        relations.append(EventReferenceRelation(
+            relation_kind=_NOMINAL_RELATION_BY_KIND[governor.event_ref.event_kind],
+            source_event=governor.event_ref.event_id,
+            target_event=target.event_ref.event_id,
+            provenance=provenance,
+            confidence=dict(reference.confidence),
+            status="nominal_reference",
+            metadata=metadata,
+        ))
+    return MetaEventRelationResult(
+        targets=tuple(targets),
+        relations=tuple(relations),
+        metadata={
+            "SKIPPED": dict(sorted(skipped.items())),
+            "VERIFIED_FLOW_CREATED": 0,
+            "MEMORY_WRITE": 0,
+            "AUTHORIZED_FLOW_CREATED": 0,
+            "TARGET_OCCURRENCE_PROMOTIONS": 0,
+            "CROSS_MESSAGE_BINDINGS": 0,
+            "LATEST_EVENT_BINDINGS": 0,
+            "KX108_CALLED": 0,
+        },
     )
 
 
