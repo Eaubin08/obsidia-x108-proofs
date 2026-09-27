@@ -50,9 +50,9 @@ def _governors(frame):
 CANONICAL = (
     "Paul rapporte que Marie a lancé le test.",
     "Paul signale que Marie a lancé le test.",
-    "Paul affirme que Marie a lancé le test.",
+    "Paul soutient que Marie a lancé le test.",
     "Paul prétend que Marie a lancé le test.",
-    "Paul suppose que Marie a lancé le test.",
+    "Paul estime que Marie a lancé le test.",
     "Paul nie que Marie a lancé le test.",
 )
 
@@ -61,7 +61,7 @@ CANONICAL = (
     "Paul a rapporté que Marie a lancé le test.",
     "Paul a nié que Marie a lancé le test.",
     "Le chef nie que Marie a lancé le test.",
-    "Il affirme que Marie a lancé le test.",
+    "Il assure que Marie a lancé le test.",
 ))
 def test_unknown_governor_complement_fails_closed(text):
     frame = parse_utterance(text)
@@ -101,15 +101,15 @@ def test_negated_unknown_governor_keeps_its_own_polarity():
 @pytest.mark.parametrize("text, expected", [
     ("Paul rapporte que Marie ne lancera pas le test.", OccurrenceStatus.NEGATED),
     ("Paul rapporte que Marie n'a pas lancé le test.", OccurrenceStatus.NEGATED),
-    ("Paul affirme que Marie lancera le test.", OccurrenceStatus.FUTURE),
-    ("Paul suppose que Marie pourrait lancer le test.", OccurrenceStatus.UNCERTAIN),
+    ("Paul soutient que Marie lancera le test.", OccurrenceStatus.FUTURE),
+    ("Paul estime que Marie pourrait lancer le test.", OccurrenceStatus.UNCERTAIN),
 ])
 def test_strong_local_signals_survive_unknown_governor(text, expected):
     assert _run_statuses(text) == [expected]
 
 
 def test_nested_content_below_unknown_governor_is_not_asserted():
-    frame = parse_utterance("Paul affirme que Marie a appris que Jean a lancé le test.")
+    frame = parse_utterance("Paul soutient que Marie a appris que Jean a lancé le test.")
     events = _events(frame)
     learn = next(unit for unit in frame.units if unit.predicate == "LEARN")
 
@@ -166,7 +166,7 @@ def test_relatives_restrictions_clefts_and_comparatives_get_no_governor(text):
 
 
 def test_unknown_governor_never_fabricates_a_request():
-    for text in ("Paul affirme que tu as lancé le test.", "Paul nie que tu lances le test.",
+    for text in ("Paul soutient que tu as lancé le test.", "Paul nie que tu lances le test.",
                  "Paul rapporte que Marie supprime le fichier."):
         summary = governable_summary(parse_utterance(text))
         assert summary["requested_world_actions"] == []
@@ -180,8 +180,9 @@ def test_no_raw_phrase_hack_in_parser():
 
 # Adversarial matrix.
 
-_UNKNOWN_PRESENT = ("rapporte", "signale", "affirme", "prétend", "suppose", "nie", "déclare", "annonce", "mentionne")
-_UNKNOWN_PARTICIPLE = ("rapporté", "signalé", "affirmé", "prétendu", "supposé", "nié", "déclaré", "annoncé", "mentionné")
+# Verbs still unknown after B2b (affirmer/déclarer/mentionner/supposer are now lexical).
+_UNKNOWN_PRESENT = ("rapporte", "signale", "soutient", "prétend", "estime", "nie", "assure", "annonce", "soupçonne")
+_UNKNOWN_PARTICIPLE = ("rapporté", "signalé", "soutenu", "prétendu", "estimé", "nié", "assuré", "annoncé", "soupçonné")
 _SUBJECTS = ("Paul", "Anne", "Il", "Elle", "Le chef")
 
 _GOVERNED = (

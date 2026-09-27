@@ -49,6 +49,10 @@ LEMMAS: dict[str, tuple[str, str]] = {
     "do": ("DO", "generic_action"),
     # embedding verbs
     "dire": ("SAY", "embedding_say"),
+    # audited safe report subset (B2b); embedding still requires "que"
+    "affirmer": ("SAY", "embedding_say"),
+    "déclarer": ("SAY", "embedding_say"),
+    "mentionner": ("SAY", "embedding_say"),
     "say": ("SAY", "embedding_say"),
     "tell": ("SAY", "embedding_say"),
     "craindre": ("FEAR", "embedding_fear"),
@@ -58,6 +62,8 @@ LEMMAS: dict[str, tuple[str, str]] = {
     "empêcher": ("PREVENT", "embedding_prevent"),
     "penser": ("BELIEVE", "embedding_believe"),
     "croire": ("BELIEVE", "embedding_believe"),
+    # audited safe belief subset (B2b)
+    "supposer": ("BELIEVE", "embedding_believe"),
     "apprendre": ("LEARN", "embedding_learn"),
     "voir": ("OBSERVE", "observation"),
     "observer": ("OBSERVE", "observation"),
@@ -114,6 +120,10 @@ _ER_VERBS: dict[str, tuple[str, str | None]] = {
     "éviter": ("évit", None),
     "empêcher": ("empêch", None),
     "penser": ("pens", None),
+    "affirmer": ("affirm", None),
+    "déclarer": ("déclar", None),
+    "mentionner": ("mentionn", None),
+    "supposer": ("suppos", None),
     "apprendre": ("appr", None),
     "observer": ("observ", None),
     "détecter": ("détect", None),
@@ -212,6 +222,9 @@ _IRREGULAR: dict[str, dict[str, tuple[str, ...]]] = {
     "croire": {
         "PRES": ("crois", "croit", "croyons", "croyez", "croient"),
         "INF": ("croire",), "PP": ("cru",),
+        "IMPF": ("croyais", "croyait", "croyions", "croyiez", "croyaient"),
+        "FUT": ("croirai", "croiras", "croira", "croirons", "croirez", "croiront"),
+        "COND": ("croirais", "croirait", "croirions", "croiriez", "croiraient"),
     },
     "apprendre": {
         "PRES": ("apprends", "apprend", "apprenons", "apprenez", "apprennent"),
