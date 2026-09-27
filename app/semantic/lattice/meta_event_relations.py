@@ -8,14 +8,96 @@ EventRef, and never touches target occurrence, truth, evidence or authority.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import AbstractSet, Any, Mapping
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
 from app.semantic.lattice.event_index import EventIndex
-from app.semantic.lattice.primitives import UtteranceFrame
+from app.semantic.lattice.events import EventKind, EventReferenceRelation, EventRelationKind
+from app.semantic.lattice.primitives import RelationKind, UtteranceFrame
 
 _SOURCE = "semantic_meta_event_relations"
 MULTIPLE_TARGETS_UNSUPPORTED = "MULTIPLE_TARGETS_UNSUPPORTED"
+
+
+@dataclass(frozen=True)
+class MetaEventRelationResult:
+    targets: tuple[EventTargetReference, ...] = ()
+    relations: tuple[EventReferenceRelation, ...] = ()
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "targets", tuple(self.targets))
+        object.__setattr__(self, "relations", tuple(self.relations))
+        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "targets": [target.to_dict() for target in self.targets],
+            "relations": [relation.to_dict() for relation in self.relations],
+            "metadata": dict(self.metadata),
+        }
+
+
+def extract_report_event_relations(frame: UtteranceFrame, event_index: EventIndex) -> MetaEventRelationResult:
+    """REPORT EventRef -REPORTS_ABOUT-> immediate target EventRef (parser REPORTS relation)."""
+    return _extract_meta_relations(
+        frame, event_index, EventKind.REPORT, frozenset({RelationKind.REPORTS.value}),
+        EventRelationKind.REPORTS_ABOUT,
+    )
+
+
+def _extract_meta_relations(
+    frame: UtteranceFrame,
+    event_index: EventIndex,
+    source_kind: EventKind,
+    relation_kinds: AbstractSet[str],
+    relation_kind: EventRelationKind,
+) -> MetaEventRelationResult:
+    targets: list[EventTargetReference] = []
+    relations: list[EventReferenceRelation] = []
+    for source in event_index.events():
+        if source.event_ref.event_kind is not source_kind:
+            continue
+        target = select_immediate_meta_target(frame, source.predicate_ref, relation_kinds, event_index)
+        targets.append(target)
+        if target.target_kind is not TargetKind.EVENT_TARGET or target.target_event is None:
+            continue
+        relations.append(EventReferenceRelation(
+            relation_kind=relation_kind,
+            source_event=target.source_event,
+            target_event=target.target_event,
+            provenance=dict(target.provenance, source_predicate=source.predicate_ref),
+            confidence={"value": None, "calibrated": False},
+            metadata={
+                "source_occurrence_status": source.occurrence_status.value,
+                "target_occurrence_status": target.metadata["target_occurrence_status"],
+                "target_occurrence_promoted": False,
+                "validated_evidence": False,
+                "verified": False,
+                "supported": False,
+                "observed": False,
+                "truth": None,
+            },
+        ))
+    return MetaEventRelationResult(
+        targets=tuple(targets),
+        relations=tuple(relations),
+        metadata={
+            "SOURCE_EVENT_KIND": source_kind.value,
+            "RELATION_KIND": relation_kind.value,
+            "VERIFIED_FLOW_CREATED": 0,
+            "SUPPORTED_FLOW_CREATED": 0,
+            "OBSERVED_FLOW_CREATED": 0,
+            "VALIDATED_EVIDENCE_CREATED": 0,
+            "MEMORY_WRITE": 0,
+            "AUTHORIZED_FLOW_CREATED": 0,
+            "EXECUTED_FLOW_CREATED": 0,
+            "TARGET_OCCURRENCE_PROMOTIONS": 0,
+            "KX108_CALLED": 0,
+        },
+    )
 
 
 def select_immediate_meta_target(
