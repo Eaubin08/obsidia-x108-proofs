@@ -1,28 +1,58 @@
 """Explicit nominal event reference resolution.
 
-This module is intentionally narrow: it resolves only explicit event-nominal
-references inside a single utterance/frame when compatible EventRef candidates
-are already available. It does not resolve generic pronouns, cross-message
-references, memory-backed references, or graph traversal paths.
+This module is intentionally narrow: it resolves only demonstrative
+event-nominal references ("ce lancement", "cette observation") inside a single
+parser frame. It does not resolve generic pronouns, definite descriptions,
+cross-message references, memory-backed references, or graph traversal paths,
+and it is not wired into OBSERVES / LEARNS_ABOUT relations.
+
+Candidate admissibility contract (applied before any compatibility or
+cardinality check):
+
+- the candidate's EventRef carries a non-null source_frame equal to this
+  frame's ref (frame refs are parser-local raw-text hashes, not message ids);
+- its predicate_ref names a PredicateUnit of this frame, and any span it
+  records matches that unit;
+- it is not the event of the predicate governing the reference;
+- the antecedent unit ends before the reference starts, and lies in an earlier
+  sentence, or in an earlier clause of the same sentence when the governing
+  predicate is known.
+
+Compatibility is decided from parser-backed canonical predicates only; event
+and predicate identifiers never carry meaning. Generic nominals are never
+resolved from cardinality alone, and antecedents whose occurrence status is not
+asserted/reported are flagged as occurrence conflicts instead of bound.
 """
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from hashlib import sha256
 from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
-from app.semantic.lattice.event_extraction import EventCandidate
+from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus
 from app.semantic.lattice.events import EventKind
 from app.semantic.lattice.primitives import PredicateUnit, UtteranceFrame
 
 _SOURCE = "semantic_event_reference_resolution"
+_RULE = "explicit_nominal_event_reference"
+FRAME_IDENTITY_SCOPE = "parser_local_raw_text_hash"
+
+_GENERIC_EVENT = "generic_event"
+_GENERIC_FACT = "generic_fact"
+_GENERIC_CLASSES = frozenset({_GENERIC_EVENT, _GENERIC_FACT})
 
 _REFERENCE_TERMS: Mapping[str, str] = MappingProxyType({
-    "événement": "generic_event",
-    "evenement": "generic_event",
-    "fait": "generic_fact",
+    "événement": _GENERIC_EVENT,
+    "evenement": _GENERIC_EVENT,
+    "action": _GENERIC_EVENT,
+    "opération": _GENERIC_EVENT,
+    "operation": _GENERIC_EVENT,
+    "décision": _GENERIC_EVENT,
+    "decision": _GENERIC_EVENT,
+    "fait": _GENERIC_FACT,
     "échec": "failure",
     "echec": "failure",
     "réussite": "success",
@@ -30,30 +60,35 @@ _REFERENCE_TERMS: Mapping[str, str] = MappingProxyType({
     "lancement": "launch",
     "arrêt": "stop",
     "arret": "stop",
-    "erreur": "failure",
-    "crash": "failure",
-    "incident": "failure",
-    "action": "generic_event",
-    "opération": "generic_event",
-    "operation": "generic_event",
+    "changement": "change",
     "observation": "observation",
     "rapport": "report",
-    "décision": "generic_event",
-    "decision": "generic_event",
-    "changement": "change",
 })
 
-_EXPLICIT_MARKERS = frozenset({
-    "ce",
-    "cet",
-    "cette",
-    "ces",
-    "l'",
-    "le",
-    "la",
+# Bounded canonical-predicate compatibility. A class with no parser-backed
+# EventRef today (e.g. failure, stop) simply stays unresolved.
+_COMPATIBLE_PREDICATES: Mapping[str, frozenset[str]] = MappingProxyType({
+    "failure": frozenset({"FAIL"}),
+    "success": frozenset({"SUCCEED"}),
+    "launch": frozenset({"EXECUTE"}),
+    "stop": frozenset({"STOP"}),
+    "change": frozenset({"CHANGE"}),
+    "observation": frozenset({"OBSERVE"}),
+    "report": frozenset({"SAY"}),
 })
 
-_PRONOUNS = frozenset({"ça", "ca", "cela", "ceci", "l'", "le", "la", "en", "y"})
+_REQUIRED_EVENT_KIND: Mapping[str, EventKind] = MappingProxyType({
+    "observation": EventKind.OBSERVATION,
+    "report": EventKind.REPORT,
+})
+
+_BINDABLE_OCCURRENCE = frozenset({OccurrenceStatus.ASSERTED_OCCURRED, OccurrenceStatus.REPORTED})
+
+# Only singular demonstratives mark an explicit nominal reference. Definite
+# articles (le/la/l') and plurals are not treated as event anaphors.
+_MENTION = re.compile(r"\b(ce|cet|cette)\s+([A-Za-zÀ-ÿ]+)(?![A-Za-zÀ-ÿ'])", re.IGNORECASE)
+_COMPLEMENTIZER_AFTER = re.compile(r"\s+qu(?:e\b|')", re.IGNORECASE)
+_SENTENCE_BREAK = re.compile(r"[.!?](?=\s|$)")
 
 
 @dataclass(frozen=True)
@@ -78,7 +113,12 @@ class _ReferenceMention:
     noun: str
     semantic_class: str
     span: tuple[int, int]
-    source_clause: int | None
+    sentence: int
+    governor: PredicateUnit | None
+
+    @property
+    def source_clause(self) -> int | None:
+        return self.governor.clause if self.governor is not None else None
 
 
 def resolve_explicit_event_references(
@@ -87,28 +127,39 @@ def resolve_explicit_event_references(
 ) -> ExplicitEventReferenceResult:
     frame_ref = _frame_ref(frame)
     units_by_id = {unit.id: unit for unit in frame.units}
-    local_candidates = tuple(
-        candidate for candidate in candidates
-        if _is_frame_local(candidate, frame_ref)
-    )
+    sentence_breaks = tuple(match.start() for match in _SENTENCE_BREAK.finditer(frame.raw))
     references: list[EventTargetReference] = []
+    rejections: dict[str, int] = {}
 
-    for mention in _mentions(frame):
-        compatible = tuple(
-            candidate for candidate in local_candidates
-            if _compatible(mention, candidate, units_by_id)
-        )
-        if len(compatible) == 1:
-            references.append(_resolved_reference(frame, mention, compatible[0], units_by_id))
+    for mention in _mentions(frame, sentence_breaks):
+        admissible: list[tuple[EventCandidate, PredicateUnit]] = []
+        for candidate in candidates:
+            unit, reason = _admit(mention, candidate, frame_ref, units_by_id, sentence_breaks)
+            if unit is None:
+                rejections[reason] = rejections.get(reason, 0) + 1
+                continue
+            admissible.append((candidate, unit))
+
+        if mention.semantic_class in _GENERIC_CLASSES:
+            references.append(_generic_reference(frame_ref, mention, admissible))
+            continue
+
+        compatible = [(c, u) for c, u in admissible if _compatible(mention, c, u)]
+        if not compatible:
+            references.append(_unresolved(frame_ref, mention, reason="no_compatible_antecedent"))
         elif len(compatible) > 1:
-            references.append(_ambiguous_reference(frame, mention, compatible, reason="multiple_compatible_antecedents"))
+            references.append(_ambiguous(frame_ref, mention, compatible, reason="multiple_compatible_antecedents"))
+        elif compatible[0][0].occurrence_status not in _BINDABLE_OCCURRENCE:
+            references.append(_ambiguous(frame_ref, mention, compatible, reason="antecedent_occurrence_conflict"))
         else:
-            references.append(_unresolved_reference(frame, mention, reason="no_compatible_antecedent"))
+            references.append(_resolved(frame_ref, mention, *compatible[0]))
 
     return ExplicitEventReferenceResult(
         references=tuple(references),
         metadata={
             "EXPLICIT_REFERENCES": len(references),
+            "REJECTED_CANDIDATES": dict(sorted(rejections.items())),
+            "FRAME_IDENTITY_SCOPE": FRAME_IDENTITY_SCOPE,
             "LATEST_EVENT_BINDINGS": 0,
             "NEAREST_EVENT_BINDINGS": 0,
             "PRONOUN_EVENT_BINDINGS": 0,
@@ -121,84 +172,138 @@ def resolve_explicit_event_references(
     )
 
 
-def _mentions(frame: UtteranceFrame) -> tuple[_ReferenceMention, ...]:
+def _mentions(frame: UtteranceFrame, sentence_breaks: tuple[int, ...]) -> tuple[_ReferenceMention, ...]:
     raw = frame.raw
     refs: list[_ReferenceMention] = []
-    seen: set[tuple[int, int]] = set()
-    for match in re.finditer(r"\b(ce|cet|cette|ces|le|la|l')\s+([A-Za-zÀ-ÿ']+)", raw, flags=re.IGNORECASE):
-        marker = match.group(1).lower()
+    for match in _MENTION.finditer(raw):
         noun = match.group(2).lower()
-        if marker not in _EXPLICIT_MARKERS:
-            continue
         semantic_class = _REFERENCE_TERMS.get(noun)
         if semantic_class is None:
             continue
+        # "ce fait que X" is a complement construction, not a nominal anaphor.
+        if semantic_class == _GENERIC_FACT and _COMPLEMENTIZER_AFTER.match(raw, match.end()):
+            continue
         span = match.span()
-        seen.add(span)
         refs.append(_ReferenceMention(
             surface=match.group(0).lower(),
             noun=noun,
             semantic_class=semantic_class,
             span=span,
-            source_clause=_source_clause(frame, span),
+            sentence=_sentence_index(sentence_breaks, span[0]),
+            governor=_governor(frame, span),
         ))
-    # Bare generic pronouns are intentionally ignored rather than converted into
-    # references. They stay for a later, explicitly scoped resolver.
-    for match in re.finditer(r"\b(ça|ca|cela|ceci|en|y)\b", raw, flags=re.IGNORECASE):
-        _ = match
-    return tuple(ref for ref in refs if ref.span in seen)
+    return tuple(refs)
 
 
-def _is_frame_local(candidate: EventCandidate, frame_ref: str) -> bool:
+def _governor(frame: UtteranceFrame, span: tuple[int, int]) -> PredicateUnit | None:
+    for unit in frame.units:
+        for arg in unit.objects:
+            if arg.span is not None and arg.span[0] <= span[0] < arg.span[1]:
+                return unit
+    return None
+
+
+def _admit(
+    mention: _ReferenceMention,
+    candidate: EventCandidate,
+    frame_ref: str,
+    units_by_id: Mapping[str, PredicateUnit],
+    sentence_breaks: tuple[int, ...],
+) -> tuple[PredicateUnit | None, str]:
     source_frame = candidate.event_ref.source_frame
-    return source_frame in {None, frame_ref}
-
-
-def _compatible(
-    mention: _ReferenceMention,
-    candidate: EventCandidate,
-    units_by_id: Mapping[str, PredicateUnit],
-) -> bool:
+    if source_frame is None:
+        return None, "frame_scope_unknown"
+    if source_frame != frame_ref:
+        return None, "frame_mismatch"
+    if candidate.event_ref.predicate_ref != candidate.predicate_ref:
+        return None, "predicate_ref_mismatch"
     unit = units_by_id.get(candidate.predicate_ref)
-    if mention.semantic_class in {"generic_event", "generic_fact"}:
-        return True
-    if mention.semantic_class == "observation":
-        return candidate.event_ref.event_kind is EventKind.OBSERVATION
-    if mention.semantic_class == "report":
-        return candidate.event_ref.event_kind is EventKind.REPORT
     if unit is None:
-        text = f"{candidate.predicate_ref} {candidate.event_ref.event_id}".lower()
-        if mention.semantic_class == "failure":
-            return any(token in text for token in ("fail", "failure", "échec", "echec", "crash", "erreur"))
-        if mention.semantic_class == "stop":
-            return any(token in text for token in ("stop", "arrêt", "arret"))
-        if mention.semantic_class == "launch":
-            return any(token in text for token in ("launch", "lancement", "execute", "run"))
-        if mention.semantic_class == "success":
-            return any(token in text for token in ("success", "réussite", "reussite"))
-        if mention.semantic_class == "change":
-            return any(token in text for token in ("change", "changement"))
+        return None, "predicate_unit_unavailable"
+    recorded_span = candidate.provenance.get("span")
+    if recorded_span is not None and tuple(recorded_span) != tuple(unit.span):
+        return None, "span_mismatch"
+    if mention.governor is not None and unit.id == mention.governor.id:
+        return None, "governing_event"
+    if not unit.span[1] < mention.span[0]:
+        return None, "not_prior"
+    if _sentence_index(sentence_breaks, unit.span[0]) < mention.sentence:
+        return unit, ""
+    if mention.governor is not None and unit.clause < mention.governor.clause:
+        return unit, ""
+    return None, "not_prior_clause"
+
+
+def _compatible(mention: _ReferenceMention, candidate: EventCandidate, unit: PredicateUnit) -> bool:
+    required_kind = _REQUIRED_EVENT_KIND.get(mention.semantic_class)
+    if required_kind is not None and candidate.event_ref.event_kind is not required_kind:
         return False
-    if mention.semantic_class == "failure":
-        return unit.predicate in {"FAIL"} or unit.lemma in {"échouer", "casser"} or unit.object_head in {"erreur", "crash"}
-    if mention.semantic_class == "launch":
-        return unit.predicate in {"EXECUTE", "PUSH", "DEPLOY"} or unit.predicate_class == "world_action"
-    if mention.semantic_class == "stop":
-        return unit.predicate == "STOP" or unit.lemma == "arrêter"
-    if mention.semantic_class == "success":
-        return unit.predicate in {"SUCCEED", "PASS"}
-    if mention.semantic_class == "change":
-        return unit.predicate == "CHANGE"
-    return False
+    return unit.predicate in _COMPATIBLE_PREDICATES.get(mention.semantic_class, frozenset())
 
 
-def _resolved_reference(
-    frame: UtteranceFrame,
+def _generic_reference(
+    frame_ref: str,
+    mention: _ReferenceMention,
+    admissible: Sequence[tuple[EventCandidate, PredicateUnit]],
+) -> EventTargetReference:
+    if len(admissible) > 1:
+        return _ambiguous(frame_ref, mention, admissible, reason="multiple_admissible_antecedents")
+    if admissible:
+        return _unresolved(frame_ref, mention, reason="generic_nominal_requires_structural_evidence", candidates=admissible)
+    return _unresolved(frame_ref, mention, reason="no_admissible_antecedent")
+
+
+def _unresolved_target_kind(mention: _ReferenceMention) -> TargetKind:
+    if mention.semantic_class == _GENERIC_FACT:
+        return TargetKind.PROPOSITION_TARGET
+    return TargetKind.UNKNOWN_TARGET
+
+
+def _base_provenance(frame_ref: str, mention: _ReferenceMention, status: ResolutionStatus) -> dict[str, Any]:
+    return {
+        "source": _SOURCE,
+        "surface_reference": mention.surface,
+        "reference_span": mention.span,
+        "source_clause": mention.source_clause,
+        "governing_predicate_id": mention.governor.id if mention.governor is not None else None,
+        "resolution_rule": _RULE,
+        "resolution_status": status.value,
+        "frame_ref": frame_ref,
+        "frame_identity_scope": FRAME_IDENTITY_SCOPE,
+    }
+
+
+def _base_metadata(mention: _ReferenceMention) -> dict[str, Any]:
+    return {
+        "semantic_class": mention.semantic_class,
+        "latest_event_fallback": False,
+        "nearest_event_fallback": False,
+        "cross_message": False,
+    }
+
+
+def _resolved(
+    frame_ref: str,
     mention: _ReferenceMention,
     candidate: EventCandidate,
-    units_by_id: Mapping[str, PredicateUnit],
+    unit: PredicateUnit,
 ) -> EventTargetReference:
-    antecedent_unit = units_by_id.get(candidate.predicate_ref)
+    confidence = 0.86
+    provenance = _base_provenance(frame_ref, mention, ResolutionStatus.RESOLVED_STRUCTURAL)
+    provenance.update({
+        "antecedent_span": unit.span,
+        "antecedent_predicate_id": candidate.predicate_ref,
+        "antecedent_event_id": candidate.event_ref.event_id,
+        "antecedent_canonical_predicate": unit.predicate,
+        "coreference_confidence": confidence,
+    })
+    metadata = _base_metadata(mention)
+    metadata.update({
+        "coreference_confidence": confidence,
+        "antecedent_occurrence_status": candidate.occurrence_status.value,
+        "occurrence_conflict": False,
+        "occurrence_promoted": False,
+    })
     return EventTargetReference(
         source_event=f"reference:{mention.span[0]}:{mention.span[1]}",
         source_predicate=f"reference:{mention.span[0]}:{mention.span[1]}",
@@ -206,129 +311,69 @@ def _resolved_reference(
         resolution_status=ResolutionStatus.RESOLVED_STRUCTURAL,
         target_predicate=candidate.predicate_ref,
         target_event=candidate.event_ref.event_id,
-        provenance=_provenance(frame, mention, candidate, antecedent_unit, "explicit_nominal_event_reference"),
-        confidence={"coreference_confidence": _confidence(mention), "calibrated": False},
-        metadata={
-            "coreference_confidence": _confidence(mention),
-            "semantic_class": mention.semantic_class,
-            "latest_event_fallback": False,
-            "nearest_event_fallback": False,
-            "cross_message": False,
-        },
+        provenance=provenance,
+        confidence={"coreference_confidence": confidence, "calibrated": False},
+        metadata=metadata,
     )
 
 
-def _ambiguous_reference(
-    frame: UtteranceFrame,
+def _ambiguous(
+    frame_ref: str,
     mention: _ReferenceMention,
-    candidates: Sequence[EventCandidate],
+    candidates: Sequence[tuple[EventCandidate, PredicateUnit]],
     *,
     reason: str,
 ) -> EventTargetReference:
-    return EventTargetReference(
-        source_event=f"reference:{mention.span[0]}:{mention.span[1]}",
-        source_predicate=f"reference:{mention.span[0]}:{mention.span[1]}",
-        target_kind=TargetKind.UNKNOWN_TARGET,
-        resolution_status=ResolutionStatus.AMBIGUOUS,
-        target_predicate=None,
-        target_event=None,
-        provenance={
-            "source": _SOURCE,
-            "surface_reference": mention.surface,
-            "reference_span": mention.span,
-            "source_clause": mention.source_clause,
-            "resolution_rule": "explicit_nominal_event_reference",
-            "resolution_status": ResolutionStatus.AMBIGUOUS.value,
-            "reason": reason,
-            "candidate_event_ids": [candidate.event_ref.event_id for candidate in candidates],
-            "candidate_predicate_ids": [candidate.predicate_ref for candidate in candidates],
-        },
-        confidence={"coreference_confidence": 0.0, "calibrated": False},
-        metadata={
-            "coreference_confidence": 0.0,
-            "semantic_class": mention.semantic_class,
-            "latest_event_fallback": False,
-            "nearest_event_fallback": False,
-        },
-    )
+    return _unbound(frame_ref, mention, ResolutionStatus.AMBIGUOUS, reason, candidates)
 
 
-def _unresolved_reference(
-    frame: UtteranceFrame,
+def _unresolved(
+    frame_ref: str,
     mention: _ReferenceMention,
     *,
     reason: str,
+    candidates: Sequence[tuple[EventCandidate, PredicateUnit]] = (),
 ) -> EventTargetReference:
+    return _unbound(frame_ref, mention, ResolutionStatus.UNRESOLVED, reason, candidates)
+
+
+def _unbound(
+    frame_ref: str,
+    mention: _ReferenceMention,
+    status: ResolutionStatus,
+    reason: str,
+    candidates: Sequence[tuple[EventCandidate, PredicateUnit]],
+) -> EventTargetReference:
+    provenance = _base_provenance(frame_ref, mention, status)
+    provenance.update({
+        "reason": reason,
+        "candidate_event_ids": [candidate.event_ref.event_id for candidate, _ in candidates],
+        "candidate_predicate_ids": [candidate.predicate_ref for candidate, _ in candidates],
+    })
+    metadata = _base_metadata(mention)
+    metadata["coreference_confidence"] = 0.0
+    if reason == "antecedent_occurrence_conflict":
+        metadata["occurrence_conflict"] = True
+        metadata["antecedent_occurrence_status"] = candidates[0][0].occurrence_status.value
     return EventTargetReference(
         source_event=f"reference:{mention.span[0]}:{mention.span[1]}",
         source_predicate=f"reference:{mention.span[0]}:{mention.span[1]}",
-        target_kind=TargetKind.UNKNOWN_TARGET,
-        resolution_status=ResolutionStatus.UNRESOLVED,
+        target_kind=_unresolved_target_kind(mention),
+        resolution_status=status,
         target_predicate=None,
         target_event=None,
-        provenance={
-            "source": _SOURCE,
-            "surface_reference": mention.surface,
-            "reference_span": mention.span,
-            "source_clause": mention.source_clause,
-            "resolution_rule": "explicit_nominal_event_reference",
-            "resolution_status": ResolutionStatus.UNRESOLVED.value,
-            "reason": reason,
-            "frame_ref": _frame_ref(frame),
-        },
+        provenance=provenance,
         confidence={"coreference_confidence": 0.0, "calibrated": False},
-        metadata={
-            "coreference_confidence": 0.0,
-            "semantic_class": mention.semantic_class,
-            "latest_event_fallback": False,
-            "nearest_event_fallback": False,
-        },
+        metadata=metadata,
     )
 
 
-def _provenance(
-    frame: UtteranceFrame,
-    mention: _ReferenceMention,
-    candidate: EventCandidate,
-    antecedent_unit: PredicateUnit | None,
-    rule: str,
-) -> dict[str, Any]:
-    antecedent_span = antecedent_unit.span if antecedent_unit is not None else candidate.event_ref.provenance.get("span")
-    return {
-        "source": _SOURCE,
-        "surface_reference": mention.surface,
-        "reference_span": mention.span,
-        "source_clause": mention.source_clause,
-        "antecedent_span": antecedent_span,
-        "antecedent_predicate_id": candidate.predicate_ref,
-        "antecedent_event_id": candidate.event_ref.event_id,
-        "resolution_rule": rule,
-        "resolution_status": ResolutionStatus.RESOLVED_STRUCTURAL.value,
-        "coreference_confidence": _confidence(mention),
-        "frame_ref": _frame_ref(frame),
-    }
-
-
-def _confidence(mention: _ReferenceMention) -> float:
-    if mention.semantic_class in {"generic_event", "generic_fact"}:
-        return 0.72
-    return 0.86
-
-
-def _source_clause(frame: UtteranceFrame, span: tuple[int, int]) -> int | None:
-    for unit in frame.units:
-        if unit.span[0] <= span[0] <= unit.span[1]:
-            return unit.clause
-        for arg in unit.objects:
-            if arg.span is not None and arg.span[0] <= span[0] <= arg.span[1]:
-                return unit.clause
-    if "." in frame.raw[:span[0]]:
-        return frame.raw[:span[0]].count(".")
-    return None
+def _sentence_index(sentence_breaks: tuple[int, ...], offset: int) -> int:
+    return sum(1 for position in sentence_breaks if position < offset)
 
 
 def _frame_ref(frame: UtteranceFrame) -> str:
-    from hashlib import sha256
-
+    # Must match event_extraction._frame_ref. Parser-local only: identical raw
+    # text yields the same ref, so this is not a message identity.
     digest = sha256(frame.raw.encode("utf-8")).hexdigest()[:12]
     return f"frame:{digest}"
