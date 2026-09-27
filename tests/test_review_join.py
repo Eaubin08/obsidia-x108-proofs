@@ -96,3 +96,24 @@ def test_center_must_be_indexed():
     frame = parse_utterance("Paul dit que Marie a lancé le test.")
     with pytest.raises(ValueError):
         build_review_envelope(frame, "event:unknown")
+
+
+# Nominal reference relations (R11 adapter) join several perspectives on one event.
+
+def test_shared_target_join_through_explicit_nominal_references():
+    frame = parse_utterance("Paul a lancé le test. J'ai observé ce lancement. Marie a mentionné ce lancement.")
+    env = build_review_envelope(frame, _eid(frame, "EXECUTE"))
+
+    assert [e["predicate"] for e in env.events] == ["EXECUTE", "OBSERVE", "SAY"]
+    assert sorted((r.relation_kind.value, r.status) for r in env.relations) == [
+        ("OBSERVES", "nominal_reference"), ("REPORTS_ABOUT", "nominal_reference")]
+    assert {r.target_event for r in env.relations} == {_eid(frame, "EXECUTE")}
+    assert env.provenance["nominal_reference_adapter"] == "wired"
+
+
+def test_ambiguous_nominal_reference_does_not_join():
+    frame = parse_utterance("Paul a lancé le build et Paul a lancé le test. J'ai observé cet événement.")
+    env = build_review_envelope(frame, _eid(frame, "EXECUTE", 1))
+
+    assert [e["predicate"] for e in env.events] == ["EXECUTE"]
+    assert env.relations == ()

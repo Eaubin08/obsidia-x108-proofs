@@ -2,7 +2,8 @@
 
 The envelope gathers the frame-local connected component of the center event
 over the typed meta-event relations (OBSERVES, LEARNS_ABOUT, REPORTS_ABOUT,
-BELIEVES_ABOUT) and copies, per event, its predicate, occurrence status and
+BELIEVES_ABOUT), structural or from explicit nominal references (relation
+status "nominal_reference"), and copies, per event, its predicate, occurrence status and
 projected epistemic states. Unresolved, ambiguous and non-event targets are
 kept as they are.
 
@@ -24,6 +25,7 @@ from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_ev
 from app.semantic.lattice.language_flow_projection import project_epistemic_flows
 from app.semantic.lattice.meta_event_relations import (
     extract_belief_event_relations,
+    extract_nominal_reference_relations,
     extract_report_event_relations,
 )
 from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
@@ -79,11 +81,13 @@ def build_review_envelope(
     knowledge = extract_knowledge_event_targets(frame, base)
     reports = extract_report_event_relations(frame, index)
     beliefs = extract_belief_event_relations(frame, index)
+    structural = (*observation.relations, *knowledge.relations, *reports.relations, *beliefs.relations)
+    nominal = extract_nominal_reference_relations(frame, index, structural_relations=structural)
     relations = [
-        r for r in (*observation.relations, *knowledge.relations, *reports.relations, *beliefs.relations)
+        r for r in (*structural, *nominal.relations)
         if index.by_event_id(r.source_event) is not None and index.by_event_id(r.target_event) is not None
     ]
-    targets = (*observation.targets, *knowledge.targets, *reports.targets, *beliefs.targets)
+    targets = (*observation.targets, *knowledge.targets, *reports.targets, *beliefs.targets, *nominal.targets)
 
     neighbours: dict[str, set[str]] = {}
     for r in relations:
@@ -125,7 +129,7 @@ def build_review_envelope(
     in_component = [t for t in targets if t.source_event in component]
     kept_relations = sorted(
         (r for r in relations if r.source_event in component),
-        key=lambda r: (order[index.by_event_id(r.source_event).predicate_ref], r.relation_kind.value),
+        key=lambda r: (order[index.by_event_id(r.source_event).predicate_ref], r.relation_kind.value, r.status),
     )
     return ReviewEnvelope(
         center_event=center_event,
@@ -142,9 +146,11 @@ def build_review_envelope(
             "source": REVIEW_JOIN_VERSION,
             "frame_ref": index.frame_ref,
             "relation_producers": ["observation_event_extraction", "knowledge_event_extraction",
-                                   "meta_event_relations.report", "meta_event_relations.belief"],
+                                   "meta_event_relations.report", "meta_event_relations.belief",
+                                   "meta_event_relations.nominal_reference"],
             "center_selected_by": "caller",
-            "nominal_reference_adapter": "not_wired",
+            "nominal_reference_adapter": "wired",
+            "nominal_references_skipped": dict(nominal.metadata["SKIPPED"]),
         },
         metadata={
             "truth": None,
