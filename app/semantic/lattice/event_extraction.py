@@ -27,6 +27,10 @@ _ACTION_CLASSES = frozenset({
 })
 
 
+# Parser class for a lexicon-unknown verb governing "que + clause"; its
+# complement is neither asserted nor classified (fail closed).
+_UNRESOLVED_GOVERNOR_CLASS = "unresolved_complement_governor"
+
 # Speech/cognition acts whose own occurrence the speaker asserts when the
 # predicate itself is asserted (present tense included).
 _META_EVENT_PREDICATES = frozenset({"SAY", "BELIEVE", "OBSERVE", "LEARN"})
@@ -169,7 +173,8 @@ def resolve_epistemic_ancestor_occurrence(
     stronger local signals (conditional, negated, hypothetical, future,
     uncertain, reported, unknown) are returned unchanged. Believed content
     becomes UNKNOWN and reported content REPORTED; the nearest REPORT/BELIEF
-    ancestor governs, while LEARN/OBSERVE ancestors are walked through.
+    ancestor governs, while LEARN/OBSERVE ancestors are walked through. An
+    unresolved complement governor (unknown verb + que) bounds to UNKNOWN.
     Malformed ancestry (missing parent, cycle) fails closed to UNKNOWN.
     """
     if local_status is not OccurrenceStatus.ASSERTED_OCCURRED:
@@ -185,7 +190,7 @@ def resolve_epistemic_ancestor_occurrence(
         kind = _event_kind(parent)
         if kind is EventKind.REPORT:
             return OccurrenceStatus.REPORTED
-        if kind is EventKind.BELIEF:
+        if kind is EventKind.BELIEF or parent.predicate_class == _UNRESOLVED_GOVERNOR_CLASS:
             return OccurrenceStatus.UNKNOWN
         seen.add(parent_id)
         parent_id = parent.embedded_under

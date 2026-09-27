@@ -113,6 +113,7 @@ class _Clause:
     restriction: str | None = None      # ONLY | NOT_ONLY
     restriction_at: int | None = None   # index of "que" in toks
     embedding_parent: int | None = None  # clause index hosting the embedding verb
+    unresolved_governor: int | None = None  # index of an unknown verb governing "que"
     units: list = field(default_factory=list)
 
 
@@ -239,6 +240,77 @@ def _is_verb(toks: list[_Tok], i: int) -> bool:
 
 
 # ── 3. clause segmentation ───────────────────────────────────────────────
+UNRESOLVED_GOVERNOR = "UNKNOWN_COMPLEMENT_GOVERNOR"
+UNRESOLVED_GOVERNOR_CLASS = "unresolved_complement_governor"
+
+# Closed-class words that can precede "que" without being a verb
+# (subordinators, comparison / degree adverbs, disjunctive pronouns).
+_NON_GOVERNOR_WORDS = {
+    "ainsi", "bien", "tant", "aussi", "autant", "plutôt", "plutot", "même", "meme",
+    "lors", "dès", "des", "pour", "afin", "tandis", "moins", "plus", "mieux", "pire",
+    "tel", "telle", "tels", "telles", "moi", "toi", "lui", "eux", "ça", "cela", "ceci",
+}
+_PARTICIPLE_ENDINGS = ("é", "ée", "és", "ées", "i", "ie", "is", "ies", "u", "ue", "us", "ues",
+                       "it", "ite", "its", "ites")
+
+
+def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
+    """Index of a lexicon-unknown verb in verb position right before "que".
+
+    Structural only: the word before "que" (after a "ne ... NEG" frame) has no
+    lexical analysis and follows a subject pronoun, a nominal subject opening
+    the clause, or an avoir/être auxiliary with a participle ending. Relatives
+    (det + noun + que), clefts, restrictions and comparatives are excluded.
+    """
+    lows = [t.low for t in toks]
+    has_ne = any(x in {"ne", "n'"} for x in lows)
+    if has_ne and not any(x in _FR_NEGATORS for x in lows):
+        return None  # "ne V que": restriction, not a complement
+    j = len(toks) - 1
+    while has_ne and j >= 0 and lows[j] in _FR_NEGATORS:
+        j -= 1
+    if j < 0:
+        return None
+    g = toks[j]
+    if (g.analyses or g.is_punct or not g.low.isalpha() or g.low in _NON_GOVERNOR_WORDS
+            or g.low in _DETERMINERS or g.low in _SUBJECT_PRONOUNS or g.low in _PREPOSITIONS
+            or g.low in _CONNECTIVES or g.low in _WH_WORDS):
+        return None
+    k = j - 1
+    while k >= 0 and (lows[k] in {"ne", "n'"} or (has_ne and lows[k] in _FR_NEGATORS)):
+        k -= 1
+    if k < 0:
+        return None
+    before = toks[k]
+    if before.low in _SUBJECT_PRONOUNS:
+        return j
+    if _is_verb(toks, k) and _pred(before) in {"HAVE", "BE"}:
+        cleft = k > 0 and lows[k - 1] in {"c'", "ce"}
+        return j if g.low.endswith(_PARTICIPLE_ENDINGS) and not cleft else None
+    if before.analyses or before.low in _DETERMINERS or before.low in _NON_GOVERNOR_WORDS:
+        return None
+    if k == 0 or (k == 1 and lows[0] in _DETERMINERS):
+        return j
+    return None
+
+
+def _unresolved_governor_draft(toks: list[_Tok], idx: int) -> "_Draft":
+    k = idx - 1
+    while k >= 0 and toks[k].low in _FR_NEGATORS | {"ne", "n'"}:
+        k -= 1
+    aux = k >= 0 and _is_verb(toks, k) and _pred(toks[k]) in {"HAVE", "BE"}
+    head = k if aux else idx
+    subj, person = _subject_before(toks, head)
+    if aux:
+        tense = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE",
+                 "CONDITIONAL": "CONDITIONAL"}.get(_tense_of(_feats(toks[k])), "PAST")
+        form = "PARTICIPLE"
+    else:
+        tense, form = "NONE", "FINITE"
+    return _Draft(toks[idx], idx, head, form, tense, subject=subj, subject_person=person,
+                  unresolved_governor=True)
+
+
 def _last_verb(toks: list[_Tok]) -> _Tok | None:
     for i in range(len(toks) - 1, -1, -1):
         if _is_verb(toks, i):
@@ -355,7 +427,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                          or any(x.low in {"paraît", "parait"} for x in c.toks))
             comparative = any(x.low in {"plus", "moins", "mieux", "autant", "pire"}
                               for x in c.toks) and not has_ne
+            governor_at = None if embedding else _unresolved_governor_index(c.toks)
             if embedding:
+                open_clause("que", [t], parent=len(clauses) - 1)
+            elif governor_at is not None:
+                c.unresolved_governor = governor_at
                 open_clause("que", [t], parent=len(clauses) - 1)
             elif has_ne and verb is not None:
                 negs = [x for x in c.toks if x.low in _FR_NEGATORS]
@@ -385,7 +461,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     # reattach it to the previous clause, connective included.
     merged: list[_Clause] = []
     for c in clauses:
-        has_verb = any(_is_verb(c.toks, k) for k in range(len(c.toks)))
+        has_verb = c.unresolved_governor is not None or any(
+            _is_verb(c.toks, k) for k in range(len(c.toks)))
         if not has_verb and merged and c.conn not in {"sans", "sans_que"}:
             prev = merged[-1]
             prev.toks += c.conn_toks + c.toks
@@ -412,6 +489,7 @@ class _Draft:
     governed: str | None = None          # wh | prep | purpose | temporal | permission
     governor_unit: str | None = None
     governor_negated: bool = False
+    unresolved_governor: bool = False    # unknown verb kept only as a "que" governor
 
 
 _MODALITY = {"ABLE": "ABILITY_OR_PERMISSION", "MUST": "OBLIGATION",
@@ -809,10 +887,16 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     for ci, clause in enumerate(clauses):
         drafts = _build_drafts(clause.toks)
+        if clause.unresolved_governor is not None:
+            drafts.append(_unresolved_governor_draft(clause.toks, clause.unresolved_governor))
         for d in drafts:
             counter += 1
-            lemma = _lemma(d.lex)
-            pred, pcls = predicate_of(lemma)
+            if d.unresolved_governor:
+                # Unknown to the lexicon: no lemma, no meaning, only structure.
+                lemma, pred, pcls = d.lex.low, UNRESOLVED_GOVERNOR, UNRESOLVED_GOVERNOR_CLASS
+            else:
+                lemma = _lemma(d.lex)
+                pred, pcls = predicate_of(lemma)
             if pred == "BE":
                 pred, pcls = "BE_PRESENT", "state"
             pol = _polarity(clause.toks, d, clause, drafts)
@@ -895,6 +979,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
                 elif pp == "OBSERVE":
                     prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
+                elif pp == UNRESOLVED_GOVERNOR:
+                    # Governor meaning unknown: the complement is neither asserted
+                    # nor reported/believed/denied; it is only subordinated.
+                    prag, epi, kind = "EMBEDDED", "NOT_APPLICABLE", RelationKind.EMBEDS
+                    ambiguities.append(f"complement_under_unresolved_governor:{u.id}")
                 elif pp in {"WANT", "NEED"}:
                     speaker_wants = pp == "NEED" or parent_unit.subject in _FIRST_PERSON
                     prag = "REQUESTED" if speaker_wants else "REPORTED"
