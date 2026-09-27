@@ -92,12 +92,13 @@ def extract_event_candidates(
         if relation.kind == RelationKind.CONDITIONS.value
     }
     frame_ref = _frame_ref(frame)
+    units_by_id = {unit.id: unit for unit in frame.units}
     candidates: list[EventCandidate] = []
     for unit in frame.units:
         event_kind = _event_kind(unit)
         if event_kind is None:
             continue
-        occurrence = _occurrence_status(unit, conditional_sources)
+        occurrence = _occurrence_status(unit, conditional_sources, units_by_id)
         event_id = _event_id(frame_ref, unit.id, extraction_version)
         event = EventRef(
             event_id=event_id,
@@ -146,7 +147,11 @@ def _event_kind(unit: PredicateUnit) -> EventKind | None:
     return None
 
 
-def _occurrence_status(unit: PredicateUnit, conditional_sources: set[str]) -> OccurrenceStatus:
+def _occurrence_status(
+    unit: PredicateUnit,
+    conditional_sources: set[str],
+    units_by_id: Mapping[str, PredicateUnit],
+) -> OccurrenceStatus:
     if unit.id in conditional_sources:
         return OccurrenceStatus.CONDITIONAL
     if unit.polarity == "negative" or unit.role == "NEGATED":
@@ -159,11 +164,31 @@ def _occurrence_status(unit: PredicateUnit, conditional_sources: set[str]) -> Oc
         return OccurrenceStatus.UNCERTAIN
     if unit.pragmatic == "REPORTED" or unit.epistemic in {"REPORTED", "HEARSAY"}:
         return OccurrenceStatus.REPORTED
+    # Belief is epistemic, not occurrence: believed content is never presented
+    # as occurred, but the stronger signals above are kept.
+    if _under_belief(unit, units_by_id):
+        return OccurrenceStatus.UNKNOWN
     if unit.realized is True and unit.polarity == "positive":
         return OccurrenceStatus.ASSERTED_OCCURRED
     if unit.predicate in {"SAY", "BELIEVE"} and unit.pragmatic == "ASSERTED":
         return OccurrenceStatus.ASSERTED_OCCURRED
     return OccurrenceStatus.UNKNOWN
+
+
+def _under_belief(unit: PredicateUnit, units_by_id: Mapping[str, PredicateUnit]) -> bool:
+    if unit.pragmatic == "BELIEVED" or unit.epistemic == "BELIEF" or unit.role == "BELIEVED":
+        return True
+    seen = {unit.id}
+    parent_id = unit.embedded_under
+    while parent_id is not None and parent_id not in seen:
+        parent = units_by_id.get(parent_id)
+        if parent is None:
+            return False
+        if parent.predicate == "BELIEVE" or parent.predicate_class == "embedding_believe":
+            return True
+        seen.add(parent_id)
+        parent_id = parent.embedded_under
+    return False
 
 
 def _frame_ref(frame: UtteranceFrame) -> str:
