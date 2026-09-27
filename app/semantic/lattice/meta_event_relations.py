@@ -48,6 +48,14 @@ def extract_report_event_relations(frame: UtteranceFrame, event_index: EventInde
     )
 
 
+def extract_belief_event_relations(frame: UtteranceFrame, event_index: EventIndex) -> MetaEventRelationResult:
+    """BELIEF EventRef -BELIEVES_ABOUT-> immediate target EventRef (parser BELIEVES relation)."""
+    return _extract_meta_relations(
+        frame, event_index, EventKind.BELIEF, frozenset({RelationKind.BELIEVES.value}),
+        EventRelationKind.BELIEVES_ABOUT,
+    )
+
+
 def _extract_meta_relations(
     frame: UtteranceFrame,
     event_index: EventIndex,
