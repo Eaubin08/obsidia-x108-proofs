@@ -35,8 +35,11 @@ _UNRESOLVED_GOVERNOR_CLASS = "unresolved_complement_governor"
 _UNRESOLVED_GOVERNANCE = "UNRESOLVED_GOVERNANCE"
 
 # Speech/cognition acts whose own occurrence the speaker asserts when the
-# predicate itself is asserted (present tense included).
+# predicate itself is asserted in a tense presenting it as occurring. Past
+# tenses are covered by `realized`; conditional, near-future and averted
+# meta-events are not asserted occurrences.
 _META_EVENT_PREDICATES = frozenset({"SAY", "BELIEVE", "OBSERVE", "LEARN"})
+_OCCURRING_META_TENSES = frozenset({"PRESENT", "PROGRESSIVE"})
 
 
 class OccurrenceStatus(str, Enum):
@@ -225,7 +228,8 @@ def _local_occurrence_status(unit: PredicateUnit, conditional_sources: set[str])
         return OccurrenceStatus.REPORTED
     if unit.realized is True and unit.polarity == "positive":
         return OccurrenceStatus.ASSERTED_OCCURRED
-    if unit.predicate in _META_EVENT_PREDICATES and unit.pragmatic == "ASSERTED":
+    if (unit.predicate in _META_EVENT_PREDICATES and unit.pragmatic == "ASSERTED"
+            and unit.tense_aspect in _OCCURRING_META_TENSES and unit.realized is not False):
         return OccurrenceStatus.ASSERTED_OCCURRED
     return OccurrenceStatus.UNKNOWN
 
