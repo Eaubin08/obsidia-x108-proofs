@@ -21,6 +21,7 @@ class TargetKind(str, Enum):
 
 class ResolutionStatus(str, Enum):
     RESOLVED_EXPLICIT = "RESOLVED_EXPLICIT"
+    RESOLVED_STRUCTURAL = "RESOLVED_STRUCTURAL"
     AMBIGUOUS = "AMBIGUOUS"
     UNRESOLVED = "UNRESOLVED"
 

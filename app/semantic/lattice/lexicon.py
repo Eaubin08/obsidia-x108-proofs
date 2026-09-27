@@ -59,6 +59,9 @@ LEMMAS: dict[str, tuple[str, str]] = {
     "penser": ("BELIEVE", "embedding_believe"),
     "croire": ("BELIEVE", "embedding_believe"),
     "apprendre": ("LEARN", "embedding_learn"),
+    "voir": ("OBSERVE", "observation"),
+    "observer": ("OBSERVE", "observation"),
+    "détecter": ("OBSERVE", "observation"),
     "think": ("BELIEVE", "embedding_believe"),
     "believe": ("BELIEVE", "embedding_believe"),
     # modals
@@ -112,6 +115,8 @@ _ER_VERBS: dict[str, tuple[str, str | None]] = {
     "empêcher": ("empêch", None),
     "penser": ("pens", None),
     "apprendre": ("appr", None),
+    "observer": ("observ", None),
+    "détecter": ("détect", None),
     "neiger": ("neig", None),
     "hésiter": ("hésit", None),
     "inquiéter": ("inquiét", "inquièt"),
@@ -214,6 +219,13 @@ _IRREGULAR: dict[str, dict[str, tuple[str, ...]]] = {
         "IMPF": ("apprenais", "apprenait", "apprenaient"),
         "FUT": ("apprendrai", "apprendra", "apprendrez"),
         "COND": ("apprendrais", "apprendrait"),
+    },
+    "voir": {
+        "PRES": ("vois", "voit", "voyons", "voyez", "voient"),
+        "INF": ("voir",), "PP": ("vu", "vue", "vus", "vues"),
+        "IMPF": ("voyais", "voyait", "voyaient"),
+        "FUT": ("verrai", "verra", "verrez"),
+        "COND": ("verrais", "verrait"),
     },
     "écrire": {
         "PRES": ("écris", "écrit", "écrivons", "écrivez", "écrivent"),

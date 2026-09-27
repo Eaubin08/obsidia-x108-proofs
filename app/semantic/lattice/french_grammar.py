@@ -893,6 +893,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     prag, epi, kind = "BELIEVED", "BELIEF", RelationKind.BELIEVES
                 elif pp == "LEARN":
                     prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
+                elif pp == "OBSERVE":
+                    prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
                 elif pp in {"WANT", "NEED"}:
                     speaker_wants = pp == "NEED" or parent_unit.subject in _FIRST_PERSON
                     prag = "REQUESTED" if speaker_wants else "REPORTED"
@@ -917,6 +919,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = ("ASKED", "UNKNOWN") if interrogative else ("EMBEDDED", "NOT_APPLICABLE")
             elif d.governed in {"purpose", "temporal", "permission"}:
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+            elif d.governed == "observation_target":
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
+                if gov is not None:
+                    embedded_under = gov.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
+                                                     evidence="observation+inf"))
             elif d.governed == "prep":
                 gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
                 if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated:
@@ -1051,6 +1060,12 @@ def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     if (clause.conn in {"avant_de", "apres"} or any(x in {"après", "apres", "before", "after"} for x in lows[:d.lex_index])) and d.verb_form in {"INFINITIVE", "PARTICIPLE"}:
         d.governed = "temporal"
         return
+    if d.verb_form in {"INFINITIVE", "PARTICIPLE"}:
+        prior = [u for (u, dd) in clause.units if dd.lex_index < d.head_index]
+        if prior and prior[-1].predicate == "OBSERVE":
+            d.governed = "observation_target"
+            d.governor_unit = prior[-1].id
+            return
     if d.verb_form != "INFINITIVE" or d.lex_index != d.head_index:
         return
     j = d.lex_index - 1
