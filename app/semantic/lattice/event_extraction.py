@@ -30,6 +30,9 @@ _ACTION_CLASSES = frozenset({
 # Parser class for a lexicon-unknown verb governing "que + clause"; its
 # complement is neither asserted nor classified (fail closed).
 _UNRESOLVED_GOVERNOR_CLASS = "unresolved_complement_governor"
+# Parser epistemic marker of a complement under a known governor without an
+# embedding contract (confirmer / expliquer / savoir + que): fail closed too.
+_UNRESOLVED_GOVERNANCE = "UNRESOLVED_GOVERNANCE"
 
 # Speech/cognition acts whose own occurrence the speaker asserts when the
 # predicate itself is asserted (present tense included).
@@ -174,12 +177,14 @@ def resolve_epistemic_ancestor_occurrence(
     uncertain, reported, unknown) are returned unchanged. Believed content
     becomes UNKNOWN and reported content REPORTED; the nearest REPORT/BELIEF
     ancestor governs, while LEARN/OBSERVE ancestors are walked through. An
-    unresolved complement governor (unknown verb + que) bounds to UNKNOWN.
+    unresolved complement governor (unknown verb + que), or a complement marked
+    UNRESOLVED_GOVERNANCE (known verb without embedding contract), bounds to
+    UNKNOWN.
     Malformed ancestry (missing parent, cycle) fails closed to UNKNOWN.
     """
     if local_status is not OccurrenceStatus.ASSERTED_OCCURRED:
         return local_status
-    if unit.pragmatic == "BELIEVED" or unit.epistemic == "BELIEF" or unit.role == "BELIEVED":
+    if unit.pragmatic == "BELIEVED" or unit.epistemic in {"BELIEF", _UNRESOLVED_GOVERNANCE}             or unit.role == "BELIEVED":
         return OccurrenceStatus.UNKNOWN
     seen = {unit.id}
     parent_id = unit.embedded_under
@@ -190,7 +195,7 @@ def resolve_epistemic_ancestor_occurrence(
         kind = _event_kind(parent)
         if kind is EventKind.REPORT:
             return OccurrenceStatus.REPORTED
-        if kind is EventKind.BELIEF or parent.predicate_class == _UNRESOLVED_GOVERNOR_CLASS:
+        if kind is EventKind.BELIEF or parent.predicate_class == _UNRESOLVED_GOVERNOR_CLASS                 or parent.epistemic == _UNRESOLVED_GOVERNANCE:
             return OccurrenceStatus.UNKNOWN
         seen.add(parent_id)
         parent_id = parent.embedded_under

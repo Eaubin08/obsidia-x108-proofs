@@ -242,6 +242,9 @@ def _is_verb(toks: list[_Tok], i: int) -> bool:
 # ── 3. clause segmentation ───────────────────────────────────────────────
 UNRESOLVED_GOVERNOR = "UNKNOWN_COMPLEMENT_GOVERNOR"
 UNRESOLVED_GOVERNOR_CLASS = "unresolved_complement_governor"
+# Epistemic marker of a complement whose known governor has no embedding
+# contract (confirmer, expliquer, savoir... + que): not asserted, not typed.
+UNRESOLVED_GOVERNANCE = "UNRESOLVED_GOVERNANCE"
 
 # Closed-class words that can precede "que" without being a verb
 # (subordinators, comparison / degree adverbs, disjunctive pronouns).
@@ -292,6 +295,47 @@ def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
     if k == 0 or (k == 1 and lows[0] in _DETERMINERS):
         return j
     return None
+
+
+def _clause_follows(toks: list[_Tok], que_at: int) -> bool:
+    """True when a verb occurs after "que" before the next clause punctuation."""
+    k = que_at + 1
+    while k < len(toks) and not toks[k].is_punct:
+        if _is_verb(toks, k):
+            return True
+        k += 1
+    return False
+
+
+def _known_complement_governor(ctoks: list[_Tok], toks: list[_Tok], que_at: int) -> bool:
+    """A lexicon-known verb without embedding contract governing "que + clause".
+
+    Structural only: the clause's last verb is known, is neither an embedding
+    verb nor an auxiliary/copula/volitive, and is followed before "que" only by
+    a "ne ... NEG" negator and/or an "à + NP" indirect object, and a finite
+    clause follows "que". "ne V que" stays a restriction; for governed actions
+    (world_action, preparatory) "ne V pas que" keeps its "not only" reading.
+    """
+    v = next((k for k in range(len(ctoks) - 1, -1, -1) if _is_verb(ctoks, k)), None)
+    if v is None or not ctoks[v].analyses:
+        return False
+    cls, pred = _cls(ctoks[v]), _pred(ctoks[v])
+    if cls.startswith("embedding") or pred in {"HAVE", "BE", "WANT", "NEED"}:
+        return False
+    lows = [t.low for t in ctoks]
+    has_ne = any(x in {"ne", "n'"} for x in lows)
+    if has_ne and not any(x in _FR_NEGATORS for x in lows):
+        return False
+    if has_ne and cls in {"world_action", "preparatory"}:
+        return False
+    k = v + 1
+    while has_ne and k < len(ctoks) and lows[k] in _FR_NEGATORS:
+        k += 1
+    tail = lows[k:]
+    if tail and not (tail[0] in {"à", "au", "aux"} and len(tail) <= 4
+                     and not any(_is_verb(ctoks, m) for m in range(k, len(ctoks)))):
+        return False
+    return _clause_follows(toks, que_at)
 
 
 def _unresolved_governor_draft(toks: list[_Tok], idx: int) -> "_Draft":
@@ -432,6 +476,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 open_clause("que", [t], parent=len(clauses) - 1)
             elif governor_at is not None:
                 c.unresolved_governor = governor_at
+                open_clause("que", [t], parent=len(clauses) - 1)
+            elif _known_complement_governor(c.toks, toks, i):
                 open_clause("que", [t], parent=len(clauses) - 1)
             elif has_ne and verb is not None:
                 negs = [x for x in c.toks if x.low in _FR_NEGATORS]
@@ -991,9 +1037,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                         prag = "FORBIDDEN"
                     kind = RelationKind.WANTS
                 else:
-                    prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
-                relations.append(LatticeRelation(kind.value, parent_unit.id, u.id,
-                                                 evidence="que"))
+                    # Known governor without an embedding contract: the complement
+                    # is subordinated, never promoted to a root assertion.
+                    prag, epi, kind = "EMBEDDED", UNRESOLVED_GOVERNANCE, RelationKind.EMBEDS
+                    ambiguities.append(f"unresolved_complement_governance:{u.id}")
+                relations.append(LatticeRelation(
+                    kind.value, parent_unit.id, u.id,
+                    evidence="que_unresolved_governance" if epi == UNRESOLVED_GOVERNANCE else "que"))
             elif clause.conn in {"avant_que", "a_moins_que"} and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
             elif clause.conn == "si" and n == 0:

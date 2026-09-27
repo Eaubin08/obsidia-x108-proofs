@@ -180,8 +180,7 @@ def test_excluded_verbs_keep_unresolved_governor_fallback(text):
     assert events[run.id].occurrence_status is U
 
 
-@pytest.mark.xfail(strict=True, reason="pre-existing: known non-embedding verb + que asserts its "
-                                        "complement (CONFIRM/EXPLAIN); out of B2b scope")
+# Closed by B2c (known non-embedding governor + que fails closed).
 @pytest.mark.parametrize("text", [
     "Paul confirme que Marie a lancé le test.",
     "Paul explique que Marie a lancé le test.",
