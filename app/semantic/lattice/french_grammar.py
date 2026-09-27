@@ -891,6 +891,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     prag, kind = "PREVENTED", RelationKind.PREVENTS
                 elif pp == "BELIEVE":
                     prag, epi, kind = "BELIEVED", "BELIEF", RelationKind.BELIEVES
+                elif pp == "LEARN":
+                    prag, epi, kind = "ASSERTED", "ASSERTED", RelationKind.EMBEDS
                 elif pp in {"WANT", "NEED"}:
                     speaker_wants = pp == "NEED" or parent_unit.subject in _FIRST_PERSON
                     prag = "REQUESTED" if speaker_wants else "REPORTED"

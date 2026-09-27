@@ -58,6 +58,7 @@ LEMMAS: dict[str, tuple[str, str]] = {
     "empêcher": ("PREVENT", "embedding_prevent"),
     "penser": ("BELIEVE", "embedding_believe"),
     "croire": ("BELIEVE", "embedding_believe"),
+    "apprendre": ("LEARN", "embedding_learn"),
     "think": ("BELIEVE", "embedding_believe"),
     "believe": ("BELIEVE", "embedding_believe"),
     # modals
@@ -110,6 +111,7 @@ _ER_VERBS: dict[str, tuple[str, str | None]] = {
     "éviter": ("évit", None),
     "empêcher": ("empêch", None),
     "penser": ("pens", None),
+    "apprendre": ("appr", None),
     "neiger": ("neig", None),
     "hésiter": ("hésit", None),
     "inquiéter": ("inquiét", "inquièt"),
@@ -205,6 +207,13 @@ _IRREGULAR: dict[str, dict[str, tuple[str, ...]]] = {
     "croire": {
         "PRES": ("crois", "croit", "croyons", "croyez", "croient"),
         "INF": ("croire",), "PP": ("cru",),
+    },
+    "apprendre": {
+        "PRES": ("apprends", "apprend", "apprenons", "apprenez", "apprennent"),
+        "INF": ("apprendre",), "PP": ("appris", "apprise"),
+        "IMPF": ("apprenais", "apprenait", "apprenaient"),
+        "FUT": ("apprendrai", "apprendra", "apprendrez"),
+        "COND": ("apprendrais", "apprendrait"),
     },
     "écrire": {
         "PRES": ("écris", "écrit", "écrivons", "écrivez", "écrivent"),
