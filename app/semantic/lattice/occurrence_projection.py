@@ -43,6 +43,10 @@ _PERFECTIVE_TENSES = frozenset({"PAST", "PLUPERFECT", "RECENT_PAST"})
 # overridden, e.g. COUNTERFACTUAL for "a failli"). It closes the perspective
 # like a report; no unit is invented.
 _HEARSAY = "HEARSAY"
+# Detached source / evidential adverbials marked by the parser on the unit
+# itself (B2e); all attributed, speaker opinion through the belief profile.
+_SOURCE_EVIDENTIALS = {"HUMAN_SOURCE": "REPORT", "EVIDENCE_SOURCE": "REPORT", "INFERRED": "REPORT",
+                       "SPEAKER_BELIEF": "BELIEF"}
 
 
 @dataclass(frozen=True)
@@ -90,10 +94,12 @@ class FrameOccurrenceProjection:
     def _evidential(self, u: PredicateUnit, kind: str) -> str | None:
         if kind == "root" and (u.epistemic == _HEARSAY or u.pragmatic == "REPORTED"):
             return _HEARSAY
+        if kind == "root" and u.epistemic in _SOURCE_EVIDENTIALS:
+            return u.epistemic
         return None
 
     def _evidential_commitment(self, u: PredicateUnit):
-        profile = profile_for("REPORT", ConstructionType.QUE_PROPOSITION)
+        profile = profile_for(_SOURCE_EVIDENTIALS.get(u.epistemic, "REPORT"), ConstructionType.QUE_PROPOSITION)
         return resolve_commitment(profile, frozenset(), source_object_ref=u.id)
 
     def _conditional_role(self, u: PredicateUnit) -> str | None:

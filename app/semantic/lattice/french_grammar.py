@@ -118,6 +118,7 @@ class _Clause:
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
+    evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
     units: list = field(default_factory=list)
 
 
@@ -532,6 +533,33 @@ def _content_operators(clause: "_Clause") -> list[str]:
     return ops
 
 
+_EVIDENCE_NOUNS = frozenset({"logs", "log", "traces", "journaux", "résultats", "resultats", "données", "donnees",
+                             "métriques", "metriques", "mesures"})
+
+
+def _source_marker(toks: list[_Tok]) -> str | None:
+    """Detached source / evidential adverbial clause: "selon Marie", "d'après les logs",
+    "selon moi", "apparemment". Only a bare name/pronoun (human), "moi" (speaker) or a
+    known trace noun (evidence) is recognised; anything else ("selon la procédure")
+    stays unmarked."""
+    lows = [t.low for t in toks]
+    if lows == ["apparemment"]:
+        return "INFERRED"
+    if lows[:1] == ["selon"]:
+        rest = lows[1:]
+    elif lows[:2] == ["d'", "après"] or lows[:2] == ["d'", "apres"]:
+        rest = lows[2:]
+    else:
+        return None
+    if rest == ["moi"]:
+        return "SPEAKER_BELIEF"
+    if len(rest) == 2 and rest[0] in _DETERMINERS and rest[1] in _EVIDENCE_NOUNS:
+        return "EVIDENCE_SOURCE"
+    if len(rest) == 1 and rest[0].isalpha() and rest[0] not in _DETERMINERS:
+        return "HUMAN_SOURCE"
+    return None
+
+
 def _is_complement(clause: _Clause) -> bool:
     return clause.conn == "que" or (clause.conn == "rel" and clause.governor_lost)
 
@@ -623,7 +651,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 open_clause("sans", [t])
                 i += 1
             continue
-        if low in {"après", "apres"} and cur().toks:
+        # "d'après X" is a source adverbial, never the temporal connective.
+        if low in {"après", "apres"} and cur().toks and cur().toks[-1].low != "d'":
             open_clause("apres", [t])
             i += 1
             continue
@@ -732,9 +761,21 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     # reattach it to the previous clause, connective included.
     merged: list[_Clause] = []
     lost_complement = False
+    pending_source = None
     for c in clauses:
         has_verb = c.unresolved_governor is not None or any(
             _is_verb(c.toks, k) for k in range(len(c.toks)))
+        # A clause opened by punctuation (conn None) holding only a source adverbial:
+        # clause-initial ("Selon Marie, P") marks the next clause, clause-final
+        # ("P, selon Marie") the previous one.
+        marker = _source_marker(c.toks) if c.conn is None else None
+        if marker is not None and merged and merged[-1].units == [] and any(
+                _is_verb(merged[-1].toks, k) for k in range(len(merged[-1].toks))):
+            merged[-1].evidential = merged[-1].evidential or marker
+        elif marker is not None and not merged:
+            pending_source = marker
+        if marker is None and has_verb and c.conn is None and pending_source is not None:
+            c.evidential, pending_source = pending_source, None
         # A verbless clause shaped like a predication with an unknown verb
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause.
         if not has_verb and merged and c.conn not in {"sans", "sans_que"} \
@@ -1158,7 +1199,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     clauses, interrogative = _segment(toks)
     # "V que P et Q": Q coordinates inside the complement or with its host.
     for prev, clause in zip(clauses, clauses[1:]):
-        if clause.conn == "et" and _is_complement(prev):
+        if clause.conn == "et" and (_is_complement(prev) or prev.evidential is not None):
             clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
@@ -1367,6 +1408,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag = "FORBIDDEN"
             elif prag == "FORBIDDEN" and u.polarity == "positive" and clause.conn not in {"sans", "sans_que"}:
                 prag = "REQUESTED"
+            if clause.evidential is not None and n == 0 and prag == "ASSERTED" and epi == "ASSERTED":
+                epi = clause.evidential
             tmp = replace(u, pragmatic=prag, epistemic=epi, realized=realized,
                           embedded_under=embedded_under)
             role = _role(tmp, d, prag, interrogative)
