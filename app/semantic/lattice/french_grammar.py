@@ -1590,6 +1590,25 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
+    def _replace_group_unit(unit: PredicateUnit) -> None:
+        for c in clauses:
+            for i, (old, d) in enumerate(c.units):
+                if old.id == unit.id:
+                    c.units[i] = (unit, d)
+                    return
+
+    def _share_group_arguments(members: list[PredicateUnit], *, subject: str | None = None) -> list[PredicateUnit]:
+        updated = list(members)
+        if subject is not None:
+            updated = [replace(u, subject=subject) if u.subject is None else u for u in updated]
+        object_sources = [u.objects for u in updated if u.objects]
+        if len(object_sources) == 1:
+            shared_objects = object_sources[0]
+            updated = [replace(u, objects=shared_objects) if not u.objects else u for u in updated]
+        for before, after in zip(members, updated):
+            if before is not after:
+                _replace_group_unit(after)
+        return updated
     # ── shared auxiliary: host AUX+PP predicate and the bare participles sharing it ──
     for host in [c for c in clauses if c.shared_aux_host is None and c.compound is not None]:
         sharers = [c for c in clauses if c.shared_aux_host is host]
@@ -1599,6 +1618,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         members = [unit_of.get(id(c.compound[2])) for c in (host, *sharers)]
         if any(u is None for u in members):
             continue
+        members = _share_group_arguments(members, subject=members[0].subject)
         for c, a, b in zip(sharers, members, members[1:]):
             if c.conn is None:  # ", PP": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
@@ -1617,6 +1637,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                    for c in sharers]
         if any(u is None for u in members):
             continue
+        members = _share_group_arguments(members)
         for c, a, b in zip(sharers, members, members[1:]):
             if c.conn is None:  # ", INF": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))

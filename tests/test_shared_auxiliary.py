@@ -39,6 +39,20 @@ def test_bare_participles_share_the_written_auxiliary(text, tense, claim):
     assert len({events[m].event_ref.event_id for m in coord.members}) == len(coord.members)
 
 
+
+def test_bare_participles_share_subject_and_final_object():
+    f = parse_utterance("Paul a lancé et exécuté le test.")
+    (coord,) = f.coordinations
+    assert (coord.construction, coord.members) == ("shared_auxiliary", ("u1", "u2"))
+    assert [u.subject for u in f.units] == ["paul", "paul"]
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], ["le test"]]
+    assert len({u.id for u in f.units}) == 2
+
+
+def test_shared_auxiliary_preserves_explicit_member_objects():
+    f = parse_utterance("Paul a lancé le build et exécuté le test.")
+    assert [[a.text for a in u.objects] for u in f.units] == [["le build"], ["le test"]]
+
 @pytest.mark.parametrize("aux,tense,claim", [
     ("a", "PAST", "ASSERTED_NOT_REALIZED"),
     ("avait", "PLUPERFECT", "ASSERTED_NOT_REALIZED"),

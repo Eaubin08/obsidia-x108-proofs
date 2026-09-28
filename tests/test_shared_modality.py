@@ -44,6 +44,20 @@ def test_bare_infinitives_share_the_obligation_modal(modal, tense):
     assert events["u1"].event_ref.event_id != events["u2"].event_ref.event_id
 
 
+
+def test_bare_infinitives_share_final_object():
+    f, gate, events = _view("Paul doit lancer et exécuter le test.")
+    (coord,) = f.coordinations
+    assert (coord.construction, coord.members) == ("shared_modality", ("u1", "u2"))
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], ["le test"]]
+    assert _signature(f.units[0], gate, events) == _signature(f.units[1], gate, events)
+    assert events["u1"].event_ref.event_id != events["u2"].event_ref.event_id
+
+
+def test_shared_modality_preserves_explicit_member_objects():
+    f, _, _ = _view("Paul doit lancer le build et exécuter le test.")
+    assert [[a.text for a in u.objects] for u in f.units] == [["le build"], ["le test"]]
+
 def test_three_infinitives_share_the_modal():
     f, gate, _ = _view("Paul doit lancer le test, exécuter le build et arrêter le lot.")
     (coord,) = f.coordinations
