@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from hashlib import sha256
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import AbstractSet, Any, Mapping
 
 from app.semantic.lattice.events import EVENT_ID_SCOPE, EventKind, EventRef
 from app.semantic.lattice.primitives import RelationKind, UtteranceFrame, PredicateUnit
@@ -102,6 +102,7 @@ def extract_event_candidates(
     """Return conservative EventRef candidates for parser-backed predicates."""
 
     conditional_sources = _conditional_sources(frame)
+    conditional_targets = _conditional_targets(frame)
     frame_ref = _frame_ref(frame)
     units_by_id = {unit.id: unit for unit in frame.units}
     candidates: list[EventCandidate] = []
@@ -109,7 +110,7 @@ def extract_event_candidates(
         event_kind = _event_kind(unit)
         if event_kind is None:
             continue
-        occurrence = _occurrence_status(unit, conditional_sources, units_by_id)
+        occurrence = _occurrence_status(unit, conditional_sources, units_by_id, conditional_targets)
         event_id = _event_id(frame_ref, unit.id, extraction_version)
         event = EventRef(
             event_id=event_id,
@@ -165,7 +166,7 @@ def occurrence_status_for(frame: UtteranceFrame, unit: PredicateUnit) -> Occurre
     EventRef built from the same predicate gets the same occurrence status.
     """
     units_by_id = {candidate.id: candidate for candidate in frame.units}
-    return _occurrence_status(unit, _conditional_sources(frame), units_by_id)
+    return _occurrence_status(unit, _conditional_sources(frame), units_by_id, _conditional_targets(frame))
 
 
 def resolve_epistemic_ancestor_occurrence(
@@ -209,8 +210,16 @@ def _occurrence_status(
     unit: PredicateUnit,
     conditional_sources: set[str],
     units_by_id: Mapping[str, PredicateUnit],
+    conditional_targets: AbstractSet[str] = frozenset(),
 ) -> OccurrenceStatus:
-    return resolve_epistemic_ancestor_occurrence(unit, units_by_id, _local_occurrence_status(unit, conditional_sources))
+    local = _local_occurrence_status(unit, conditional_sources)
+    # Consequent of a parser CONDITIONS relation ("si A, B", "B à moins que A"):
+    # B only holds under the condition. Stronger local signals (negated,
+    # hypothetical, future, uncertain, reported) are kept; only an asserted or
+    # unqualified occurrence becomes CONDITIONAL.
+    if unit.id in conditional_targets and local in {OccurrenceStatus.ASSERTED_OCCURRED, OccurrenceStatus.UNKNOWN}:
+        local = OccurrenceStatus.CONDITIONAL
+    return resolve_epistemic_ancestor_occurrence(unit, units_by_id, local)
 
 
 def _local_occurrence_status(unit: PredicateUnit, conditional_sources: set[str]) -> OccurrenceStatus:
@@ -237,6 +246,14 @@ def _local_occurrence_status(unit: PredicateUnit, conditional_sources: set[str])
 def _conditional_sources(frame: UtteranceFrame) -> set[str]:
     return {
         relation.source
+        for relation in frame.relations
+        if relation.kind == RelationKind.CONDITIONS.value
+    }
+
+
+def _conditional_targets(frame: UtteranceFrame) -> set[str]:
+    return {
+        relation.target
         for relation in frame.relations
         if relation.kind == RelationKind.CONDITIONS.value
     }
