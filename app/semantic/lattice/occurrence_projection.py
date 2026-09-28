@@ -73,6 +73,9 @@ class FrameOccurrenceProjection:
         self.cond_targets = {m for r in conditions for m in frame.relation_members(r.target)}
         self.cond_group = {m: r.source for r in conditions if frame.coordination(r.source) is not None
                            for m in frame.relation_members(r.source)}
+        # members negated by a shared "ne ... ni ... ni" coordination
+        self.shared_negation = {m: c.id for c in frame.coordinations
+                                if c.construction == "ni_negative_coordination" for m in c.members}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
@@ -226,6 +229,8 @@ class FrameOccurrenceProjection:
             provenance["evidential"] = evidential
         if u.id in self.cond_group:
             provenance["conditional_group"] = self.cond_group[u.id]
+        if u.id in self.shared_negation:
+            provenance["shared_negation"] = self.shared_negation[u.id]
         inherited = {k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited

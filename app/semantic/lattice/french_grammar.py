@@ -121,6 +121,7 @@ class _Clause:
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
     boundary: str | None = None  # punctuation that opened the clause
     protasis_head: "_Clause | None" = None  # first "si" clause of a conjunctive protasis
+    ni_head: "_Clause | None" = None  # clause holding "ne" of a verbal "ne ... ni V1 ni V2"
     units: list = field(default_factory=list)
 
 
@@ -560,6 +561,45 @@ def _source_marker(toks: list[_Tok]) -> str | None:
     if len(rest) == 1 and rest[0].isalpha() and rest[0] not in _DETERMINERS:
         return "HUMAN_SOURCE"
     return None
+
+
+def _mark_verbal_ni(clauses: list[_Clause]) -> None:
+    """"Paul n'a ni lancé P ni arrêté Q": the negation is shared by the verbal ni members.
+
+    Only when "ne" precedes the first "ni", no lexical/modal verb precedes it
+    (an auxiliary may: it is shared), a verb directly follows it, and at least
+    two "ni" coordinate verbs (same clause or ", ni ..." clauses). Every "ni"
+    must introduce a past participle sharing the auxiliary; nominal "ni"
+    (objects/subjects), bare infinitives and modal "ne doit ni ... ni" are
+    left unchanged.
+    """
+    for k, c in enumerate(clauses):
+        lows = [t.low for t in c.toks]
+        if "ni" not in lows:
+            continue
+        f = lows.index("ni")
+        if not any(x in {"ne", "n'"} for x in lows[:f]) or f + 1 >= len(lows) or not _is_verb(c.toks, f + 1):
+            continue
+        verbs = [j for j in range(f) if _is_verb(c.toks, j)]
+        if any(_pred(c.toks[j]) not in {"HAVE", "BE"} for j in verbs):
+            continue
+        # compound past only (passé composé / plus-que-parfait): the members'
+        # own tense is not rebuilt here, so a future or conditional auxiliary
+        # ("n'aura ni ... ni") stays out of scope rather than read as past
+        if not verbs or not all(_feats(c.toks[j]) & {"PRES", "IMPF"} and
+                                not _feats(c.toks[j]) & {"FUT", "COND"} for j in verbs):
+            continue
+        group, count = [c], lows.count("ni")
+        for d in clauses[k + 1:]:
+            if not (d.conn is None and d.boundary == "," and d.toks and d.toks[0].low == "ni"):
+                break
+            group.append(d)
+            count += sum(1 for t in d.toks if t.low == "ni")
+        after_ni = [(g.toks, j + 1) for g in group for j, t in enumerate(g.toks) if t.low == "ni"]
+        if count >= 2 and all(j < len(ts) and _is_verb(ts, j) and "PP" in _feats(ts[j])
+                              and "INF" not in _feats(ts[j]) for ts, j in after_ni):
+            for g in group:
+                g.ni_head = c
 
 
 def _is_complement(clause: _Clause) -> bool:
@@ -1141,6 +1181,12 @@ def _polarity(toks: list[_Tok], d: _Draft, clause: _Clause, all_drafts: list[_Dr
                    negation_confirmed=True)
         return out
 
+    # verbal "ne ... ni V1 ni V2": the member directly after "ni" is negated by
+    # the shared ni coordination (see _mark_verbal_ni), not by another member.
+    if clause.ni_head is not None and lo > 0 and lows[lo - 1] == "ni":
+        out.update(polarity="negative", negator="ni", negation_confirmed=True)
+        return out
+
     # EN negation: do not / don't / never / not before the chain head.
     for j in range(max(0, lo - 3), lo):
         if lows[j] in _EN_NEGATORS:
@@ -1205,6 +1251,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     toks, disfluencies, ortho = _tokenize(raw)
     normalized = " ".join(t.low for t in toks)
     clauses, interrogative = _segment(toks)
+    _mark_verbal_ni(clauses)
     # "Si P et Q, R" / "si P et que Q" / "si P et si Q": one conjunctive protasis.
     # A bare "et Q" joins only a sentence-initial protasis ("R si P et Q" stays open).
     for k in range(1, len(clauses)):
@@ -1459,6 +1506,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
                                "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
+
+    # ── verbal ni coordination: one structural group per "ne ... ni ... ni" ──
+    ni_heads = [c for c in clauses if c.ni_head is c]
+    for head in ni_heads:
+        members = [u for c in clauses if c.ni_head is head for (u, d) in c.units
+                   if d.head_index > 0 and c.toks[d.head_index - 1].low == "ni" and u.negator == "ni"]
+        if len(members) < 2:
+            continue
+        for a, b in zip(members, members[1:]):
+            relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence="ni"))
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "ni_negative_coordination",
+            tuple("ni" for _ in members), (members[0].span[0], members[-1].span[1])))
 
     # ── inter-clause relations ──
     for ci, clause in enumerate(clauses):
