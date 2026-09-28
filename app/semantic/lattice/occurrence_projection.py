@@ -38,6 +38,11 @@ _DIRECTIVE_PRAGMATICS = frozenset({"REQUESTED", "INDIRECT_REQUEST", "FORBIDDEN"}
 _MENTION_ROLES = frozenset({"MENTION", "PURPOSE", "TEMPORAL_CONTEXT", "EXPLANATION_CONTENT"})
 _META = frozenset({"SAY", "BELIEVE", "OBSERVE", "LEARN"})
 _PERFECTIVE_TENSES = frozenset({"PAST", "PLUPERFECT", "RECENT_PAST"})
+# Reportive evidential without a governor unit ("il paraît que P"): the parser
+# marks P itself (pragmatic REPORTED at the root; its epistemic HEARSAY may be
+# overridden, e.g. COUNTERFACTUAL for "a failli"). It closes the perspective
+# like a report; no unit is invented.
+_HEARSAY = "HEARSAY"
 
 
 @dataclass(frozen=True)
@@ -82,6 +87,15 @@ class FrameOccurrenceProjection:
             return parent, relation, "complement"
         return parent, relation, "unknown_edge"
 
+    def _evidential(self, u: PredicateUnit, kind: str) -> str | None:
+        if kind == "root" and (u.epistemic == _HEARSAY or u.pragmatic == "REPORTED"):
+            return _HEARSAY
+        return None
+
+    def _evidential_commitment(self, u: PredicateUnit):
+        profile = profile_for("REPORT", ConstructionType.QUE_PROPOSITION)
+        return resolve_commitment(profile, frozenset(), source_object_ref=u.id)
+
     def _conditional_role(self, u: PredicateUnit) -> str | None:
         if u.id in self.cond_sources:
             return "source"
@@ -123,7 +137,9 @@ class FrameOccurrenceProjection:
         self.visiting.add(u.id)
         parent, relation, kind = self._edge(u)
         if parent is None:
-            ctx = _Context(unresolved=kind == "malformed", unresolved_from=u.id if kind == "malformed" else None)
+            evidential = self._evidential(u, kind) is not None
+            ctx = _Context(unresolved=kind == "malformed", unresolved_from=u.id if kind == "malformed" else None,
+                           non_assertive=evidential, non_assertive_from=u.id if evidential else None)
         else:
             base = self.context(parent)
             non_assertive, na_from = base.non_assertive, base.non_assertive_from
@@ -161,10 +177,13 @@ class FrameOccurrenceProjection:
         ctx = self.context(parent) if parent is not None else _Context()
         commitment = None
         parent_claim = None
+        evidential = self._evidential(u, kind)
         if kind == "complement":
             commitment = self._commitment(u, parent, relation)
             if commitment.commitment is ComplementCommitment.ENTAILED:
                 parent_claim = self.claim(parent)[0].claim
+        elif evidential is not None:
+            commitment = self._evidential_commitment(u)
         directive = u.pragmatic in _DIRECTIVE_PRAGMATICS or u.role in {"REQUEST", "AMBIGUOUS_REQUEST"}
         # "oublier de X" is an implicative without a profile, unless the parser already
         # resolved it as a reminder directive ("n'oublie pas de lancer").
@@ -188,6 +207,8 @@ class FrameOccurrenceProjection:
         if role == "ancestry":
             inherited["conditional"] = ctx.condition_from or parent.id
         provenance = {"edge": kind, "governor": parent.predicate if parent is not None else None}
+        if evidential is not None:
+            provenance["evidential"] = evidential
         inherited = {k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited
@@ -245,6 +266,8 @@ class FrameOccurrenceProjection:
             seen.add(u.id)
             parent, relation, kind = self._edge(u)
             if parent is None:
+                if kind == "root" and self._evidential(u, kind) is not None:
+                    return family or "REPORT"
                 return family if kind == "root" else None
             if kind == "unknown_edge":
                 return None
