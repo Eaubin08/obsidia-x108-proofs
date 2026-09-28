@@ -425,6 +425,99 @@ def _si_unresolved_governor(toks: list[_Tok], i: int) -> bool:
     return _unresolved_governor_index(toks[i + 1:q]) is not None
 
 
+# ── unanalyzed predicative content (M8-0b) ───────────────────────────────
+# A clause whose verb the lexicon does not know yields no PredicateUnit. It is
+# not non-existent: it is reported in frame.missing with its span and link.
+UNANALYZED_PREDICATIVE_CONTENT = "unanalyzed_predicative_content"
+_INFINITIVE_ENDINGS = ("er", "ir", "re", "oir")
+_PRE_VERB_SKIP = {"ne", "n'", "y", "en", "le", "la", "les", "l'", "lui", "leur"} | _REFLEXIVE_CLITICS
+_AUX_ADVERBS = {"déjà", "deja", "bien", "vraiment", "encore", "toujours", "souvent", "enfin", "aussi"}
+# Constructions already analysed without a PredicateUnit ("il paraît que" -> HEARSAY).
+_ANALYSED_NON_UNIT_WORDS = {"paraît", "parait"}
+
+
+def _content_word(t: _Tok) -> bool:
+    """A word unknown to the lexicon that is not a closed-class function word."""
+    return (not t.analyses and not t.is_punct and t.low.isalpha()
+            and t.low not in _NON_GOVERNOR_WORDS | _DETERMINERS | _PREPOSITIONS | _WH_WORDS
+            | _FR_NEGATORS | _SUBJECT_PRONOUNS | set(_CONNECTIVES) | _ANALYSED_NON_UNIT_WORDS
+            | {"que", "qui", "si"})
+
+
+def _lost_verb_evidence(clause: "_Clause") -> list[tuple[int, int]]:
+    """(auxiliary/modal index, unknown participle/infinitive index) pairs of the clause."""
+    toks, lows = clause.toks, [t.low for t in clause.toks]
+    out = []
+    for k in range(len(toks)):
+        if not _is_verb(toks, k) or toks[k].hyphen_before:
+            continue
+        pred, cls = _pred(toks[k]), _cls(toks[k])
+        if pred in {"HAVE", "BE"} or cls in {"modal", "aspectual"}:
+            # After an auxiliary only negators / adverbs can intervene ("n'est
+            # pas parti"); object clitics may follow a modal ("peut le faire").
+            if pred in {"HAVE", "BE"}:
+                skip = _FR_NEGATORS | _AUX_ADVERBS
+            else:
+                skip = _PRE_VERB_SKIP | _FR_NEGATORS | _AUX_ADVERBS
+            j = k + 1
+            while j < len(toks) and lows[j] in skip:
+                j += 1
+            endings = _PARTICIPLE_ENDINGS if pred in {"HAVE", "BE"} else _INFINITIVE_ENDINGS
+            if j < len(toks) and _content_word(toks[j]) and lows[j].endswith(endings):
+                out.append((k, j))
+    return out
+
+
+def _unanalyzed_predicative(clause: "_Clause") -> bool:
+    """Structural evidence of a predication whose verb is unknown (no meaning inferred).
+
+    Either an auxiliary / modal / aspectual verb followed by an unknown
+    participle or infinitive ("est parti", "va partir", "pourrait partir"), or
+    a verbless clause shaped subject + unknown word: a subject pronoun ("elle
+    appelle"), or a nominal subject where a clause is expected ("que Paul
+    part", "si Paul part").
+    """
+    toks, lows = clause.toks, [t.low for t in clause.toks]
+    skip = _PRE_VERB_SKIP | _FR_NEGATORS
+    if _lost_verb_evidence(clause):
+        return True
+    if any(_is_verb(toks, k) for k in range(len(toks))):
+        return False
+    i = 1 if lows[:1] == ["si"] else 0
+    if i >= len(toks):
+        return False
+    if lows[i] in _SUBJECT_PRONOUNS:
+        j = i + 1
+    elif clause.conn in {"que", "si"} or i == 1:
+        if lows[i] in _DETERMINERS:
+            i += 1
+        if i >= len(toks) or not _content_word(toks[i]):
+            return False
+        j = i + 1
+    else:
+        return False
+    while j < len(toks) and lows[j] in skip:
+        j += 1
+    return j < len(toks) and _content_word(toks[j])
+
+
+def _content_operators(clause: "_Clause") -> list[str]:
+    """Scope operators detectable around unanalyzed content (never inferred meaning)."""
+    lows = [t.low for t in clause.toks]
+    ops = []
+    if any(x in {"ne", "n'"} for x in lows) and any(x in _FR_NEGATORS for x in lows):
+        ops.append("neg")
+    verbs = [t for k, t in enumerate(clause.toks) if _is_verb(clause.toks, k)]
+    tenses = {_tense_of(_feats(t)) for t in verbs}
+    if "FUTURE" in tenses or any(_pred(t) == "GO" for t in verbs):
+        ops.append("future")
+    if "CONDITIONAL" in tenses:
+        ops.append("conditional_mood")
+    if any(_cls(t) == "modal" for t in verbs):
+        ops.append("modal")
+    return ops
+
+
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     clauses: list[_Clause] = [_Clause([])]
     interrogative = False
@@ -590,7 +683,10 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     for c in clauses:
         has_verb = c.unresolved_governor is not None or any(
             _is_verb(c.toks, k) for k in range(len(c.toks)))
-        if not has_verb and merged and c.conn not in {"sans", "sans_que"}:
+        # A verbless clause shaped like a predication with an unknown verb
+        # ("elle appelle Luc") is kept as its own (unanalyzed) clause.
+        if not has_verb and merged and c.conn not in {"sans", "sans_que"} \
+                and not _unanalyzed_predicative(c):
             prev = merged[-1]
             prev.toks += c.conn_toks + c.toks
             continue
@@ -1245,6 +1341,59 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if not (conn == "alors" and any(c.conn == "si" for c in clauses[:ci])):
                 relations.append(LatticeRelation(kind.value, src.id, tgt.id, evidence=conn))
 
+    # ── unanalyzed predicative content: reported, never dropped (M8-0b) ──
+    # "<marker>:<start>-<end>:<link>[:ops=...]" — the span of the clause, its
+    # structural link when syntax gives it, and detectable scope operators.
+    missing: list[str] = []
+    protases = [cj for cj, c in enumerate(clauses)
+                if c.conn == "si" or (c.toks and c.toks[0].low == "si")]
+    for ci, clause in enumerate(clauses):
+        if not clause.toks:
+            continue
+        governed_by = None
+        if clause.units:
+            # Partial loss: a known modal / auxiliary whose unknown infinitive or
+            # participle produced no unit ("pourrait partir").
+            covered = {u.span for (u, _) in clause.units}
+            lost = [(k, j) for k, j in _lost_verb_evidence(clause)
+                    if (clause.toks[j].start, clause.toks[j].end) not in covered]
+            if not lost:
+                continue
+            k = lost[0][0]
+            governed_by = next((u for (u, _) in clause.units
+                                if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
+        elif not _unanalyzed_predicative(clause):
+            continue
+        content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
+        if clause.conn in {"que", "rel"}:
+            parent = None
+            if clause.embedding_parent is not None and clause.embedding_parent < ci:
+                parent = last_of(clause.embedding_parent)
+            if parent is None and ci > 0:
+                parent = last_of(ci - 1)
+            if parent is not None:
+                link = f"embedded_under={parent.id}"
+            elif clause.conn == "rel" and not clause.governor_lost:
+                link = "unattached"  # e.g. main predicate absorbed after a relative
+            else:
+                link = "embedded_under_unresolved_governor"
+        elif ci in protases:
+            link = "conditional_protasis"
+        else:
+            cj = max((p for p in protases if p < ci), default=None)
+            if cj is not None and not any(cj < mj < ci for mj, _ in main_heads):
+                h = head_of(cj)
+                link = f"conditional_consequent_of={h.id}" if h is not None else "conditional_consequent"
+            elif clause.conn in {"mais", "puis", "et", "ou", "donc", "car", "alors", "apres", "avant_de"}:
+                prev_main = next((u for (mj, u) in reversed(main_heads) if mj < ci), None)
+                link = f"{clause.conn}_after={prev_main.id}" if prev_main is not None else clause.conn
+            else:
+                link = "root"
+        ops = _content_operators(clause)
+        missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{content[0].start}-{content[-1].end}:{link}"
+                       + (f":governed_by={governed_by.id}" if governed_by is not None else "")
+                       + (f":ops={','.join(ops)}" if ops else ""))
+
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed = _resolve_references(final_units)
     relations.extend(ref_relations)
@@ -1275,6 +1424,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         ambiguities=tuple(dict.fromkeys(ambiguities)),
         contradictions=tuple(contradictions),
         evidence_needs=tuple(evidence),
+        missing=tuple(missing),
         disfluencies=tuple(disfluencies),
         orthography_flags=tuple(dict.fromkeys(ortho)),
     )
