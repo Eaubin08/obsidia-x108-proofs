@@ -113,18 +113,6 @@ def test_negated_governor_scopes_over_both_siblings():
     assert claims["u2"].occurrence_derivation.rule == claims["u3"].occurrence_derivation.rule == "commitment:MENTIONED"
 
 
-@pytest.mark.parametrize("text", [
-    f"Marie dit que Jean croit que {P} et que {Q}.",
-    f"Marie croit que Jean a appris que {P} et que {Q}.",
-])
-def test_multiple_compatible_governors_never_assert_q(text):
-    f = parse_utterance(text)
-    q = next(u for u in f.units if u.subject == "nadia")
-    ev = {c.predicate_ref: c for c in build_frame_event_index(f).events()}[q.id]
-    assert ev.occurrence_claim.value not in {"ASSERTED_REALIZED", "ASSERTED_NOT_REALIZED"}
-    assert q.embedded_under is not None
-
-
 @pytest.mark.parametrize("text,expected", [
     (f"{P} et {Q}.", [("COORDINATES", "u1", "u2", "et")]),
     ("Paul a lancé le test que Nadia a préparé.", None),
@@ -135,3 +123,43 @@ def test_controls_without_coordinated_complements_are_unchanged(text, expected):
     assert not any(r.evidence == "et que" for r in f.relations)
     if expected is not None:
         assert sorted((r.kind, r.source, r.target, r.evidence) for r in f.relations) == expected
+
+
+# Iteration 5: ambiguous attachment stays AMBIGUOUS (no default, no nearest governor).
+
+AMBIGUOUS_ATTACHMENTS = [
+    f"Marie dit que {P} et {Q}.",
+    f"Marie croit que {P} et {Q}.",
+    f"Marie a appris que {P} et {Q}.",
+    f"Marie ne dit pas que {P} et {Q}.",
+    f"Marie sait que {P} et {Q}.",
+    f"Marie se rend compte que {P} et {Q}.",
+    f"Il paraît que {P} et {Q}.",
+    f"Marie dit que {P}, et {Q}.",
+    f"Marie dit que Jean croit que {P} et que {Q}.",
+    f"Marie croit que Jean a appris que {P} et que {Q}.",
+]
+
+
+@pytest.mark.parametrize("text", AMBIGUOUS_ATTACHMENTS)
+def test_ambiguous_coordination_attachment_is_never_resolved(text):
+    f = parse_utterance(text)
+    q = next(u for u in f.units if u.subject == "nadia")
+    assert q.embedded_under is None
+    assert (q.pragmatic, q.epistemic) == ("EMBEDDED", "UNRESOLVED_GOVERNANCE")
+    assert f"coordination_attachment_ambiguous:{q.id}" in f.ambiguities
+    assert not any(q.id in (r.source, r.target) for r in f.relations)
+    ev = {c.predicate_ref: c for c in build_frame_event_index(f).events()}[q.id]
+    assert ev.occurrence_claim.value == "UNRESOLVED"
+
+
+@pytest.mark.parametrize("text", [
+    f"{P} et {Q}.",
+    f"Est-ce que {P} et {Q} ?",
+    f"Si {P}, {Q} et Luc lance le lot.",
+])
+def test_coordination_outside_any_complement_is_unchanged(text):
+    f = parse_utterance(text)
+    assert not any(a.startswith("coordination_attachment_ambiguous") for a in f.ambiguities)
+    q = next(u for u in f.units if u.subject == "nadia")
+    assert q.epistemic != "UNRESOLVED_GOVERNANCE"

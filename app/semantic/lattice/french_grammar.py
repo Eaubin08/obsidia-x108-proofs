@@ -116,6 +116,7 @@ class _Clause:
     unresolved_governor: int | None = None  # index of an unknown verb governing "que"
     governor_lost: bool = False  # "que" clause after a non-nominal word: not a relative
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
+    attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
     units: list = field(default_factory=list)
 
 
@@ -530,24 +531,31 @@ def _content_operators(clause: "_Clause") -> list[str]:
     return ops
 
 
-def _coordinated_complement(clauses: list[_Clause]) -> _Clause | None:
-    """"V que P et que Q": the complement P that Q coordinates with.
+def _is_complement(clause: _Clause) -> bool:
+    return clause.conn == "que" or (clause.conn == "rel" and clause.governor_lost)
+
+
+def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, bool]:
+    """"V que P et que Q": (the complement P that Q coordinates with, ambiguous).
 
     P is a "que" complement, or one whose governor was lost (Q then shares that
     unknown governance). Only for a unique syntactic governor: when P's governor
-    is itself a "que" complement, Q could complement either governor and nothing
-    is resolved.
+    is itself a "que" complement, Q could complement either governor, and the
+    attachment stays ambiguous.
     """
     if len(clauses) < 2:
-        return None
+        return None, False
     c, prev = clauses[-1], clauses[-2]
-    complement = prev.conn == "que" or (prev.conn == "rel" and prev.governor_lost)
-    if c.toks or c.conn != "et" or not complement or prev.embedding_parent is None:
-        return None
+    if c.toks or c.conn != "et" or not _is_complement(prev):
+        return None, False
+    if prev.attachment_ambiguous:
+        return None, True
     gov = prev.embedding_parent
-    if not 0 <= gov < len(clauses) - 2 or clauses[gov].conn == "que":
-        return None
-    return prev
+    if gov is None or not 0 <= gov < len(clauses) - 2:
+        return None, False
+    if clauses[gov].conn == "que":
+        return None, True
+    return prev, False
 
 
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
@@ -657,10 +665,14 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
 
         if low in {"que", "qu'"}:
             c = cur()
-            sibling = _coordinated_complement(clauses)
+            sibling, ambiguous = _coordinated_complement(clauses)
             if sibling is not None:
                 c.conn, c.conn_toks, c.governor_lost = sibling.conn, c.conn_toks + [t], sibling.governor_lost
                 c.embedding_parent, c.coordinated_with = sibling.embedding_parent, sibling
+                i += 1
+                continue
+            if ambiguous:
+                c.conn, c.conn_toks, c.attachment_ambiguous = "que", c.conn_toks + [t], True
                 i += 1
                 continue
             verb = _last_verb(c.toks)
@@ -1137,6 +1149,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     toks, disfluencies, ortho = _tokenize(raw)
     normalized = " ".join(t.low for t in toks)
     clauses, interrogative = _segment(toks)
+    # "V que P et Q": Q coordinates inside the complement or with its host.
+    for prev, clause in zip(clauses, clauses[1:]):
+        if clause.conn == "et" and _is_complement(prev):
+            clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
 
@@ -1226,6 +1242,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue
             if clause.conn in {"sans", "sans_que"} and n == 0:
                 prag = "FORBIDDEN"
+            elif clause.attachment_ambiguous and n == 0:
+                # Several attachments stay open: never the nearest governor,
+                # never a root assertion.
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
             elif clause.conn == "que" and parent_unit is None and n == 0 and host is not None and any(
                     t.low in {"paraît", "parait"} for t in host.toks):
                 prag, epi = "REPORTED", "HEARSAY"
@@ -1381,8 +1402,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         elif conn == "a_moins_que" and prev_main is not None:
             relations.append(LatticeRelation(RelationKind.CONDITIONS.value, h.id, prev_main.id,
                                              confidence=0.8, evidence="à moins que"))
-        elif prev_main is not None and conn in {"mais", "puis", "et", "ou", "donc", "car",
-                                                "avant_de", "apres", "alors"}:
+        elif prev_main is not None and not clause.attachment_ambiguous and conn in {
+                "mais", "puis", "et", "ou", "donc", "car", "avant_de", "apres", "alors"}:
             kind, src, tgt = {
                 "mais": (RelationKind.CONTRASTS, prev_main, h),
                 "puis": (RelationKind.PRECEDES, prev_main, h),
