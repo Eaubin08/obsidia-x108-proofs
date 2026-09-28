@@ -24,7 +24,7 @@ from dataclasses import dataclass, field, replace
 
 from app.semantic.lattice.lexicon import fold, lookup, predicate_of
 from app.semantic.lattice.primitives import (
-    Argument, LatticeRelation, PredicateUnit, RelationKind, UtteranceFrame,
+    Argument, CoordinationRef, LatticeRelation, PredicateUnit, RelationKind, UtteranceFrame,
 )
 
 # ── closed word classes ──────────────────────────────────────────────────
@@ -119,6 +119,8 @@ class _Clause:
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
+    boundary: str | None = None  # punctuation that opened the clause
+    protasis_head: "_Clause | None" = None  # first "si" clause of a conjunctive protasis
     units: list = field(default_factory=list)
 
 
@@ -615,6 +617,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             if low == "?":
                 interrogative = True
             open_clause(None, [])
+            cur().boundary = low
             i += 1
             continue
 
@@ -695,6 +698,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
 
         if low in {"que", "qu'"}:
             c = cur()
+            if not c.toks and c.conn == "et" and len(clauses) >= 2 and clauses[-2].conn == "si":
+                # "si P et que Q": "que" takes up "si"; Q joins the protasis.
+                c.conn, c.conn_toks = "si", c.conn_toks + [t]
+                i += 1
+                continue
             sibling, ambiguous = _coordinated_complement(clauses)
             if sibling is not None:
                 c.conn, c.conn_toks, c.governor_lost = sibling.conn, c.conn_toks + [t], sibling.governor_lost
@@ -1197,6 +1205,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     toks, disfluencies, ortho = _tokenize(raw)
     normalized = " ".join(t.low for t in toks)
     clauses, interrogative = _segment(toks)
+    # "Si P et Q, R" / "si P et que Q" / "si P et si Q": one conjunctive protasis.
+    # A bare "et Q" joins only a sentence-initial protasis ("R si P et Q" stays open).
+    for k in range(1, len(clauses)):
+        prev, clause = clauses[k - 1], clauses[k]
+        if prev.conn != "si" or clause.boundary is not None or not clause.conn_toks \
+                or clause.conn_toks[0].low != "et":
+            continue
+        head = prev.protasis_head or prev
+        hi = next(j for j, c in enumerate(clauses) if c is head)
+        preposed = hi == 0 or head.boundary in {".", "!", "?", ";", ":"}
+        if clause.conn == "si" or (clause.conn == "et" and preposed):
+            clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
     # "V que P et Q": Q coordinates inside the complement or with its host.
     for prev, clause in zip(clauses, clauses[1:]):
         if clause.conn == "et" and (_is_complement(prev) or prev.evidential is not None):
@@ -1206,6 +1226,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     units: list[PredicateUnit] = []
     relations: list[LatticeRelation] = []
+    coordinations: list[CoordinationRef] = []
     ambiguities: list[str] = []
     deixis = [t.low for t in toks if t.low in _DEIXIS and not t.hyphen_before]
     counter = 0
@@ -1452,10 +1473,24 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if host is not None:
                 relations.append(LatticeRelation(RelationKind.FORBIDS.value, host.id, h.id,
                                                  evidence=conn))
+        elif conn == "si" and clause.protasis_head is not None and clause.protasis_head is not clause:
+            pass  # member of a conjunctive protasis: related through its head's group
         elif conn == "si":
             host = next_main if next_main is not None else prev_main
+            source = h.id
+            if clause.protasis_head is clause:
+                group = [c for c in clauses if c.protasis_head is clause and c.units]
+                heads = [c.units[0][0] for c in group]
+                links = tuple(" ".join(x.low for x in c.conn_toks) for c in group[1:])
+                for a, (b, link) in zip(heads, zip(heads[1:], links)):
+                    relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=link))
+                if len(heads) > 1:
+                    source = f"c{len(coordinations) + 1}"
+                    coordinations.append(CoordinationRef(
+                        source, "AND", tuple(u.id for u in heads), "conditional_protasis", links,
+                        (heads[0].span[0], heads[-1].span[1])))
             if host is not None:
-                relations.append(LatticeRelation(RelationKind.CONDITIONS.value, h.id, host.id,
+                relations.append(LatticeRelation(RelationKind.CONDITIONS.value, source, host.id,
                                                  evidence="si"))
         elif conn == "avant_que" and prev_main is not None:
             relations.append(LatticeRelation(RelationKind.PRECEDES.value, prev_main.id, h.id,
@@ -1569,6 +1604,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         missing=tuple(missing),
         disfluencies=tuple(disfluencies),
         orthography_flags=tuple(dict.fromkeys(ortho)),
+        coordinations=tuple(coordinations),
     )
 
 

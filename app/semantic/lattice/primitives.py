@@ -150,6 +150,22 @@ class LatticeRelation:
 
 
 @dataclass(frozen=True)
+class CoordinationRef:
+    """Structural grouping of semantic units ("si P et Q": AND over P, Q).
+
+    Not an event, not an EventCandidate, no occurrence claim: it only states
+    that its members are coordinated, so that a relation (e.g. CONDITIONS)
+    can take the group as one endpoint without making any member sufficient.
+    """
+    id: str
+    kind: str                       # "AND" | "OR"
+    members: tuple[str, ...]        # unit ids, surface order
+    construction: str               # e.g. "conditional_protasis"
+    evidence: tuple[str, ...] = ()  # connective surface between members
+    span: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True)
 class UtteranceFrame:
     raw: str
     normalized: str
@@ -167,6 +183,15 @@ class UtteranceFrame:
     disfluencies: tuple[str, ...] = ()
     orthography_flags: tuple[str, ...] = ()
     boundary: dict = field(default_factory=lambda: dict(BOUNDARY))
+    coordinations: tuple[CoordinationRef, ...] = ()
+
+    def coordination(self, ref: str | None) -> CoordinationRef | None:
+        return next((c for c in self.coordinations if c.id == ref), None)
+
+    def relation_members(self, ref: str) -> tuple[str, ...]:
+        """Unit ids behind a relation endpoint: a CoordinationRef's members, else ref."""
+        coordination = self.coordination(ref)
+        return coordination.members if coordination is not None else (ref,)
 
     @property
     def closure_blockers(self) -> tuple[str, ...]:

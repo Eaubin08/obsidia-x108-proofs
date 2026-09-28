@@ -54,6 +54,7 @@ def governable_summary(frame: UtteranceFrame) -> dict:
         "schema": SCHEMA,
         "units": [_compact(u) for u in frame.units],
         "relations": [[r.kind, r.source, r.target] for r in frame.relations],
+        "coordinations": [[c.id, c.kind, list(c.members), c.construction] for c in frame.coordinations],
         "constraints": list(frame.constraints),
         "requested_world_actions": sorted({u.predicate for u in requested}),
         "requested_action_surfaces": [u.surface for u in requested],
@@ -77,7 +78,7 @@ def fail_closed_summary(error: Exception) -> dict:
     return {
         "schema": SCHEMA,
         "error": type(error).__name__,
-        "units": [], "relations": [], "constraints": [],
+        "units": [], "relations": [], "coordinations": [], "constraints": [],
         "requested_world_actions": [], "requested_action_surfaces": [],
         "negated_execute_surfaces": [], "confirmed_no_execute": False,
         "prepare_requested": False, "prepare_referent_open": False,

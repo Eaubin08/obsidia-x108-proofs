@@ -67,8 +67,12 @@ class FrameOccurrenceProjection:
         self.frame = frame
         self.units = {u.id: u for u in frame.units}
         self.edges = {(r.source, r.target): r for r in frame.relations}
-        self.cond_sources = {r.source for r in frame.relations if r.kind == RelationKind.CONDITIONS.value}
-        self.cond_targets = {r.target for r in frame.relations if r.kind == RelationKind.CONDITIONS.value}
+        conditions = [r for r in frame.relations if r.kind == RelationKind.CONDITIONS.value]
+        # a coordinated antecedent (CoordinationRef) conditions through its members jointly
+        self.cond_sources = {m for r in conditions for m in frame.relation_members(r.source)}
+        self.cond_targets = {m for r in conditions for m in frame.relation_members(r.target)}
+        self.cond_group = {m: r.source for r in conditions if frame.coordination(r.source) is not None
+                           for m in frame.relation_members(r.source)}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
@@ -220,6 +224,8 @@ class FrameOccurrenceProjection:
         provenance = {"edge": kind, "governor": parent.predicate if parent is not None else None}
         if evidential is not None:
             provenance["evidential"] = evidential
+        if u.id in self.cond_group:
+            provenance["conditional_group"] = self.cond_group[u.id]
         inherited = {k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited

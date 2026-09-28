@@ -269,17 +269,19 @@ def _local_occurrence_status(unit: PredicateUnit, conditional_sources: set[str])
 
 def _conditional_sources(frame: UtteranceFrame) -> set[str]:
     return {
-        relation.source
+        member
         for relation in frame.relations
         if relation.kind == RelationKind.CONDITIONS.value
+        for member in frame.relation_members(relation.source)
     }
 
 
 def _conditional_targets(frame: UtteranceFrame) -> set[str]:
     return {
-        relation.target
+        member
         for relation in frame.relations
         if relation.kind == RelationKind.CONDITIONS.value
+        for member in frame.relation_members(relation.target)
     }
 
 

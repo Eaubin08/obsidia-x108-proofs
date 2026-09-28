@@ -111,6 +111,17 @@ def project_causal_flows(frame: UtteranceFrame) -> tuple[OrderedMeaningFlow, ...
         if relation_type is None:
             continue
         claim_level = _claim_level(frame, relation)
+        metadata = {
+            "claim_level": claim_level,
+            "source_relation_kind": relation.kind,
+            "validated_proof": False,
+        }
+        coordination = frame.coordination(relation.source)
+        if coordination is not None:
+            # one flow for the whole coordinated antecedent; no member is sufficient alone
+            metadata.update(coordination_kind=coordination.kind,
+                            coordination_members=list(coordination.members),
+                            coordination_construction=coordination.construction)
         flows.append(_flow(
             family=FlowFamily.CAUSAL_CLAIM,
             source_object=relation.source,
@@ -120,11 +131,7 @@ def project_causal_flows(frame: UtteranceFrame) -> tuple[OrderedMeaningFlow, ...
             frame=frame,
             relation_evidence=relation.evidence,
             confidence_value=relation.confidence,
-            metadata={
-                "claim_level": claim_level,
-                "source_relation_kind": relation.kind,
-                "validated_proof": False,
-            },
+            metadata=metadata,
         ))
     return tuple(flows)
 
@@ -281,7 +288,8 @@ def _claim_level(frame: UtteranceFrame, causal_relation: object) -> str:
         for rel in frame.relations
         if rel.kind == RelationKind.REPORTS.value
     }
-    if getattr(relation, "source") in reported_targets or getattr(relation, "target") in reported_targets:
+    endpoints = {*frame.relation_members(getattr(relation, "source")), getattr(relation, "target")}
+    if endpoints & reported_targets:
         return "REPORTED_CAUSAL_CLAIM"
     return "LINGUISTIC_CAUSAL_CLAIM"
 
