@@ -303,6 +303,9 @@ def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
     if _is_verb(toks, k) and _pred(before) in {"HAVE", "BE"}:
         cleft = k > 0 and lows[k - 1] in {"c'", "ce"}
         return j if g.low.endswith(_PARTICIPLE_ENDINGS) and not cleft else None
+    if _is_verb(toks, k) and _cls(before) in {"modal", "aspectual"}:
+        # "pourrait découvrir que", "va découvrir que": unknown infinitive governor.
+        return j if g.low.endswith(_INFINITIVE_ENDINGS) else None
     if before.analyses or before.low in _DETERMINERS or before.low in _NON_GOVERNOR_WORDS:
         return None
     if k == 0 or (k == 1 and lows[0] in _DETERMINERS):
@@ -356,9 +359,17 @@ def _unresolved_governor_draft(toks: list[_Tok], idx: int) -> "_Draft":
     while k >= 0 and toks[k].low in _FR_NEGATORS | {"ne", "n'"}:
         k -= 1
     aux = k >= 0 and _is_verb(toks, k) and _pred(toks[k]) in {"HAVE", "BE"}
-    head = k if aux else idx
-    subj, person = _subject_before(toks, head)
-    if aux:
+    modal = k >= 0 and not aux and _is_verb(toks, k) and _cls(toks[k]) in {"modal", "aspectual"}
+    folded = modal and _pred(toks[k]) == "GO"  # "va découvrir": aller folds into the infinitive
+    head = k if aux or folded else idx  # under a modal unit, negation scope stays on the infinitive
+    subj, person = _subject_before(toks, k if modal else head)
+    if modal:
+        # A modal keeps its own unit and governs this infinitive (see
+        # _mark_governed); "aller + inf" folds into the infinitive as for known
+        # verbs ("va dire" -> NEAR_FUTURE), so the future is never lost.
+        tense = "NEAR_FUTURE" if folded else "NONE"
+        form = "INFINITIVE"
+    elif aux:
         tense = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE",
                  "CONDITIONAL": "CONDITIONAL"}.get(_tense_of(_feats(toks[k])), "PAST")
         form = "PARTICIPLE"
@@ -1225,12 +1236,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
             elif clause.conn == "si" and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
-            elif clause.conn == "rel" and clause.governor_lost and parent_unit is None and n == 0:
+            elif clause.conn == "rel" and clause.governor_lost and n == 0:
                 # "que" complement whose governor could not be built ("se rend
-                # compte que"): subordinated content of unknown governance,
-                # never promoted to an independent root assertion.
+                # compte que", "pourrait se rendre compte que"): subordinated
+                # content of unknown governance, never a root assertion nor a
+                # relative asserted under whatever unit precedes it.
                 prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
                 ambiguities.append(f"complement_governor_lost:{u.id}")
+                if parent_unit is not None:
+                    embedded_under = parent_unit.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id, u.id,
+                                                     evidence="que_governor_lost"))
             elif clause.conn in {"rel", "comparative"}:
                 prag, epi = "ASSERTED", "ASSERTED"
                 if parent_unit is not None:
@@ -1248,6 +1264,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     embedded_under = gov.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
                                                      evidence="observation+inf"))
+            elif d.governed == "modal_governor":
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
+                if gov is not None:
+                    embedded_under = gov.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
+                                                     evidence="modal+inf"))
             elif d.governed == "prep":
                 gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
                 if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated:
@@ -1433,6 +1456,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
+    if d.unresolved_governor and d.verb_form == "INFINITIVE":
+        # Unknown "que" governor under a modal / aspectual: MODAL(G(X)), the
+        # modal unit governs G, never flattened into G(X) or X.
+        prior = [u for (u, dd) in clause.units if dd.lex_index < d.lex_index]
+        if prior and prior[-1].predicate_class in {"modal", "aspectual"}:
+            d.governed = "modal_governor"
+            d.governor_unit = prior[-1].id
+        return
     if (clause.conn in {"avant_de", "apres"} or any(x in {"après", "apres", "before", "after"} for x in lows[:d.lex_index])) and d.verb_form in {"INFINITIVE", "PARTICIPLE"}:
         d.governed = "temporal"
         return
