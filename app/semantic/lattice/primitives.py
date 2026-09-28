@@ -1,0 +1,191 @@
+"""Cognitive-lattice primitives — immutable, descriptive, non-sovereign.
+
+Names deliberately differ from app.semantic.frame (SemanticFrame /
+SemanticRelation are the solver-facing structures and keep their meaning).
+
+One PredicateUnit is ONE cognitive object. Grammatical, semantic, temporal,
+causal, epistemic, pragmatic, provenance, world, authority and confidence
+positions are projections of that same object (see projections.py), not
+copies.
+
+decision_authority: KX108_ONLY · emits_act: false · memory_write: false
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+
+BOUNDARY = {
+    "readonly": True,
+    "non_sovereign": True,
+    "decision_authority": "KX108_ONLY",
+    "emits_act": False,
+    "memory_write": False,
+    "kernel_mutation": False,
+}
+
+
+class RelationKind(str, Enum):
+    CONTRASTS = "CONTRASTS"
+    PRECEDES = "PRECEDES"
+    COORDINATES = "COORDINATES"
+    ALTERNATIVE = "ALTERNATIVE"
+    CAUSES = "CAUSES"
+    CONDITIONS = "CONDITIONS"
+    FORBIDS = "FORBIDS"
+    REPORTS = "REPORTS"
+    FEARS = "FEARS"
+    PREVENTS = "PREVENTS"
+    BELIEVES = "BELIEVES"
+    WANTS = "WANTS"
+    EMBEDS = "EMBEDS"
+    REFERS_TO = "REFERS_TO"
+
+
+TEMPORAL_KINDS = frozenset({RelationKind.PRECEDES})
+PROVENANCE_KINDS = frozenset({RelationKind.REPORTS})
+EMBEDDING_KINDS = frozenset({
+    RelationKind.REPORTS, RelationKind.FEARS, RelationKind.PREVENTS,
+    RelationKind.BELIEVES, RelationKind.WANTS, RelationKind.EMBEDS,
+    RelationKind.CONDITIONS,
+})
+
+
+class ConnectionKind(str, Enum):
+    """How two objects of the lattice are (or are not) connected."""
+
+    DIRECT_RELATION = "DIRECT_RELATION"
+    TEMPORAL_RELATION = "TEMPORAL_RELATION"
+    PROVENANCE_RELATION = "PROVENANCE_RELATION"
+    SHARED_CAUSE = "SHARED_CAUSE"
+    SHARED_ANCESTOR = "SHARED_ANCESTOR"
+    INDIRECT_PATH = "INDIRECT_PATH"
+    SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY"
+    NO_PROVEN_CONNECTION = "NO_PROVEN_CONNECTION"
+
+
+@dataclass(frozen=True)
+class Argument:
+    text: str                      # folded surface of the argument
+    head: str                      # content head ("script", "tests unitaires", "*")
+    kind: str                      # NP | PRONOUN | DEMONSTRATIVE | NEGATIVE_QUANTIFIER
+    reference: str                 # LITERAL | PRESUPPOSED | DEICTIC | RESOLVED_INTRA | UNRESOLVED
+    antecedent: str | None = None  # head of the antecedent when RESOLVED_INTRA
+    antecedent_unit: str | None = None
+    span: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True)
+class PredicateUnit:
+    id: str
+    predicate: str                 # canonical, language independent (EXECUTE, PREPARE...)
+    lemma: str
+    surface: str                   # folded surface of the lexical verb
+    span: tuple[int, int]          # character span in the RAW input
+    clause: int
+    predicate_class: str           # world_action | preparatory | embedding | ...
+    verb_form: str                 # FINITE | IMPERATIVE | INFINITIVE | PARTICIPLE | GERUND
+    polarity: str = "positive"
+    negator: str | None = None
+    negation_confirmed: bool = False
+    ne_omitted: bool = False
+    ne_expletive: bool = False
+    restriction: str | None = None         # ONLY | NOT_ONLY
+    modality: str | None = None            # ABILITY_OR_PERMISSION | OBLIGATION | DESIRE | KNOW_HOW
+    politeness: bool = False
+    pragmatic: str = "UNKNOWN"
+    tense_aspect: str = "NONE"
+    realized: bool | None = None
+    epistemic: str = "NOT_APPLICABLE"
+    subject: str | None = None
+    action_agent: str = "UNKNOWN"
+    request_target: str = "NONE"
+    role: str = "OTHER"
+    objects: tuple[Argument, ...] = ()
+    embedded_under: str | None = None
+    confidence: float = 1.0
+    provenance: str = "builtin_french_grammar_v0"
+
+    @property
+    def object(self) -> Argument | None:
+        return self.objects[0] if self.objects else None
+
+    @property
+    def object_head(self) -> str | None:
+        arg = self.object
+        if arg is None:
+            return None
+        if arg.reference == "RESOLVED_INTRA" and arg.antecedent:
+            return arg.antecedent
+        return arg.head
+
+    def describe(self) -> str:
+        bits = [f"{self.id}:{self.predicate}({self.object_head or ''})",
+                self.polarity, self.pragmatic]
+        for name in ("negator", "restriction", "modality", "tense_aspect"):
+            value = getattr(self, name)
+            if value and value != "NONE":
+                bits.append(f"{name}={value}")
+        for name in ("action_agent", "request_target", "role"):
+            value = getattr(self, name)
+            if value and value not in {"UNKNOWN", "NONE", "OTHER"}:
+                bits.append(f"{name}={value}")
+        if self.ne_expletive:
+            bits.append("ne_expletive")
+        if self.ne_omitted:
+            bits.append("ne_omitted")
+        return " ".join(bits)
+
+
+@dataclass(frozen=True)
+class LatticeRelation:
+    kind: str
+    source: str
+    target: str
+    confidence: float = 1.0
+    evidence: str = ""
+
+    def describe(self) -> str:
+        return f"{self.kind}({self.source}->{self.target})[{self.evidence}]"
+
+
+@dataclass(frozen=True)
+class UtteranceFrame:
+    raw: str
+    normalized: str
+    units: tuple[PredicateUnit, ...] = ()
+    relations: tuple[LatticeRelation, ...] = ()
+    constraints: tuple[str, ...] = ()
+    surface_act: str = "none"
+    unresolved_references: tuple[str, ...] = ()
+    presupposed_referents: tuple[str, ...] = ()
+    deixis: tuple[str, ...] = ()
+    ambiguities: tuple[str, ...] = ()
+    contradictions: tuple[str, ...] = ()
+    evidence_needs: tuple[str, ...] = ()
+    missing: tuple[str, ...] = ()
+    disfluencies: tuple[str, ...] = ()
+    orthography_flags: tuple[str, ...] = ()
+    boundary: dict = field(default_factory=lambda: dict(BOUNDARY))
+
+    @property
+    def closure_blockers(self) -> tuple[str, ...]:
+        blockers = [f"unresolved_reference:{r}" for r in self.unresolved_references]
+        blockers += [f"contradiction:{c}" for c in self.contradictions]
+        blockers += [f"missing:{m}" for m in self.missing]
+        return tuple(blockers)
+
+    @property
+    def closure(self) -> bool:
+        """Meaning fully resolved from the utterance alone.
+
+        Evidence needs do NOT block semantic closure: "maman est là ?" is
+        understood; only its truth value is open.
+        """
+        return bool(self.units) and not self.closure_blockers
+
+    def unit(self, unit_id: str) -> PredicateUnit:
+        for u in self.units:
+            if u.id == unit_id:
+                return u
+        raise KeyError(unit_id)
