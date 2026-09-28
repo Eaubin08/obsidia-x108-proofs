@@ -108,7 +108,7 @@ def test_belief_around_learn():
     ]
 
 
-# G. O4: malformed coordination stays structurally wrong but does not leak.
+# G. O4: coordinated complements are siblings under SAY and do not leak.
 
 def test_reported_coordination_does_not_leak_asserted_occurrence():
     frame, events, _, _ = _extract("Paul dit que Marie a lancé A et que Jean a lancé B.")
@@ -116,8 +116,8 @@ def test_reported_coordination_does_not_leak_asserted_occurrence():
     by_predicate = {event.predicate_ref: event for event in events}
 
     assert len(runs) == 2
-    # Known open parser issue: the second conjunct hangs under the first.
-    assert runs[1].embedded_under == runs[0].id
+    # "que P et que Q": sibling complements of the unique governor (doctrine Q2).
+    assert runs[1].embedded_under == runs[0].embedded_under == frame.units[0].id
     assert [by_predicate[run.id].occurrence_status for run in runs] == [R, R]
 
 

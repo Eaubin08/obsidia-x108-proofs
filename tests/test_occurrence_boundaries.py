@@ -107,7 +107,7 @@ def test_inherited_unresolved_governance_names_its_ancestor():
 
 
 def test_inherited_attribution_boundary_names_its_ancestor():
-    frame = parse_utterance("Paul dit que Marie a lancé A et que Jean a lancé B.")
+    frame = parse_utterance("Paul dit que Marie a lancé le test que Jean a préparé.")
     index = build_frame_event_index(frame)
     inherited = [c for c in index.events() if c.occurrence_derivation.rule == "attribution_boundary"]
     assert inherited

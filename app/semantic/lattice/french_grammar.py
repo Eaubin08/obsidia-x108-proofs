@@ -115,6 +115,7 @@ class _Clause:
     embedding_parent: int | None = None  # clause index hosting the embedding verb
     unresolved_governor: int | None = None  # index of an unknown verb governing "que"
     governor_lost: bool = False  # "que" clause after a non-nominal word: not a relative
+    coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     units: list = field(default_factory=list)
 
 
@@ -529,6 +530,26 @@ def _content_operators(clause: "_Clause") -> list[str]:
     return ops
 
 
+def _coordinated_complement(clauses: list[_Clause]) -> _Clause | None:
+    """"V que P et que Q": the complement P that Q coordinates with.
+
+    P is a "que" complement, or one whose governor was lost (Q then shares that
+    unknown governance). Only for a unique syntactic governor: when P's governor
+    is itself a "que" complement, Q could complement either governor and nothing
+    is resolved.
+    """
+    if len(clauses) < 2:
+        return None
+    c, prev = clauses[-1], clauses[-2]
+    complement = prev.conn == "que" or (prev.conn == "rel" and prev.governor_lost)
+    if c.toks or c.conn != "et" or not complement or prev.embedding_parent is None:
+        return None
+    gov = prev.embedding_parent
+    if not 0 <= gov < len(clauses) - 2 or clauses[gov].conn == "que":
+        return None
+    return prev
+
+
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     clauses: list[_Clause] = [_Clause([])]
     interrogative = False
@@ -636,6 +657,12 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
 
         if low in {"que", "qu'"}:
             c = cur()
+            sibling = _coordinated_complement(clauses)
+            if sibling is not None:
+                c.conn, c.conn_toks, c.governor_lost = sibling.conn, c.conn_toks + [t], sibling.governor_lost
+                c.embedding_parent, c.coordinated_with = sibling.embedding_parent, sibling
+                i += 1
+                continue
             verb = _last_verb(c.toks)
             vcls = _cls(verb) if verb is not None else "none"
             vpred = _pred(verb) if verb is not None else ""
@@ -1177,13 +1204,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     def last_of(ci: int) -> PredicateUnit | None:
         return clauses[ci].units[-1][0] if clauses[ci].units else None
 
+    # clause -> (governor unit, host clause), reused by a coordinated sibling
+    resolved: dict[int, tuple[PredicateUnit | None, _Clause | None]] = {}
     for ci, clause in enumerate(clauses):
-        parent_unit = None
-        if clause.embedding_parent is not None and clause.embedding_parent < ci:
-            parent_unit = last_of(clause.embedding_parent)
-        # embedding parent may have been merged; fall back to previous clause
-        if clause.conn in {"que", "rel", "comparative"} and parent_unit is None and ci > 0:
-            parent_unit = last_of(ci - 1)
+        parent_unit, host = None, clauses[ci - 1] if ci > 0 else None
+        if clause.coordinated_with is not None and id(clause.coordinated_with) in resolved:
+            parent_unit, host = resolved[id(clause.coordinated_with)]
+        else:
+            if clause.embedding_parent is not None and clause.embedding_parent < ci:
+                parent_unit = last_of(clause.embedding_parent)
+            # embedding parent may have been merged; fall back to previous clause
+            if clause.conn in {"que", "rel", "comparative"} and parent_unit is None and ci > 0:
+                parent_unit = last_of(ci - 1)
+        resolved[id(clause)] = (parent_unit, host)
         new_units = []
         for n, (u, d) in enumerate(clause.units):
             prag, epi, realized = u.pragmatic, "NOT_APPLICABLE", None
@@ -1193,8 +1226,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue
             if clause.conn in {"sans", "sans_que"} and n == 0:
                 prag = "FORBIDDEN"
-            elif clause.conn == "que" and parent_unit is None and n == 0 and ci > 0 and any(
-                    t.low in {"paraît", "parait"} for t in clauses[ci - 1].toks):
+            elif clause.conn == "que" and parent_unit is None and n == 0 and host is not None and any(
+                    t.low in {"paraît", "parait"} for t in host.toks):
                 prag, epi = "REPORTED", "HEARSAY"
             elif clause.conn == "que" and parent_unit is not None and n == 0:
                 embedded_under = parent_unit.id
@@ -1304,6 +1337,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             new_units.append((replace(tmp, action_agent=agent, request_target=target,
                                       role=role), d))
         clause.units = new_units
+        sibling = clause.coordinated_with
+        if sibling is not None and sibling.units and new_units:
+            relations.append(LatticeRelation(RelationKind.COORDINATES.value, sibling.units[0][0].id,
+                                             new_units[0][0].id, evidence="et que"))
         # Temporal infinitives mention context; preserve legacy fail-closed
         # behavior when a PREPARE request is framed as before executing.
         if clause.conn in {"avant_de", "apres"} and clause.units and main_heads:
