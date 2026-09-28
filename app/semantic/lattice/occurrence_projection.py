@@ -81,6 +81,12 @@ class FrameOccurrenceProjection:
                              for m in c.members[1:]}
         self.shared_tense.update({m: c.id for c in frame.coordinations
                                   if c.construction == "ni_negative_coordination" for m in c.members})
+        # members whose modality comes from one written, shared modal
+        self.shared_modality = {m: c.id for c in frame.coordinations if c.construction == "shared_modality"
+                                for m in c.members[1:]}
+        self.shared_modality.update({m: c.id for c in frame.coordinations
+                                     if c.construction == "ni_negative_coordination" for m in c.members
+                                     if self.units[m].modality is not None})
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
@@ -238,6 +244,8 @@ class FrameOccurrenceProjection:
             provenance["shared_negation"] = self.shared_negation[u.id]
         if u.id in self.shared_tense:
             provenance["shared_tense"] = self.shared_tense[u.id]
+        if u.id in self.shared_modality:
+            provenance["shared_modality"] = self.shared_modality[u.id]
         inherited = {k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited

@@ -124,6 +124,9 @@ class _Clause:
     ni_head: "_Clause | None" = None  # clause holding "ne" of a verbal "ne ... ni V1 ni V2"
     compound: tuple | None = None  # (tense, auxiliary surface, draft) of its last AUX+PP predicate
     shared_aux_host: "_Clause | None" = None  # clause whose auxiliary a bare participle shares
+    modal: object = None  # its last modal+infinitive draft (OBLIGATION), shared by bare infinitives
+    shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
+    ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     units: list = field(default_factory=list)
 
 
@@ -583,13 +586,17 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         if not any(x in {"ne", "n'"} for x in lows[:f]) or f + 1 >= len(lows) or not _is_verb(c.toks, f + 1):
             continue
         verbs = [j for j in range(f) if _is_verb(c.toks, j)]
-        if any(_pred(c.toks[j]) not in {"HAVE", "BE"} for j in verbs):
-            continue
-        # exactly one auxiliary, shared by every member (its compound tense
-        # is rebuilt on each member, see _share_auxiliary); a conditional
-        # auxiliary stays out of scope (negation vs. conditional mood open)
+        # exactly one auxiliary (members are past participles) or one
+        # obligation modal (members are infinitives), shared by every member
+        # (rebuilt on each member, see _share_auxiliary); a conditional one
+        # stays out of scope (negation vs. conditional mood open)
         if len(verbs) != 1 or "COND" in _feats(c.toks[verbs[0]]):
             continue
+        shared = c.toks[verbs[0]]
+        modal = _MODALITY.get(_pred(shared)) == "OBLIGATION"
+        if not modal and _pred(shared) not in {"HAVE", "BE"}:
+            continue
+        member_feat, other_feat = ("INF", "PP") if modal else ("PP", "INF")
         group, count = [c], lows.count("ni")
         for d in clauses[k + 1:]:
             if not (d.conn is None and d.boundary == "," and d.toks and d.toks[0].low == "ni"):
@@ -597,10 +604,11 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
             group.append(d)
             count += sum(1 for t in d.toks if t.low == "ni")
         after_ni = [(g.toks, j + 1) for g in group for j, t in enumerate(g.toks) if t.low == "ni"]
-        if count >= 2 and all(j < len(ts) and _is_verb(ts, j) and "PP" in _feats(ts[j])
-                              and "INF" not in _feats(ts[j]) for ts, j in after_ni):
+        if count >= 2 and all(j < len(ts) and _is_verb(ts, j) and member_feat in _feats(ts[j])
+                              and other_feat not in _feats(ts[j]) for ts, j in after_ni):
             for g in group:
                 g.ni_head = c
+            c.ni_modal = shared if modal else None
 
 
 _COMPOUND_TENSE = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE", "CONDITIONAL": "CONDITIONAL"}
@@ -617,6 +625,27 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     never share.
     """
     clause = clauses[ci]
+    if clause.ni_head is not None and clause.ni_head.ni_modal is not None:
+        # "ne doit ni INF1 ni INF2": the obligation modal (its tense, its subject)
+        # is shared by the infinitives; its own finite draft is folded into them,
+        # exactly as in "ne doit pas INF".
+        head = clause.ni_head
+        if clause is head:
+            finite = [d for d in drafts if d.lex is head.ni_modal and d.verb_form == "FINITE"]
+            if not finite:
+                return
+            head.ni_modal = finite[0]
+            drafts.remove(finite[0])
+        m = head.ni_modal
+        if isinstance(m, _Draft):
+            for d in drafts:
+                if d.head_index > 0 and clause.toks[d.head_index - 1].low == "ni" \
+                        and d.verb_form == "INFINITIVE" and d.modality is None and d.subject is None:
+                    d.modality, d.modal_tok, d.tense = "OBLIGATION", m.lex, m.tense
+                    # same rule as the modal+infinitive chain: "falloir" is impersonal
+                    d.subject = m.subject
+                    d.subject_person = "impersonal" if _pred(m.lex) == "NEED" else m.subject_person
+        return
     if clause.ni_head is not None:
         head = clause.ni_head
         lows = [t.low for t in head.toks]
@@ -636,9 +665,23 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.compound = (prev.compound[0], prev.compound[1], d0)
             clause.shared_aux_host = prev.shared_aux_host or prev
             return
+        # "Paul doit lancer P et exécuter Q": the obligation modal chain (the modal,
+        # its tense, its subject) is shared by a bare coordinated infinitive
+        if linked and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and d0.modality is None and d0.subject is None:
+            m = prev.modal
+            d0.modality, d0.modal_tok, d0.tense = m.modality, m.modal_tok, m.tense
+            d0.subject, d0.subject_person, d0.politeness = m.subject, m.subject_person, m.politeness
+            clause.modal = m
+            clause.shared_modal_host = prev.shared_modal_host or prev
+            return
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
     if compound and compound[-1] is drafts[-1]:
         clause.compound = (compound[-1].tense, clause.toks[compound[-1].head_index].low, compound[-1])
+    if drafts and drafts[-1].modality == "OBLIGATION" and drafts[-1].verb_form == "INFINITIVE" \
+            and drafts[-1].head_index != drafts[-1].lex_index and drafts[-1].modal_tok is not None:
+        clause.modal = drafts[-1]
 
 
 def _is_complement(clause: _Clause) -> bool:
@@ -1562,6 +1605,24 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         coordinations.append(CoordinationRef(
             f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_auxiliary",
             (host.compound[1], *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
+            (members[0].span[0], members[-1].span[1])))
+
+    # ── shared modality: host modal+infinitive predicate and the bare infinitives sharing it ──
+    for host in [c for c in clauses if c.shared_modal_host is None and c.modal is not None]:
+        sharers = [c for c in clauses if c.shared_modal_host is host]
+        if not sharers:
+            continue
+        unit_of = {id(d): u for c in (host, *sharers) for (u, d) in c.units}
+        members = [unit_of.get(id(host.modal))] + [unit_of.get(id(c.units[0][1])) if c.units else None
+                                                   for c in sharers]
+        if any(u is None for u in members):
+            continue
+        for c, a, b in zip(sharers, members, members[1:]):
+            if c.conn is None:  # ", INF": no connective relation was built for it
+                relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_modality",
+            (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
 
     # ── verbal ni coordination: one structural group per "ne ... ni ... ni" ──

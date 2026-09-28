@@ -56,10 +56,10 @@ def test_nominal_ni_is_one_negated_event_unchanged(text):
 
 
 @pytest.mark.parametrize("text", [
-    "Il ne doit ni lancer le test ni arrêter le build.",
+    # modal "ne doit ni ... ni" is covered by the shared modality (iteration 9)
     "Marie n" + A + "a ni appris que Paul a lancé le test ni dit que Nadia a lancé le build.",
 ])
-def test_modal_and_clausal_ni_are_out_of_scope_and_unchanged(text):
+def test_clausal_ni_is_out_of_scope_and_unchanged(text):
     f = parse_utterance(text)
     assert not any(c.construction == "ni_negative_coordination" for c in f.coordinations)
 
