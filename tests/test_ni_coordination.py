@@ -87,15 +87,12 @@ def test_non_participle_members_leave_the_group_unchanged(text):
     assert not any(u.negator == "ni" and u.pragmatic == "FORBIDDEN" for u in f.units)
 
 
-@pytest.mark.parametrize("text", [
-    "Paul n" + A + "aura ni lancé le test ni arrêté le build.",
-    "Paul n" + A + "aurait ni lancé le test ni arrêté le build.",
-])
-def test_future_or_conditional_auxiliary_is_out_of_scope(text):
-    f = parse_utterance(text)
-    assert f.coordinations == ()
+def test_future_or_conditional_auxiliary_is_in_scope_with_its_tense():
+    # the shared auxiliary tense is rebuilt on each member (iteration 8)
+    f = parse_utterance("Paul n" + A + "aura ni lancé le test ni arrêté le build.")
+    (coord,) = f.coordinations
     for c in build_frame_event_index(f).events():
-        assert c.occurrence_claim.value not in {"ASSERTED_REALIZED", "ASSERTED_NOT_REALIZED"}
+        assert c.occurrence_claim.value == "PROJECTED_FUTURE"
 
 
 def test_pluperfect_auxiliary_is_in_scope():

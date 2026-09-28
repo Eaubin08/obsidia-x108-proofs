@@ -122,6 +122,8 @@ class _Clause:
     boundary: str | None = None  # punctuation that opened the clause
     protasis_head: "_Clause | None" = None  # first "si" clause of a conjunctive protasis
     ni_head: "_Clause | None" = None  # clause holding "ne" of a verbal "ne ... ni V1 ni V2"
+    compound: tuple | None = None  # (tense, auxiliary surface, draft) of its last AUX+PP predicate
+    shared_aux_host: "_Clause | None" = None  # clause whose auxiliary a bare participle shares
     units: list = field(default_factory=list)
 
 
@@ -583,11 +585,10 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         verbs = [j for j in range(f) if _is_verb(c.toks, j)]
         if any(_pred(c.toks[j]) not in {"HAVE", "BE"} for j in verbs):
             continue
-        # compound past only (passé composé / plus-que-parfait): the members'
-        # own tense is not rebuilt here, so a future or conditional auxiliary
-        # ("n'aura ni ... ni") stays out of scope rather than read as past
-        if not verbs or not all(_feats(c.toks[j]) & {"PRES", "IMPF"} and
-                                not _feats(c.toks[j]) & {"FUT", "COND"} for j in verbs):
+        # exactly one auxiliary, shared by every member (its compound tense
+        # is rebuilt on each member, see _share_auxiliary); a conditional
+        # auxiliary stays out of scope (negation vs. conditional mood open)
+        if len(verbs) != 1 or "COND" in _feats(c.toks[verbs[0]]):
             continue
         group, count = [c], lows.count("ni")
         for d in clauses[k + 1:]:
@@ -600,6 +601,44 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
                               and "INF" not in _feats(ts[j]) for ts, j in after_ni):
             for g in group:
                 g.ni_head = c
+
+
+_COMPOUND_TENSE = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE", "CONDITIONAL": "CONDITIONAL"}
+
+
+def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
+    """One written auxiliary shared by coordinated past participles.
+
+    "Paul a lancé et exécuté le test", "Paul a lancé, exécuté et arrêté le
+    test": a bare participle clause (no subject, no auxiliary) coordinated by
+    "et" / "," right after a main clause ending in AUX+PP takes that compound
+    tense. "ne AUX ni PP1 ni PP2": every ni member takes the auxiliary's
+    compound tense. Ambiguous attachments (after a complement or a relative)
+    never share.
+    """
+    clause = clauses[ci]
+    if clause.ni_head is not None:
+        head = clause.ni_head
+        lows = [t.low for t in head.toks]
+        aux = [t for t in head.toks[:lows.index("ni")] if t.analyses and _pred(t) in {"HAVE", "BE"}]
+        tense = _COMPOUND_TENSE.get(_tense_of(_feats(aux[0])), "PAST") if aux else None
+        for d in drafts:
+            if tense and d.head_index > 0 and clause.toks[d.head_index - 1].low == "ni" \
+                    and d.verb_form == "PARTICIPLE" and d.tense == "NONE":
+                d.tense = tense
+    elif ci > 0 and drafts and not clause.attachment_ambiguous and clause.protasis_head is None:
+        prev, d0 = clauses[ci - 1], drafts[0]
+        linked = [x.low for x in clause.conn_toks] == ["et"] or (clause.conn is None and clause.boundary == ",")
+        if linked and prev.compound is not None and prev.conn not in {"que", "rel", "comparative"} \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "PARTICIPLE" \
+                and d0.tense == "NONE" and d0.subject is None:
+            d0.tense = prev.compound[0]
+            clause.compound = (prev.compound[0], prev.compound[1], d0)
+            clause.shared_aux_host = prev.shared_aux_host or prev
+            return
+    compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
+    if compound and compound[-1] is drafts[-1]:
+        clause.compound = (compound[-1].tense, clause.toks[compound[-1].head_index].low, compound[-1])
 
 
 def _is_complement(clause: _Clause) -> bool:
@@ -1282,6 +1321,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         drafts = _build_drafts(clause.toks)
         if clause.unresolved_governor is not None:
             drafts.append(_unresolved_governor_draft(clause.toks, clause.unresolved_governor))
+        _share_auxiliary(clauses, ci, drafts)
         for d in drafts:
             counter += 1
             if d.unresolved_governor:
@@ -1506,6 +1546,23 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
                                "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
+
+    # ── shared auxiliary: host AUX+PP predicate and the bare participles sharing it ──
+    for host in [c for c in clauses if c.shared_aux_host is None and c.compound is not None]:
+        sharers = [c for c in clauses if c.shared_aux_host is host]
+        if not sharers:
+            continue
+        unit_of = {id(d): u for c in (host, *sharers) for (u, d) in c.units}
+        members = [unit_of.get(id(c.compound[2])) for c in (host, *sharers)]
+        if any(u is None for u in members):
+            continue
+        for c, a, b in zip(sharers, members, members[1:]):
+            if c.conn is None:  # ", PP": no connective relation was built for it
+                relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_auxiliary",
+            (host.compound[1], *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
+            (members[0].span[0], members[-1].span[1])))
 
     # ── verbal ni coordination: one structural group per "ne ... ni ... ni" ──
     ni_heads = [c for c in clauses if c.ni_head is c]
