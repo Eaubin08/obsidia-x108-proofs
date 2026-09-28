@@ -117,6 +117,7 @@ class _Clause:
     governor_lost: bool = False  # "que" clause after a non-nominal word: not a relative
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
+    complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     units: list = field(default_factory=list)
 
 
@@ -730,6 +731,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     # A "clause" without any verb is NP material (coordination, apposition):
     # reattach it to the previous clause, connective included.
     merged: list[_Clause] = []
+    lost_complement = False
     for c in clauses:
         has_verb = c.unresolved_governor is not None or any(
             _is_verb(c.toks, k) for k in range(len(c.toks)))
@@ -739,7 +741,12 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 and not _unanalyzed_predicative(c):
             prev = merged[-1]
             prev.toks += c.conn_toks + c.toks
+            # "V que le test que P V2": the complement opener only held its
+            # subject NP; the relative that follows also carries V2.
+            lost_complement = _is_complement(c)
             continue
+        c.complement_structure_lost = lost_complement and c.conn == "rel"
+        lost_complement = False
         merged.append(c)
     # Re-index embedding parents after merging.
     return merged, interrogative
@@ -1242,6 +1249,16 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue
             if clause.conn in {"sans", "sans_que"} and n == 0:
                 prag = "FORBIDDEN"
+            elif clause.complement_structure_lost:
+                # Relative and complement predicate share a clause whose complement
+                # structure was lost: subordinated under the governor, unknown
+                # governance, never an asserted relative of the governor.
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"complement_structure_lost:{u.id}")
+                if parent_unit is not None:
+                    embedded_under = parent_unit.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id, u.id,
+                                                     evidence="que_governor_lost"))
             elif clause.attachment_ambiguous and n == 0:
                 # Several attachments stay open: never the nearest governor,
                 # never a root assertion.
