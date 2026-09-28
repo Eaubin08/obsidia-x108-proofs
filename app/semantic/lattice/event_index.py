@@ -15,8 +15,8 @@ from typing import Any, Iterable, Mapping
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
 from app.semantic.lattice.event_extraction import EventCandidate, _frame_ref, extract_event_candidates
-from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_event_targets
-from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
+from app.semantic.lattice.knowledge_event_extraction import discover_knowledge_events
+from app.semantic.lattice.observation_event_extraction import discover_observation_events
 from app.semantic.lattice.primitives import UtteranceFrame
 
 
@@ -107,11 +107,13 @@ def build_event_index(frame: UtteranceFrame, *candidate_groups: Iterable[EventCa
 
 
 def build_frame_event_index(frame: UtteranceFrame) -> EventIndex:
-    """Index the events of the existing base, observation and knowledge extractors."""
+    """Full frame identity set: base + discovered OBSERVATION + KNOWLEDGE_ACQUISITION events.
+
+    Discovery only (phase A): no meta-event target is bound here, so building
+    the index never depends on, nor recurses into, relation binding (phase B).
+    """
     base = extract_event_candidates(frame)
-    observation = extract_observation_event_targets(frame, base)
-    knowledge = extract_knowledge_event_targets(frame, base)
-    return build_event_index(frame, base, observation.observation_events, knowledge.knowledge_events)
+    return build_event_index(frame, base, discover_observation_events(frame), discover_knowledge_events(frame, base))
 
 
 _RESOLVED = frozenset({ResolutionStatus.RESOLVED_EXPLICIT, ResolutionStatus.RESOLVED_STRUCTURAL})

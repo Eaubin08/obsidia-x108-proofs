@@ -47,17 +47,67 @@ class ObservationEventResult:
         }
 
 
+def discover_observation_events(frame: UtteranceFrame) -> tuple[EventCandidate, ...]:
+    """Phase A: mint the frame's OBSERVATION EventRefs (ids, occurrence) without binding targets."""
+    return tuple(_observation_candidate(frame, unit) for unit in frame.units if unit.predicate == "OBSERVE")
+
+
 def extract_observation_event_targets(
     frame: UtteranceFrame,
     candidates: Sequence[EventCandidate],
 ) -> ObservationEventResult:
-    # Imported at call time: event_index and meta_event_relations import this module.
+    """Discover, index the whole frame, then bind (public wrapper).
+
+    Targets are bound against the full frame identity set (caller candidates +
+    every discovered OBSERVATION and KNOWLEDGE_ACQUISITION event), never a
+    family-local view, so the result does not depend on which meta-events the
+    caller happened to pass.
+    """
+    # Imported at call time: event_index imports this module.
+    from app.semantic.lattice.event_extraction import extract_event_candidates
     from app.semantic.lattice.event_index import build_event_index
+    from app.semantic.lattice.knowledge_event_extraction import discover_knowledge_events
+
+    # Meta-event identities are discovered from the frame itself (canonical base),
+    # never copied from caller-supplied candidates: those are only proposals, and
+    # a differing proposal conflicts instead of overriding the frame identity.
+    observations = discover_observation_events(frame)
+    learns = discover_knowledge_events(frame, extract_event_candidates(frame))
+    index = build_event_index(frame, candidates, observations, learns)
+    targets, relations = bind_observation_targets(frame, observations, index)
+    return ObservationEventResult(
+        observation_events=observations,
+        targets=targets,
+        relations=relations,
+        metadata={
+            "VERIFIED_FLOW_CREATED": 0,
+            "SUPPORTED_FLOW_CREATED": 0,
+            "PHYSICAL_PROOF_CREATED": 0,
+            "VALIDATED_EVIDENCE_CREATED": 0,
+            "MEMORY_FLOW_CREATED": 0,
+            "MEMORY_WRITE": 0,
+            "AUTHORIZED_FLOW_CREATED": 0,
+            "EXECUTED_FLOW_CREATED": 0,
+            "KX108_CALLED": 0,
+            "CAUSAL_FLOW_FROM_OBSERVATION": 0,
+            "TARGET_OCCURRENCE_PROMOTIONS": 0,
+            "LATEST_EVENT_FALLBACK": 0,
+            "INDEX_VIEW": "full_frame",
+        },
+    )
+
+
+
+def bind_observation_targets(
+    frame: UtteranceFrame,
+    observations: Sequence[EventCandidate],
+    event_index,
+) -> tuple[tuple[EventTargetReference, ...], tuple[EventReferenceRelation, ...]]:
+    """Phase B: bind each OBSERVATION to its immediate target on a full frame EventIndex."""
+    # Imported at call time: meta_event_relations imports this module.
     from app.semantic.lattice.meta_event_relations import select_immediate_meta_target
 
-    observations = [_observation_candidate(frame, unit) for unit in frame.units if unit.predicate == "OBSERVE"]
-    # Target identity comes from the shared EventIndex contract (no second path).
-    index = build_event_index(frame, candidates, observations)
+    index = event_index
     targets: list[EventTargetReference] = []
     relations: list[EventReferenceRelation] = []
 
@@ -104,25 +154,7 @@ def extract_observation_event_targets(
             continue
         targets.append(_unknown_target(observation, reason="no_structural_target"))
 
-    return ObservationEventResult(
-        observation_events=tuple(observations),
-        targets=tuple(targets),
-        relations=tuple(relations),
-        metadata={
-            "VERIFIED_FLOW_CREATED": 0,
-            "SUPPORTED_FLOW_CREATED": 0,
-            "PHYSICAL_PROOF_CREATED": 0,
-            "VALIDATED_EVIDENCE_CREATED": 0,
-            "MEMORY_FLOW_CREATED": 0,
-            "MEMORY_WRITE": 0,
-            "AUTHORIZED_FLOW_CREATED": 0,
-            "EXECUTED_FLOW_CREATED": 0,
-            "KX108_CALLED": 0,
-            "CAUSAL_FLOW_FROM_OBSERVATION": 0,
-            "TARGET_OCCURRENCE_PROMOTIONS": 0,
-            "LATEST_EVENT_FALLBACK": 0,
-        },
-    )
+    return tuple(targets), tuple(relations)
 
 
 def _observation_candidate(frame: UtteranceFrame, unit: PredicateUnit) -> EventCandidate:

@@ -16,7 +16,12 @@ from app.semantic.lattice.event_coreference import (
     ResolutionStatus,
     TargetKind,
 )
-from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus, occurrence_status_for
+from app.semantic.lattice.event_extraction import (
+    EventCandidate,
+    OccurrenceStatus,
+    extract_event_candidates,
+    occurrence_status_for,
+)
 from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.primitives import PredicateUnit, RelationKind, UtteranceFrame
 
@@ -47,18 +52,68 @@ class KnowledgeEventExtraction:
         }
 
 
+def discover_knowledge_events(
+    frame: UtteranceFrame,
+    candidates: Sequence[EventCandidate],
+) -> tuple[EventCandidate, ...]:
+    """Phase A: mint the frame's KNOWLEDGE_ACQUISITION EventRefs without binding targets.
+
+    `candidates` is only consulted to keep an existing base EventRef id for a
+    LEARN predicate (unchanged identity rule).
+    """
+    by_predicate = {candidate.predicate_ref: candidate for candidate in candidates}
+    return tuple(_knowledge_candidate(frame, unit, by_predicate) for unit in frame.units if unit.predicate == "LEARN")
+
+
 def extract_knowledge_event_targets(
     frame: UtteranceFrame,
     candidates: Sequence[EventCandidate],
 ) -> KnowledgeEventExtraction:
-    # Imported at call time: event_index and meta_event_relations import this module.
+    """Discover, index the whole frame, then bind (public wrapper).
+
+    Targets are bound against the full frame identity set (caller candidates +
+    every discovered OBSERVATION and KNOWLEDGE_ACQUISITION event), never a
+    family-local view.
+    """
+    # Imported at call time: event_index imports this module.
     from app.semantic.lattice.event_index import build_event_index
+    from app.semantic.lattice.observation_event_extraction import discover_observation_events
+
+    # Meta-event identities are discovered from the frame itself (canonical base),
+    # never copied from caller-supplied candidates (see observation extractor).
+    learn_candidates = discover_knowledge_events(frame, extract_event_candidates(frame))
+    index = build_event_index(frame, candidates, discover_observation_events(frame), learn_candidates)
+    targets, relations = bind_knowledge_targets(frame, learn_candidates, index)
+    return KnowledgeEventExtraction(
+        knowledge_events=learn_candidates,
+        targets=targets,
+        relations=relations,
+        metadata={
+            "VERIFIED_FLOW_CREATED": 0,
+            "VALIDATED_EVIDENCE_CREATED": 0,
+            "PHYSICAL_PROOF_CREATED": 0,
+            "MEMORY_FLOW_CREATED": 0,
+            "MEMORY_WRITE": 0,
+            "AUTHORIZED_FLOW_CREATED": 0,
+            "EXECUTED_FLOW_CREATED": 0,
+            "KX108_CALLED": 0,
+            "TARGET_OCCURRENCE_PROMOTIONS": 0,
+            "INDEX_VIEW": "full_frame",
+        },
+    )
+
+
+
+def bind_knowledge_targets(
+    frame: UtteranceFrame,
+    learn_candidates: Sequence[EventCandidate],
+    event_index,
+) -> tuple[tuple[EventTargetReference, ...], tuple[EventReferenceRelation, ...]]:
+    """Phase B: bind each KNOWLEDGE_ACQUISITION to its immediate target on a full frame EventIndex."""
+    # Imported at call time: meta_event_relations imports this module.
     from app.semantic.lattice.meta_event_relations import select_immediate_meta_target
 
-    by_predicate = {candidate.predicate_ref: candidate for candidate in candidates}
-    learn_candidates = [_knowledge_candidate(frame, unit, by_predicate) for unit in frame.units if unit.predicate == "LEARN"]
-    # Target identity comes from the shared EventIndex contract (no second path).
-    index = build_event_index(frame, candidates, learn_candidates)
+    index = event_index
     targets: list[EventTargetReference] = []
     relations: list[EventReferenceRelation] = []
 
@@ -143,22 +198,7 @@ def extract_knowledge_event_targets(
             },
         ))
 
-    return KnowledgeEventExtraction(
-        knowledge_events=tuple(learn_candidates),
-        targets=tuple(targets),
-        relations=tuple(relations),
-        metadata={
-            "VERIFIED_FLOW_CREATED": 0,
-            "VALIDATED_EVIDENCE_CREATED": 0,
-            "PHYSICAL_PROOF_CREATED": 0,
-            "MEMORY_FLOW_CREATED": 0,
-            "MEMORY_WRITE": 0,
-            "AUTHORIZED_FLOW_CREATED": 0,
-            "EXECUTED_FLOW_CREATED": 0,
-            "KX108_CALLED": 0,
-            "TARGET_OCCURRENCE_PROMOTIONS": 0,
-        },
-    )
+    return tuple(targets), tuple(relations)
 
 
 def _knowledge_candidate(
