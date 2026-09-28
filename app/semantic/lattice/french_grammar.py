@@ -114,6 +114,7 @@ class _Clause:
     restriction_at: int | None = None   # index of "que" in toks
     embedding_parent: int | None = None  # clause index hosting the embedding verb
     unresolved_governor: int | None = None  # index of an unknown verb governing "que"
+    governor_lost: bool = False  # "que" clause after a non-nominal word: not a relative
     units: list = field(default_factory=list)
 
 
@@ -254,7 +255,15 @@ _NON_GOVERNOR_WORDS = {
     "tel", "telle", "tels", "telles", "moi", "toi", "lui", "eux", "ça", "cela", "ceci",
 }
 _PARTICIPLE_ENDINGS = ("é", "ée", "és", "ées", "i", "ie", "is", "ies", "u", "ue", "us", "ues",
-                       "it", "ite", "its", "ites")
+                       "it", "ite", "its", "ites",
+                       # irregular participles: découvert, mort, peint / craint / joint, dû
+                       "ert", "erte", "erts", "ertes", "ort", "orte", "orts", "ortes",
+                       "int", "inte", "ints", "intes", "û", "ûe", "ûs", "ûes")
+_ANTECEDENT_PRONOUNS = {"ce", "c'", "celui", "celle", "ceux", "celles", "cela", "ça", "ca", "tout", "rien"}
+_DEGREE_WORDS = {"si", "tellement", "tant", "trop", "assez", "tel", "telle", "tels", "telles"}
+# Nominal / pronominal complement heads between a governor and "que":
+# "parler du fait que", "tenir à ce que", "parler de ce que".
+_COMPLEMENT_HEADS = {("du", "fait"), ("le", "fait"), ("de", "ce"), ("à", "ce")}
 
 
 def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
@@ -270,6 +279,8 @@ def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
     if has_ne and not any(x in _FR_NEGATORS for x in lows):
         return None  # "ne V que": restriction, not a complement
     j = len(toks) - 1
+    if j >= 2 and (lows[j - 1], lows[j]) in _COMPLEMENT_HEADS:
+        j -= 2  # the governor precedes the complement head ("parle du fait que")
     while has_ne and j >= 0 and lows[j] in _FR_NEGATORS:
         j -= 1
     if j < 0:
@@ -280,7 +291,9 @@ def _unresolved_governor_index(toks: list[_Tok]) -> int | None:
             or g.low in _CONNECTIVES or g.low in _WH_WORDS):
         return None
     k = j - 1
-    while k >= 0 and (lows[k] in {"ne", "n'"} or (has_ne and lows[k] in _FR_NEGATORS)):
+    # Skip "ne", a "ne ... NEG" negator and clitics (se souvient, me doute, te promet).
+    while k >= 0 and (lows[k] in {"ne", "n'"} or lows[k] in _REFLEXIVE_CLITICS
+                      or (has_ne and lows[k] in _FR_NEGATORS)):
         k -= 1
     if k < 0:
         return None
@@ -394,6 +407,24 @@ def _si_nominal_subject(toks: list[_Tok], i: int) -> bool:
     return j < len(toks) and _is_verb(toks, j)
 
 
+def _si_unresolved_governor(toks: list[_Tok], i: int) -> bool:
+    """Clause-initial "si" + nominal subject + unknown complement governor + "que".
+
+    "Si Marie découvre que X, ..." / "Si Marie se souvient que X, ...": the
+    governor is unknown to the lexicon, so no verb follows the subject; the
+    protasis is recognised through the same structural governor test as a
+    main clause. Mid-clause adverbial "si" ("est si peu fiable que") is excluded.
+    """
+    if not (i == 0 or toks[i - 1].is_punct or toks[i - 1].low in _CONNECTIVES):
+        return False
+    q = i + 1
+    while q < len(toks) and not toks[q].is_punct and toks[q].low not in {"que", "qu'"}:
+        q += 1
+    if q >= len(toks) or toks[q].low not in {"que", "qu'"} or q - i < 3:
+        return False
+    return _unresolved_governor_index(toks[i + 1:q]) is not None
+
+
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     clauses: list[_Clause] = [_Clause([])]
     interrogative = False
@@ -478,7 +509,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         if low in {"si", "if"}:
             if nxt is not None and (nxt.low in _SUBJECT_PRONOUNS | _DETERMINERS
                                     or nxt.low in {"c'", "ça", "ca", "it"}
-                                    or _si_nominal_subject(toks, i)):
+                                    or _si_nominal_subject(toks, i)
+                                    or _si_unresolved_governor(toks, i)):
                 open_clause("si", [t])
                 i += 1
                 continue
@@ -530,7 +562,17 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             elif comparative:
                 open_clause("comparative", [t], parent=len(clauses) - 1)
             else:
+                # A relative "que" follows a nominal antecedent (det + noun, "ce").
+                # Otherwise the governor of this complement could not be
+                # recognised; it must stay subordinated (see pragmatics).
+                # Clefts ("c'est Paul que") and degree consecutives ("si rapide
+                # que") are not complements either.
+                lows_c = [x.low for x in c.toks]
+                nominal = prev is None or prev.low in _ANTECEDENT_PRONOUNS or (
+                    len(c.toks) >= 2 and c.toks[-2].low in _DETERMINERS) or bool(
+                    {"c'", "ce"} & set(lows_c) or _DEGREE_WORDS & set(lows_c[1:]))
                 open_clause("rel", [t], parent=len(clauses) - 1)
+                cur().governor_lost = not nominal
             i += 1
             continue
         if low == "qui" and cur().toks:
@@ -1087,6 +1129,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
             elif clause.conn == "si" and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
+            elif clause.conn == "rel" and clause.governor_lost and parent_unit is None and n == 0:
+                # "que" complement whose governor could not be built ("se rend
+                # compte que"): subordinated content of unknown governance,
+                # never promoted to an independent root assertion.
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"complement_governor_lost:{u.id}")
             elif clause.conn in {"rel", "comparative"}:
                 prag, epi = "ASSERTED", "ASSERTED"
                 if parent_unit is not None:
