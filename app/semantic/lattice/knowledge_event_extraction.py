@@ -21,6 +21,8 @@ from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelat
 from app.semantic.lattice.primitives import PredicateUnit, RelationKind, UtteranceFrame
 
 _SOURCE = "semantic_knowledge_event_extraction"
+# Immediate structural complement of a LEARN predicate (shared selector contract).
+_TARGET_RELATIONS = frozenset({RelationKind.EMBEDS.value})
 
 
 @dataclass(frozen=True)
@@ -49,25 +51,52 @@ def extract_knowledge_event_targets(
     frame: UtteranceFrame,
     candidates: Sequence[EventCandidate],
 ) -> KnowledgeEventExtraction:
+    # Imported at call time: event_index and meta_event_relations import this module.
+    from app.semantic.lattice.event_index import build_event_index
+    from app.semantic.lattice.meta_event_relations import select_immediate_meta_target
+
     by_predicate = {candidate.predicate_ref: candidate for candidate in candidates}
-    learn_candidates: list[EventCandidate] = []
+    learn_candidates = [_knowledge_candidate(frame, unit, by_predicate) for unit in frame.units if unit.predicate == "LEARN"]
+    # Target identity comes from the shared EventIndex contract (no second path).
+    index = build_event_index(frame, candidates, learn_candidates)
     targets: list[EventTargetReference] = []
     relations: list[EventReferenceRelation] = []
 
-    for unit in frame.units:
-        if unit.predicate != "LEARN":
+    for candidate in learn_candidates:
+        unit_id = candidate.predicate_ref
+        if index.event_for(unit_id) is None:
+            targets.append(_unresolved_target(candidate, reason="source_event_conflict"))
             continue
-        candidate = _knowledge_candidate(frame, unit, by_predicate)
-        learn_candidates.append(candidate)
-        target_unit_id = _explicit_embedded_target(frame, unit.id)
+        selection = select_immediate_meta_target(frame, unit_id, _TARGET_RELATIONS, index)
+        if selection.resolution_status is ResolutionStatus.AMBIGUOUS:
+            targets.append(EventTargetReference(
+                source_event=candidate.event_ref.event_id,
+                source_predicate=unit_id,
+                target_kind=TargetKind.UNKNOWN_TARGET,
+                resolution_status=ResolutionStatus.AMBIGUOUS,
+                target_predicate=None,
+                target_event=None,
+                provenance={
+                    "source": _SOURCE,
+                    "reason": selection.provenance["reason"],
+                    "candidate_predicate_ids": list(selection.provenance["candidate_predicate_ids"]),
+                    "parser_relation": RelationKind.EMBEDS.value,
+                },
+                confidence={"value": None, "calibrated": False},
+                metadata=_target_metadata(),
+            ))
+            continue
+        target_unit_id = selection.target_predicate
         if target_unit_id is None:
-            targets.append(_unresolved_target(candidate, reason="no_explicit_embedded_target"))
+            reason = selection.provenance.get("reason")
+            targets.append(_unresolved_target(
+                candidate, reason="no_explicit_embedded_target" if reason == "no_immediate_relation" else reason))
             continue
-        target_candidate = by_predicate.get(target_unit_id)
+        target_candidate = index.event_for(target_unit_id) if selection.target_event else None
         if target_candidate is None:
             targets.append(EventTargetReference(
                 source_event=candidate.event_ref.event_id,
-                source_predicate=unit.id,
+                source_predicate=unit_id,
                 target_kind=TargetKind.PROPOSITION_TARGET,
                 resolution_status=ResolutionStatus.RESOLVED_EXPLICIT,
                 target_predicate=target_unit_id,
@@ -83,7 +112,7 @@ def extract_knowledge_event_targets(
             continue
         target = EventTargetReference(
             source_event=candidate.event_ref.event_id,
-            source_predicate=unit.id,
+            source_predicate=unit_id,
             target_kind=TargetKind.EVENT_TARGET,
             resolution_status=ResolutionStatus.RESOLVED_EXPLICIT,
             target_predicate=target_unit_id,
@@ -170,16 +199,6 @@ def _knowledge_candidate(
             "event_occurred_claim": occurrence is OccurrenceStatus.ASSERTED_OCCURRED,
         },
     )
-
-
-def _explicit_embedded_target(frame: UtteranceFrame, learn_unit_id: str) -> str | None:
-    for relation in frame.relations:
-        if relation.source == learn_unit_id and relation.kind == RelationKind.EMBEDS.value:
-            return relation.target
-    for unit in frame.units:
-        if unit.embedded_under == learn_unit_id:
-            return unit.id
-    return None
 
 
 def _unresolved_target(candidate: EventCandidate, *, reason: str) -> EventTargetReference:

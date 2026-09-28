@@ -21,6 +21,8 @@ from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelat
 from app.semantic.lattice.primitives import Argument, PredicateUnit, RelationKind, UtteranceFrame
 
 _SOURCE = "semantic_observation_event_extraction"
+# Immediate structural complement of an OBSERVE predicate (shared selector contract).
+_TARGET_RELATIONS = frozenset({RelationKind.EMBEDS.value})
 
 
 @dataclass(frozen=True)
@@ -49,19 +51,28 @@ def extract_observation_event_targets(
     frame: UtteranceFrame,
     candidates: Sequence[EventCandidate],
 ) -> ObservationEventResult:
-    by_predicate = {candidate.predicate_ref: candidate for candidate in candidates}
-    observations: list[EventCandidate] = []
+    # Imported at call time: event_index and meta_event_relations import this module.
+    from app.semantic.lattice.event_index import build_event_index
+    from app.semantic.lattice.meta_event_relations import select_immediate_meta_target
+
+    observations = [_observation_candidate(frame, unit) for unit in frame.units if unit.predicate == "OBSERVE"]
+    # Target identity comes from the shared EventIndex contract (no second path).
+    index = build_event_index(frame, candidates, observations)
     targets: list[EventTargetReference] = []
     relations: list[EventReferenceRelation] = []
 
-    for unit in frame.units:
-        if unit.predicate != "OBSERVE":
+    for observation in observations:
+        unit = frame.unit(observation.predicate_ref)
+        if index.event_for(unit.id) is None:
+            targets.append(_unknown_target(observation, reason="source_event_conflict"))
             continue
-        observation = _observation_candidate(frame, unit)
-        observations.append(observation)
-        target_unit_id = _structural_embedded_target(frame, unit.id)
+        selection = select_immediate_meta_target(frame, unit.id, _TARGET_RELATIONS, index)
+        if selection.resolution_status is ResolutionStatus.AMBIGUOUS:
+            targets.append(_ambiguous_target(observation, selection))
+            continue
+        target_unit_id = selection.target_predicate
         if target_unit_id is not None:
-            target_candidate = by_predicate.get(target_unit_id)
+            target_candidate = index.event_for(target_unit_id) if selection.target_event else None
             if target_candidate is None:
                 targets.append(_proposition_target(observation, unit.id, target_unit_id))
                 continue
@@ -83,6 +94,9 @@ def extract_observation_event_targets(
                     "causal_flow_from_observation": False,
                 },
             ))
+            continue
+        if selection.provenance.get("reason") != "no_immediate_relation":
+            targets.append(_unknown_target(observation, reason=selection.provenance["reason"]))
             continue
         entity = _direct_entity_target(unit)
         if entity is not None:
@@ -224,6 +238,25 @@ def _entity_target(
     )
 
 
+def _ambiguous_target(observation: EventCandidate, selection: EventTargetReference) -> EventTargetReference:
+    return EventTargetReference(
+        source_event=observation.event_ref.event_id,
+        source_predicate=observation.predicate_ref,
+        target_kind=TargetKind.UNKNOWN_TARGET,
+        resolution_status=ResolutionStatus.AMBIGUOUS,
+        target_predicate=None,
+        target_event=None,
+        provenance={
+            "source": _SOURCE,
+            "reason": selection.provenance["reason"],
+            "candidate_predicate_ids": list(selection.provenance["candidate_predicate_ids"]),
+            "parser_relation": RelationKind.EMBEDS.value,
+        },
+        confidence={"value": None, "calibrated": False},
+        metadata=_target_metadata("ambiguous"),
+    )
+
+
 def _unknown_target(observation: EventCandidate, *, reason: str) -> EventTargetReference:
     return EventTargetReference(
         source_event=observation.event_ref.event_id,
@@ -247,16 +280,6 @@ def _target_metadata(target_rule: str) -> dict[str, Any]:
         "evidence_validated": False,
         "physical_truth": False,
     }
-
-
-def _structural_embedded_target(frame: UtteranceFrame, observe_unit_id: str) -> str | None:
-    for relation in frame.relations:
-        if relation.source == observe_unit_id and relation.kind == RelationKind.EMBEDS.value:
-            return relation.target
-    for unit in frame.units:
-        if unit.embedded_under == observe_unit_id:
-            return unit.id
-    return None
 
 
 def _direct_entity_target(unit: PredicateUnit) -> Argument | None:

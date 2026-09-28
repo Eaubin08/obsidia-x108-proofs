@@ -250,7 +250,10 @@ def select_immediate_meta_target(
     })
     if target_predicate not in units:
         return _unresolved(source, source_predicate, base, ResolutionStatus.UNRESOLVED, "target_not_in_frame")
-    if any(conflict.predicate_ref == target_predicate for conflict in event_index.conflicts):
+    # A frame_mismatch conflict is about a foreign / unscoped proposal that merely
+    # reuses a local unit id; it says nothing about this frame's target identity.
+    if any(conflict.predicate_ref == target_predicate and conflict.reason != "frame_mismatch"
+           for conflict in event_index.conflicts):
         return _unresolved(source, source_predicate, base, ResolutionStatus.UNRESOLVED, "target_event_conflict")
 
     target = event_index.event_for(target_predicate)
