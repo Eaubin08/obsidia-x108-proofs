@@ -152,8 +152,10 @@ def test_profiles_and_derivations_are_immutable():
 def test_module_is_not_wired_into_runtime_layers():
     import pathlib
     root = pathlib.Path(CC.__file__).parent
+    # Only the shadow-only occurrence modules (M8-D1) may consume the profiles.
+    shadow_consumers = {"complement_commitment.py", "occurrence_derivation.py", "occurrence_shadow.py"}
     for path in root.glob("*.py"):
-        if path.name != "complement_commitment.py":
+        if path.name not in shadow_consumers:
             assert "complement_commitment" not in path.read_text(encoding="utf-8"), path.name
     source = pathlib.Path(CC.__file__).read_text(encoding="utf-8").lower()
     imports = [line for line in source.splitlines() if line.startswith(("import ", "from "))]
