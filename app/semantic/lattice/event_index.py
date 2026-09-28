@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Iterable, Mapping
 
+from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
 from app.semantic.lattice.event_extraction import EventCandidate, _frame_ref, extract_event_candidates
 from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_event_targets
 from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
@@ -111,6 +112,30 @@ def build_frame_event_index(frame: UtteranceFrame) -> EventIndex:
     observation = extract_observation_event_targets(frame, base)
     knowledge = extract_knowledge_event_targets(frame, base)
     return build_event_index(frame, base, observation.observation_events, knowledge.knowledge_events)
+
+
+_RESOLVED = frozenset({ResolutionStatus.RESOLVED_EXPLICIT, ResolutionStatus.RESOLVED_STRUCTURAL})
+
+
+def target_index_violation(reference: EventTargetReference, event_index: EventIndex) -> str | None:
+    """Contextual check of a target record against ONE frame index; None when consistent.
+
+    A resolved EVENT_TARGET must name an indexed predicate whose EventRef is
+    exactly target_event; a resolved PROPOSITION_TARGET must name a predicate of
+    this frame. Pure: no global state, no cross-frame lookup, no repair.
+    """
+    if reference.resolution_status not in _RESOLVED:
+        return None
+    if reference.target_kind is TargetKind.EVENT_TARGET:
+        indexed = event_index.event_for(reference.target_predicate)
+        if indexed is None:
+            return "target_predicate_not_indexed"
+        if indexed.event_ref.event_id != reference.target_event:
+            return "target_event_mismatch"
+        return None
+    if reference.target_kind is TargetKind.PROPOSITION_TARGET and reference.target_predicate not in event_index.unit_order:
+        return "target_predicate_not_in_frame"
+    return None
 
 
 def _signature(candidate: EventCandidate) -> tuple[str, str, str]:

@@ -14,7 +14,7 @@ from typing import AbstractSet, Any, Iterable, Mapping
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
 from app.semantic.lattice.event_extraction import extract_event_candidates
-from app.semantic.lattice.event_index import EventIndex
+from app.semantic.lattice.event_index import EventIndex, target_index_violation
 from app.semantic.lattice.event_reference_resolution import resolve_explicit_event_references
 from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_event_targets
 from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
@@ -125,7 +125,7 @@ def extract_nominal_reference_relations(
             "verified": False,
             "truth": None,
         }
-        targets.append(EventTargetReference(
+        record = EventTargetReference(
             source_event=governor.event_ref.event_id,
             source_predicate=governor.predicate_ref,
             target_kind=TargetKind.EVENT_TARGET,
@@ -135,7 +135,11 @@ def extract_nominal_reference_relations(
             provenance=provenance,
             confidence=dict(reference.confidence),
             metadata=metadata,
-        ))
+        )
+        if target_index_violation(record, event_index) is not None:
+            skipped["target_index_inconsistent"] = skipped.get("target_index_inconsistent", 0) + 1
+            continue
+        targets.append(record)
         relations.append(EventReferenceRelation(
             relation_kind=_NOMINAL_RELATION_BY_KIND[governor.event_ref.event_kind],
             source_event=governor.event_ref.event_id,
@@ -259,7 +263,7 @@ def select_immediate_meta_target(
     target = event_index.event_for(target_predicate)
     if target is None:
         base["resolution_status"] = ResolutionStatus.RESOLVED_STRUCTURAL.value
-        return EventTargetReference(
+        return _checked(source, source_predicate, base, event_index, EventTargetReference(
             source_event=source.event_ref.event_id,
             source_predicate=source_predicate,
             target_kind=TargetKind.PROPOSITION_TARGET,
@@ -269,9 +273,9 @@ def select_immediate_meta_target(
             provenance=base,
             confidence={"value": None, "calibrated": False},
             metadata=_metadata(None),
-        )
+        ))
     base["resolution_status"] = ResolutionStatus.RESOLVED_STRUCTURAL.value
-    return EventTargetReference(
+    return _checked(source, source_predicate, base, event_index, EventTargetReference(
         source_event=source.event_ref.event_id,
         source_predicate=source_predicate,
         target_kind=TargetKind.EVENT_TARGET,
@@ -281,7 +285,15 @@ def select_immediate_meta_target(
         provenance=base,
         confidence={"value": None, "calibrated": False},
         metadata=_metadata(target.occurrence_status.value),
-    )
+    ))
+
+
+def _checked(source, source_predicate: str, provenance: dict[str, Any], event_index: EventIndex,
+             reference: EventTargetReference) -> EventTargetReference:
+    violation = target_index_violation(reference, event_index)
+    if violation is None:
+        return reference
+    return _unresolved(source, source_predicate, provenance, ResolutionStatus.UNRESOLVED, violation)
 
 
 def _unresolved(source, source_predicate: str, provenance: dict[str, Any], status: ResolutionStatus,

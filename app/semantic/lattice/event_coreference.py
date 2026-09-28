@@ -81,7 +81,11 @@ def _check_target_consistency(
     target_predicate: str | None,
     target_event: str | None,
 ) -> None:
-    """Reject target records that contradict themselves (no guessing, no repair)."""
+    """Reject target records whose local shape contradicts itself (no guessing, no repair).
+
+    Shape only: whether target_predicate and target_event agree is a contextual
+    question answered against the frame EventIndex (event_index.target_index_violation).
+    """
     if status not in _RESOLVED and target_event is not None:
         raise ValueError(f"{status.value} reference cannot carry a target_event")
     if kind is TargetKind.EVENT_TARGET and status in _RESOLVED and not target_event:
@@ -90,3 +94,11 @@ def _check_target_consistency(
         raise ValueError("EVENT_TARGET must be resolved; use UNKNOWN_TARGET when unresolved")
     if kind is TargetKind.UNKNOWN_TARGET and (status in _RESOLVED or target_predicate or target_event):
         raise ValueError("UNKNOWN_TARGET carries no target and is never resolved")
+    if kind is TargetKind.EVENT_TARGET and not target_predicate:
+        raise ValueError("EVENT_TARGET requires the target_predicate its EventRef refers to")
+    if kind is TargetKind.PROPOSITION_TARGET and target_event is not None:
+        raise ValueError("PROPOSITION_TARGET must not carry a target_event")
+    if kind is TargetKind.PROPOSITION_TARGET and status in _RESOLVED and not target_predicate:
+        raise ValueError("resolved PROPOSITION_TARGET requires a target_predicate")
+    if kind is TargetKind.ENTITY_TARGET and target_event is not None:
+        raise ValueError("ENTITY_TARGET must not carry a target_event")

@@ -25,6 +25,15 @@ def _ref(kind, status, target_predicate=None, target_event=None):
     (TargetKind.UNKNOWN_TARGET, AMB, None, "e1"),
     (TargetKind.PROPOSITION_TARGET, UNR, None, "e1"),
     (TargetKind.EVENT_TARGET, AMB, "u1", "e1"),
+    # M2 local shape invariants
+    (TargetKind.PROPOSITION_TARGET, S, None, None),
+    (TargetKind.PROPOSITION_TARGET, R, None, None),
+    (TargetKind.PROPOSITION_TARGET, S, "u1", "e1"),
+    (TargetKind.PROPOSITION_TARGET, R, "u1", "e1"),
+    (TargetKind.EVENT_TARGET, S, None, "e1"),
+    (TargetKind.EVENT_TARGET, R, None, "e1"),
+    (TargetKind.ENTITY_TARGET, S, None, "e1"),
+    (TargetKind.ENTITY_TARGET, S, "u1", "e1"),
 ])
 def test_contradictory_target_records_are_rejected(kind, status, predicate, event):
     with pytest.raises(ValueError):
