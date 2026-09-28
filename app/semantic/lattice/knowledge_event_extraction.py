@@ -20,6 +20,7 @@ from app.semantic.lattice.event_extraction import (
     EventCandidate,
     OccurrenceStatus,
     extract_event_candidates,
+    occurrence_claim_for,
     occurrence_status_for,
 )
 from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelation, EventRelationKind
@@ -210,6 +211,11 @@ def _knowledge_candidate(
 ) -> EventCandidate:
     base = existing.get(unit.id)
     occurrence = base.occurrence_status if base is not None else occurrence_status_for(frame, unit)
+    if base is not None and base.occurrence_claim is not None:
+        claim, derivation = base.occurrence_claim, base.occurrence_derivation
+    else:
+        derived = occurrence_claim_for(frame, unit)
+        claim, derivation = derived.claim, derived.derivation
     frame_ref = base.event_ref.source_frame if base is not None else _frame_ref(frame)
     event_id = base.event_ref.event_id if base is not None else _event_id(frame_ref or _frame_ref(frame), unit.id)
     event = EventRef(
@@ -230,6 +236,8 @@ def _knowledge_candidate(
         event_ref=event,
         predicate_ref=unit.id,
         occurrence_status=occurrence,
+        occurrence_claim=claim,
+        occurrence_derivation=derivation,
         provenance={
             "source": _SOURCE,
             "predicate_ref": unit.id,

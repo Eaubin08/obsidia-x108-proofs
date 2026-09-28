@@ -16,7 +16,12 @@ from app.semantic.lattice.event_coreference import (
     ResolutionStatus,
     TargetKind,
 )
-from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus, occurrence_status_for
+from app.semantic.lattice.event_extraction import (
+    EventCandidate,
+    OccurrenceStatus,
+    occurrence_claim_for,
+    occurrence_status_for,
+)
 from app.semantic.lattice.events import EventKind, EventRef, EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.primitives import Argument, PredicateUnit, RelationKind, UtteranceFrame
 
@@ -188,10 +193,13 @@ def _observation_candidate(frame: UtteranceFrame, unit: PredicateUnit) -> EventC
         },
     )
     occurrence = occurrence_status_for(frame, unit)
+    claim = occurrence_claim_for(frame, unit)
     return EventCandidate(
         event_ref=event,
         predicate_ref=unit.id,
         occurrence_status=occurrence,
+        occurrence_claim=claim.claim,
+        occurrence_derivation=claim.derivation,
         provenance={
             "source": _SOURCE,
             "predicate_ref": unit.id,

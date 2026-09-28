@@ -118,8 +118,10 @@ def extract_nominal_reference_relations(
             "target_rule": "explicit_nominal_reference",
             "coreference_confidence": reference.metadata.get("coreference_confidence"),
             "coreference_calibrated": False,
-            "source_occurrence_status": governor.occurrence_status.value,
+            "source_occurrence_status": governor.occurrence_status.value,  # legacy, compatibility only
             "target_occurrence_status": target.occurrence_status.value,
+            "source_occurrence_claim": _claim(governor),
+            "target_occurrence_claim": _claim(target),
             "target_occurrence_promoted": False,
             "validated_evidence": False,
             "verified": False,
@@ -189,8 +191,10 @@ def _extract_meta_relations(
             confidence={"value": None, "calibrated": False},
             status="structural",
             metadata={
-                "source_occurrence_status": source.occurrence_status.value,
+                "source_occurrence_status": source.occurrence_status.value,  # legacy, compatibility only
                 "target_occurrence_status": target.metadata["target_occurrence_status"],
+                "source_occurrence_claim": _claim(source),
+                "target_occurrence_claim": target.metadata["target_occurrence_claim"],
                 "target_occurrence_promoted": False,
                 "validated_evidence": False,
                 "verified": False,
@@ -285,7 +289,7 @@ def select_immediate_meta_target(
         target_event=target.event_ref.event_id,
         provenance=base,
         confidence={"value": None, "calibrated": False},
-        metadata=_metadata(target.occurrence_status.value),
+        metadata=_metadata(target.occurrence_status.value, _claim(target)),
     ))
 
 
@@ -313,10 +317,17 @@ def _unresolved(source, source_predicate: str, provenance: dict[str, Any], statu
     )
 
 
-def _metadata(target_occurrence: str | None) -> Mapping[str, Any]:
+def _claim(candidate) -> str | None:
+    """Canonical OccurrenceClaim of an event candidate (a claim, not a truth value)."""
+    claim = getattr(candidate, "occurrence_claim", None)
+    return claim.value if claim is not None else None
+
+
+def _metadata(target_occurrence: str | None, target_claim: str | None = None) -> Mapping[str, Any]:
     return {
         "target_rule": "immediate_structural",
-        "target_occurrence_status": target_occurrence,
+        "target_occurrence_status": target_occurrence,  # legacy, compatibility only
+        "target_occurrence_claim": target_claim,
         "target_occurrence_promoted": False,
         "nearest_event_fallback": False,
         "first_candidate_fallback": False,

@@ -32,8 +32,10 @@ from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
-from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStatus
+from app.semantic.lattice.event_extraction import EventCandidate
 from app.semantic.lattice.events import EventKind
+from app.semantic.lattice.occurrence_derivation import OccurrenceClaim
+from app.semantic.lattice.occurrence_projection import FrameOccurrenceProjection
 from app.semantic.lattice.primitives import PredicateUnit, UtteranceFrame
 
 _SOURCE = "semantic_event_reference_resolution"
@@ -82,7 +84,29 @@ _REQUIRED_EVENT_KIND: Mapping[str, EventKind] = MappingProxyType({
     "report": EventKind.REPORT,
 })
 
-_BINDABLE_OCCURRENCE = frozenset({OccurrenceStatus.ASSERTED_OCCURRED, OccurrenceStatus.REPORTED})
+# M8-D2: an antecedent is bindable for its semantic reason, not for the legacy
+# ASSERTED_OCCURRED / REPORTED overload: either its OccurrenceClaim presents it
+# as realized, or an explicit referable perspective (report, learning,
+# propositional perception) introduces it as realized inside that perspective.
+_BINDABLE_CLAIMS = frozenset({OccurrenceClaim.ASSERTED_REALIZED})
+
+
+def is_event_reference_bindable(
+    candidate: EventCandidate,
+    frame: UtteranceFrame,
+    projection: FrameOccurrenceProjection | None = None,
+) -> tuple[bool, str]:
+    """(bindable, reason). Never reads the legacy OccurrenceStatus."""
+    claim = candidate.occurrence_claim
+    if claim in _BINDABLE_CLAIMS:
+        return True, f"occurrence:{claim.value}"
+    unit = next((u for u in frame.units if u.id == candidate.predicate_ref), None)
+    if unit is not None:
+        projection = projection or FrameOccurrenceProjection(frame)
+        family = projection.referable_perspective(unit)
+        if family is not None and projection.holder_level_claim(unit).claim in _BINDABLE_CLAIMS:
+            return True, f"perspective:{family}"
+    return False, f"occurrence:{claim.value if claim is not None else 'MISSING'}"
 
 # Only singular demonstratives mark an explicit nominal reference. Definite
 # articles (le/la/l') and plurals are not treated as event anaphors.
@@ -127,6 +151,7 @@ def resolve_explicit_event_references(
 ) -> ExplicitEventReferenceResult:
     frame_ref = _frame_ref(frame)
     units_by_id = {unit.id: unit for unit in frame.units}
+    projection = FrameOccurrenceProjection(frame)
     sentence_breaks = tuple(match.start() for match in _SENTENCE_BREAK.finditer(frame.raw))
     references: list[EventTargetReference] = []
     rejections: dict[str, int] = {}
@@ -149,7 +174,7 @@ def resolve_explicit_event_references(
             references.append(_unresolved(frame_ref, mention, reason="no_compatible_antecedent"))
         elif len(compatible) > 1:
             references.append(_ambiguous(frame_ref, mention, compatible, reason="multiple_compatible_antecedents"))
-        elif compatible[0][0].occurrence_status not in _BINDABLE_OCCURRENCE:
+        elif not is_event_reference_bindable(compatible[0][0], frame, projection)[0]:
             references.append(_ambiguous(frame_ref, mention, compatible, reason="antecedent_occurrence_conflict"))
         else:
             references.append(_resolved(frame_ref, mention, *compatible[0]))
@@ -300,7 +325,8 @@ def _resolved(
     metadata = _base_metadata(mention)
     metadata.update({
         "coreference_confidence": confidence,
-        "antecedent_occurrence_status": candidate.occurrence_status.value,
+        "antecedent_occurrence_status": candidate.occurrence_status.value,  # legacy, compatibility only
+        "antecedent_occurrence_claim": _claim_value(candidate),
         "occurrence_conflict": False,
         "occurrence_promoted": False,
     })
@@ -355,6 +381,7 @@ def _unbound(
     if reason == "antecedent_occurrence_conflict":
         metadata["occurrence_conflict"] = True
         metadata["antecedent_occurrence_status"] = candidates[0][0].occurrence_status.value
+        metadata["antecedent_occurrence_claim"] = _claim_value(candidates[0][0])
     return EventTargetReference(
         source_event=f"reference:{mention.span[0]}:{mention.span[1]}",
         source_predicate=f"reference:{mention.span[0]}:{mention.span[1]}",
@@ -366,6 +393,10 @@ def _unbound(
         confidence={"coreference_confidence": 0.0, "calibrated": False},
         metadata=metadata,
     )
+
+
+def _claim_value(candidate: EventCandidate) -> str | None:
+    return candidate.occurrence_claim.value if candidate.occurrence_claim is not None else None
 
 
 def _sentence_index(sentence_breaks: tuple[int, ...], offset: int) -> int:

@@ -157,7 +157,11 @@ def build_review_envelope(
             "predicate_ref": candidate.predicate_ref,
             "predicate": unit.predicate,
             "event_kind": ref.event_kind.value,
-            "occurrence_status": candidate.occurrence_status.value,
+            "occurrence_status": candidate.occurrence_status.value,  # legacy, compatibility only
+            # Canonical occurrence projection: a sourced claim, never a truth / winner.
+            "occurrence_claim": candidate.occurrence_claim.value if candidate.occurrence_claim is not None else None,
+            "occurrence_derivation": (candidate.occurrence_derivation.to_dict()
+                                      if candidate.occurrence_derivation is not None else None),
             # Derived convenience view; the canonical record is epistemic_contributions.
             "epistemic_states": tuple(dict.fromkeys(
                 c["state"] for c in contributions

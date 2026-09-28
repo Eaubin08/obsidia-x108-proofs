@@ -13,7 +13,10 @@ from hashlib import sha256
 from types import MappingProxyType
 from typing import AbstractSet, Any, Mapping
 
+from app.semantic.lattice.complement_commitment import StatusDerivation
 from app.semantic.lattice.events import EVENT_ID_SCOPE, EventKind, EventRef
+from app.semantic.lattice.occurrence_derivation import OccurrenceClaim, OccurrenceDerivation
+from app.semantic.lattice.occurrence_projection import FrameOccurrenceProjection
 from app.semantic.lattice.primitives import RelationKind, UtteranceFrame, PredicateUnit
 
 EXTRACTION_VERSION = "event_extraction_v0"
@@ -66,6 +69,11 @@ class EventCandidate:
     The EventRef is the event identity. This record only explains how the
     candidate was derived from a PredicateUnit and how cautiously occurrence is
     represented.
+
+    `occurrence_status` is the legacy status (compatibility, EventIndex identity
+    signature). `occurrence_claim` + `occurrence_derivation` are the canonical
+    semantic occurrence projection (M8-D2): a claim about realization at this
+    level, never truth, evidence or verification.
     """
 
     event_ref: EventRef
@@ -74,6 +82,8 @@ class EventCandidate:
     extraction_status: ExtractionStatus | str = ExtractionStatus.EXTRACTED
     provenance: Mapping[str, Any] = field(default_factory=dict)
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    occurrence_claim: OccurrenceClaim | str | None = None
+    occurrence_derivation: StatusDerivation | None = None
 
     def __post_init__(self) -> None:
         occurrence = self.occurrence_status if isinstance(self.occurrence_status, OccurrenceStatus) else OccurrenceStatus(str(self.occurrence_status))
@@ -82,6 +92,8 @@ class EventCandidate:
         object.__setattr__(self, "extraction_status", extraction)
         object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+        if self.occurrence_claim is not None and not isinstance(self.occurrence_claim, OccurrenceClaim):
+            object.__setattr__(self, "occurrence_claim", OccurrenceClaim(str(self.occurrence_claim)))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -91,6 +103,9 @@ class EventCandidate:
             "extraction_status": self.extraction_status.value,
             "provenance": dict(self.provenance),
             "metadata": dict(self.metadata),
+            "occurrence_claim": self.occurrence_claim.value if self.occurrence_claim is not None else None,
+            "occurrence_derivation": (self.occurrence_derivation.to_dict()
+                                      if self.occurrence_derivation is not None else None),
         }
 
 
@@ -105,12 +120,14 @@ def extract_event_candidates(
     conditional_targets = _conditional_targets(frame)
     frame_ref = _frame_ref(frame)
     units_by_id = {unit.id: unit for unit in frame.units}
+    projection = FrameOccurrenceProjection(frame)
     candidates: list[EventCandidate] = []
     for unit in frame.units:
         event_kind = _event_kind(unit)
         if event_kind is None:
             continue
         occurrence = _occurrence_status(unit, conditional_sources, units_by_id, conditional_targets)
+        claim = projection.claim(unit)[0]
         event_id = _event_id(frame_ref, unit.id, extraction_version)
         event = EventRef(
             event_id=event_id,
@@ -145,6 +162,8 @@ def extract_event_candidates(
                 "event_id_scope": EVENT_ID_SCOPE,
                 "event_occurred_claim": occurrence is OccurrenceStatus.ASSERTED_OCCURRED,
             },
+            occurrence_claim=claim.claim,
+            occurrence_derivation=claim.derivation,
         ))
     return tuple(candidates)
 
@@ -157,6 +176,11 @@ def _event_kind(unit: PredicateUnit) -> EventKind | None:
     if unit.predicate_class in _ACTION_CLASSES:
         return EventKind.ACTION
     return None
+
+
+def occurrence_claim_for(frame: UtteranceFrame, unit: PredicateUnit) -> OccurrenceDerivation:
+    """Canonical OccurrenceClaim of a unit (single adapter: occurrence_projection)."""
+    return FrameOccurrenceProjection(frame).claim(unit)[0]
 
 
 def occurrence_status_for(frame: UtteranceFrame, unit: PredicateUnit) -> OccurrenceStatus:

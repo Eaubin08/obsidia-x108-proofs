@@ -181,16 +181,22 @@ def test_direct_perception_never_bypasses_parent_scope(governor, claim):
     assert _record(governor, "EXECUTE").new_occurrence_claim is claim
 
 
-def test_modules_are_shadow_only():
+def test_occurrence_modules_stay_out_of_runtime_layers():
+    # M8-D2 wires occurrence_projection into semantic event extraction; runtime
+    # layers (IR, router, gates, track3, cli) still never import these modules.
     root = pathlib.Path(__file__).resolve().parents[1] / "app"
-    for path in root.rglob("*.py"):
-        if path.name in {"occurrence_derivation.py", "occurrence_shadow.py"}:
-            continue
+    runtime = [p for p in root.rglob("*.py") if "semantic" not in p.parts]
+    for path in runtime:
         text = path.read_text(encoding="utf-8")
-        assert "occurrence_derivation" not in text and "occurrence_shadow" not in text, path
+        for module in ("occurrence_derivation", "occurrence_projection", "occurrence_shadow", "complement_commitment"):
+            assert module not in text, (path, module)
     core = (root / "semantic" / "lattice" / "occurrence_derivation.py").read_text(encoding="utf-8")
     imports = [l for l in core.splitlines() if l.startswith(("import ", "from "))]
     assert all("french_grammar" not in l and "event_" not in l and "review_join" not in l for l in imports)
+    # the shadow comparison is never imported by the semantic pipeline itself
+    for path in (root / "semantic").rglob("*.py"):
+        if path.name != "occurrence_shadow.py":
+            assert "occurrence_shadow" not in path.read_text(encoding="utf-8"), path
 
 
 def test_occurrence_property_matrix():

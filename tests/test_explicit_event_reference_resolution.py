@@ -9,6 +9,7 @@ from app.semantic.lattice.event_extraction import EventCandidate, OccurrenceStat
 from app.semantic.lattice.event_reference_resolution import resolve_explicit_event_references
 from app.semantic.lattice.french_grammar import parse_utterance
 from app.semantic.lattice.observation_event_extraction import extract_observation_event_targets
+from app.semantic.lattice.occurrence_derivation import OccurrenceClaim
 
 
 def _unit_id(frame, predicate: str) -> str:
@@ -195,7 +196,10 @@ def test_non_occurred_parser_antecedent_is_flagged_not_silently_bound(raw, expec
 def test_hypothetical_and_conditional_antecedents_are_flagged(status):
     frame = parse_utterance("Paul a lancé le test. J'ai observé ce lancement.")
     real = extract_event_candidates(frame)[0]
-    ref = _only_reference(resolve_explicit_event_references(frame, (replace(real, occurrence_status=status),)))
+    # M8-D2: binding follows the semantic occurrence claim, so the hypothetical /
+    # conditional antecedent is forged on the claim (legacy status kept in step).
+    forged = replace(real, occurrence_status=status, occurrence_claim=OccurrenceClaim.CONTINGENT)
+    ref = _only_reference(resolve_explicit_event_references(frame, (forged,)))
 
     _assert_not_bound(ref)
     assert ref.metadata["occurrence_conflict"] is True
@@ -354,7 +358,8 @@ def _case(kind: str, i: int):
     if kind == "hypothetical":
         frame, cands = base(f"Paul a lancé le test {i}. J'ai observé ce lancement.")
         status = (OccurrenceStatus.HYPOTHETICAL, OccurrenceStatus.CONDITIONAL)[i % 2]
-        return frame, tuple(replace(c, occurrence_status=status) for c in cands), set()
+        return frame, tuple(replace(c, occurrence_status=status, occurrence_claim=OccurrenceClaim.CONTINGENT)
+                            for c in cands), set()
     if kind == "unit_none":
         frame, cands = base(f"Paul a lancé le test {i}. J'ai observé {('ce lancement', 'cet échec', 'cet arrêt')[i % 3]}.")
         forged = tuple(
