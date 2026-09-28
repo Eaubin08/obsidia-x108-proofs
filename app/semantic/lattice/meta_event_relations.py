@@ -187,6 +187,7 @@ def _extract_meta_relations(
             target_event=target.target_event,
             provenance=dict(target.provenance, source_predicate=source.predicate_ref),
             confidence={"value": None, "calibrated": False},
+            status="structural",
             metadata={
                 "source_occurrence_status": source.occurrence_status.value,
                 "target_occurrence_status": target.metadata["target_occurrence_status"],

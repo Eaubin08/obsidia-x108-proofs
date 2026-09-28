@@ -80,12 +80,21 @@ class EventRef:
         }
 
 
+# EventReferenceRelation.status says where a relation comes from, never that
+# its source occurred or its target is true / verified:
+#   "structural"        -- derived from explicit parser / embedding structure
+#   "nominal_reference" -- derived from an explicit nominal event reference
+# Occurrence lives on EventRef / EventCandidate; epistemic states live in flows.
+RELATION_STATUSES = frozenset({"structural", "nominal_reference"})
+
+
 @dataclass(frozen=True)
 class EventReferenceRelation:
     """Typed relation between two EventRef ids.
 
     Relations point to event ids only; they never embed or duplicate the target
-    event payload and do not validate truth, evidence, or authority.
+    event payload and do not validate truth, evidence, or authority. `status`
+    is the relation's origin (see RELATION_STATUSES), not a truth value.
     """
 
     relation_kind: EventRelationKind | str
@@ -93,7 +102,7 @@ class EventReferenceRelation:
     target_event: str
     provenance: Mapping[str, Any] = field(default_factory=dict)
     confidence: Mapping[str, Any] = field(default_factory=dict)
-    status: str = "asserted"
+    status: str = "structural"
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -101,6 +110,8 @@ class EventReferenceRelation:
             raise ValueError("source_event is required")
         if not self.target_event:
             raise ValueError("target_event is required")
+        if self.status not in RELATION_STATUSES:
+            raise ValueError(f"relation status must be one of {sorted(RELATION_STATUSES)}, got {self.status!r}")
         kind = self.relation_kind if isinstance(self.relation_kind, EventRelationKind) else EventRelationKind(str(self.relation_kind))
         object.__setattr__(self, "relation_kind", kind)
         object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
