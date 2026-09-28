@@ -163,3 +163,12 @@ def test_coordination_outside_any_complement_is_unchanged(text):
     assert not any(a.startswith("coordination_attachment_ambiguous") for a in f.ambiguities)
     q = next(u for u in f.units if u.subject == "nadia")
     assert q.epistemic != "UNRESOLVED_GOVERNANCE"
+
+
+def test_ambiguous_clause_is_never_the_host_of_another_clause():
+    f = parse_utterance(f"Si Marie dit que {P} et {Q}, Luc lance le lot.")
+    say = f.units[0]
+    q = next(u for u in f.units if u.subject == "nadia")
+    luc = next(u for u in f.units if u.subject == "luc")
+    assert not any(q.id in (r.source, r.target) for r in f.relations)
+    assert ("CONDITIONS", say.id, luc.id) in {(r.kind, r.source, r.target) for r in f.relations}

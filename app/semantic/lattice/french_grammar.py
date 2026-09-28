@@ -1373,9 +1373,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                            role="REQUEST"), d)
 
         # Subordinate clauses (reason, condition, embedding...) never become the
-        # host of a following "puis" / "mais": only main clauses do.
+        # host of a following "puis" / "mais": only main clauses do. A clause of
+        # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "car"} and clause.units:
+                               "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
     # ── inter-clause relations ──
