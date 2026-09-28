@@ -71,18 +71,20 @@ def extract_knowledge_event_targets(
 ) -> KnowledgeEventExtraction:
     """Discover, index the whole frame, then bind (public wrapper).
 
-    Targets are bound against the full frame identity set (caller candidates +
-    every discovered OBSERVATION and KNOWLEDGE_ACQUISITION event), never a
-    family-local view.
+    Targets are bound against the full frame identity set: the canonical base
+    (extract_event_candidates(frame)), every discovered OBSERVATION and
+    KNOWLEDGE_ACQUISITION event, plus the caller `candidates`, which are
+    proposals only (see extract_observation_event_targets).
     """
     # Imported at call time: event_index imports this module.
     from app.semantic.lattice.event_index import build_event_index
     from app.semantic.lattice.observation_event_extraction import discover_observation_events
 
-    # Meta-event identities are discovered from the frame itself (canonical base),
-    # never copied from caller-supplied candidates (see observation extractor).
-    learn_candidates = discover_knowledge_events(frame, extract_event_candidates(frame))
-    index = build_event_index(frame, candidates, discover_observation_events(frame), learn_candidates)
+    # Identities come from the frame itself, never from caller-supplied
+    # candidates (see observation extractor).
+    canonical_base = extract_event_candidates(frame)
+    learn_candidates = discover_knowledge_events(frame, canonical_base)
+    index = build_event_index(frame, canonical_base, candidates, discover_observation_events(frame), learn_candidates)
     targets, relations = bind_knowledge_targets(frame, learn_candidates, index)
     return KnowledgeEventExtraction(
         knowledge_events=learn_candidates,

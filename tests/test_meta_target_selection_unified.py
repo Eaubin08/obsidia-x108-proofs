@@ -129,9 +129,14 @@ def test_foreign_candidates_neither_used_nor_poisoning(family):
     assert {c.predicate_ref for c in foreign} & {c.predicate_ref for c in local}
 
     assert _run(frame, family, tuple(local) + tuple(foreign)).to_dict() == _run(frame, family, local).to_dict()
+    # Foreign proposals are rejected, and their presence instead of the local
+    # base does not hide the local identity: the canonical base always binds.
     only_foreign = _run(frame, family, foreign)
-    assert only_foreign.relations == ()
-    assert [t.target_kind for t in only_foreign.targets] == [TargetKind.PROPOSITION_TARGET]
+    assert only_foreign.to_dict() == _run(frame, family, local).to_dict()
+    assert [t.target_kind for t in only_foreign.targets] == [TargetKind.EVENT_TARGET]
+    local_ids = {c.event_ref.event_id for c in local}
+    assert {r.target_event for r in only_foreign.relations} <= local_ids
+    assert not {r.target_event for r in only_foreign.relations} & {c.event_ref.event_id for c in foreign}
 
 
 def test_unified_selection_adversarial_matrix():

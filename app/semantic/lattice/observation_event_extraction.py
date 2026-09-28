@@ -58,22 +58,26 @@ def extract_observation_event_targets(
 ) -> ObservationEventResult:
     """Discover, index the whole frame, then bind (public wrapper).
 
-    Targets are bound against the full frame identity set (caller candidates +
-    every discovered OBSERVATION and KNOWLEDGE_ACQUISITION event), never a
-    family-local view, so the result does not depend on which meta-events the
-    caller happened to pass.
+    Targets are bound against the full frame identity set: the canonical base
+    (extract_event_candidates(frame)), every discovered OBSERVATION and
+    KNOWLEDGE_ACQUISITION event, plus the caller `candidates`. The canonical
+    set is always present, so the result does not depend on caller
+    completeness; `candidates` may be empty, partial, complete, duplicated,
+    conflicting or foreign -- they are proposals only (identical -> merged,
+    incompatible -> EventIndex conflict, foreign frame -> rejected).
     """
     # Imported at call time: event_index imports this module.
     from app.semantic.lattice.event_extraction import extract_event_candidates
     from app.semantic.lattice.event_index import build_event_index
     from app.semantic.lattice.knowledge_event_extraction import discover_knowledge_events
 
-    # Meta-event identities are discovered from the frame itself (canonical base),
-    # never copied from caller-supplied candidates: those are only proposals, and
-    # a differing proposal conflicts instead of overriding the frame identity.
+    # Identities come from the frame itself (canonical base + meta discovery),
+    # never from caller-supplied candidates: a differing proposal conflicts
+    # instead of overriding, and an omitted one does not hide the event.
+    canonical_base = extract_event_candidates(frame)
     observations = discover_observation_events(frame)
-    learns = discover_knowledge_events(frame, extract_event_candidates(frame))
-    index = build_event_index(frame, candidates, observations, learns)
+    learns = discover_knowledge_events(frame, canonical_base)
+    index = build_event_index(frame, canonical_base, candidates, observations, learns)
     targets, relations = bind_observation_targets(frame, observations, index)
     return ObservationEventResult(
         observation_events=observations,
