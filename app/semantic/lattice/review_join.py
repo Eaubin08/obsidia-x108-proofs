@@ -14,12 +14,22 @@ Each event's `epistemic_states` is only a derived convenience view. Nothing is
 deduplicated across sources. Unresolved, ambiguous and non-event targets are
 kept as they are.
 
+Membership is fail-closed: only REVIEW_MEMBERSHIP_RELATION_KINDS (the four
+perspective relations) expand a component; any other or future relation kind
+never pulls an event in, but stays visible when both endpoints are already
+members. Relation status never filters membership. Exact duplicate relations
+(identical kind, endpoints, status, provenance, confidence, metadata) are
+collapsed; anything that differs is kept. An allowed kind is not proof of a
+correct relation: ReviewJoin trusts the upstream event graph (target selection
+and index invariants) for that.
+
 It is NOT a verdict: no truth scalar, no conflict resolution, no temporal
 enrichment, no coreference between distinct events, no center selection
 heuristic (the caller names the center), no memory, no authority.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Mapping
@@ -27,7 +37,7 @@ from typing import Any, Mapping
 from app.semantic.lattice.event_coreference import EventTargetReference, ResolutionStatus, TargetKind
 from app.semantic.lattice.event_extraction import extract_event_candidates
 from app.semantic.lattice.event_index import EventIndex, EventIndexConflict, build_frame_event_index
-from app.semantic.lattice.events import EventReferenceRelation
+from app.semantic.lattice.events import EventReferenceRelation, EventRelationKind
 from app.semantic.lattice.knowledge_event_extraction import extract_knowledge_event_targets
 from app.semantic.lattice.language_flow_projection import project_epistemic_flows
 from app.semantic.lattice.meta_event_relations import (
@@ -39,6 +49,16 @@ from app.semantic.lattice.observation_event_extraction import extract_observatio
 from app.semantic.lattice.primitives import UtteranceFrame
 
 REVIEW_JOIN_VERSION = "review_join_v0"
+
+# The only relation kinds that express a perspective on the same semantic
+# object and may therefore expand a review component. New kinds are excluded
+# until explicitly added here.
+REVIEW_MEMBERSHIP_RELATION_KINDS = frozenset({
+    EventRelationKind.OBSERVES,
+    EventRelationKind.LEARNS_ABOUT,
+    EventRelationKind.REPORTS_ABOUT,
+    EventRelationKind.BELIEVES_ABOUT,
+})
 
 
 @dataclass(frozen=True)
@@ -94,14 +114,18 @@ def build_review_envelope(
     beliefs = extract_belief_event_relations(frame, index)
     structural = (*observation.relations, *knowledge.relations, *reports.relations, *beliefs.relations)
     nominal = extract_nominal_reference_relations(frame, index, structural_relations=structural)
-    relations = [
+    indexed = [
         r for r in (*structural, *nominal.relations)
         if index.by_event_id(r.source_event) is not None and index.by_event_id(r.target_event) is not None
     ]
+    relations = _dedupe_exact(indexed)
     targets = (*observation.targets, *knowledge.targets, *reports.targets, *beliefs.targets, *nominal.targets)
 
+    # Phase 1 -- membership: undirected traversal over perspective kinds only.
     neighbours: dict[str, set[str]] = {}
     for r in relations:
+        if r.relation_kind not in REVIEW_MEMBERSHIP_RELATION_KINDS:
+            continue
         neighbours.setdefault(r.source_event, set()).add(r.target_event)
         neighbours.setdefault(r.target_event, set()).add(r.source_event)
     component, frontier = {center_event}, [center_event]
@@ -115,8 +139,9 @@ def build_review_envelope(
     component_predicates = {index.by_event_id(e).predicate_ref for e in component}
     order = {unit.id: i for i, unit in enumerate(frame.units)}
     in_component = [t for t in targets if t.source_event in component]
+    # Phase 2 -- visibility: every relation whose BOTH endpoints are members.
     kept_relations = sorted(
-        (r for r in relations if r.source_event in component),
+        (r for r in relations if r.source_event in component and r.target_event in component),
         key=lambda r: (order[index.by_event_id(r.source_event).predicate_ref], r.relation_kind.value, r.status),
     )
     contributions = _epistemic_contributions(frame, index, component_predicates, kept_relations, order)
@@ -178,6 +203,10 @@ def build_review_envelope(
             "epistemic_contributions": "canonical_lossless",
             "epistemic_states": "derived_summary",
             "flow_identity": "position_in_project_epistemic_flows (flows carry no id upstream)",
+            "membership_relation_kinds": sorted(kind.value for kind in REVIEW_MEMBERSHIP_RELATION_KINDS),
+            "membership_trust": "allowed kinds trusted; correctness is an upstream event-graph invariant",
+            "exact_duplicate_relations_collapsed": len(indexed) - len(relations),
+            "non_membership_relations": sum(r.relation_kind not in REVIEW_MEMBERSHIP_RELATION_KINDS for r in relations),
         },
         metadata={
             "truth": None,
@@ -235,6 +264,18 @@ def _epistemic_contributions(
             "relation_position": position,
         }))
     return [record for _, record in sorted(records, key=lambda item: item[0])]
+
+
+def _dedupe_exact(relations: list[EventReferenceRelation]) -> list[EventReferenceRelation]:
+    """Drop relations identical in every field (first occurrence kept, order stable)."""
+    seen: set[str] = set()
+    unique: list[EventReferenceRelation] = []
+    for relation in relations:
+        key = json.dumps(relation.to_dict(), sort_keys=True, default=str)
+        if key not in seen:
+            seen.add(key)
+            unique.append(relation)
+    return unique
 
 
 def _freeze(value: Any) -> Any:
