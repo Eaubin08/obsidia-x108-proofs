@@ -362,6 +362,38 @@ def _last_verb(toks: list[_Tok]) -> _Tok | None:
     return None
 
 
+_ELIDED_SI_SUBJECTS = {"il", "ils", "elle", "elles"}
+
+
+def _politeness_formula(toks: list[_Tok], i: int) -> bool:
+    """ "s'il te plaît" / "s'il vous plaît" is a politeness formula, not a protasis."""
+    return (i + 3 < len(toks) and toks[i + 1].low == "il" and toks[i + 2].low in {"te", "vous"}
+            and toks[i + 3].low in {"plaît", "plait"})
+
+
+def _si_nominal_subject(toks: list[_Tok], i: int) -> bool:
+    """ "si" + bare nominal subject (proper noun, 1-2 words) + verb opens a protasis.
+
+    Structural: the word(s) after "si" are unknown to the lexicon and are not
+    function words, and a verb follows (optionally after "ne"). Adverbial "si"
+    ("si content", "si bien fait") has no verb right after its complement.
+    """
+    blocked = (_NON_GOVERNOR_WORDS | _DETERMINERS | _PREPOSITIONS | _WH_WORDS | _FR_NEGATORS
+               | _SUBJECT_PRONOUNS | {"que", "qu'", "qui", "ne", "n'"})
+    j, names = i + 1, 0
+    while j < len(toks) and names < 2:
+        t = toks[j]
+        if t.is_punct or t.analyses or not t.low.isalpha() or t.low in blocked or t.low in _CONNECTIVES:
+            break
+        names += 1
+        j += 1
+    if names == 0:
+        return False
+    while j < len(toks) and toks[j].low in {"ne", "n'"}:
+        j += 1
+    return j < len(toks) and _is_verb(toks, j)
+
+
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     clauses: list[_Clause] = [_Clause([])]
     interrogative = False
@@ -437,9 +469,16 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             i += 1
             continue
 
+        # Elided conditional "si" before il/ils/elle/elles: "s'il", "s'ils".
+        if low == "s'" and nxt is not None and nxt.low in _ELIDED_SI_SUBJECTS                 and not _politeness_formula(toks, i):
+            open_clause("si", [t])
+            i += 1
+            continue
+
         if low in {"si", "if"}:
             if nxt is not None and (nxt.low in _SUBJECT_PRONOUNS | _DETERMINERS
-                                    or nxt.low in {"c'", "ça", "ca", "it"}):
+                                    or nxt.low in {"c'", "ça", "ca", "it"}
+                                    or _si_nominal_subject(toks, i)):
                 open_clause("si", [t])
                 i += 1
                 continue
