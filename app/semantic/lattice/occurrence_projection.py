@@ -46,6 +46,11 @@ class _Context:
     unresolved: bool = False
     condition: bool = False
     question: bool = False
+    # Ancestor unit that introduced each inherited constraint (derivation provenance).
+    non_assertive_from: str | None = None
+    unresolved_from: str | None = None
+    condition_from: str | None = None
+    question_from: str | None = None
 
 
 class FrameOccurrenceProjection:
@@ -118,19 +123,28 @@ class FrameOccurrenceProjection:
         self.visiting.add(u.id)
         parent, relation, kind = self._edge(u)
         if parent is None:
-            ctx = _Context(unresolved=kind == "malformed")
+            ctx = _Context(unresolved=kind == "malformed", unresolved_from=u.id if kind == "malformed" else None)
         else:
             base = self.context(parent)
-            non_assertive, unresolved = base.non_assertive, base.unresolved or kind == "unknown_edge"
+            non_assertive, na_from = base.non_assertive, base.non_assertive_from
+            unresolved, un_from = base.unresolved, base.unresolved_from
+            if kind == "unknown_edge" and not unresolved:
+                unresolved, un_from = True, parent.id
             if kind == "complement":
                 c = self._commitment(u, parent, relation).commitment
-                non_assertive = non_assertive or c in {ComplementCommitment.PRESUPPOSED, ComplementCommitment.ATTRIBUTED,
-                                                       ComplementCommitment.MENTIONED, ComplementCommitment.QUESTIONED}
-                unresolved = unresolved or c is ComplementCommitment.UNRESOLVED
+                if not non_assertive and c in {ComplementCommitment.PRESUPPOSED, ComplementCommitment.ATTRIBUTED,
+                                               ComplementCommitment.MENTIONED, ComplementCommitment.QUESTIONED}:
+                    non_assertive, na_from = True, parent.id
+                if not unresolved and c is ComplementCommitment.UNRESOLVED:
+                    unresolved, un_from = True, parent.id
+            condition_here = bool(self._conditional_role(parent)) or self._hypothetical(parent)
+            question_here = parent.pragmatic == "ASKED"
             ctx = _Context(
                 non_assertive=non_assertive, unresolved=unresolved,
-                condition=base.condition or bool(self._conditional_role(parent)) or self._hypothetical(parent),
-                question=base.question or parent.pragmatic == "ASKED")
+                condition=base.condition or condition_here, question=base.question or question_here,
+                non_assertive_from=na_from, unresolved_from=un_from,
+                condition_from=base.condition_from or (parent.id if condition_here else None),
+                question_from=base.question_from or (parent.id if question_here else None))
         self.visiting.discard(u.id)
         self.contexts[u.id] = ctx
         return ctx
@@ -157,6 +171,26 @@ class FrameOccurrenceProjection:
         implicative = kind == "prep" and parent.predicate in _IMPLICATIVE_GOVERNORS and not directive
         role = self._conditional_role(u) or ("ancestry" if parent is not None and (
             ctx.condition or self._conditional_role(parent) or self._hypothetical(parent)) else None)
+        # the parser's B2c marker only counts where no profile decides
+        local_unresolved = (kind == "unknown_edge" or implicative
+                            or (u.epistemic == "UNRESOLVED_GOVERNANCE" and commitment is None))
+        interrogative_ancestry = parent is not None and (ctx.question or parent.pragmatic == "ASKED")
+        # Name the ancestor behind every inherited value (M8-A derivation contract).
+        inherited = {}
+        if ctx.unresolved:
+            inherited["unresolved_governance"] = ctx.unresolved_from
+        elif local_unresolved and parent is not None:
+            inherited["unresolved_governance"] = parent.id
+        if ctx.non_assertive:
+            inherited["attribution_boundary"] = ctx.non_assertive_from
+        if interrogative_ancestry:
+            inherited["question"] = ctx.question_from or parent.id
+        if role == "ancestry":
+            inherited["conditional"] = ctx.condition_from or parent.id
+        provenance = {"edge": kind, "governor": parent.predicate if parent is not None else None}
+        inherited = {k: v for k, v in inherited.items() if v is not None}
+        if inherited:
+            provenance["inherited_from"] = inherited
         inp = OccurrenceInput(
             u.id,
             polarity="negative" if (u.polarity == "negative" or u.role == "NEGATED") else "positive",
@@ -165,11 +199,9 @@ class FrameOccurrenceProjection:
             question=u.pragmatic == "ASKED",
             conditional_role=role, hypothetical=self._hypothetical(u),
             temporal_subordinate=u.id in self.temporal,
-            interrogative_ancestry=parent is not None and (ctx.question or parent.pragmatic == "ASKED"),
+            interrogative_ancestry=interrogative_ancestry,
             attribution_boundary=ctx.non_assertive,
-            unresolved_governance=(ctx.unresolved or kind == "unknown_edge" or implicative
-                                   # the parser's B2c marker only counts where no profile decides
-                                   or (u.epistemic == "UNRESOLVED_GOVERNANCE" and commitment is None)),
+            unresolved_governance=ctx.unresolved or local_unresolved,
             # purpose / mention / temporal-context infinitives and "après avoir X"
             governed_mention=(kind == "prep" and parent.predicate not in _IMPLICATIVE_GOVERNORS)
             or (u.pragmatic == "EMBEDDED" and u.role in _MENTION_ROLES),
@@ -178,7 +210,7 @@ class FrameOccurrenceProjection:
                                 "META_EVENT_PRESENT" if (u.predicate in _META and u.pragmatic == "ASSERTED"
                                                          and u.tense_aspect in {"PRESENT", "PROGRESSIVE"}) else None),
             commitment=commitment, parent_claim=parent_claim,
-            provenance={"edge": kind, "governor": parent.predicate if parent is not None else None},
+            provenance=provenance,
         )
         result = (derive_occurrence(inp), commitment.commitment.value if commitment is not None else None)
         self.visiting.discard(u.id)
@@ -201,23 +233,28 @@ class FrameOccurrenceProjection:
     def referable_perspective(self, u: PredicateUnit) -> str | None:
         """Family of the perspective that introduces u as a referable object, if any.
 
-        Walks up relative / infinitive edges to the first complement edge; only a
-        report, a learning or a propositional perception introduces its content as
-        a referable object (beliefs and unknown governors do not).
+        Only a report, a learning or a propositional perception introduces its
+        content as a referable object, and only when the COMPLETE perspective path
+        up to the root is referable: any belief, knowledge, unprofiled or unknown
+        governor above (or an unknown / malformed edge) closes the path (M8-D2b).
+        Relative / infinitive edges are walked through.
         """
         seen = set()
+        family = None
         while u.id not in seen:
             seen.add(u.id)
             parent, relation, kind = self._edge(u)
-            if parent is None or kind == "unknown_edge":
+            if parent is None:
+                return family if kind == "root" else None
+            if kind == "unknown_edge":
                 return None
             if kind == "complement":
-                family = _FAMILY.get(parent.predicate)
+                edge_family = _FAMILY.get(parent.predicate)
                 construction = _CONSTRUCTION.get(relation.evidence) if relation is not None else None
-                if family == "REPORT" or (family in {"LEARN", "PERCEPTION"}
-                                          and construction is ConstructionType.QUE_PROPOSITION):
-                    return family
-                return None
+                if not (edge_family == "REPORT" or (edge_family in {"LEARN", "PERCEPTION"}
+                                                    and construction is ConstructionType.QUE_PROPOSITION)):
+                    return None
+                family = family or edge_family
             u = parent
         return None
 
