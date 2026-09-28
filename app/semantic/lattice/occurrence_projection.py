@@ -138,7 +138,8 @@ class FrameOccurrenceProjection:
         parent, relation, kind = self._edge(u)
         if parent is None:
             evidential = self._evidential(u, kind) is not None
-            ctx = _Context(unresolved=kind == "malformed", unresolved_from=u.id if kind == "malformed" else None,
+            unresolved = kind == "malformed" or u.epistemic == "UNRESOLVED_GOVERNANCE"
+            ctx = _Context(unresolved=unresolved, unresolved_from=u.id if unresolved else None,
                            non_assertive=evidential, non_assertive_from=u.id if evidential else None)
         else:
             base = self.context(parent)
@@ -155,6 +156,10 @@ class FrameOccurrenceProjection:
                     unresolved, un_from = True, parent.id
             condition_here = bool(self._conditional_role(parent)) or self._hypothetical(parent)
             question_here = parent.pragmatic == "ASKED"
+            # the parser's unresolved-governance marker, where no profile decides,
+            # scopes over the unit's own descendants
+            if not unresolved and kind != "complement" and u.epistemic == "UNRESOLVED_GOVERNANCE":
+                unresolved, un_from = True, u.id
             ctx = _Context(
                 non_assertive=non_assertive, unresolved=unresolved,
                 condition=base.condition or condition_here, question=base.question or question_here,
