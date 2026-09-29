@@ -70,6 +70,7 @@ _INTERJECTIONS = {"please", "stp", "svp", "merci", "ok", "okay", "bon", "bonjour
                   "salut", "hey", "hello", "hi", "oui", "non", "yes", "no"}
 _WH_WORDS = {"comment", "pourquoi", "quand", "où", "quoi", "combien", "how", "what",
              "why", "when", "where", "whether", "which"}
+_TEMPORAL_INTRODUCERS = {"lorsque", "lorsqu'"}
 _DISFLUENCIES = {"euh", "heu", "bah", "ben", "hum", "hmm", "uh", "um", "erm"}
 _NO_COLLAPSE = {"nous", "vous"}
 _ELIDED_LETTERS = {"l", "j", "n", "m", "t", "s", "d", "c", "qu"}
@@ -1127,10 +1128,11 @@ def _subject_before(toks: list[_Tok], idx: int) -> tuple[str | None, str | None]
     if not t.analyses and t.low not in _DETERMINERS and t.low not in _PREPOSITIONS             and t.low not in _INTERJECTIONS and t.low not in _WH_WORDS \
             and t.low not in _FR_NEGATORS and t.low not in _CONNECTIVES \
             and t.low not in _TIME_ADVERBS and t.low not in {"que", "qu'", "qui"}:
-        # nominal subject ("maman", "le script")
+        # nominal subject ("maman", "le script"); it never extends across a WH word
+        # or a temporal introducer ("P quand Nadia exécute Q": the subject is "nadia")
         j = k
         while j > 0 and not toks[j - 1].analyses and toks[j - 1].low not in (
-                _PREPOSITIONS | _SUBJECT_PRONOUNS | {"ne", "n'"}):
+                _PREPOSITIONS | _SUBJECT_PRONOUNS | _WH_WORDS | _TEMPORAL_INTRODUCERS | {"ne", "n'"}):
             j -= 1
         words = [x.low for x in toks[j:k + 1] if x.low not in _DETERMINERS]
         return (" ".join(words) or t.low), "3"
