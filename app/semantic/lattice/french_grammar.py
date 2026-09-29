@@ -24,7 +24,8 @@ from dataclasses import dataclass, field, replace
 
 from app.semantic.lattice.lexicon import fold, lookup, predicate_of
 from app.semantic.lattice.primitives import (
-    Argument, CoordinationRef, LatticeRelation, PredicateUnit, RelationKind, UtteranceFrame,
+    Argument, CoordinationRef, LatticeRelation, OperatorScopeRef, PredicateUnit, RelationKind,
+    UtteranceFrame,
 )
 
 # ── closed word classes ──────────────────────────────────────────────────
@@ -587,13 +588,17 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
             continue
         verbs = [j for j in range(f) if _is_verb(c.toks, j)]
         # exactly one auxiliary (members are past participles) or one
-        # obligation modal (members are infinitives), shared by every member
-        # (rebuilt on each member, see _share_auxiliary); a conditional one
-        # stays out of scope (negation vs. conditional mood open)
+        # obligation / ability-permission modal (members are infinitives),
+        # shared by every member (rebuilt on each member, see _share_auxiliary);
+        # a conditional one stays out of scope (negation vs. conditional mood open)
         if len(verbs) != 1 or "COND" in _feats(c.toks[verbs[0]]):
             continue
         shared = c.toks[verbs[0]]
-        modal = _MODALITY.get(_pred(shared)) == "OBLIGATION"
+        ability = _MODALITY.get(_pred(shared)) == "ABILITY_OR_PERMISSION"
+        if ability and any(x in _SECOND_PERSON for x in lows):
+            # "Ne peux-tu ni P ni Q ?": negated question / reproach / suggestion stays open
+            continue
+        modal = ability or _MODALITY.get(_pred(shared)) == "OBLIGATION"
         if not modal and _pred(shared) not in {"HAVE", "BE"}:
             continue
         member_feat, other_feat = ("INF", "PP") if modal else ("PP", "INF")
@@ -626,9 +631,9 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     """
     clause = clauses[ci]
     if clause.ni_head is not None and clause.ni_head.ni_modal is not None:
-        # "ne doit ni INF1 ni INF2": the obligation modal (its tense, its subject)
-        # is shared by the infinitives; its own finite draft is folded into them,
-        # exactly as in "ne doit pas INF".
+        # "ne doit ni INF1 ni INF2" / "ne peut ni INF1 ni INF2": the modal (its
+        # modality, tense, subject) is shared by the infinitives; its own finite
+        # draft is folded into them, exactly as in "ne doit pas INF".
         head = clause.ni_head
         if clause is head:
             finite = [d for d in drafts if d.lex is head.ni_modal and d.verb_form == "FINITE"]
@@ -641,7 +646,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             for d in drafts:
                 if d.head_index > 0 and clause.toks[d.head_index - 1].low == "ni" \
                         and d.verb_form == "INFINITIVE" and d.modality is None and d.subject is None:
-                    d.modality, d.modal_tok, d.tense = "OBLIGATION", m.lex, m.tense
+                    d.modality, d.modal_tok, d.tense = _MODALITY.get(_pred(m.lex)), m.lex, m.tense
                     # same rule as the modal+infinitive chain: "falloir" is impersonal
                     d.subject = m.subject
                     d.subject_person = "impersonal" if _pred(m.lex) == "NEED" else m.subject_person
@@ -667,7 +672,8 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             return
         # "Paul doit lancer P et exécuter Q": the obligation modal chain (the modal,
         # its tense, its subject) is shared by a bare coordinated infinitive;
-        # "Veuillez lancer P et exécuter Q": so is the directive operator's scope
+        # "Veuillez lancer P et exécuter Q": so is the directive operator's scope;
+        # "Peux-tu lancer P et exécuter Q ?": so is the ability-permission modal
         if linked and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
@@ -681,10 +687,15 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
     if compound and compound[-1] is drafts[-1]:
         clause.compound = (compound[-1].tense, clause.toks[compound[-1].head_index].low, compound[-1])
-    if drafts and (drafts[-1].modality == "OBLIGATION" or drafts[-1].directive) \
-            and drafts[-1].verb_form == "INFINITIVE" \
-            and drafts[-1].head_index != drafts[-1].lex_index and drafts[-1].modal_tok is not None:
-        clause.modal = drafts[-1]
+    last = drafts[-1] if drafts else None
+    # a negated "pouvoir" ("ne peut pas P et Q": ¬(P∧Q) or ¬P∧¬Q) or one inside a
+    # protasis ("R si tu peux P et Q") has no safe scope over a coordination: not shared
+    ability_open = last is not None and last.modality == "ABILITY_OR_PERMISSION" and (
+        clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
+    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION"} or last.directive) \
+            and not ability_open and last.verb_form == "INFINITIVE" \
+            and last.head_index != last.lex_index and last.modal_tok is not None:
+        clause.modal = last
 
 
 def _is_complement(clause: _Clause) -> bool:
@@ -1638,6 +1649,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             (host.compound[1], *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
 
+    operator_scopes: list[OperatorScopeRef] = []
+
+    def _scope_operator(m: _Draft, coord: CoordinationRef) -> None:
+        # one "pouvoir" over the coordination: one speech act, derived from the modal itself
+        tok = m.modal_tok or m.lex
+        if _MODALITY.get(_pred(tok)) != "ABILITY_OR_PERMISSION":
+            return
+        act = _ability_speech_act(m, interrogative)
+        operator_scopes.append(OperatorScopeRef(
+            f"o{len(operator_scopes) + 1}", "ABILITY_OR_PERMISSION", tok.low, coord.id, act,
+            "ADDRESSEE_OR_POSSIBLE_ADDRESSEE" if act == "INDIRECT_REQUEST" else "NONE",
+            (tok.start, coord.span[1])))
+
     # ── shared modality: host modal+infinitive predicate and the bare infinitives sharing it ──
     for host in [c for c in clauses if c.shared_modal_host is None and c.modal is not None]:
         sharers = [c for c in clauses if c.shared_modal_host is host]
@@ -1657,6 +1681,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             "shared_directive" if host.modal.directive else "shared_modality",
             (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
+        _scope_operator(host.modal, coordinations[-1])
 
     # ── verbal ni coordination: one structural group per "ne ... ni ... ni" ──
     ni_heads = [c for c in clauses if c.ni_head is c]
@@ -1670,6 +1695,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         coordinations.append(CoordinationRef(
             f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "ni_negative_coordination",
             tuple("ni" for _ in members), (members[0].span[0], members[-1].span[1])))
+        if isinstance(head.ni_modal, _Draft):
+            _scope_operator(head.ni_modal, coordinations[-1])
 
     # ── inter-clause relations ──
     for ci, clause in enumerate(clauses):
@@ -1816,6 +1843,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         disfluencies=tuple(disfluencies),
         orthography_flags=tuple(dict.fromkeys(ortho)),
         coordinations=tuple(coordinations),
+        operator_scopes=tuple(operator_scopes),
     )
 
 
@@ -1928,6 +1956,13 @@ def _request_target(u: PredicateUnit, agent: str, prag: str, role: str) -> str:
         return "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"
     return "NONE"
 
+def _ability_speech_act(d: _Draft, interrogative: bool) -> str:
+    """Speech act carried by an ability-permission modal, from its own context."""
+    if d.subject_person == "2" and (interrogative or d.politeness):
+        return "INDIRECT_REQUEST"
+    return "QUESTION" if interrogative else "NONE"
+
+
 def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
                      ambiguities: list[str]) -> tuple[str, str]:
     person = d.subject_person
@@ -1935,10 +1970,11 @@ def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
         # one written directive operator scopes over its (coordinated) infinitives
         return "REQUESTED", "NOT_APPLICABLE"
     if u.modality == "ABILITY_OR_PERMISSION":
-        if person == "2" and (interrogative or d.politeness):
+        act = _ability_speech_act(d, interrogative)
+        if act == "INDIRECT_REQUEST":
             ambiguities.append(f"ability_permission_or_request:{u.id}")
             return "INDIRECT_REQUEST", "NOT_APPLICABLE"
-        return ("ASKED", "UNKNOWN") if interrogative else ("ASSERTED", "ASSERTED")
+        return ("ASKED", "UNKNOWN") if act == "QUESTION" else ("ASSERTED", "ASSERTED")
     if u.modality == "OBLIGATION":
         if person in {"2", "impersonal"} or d.subject is None:
             return "REQUESTED", "NOT_APPLICABLE"

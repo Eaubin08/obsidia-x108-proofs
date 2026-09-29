@@ -166,6 +166,23 @@ class CoordinationRef:
 
 
 @dataclass(frozen=True)
+class OperatorScopeRef:
+    """One written operator scoping over a coordination ("Peux-tu lancer P et exécuter Q ?").
+
+    Not an event, not a coordination, no occurrence claim, no authority: it
+    states that one operator scopes over a CoordinationRef, and the speech act
+    that operator carries in its context (one act, shared by every member).
+    """
+    id: str
+    kind: str                       # "ABILITY_OR_PERMISSION"
+    source: str                     # operator surface ("peux", "pourrais")
+    scope: str                      # CoordinationRef id
+    speech_act: str                 # "INDIRECT_REQUEST" | "QUESTION" | "NONE"
+    target: str = "NONE"            # "ADDRESSEE_OR_POSSIBLE_ADDRESSEE" | "NONE"
+    span: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True)
 class UtteranceFrame:
     raw: str
     normalized: str
@@ -184,6 +201,7 @@ class UtteranceFrame:
     orthography_flags: tuple[str, ...] = ()
     boundary: dict = field(default_factory=lambda: dict(BOUNDARY))
     coordinations: tuple[CoordinationRef, ...] = ()
+    operator_scopes: tuple[OperatorScopeRef, ...] = ()
 
     def coordination(self, ref: str | None) -> CoordinationRef | None:
         return next((c for c in self.coordinations if c.id == ref), None)

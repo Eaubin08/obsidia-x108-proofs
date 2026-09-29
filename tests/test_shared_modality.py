@@ -102,7 +102,7 @@ def test_true_directive_obligations_stay_directives_and_gated(text):
 @pytest.mark.parametrize("text", [
     "Lance le test et exécute le build.",
     "Lancer le test et exécuter le build.",
-    "Peux-tu lancer le test et exécuter le build ?",
+    # "Peux-tu ..." now shares its pouvoir operator (tests/test_shared_operator.py)
     "Marie dit que Paul doit lancer le test et exécuter le build.",
 ])
 def test_controls_have_no_shared_modality(text):
