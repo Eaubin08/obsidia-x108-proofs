@@ -34,6 +34,10 @@ _EPISTEMIC_UNIT_MAP = {
     "POSSIBLE": "UNCERTAIN",
     "HYPOTHETICAL": "HYPOTHESIS",
     "COUNTERFACTUAL": "CONTRADICTED",
+    # detached source markers (B2e profiles): "Selon Marie, P" is Marie's report,
+    # "Selon moi, P" the speaker's belief; trace / inferential sources stay unlabelled (held)
+    "HUMAN_SOURCE": "REPORTED",
+    "SPEAKER_BELIEF": "BELIEVED",
 }
 
 _EPISTEMIC_PRAGMATIC_MAP = {
