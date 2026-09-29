@@ -21,7 +21,7 @@ Frozen M8-D0 rules:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from types import MappingProxyType
 from typing import Any, Mapping
@@ -75,6 +75,7 @@ class OccurrenceInput:
     # scope / context
     conditional_role: str | None = None     # "source" | "target" | "ancestry"
     hypothetical: bool = False
+    alternative: bool = False               # a branch of "P ou Q": the disjunction is posed, not X
     temporal_subordinate: bool = False      # "avant que X": temporal anchor, not a hypothesis
     interrogative_ancestry: bool = False
     attribution_boundary: bool = False      # inside ATTRIBUTED / MENTIONED / PRESUPPOSED content
@@ -162,6 +163,13 @@ def _derive(inp: OccurrenceInput) -> tuple[OccurrenceClaim, str]:
         return OccurrenceClaim.CONTINGENT, f"conditional:{inp.conditional_role}"
     if inp.hypothetical:
         return OccurrenceClaim.CONTINGENT, "hypothetical"
+    if inp.alternative:
+        # ALTERNATIVE != OCCURRENCE: no claim on a branch (nor its local operators);
+        # a branch that already makes no claim keeps it
+        local = _derive(replace(inp, alternative=False))
+        if local[0] is OccurrenceClaim.NO_ASSERTION:
+            return local
+        return OccurrenceClaim.UNRESOLVED, "alternative"
 
     negated = inp.polarity == "negative"
     future = inp.tense_aspect in _FUTURE_TENSES

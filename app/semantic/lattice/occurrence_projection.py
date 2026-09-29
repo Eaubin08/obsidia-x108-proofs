@@ -97,6 +97,7 @@ class FrameOccurrenceProjection:
         # members inside the scope of one shared operator ("Peux-tu P et Q ?"): one act
         self.shared_operator = {m: o.id for o in frame.operator_scopes
                                 for m in frame.relation_members(o.scope)}
+        self.alternative = self._alternative_branches(frame)
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
@@ -104,6 +105,33 @@ class FrameOccurrenceProjection:
         self.visiting: set[str] = set()
 
     # -- structure ---------------------------------------------------------
+    @staticmethod
+    def _alternative_branches(frame: UtteranceFrame) -> dict[str, str]:
+        """Branch unit -> OR CoordinationRef id. Units coordinated by "et" with a
+        branch are included: the precedence of "ou" over "et" is not decided."""
+        links: dict[str, set[str]] = {}
+        for r in frame.relations:
+            if r.kind == RelationKind.COORDINATES.value:
+                for a in frame.relation_members(r.source):
+                    for b in frame.relation_members(r.target):
+                        links.setdefault(a, set()).add(b)
+                        links.setdefault(b, set()).add(a)
+        for c in frame.coordinations:
+            if c.kind == "AND":
+                for a in c.members:
+                    links.setdefault(a, set()).update(m for m in c.members if m != a)
+        out: dict[str, str] = {}
+        for c in frame.coordinations:
+            if c.kind != "OR":
+                continue
+            todo = list(c.members)
+            while todo:
+                m = todo.pop()
+                if m not in out:
+                    out[m] = c.id
+                    todo.extend(links.get(m, ()))
+        return out
+
     def _edge(self, u: PredicateUnit):
         parent = self.units.get(u.embedded_under) if u.embedded_under else None
         relation = self.edges.get((u.embedded_under, u.id)) if parent else None
@@ -262,7 +290,9 @@ class FrameOccurrenceProjection:
             provenance["shared_subject"] = self.shared_subject[u.id]
         if u.id in self.shared_operator:
             provenance["shared_operator"] = self.shared_operator[u.id]
-        inherited = {k: v for k, v in inherited.items() if v is not None}
+        if u.id in self.alternative:
+            provenance["alternative"] = self.alternative[u.id]
+        inherited ={k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited
         inp = OccurrenceInput(
@@ -272,6 +302,7 @@ class FrameOccurrenceProjection:
             directive=directive,
             question=u.pragmatic == "ASKED",
             conditional_role=role, hypothetical=self._hypothetical(u),
+            alternative=u.id in self.alternative,
             temporal_subordinate=u.id in self.temporal,
             interrogative_ancestry=interrogative_ancestry,
             attribution_boundary=ctx.non_assertive,

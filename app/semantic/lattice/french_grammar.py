@@ -1758,6 +1758,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             _scope_operator(head.ni_modal, coordinations[-1])
 
     # ── inter-clause relations ──
+    alternatives: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
         h = head_of(ci)
         if h is None:
@@ -1814,6 +1815,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             # "si P, alors Q": CONDITIONS already links P -> Q.
             if not (conn == "alors" and any(c.conn == "si" for c in clauses[:ci])):
                 relations.append(LatticeRelation(kind.value, src.id, tgt.id, evidence=conn))
+            if conn == "ou":
+                # "P ou Q (ou R)": one disjunction over the branches, never an occurrence of one
+                group = next((g for g in alternatives if g[-1] is prev_main), None)
+                if group is None:
+                    alternatives.append([prev_main, h])
+                else:
+                    group.append(h)
+    for group in alternatives:
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "OR", tuple(u.id for u in group), "disjunction",
+            tuple("ou" for _ in group[1:]), (group[0].span[0], group[-1].span[1])))
 
     # ── unanalyzed predicative content: reported, never dropped (M8-0b) ──
     # "<marker>:<start>-<end>:<link>[:ops=...]" — the span of the clause, its
