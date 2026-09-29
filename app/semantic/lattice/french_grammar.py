@@ -495,14 +495,19 @@ def _lost_verb_evidence(clause: "_Clause") -> list[tuple[int, int]]:
     return out
 
 
-def _unanalyzed_predicative(clause: "_Clause") -> bool:
+_SEQUENCE_CONNECTIVES = {"et", "ou", "mais", "puis", "donc", "car", "alors"}
+
+
+def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> bool:
     """Structural evidence of a predication whose verb is unknown (no meaning inferred).
 
     Either an auxiliary / modal / aspectual verb followed by an unknown
     participle or infinitive ("est parti", "va partir", "pourrait partir"), or
     a verbless clause shaped subject + unknown word: a subject pronoun ("elle
     appelle"), or a nominal subject where a clause is expected ("que Paul
-    part", "si Paul part").
+    part", "si Paul part", or a clause of a sequence: "Paul frobnique le test
+    puis lance P", "Nadia exécute Q et Paul lança P"). A standalone verbless
+    utterance ("Merci Paul.", "Le test rouge.") is not a predication.
     """
     toks, lows = clause.toks, [t.low for t in clause.toks]
     skip = _PRE_VERB_SKIP | _FR_NEGATORS
@@ -513,9 +518,10 @@ def _unanalyzed_predicative(clause: "_Clause") -> bool:
     i = 1 if lows[:1] == ["si"] else 0
     if i >= len(toks):
         return False
+    expected = clause.conn in {"que", "si"} or i == 1
     if lows[i] in _SUBJECT_PRONOUNS:
         j = i + 1
-    elif clause.conn in {"que", "si"} or i == 1:
+    elif (expected or (in_sequence and _source_marker(clause.toks) is None)) and lows[i] not in _INTERJECTIONS:
         if lows[i] in _DETERMINERS:
             i += 1
         if i >= len(toks) or not _content_word(toks[i]):
@@ -525,7 +531,15 @@ def _unanalyzed_predicative(clause: "_Clause") -> bool:
         return False
     while j < len(toks) and lows[j] in skip:
         j += 1
-    return j < len(toks) and _content_word(toks[j])
+    if not (j < len(toks) and _content_word(toks[j])):
+        return False
+    if lows[i] in _SUBJECT_PRONOUNS or expected:
+        return True
+    # a sequence clause with a nominal subject: the unknown verb must introduce an
+    # argument ("Paul frobnique le test"), so "et la gouvernance Obsidia" stays an NP
+    # ("de / du / des" mostly open a noun complement: "le contexte historique de ce projet")
+    return j + 1 < len(toks) and lows[j + 1] in (_DETERMINERS - {"de", "d'", "du", "des"}) \
+        | _OBJECT_CLITICS | {"que", "qu'"}
 
 
 def _content_operators(clause: "_Clause") -> list[str]:
@@ -988,7 +1002,8 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         # A verbless clause shaped like a predication with an unknown verb
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause.
         if not has_verb and merged and c.conn not in {"sans", "sans_que"} \
-                and not _unanalyzed_predicative(c):
+                and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
+                                                or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
             prev.toks += c.conn_toks + c.toks
             # "V que le test que P V2": the complement opener only held its
@@ -1892,7 +1907,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             k = lost[0][0]
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
-        elif not _unanalyzed_predicative(clause):
+        elif not _unanalyzed_predicative(clause, in_sequence=clause.conn in _SEQUENCE_CONNECTIVES
+                                         or (clause.conn is None and any(c.units for c in clauses if c is not clause))):
             continue
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
         if clause.conn in {"que", "rel"}:
