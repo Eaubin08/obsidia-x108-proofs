@@ -129,6 +129,7 @@ class _Clause:
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
+    neg_desire_open: object = None  # negated DESIRE chain draft whose scope over a bare coordinated INF is open
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
@@ -756,6 +757,19 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.shared_modal_host = prev.shared_modal_host or prev
             clause.share_family = family
             return
+        # "Paul ne veut pas lancer P et / puis / ou / , exécuter Q": the bare infinitive
+        # stays open under that exact negated desire unit, no polarity chosen
+        open_host = prev.neg_desire_open
+        if open_host is not None and same_family \
+                and (linked or disjoined or (sequenced and "mais" not in conns)) \
+                and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and d0.modality is None and d0.subject is None:
+            d0.governed = "negated_scope_open"
+            d0.governor_span = (open_host.lex.start, open_host.lex.end)
+            clause.neg_desire_open = open_host
+            clause.share_family = family
+            return
         # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
         # explicit subject shares that subject; it is never an imperative
         host = prev.subject_host
@@ -785,6 +799,11 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         and last.tense in {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"} and last.subject is not None
     scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
         and (clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
+    # "Paul ne veut pas lancer P et exécuter Q": ¬(P∧Q), ¬P∧¬Q or ¬P∧Q stays held, but in
+    # every reading Q is that desire's content, never an injunction (negated_scope_open)
+    if scope_open and clause.conn != "si" and last.modality == "DESIRE" and last.verb_form == "INFINITIVE" \
+            and last.head_index != last.lex_index and last.modal_tok is not None:
+        clause.neg_desire_open = last
     if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE"}
                              or last.directive or near_future) \
             and not scope_open and last.verb_form == "INFINITIVE" \
@@ -2029,6 +2048,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
+    if d.governed == "negated_scope_open":  # already bound to its exact host (_share_auxiliary)
+        return
     if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
             and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:
         # "ne voudrait ni INF": bound to that exact "vouloir" token, never to a nearest unit
