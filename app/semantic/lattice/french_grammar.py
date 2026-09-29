@@ -1430,8 +1430,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if clause.conn == "si" or (clause.conn == "et" and preposed):
             clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
     # "V que P et Q": Q coordinates inside the complement or with its host.
+    # "V que P parce que Q" / "V que P donc Q": the cause / consequence may bear on P
+    # (inside the complement) or on V; within one sentence it is never bound to the
+    # nearest host
     for prev, clause in zip(clauses, clauses[1:]):
-        if clause.conn in {"et", "ou"} and (_is_complement(prev) or prev.evidential is not None):
+        causal = clause.conn in {"car", "donc"} and clause.boundary not in {".", "!", "?", ";"}
+        if (clause.conn in {"et", "ou"} or causal) and (_is_complement(prev) or prev.evidential is not None):
             clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
