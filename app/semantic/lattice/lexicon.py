@@ -336,6 +336,8 @@ def _er_forms(stem: str, mute: str | None) -> dict[str, tuple[str, ...]]:
 
 
 _ER_PRES_PERSONS = (("P1S", "P3S"), ("P2S",), ("P1P",), ("P2P",), ("P3P",))
+# five-slot present table of a non -er irregular verb ("fais, fait, faisons, faites, font")
+_IRR_PRES_PERSONS = (("P1S", "P2S"), ("P3S",), ("P1P",), ("P2P",), ("P3P",))
 
 
 def _er_present_persons(form: str) -> tuple[str, ...]:
@@ -362,10 +364,15 @@ def _build() -> tuple[dict[str, list[Analysis]], dict[str, list[Analysis]]]:
                 add(f, lemma, {feat} | (set(_ER_PRES_PERSONS[i]) if feat == "PRES" else set()))
     for lemma, table in _IRREGULAR.items():
         for feat, forms in table.items():
-            for f in forms:
-                # an -er verb's present person follows its ending ("déploie", "lançons")
-                persons = _er_present_persons(f) if feat == "PRES" and lemma.endswith("er") \
-                    and lemma != "aller" else ()
+            for i, f in enumerate(forms):
+                # an -er verb's present person follows its ending ("déploie", "lançons");
+                # another verb's follows its position in a full five-slot table
+                if feat == "PRES" and lemma.endswith("er"):
+                    persons = _er_present_persons(f) if lemma != "aller" else ()
+                elif feat == "PRES" and len(forms) == 5:
+                    persons = _IRR_PRES_PERSONS[i]
+                else:
+                    persons = ()
                 add(f, lemma, {feat, *persons})
     for lemma, table in _EN_FORMS.items():
         for key, forms in table.items():
