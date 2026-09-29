@@ -734,8 +734,9 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     # inside a protasis ("R si tu peux P et Q") has no safe scope over a coordination
     # "Paul va lancer P et exécuter Q": the near-future periphrasis (tense, subject) is
     # shared like a modal chain; a negated one stays open like a negated "pouvoir"
+    # (so are "venir de" RECENT_PAST and "être en train de" PROGRESSIVE)
     near_future = last is not None and last.modality is None and not last.directive \
-        and last.tense == "NEAR_FUTURE" and last.subject is not None
+        and last.tense in {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"} and last.subject is not None
     scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
         and (clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
     if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE"}
@@ -1095,7 +1096,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                     v = _next_verb(toks, j + 3, skip)
                     if v is not None:
                         drafts.append(_Draft(toks[v], v, k, "INFINITIVE", "PROGRESSIVE",
-                                             subject=subj, subject_person=person))
+                                             subject=subj, subject_person=person, modal_tok=t))
                         consumed.update({k, v})
                         k = v + 1
                         continue
@@ -1146,7 +1147,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                 v = _next_verb(toks, after + 1, skip)
                 if v is not None:
                     drafts.append(_Draft(toks[v], v, k, "INFINITIVE", "RECENT_PAST",
-                                         subject=subj, subject_person=person))
+                                         subject=subj, subject_person=person, modal_tok=t))
                     consumed.update({k, v})
                     k = v + 1
                     continue

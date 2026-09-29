@@ -35,6 +35,10 @@ def _signature(u, gate, events):
     ("Paul allait lancer P et exécuter Q.", "Paul allait", "."),
     ("Vas-tu lancer P et exécuter Q ?", "Vas-tu", " ?"),
     ("Paul va lancer P, vérifier Q et arrêter R.", "Paul va", "."),
+    # the other periphrases share the same way (RECENT_PAST, PROGRESSIVE)
+    ("Paul vient de lancer P et exécuter Q.", "Paul vient de", "."),
+    ("Je viens de lancer P et exécuter Q.", "Je viens de", "."),
+    ("Paul est en train de lancer P et exécuter Q.", "Paul est en train de", "."),
 ])
 def test_infinitives_share_the_near_future_periphrasis(text, lead, tail):
     f, gate, events = _view(text)
