@@ -40,6 +40,11 @@ def _signature(u, gate, events):
     ("Les tests lancent P et exécutent Q.", "Les tests", ("exécutent Q",)),
     ("Paul a lancé P et exécute Q.", "Paul", ("exécute Q",)),
     ("Paul lance P et exécute Q ?", "Paul", ("exécute Q ?",)),
+    # irregular -er tables: the present person follows the -er ending
+    ("Paul lance P et déploie Q.", "Paul", ("déploie Q",)),
+    ("Vous lancez P et déployez Q.", "Vous", ("déployez Q",)),
+    ("Nous exécutons P et lançons Q.", "Nous", ("lançons Q",)),
+    ("Nous exécutons P et effaçons Q.", "Nous", ("effaçons Q",)),
 ])
 def test_bare_present_verb_shares_the_agreeing_subject(text, subject, refs):
     f, gate, events = _view(text)
@@ -66,6 +71,8 @@ def test_member_negation_stays_local():
 
 @pytest.mark.parametrize("text", [
     "Paul lance P et exécutez Q.",          # person clash: only the imperative reading agrees
+    "Paul lance P et déployez Q.",
+    "Paul lance P et lançons Q.",
     "Lance P et exécute Q.",                # imperative host: no subject to share
     "Lance R si Paul lance P et exécute Q.",  # subordinated host stays open
     "Marie dit que Paul lance P et exécute Q.",  # ambiguous attachment stays open

@@ -337,6 +337,15 @@ def _er_forms(stem: str, mute: str | None) -> dict[str, tuple[str, ...]]:
 
 _ER_PRES_PERSONS = (("P1S", "P3S"), ("P2S",), ("P1P",), ("P2P",), ("P3P",))
 
+
+def _er_present_persons(form: str) -> tuple[str, ...]:
+    """Person/number of an -er present form from its ending (same paradigm as _ER_PRES_PERSONS)."""
+    for ending, persons in (("ent", ("P3P",)), ("ons", ("P1P",)), ("ez", ("P2P",)), ("es", ("P2S",)),
+                            ("e", ("P1S", "P3S"))):
+        if form.endswith(ending):
+            return persons
+    return ()
+
 Analysis = tuple[str, frozenset]  # (lemma, features)
 
 
@@ -354,7 +363,10 @@ def _build() -> tuple[dict[str, list[Analysis]], dict[str, list[Analysis]]]:
     for lemma, table in _IRREGULAR.items():
         for feat, forms in table.items():
             for f in forms:
-                add(f, lemma, {feat})
+                # an -er verb's present person follows its ending ("déploie", "lançons")
+                persons = _er_present_persons(f) if feat == "PRES" and lemma.endswith("er") \
+                    and lemma != "aller" else ()
+                add(f, lemma, {feat, *persons})
     for lemma, table in _EN_FORMS.items():
         for key, forms in table.items():
             for f in forms:
