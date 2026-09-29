@@ -723,16 +723,16 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     if last is not None and last.subject is not None and not last.inverted \
             and last.subject_person in {"1", "2", "3"} and last.verb_form != "IMPERATIVE":
         clause.subject_host = last
-    # a negated "pouvoir" ("ne peut pas P et Q": ¬(P∧Q) or ¬P∧¬Q) or one inside a
-    # protasis ("R si tu peux P et Q") has no safe scope over a coordination: not shared
+    # a negated "pouvoir" / "vouloir" ("ne peut pas P et Q": ¬(P∧Q) or ¬P∧¬Q) or one
+    # inside a protasis ("R si tu peux P et Q") has no safe scope over a coordination
     # "Paul va lancer P et exécuter Q": the near-future periphrasis (tense, subject) is
     # shared like a modal chain; a negated one stays open like a negated "pouvoir"
     near_future = last is not None and last.modality is None and not last.directive \
         and last.tense == "NEAR_FUTURE" and last.subject is not None
-    scope_open = last is not None and (last.modality == "ABILITY_OR_PERMISSION" or near_future) and (
-        clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
-    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION"} or last.directive
-                             or near_future) \
+    scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
+        and (clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
+    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE"}
+                             or last.directive or near_future) \
             and not scope_open and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.modal = last
