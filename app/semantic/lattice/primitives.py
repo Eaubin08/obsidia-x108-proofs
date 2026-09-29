@@ -16,13 +16,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 # Parser ambiguity markers that leave the meaning structure itself unresolved
-# (antecedent, attachment, governor, lost structure, bare "ne"): they block
-# semantic closure. Speech-act readings kept by fail-closed doctrine
-# (ability_permission_or_request, desire_or_request, question_or_request) do not.
+# (antecedent, attachment, governor, lost structure, bare "ne", unshared negated
+# scope): they block semantic closure. Speech-act readings kept by fail-closed
+# doctrine (ability_permission_or_request, desire_or_request, question_or_request)
+# do not.
 STRUCTURAL_AMBIGUITIES = frozenset({
     "ambiguous_antecedent", "coordination_attachment_ambiguous", "complement_governor_lost",
     "complement_structure_lost", "complement_under_unresolved_governor", "unresolved_complement_governance",
-    "infinitive_under_unrecognized_governor", "bare_ne",
+    "infinitive_under_unrecognized_governor", "bare_ne", "negated_scope_open",
 })
 
 BOUNDARY = {

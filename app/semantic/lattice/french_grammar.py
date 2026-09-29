@@ -128,6 +128,7 @@ class _Clause:
     modal: object = None  # its last modal+infinitive draft (OBLIGATION), shared by bare infinitives
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
+    ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
@@ -613,17 +614,24 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
             continue
         verbs = [j for j in range(f) if _is_verb(c.toks, j)]
         # exactly one auxiliary (members are past participles) or one
-        # obligation / ability-permission modal (members are infinitives),
+        # obligation / ability-permission / desire modal (members are infinitives),
         # shared by every member (rebuilt on each member, see _share_auxiliary);
         # a conditional one stays out of scope (negation vs. conditional mood open)
-        if len(verbs) != 1 or "COND" in _feats(c.toks[verbs[0]]):
+        if len(verbs) != 1:
             continue
         shared = c.toks[verbs[0]]
+        # a conditional or second-person desire ("ne voudrait ni", "Ne veux-tu ni ... ?")
+        # is not shared either, but its ni infinitives are never injunctive: they stay
+        # open under that exact "vouloir" (negated_scope_open)
+        desire = _MODALITY.get(_pred(shared)) == "DESIRE" and "IMP" not in _feats(shared)
+        desire_open = desire and ("COND" in _feats(shared) or any(x in _SECOND_PERSON for x in lows))
+        if "COND" in _feats(shared) and not desire:
+            continue
         ability = _MODALITY.get(_pred(shared)) == "ABILITY_OR_PERMISSION"
         if ability and any(x in _SECOND_PERSON for x in lows):
             # "Ne peux-tu ni P ni Q ?": negated question / reproach / suggestion stays open
             continue
-        modal = ability or _MODALITY.get(_pred(shared)) == "OBLIGATION"
+        modal = ability or desire or _MODALITY.get(_pred(shared)) == "OBLIGATION"
         if not modal and _pred(shared) not in {"HAVE", "BE"}:
             continue
         member_feat, other_feat = ("INF", "PP") if modal else ("PP", "INF")
@@ -636,6 +644,10 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         after_ni = [(g.toks, j + 1) for g in group for j, t in enumerate(g.toks) if t.low == "ni"]
         if count >= 2 and all(j < len(ts) and _is_verb(ts, j) and member_feat in _feats(ts[j])
                               and other_feat not in _feats(ts[j]) for ts, j in after_ni):
+            if desire_open:
+                for g in group:
+                    g.ni_scope_open = shared
+                continue
             for g in group:
                 g.ni_head = c
             c.ni_modal = shared if modal else None
@@ -1048,6 +1060,7 @@ class _Draft:
     governed: str | None = None          # wh | prep | purpose | temporal | permission
     governor_unit: str | None = None
     governor_negated: bool = False
+    governor_span: tuple | None = None   # exact governor token of a negated_scope_open infinitive
     unresolved_governor: bool = False    # unknown verb kept only as a "que" governor
     directive: bool = False              # under a written directive operator ("veuillez" + inf)
 
@@ -1638,6 +1651,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
                                                      u.id, evidence=clause.conn))
+            elif d.governed == "negated_scope_open":
+                # an infinitive under a negated "vouloir" whose scope over it is not
+                # established: its content, never an injunction, and no polarity chosen
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                ambiguities.append(f"negated_scope_open:{u.id}")
+                gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
+                            if x.span == d.governor_span), None)
+                if gov is not None:
+                    embedded_under = gov.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
+                                                     evidence="negated_scope_open"))
             elif d.governed == "wh":
                 prag, epi = ("ASKED", "UNKNOWN") if interrogative else ("EMBEDDED", "NOT_APPLICABLE")
             elif d.governed in {"purpose", "temporal", "permission"}:
@@ -2005,6 +2029,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
+    if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
+            and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:
+        # "ne voudrait ni INF": bound to that exact "vouloir" token, never to a nearest unit
+        d.governed = "negated_scope_open"
+        d.governor_span = (clause.ni_scope_open.start, clause.ni_scope_open.end)
+        return
     if d.unresolved_governor and d.verb_form == "INFINITIVE":
         # Unknown "que" governor under a modal / aspectual: MODAL(G(X)), the
         # modal unit governs G, never flattened into G(X) or X.
