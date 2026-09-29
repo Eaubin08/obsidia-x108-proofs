@@ -2116,13 +2116,35 @@ def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
     return "ASSERTED", "ASSERTED"
 
 
+_PLURAL_DETS = {"les", "des", "ces", "mes", "tes", "ses", "nos", "vos", "leurs", "aux"}
+_FEMININE_DETS = {"la", "une", "cette", "ma", "ta", "sa"}
+_MASCULINE_DETS = {"le", "un", "ce", "cet", "mon", "ton", "son", "du", "au"}
+
+
+def _agrees_with_antecedent(pronoun: str, det: str | None) -> bool:
+    """Number / gender agreement of an object pronoun with an NP determiner (unknown: compatible)."""
+    if det is None or pronoun not in {"le", "la", "l'", "les"}:
+        return True
+    if pronoun == "les":
+        return det in _PLURAL_DETS
+    if det in _PLURAL_DETS:
+        return False
+    return not ((pronoun == "le" and det in _FEMININE_DETS) or (pronoun == "la" and det in _MASCULINE_DETS))
+
+
 def _resolve_references(units: list[PredicateUnit]):
-    """Intra-utterance anaphora (then cataphora) for pronoun objects."""
-    candidates: list[tuple[int, str, str]] = []  # (position, head, unit id)
+    """Intra-utterance anaphora (then cataphora) for pronoun objects.
+
+    Only antecedents agreeing with the pronoun count; a unique one resolves it,
+    several distinct ones leave it open (never the nearest), none leaves it open.
+    """
+    candidates: list[tuple[int, str, str, str | None]] = []  # (position, head, unit id, determiner)
     for u in units:
         for a in u.objects:
             if a.kind in {"NP", "NEGATIVE_QUANTIFIER"} and a.head != "*":
-                candidates.append(((a.span or u.span)[0], a.head, u.id))
+                first = a.text.split()[0] if a.text.split() else ""
+                det = first if first in _DETERMINERS else ("l'" if a.text.startswith("l'") else None)
+                candidates.append(((a.span or u.span)[0], a.head, u.id, det))
     relations: list[LatticeRelation] = []
     unresolved: list[str] = []
     presupposed: list[str] = []
@@ -2133,12 +2155,20 @@ def _resolve_references(units: list[PredicateUnit]):
         for a in u.objects:
             if a.reference == "UNRESOLVED" and a.kind == "PRONOUN":
                 pos = (a.span or u.span)[0]
-                before = [c for c in candidates if c[0] < pos]
-                after = [c for c in candidates if c[0] > pos]
-                ante = before[-1] if before else (after[0] if after else None)
-                # "le test et le build ... le": the nearest of several coordinated
-                # objects is never chosen; the reference stays open (no nearest match)
-                rivals = {(c[0], c[1]) for c in candidates if c[2] == ante[2]} if ante is not None else set()
+                agree = [c for c in candidates if _agrees_with_antecedent(a.text, c[3])]
+                before = [c for c in agree if c[0] < pos]
+                after = [c for c in agree if c[0] > pos]
+                pool = before or after
+                ante = pool[-1] if before else (pool[0] if pool else None)
+                # several distinct agreeing antecedents ("le test ... le build ... le"):
+                # never the nearest; the reference stays open (no nearest match)
+                rivals = {(c[0], c[1]) for c in pool}
+                if not pool and a.text == "les":
+                    # "le test et le build ... les": only a collective reading of the
+                    # coordinated singulars would agree; it stays open (named, not chosen)
+                    raw = [c for c in candidates if c[0] < pos] or [c for c in candidates if c[0] > pos]
+                    host = raw[-1][2] if raw and raw[0][0] < pos else (raw[0][2] if raw else None)
+                    rivals = {(c[0], c[1]) for c in raw if c[2] == host}
                 if len(rivals) > 1:
                     ambiguous.append(f"ambiguous_antecedent:{u.id}:{a.text}:"
                                      + ",".join(h for _, h in sorted(rivals)))

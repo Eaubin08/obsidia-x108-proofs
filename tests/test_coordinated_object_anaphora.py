@@ -46,3 +46,34 @@ def test_single_or_shared_antecedent_unchanged(text, antecedent):
     arg = next(a for u in f.units for a in u.objects if a.kind == "PRONOUN")
     assert (arg.reference, arg.antecedent) == ("RESOLVED_INTRA", antecedent)
     assert not any(a.startswith("ambiguous_antecedent:") for a in f.ambiguities)
+
+
+# ── no nearest match across predicates: only agreeing antecedents count ──
+@pytest.mark.parametrize("text", [
+    "Prépare le test puis lance le build puis ne le lance pas.",
+    "Ne lance pas le test mais prépare le build puis lance-le.",
+    "Paul a lancé le test et Nadia a arrêté le build, puis il l'a relancé.",
+])
+def test_several_agreeing_antecedents_across_predicates_stay_open(text):
+    f = parse_utterance(text)
+    arg = next(a for u in f.units for a in u.objects if a.kind == "PRONOUN")
+    assert (arg.reference, arg.antecedent) == ("UNRESOLVED", None)
+    assert any(a.startswith("ambiguous_antecedent:") and a.endswith("test,build") for a in f.ambiguities)
+    assert f.closure is False
+
+
+@pytest.mark.parametrize("text,antecedent", [
+    ("Prépare la base puis lance le build puis arrête-la.", "base"),   # gender: only "la base" agrees
+    ("Prépare les tests puis lance le build puis arrête-les.", "tests"),  # number: only "les tests" agrees
+    ("Arrête-le puis lance le test.", "test"),                           # unique cataphora
+])
+def test_unique_agreeing_antecedent_resolves_even_if_not_nearest(text, antecedent):
+    f = parse_utterance(text)
+    arg = next(a for u in f.units for a in u.objects if a.kind == "PRONOUN")
+    assert (arg.reference, arg.antecedent) == ("RESOLVED_INTRA", antecedent)
+
+
+def test_no_agreeing_antecedent_is_never_a_fallback():
+    f = parse_utterance("Prépare la base puis lance-le.")
+    arg = next(a for u in f.units for a in u.objects if a.kind == "PRONOUN")
+    assert arg.reference == "UNRESOLVED" and f.closure is False
