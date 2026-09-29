@@ -1925,8 +1925,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                        + (f":ops={','.join(ops)}" if ops else ""))
 
     final_units = [u for c in clauses for (u, _) in c.units]
-    final_units, ref_relations, unresolved, presupposed = _resolve_references(final_units)
+    final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)
     relations.extend(ref_relations)
+    ambiguities.extend(ambiguous_refs)
 
     constraints = _constraints(final_units)
     contradictions = _contradictions(final_units)
@@ -2125,6 +2126,7 @@ def _resolve_references(units: list[PredicateUnit]):
     relations: list[LatticeRelation] = []
     unresolved: list[str] = []
     presupposed: list[str] = []
+    ambiguous: list[str] = []
     out: list[PredicateUnit] = []
     for u in units:
         new_args = []
@@ -2134,6 +2136,13 @@ def _resolve_references(units: list[PredicateUnit]):
                 before = [c for c in candidates if c[0] < pos]
                 after = [c for c in candidates if c[0] > pos]
                 ante = before[-1] if before else (after[0] if after else None)
+                # "le test et le build ... le": the nearest of several coordinated
+                # objects is never chosen; the reference stays open (no nearest match)
+                rivals = {(c[0], c[1]) for c in candidates if c[2] == ante[2]} if ante is not None else set()
+                if len(rivals) > 1:
+                    ambiguous.append(f"ambiguous_antecedent:{u.id}:{a.text}:"
+                                     + ",".join(h for _, h in sorted(rivals)))
+                    ante = None
                 if ante is not None:
                     a = replace(a, reference="RESOLVED_INTRA", antecedent=ante[1],
                                 antecedent_unit=ante[2])
@@ -2147,7 +2156,7 @@ def _resolve_references(units: list[PredicateUnit]):
                 presupposed.append(a.head)
             new_args.append(a)
         out.append(replace(u, objects=tuple(new_args)))
-    return out, relations, unresolved, list(dict.fromkeys(presupposed))
+    return out, relations, unresolved, list(dict.fromkeys(presupposed)), ambiguous
 
 
 def _heads(u: PredicateUnit) -> list[str]:
