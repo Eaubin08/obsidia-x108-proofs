@@ -1604,7 +1604,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         object_sources = [u.objects for u in updated if u.objects]
         if len(object_sources) == 1:
             shared_objects = object_sources[0]
-            updated = [replace(u, objects=shared_objects) if not u.objects else u for u in updated]
+            last_predicate_end = max(u.span[1] for u in updated)
+            shared_after_coordination = all(arg.span is not None and arg.span[0] >= last_predicate_end
+                                            for arg in shared_objects)
+            if shared_after_coordination:
+                updated = [replace(u, objects=shared_objects) if not u.objects else u for u in updated]
         for before, after in zip(members, updated):
             if before is not after:
                 _replace_group_unit(after)

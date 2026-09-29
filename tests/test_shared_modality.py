@@ -58,6 +58,19 @@ def test_shared_modality_preserves_explicit_member_objects():
     f, _, _ = _view("Paul doit lancer le build et exécuter le test.")
     assert [[a.text for a in u.objects] for u in f.units] == [["le build"], ["le test"]]
 
+
+@pytest.mark.parametrize("text", [
+    "Paul doit lancer le test et attendre.",
+    "Paul devait lancer le test et attendre.",
+    "Paul devra lancer le test et attendre.",
+])
+def test_object_before_modal_coordination_is_not_shared(text):
+    f, _, _ = _view(text)
+    (coord,) = f.coordinations
+    assert coord.construction == "shared_modality"
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], []]
+    assert [u.subject for u in f.units] == ["paul", "paul"]
+
 def test_three_infinitives_share_the_modal():
     f, gate, _ = _view("Paul doit lancer le test, exécuter le build et arrêter le lot.")
     (coord,) = f.coordinations

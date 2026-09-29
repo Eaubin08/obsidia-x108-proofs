@@ -53,6 +53,35 @@ def test_shared_auxiliary_preserves_explicit_member_objects():
     f = parse_utterance("Paul a lancé le build et exécuté le test.")
     assert [[a.text for a in u.objects] for u in f.units] == [["le build"], ["le test"]]
 
+
+@pytest.mark.parametrize("text", [
+    "Paul a lancé le test et attendu.",
+    "Paul a lancé le test et passé.",
+    "Paul a lancé le test et arrêté.",
+    "Paul avait lancé le test et attendu.",
+    "Paul aura lancé le test et attendu.",
+])
+def test_object_before_coordination_is_not_shared(text):
+    f = parse_utterance(text)
+    (coord,) = f.coordinations
+    assert coord.construction == "shared_auxiliary"
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], []]
+    assert [u.subject for u in f.units] == ["paul", "paul"]
+
+
+def test_three_member_final_object_is_structurally_shared():
+    f = parse_utterance("Paul a lancé, exécuté et préparé le test.")
+    (coord,) = f.coordinations
+    assert (coord.construction, coord.members) == ("shared_auxiliary", ("u1", "u2", "u3"))
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], ["le test"], ["le test"]]
+
+
+def test_three_member_earlier_object_is_not_shared_forward():
+    f = parse_utterance("Paul a lancé le test, attendu et passé.")
+    (coord,) = f.coordinations
+    assert (coord.construction, coord.members) == ("shared_auxiliary", ("u1", "u2", "u3"))
+    assert [[a.text for a in u.objects] for u in f.units] == [["le test"], [], []]
+
 @pytest.mark.parametrize("aux,tense,claim", [
     ("a", "PAST", "ASSERTED_NOT_REALIZED"),
     ("avait", "PLUPERFECT", "ASSERTED_NOT_REALIZED"),
