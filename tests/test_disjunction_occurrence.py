@@ -80,3 +80,53 @@ def test_directive_alternative_keeps_its_gates():
     f = parse_utterance("Lance P ou exécute Q.")
     auth = project(f, ProjectionAxis.AUTHORITY)
     assert all(auth[u.id]["requires_gate"] for u in f.units)
+
+
+# ── P13a: shared structure over a disjunction (OR sharing group) ──
+@pytest.mark.parametrize("text,construction", [
+    ("Paul lance P ou exécute Q.", "shared_subject"),
+    ("Paul doit lancer P ou exécuter Q.", "shared_modality"),
+    ("Paul va lancer P ou exécuter Q.", "shared_periphrasis"),
+    ("Paul a lancé P ou exécuté Q.", "shared_auxiliary"),
+    ("Peux-tu lancer P ou exécuter Q ?", "shared_modality"),
+    ("Veuillez lancer P ou exécuter Q.", "shared_directive"),
+])
+def test_shared_structure_over_a_disjunction(text, construction):
+    f, events = _claims(text)
+    ref_f, ref_events = _claims(text.replace(" ou ", " et "))
+    share = next(c for c in f.coordinations if c.construction == construction)
+    assert share.kind == "OR" and share.members == ("u1", "u2")
+    assert any(c.construction == "disjunction" for c in f.coordinations)
+    u2, r2 = f.units[1], ref_f.units[1]
+    assert (u2.subject, u2.modality, u2.tense_aspect, u2.pragmatic, u2.role) == \
+        (r2.subject, r2.modality, r2.tense_aspect, r2.pragmatic, r2.role)
+    if not text.endswith("?") and u2.pragmatic != "REQUESTED":
+        assert all(e.occurrence_claim.value == "UNRESOLVED" for e in events.values())
+
+
+def test_indirect_request_over_a_disjunction_keeps_one_operator_and_gates():
+    f = parse_utterance("Peux-tu lancer P ou exécuter Q ?")
+    (op,) = f.operator_scopes
+    assert f.coordination(op.scope).kind == "OR" and op.speech_act == "INDIRECT_REQUEST"
+    auth = project(f, ProjectionAxis.AUTHORITY)
+    assert all(auth[u.id]["requires_gate"] for u in f.units)
+
+
+@pytest.mark.parametrize("text", [
+    "Paul doit lancer P ou exécuter Q et arrêter R.",  # "et" / "ou" precedence undecided: no mixed chain
+    "Paul ne doit pas lancer P ou exécuter Q.",        # negated host: negative scope held
+])
+def test_no_mixed_or_negated_disjunctive_sharing(text):
+    f = parse_utterance(text)
+    assert not any(c.kind == "OR" and c.construction.startswith("shared_") and len(c.members) > 2
+                   for c in f.coordinations)
+    if "ne doit pas" in text:
+        assert not any(c.construction == "shared_modality" for c in f.coordinations)
+
+
+def test_comma_member_of_a_disjunctive_list_is_not_conjoined():
+    f, events = _claims("Paul va lancer P, exécuter Q ou arrêter R.")
+    share = next(c for c in f.coordinations if c.construction == "shared_periphrasis")
+    assert share.kind == "OR" and len(share.members) == 3
+    assert not any(r.kind == "COORDINATES" for r in f.relations)
+    assert all(e.occurrence_claim.value == "UNRESOLVED" for e in events.values())

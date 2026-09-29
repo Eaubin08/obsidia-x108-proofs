@@ -130,6 +130,7 @@ class _Clause:
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
+    share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
     units: list = field(default_factory=list)
 
 
@@ -690,13 +691,21 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # negative scope, so only the finite subject (own inflection) is shared there
         sequenced = clause.conn in {"puis", "mais"} and bool(conns) \
             and set(conns) <= {"et", "puis", "ensuite", "mais"}
-        chained = linked or (sequenced and not any(t.low in {"ne", "n'"} for t in prev.toks))
+        # "ou" shares the same structure over a disjunction (group kind OR); one chain
+        # never mixes "et" and "ou" members (their precedence is not decided), a comma
+        # member takes the chain's family
+        disjoined = clause.conn == "ou" and conns == ["ou"]
+        family = "or" if disjoined else prev.share_family if not conns else "and"
+        same_family = prev.share_family in (None, family)
+        negated_host = any(t.low in {"ne", "n'"} for t in prev.toks)
+        chained = same_family and (linked or ((sequenced or disjoined) and not negated_host))
         if chained and prev.compound is not None and prev.conn not in {"que", "rel", "comparative"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "PARTICIPLE" \
                 and d0.tense == "NONE" and d0.subject is None:
             d0.tense = prev.compound[0]
             clause.compound = (prev.compound[0], prev.compound[1], d0)
             clause.shared_aux_host = prev.shared_aux_host or prev
+            clause.share_family = family
             return
         # "Paul doit lancer P et exécuter Q": the obligation modal chain (the modal,
         # its tense, its subject) is shared by a bare coordinated infinitive;
@@ -711,17 +720,20 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             d0.directive = m.directive
             clause.modal = m
             clause.shared_modal_host = prev.shared_modal_host or prev
+            clause.share_family = family
             return
         # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
         # explicit subject shares that subject; it is never an imperative
         host = prev.subject_host
-        if (linked or sequenced) and host is not None and prev.conn not in _NO_SUBJECT_SHARE \
+        if same_family and (linked or sequenced or disjoined) and host is not None \
+                and prev.conn not in _NO_SUBJECT_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form in {"IMPERATIVE", "FINITE"} \
                 and d0.subject is None and d0.modality is None and _agrees_with_subject(d0.lex, host):
             d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
             d0.subject, d0.subject_person = host.subject, host.subject_person
             clause.subject_host = host
             clause.shared_subject_host = prev.shared_subject_host or prev
+            clause.share_family = family
             return
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
     if compound and compound[-1] is drafts[-1]:
@@ -744,6 +756,11 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             and not scope_open and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.modal = last
+
+
+def _share_kind(sharers: list[_Clause]) -> str:
+    """Kind of a sharing group: OR when its members are joined by "ou" (never mixed with "et")."""
+    return "OR" if any(c.conn == "ou" for c in sharers) else "AND"
 
 
 def _is_complement(clause: _Clause) -> bool:
@@ -1690,10 +1707,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             continue
         members = _share_group_arguments(members, subject=members[0].subject)
         for c, a, b in zip(sharers, members, members[1:]):
-            if c.conn is None:  # ", PP": no connective relation was built for it
+            if c.conn is None and _share_kind(sharers) == "AND":  # ", PP": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
         coordinations.append(CoordinationRef(
-            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_auxiliary",
+            f"c{len(coordinations) + 1}", _share_kind(sharers), tuple(u.id for u in members), "shared_auxiliary",
             (host.compound[1], *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
 
@@ -1722,10 +1739,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             continue
         members = _share_group_arguments(members)
         for c, a, b in zip(sharers, members, members[1:]):
-            if c.conn is None:  # ", INF": no connective relation was built for it
+            if c.conn is None and _share_kind(sharers) == "AND":  # ", INF": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
         coordinations.append(CoordinationRef(
-            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members),
+            f"c{len(coordinations) + 1}", _share_kind(sharers), tuple(u.id for u in members),
             "shared_directive" if host.modal.directive
             else "shared_periphrasis" if host.modal.modality is None else "shared_modality",
             (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
@@ -1743,10 +1760,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if any(u is None for u in members):
             continue
         for c, a, b in zip(sharers, members, members[1:]):
-            if c.conn is None:  # ", V": no connective relation was built for it
+            if c.conn is None and _share_kind(sharers) == "AND":  # ", V": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
         coordinations.append(CoordinationRef(
-            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_subject",
+            f"c{len(coordinations) + 1}", _share_kind(sharers), tuple(u.id for u in members), "shared_subject",
             (host.subject_host.subject, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
 
