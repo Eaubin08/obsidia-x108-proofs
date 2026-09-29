@@ -683,8 +683,15 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
                 d.tense = tense
     elif ci > 0 and drafts and not clause.attachment_ambiguous and clause.protasis_head is None:
         prev, d0 = clauses[ci - 1], drafts[0]
-        linked = [x.low for x in clause.conn_toks] == ["et"] or (clause.conn is None and clause.boundary == ",")
-        if linked and prev.compound is not None and prev.conn not in {"que", "rel", "comparative"} \
+        conns = [x.low for x in clause.conn_toks]
+        linked = conns == ["et"] or (clause.conn is None and clause.boundary == ",")
+        # "puis" / "mais" coordinate the same way; under a negated host ("ne ... pas P
+        # mais Q") a shared auxiliary / modal / periphrasis would decide the held
+        # negative scope, so only the finite subject (own inflection) is shared there
+        sequenced = clause.conn in {"puis", "mais"} and bool(conns) \
+            and set(conns) <= {"et", "puis", "ensuite", "mais"}
+        chained = linked or (sequenced and not any(t.low in {"ne", "n'"} for t in prev.toks))
+        if chained and prev.compound is not None and prev.conn not in {"que", "rel", "comparative"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "PARTICIPLE" \
                 and d0.tense == "NONE" and d0.subject is None:
             d0.tense = prev.compound[0]
@@ -695,7 +702,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # its tense, its subject) is shared by a bare coordinated infinitive;
         # "Veuillez lancer P et exécuter Q": so is the directive operator's scope;
         # "Peux-tu lancer P et exécuter Q ?": so is the ability-permission modal
-        if linked and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
+        if chained and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
             m = prev.modal
@@ -708,7 +715,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
         # explicit subject shares that subject; it is never an imperative
         host = prev.subject_host
-        if linked and host is not None and prev.conn not in _NO_SUBJECT_SHARE \
+        if (linked or sequenced) and host is not None and prev.conn not in _NO_SUBJECT_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form in {"IMPERATIVE", "FINITE"} \
                 and d0.subject is None and d0.modality is None and _agrees_with_subject(d0.lex, host):
             d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
