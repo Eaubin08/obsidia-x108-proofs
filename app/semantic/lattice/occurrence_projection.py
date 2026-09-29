@@ -77,7 +77,8 @@ class FrameOccurrenceProjection:
         self.shared_negation = {m: c.id for c in frame.coordinations
                                 if c.construction == "ni_negative_coordination" for m in c.members}
         # members whose tense comes from one written, shared auxiliary
-        self.shared_tense = {m: c.id for c in frame.coordinations if c.construction == "shared_auxiliary"
+        self.shared_tense = {m: c.id for c in frame.coordinations
+                             if c.construction in {"shared_auxiliary", "shared_periphrasis"}
                              for m in c.members[1:]}
         self.shared_tense.update({m: c.id for c in frame.coordinations
                                   if c.construction == "ni_negative_coordination" for m in c.members})

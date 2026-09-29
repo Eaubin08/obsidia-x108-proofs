@@ -725,10 +725,15 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         clause.subject_host = last
     # a negated "pouvoir" ("ne peut pas P et Q": ¬(P∧Q) or ¬P∧¬Q) or one inside a
     # protasis ("R si tu peux P et Q") has no safe scope over a coordination: not shared
-    ability_open = last is not None and last.modality == "ABILITY_OR_PERMISSION" and (
+    # "Paul va lancer P et exécuter Q": the near-future periphrasis (tense, subject) is
+    # shared like a modal chain; a negated one stays open like a negated "pouvoir"
+    near_future = last is not None and last.modality is None and not last.directive \
+        and last.tense == "NEAR_FUTURE" and last.subject is not None
+    scope_open = last is not None and (last.modality == "ABILITY_OR_PERMISSION" or near_future) and (
         clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
-    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION"} or last.directive) \
-            and not ability_open and last.verb_form == "INFINITIVE" \
+    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION"} or last.directive
+                             or near_future) \
+            and not scope_open and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.modal = last
 
@@ -1122,7 +1127,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
             if v is not None and "INF" in _feats(toks[v]):
                 drafts.append(_Draft(toks[v], v, k, "INFINITIVE",
                                      "NEAR_FUTURE" if subj else "NONE",
-                                     subject=subj, subject_person=person))
+                                     subject=subj, subject_person=person, modal_tok=t))
                 consumed.update({k, v})
                 k = v + 1
                 continue
@@ -1713,7 +1718,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
         coordinations.append(CoordinationRef(
             f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members),
-            "shared_directive" if host.modal.directive else "shared_modality",
+            "shared_directive" if host.modal.directive
+            else "shared_periphrasis" if host.modal.modality is None else "shared_modality",
             (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
         _scope_operator(host.modal, coordinations[-1])
