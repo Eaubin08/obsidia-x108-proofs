@@ -768,7 +768,7 @@ def _is_complement(clause: _Clause) -> bool:
 
 
 def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, bool]:
-    """"V que P et que Q": (the complement P that Q coordinates with, ambiguous).
+    """"V que P et que Q" / "V que P ou que Q": (the complement P that Q coordinates with, ambiguous).
 
     P is a "que" complement, or one whose governor was lost (Q then shares that
     unknown governance). Only for a unique syntactic governor: when P's governor
@@ -778,7 +778,7 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
     if len(clauses) < 2:
         return None, False
     c, prev = clauses[-1], clauses[-2]
-    if c.toks or c.conn != "et" or not _is_complement(prev):
+    if c.toks or c.conn not in {"et", "ou"} or not _is_complement(prev):
         return None, False
     if prev.attachment_ambiguous:
         return None, True
@@ -1431,7 +1431,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
     # "V que P et Q": Q coordinates inside the complement or with its host.
     for prev, clause in zip(clauses, clauses[1:]):
-        if clause.conn == "et" and (_is_complement(prev) or prev.evidential is not None):
+        if clause.conn in {"et", "ou"} and (_is_complement(prev) or prev.evidential is not None):
             clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
@@ -1504,6 +1504,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     # clause -> (governor unit, host clause), reused by a coordinated sibling
     resolved: dict[int, tuple[PredicateUnit | None, _Clause | None]] = {}
+    complement_alternatives: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
         parent_unit, host = None, clauses[ci - 1] if ci > 0 else None
         if clause.coordinated_with is not None and id(clause.coordinated_with) in resolved:
@@ -1654,8 +1655,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         clause.units = new_units
         sibling = clause.coordinated_with
         if sibling is not None and sibling.units and new_units:
-            relations.append(LatticeRelation(RelationKind.COORDINATES.value, sibling.units[0][0].id,
-                                             new_units[0][0].id, evidence="et que"))
+            a, b = sibling.units[0][0], new_units[0][0]
+            if clause.conn_toks and clause.conn_toks[0].low == "ou":
+                # "V que P ou que Q": sibling complements in one disjunction
+                relations.append(LatticeRelation(RelationKind.ALTERNATIVE.value, a.id, b.id, evidence="ou que"))
+                group = next((g for g in complement_alternatives if g[-1] is a), None)
+                if group is None:
+                    complement_alternatives.append([a, b])
+                else:
+                    group.append(b)
+            else:
+                relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence="et que"))
         # Temporal infinitives mention context; preserve legacy fail-closed
         # behavior when a PREPARE request is framed as before executing.
         if clause.conn in {"avant_de", "apres"} and clause.units and main_heads:
@@ -1672,6 +1682,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
                                "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
+
+    for group in complement_alternatives:
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "OR", tuple(u.id for u in group), "disjunction",
+            tuple("ou que" for _ in group[1:]), (group[0].span[0], group[-1].span[1])))
 
     def _replace_group_unit(unit: PredicateUnit) -> None:
         for c in clauses:
