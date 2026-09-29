@@ -506,6 +506,8 @@ def _lost_verb_evidence(clause: "_Clause") -> list[tuple[int, int]]:
 
 
 _SEQUENCE_CONNECTIVES = {"et", "ou", "mais", "puis", "donc", "car", "alors"}
+# demonstrative subjects: a clause they open has the shape of a subject pronoun's ("ça parle de X")
+_DEMONSTRATIVE_SUBJECTS = {"ça", "ca", "cela", "ceci"}
 
 
 def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> bool:
@@ -514,7 +516,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     Either an auxiliary / modal / aspectual verb followed by an unknown
     participle or infinitive ("est parti", "va partir", "pourrait partir"), or
     a verbless clause shaped subject + unknown word: a subject pronoun ("elle
-    appelle"), or a nominal subject where a clause is expected ("que Paul
+    appelle") or a demonstrative one ("ça parle de X"), or a nominal subject where a clause is expected ("que Paul
     part", "si Paul part", or a clause of a sequence: "Paul frobnique le test
     puis lance P", "Nadia exécute Q et Paul lança P"). A standalone verbless
     utterance ("Merci Paul.", "Le test rouge.") is not a predication.
@@ -529,7 +531,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     if i >= len(toks):
         return False
     expected = clause.conn in {"que", "si"} or i == 1
-    if lows[i] in _SUBJECT_PRONOUNS:
+    if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS:
         j = i + 1
     elif (expected or (in_sequence and _source_marker(clause.toks) is None)) and lows[i] not in _INTERJECTIONS:
         if lows[i] in _DETERMINERS:
@@ -543,7 +545,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
         j += 1
     if not (j < len(toks) and _content_word(toks[j])):
         return False
-    if lows[i] in _SUBJECT_PRONOUNS or expected:
+    if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or expected:
         return True
     # a sequence clause with a nominal subject: the unknown verb must introduce an
     # argument ("Paul frobnique le test"), so "et la gouvernance Obsidia" stays an NP
