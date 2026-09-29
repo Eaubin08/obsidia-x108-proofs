@@ -639,7 +639,7 @@ _PERSON_FEATS = {"je": {"P1S"}, "j'": {"P1S"}, "tu": {"P2S"}, "il": {"P3S"}, "el
                  "on": {"P3S"}, "c'": {"P3S"}, "ça": {"P3S"}, "ca": {"P3S"}, "cela": {"P3S"},
                  "nous": {"P1P"}, "vous": {"P2P"}, "ils": {"P3P"}, "elles": {"P3P"}}
 # connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
-_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que"}
+_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que"}
 
 
 def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
@@ -713,7 +713,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         same_family = prev.share_family in (None, family)
         negated_host = any(t.low in {"ne", "n'"} for t in prev.toks)
         chained = same_family and (linked or ((sequenced or disjoined) and not negated_host))
-        if chained and prev.compound is not None and prev.conn not in {"que", "rel", "comparative"} \
+        if chained and prev.compound is not None and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "PARTICIPLE" \
                 and d0.tense == "NONE" and d0.subject is None:
             d0.tense = prev.compound[0]
@@ -725,7 +725,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # its tense, its subject) is shared by a bare coordinated infinitive;
         # "Veuillez lancer P et exécuter Q": so is the directive operator's scope;
         # "Peux-tu lancer P et exécuter Q ?": so is the ability-permission modal
-        if chained and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
+        if chained and prev.modal is not None and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
             m = prev.modal
@@ -868,6 +868,12 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             else:
                 open_clause("sans", [t])
                 i += 1
+            continue
+        # "après que Q": a temporal subordinate (Q before its host), never a relative
+        if low in {"après", "apres"} and nxt is not None and nxt.low in {"que", "qu'"} \
+                and not (cur().toks and cur().toks[-1].low == "d'"):
+            open_clause("apres_que", [t, nxt])
+            i += 2
             continue
         # "d'après X" is a source adverbial, never the temporal connective.
         if low in {"après", "apres"} and cur().toks and cur().toks[-1].low != "d'":
@@ -1600,6 +1606,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     evidence="que_unresolved_governance" if epi == UNRESOLVED_GOVERNANCE else "que"))
             elif clause.conn in {"avant_que", "a_moins_que"} and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
+            elif clause.conn == "apres_que" and n == 0:
+                # temporal context of its host, presupposed by the construction, not asserted
+                # (the finite counterpart of "après avoir V")
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                d.governed = "temporal"
             elif clause.conn == "si" and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
             elif clause.conn == "rel" and clause.governor_lost and n == 0:
@@ -1699,7 +1710,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # host of a following "puis" / "mais": only main clauses do. A clause of
         # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
+                               "avant_que", "a_moins_que", "apres_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
     for group in complement_alternatives:
@@ -1849,6 +1860,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if host is not None:
                 relations.append(LatticeRelation(RelationKind.CONDITIONS.value, source, host.id,
                                                  evidence="si"))
+        elif conn == "apres_que" and (prev_main or next_main) is not None:
+            host = prev_main if prev_main is not None else next_main
+            relations.append(LatticeRelation(RelationKind.PRECEDES.value, h.id, host.id,
+                                             evidence="après que"))
         elif conn == "avant_que" and prev_main is not None:
             relations.append(LatticeRelation(RelationKind.PRECEDES.value, prev_main.id, h.id,
                                              evidence="avant que"))
@@ -1930,7 +1945,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if cj is not None and not any(cj < mj < ci for mj, _ in main_heads):
                 h = head_of(cj)
                 link = f"conditional_consequent_of={h.id}" if h is not None else "conditional_consequent"
-            elif clause.conn in {"mais", "puis", "et", "ou", "donc", "car", "alors", "apres", "avant_de"}:
+            elif clause.conn in {"mais", "puis", "et", "ou", "donc", "car", "alors", "apres", "avant_de", "apres_que"}:
                 prev_main = next((u for (mj, u) in reversed(main_heads) if mj < ci), None)
                 link = f"{clause.conn}_after={prev_main.id}" if prev_main is not None else clause.conn
             else:
