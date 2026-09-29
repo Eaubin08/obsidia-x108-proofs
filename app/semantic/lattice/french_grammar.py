@@ -531,7 +531,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     i = 1 if lows[:1] == ["si"] else 0
     if i >= len(toks):
         return False
-    expected = clause.conn in {"que", "si"} or i == 1
+    expected = clause.conn in {"que", "si", "quand"} or i == 1
     if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS:
         j = i + 1
     elif (expected or (in_sequence and _source_marker(clause.toks) is None)) and lows[i] not in _INTERJECTIONS:
@@ -663,7 +663,10 @@ _PERSON_FEATS = {"je": {"P1S"}, "j'": {"P1S"}, "tu": {"P2S"}, "il": {"P3S"}, "el
                  "on": {"P3S"}, "c'": {"P3S"}, "ça": {"P3S"}, "ca": {"P3S"}, "cela": {"P3S"},
                  "nous": {"P1P"}, "vous": {"P2P"}, "ils": {"P3P"}, "elles": {"P3P"}}
 # connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
-_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que"}
+_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que",
+                     "quand"}
+# subordinates that never lend their auxiliary / modal / periphrasis to a following clause
+_NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "quand"}
 
 
 def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
@@ -737,7 +740,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         same_family = prev.share_family in (None, family)
         negated_host = any(t.low in {"ne", "n'"} for t in prev.toks)
         chained = same_family and (linked or ((sequenced or disjoined) and not negated_host))
-        if chained and prev.compound is not None and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
+        if chained and prev.compound is not None and prev.conn not in _NO_CHAIN_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "PARTICIPLE" \
                 and d0.tense == "NONE" and d0.subject is None:
             d0.tense = prev.compound[0]
@@ -749,7 +752,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # its tense, its subject) is shared by a bare coordinated infinitive;
         # "Veuillez lancer P et exécuter Q": so is the directive operator's scope;
         # "Peux-tu lancer P et exécuter Q ?": so is the ability-permission modal
-        if chained and prev.modal is not None and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
+        if chained and prev.modal is not None and prev.conn not in _NO_CHAIN_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
             m = prev.modal
@@ -765,7 +768,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         open_host = prev.neg_desire_open
         if open_host is not None and same_family \
                 and (linked or disjoined or (sequenced and "mais" not in conns)) \
-                and prev.conn not in {"que", "rel", "comparative", "apres_que"} \
+                and prev.conn not in _NO_CHAIN_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
             d0.governed = "negated_scope_open"
@@ -846,6 +849,32 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
     return prev, False
 
 
+def _subordinating_quand(toks: list[_Tok], i: int) -> bool:
+    """"quand" opening a subordinate clause, not an interrogative or idiomatic one.
+
+    Not: "quand même", "quand" followed by a verb ("Quand lances-tu P ?",
+    "Quand est-ce que ..."), after a preposition ("depuis quand", "n'importe
+    quand") or right after a verb / hyphenated pronoun (indirect question:
+    "Dis-moi quand P", "Je sais quand P"). A clause-initial "quand" is one only
+    when a comma follows it in the sentence ("Quand Q, P"; "Quand Paul lance-t-il
+    P ?" stays a question).
+    """
+    nxt = toks[i + 1] if i + 1 < len(toks) else None
+    if nxt is None or nxt.is_punct or nxt.low in {"même", "meme"} or _is_verb(toks, i + 1):
+        return False
+    prev = toks[i - 1] if i > 0 else None
+    if prev is None or prev.is_punct or prev.low in _CONNECTIVES:
+        for t in toks[i + 1:]:
+            if t.low == ",":
+                return True
+            if t.low in {".", "!", "?", ";", ":"}:
+                return False
+        return False
+    if prev.low in _PREPOSITIONS | {"depuis", "importe", "jusqu'", "jusqu'à"} or prev.hyphen_before:
+        return False
+    return not _is_verb(toks, i - 1)
+
+
 def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
     clauses: list[_Clause] = [_Clause([])]
     interrogative = False
@@ -916,6 +945,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 and not (cur().toks and cur().toks[-1].low == "d'"):
             open_clause("apres_que", [t, nxt])
             i += 2
+            continue
+        # "quand" / "lorsque" Q: a temporal subordinate whose meaning stays held
+        if low in _TEMPORAL_INTRODUCERS or (low == "quand" and _subordinating_quand(toks, i)):
+            open_clause("quand", [t])
+            i += 1
             continue
         # "d'après X" is a source adverbial, never the temporal connective.
         if low in {"après", "apres"} and cur().toks and cur().toks[-1].low != "d'":
@@ -1048,8 +1082,9 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         if marker is None and has_verb and c.conn is None and pending_source is not None:
             c.evidential, pending_source = pending_source, None
         # A verbless clause shaped like a predication with an unknown verb
-        # ("elle appelle Luc") is kept as its own (unanalyzed) clause.
-        if not has_verb and merged and c.conn not in {"sans", "sans_que"} \
+        # ("elle appelle Luc") is kept as its own (unanalyzed) clause, and so is
+        # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V").
+        if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand"} \
                 and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
                                                 or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
@@ -1497,10 +1532,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     # "V que P et Q": Q coordinates inside the complement or with its host.
     # "V que P parce que Q" / "V que P donc Q": the cause / consequence may bear on P
     # (inside the complement) or on V; within one sentence it is never bound to the
-    # nearest host
+    # nearest host. "P quand Q et R": R may continue Q or P (never the nearest either)
     for prev, clause in zip(clauses, clauses[1:]):
         causal = clause.conn in {"car", "donc"} and clause.boundary not in {".", "!", "?", ";"}
-        if (clause.conn in {"et", "ou"} or causal) and (_is_complement(prev) or prev.evidential is not None):
+        if (clause.conn in {"et", "ou"} or causal) and (_is_complement(prev) or prev.evidential is not None
+                                                        or prev.conn == "quand"):
             clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
@@ -1655,6 +1691,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # (the finite counterpart of "après avoir V")
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 d.governed = "temporal"
+            elif clause.conn == "quand":
+                # "quand / lorsque Q": order, simultaneity, habit or condition is a held
+                # doctrine: Q is subordinated, never asserted, no relation and no host chosen
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"temporal_subordinate_open:{u.id}")
             elif clause.conn == "si" and n == 0:
                 prag, epi = "HYPOTHETICAL", "HYPOTHETICAL"
             elif clause.conn == "rel" and clause.governor_lost and n == 0:
@@ -1765,7 +1806,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # host of a following "puis" / "mais": only main clauses do. A clause of
         # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "apres_que", "car"} and clause.units                 and not clause.attachment_ambiguous:
+                               "avant_que", "a_moins_que", "apres_que", "quand", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
     for group in complement_alternatives:
@@ -1977,8 +2018,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             k = lost[0][0]
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
-        elif not _unanalyzed_predicative(clause, in_sequence=clause.conn in _SEQUENCE_CONNECTIVES
-                                         or (clause.conn is None and any(c.units for c in clauses if c is not clause))):
+        elif clause.conn != "quand" and not _unanalyzed_predicative(
+                clause, in_sequence=clause.conn in _SEQUENCE_CONNECTIVES
+                or (clause.conn is None and any(c.units for c in clauses if c is not clause))):
+            # (a "quand / lorsque" subordinate without any unit is always reported)
             continue
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
         if clause.conn in {"que", "rel"}:
@@ -1993,6 +2036,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 link = "unattached"  # e.g. main predicate absorbed after a relative
             else:
                 link = "embedded_under_unresolved_governor"
+        elif clause.conn == "quand":
+            link = "temporal_subordinate"  # no host chosen
         elif ci in protases:
             link = "conditional_protasis"
         else:
