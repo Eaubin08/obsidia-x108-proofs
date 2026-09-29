@@ -666,20 +666,23 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.shared_aux_host = prev.shared_aux_host or prev
             return
         # "Paul doit lancer P et exécuter Q": the obligation modal chain (the modal,
-        # its tense, its subject) is shared by a bare coordinated infinitive
+        # its tense, its subject) is shared by a bare coordinated infinitive;
+        # "Veuillez lancer P et exécuter Q": so is the directive operator's scope
         if linked and prev.modal is not None and prev.conn not in {"que", "rel", "comparative"} \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:
             m = prev.modal
             d0.modality, d0.modal_tok, d0.tense = m.modality, m.modal_tok, m.tense
             d0.subject, d0.subject_person, d0.politeness = m.subject, m.subject_person, m.politeness
+            d0.directive = m.directive
             clause.modal = m
             clause.shared_modal_host = prev.shared_modal_host or prev
             return
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
     if compound and compound[-1] is drafts[-1]:
         clause.compound = (compound[-1].tense, clause.toks[compound[-1].head_index].low, compound[-1])
-    if drafts and drafts[-1].modality == "OBLIGATION" and drafts[-1].verb_form == "INFINITIVE" \
+    if drafts and (drafts[-1].modality == "OBLIGATION" or drafts[-1].directive) \
+            and drafts[-1].verb_form == "INFINITIVE" \
             and drafts[-1].head_index != drafts[-1].lex_index and drafts[-1].modal_tok is not None:
         clause.modal = drafts[-1]
 
@@ -941,6 +944,7 @@ class _Draft:
     governor_unit: str | None = None
     governor_negated: bool = False
     unresolved_governor: bool = False    # unknown verb kept only as a "que" governor
+    directive: bool = False              # under a written directive operator ("veuillez" + inf)
 
 
 _MODALITY = {"ABLE": "ABILITY_OR_PERMISSION", "MUST": "OBLIGATION",
@@ -1103,10 +1107,13 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                     consumed.add(v)
                     v, form = w, "PARTICIPLE"
             if v is not None and ("INF" in _feats(toks[v]) or form == "PARTICIPLE"):
+                # "veuillez" + inf: polite directive operator, not a desire modality
+                polite = pred == "WANT" and "IMP" in feats and subj is None
                 d = _Draft(toks[v], v, k, form, _tense_of(feats),
-                           modality=_MODALITY.get(pred), modal_tok=t,
-                           politeness="COND" in feats or t.low == "could",
-                           subject=subj, subject_person=person, inverted=inverted)
+                           modality=None if polite else _MODALITY.get(pred), modal_tok=t,
+                           politeness=polite or "COND" in feats or t.low == "could",
+                           subject=subj, subject_person=person, inverted=inverted,
+                           directive=polite)
                 if pred == "NEED":
                     d.subject_person = "impersonal"
                 drafts.append(d)
@@ -1646,7 +1653,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if c.conn is None:  # ", INF": no connective relation was built for it
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
         coordinations.append(CoordinationRef(
-            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_modality",
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members),
+            "shared_directive" if host.modal.directive else "shared_modality",
             (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
 
@@ -1923,6 +1931,9 @@ def _request_target(u: PredicateUnit, agent: str, prag: str, role: str) -> str:
 def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
                      ambiguities: list[str]) -> tuple[str, str]:
     person = d.subject_person
+    if d.directive:
+        # one written directive operator scopes over its (coordinated) infinitives
+        return "REQUESTED", "NOT_APPLICABLE"
     if u.modality == "ABILITY_OR_PERMISSION":
         if person == "2" and (interrogative or d.politeness):
             ambiguities.append(f"ability_permission_or_request:{u.id}")

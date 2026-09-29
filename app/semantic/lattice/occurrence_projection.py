@@ -87,6 +87,9 @@ class FrameOccurrenceProjection:
         self.shared_modality.update({m: c.id for c in frame.coordinations
                                      if c.construction == "ni_negative_coordination" for m in c.members
                                      if self.units[m].modality is not None})
+        # members inside the scope of one written directive operator ("veuillez")
+        self.shared_directive = {m: c.id for c in frame.coordinations if c.construction == "shared_directive"
+                                 for m in c.members}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
@@ -246,6 +249,8 @@ class FrameOccurrenceProjection:
             provenance["shared_tense"] = self.shared_tense[u.id]
         if u.id in self.shared_modality:
             provenance["shared_modality"] = self.shared_modality[u.id]
+        if u.id in self.shared_directive:
+            provenance["shared_directive"] = self.shared_directive[u.id]
         inherited = {k: v for k, v in inherited.items() if v is not None}
         if inherited:
             provenance["inherited_from"] = inherited
