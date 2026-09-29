@@ -15,6 +15,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Parser ambiguity markers that leave the meaning structure itself unresolved
+# (antecedent, attachment, governor, lost structure, bare "ne"): they block
+# semantic closure. Speech-act readings kept by fail-closed doctrine
+# (ability_permission_or_request, desire_or_request, question_or_request) do not.
+STRUCTURAL_AMBIGUITIES = frozenset({
+    "ambiguous_antecedent", "coordination_attachment_ambiguous", "complement_governor_lost",
+    "complement_structure_lost", "complement_under_unresolved_governor", "unresolved_complement_governance",
+    "infinitive_under_unrecognized_governor", "bare_ne",
+})
+
 BOUNDARY = {
     "readonly": True,
     "non_sovereign": True,
@@ -213,9 +223,12 @@ class UtteranceFrame:
 
     @property
     def closure_blockers(self) -> tuple[str, ...]:
+        """Why the meaning is not resolved yet (empty when it is)."""
         blockers = [f"unresolved_reference:{r}" for r in self.unresolved_references]
         blockers += [f"contradiction:{c}" for c in self.contradictions]
         blockers += [f"missing:{m}" for m in self.missing]
+        blockers += [f"ambiguity:{a}" for a in self.ambiguities
+                     if a.split(":", 1)[0] in STRUCTURAL_AMBIGUITIES]
         return tuple(blockers)
 
     @property
