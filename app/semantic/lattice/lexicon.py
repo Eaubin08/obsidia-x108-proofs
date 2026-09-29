@@ -335,6 +335,8 @@ def _er_forms(stem: str, mute: str | None) -> dict[str, tuple[str, ...]]:
     }
 
 
+_ER_PRES_PERSONS = (("P1S", "P3S"), ("P2S",), ("P1P",), ("P2P",), ("P3P",))
+
 Analysis = tuple[str, frozenset]  # (lemma, features)
 
 
@@ -346,8 +348,9 @@ def _build() -> tuple[dict[str, list[Analysis]], dict[str, list[Analysis]]]:
 
     for lemma, (stem, mute) in _ER_VERBS.items():
         for feat, forms in _er_forms(stem, mute).items():
-            for f in forms:
-                add(f, lemma, {feat})
+            for i, f in enumerate(forms):
+                # present person/number, known by position (agreement with a shared subject)
+                add(f, lemma, {feat} | (set(_ER_PRES_PERSONS[i]) if feat == "PRES" else set()))
     for lemma, table in _IRREGULAR.items():
         for feat, forms in table.items():
             for f in forms:

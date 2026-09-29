@@ -90,6 +90,9 @@ class FrameOccurrenceProjection:
         # members inside the scope of one written directive operator ("veuillez")
         self.shared_directive = {m: c.id for c in frame.coordinations if c.construction == "shared_directive"
                                  for m in c.members}
+        # members whose subject comes from one written, shared subject
+        self.shared_subject = {m: c.id for c in frame.coordinations if c.construction == "shared_subject"
+                               for m in c.members[1:]}
         # members inside the scope of one shared operator ("Peux-tu P et Q ?"): one act
         self.shared_operator = {m: o.id for o in frame.operator_scopes
                                 for m in frame.relation_members(o.scope)}
@@ -254,6 +257,8 @@ class FrameOccurrenceProjection:
             provenance["shared_modality"] = self.shared_modality[u.id]
         if u.id in self.shared_directive:
             provenance["shared_directive"] = self.shared_directive[u.id]
+        if u.id in self.shared_subject:
+            provenance["shared_subject"] = self.shared_subject[u.id]
         if u.id in self.shared_operator:
             provenance["shared_operator"] = self.shared_operator[u.id]
         inherited = {k: v for k, v in inherited.items() if v is not None}

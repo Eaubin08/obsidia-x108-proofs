@@ -128,6 +128,8 @@ class _Clause:
     modal: object = None  # its last modal+infinitive draft (OBLIGATION), shared by bare infinitives
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
+    subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
+    shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     units: list = field(default_factory=list)
 
 
@@ -618,6 +620,25 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
 
 _COMPOUND_TENSE = {"PRESENT": "PAST", "PAST": "PLUPERFECT", "FUTURE": "FUTURE", "CONDITIONAL": "CONDITIONAL"}
 
+_PERSON_FEATS = {"je": {"P1S"}, "j'": {"P1S"}, "tu": {"P2S"}, "il": {"P3S"}, "elle": {"P3S"},
+                 "on": {"P3S"}, "c'": {"P3S"}, "ça": {"P3S"}, "ca": {"P3S"}, "cela": {"P3S"},
+                 "nous": {"P1P"}, "vous": {"P2P"}, "ils": {"P3P"}, "elles": {"P3P"}}
+# connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
+_NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que"}
+
+
+def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
+    """A subject-less present verb can take the host's subject: no imperative
+    reading exists ("exécutes", "exécutent"), or its person agrees ("Paul ...
+    et exécute Q"); a form of another person ("Paul ... et exécutez Q") never."""
+    feats = _feats(tok)
+    if "EN" in feats or "PRES" not in feats:
+        return False
+    if "IMP" not in feats:
+        return True
+    want = _PERSON_FEATS.get(host.subject) or ({"P3S", "P3P"} if host.subject_person == "3" else set())
+    return bool(want & feats)
+
 
 def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     """One written auxiliary shared by coordinated past participles.
@@ -684,10 +705,24 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.modal = m
             clause.shared_modal_host = prev.shared_modal_host or prev
             return
+        # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
+        # explicit subject shares that subject; it is never an imperative
+        host = prev.subject_host
+        if linked and host is not None and prev.conn not in _NO_SUBJECT_SHARE \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form in {"IMPERATIVE", "FINITE"} \
+                and d0.subject is None and d0.modality is None and _agrees_with_subject(d0.lex, host):
+            d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
+            d0.subject, d0.subject_person = host.subject, host.subject_person
+            clause.subject_host = host
+            clause.shared_subject_host = prev.shared_subject_host or prev
+            return
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
     if compound and compound[-1] is drafts[-1]:
         clause.compound = (compound[-1].tense, clause.toks[compound[-1].head_index].low, compound[-1])
     last = drafts[-1] if drafts else None
+    if last is not None and last.subject is not None and not last.inverted \
+            and last.subject_person in {"1", "2", "3"} and last.verb_form != "IMPERATIVE":
+        clause.subject_host = last
     # a negated "pouvoir" ("ne peut pas P et Q": ¬(P∧Q) or ¬P∧¬Q) or one inside a
     # protasis ("R si tu peux P et Q") has no safe scope over a coordination: not shared
     ability_open = last is not None and last.modality == "ABILITY_OR_PERMISSION" and (
@@ -1682,6 +1717,24 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             (host.modal.modal_tok.low, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
             (members[0].span[0], members[-1].span[1])))
         _scope_operator(host.modal, coordinations[-1])
+
+    # ── shared subject: host predicate with an explicit subject and the bare agreeing verbs ──
+    for host in [c for c in clauses if c.shared_subject_host is None and c.subject_host is not None]:
+        sharers = [c for c in clauses if c.shared_subject_host is host]
+        if not sharers:
+            continue
+        unit_of = {id(d): u for c in (host, *sharers) for (u, d) in c.units}
+        members = [unit_of.get(id(host.subject_host))] + [unit_of.get(id(c.units[0][1])) if c.units else None
+                                                          for c in sharers]
+        if any(u is None for u in members):
+            continue
+        for c, a, b in zip(sharers, members, members[1:]):
+            if c.conn is None:  # ", V": no connective relation was built for it
+                relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=","))
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in members), "shared_subject",
+            (host.subject_host.subject, *(" ".join(x.low for x in c.conn_toks) or "," for c in sharers)),
+            (members[0].span[0], members[-1].span[1])))
 
     # ── verbal ni coordination: one structural group per "ne ... ni ... ni" ──
     ni_heads = [c for c in clauses if c.ni_head is c]
