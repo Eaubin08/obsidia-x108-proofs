@@ -146,6 +146,11 @@ def _lower_aligned(raw: str) -> str:
     return "".join(out)
 
 
+def _is_puis_je(t: "_Tok", nxt: "_Tok | None") -> bool:
+    """"puis" inverted with a hyphenated "je" is the first person of pouvoir."""
+    return t.low == "puis" and nxt is not None and nxt.low == "je" and nxt.hyphen_before
+
+
 def _tokenize(raw: str) -> tuple[list[_Tok], list[str], list[str]]:
     text = _lower_aligned(raw)
     toks: list[_Tok] = []
@@ -197,9 +202,12 @@ def _tokenize(raw: str) -> tuple[list[_Tok], list[str], list[str]]:
         cleaned.append(t)
         i += 1
 
-    for t in cleaned:
+    for i, t in enumerate(cleaned):
         if not t.is_punct:
             t.analyses, t.accentless_ambiguous = lookup(t.low)
+            if _is_puis_je(t, cleaned[i + 1] if i + 1 < len(cleaned) else None):
+                # "puis-je": pouvoir, present, first person singular (never the connective)
+                t.analyses = [("pouvoir", frozenset({"PRES", "P1S"}))]
             if t.accentless_ambiguous and any(
                     "PP" in ft for _, ft in t.analyses) and any(
                     "PRES" in ft or "INF" in ft for _, ft in t.analyses):
@@ -882,7 +890,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             continue
 
         # "puis-je" is pouvoir, not the connective.
-        if low == "puis" and nxt is not None and nxt.hyphen_before:
+        if _is_puis_je(t, nxt):
             cur().toks.append(t)
             i += 1
             continue
