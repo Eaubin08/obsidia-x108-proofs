@@ -1968,7 +1968,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 realized = True if prag != "ASKED" else None
             if u.tense_aspect == "AVERTED":
                 realized, epi = False, "COUNTERFACTUAL"
-            if prag in {"REQUESTED", "FORBIDDEN", "INDIRECT_REQUEST"} and u.polarity == "negative":
+            if prag == "INDIRECT_REQUEST" and u.polarity == "negative" and _negates_operator(clause.toks, d):
+                # "Ne peux-tu pas lancer P ?", "Tu ne lances pas P ?": the negation bears on
+                # the question / ability operator, not on a requested content: never a
+                # prohibition; which act it is stays open (named), no gate, no constraint
+                ambiguities.append(f"negated_speech_act_open:{u.id}")
+            elif prag in {"REQUESTED", "FORBIDDEN", "INDIRECT_REQUEST"} and u.polarity == "negative":
                 prag = "FORBIDDEN"
             elif prag == "FORBIDDEN" and u.polarity == "positive" and clause.conn not in {"sans", "sans_que"}:
                 prag = "REQUESTED"
@@ -2411,6 +2416,16 @@ def _unknown_finite_governor(clause: _Clause, d: _Draft) -> bool:
         s -= 1
     return s >= 0 and lows[s] not in _INTERJECTIONS and not toks[s].hyphen_before and (
         lows[s] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or _content_word(toks[s]))
+
+
+def _negates_operator(toks: list[_Tok], d: _Draft) -> bool:
+    """The negation of this chain frames its finite head (the question / modal operator),
+    not its lexical infinitive: "ne peux-tu pas lancer" vs "peux-tu ne pas lancer". A member
+    sharing an operator from another clause ("peux-tu arrêter P et ne pas lancer Q ?")
+    carries its own negation."""
+    if d.modal_tok is not None and not any(t is d.modal_tok for t in toks):
+        return False
+    return not any(t.low in {"ne", "n'"} for t in toks[d.head_index + 1:d.lex_index])
 
 
 def _action_agent(u: PredicateUnit, d: _Draft, prag: str) -> str:
