@@ -60,6 +60,7 @@ class ProjectionOperator(str, Enum):
 
 class ConstructionType(str, Enum):
     QUE_PROPOSITION = "QUE_PROPOSITION"                            # G que X
+    INTERROGATIVE_COMPLEMENT = "INTERROGATIVE_COMPLEMENT"          # G wh X
     DIRECT_INFINITIVE_PERCEPTION = "DIRECT_INFINITIVE_PERCEPTION"  # voir Y faire
 
 
@@ -178,6 +179,7 @@ def _closed(rule: ProjectionRule, target: ComplementCommitment | None = None, *,
 
 
 _C, _R, _Q = ComplementCommitment, ProjectionRule, ConstructionType.QUE_PROPOSITION
+_WH = ConstructionType.INTERROGATIVE_COMPLEMENT
 
 
 def _attribution(family: str, kind: PerspectiveKind) -> ComplementCommitmentProfile:
@@ -212,6 +214,14 @@ _PROFILES = (
         question_projection=_closed(_R.PROJECT),
         future_projection=_EXT, modal_projection=_EXT,
         conditional_projection=_OPEN,  # no escape from the protasis in V0
+        counterfactual_projection=_EXT,
+    ),
+    ComplementCommitmentProfile(
+        "KNOW", _WH, _C.QUESTIONED, DoctrineStatus.CLOSED_V0, PerspectiveKind.KNOWS, PerspectiveStance.ADHERE,
+        negation_projection=_closed(_R.PROJECT),
+        question_projection=_closed(_R.PROJECT),
+        future_projection=_EXT, modal_projection=_EXT,
+        conditional_projection=_OPEN,
         counterfactual_projection=_EXT,
     ),
     _base_only("LEARN", PerspectiveKind.LEARNS),

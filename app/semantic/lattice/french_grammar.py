@@ -993,7 +993,7 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
     return prev, False
 
 
-_WH_COMPLEMENT_WORDS = {"quand", "comment", "pourquoi", "où", "combien"}
+_WH_COMPLEMENT_WORDS = {"qui", "quand", "comment", "pourquoi", "où", "combien"}
 _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
@@ -1019,10 +1019,17 @@ def _wh_complement_governor(toks: list[_Tok], i: int) -> "_Tok | None":
     if toks[i].low not in _WH_COMPLEMENT_WORDS or i == 0 or i + 1 >= len(toks):
         return None
     nxt = toks[i + 1]
-    if nxt.is_punct or nxt.low in {"même", "meme"} or _is_verb(toks, i + 1):
+    if nxt.is_punct or nxt.low in {"même", "meme"}:
+        return None
+    if _is_verb(toks, i + 1) and toks[i].low != "qui":
+        return None
+    if toks[i].low == "qui" and _is_verb(toks, i + 1) and "INF" in _feats(nxt) and not (_feats(nxt) - {"INF"}):
         return None
     g = i - 1
-    if toks[g].hyphen_before and toks[g].low in _HYPHEN_OBJECT_PRONOUNS:
+    while g >= 0 and (
+        toks[g].low in _FR_NEGATORS
+        or (toks[g].hyphen_before and toks[g].low in (_HYPHEN_OBJECT_PRONOUNS | _SUBJECT_PRONOUNS))
+    ):
         g -= 1
     if g < 0 or not _is_verb(toks, g):
         return None
@@ -2040,17 +2047,23 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 d.governed = "temporal"
             elif clause.conn == "wh":
-                # WH complement: subordinated under its adjacent governor; its commitment
-                # (presupposed, mentioned, asked) is not decided
+                # H13: a WH complement under KNOW is question content. That closes
+                # the complement structure only; it does not assert the answer,
+                # occurrence, truth or verification of the embedded event.
                 prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
-                ambiguities.append(f"unresolved_complement_governance:{u.id}")
                 wg = clause.wh_governor
                 gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
                             if x.span == (wg.start, wg.end)), None)
+                resolved_know_wh = gov is not None and gov.predicate == "KNOW"
+                if resolved_know_wh:
+                    epi = "NOT_APPLICABLE"
+                else:
+                    ambiguities.append(f"unresolved_complement_governance:{u.id}")
                 if gov is not None:
                     embedded_under = gov.id
-                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
-                                                     evidence="wh_unresolved_governance"))
+                    relations.append(LatticeRelation(
+                        RelationKind.EMBEDS.value, gov.id, u.id,
+                        evidence="interrogative_complement" if resolved_know_wh else "wh_unresolved_governance"))
             elif clause.conn == "quand":
                 # "quand / lorsque Q": order, simultaneity, habit or condition is a held
                 # doctrine: Q is subordinated, never asserted, no relation and no host chosen

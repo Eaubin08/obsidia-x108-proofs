@@ -28,6 +28,7 @@ from app.semantic.lattice.primitives import PredicateUnit, RelationKind, Utteran
 _FAMILY = {"SAY": "REPORT", "BELIEVE": "BELIEF", "KNOW": "KNOW", "LEARN": "LEARN", "OBSERVE": "PERCEPTION"}
 _CONSTRUCTION = {"que": ConstructionType.QUE_PROPOSITION,
                  "que_unresolved_governance": ConstructionType.QUE_PROPOSITION,
+                 "interrogative_complement": ConstructionType.INTERROGATIVE_COMPLEMENT,
                  "observation+inf": ConstructionType.DIRECT_INFINITIVE_PERCEPTION}
 _COMPLEMENT_EVIDENCE = frozenset({*_CONSTRUCTION, "que_governor_lost", "modal+inf"})
 _COMPLEMENT_KINDS = frozenset({RelationKind.REPORTS.value, RelationKind.BELIEVES.value, RelationKind.FEARS.value,
