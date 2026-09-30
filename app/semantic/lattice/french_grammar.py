@@ -1411,11 +1411,17 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
         subj, person = _subject_before(toks, k)
         inverted = False
         nxt = toks[k + 1] if k + 1 < len(toks) else None
-        if nxt is not None and nxt.low in _SUBJECT_PRONOUNS and (
+        epenthetic = nxt is not None and nxt.low == "t'" and nxt.hyphen_before and k + 2 < len(toks) \
+            and toks[k + 2].hyphen_before and toks[k + 2].low in {"il", "elle", "on"}
+        if epenthetic:
+            # "faudra-t-il": the euphonic "-t-" only marks the inversion (no subject, no content)
+            subj, person, inverted = toks[k + 2].low, "3", True
+            nxt = toks[k + 2]
+        if not epenthetic and nxt is not None and nxt.low in _SUBJECT_PRONOUNS and (
                 nxt.hyphen_before or ("EN" in feats and cls == "modal")):
             subj, person, inverted = nxt.low, ("2" if nxt.low in _SECOND_PERSON else "1"
                                                if nxt.low in _FIRST_PERSON else "3"), True
-        after = k + 2 if inverted else k + 1
+        after = k + 3 if epenthetic else k + 2 if inverted else k + 1
 
         # aux avoir/être + participle ; "a failli" + infinitive ; "est en train de"
         if pred in {"HAVE", "BE"}:
