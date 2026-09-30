@@ -133,6 +133,7 @@ class _Clause:
     neg_desire_open: object = None  # negated DESIRE chain draft whose scope over a bare coordinated INF is open
     know_how_open: object = None  # savoir (KNOW_HOW) chain draft: its scope over a bare coordinated INF is open
     wh_governor: object = None  # verb token right before the WH word of a "wh" complement ("sais quand P")
+    subject_unresolved_chain: bool = False  # its bare finite verb disagreed with the host subject (NF4)
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
@@ -706,16 +707,20 @@ _NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "quand", "wh"}
 
 
 def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
-    """A subject-less present verb can take the host's subject: no imperative
-    reading exists ("exécutes", "exécutent"), or its person agrees ("Paul ...
-    et exécute Q"); a form of another person ("Paul ... et exécutez Q") never."""
+    """A subject-less present verb takes the host's subject only when its person
+    agrees ("Paul ... et exécute Q", "Les tests ... et exécutent Q"); a form of another
+    person never does ("Paul ... et exécutez / exécutent Q"). For a form without an
+    imperative reading, a nominal subject's number is read on the host's own finite
+    verb when it carries one (NF4: agreement required, no proximity fallback, no
+    automatic subject fusion); imperative-ambiguous forms keep the P1 contract."""
     feats = _feats(tok)
     if "EN" in feats or "PRES" not in feats:
         return False
-    if "IMP" not in feats:
-        return True
-    want = _PERSON_FEATS.get(host.subject) or ({"P3S", "P3P"} if host.subject_person == "3" else set())
-    return bool(want & feats)
+    want = _PERSON_FEATS.get(host.subject)
+    if want is None and host.subject_person == "3":
+        own = _feats(host.lex) & {"P3S", "P3P"} if host.verb_form == "FINITE" and "IMP" not in feats else set()
+        want = own or {"P3S", "P3P"}
+    return bool((want or set()) & feats)
 
 
 def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
@@ -835,6 +840,19 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             d0.subject, d0.subject_person = host.subject, host.subject_person
             clause.subject_host = host
             clause.shared_subject_host = prev.shared_subject_host or prev
+            clause.share_family = family
+            return
+        # "Paul lance P et exécutent Q": no agreement, and the form has no imperative
+        # reading: never shared, never an imperative; the subject stays unresolved (named)
+        if same_family and (linked or sequenced or disjoined) \
+                and (host is not None or prev.subject_unresolved_chain) \
+                and prev.conn not in _NO_SUBJECT_SHARE \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form in {"IMPERATIVE", "FINITE"} \
+                and d0.subject is None and d0.modality is None \
+                and {"PRES"} <= _feats(d0.lex) and not {"IMP", "EN"} & _feats(d0.lex):
+            d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
+            d0.governed = "subject_unresolved"
+            clause.subject_unresolved_chain = True
             clause.share_family = family
             return
         # "Paul lance P et ne pas exécuter Q": no host operator licenses the negated bare
@@ -1861,6 +1879,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
                                                      u.id, evidence=clause.conn))
+            elif d.governed == "subject_unresolved":
+                # "Paul lance P et exécutent Q": the predicate is kept, its subject is not
+                # the host's (no agreement) and is not known: never asserted, never requested
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"subject_unresolved:{u.id}")
             elif d.governed == "unknown_governor":
                 # content of an unrecognised finite governor: no subject taken from it, no request
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
@@ -2276,7 +2299,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
-    if d.governed in {"negated_scope_open", "know_how_scope_open", "unknown_governor"}:  # already bound
+    if d.governed in {"negated_scope_open", "know_how_scope_open", "unknown_governor", "subject_unresolved"}:
         return
     if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
             and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:

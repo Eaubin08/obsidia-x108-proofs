@@ -25,7 +25,7 @@ STRUCTURAL_AMBIGUITIES = frozenset({
     "complement_structure_lost", "complement_under_unresolved_governor", "unresolved_complement_governance",
     "infinitive_under_unrecognized_governor", "bare_ne", "negated_scope_open",
     "temporal_subordinate_open", "modal_past_occurrence_open", "know_how_scope_open",
-    "coordinated_subject_unrepresented",
+    "coordinated_subject_unrepresented", "subject_unresolved",
 })
 
 BOUNDARY = {

@@ -2,9 +2,9 @@
 
 "Paul lance P et exécute Q": "exécute" is the present of Paul (CoordinationRef
 "shared_subject"), exactly what "Paul exécute Q." would be; it is never an
-imperative request of the addressee. A form without an imperative reading
-("exécutes", "exécutent") always shares; an imperative-ambiguous form shares
-only when its person agrees ("Paul lance P et exécutez Q" stays imperative).
+imperative request of the addressee. Every form shares only when its person
+agrees (NF4: "Paul lance P et exécutez Q" stays imperative; "Paul lance P et
+exécutent Q" keeps an unresolved subject, test_subject_agreement_required).
 Subordinated hosts (si, que, relative) never share.
 """
 from __future__ import annotations
