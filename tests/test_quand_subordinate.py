@@ -50,7 +50,9 @@ def test_subordinate_is_preserved_and_held_open(text, host, sub, subject):
     assert events.get(s.id) not in ASSERTED
     assert f"temporal_subordinate_open:{s.id}" in f.ambiguities
     assert not any(r.kind in TEMPORAL for r in f.relations)
-    assert not any(r.target == s.id or r.source == s.id for r in f.relations)
+    # H05 (D1): only the neutral TEMPORAL_ANCHOR(s -> host) is allowed (no order, condition or cause)
+    assert [(r.kind, r.source, r.target) for r in f.relations if s.id in (r.source, r.target)] \
+        == [("TEMPORAL_ANCHOR", s.id, h.id)]
     assert s.embedded_under is None
     assert h.subject == "paul" and not gate[s.id]
     assert f.closure is False and not semantic_closure(f).closed

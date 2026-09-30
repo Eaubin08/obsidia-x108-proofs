@@ -42,6 +42,25 @@ BOUNDARY = {
 }
 
 
+class SourceClass(str, Enum):
+    """Kind of source a content is attributed to (H03). A source class is never an
+    epistemic state: none of these means true, verified, supported or observed."""
+    HUMAN = "HUMAN"                    # "Selon Marie, P"
+    EVIDENCE_TRACE = "EVIDENCE_TRACE"  # "Selon les logs, P": a trace, not a verification
+    INFERENCE = "INFERENCE"            # "Apparemment, P" (its epistemic policy is held)
+    SPEAKER = "SPEAKER"                # "Selon moi, P"
+
+
+# parser evidential markers (detached sources) -> source class; nothing else is stamped
+_EVIDENTIAL_SOURCE_CLASS = {"HUMAN_SOURCE": SourceClass.HUMAN, "EVIDENCE_SOURCE": SourceClass.EVIDENCE_TRACE,
+                            "INFERRED": SourceClass.INFERENCE, "SPEAKER_BELIEF": SourceClass.SPEAKER}
+
+
+def source_class(unit: "PredicateUnit") -> SourceClass | None:
+    """Source class of a unit carrying a detached source marker, else None."""
+    return _EVIDENTIAL_SOURCE_CLASS.get(unit.epistemic)
+
+
 class RelationKind(str, Enum):
     CONTRASTS = "CONTRASTS"
     PRECEDES = "PRECEDES"
@@ -56,6 +75,10 @@ class RelationKind(str, Enum):
     BELIEVES = "BELIEVES"
     WANTS = "WANTS"
     EMBEDS = "EMBEDS"
+    # H05: "quand / lorsque P" temporally anchors its host (no order, condition or cause);
+    # "pendant que P" overlaps its host (no exact bounds, no condition or cause)
+    TEMPORAL_ANCHOR = "TEMPORAL_ANCHOR"
+    OVERLAPS = "OVERLAPS"
     REFERS_TO = "REFERS_TO"
 
 

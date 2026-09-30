@@ -11,7 +11,7 @@ from typing import Any
 
 from app.semantic.lattice.flow_validators import EPISTEMIC_STATES
 from app.semantic.lattice.ordered_meaning_flow import FlowFamily, OrderedMeaningFlow
-from app.semantic.lattice.primitives import PredicateUnit, RelationKind, UtteranceFrame
+from app.semantic.lattice.primitives import PredicateUnit, RelationKind, UtteranceFrame, source_class
 
 _OBJECT_ID_SCOPE = "frame_local"
 _SOURCE_KIND = "language_parser"
@@ -37,6 +37,9 @@ _EPISTEMIC_UNIT_MAP = {
     # detached source markers (B2e profiles): "Selon Marie, P" is Marie's report,
     # "Selon moi, P" the speaker's belief; trace / inferential sources stay unlabelled (held)
     "HUMAN_SOURCE": "REPORTED",
+    # H03: a trace source is a report of that trace (source_class EVIDENCE_TRACE), never
+    # SUPPORTED / VERIFIED; the inferential source ("apparemment") keeps no flow (policy held)
+    "EVIDENCE_SOURCE": "REPORTED",
     "SPEAKER_BELIEF": "BELIEVED",
 }
 
@@ -164,6 +167,7 @@ def project_epistemic_flows(frame: UtteranceFrame) -> tuple[OrderedMeaningFlow, 
                 "embedded_under": unit.embedded_under,
                 "source_epistemic": unit.epistemic,
                 "source_pragmatic": unit.pragmatic,
+                "source_class": source_class(unit).value if source_class(unit) else None,
             },
         ))
     for relation in frame.relations:

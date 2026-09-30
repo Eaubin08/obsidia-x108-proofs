@@ -1123,6 +1123,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             open_clause("a_moins_que", [t, nxt, nxt2])
             i += 3
             continue
+        # "pendant que P": temporal subordinator (H05, OVERLAPS), never a lost-governor "que"
+        if low == "pendant" and nxt is not None and nxt.low in {"que", "qu'"}:
+            open_clause("quand", [t, nxt])
+            i += 2
+            continue
         # "de sorte que P", "jusqu'à ce que P": subordinators, never a relative on a noun /
         # "ce"; their meaning is not analysed here: lost-governor complement contract (N14)
         span = [x.low for x in toks[i:i + 4]]
@@ -2332,6 +2337,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             hosts.insert(0, u)
         return hosts
 
+    def _adjacent_host(ci: int) -> PredicateUnit | None:
+        """Main head structurally adjacent to the subordinate at ci (the clause right before a
+        postposed one, right after a preposed one), else None (never a farther / nearest host)."""
+        heads = dict(main_heads)
+        if ci > 0 and ci - 1 in heads and clauses[ci].boundary in {None, ","}:
+            return heads[ci - 1]
+        first = ci == 0 or clauses[ci].boundary in _SENTENCE_BOUNDARIES
+        if first and ci + 1 in heads and clauses[ci + 1].boundary in {None, ","}:
+            return heads[ci + 1]
+        return None
+
     def _temporal_hosts(ci: int) -> list[PredicateUnit] | None:
         """Possible hosts of a temporal subordinate when there are several, else None."""
         hosts = _scope_hosts(ci)
@@ -2353,7 +2369,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             hosts = _scope_hosts(ci)
             ambiguities.append(f"exception_condition_open:{h.id}"
                                + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
-        prev_main = next((u for (cj, u) in reversed(main_heads) if cj < ci), None)
+        elif conn == "quand" and h is not None and _adjacent_host(ci) is not None:
+            # H05: "quand / lorsque P" temporally anchors its host (no order, condition or cause);
+            # "pendant que P" overlaps it. Only a structurally adjacent host is related; a
+            # coordinated host group is named (no host by proximity). Closure policy held.
+            kind = RelationKind.OVERLAPS if clause.conn_toks and clause.conn_toks[0].low == "pendant" \
+                else RelationKind.TEMPORAL_ANCHOR
+            hosts = _scope_hosts(ci)
+            if len(hosts) == 1:
+                relations.append(LatticeRelation(kind.value, h.id, hosts[0].id,
+                                                 evidence=" ".join(x.low for x in clause.conn_toks)))
+            elif len(hosts) > 1:
+                ambiguities.append(f"temporal_scope_ambiguous:{h.id}:host={','.join(u.id for u in hosts)}")
+        prev_main =next((u for (cj, u) in reversed(main_heads) if cj < ci), None)
         next_main = next((u for (cj, u) in main_heads if cj > ci), None)
         if conn in {"sans", "sans_que"}:
             host = prev_main or next_main

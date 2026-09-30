@@ -47,9 +47,14 @@ def test_parity_with_explicit_report_and_belief():
     assert {s for _, s in s1} == {s for _, s in s2} == {"REPORTED"}
 
 
+def test_trace_source_is_reported_with_its_source_class():
+    # H03 (D1): a trace is reported by that trace (source_class EVIDENCE_TRACE), never SUPPORTED / VERIFIED
+    _, states, _, _ = _states("Selon les logs, Paul a lancé P.")
+    assert {s for _, s in states} == {"REPORTED"}
+
+
 @pytest.mark.parametrize("text", [
-    "Selon les logs, Paul a lancé P.",   # trace source: label held
-    "Apparemment, Paul a lancé P.",      # inferential source: label held
+    "Apparemment, Paul a lancé P.",      # inferential source: policy held (H03_APPAREMMENT_POLICY)
     "Paul a lancé P.",                   # speaker assertion: no epistemic state
 ])
 def test_unlabelled_sources_get_no_new_state(text):

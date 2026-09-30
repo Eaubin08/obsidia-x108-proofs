@@ -13,7 +13,7 @@ from enum import Enum
 
 from app.semantic.lattice.primitives import (
     EMBEDDING_KINDS, PROVENANCE_KINDS, TEMPORAL_KINDS, ConnectionKind,
-    PredicateUnit, RelationKind, UtteranceFrame,
+    PredicateUnit, RelationKind, UtteranceFrame, source_class,
 )
 
 MAX_PATH = 6
@@ -55,7 +55,9 @@ def _view(frame: UtteranceFrame, u: PredicateUnit, axis: ProjectionAxis) -> dict
         return {"causes": [r.target for r in frame.relations if r.kind in _CAUSAL and r.source == u.id],
                 "caused_by": [r.source for r in frame.relations if r.kind in _CAUSAL and r.target == u.id]}
     if axis is ProjectionAxis.EPISTEMIC:
-        return {"epistemic": u.epistemic, "embedded_under": u.embedded_under}
+        sc = source_class(u)
+        return {"epistemic": u.epistemic, "embedded_under": u.embedded_under,
+                "source_class": sc.value if sc else None}
     if axis is ProjectionAxis.PRAGMATIC:
         return {"pragmatic": u.pragmatic, "request_target": u.request_target,
                 "role": u.role, "politeness": u.politeness}
