@@ -417,3 +417,10 @@ def lookup(low: str) -> tuple[list[Analysis], bool]:
 
 def predicate_of(lemma: str) -> tuple[str, str]:
     return LEMMAS.get(lemma, (lemma.upper(), "other"))
+
+
+def has_imperative_paradigm(lemma: str) -> bool:
+    """Whether the lexicon knows this lemma's imperative forms (every -er verb, and the
+    irregular tables with an IMP row); False means the lexicon is silent, not that no
+    imperative exists ("voir")."""
+    return lemma in _ER_VERBS or "IMP" in _IRREGULAR.get(lemma, {})

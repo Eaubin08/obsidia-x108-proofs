@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field, replace
 
-from app.semantic.lattice.lexicon import fold, lookup, predicate_of
+from app.semantic.lattice.lexicon import fold, has_imperative_paradigm, lookup, predicate_of
 from app.semantic.lattice.primitives import (
     Argument, CoordinationRef, LatticeRelation, OperatorScopeRef, PredicateUnit, RelationKind,
     UtteranceFrame,
@@ -852,6 +852,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
                 and d0.subject is None and d0.modality is None and _agrees_with_subject(d0.lex, host):
             d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
             d0.subject, d0.subject_person = host.subject, host.subject_person
+            d0.governed = None
             clause.subject_host = host
             clause.shared_subject_host = prev.shared_subject_host or prev
             clause.share_family = family
@@ -1475,20 +1476,27 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
             k += 1
             continue
 
-        form = "FINITE"
+        form, unresolved_subject = "FINITE", False
         prev = toks[k - 1] if k > 0 else None
         if "INF" in feats and (not ({"PRES", "IMP", "PP"} & feats)
                                or (prev is not None and prev.low in {"de", "d'", "à", "to", "pas", "rien"})):
             form = "INFINITIVE"
         elif "PPR" in feats and not ({"PRES", "IMP", "INF"} & feats):
             form = "GERUND"
+        elif subj is None and "PRES" in feats and not ({"IMP", "EN", "P1P", "P2P"} & feats) \
+                and has_imperative_paradigm(_lemma(t)):
+            # no subject is not a proof of imperative: "Exécutent Q.", "Font Q." have no
+            # imperative reading in a known paradigm; the subject stays unresolved (a 1st /
+            # 2nd plural present is always a possible imperative: "Disons Q.")
+            form, unresolved_subject = "FINITE", True
         elif subj is None and ({"IMP", "PRES", "INF"} & feats):
             form = "IMPERATIVE"
         elif subj is None and "PP" in feats:
             form = "PARTICIPLE"
         drafts.append(_Draft(t, k, k, form, "NONE" if form in {"IMPERATIVE", "INFINITIVE"}
                              else _tense_of(feats), subject=subj, subject_person=person,
-                             inverted=inverted))
+                             inverted=inverted,
+                             governed="subject_unresolved" if unresolved_subject else None))
         consumed.add(k)
         k += 1
     return drafts
@@ -1948,6 +1956,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                      evidence="prep+inf"))
             else:
                 prag, epi = _main_pragmatics(u, d, interrogative, ambiguities)
+            if d.governed == "subject_unresolved" and f"subject_unresolved:{u.id}" not in ambiguities:
+                # whatever branch set its pragmatics (protasis, ambiguous attachment...), a
+                # finite verb whose subject is unknown is always named (R1)
+                ambiguities.append(f"subject_unresolved:{u.id}")
             if d.compound_modal:
                 # whether "a pu / a dû / a voulu V" happened is not decided: never realized
                 ambiguities.append(f"modal_past_occurrence_open:{u.id}")
