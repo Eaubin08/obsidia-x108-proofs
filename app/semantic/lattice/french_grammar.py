@@ -1121,6 +1121,16 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             open_clause("a_moins_que", [t, nxt, nxt2])
             i += 3
             continue
+        # "de sorte que P", "jusqu'à ce que P": subordinators, never a relative on a noun /
+        # "ce"; their meaning is not analysed here: lost-governor complement contract (N14)
+        span = [x.low for x in toks[i:i + 4]]
+        n_sub = 3 if span[:3] == ["de", "sorte", "que"] or span[:3] == ["de", "sorte", "qu'"] else \
+            4 if span[:3] == ["jusqu'", "à", "ce"] and span[3:4] in (["que"], ["qu'"]) else 0
+        if n_sub and cur().toks:
+            open_clause("rel", toks[i:i + n_sub], parent=len(clauses) - 1)
+            cur().governor_lost = True
+            i += n_sub
+            continue
         if low == "parce" and nxt is not None and nxt.low in {"que", "qu'"}:
             open_clause("car", [t, nxt])
             i += 2
