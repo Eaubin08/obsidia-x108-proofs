@@ -1383,7 +1383,7 @@ def _negated_periphrasis_infinitive(toks: list[_Tok], after: int, subj: str | No
     analysed here (its occurrence is not decided); index of its infinitive, which stays
     content of that governor (never an addressee request), or None."""
     j = after
-    while j < len(toks) and toks[j].low in {"pas", "plus", "jamais"}:
+    while j < len(toks) and toks[j].low in {"pas", "plus", "jamais", "rien"}:
         j += 1
     if j == after or subj is None or j + len(marker) >= len(toks):
         return None
@@ -1425,13 +1425,29 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
 
         # aux avoir/être + participle ; "a failli" + infinitive ; "est en train de"
         if pred in {"HAVE", "BE"}:
-            v = _negated_periphrasis_infinitive(toks, after, subj, ("à",)) if pred == "HAVE" else None
+            familiar_tu = k > 0 and toks[k - 1].low == "t'" and not toks[k - 1].hyphen_before  # "t'as pas à"
+            v = _negated_periphrasis_infinitive(toks, after, subj or ("tu" if familiar_tu else None), ("à",)) \
+                if pred == "HAVE" else None
             if v is not None:
-                # "Tu n'as pas à lancer P": negated "avoir à" (deontic force held, H16)
+                # "Tu n'as pas / rien à lancer P": negated "avoir à" (deontic force held, H16)
                 drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="deontic_scope_open"))
                 consumed.update({k, v})
                 k = v + 1
                 continue
+            if pred == "BE":
+                j = after
+                while j < len(toks) and toks[j].low in {"pas", "plus", "jamais"}:
+                    j += 1
+                negated = j != after or (k > 0 and toks[k - 1].low in {"ne", "n'"})
+                if negated and j + 2 < len(toks) and toks[j].low in {"obligatoire", "nécessaire"} \
+                        and toks[j + 1].low in {"de", "d'"} and _is_verb(toks, j + 2) and "INF" in _feats(toks[j + 2]):
+                    # "Il n'est pas obligatoire / nécessaire de lancer P": absence of obligation or
+                    # not; the deontic force is held (never a prohibition, never a request)
+                    v = j + 2
+                    drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="deontic_scope_open"))
+                    consumed.update({k, v})
+                    k = v + 1
+                    continue
             if pred == "BE":
                 # être là / ici -> presence ; être en train de + inf -> progressive
                 j = after
