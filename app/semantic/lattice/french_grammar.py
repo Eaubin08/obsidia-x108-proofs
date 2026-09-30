@@ -923,6 +923,21 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
 
 _WH_COMPLEMENT_WORDS = {"quand", "comment", "pourquoi", "où", "combien"}
 _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
+_TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
+_SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
+_PLURAL_AUX = {"ont", "sont", "vont", "avons", "sommes", "allons", "avez", "êtes", "allez", "font", "doivent",
+               "peuvent", "veulent", "savent", "viennent"}
+
+
+def _bare_noun_phrase(ts: list) -> bool:
+    """An optional determiner and one or two unknown content words ("Nadia", "le test")."""
+    words = [t for t in ts if t.low not in _DETERMINERS]
+    return bool(words) and len(ts) - len(words) <= 1 and len(words) <= 2 \
+        and all(_content_word(t) and not t.hyphen_before for t in words)
+
+
+def _plural_verb(tok) -> bool:
+    return bool(_feats(tok) & {"P1P", "P2P", "P3P"}) or tok.low in _PLURAL_AUX
 
 
 def _wh_complement_governor(toks: list[_Tok], i: int) -> "_Tok | None":
@@ -2197,6 +2212,27 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{content[0].start}-{content[-1].end}:{link}"
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
                        + (f":ops={','.join(ops)}" if ops else ""))
+
+    # "Nadia et Luc exécutent Q": "et" split a coordinated subject; the first nominal
+    # conjunct (a verbless clause) is never lost silently. The group-subject schema is not
+    # decided: the conjunct is kept as a named missing entry, the unit carries a blocker.
+    for ci in range(len(clauses) - 1):
+        c0, c1 = clauses[ci], clauses[ci + 1]
+        if c0.units or not c0.toks or c0.conn not in {None, "si", "que"} or not c1.units \
+                or [x.low for x in c1.conn_toks] != ["et"]:
+            continue
+        np0 = list(c0.toks)
+        while np0 and np0[0].low in _SUBJECT_INTRODUCERS:
+            np0 = np0[1:]
+        u1, d1 = c1.units[0]
+        pre = [t for t in c1.toks[:d1.head_index] if t.low not in {"ne", "n'"}]
+        head = c1.toks[d1.head_index]
+        covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
+        if not covered and _bare_noun_phrase(np0) \
+                and (_bare_noun_phrase(pre) or [t.low for t in pre] in (["moi"], ["toi"])) \
+                and d1.head_index > 0 and _plural_verb(head):
+            missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
+            ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
 
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)

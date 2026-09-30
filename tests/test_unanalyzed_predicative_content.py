@@ -121,7 +121,11 @@ def test_coordinated_unknown_clause_is_not_swallowed():
     "Je suis là.",
 ])
 def test_analyzed_or_non_predicative_text_is_not_marked(text):
-    assert parse_utterance(text).missing == ()
+    # no unanalysed predicative content; a coordinated subject's first conjunct is
+    # reported under its own marker (NEW8, test_coordinated_subject_unrepresented)
+    missing = parse_utterance(text).missing
+    assert not [m for m in missing if m.startswith(MARK)]
+    assert all(m.startswith("coordinated_subject_unrepresented:") for m in missing)
 
 
 def test_unanalyzed_content_adversarial_matrix():
