@@ -7,9 +7,12 @@ Q (CONDITIONS P -> Q) instead of R, Q became an independent gated request
 coordinated with R, and closure was True.
 
 Fail-closed: the member after a postposed protasis is kept, named
-(coordination_attachment_ambiguous), never a request, never related by
-proximity (no CONDITIONS to it, no COORDINATES with R), its occurrence stays
-unresolved, and the protasis conditions its own host R. Forms whose structure
+(coordination_attachment_ambiguous), never semantically REQUESTED, never
+related by proximity (no CONDITIONS to it, no COORDINATES with R), its
+occurrence stays unresolved, and the protasis conditions its own host R.
+G5-R: its main-clause request reading is still exposed at runtime as a
+possible request (EMBEDDED + role REQUEST); a member whose morphology leaves
+only the main imperative reading is a request (test_postposed_protasis_request). Forms whose structure
 fixes the attachment are unchanged: the preposed conjunctive protasis ("Si P
 et Q, R") and a member coordinated before the protasis ("R et Q si P").
 """
@@ -40,7 +43,6 @@ def _rels(f):
     "Lance R si Paul va lancer P et exécuter Q.",
     "Lance R si Paul lance P et exécute Q.",
     "Lance R si Paul lance P et exécuter Q.",
-    "Lance R si tu veux lancer P et exécute Q.",
     "Lance R si Paul veut lancer P, exécuter Q.",
     "Lance R si Paul veut lancer P ou exécuter Q.",
     "Paul lance R si Paul veut lancer P et exécuter Q.",
@@ -57,7 +59,7 @@ def test_member_after_postposed_protasis_is_named_not_attached(text):
     assert ("CONDITIONS", p.id, r.id) in _rels(f)                                # the protasis conditions R
     events = {c.predicate_ref: c for c in build_frame_event_index(f).events()}
     assert events[q.id].occurrence_claim.value == "UNRESOLVED"
-    assert "exécuter" not in governable_summary(f)["requested_action_surfaces"]
+    assert q.role == "REQUEST" and q.surface in governable_summary(f)["requested_action_surfaces"]  # possible
     assert not f.closure
 
 

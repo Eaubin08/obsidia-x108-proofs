@@ -120,6 +120,7 @@ class _Clause:
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
     after_postposed_protasis: bool = False  # "R si P et Q": Q in the protasis or the main clause
+    main_after_protasis: bool = False  # "R si tu P et exécute Q": morphology leaves only the main reading
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
     boundary: str | None = None  # punctuation that opened the clause
@@ -739,6 +740,17 @@ def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
     return bool((want or set()) & feats)
 
 
+def _main_imperative_only(clauses: list[_Clause], ci: int, d0: "_Draft") -> bool:
+    """After a postposed protasis, a bare subject-less imperative form that does not agree
+    with the protasis subject ("si tu veux lancer P et exécute Q", "si Paul lance P et
+    exécutez Q") cannot continue the protasis: the main imperative is its only reading."""
+    prot = next((c for c in reversed(clauses[:ci]) if c.conn == "si"), None)
+    host = prot.units[-1][1] if prot is not None and prot.units else None
+    return host is not None and host.subject is not None \
+        and d0.verb_form == "IMPERATIVE" and d0.head_index == d0.lex_index and d0.subject is None \
+        and d0.modality is None and "IMP" in _feats(d0.lex) and not _agrees_with_subject(d0.lex, host)
+
+
 def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     """One written auxiliary shared by coordinated past participles.
 
@@ -931,6 +943,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
 
 
 _PERIPHRASES = {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"}
+_SENTENCE_BOUNDARIES = {".", "!", "?", ";", ":"}
 _MEMBER_NEGATORS = {"ne", "n'", "pas", "plus", "jamais"}
 
 
@@ -1293,6 +1306,7 @@ class _Draft:
     unresolved_governor: bool = False    # unknown verb kept only as a "que" governor
     directive: bool = False              # under a written directive operator ("veuillez" + inf)
     compound_modal: bool = False         # "a pu / a dû / a voulu V": compound-tense modal chain
+    possible_request: bool = False       # ambiguous attachment with one addressee-request reading
 
 
 _MODALITY = {"ABLE": "ABILITY_OR_PERMISSION", "MUST": "OBLIGATION",
@@ -1800,6 +1814,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if clause.unresolved_governor is not None:
             drafts.append(_unresolved_governor_draft(clause.toks, clause.unresolved_governor))
         _share_auxiliary(clauses, ci, drafts)
+        if clause.after_postposed_protasis and drafts and _main_imperative_only(clauses, ci, drafts[0]):
+            # "Lance R si tu veux lancer P et exécute Q": "exécute" cannot continue a protasis
+            # whose subject it does not agree with; its only reading is the main imperative
+            clause.attachment_ambiguous = clause.after_postposed_protasis = False
+            clause.main_after_protasis = True
         for d in drafts:
             counter += 1
             if d.unresolved_governor:
@@ -1898,6 +1917,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     # "Lance R si P et ne pas / n'exécute pas Q": one reading is a main-clause
                     # prohibition; in doubt it is kept (never relaxes execution), still named
                     prag = "FORBIDDEN"
+                elif clause.after_postposed_protasis and u.polarity == "positive" and d.subject is None \
+                        and u.verb_form in {"INFINITIVE", "IMPERATIVE"} and d.head_index == d.lex_index \
+                        and d.modality is None:
+                    # "Lance R si Paul lance P et exécute Q": one reading is a main-clause request;
+                    # never REQUESTED, but exposed as a possible request (existing runtime path)
+                    d.possible_request = True
             elif clause.conn == "que" and parent_unit is None and n == 0 and host is not None and any(
                     t.low in {"paraît", "parait"} for t in host.toks):
                 prag, epi = "REPORTED", "HEARSAY"
@@ -2234,6 +2259,21 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             pass  # member of a conjunctive protasis: related through its head's group
         elif conn == "si":
             host = next_main if next_main is not None else prev_main
+            # a postposed protasis ("R si P") conditions the main clause it follows, never
+            # the next main head by proximity; when that clause is itself a coordinated
+            # member ("R et Q si P") the scope over the coordination is not decided (H11):
+            # no CONDITIONS target is chosen, the open scope is named (N5)
+            prev_ci = next((cj for (cj, u) in reversed(main_heads) if cj < ci), None)
+            scope_open = False
+            if prev_ci is not None and clause.protasis_head is None and clause.boundary in {None, ","} \
+                    and not any(c.boundary in _SENTENCE_BOUNDARIES for c in clauses[prev_ci + 1:ci]):
+                host = prev_main
+                pc = clauses[prev_ci]
+                earlier = [cj for (cj, _) in main_heads if cj < prev_ci
+                           and not any(c.boundary in _SENTENCE_BOUNDARIES for c in clauses[cj + 1:prev_ci + 1])]
+                scope_open = bool(earlier) and (pc.conn in {"et", "ou", "puis", "mais"}
+                                                or (pc.conn is None and pc.boundary == ","))
+                scope_open = scope_open or (ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis)
             source = h.id if h is not None else None
             if clause.protasis_head is clause:
                 group = [c for c in clauses if c.protasis_head is clause and c.units]
@@ -2250,7 +2290,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     coordinations.append(CoordinationRef(
                         source, "AND", tuple(u.id for u in heads), "conditional_protasis", links,
                         (heads[0].span[0], heads[-1].span[1])))
-            if host is not None:
+            if scope_open:
+                ambiguities.append(f"condition_scope_ambiguous:{source}")
+                if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and host is not None:
+                    # "R si tu P et exécute Q": R is conditioned in every reading, only the
+                    # extension to the following main member Q is open
+                    relations.append(LatticeRelation(RelationKind.CONDITIONS.value, source, host.id,
+                                                     evidence="si"))
+            elif host is not None:
                 relations.append(LatticeRelation(RelationKind.CONDITIONS.value, source, host.id,
                                                  evidence="si"))
         elif conn == "apres_que" and (prev_main or next_main) is not None:
@@ -2548,6 +2595,8 @@ def _action_agent(u: PredicateUnit, d: _Draft, prag: str) -> str:
 def _role(u: PredicateUnit, d: _Draft, prag: str, interrogative: bool) -> str:
     if u.polarity == "negative":
         return "NEGATED"
+    if d.possible_request:
+        return "REQUEST"   # EMBEDDED + REQUEST: possible request, never semantic REQUESTED
     if prag == "REPORTED":
         return "REPORTED"
     if prag == "BELIEVED":
