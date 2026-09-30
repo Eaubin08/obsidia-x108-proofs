@@ -849,10 +849,10 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # unrecognised word, the bare infinitive continues that content or is independent;
         # it is never an injunction: it takes the same open contract (named)
         gov_prev = prev.units[-1][1] if prev.units else None
-        if gov_prev is not None and gov_prev.governed == "unknown_governor" and same_family \
-                and (linked or disjoined or sequenced) and prev.conn not in _NO_CHAIN_SHARE \
+        if gov_prev is not None and gov_prev.governed in {"unknown_governor", "deontic_scope_open"} \
+                and same_family and (linked or disjoined or sequenced) and prev.conn not in _NO_CHAIN_SHARE \
                 and _bare_infinitive(clause, d0) and d0.modality is None and d0.subject is None:
-            d0.governed = "unknown_governor"
+            d0.governed = gov_prev.governed
             clause.share_family = family
             return
         # "Paul sait lancer P et exécuter Q": KNOW_HOW sharing is not decided; the bare
@@ -1372,8 +1372,9 @@ def _negated_periphrasis_infinitive(toks: list[_Tok], after: int, subj: str | No
         j += 1
     if j == after or subj is None or j + len(marker) >= len(toks):
         return None
+    last = {"de", "d'"} if marker[-1] == "de" else {marker[-1]}
     if [t.low for t in toks[j:j + len(marker) - 1]] != list(marker[:-1]) \
-            or toks[j + len(marker) - 1].low not in {"de", "d'"}:
+            or toks[j + len(marker) - 1].low not in last:
         return None
     v = j + len(marker)
     return v if _is_verb(toks, v) and "INF" in _feats(toks[v]) else None
@@ -1403,6 +1404,13 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
 
         # aux avoir/être + participle ; "a failli" + infinitive ; "est en train de"
         if pred in {"HAVE", "BE"}:
+            v = _negated_periphrasis_infinitive(toks, after, subj, ("à",)) if pred == "HAVE" else None
+            if v is not None:
+                # "Tu n'as pas à lancer P": negated "avoir à" (deontic force held, H16)
+                drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="deontic_scope_open"))
+                consumed.update({k, v})
+                k = v + 1
+                continue
             if pred == "BE":
                 # être là / ici -> presence ; être en train de + inf -> progressive
                 j = after
@@ -2010,6 +2018,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # the host's (no agreement) and is not known: never asserted, never requested
                 prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
                 ambiguities.append(f"subject_unresolved:{u.id}")
+            elif d.governed == "deontic_scope_open":
+                # "Tu n'as pas à lancer P": absence of obligation or no-right reading is held
+                # (H16); content of that negated "avoir à", never a request nor a prohibition
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                ambiguities.append(f"deontic_scope_open:{u.id}")
+                u, d.subject_person = replace(u, subject=None), None
             elif d.governed == "unknown_governor":
                 # content of an unrecognised finite governor: no subject taken from it, no request
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
@@ -2482,7 +2496,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
-    if d.governed in {"negated_scope_open", "know_how_scope_open", "unknown_governor", "subject_unresolved"}:
+    if d.governed in {"negated_scope_open", "know_how_scope_open", "unknown_governor", "subject_unresolved",
+                      "deontic_scope_open"}:
         return
     if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
             and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:
