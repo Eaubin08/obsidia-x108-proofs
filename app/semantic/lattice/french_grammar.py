@@ -1347,6 +1347,24 @@ def _subject_before(toks: list[_Tok], idx: int) -> tuple[str | None, str | None]
     return None, None
 
 
+def _negated_periphrasis_infinitive(toks: list[_Tok], after: int, subj: str | None,
+                                    marker: tuple[str, ...]) -> int | None:
+    """"Paul ne vient pas de lancer P", "Paul n'est pas en train de lancer P": a negator
+    between the finite verb and "de" / "en train de". The negated periphrasis is not
+    analysed here (its occurrence is not decided); index of its infinitive, which stays
+    content of that governor (never an addressee request), or None."""
+    j = after
+    while j < len(toks) and toks[j].low in {"pas", "plus", "jamais"}:
+        j += 1
+    if j == after or subj is None or j + len(marker) >= len(toks):
+        return None
+    if [t.low for t in toks[j:j + len(marker) - 1]] != list(marker[:-1]) \
+            or toks[j + len(marker) - 1].low not in {"de", "d'"}:
+        return None
+    v = j + len(marker)
+    return v if _is_verb(toks, v) and "INF" in _feats(toks[v]) else None
+
+
 def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
     drafts: list[_Draft] = []
     consumed: set[int] = set()
@@ -1390,6 +1408,12 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                         consumed.update({k, v})
                         k = v + 1
                         continue
+                v = _negated_periphrasis_infinitive(toks, after, subj, ("en", "train", "de"))
+                if v is not None:
+                    drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="unknown_governor"))
+                    consumed.update({k, v})
+                    k = v + 1
+                    continue
             v = _next_verb(toks, after, skip)
             if v is not None and "PP" in _feats(toks[v]):
                 lex = toks[v]
@@ -1454,6 +1478,12 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                     consumed.update({k, v})
                     k = v + 1
                     continue
+            v = _negated_periphrasis_infinitive(toks, after, subj, ("de",))
+            if v is not None:
+                drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="unknown_governor"))
+                consumed.update({k, v})
+                k = v + 1
+                continue
             v = _next_verb(toks, after, skip)
             if v is not None and person in {"1", "3"} and "INF" in _feats(toks[v]) and "PP" not in _feats(toks[v]):
                 # "Paul (ne) vient (pas) lancer P": venir + infinitive has no construction here;
