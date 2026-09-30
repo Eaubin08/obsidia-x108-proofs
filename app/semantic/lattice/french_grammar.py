@@ -1012,6 +1012,16 @@ def _plural_verb(tok) -> bool:
     return bool(_feats(tok) & {"P1P", "P2P", "P3P"}) or tok.low in _PLURAL_AUX
 
 
+def _finite_clause_after(toks: list[_Tok], i: int) -> bool:
+    """A verb follows the WH word at i before the next punctuation ("qui a lancé P")."""
+    for j in range(i + 1, len(toks)):
+        if toks[j].low in {".", "!", "?", ";", ","}:
+            return False
+        if _is_verb(toks, j):
+            return True
+    return False
+
+
 def _wh_complement_governor(toks: list[_Tok], i: int) -> "_Tok | None":
     """The verb governing a WH complement ("Je sais quand P", "Dis-moi comment P"): only the
     verb right before the WH word (or before its hyphenated pronoun), and only when a finite
@@ -1170,6 +1180,19 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         if gov is not None:
             open_clause("wh", [t])
             cur().wh_governor = gov
+            i += 1
+            continue
+        # "Paul se demande qui / où / quand P": WH complement of a governor unknown to the
+        # lexicon; the governor is kept unresolved (as for "que"), the complement is
+        # interrogative content, never a relative nor an asserted event. No profile is
+        # implied: SYNTAX RECOGNITION != SEMANTIC PROFILE AVAILABILITY.
+        governor_at = _unresolved_governor_index(cur().toks) \
+            if low in _WH_COMPLEMENT_WORDS and cur().toks and _finite_clause_after(toks, i) else None
+        if governor_at is not None:
+            wg = cur().toks[governor_at]
+            cur().unresolved_governor = governor_at
+            open_clause("wh", [t])
+            cur().wh_governor = wg
             i += 1
             continue
         # "quand" / "lorsque" Q: a temporal subordinate whose meaning stays held

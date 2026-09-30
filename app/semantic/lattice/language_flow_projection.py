@@ -33,7 +33,8 @@ _EPISTEMIC_UNIT_MAP = {
     "UNKNOWN": "UNKNOWN",
     "POSSIBLE": "UNCERTAIN",
     "HYPOTHETICAL": "HYPOTHESIS",
-    "COUNTERFACTUAL": "CONTRADICTED",
+    # H07: "a failli P" (COUNTERFACTUAL) is a non-realization carried by the occurrence
+    # (ASSERTED_NOT_REALIZED), never an epistemic contradiction: no epistemic flow
     # detached source markers (B2e profiles): "Selon Marie, P" is Marie's report,
     # "Selon moi, P" the speaker's belief; trace / inferential sources stay unlabelled (held)
     "HUMAN_SOURCE": "REPORTED",
