@@ -2649,6 +2649,11 @@ def _request_target(u: PredicateUnit, agent: str, prag: str, role: str) -> str:
         return "ADDRESSEE"
     if role == "AMBIGUOUS_REQUEST" and prag == "INDIRECT_REQUEST" and agent == "ADDRESSEE":
         return "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"
+    if role == "AMBIGUOUS_REQUEST" and prag == "INDIRECT_REQUEST" and agent == "IMPERSONAL" \
+            and u.modality == "OBLIGATION":
+        # "Faut-il lancer P ?" (question channel only): its possible request may be the
+        # addressee's; no other impersonal clause is retargeted
+        return "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"
     return "NONE"
 
 def _ability_speech_act(d: _Draft, interrogative: bool) -> str:
@@ -2674,8 +2679,8 @@ def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
             return "INDIRECT_REQUEST", "NOT_APPLICABLE"
         return ("ASKED", "UNKNOWN") if act == "QUESTION" else ("ASSERTED", "ASSERTED")
     if u.modality == "OBLIGATION":
-        if interrogative and person == "2":
-            # "Dois-tu lancer P ?", "Tu ne dois pas lancer P ?": a question about an obligation
+        if interrogative and person in {"2", "impersonal"}:
+            # "Dois-tu / Faut-il lancer P ?", "Ne faut-il pas lancer P ?": a question about an obligation
             # or a request: fail-closed channel, never a definitive request or prohibition
             ambiguities.append(f"question_or_request:{u.id}")
             return "INDIRECT_REQUEST", "NOT_APPLICABLE"
