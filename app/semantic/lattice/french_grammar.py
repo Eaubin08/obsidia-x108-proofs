@@ -1824,6 +1824,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     relations: list[LatticeRelation] = []
     coordinations: list[CoordinationRef] = []
     ambiguities: list[str] = []
+    lost_governors: list[tuple[tuple[int, int], str]] = []  # (governor span, governed unit)
     deixis = [t.low for t in toks if t.low in _DEIXIS and not t.hyphen_before]
     counter = 0
 
@@ -2084,6 +2085,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                      evidence="prep+inf"))
             else:
                 prag, epi = _main_pragmatics(u, d, interrogative, ambiguities)
+            if d.governed == "unknown_governor" and f"infinitive_under_unrecognized_governor:{u.id}" not in ambiguities:
+                # "à moins que Paul veuille lancer P": a subordinate branch set its pragmatics;
+                # the unrecognised governor is still named and its surface kept (N11)
+                ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
+                if d.governor_span is not None:
+                    lost_governors.append((d.governor_span, u.id))
             if d.governed == "subject_unresolved" and f"subject_unresolved:{u.id}" not in ambiguities:
                 # whatever branch set its pragmatics (protasis, ambiguous attachment...), a
                 # finite verb whose subject is unknown is always named (R1)
@@ -2467,6 +2474,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
                        + (f":ops={','.join(ops)}" if ops else ""))
 
+    for (g_start, g_end), uid in lost_governors:
+        missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{g_start}-{g_end}:unrecognized_governor_of={uid}")
+
     # "Lance R si Paul valide P": a postposed "si" + proper-noun subject + unknown word opens
     # no clause (no known verb); the protasis content is reported, never silently dropped
     # (no unit, no CONDITIONS target invented; R is not left looking unconditional)
@@ -2626,8 +2636,11 @@ def _unknown_finite_governor(clause: _Clause, d: _Draft) -> bool:
     s = g - 1
     while s >= 0 and lows[s] in {"ne", "n'"}:
         s -= 1
-    return s >= 0 and lows[s] not in _INTERJECTIONS and not toks[s].hyphen_before and (
+    found = s >= 0 and lows[s] not in _INTERJECTIONS and not toks[s].hyphen_before and (
         lows[s] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or _content_word(toks[s]))
+    if found:
+        d.governor_span = (toks[g].start, toks[g].end)   # surface of the unrecognised governor
+    return found
 
 
 def _oral_head_negator(toks: list[_Tok], d: _Draft) -> int | None:
