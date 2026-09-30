@@ -106,16 +106,32 @@ def router_decide(raw: str, memory_index: Optional[dict] = None
     decision_py = root / "app" / "router" / "decision.py"
     if not decision_py.is_file():
         return None, ROUTER_UNAVAILABLE
+    # The router lives under the generic top-level name "app": it is imported and
+    # called with its root first and its own "app" namespace (never the process's
+    # own "app", which would silently answer instead of the configured router),
+    # then the process import state (sys.path, every "app" / "app.*" module) is
+    # restored exactly, whatever the outcome. A long-lived process keeps neither
+    # the router root nor a foreign "app".
+    saved_path = list(sys.path)
+    saved_app = {n: m for n, m in sys.modules.items() if n == "app" or n.startswith("app.")}
     try:
-        if str(root) not in sys.path:
-            sys.path.insert(0, str(root))
-        from app.router.decision import decide  # type: ignore
-    except Exception:
-        return None, ROUTER_UNAVAILABLE
-    try:
-        d = decide(raw, memory_index=memory_index or {})
-    except Exception:
-        return None, ROUTER_EXCEPTION
+        for n in saved_app:
+            del sys.modules[n]
+        sys.path.insert(0, str(root))
+        try:
+            from app.router.decision import decide  # type: ignore
+        except Exception:
+            return None, ROUTER_UNAVAILABLE
+        try:
+            d = decide(raw, memory_index=memory_index or {})
+        except Exception:
+            return None, ROUTER_EXCEPTION
+    finally:
+        sys.path[:] = saved_path
+        for n in [n for n in sys.modules if n == "app" or n.startswith("app.")]:
+            if n not in saved_app:
+                del sys.modules[n]
+        sys.modules.update(saved_app)
     if not isinstance(d, dict) or not isinstance(d.get("route"), str) or not d["route"].strip():
         return None, MALFORMED_ROUTER_DECISION
     if not isinstance(d.get("ir"), dict) or not isinstance(d.get("gate"), dict):
