@@ -109,6 +109,8 @@ class FrameOccurrenceProjection:
         # "après que Q": Q is the presupposed temporal anchor (source of PRECEDES), not asserted
         self.temporal |= {r.source for r in frame.relations
                           if r.kind == RelationKind.PRECEDES.value and r.evidence == "après que"}
+        # "R et Q avant / après que P" (host held): P keeps its temporal-subordinate status
+        self.temporal |= {a.split(":")[1] for a in frame.ambiguities if a.startswith("temporal_scope_ambiguous:")}
         self.claims: dict[str, tuple[OccurrenceDerivation, str | None]] = {}
         self.contexts: dict[str, _Context] = {}
         self.visiting: set[str] = set()

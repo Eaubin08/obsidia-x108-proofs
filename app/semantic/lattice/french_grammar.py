@@ -946,7 +946,7 @@ _PERIPHRASES = {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"}
 _SENTENCE_BOUNDARIES = {".", "!", "?", ";", ":"}
 # postposed subordinates after which a coordinated member may continue the subordinate or
 # the main clause ("R si P et Q", "R sauf si / à moins que P et Q"): never attached by proximity
-_POSTPOSED_ATTACH_CONNS = {"si", "a_moins_que"}
+_POSTPOSED_ATTACH_CONNS = {"si", "a_moins_que", "avant_que", "apres_que", "sans_que"}
 _MEMBER_NEGATORS = {"ne", "n'", "pas", "plus", "jamais"}
 
 
@@ -2284,6 +2284,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             hosts.insert(0, u)
         return hosts
 
+    def _temporal_hosts(ci: int) -> list[PredicateUnit] | None:
+        """Possible hosts of a temporal subordinate when there are several, else None."""
+        hosts = _scope_hosts(ci)
+        if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and clauses[ci + 1].units:
+            hosts.append(clauses[ci + 1].units[0][0])
+        return hosts if len(hosts) > 1 else None
+
     # ── inter-clause relations ──
     alternatives: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
@@ -2344,6 +2351,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             elif host is not None:
                 relations.append(LatticeRelation(RelationKind.CONDITIONS.value, source, host.id,
                                                  evidence="si"))
+        elif conn in {"apres_que", "avant_que"} and _temporal_hosts(ci) is not None:
+            # "R et Q avant / après que P": with several possible hosts no PRECEDES target is
+            # chosen (never the nearest); the temporal scope is named (not a condition scope)
+            hosts = _temporal_hosts(ci)
+            ambiguities.append(f"temporal_scope_ambiguous:{h.id}:host={','.join(u.id for u in hosts)}")
         elif conn == "apres_que" and (prev_main or next_main) is not None:
             host = prev_main if prev_main is not None else next_main
             relations.append(LatticeRelation(RelationKind.PRECEDES.value, h.id, host.id,

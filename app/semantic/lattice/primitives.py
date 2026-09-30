@@ -29,6 +29,7 @@ STRUCTURAL_AMBIGUITIES = frozenset({
     "coordinated_subject_unrepresented", "subject_unresolved", "negated_speech_act_open",
     "occurrence_conflict_open", "condition_scope_ambiguous",
     "deontic_scope_open", "exception_condition_open",
+    "temporal_scope_ambiguous",
 })
 
 BOUNDARY = {
