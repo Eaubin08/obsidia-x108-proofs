@@ -52,7 +52,9 @@ def test_no_unit_gate_or_occurrence_is_created_for_it():
 
 @pytest.mark.parametrize("text", [
     "Ça va.", "Ça, c'est bon.", "J'ai vu ça.", "Merci pour ça.", "Ça aussi.", "Pas ça.", "Et ça ?",
-    "Ça va et Paul lance P.", "C'est bon et Paul lance P.", "Fais ça et lance P.", "Lance ça.",
+    "Ça va et Paul lance P.", "Fais ça et lance P.", "Lance ça.",
+    # "C'est bon et Paul lance P." left this list: a copula + attribute in a sequence is
+    # reported missing (NF9, test_copula_attribute_missing), never silently dropped
 ])
 def test_no_new_missing_for_known_or_verbless_demonstratives(text):
     f = parse_utterance(text)

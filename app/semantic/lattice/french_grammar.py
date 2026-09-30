@@ -506,6 +506,37 @@ def _lost_verb_evidence(clause: "_Clause") -> list[tuple[int, int]]:
     return out
 
 
+# connectives whose clause is always expected to carry a predication: a copula +
+# attribute there is reported, never dropped ("Lance P si c'est prêt")
+_COPULA_REPORTED_CONNS = {"si", "que", "apres_que", "avant_que", "a_moins_que"}
+
+
+def _copula_evidence(clause: "_Clause") -> list[tuple[int, int]]:
+    """(finite "être" index, attribute index) pairs: "c'est prêt", "le test est vert".
+
+    Only a finite, non-inverted "être" directly followed (after negators /
+    adverbs) by a non-verbal word; presence ("est là"), "est-ce", "n'est-ce" and
+    auxiliaries of a participle are not copulas here. Nothing is inferred about
+    the attribute: this is evidence of an unanalysed predication only.
+    """
+    toks, lows = clause.toks, [t.low for t in clause.toks]
+    out = []
+    for k in range(len(toks)):
+        if not _is_verb(toks, k) or toks[k].hyphen_before or _pred(toks[k]) != "BE" \
+                or "INF" in _feats(toks[k]) or "PP" in _feats(toks[k]):
+            continue
+        j, adverb = k + 1, None
+        while j < len(toks) and lows[j] in _FR_NEGATORS | _AUX_ADVERBS:
+            adverb = j if lows[j] in _AUX_ADVERBS else adverb
+            j += 1
+        if j < len(toks) and not toks[j].is_punct and not toks[j].hyphen_before and not _is_verb(toks, j) \
+                and lows[j] not in {"là", "ici", "here", "en"}:
+            out.append((k, j))
+        elif (j >= len(toks) or toks[j].is_punct) and adverb is not None:
+            out.append((k, adverb))  # the adverb is the attribute: "c'est bien", "il est aussi"
+    return out
+
+
 _SEQUENCE_CONNECTIVES = {"et", "ou", "mais", "puis", "donc", "car", "alors"}
 # demonstrative subjects: a clause they open has the shape of a subject pronoun's ("ça parle de X")
 _DEMONSTRATIVE_SUBJECTS = {"ça", "ca", "cela", "ceci"}
@@ -2019,9 +2050,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
         elif clause.conn != "quand" and not _unanalyzed_predicative(
-                clause, in_sequence=clause.conn in _SEQUENCE_CONNECTIVES
-                or (clause.conn is None and any(c.units for c in clauses if c is not clause))):
-            # (a "quand / lorsque" subordinate without any unit is always reported)
+                clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
+                                     or (clause.conn is None and any(c.units for c in clauses if c is not clause)))) \
+                and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
+            # (a "quand / lorsque" subordinate without any unit is always reported; so is
+            # a copula + attribute clause in a subordinate or a sequence: "si c'est prêt")
             continue
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
         if clause.conn in {"que", "rel"}:
