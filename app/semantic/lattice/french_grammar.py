@@ -906,7 +906,8 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     # (so are "venir de" RECENT_PAST and "être en train de" PROGRESSIVE)
     near_future = last is not None and last.modality is None and not last.directive \
         and last.tense in {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"} and last.subject is not None
-    negated_head = last is not None and any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index])
+    negated_head = last is not None and (any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index])
+                                         or _oral_head_negator(clause.toks, last) is not None)
     scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
         and (clause.conn == "si" or negated_head)
     # "Paul ne doit pas lancer P et exécuter Q": a negated obligation is never shared as a
@@ -1696,6 +1697,12 @@ def _polarity(toks: list[_Tok], d: _Draft, clause: _Clause, all_drafts: list[_Dr
         # The ne ... NEG pair frames another (possibly unknown) predicate.
         out["governor_negated"] = True
         return out
+    # oral negation of a chain head: "tu peux pas lancer P" (never dropped for lack of "ne")
+    k = _oral_head_negator(toks, d)
+    if k is not None:
+        out.update(polarity="negative", negator=lows[k], ne_omitted=True,
+                   negation_confirmed=False, confidence=0.7)
+        return out
     # oral negation: negator right after the verb (or its hyphenated clitic)
     j = hi + 1
     while j < len(lows) and toks[j].hyphen_before and lows[j] in {"le", "la", "les", "moi", "lui"}:
@@ -2467,6 +2474,21 @@ def _unknown_finite_governor(clause: _Clause, d: _Draft) -> bool:
         lows[s] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or _content_word(toks[s]))
 
 
+def _oral_head_negator(toks: list[_Tok], d: _Draft) -> int | None:
+    """"Tu peux pas lancer P", "Paul doit pas lancer P": index of an oral negator (no "ne")
+    right after the finite head of a chain (after its hyphenated clitic), before the
+    lexical verb; None when there is none or a written "ne" frames the head."""
+    if d.head_index == d.lex_index or any(t.low in {"ne", "n'"} for t in toks[:d.head_index]):
+        return None
+    j = d.head_index + 1
+    while j < d.lex_index and toks[j].hyphen_before:
+        j += 1
+    if j < d.lex_index and toks[j].low in _ORAL_NEGATORS and not (
+            j + 1 < len(toks) and toks[j].low == "pas" and toks[j + 1].low in {"à", "a", "besoin"}):
+        return j
+    return None
+
+
 def _negates_operator(toks: list[_Tok], d: _Draft) -> bool:
     """The negation of this chain frames its finite head (the question / modal operator),
     not its lexical infinitive: "ne peux-tu pas lancer" vs "peux-tu ne pas lancer". A member
@@ -2474,6 +2496,8 @@ def _negates_operator(toks: list[_Tok], d: _Draft) -> bool:
     carries its own negation."""
     if d.modal_tok is not None and not any(t is d.modal_tok for t in toks):
         return False
+    if _oral_head_negator(toks, d) is not None:
+        return True     # "tu peux pas (ne pas) lancer": the oral negation frames the operator
     return not any(t.low in {"ne", "n'"} for t in toks[d.head_index + 1:d.lex_index])
 
 
