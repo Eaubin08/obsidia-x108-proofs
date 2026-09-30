@@ -789,7 +789,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             m = prev.modal
             d0.modality, d0.modal_tok, d0.tense = m.modality, m.modal_tok, m.tense
             d0.subject, d0.subject_person, d0.politeness = m.subject, m.subject_person, m.politeness
-            d0.directive = m.directive
+            d0.directive, d0.compound_modal = m.directive, m.compound_modal
             clause.modal = m
             clause.shared_modal_host = prev.shared_modal_host or prev
             clause.share_family = family
@@ -1151,6 +1151,7 @@ class _Draft:
     governor_span: tuple | None = None   # exact governor token of a negated_scope_open infinitive
     unresolved_governor: bool = False    # unknown verb kept only as a "que" governor
     directive: bool = False              # under a written directive operator ("veuillez" + inf)
+    compound_modal: bool = False         # "a pu / a dû / a voulu V": compound-tense modal chain
 
 
 _MODALITY = {"ABLE": "ABILITY_OR_PERMISSION", "MUST": "OBLIGATION",
@@ -1256,6 +1257,19 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                     if w is not None:
                         drafts.append(_Draft(toks[w], w, k, "INFINITIVE", "AVERTED",
                                              subject=subj, subject_person=person))
+                        consumed.update({k, v, w})
+                        k = w + 1
+                        continue
+                if _MODALITY.get(_pred(lex)) is not None:
+                    # "a voulu / a pu / a dû / a su / a fallu" + infinitive: one modal chain in
+                    # a compound tense (its occurrence is held, see modal_past_occurrence_open)
+                    w = _next_verb(toks, v + 1, skip)
+                    if w is not None and "INF" in _feats(toks[w]) and "PP" not in _feats(toks[w]):
+                        drafts.append(_Draft(
+                            toks[w], w, k, "INFINITIVE", _COMPOUND_TENSE.get(_tense_of(feats), "PAST"),
+                            modality=_MODALITY[_pred(lex)], modal_tok=lex, subject=subj,
+                            subject_person="impersonal" if _pred(lex) == "NEED" else person,
+                            inverted=inverted, compound_modal=True))
                         consumed.update({k, v, w})
                         k = w + 1
                         continue
@@ -1791,7 +1805,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                      evidence="prep+inf"))
             else:
                 prag, epi = _main_pragmatics(u, d, interrogative, ambiguities)
-            if u.tense_aspect in {"PAST", "PLUPERFECT", "RECENT_PAST"} and prag in {
+            if d.compound_modal:
+                # whether "a pu / a dû / a voulu V" happened is not decided: never realized
+                ambiguities.append(f"modal_past_occurrence_open:{u.id}")
+            elif u.tense_aspect in {"PAST", "PLUPERFECT", "RECENT_PAST"} and prag in {
                     "ASSERTED", "REPORTED", "BELIEVED", "ASKED"}:
                 realized = True if prag != "ASKED" else None
             if u.tense_aspect == "AVERTED":
@@ -2246,7 +2263,7 @@ def _request_target(u: PredicateUnit, agent: str, prag: str, role: str) -> str:
 
 def _ability_speech_act(d: _Draft, interrogative: bool) -> str:
     """Speech act carried by an ability-permission modal, from its own context."""
-    if d.subject_person == "2" and (interrogative or d.politeness):
+    if d.subject_person == "2" and (interrogative or d.politeness) and not d.compound_modal:
         return "INDIRECT_REQUEST"
     return "QUESTION" if interrogative else "NONE"
 
@@ -2254,6 +2271,9 @@ def _ability_speech_act(d: _Draft, interrogative: bool) -> str:
 def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
                      ambiguities: list[str]) -> tuple[str, str]:
     person = d.subject_person
+    if d.compound_modal:
+        # a past modal ("tu as dû lancer P", "il a fallu lancer P") is never a directive
+        return ("ASKED", "UNKNOWN") if interrogative else ("ASSERTED", "ASSERTED")
     if d.directive:
         # one written directive operator scopes over its (coordinated) infinitives
         return "REQUESTED", "NOT_APPLICABLE"

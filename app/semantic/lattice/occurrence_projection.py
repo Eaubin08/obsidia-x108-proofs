@@ -98,6 +98,8 @@ class FrameOccurrenceProjection:
         self.shared_operator = {m: o.id for o in frame.operator_scopes
                                 for m in frame.relation_members(o.scope)}
         self.alternative = self._alternative_branches(frame)
+        self.modal_past = {a.split(":", 1)[1] for a in frame.ambiguities
+                           if a.startswith("modal_past_occurrence_open:")}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         # "après que Q": Q is the presupposed temporal anchor (source of PRECEDES), not asserted
@@ -308,7 +310,7 @@ class FrameOccurrenceProjection:
             question=u.pragmatic == "ASKED",
             conditional_role=role, hypothetical=self._hypothetical(u),
             alternative=u.id in self.alternative,
-            temporal_subordinate=u.id in self.temporal,
+            temporal_subordinate=u.id in self.temporal, modal_past=u.id in self.modal_past,
             interrogative_ancestry=interrogative_ancestry,
             attribution_boundary=ctx.non_assertive,
             unresolved_governance=ctx.unresolved or local_unresolved,
@@ -337,6 +339,7 @@ class FrameOccurrenceProjection:
             directive=u.pragmatic in _DIRECTIVE_PRAGMATICS or u.role in {"REQUEST", "AMBIGUOUS_REQUEST"},
             question=u.pragmatic == "ASKED", conditional_role=self._conditional_role(u),
             hypothetical=self._hypothetical(u), temporal_subordinate=u.id in self.temporal,
+            modal_past=u.id in self.modal_past,
             realization_signal="PERFECTIVE" if u.tense_aspect in _PERFECTIVE_TENSES else None,
             provenance={"level": "holder"}))
 

@@ -80,6 +80,7 @@ class OccurrenceInput:
     interrogative_ancestry: bool = False
     attribution_boundary: bool = False      # inside ATTRIBUTED / MENTIONED / PRESUPPOSED content
     unresolved_governance: bool = False     # unknown / unprofiled governor, implicative, lost governor
+    modal_past: bool = False                # compound-tense modal ("a pu / a dû / a voulu V"): held doctrine
     governed_mention: bool = False          # purpose / mention infinitive
     malformed_ancestry: bool = False
     realization_signal: str | None = None
@@ -119,6 +120,9 @@ def derive_occurrence(inp: OccurrenceInput) -> OccurrenceDerivation:
 def _derive(inp: OccurrenceInput) -> tuple[OccurrenceClaim, str]:
     if inp.malformed_ancestry:
         return OccurrenceClaim.UNRESOLVED, "malformed_ancestry"
+    if inp.modal_past:
+        # MODAL_PLUS_PAST_OCCURRENCE: whether "a pu / a dû / a voulu V" happened is not decided
+        return OccurrenceClaim.UNRESOLVED, "modal_past_open"
     if inp.unresolved_governance:
         # Fail closed first: nothing (not even an entailment) resolves under it.
         return OccurrenceClaim.UNRESOLVED, "unresolved_governance"
