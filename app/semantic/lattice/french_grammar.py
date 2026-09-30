@@ -2403,6 +2403,20 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                        + (f":governed_by={governed_by.id}" if governed_by is not None else "")
                        + (f":ops={','.join(ops)}" if ops else ""))
 
+    # "Lance R si Paul valide P": a postposed "si" + proper-noun subject + unknown word opens
+    # no clause (no known verb); the protasis content is reported, never silently dropped
+    # (no unit, no CONDITIONS target invented; R is not left looking unconditional)
+    for clause in clauses:
+        for k in range(1, len(clause.toks)):
+            if clause.toks[k].low != "si":
+                continue
+            rest = [t for t in clause.toks[k + 1:] if not t.is_punct]
+            if len(rest) >= 2 and raw[rest[0].start:rest[0].start + 1].isupper() and not rest[0].analyses \
+                    and rest[0].low.isalpha() and rest[1].low.isalpha() and rest[1].low not in _CONNECTIVES \
+                    and not any(_is_verb(clause.toks, j) for j in range(k + 1, len(clause.toks))):
+                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{rest[0].start}-{rest[-1].end}:conditional_protasis")
+                break
+
     # "Nadia et Luc exécutent Q": "et" split a coordinated subject; the first nominal
     # conjunct (a verbless clause) is never lost silently. The group-subject schema is not
     # decided: the conjunct is kept as a named missing entry, the unit carries a blocker.
