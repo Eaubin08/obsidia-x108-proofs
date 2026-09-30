@@ -905,8 +905,13 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     # (so are "venir de" RECENT_PAST and "être en train de" PROGRESSIVE)
     near_future = last is not None and last.modality is None and not last.directive \
         and last.tense in {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"} and last.subject is not None
+    negated_head = last is not None and any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index])
     scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
-        and (clause.conn == "si" or any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index]))
+        and (clause.conn == "si" or negated_head)
+    # "Paul ne doit pas lancer P et exécuter Q": a negated obligation is never shared as a
+    # positive one (nor its negation copied): its scope over Q stays open too (G2)
+    scope_open = scope_open or (last is not None and last.modality == "OBLIGATION" and negated_head
+                                and clause.conn != "si")
     # "Paul ne veut / peut / va pas lancer P et exécuter Q": ¬(P∧Q), ¬P∧¬Q or ¬P∧Q stays
     # held, but in every reading Q is that operator's content, never an injunction
     # (negated_scope_open)
