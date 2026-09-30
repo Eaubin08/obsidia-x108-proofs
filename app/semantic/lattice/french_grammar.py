@@ -794,11 +794,11 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.shared_modal_host = prev.shared_modal_host or prev
             clause.share_family = family
             return
-        # "Paul ne veut pas lancer P et / puis / ou / , exécuter Q": the bare infinitive
-        # stays open under that exact negated desire unit, no polarity chosen
+        # "Paul ne veut pas lancer P et / puis / ou / mais / , exécuter Q": the bare
+        # infinitive stays open under that exact negated desire unit, no polarity chosen
         open_host = prev.neg_desire_open
         if open_host is not None and same_family \
-                and (linked or disjoined or (sequenced and "mais" not in conns)) \
+                and (linked or disjoined or sequenced) \
                 and prev.conn not in _NO_CHAIN_SHARE \
                 and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
                 and d0.modality is None and d0.subject is None:

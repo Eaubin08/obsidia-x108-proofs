@@ -4,7 +4,7 @@
 ¬P∧¬Q or ¬P∧Q) is a held doctrine, so the desire is not shared; but in every
 reading "exécuter Q" is the content of that desire, never an injunction to
 the addressee. It was REQUESTED with a gate. Without choosing any polarity,
-the infinitive (after "et", ",", "puis", "et puis" or "ou") now stays
+the infinitive (after "et", ",", "puis", "et puis", "ou" or "mais") now stays
 EMBEDDED under the exact negated desire unit (EMBEDS, evidence
 negated_scope_open) with the named structural ambiguity negated_scope_open,
 which blocks semantic closure. Its own polarity, modality and subject stay
@@ -40,6 +40,11 @@ def _view(text):
     ("Paul ne voudrait pas lancer P, exécuter Q.", 1),
     ("Paul ne veut pas lancer P, exécuter Q et arrêter R.", 2),
     ("Tu ne veux pas lancer P et exécuter Q ?", 1),
+    # NF1: "mais" joins the same open scope (its contrast relation is kept)
+    ("Paul ne veut pas lancer P mais exécuter Q.", 1),
+    ("Je ne veux pas lancer P mais exécuter Q.", 1),
+    ("Paul ne voudrait pas lancer P mais exécuter Q.", 1),
+    ("Paul ne veut plus lancer P mais exécuter Q.", 1),
 ])
 def test_infinitive_after_negated_desire_stays_open_never_requested(text, n_open):
     f, gate, events = _view(text)
@@ -69,11 +74,15 @@ def test_infinitive_after_negated_desire_stays_open_never_requested(text, n_open
     "Lance R si Paul ne veut pas lancer P et exécuter Q.",  # protasis: unchanged
     "Paul ne peut pas lancer P et exécuter Q.",           # NEG-OPERATOR-ET: out of scope
     "Paul ne va pas lancer P et exécuter Q.",             # NEG-OPERATOR-ET: out of scope
-    "Paul ne veut pas lancer P mais exécuter Q.",         # "mais": not in this ticket
 ])
 def test_outside_the_ticket_nothing_is_marked(text):
     f = parse_utterance(text)
     assert not any(a.startswith("negated_scope_open") for a in f.ambiguities)
+
+
+def test_mais_keeps_its_contrast_relation():
+    f, _, _ = _view("Paul ne veut pas lancer P mais exécuter Q.")
+    assert ("CONTRASTS", f.units[0].id, f.units[1].id) in [(r.kind, r.source, r.target) for r in f.relations]
 
 
 def test_true_request_after_negated_desire_is_kept():
