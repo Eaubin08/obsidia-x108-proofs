@@ -1760,6 +1760,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
                                                      u.id, evidence=clause.conn))
+            elif d.governed == "unknown_governor":
+                # content of an unrecognised finite governor: no subject taken from it, no request
+                prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
+                u, d.subject_person = replace(u, subject=None), None
             elif d.governed == "negated_scope_open":
                 # an infinitive under a negated "vouloir" whose scope over it is not
                 # established: its content, never an injunction, and no polarity chosen
@@ -2174,6 +2179,10 @@ def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
             return
     if d.verb_form != "INFINITIVE" or d.lex_index != d.head_index:
         return
+    if _unknown_finite_governor(clause, d):
+        # "Paul n'aime pas lancer P": governed by an unrecognised word, never injunctive
+        d.governed = "unknown_governor"
+        return
     j = d.lex_index - 1
     skip = _OBJECT_CLITICS | _REFLEXIVE_CLITICS | {"ne", "n'", "pas", "rien", "jamais", "plus", "avoir"}
     while j >= 0 and lows[j] in skip:
@@ -2202,6 +2211,28 @@ def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
         d.governor_unit = prior[-1].id if prior else None
         d.governor_negated = bool(pol.get("governor_negated")) or bool(
             prior and prior[-1].polarity == "negative")
+
+
+def _unknown_finite_governor(clause: _Clause, d: _Draft) -> bool:
+    """A bare infinitive whose left context is subject + unknown content word (+ ne /
+    pas / ni): "Paul aime lancer P", "Paul n'aime ni lancer P ni exécuter Q".
+
+    The second "ni" member takes the same (exact) governor as the first; an
+    interjection or a hyphenated word is never taken as a governor or a subject.
+    """
+    toks, lows = clause.toks, [t.low for t in clause.toks]
+    g = d.lex_index - 1
+    if g >= 0 and lows[g] == "ni" and any(dd.governed == "unknown_governor" for (_, dd) in clause.units):
+        return True
+    while g >= 0 and lows[g] in _OBJECT_CLITICS | _REFLEXIVE_CLITICS | {"ne", "n'", "pas", "plus", "jamais", "ni"}:
+        g -= 1
+    if g < 1 or not _content_word(toks[g]) or toks[g].hyphen_before or lows[g] in _INTERJECTIONS:
+        return False
+    s = g - 1
+    while s >= 0 and lows[s] in {"ne", "n'"}:
+        s -= 1
+    return s >= 0 and lows[s] not in _INTERJECTIONS and not toks[s].hyphen_before and (
+        lows[s] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or _content_word(toks[s]))
 
 
 def _action_agent(u: PredicateUnit, d: _Draft, prag: str) -> str:
