@@ -680,11 +680,12 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         # "ne sait ni INF ni INF": KNOW_HOW sharing is not decided, its ni infinitives stay open too
         know_how = _MODALITY.get(_pred(shared)) == "KNOW_HOW"
         desire_open = desire_open or know_how
-        if "COND" in _feats(shared) and not (desire or know_how):
-            continue
         ability = _MODALITY.get(_pred(shared)) == "ABILITY_OR_PERMISSION"
-        if ability and any(x in _SECOND_PERSON for x in lows):
-            # "Ne peux-tu ni P ni Q ?": negated question / reproach / suggestion stays open
+        # "Ne peux-tu / pourrais-tu ni P ni Q ?": negated question / reproach / suggestion: not
+        # shared either, its ni infinitives stay open under that exact "pouvoir" (never injunctive)
+        ability_open = ability and any(x in _SECOND_PERSON for x in lows)
+        desire_open = desire_open or ability_open
+        if "COND" in _feats(shared) and not (desire or know_how or ability_open):
             continue
         modal = ability or desire or know_how or _MODALITY.get(_pred(shared)) == "OBLIGATION"
         if not modal and _pred(shared) not in {"HAVE", "BE"}:
@@ -1987,6 +1988,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 realized = True if prag != "ASKED" else None
             if u.tense_aspect == "AVERTED":
                 realized, epi = False, "COUNTERFACTUAL"
+            if interrogative and d.lex is clause.ni_scope_open and d.modality is None \
+                    and _MODALITY.get(_pred(d.lex)) == "ABILITY_OR_PERMISSION":
+                # "Ne peux-tu ni lancer P ni exécuter Q ?": the act of the negated ability
+                # question over its open ni members is not decided either (named)
+                ambiguities.append(f"negated_speech_act_open:{u.id}")
             if prag == "INDIRECT_REQUEST" and u.polarity == "negative" and _negates_operator(clause.toks, d):
                 # "Ne peux-tu pas lancer P ?", "Tu ne lances pas P ?": the negation bears on
                 # the question / ability operator, not on a requested content: never a
