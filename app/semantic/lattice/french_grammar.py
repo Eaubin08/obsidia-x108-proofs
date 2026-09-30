@@ -120,6 +120,7 @@ class _Clause:
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
     after_postposed_protasis: bool = False  # "R si P et Q": Q in the protasis or the main clause
+    postposed_subordinate: bool = False  # "de sorte que / jusqu'à ce que": G5-R attachment contract
     main_after_protasis: bool = False  # "R si tu P et exécute Q": morphology leaves only the main reading
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
@@ -744,7 +745,8 @@ def _main_imperative_only(clauses: list[_Clause], ci: int, d0: "_Draft") -> bool
     """After a postposed protasis, a bare subject-less imperative form that does not agree
     with the protasis subject ("si tu veux lancer P et exécute Q", "si Paul lance P et
     exécutez Q") cannot continue the protasis: the main imperative is its only reading."""
-    prot = next((c for c in reversed(clauses[:ci]) if c.conn in _POSTPOSED_ATTACH_CONNS), None)
+    prot = next((c for c in reversed(clauses[:ci])
+                 if c.conn in _POSTPOSED_ATTACH_CONNS or c.postposed_subordinate), None)
     host = prot.units[-1][1] if prot is not None and prot.units else None
     return host is not None and host.subject is not None \
         and d0.verb_form == "IMPERATIVE" and d0.head_index == d0.lex_index and d0.subject is None \
@@ -1128,7 +1130,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             4 if span[:3] == ["jusqu'", "à", "ce"] and span[3:4] in (["que"], ["qu'"]) else 0
         if n_sub and cur().toks:
             open_clause("rel", toks[i:i + n_sub], parent=len(clauses) - 1)
-            cur().governor_lost = True
+            cur().governor_lost = cur().postposed_subordinate = True
             i += n_sub
             continue
         if low == "parce" and nxt is not None and nxt.low in {"que", "qu'"}:
@@ -1849,8 +1851,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     # sharing, no request): kept and named, and the protasis conditions its own host R
     for k in range(2, len(clauses)):
         prev, clause = clauses[k - 1], clauses[k]
-        if (prev.after_postposed_protasis or (prev.conn in _POSTPOSED_ATTACH_CONNS and prev.protasis_head is None
-                                               and prev.boundary in {None, ","})) \
+        if (prev.after_postposed_protasis
+                or ((prev.conn in _POSTPOSED_ATTACH_CONNS or prev.postposed_subordinate)
+                    and prev.protasis_head is None and prev.boundary in {None, ","})) \
                 and clause.boundary in {None, ","} \
                 and (clause.conn in {"et", "ou", "puis", "mais"} or (clause.conn is None and clause.boundary == ",")):
             clause.attachment_ambiguous = clause.after_postposed_protasis = True
@@ -1969,7 +1972,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
                 if clause.after_postposed_protasis and u.polarity == "negative" and d.subject is None \
                         and u.verb_form in {"INFINITIVE", "IMPERATIVE"} and d.head_index == d.lex_index \
-                        and not any(c.modal is not None for c in clauses[:ci] if c.conn in _POSTPOSED_ATTACH_CONNS):
+                        and not any(c.modal is not None for c in clauses[:ci]
+                                    if c.conn in _POSTPOSED_ATTACH_CONNS or c.postposed_subordinate):
                     # "Lance R si P et ne pas / n'exécute pas Q": one reading is a main-clause
                     # prohibition; in doubt it is kept (never relaxes execution), still named
                     prag = "FORBIDDEN"
