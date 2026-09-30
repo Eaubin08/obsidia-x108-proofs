@@ -443,6 +443,20 @@ def _si_nominal_subject(toks: list[_Tok], i: int) -> bool:
         j += 1
     if names == 0:
         return False
+    if j < len(toks) and toks[j].low == "et":
+        # "si Nadia et Luc exécutent Q": a coordinated subject, only with a plural verb
+        k = j + 1
+        if k < len(toks) and toks[k].low in _DETERMINERS:
+            k += 1
+        conj = 0
+        while k < len(toks) and conj < 2 and (toks[k].low in _TONIC_PRONOUNS or not (
+                toks[k].is_punct or toks[k].analyses or not toks[k].low.isalpha()
+                or toks[k].low in blocked or toks[k].low in _CONNECTIVES)):
+            conj += 1
+            k += 1
+        while k < len(toks) and toks[k].low in {"ne", "n'"}:
+            k += 1
+        return conj > 0 and k < len(toks) and _is_verb(toks, k) and _plural_verb(toks[k])
     while j < len(toks) and toks[j].low in {"ne", "n'"}:
         j += 1
     return j < len(toks) and _is_verb(toks, j)
@@ -2104,7 +2118,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     alternatives: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
         h = head_of(ci)
-        if h is None:
+        # a protasis head without a unit ("Si Nadia et Luc exécutent Q"): its group still conditions
+        if h is None and not (clause.conn == "si" and clause.protasis_head is clause):
             continue
         conn = clause.conn
         prev_main = next((u for (cj, u) in reversed(main_heads) if cj < ci), None)
@@ -2118,10 +2133,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             pass  # member of a conjunctive protasis: related through its head's group
         elif conn == "si":
             host = next_main if next_main is not None else prev_main
-            source = h.id
+            source = h.id if h is not None else None
             if clause.protasis_head is clause:
                 group = [c for c in clauses if c.protasis_head is clause and c.units]
                 heads = [c.units[0][0] for c in group]
+                if source is None:
+                    if not heads:
+                        continue
+                    source = heads[0].id
                 links = tuple(" ".join(x.low for x in c.conn_toks) for c in group[1:])
                 for a, (b, link) in zip(heads, zip(heads[1:], links)):
                     relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=link))
