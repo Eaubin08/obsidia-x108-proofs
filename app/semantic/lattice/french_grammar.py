@@ -119,6 +119,7 @@ class _Clause:
     governor_lost: bool = False  # "que" clause after a non-nominal word: not a relative
     coordinated_with: "_Clause | None" = None  # "V que P et que Q": Q's sibling complement P
     attachment_ambiguous: bool = False  # coordinated after a complement, several attachments open
+    after_postposed_protasis: bool = False  # "R si P et Q": Q in the protasis or the main clause
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
     boundary: str | None = None  # punctuation that opened the clause
@@ -1737,6 +1738,16 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if (clause.conn in {"et", "ou"} or causal) and (_is_complement(prev) or prev.evidential is not None
                                                         or prev.conn in {"quand", "wh"}):
             clause.attachment_ambiguous = True
+    # "R si P et Q": after a postposed protasis Q may continue the protasis or the main
+    # clause (held, H11); it is never attached by proximity (no CONDITIONS to it, no
+    # sharing, no request): kept and named, and the protasis conditions its own host R
+    for k in range(2, len(clauses)):
+        prev, clause = clauses[k - 1], clauses[k]
+        if (prev.after_postposed_protasis or (prev.conn == "si" and prev.protasis_head is None
+                                               and prev.boundary in {None, ","})) \
+                and clause.boundary in {None, ","} \
+                and (clause.conn in {"et", "ou", "puis", "mais"} or (clause.conn is None and clause.boundary == ",")):
+            clause.attachment_ambiguous = clause.after_postposed_protasis = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
 
@@ -1844,6 +1855,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # never a root assertion.
                 prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
                 ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
+                if clause.after_postposed_protasis and u.polarity == "negative" and d.subject is None \
+                        and u.verb_form in {"INFINITIVE", "IMPERATIVE"} and d.head_index == d.lex_index \
+                        and not any(c.modal is not None for c in clauses[:ci] if c.conn == "si"):
+                    # "Lance R si P et ne pas / n'exécute pas Q": one reading is a main-clause
+                    # prohibition; in doubt it is kept (never relaxes execution), still named
+                    prag = "FORBIDDEN"
             elif clause.conn == "que" and parent_unit is None and n == 0 and host is not None and any(
                     t.low in {"paraît", "parait"} for t in host.toks):
                 prag, epi = "REPORTED", "HEARSAY"
