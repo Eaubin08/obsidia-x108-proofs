@@ -72,9 +72,7 @@ def test_infinitive_after_negated_desire_stays_open_never_requested(text, n_open
     "Paul ne veut pas lancer P et Nadia exécute Q.",
     "Veuillez lancer P et exécuter Q.",
     "Lance R si Paul ne veut pas lancer P et exécuter Q.",  # protasis: unchanged
-    "Paul ne peut pas lancer P et exécuter Q.",           # NEG-OPERATOR-ET: out of scope
-    "Paul ne va pas lancer P et exécuter Q.",             # NEG-OPERATOR-ET: out of scope
-])
+])  # negated pouvoir / aller (NEG-OPERATOR-ET): see test_negated_operator_coordination (G1)
 def test_outside_the_ticket_nothing_is_marked(text):
     f = parse_utterance(text)
     assert not any(a.startswith("negated_scope_open") for a in f.ambiguities)

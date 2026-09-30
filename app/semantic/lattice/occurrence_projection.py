@@ -316,7 +316,11 @@ class FrameOccurrenceProjection:
             unresolved_governance=ctx.unresolved or local_unresolved,
             # purpose / mention / temporal-context infinitives and "après avoir X"
             governed_mention=(kind == "prep" and parent.predicate not in _IMPLICATIVE_GOVERNORS)
-            or (u.pragmatic == "EMBEDDED" and u.role in _MENTION_ROLES),
+            or (u.pragmatic == "EMBEDDED" and u.role in _MENTION_ROLES)
+            # a locally negated infinitive under an unrepresented governor ("Paul aime lancer P
+            # et ne pas exécuter Q"): the negation is inside the content, never a root assertion
+            or (u.pragmatic == "EMBEDDED" and u.role == "NEGATED" and u.verb_form == "INFINITIVE"
+                and u.embedded_under is None),
             malformed_ancestry=kind == "malformed",
             realization_signal=("PERFECTIVE" if u.tense_aspect in _PERFECTIVE_TENSES else
                                 "META_EVENT_PRESENT" if (u.predicate in _META and u.pragmatic == "ASSERTED"

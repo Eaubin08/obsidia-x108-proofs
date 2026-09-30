@@ -78,7 +78,9 @@ def test_true_directives_keep_their_prohibition(text):
 
 
 @pytest.mark.parametrize("text", ["Paul ne peut pas lancer P et ne pas exécuter Q.", "Paul ne va pas lancer P et ne pas exécuter Q."])
-def test_neg_operator_et_is_untouched(text):
+def test_neg_operator_et_member_stays_open_under_the_operator(text):
+    # G1: under a negated operator the member is that operator's open content, never a prohibition
     f, u = _last(text)
-    assert not any(a.endswith(u.id) and a.startswith(("infinitive_under_unrecognized_governor", "negated_scope_open"))
-                   for a in f.ambiguities)
+    assert f"negated_scope_open:{u.id}" in f.ambiguities
+    assert u.pragmatic == "EMBEDDED" and u.polarity == "negative"
+    assert not any(c.startswith("NO_") for c in f.constraints)
