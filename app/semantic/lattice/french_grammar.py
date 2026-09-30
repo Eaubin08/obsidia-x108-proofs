@@ -132,6 +132,7 @@ class _Clause:
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_desire_open: object = None  # negated DESIRE chain draft whose scope over a bare coordinated INF is open
     know_how_open: object = None  # savoir (KNOW_HOW) chain draft: its scope over a bare coordinated INF is open
+    wh_governor: object = None  # verb token right before the WH word of a "wh" complement ("sais quand P")
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
@@ -563,7 +564,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     i = 1 if lows[:1] == ["si"] else 0
     if i >= len(toks):
         return False
-    expected = clause.conn in {"que", "si", "quand"} or i == 1
+    expected = clause.conn in {"que", "si", "quand", "wh"} or i == 1
     if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS:
         j = i + 1
     elif (expected or (in_sequence and _source_marker(clause.toks) is None)) and lows[i] not in _INTERJECTIONS:
@@ -699,9 +700,9 @@ _PERSON_FEATS = {"je": {"P1S"}, "j'": {"P1S"}, "tu": {"P2S"}, "il": {"P3S"}, "el
                  "nous": {"P1P"}, "vous": {"P2P"}, "ils": {"P3P"}, "elles": {"P3P"}}
 # connectives after which a bare verb's subject stays open ("R si Paul lance P et exécute Q")
 _NO_SUBJECT_SHARE = {"que", "rel", "comparative", "si", "sans", "sans_que", "avant_que", "a_moins_que", "apres_que",
-                     "quand"}
+                     "quand", "wh"}
 # subordinates that never lend their auxiliary / modal / periphrasis to a following clause
-_NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "quand"}
+_NO_CHAIN_SHARE = {"que", "rel", "comparative", "apres_que", "quand", "wh"}
 
 
 def _agrees_with_subject(tok: _Tok, host: "_Draft") -> bool:
@@ -920,6 +921,32 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
     return prev, False
 
 
+_WH_COMPLEMENT_WORDS = {"quand", "comment", "pourquoi", "où", "combien"}
+_HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
+
+
+def _wh_complement_governor(toks: list[_Tok], i: int) -> "_Tok | None":
+    """The verb governing a WH complement ("Je sais quand P", "Dis-moi comment P"): only the
+    verb right before the WH word (or before its hyphenated pronoun), and only when a finite
+    clause follows ("Dis-moi comment lancer P" stays a WH infinitive)."""
+    if toks[i].low not in _WH_COMPLEMENT_WORDS or i == 0 or i + 1 >= len(toks):
+        return None
+    nxt = toks[i + 1]
+    if nxt.is_punct or nxt.low in {"même", "meme"} or _is_verb(toks, i + 1):
+        return None
+    g = i - 1
+    if toks[g].hyphen_before and toks[g].low in _HYPHEN_OBJECT_PRONOUNS:
+        g -= 1
+    if g < 0 or not _is_verb(toks, g):
+        return None
+    for j in range(i + 2, len(toks)):
+        if toks[j].low in {".", "!", "?", ";", ","}:
+            return None
+        if _is_verb(toks, j):
+            return toks[g]
+    return None
+
+
 def _subordinating_quand(toks: list[_Tok], i: int) -> bool:
     """"quand" opening a subordinate clause, not an interrogative or idiomatic one.
 
@@ -1016,6 +1043,13 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 and not (cur().toks and cur().toks[-1].low == "d'"):
             open_clause("apres_que", [t, nxt])
             i += 2
+            continue
+        # "Je sais quand P", "Dis-moi comment P": a WH complement of the adjacent verb
+        gov = _wh_complement_governor(toks, i)
+        if gov is not None:
+            open_clause("wh", [t])
+            cur().wh_governor = gov
+            i += 1
             continue
         # "quand" / "lorsque" Q: a temporal subordinate whose meaning stays held
         if low in _TEMPORAL_INTRODUCERS or (low == "quand" and _subordinating_quand(toks, i)):
@@ -1155,7 +1189,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         # A verbless clause shaped like a predication with an unknown verb
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause, and so is
         # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V").
-        if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand"} \
+        if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand", "wh"} \
                 and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
                                                 or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
@@ -1621,7 +1655,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     for prev, clause in zip(clauses, clauses[1:]):
         causal = clause.conn in {"car", "donc"} and clause.boundary not in {".", "!", "?", ";"}
         if (clause.conn in {"et", "ou"} or causal) and (_is_complement(prev) or prev.evidential is not None
-                                                        or prev.conn == "quand"):
+                                                        or prev.conn in {"quand", "wh"}):
             clause.attachment_ambiguous = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
@@ -1776,6 +1810,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # (the finite counterpart of "après avoir V")
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 d.governed = "temporal"
+            elif clause.conn == "wh":
+                # WH complement: subordinated under its adjacent governor; its commitment
+                # (presupposed, mentioned, asked) is not decided
+                prag, epi = "EMBEDDED", UNRESOLVED_GOVERNANCE
+                ambiguities.append(f"unresolved_complement_governance:{u.id}")
+                wg = clause.wh_governor
+                gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
+                            if x.span == (wg.start, wg.end)), None)
+                if gov is not None:
+                    embedded_under = gov.id
+                    relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
+                                                     evidence="wh_unresolved_governance"))
             elif clause.conn == "quand":
                 # "quand / lorsque Q": order, simultaneity, habit or condition is a held
                 # doctrine: Q is subordinated, never asserted, no relation and no host chosen
@@ -1899,7 +1945,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # host of a following "puis" / "mais": only main clauses do. A clause of
         # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "apres_que", "quand", "car"} and clause.units                 and not clause.attachment_ambiguous:
+                               "avant_que", "a_moins_que", "apres_que", "quand", "wh", "car"} and clause.units                 and not clause.attachment_ambiguous:
             main_heads.append((ci, clause.units[0][0]))
 
     for group in complement_alternatives:
@@ -2133,6 +2179,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 link = "embedded_under_unresolved_governor"
         elif clause.conn == "quand":
             link = "temporal_subordinate"  # no host chosen
+        elif clause.conn == "wh":
+            link = "wh_complement"
         elif ci in protases:
             link = "conditional_protasis"
         else:
