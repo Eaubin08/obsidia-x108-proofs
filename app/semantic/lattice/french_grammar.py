@@ -2345,6 +2345,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     relations.extend(ref_relations)
     ambiguities.extend(ambiguous_refs)
 
+    ambiguities.extend(_occurrence_conflict_candidates(clauses))
+
     constraints = _constraints(final_units)
     contradictions = _contradictions(final_units)
     evidence = _evidence_needs(final_units)
@@ -2672,6 +2674,33 @@ def _constraints(units: list[PredicateUnit]) -> list[str]:
         if u.restriction == "ONLY" and u.polarity == "positive":
             out += [f"ONLY_{u.predicate}({h})" for h in _heads(u)]
     return list(dict.fromkeys(out))
+
+
+def _occurrence_conflict_candidates(clauses: list[_Clause]) -> list[str]:
+    """"Paul a lancé P et Paul n'a pas lancé P": two root assertions whose clauses are the
+    same words except "ne ... pas" (same subject, verb form, object, adjuncts). Both claims
+    are kept as they are; the pair is only named as a possible occurrence conflict
+    (temporal / perspective / contradiction resolution is held doctrine, H06). A pair that
+    differs in anything else (pronoun subject, tense, adjunct...) is never compared.
+    """
+    rows = []
+    for c in clauses:
+        if len(c.units) != 1 or c.conn not in {None, "et", "mais"}:
+            continue
+        u = c.units[0][0]
+        if u.pragmatic != "ASSERTED" or u.embedded_under is not None:
+            continue
+        if u.polarity == "negative" and not (u.negation_confirmed and u.negator == "pas"):
+            continue
+        conn = {id(t) for t in c.conn_toks}
+        sig = tuple(t.low for t in c.toks if id(t) not in conn and t.low not in {"ne", "n'", "pas"})
+        rows.append((sig, u))
+    out = []
+    for i, (sig_a, a) in enumerate(rows):
+        for sig_b, b in rows[i + 1:]:
+            if sig_a == sig_b and {a.polarity, b.polarity} == {"positive", "negative"}:
+                out.append(f"occurrence_conflict_open:{a.id}:{b.id}")
+    return out
 
 
 def _contradictions(units: list[PredicateUnit]) -> list[str]:

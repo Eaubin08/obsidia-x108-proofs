@@ -18,7 +18,8 @@ from enum import Enum
 # Parser ambiguity markers that leave the meaning structure itself unresolved
 # (antecedent, attachment, governor, lost structure, bare "ne", unshared negated
 # scope, held temporal subordinate, held compound-modal occurrence, open act of a
-# negated question operator): they block semantic closure. Speech-act readings kept by fail-closed doctrine
+# negated question operator, possible positive / negative occurrence conflict): they
+# block semantic closure. Speech-act readings kept by fail-closed doctrine
 # (ability_permission_or_request, desire_or_request, question_or_request) do not.
 STRUCTURAL_AMBIGUITIES = frozenset({
     "ambiguous_antecedent", "coordination_attachment_ambiguous", "complement_governor_lost",
@@ -26,6 +27,7 @@ STRUCTURAL_AMBIGUITIES = frozenset({
     "infinitive_under_unrecognized_governor", "bare_ne", "negated_scope_open",
     "temporal_subordinate_open", "modal_past_occurrence_open", "know_how_scope_open",
     "coordinated_subject_unrepresented", "subject_unresolved", "negated_speech_act_open",
+    "occurrence_conflict_open",
 })
 
 BOUNDARY = {
