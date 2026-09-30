@@ -788,7 +788,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         # "Veuillez lancer P et exécuter Q": so is the directive operator's scope;
         # "Peux-tu lancer P et exécuter Q ?": so is the ability-permission modal
         if chained and prev.modal is not None and prev.conn not in _NO_CHAIN_SHARE \
-                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and _bare_infinitive(clause, d0) \
                 and d0.modality is None and d0.subject is None:
             m = prev.modal
             d0.modality, d0.modal_tok, d0.tense = m.modality, m.modal_tok, m.tense
@@ -804,7 +804,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         if open_host is not None and same_family \
                 and (linked or disjoined or sequenced) \
                 and prev.conn not in _NO_CHAIN_SHARE \
-                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and _bare_infinitive(clause, d0) \
                 and d0.modality is None and d0.subject is None:
             d0.governed = "negated_scope_open"
             d0.governor_span = (open_host.lex.start, open_host.lex.end)
@@ -816,7 +816,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         open_host = prev.know_how_open
         if open_host is not None and same_family and (linked or disjoined or sequenced) \
                 and prev.conn not in _NO_CHAIN_SHARE \
-                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and _bare_infinitive(clause, d0) \
                 and d0.modality is None and d0.subject is None:
             d0.governed = "know_how_scope_open"
             d0.governor_span = (open_host.lex.start, open_host.lex.end)
@@ -834,6 +834,16 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             d0.subject, d0.subject_person = host.subject, host.subject_person
             clause.subject_host = host
             clause.shared_subject_host = prev.shared_subject_host or prev
+            clause.share_family = family
+            return
+        # "Paul lance P et ne pas exécuter Q": no host operator licenses the negated bare
+        # infinitive; it is never an independent prohibition (NO_EXECUTE), only named
+        host = prev.subject_host
+        if same_family and (linked or sequenced or disjoined) and host is not None \
+                and host.modality is None and not host.directive and host.tense not in _PERIPHRASES \
+                and prev.conn not in _NO_CHAIN_SHARE and _bare_infinitive(clause, d0) and d0.head_index > 0 \
+                and d0.modality is None and d0.subject is None:
+            d0.governed = "unknown_governor"
             clause.share_family = family
             return
     compound = [d for d in drafts if d.verb_form == "PARTICIPLE" and d.head_index != d.lex_index]
@@ -865,6 +875,17 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             and not scope_open and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.modal = last
+
+
+_PERIPHRASES = {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"}
+_MEMBER_NEGATORS = {"ne", "n'", "pas", "plus", "jamais"}
+
+
+def _bare_infinitive(clause: _Clause, d0: "_Draft") -> bool:
+    """A subject-less infinitive opening its clause, possibly after its own negation
+    ("et exécuter Q", "et ne pas exécuter Q": the negation stays local to the member)."""
+    return d0.verb_form == "INFINITIVE" and d0.head_index == d0.lex_index \
+        and all(t.low in _MEMBER_NEGATORS for t in clause.toks[:d0.head_index])
 
 
 def _share_kind(sharers: list[_Clause]) -> str:
@@ -2171,7 +2192,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
-    if d.governed in {"negated_scope_open", "know_how_scope_open"}:  # bound to its exact host already
+    if d.governed in {"negated_scope_open", "know_how_scope_open", "unknown_governor"}:  # already bound
         return
     if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
             and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:
