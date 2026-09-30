@@ -2557,6 +2557,11 @@ def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
             return "INDIRECT_REQUEST", "NOT_APPLICABLE"
         return ("ASKED", "UNKNOWN") if act == "QUESTION" else ("ASSERTED", "ASSERTED")
     if u.modality == "OBLIGATION":
+        if interrogative and person == "2":
+            # "Dois-tu lancer P ?", "Tu ne dois pas lancer P ?": a question about an obligation
+            # or a request: fail-closed channel, never a definitive request or prohibition
+            ambiguities.append(f"question_or_request:{u.id}")
+            return "INDIRECT_REQUEST", "NOT_APPLICABLE"
         if person in {"2", "impersonal"} or d.subject is None:
             return "REQUESTED", "NOT_APPLICABLE"
         return ("ASKED", "UNKNOWN") if interrogative else ("ASSERTED", "ASSERTED")
