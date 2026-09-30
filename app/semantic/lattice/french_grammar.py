@@ -131,6 +131,7 @@ class _Clause:
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_desire_open: object = None  # negated DESIRE chain draft whose scope over a bare coordinated INF is open
+    know_how_open: object = None  # savoir (KNOW_HOW) chain draft: its scope over a bare coordinated INF is open
     subject_host: object = None  # its last draft with an explicit subject, shared by an agreeing bare verb
     shared_subject_host: "_Clause | None" = None  # clause whose subject a bare finite verb shares
     share_family: str | None = None  # "and" | "or": connective family of a sharing chain member
@@ -660,13 +661,16 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         # open under that exact "vouloir" (negated_scope_open)
         desire = _MODALITY.get(_pred(shared)) == "DESIRE" and "IMP" not in _feats(shared)
         desire_open = desire and ("COND" in _feats(shared) or any(x in _SECOND_PERSON for x in lows))
-        if "COND" in _feats(shared) and not desire:
+        # "ne sait ni INF ni INF": KNOW_HOW sharing is not decided, its ni infinitives stay open too
+        know_how = _MODALITY.get(_pred(shared)) == "KNOW_HOW"
+        desire_open = desire_open or know_how
+        if "COND" in _feats(shared) and not (desire or know_how):
             continue
         ability = _MODALITY.get(_pred(shared)) == "ABILITY_OR_PERMISSION"
         if ability and any(x in _SECOND_PERSON for x in lows):
             # "Ne peux-tu ni P ni Q ?": negated question / reproach / suggestion stays open
             continue
-        modal = ability or desire or _MODALITY.get(_pred(shared)) == "OBLIGATION"
+        modal = ability or desire or know_how or _MODALITY.get(_pred(shared)) == "OBLIGATION"
         if not modal and _pred(shared) not in {"HAVE", "BE"}:
             continue
         member_feat, other_feat = ("INF", "PP") if modal else ("PP", "INF")
@@ -807,6 +811,18 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.neg_desire_open = open_host
             clause.share_family = family
             return
+        # "Paul sait lancer P et exécuter Q": KNOW_HOW sharing is not decided; the bare
+        # infinitive stays open under that exact savoir unit (know_how_scope_open)
+        open_host = prev.know_how_open
+        if open_host is not None and same_family and (linked or disjoined or sequenced) \
+                and prev.conn not in _NO_CHAIN_SHARE \
+                and d0.head_index == d0.lex_index == 0 and d0.verb_form == "INFINITIVE" \
+                and d0.modality is None and d0.subject is None:
+            d0.governed = "know_how_scope_open"
+            d0.governor_span = (open_host.lex.start, open_host.lex.end)
+            clause.know_how_open = open_host
+            clause.share_family = family
+            return
         # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
         # explicit subject shares that subject; it is never an imperative
         host = prev.subject_host
@@ -841,6 +857,9 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     if scope_open and clause.conn != "si" and last.modality == "DESIRE" and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.neg_desire_open = last
+    if last is not None and clause.conn != "si" and last.modality == "KNOW_HOW" and last.verb_form == "INFINITIVE" \
+            and last.head_index != last.lex_index and last.modal_tok is not None:
+        clause.know_how_open = last
     if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE"}
                              or last.directive or near_future) \
             and not scope_open and last.verb_form == "INFINITIVE" \
@@ -1765,17 +1784,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
                 u, d.subject_person = replace(u, subject=None), None
-            elif d.governed == "negated_scope_open":
-                # an infinitive under a negated "vouloir" whose scope over it is not
-                # established: its content, never an injunction, and no polarity chosen
+            elif d.governed in {"negated_scope_open", "know_how_scope_open"}:
+                # an infinitive under a negated "vouloir" (or a savoir chain) whose scope over
+                # it is not established: its content, never an injunction, no polarity chosen
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
-                ambiguities.append(f"negated_scope_open:{u.id}")
+                ambiguities.append(f"{d.governed}:{u.id}")
                 gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
                             if x.span == d.governor_span), None)
                 if gov is not None:
                     embedded_under = gov.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
-                                                     evidence="negated_scope_open"))
+                                                     evidence=d.governed))
             elif d.governed == "wh":
                 prag, epi = ("ASKED", "UNKNOWN") if interrogative else ("EMBEDDED", "NOT_APPLICABLE")
             elif d.governed in {"purpose", "temporal", "permission"}:
@@ -2152,7 +2171,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:
     """Classify infinitive roles that mention an action without requesting it."""
     lows = [t.low for t in clause.toks]
-    if d.governed == "negated_scope_open":  # already bound to its exact host (_share_auxiliary)
+    if d.governed in {"negated_scope_open", "know_how_scope_open"}:  # bound to its exact host already
         return
     if clause.ni_scope_open is not None and d.verb_form == "INFINITIVE" and d.head_index > 0 \
             and lows[d.head_index - 1] == "ni" and d.modality is None and d.subject is None:
