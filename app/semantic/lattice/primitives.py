@@ -28,7 +28,7 @@ STRUCTURAL_AMBIGUITIES = frozenset({
     "temporal_subordinate_open", "modal_past_occurrence_open", "know_how_scope_open",
     "coordinated_subject_unrepresented", "subject_unresolved", "negated_speech_act_open",
     "occurrence_conflict_open", "condition_scope_ambiguous",
-    "deontic_scope_open",
+    "deontic_scope_open", "exception_condition_open",
 })
 
 BOUNDARY = {

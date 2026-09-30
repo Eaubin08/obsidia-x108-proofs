@@ -68,10 +68,16 @@ def test_consequent_meta_event_is_conditional(text, meta):
     assert consequent == C
 
 
-def test_a_moins_que_main_clause_is_conditional():
-    _, _, relation, protasis, consequent = _pair("Paul relance le build à moins que Marie lance le test.")
-    assert relation.evidence == "à moins que"
-    assert (protasis, consequent) == (C, C)
+def test_a_moins_que_is_an_exception_not_an_ordinary_condition():
+    # N10: "à moins que" is an exception condition (final relation held, H17): no ordinary
+    # CONDITIONS; the exception and its host are named and neither is ever asserted
+    frame = parse_utterance("Paul relance le build à moins que Marie lance le test.")
+    index = build_frame_event_index(frame)
+    host, exception = frame.units
+    assert not any(r.kind == "CONDITIONS" for r in frame.relations)
+    assert f"exception_condition_open:{exception.id}:host={host.id}" in frame.ambiguities
+    for u in (host, exception):
+        assert index.event_for(u.id).occurrence_claim.value == "UNRESOLVED"
 
 
 @pytest.mark.parametrize("text", [

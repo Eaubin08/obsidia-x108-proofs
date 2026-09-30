@@ -581,7 +581,7 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     i = 1 if lows[:1] == ["si"] else 0
     if i >= len(toks):
         return False
-    expected = clause.conn in {"que", "si", "quand", "wh"} or i == 1
+    expected = clause.conn in {"que", "si", "quand", "wh", "a_moins_que"} or i == 1
     if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS:
         j = i + 1
     elif (expected or (in_sequence and _source_marker(clause.toks) is None)) and lows[i] not in _INTERJECTIONS:
@@ -744,7 +744,7 @@ def _main_imperative_only(clauses: list[_Clause], ci: int, d0: "_Draft") -> bool
     """After a postposed protasis, a bare subject-less imperative form that does not agree
     with the protasis subject ("si tu veux lancer P et exécute Q", "si Paul lance P et
     exécutez Q") cannot continue the protasis: the main imperative is its only reading."""
-    prot = next((c for c in reversed(clauses[:ci]) if c.conn == "si"), None)
+    prot = next((c for c in reversed(clauses[:ci]) if c.conn in _POSTPOSED_ATTACH_CONNS), None)
     host = prot.units[-1][1] if prot is not None and prot.units else None
     return host is not None and host.subject is not None \
         and d0.verb_form == "IMPERATIVE" and d0.head_index == d0.lex_index and d0.subject is None \
@@ -944,6 +944,9 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
 
 _PERIPHRASES = {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"}
 _SENTENCE_BOUNDARIES = {".", "!", "?", ";", ":"}
+# postposed subordinates after which a coordinated member may continue the subordinate or
+# the main clause ("R si P et Q", "R sauf si / à moins que P et Q"): never attached by proximity
+_POSTPOSED_ATTACH_CONNS = {"si", "a_moins_que"}
 _MEMBER_NEGATORS = {"ne", "n'", "pas", "plus", "jamais"}
 
 
@@ -1093,6 +1096,13 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             continue
 
         # Complex subordinators.
+        # "sauf si P", "excepté si P", "sauf s'il P": exception condition, same family as
+        # "à moins que" (H17); "sauf" is never absorbed into the preceding object
+        if low in {"sauf", "excepté", "excepte"} and nxt is not None and (
+                nxt.low == "si" or (nxt.low == "s'" and nxt2 is not None and nxt2.low in _ELIDED_SI_SUBJECTS)):
+            open_clause("a_moins_que", [t, nxt])
+            i += 2
+            continue
         if low in {"avant", "before"} and nxt is not None and nxt.low in {"de", "d'"}:
             open_clause("avant_de", [t, nxt])
             i += 2
@@ -1802,7 +1812,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     # sharing, no request): kept and named, and the protasis conditions its own host R
     for k in range(2, len(clauses)):
         prev, clause = clauses[k - 1], clauses[k]
-        if (prev.after_postposed_protasis or (prev.conn == "si" and prev.protasis_head is None
+        if (prev.after_postposed_protasis or (prev.conn in _POSTPOSED_ATTACH_CONNS and prev.protasis_head is None
                                                and prev.boundary in {None, ","})) \
                 and clause.boundary in {None, ","} \
                 and (clause.conn in {"et", "ou", "puis", "mais"} or (clause.conn is None and clause.boundary == ",")):
@@ -1921,7 +1931,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
                 if clause.after_postposed_protasis and u.polarity == "negative" and d.subject is None \
                         and u.verb_form in {"INFINITIVE", "IMPERATIVE"} and d.head_index == d.lex_index \
-                        and not any(c.modal is not None for c in clauses[:ci] if c.conn == "si"):
+                        and not any(c.modal is not None for c in clauses[:ci] if c.conn in _POSTPOSED_ATTACH_CONNS):
                     # "Lance R si P et ne pas / n'exécute pas Q": one reading is a main-clause
                     # prohibition; in doubt it is kept (never relaxes execution), still named
                     prag = "FORBIDDEN"
@@ -2254,6 +2264,26 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if isinstance(head.ni_modal, _Draft):
             _scope_operator(head.ni_modal, coordinations[-1])
 
+    def _scope_hosts(ci: int) -> list[PredicateUnit]:
+        """Main units a subordinate at ci may scope over, never one chosen by proximity: the
+        preceding main head of its sentence and the members coordinated with it (et / ou /
+        puis / mais / ,); for a preposed subordinate, the next main head."""
+        prev = [(cj, u) for (cj, u) in main_heads if cj < ci
+                and not any(c.boundary in _SENTENCE_BOUNDARIES for c in clauses[cj + 1:ci + 1])]
+        if not prev:
+            nxt = next((u for (cj, u) in main_heads if cj > ci), None)
+            return [nxt] if nxt is not None else []
+        cj, u = prev[-1]
+        hosts = [u]
+        while clauses[cj].conn in {"et", "ou", "puis", "mais"} or (clauses[cj].conn is None
+                                                                   and clauses[cj].boundary == ","):
+            earlier = [(k, v) for (k, v) in prev if k < cj]
+            if not earlier:
+                break
+            cj, u = earlier[-1]
+            hosts.insert(0, u)
+        return hosts
+
     # ── inter-clause relations ──
     alternatives: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
@@ -2321,9 +2351,15 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         elif conn == "avant_que" and prev_main is not None:
             relations.append(LatticeRelation(RelationKind.PRECEDES.value, prev_main.id, h.id,
                                              evidence="avant que"))
-        elif conn == "a_moins_que" and prev_main is not None:
-            relations.append(LatticeRelation(RelationKind.CONDITIONS.value, h.id, prev_main.id,
-                                             confidence=0.8, evidence="à moins que"))
+        elif conn == "a_moins_que":
+            # "sauf si / excepté si / à moins que P": an exception condition is not an ordinary
+            # CONDITIONS (its final relation is held, H17): no relation, the exception and its
+            # possible host(s) are named, their occurrence stays unresolved
+            hosts = _scope_hosts(ci)
+            if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and clauses[ci + 1].units:
+                hosts.append(clauses[ci + 1].units[0][0])   # forced main member after it: also open
+            ambiguities.append(f"exception_condition_open:{h.id}"
+                               + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
         elif prev_main is not None and not clause.attachment_ambiguous and conn in {
                 "mais", "puis", "et", "ou", "donc", "car", "avant_de", "apres", "alors"}:
             kind, src, tgt = {
@@ -2402,6 +2438,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             link = "wh_complement"
         elif ci in protases:
             link = "conditional_protasis"
+        elif clause.conn == "a_moins_que":
+            link = "exception_condition"  # held relation (H17), no host chosen
         else:
             cj = max((p for p in protases if p < ci), default=None)
             if cj is not None and not any(cj < mj < ci for mj, _ in main_heads):

@@ -100,6 +100,10 @@ class FrameOccurrenceProjection:
         self.alternative = self._alternative_branches(frame)
         self.modal_past = {a.split(":", 1)[1] for a in frame.ambiguities
                            if a.startswith("modal_past_occurrence_open:")}
+        # an exception condition and its possible hosts (held relation, H17): never a claim
+        # decided by the missing relation, their occurrence stays unresolved
+        self.exception_open = {x for a in frame.ambiguities if a.startswith("exception_condition_open:")
+                               for part in a.split(":")[1:] for x in part.removeprefix("host=").split(",")}
         self.temporal = {r.target for r in frame.relations
                          if r.kind == RelationKind.PRECEDES.value and r.evidence == "avant que"}
         # "après que Q": Q is the presupposed temporal anchor (source of PRECEDES), not asserted
@@ -265,7 +269,7 @@ class FrameOccurrenceProjection:
         role = self._conditional_role(u) or ("ancestry" if parent is not None and (
             ctx.condition or self._conditional_role(parent) or self._hypothetical(parent)) else None)
         # the parser's B2c marker only counts where no profile decides
-        local_unresolved = (kind == "unknown_edge" or implicative
+        local_unresolved = (kind == "unknown_edge" or implicative or u.id in self.exception_open
                             or (u.epistemic == "UNRESOLVED_GOVERNANCE" and commitment is None))
         interrogative_ancestry = parent is not None and (ctx.question or parent.pragmatic == "ASKED")
         # Name the ancestor behind every inherited value (M8-A derivation contract).
