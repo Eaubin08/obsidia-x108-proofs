@@ -1103,6 +1103,11 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             open_clause("a_moins_que", [t, nxt])
             i += 2
             continue
+        if low in {"sauf", "excepté", "excepte"} and nxt is not None and nxt.low in {"quand", "lorsque", "lorsqu'"}:
+            # "sauf quand / excepté lorsque P": temporal subordinate + exception (H17, H05)
+            open_clause("quand", [t, nxt])
+            i += 2
+            continue
         if low in {"avant", "before"} and nxt is not None and nxt.low in {"de", "d'"}:
             open_clause("avant_de", [t, nxt])
             i += 2
@@ -2306,6 +2311,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if h is None and not (clause.conn == "si" and clause.protasis_head is clause):
             continue
         conn = clause.conn
+        if conn == "quand" and h is not None and clause.conn_toks \
+                and clause.conn_toks[0].low in {"sauf", "excepté", "excepte"}:
+            # "sauf quand P": the exception is named too; no relation is chosen
+            hosts = _scope_hosts(ci)
+            ambiguities.append(f"exception_condition_open:{h.id}"
+                               + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
         prev_main = next((u for (cj, u) in reversed(main_heads) if cj < ci), None)
         next_main = next((u for (cj, u) in main_heads if cj > ci), None)
         if conn in {"sans", "sans_que"}:
