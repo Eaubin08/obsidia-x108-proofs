@@ -197,6 +197,19 @@ class FrameOccurrenceProjection:
             ops.add(ProjectionOperator.QUESTION)
         return frozenset(ops)
 
+    def complement_commitment(self, u: PredicateUnit, families: set[str] | None = None):
+        """Resolved commitment of u as a "que" complement of a profiled governor (optionally
+        restricted to governor predicates in families), else None. Read-only."""
+        parent, relation, kind = self._edge(u)
+        if kind != "complement" or parent is None or (families is not None and parent.predicate not in families):
+            return None
+        return self._commitment(u, parent, relation)
+
+    def profiled_complement_unresolved(self, u: PredicateUnit, families: set[str] | None = None) -> bool:
+        """True when u is a profiled complement whose commitment resolves to UNRESOLVED."""
+        resolution = self.complement_commitment(u, families)
+        return resolution is not None and resolution.commitment is ComplementCommitment.UNRESOLVED
+
     def _commitment(self, u: PredicateUnit, parent: PredicateUnit, relation):
         family = _FAMILY.get(parent.predicate)
         construction = _CONSTRUCTION.get(relation.evidence) if relation is not None else None

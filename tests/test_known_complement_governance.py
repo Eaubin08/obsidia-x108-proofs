@@ -43,7 +43,8 @@ def _run_statuses(text: str):
     ("Paul confirme que Marie a lancé le test.", "CONFIRM"),
     ("Paul explique que Marie a lancé le test.", "EXPLAIN"),
     ("Paul vérifie que Marie a lancé le test.", "VERIFY"),
-    ("Paul sait que Marie a lancé le test.", "KNOW"),
+    # KNOW has a commitment profile: its governance follows the profile (H04 closure policy,
+    # test_d1_closure_policies), no longer the generic fail-closed fallback
     ("Paul a confirmé que Marie a lancé le test.", "CONFIRM"),
     ("Paul explique à Marie que Jean a lancé le test.", "EXPLAIN"),
     ("Paul ne confirme pas que Marie a lancé le test.", "CONFIRM"),

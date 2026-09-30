@@ -66,8 +66,9 @@ def test_h04_relations_not_states(text):
     assert derivation.rule == "commitment:PRESUPPOSED"
 
 
-def test_h04_closure_policy_is_unchanged():
-    assert not parse_utterance("Marie sait que Paul a lancé P.").closure
+def test_h04_closure_policy_follows_the_profile():
+    # H04 closure policy (option C): closed IFF the profile resolves (see test_d1_closure_policies)
+    assert parse_utterance("Marie sait que Paul a lancé P.").closure
     assert parse_utterance("Marie apprend que Paul a lancé P.").closure
 
 
@@ -80,7 +81,8 @@ def test_h05_quand_lorsque_temporal_anchor(text):
     rels = {(r.kind, r.source, r.target) for r in f.relations}
     assert ("TEMPORAL_ANCHOR", p.id, q.id) in rels
     assert not any(r.kind in {"PRECEDES", "CONDITIONS", "CAUSES", "OVERLAPS"} for r in f.relations)
-    assert f"temporal_subordinate_open:{p.id}" in f.ambiguities and not f.closure
+    # H05 closure policy (option A): unique host + typed relation -> structurally closed
+    assert f"temporal_subordinate_open:{p.id}" not in f.ambiguities and f.closure
 
 
 @pytest.mark.parametrize("text", ["Nadia lance Q pendant que Paul lance P.", "Pendant que Paul lance P, Nadia lance Q."])
@@ -91,7 +93,7 @@ def test_h05_pendant_que_overlaps(text):
     assert ("OVERLAPS", p.id, q.id) in {(r.kind, r.source, r.target) for r in f.relations}
     assert not any(r.kind in {"PRECEDES", "CONDITIONS", "CAUSES", "EMBEDS"} for r in f.relations)
     assert not any(a.startswith("complement_governor_lost") for a in f.ambiguities)
-    assert _claims(f)[p.id] not in {"ASSERTED_REALIZED", "ASSERTED_NOT_REALIZED"} and not f.closure
+    assert _claims(f)[p.id] not in {"ASSERTED_REALIZED", "ASSERTED_NOT_REALIZED"} and f.closure  # policy A
 
 
 def test_h05_apres_que_control_is_unchanged():

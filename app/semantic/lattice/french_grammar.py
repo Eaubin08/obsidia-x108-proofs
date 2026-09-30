@@ -378,6 +378,8 @@ def _known_complement_governor(ctoks: list[_Tok], toks: list[_Tok], que_at: int)
     if has_ne and cls in {"world_action", "preparatory"}:
         return False
     k = v + 1
+    while k < len(ctoks) and ctoks[k].hyphen_before and (lows[k] in _SUBJECT_PRONOUNS or lows[k] == "t'"):
+        k += 1   # inverted subject ("sait-elle que", "sait-t-il que"): not a complement tail
     while has_ne and k < len(ctoks) and lows[k] in _FR_NEGATORS:
         k += 1
     tail = lows[k:]
@@ -2021,9 +2023,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     kind = RelationKind.WANTS
                 else:
                     # Known governor without an embedding contract: the complement
-                    # is subordinated, never promoted to a root assertion.
+                    # is subordinated, never promoted to a root assertion. KNOW has a
+                    # commitment profile: its governance is decided by that profile
+                    # (H04 closure policy, see _unresolved_profile_complements).
                     prag, epi, kind = "EMBEDDED", UNRESOLVED_GOVERNANCE, RelationKind.EMBEDS
-                    ambiguities.append(f"unresolved_complement_governance:{u.id}")
+                    if pp != "KNOW":
+                        ambiguities.append(f"unresolved_complement_governance:{u.id}")
                 relations.append(LatticeRelation(
                     kind.value, parent_unit.id, u.id,
                     evidence="que_unresolved_governance" if epi == UNRESOLVED_GOVERNANCE else "que"))
@@ -2324,8 +2329,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         prev = [(cj, u) for (cj, u) in main_heads if cj < ci
                 and not any(c.boundary in _SENTENCE_BOUNDARIES for c in clauses[cj + 1:ci + 1])]
         if not prev:
-            nxt = next((u for (cj, u) in main_heads if cj > ci), None)
-            return [nxt] if nxt is not None else []
+            # preposed: the next main head and the members coordinated after it (D1-F1)
+            nxts = [(cj, u) for (cj, u) in main_heads if cj > ci]
+            if not nxts:
+                return []
+            hosts = [nxts[0][1]]
+            for (cj, u), (cj2, u2) in zip(nxts, nxts[1:]):
+                c2 = clauses[cj2]
+                if any(c.boundary in _SENTENCE_BOUNDARIES for c in clauses[cj + 1:cj2 + 1]) or not (
+                        c2.conn in {"et", "ou", "puis", "mais"} or (c2.conn is None and c2.boundary == ",")):
+                    break
+                hosts.append(u2)
+            return hosts
         cj, u = prev[-1]
         hosts = [u]
         while clauses[cj].conn in {"et", "ou", "puis", "mais"} or (clauses[cj].conn is None
@@ -2379,6 +2394,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if len(hosts) == 1:
                 relations.append(LatticeRelation(kind.value, h.id, hosts[0].id,
                                                  evidence=" ".join(x.low for x in clause.conn_toks)))
+                # H05 closure policy: typed relation + exactly one structural host -> the
+                # temporal subordinate is structurally complete (other blockers still apply)
+                if f"temporal_subordinate_open:{h.id}" in ambiguities:
+                    ambiguities.remove(f"temporal_subordinate_open:{h.id}")
             elif len(hosts) > 1:
                 ambiguities.append(f"temporal_scope_ambiguous:{h.id}:host={','.join(u.id for u in hosts)}")
         prev_main =next((u for (cj, u) in reversed(main_heads) if cj < ci), None)
@@ -2607,7 +2626,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     else:
         surface = "none"
 
-    return UtteranceFrame(
+    frame = UtteranceFrame(
         raw=raw,
         normalized=normalized,
         units=tuple(final_units),
@@ -2626,6 +2645,21 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         coordinations=tuple(coordinations),
         operator_scopes=tuple(operator_scopes),
     )
+    held = _unresolved_profile_complements(frame)
+    return replace(frame, ambiguities=frame.ambiguities + held) if held else frame
+
+
+def _unresolved_profile_complements(frame: UtteranceFrame) -> tuple[str, ...]:
+    """H04 closure policy: the governance of a KNOW / LEARN / PERCEPTION complement is
+    structurally complete IFF its commitment profile resolves under the governor's
+    operators (the occurrence layer's resolver is the authority); otherwise it is named
+    (closure blocker). Structural only: never truth, occurrence, verification or authority."""
+    from app.semantic.lattice.occurrence_projection import occurrence_projection
+
+    projection = occurrence_projection(frame)
+    return tuple(f"unresolved_complement_governance:{u.id}" for u in frame.units
+                 if projection.profiled_complement_unresolved(u, families={"KNOW", "LEARN", "OBSERVE"})
+                 and f"unresolved_complement_governance:{u.id}" not in frame.ambiguities)
 
 
 def _mark_governed(clause: _Clause, d: _Draft, pol: dict) -> None:

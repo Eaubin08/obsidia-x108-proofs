@@ -48,14 +48,15 @@ def test_subordinate_is_preserved_and_held_open(text, host, sub, subject):
     (h,) = [u for u in f.units if u.lemma == host]
     assert s.subject == subject and s.pragmatic == "EMBEDDED"
     assert events.get(s.id) not in ASSERTED
-    assert f"temporal_subordinate_open:{s.id}" in f.ambiguities
+    # H05 closure policy (D1, option A): typed relation + unique host -> the marker is lifted
+    assert f"temporal_subordinate_open:{s.id}" not in f.ambiguities
     assert not any(r.kind in TEMPORAL for r in f.relations)
     # H05 (D1): only the neutral TEMPORAL_ANCHOR(s -> host) is allowed (no order, condition or cause)
     assert [(r.kind, r.source, r.target) for r in f.relations if s.id in (r.source, r.target)] \
         == [("TEMPORAL_ANCHOR", s.id, h.id)]
     assert s.embedded_under is None
     assert h.subject == "paul" and not gate[s.id]
-    assert f.closure is False and not semantic_closure(f).closed
+    assert f.closure is True and semantic_closure(f).closed     # structural closure, never truth
 
 
 @pytest.mark.parametrize("text", [
