@@ -1002,6 +1002,9 @@ _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "l
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
 _DISTRIBUTIVE_FLOATS = {"chacun", "chacune"}
 _PARTITIVE_QUANTIFIERS = {"chacun", "chacune", "un", "une"}  # + de / des / du NP
+# D5-N7: manner words reported when found around a unit's arguments ("maintenant" is deixis)
+_MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "automatiquement",
+                  "directement", "immédiatement", "immediatement"}
 _TOTALITY_QUANTIFIERS = {"tous", "toutes", "tout", "toute"}  # + determiner NP
 _TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
@@ -1732,7 +1735,8 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
                 or (words and (w.low in _FR_NEGATORS or w.low in _EN_NEGATORS))
                 or w.low in _DETERMINERS
                 or w.low in _SUBJECT_PRONOUNS or w.low in _RESTRICTION_ADVERBS
-                or w.is_punct or _is_verb(toks, j)):
+                or w.is_punct or _is_verb(toks, j)
+                or (words and w.low in _MANNER_ADVERBS)):  # D5-N7: a modifier never extends the object
             break
         words.append(w.low)
         end_tok = w
@@ -1815,9 +1819,10 @@ def _objects_for(toks: list[_Tok], d: _Draft, clause: _Clause) -> list[Argument]
     # restriction "que" ("ne lance que les tests")
     if clause.restriction_at is not None and clause.restriction_at > k:
         j = clause.restriction_at + 1
-    while j < len(toks) and toks[j].low in (_ADVERBS_SKIPPABLE | _RESTRICTION_ADVERBS
-                                            | {"ni"}) - {"rien"}:
-        j += 1
+    while j < len(toks) and (toks[j].low in (_ADVERBS_SKIPPABLE | _RESTRICTION_ADVERBS | {"ni"}) - {"rien"}
+                             or (toks[j].low in _MANNER_ADVERBS - {"tout"}
+                                 and j + 1 < len(toks) and not toks[j + 1].is_punct)):
+        j += 1  # D5-N7: "lance vite P": the modifier is kept apart (reported), P stays the object
     # coordinated NPs: "le script et les tests", "ni le script ni les tests"
     while j < len(toks):
         arg, nj = _np_from(toks, j)
@@ -2757,6 +2762,31 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 clause.units[i] = (replace(u, objects=tuple(reread)), d)
             missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{floating.start}-{floating.end}"
                            f":subject_distributivity_of={u.id}")
+
+    # D5-N7 (provisional, fail-closed): manner material around a unit's arguments ("P tout
+    # seul", "P vite", "vite P", "tout seul") has no positive carrier yet: it is reported with
+    # its span, never fused into the object nor dropped; the frame stays open
+    for clause in clauses:
+        heads = sorted(d.head_index for _, d in clause.units)
+        for u, d in clause.units:
+            stop = next((h for h in heads if h > d.lex_index), len(clause.toks))
+            covered = [a.span for a in u.objects if a.span is not None]
+            k = d.lex_index + 1
+            while k < stop:
+                t = clause.toks[k]
+                if t.is_punct:
+                    break
+                manner = t.low in _MANNER_MARKED or (
+                    t.low == "tout" and k + 1 < stop and clause.toks[k + 1].low in _MANNER_MARKED)
+                if not manner or any(a <= t.start < b for a, b in covered):
+                    k += 1
+                    continue
+                end = k
+                while end + 1 < stop and clause.toks[end + 1].low in _MANNER_MARKED:
+                    end += 1
+                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{t.start}-{clause.toks[end].end}"
+                               f":unrepresented_modifier_of={u.id}")
+                k = end + 1
 
     # D5-N3 conservation: nominal material (determiner + word) left right after a unit's
     # objects ("le test de Marie", "aucun des tests") is reported, never dropped silently
