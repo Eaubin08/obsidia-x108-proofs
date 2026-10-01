@@ -1015,7 +1015,9 @@ def _bare_noun_phrase(ts: list) -> bool:
 
 
 def _plural_verb(tok) -> bool:
-    return bool(_feats(tok) & {"P1P", "P2P", "P3P"}) or tok.low in _PLURAL_AUX
+    feats = _feats(tok)
+    # D5-N1: future / conditional analyses carry no person feature; their plural endings do
+    return bool(feats & {"P1P", "P2P", "P3P"}) or tok.low in _PLURAL_AUX         or ("FUT" in feats and tok.low.endswith(("rons", "rez", "ront")))         or ("COND" in feats and tok.low.endswith(("rions", "riez", "raient")))
 
 
 def _finite_clause_after(toks: list[_Tok], i: int) -> bool:
@@ -2655,8 +2657,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             np0 = np0[1:]
         u1, d1 = c1.units[0]
         pre = [t for t in c1.toks[:d1.head_index] if t.low not in {"ne", "n'"}]
-        # "chacun" before the verb, inside its chain ("ont chacun lancé") or right after it
-        each = [t for t in c1.toks[:d1.lex_index + 2] if t.low in _DISTRIBUTIVE_FLOATS]
+        # "chacun" before the verb or inside its chain ("ont chacun lancé"); right after the
+        # finite verb only when it opens the object ("lanceront chacun P"), never as the
+        # pronoun head of a partitive object ("lancent chacun des tests")
+        each = [t for t in c1.toks[:d1.lex_index] if t.low in _DISTRIBUTIVE_FLOATS]
+        post = d1.lex_index + 1
+        float_obj = post + 1 < len(c1.toks) and c1.toks[post].low in _DISTRIBUTIVE_FLOATS             and c1.toks[post + 1].low not in {"de", "d'", "des", "du"} and not c1.toks[post + 1].is_punct             and bool(u1.objects) and u1.objects[0].span is not None and u1.objects[0].span[0] == c1.toks[post].start
         pre = [t for t in pre if t.low not in _DISTRIBUTIVE_FLOATS]
         head = c1.toks[d1.head_index]
         covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
@@ -2667,6 +2673,22 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # D5-R3: members of more than one agent class ("toi et moi", "Paul et moi") have no
         # truthful single action_agent: UNKNOWN (no MIXED value) and the agency stays open
         mixed = len(set(persons)) > 1
+        if float_obj:
+            # D5-N1: the floating quantifier is the subject's distributivity, never object material
+            # the object NPs are re-read after it (same coordination rule as _objects_for)
+            args, j = [], post + 1
+            while j < len(c1.toks):
+                arg, j = _np_from(c1.toks, j)
+                if arg is None:
+                    break
+                args.append(arg)
+                if j < len(c1.toks) and c1.toks[j].low in {"et", "ou", ","}:
+                    j += 1
+                    continue
+                break
+            if args:
+                each.append(c1.toks[post])
+                u1 = replace(u1, objects=tuple(args))
         person = mixed or "THIRD_PARTY" not in persons
         texts = (" ".join(t.low for t in np0 if t.low not in _DETERMINERS) or np0[-1].low,
                  " ".join(t.low for t in pre if t.low not in _DETERMINERS) or pre[-1].low)

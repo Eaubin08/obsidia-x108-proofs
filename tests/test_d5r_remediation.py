@@ -102,3 +102,36 @@ def test_r1_chacun_inside_modal_or_periphrastic_chain(text, tense):
     (c,) = _subject(f)
     assert c.distributivity == "EXPLICIT"
     _no_false_force(f)
+
+
+# ── N1: future coordinated subject + post-verbal "chacun" ──
+@pytest.mark.parametrize("text,tense,dist,objs", [
+    ("Paul et Nadia lanceront P.", "FUTURE", "UNSPECIFIED", ("p",)),
+    ("Paul et Nadia lanceront chacun P.", "FUTURE", "EXPLICIT", ("p",)),
+    ("Paul et Nadia lancent chacun P.", "PRESENT", "EXPLICIT", ("p",)),
+    ("Paul et Nadia ont chacun lancé P.", "PAST", "EXPLICIT", ("p",)),
+    ("Paul et Nadia peuvent chacun lancer P.", "PRESENT", "EXPLICIT", ("p",)),
+    ("Paul et Nadia lanceront chacun le test.", "FUTURE", "EXPLICIT", ("le test",)),
+])
+def test_n1_future_and_post_verbal_chacun(text, tense, dist, objs):
+    f = parse_utterance(text)
+    (u,) = f.units
+    (c,) = _subject(f)
+    assert (c.member_texts, c.distributivity) == (("paul", "nadia"), dist)
+    assert (u.tense_aspect, u.action_agent, u.subject) == (tense, "THIRD_PARTY", "paul et nadia")
+    assert tuple(a.text for a in u.objects) == objs and not any("chacun" in a.text for a in u.objects)
+    assert len(build_frame_event_index(f).events()) == 1 and f.closure
+    _no_false_force(f)
+
+
+def test_n1_no_promotion_from_post_verbal_chacun():
+    ev = lambda t: build_frame_event_index(parse_utterance(t)).events()[0].occurrence_claim
+    assert ev("Paul et Nadia lanceront chacun P.") == ev("Paul et Nadia lanceront P.")
+    assert ev("Paul et Nadia lancent chacun P.") == ev("Paul et Nadia lancent P.")
+
+
+@pytest.mark.parametrize("text", ["Paul lance chacun des tests.", "Paul et Nadia lancent chacun des tests."])
+def test_n1_partitive_chacun_is_an_object_not_subject_distributivity(text):
+    f = parse_utterance(text)
+    assert f.units[0].objects[0].text == "chacun"
+    assert all(c.distributivity != "EXPLICIT" for c in _subject(f))
