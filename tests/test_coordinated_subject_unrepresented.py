@@ -8,6 +8,13 @@ decided here. Instead the lost conjunct is preserved as a missing entry
 coordinated_subject_unrepresented:<span>:subject_of=<unit>, and the unit
 carries the named structural ambiguity coordinated_subject_unrepresented
 (closure open). Still one event; nothing is duplicated or invented.
+
+H14 (D5, decided): the schema is now represented. Every conjunct is a member of
+one argument CoordinationRef (construction coordinated_subject, member_kind
+"argument", host = the one unit, AND / OR, distributivity UNSPECIFIED): no group
+entity, no event per participant, closure no longer blocked. Only a speech-act
+person conjunct ("Paul et moi") keeps the fail-closed marker (its agent reading
+is not decided).
 """
 from __future__ import annotations
 
@@ -23,21 +30,27 @@ def _lost(f):
             for m in f.missing if m.startswith("coordinated_subject_unrepresented:")]
 
 
-@pytest.mark.parametrize("text,lost", [
-    ("Nadia et Luc exécutent Q.", "Nadia"),
-    ("Paul et Nadia ont lancé P.", "Paul"),
-    ("Le test et le build ont lancé P.", "Le test"),
-    ("Marie et Paul vont lancer P.", "Marie"),
-    ("Si Nadia et Luc exécutent Q, arrête R.", "Nadia"),
-    ("Paul et moi lançons P.", "Paul"),
+@pytest.mark.parametrize("text,members", [
+    ("Nadia et Luc exécutent Q.", ("nadia", "luc")),
+    ("Paul et Nadia ont lancé P.", ("paul", "nadia")),
+    ("Le test et le build ont lancé P.", ("test", "build")),
+    ("Marie et Paul vont lancer P.", ("marie", "paul")),
+    ("Si Nadia et Luc exécutent Q, arrête R.", ("nadia", "luc")),
 ])
-def test_first_conjunct_is_named_never_dropped(text, lost):
+def test_h14_every_conjunct_is_a_represented_member(text, members):
     f = parse_utterance(text)
+    (c,) = [c for c in f.coordinations if c.construction == "coordinated_subject"]
+    assert (c.kind, c.member_kind, c.role, c.member_texts, c.distributivity) ==         ("AND", "argument", "subject", members, "UNSPECIFIED")
+    assert c.host in {u.id for u in f.units}
+    assert [f.raw[a:b].lower() for a, b in c.member_spans][0].endswith(members[0])
+    assert not _lost(f) and not any(a.startswith("coordinated_subject_unrepresented") for a in f.ambiguities)
+
+
+def test_speech_act_person_conjunct_stays_fail_closed():
+    f = parse_utterance("Paul et moi lançons P.")
     found = _lost(f)
-    assert [x for x, _ in found] == [lost], found
-    uid = found[0][1].split("=")[1] if found[0][1].startswith("subject_of=") else None
-    if uid is not None:
-        assert f"coordinated_subject_unrepresented:{uid}" in f.ambiguities
+    assert [x for x, _ in found] == ["Paul"], found
+    assert "coordinated_subject_unrepresented:u1" in f.ambiguities
     assert f.closure is False and not semantic_closure(f).closed
 
 

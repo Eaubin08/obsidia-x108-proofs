@@ -129,13 +129,13 @@ class FrameOccurrenceProjection:
                         links.setdefault(a, set()).add(b)
                         links.setdefault(b, set()).add(a)
         for c in frame.coordinations:
-            if c.construction != "disjunction":
+            if c.construction != "disjunction" and c.member_kind == "unit":
                 for a in c.members:
                     links.setdefault(a, set()).update(m for m in c.members if m != a)
         out: dict[str, str] = {}
         # the clause-level disjunction names the alternative first; an OR sharing group
         # ("Paul doit lancer P ou exécuter Q") is a root only where no disjunction covers it
-        roots = sorted((c for c in frame.coordinations if c.kind == "OR"),
+        roots = sorted((c for c in frame.coordinations if c.kind == "OR" and c.member_kind == "unit"),
                        key=lambda c: c.construction != "disjunction")
         for c in roots:
             todo = list(c.members)

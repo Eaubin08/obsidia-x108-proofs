@@ -196,13 +196,25 @@ class CoordinationRef:
     Not an event, not an EventCandidate, no occurrence claim: it only states
     that its members are coordinated, so that a relation (e.g. CONDITIONS)
     can take the group as one endpoint without making any member sufficient.
+
+    H14 / D5: with member_kind "argument" the members are nominal argument
+    mentions of ONE host unit ("Paul et Nadia lancent P", "lance P ou Q"):
+    member ids "<host>.s<k>" / "<host>.o<k>", never unit ids. Not a group
+    entity and never one event per member; distributivity is UNSPECIFIED
+    unless written ("chacun": EXPLICIT).
     """
     id: str
     kind: str                       # "AND" | "OR"
-    members: tuple[str, ...]        # unit ids, surface order
+    members: tuple[str, ...]        # unit ids (or argument mention ids), surface order
     construction: str               # e.g. "conditional_protasis"
     evidence: tuple[str, ...] = ()  # connective surface between members
     span: tuple[int, int] | None = None
+    member_kind: str = "unit"       # "unit" | "argument"
+    host: str | None = None         # argument coordination: the unit whose argument it is
+    role: str | None = None         # argument coordination: "subject" | "object"
+    member_texts: tuple[str, ...] = ()            # argument coordination: folded surfaces
+    member_spans: tuple[tuple[int, int], ...] = ()  # argument coordination: raw spans
+    distributivity: str | None = None  # coordinated subject: "UNSPECIFIED" | "EXPLICIT"
 
 
 @dataclass(frozen=True)

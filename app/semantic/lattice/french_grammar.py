@@ -999,6 +999,7 @@ def _coordinated_complement(clauses: list[_Clause]) -> tuple[_Clause | None, boo
 _WH_COMPLEMENT_WORDS = {"qui", "quand", "comment", "pourquoi", "où", "combien"}
 _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
+_DISTRIBUTIVE_FLOATS = {"chacun", "chacune"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
 _PLURAL_AUX = {"ont", "sont", "vont", "avons", "sommes", "allons", "avez", "êtes", "allez", "font", "doivent",
                "peuvent", "veulent", "savent", "viennent"}
@@ -1975,6 +1976,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     # clause -> (governor unit, host clause), reused by a coordinated sibling
     resolved: dict[int, tuple[PredicateUnit | None, _Clause | None]] = {}
     complement_alternatives: list[list[PredicateUnit]] = []
+    complement_conjunctions: list[list[PredicateUnit]] = []
     for ci, clause in enumerate(clauses):
         parent_unit, host = None, clauses[ci - 1] if ci > 0 else None
         if clause.coordinated_with is not None and id(clause.coordinated_with) in resolved:
@@ -2230,6 +2232,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     group.append(b)
             else:
                 relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence="et que"))
+                # H02: "V que P et que Q" keeps its group target, by parity with "ou que"
+                group = next((g for g in complement_conjunctions if g[-1] is a), None)
+                if group is None:
+                    complement_conjunctions.append([a, b])
+                else:
+                    group.append(b)
         # Temporal infinitives mention context; preserve legacy fail-closed
         # behavior when a PREPARE request is framed as before executing.
         if clause.conn in {"avant_de", "apres"} and clause.units and main_heads:
@@ -2251,6 +2259,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         coordinations.append(CoordinationRef(
             f"c{len(coordinations) + 1}", "OR", tuple(u.id for u in group), "disjunction",
             tuple("ou que" for _ in group[1:]), (group[0].span[0], group[-1].span[1])))
+    for group in complement_conjunctions:
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "AND", tuple(u.id for u in group), "complement_conjunction",
+            tuple("et que" for _ in group[1:]), (group[0].span[0], group[-1].span[1])))
 
     def _replace_group_unit(unit: PredicateUnit) -> None:
         for c in clauses:
@@ -2624,24 +2636,40 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{rest[0].start}-{rest[-1].end}:conditional_protasis")
                 break
 
-    # "Nadia et Luc exécutent Q": "et" split a coordinated subject; the first nominal
-    # conjunct (a verbless clause) is never lost silently. The group-subject schema is not
-    # decided: the conjunct is kept as a named missing entry, the unit carries a blocker.
+    # H14 / D5-F1: "Paul et Nadia lancent P": "et" / "ou" split a coordinated subject. Its
+    # members are kept as one argument CoordinationRef (construction coordinated_subject) on
+    # the ONE unit: no group entity, no event per participant. A floating "chacun" is the
+    # explicit distributivity of that subject, never the subject replacing its members.
+    # With a speech-act person ("moi", "toi") the agent reading stays undecided (blocker kept).
     for ci in range(len(clauses) - 1):
         c0, c1 = clauses[ci], clauses[ci + 1]
-        if c0.units or not c0.toks or c0.conn not in {None, "si", "que"} or not c1.units \
-                or [x.low for x in c1.conn_toks] != ["et"]:
+        conj = [x.low for x in c1.conn_toks]
+        if c0.units or not c0.toks or c0.conn not in {None, "si", "que"} or not c1.units                 or conj not in (["et"], ["ou"]):
             continue
         np0 = list(c0.toks)
         while np0 and np0[0].low in _SUBJECT_INTRODUCERS:
             np0 = np0[1:]
         u1, d1 = c1.units[0]
         pre = [t for t in c1.toks[:d1.head_index] if t.low not in {"ne", "n'"}]
+        each = [t for t in pre if t.low in _DISTRIBUTIVE_FLOATS]
+        pre = [t for t in pre if t.low not in _DISTRIBUTIVE_FLOATS]
         head = c1.toks[d1.head_index]
+        if each and pre and pre[-1].analyses and _plural_verb(pre[-1]):
+            head = pre.pop()  # "ont chacun lancé": the auxiliary carries the agreement
         covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
-        if not covered and _bare_noun_phrase(np0) \
-                and (_bare_noun_phrase(pre) or [t.low for t in pre] in (["moi"], ["toi"])) \
-                and d1.head_index > 0 and _plural_verb(head):
+        person = [t.low for t in pre] in (["moi"], ["toi"])
+        if covered or not _bare_noun_phrase(np0) or not (_bare_noun_phrase(pre) or person)                 or d1.head_index == 0 or not (_plural_verb(head) or conj == ["ou"]):
+            continue
+        texts = (" ".join(t.low for t in np0 if t.low not in _DETERMINERS) or np0[-1].low,
+                 " ".join(t.low for t in pre if t.low not in _DETERMINERS) or pre[-1].low)
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", "OR" if conj == ["ou"] else "AND", (f"{u1.id}.s1", f"{u1.id}.s2"),
+            "coordinated_subject", (conj[0],), (np0[0].start, pre[-1].end), member_kind="argument",
+            host=u1.id, role="subject", member_texts=texts,
+            member_spans=((np0[0].start, np0[-1].end), (pre[0].start, pre[-1].end)),
+            distributivity="EXPLICIT" if each else "UNSPECIFIED"))
+        c1.units[0] = (replace(u1, subject=f" {conj[0]} ".join(texts)), d1)
+        if person:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
 
@@ -2659,6 +2687,26 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and all(a.span is not None for a in u.objects[:2]) \
                 and raw[u.objects[0].span[1]:u.objects[1].span[0]].strip().lower() in {"et", "ou"}:
             ambiguities.append(f"negated_scope_open:{u.id}")
+
+    # D5-F2: "lance P ou Q" / "lance P et Q": one unit, its coordinated objects keep their
+    # connective (OR never collapses to AND; no branch chosen; no event per object). A mixed
+    # "P et Q ou R" has no written precedence: named, not resolved.
+    for u in final_units:
+        args = [a for a in u.objects if a.span is not None]
+        if len(args) < 2 or len(args) != len(u.objects):
+            continue
+        links = [raw[a.span[1]:b.span[0]].strip().lower() for a, b in zip(args, args[1:])]
+        if not all(x in {"et", "ou", ",", ", et", ", ou"} for x in links) or links[-1] == ",":
+            continue
+        kinds = {"OR" if "ou" in x else "AND" for x in links if x != ","}
+        if len(kinds) > 1:
+            ambiguities.append(f"coordination_attachment_ambiguous:{u.id}")
+            continue
+        coordinations.append(CoordinationRef(
+            f"c{len(coordinations) + 1}", kinds.pop(), tuple(f"{u.id}.o{k}" for k in range(1, len(args) + 1)),
+            "coordinated_object", tuple(links), (args[0].span[0], args[-1].span[1]), member_kind="argument",
+            host=u.id, role="object", member_texts=tuple(a.text for a in args),
+            member_spans=tuple(a.span for a in args)))
 
     constraints = _constraints(final_units)
     contradictions = _contradictions(final_units)

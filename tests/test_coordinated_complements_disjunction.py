@@ -72,5 +72,8 @@ def test_ou_without_que_after_a_complement_fails_closed(gov):
 
 
 def test_et_que_contract_unchanged():
+    # H02 (D5): the per-member REPORTS / COORDINATES contract is unchanged; the explicit AND
+    # group target is added by parity with "ou que" (complement_conjunction), never a fusion
     f, _, _ = _view("Marie dit que Paul a lancé P et que Nadia a exécuté Q.")
-    assert f.coordinations == () and ("COORDINATES", "u2", "u3") in {(r.kind, r.source, r.target) for r in f.relations}
+    assert [(c.kind, c.members, c.construction) for c in f.coordinations] ==         [("AND", ("u2", "u3"), "complement_conjunction")]
+    assert ("COORDINATES", "u2", "u3") in {(r.kind, r.source, r.target) for r in f.relations}

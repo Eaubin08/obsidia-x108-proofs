@@ -247,6 +247,13 @@ def select_immediate_meta_target(
         return _unresolved(source, source_predicate, base, ResolutionStatus.UNRESOLVED, "no_immediate_relation")
     if len(targets) > 1:
         base["candidate_predicate_ids"] = targets
+        # H02: an explicit coordination of exactly these complements ("dit que P et / ou que Q")
+        # is exposed as the group target a caller may ask for; never a first / nearest / last pick
+        group = next((c for c in frame.coordinations if c.member_kind == "unit"
+                      and c.construction in {"complement_conjunction", "disjunction"}
+                      and set(c.members) == set(targets)), None)
+        if group is not None:
+            base.update(coordination_target=group.id, coordination_kind=group.kind)
         return _unresolved(source, source_predicate, base, ResolutionStatus.AMBIGUOUS, MULTIPLE_TARGETS_UNSUPPORTED)
 
     target_predicate = targets[0]
