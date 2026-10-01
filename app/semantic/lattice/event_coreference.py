@@ -16,6 +16,9 @@ class TargetKind(str, Enum):
     PROPOSITION_TARGET = "PROPOSITION_TARGET"
     EVENT_TARGET = "EVENT_TARGET"
     ENTITY_TARGET = "ENTITY_TARGET"
+    # H02: an existing CoordinationRef as a structural object ("dit que P et que Q" -> P AND Q);
+    # never a predicate, never an event, no member representative
+    COORDINATION_TARGET = "COORDINATION_TARGET"
     UNKNOWN_TARGET = "UNKNOWN_TARGET"
 
 
@@ -43,6 +46,7 @@ class EventTargetReference:
     provenance: Mapping[str, Any] = field(default_factory=dict)
     confidence: Mapping[str, Any] = field(default_factory=dict)
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    target_coordination: str | None = None  # CoordinationRef id, COORDINATION_TARGET only
 
     def __post_init__(self) -> None:
         if not self.source_event:
@@ -51,7 +55,7 @@ class EventTargetReference:
             raise ValueError("source_predicate is required")
         kind = self.target_kind if isinstance(self.target_kind, TargetKind) else TargetKind(str(self.target_kind))
         status = self.resolution_status if isinstance(self.resolution_status, ResolutionStatus) else ResolutionStatus(str(self.resolution_status))
-        _check_target_consistency(kind, status, self.target_predicate, self.target_event)
+        _check_target_consistency(kind, status, self.target_predicate, self.target_event, self.target_coordination)
         object.__setattr__(self, "target_kind", kind)
         object.__setattr__(self, "resolution_status", status)
         object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
@@ -66,6 +70,7 @@ class EventTargetReference:
             "resolution_status": self.resolution_status.value,
             "target_predicate": self.target_predicate,
             "target_event": self.target_event,
+            "target_coordination": self.target_coordination,
             "provenance": dict(self.provenance),
             "confidence": dict(self.confidence),
             "metadata": dict(self.metadata),
@@ -80,12 +85,20 @@ def _check_target_consistency(
     status: ResolutionStatus,
     target_predicate: str | None,
     target_event: str | None,
+    target_coordination: str | None = None,
 ) -> None:
     """Reject target records whose local shape contradicts itself (no guessing, no repair).
 
     Shape only: whether target_predicate and target_event agree is a contextual
     question answered against the frame EventIndex (event_index.target_index_violation).
     """
+    if kind is TargetKind.COORDINATION_TARGET:
+        if not target_coordination:
+            raise ValueError("COORDINATION_TARGET requires a target_coordination")
+        if target_predicate is not None or target_event is not None:
+            raise ValueError("COORDINATION_TARGET carries no target_predicate / target_event (no member winner)")
+    elif target_coordination is not None:
+        raise ValueError(f"{kind.value} must not carry a target_coordination")
     if status not in _RESOLVED and target_event is not None:
         raise ValueError(f"{status.value} reference cannot carry a target_event")
     if kind is TargetKind.EVENT_TARGET and status in _RESOLVED and not target_event:

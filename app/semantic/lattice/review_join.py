@@ -98,6 +98,17 @@ class ReviewEnvelope:
         }
 
 
+_NON_EVENT_TARGET_KINDS = frozenset({TargetKind.PROPOSITION_TARGET, TargetKind.ENTITY_TARGET,
+                                     TargetKind.COORDINATION_TARGET})
+
+
+def _is_non_event_target(target: EventTargetReference) -> bool:
+    """A resolved target that is not an EventRef (proposition, entity, or an H02
+    CoordinationRef kept as a structural object, never fused into its members)."""
+    return target.target_kind in _NON_EVENT_TARGET_KINDS \
+        and target.resolution_status not in {ResolutionStatus.UNRESOLVED, ResolutionStatus.AMBIGUOUS}
+
+
 def build_review_envelope(
     frame: UtteranceFrame,
     center_event: str,
@@ -191,9 +202,7 @@ def build_review_envelope(
         epistemic_contributions=tuple(contributions),
         unresolved=tuple(t for t in in_component
                          if t.resolution_status in {ResolutionStatus.UNRESOLVED, ResolutionStatus.AMBIGUOUS}),
-        non_event_targets=tuple(t for t in in_component
-                                if t.target_kind in {TargetKind.PROPOSITION_TARGET, TargetKind.ENTITY_TARGET}
-                                and t.resolution_status not in {ResolutionStatus.UNRESOLVED, ResolutionStatus.AMBIGUOUS}),
+        non_event_targets=tuple(t for t in in_component if _is_non_event_target(t)),
         conflicts=tuple(c for c in index.conflicts if c.predicate_ref in component_predicates),
         provenance={
             "source": REVIEW_JOIN_VERSION,

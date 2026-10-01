@@ -227,8 +227,14 @@ def select_immediate_meta_target(
     source_predicate: str,
     relation_kinds: AbstractSet[str],
     event_index: EventIndex,
+    requested_target: str | None = None,
 ) -> EventTargetReference:
-    """Resolve the immediate target of `source_predicate` through `relation_kinds`."""
+    """Resolve the immediate target of `source_predicate` through `relation_kinds`.
+
+    `requested_target` (optional) is an explicit caller choice among the structural
+    candidates: one candidate predicate, or the CoordinationRef id covering exactly them
+    (H02). Anything else stays unresolved; without it, several candidates stay AMBIGUOUS.
+    """
     source = event_index.event_for(source_predicate)
     if source is None:
         raise ValueError(f"source predicate {source_predicate!r} has no indexed EventRef")
@@ -245,13 +251,33 @@ def select_immediate_meta_target(
 
     if not targets:
         return _unresolved(source, source_predicate, base, ResolutionStatus.UNRESOLVED, "no_immediate_relation")
+    # H02: an explicit coordination of exactly these complements ("dit que P et / ou que Q")
+    # is a group target a caller may ask for; never a first / nearest / last pick
+    group = next((c for c in frame.coordinations if c.member_kind == "unit"
+                  and c.construction in {"complement_conjunction", "disjunction"}
+                  and set(c.members) == set(targets)), None) if len(targets) > 1 else None
+    if requested_target is not None:
+        base["requested_target"] = requested_target
+        if group is not None and requested_target == group.id:
+            base.update(coordination_kind=group.kind, coordination_construction=group.construction,
+                        resolution_status=ResolutionStatus.RESOLVED_EXPLICIT.value)
+            return EventTargetReference(
+                source_event=source.event_ref.event_id,
+                source_predicate=source_predicate,
+                target_kind=TargetKind.COORDINATION_TARGET,
+                resolution_status=ResolutionStatus.RESOLVED_EXPLICIT,
+                target_coordination=group.id,
+                provenance=base,
+                confidence={"value": None, "calibrated": False},
+                metadata=_metadata(None),
+            )
+        if requested_target not in targets:
+            base["candidate_predicate_ids"] = targets
+            return _unresolved(source, source_predicate, base, ResolutionStatus.UNRESOLVED,
+                               "requested_target_not_candidate")
+        targets = [requested_target]  # the caller named this member: the member mechanism below
     if len(targets) > 1:
         base["candidate_predicate_ids"] = targets
-        # H02: an explicit coordination of exactly these complements ("dit que P et / ou que Q")
-        # is exposed as the group target a caller may ask for; never a first / nearest / last pick
-        group = next((c for c in frame.coordinations if c.member_kind == "unit"
-                      and c.construction in {"complement_conjunction", "disjunction"}
-                      and set(c.members) == set(targets)), None)
         if group is not None:
             base.update(coordination_target=group.id, coordination_kind=group.kind)
         return _unresolved(source, source_predicate, base, ResolutionStatus.AMBIGUOUS, MULTIPLE_TARGETS_UNSUPPORTED)

@@ -115,6 +115,8 @@ def _expected_local_valid(kind, status, predicate, event) -> bool:
         return not resolved and predicate is None and event is None
     if kind is TargetKind.PROPOSITION_TARGET:
         return event is None and (not resolved or bool(predicate))
+    if kind is TargetKind.COORDINATION_TARGET:
+        return False  # H02: requires target_coordination, which this matrix never supplies
     return event is None  # ENTITY_TARGET
 
 
