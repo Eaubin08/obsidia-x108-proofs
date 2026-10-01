@@ -1462,7 +1462,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
     k = 0
     skip = {"ne", "n'", "pas", "plus", "jamais", "rien", "déjà", "deja", "bien", "not",
             "never", "surtout", "vraiment", "encore", "toujours", "le", "la", "les", "l'",
-            "y", "en", "lui", "leur"} | _REFLEXIVE_CLITICS | _DISTRIBUTIVE_FLOATS
+            "y", "en", "lui", "leur", "tout"} | _REFLEXIVE_CLITICS | _DISTRIBUTIVE_FLOATS
     while k < len(toks):
         if k in consumed or not _is_verb(toks, k):
             k += 1
@@ -1700,6 +1700,11 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
         if inner is not None and inner.kind == "NP":
             text = " ".join(x.low for x in toks[j:nj])
             return Argument(text, inner.head, "NP", inner.reference, span=(t.start, toks[nj - 1].end)), nj
+    # D5-N6: "tout" closing its phrase is the pronoun object ("lance tout"); "tout seul" stays
+    # manner (N7), "tout le test" is the N3 quantified NP above
+    if t.low == "tout" and (nxt is None or toks[j + 1].is_punct or nxt in _CONNECTIVES
+                            or nxt in _PREPOSITIONS or nxt in _TIME_ADVERBS):
+        return Argument("tout", "tout", "NP", "LITERAL", span=(t.start, t.end)), j + 1
     if t.low in _WH_WORDS or t.low in _REFLEXIVE_CLITICS or t.low in _MANNER_ADVERBS:
         return None, j
     if t.low in _DEMONSTRATIVE_PRONOUNS:
@@ -1795,6 +1800,9 @@ def _objects_for(toks: list[_Tok], d: _Draft, clause: _Clause) -> list[Argument]
         if toks[m].low in {"le", "la", "les", "l'"}:
             args.append(Argument(toks[m].low, toks[m].low, "PRONOUN", "UNRESOLVED",
                                  span=(toks[m].start, toks[m].end)))
+        elif toks[m].low == "tout":
+            # D5-N6: preposed "tout" inside the chain ("a tout lancé", "peut tout lancer")
+            args.append(Argument("tout", "tout", "NP", "LITERAL", span=(toks[m].start, toks[m].end)))
     j = k + 1
     if d.inverted and d.head_index == k:
         j += 1
@@ -2807,7 +2815,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             host=u.id, role="object", member_texts=tuple(a.text for a in args),
             member_spans=tuple(a.span for a in args)))
 
-    constraints = _constraints(final_units)
+    # D5-N6: "ne ... pas tout / tous les X" is NOT ALL, never NONE: the negated scope over a
+    # totality object is open (H01), the negation is not a confirmed no-execute, and no
+    # prohibition is issued over that object
+    not_all = set()
+    for i, u in enumerate(final_units):
+        if u.polarity == "negative" and u.negator in {"pas", "plus", "jamais"} and u.objects                 and u.objects[0].text.split(" ", 1)[0] in _TOTALITY_QUANTIFIERS:
+            ambiguities.append(f"negated_scope_open:{u.id}")
+            not_all.add(u.id)
+            final_units[i] = replace(u, negation_confirmed=False)
+
+    constraints = _constraints([u for u in final_units if u.id not in not_all])
     contradictions = _contradictions(final_units)
     evidence = _evidence_needs(final_units)
 
