@@ -301,7 +301,7 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_PROVEN_E2E_REAL_MUTATION",
         notes="pc_governed_execute: explicit human EAH required. J5->KX108_PRE->governed apply. KX108_ONLY."),
-    # -- V2 capabilities (CREATE_FILE, MOVE_FILE, APPLY_PATCH) ---------------
+    # -- V2 capabilities (CREATE_FILE, MOVE_FILE, APPLY_PATCH, CREATE_DIR) -----
     "PC_V2_CREATE_FILE_PREPARE": _cap(
         "PC_V2_CREATE_FILE_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
         mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
@@ -350,6 +350,22 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 APPLY_PATCH EXECUTE: EAH+human approval+KX108+git apply. KX108_ONLY."),
+    "PC_V2_CREATE_DIR_PREPARE": _cap(
+        "PC_V2_CREATE_DIR_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"dir_path": "workspace-relative",
+                     "execution_worktree_path": "operator-trusted path"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 CREATE_DIR PREPARE: parent must exist, target must be absent. KX108_ONLY."),
+    "PC_V2_CREATE_DIR_EXECUTE": _cap(
+        "PC_V2_CREATE_DIR_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_CREATE_DIR_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 CREATE_DIR EXECUTE: EAH+human approval+KX108 required. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())
@@ -404,6 +420,8 @@ _KIND_TO_CAPABILITY = {
     "PC_V2_MOVE_FILE_EXECUTE": "PC_V2_MOVE_FILE_EXECUTE",
     "PC_V2_APPLY_PATCH_PREPARE": "PC_V2_APPLY_PATCH_PREPARE",
     "PC_V2_APPLY_PATCH_EXECUTE": "PC_V2_APPLY_PATCH_EXECUTE",
+    "PC_V2_CREATE_DIR_PREPARE": "PC_V2_CREATE_DIR_PREPARE",
+    "PC_V2_CREATE_DIR_EXECUTE": "PC_V2_CREATE_DIR_EXECUTE",
 }
 
 
