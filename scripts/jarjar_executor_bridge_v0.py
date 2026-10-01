@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "CREATE_FILE", "APPLY_PATCH", "ROLLBACK_MOVE_FILE"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
