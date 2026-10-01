@@ -29,7 +29,7 @@ def world(tmp_path):
     _git(main, "init", "-q")
     _git(main, "config", "user.email", "g3@test.local")
     _git(main, "config", "user.name", "G3")
-    (main / "a.txt").write_text("before\n", encoding="utf-8")
+    (main / "a.txt").write_bytes(b"before\n")
     _git(main, "add", "a.txt")
     _git(main, "commit", "-q", "-m", "seed")
     base_sha = _git(main, "rev-parse", "HEAD")
@@ -164,7 +164,7 @@ def test_apply_patch_prepare_never_calls_executor(world):
     ex = _executor()
     out = _patch_prepare(world)
     assert out["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL
-    assert (world["exec"] / "a.txt").read_text(encoding="utf-8") == "before\n"
+    assert (world["exec"] / "a.txt").read_bytes() == b"before\n"
     ex.apply_patch.assert_not_called()
 
 
@@ -182,7 +182,7 @@ def test_apply_patch_execute_via_jarjar_executor(world):
     )
     assert result["status"] == PC2.EXECUTED_OK, result
     ex.apply_patch.assert_called_once()
-    assert (world["exec"] / "a.txt").read_text(encoding="utf-8") == "after\n"
+    assert (world["exec"] / "a.txt").read_bytes() == b"after\n"
     assert result["executor_provider"] == "JARJAR"
     assert result["executor_backend"] == "NativeFilesystemBackend"
 
