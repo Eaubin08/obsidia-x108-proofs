@@ -1,15 +1,13 @@
-"""NF3a (fail-closed only): the content of savoir (KNOW_HOW) is never an addressee request.
+"""NF3a safety + H15 doctrine (D4): the content of savoir (KNOW_HOW) is never an addressee request.
 
-"Paul ne sait ni lancer P ni exécuter Q" and "Paul sait lancer P et
-exécuter Q": KNOW_HOW was neither admitted under verbal ni nor shared over a
-coordination, so the infinitives became injunctive REQUESTED units with a
-gate. The sharing parity of KNOW_HOW is not decided here. Instead:
-- ni under savoir: every ni infinitive stays EMBEDDED under the exact
-  savoir unit, named negated_scope_open (as the unshared desire, A1a);
-- a bare infinitive coordinated after a savoir chain stays EMBEDDED under
-  that exact host unit, named know_how_scope_open.
-Both markers block closure; no modality, polarity or subject is copied, no
-gate is kept.
+NF3a made the infinitives under savoir fail-closed (open, never injunctive)
+while KNOW_HOW sharing parity was held. H15 (D4, approved) decides it:
+KNOW_HOW is a modality (not a capability, permission or authority), shared
+over a coordination like devoir / pouvoir / vouloir (shared_modality);
+"ne sait ni ... ni ..." is the explicit distributive negation
+(ni_negative_coordination, every member negated, H01); "ne sait pas P et Q"
+keeps its scope open (negated_scope_open, H01). In every case no member is
+REQUESTED / FORBIDDEN and no gate is kept.
 """
 from __future__ import annotations
 
@@ -17,7 +15,6 @@ import pytest
 
 from app.semantic.lattice.french_grammar import parse_utterance
 from app.semantic.lattice.projections import ProjectionAxis, project
-from app.semantic.lattice.semantic_closure import semantic_closure
 
 REQUESTS = {"REQUESTED", "INDIRECT_REQUEST", "FORBIDDEN"}
 
@@ -32,36 +29,36 @@ def _view(text):
     "Je ne sais ni lancer P ni exécuter Q.",
     "Paul ne sait ni lancer P, ni exécuter Q.",
 ])
-def test_ni_under_savoir_is_open_never_requested(text):
+def test_ni_under_savoir_is_distributive_never_requested(text):
     f, gate = _view(text)
-    (gov,) = [u for u in f.units if u.lemma == "savoir"]
-    members = [u for u in f.units if u is not gov]
+    members = [u for u in f.units if u.lemma in {"lancer", "exécuter"}]
     assert len(members) == 2
+    assert any(c.construction == "ni_negative_coordination" for c in f.coordinations)
     for u in members:
-        assert u.pragmatic == "EMBEDDED" and not gate[u.id] and u.embedded_under == gov.id
-        assert f"negated_scope_open:{u.id}" in f.ambiguities
-    assert f.closure is False and not semantic_closure(f).closed
+        assert u.polarity == "negative" and u.pragmatic not in REQUESTS and not gate[u.id]
+    assert not any(a.startswith("negated_scope_open") for a in f.ambiguities)
 
 
-@pytest.mark.parametrize("text,n_open", [
-    ("Paul sait lancer P et exécuter Q.", 1),
-    ("Paul sait lancer P, exécuter Q.", 1),
-    ("Paul sait lancer P ou exécuter Q.", 1),
-    ("Paul ne sait pas lancer P et exécuter Q.", 1),
-    ("Sais-tu lancer P et exécuter Q ?", 1),
-    ("Paul sait lancer P, exécuter Q et arrêter R.", 2),
+@pytest.mark.parametrize("text,n", [
+    ("Paul sait lancer P et exécuter Q.", 2),
+    ("Paul sait lancer P, exécuter Q.", 2),
+    ("Paul sait lancer P ou exécuter Q.", 2),
+    ("Sais-tu lancer P et exécuter Q ?", 2),
+    ("Paul sait lancer P, exécuter Q et arrêter R.", 3),
 ])
-def test_infinitive_after_savoir_chain_is_open_never_requested(text, n_open):
+def test_positive_know_how_is_shared_never_requested(text, n):
     f, gate = _view(text)
-    host = f.units[0]
-    assert host.modality == "KNOW_HOW"
-    opened = f.units[1:]
-    assert len(opened) == n_open
-    for u in opened:
-        assert u.pragmatic == "EMBEDDED" and u.pragmatic not in REQUESTS and not gate[u.id]
-        assert (u.modality, u.subject) == (None, None) and u.embedded_under == host.id
-        assert f"know_how_scope_open:{u.id}" in f.ambiguities
-    assert f.closure is False
+    assert len(f.units) == n and any(c.construction == "shared_modality" for c in f.coordinations)
+    for u in f.units:
+        assert u.modality == "KNOW_HOW" and u.pragmatic not in REQUESTS and not gate[u.id]
+    assert not any(a.startswith(("know_how_scope_open", "negated_scope_open")) for a in f.ambiguities)
+
+
+def test_negated_know_how_over_et_stays_open():
+    f, gate = _view("Paul ne sait pas lancer P et exécuter Q.")
+    q = f.units[1]
+    assert q.pragmatic == "EMBEDDED" and not gate[q.id] and q.embedded_under == f.units[0].id
+    assert f"negated_scope_open:{q.id}" in f.ambiguities and f.closure is False
 
 
 @pytest.mark.parametrize("text", [

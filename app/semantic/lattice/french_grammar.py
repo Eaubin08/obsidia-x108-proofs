@@ -682,9 +682,8 @@ def _mark_verbal_ni(clauses: list[_Clause]) -> None:
         # open under that exact "vouloir" (negated_scope_open)
         desire = _MODALITY.get(_pred(shared)) == "DESIRE" and "IMP" not in _feats(shared)
         desire_open = desire and ("COND" in _feats(shared) or any(x in _SECOND_PERSON for x in lows))
-        # "ne sait ni INF ni INF": KNOW_HOW sharing is not decided, its ni infinitives stay open too
+        # "ne sait ni INF ni INF": explicit distributive negation, shared like the other modals (H01/H15)
         know_how = _MODALITY.get(_pred(shared)) == "KNOW_HOW"
-        desire_open = desire_open or know_how
         ability = _MODALITY.get(_pred(shared)) == "ABILITY_OR_PERMISSION"
         # "Ne peux-tu / pourrais-tu ni P ni Q ?": negated question / reproach / suggestion: not
         # shared either, its ni infinitives stay open under that exact "pouvoir" (never injunctive)
@@ -928,7 +927,10 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
         and last.tense in {"NEAR_FUTURE", "RECENT_PAST", "PROGRESSIVE"} and last.subject is not None
     negated_head = last is not None and (any(t.low in {"ne", "n'"} for t in clause.toks[:last.head_index])
                                          or _oral_head_negator(clause.toks, last) is not None)
-    scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE"} or near_future) \
+    # H15: KNOW_HOW ("sait lancer P") is a modality shared like the others; negated or in a
+    # protasis its scope over a coordination stays open (H01)
+    scope_open = last is not None and (last.modality in {"ABILITY_OR_PERMISSION", "DESIRE", "KNOW_HOW"}
+                                       or near_future) \
         and (clause.conn == "si" or negated_head)
     # "Paul ne doit pas lancer P et exécuter Q": a negated obligation is never shared as a
     # positive one (nor its negation copied): its scope over Q stays open too (G2)
@@ -940,10 +942,7 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
     if scope_open and clause.conn != "si" and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
         clause.neg_scope_open = last
-    if last is not None and clause.conn != "si" and last.modality == "KNOW_HOW" and last.verb_form == "INFINITIVE" \
-            and last.head_index != last.lex_index and last.modal_tok is not None:
-        clause.know_how_open = last
-    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE"}
+    if last is not None and (last.modality in {"OBLIGATION", "ABILITY_OR_PERMISSION", "DESIRE", "KNOW_HOW"}
                              or last.directive or near_future) \
             and not scope_open and last.verb_form == "INFINITIVE" \
             and last.head_index != last.lex_index and last.modal_tok is not None:
@@ -2652,6 +2651,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     ambiguities.extend(ambiguous_refs)
 
     ambiguities.extend(_occurrence_conflict_candidates(clauses))
+    # H01: one "ne ... pas / plus / jamais" over coordinated objects ("ne lance pas P et Q"):
+    # ¬(P∧Q), ¬P∧¬Q or another reading is not fixed by syntax -> named, never chosen
+    # ("ni ... ni" is the explicit distributive form and is not concerned)
+    for u in final_units:
+        if u.polarity == "negative" and u.negator in {"pas", "plus", "jamais"} and len(u.objects) >= 2 \
+                and all(a.span is not None for a in u.objects[:2]) \
+                and raw[u.objects[0].span[1]:u.objects[1].span[0]].strip().lower() in {"et", "ou"}:
+            ambiguities.append(f"negated_scope_open:{u.id}")
 
     constraints = _constraints(final_units)
     contradictions = _contradictions(final_units)
