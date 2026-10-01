@@ -24,7 +24,8 @@ from dataclasses import dataclass, field, replace
 
 from app.semantic.lattice.lexicon import fold, has_imperative_paradigm, lookup, predicate_of
 from app.semantic.lattice.primitives import (
-    Argument, CoordinationRef, LatticeRelation, OperatorScopeRef, PredicateUnit, RelationKind,
+    Argument, CoordinationRef, LatticeRelation, OperatorScopeRef, ParticipantConfigurationRef, PredicateUnit,
+    RelationKind,
     UtteranceFrame,
 )
 
@@ -2370,6 +2371,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             (members[0].span[0], members[-1].span[1])))
 
     operator_scopes: list[OperatorScopeRef] = []
+    participant_configurations: list[ParticipantConfigurationRef] = []
+
+    def _configure(unit: str, kind: str, cue: str, span: tuple[int, int], group: str | None = None) -> None:
+        participant_configurations.append(ParticipantConfigurationRef(
+            f"p{len(participant_configurations) + 1}", unit, "subject", kind, cue, span, group))
 
     def _scope_operator(m: _Draft, coord: CoordinationRef) -> None:
         # one "pouvoir" over the coordination: one speech act, derived from the modal itself
@@ -2741,6 +2747,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             host=u1.id, role="subject", member_texts=texts,
             member_spans=((np0[0].start, np0[-1].end), (pre[0].start, pre[-1].end)),
             distributivity="EXPLICIT" if each else "UNSPECIFIED"))
+        if each:
+            # canonical carrier; CoordinationRef.distributivity above is its legacy mirror
+            _configure(u1.id, "DISTRIBUTIVE", each[0].low, (each[0].start, each[0].end), coordinations[-1].id)
         u1 = replace(u1, subject=f" {conj[0]} ".join(texts))
         if mixed:
             u1 = replace(u1, action_agent="UNKNOWN",
@@ -2750,9 +2759,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
 
-    # D5-N4 (provisional, fail-closed): a floating "chacun" of a plural NON-coordinated subject
-    # ("Ils lancent chacun P", "Les agents ont chacun lancé P") has no distributivity carrier
-    # yet: the object is restored and the quantifier is reported, so the frame stays open
+    # D5-N4: a floating "chacun" of a plural NON-coordinated subject ("Ils lancent chacun P",
+    # "Les agents ont chacun lancé P"): the object is restored and the distributivity is a
+    # ParticipantConfigurationRef (no group); "ils" stays unresolved (no anaphora here)
     hosts = {c.host for c in coordinations if c.construction == "coordinated_subject"}
     for clause in clauses:
         for i, (u, d) in enumerate(clause.units):
@@ -2763,8 +2772,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue
             if reread is not None:
                 clause.units[i] = (replace(u, objects=tuple(reread)), d)
-            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{floating.start}-{floating.end}"
-                           f":subject_distributivity_of={u.id}")
+            _configure(u.id, "DISTRIBUTIVE", floating.low, (floating.start, floating.end))
 
     # D5-N7 (provisional, fail-closed): manner material around a unit's arguments ("P tout
     # seul", "P vite", "vite P", "tout seul") has no positive carrier yet: it is reported with
@@ -2787,8 +2795,20 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 end = k
                 while end + 1 < stop and clause.toks[end + 1].low in _MANNER_MARKED:
                     end += 1
-                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{t.start}-{clause.toks[end].end}"
-                               f":unrepresented_modifier_of={u.id}")
+                cue = " ".join(x.low for x in clause.toks[k:end + 1])
+                span = (t.start, clause.toks[end].end)
+                plural = u.id in hosts or _plural_verb(clause.toks[d.head_index])
+                group = next((c.id for c in coordinations
+                              if c.construction == "coordinated_subject" and c.host == u.id), None)
+                if cue == "ensemble" and plural and u.subject is not None:
+                    _configure(u.id, "COLLECTIVE", cue, span, group)  # N13
+                elif cue == "tout seul" and not plural and u.subject is not None:
+                    # SOLO: an explicit singular subject realizes it alone. A bare "seul" may
+                    # mean "only P" and stays reported (never restriction=ONLY, never forced)
+                    _configure(u.id, "SOLO", cue, span)
+                else:
+                        missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{t.start}-{clause.toks[end].end}"
+                                   f":unrepresented_modifier_of={u.id}")
                 k = end + 1
 
     # D5-N3 conservation: nominal material (determiner + word) left right after a unit's
@@ -2889,6 +2909,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         orthography_flags=tuple(dict.fromkeys(ortho)),
         coordinations=tuple(coordinations),
         operator_scopes=tuple(operator_scopes),
+        participant_configurations=tuple(participant_configurations),
     )
     held = _unresolved_profile_complements(frame)
     return replace(frame, ambiguities=frame.ambiguities + held) if held else frame

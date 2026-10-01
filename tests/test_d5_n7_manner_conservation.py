@@ -5,7 +5,9 @@ object ("p tout seul"), "Lance vite P" lost P, "Paul lance tout seul" kept no tr
 _np_from now ends the object before a manner word, the object search skips a manner word
 before the object, and, with no positive manner carrier yet, the manner span is reported
 (unanalyzed_predicative_content:<span>:unrepresented_modifier_of=<unit>): the frame stays
-OPEN. "maintenant" is deixis and untouched; "tout" objects (N6) and quantified objects
+OPEN. Participant cues ("tout seul" with an explicit singular subject, "ensemble" with a
+plural one) left this fallback for ParticipantConfigurationRef (test_participant_
+configuration_v0); a bare "seul" stays here. "maintenant" is deixis and untouched; "tout" objects (N6) and quantified objects
 (N3) are unchanged. No request, prohibition, authority or event is added.
 """
 from __future__ import annotations
@@ -31,15 +33,12 @@ def _claims(text):
 
 
 @pytest.mark.parametrize("text,objs,mod,ref", [
-    ("Paul lance P tout seul.", ("p",), "tout seul", "Paul lance P."),
     ("Paul lance P seul.", ("p",), "seul", "Paul lance P."),
     ("Paul lance P vite.", ("p",), "vite", "Paul lance P."),
     ("Paul lance P automatiquement.", ("p",), "automatiquement", "Paul lance P."),
-    ("Paul lance tout seul.", (), "tout seul", "Paul lance."),
     ("Lance vite P.", ("p",), "vite", "Lance P."),
     ("Lance P directement.", ("p",), "directement", "Lance P."),
     ("Lance P et Q vite.", ("p", "q"), "vite", "Lance P et Q."),
-    ("Paul et Nadia lancent P ensemble.", ("p",), "ensemble", "Paul et Nadia lancent P."),
 ])
 def test_n7_object_kept_modifier_reported_frame_open(text, objs, mod, ref):
     f, r = parse_utterance(text), parse_utterance(ref)

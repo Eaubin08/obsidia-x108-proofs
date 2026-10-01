@@ -235,6 +235,24 @@ class OperatorScopeRef:
 
 
 @dataclass(frozen=True)
+class ParticipantConfigurationRef:
+    """How the participants of ONE predication realize it ("Ils lancent chacun P",
+    "Paul et Nadia lancent P ensemble", "Paul lance P tout seul").
+
+    The canonical carrier of participant configuration (CoordinationRef.distributivity
+    is only a legacy mirror). Descriptive only: not an event, never one event per
+    participant, no group entity, no restriction (ONLY), no authority, no permission.
+    """
+    id: str
+    unit: str                       # the PredicateUnit realized
+    role: str                       # "subject"
+    kind: str                       # "DISTRIBUTIVE" | "COLLECTIVE" | "SOLO"
+    cue: str                        # surface cue ("chacun", "ensemble", "tout seul")
+    span: tuple[int, int] | None = None
+    group: str | None = None        # coordinated-subject CoordinationRef id, if any
+
+
+@dataclass(frozen=True)
 class UtteranceFrame:
     raw: str
     normalized: str
@@ -254,6 +272,7 @@ class UtteranceFrame:
     boundary: dict = field(default_factory=lambda: dict(BOUNDARY))
     coordinations: tuple[CoordinationRef, ...] = ()
     operator_scopes: tuple[OperatorScopeRef, ...] = ()
+    participant_configurations: tuple[ParticipantConfigurationRef, ...] = ()
 
     def coordination(self, ref: str | None) -> CoordinationRef | None:
         return next((c for c in self.coordinations if c.id == ref), None)

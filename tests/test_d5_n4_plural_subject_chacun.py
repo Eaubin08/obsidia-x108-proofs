@@ -3,8 +3,9 @@
 "Ils lancent chacun P" read "chacun p" as the object and closed. The floating
 quantifier is not object material: the object is re-read after it ("p"), and since
 no positive carrier exists yet for the distributivity of a non-coordinated subject,
-the quantifier is reported (unanalyzed_predicative_content:<span>:
-subject_distributivity_of=<unit>) and the frame stays OPEN. Same inside the verb
+the quantifier was reported (unanalyzed_predicative_content:<span>:
+subject_distributivity_of=<unit>) with the frame OPEN. Since ParticipantConfigurationRef
+V0 it is positively represented (DISTRIBUTIVE, group None) and that marker is gone. Same inside the verb
 chain ("Ils ont chacun lancé P"), which R1 made transparent. Coordinated subjects
 keep their positive EXPLICIT CoordinationRef; a partitive "chacun des tests" stays
 the quantified object (N3). No anaphora resolution, no event multiplication.
@@ -33,14 +34,14 @@ def _ev(text):
     ("Les équipes lancent chacune P.", "équipes", "chacune", "Les équipes lancent P."),
     ("Ils ont chacun lancé P.", "ils", "chacun", "Ils ont lancé P."),
 ])
-def test_n4_object_restored_and_distributivity_kept_open(text, subject, each, base):
+def test_n4_object_restored_and_distributivity_represented(text, subject, each, base):
     f = parse_utterance(text)
     (u,) = f.units
     assert (u.subject, [a.text for a in u.objects]) == (subject, ["p"])
-    (m,) = _marker(f)
-    a, b = map(int, m.split(":")[1].split("-"))
-    assert f.raw[a:b] == each and m.endswith(f"={u.id}")
-    assert not f.closure and not f.coordinations
+    assert not _marker(f) and not f.coordinations
+    (pc,) = f.participant_configurations
+    assert (pc.unit, pc.role, pc.kind, pc.cue, pc.group) == (u.id, "subject", "DISTRIBUTIVE", each, None)
+    assert f.raw[pc.span[0]:pc.span[1]] == each and f.closure
     assert _ev(text) == _ev(base) and len(_ev(text)) == 1  # no promotion, no multiplication
     s = governable_summary(f)
     assert s["requested_world_actions"] == [] and s["confirmed_no_execute"] is False and f.constraints == ()
