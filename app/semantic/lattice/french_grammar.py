@@ -1001,6 +1001,8 @@ _WH_COMPLEMENT_WORDS = {"qui", "quand", "comment", "pourquoi", "où", "combien"}
 _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
 _DISTRIBUTIVE_FLOATS = {"chacun", "chacune"}
+_PARTITIVE_QUANTIFIERS = {"chacun", "chacune", "un", "une"}  # + de / des / du NP
+_TOTALITY_QUANTIFIERS = {"tous", "toutes", "tout", "toute"}  # + determiner NP
 _TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
 _PLURAL_AUX = {"ont", "sont", "vont", "avons", "sommes", "allons", "avez", "êtes", "allez", "font", "doivent",
@@ -1683,6 +1685,21 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
     if j >= len(toks):
         return None, j
     t = toks[j]
+    # D5-N3: a quantifier owns its licensed nominal complement ("chacun des / de ces tests",
+    # "un des tests", "tous les tests"): one complete argument, never truncated
+    nxt = toks[j + 1].low if j + 1 < len(toks) else None
+    inner_at = None
+    if t.low in _PARTITIVE_QUANTIFIERS and nxt in {"des", "du"}:
+        inner_at = j + 1
+    elif t.low in _PARTITIVE_QUANTIFIERS and nxt in {"de", "d'"} and j + 2 < len(toks)             and toks[j + 2].low in _DETERMINERS:
+        inner_at = j + 2
+    elif t.low in _TOTALITY_QUANTIFIERS and nxt in _DETERMINERS and nxt not in {"de", "d'", "des", "du", "un", "une"}:
+        inner_at = j + 1
+    if inner_at is not None:
+        inner, nj = _np_from(toks, inner_at)
+        if inner is not None and inner.kind == "NP":
+            text = " ".join(x.low for x in toks[j:nj])
+            return Argument(text, inner.head, "NP", inner.reference, span=(t.start, toks[nj - 1].end)), nj
     if t.low in _WH_WORDS or t.low in _REFLEXIVE_CLITICS or t.low in _MANNER_ADVERBS:
         return None, j
     if t.low in _DEMONSTRATIVE_PRONOUNS:
@@ -2706,6 +2723,28 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if person:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
+
+    # D5-N3 conservation: nominal material (determiner + word) left right after a unit's
+    # objects ("le test de Marie", "aucun des tests") is reported, never dropped silently
+    for clause in clauses:
+        for u, d in clause.units:
+            spans = [a.span for a in u.objects if a.span is not None]
+            if spans:
+                k = next((i for i, t in enumerate(clause.toks) if t.start >= max(e for _, e in spans)), None)
+            else:
+                k = d.lex_index + 1
+                while k < len(clause.toks) and clause.toks[k].low in _FR_NEGATORS | _ADVERBS_SKIPPABLE:
+                    k += 1
+            if k is None or k + 1 >= len(clause.toks) or clause.toks[k].low not in _DETERMINERS:
+                continue
+            nxt = clause.toks[k + 1]
+            if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1):
+                continue
+            end = k + 1
+            while end + 1 < len(clause.toks) and not clause.toks[end + 1].is_punct                     and clause.toks[end + 1].low not in _CONNECTIVES and not _is_verb(clause.toks, end + 1):
+                end += 1
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
+                           f":unattached_nominal_of={u.id}")
 
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)

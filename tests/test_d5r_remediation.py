@@ -133,5 +133,6 @@ def test_n1_no_promotion_from_post_verbal_chacun():
 @pytest.mark.parametrize("text", ["Paul lance chacun des tests.", "Paul et Nadia lancent chacun des tests."])
 def test_n1_partitive_chacun_is_an_object_not_subject_distributivity(text):
     f = parse_utterance(text)
-    assert f.units[0].objects[0].text == "chacun"
+    # N3: the partitive quantifier is one complete object argument (was truncated to "chacun")
+    assert [a.text for a in f.units[0].objects] == ["chacun des tests"]
     assert all(c.distributivity != "EXPLICIT" for c in _subject(f))
