@@ -92,11 +92,13 @@ def _executor():
         p = subprocess.run(
             ["git", "apply", "-"],
             cwd=str(repo_root),
-            input=patch_content,
+            input=patch_content.encode("utf-8"),
             capture_output=True,
-            text=True,
         )
-        return {"ok": p.returncode == 0, "error": p.stderr}
+        return {
+            "ok": p.returncode == 0,
+            "error": p.stderr.decode("utf-8", errors="replace"),
+        }
 
     ex.create_file.side_effect = create_file
     ex.apply_patch.side_effect = apply_patch
