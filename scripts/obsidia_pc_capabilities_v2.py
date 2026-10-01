@@ -340,7 +340,7 @@ def pc_v2_move_file_prepare(
                               dest_path=dest_path, source_sha256=ssha)}
 def pc_v2_move_file_execute(
         prepared_result, human_authorized_eah, human_authorization_reference,
-        *, stores_base_dir, repo_root, session_id=""):
+        *, stores_base_dir, repo_root, session_id="", executor=None):
     st = _stores(stores_base_dir); ew = Path(repo_root).resolve()
     if prepared_result.get("j5_phase") != "PREPARE": return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
     if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL: return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
@@ -366,7 +366,18 @@ def pc_v2_move_file_execute(
     if not kx.get("verify_ok"): return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", ""); kx_id = kx.get("decision_record_id", ""); kx_hash = kx.get("record", {}).get("decision_record_hash", "")
     if gate != "ALLOW": return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "KX108_PRE_GATE:"+gate, session_id)
-    da.parent.mkdir(parents=True, exist_ok=True); os.replace(sa, da)
+    if executor is not None:
+        _ex = executor.move_file(sa, da)
+        if not _ex["ok"]:
+            return _exec_rej(
+                OP_MOVE_FILE,
+                _CAP_MOVE_EXECUTE,
+                "JARJAR_EXECUTOR_FAILED:" + str(_ex.get("error", "")),
+                session_id,
+            )
+    else:
+        da.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(sa, da)
     if not da.exists() or sa.exists(): return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "MOVE_REALIZED_STATE_MISMATCH", session_id)
     asha = _sha256(da.read_bytes())
     if asha != ssha: return _exec_rej(OP_MOVE_FILE, _CAP_MOVE_EXECUTE, "CONTENT_MISMATCH_AFTER_MOVE", session_id)
@@ -382,6 +393,8 @@ def pc_v2_move_file_execute(
             "source_path": spath, "dest_path": dpath,
             "sealed_apply_receipt_id": sar_rec["sealed_apply_receipt_id"],
             "sealed_rollback_evidence_id": sre_id,
+            "executor_provider": executor.EXECUTOR_PROVIDER if executor else "OS_NATIVE",
+            "executor_backend": executor.EXECUTOR_BACKEND if executor else "os.replace",
             "receipt": _rcpt(_CAP_MOVE_EXECUTE, OP_MOVE_FILE, EXECUTED_OK, session_id,
                               kx108_pre_gate=gate, source_path=spath, dest_path=dpath,
                               sealed_apply_receipt_id=sar_rec["sealed_apply_receipt_id"],
@@ -541,7 +554,7 @@ def pc_v2_create_dir_prepare(
 
 def pc_v2_create_dir_execute(
         prepared_result, human_authorized_eah, human_authorization_reference,
-        *, stores_base_dir, repo_root, session_id=""):
+        *, stores_base_dir, repo_root, session_id="", executor=None):
     st = _stores(stores_base_dir); ew = Path(repo_root).resolve()
     if prepared_result.get("j5_phase") != "PREPARE": return _exec_rej(OP_CREATE_DIR, _CAP_CDIR_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
     if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL: return _exec_rej(OP_CREATE_DIR, _CAP_CDIR_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
@@ -563,11 +576,23 @@ def pc_v2_create_dir_execute(
     if not kx.get("verify_ok"): return _exec_rej(OP_CREATE_DIR, _CAP_CDIR_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW": return _exec_rej(OP_CREATE_DIR, _CAP_CDIR_EXECUTE, "KX108_PRE_GATE:"+gate, session_id)
-    da.mkdir(parents=False, exist_ok=False)
+    if executor is not None:
+        _ex = executor.create_dir(da)
+        if not _ex["ok"]:
+            return _exec_rej(
+                OP_CREATE_DIR,
+                _CAP_CDIR_EXECUTE,
+                "JARJAR_EXECUTOR_FAILED:" + str(_ex.get("error", "")),
+                session_id,
+            )
+    else:
+        da.mkdir(parents=False, exist_ok=False)
     if not da.exists() or not da.is_dir(): return _exec_rej(OP_CREATE_DIR, _CAP_CDIR_EXECUTE, "CREATE_DIR_REALIZED_STATE_MISMATCH", session_id)
     return {"status": EXECUTED_OK, "j5_phase": "EXECUTE", "operation_type": OP_CREATE_DIR,
             "jarvis_authority": JARVIS_AUTHORITY, "decision_authority": KX_DECISION_AUTHORITY,
             "kx108_pre_gate": gate, "human_authorization_consumed": True, "dir_path": dpath,
+            "executor_provider": executor.EXECUTOR_PROVIDER if executor else "OS_NATIVE",
+            "executor_backend": executor.EXECUTOR_BACKEND if executor else "os.replace",
             "receipt": _rcpt(_CAP_CDIR_EXECUTE, OP_CREATE_DIR, EXECUTED_OK, session_id,
                               kx108_pre_gate=gate, dir_path=dpath)}
 
