@@ -1752,6 +1752,31 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
     return Argument(text, head, kind, ref, span=(start, end_tok.end)), j
 
 
+def _floating_each(toks: list[_Tok], d: "_Draft", u: PredicateUnit) -> tuple[_Tok | None, list[Argument] | None]:
+    """A floating "chacun / chacune" of the subject: inside the verb chain ("ont chacun
+    lancé"), or right after the finite verb opening the object ("lancent chacun P", never
+    the partitive "chacun des tests"). Returns (token, objects re-read after it or None)."""
+    inner = next((t for t in toks[d.head_index + 1:d.lex_index] if t.low in _DISTRIBUTIVE_FLOATS), None)
+    if inner is not None:
+        return inner, None
+    post = d.lex_index + 1
+    if not (post + 1 < len(toks) and toks[post].low in _DISTRIBUTIVE_FLOATS
+            and toks[post + 1].low not in {"de", "d'", "des", "du"} and not toks[post + 1].is_punct
+            and u.objects and u.objects[0].span is not None and u.objects[0].span[0] == toks[post].start):
+        return None, None
+    args, j = [], post + 1
+    while j < len(toks):
+        arg, j = _np_from(toks, j)
+        if arg is None:
+            break
+        args.append(arg)
+        if j < len(toks) and toks[j].low in {"et", "ou", ","}:
+            j += 1
+            continue
+        break
+    return (toks[post], args) if args else (None, None)
+
+
 def _objects_for(toks: list[_Tok], d: _Draft, clause: _Clause) -> list[Argument]:
     args: list[Argument] = []
     k = d.lex_index
@@ -2674,12 +2699,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             np0 = np0[1:]
         u1, d1 = c1.units[0]
         pre = [t for t in c1.toks[:d1.head_index] if t.low not in {"ne", "n'"}]
-        # "chacun" before the verb or inside its chain ("ont chacun lancé"); right after the
-        # finite verb only when it opens the object ("lanceront chacun P"), never as the
-        # pronoun head of a partitive object ("lancent chacun des tests")
-        each = [t for t in c1.toks[:d1.lex_index] if t.low in _DISTRIBUTIVE_FLOATS]
-        post = d1.lex_index + 1
-        float_obj = post + 1 < len(c1.toks) and c1.toks[post].low in _DISTRIBUTIVE_FLOATS             and c1.toks[post + 1].low not in {"de", "d'", "des", "du"} and not c1.toks[post + 1].is_punct             and bool(u1.objects) and u1.objects[0].span is not None and u1.objects[0].span[0] == c1.toks[post].start
+        # "chacun" before the verb, inside its chain or right after it (see _floating_each)
+        each = [t for t in c1.toks[:d1.head_index] if t.low in _DISTRIBUTIVE_FLOATS]
+        floating, reread = _floating_each(c1.toks, d1, u1)
         pre = [t for t in pre if t.low not in _DISTRIBUTIVE_FLOATS]
         head = c1.toks[d1.head_index]
         covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
@@ -2690,22 +2712,10 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # D5-R3: members of more than one agent class ("toi et moi", "Paul et moi") have no
         # truthful single action_agent: UNKNOWN (no MIXED value) and the agency stays open
         mixed = len(set(persons)) > 1
-        if float_obj:
-            # D5-N1: the floating quantifier is the subject's distributivity, never object material
-            # the object NPs are re-read after it (same coordination rule as _objects_for)
-            args, j = [], post + 1
-            while j < len(c1.toks):
-                arg, j = _np_from(c1.toks, j)
-                if arg is None:
-                    break
-                args.append(arg)
-                if j < len(c1.toks) and c1.toks[j].low in {"et", "ou", ","}:
-                    j += 1
-                    continue
-                break
-            if args:
-                each.append(c1.toks[post])
-                u1 = replace(u1, objects=tuple(args))
+        if floating is not None:
+            each.append(floating)
+            if reread is not None:
+                u1 = replace(u1, objects=tuple(reread))
         person = mixed or "THIRD_PARTY" not in persons
         texts = (" ".join(t.low for t in np0 if t.low not in _DETERMINERS) or np0[-1].low,
                  " ".join(t.low for t in pre if t.low not in _DETERMINERS) or pre[-1].low)
@@ -2723,6 +2733,22 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         if person:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
+
+    # D5-N4 (provisional, fail-closed): a floating "chacun" of a plural NON-coordinated subject
+    # ("Ils lancent chacun P", "Les agents ont chacun lancé P") has no distributivity carrier
+    # yet: the object is restored and the quantifier is reported, so the frame stays open
+    hosts = {c.host for c in coordinations if c.construction == "coordinated_subject"}
+    for clause in clauses:
+        for i, (u, d) in enumerate(clause.units):
+            if u.id in hosts or u.subject is None or not _plural_verb(clause.toks[d.head_index]):
+                continue
+            floating, reread = _floating_each(clause.toks, d, u)
+            if floating is None:
+                continue
+            if reread is not None:
+                clause.units[i] = (replace(u, objects=tuple(reread)), d)
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{floating.start}-{floating.end}"
+                           f":subject_distributivity_of={u.id}")
 
     # D5-N3 conservation: nominal material (determiner + word) left right after a unit's
     # objects ("le test de Marie", "aucun des tests") is reported, never dropped silently
