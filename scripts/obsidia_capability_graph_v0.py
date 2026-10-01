@@ -301,6 +301,55 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_PROVEN_E2E_REAL_MUTATION",
         notes="pc_governed_execute: explicit human EAH required. J5->KX108_PRE->governed apply. KX108_ONLY."),
+    # -- V2 capabilities (CREATE_FILE, MOVE_FILE, APPLY_PATCH) ---------------
+    "PC_V2_CREATE_FILE_PREPARE": _cap(
+        "PC_V2_CREATE_FILE_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"target_path": "workspace-relative", "content": "bytes",
+                     "execution_worktree_path": "operator-trusted path"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 CREATE_FILE PREPARE: target must be absent. KX108_ONLY."),
+    "PC_V2_CREATE_FILE_EXECUTE": _cap(
+        "PC_V2_CREATE_FILE_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_CREATE_FILE_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 CREATE_FILE EXECUTE: EAH+human approval+KX108 required. KX108_ONLY."),
+    "PC_V2_MOVE_FILE_PREPARE": _cap(
+        "PC_V2_MOVE_FILE_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"source_path": "workspace-relative", "dest_path": "workspace-relative",
+                     "execution_worktree_path": "operator-trusted path"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 MOVE_FILE PREPARE: source must exist, dest must be absent. KX108_ONLY."),
+    "PC_V2_MOVE_FILE_EXECUTE": _cap(
+        "PC_V2_MOVE_FILE_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_MOVE_FILE_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 MOVE_FILE EXECUTE: EAH+human approval+KX108 required. KX108_ONLY."),
+    "PC_V2_APPLY_PATCH_PREPARE": _cap(
+        "PC_V2_APPLY_PATCH_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"patch_content": "unified diff str",
+                     "execution_worktree_path": "operator-trusted path"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 APPLY_PATCH PREPARE: unified diff, no binary, multi-file bounded. KX108_ONLY."),
+    "PC_V2_APPLY_PATCH_EXECUTE": _cap(
+        "PC_V2_APPLY_PATCH_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_APPLY_PATCH_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 APPLY_PATCH EXECUTE: EAH+human approval+KX108+git apply. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())
@@ -349,6 +398,12 @@ _KIND_TO_CAPABILITY = {
     "PC_PROCESS_STATUS": "PC_PROCESS_STATUS",
     "PC_GOVERNED_PREPARE": "PC_GOVERNED_PREPARE",
     "PC_GOVERNED_EXECUTE": "PC_GOVERNED_EXECUTE",
+    "PC_V2_CREATE_FILE_PREPARE": "PC_V2_CREATE_FILE_PREPARE",
+    "PC_V2_CREATE_FILE_EXECUTE": "PC_V2_CREATE_FILE_EXECUTE",
+    "PC_V2_MOVE_FILE_PREPARE": "PC_V2_MOVE_FILE_PREPARE",
+    "PC_V2_MOVE_FILE_EXECUTE": "PC_V2_MOVE_FILE_EXECUTE",
+    "PC_V2_APPLY_PATCH_PREPARE": "PC_V2_APPLY_PATCH_PREPARE",
+    "PC_V2_APPLY_PATCH_EXECUTE": "PC_V2_APPLY_PATCH_EXECUTE",
 }
 
 
