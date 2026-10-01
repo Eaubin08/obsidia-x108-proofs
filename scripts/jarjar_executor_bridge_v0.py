@@ -48,6 +48,18 @@ class JarJarFilesystemExecutor:
         if not result.ok:
             return {"ok": False, "error": result.message, "executor": _EXECUTOR_BACKEND, "capability": "folder.create"}
         return {"ok": True, "error": None, "executor": _EXECUTOR_BACKEND, "capability": "folder.create", "data": result.data}
+    def create_file(self, target_abs: Path, content: bytes) -> dict:
+        result = self._backend.create_file_bytes(target_abs, content)
+        if not result.ok:
+            return {"ok": False, "error": result.message, "executor": _EXECUTOR_BACKEND, "capability": "file.create"}
+        return {"ok": True, "error": None, "executor": _EXECUTOR_BACKEND, "capability": "file.create", "data": result.data}
+
+    def apply_patch(self, repo_root: Path, patch_content: str, target_paths: list[str]) -> dict:
+        result = self._backend.apply_unified_patch(repo_root, patch_content, target_paths)
+        if not result.ok:
+            return {"ok": False, "error": result.message, "executor": _EXECUTOR_BACKEND, "capability": "patch.apply"}
+        return {"ok": True, "error": None, "executor": _EXECUTOR_BACKEND, "capability": "patch.apply", "data": result.data}
+
     def rollback_move_file(self, current_abs: Path, restore_to_abs: Path) -> dict:
         req = self._req("file.move", source=str(current_abs), target=str(restore_to_abs))
         result = self._backend.execute(req)
