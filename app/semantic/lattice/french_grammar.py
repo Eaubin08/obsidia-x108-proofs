@@ -60,7 +60,9 @@ _ADVERBS_SKIPPABLE = {"pas", "jamais", "plus", "rien", "déjà", "deja", "bien",
 _PREPOSITIONS = {"sur", "dans", "avec", "pour", "à", "a", "en", "par", "vers",
                  "chez", "on", "in", "with", "to", "for", "into", "at", "of",
                  "from"}
-_DEIXIS = {"ici", "là", "maintenant", "aujourd'hui", "demain", "hier",
+# temporal cues carried by UtteranceFrame.deixis / TemporalCueAttachment ("immédiatement": N12-T,
+# relative immediacy; same carrier as "maintenant", not the same meaning)
+_DEIXIS = {"ici", "là", "maintenant", "immédiatement", "immediatement", "aujourd'hui", "demain", "hier",
            "here", "now", "today", "tomorrow", "yesterday"}
 _TIME_ADVERBS = _DEIXIS | {"dehors", "ensuite", "après", "apres", "avant", "tard", "tôt"}
 # Manner adverbs that must never be read as a bare (determiner-less) object.
@@ -1002,9 +1004,10 @@ _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "l
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
 _DISTRIBUTIVE_FLOATS = {"chacun", "chacune"}
 _PARTITIVE_QUANTIFIERS = {"chacun", "chacune", "un", "une"}  # + de / des / du NP
-# D5-N7: manner words reported when found around a unit's arguments ("maintenant" is deixis)
+# D5-N7: manner words reported when found around a unit's arguments ("maintenant" and
+# "immédiatement" are temporal cues, N12-T)
 _MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "automatiquement",
-                  "directement", "immédiatement", "immediatement"}
+                  "directement"}
 _TOTALITY_QUANTIFIERS = {"tous", "toutes", "tout", "toute"}  # + determiner NP
 _TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
