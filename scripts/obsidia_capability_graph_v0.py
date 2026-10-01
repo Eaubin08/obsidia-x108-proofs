@@ -242,6 +242,65 @@ _GRAPH: "dict[str, dict]" = {
         route=ROUTE_COGNITIVE_REQUEST, input_shape={"text": "str"},
         availability="AVAILABLE", proof_status="NON_MUTATING",
         notes="Pure conversation/reasoning. No repository effect."),
+    # ── PC Capabilities V0 (OpenJarvis-bound, read-only) ─────────────────
+    "PC_READ_FILE": _cap(
+        "PC_READ_FILE", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={"path": "workspace-relative path"},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.read_file — workspace-bound, secret-filtered."),
+    "PC_LIST_DIR": _cap(
+        "PC_LIST_DIR", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={"path": "workspace-relative directory"},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.list_dir — max 200 entries, skip dirs filtered."),
+    "PC_SEARCH_PROJECT": _cap(
+        "PC_SEARCH_PROJECT", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={"pattern": "regex", "file_glob": "glob"},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.search_project — ripgrep-style, workspace-bound."),
+    "PC_GIT_STATUS": _cap(
+        "PC_GIT_STATUS", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.git_status — wraps native read_git_state."),
+    "PC_GIT_DIFF": _cap(
+        "PC_GIT_DIFF", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={"file_path": "optional", "staged": "bool"},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.git_diff — workspace-bound, max 65536 bytes."),
+    "PC_RUN_TEST_READONLY": _cap(
+        "PC_RUN_TEST_READONLY", family="PC_TEST", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_BOUNDED, authority_class=AUTHORITY_NONE, rw=RW_NONE,
+        route=ROUTE_NATIVE, input_shape={"test_family_id": "PC_TEST_FAMILY_REGISTRY key"},
+        availability="AVAILABLE", proof_status="CLOSED_STACK_NATIVE_BOUNDED",
+        notes="obsidia_pc_capabilities_v0.run_test_readonly — named families only, no raw paths."),
+    "PC_PROCESS_STATUS": _cap(
+        "PC_PROCESS_STATUS", family="PC_READ_ONLY", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_DETERMINISTIC_READ_ONLY, authority_class=AUTHORITY_NONE, rw=RW_READ,
+        route=ROUTE_NATIVE, input_shape={"name_filter": "optional str"},
+        availability="AVAILABLE", proof_status="CLOSED_READ_ONLY",
+        notes="obsidia_pc_capabilities_v0.process_status — psutil or os fallback, max 50."),
+    "PC_GOVERNED_PREPARE": _cap(
+        "PC_GOVERNED_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"source_git_commit": "str", "target_path": "workspace-relative",
+                     "execution_worktree_path": "operator-trusted path"},
+        availability="AVAILABLE", proof_status="J5_PROVEN_PREPARE_ONLY",
+        notes="pc_governed_prepare: PREPARE only, no mutation, reveals EAH. KX108_ONLY."),
+    "PC_GOVERNED_EXECUTE": _cap(
+        "PC_GOVERNED_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_GOVERNED_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_PROVEN_E2E_REAL_MUTATION",
+        notes="pc_governed_execute: explicit human EAH required. J5->KX108_PRE->governed apply. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())
@@ -281,6 +340,15 @@ _KIND_TO_CAPABILITY = {
     "HUMAN_DECISION": "HUMAN_AUTHORITY",
     "UNKNOWN": "UNKNOWN_AUTHORITY",
     "CONVERSATION": "CONVERSATION",
+    "PC_READ_FILE": "PC_READ_FILE",
+    "PC_LIST_DIR": "PC_LIST_DIR",
+    "PC_SEARCH_PROJECT": "PC_SEARCH_PROJECT",
+    "PC_GIT_STATUS": "PC_GIT_STATUS",
+    "PC_GIT_DIFF": "PC_GIT_DIFF",
+    "PC_RUN_TEST_READONLY": "PC_RUN_TEST_READONLY",
+    "PC_PROCESS_STATUS": "PC_PROCESS_STATUS",
+    "PC_GOVERNED_PREPARE": "PC_GOVERNED_PREPARE",
+    "PC_GOVERNED_EXECUTE": "PC_GOVERNED_EXECUTE",
 }
 
 
