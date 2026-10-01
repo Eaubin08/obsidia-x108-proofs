@@ -125,6 +125,7 @@ class _Clause:
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
     boundary: str | None = None  # punctuation that opened the clause
+    boundary_tok: object = None  # that punctuation token (kept when a verbless clause is merged back)
     protasis_head: "_Clause | None" = None  # first "si" clause of a conjunctive protasis
     ni_head: "_Clause | None" = None  # clause holding "ne" of a verbal "ne ... ni V1 ni V2"
     compound: tuple | None = None  # (tense, auxiliary surface, draft) of its last AUX+PP predicate
@@ -1000,6 +1001,7 @@ _WH_COMPLEMENT_WORDS = {"qui", "quand", "comment", "pourquoi", "où", "combien"}
 _HYPHEN_OBJECT_PRONOUNS = {"moi", "toi", "lui", "nous", "vous", "leur", "le", "la", "les"}
 _TONIC_PRONOUNS = {"moi", "toi", "lui", "elle", "nous", "vous", "eux", "elles"}
 _DISTRIBUTIVE_FLOATS = {"chacun", "chacune"}
+_TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
 _PLURAL_AUX = {"ont", "sont", "vont", "avons", "sommes", "allons", "avez", "êtes", "allez", "font", "doivent",
                "peuvent", "veulent", "savent", "viennent"}
@@ -1109,7 +1111,7 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             if low == "?":
                 interrogative = True
             open_clause(None, [])
-            cur().boundary = low
+            cur().boundary, cur().boundary_tok = low, t
             i += 1
             continue
 
@@ -1341,7 +1343,9 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
                 and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
                                                 or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
-            prev.toks += c.conn_toks + c.toks
+            # D5-R2: a merged comma tail keeps its comma, so NP members never fuse ("P, Q")
+            comma = [c.boundary_tok] if c.boundary == "," and c.boundary_tok is not None and not c.conn_toks else []
+            prev.toks += comma + c.conn_toks + c.toks
             # "V que le test que P V2": the complement opener only held its
             # subject NP; the relative that follows also carries V2.
             lost_complement = _is_complement(c)
@@ -1454,7 +1458,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
     k = 0
     skip = {"ne", "n'", "pas", "plus", "jamais", "rien", "déjà", "deja", "bien", "not",
             "never", "surtout", "vraiment", "encore", "toujours", "le", "la", "les", "l'",
-            "y", "en", "lui", "leur"} | _REFLEXIVE_CLITICS
+            "y", "en", "lui", "leur"} | _REFLEXIVE_CLITICS | _DISTRIBUTIVE_FLOATS
     while k < len(toks):
         if k in consumed or not _is_verb(toks, k):
             k += 1
@@ -1704,7 +1708,7 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
                 or (words and (w.low in _FR_NEGATORS or w.low in _EN_NEGATORS))
                 or w.low in _DETERMINERS
                 or w.low in _SUBJECT_PRONOUNS or w.low in _RESTRICTION_ADVERBS
-                or _is_verb(toks, j)):
+                or w.is_punct or _is_verb(toks, j)):
             break
         words.append(w.low)
         end_tok = w
@@ -2651,15 +2655,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             np0 = np0[1:]
         u1, d1 = c1.units[0]
         pre = [t for t in c1.toks[:d1.head_index] if t.low not in {"ne", "n'"}]
-        each = [t for t in pre if t.low in _DISTRIBUTIVE_FLOATS]
+        # "chacun" before the verb, inside its chain ("ont chacun lancé") or right after it
+        each = [t for t in c1.toks[:d1.lex_index + 2] if t.low in _DISTRIBUTIVE_FLOATS]
         pre = [t for t in pre if t.low not in _DISTRIBUTIVE_FLOATS]
         head = c1.toks[d1.head_index]
-        if each and pre and pre[-1].analyses and _plural_verb(pre[-1]):
-            head = pre.pop()  # "ont chacun lancé": the auxiliary carries the agreement
         covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
-        person = [t.low for t in pre] in (["moi"], ["toi"])
-        if covered or not _bare_noun_phrase(np0) or not (_bare_noun_phrase(pre) or person)                 or d1.head_index == 0 or not (_plural_verb(head) or conj == ["ou"]):
+        tonic = (["moi"], ["toi"])
+        persons = [_TONIC_AGENT.get(t[0].low) if [x.low for x in t] in tonic else "THIRD_PARTY" for t in (np0, pre) if t]
+        if covered or not (_bare_noun_phrase(np0) or [t.low for t in np0] in tonic)                 or not (_bare_noun_phrase(pre) or [t.low for t in pre] in tonic)                 or d1.head_index == 0 or not (_plural_verb(head) or conj == ["ou"]):
             continue
+        # D5-R3: members of more than one agent class ("toi et moi", "Paul et moi") have no
+        # truthful single action_agent: UNKNOWN (no MIXED value) and the agency stays open
+        mixed = len(set(persons)) > 1
+        person = mixed or "THIRD_PARTY" not in persons
         texts = (" ".join(t.low for t in np0 if t.low not in _DETERMINERS) or np0[-1].low,
                  " ".join(t.low for t in pre if t.low not in _DETERMINERS) or pre[-1].low)
         coordinations.append(CoordinationRef(
@@ -2668,7 +2676,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             host=u1.id, role="subject", member_texts=texts,
             member_spans=((np0[0].start, np0[-1].end), (pre[0].start, pre[-1].end)),
             distributivity="EXPLICIT" if each else "UNSPECIFIED"))
-        c1.units[0] = (replace(u1, subject=f" {conj[0]} ".join(texts)), d1)
+        u1 = replace(u1, subject=f" {conj[0]} ".join(texts))
+        if mixed:
+            u1 = replace(u1, action_agent="UNKNOWN",
+                         role="MENTION" if u1.role == "THIRD_PARTY_ACTION" else u1.role)
+        c1.units[0] = (u1, d1)
         if person:
             missing.append(f"coordinated_subject_unrepresented:{np0[0].start}-{np0[-1].end}:subject_of={u1.id}")
             ambiguities.append(f"coordinated_subject_unrepresented:{u1.id}")
