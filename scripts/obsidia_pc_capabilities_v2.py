@@ -257,7 +257,7 @@ def pc_v2_create_file_prepare(
 
 def pc_v2_create_file_execute(
         prepared_result, human_authorized_eah, human_authorization_reference,
-        *, stores_base_dir, repo_root, session_id=""):
+        *, stores_base_dir, repo_root, session_id="", executor=None):
     st = _stores(stores_base_dir); ew = Path(repo_root).resolve()
     if prepared_result.get("j5_phase") != "PREPARE": return _exec_rej(OP_CREATE_FILE, _CAP_CREATE_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
     if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL: return _exec_rej(OP_CREATE_FILE, _CAP_CREATE_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
@@ -284,9 +284,19 @@ def pc_v2_create_file_execute(
     if not kx.get("verify_ok"): return _exec_rej(OP_CREATE_FILE, _CAP_CREATE_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", ""); kx_id = kx.get("decision_record_id", ""); kx_hash = kx.get("record", {}).get("decision_record_hash", "")
     if gate != "ALLOW": return _exec_rej(OP_CREATE_FILE, _CAP_CREATE_EXECUTE, "KX108_PRE_GATE:"+gate, session_id)
-    ta.parent.mkdir(parents=True, exist_ok=True)
-    tmp = ta.parent / ("." + ta.name + "." + str(os.getpid()) + ".v2c.tmp")
-    tmp.write_bytes(cb); os.replace(tmp, ta)
+    if executor is not None:
+        _ex = executor.create_file(ta, cb)
+        if not _ex["ok"]:
+            return _exec_rej(
+                OP_CREATE_FILE,
+                _CAP_CREATE_EXECUTE,
+                "JARJAR_EXECUTOR_FAILED:" + str(_ex.get("error", "")),
+                session_id,
+            )
+    else:
+        ta.parent.mkdir(parents=True, exist_ok=True)
+        tmp = ta.parent / ("." + ta.name + "." + str(os.getpid()) + ".v2c.tmp")
+        tmp.write_bytes(cb); os.replace(tmp, ta)
     after = ta.read_bytes(); asha = _sha256(after)
     if asha != csha: return _exec_rej(OP_CREATE_FILE, _CAP_CREATE_EXECUTE, REALIZED_STATE_MISMATCH, session_id)
     sre_rec = _sre(v2id, child, exp_eah, apv_id, kx_id, kx_hash, tpath, b"", csha, OP_CREATE_FILE)
@@ -301,6 +311,8 @@ def pc_v2_create_file_execute(
             "target_path": tpath, "target_post_sha256": asha,
             "sealed_apply_receipt_id": sar_rec["sealed_apply_receipt_id"],
             "sealed_rollback_evidence_id": sre_id,
+            "executor_provider": executor.EXECUTOR_PROVIDER if executor else "OS_NATIVE",
+            "executor_backend": executor.EXECUTOR_BACKEND if executor else "atomic_path_write",
             "receipt": _rcpt(_CAP_CREATE_EXECUTE, OP_CREATE_FILE, EXECUTED_OK, session_id,
                               kx108_pre_gate=gate, target_path=tpath, target_post_sha256=asha,
                               sealed_apply_receipt_id=sar_rec["sealed_apply_receipt_id"],
@@ -462,7 +474,7 @@ def pc_v2_apply_patch_prepare(
 
 def pc_v2_apply_patch_execute(
         prepared_result, human_authorized_eah, human_authorization_reference,
-        *, stores_base_dir, repo_root, session_id=""):
+        *, stores_base_dir, repo_root, session_id="", executor=None):
     st = _stores(stores_base_dir); ew = Path(repo_root).resolve()
     if prepared_result.get("j5_phase") != "PREPARE": return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
     if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
@@ -494,8 +506,18 @@ def pc_v2_apply_patch_execute(
     if not kx.get("verify_ok"): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", ""); kx_id = kx.get("decision_record_id", ""); kx_hash = kx.get("record", {}).get("decision_record_hash", "")
     if gate != "ALLOW": return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "KX108_PRE_GATE:"+gate, session_id)
-    appl = subprocess.run(["git", "apply", str(pp)], cwd=str(ew), capture_output=True, text=True, timeout=60)
-    if appl.returncode != 0: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PATCH_APPLY_FAILED:"+appl.stderr.strip()[:200], session_id)
+    if executor is not None:
+        _ex = executor.apply_patch(ew, pt, list(targets))
+        if not _ex["ok"]:
+            return _exec_rej(
+                OP_APPLY_PATCH,
+                _CAP_PATCH_EXECUTE,
+                "JARJAR_EXECUTOR_FAILED:" + str(_ex.get("error", "")),
+                session_id,
+            )
+    else:
+        appl = subprocess.run(["git", "apply", str(pp)], cwd=str(ew), capture_output=True, text=True, timeout=60)
+        if appl.returncode != 0: return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "PATCH_APPLY_FAILED:"+appl.stderr.strip()[:200], session_id)
     after = {}
     for rel in targets:
         pa = _canon(rel, ew)
@@ -521,6 +543,8 @@ def pc_v2_apply_patch_execute(
             "target_paths": targets, "after_digests": after,
             "sealed_apply_receipt_id": sar_rec["sealed_apply_receipt_id"],
             "sealed_rollback_evidence_ids": sre_ids,
+            "executor_provider": executor.EXECUTOR_PROVIDER if executor else "OS_NATIVE",
+            "executor_backend": executor.EXECUTOR_BACKEND if executor else "git.apply",
             "receipt": _rcpt(_CAP_PATCH_EXECUTE, OP_APPLY_PATCH, EXECUTED_OK, session_id,
                               kx108_pre_gate=gate, target_paths=targets, after_digests=after,
                               sealed_apply_receipt_id=sar_rec["sealed_apply_receipt_id"],
