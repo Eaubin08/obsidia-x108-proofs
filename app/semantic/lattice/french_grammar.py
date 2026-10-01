@@ -851,9 +851,10 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             return
         # "Paul aime / vient lancer P et exécuter Q": after an infinitive governed by an
         # unrecognised word, the bare infinitive continues that content or is independent;
-        # it is never an injunction: it takes the same open contract (named)
+        # it is never an injunction: it takes the same open contract (named). Likewise after a
+        # governed WH infinitive ("sait comment lancer P et exécuter Q", D4-F1)
         gov_prev = prev.units[-1][1] if prev.units else None
-        if gov_prev is not None and gov_prev.governed in {"unknown_governor", "deontic_scope_open"} \
+        if gov_prev is not None and gov_prev.governed in {"unknown_governor", "deontic_scope_open", "wh"} \
                 and same_family and (linked or disjoined or sequenced) and prev.conn not in _NO_CHAIN_SHARE \
                 and _bare_infinitive(clause, d0) and d0.modality is None and d0.subject is None:
             d0.governed = gov_prev.governed
@@ -872,11 +873,14 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             clause.share_family = family
             return
         # "Paul lance P et exécute Q": a bare present verb agreeing with the host's
-        # explicit subject shares that subject; it is never an imperative
+        # explicit subject shares that subject; it is never an imperative. The member's own
+        # "ne" before the verb does not block sharing ("Paul ne lance pas P et ne lance pas Q", D4-F2)
         host = prev.subject_host
         if same_family and (linked or sequenced or disjoined) and host is not None \
                 and prev.conn not in _NO_SUBJECT_SHARE \
-                and d0.head_index == d0.lex_index == 0 and d0.verb_form in {"IMPERATIVE", "FINITE"} \
+                and d0.head_index == d0.lex_index \
+                and all(t.low in {"ne", "n'"} for t in clause.toks[:d0.head_index]) \
+                and d0.verb_form in {"IMPERATIVE", "FINITE"} \
                 and d0.subject is None and d0.modality is None and _agrees_with_subject(d0.lex, host):
             d0.verb_form, d0.tense = "FINITE", _tense_of(_feats(d0.lex))
             d0.subject, d0.subject_person = host.subject, host.subject_person
