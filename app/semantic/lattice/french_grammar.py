@@ -1013,6 +1013,7 @@ _MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "autom
 # prepositions kept out of _PREPOSITIONS (subordinator / governor roles elsewhere) that still
 # end an object and open conservable prepositional content ("p via ssh", "p depuis")
 _OBJECT_BOUNDARY_PREPOSITIONS = {"via", "depuis"}
+_RELATIVE_PRONOUNS = {"qui", "que", "qu'", "dont", "où", "lequel", "laquelle", "lesquels", "lesquelles"}
 # ObliqueArgumentRef V0 (O2): constructions that license a role; any other preposition is UNRESOLVED
 _LICENSED_OBLIQUES = (
     (("en", "utilisant"), "en utilisant", "INSTRUMENT"),
@@ -2724,11 +2725,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             k = lost[0][0]
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
-        elif clause.conn != "quand" and not _unanalyzed_predicative(
+        elif clause.conn not in {"quand", "rel"} and not _unanalyzed_predicative(
                 clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
                                      or (clause.conn is None and any(c.units for c in clauses if c is not clause)))) \
                 and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
-            # (a "quand / lorsque" subordinate without any unit is always reported; so is
+            # (a "quand / lorsque" subordinate or a relative ("qui est utile") without any unit is
+            # always reported; so is
             # a copula + attribute clause in a subordinate or a sequence: "si c'est prêt")
             continue
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
@@ -2923,6 +2925,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     link = "unattached_nominal_of"
                 elif first in _PREPOSITIONS or first in _OBJECT_BOUNDARY_PREPOSITIONS:
                     link = "unattached_prepositional_of"
+                elif first in _RELATIVE_PRONOUNS:
+                    # "la mémoire qui te sert à parler": a relative with no recognised verb was merged
+                    # into the clause and dropped; its content is kept (no antecedent, subject or
+                    # predicate inferred)
+                    link = "unattached_relative_of"
                 elif first in {"puis", "mais", "then", "but"}:  # "si" / "car"... have their own reporting
                     # "Lance P puis R": a verbless connective tail (R) was dropped with a closed frame;
                     # kept as reported content, no sequence relation invented (PRECEDES needs units)
@@ -2930,7 +2937,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 else:
                     break
                 nxt = clause.toks[k + 1]
-                if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1) or k + 1 in heads_of[id(clause)]:
+                if link != "unattached_relative_of" and (nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1)
+                                                         or k + 1 in heads_of[id(clause)]):
                     break  # "pour tester Q", "à lancer P": an infinitive unit consumes it
                 end = k + 1
 
