@@ -85,7 +85,27 @@ IMPLEMENTED:
 - scripts/jarjar_governed_contract_v0.py
 - tests/test_jarjar_contract_unification_g7.py
 
-NOT YET CLOSED:
-- targeted tests must run on local Windows environment
-- G1-G5 regression must remain green with G7 present
-- optional integration proof can then close G7
+CLOSURE EVIDENCE:
+- local Windows targeted + regression suite: 79 passed
+- canonical adapter validated against real governed CREATE_FILE output
+- canonical adapter validated against real governed MOVE_FILE output
+- canonical adapter validated against real governed APPLY_PATCH output
+- canonical adapter validated against real governed PATCH rollback output
+- no authority changes
+- no mutation added by G7
+- G1-G5 behavior remains untouched
+
+FINAL VERDICT:
+G7 CLOSED / PROVED
+
+
+## Final closure — 2026-10-02
+
+Observed local result:
+
+- 79 passed
+- suite duration: 87.62s
+- branch: work/jarjar-g7-contract-unification
+
+G7 is closed as an additive read-only contract-normalization layer.
+It does not replace operation-specific contracts and does not reopen G1-G5.
