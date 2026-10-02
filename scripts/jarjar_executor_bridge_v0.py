@@ -60,6 +60,33 @@ class JarJarFilesystemExecutor:
             return {"ok": False, "error": result.message, "executor": _EXECUTOR_BACKEND, "capability": "patch.apply"}
         return {"ok": True, "error": None, "executor": _EXECUTOR_BACKEND, "capability": "patch.apply", "data": result.data}
 
+    def restore_file_bytes_guarded(
+        self,
+        target_abs: Path,
+        restore_content: bytes,
+        expected_current_sha256: str,
+    ) -> dict:
+        result = self._backend.restore_file_bytes_guarded(
+            target_abs,
+            restore_content,
+            expected_current_sha256,
+        )
+        if not result.ok:
+            return {
+                "ok": False,
+                "error": result.message,
+                "executor": _EXECUTOR_BACKEND,
+                "capability": "patch.rollback",
+                "data": result.data,
+            }
+        return {
+            "ok": True,
+            "error": None,
+            "executor": _EXECUTOR_BACKEND,
+            "capability": "patch.rollback",
+            "data": result.data,
+        }
+
     def rollback_move_file(self, current_abs: Path, restore_to_abs: Path) -> dict:
         req = self._req("file.move", source=str(current_abs), target=str(restore_to_abs))
         result = self._backend.execute(req)
