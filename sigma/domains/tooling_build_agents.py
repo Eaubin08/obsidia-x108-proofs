@@ -113,8 +113,16 @@ class SessionIntegrityAgent(BaseAgent):
         elif state.human_approval_status in ("PENDING", "UNKNOWN"):
             unknowns.append("HUMAN_APPROVAL_PENDING")
 
-        if not state.base_sha:
-            unknowns.append("BASE_SHA_MISSING")
+        _anchor_kind = getattr(state, "state_anchor_kind", "GIT_HEAD") or "GIT_HEAD"
+        if _anchor_kind == "GIT_HEAD":
+            if not state.base_sha:
+                unknowns.append("BASE_SHA_MISSING")
+        elif _anchor_kind == "PHYSICAL_PRE_STATE":
+            _psa = getattr(state, "physical_state_anchor", "") or ""
+            if not _psa:
+                unknowns.append("PHYSICAL_STATE_ANCHOR_MISSING")
+        else:
+            unknowns.append("STATE_ANCHOR_KIND_UNKNOWN")
         if not state.manifest_hash:
             unknowns.append("MANIFEST_HASH_MISSING")
         if not state.worktree_isolated:

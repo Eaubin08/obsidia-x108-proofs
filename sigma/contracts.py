@@ -513,6 +513,8 @@ class ToolingBuildState(UniversalBase):
     base_sha: str = ""
     manifest_hash: str = ""
     diff_hash: str = ""
+    physical_state_anchor: str = ""
+    state_anchor_kind: str = "GIT_HEAD"
 
     # Scope déclaré vs réel
     approved_scope: List[str] = field(default_factory=list)
@@ -558,6 +560,8 @@ class ToolingBuildState(UniversalBase):
         self.base_sha = kwargs.get("base_sha", "")
         self.manifest_hash = kwargs.get("manifest_hash", "")
         self.diff_hash = kwargs.get("diff_hash", "")
+        self.physical_state_anchor = kwargs.get("physical_state_anchor", "")
+        self.state_anchor_kind = kwargs.get("state_anchor_kind", "GIT_HEAD")
         self.approved_scope = list(kwargs.get("approved_scope", []) or [])
         self.actual_touched_files = list(kwargs.get("actual_touched_files", []) or [])
         self.new_files = list(kwargs.get("new_files", []) or [])
