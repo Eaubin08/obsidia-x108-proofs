@@ -2904,61 +2904,76 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 k = d.lex_index + 1
                 while k < len(clause.toks) and clause.toks[k].low in _FR_NEGATORS | _ADVERBS_SKIPPABLE:
                     k += 1
-            if k is None or k + 1 >= len(clause.toks):
-                continue
-            first = clause.toks[k].low
-            if _is_verb(clause.toks, k):
-                continue  # "a échoué": "a" is the auxiliary, not the preposition "à"
-            if first == "au" and k + 1 < len(clause.toks) and clause.toks[k + 1].low == "moyen":
-                link = "unattached_prepositional_of"  # "au moyen de X" (contracted "à le")
-            elif first in _DETERMINERS:
-                link = "unattached_nominal_of"
-            elif first in _PREPOSITIONS or first in _OBJECT_BOUNDARY_PREPOSITIONS:
-                link = "unattached_prepositional_of"
-            else:
-                continue
-            nxt = clause.toks[k + 1]
-            if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1) or k + 1 in heads_of[id(clause)]:
-                continue  # "pour tester Q", "à lancer P": an infinitive unit consumes it
-            end = k + 1
+            def _next_remainder(end: int, clause=clause) -> int | None:
+                # the next remainder after a comma ("Lance P avec Q, puis R"), never past a unit head
+                i = end + 1
+                while i < len(clause.toks) and clause.toks[i].low == ",":
+                    i += 1
+                return i if i < len(clause.toks) and i not in heads_of[id(clause)] else None
 
-            def _continues(i: int, clause=clause) -> bool:
-                # nominal material of the same clause; a connective only when more of it follows
-                # ("à partir de ta mémoire et du document X"), never a new predication
-                t = clause.toks[i]
-                if t.low in {"et", "ou", ","}:
-                    return i + 1 < len(clause.toks) and _continues(i + 1)
-                return not t.is_punct and t.low not in _CONNECTIVES and not _is_verb(clause.toks, i) \
-                    and i not in heads_of[id(clause)]
-            while end + 1 < len(clause.toks) and _continues(end + 1):
-                end += 1
-            parsed = _oblique_members(clause.toks, k, end) if link == "unattached_prepositional_of" else None
-            if parsed is None:
-                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
-                               f":{link}={u.id}")
-                continue
-            # ObliqueArgumentRef V0: the S11 fallback is replaced, never duplicated
-            marker, licensed, args, links = parsed
-            kinds = {"OR" if x == "ou" else "AND" for x in links if x != ","}
-            if len(kinds) > 1 or (links and links[-1] == "," and len(args) > 1 and not kinds):
-                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
-                               f":{link}={u.id}")  # mixed "et / ou": precedence not written
-                continue
-            group = None
-            if len(args) > 1:
-                group = f"c{len(coordinations) + 1}"
-                coordinations.append(CoordinationRef(
-                    group, kinds.pop() if kinds else "AND",
-                    tuple(f"{u.id}.x{len(oblique_arguments) + n + 1}" for n in range(len(args))),
-                    "coordinated_oblique", tuple(links), (args[0].span[0], args[-1].span[1]),
-                    member_kind="argument", host=u.id, role="oblique",
-                    member_texts=tuple(a.text for a in args), member_spans=tuple(a.span for a in args)))
-            for n, a in enumerate(args):
-                # SOURCE never over a temporal cue ("à partir de demain"): no guessed temporal relation
-                role = "UNRESOLVED" if licensed == "SOURCE" and a.reference == "DEICTIC" else licensed
-                start = clause.toks[k].start if n == 0 else a.span[0]
-                oblique_arguments.append(ObliqueArgumentRef(
-                    f"b{len(oblique_arguments) + 1}", u.id, role, marker, a, (start, a.span[1]), group))
+            while k is not None:
+                if k is None or k + 1 >= len(clause.toks):
+                    break
+                first = clause.toks[k].low
+                if _is_verb(clause.toks, k):
+                    break  # "a échoué": "a" is the auxiliary, not the preposition "à"
+                if first == "au" and k + 1 < len(clause.toks) and clause.toks[k + 1].low == "moyen":
+                    link = "unattached_prepositional_of"  # "au moyen de X" (contracted "à le")
+                elif first in _DETERMINERS:
+                    link = "unattached_nominal_of"
+                elif first in _PREPOSITIONS or first in _OBJECT_BOUNDARY_PREPOSITIONS:
+                    link = "unattached_prepositional_of"
+                elif first in {"puis", "mais", "then", "but"}:  # "si" / "car"... have their own reporting
+                    # "Lance P puis R": a verbless connective tail (R) was dropped with a closed frame;
+                    # kept as reported content, no sequence relation invented (PRECEDES needs units)
+                    link = "unattached_connective_content_of"
+                else:
+                    break
+                nxt = clause.toks[k + 1]
+                if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1) or k + 1 in heads_of[id(clause)]:
+                    break  # "pour tester Q", "à lancer P": an infinitive unit consumes it
+                end = k + 1
+
+                def _continues(i: int, clause=clause) -> bool:
+                    # nominal material of the same clause; a connective only when more of it follows
+                    # ("à partir de ta mémoire et du document X"), never a new predication
+                    t = clause.toks[i]
+                    if t.low in {"et", "ou", ","}:
+                        return i + 1 < len(clause.toks) and _continues(i + 1)
+                    return not t.is_punct and t.low not in _CONNECTIVES and not _is_verb(clause.toks, i) \
+                        and i not in heads_of[id(clause)]
+                while end + 1 < len(clause.toks) and _continues(end + 1):
+                    end += 1
+                parsed = _oblique_members(clause.toks, k, end) if link == "unattached_prepositional_of" else None
+                if parsed is None:
+                    missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
+                                   f":{link}={u.id}")
+                    k = _next_remainder(end)
+                    continue
+                # ObliqueArgumentRef V0: the S11 fallback is replaced, never duplicated
+                marker, licensed, args, links = parsed
+                kinds = {"OR" if x == "ou" else "AND" for x in links if x != ","}
+                if len(kinds) > 1 or (links and links[-1] == "," and len(args) > 1 and not kinds):
+                    missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
+                                   f":{link}={u.id}")  # mixed "et / ou": precedence not written
+                    k = _next_remainder(end)
+                    continue
+                group = None
+                if len(args) > 1:
+                    group = f"c{len(coordinations) + 1}"
+                    coordinations.append(CoordinationRef(
+                        group, kinds.pop() if kinds else "AND",
+                        tuple(f"{u.id}.x{len(oblique_arguments) + n + 1}" for n in range(len(args))),
+                        "coordinated_oblique", tuple(links), (args[0].span[0], args[-1].span[1]),
+                        member_kind="argument", host=u.id, role="oblique",
+                        member_texts=tuple(a.text for a in args), member_spans=tuple(a.span for a in args)))
+                for n, a in enumerate(args):
+                    # SOURCE never over a temporal cue ("à partir de demain"): no guessed temporal relation
+                    role = "UNRESOLVED" if licensed == "SOURCE" and a.reference == "DEICTIC" else licensed
+                    start = clause.toks[k].start if n == 0 else a.span[0]
+                    oblique_arguments.append(ObliqueArgumentRef(
+                        f"b{len(oblique_arguments) + 1}", u.id, role, marker, a, (start, a.span[1]), group))
+                k = _next_remainder(end)
 
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)
