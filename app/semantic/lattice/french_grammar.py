@@ -2242,6 +2242,13 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                                      evidence="que_governor_lost"))
             elif clause.conn in {"rel", "comparative"}:
                 prag, epi = "ASSERTED", "ASSERTED"
+                if d.verb_form == "INFINITIVE" and (d.governed == "unknown_governor" or (
+                        d.governed == "prep" and not any(x.id == d.governor_unit for (x, _) in new_units + clause.units))):
+                    # "le script qui sert à lancer P": the infinitive is content of an unrecognised
+                    # governor ("sert"), never an asserted "le script lance P"; the relation it
+                    # expresses is not represented (named, frame open)
+                    prag, epi = "EMBEDDED", "NOT_APPLICABLE"
+                    ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
                 if parent_unit is not None:
                     embedded_under = parent_unit.id
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, parent_unit.id,
