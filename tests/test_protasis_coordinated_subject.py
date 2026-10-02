@@ -8,8 +8,8 @@ true request was lost (since 4ef2602b). "si" + bare noun phrase + "et" +
 bare noun phrase / tonic pronoun + a plural-agreeing verb now opens the
 protasis, and the existing conjunctive-protasis rule keeps "et Luc exécutent
 Q" inside it: HYPOTHETICAL, CONDITIONS to the consequent, which never shares
-the protasis subject. The group-subject schema is not decided: the first
-conjunct keeps its NEW8 marker (closure open).
+the protasis subject. Since H14 (D5) the coordinated subject is represented
+(CoordinationRef coordinated_subject on the protasis unit), no longer a NEW8 marker.
 """
 from __future__ import annotations
 
@@ -44,7 +44,9 @@ def test_coordinated_subject_protasis_is_kept_and_the_consequent_request_too(tex
     assert ("CONDITIONS", p.id, c.id) in [(r.kind, r.source, r.target) for r in f.relations]
     assert (c.subject, c.verb_form, c.pragmatic) == (None, "IMPERATIVE", "REQUESTED")
     assert gate[c.id] is gated
-    assert any(a.startswith("coordinated_subject_unrepresented:") for a in f.ambiguities)
+    # H14 (D5): the coordinated subject is represented (CoordinationRef coordinated_subject on
+    # the protasis unit) instead of the former NEW8 coordinated_subject_unrepresented marker
+    assert [(c.construction, c.host) for c in f.coordinations if c.role == "subject"] == [("coordinated_subject", p.id)]
 
 
 @pytest.mark.parametrize("text,subject", [
