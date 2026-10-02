@@ -360,3 +360,153 @@ def test_g0_create_dir_regression(tmp_path, bridge_world):
         stores_base_dir=w["stores_base"], repo_root=w["exec_wt"], executor=ex)
     assert r["status"] == PC2.EXECUTED_OK
     ex.create_dir.assert_called_once()
+
+
+# ============================================================
+# G1-A REMEDIATION TESTS — canonical physical state anchor
+# ============================================================
+
+def test_prepare_captures_physical_anchor(tmp_path):
+    ex = _ok()
+    r = _prep(tmp_path, ex)
+    assert r["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL
+    psa = r.get("physical_state_anchor", "")
+    assert len(psa) == 64, f"physical_state_anchor must be 64-hex SHA-256; got {psa!r}"
+    assert all(c in "0123456789abcdef" for c in psa)
+
+
+def test_prepare_state_anchor_kind_is_physical_pre_state(tmp_path):
+    ex = _ok()
+    r = _prep(tmp_path, ex)
+    assert r.get("state_anchor_kind") == "PHYSICAL_PRE_STATE"
+
+
+def test_prepare_anchor_deterministic(tmp_path):
+    """Same inputs always produce the same physical_state_anchor."""
+    ex1 = _ok(hwnd=_HWND, title=_TITLE)
+    ex2 = _ok(hwnd=_HWND, title=_TITLE)
+    r1 = _prep(tmp_path / "s1", ex1)
+    r2 = _prep(tmp_path / "s2", ex2)
+    assert r1["physical_state_anchor"] == r2["physical_state_anchor"]
+
+
+def test_prepare_eah_independent_from_physical_anchor(tmp_path):
+    """EAH (approval anchor) must differ from physical_state_anchor (state anchor)."""
+    ex = _ok()
+    r = _prep(tmp_path, ex)
+    eah = r["execution_authority_hash"]
+    psa = r["physical_state_anchor"]
+    assert eah != psa, f"EAH must not equal PSA; both={eah!r}"
+
+
+def test_execute_base_sha_not_equal_eah(tmp_path):
+    """After H1: _kx108_pre receives base_sha='' not base_sha=EAH."""
+    import obsidia_pc_capabilities_v2 as _PC2
+    captured = {}
+    orig = _PC2._kx108_pre
+    def _cap(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, *, kxpre, **kwargs):
+        captured["base_sha"] = base_sha
+        captured["eah"] = eah
+        return orig(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, kxpre=kxpre, **kwargs)
+    _PC2._kx108_pre = _cap
+    try:
+        ex = _ok()
+        prep = _prep(tmp_path, ex)
+        r = _exec(tmp_path, prep, ex)
+        assert r["status"] == PC2.EXECUTED_OK
+        assert captured.get("base_sha") == "", f"base_sha must be empty; got {captured.get('base_sha')!r}"
+        assert captured.get("base_sha") != captured.get("eah"), "base_sha must not equal EAH"
+    finally:
+        _PC2._kx108_pre = orig
+
+
+def test_execute_physical_anchor_passed_to_kx108(tmp_path):
+    """After H1: _kx108_pre receives physical_state_anchor and state_anchor_kind=PHYSICAL_PRE_STATE."""
+    import obsidia_pc_capabilities_v2 as _PC2
+    captured = {}
+    orig = _PC2._kx108_pre
+    def _cap(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, *, kxpre, **kwargs):
+        captured["physical_state_anchor"] = kwargs.get("physical_state_anchor", "MISSING")
+        captured["state_anchor_kind"] = kwargs.get("state_anchor_kind", "MISSING")
+        return orig(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, kxpre=kxpre, **kwargs)
+    _PC2._kx108_pre = _cap
+    try:
+        ex = _ok()
+        prep = _prep(tmp_path, ex)
+        r = _exec(tmp_path, prep, ex)
+        assert r["status"] == PC2.EXECUTED_OK
+        assert captured.get("state_anchor_kind") == "PHYSICAL_PRE_STATE"
+        psa = captured.get("physical_state_anchor", "")
+        assert len(psa) == 64
+    finally:
+        _PC2._kx108_pre = orig
+
+
+def _disappeared_at_execute(hwnd=_HWND, title=_TITLE):
+    """Mock: PREPARE find_window OK, EXECUTE find_window fails."""
+    ex = MagicMock()
+    ex.EXECUTOR_PROVIDER = "JARJAR"
+    ex.EXECUTOR_BACKEND = "NativeWindowsBackend"
+    ex.focus_window_by_hwnd.return_value = {"ok": True, "hwnd": hwnd, "title": title}
+    ex.verify_focus.return_value = {"ok": True, "hwnd": hwnd, "title": title, "title_consistent": True}
+    call_count = [0]
+    def fw(t):
+        call_count[0] += 1
+        if call_count[0] == 1:
+            return {"ok": True, "hwnd": hwnd, "title": title}
+        return {"ok": False, "error": "WINDOW_NOT_FOUND"}
+    ex.find_window.side_effect = fw
+    return ex
+
+
+def _hwnd_drifted_at_execute(*, hwnd=_HWND, title=_TITLE, drift_hwnd=99999):
+    """Mock: PREPARE find_window OK, EXECUTE find_window returns different hwnd."""
+    ex = MagicMock()
+    ex.EXECUTOR_PROVIDER = "JARJAR"
+    ex.EXECUTOR_BACKEND = "NativeWindowsBackend"
+    ex.focus_window_by_hwnd.return_value = {"ok": True, "hwnd": hwnd, "title": title}
+    ex.verify_focus.return_value = {"ok": True, "hwnd": hwnd, "title": title, "title_consistent": True}
+    call_count = [0]
+    def fw(t):
+        call_count[0] += 1
+        if call_count[0] == 1:
+            return {"ok": True, "hwnd": hwnd, "title": title}
+        return {"ok": True, "hwnd": drift_hwnd, "title": title}
+    ex.find_window.side_effect = fw
+    return ex
+
+
+def test_execute_target_disappeared_fails_closed(tmp_path):
+    """If target hwnd vanishes between PREPARE and EXECUTE, must fail closed."""
+    ex = _disappeared_at_execute()
+    prep = _prep(tmp_path, ex)
+    assert prep["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL
+    r = _exec(tmp_path, prep, ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "TARGET_IDENTITY_LOST" in r["reason"]
+
+
+def test_execute_target_hwnd_drifted_fails_closed(tmp_path):
+    """If same title now maps to different hwnd, must fail closed."""
+    ex = _hwnd_drifted_at_execute()
+    prep = _prep(tmp_path, ex)
+    r = _exec(tmp_path, prep, ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "TARGET_HWND_DRIFTED" in r["reason"]
+
+
+def test_execute_unrelated_window_state_unchanged(tmp_path):
+    """Unrelated windows changing titles between PREPARE and EXECUTE do not fail
+    window.focus if the target window itself is unchanged."""
+    ex = _ok()
+    prep = _prep(tmp_path, ex)
+    r = _exec(tmp_path, prep, ex)
+    assert r["status"] == PC2.EXECUTED_OK, f"Expected EXECUTED_OK; got {r}"
+
+
+def test_execute_no_mutation_before_kx108(tmp_path):
+    """PREPARE must not call focus_window_by_hwnd. Only find_window is read-only."""
+    ex = _ok()
+    _prep(tmp_path, ex)
+    ex.focus_window_by_hwnd.assert_not_called()
+    ex.verify_focus.assert_not_called()

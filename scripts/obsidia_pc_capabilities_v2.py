@@ -137,11 +137,13 @@ def _approval(v2id: str, child: str, eah: str, cand_seed: str) -> dict:
     }
     rec["approval_record_hash"] = _E.compute_approval_record_hash(rec)
     return rec
-def _kx108_pre(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, *, kxpre) -> dict:
+def _kx108_pre(v2id, child, eah, apv_id, dh, base_sha, mhash, paths, op, *, kxpre,
+               physical_state_anchor="", state_anchor_kind="GIT_HEAD") -> dict:
     xh = _sha256(json.dumps({"v2id":v2id,"child":child,"eah":eah,"apv":apv_id,"op":op}, sort_keys=True).encode())
     kwargs = {
         "session_id": child, "objective": f"V2 governed {op}",
         "base_sha": base_sha, "manifest_hash": mhash, "diff_hash": "",
+        "physical_state_anchor": physical_state_anchor, "state_anchor_kind": state_anchor_kind,
         "approved_scope": list(paths),
         "actual_touched_files": [], "new_files": [], "deleted_files": [],
         "protected_scope_status": "CLEAN",
@@ -618,12 +620,23 @@ def pc_v2_window_focus_prepare(
                          "WINDOW_NOT_FOUND:" + str(fw.get("error", "")), session_id)
     resolved_hwnd = int(fw["hwnd"])
     resolved_title = str(fw["title"])
+    _psa_snapshot = {
+        "anchor_schema": "WINDOW_FOCUS_PRE_STATE_V0",
+        "operation": "WINDOW_FOCUS",
+        "hwnd": resolved_hwnd,
+        "title": resolved_title,
+    }
+    physical_state_anchor = _sha256(
+        json.dumps(_psa_snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    )
     desc = {
         "requested_title": title,
         "resolved_hwnd": resolved_hwnd,
         "resolved_title": resolved_title,
         "session_id": session_id,
         "operation_type": OP_WINDOW_FOCUS,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
     }
     eah = _eah(OP_WINDOW_FOCUS, desc)
     child = _v2id("chd", eah + title + str(resolved_hwnd))
@@ -637,6 +650,8 @@ def pc_v2_window_focus_prepare(
         "execution_authority_hash": eah,
         "requested_title": title,
         "resolved_hwnd": resolved_hwnd, "resolved_title": resolved_title,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
         "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
         "_stores_base_dir": str(stores_base_dir),
         "receipt": _rcpt(_CAP_WFOCUS_PREPARE, OP_WINDOW_FOCUS,
@@ -672,6 +687,23 @@ def pc_v2_window_focus_execute(
     resolved_hwnd = desc["descriptor"]["resolved_hwnd"]
     resolved_title = desc["descriptor"]["resolved_title"]
     requested_title = desc["descriptor"]["requested_title"]
+    stored_psa = desc["descriptor"].get("physical_state_anchor", "")
+    if stored_psa:
+        _pre_obs = executor.find_window(resolved_title)
+        if not _pre_obs.get("ok"):
+            return _exec_rej(OP_WINDOW_FOCUS, _CAP_WFOCUS_EXECUTE,
+                             "TARGET_IDENTITY_LOST:" + str(_pre_obs.get("error", "")), session_id)
+        _cur_hwnd = int(_pre_obs.get("hwnd", 0))
+        _cur_title = str(_pre_obs.get("title", ""))
+        if _cur_hwnd != resolved_hwnd:
+            return _exec_rej(OP_WINDOW_FOCUS, _CAP_WFOCUS_EXECUTE,
+                             "TARGET_HWND_DRIFTED:expected=%d,got=%d" % (resolved_hwnd, _cur_hwnd), session_id)
+        _cur_snap = {"anchor_schema": "WINDOW_FOCUS_PRE_STATE_V0", "operation": "WINDOW_FOCUS",
+                     "hwnd": _cur_hwnd, "title": _cur_title}
+        _cur_psa = _sha256(json.dumps(_cur_snap, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+        if _cur_psa != stored_psa:
+            return _exec_rej(OP_WINDOW_FOCUS, _CAP_WFOCUS_EXECUTE,
+                             "PRE_STATE_DRIFTED:anchor_mismatch", session_id)
     cand_seed = requested_title + str(resolved_hwnd)
     apr = _approval(v2id, child, exp_eah, cand_seed)
     apv_id = apr["approval_id"]
@@ -679,7 +711,10 @@ def pc_v2_window_focus_execute(
     if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
         return _exec_rej(OP_WINDOW_FOCUS, _CAP_WFOCUS_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
     scope_id = "OS_WINDOW:" + resolved_title
-    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, exp_eah, mh, [scope_id], OP_WINDOW_FOCUS, kxpre=st["kxpre"])
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_WINDOW_FOCUS,
+                    kxpre=st["kxpre"],
+                    physical_state_anchor=stored_psa,
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
     if not kx.get("verify_ok"):
         return _exec_rej(OP_WINDOW_FOCUS, _CAP_WFOCUS_EXECUTE, "KX108_PRE_FAILED", session_id)
     gate = kx.get("x108_gate", "")
