@@ -150,7 +150,9 @@ def test_c_execute_ok_exe(tmp_path):
     assert r["executor_provider"] == "JARJAR"
     assert r["executor_capability"] == "app.open"
 
-def test_c_execute_lnk_weak_proof(tmp_path):
+def test_c_execute_lnk_deferred_fail_closed(tmp_path):
+    # LNK_EXECUTE=EXECUTE_REJECTED, LNK_REASON=LNK_DEFERRED:NO_REALIZED_STATE_PROOF
+    # LNK_EXECUTOR_CALLED=NO, LNK_PID_CREATED=NO, LNK_SUCCESS_RECEIPT=NO
     ex = _ok_lnk()
     prep = PC2.pc_v2_app_open_prepare(
         _LNK_NAME, stores_base_dir=tmp_path / "stores", executor=ex)
@@ -158,11 +160,20 @@ def test_c_execute_lnk_weak_proof(tmp_path):
     r = PC2.pc_v2_app_open_execute(
         prep, eah, "human-ref-lnk",
         stores_base_dir=tmp_path / "stores", executor=ex)
-    assert r["status"] == PC2.EXECUTED_OK, r
-    assert r["proof_strength"] == "WEAK"
-    assert r["pid_verified"] is False
-    assert r["lnk_policy"] == "WEAK_ACCEPTED"
-    assert r["launched_pid"] is None
+    assert r["status"] == PC2.EXECUTE_REJECTED, r
+    assert r["reason"] == "LNK_DEFERRED:NO_REALIZED_STATE_PROOF", r
+    ex.open_app_by_target.assert_not_called()
+
+def test_c_lnk_weak_accepted_removed(tmp_path):
+    # LNK_WEAK_ACCEPTED_REMOVED=YES: prove WEAK_ACCEPTED string absent from source
+    src_v2 = Path(PC2.__file__).read_text("utf-8")
+    assert "WEAK_ACCEPTED" not in src_v2, "WEAK_ACCEPTED must be removed from pc_v2 source"
+    assert "lnk_policy = \"WEAK_ACCEPTED\"" not in src_v2
+    # prove that prepare still passes for .lnk (LNK_PREPARE=PASS)
+    ex = _ok_lnk()
+    prep = PC2.pc_v2_app_open_prepare(
+        _LNK_NAME, stores_base_dir=tmp_path / "stores", executor=ex)
+    assert prep["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL, prep
 
 def test_c_execute_open_called_with_resolved_target(tmp_path):
     ex = _ok_exe()

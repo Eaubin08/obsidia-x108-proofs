@@ -897,24 +897,20 @@ def pc_v2_app_open_execute(
     gate  = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    if resolved_target.casefold().endswith(".lnk"):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "LNK_DEFERRED:NO_REALIZED_STATE_PROOF", session_id)
     ex = executor.open_app_by_target(resolved_target)
     if not ex.get("ok"):
         return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
                          "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error", "")), session_id)
-    pid    = ex.get("pid")
-    is_lnk = resolved_target.casefold().endswith(".lnk")
-    if is_lnk:
-        proof_strength = "WEAK"
-        pid_verified   = False
-    else:
-        if pid is None:
-            return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
-                             "REALIZED_STATE_MISMATCH:PID_NONE", session_id)
-        if not _is_pid_alive(pid):
-            return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
-                             "REALIZED_STATE_MISMATCH:PID_NOT_ALIVE", session_id)
-        proof_strength = "STRONG"
-        pid_verified   = True
+    pid = ex.get("pid")
+    if pid is None:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "REALIZED_STATE_MISMATCH:PID_NONE", session_id)
+    if not _is_pid_alive(pid):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "REALIZED_STATE_MISMATCH:PID_NOT_ALIVE", session_id)
     return {
         "status": EXECUTED_OK, "j5_phase": "EXECUTE",
         "operation_type": OP_APP_OPEN,
@@ -923,9 +919,9 @@ def pc_v2_app_open_execute(
         "requested_app": requested_app,
         "resolved_target": resolved_target, "resolved_source": resolved_source,
         "launched_pid": pid,
-        "pid_verified": pid_verified,
-        "proof_strength": proof_strength,
-        "lnk_policy": "WEAK_ACCEPTED" if is_lnk else "NOT_APPLICABLE",
+        "pid_verified": True,
+        "proof_strength": "STRONG",
+        "lnk_policy": "NOT_APPLICABLE",
         "executor_provider": executor.EXECUTOR_PROVIDER,
         "executor_backend": executor.EXECUTOR_BACKEND,
         "executor_capability": "app.open",
@@ -933,8 +929,8 @@ def pc_v2_app_open_execute(
                          kx108_pre_gate=gate,
                          requested_app=requested_app,
                          resolved_target=resolved_target, resolved_source=resolved_source,
-                         launched_pid=pid, pid_verified=pid_verified,
-                         proof_strength=proof_strength,
+                         launched_pid=pid, pid_verified=True,
+                         proof_strength="STRONG",
                          executor_provider=executor.EXECUTOR_PROVIDER,
                          executor_backend=executor.EXECUTOR_BACKEND,
                          executor_capability="app.open"),
