@@ -40,6 +40,9 @@ LEMMAS: dict[str, tuple[str, str]] = {
     "rédiger": ("WRITE", "text_production"),
     "expliquer": ("EXPLAIN", "text_production"),
     "explain": ("EXPLAIN", "text_production"),
+    # distinct operations, never collapsed into EXPLAIN / SAY (lexical distinction kept)
+    "détailler": ("DETAIL", "text_production"),
+    "comparer": ("COMPARE", "text_production"),
     "tester": ("VERIFY", "inspection"),
     "vérifier": ("VERIFY", "inspection"),
     "check": ("VERIFY", "inspection"),
@@ -112,6 +115,8 @@ _ER_VERBS: dict[str, tuple[str, str | None]] = {
     "préparer": ("prépar", None),
     "rédiger": ("rédig", None),
     "expliquer": ("expliqu", None),
+    "détailler": ("détaill", None),
+    "comparer": ("compar", None),
     "tester": ("test", None),
     "vérifier": ("vérifi", None),
     "confirmer": ("confirm", None),
