@@ -524,16 +524,26 @@ def pc_v2_apply_patch_execute(
         if pa is None or not pa.exists(): return _exec_rej(OP_APPLY_PATCH, _CAP_PATCH_EXECUTE, "REALIZED_TARGET_MISSING:"+rel, session_id)
         after[rel] = _sha256(pa.read_bytes())
     sre_ids = []
+    sre_records = []
     total_bytes = 0
     for rel in targets:
         bb = before_bytes.get(rel, b"")
         sre_r = _sre(v2id, child+"_"+_sha16(rel), exp_eah, apv_id, kx_id, kx_hash, rel, bb, psha, OP_APPLY_PATCH)
-        _SEV.store_sealed_rollback_evidence(sre_r, st["sre"])
-        sre_ids.append(sre_r["sealed_rollback_evidence_id"]); total_bytes += len(bb)
-    p0 = targets[0]; bb0 = before_bytes.get(p0, b"")
-    sre0 = _sre(v2id, child+"_"+_sha16(p0), exp_eah, apv_id, kx_id, kx_hash, p0, bb0, psha, OP_APPLY_PATCH)
+        store_result = _SEV.store_sealed_rollback_evidence(sre_r, st["sre"])
+        if store_result.get("status") not in ("STORED", "IDEMPOTENT_EXISTING_IDENTICAL"):
+            return _exec_rej(
+                OP_APPLY_PATCH,
+                _CAP_PATCH_EXECUTE,
+                "ROLLBACK_EVIDENCE_STORE_FAILED:" + str(store_result.get("status", "")),
+                session_id,
+            )
+        sre_records.append(sre_r)
+        sre_ids.append(sre_r["sealed_rollback_evidence_id"])
+        total_bytes += len(bb)
+    p0 = targets[0]
+    sre0 = sre_records[0]
     sre0_hash = _sha256(json.dumps(sre0, sort_keys=True, ensure_ascii=False).encode())
-    sre0_id = sre_ids[0] if sre_ids else sre0["sealed_rollback_evidence_id"]
+    sre0_id = sre0["sealed_rollback_evidence_id"]
     sar_rec = _sar(v2id, child, exp_eah, apv_id, kx_id, kx_hash, sre0_id, sre0_hash, p0,
                   before.get(p0, _EMPTY_SHA256), after.get(p0, ""), psha, total_bytes, OP_APPLY_PATCH)
     _SEV.store_sealed_apply_receipt(sar_rec, st["sar"])
