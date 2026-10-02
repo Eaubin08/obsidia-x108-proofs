@@ -2811,8 +2811,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                    f":unrepresented_modifier_of={u.id}")
                 k = end + 1
 
-    # D5-N3 conservation: nominal material (determiner + word) left right after a unit's
-    # objects ("le test de Marie", "aucun des tests") is reported, never dropped silently
+    # D5-N3 / S11 conservation: material left right after a unit's objects (or after its verb
+    # when it has none) and consumed by no structure is reported, never dropped silently:
+    # nominal ("le test de Marie", "aucun des tests") or prepositional ("avec Q", "sur le
+    # serveur", "en utilisant ta mémoire", "à partir du document X"). Its role (source,
+    # instrument, location...) is not decided here: the exact span is kept, the frame stays open
+    heads_of = {id(c): {i for _, d in c.units for i in (d.head_index, d.lex_index)} for c in clauses}
     for clause in clauses:
         for u, d in clause.units:
             spans = [a.span for a in u.objects if a.span is not None]
@@ -2822,16 +2826,25 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 k = d.lex_index + 1
                 while k < len(clause.toks) and clause.toks[k].low in _FR_NEGATORS | _ADVERBS_SKIPPABLE:
                     k += 1
-            if k is None or k + 1 >= len(clause.toks) or clause.toks[k].low not in _DETERMINERS:
+            if k is None or k + 1 >= len(clause.toks):
+                continue
+            first = clause.toks[k].low
+            if first in _DETERMINERS:
+                link = "unattached_nominal_of"
+            elif first in _PREPOSITIONS:
+                link = "unattached_prepositional_of"
+            else:
                 continue
             nxt = clause.toks[k + 1]
-            if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1):
-                continue
+            if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1) or k + 1 in heads_of[id(clause)]:
+                continue  # "pour tester Q", "à lancer P": an infinitive unit consumes it
             end = k + 1
-            while end + 1 < len(clause.toks) and not clause.toks[end + 1].is_punct                     and clause.toks[end + 1].low not in _CONNECTIVES and not _is_verb(clause.toks, end + 1):
+            while end + 1 < len(clause.toks) and not clause.toks[end + 1].is_punct \
+                    and clause.toks[end + 1].low not in _CONNECTIVES and not _is_verb(clause.toks, end + 1) \
+                    and end + 1 not in heads_of[id(clause)]:
                 end += 1
             missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
-                           f":unattached_nominal_of={u.id}")
+                           f":{link}={u.id}")
 
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)

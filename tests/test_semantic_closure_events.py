@@ -30,7 +30,9 @@ def test_open_reasons_are_named(text, prefix):
 
 
 @pytest.mark.parametrize("text", [
-    "Paul a lancé P.", "Dis bonjour à maman.", "Paul a lancé le test. Marie a vu ce lancement.",
+    # "Dis bonjour à maman" left this list with S11: its recipient "à maman" is unrepresented
+    # explicit content (preserved, frame open; test_s11_prepositional_conservation)
+    "Paul a lancé P.", "Dis bonjour.", "Paul a lancé le test. Marie a vu ce lancement.",
     "Marie dit que Paul a lancé P.", "Maman est là ?",
 ])
 def test_resolved_requests_are_closed(text):
