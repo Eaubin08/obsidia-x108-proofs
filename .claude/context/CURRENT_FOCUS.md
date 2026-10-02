@@ -1,101 +1,53 @@
 # Current Focus
 
-> **Read this every session start.** Update at session end with a short delta.
-> Keep ≤ 300 tokens. If it grows, move stale entries to `.claude/memory/snapshots/`.
+> Read this every session start. Keep this file short.
+> Git branch, HEAD, and working-tree cleanliness are not durable memory:
+> verify them with `git branch --show-current`, `git rev-parse --short HEAD`,
+> and `git status --short` at session start.
 
 ---
 
 ## Current phase
 
-Public repo cleanup completed. Canonical repo established. Next mission: choose next technical phase from roadmap.
+Claude configuration concordance cleanup is in progress. The target is a light
+default Claude session with MCP `obsidia` disabled unless explicitly requested
+for a mission.
 
-## Active branch (as of last inspection)
+## Current WIP
 
-- Branch: `main`
-- Working tree: clean
-- HEAD: `5c5c2ef` (aligned with origin/main)
-- Canonical repo: `obsidia-x108-proofs_REMOTE_A5F21C6B`
-- Old repo (`obsidia-x108-proofs`): `.git/config` corrupted — kept local, not canonical
+- Update Claude memory so it no longer presents branch, HEAD, or "clean" state
+  as durable truth.
+- Keep `.claude/settings.json` as the versioned conservative baseline.
+- Keep `.claude/settings.local.json` as local operator configuration.
+- Inspect and remove only confirmed nested `.claude/` config copies.
+- Do not touch protected proof/seal files, including `merkle_seal.json`.
 
-## Known issues
+## Operating rule
 
-- V18_3_1 root hash mismatch: **RESOLVED** (PROOFKIT_REPORT.json regenerated 2026-05-21, all checks PASS)
-- Old repo `.git/config` corruption: NOT fixed — circumvented by using REMOTE clone as canonical
+Before acting on any remembered state, re-measure live Git state. Memory may
+name the current objective and known WIP, but Git is the authority for branch,
+HEAD, staged changes, unstaged changes, and untracked files.
 
-## Next technical mission
+## Session modes
 
-Choose next mission from `docs/roadmap/NOT_YET_IMPLEMENTED_AFTER_V2.md`:
+- `LIGHT_SESSION`: default. MCP `obsidia` disabled; use targeted file reads,
+  grep, and read-only Git commands.
+- `MCP_SESSION`: explicit opt-in when the mission needs the local Obsidia MCP
+  bridge. MCP output is advisory tooling, not project authority.
+- `LOOP_SESSION`: long-running Claude work. Keep normal safety gates; stop on
+  edits, protected files, doctrine choices, push, merge, or broad commands.
+- `AUDIT_SESSION`: read-only concordance or repo audit. Produce evidence and a
+  decision matrix; do not patch unless the user switches to APPLY.
 
-- [ ] Runtime ACT réel
-- [ ] Graphiti/Brody feedback loop
-- [ ] Ledger Gencoin persistant
-- [ ] Tests adversariaux
-- [ ] Seuils par domaine
-- [ ] Vue régulateur
-- [ ] Machine-checking
+## Next
 
-## Open questions
-
-- (none)
-
-## 2026-05-05 settings-cleanup
-- branch: ci-strict-sigma-qa-no-false-error_20260502_235213
-- did: removed invalid `hooks._disabled_by_default` key from `.claude/settings.json`; committed as 4ea9de5
-- next: begin read-only PROOF_SENTINEL diagnosis of V18_3_1 root hash mismatch
-- blocked on: nothing
-
-## 2026-05-26 public-cleanup-freeze
-- branch: main (canonical: obsidia-x108-proofs_REMOTE_A5F21C6B)
-- did: phases 1-4 public repo cleanup completed + 4 git tags pushed (HEAD 5c5c2ef)
-- next: choose next technical mission from NOT_YET_IMPLEMENTED_AFTER_V2.md
-- blocked on: nothing
-
-## 2026-07-08 gateway-fusion + plan-build-integral
-- branch: feat/path-brody-r02-thermo-mcp-closure
-- did: hook UserPromptSubmit (router->Claude Code) + pont pre-inference dans
-  obsidia_cli.handle() + gateway `obsidia chat` (cascade L0/L2/brody/claude -p)
-  + audit log MEASURED `audit/obsidia_gateway_usage.jsonl`. Router hackathon :
-  fix route brody (unified_ir.py, 542 tests OK), .gitignore blinde (.local_*).
-- plan build integral (4 phases): P0 hackathon (B1 run live MEASURED avec
-  FIREWORKS_API_KEY, B11 catalogue modeles, Docker froid); P1 memoire par sens
-  (fix import Shazam 05_SHAZAM, exporteur gateway_memory_index depuis ledger +
-  MATH_MEMORY_INDEX ACTIVE, brancher Shazam+similarity_search 13_NUAGE au L2);
-  P2 calibration chat (invariants drift/DecisionTicket dans prompt L3, traca
-  M.A.P. -> audit bus, fix ANTHROPIC_MODEL settings.json, suppr patch_alphabet);
-  P3 MCP (auditer 09_MCP_BRIDGE_OBSIDIA_IR AVANT d'ecrire, promotion SRL par
-  operateur, de-stub Brody, benchmark OIE V0.3 MEASURED). Vigilance: 07_BDF,
-  08_HEXAFLUX, 15_GUARDS vs gates router, test_cosmos_friction_eml.
-- next: fin P0 (docker + run live) puis P1 etape 1 (import Shazam)
-- blocked on: FIREWORKS_API_KEY (B1/B11) — a fournir par l'operateur
-
-## 2026-07-08 build-integral-complet
-- branch: feat/path-brody-r02-thermo-mcp-closure (x108) + main (router)
-- did: TOUT le plan livre. Cascade complete active (router->memoire par
-  sens->Brody live->kernel X108 reel->Obsidure AVDR reel->claude cadre),
-  hooks UserPromptSubmit+PreToolUse, serveur MCP (.mcp.json cree), doctrine
-  memoire espace-temps (strates RAW->CANON, frise FRISE_TIMELINE + frise
-  humaine V0), promotion SRL CANONICAL (acte operateur), guards 15 statues
-  CONCEPT_ONLY, pluriels arbres. B1 CLOS : run live MEASURED fige + tag
-  submission/live-baseline-measured-20260708 (76% tokens saved, 0/8 vs 1/8
-  violations). ~10 commits, backup tags pre-wiring-full-20260708.
-- next: operateur — redemarrer session Claude Code (approuver MCP obsidia,
-  hooks PreToolUse actifs), settings.json l.93 claude-sonnet-5, soumission
-  hackathon. Chantiers futurs : indexer corpus docs au Level 2, remplir
-  guards reels, de-stub Brody generatif, OIE V0.3 continue.
-- blocked on: nothing
+Finish this Claude configuration cleanup, show the diff, and then prepare a
+separate divergence matrix for `.claude/skills` versus `.agents/skills`.
 
 ---
 
 ## Update protocol
 
-At session end, the user (or `context-keeper` skill, with approval) appends a 3–5 line delta:
-
-```
-## YYYY-MM-DD <short tag>
-- branch: <name>
-- did: <one line>
-- next: <one line>
-- blocked on: <one line or "nothing">
-```
-
-When this file passes ~80 lines, oldest deltas move to `.claude/memory/snapshots/CURRENT_FOCUS-<date>.md`.
+At session end, append only short objective/WIP deltas. Do not store branch,
+HEAD, or "clean" status as durable truth; store the command to verify them
+instead.

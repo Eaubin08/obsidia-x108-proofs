@@ -21,6 +21,7 @@ After the subagent returns:
 Rules:
 - Never write either file without showing the diff first.
 - Never quote protected file content.
+- Never record branch, HEAD, or "clean" as durable truth; record verification commands instead.
 - Never auto-commit.
 - If either file would exceed its budget (300 tokens for SCRATCH, 80 lines for FOCUS), propose archiving the oldest section to `.claude/memory/snapshots/`.
 

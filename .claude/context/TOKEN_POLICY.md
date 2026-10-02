@@ -27,9 +27,9 @@
 
 ## When the context approaches 60%
 
-- Update `CURRENT_FOCUS.md` with a delta (3–5 lines).
+- Update `CURRENT_FOCUS.md` with a short objective/WIP delta.
 - Suggest `/compact` to the user.
-- Resume from `CURRENT_FOCUS.md`, not from re-reading.
+- Resume from `CURRENT_FOCUS.md`, then re-check live Git state with Git commands.
 
 ## Cost rule of thumb
 
@@ -53,6 +53,6 @@ For any discovery task ("where is X", "how is Y wired"), delegate to the `explor
 ## Persistent memory
 
 - `SCRATCH.md` is the per-session scratch.
-- `CURRENT_FOCUS.md` is the per-week working state.
+- `CURRENT_FOCUS.md` is the compact working focus. It is not authority for branch, HEAD, or clean/dirty status.
 - `RISKS.md` and `P1_FREEZE.md` are stable references.
 - Optional: `wiki-brain-bridge` skill for a project-wide knowledge graph (NOT auto-installed; sandbox eval first).

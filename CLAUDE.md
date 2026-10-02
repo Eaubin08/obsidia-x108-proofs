@@ -37,6 +37,19 @@ Detail → `.claude/context/WORKFLOW.md`
 
 ---
 
+## Claude session modes
+
+Default to `LIGHT_SESSION`: MCP `obsidia` disabled, targeted file reads / grep / read-only Git only.
+Use `MCP_SESSION` only when the user explicitly asks for local Obsidia MCP bridge work.
+Use `LOOP_SESSION` for long-running governed work, without weakening the normal safety gates.
+Use `AUDIT_SESSION` for read-only concordance or repository audits.
+
+These are operator modes, not project authority. Branch, HEAD, and clean/dirty state are always verified live with Git, not trusted from memory.
+
+Detail → `.claude/context/CURRENT_FOCUS.md`
+
+---
+
 ## Layer routing
 
 Every task picks **one** primary layer before action. Never mix layers without explicit user request.

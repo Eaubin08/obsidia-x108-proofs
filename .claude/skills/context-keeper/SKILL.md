@@ -13,7 +13,7 @@ obsidia_reduction: local Claude Code behavior for SCRATCH/CURRENT_FOCUS maintena
 Keep the project's working state compact and current. After every meaningful step, update:
 
 - `.claude/memory/SCRATCH.md` — per-session scratch (what's being built right now)
-- `.claude/context/CURRENT_FOCUS.md` — per-week working state (active branch, known issues, next mission)
+- `.claude/context/CURRENT_FOCUS.md` — compact working focus (objective, WIP, decisions, next mission)
 
 ## When to use
 
@@ -34,7 +34,8 @@ Keep the project's working state compact and current. After every meaningful ste
 2. Keep `SCRATCH.md` ≤ 300 tokens. If it grows, archive oldest entries to `.claude/memory/snapshots/`.
 3. Keep `CURRENT_FOCUS.md` ≤ 80 lines. Same archiving rule.
 4. Never quote protected file content in either file. Reference paths only.
-5. Never commit these files automatically.
+5. Never store branch, HEAD, or "clean" as durable truth. If needed, record the Git commands to re-run.
+6. Never commit these files automatically.
 
 ## Required output format
 
@@ -64,10 +65,10 @@ Proposed delta to .claude/memory/SCRATCH.md:
 Proposed delta to .claude/context/CURRENT_FOCUS.md:
 ---
 ## YYYY-MM-DD <short tag>
-- branch: <name>
-- did: <one line>
+- objective: <one line>
+- wip: <one line>
 - next: <one line>
-- blocked on: <one line or "nothing">
+- verify git state with: `git branch --show-current`; `git rev-parse --short HEAD`; `git status --short`
 ---
 
 Approval required: YES — wait for user "Approved."

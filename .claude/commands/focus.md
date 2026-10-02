@@ -22,17 +22,17 @@ Mode: READ_ONLY
 Layer: AGENTIC
 Files touched: none
 
-Branch:        <current branch>
-Working tree:  clean | dirty (<N changed files>)
+Live Git branch:        <current branch from git>
+Live working tree:      clean | dirty (<N changed files>)
 
 From SCRATCH.md (live state):
   Currently building: <one line>
   Files touched this session: <list or "none">
   Next: <one line>
 
-From CURRENT_FOCUS.md (week state):
+From CURRENT_FOCUS.md (working focus, not Git authority):
   Phase: <one line>
-  Known issues: <one line>
+  WIP / decisions: <one line>
   Next mission: <one line>
 
 Suggested next command:
@@ -41,5 +41,6 @@ Suggested next command:
 
 Rules:
 - Read-only.
+- Treat branch and working-tree output as live Git evidence only; do not copy it into memory as durable truth.
 - If `SCRATCH.md` or `CURRENT_FOCUS.md` is missing, say so and suggest creating from template.
 - Do not quote > 15 words verbatim from either file.

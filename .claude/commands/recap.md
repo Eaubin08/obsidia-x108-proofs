@@ -21,8 +21,8 @@ Files touched: none
 
 Session recap
 =============
-Branch:        <name>
-Working tree:  clean | <N changed files>
+Live Git branch:        <name from git>
+Live working tree:      clean | <N changed files>
 Recent commits (last 10):
   <oneline 1>
   <oneline 2>
@@ -38,7 +38,7 @@ Files touched:
 Current state of mind:
 <one paragraph: what's done, what's pending, what's blocked>
 
-Next mission (from CURRENT_FOCUS.md):
+Next mission (from CURRENT_FOCUS.md, not Git authority):
 <one line>
 
 Suggested next move:
@@ -50,6 +50,7 @@ Compact suggested? YES | NO
 
 Rules:
 - Read-only.
+- Treat branch and working-tree output as live Git evidence only; do not copy it into memory as durable truth.
 - Never quote > 15 words from any protected file.
 - Suggest `/update-focus` if the recap reveals state drift between SCRATCH and CURRENT_FOCUS.
 - Suggest `/compact` if the session is long.
