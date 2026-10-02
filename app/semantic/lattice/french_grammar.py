@@ -1746,7 +1746,8 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
                 or w.low in _DETERMINERS
                 or w.low in _SUBJECT_PRONOUNS or w.low in _RESTRICTION_ADVERBS
                 or w.is_punct or _is_verb(toks, j)
-                or (words and w.low in _MANNER_ADVERBS)):  # D5-N7: a modifier never extends the object
+                or (words and w.low in _MANNER_ADVERBS)  # D5-N7: a modifier never extends the object
+                or (w.low == "s'" and _politeness_formula(toks, j))):  # "le test s'il te plaît"
             break
         words.append(w.low)
         end_tok = w
@@ -2841,6 +2842,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if k is None or k + 1 >= len(clause.toks):
                 continue
             first = clause.toks[k].low
+            if _is_verb(clause.toks, k):
+                continue  # "a échoué": "a" is the auxiliary, not the preposition "à"
             if first in _DETERMINERS:
                 link = "unattached_nominal_of"
             elif first in _PREPOSITIONS:

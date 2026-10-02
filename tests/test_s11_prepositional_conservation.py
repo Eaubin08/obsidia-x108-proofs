@@ -62,3 +62,16 @@ def test_s11_consumed_material_not_reported(text):
 def test_s11_nominal_internal_pp_stays_preserved_open():
     f = parse_utterance("Paul lance le test de Marie.")
     assert any(m.endswith(":unattached_nominal_of=u1") for m in f.missing) and not _preps(f) and not f.closure
+
+
+def test_s11_auxiliary_a_is_not_the_preposition():
+    # "a" is both the auxiliary and an unaccented "à": a verb never opens prepositional content
+    f = parse_utterance("Le test que Paul a lancé a échoué.")
+    assert not _preps(f)
+
+
+@pytest.mark.parametrize("text,obj", [("Lance le test s'il te plaît.", "le test"), ("Lance P s'il vous plaît.", "p")])
+def test_politeness_formula_never_enters_the_object(text, obj):
+    f = parse_utterance(text)
+    assert [a.text for a in f.units[0].objects] == [obj] and f.closure
+    assert governable_summary(f)["requested_world_actions"] == ["EXECUTE"]
