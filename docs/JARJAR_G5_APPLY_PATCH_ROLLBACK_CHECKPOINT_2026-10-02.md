@@ -11,14 +11,16 @@ TARGETED TESTS:
 - Obsidia G4+G5 targeted regression after SRE/SAR fix: 10 passed
 
 CURRENT VERDICT:
-G5-A IMPLEMENTED / TARGETED GREEN
-NOT YET CLOSED
+G5-A CLOSED / PROVED
 
-Closure still requires:
-1. expanded G1-G5 Jarjar regression
-2. expanded G3-G5 Obsidia regression
-3. physical end-to-end APPLY_PATCH -> rollback proof on Windows
-4. final checkpoint with exact HEADs and proof outputs
+Closure evidence:
+1. Jarjar expanded regression: 40 passed
+2. Obsidia expanded regression: 84 passed
+3. Windows physical proof: G5_PHYSICAL_PROOF_PASS
+4. exact preimage restored: true
+5. decision_authority: KX108_ONLY
+6. kx108_invocations_during_rollback: 0
+7. human_authorization_consumed: true
 
 ## Contract
 
@@ -58,3 +60,30 @@ Fixed on G5:
 - DELETE/destructive V3: HOLD
 - no cognition/world/memory changes
 - no KX108 authority change
+
+
+## Physical proof — 2026-10-02
+
+Observed result:
+
+- status: G5_PHYSICAL_PROOF_PASS
+- operation: V2_APPLY_PATCH
+- rollback: SINGLE_TARGET_EXACT_PREIMAGE_RESTORE
+- executor_provider: NativeFilesystemBackend
+- executor_backend: NativeFilesystemBackend
+- decision_authority: KX108_ONLY
+- kx108_invocations_during_rollback: 0
+- human_authorization_consumed: true
+- pre_sha256: bf009ed794836f447cf35b28c444880c90e543f81f9772d3a1f4874ef202d07b
+- post_sha256: e015eb73300d1a739452f348af55dec5f0c1e94f09784f65738d8eaa51b2bea6
+- restored_sha256: bf009ed794836f447cf35b28c444880c90e543f81f9772d3a1f4874ef202d07b
+- restored_matches_preimage: true
+- sealed_rollback_evidence_id: sre-0ec695605514a95c53fe578ca4ffbeaf
+- sealed_apply_receipt_id: sar-8a856b4f9006258cee4741104e10776f
+
+## Final G5-A verdict
+
+G5-A single-target governed APPLY_PATCH rollback is CLOSED / PROVED.
+
+Multi-file transactional rollback remains deferred and is not implied by this closure.
+G6 destructive operations remain HOLD.
