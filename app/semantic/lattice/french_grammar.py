@@ -127,6 +127,7 @@ class _Clause:
     main_after_protasis: bool = False  # "R si tu P et exécute Q": morphology leaves only the main reading
     complement_structure_lost: bool = False  # "V que [le X que P] V2": verbless complement opener merged
     evidential: str | None = None  # detached source / evidential adverbial ("Selon Marie, P")
+    evidential_span: tuple | None = None  # its raw span (S12: reported when no unit carries it)
     boundary: str | None = None  # punctuation that opened the clause
     boundary_tok: object = None  # that punctuation token (kept when a verbless clause is merged back)
     protasis_head: "_Clause | None" = None  # first "si" clause of a conjunctive protasis
@@ -1340,13 +1341,18 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
         # clause-initial ("Selon Marie, P") marks the next clause, clause-final
         # ("P, selon Marie") the previous one.
         marker = _source_marker(c.toks) if c.conn is None else None
+        span = (c.toks[0].start, c.toks[-1].end) if marker is not None else None
         if marker is not None and merged and merged[-1].units == [] and any(
                 _is_verb(merged[-1].toks, k) for k in range(len(merged[-1].toks))):
-            merged[-1].evidential = merged[-1].evidential or marker
+            if merged[-1].evidential is None:
+                merged[-1].evidential, merged[-1].evidential_span = marker, span
+            # S12: the source is consumed by the evidential; it never becomes object material
+            # ("Lance P, selon Paul" read "selon paul" as a second object)
+            continue
         elif marker is not None and not merged:
-            pending_source = marker
+            pending_source = (marker, span)
         if marker is None and has_verb and c.conn is None and pending_source is not None:
-            c.evidential, pending_source = pending_source, None
+            (c.evidential, c.evidential_span), pending_source = pending_source, None
         # A verbless clause shaped like a predication with an unknown verb
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause, and so is
         # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V").
@@ -1969,6 +1975,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     units: list[PredicateUnit] = []
     relations: list[LatticeRelation] = []
     coordinations: list[CoordinationRef] = []
+    detached_sources: list[str] = []  # S12, merged into missing below
     ambiguities: list[str] = []
     lost_governors: list[tuple[tuple[int, int], str]] = []  # (governor span, governed unit)
     deixis = [t.low for t in toks if t.low in _DEIXIS and not t.hyphen_before]
@@ -2276,6 +2283,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 prag = "REQUESTED"
             if clause.evidential is not None and n == 0 and prag == "ASSERTED" and epi == "ASSERTED":
                 epi = clause.evidential
+            elif clause.evidential is not None and n == 0 and clause.evidential_span is not None:
+                # S12: a detached source over a non-assertive or modified unit (request, question,
+                # negation...) has no positive reading decided yet: reported, never dropped
+                detached_sources.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.evidential_span[0]}-"
+                                        f"{clause.evidential_span[1]}:detached_source_of={u.id}")
             tmp = replace(u, pragmatic=prag, epistemic=epi, realized=realized,
                           embedded_under=embedded_under)
             role = _role(tmp, d, prag, interrogative)
@@ -2628,7 +2640,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     # ── unanalyzed predicative content: reported, never dropped (M8-0b) ──
     # "<marker>:<start>-<end>:<link>[:ops=...]" — the span of the clause, its
     # structural link when syntax gives it, and detectable scope operators.
-    missing: list[str] = []
+    missing: list[str] = list(detached_sources)
     protases = [cj for cj, c in enumerate(clauses)
                 if c.conn == "si" or (c.toks and c.toks[0].low == "si")]
     for ci, clause in enumerate(clauses):
