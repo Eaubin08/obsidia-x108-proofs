@@ -125,3 +125,95 @@ def self_check_bridge_v0() -> dict:
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
+
+
+# ============================================================
+# G1-A : JarJarWindowsExecutor — window.focus
+# ============================================================
+class JarJarWindowsExecutor:
+    """Wraps NativeWindowsBackend for governed window.focus operations.
+    Physical execution + TOCTOU verification only. No authorization decisions.
+    """
+    EXECUTOR_PROVIDER = _EXECUTOR_PROVIDER
+    EXECUTOR_BACKEND = "NativeWindowsBackend"
+    BRIDGE_VERSION = _BRIDGE_VERSION
+
+    def __init__(self, *, jarjar_src=None) -> None:
+        _ensure_jarjar_import(jarjar_src)
+        from jarvis.integrations.win32_driver import Win32Driver
+        from jarvis.windows import NativeWindowsBackend
+        from jarvis.contracts import ActionRequest
+        self._ActionRequest = ActionRequest
+        self._backend = NativeWindowsBackend(driver=Win32Driver())
+
+    def _req(self, capability: str, **kwargs: str):
+        return self._ActionRequest(capability=capability, arguments=dict(kwargs),
+                                   source="obsidia_bridge_v1")
+
+    def find_window(self, title: str) -> dict:
+        """Read-only. Enumerate visible windows and return the first hwnd whose title
+        contains *title* (casefold). Never mutates focus."""
+        result = self._backend.execute(self._req("window.list"))
+        if not result.ok:
+            return {"ok": False, "error": "WINDOW_LIST_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.list"}
+        wanted = title.casefold()
+        windows = result.data.get("windows", [])
+        matches = [w for w in windows
+                   if isinstance(w.get("title"), str) and wanted in w["title"].casefold()]
+        if not matches:
+            return {"ok": False, "error": "WINDOW_NOT_FOUND",
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.list"}
+        w = matches[0]
+        return {"ok": True, "hwnd": int(w["hwnd"]), "title": w["title"],
+                "executor": self.EXECUTOR_BACKEND, "capability": "window.list"}
+
+    def focus_window_by_hwnd(self, hwnd: int) -> dict:
+        """TOCTOU-safe focus: re-verify hwnd still exists, focus by its current exact
+        title, then confirm returned hwnd matches the expected hwnd.
+        Fails closed if hwnd disappeared or a different window was focused."""
+        list_result = self._backend.execute(self._req("window.list"))
+        if not list_result.ok:
+            return {"ok": False, "error": "WINDOW_LIST_FAILED:" + list_result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.list"}
+        windows = list_result.data.get("windows", [])
+        current = next((w for w in windows if int(w["hwnd"]) == hwnd), None)
+        if current is None:
+            return {"ok": False, "error": "TARGET_HWND_NOT_FOUND",
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.list"}
+        current_title = current["title"]
+        focus_result = self._backend.execute(self._req("window.focus", title=current_title))
+        if not focus_result.ok:
+            return {"ok": False, "error": "FOCUS_FAILED:" + focus_result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.focus"}
+        returned_hwnd = int(focus_result.data.get("hwnd", 0))
+        if returned_hwnd != hwnd:
+            return {"ok": False,
+                    "error": "HWND_MISMATCH:expected=%d,got=%d" % (hwnd, returned_hwnd),
+                    "executor": self.EXECUTOR_BACKEND, "capability": "window.focus"}
+        return {"ok": True, "hwnd": returned_hwnd,
+                "title": focus_result.data.get("title", current_title),
+                "executor": self.EXECUTOR_BACKEND, "capability": "window.focus"}
+
+    def verify_focus(self, hwnd: int, resolved_title: str) -> dict:
+        """Post-execute proof: verify hwnd is still visible and title is consistent
+        with what was resolved at PREPARE time. Read-only (window.list)."""
+        result = self._backend.execute(self._req("window.list"))
+        if not result.ok:
+            return {"ok": False, "error": "WINDOW_LIST_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        windows = result.data.get("windows", [])
+        match = next((w for w in windows if int(w["hwnd"]) == hwnd), None)
+        if match is None:
+            return {"ok": False, "error": "HWND_NOT_FOUND_POST_FOCUS",
+                    "executor": self.EXECUTOR_BACKEND}
+        actual_title = match["title"]
+        rt = resolved_title.casefold()
+        at = actual_title.casefold()
+        title_ok = rt in at or at in rt
+        return {"ok": True, "hwnd": hwnd, "title": actual_title,
+                "title_consistent": title_ok, "executor": self.EXECUTOR_BACKEND}
+
+
+def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":
+    return JarJarWindowsExecutor(jarjar_src=jarjar_src)
