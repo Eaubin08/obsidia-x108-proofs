@@ -24,8 +24,8 @@ from dataclasses import dataclass, field, replace
 
 from app.semantic.lattice.lexicon import fold, has_imperative_paradigm, lookup, predicate_of
 from app.semantic.lattice.primitives import (
-    Argument, CoordinationRef, LatticeRelation, OperatorScopeRef, ParticipantConfigurationRef, PredicateUnit,
-    RelationKind,
+    Argument, CoordinationRef, LatticeRelation, ObliqueArgumentRef, OperatorScopeRef, ParticipantConfigurationRef,
+    PredicateUnit, RelationKind,
     UtteranceFrame,
 )
 
@@ -1013,6 +1013,59 @@ _MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "autom
 # prepositions kept out of _PREPOSITIONS (subordinator / governor roles elsewhere) that still
 # end an object and open conservable prepositional content ("p via ssh", "p depuis")
 _OBJECT_BOUNDARY_PREPOSITIONS = {"via", "depuis"}
+# ObliqueArgumentRef V0 (O2): constructions that license a role; any other preposition is UNRESOLVED
+_LICENSED_OBLIQUES = (
+    (("en", "utilisant"), "en utilisant", "INSTRUMENT"),
+    (("à", "l'", "aide"), "à l'aide de", "INSTRUMENT"),
+    (("a", "l'", "aide"), "à l'aide de", "INSTRUMENT"),
+    (("au", "moyen"), "au moyen de", "INSTRUMENT"),
+    (("à", "partir"), "à partir de", "SOURCE"),
+    (("a", "partir"), "à partir de", "SOURCE"),
+)
+
+
+def _oblique_members(toks: list, k: int, end: int):
+    """Parse toks[k:end + 1] as ONE oblique construction: (marker, role, args, links) or None.
+
+    None (the caller keeps the S11 fallback) unless the whole remainder is consumed: the
+    marker, then argument NPs joined by "et" / "ou" / "," (an optional repeated "de")."""
+    lows = [t.low for t in toks[k:end + 1]]
+    marker, role, j = None, "UNRESOLVED", k
+    for head, name, licensed in _LICENSED_OBLIQUES:
+        if tuple(lows[:len(head)]) == head:
+            marker, role, j = name, licensed, k + len(head)
+            if head[-1] in {"aide", "moyen", "partir"}:
+                if j > end or toks[j].low not in {"de", "d'", "du", "des"}:
+                    return None
+                j += 1 if toks[j].low in {"de", "d'"} else 0
+            break
+    if marker is None:
+        if lows[0] not in _PREPOSITIONS and lows[0] not in _OBJECT_BOUNDARY_PREPOSITIONS:
+            return None
+        marker, j = ("à" if lows[0] == "a" else lows[0]), k + 1
+    args, links = [], []
+    while j <= end:
+        t = toks[j]
+        if t.low in _TIME_ADVERBS and not t.analyses:
+            arg, nj = Argument(t.low, t.low, "NP", "DEICTIC", span=(t.start, t.end)), j + 1
+        else:
+            arg, nj = _np_from(toks, j)
+        if arg is None or nj > end + 1:
+            return None
+        args.append(arg)
+        j = nj
+        if j <= end and toks[j].low in {"et", "ou", ","}:
+            links.append(toks[j].low)
+            j += 1
+            if j <= end and toks[j].low in {"de", "d'"}:
+                j += 1
+            continue
+        break
+    if not args or j != end + 1:
+        return None
+    return marker, role, args, links
+
+
 _TOTALITY_QUANTIFIERS = {"tous", "toutes", "tout", "toute"}  # + determiner NP
 _TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
@@ -2389,6 +2442,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     operator_scopes: list[OperatorScopeRef] = []
     participant_configurations: list[ParticipantConfigurationRef] = []
+    oblique_arguments: list[ObliqueArgumentRef] = []
 
     def _configure(unit: str, kind: str, cue: str, span: tuple[int, int], group: str | None = None) -> None:
         participant_configurations.append(ParticipantConfigurationRef(
@@ -2848,7 +2902,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             first = clause.toks[k].low
             if _is_verb(clause.toks, k):
                 continue  # "a échoué": "a" is the auxiliary, not the preposition "à"
-            if first in _DETERMINERS:
+            if first == "au" and k + 1 < len(clause.toks) and clause.toks[k + 1].low == "moyen":
+                link = "unattached_prepositional_of"  # "au moyen de X" (contracted "à le")
+            elif first in _DETERMINERS:
                 link = "unattached_nominal_of"
             elif first in _PREPOSITIONS or first in _OBJECT_BOUNDARY_PREPOSITIONS:
                 link = "unattached_prepositional_of"
@@ -2858,12 +2914,44 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if nxt.is_punct or nxt.low in _CONNECTIVES or _is_verb(clause.toks, k + 1) or k + 1 in heads_of[id(clause)]:
                 continue  # "pour tester Q", "à lancer P": an infinitive unit consumes it
             end = k + 1
-            while end + 1 < len(clause.toks) and not clause.toks[end + 1].is_punct \
-                    and clause.toks[end + 1].low not in _CONNECTIVES and not _is_verb(clause.toks, end + 1) \
-                    and end + 1 not in heads_of[id(clause)]:
+
+            def _continues(i: int, clause=clause) -> bool:
+                # nominal material of the same clause; a connective only when more of it follows
+                # ("à partir de ta mémoire et du document X"), never a new predication
+                t = clause.toks[i]
+                if t.low in {"et", "ou", ","}:
+                    return i + 1 < len(clause.toks) and _continues(i + 1)
+                return not t.is_punct and t.low not in _CONNECTIVES and not _is_verb(clause.toks, i) \
+                    and i not in heads_of[id(clause)]
+            while end + 1 < len(clause.toks) and _continues(end + 1):
                 end += 1
-            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
-                           f":{link}={u.id}")
+            parsed = _oblique_members(clause.toks, k, end) if link == "unattached_prepositional_of" else None
+            if parsed is None:
+                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
+                               f":{link}={u.id}")
+                continue
+            # ObliqueArgumentRef V0: the S11 fallback is replaced, never duplicated
+            marker, licensed, args, links = parsed
+            kinds = {"OR" if x == "ou" else "AND" for x in links if x != ","}
+            if len(kinds) > 1 or (links and links[-1] == "," and len(args) > 1 and not kinds):
+                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clause.toks[k].start}-{clause.toks[end].end}"
+                               f":{link}={u.id}")  # mixed "et / ou": precedence not written
+                continue
+            group = None
+            if len(args) > 1:
+                group = f"c{len(coordinations) + 1}"
+                coordinations.append(CoordinationRef(
+                    group, kinds.pop() if kinds else "AND",
+                    tuple(f"{u.id}.x{len(oblique_arguments) + n + 1}" for n in range(len(args))),
+                    "coordinated_oblique", tuple(links), (args[0].span[0], args[-1].span[1]),
+                    member_kind="argument", host=u.id, role="oblique",
+                    member_texts=tuple(a.text for a in args), member_spans=tuple(a.span for a in args)))
+            for n, a in enumerate(args):
+                # SOURCE never over a temporal cue ("à partir de demain"): no guessed temporal relation
+                role = "UNRESOLVED" if licensed == "SOURCE" and a.reference == "DEICTIC" else licensed
+                start = clause.toks[k].start if n == 0 else a.span[0]
+                oblique_arguments.append(ObliqueArgumentRef(
+                    f"b{len(oblique_arguments) + 1}", u.id, role, marker, a, (start, a.span[1]), group))
 
     final_units = [u for c in clauses for (u, _) in c.units]
     final_units, ref_relations, unresolved, presupposed, ambiguous_refs = _resolve_references(final_units)
@@ -2942,6 +3030,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         coordinations=tuple(coordinations),
         operator_scopes=tuple(operator_scopes),
         participant_configurations=tuple(participant_configurations),
+        oblique_arguments=tuple(oblique_arguments),
     )
     held = _unresolved_profile_complements(frame)
     return replace(frame, ambiguities=frame.ambiguities + held) if held else frame

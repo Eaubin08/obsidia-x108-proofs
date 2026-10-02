@@ -60,5 +60,6 @@ def test_s12_asserted_units_keep_the_existing_carrier(text, epistemic):
 def test_s12_epistemic_and_functional_sources_never_fused():
     f = parse_utterance("Selon Paul, explique Obsidia avec ta mémoire.")
     assert _sources(f) == [("Selon Paul", "u1")]
-    assert any(m.endswith(":unattached_prepositional_of=u1") for m in f.missing)
+    # the functional oblique is the canonical ObliqueArgumentRef (S11 marker migrated)
+    assert [(o.unit, o.marker, o.argument.text) for o in f.oblique_arguments] == [("u1", "avec", "ta mémoire")]
     assert [a.text for a in f.units[0].objects] == ["obsidia"]

@@ -253,6 +253,26 @@ class ParticipantConfigurationRef:
 
 
 @dataclass(frozen=True)
+class ObliqueArgumentRef:
+    """A prepositional (oblique) argument of ONE predication ("Explique Obsidia en utilisant
+    ta mémoire", "Lance P sur le serveur").
+
+    The role is licensed by the construction, never by the noun: INSTRUMENT ("en utilisant /
+    à l'aide de / au moyen de X"), SOURCE ("à partir de X", X not a temporal cue), else
+    UNRESOLVED (structured, not resolved: it blocks closure). A functional source is not an
+    epistemic source (SourceClass). Descriptive only: no capability, selection, availability,
+    authorization or truth (INSTRUMENT(memory) neither selects nor reads any memory).
+    """
+    id: str
+    unit: str                       # the PredicateUnit it is an argument of
+    role: str                       # "SOURCE" | "INSTRUMENT" | "UNRESOLVED"
+    marker: str                     # normalized construction ("en utilisant", "à partir de", "avec")
+    argument: Argument              # the nominal argument (existing Argument)
+    span: tuple[int, int] | None = None  # marker + argument, raw
+    group: str | None = None        # argument CoordinationRef id (coordinated_oblique), if any
+
+
+@dataclass(frozen=True)
 class UtteranceFrame:
     raw: str
     normalized: str
@@ -273,6 +293,7 @@ class UtteranceFrame:
     coordinations: tuple[CoordinationRef, ...] = ()
     operator_scopes: tuple[OperatorScopeRef, ...] = ()
     participant_configurations: tuple[ParticipantConfigurationRef, ...] = ()
+    oblique_arguments: tuple[ObliqueArgumentRef, ...] = ()
 
     def coordination(self, ref: str | None) -> CoordinationRef | None:
         return next((c for c in self.coordinations if c.id == ref), None)
@@ -290,6 +311,8 @@ class UtteranceFrame:
         blockers += [f"missing:{m}" for m in self.missing]
         blockers += [f"ambiguity:{a}" for a in self.ambiguities
                      if a.split(":", 1)[0] in STRUCTURAL_AMBIGUITIES]
+        # structured != resolved: an oblique whose role is not licensed keeps the meaning open
+        blockers += [f"oblique_role_unresolved:{o.id}" for o in self.oblique_arguments if o.role == "UNRESOLVED"]
         return tuple(blockers)
 
     @property

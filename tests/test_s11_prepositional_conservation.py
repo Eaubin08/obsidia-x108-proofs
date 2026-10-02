@@ -4,7 +4,9 @@ Material introduced by a preposition after a unit's objects ("en utilisant ta m√
 "√† partir du document X", "avec Python", "sur le serveur", "avec Q") was dropped and
 the frame closed, including gated directives. It is now reported with its exact span
 (unanalyzed_predicative_content:<span>:unattached_prepositional_of=<unit>); its role
-(source, instrument, location...) is NOT decided here (ObliqueArgumentRef comes later).
+(source, instrument, location...) is NOT decided here. Since ObliqueArgumentRef V0 the
+marker is migrated to the canonical ref (SOURCE / INSTRUMENT close, UNRESOLVED stays open);
+it remains only as a fallback for a remainder no ref can safely represent.
 Structures that already consume material (temporal cues, participant configuration,
 quantified objects, infinitive units, protases) are untouched. No request, prohibition,
 occurrence, memory or tool decision changes.
@@ -19,12 +21,20 @@ from app.semantic.lattice.ir_projection import governable_summary
 
 
 def _preps(f):
+    """Preserved prepositional content: the S11 fallback marker or, since ObliqueArgumentRef V0,
+    the canonical ref (marker + argument span) that replaced it (never both)."""
     out = []
     for m in f.missing:
         if ":unattached_prepositional_of=" in m:
             a, b = map(int, m.split(":")[1].split("-"))
             out.append((f.raw[a:b], m.rsplit("=", 1)[1]))
+    out += [(f.raw[o.span[0]:o.span[1]], o.unit) for o in f.oblique_arguments]
     return out
+
+
+def _closed_by_role(f):
+    # structured != resolved: only a licensed role (SOURCE / INSTRUMENT) lets the frame close
+    return bool(f.oblique_arguments) and all(o.role != "UNRESOLVED" for o in f.oblique_arguments)         and not any(":unattached_prepositional_of=" in m for m in f.missing)
 
 
 def _gov(f):
@@ -46,7 +56,7 @@ def _gov(f):
 ])
 def test_s11_prepositional_content_kept_frame_open(text, ref, span):
     f, r = parse_utterance(text), parse_utterance(ref)
-    assert _preps(f) == [(span, "u1")] and not f.closure and r.closure
+    assert _preps(f) == [(span, "u1")] and f.closure is _closed_by_role(f) and r.closure
     assert _gov(f) == _gov(r)  # same units, force, objects, requests, constraints, occurrence
 
 
@@ -83,4 +93,4 @@ def test_via_depuis_end_the_object_and_are_preserved(text, span):
     # "via" / "depuis" were fused into the object ("p via ssh", "p depuis") with a closed frame
     f = parse_utterance(text)
     assert [a.text for a in f.units[0].objects] == ["p"]
-    assert _preps(f) == [(span, "u1")] and not f.closure
+    assert _preps(f) == [(span, "u1")] and not f.closure  # via / depuis: UNRESOLVED
