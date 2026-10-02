@@ -75,3 +75,12 @@ def test_politeness_formula_never_enters_the_object(text, obj):
     f = parse_utterance(text)
     assert [a.text for a in f.units[0].objects] == [obj] and f.closure
     assert governable_summary(f)["requested_world_actions"] == ["EXECUTE"]
+
+
+@pytest.mark.parametrize("text,span", [("Lance P via SSH.", "via SSH"), ("Lance P depuis le serveur.", "depuis le serveur"),
+                                       ("Lance P depuis hier.", "depuis hier")])
+def test_via_depuis_end_the_object_and_are_preserved(text, span):
+    # "via" / "depuis" were fused into the object ("p via ssh", "p depuis") with a closed frame
+    f = parse_utterance(text)
+    assert [a.text for a in f.units[0].objects] == ["p"]
+    assert _preps(f) == [(span, "u1")] and not f.closure

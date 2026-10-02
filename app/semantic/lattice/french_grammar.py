@@ -1010,6 +1010,9 @@ _PARTITIVE_QUANTIFIERS = {"chacun", "chacune", "un", "une"}  # + de / des / du N
 # "immédiatement" are temporal cues, N12-T)
 _MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "automatiquement",
                   "directement"}
+# prepositions kept out of _PREPOSITIONS (subordinator / governor roles elsewhere) that still
+# end an object and open conservable prepositional content ("p via ssh", "p depuis")
+_OBJECT_BOUNDARY_PREPOSITIONS = {"via", "depuis"}
 _TOTALITY_QUANTIFIERS = {"tous", "toutes", "tout", "toute"}  # + determiner NP
 _TONIC_AGENT = {"moi": "SPEAKER", "toi": "ADDRESSEE"}
 _SUBJECT_INTRODUCERS = {"si", "que", "qu'", "comme", "dès", "pendant", "lorsque", "lorsqu'", "quand", "depuis"}
@@ -1747,7 +1750,8 @@ def _np_from(toks: list[_Tok], j: int) -> tuple[Argument | None, int]:
                 or w.low in _SUBJECT_PRONOUNS or w.low in _RESTRICTION_ADVERBS
                 or w.is_punct or _is_verb(toks, j)
                 or (words and w.low in _MANNER_ADVERBS)  # D5-N7: a modifier never extends the object
-                or (w.low == "s'" and _politeness_formula(toks, j))):  # "le test s'il te plaît"
+                or (w.low == "s'" and _politeness_formula(toks, j))  # "le test s'il te plaît"
+                or w.low in _OBJECT_BOUNDARY_PREPOSITIONS):
             break
         words.append(w.low)
         end_tok = w
@@ -2846,7 +2850,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 continue  # "a échoué": "a" is the auxiliary, not the preposition "à"
             if first in _DETERMINERS:
                 link = "unattached_nominal_of"
-            elif first in _PREPOSITIONS:
+            elif first in _PREPOSITIONS or first in _OBJECT_BOUNDARY_PREPOSITIONS:
                 link = "unattached_prepositional_of"
             else:
                 continue
