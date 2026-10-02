@@ -30,6 +30,7 @@ OP_APPLY_PATCH              = "V2_APPLY_PATCH"
 OP_CREATE_DIR               = "V2_CREATE_DIR"
 GOVERNED_DELETE_FILE_STATUS = "DEFERRED_TO_V3_DESTRUCTIVE_OPERATIONS"
 OP_WINDOW_FOCUS             = "V2_WINDOW_FOCUS"
+OP_APP_OPEN                 = "V2_APP_OPEN"
 _CAP_CREATE_PREPARE = "PC_V2_CREATE_FILE_PREPARE"
 _CAP_CREATE_EXECUTE = "PC_V2_CREATE_FILE_EXECUTE"
 _CAP_MOVE_PREPARE   = "PC_V2_MOVE_FILE_PREPARE"
@@ -40,7 +41,9 @@ _CAP_CDIR_PREPARE   = "PC_V2_CREATE_DIR_PREPARE"
 _CAP_CDIR_EXECUTE   = "PC_V2_CREATE_DIR_EXECUTE"
 _CAP_WFOCUS_PREPARE = "PC_V2_WINDOW_FOCUS_PREPARE"
 _CAP_WFOCUS_EXECUTE = "PC_V2_WINDOW_FOCUS_EXECUTE"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE)
+_CAP_AOPEN_PREPARE  = "PC_V2_APP_OPEN_PREPARE"
+_CAP_AOPEN_EXECUTE  = "PC_V2_APP_OPEN_EXECUTE"
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -749,6 +752,196 @@ def pc_v2_window_focus_execute(
                          executor_capability="window.focus"),
     }
 
+
+# ============================================================
+# GOVERNED_APP_OPEN  (G1-B)
+# ============================================================
+
+def _is_pid_alive(pid: int) -> bool:
+    try:
+        import ctypes, ctypes.wintypes
+        PROCESS_QUERY_INFORMATION = 0x0400
+        STILL_ACTIVE = 259
+        h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, False, pid)
+        if not h:
+            return False
+        code = ctypes.wintypes.DWORD()
+        ok = ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(h)
+        return bool(ok) and code.value == STILL_ACTIVE
+    except Exception:
+        return False
+
+
+def pc_v2_app_open_prepare(app, *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_APP_OPEN, _CAP_AOPEN_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(app, str) or not app.strip():
+        return _prep_rej(OP_APP_OPEN, _CAP_AOPEN_PREPARE, "APP_REQUIRED", session_id)
+    app = app.strip()
+    st = _stores(stores_base_dir)
+    inv = executor.resolve_app(app)
+    if not inv.get("ok"):
+        return _prep_rej(OP_APP_OPEN, _CAP_AOPEN_PREPARE,
+                         "APP_NOT_IN_INVENTORY:" + str(inv.get("error", "")), session_id)
+    resolved_name   = inv["name"]
+    resolved_target = inv["target"]
+    resolved_source = inv["source"]
+    _psa_snapshot = {
+        "anchor_schema": "APP_OPEN_PRE_STATE_V0",
+        "requested_app": app,
+        "resolved_target": resolved_target,
+        "resolved_source": resolved_source,
+        "target_is_file": os.path.isfile(resolved_target),
+    }
+    physical_state_anchor = _sha256(
+        json.dumps(_psa_snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    )
+    desc = {
+        "requested_app": app,
+        "resolved_name": resolved_name,
+        "resolved_target": resolved_target,
+        "resolved_source": resolved_source,
+        "session_id": session_id,
+        "operation_type": OP_APP_OPEN,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah   = _eah(OP_APP_OPEN, desc)
+    child = _v2id("chd", eah + app + resolved_target)
+    v2id  = _v2id("v2x", eah + session_id + "APP_OPEN")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_APP_OPEN, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_APP_OPEN, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "requested_app": app,
+        "resolved_name": resolved_name,
+        "resolved_target": resolved_target,
+        "resolved_source": resolved_source,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_AOPEN_PREPARE, OP_APP_OPEN,
+                         PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                         execution_authority_hash=eah,
+                         requested_app=app,
+                         resolved_target=resolved_target,
+                         resolved_source=resolved_source,
+                         physical_state_anchor=physical_state_anchor),
+    }
+
+
+
+def pc_v2_app_open_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    if not desc or desc.get("eah") != exp_eah:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    requested_app   = desc["descriptor"]["requested_app"]
+    resolved_target = desc["descriptor"]["resolved_target"]
+    resolved_source = desc["descriptor"]["resolved_source"]
+    stored_psa      = desc["descriptor"].get("physical_state_anchor", "")
+    cur_inv = executor.resolve_app(requested_app)
+    if not cur_inv.get("ok"):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "APP_NOT_IN_INVENTORY:" + str(cur_inv.get("error", "")), session_id)
+    if cur_inv["target"] != resolved_target:
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "INVENTORY_DRIFT_DETECTED:target_changed", session_id)
+    if stored_psa:
+        _cur_snap = {
+            "anchor_schema": "APP_OPEN_PRE_STATE_V0",
+            "requested_app": requested_app,
+            "resolved_target": cur_inv["target"],
+            "resolved_source": cur_inv["source"],
+            "target_is_file": os.path.isfile(cur_inv["target"]),
+        }
+        _cur_psa = _sha256(json.dumps(_cur_snap, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+        if _cur_psa != stored_psa:
+            return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                             "PRE_STATE_DRIFTED:anchor_mismatch", session_id)
+    cand_seed = requested_app + resolved_target
+    apr   = _approval(v2id, child, exp_eah, cand_seed)
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    scope_id = "OS_APP:" + resolved_target
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_APP_OPEN,
+                    kxpre=st["kxpre"],
+                    physical_state_anchor=stored_psa,
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate  = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    ex = executor.open_app_by_target(resolved_target)
+    if not ex.get("ok"):
+        return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                         "JARJAR_EXECUTOR_FAILED:" + str(ex.get("error", "")), session_id)
+    pid    = ex.get("pid")
+    is_lnk = resolved_target.casefold().endswith(".lnk")
+    if is_lnk:
+        proof_strength = "WEAK"
+        pid_verified   = False
+    else:
+        if pid is None:
+            return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                             "REALIZED_STATE_MISMATCH:PID_NONE", session_id)
+        if not _is_pid_alive(pid):
+            return _exec_rej(OP_APP_OPEN, _CAP_AOPEN_EXECUTE,
+                             "REALIZED_STATE_MISMATCH:PID_NOT_ALIVE", session_id)
+        proof_strength = "STRONG"
+        pid_verified   = True
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_APP_OPEN,
+        "jarvis_authority": JARVIS_AUTHORITY, "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "requested_app": requested_app,
+        "resolved_target": resolved_target, "resolved_source": resolved_source,
+        "launched_pid": pid,
+        "pid_verified": pid_verified,
+        "proof_strength": proof_strength,
+        "lnk_policy": "WEAK_ACCEPTED" if is_lnk else "NOT_APPLICABLE",
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "executor_capability": "app.open",
+        "receipt": _rcpt(_CAP_AOPEN_EXECUTE, OP_APP_OPEN, EXECUTED_OK, session_id,
+                         kx108_pre_gate=gate,
+                         requested_app=requested_app,
+                         resolved_target=resolved_target, resolved_source=resolved_source,
+                         launched_pid=pid, pid_verified=pid_verified,
+                         proof_strength=proof_strength,
+                         executor_provider=executor.EXECUTOR_PROVIDER,
+                         executor_backend=executor.EXECUTOR_BACKEND,
+                         executor_capability="app.open"),
+    }
+
+
+
 # ============================
 # Dispatcher + self-check
 # ============================
@@ -764,6 +957,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_CDIR_EXECUTE:   pc_v2_create_dir_execute,
         _CAP_WFOCUS_PREPARE: pc_v2_window_focus_prepare,
         _CAP_WFOCUS_EXECUTE: pc_v2_window_focus_execute,
+        _CAP_AOPEN_PREPARE:  pc_v2_app_open_prepare,
+        _CAP_AOPEN_EXECUTE:  pc_v2_app_open_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -785,7 +980,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,

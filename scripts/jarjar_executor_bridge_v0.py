@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
@@ -213,6 +213,56 @@ class JarJarWindowsExecutor:
         title_ok = rt in at or at in rt
         return {"ok": True, "hwnd": hwnd, "title": actual_title,
                 "title_consistent": title_ok, "executor": self.EXECUTOR_BACKEND}
+
+
+    # ── G1-B : app.open ───────────────────────────────────────────────────────
+
+    def resolve_app(self, app_name: str) -> dict:
+        """Read-only. Resolve app_name through WindowsAppInventory.
+        Returns {"ok": True, "name": ..., "target": ..., "source": ...}
+        or {"ok": False, "error": "APP_NOT_IN_INVENTORY"}.
+        NEVER launches a process.
+        """
+        try:
+            entry = self._backend.driver.app_inventory.resolve(app_name)
+        except Exception as exc:
+            return {"ok": False, "error": "INVENTORY_ERROR:" + str(exc),
+                    "executor": self.EXECUTOR_BACKEND, "capability": "app.resolve"}
+        if entry is None:
+            return {"ok": False, "error": "APP_NOT_IN_INVENTORY",
+                    "executor": self.EXECUTOR_BACKEND, "capability": "app.resolve"}
+        return {
+            "ok": True,
+            "name": entry.name,
+            "target": entry.target,
+            "source": entry.source,
+            "executor": self.EXECUTOR_BACKEND,
+            "capability": "app.resolve",
+        }
+
+    def open_app_by_target(self, resolved_target: str) -> dict:
+        """Execute app.open using the pre-validated resolved target path.
+        Passes resolved_target as the `app` argument so the driver executes
+        exactly that target (builtin .exe via PATH, or absolute .lnk / .exe).
+        The driver's inventory re-resolution returns None for target paths,
+        triggering its fallback — which is safe because the target was already
+        validated through inventory at PREPARE time and bound to human approval.
+        .lnk targets: pid=None (WEAK proof).
+        .exe/builtin targets: pid returned (STRONG proof possible).
+        """
+        result = self._backend.execute(self._req("app.open", app=resolved_target))
+        if not result.ok:
+            return {"ok": False, "error": "APP_OPEN_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND, "capability": "app.open"}
+        data = result.data or {}
+        return {
+            "ok": True,
+            "pid": data.get("pid"),
+            "target": data.get("target", resolved_target),
+            "source": data.get("source", "unknown"),
+            "executor": self.EXECUTOR_BACKEND,
+            "capability": "app.open",
+        }
 
 
 def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":

@@ -381,6 +381,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 WINDOW_FOCUS EXECUTE: EAH+human approval+KX108+exact hwnd. KX108_ONLY."),
+    "PC_V2_APP_OPEN_PREPARE": _cap(
+        "PC_V2_APP_OPEN_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"app": "str - application name or alias"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 APP_OPEN PREPARE: resolve inventory+pre-state anchor, no process launch. KX108_ONLY."),
+    "PC_V2_APP_OPEN_EXECUTE": _cap(
+        "PC_V2_APP_OPEN_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_APP_OPEN_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 APP_OPEN EXECUTE: EAH+human approval+KX108+inventory drift check+PID verify. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())
