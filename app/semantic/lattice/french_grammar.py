@@ -2080,11 +2080,20 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     for k in range(1, len(clauses)):
         prev, clause = clauses[k - 1], clauses[k]
         if prev.conn != "si" or clause.boundary is not None or not clause.conn_toks \
-                or clause.conn_toks[0].low != "et":
+                or clause.conn_toks[0].low not in {"et", "ou"}:
             continue
         head = prev.protasis_head or prev
         hi = next(j for j, c in enumerate(clauses) if c is head)
         preposed = hi == 0 or head.boundary in {".", "!", "?", ";", ":"}
+        # R2: "Si P ou Q, R": a preposed protasis joins its "ou" member too (one OR group);
+        # never mixed with "et" (precedence not written); a postposed "R si P ou Q" stays open
+        joined = {c.conn_toks[0].low for c in clauses if c.protasis_head is head and c is not head and c.conn_toks}
+        if clause.conn_toks[0].low == "ou":
+            if clause.conn == "ou" and preposed and joined <= {"ou"}:
+                clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
+            continue
+        if "ou" in joined:
+            continue
         if clause.conn == "si" or (clause.conn == "et" and (preposed or _continues_protasis_modal(prev, clause))):
             clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
     # "V que P et Q": Q coordinates inside the complement or with its host.
@@ -2770,13 +2779,16 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                         continue
                     source = heads[0].id
                 links = tuple(" ".join(x.low for x in c.conn_toks) for c in group[1:])
+                # R2: a preposed disjunctive protasis ("Si P ou Q, R") is one OR group
+                disjunctive = bool(links) and all(x == "ou" for x in links)
+                pair = RelationKind.ALTERNATIVE if disjunctive else RelationKind.COORDINATES
                 for a, (b, link) in zip(heads, zip(heads[1:], links)):
-                    relations.append(LatticeRelation(RelationKind.COORDINATES.value, a.id, b.id, evidence=link))
+                    relations.append(LatticeRelation(pair.value, a.id, b.id, evidence=link))
                 if len(heads) > 1:
                     source = f"c{len(coordinations) + 1}"
                     coordinations.append(CoordinationRef(
-                        source, "AND", tuple(u.id for u in heads), "conditional_protasis", links,
-                        (heads[0].span[0], heads[-1].span[1])))
+                        source, "OR" if disjunctive else "AND", tuple(u.id for u in heads),
+                        "conditional_protasis", links, (heads[0].span[0], heads[-1].span[1])))
             if scope_open:
                 ambiguities.append(f"condition_scope_ambiguous:{source}")
                 if ci + 1 < len(clauses) and clauses[ci + 1].main_after_protasis and host is not None:
