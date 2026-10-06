@@ -574,7 +574,8 @@ _SEQUENCE_CONNECTIVES = {"et", "ou", "mais", "puis", "donc", "car", "alors"}
 _DEMONSTRATIVE_SUBJECTS = {"ça", "ca", "cela", "ceci"}
 
 
-def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> bool:
+def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False,
+                            complement_follows: bool = False) -> bool:
     """Structural evidence of a predication whose verb is unknown (no meaning inferred).
 
     Either an auxiliary / modal / aspectual verb followed by an unknown
@@ -610,6 +611,10 @@ def _unanalyzed_predicative(clause: "_Clause", in_sequence: bool = False) -> boo
     if not (j < len(toks) and _content_word(toks[j])):
         return False
     if lows[i] in _SUBJECT_PRONOUNS | _DEMONSTRATIVE_SUBJECTS or expected:
+        return True
+    if complement_follows and j + 1 == len(toks):
+        # D2b: "Paul ignore / se demande si P": the unknown verb's argument is the following
+        # "si / que" complement clause
         return True
     # a sequence clause with a nominal subject: the unknown verb must introduce an
     # argument ("Paul frobnique le test"), so "et la gouvernance Obsidia" stays an NP
@@ -2887,13 +2892,22 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
         elif clause.conn not in {"quand", "rel", "a_moins_que"} and not verbless_si(ci) and not _unanalyzed_predicative(
                 clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
-                                     or (clause.conn is None and any(c.units for c in clauses if c is not clause)))) \
+                                     or (clause.conn is None and any(c.units for c in clauses if c is not clause))),
+                complement_follows=(cmp_next := clause.conn is None and ci + 1 < len(clauses)
+                                    and clauses[ci + 1].conn in {"si", "que"} and clauses[ci + 1].units
+                                    and clauses[ci + 1].boundary is None)) \
                 and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
             # (a "quand / lorsque" subordinate, a verbless preposed protasis ("Si P, lance R",
             # "Si possible, ...": a condition is never dropped, H11) or a relative ("qui est
             # utile") without any unit is always reported; so is
             # a copula + attribute clause in a subordinate or a sequence: "si c'est prêt")
             continue
+        if not clause.units and clause.conn is None and ci + 1 < len(clauses) \
+                and clauses[ci + 1].conn in {"si", "que"} and clauses[ci + 1].units \
+                and clauses[ci + 1].boundary is None:
+            # D2b: "Paul ignore / se demande si P": the complement of that unknown governor is
+            # never a free protasis nor a root predication: its governance stays unresolved
+            ambiguities.append(f"complement_under_unresolved_governor:{clauses[ci + 1].units[0][0].id}")
         content = clause.toks[1:] if clause.toks[0].low == "si" else clause.toks
         if clause.conn in {"que", "rel"}:
             parent = None
