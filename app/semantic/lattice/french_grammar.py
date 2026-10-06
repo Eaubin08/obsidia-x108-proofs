@@ -183,8 +183,13 @@ def _tokenize(raw: str) -> tuple[list[_Tok], list[str], list[str]]:
         if t.low == "hui" and merged and merged[-1].low == "aujourd'":
             merged[-1] = _Tok("aujourd'hui", merged[-1].start, t.end)
             continue
+        sentence_start = i == 0 or toks[i - 1].low in {".", "!", "?", ";", ":"}
+        symbolic = raw[t.start:t.end].isupper() and not sentence_start
         if (t.low in _ELIDED_LETTERS and nxt is not None and not nxt.is_punct
-                and t.low != "a"):
+                and t.low != "a" and nxt.low[:1] in "aeiouyhàâäéèêëîïôöùûü" and not symbolic):
+            # N5: elision only before a vowel / mute h ("j ai", "s il"), and never for an
+            # upper-case letter inside a sentence: "Lance S si P", "Lance D et Q" keep their
+            # symbolic argument (never read as a missing apostrophe)
             ortho.append(f"missing_apostrophe:{t.low}")
             t = _Tok(t.low + "'", t.start, t.end, t.hyphen_before)
         merged.append(t)
