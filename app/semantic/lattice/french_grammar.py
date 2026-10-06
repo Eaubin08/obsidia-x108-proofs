@@ -1553,6 +1553,7 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
         nxt = toks[k + 1] if k + 1 < len(toks) else None
         epenthetic = nxt is not None and nxt.low == "t'" and nxt.hyphen_before and k + 2 < len(toks) \
             and toks[k + 2].hyphen_before and toks[k + 2].low in {"il", "elle", "on"}
+        nominal = subj if subj is not None and subj not in _SUBJECT_PRONOUNS             and subj not in {"c'", "ça", "ca", "cela"} else None
         if epenthetic:
             # "faudra-t-il": the euphonic "-t-" only marks the inversion (no subject, no content)
             subj, person, inverted = toks[k + 2].low, "3", True
@@ -1561,6 +1562,10 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                 nxt.hyphen_before or ("EN" in feats and cls == "modal")):
             subj, person, inverted = nxt.low, ("2" if nxt.low in _SECOND_PERSON else "1"
                                                if nxt.low in _FIRST_PERSON else "3"), True
+        if inverted and nominal is not None and person == "3":
+            # complex inversion ("Paul lance-t-il le test ?"): the inverted pronoun only
+            # resumes the nominal subject, which stays the participant
+            subj = nominal
         after = k + 3 if epenthetic else k + 2 if inverted else k + 1
 
         # aux avoir/être + participle ; "a failli" + infinitive ; "est en train de"
@@ -1888,6 +1893,8 @@ def _objects_for(toks: list[_Tok], d: _Draft, clause: _Clause) -> list[Argument]
     j = k + 1
     if d.inverted and d.head_index == k:
         j += 1
+        if j < len(toks) and toks[j - 1].low == "t'" and toks[j].hyphen_before:
+            j += 1  # euphonic "-t-" + pronoun ("lance-t-il le test"): the object follows both
     # hyphenated clitic: "exécute-le", "fais-le"
     if j < len(toks) and toks[j].hyphen_before and toks[j].low in {"le", "la", "les", "moi", "lui"}:
         if toks[j].low in {"le", "la", "les"}:
