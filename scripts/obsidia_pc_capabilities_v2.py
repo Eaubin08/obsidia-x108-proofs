@@ -1963,10 +1963,17 @@ def pc_v2_browser_navigate_execute(
             return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
                              "NOOP_POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
         post_url     = str(post_r.get("url") or "")
+        post_session_id = str(post_r.get("browser_session_id") or "")
         post_page_id = str(post_r.get("page_id") or "")
         if _canon_url(post_url) != canon_req:
             return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
-        if post_page_id and post_page_id != stored_page_id:
+        if not post_session_id:
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_SESSION_ID_MISSING", session_id)
+        if not post_page_id:
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_MISSING", session_id)
+        if post_session_id != stored_session_id:
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_SESSION_ID_DRIFT", session_id)
+        if post_page_id != stored_page_id:
             return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
         return {
             "status": EXECUTED_OK, "j5_phase": "EXECUTE",
@@ -2001,10 +2008,17 @@ def pc_v2_browser_navigate_execute(
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
                          "POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
     post_url     = str(post_r.get("url") or "")
+    post_session_id = str(post_r.get("browser_session_id") or "")
     post_page_id = str(post_r.get("page_id") or "")
     if _canon_url(post_url) != canon_req:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
-    if post_page_id and post_page_id != stored_page_id:
+    if not post_session_id:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_SESSION_ID_MISSING", session_id)
+    if not post_page_id:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_MISSING", session_id)
+    if post_session_id != stored_session_id:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_SESSION_ID_DRIFT", session_id)
+    if post_page_id != stored_page_id:
         return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
     return {
         "status": EXECUTED_OK, "j5_phase": "EXECUTE",
@@ -2087,7 +2101,7 @@ def pc_v2_browser_read_prepare(
         "read_scope": read_scope,
         "session_id": session_id,
         "physical_state_anchor": physical_state_anchor,
-        "state_anchor_kind": "PHYSICAL_PRE_STATE_V1",
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
     }
     eah   = _eah(OP_BROWSER_READ, desc)
     scope = _sha16(f"BROWSER_READ:{read_scope}:{selector or ''}")
@@ -2104,7 +2118,7 @@ def pc_v2_browser_read_prepare(
         "pre_url": pre_url, "pre_origin": pre_origin,
         "selector": selector, "read_scope": read_scope,
         "physical_state_anchor": physical_state_anchor,
-        "state_anchor_kind": "PHYSICAL_PRE_STATE_V1",
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
         "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
         "_stores_base_dir": str(stores_base_dir),
         "receipt": _rcpt(_CAP_BRAD_PREPARE, OP_BROWSER_READ,
@@ -2186,7 +2200,14 @@ def pc_v2_browser_read_execute(
     if read_r.get("closed"):
         return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "PAGE_CLOSED_DURING_READ", session_id)
     post_page_id = str(read_r.get("page_id") or "")
-    if post_page_id and post_page_id != stored_page_id:
+    post_session_id = str(read_r.get("browser_session_id") or "")
+    if not post_session_id:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "POST_SESSION_ID_MISSING", session_id)
+    if not post_page_id:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "POST_PAGE_ID_MISSING", session_id)
+    if post_session_id != stored_session_id:
+        return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "POST_SESSION_ID_DRIFT", session_id)
+    if post_page_id != stored_page_id:
         return _exec_rej(OP_BROWSER_READ, _CAP_BRAD_EXECUTE, "POST_PAGE_ID_DRIFT", session_id)
     if selector is not None:
         element_count = read_r.get("element_count")

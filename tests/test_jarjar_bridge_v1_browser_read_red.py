@@ -127,6 +127,11 @@ def test_prepare_success_selector(tmp_path):
     assert r["read_scope"] == "SELECTOR"
     assert r["selector"] == "h1"
 
+def test_prepare_state_anchor_kind_is_canonical(tmp_path):
+    r = PC2.pc_v2_browser_read_prepare(stores_base_dir=tmp_path / "s", executor=_ex())
+    assert r["state_anchor_kind"] == "PHYSICAL_PRE_STATE"
+    assert r["receipt"]["state_anchor_kind"] == "PHYSICAL_PRE_STATE"
+
 # -- execute rejections ---------------------------------------------------
 
 def test_execute_wrong_eah_rejected(tmp_path):
@@ -173,6 +178,46 @@ def test_execute_session_drift_rejected(tmp_path):
                                         stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTE_REJECTED
     assert "PRE_STATE_DRIFT" in r.get("reason", "")
+
+def test_execute_post_page_id_missing_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_read_prepare(stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_page.return_value = _page(pid="")
+    r = PC2.pc_v2_browser_read_execute(prep, eah, "REF",
+                                        stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_MISSING" in r.get("reason", "")
+
+def test_execute_post_session_id_missing_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_read_prepare(stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_page.return_value = _page(sid="")
+    r = PC2.pc_v2_browser_read_execute(prep, eah, "REF",
+                                        stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_MISSING" in r.get("reason", "")
+
+def test_execute_post_page_id_drift_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_read_prepare(stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_page.return_value = _page(pid="page-" + "z" * 27)
+    r = PC2.pc_v2_browser_read_execute(prep, eah, "REF",
+                                        stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_DRIFT" in r.get("reason", "")
+
+def test_execute_post_session_id_drift_rejected(tmp_path):
+    ex = _ex()
+    prep = PC2.pc_v2_browser_read_prepare(stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    ex.read_page.return_value = _page(sid="sess-" + "z" * 27)
+    r = PC2.pc_v2_browser_read_execute(prep, eah, "REF",
+                                        stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_DRIFT" in r.get("reason", "")
 
 def test_execute_closed_at_execute_rejected(tmp_path):
     ex = _ex()

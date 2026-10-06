@@ -42,11 +42,11 @@ def _ex(*, pre_url=PRE_URL, post_url=DEST_URL, nav_ok=True, nav_url=None, status
     return ex
 
 
-def _ex_post(ex, post_url, post_pid=PAGE_ID):
+def _ex_post(ex, post_url, post_pid=PAGE_ID, post_sid=SESSION_ID):
     ex.read_browser_state.side_effect = [
         _state(PRE_URL),
         _state(PRE_URL),
-        _state(post_url, pid=post_pid),
+        _state(post_url, sid=post_sid, pid=post_pid),
     ]
     return ex
 
@@ -156,6 +156,12 @@ def test_prepare_psa_same_for_different_dest():
     assert p1["physical_state_anchor"] == p2["physical_state_anchor"]
     assert p1["execution_authority_hash"] != p2["execution_authority_hash"]
 
+def test_prepare_state_anchor_kind_is_canonical(tmp_path):
+    ex = _ex()
+    r = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["state_anchor_kind"] == "PHYSICAL_PRE_STATE"
+    assert r["receipt"]["state_anchor_kind"] == "PHYSICAL_PRE_STATE"
+
 
 # execute rejections
 
@@ -262,6 +268,30 @@ def test_post_navigate_page_id_drift_fail_closed(tmp_path):
     assert r["status"] == PC2.EXECUTE_REJECTED
     assert "POST_PAGE_ID_DRIFT" in r.get("reason", "")
 
+def test_post_navigate_page_id_missing_fail_closed(tmp_path):
+    ex = _ex_post(_ex(), DEST_URL, post_pid="")
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N014", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_MISSING" in r.get("reason", "")
+
+def test_post_navigate_session_id_missing_fail_closed(tmp_path):
+    ex = _ex_post(_ex(), DEST_URL, post_sid="")
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N015", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_MISSING" in r.get("reason", "")
+
+def test_post_navigate_session_id_drift_fail_closed(tmp_path):
+    ex = _ex_post(_ex(), DEST_URL, post_sid="sess-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N016", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_DRIFT" in r.get("reason", "")
+
 
 def test_status_none_allowed_if_post_read_ok(tmp_path):
     ex = _ex(status=None)
@@ -346,6 +376,58 @@ def test_noop_preserves_page_id(tmp_path):
     r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N013", stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTED_OK
     assert r["mutation_performed"] is False
+
+def test_noop_post_page_id_missing_fail_closed(tmp_path):
+    ex = _ex(pre_url=DEST_URL)
+    ex.read_browser_state.side_effect = [
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL, pid=""),
+    ]
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N017", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_MISSING" in r.get("reason", "")
+
+def test_noop_post_session_id_missing_fail_closed(tmp_path):
+    ex = _ex(pre_url=DEST_URL)
+    ex.read_browser_state.side_effect = [
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL, sid=""),
+    ]
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N018", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_MISSING" in r.get("reason", "")
+
+def test_noop_post_page_id_drift_fail_closed(tmp_path):
+    ex = _ex(pre_url=DEST_URL)
+    ex.read_browser_state.side_effect = [
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL, pid="page-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"),
+    ]
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N019", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_PAGE_ID_DRIFT" in r.get("reason", "")
+
+def test_noop_post_session_id_drift_fail_closed(tmp_path):
+    ex = _ex(pre_url=DEST_URL)
+    ex.read_browser_state.side_effect = [
+        _state(DEST_URL),
+        _state(DEST_URL),
+        _state(DEST_URL, sid="sess-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"),
+    ]
+    prep = PC2.pc_v2_browser_navigate_prepare(DEST_URL, stores_base_dir=tmp_path / "s", executor=ex)
+    eah = prep["execution_authority_hash"]
+    r = PC2.pc_v2_browser_navigate_execute(prep, eah, "REF-N020", stores_base_dir=tmp_path / "s", executor=ex)
+    assert r["status"] == PC2.EXECUTE_REJECTED
+    assert "POST_SESSION_ID_DRIFT" in r.get("reason", "")
 
 
 # URL normalization
