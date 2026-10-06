@@ -1436,8 +1436,9 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             (c.evidential, c.evidential_span), pending_source = pending_source, None
         # A verbless clause shaped like a predication with an unknown verb
         # ("elle appelle Luc") is kept as its own (unanalyzed) clause, and so is
-        # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V").
-        if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand", "wh"} \
+        # a verbless "quand / lorsque" subordinate ("lorsque Nadia et Luc V"), and a verbless
+        # exception ("Lance R sauf si P": never "r sauf", never an ordinary protasis, F1).
+        if not has_verb and merged and c.conn not in {"sans", "sans_que", "quand", "wh", "a_moins_que"} \
                 and not _unanalyzed_predicative(c, in_sequence=c.conn in _SEQUENCE_CONNECTIVES
                                                 or (c.conn is None and c.boundary == ",")):
             prev = merged[-1]
@@ -2816,7 +2817,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             k = lost[0][0]
             governed_by = next((u for (u, _) in clause.units
                                 if u.span == (clause.toks[k].start, clause.toks[k].end)), None)
-        elif clause.conn not in {"quand", "rel"} and not verbless_si(ci) and not _unanalyzed_predicative(
+        elif clause.conn not in {"quand", "rel", "a_moins_que"} and not verbless_si(ci) and not _unanalyzed_predicative(
                 clause, in_sequence=(in_seq := clause.conn in _SEQUENCE_CONNECTIVES
                                      or (clause.conn is None and any(c.units for c in clauses if c is not clause)))) \
                 and not (_copula_evidence(clause) and (in_seq or clause.conn in _COPULA_REPORTED_CONNS)):
