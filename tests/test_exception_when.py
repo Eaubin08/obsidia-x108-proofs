@@ -20,7 +20,8 @@ def test_exception_when_is_named_and_object_clean(text):
     r, p = f.units
     assert [a.text for a in r.objects] == ["r"]
     assert f"temporal_subordinate_open:{p.id}" in f.ambiguities
-    assert f"exception_condition_open:{p.id}:host={r.id}" in f.ambiguities
+    # H17 A (requalified): one structural host -> EXCEPTS; the temporal reading stays held
+    assert [(x.kind, x.source, x.target) for x in f.relations] == [("EXCEPTS", p.id, r.id)]
     assert not any(x.kind in {"CONDITIONS", "PRECEDES"} for x in f.relations) and not f.closure
 
 

@@ -75,7 +75,8 @@ def test_a_moins_que_is_an_exception_not_an_ordinary_condition():
     index = build_frame_event_index(frame)
     host, exception = frame.units
     assert not any(r.kind == "CONDITIONS" for r in frame.relations)
-    assert f"exception_condition_open:{exception.id}:host={host.id}" in frame.ambiguities
+    # H17 A (requalified, formerly named open): one structural host -> EXCEPTS(exception, host)
+    assert [(r.kind, r.source, r.target) for r in frame.relations] == [("EXCEPTS", exception.id, host.id)]
     for u in (host, exception):
         assert index.event_for(u.id).occurrence_claim.value == "UNRESOLVED"
 

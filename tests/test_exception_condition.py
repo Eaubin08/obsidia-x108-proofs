@@ -36,8 +36,11 @@ def test_exception_condition_is_named_not_a_condition(text):
     assert [a.text for a in r.objects] == ["r"]                               # no "r sauf"
     assert p.pragmatic == "HYPOTHETICAL"
     assert not any(x.kind == "CONDITIONS" for x in f.relations)
-    assert f"exception_condition_open:{p.id}:host={r.id}" in f.ambiguities
-    assert r.pragmatic == "REQUESTED" and not f.closure
+    # H17 A (requalified, formerly named open, closure held): one structural host ->
+    # EXCEPTS(exception -> host); the request keeps its gate; closure no longer held
+    assert [(x.kind, x.source, x.target) for x in f.relations] == [("EXCEPTS", p.id, r.id)]
+    assert not any(a.startswith("exception_condition_open") for a in f.ambiguities)
+    assert r.pragmatic == "REQUESTED" and f.closure
 
 
 def test_negated_host_constraint_targets_exactly_r():
