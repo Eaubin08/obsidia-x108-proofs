@@ -138,6 +138,7 @@ class _Clause:
     modal: object = None  # its last modal+infinitive draft (OBLIGATION), shared by bare infinitives
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
     prep_member_of: str | None = None   # F-B3G-1: unit id of the prep-governed member it coordinates with
+    rel_member: bool = False            # N7: a verb coordinated inside a subject "qui" relative
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_scope_open: object = None  # negated operator chain draft whose scope over a bare coordinated INF is open
@@ -2275,6 +2276,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 and clause.boundary in {None, ","} \
                 and (clause.conn in {"et", "ou", "puis", "mais"} or (clause.conn is None and clause.boundary == ",")):
             clause.attachment_ambiguous = clause.after_postposed_protasis = True
+    # N7: "Le script qui lance P et exécute Q est prêt": a verb coordinated right after a
+    # subject "qui" relative on the sentence-initial NP continues that relative (the main
+    # predicate comes later); never a root injunction. Its attachment stays open and named.
+    if len(clauses) > 2 and _bare_noun_phrase(clauses[0].toks) \
+            and not any(_is_verb(clauses[0].toks, j) for j in range(len(clauses[0].toks))):
+        for k in range(2, len(clauses)):
+            prev, clause = clauses[k - 1], clauses[k]
+            rel_qui = prev.conn == "rel" and prev.conn_toks and prev.conn_toks[-1].low == "qui"
+            if (rel_qui or prev.rel_member) and clause.conn in {"et", "ou", "puis"} and clause.boundary is None \
+                    and clause.toks and _is_verb(clause.toks, 0) and all(c.conn == "rel" or c.rel_member
+                                                                        for c in clauses[1:k]):
+                clause.attachment_ambiguous = clause.rel_member = True
     if any(t.hyphen_before and t.low in _SUBJECT_PRONOUNS for t in toks):
         interrogative = True
 
@@ -3345,6 +3358,27 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{rest[0].start}-{rest[-1].end}"
                            f":main_predicate_after_relative_of={last_u.id}")
             clause.toks = clause.toks[:k]
+        # N7: a verb coordinated inside a subject "qui" relative keeps its own objects; what
+        # follows them is the antecedent's main predicate ("... et exécute Q est prêt"): reported
+        for clause in clauses[1:]:
+            if not clause.rel_member or not clause.units:
+                continue
+            last_u, last_d = clause.units[-1]
+            end = max([a.span[1] for a in last_u.objects if a.span is not None] + [last_d.lex.end])
+            rest = [t for t in clause.toks if t.start >= end and not t.is_punct]
+            if rest and not any(m.endswith(f"_of={last_u.id}") for m in missing):
+                missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{rest[0].start}-{rest[-1].end}"
+                               f":main_predicate_after_relative_of={last_u.id}")
+                clause.toks = [t for t in clause.toks if t.start < end or t.is_punct]
+        # N7: a subject relative on the sentence-initial NP whose main predicate was found nowhere
+        # (no unit of the antecedent, nothing reported after the relative) keeps the frame open
+        ante = " ".join(t.low for t in clauses[0].toks if t.low not in _DETERMINERS)
+        rels = [c for c in clauses[1:] if c.conn == "rel" or c.rel_member]
+        if rels and len(rels) == len(clauses) - 1 and rels[0].conn_toks and rels[0].conn_toks[-1].low == "qui" \
+                and not any(u.subject == ante for c in rels for (u, _) in c.units) \
+                and not any("main_predicate_after_relative_of=" in m or m.endswith(":unattached") for m in missing):
+            missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{clauses[0].toks[0].start}-{clauses[0].toks[-1].end}"
+                           f":main_predicate_unresolved")
 
     # D5-N3 / S11 conservation: material left right after a unit's objects (or after its verb
     # when it has none) and consumed by no structure is reported, never dropped silently:
