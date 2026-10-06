@@ -1595,20 +1595,46 @@ def _build_drafts(toks: list[_Tok], interrogative: bool = False) -> list[_Draft]
                 consumed.update({k, v})
                 k = v + 1
                 continue
+            if pred == "HAVE" and subj is not None and after + 1 < len(toks) and toks[after].low in {"à", "a"} \
+                    and _is_verb(toks, after + 1) and "INF" in _feats(toks[after + 1]) \
+                    and not (k > 0 and toks[k - 1].low in {"ne", "n'"}):
+                # H16 A: "Tu as à lancer P", "Paul a à lancer P": obligation, by the modal channel
+                v = after + 1
+                drafts.append(_Draft(toks[v], v, k, "INFINITIVE", _tense_of(feats),
+                                     modality="OBLIGATION", modal_tok=t, subject=subj,
+                                     subject_person=person, inverted=inverted))
+                consumed.update({k, v})
+                k = v + 1
+                continue
             if pred == "BE":
                 j = after
                 while j < len(toks) and toks[j].low in {"pas", "plus", "jamais"}:
                     j += 1
                 negated = j != after or (k > 0 and toks[k - 1].low in {"ne", "n'"})
-                if negated and j + 2 < len(toks) and toks[j].low in {"obligatoire", "nécessaire"} \
-                        and toks[j + 1].low in {"de", "d'"} and _is_verb(toks, j + 2) and "INF" in _feats(toks[j + 2]):
-                    # "Il n'est pas obligatoire / nécessaire de lancer P": absence of obligation or
-                    # not; the deontic force is held (never a prohibition, never a request)
+                deontic = j + 2 < len(toks) and toks[j].low in {"obligatoire", "nécessaire"} \
+                    and toks[j + 1].low in {"de", "d'"} and _is_verb(toks, j + 2) and "INF" in _feats(toks[j + 2])
+                if deontic and toks[j].low == "obligatoire" and (not negated or interrogative):
+                    # H16 A: "Il est obligatoire de lancer P" is an obligation, by the same channel
+                    # as "il faut" ("Est-il / N'est-il pas obligatoire de lancer P ?": question
+                    # or request, the negated operator never a prohibition)
+                    v = j + 2
+                    drafts.append(_Draft(toks[v], v, k, "INFINITIVE", _tense_of(feats),
+                                         modality="OBLIGATION", modal_tok=t, subject=subj,
+                                         subject_person="impersonal", inverted=inverted))
+                    consumed.update({k, v})
+                    k = v + 1
+                    continue
+                if deontic and negated:
+                    # "Il n'est pas obligatoire / nécessaire de lancer P": NOT_REQUIRED (set with "pas
+                    # besoin de" below); "N'est-il pas nécessaire de lancer P ?" stays held. Never a
+                    # prohibition, never a request
                     v = j + 2
                     drafts.append(_Draft(toks[v], v, v, "INFINITIVE", governed="deontic_scope_open"))
                     consumed.update({k, v})
                     k = v + 1
                     continue
+                # "Il est nécessaire de lancer P": necessity is not an obligation (H16 A): held
+                # under its unrecognised governor
             if pred == "BE":
                 # être là / ici -> presence ; être en train de + inf -> progressive
                 j = after
@@ -2137,7 +2163,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     for clause in clauses:
         lows = [t.low for t in clause.toks]
         for idx in range(len(lows) - 2):
-            if lows[idx] == "pas" and lows[idx + 1] == "besoin" and lows[idx + 2] in {"de", "d'"}:
+            # H16 A: "Il n'est pas obligatoire / nécessaire de lancer P" is the same absence of
+            # obligation (declarative only: the question stays a question)
+            if lows[idx] == "pas" and lows[idx + 2] in {"de", "d'"} and (
+                    lows[idx + 1] == "besoin"
+                    or (lows[idx + 1] in {"obligatoire", "nécessaire"} and not interrogative)):
                 for n, (u, d) in enumerate(clause.units):
                     if d.lex_index > idx + 2:
                         clause.units[n] = (replace(u, polarity="positive", negator=None,

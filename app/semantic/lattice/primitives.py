@@ -24,6 +24,8 @@ from enum import Enum
 # speech-act ambiguity alone never blocks closure; the possible request keeps its gate.
 # Nor (H12 option B) modal_past_occurrence_open: "a voulu / a pu / a dû P" leaves the
 # occurrence of P canonically UNRESOLVED; that is the final reading, not an incompleteness.
+# Nor (H16 option A) deontic_scope_open: "Tu n'as pas à lancer P" keeps both readings
+# (absence of obligation / no right) canonically; never NOT_REQUIRED, never FORBIDDEN.
 STRUCTURAL_AMBIGUITIES = frozenset({
     "ambiguous_antecedent", "coordination_attachment_ambiguous", "complement_governor_lost",
     "complement_structure_lost", "complement_under_unresolved_governor", "unresolved_complement_governance",
@@ -31,7 +33,7 @@ STRUCTURAL_AMBIGUITIES = frozenset({
     "temporal_subordinate_open", "know_how_scope_open",
     "coordinated_subject_unrepresented", "subject_unresolved",
     "occurrence_conflict_open", "condition_scope_ambiguous",
-    "deontic_scope_open", "exception_condition_open",
+    "exception_condition_open",
     "temporal_scope_ambiguous",
 })
 
