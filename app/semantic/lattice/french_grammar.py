@@ -1535,7 +1535,7 @@ def _negated_periphrasis_infinitive(toks: list[_Tok], after: int, subj: str | No
     return v if _is_verb(toks, v) and "INF" in _feats(toks[v]) else None
 
 
-def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
+def _build_drafts(toks: list[_Tok], interrogative: bool = False) -> list[_Draft]:
     drafts: list[_Draft] = []
     consumed: set[int] = set()
     k = 0
@@ -1689,6 +1689,14 @@ def _build_drafts(toks: list[_Tok]) -> list[_Draft]:
                 k = v + 1
                 continue
             v = _next_verb(toks, after, skip)
+            if v is not None and person == "2" and "INF" in _feats(toks[v]) and "PP" not in _feats(toks[v])                     and interrogative:
+                # H09: "Tu viens lancer P ?": question or request about the addressee's action;
+                # the subject is kept, never a bare injunction
+                drafts.append(_Draft(toks[v], v, k, "INFINITIVE", "PRESENT", subject=subj,
+                                     subject_person=person, modal_tok=t))
+                consumed.update({k, v})
+                k = v + 1
+                continue
             if v is not None and person in {"1", "3"} and "INF" in _feats(toks[v]) and "PP" not in _feats(toks[v]):
                 # "Paul (ne) vient (pas) lancer P": venir + infinitive has no construction here;
                 # the infinitive is content of that unrecognised governor, never an injunction
@@ -2065,7 +2073,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     counter = 0
 
     for ci, clause in enumerate(clauses):
-        drafts = _build_drafts(clause.toks)
+        drafts = _build_drafts(clause.toks, interrogative)
         if clause.unresolved_governor is not None:
             drafts.append(_unresolved_governor_draft(clause.toks, clause.unresolved_governor))
         _share_auxiliary(clauses, ci, drafts)
@@ -2146,7 +2154,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         new_units = []
         for n, (u, d) in enumerate(clause.units):
             prag, epi, realized = u.pragmatic, "NOT_APPLICABLE", None
-            embedded_under = None
+            embedded_under, operator_negated = None, False
             if prag == "NOT_REQUIRED":
                 new_units.append((u, d))
                 continue
@@ -2381,11 +2389,21 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # "Ne peux-tu ni lancer P ni exécuter Q ?": the act of the negated ability
                 # question over its open ni members is not decided either (named)
                 ambiguities.append(f"negated_speech_act_open:{u.id}")
-            if prag == "INDIRECT_REQUEST" and u.polarity == "negative" and _negates_operator(clause.toks, d):
+            head_negated = interrogative and d.head_index != d.lex_index and d.head_index > 0                 and clause.toks[d.head_index - 1].low in {"ne", "n'"}
+            if prag == "INDIRECT_REQUEST" and u.polarity == "negative" and (
+                    _negates_operator(clause.toks, d) or head_negated):
                 # "Ne peux-tu pas lancer P ?", "Tu ne lances pas P ?": the negation bears on
                 # the question / ability operator, not on a requested content: never a
-                # prohibition; which act it is stays open (named), no gate, no constraint
+                # prohibition; which act it is stays open (named), no constraint. H10: the
+                # request reading (do P) remains possible: it keeps the normal gate (below)
                 ambiguities.append(f"negated_speech_act_open:{u.id}")
+                if any(t.low in {"ne", "n'"} for t in clause.toks[d.head_index + 1:d.lex_index]):
+                    # "Tu peux pas ne pas lancer P ?": the content is negated too; its request
+                    # reading would be "do not launch P" (not represented): open, no gate,
+                    # never a prohibition (H10 option A)
+                    ambiguities.append(f"negated_scope_open:{u.id}")
+                else:
+                    operator_negated = True
             elif prag in {"REQUESTED", "FORBIDDEN", "INDIRECT_REQUEST"} and u.polarity == "negative":
                 prag = "FORBIDDEN"
             elif prag == "FORBIDDEN" and u.polarity == "positive" and clause.conn not in {"sans", "sans_que"}:
@@ -2402,6 +2420,11 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             role = _role(tmp, d, prag, interrogative)
             agent = _action_agent(tmp, d, prag)
             target = _request_target(tmp, agent, prag, role)
+            if operator_negated and u.predicate_class == "world_action" and (
+                    agent == "ADDRESSEE" or (agent == "IMPERSONAL" and u.modality == "OBLIGATION")):
+                # H10: the negation bears on the question operator; the content of the possible
+                # request is the positive action: ambiguous request, gate kept, never FORBIDDEN
+                role, target = "AMBIGUOUS_REQUEST", "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"
             new_units.append((replace(tmp, action_agent=agent, request_target=target,
                                       role=role), d))
         clause.units = new_units
@@ -3401,6 +3424,11 @@ def _main_pragmatics(u: PredicateUnit, d: _Draft, interrogative: bool,
     if u.modality == "DESIRE":
         if person == "1":
             ambiguities.append(f"desire_or_request:{u.id}")
+        elif interrogative and person == "2":
+            # H09: "Veux-tu / Tu veux lancer P ?": a question about a desire or an invitation
+            # (request): both readings kept, the possible request keeps its gate
+            ambiguities.append(f"desire_or_request:{u.id}")
+            return "INDIRECT_REQUEST", "NOT_APPLICABLE"
         return ("ASKED", "UNKNOWN") if interrogative else ("ASSERTED", "ASSERTED")
     if u.modality == "KNOW_HOW":
         return ("ASKED", "UNKNOWN") if interrogative else ("ASSERTED", "ASSERTED")

@@ -15,7 +15,7 @@ few facts the IR is allowed to use, under explicit fail-closed rules:
 """
 from __future__ import annotations
 
-from app.semantic.lattice.primitives import BOUNDARY, UtteranceFrame
+from app.semantic.lattice.primitives import BOUNDARY, UtteranceFrame, request_content_positive
 
 SCHEMA = "OBSIDIA_UTTERANCE_FRAME_SUMMARY_V0"
 REQUEST_PRAGMATICS = frozenset({"REQUESTED", "INDIRECT_REQUEST", "EMBEDDED"})
@@ -35,7 +35,8 @@ def _compact(u) -> dict:
 
 def governable_summary(frame: UtteranceFrame) -> dict:
     requested = [u for u in frame.units
-                 if u.predicate_class == "world_action" and u.polarity == "positive"
+                 if u.predicate_class == "world_action"
+                 and request_content_positive(frame, u)
                  and u.pragmatic in REQUEST_PRAGMATICS
                  and u.role in {"REQUEST", "AMBIGUOUS_REQUEST"}
                  and u.request_target in {"ADDRESSEE", "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"}]

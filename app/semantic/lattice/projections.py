@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from app.semantic.lattice.primitives import (
+    request_content_positive,
     EMBEDDING_KINDS, PROVENANCE_KINDS, TEMPORAL_KINDS, ConnectionKind,
     PredicateUnit, RelationKind, UtteranceFrame, source_class,
 )
@@ -70,7 +71,7 @@ def _view(frame: UtteranceFrame, u: PredicateUnit, axis: ProjectionAxis) -> dict
         needs = [e for e in frame.evidence_needs if f"{u.predicate}" in e]
         return {"evidence_needs": needs, "world_action_mentioned": u.predicate_class == "world_action"}
     if axis is ProjectionAxis.AUTHORITY:
-        requested = (u.predicate_class == "world_action" and u.polarity == "positive"
+        requested = (u.predicate_class == "world_action" and request_content_positive(frame, u)
                      and u.pragmatic in {"REQUESTED", "INDIRECT_REQUEST"}
                      and u.role in {"REQUEST", "AMBIGUOUS_REQUEST"}
                      and u.request_target in {"ADDRESSEE", "ADDRESSEE_OR_POSSIBLE_ADDRESSEE"})
