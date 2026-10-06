@@ -106,7 +106,7 @@ def run_brody_gms_demo_v0(evidence: CognitiveEvidenceV0, *, confidence: float = 
     return _run_path(
         path="BRODY_GMS_COGNITIVE",
         world=cognitive_evidence_to_world(evidence),
-        domain_id="enterprise",
+        domain_id="meta",
         proposed_action_ref="proposal:brody-gms:respond",
         confidence=confidence,
     )
