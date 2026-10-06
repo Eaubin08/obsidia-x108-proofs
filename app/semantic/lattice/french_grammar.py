@@ -57,7 +57,7 @@ _EN_NEGATORS = {"not", "never", "don't", "doesn't", "didn't", "cannot", "can't",
 _RESTRICTION_ADVERBS = {"only", "seulement", "uniquement"}
 _ADVERBS_SKIPPABLE = {"pas", "jamais", "plus", "rien", "déjà", "deja", "bien",
                       "surtout", "vraiment", "encore", "toujours", "not", "never",
-                      "please", "stp", "svp"}
+                      "please", "stp", "svp", "aussi"}   # aussi: additive adverb, never an object (N6)
 _PREPOSITIONS = {"sur", "dans", "avec", "pour", "à", "a", "en", "par", "vers",
                  "chez", "on", "in", "with", "to", "for", "into", "at", "of",
                  "from"}
@@ -2292,6 +2292,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
 
     for ci, clause in enumerate(clauses):
         drafts = _build_drafts(clause.toks, interrogative)
+        if clause.conn == "rel" and ci > 0 and not clauses[ci - 1].units \
+                and _bare_noun_phrase(clauses[ci - 1].toks):
+            # N6: "Le script qui sert à tester Q sert aussi à arrêter S": after the relative's own
+            # predicate, a second finite verb is the main predicate of the antecedent; its subject
+            # is the antecedent NP, never the relative's object (structural, no nearest NP)
+            ante = " ".join(t.low for t in clauses[ci - 1].toks if t.low not in _DETERMINERS)
+            finite = [d for d in drafts if d.verb_form == "FINITE" and d.head_index > 0]
+            first = min((d.head_index for d in drafts), default=None)   # the relative's own verb
+            for d in finite:
+                if first is not None and d.head_index > first and d.subject is not None \
+                        and d.subject != ante and d.subject_person == "3":
+                    d.subject = ante
         if clause.unresolved_governor is not None:
             drafts.append(_unresolved_governor_draft(clause.toks, clause.unresolved_governor))
         _share_auxiliary(clauses, ci, drafts)
