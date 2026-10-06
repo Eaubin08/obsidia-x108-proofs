@@ -878,7 +878,7 @@ def send_trading_payload(
 
 
 def stream_to_kernel(api_base: str = DEFAULT_API_BASE, once: bool = False):
-    print("[TRADING][START] connector=DOMAIN_SENSOR problem=autonomous_trade_execution route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
+    print(_color("[TRADING][START]", COLORS["TRADING"]) + " connector=DOMAIN_SENSOR problem=autonomous_trade_execution route=API_BRIDGE_ONLY kernel=TRUE_AUTHORITY_3001")
     _api_key = os.environ.get("OBSIDIA_API_KEY", "")
     _headers = {"X-API-Key": _api_key} if _api_key else {}
 
@@ -901,9 +901,9 @@ def stream_to_kernel(api_base: str = DEFAULT_API_BASE, once: bool = False):
                 data = res.json().get("data", res.json())
                 _print_domain_readable_surface("TRADING", data)
             else:
-                print(f"⚠️ [TRADING] API error: {res.status_code} {res.text[:250]}")
+                print(_color("[TRADING][API ERROR]", COLORS["HOLD"]) + f" status={res.status_code} {res.text[:250]}")
         except Exception as e:
-            print(f"❌ [TRADING] Connection error: {e}")
+            print(_color("[TRADING][CONNECTION ERROR]", COLORS["BLOCK"]) + f" {e}")
         return
 
     try:
@@ -945,14 +945,14 @@ def stream_to_kernel(api_base: str = DEFAULT_API_BASE, once: bool = False):
                     data = res.json().get("data", res.json())
                     _print_domain_readable_surface("TRADING", data)
                 else:
-                    print(f"⚠️ [TRADING] API error: {res.status_code} {res.text[:250]}")
+                    print(_color("[TRADING][API ERROR]", COLORS["HOLD"]) + f" status={res.status_code} {res.text[:250]}")
             else:
-                print(f"⏳ Accumulation des données... ({len(history['prices'])}/{MAX_HISTORY})")
+                print(_color("[TRADING][WARMUP]", COLORS["HOLD"]) + f" accumulation={len(history['prices'])}/{MAX_HISTORY}")
 
             time.sleep(2)
 
         except Exception as e:
-            print(f"❌ [TRADING] Error: {e}")
+            print(_color("[TRADING][ERROR]", COLORS["BLOCK"]) + f" {e}")
             time.sleep(5)
 
 
