@@ -396,6 +396,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 APP_OPEN EXECUTE: EAH+human approval+KX108+inventory drift check+PID verify. KX108_ONLY."),
+    "PC_V2_UIA_SET_TEXT_PREPARE": _cap(
+        "PC_V2_UIA_SET_TEXT_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"window_title": "str", "control_name": "str", "target_value": "str"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 UIA SET_TEXT PREPARE: resolve exact Edit control, read pre_value, build PSA. KX108_ONLY."),
+    "PC_V2_UIA_SET_TEXT_EXECUTE": _cap(
+        "PC_V2_UIA_SET_TEXT_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_UIA_SET_TEXT_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 UIA SET_TEXT EXECUTE: TOCTOU identity+pre_value check, set_text, post-read proof_strength=STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

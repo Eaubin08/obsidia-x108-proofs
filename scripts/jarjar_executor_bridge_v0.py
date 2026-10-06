@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS", "UIA_SET_TEXT", "UIA_READ_TEXT"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
@@ -142,9 +142,12 @@ class JarJarWindowsExecutor:
         _ensure_jarjar_import(jarjar_src)
         from jarvis.integrations.win32_driver import Win32Driver
         from jarvis.windows import NativeWindowsBackend
+        from jarvis.structured_ui import StructuredUIBackend
+        from jarvis.integrations.uia_driver import UIADriver
         from jarvis.contracts import ActionRequest
         self._ActionRequest = ActionRequest
         self._backend = NativeWindowsBackend(driver=Win32Driver())
+        self._ui_backend = StructuredUIBackend(driver=UIADriver())
 
     def _req(self, capability: str, **kwargs: str):
         return self._ActionRequest(capability=capability, arguments=dict(kwargs),
@@ -264,6 +267,76 @@ class JarJarWindowsExecutor:
             "capability": "app.open",
         }
 
+
+
+
+    # ── G2-A : UIA control operations ─────────────────────────────────────────
+
+    def list_controls(self, window_title: str) -> dict:
+        """Read-only. List UIA controls for window_title.
+        Returns serializable snapshot via StructuredUIBackend (control.list).
+        NEVER mutates UI state.
+        """
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.list",
+                                arguments={"window_title": window_title},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "CONTROL_LIST_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.list"}
+        data = result.data or {}
+        return {"ok": True,
+                "window": data.get("window", window_title),
+                "controls": data.get("controls", []),
+                "executor": "StructuredUIBackend",
+                "capability": "control.list"}
+
+    def set_text(self, window_title: str, control_name: str, value: str) -> dict:
+        """Write exact value into Edit control identified by window_title + control_name.
+        Physical mutation only. No authorization decisions.
+        """
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.set_text",
+                                arguments={"window_title": window_title,
+                                           "control_name": control_name,
+                                           "value": value},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "SET_TEXT_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.set_text"}
+        return {"ok": True,
+                "window": window_title,
+                "control": control_name,
+                "value": value,
+                "executor": "StructuredUIBackend",
+                "capability": "control.set_text"}
+
+    def read_text(self, window_title: str, control_name: str) -> dict:
+        """Read current text from Edit control. Used for pre-value capture and post-write verification.
+        Read-only; never mutates.
+        """
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.read_text",
+                                arguments={"window_title": window_title,
+                                           "control_name": control_name,
+                                           "control_type": "Edit"},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "READ_TEXT_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.read_text"}
+        data = result.data or {}
+        return {"ok": True,
+                "window": window_title,
+                "control": control_name,
+                "text": data.get("text", ""),
+                "executor": "StructuredUIBackend",
+                "capability": "control.read_text"}
 
 def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":
     return JarJarWindowsExecutor(jarjar_src=jarjar_src)

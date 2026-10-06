@@ -43,7 +43,10 @@ _CAP_WFOCUS_PREPARE = "PC_V2_WINDOW_FOCUS_PREPARE"
 _CAP_WFOCUS_EXECUTE = "PC_V2_WINDOW_FOCUS_EXECUTE"
 _CAP_AOPEN_PREPARE  = "PC_V2_APP_OPEN_PREPARE"
 _CAP_AOPEN_EXECUTE  = "PC_V2_APP_OPEN_EXECUTE"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE)
+OP_UIA_SET_TEXT             = "V2_UIA_SET_TEXT"
+_CAP_UTEXT_PREPARE  = "PC_V2_UIA_SET_TEXT_PREPARE"
+_CAP_UTEXT_EXECUTE  = "PC_V2_UIA_SET_TEXT_EXECUTE"
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -937,6 +940,223 @@ def pc_v2_app_open_execute(
     }
 
 
+# ============================
+# G2-A: UIA set_text governed
+# ============================
+_EDIT_CLASS_NAMES = frozenset({"Edit", "RichEdit20W", "RichEdit20A",
+                               "RichTextBox", "TMemo", "TEdit"})
+
+
+def _find_edit_control(controls, control_name):
+    matches = [c for c in controls
+               if c.get("name") == control_name
+               and c.get("class_name", "") in _EDIT_CLASS_NAMES]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def pc_v2_uia_set_text_prepare(
+        window_title, control_name, target_value,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(window_title, str) or not window_title.strip():
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "WINDOW_TITLE_REQUIRED", session_id)
+    if not isinstance(control_name, str) or not control_name.strip():
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NAME_REQUIRED", session_id)
+    if not isinstance(target_value, str):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "TARGET_VALUE_REQUIRED", session_id)
+    window_title = window_title.strip()
+    control_name = control_name.strip()
+    st = _stores(stores_base_dir)
+    ctrl_list = executor.list_controls(window_title)
+    if not ctrl_list.get("ok"):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE,
+                         "WINDOW_NOT_FOUND:" + str(ctrl_list.get("error", "")), session_id)
+    controls = ctrl_list.get("controls", [])
+    ctrl = _find_edit_control(controls, control_name)
+    if ctrl is None:
+        multi = [c for c in controls if c.get("name") == control_name]
+        if len(multi) > 1:
+            return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_AMBIGUOUS", session_id)
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NOT_FOUND", session_id)
+    if not ctrl.get("enabled", False):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_DISABLED", session_id)
+    if not ctrl.get("visible", False):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE, "CONTROL_NOT_VISIBLE", session_id)
+    pre_read = executor.read_text(window_title, control_name)
+    if not pre_read.get("ok"):
+        return _prep_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_PREPARE,
+                         "PRE_VALUE_READ_FAILED:" + str(pre_read.get("error", "")), session_id)
+    pre_value     = pre_read.get("text", "")
+    class_name    = ctrl.get("class_name", "")
+    automation_id = ctrl.get("automation_id", "")
+    bounds        = ctrl.get("bounds", {})
+    _psa_snapshot = {
+        "anchor_schema": "UIA_SET_TEXT_PRE_STATE_V0",
+        "window_title": window_title,
+        "control_name": control_name,
+        "class_name": class_name,
+        "automation_id": automation_id,
+        "bounds": bounds,
+        "enabled": ctrl.get("enabled", False),
+        "visible": ctrl.get("visible", False),
+        "pre_value": pre_value,
+        "target_value": target_value,
+    }
+    physical_state_anchor = _sha256(
+        json.dumps(_psa_snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    )
+    desc = {
+        "window_title": window_title,
+        "control_name": control_name,
+        "class_name": class_name,
+        "automation_id": automation_id,
+        "bounds": bounds,
+        "target_value": target_value,
+        "pre_value": pre_value,
+        "session_id": session_id,
+        "operation_type": OP_UIA_SET_TEXT,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah   = _eah(OP_UIA_SET_TEXT, desc)
+    child = _v2id("chd", eah + window_title + control_name + target_value)
+    v2id  = _v2id("v2x", eah + session_id + "UIA_SET_TEXT")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_UIA_SET_TEXT, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_UIA_SET_TEXT, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "window_title": window_title,
+        "control_name": control_name,
+        "class_name": class_name,
+        "automation_id": automation_id,
+        "target_value": target_value,
+        "pre_value": pre_value,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_UTEXT_PREPARE, OP_UIA_SET_TEXT,
+                         PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                         execution_authority_hash=eah,
+                         window_title=window_title, control_name=control_name,
+                         class_name=class_name, automation_id=automation_id,
+                         target_value=target_value, pre_value=pre_value,
+                         physical_state_anchor=physical_state_anchor),
+    }
+
+
+def pc_v2_uia_set_text_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    if not desc or desc.get("eah") != exp_eah:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d             = desc["descriptor"]
+    window_title  = d["window_title"]
+    control_name  = d["control_name"]
+    target_value  = d["target_value"]
+    stored_psa    = d.get("physical_state_anchor", "")
+    stored_aid    = d.get("automation_id", "")
+    stored_cls    = d.get("class_name", "")
+    stored_pre    = d.get("pre_value", "")
+    ctrl_list = executor.list_controls(window_title)
+    if not ctrl_list.get("ok"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "WINDOW_NOT_FOUND:" + str(ctrl_list.get("error", "")), session_id)
+    cur_ctrl = _find_edit_control(ctrl_list.get("controls", []), control_name)
+    if cur_ctrl is None:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "CONTROL_NOT_FOUND", session_id)
+    cur_aid = cur_ctrl.get("automation_id", "")
+    if stored_aid and cur_aid and stored_aid != cur_aid:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "CONTROL_IDENTITY_DRIFTED:automation_id_changed", session_id)
+    if stored_cls and cur_ctrl.get("class_name", "") != stored_cls:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "CONTROL_IDENTITY_DRIFTED:class_name_changed", session_id)
+    cur_pre = executor.read_text(window_title, control_name)
+    if not cur_pre.get("ok"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "PRE_VALUE_READ_FAILED:" + str(cur_pre.get("error", "")), session_id)
+    if cur_pre.get("text", "") != stored_pre:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "PRE_VALUE_DRIFTED", session_id)
+    cand_seed = window_title + control_name + target_value
+    apr    = _approval(v2id, child, exp_eah, cand_seed)
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    scope_id = "UIA_CONTROL:" + window_title + ":" + control_name
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_UIA_SET_TEXT,
+                    kxpre=st["kxpre"],
+                    physical_state_anchor=stored_psa,
+                    state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "KX108_PRE_GATE:" + gate, session_id)
+    ex = executor.set_text(window_title, control_name, target_value)
+    if not ex.get("ok"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
+    post_read = executor.read_text(window_title, control_name)
+    if not post_read.get("ok"):
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "POST_VALUE_READ_FAILED:" + str(post_read.get("error", "")), session_id)
+    post_value = post_read.get("text", "")
+    if post_value != target_value:
+        return _exec_rej(OP_UIA_SET_TEXT, _CAP_UTEXT_EXECUTE,
+                         "REALIZED_STATE_MISMATCH:post_value_differs", session_id)
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_UIA_SET_TEXT,
+        "jarvis_authority": JARVIS_AUTHORITY, "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "window_title": window_title, "control_name": control_name,
+        "target_value": target_value, "pre_value": stored_pre, "post_value": post_value,
+        "proof_strength": "STRONG", "realized_state_verified": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "executor_capability": "control.set_text",
+        "receipt": _rcpt(_CAP_UTEXT_EXECUTE, OP_UIA_SET_TEXT, EXECUTED_OK, session_id,
+                         kx108_pre_gate=gate,
+                         window_title=window_title, control_name=control_name,
+                         target_value=target_value, pre_value=stored_pre,
+                         post_value=post_value, proof_strength="STRONG",
+                         realized_state_verified=True,
+                         executor_provider=executor.EXECUTOR_PROVIDER,
+                         executor_backend=executor.EXECUTOR_BACKEND,
+                         executor_capability="control.set_text"),
+    }
+
+
+
+
 
 # ============================
 # Dispatcher + self-check
@@ -955,6 +1175,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_WFOCUS_EXECUTE: pc_v2_window_focus_execute,
         _CAP_AOPEN_PREPARE:  pc_v2_app_open_prepare,
         _CAP_AOPEN_EXECUTE:  pc_v2_app_open_execute,
+        _CAP_UTEXT_PREPARE:  pc_v2_uia_set_text_prepare,
+        _CAP_UTEXT_EXECUTE:  pc_v2_uia_set_text_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -976,7 +1198,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_UIA_SET_TEXT],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,
