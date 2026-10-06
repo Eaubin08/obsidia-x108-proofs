@@ -137,6 +137,7 @@ class _Clause:
     shared_aux_host: "_Clause | None" = None  # clause whose auxiliary a bare participle shares
     modal: object = None  # its last modal+infinitive draft (OBLIGATION), shared by bare infinitives
     shared_modal_host: "_Clause | None" = None  # clause whose modal a bare infinitive shares
+    prep_member_of: str | None = None   # F-B3G-1: unit id of the prep-governed member it coordinates with
     ni_modal: object = None  # obligation modal of "ne doit ni INF1 ni INF2" (token, then its draft)
     ni_scope_open: object = None  # "vouloir" token of a "ne ... ni INF" whose negated scope is not shared
     neg_scope_open: object = None  # negated operator chain draft whose scope over a bare coordinated INF is open
@@ -878,6 +879,33 @@ def _share_auxiliary(clauses: list[_Clause], ci: int, drafts: list) -> None:
             d0.governed = gov_prev.governed
             clause.share_family = family
             return
+        # F-B3G-1: "Le script sert à tester Q et à lancer R", "Paul a oublié de tester Q et de
+        # lancer R": a member repeating the same preposition continues the SAME prep-governed
+        # chain (same governor, same negation, same open status); never a root injunction.
+        # A bare member ("sert à tester Q et lancer R") is not licensed to share: its attachment
+        # stays open and named, its possible request exposed fail-closed (no proximity sharing).
+        prep_of = lambda c, d: c.toks[d.lex_index - 1].low if 0 < d.lex_index <= len(c.toks) else None
+        family_of = {"à": "à", "a": "à", "de": "de", "d'": "de"}
+        if gov_prev is not None and gov_prev.governed in {"prep", "unknown_governor"} \
+                and gov_prev.verb_form == "INFINITIVE" and family_of.get(prep_of(prev, gov_prev)) \
+                and same_family and (linked or disjoined or sequenced) \
+                and (prev.conn not in _NO_CHAIN_SHARE or prev.conn == "rel") \
+                and d0.verb_form in {"INFINITIVE", "IMPERATIVE"} and d0.modality is None and d0.subject is None:
+            lead = [t.low for t in clause.toks[:d0.lex_index]]
+            if lead and family_of.get(lead[-1]) == family_of[prep_of(prev, gov_prev)] \
+                    and all(x in _MEMBER_NEGATORS for x in lead[:-1]) and "INF" in _feats(d0.lex):
+                # (a repeated preposition cannot open a main clause: also after a relative)
+                d0.verb_form, d0.tense = "INFINITIVE", "NONE"
+                d0.governed, d0.governor_unit = gov_prev.governed, gov_prev.governor_unit
+                d0.governor_negated, d0.governor_span = gov_prev.governor_negated, gov_prev.governor_span
+                clause.prep_member_of = prev.units[-1][0].id     # coordinated with that member
+                clause.share_family = family
+                return
+            if prev.conn not in _NO_CHAIN_SHARE and _bare_infinitive(clause, d0) and "INF" in _feats(d0.lex):
+                clause.attachment_ambiguous = True
+                d0.possible_request = True
+                clause.share_family = family
+                return
         # "Paul sait lancer P et exécuter Q": KNOW_HOW sharing is not decided; the bare
         # infinitive stays open under that exact savoir unit (know_how_scope_open)
         open_host = prev.know_how_open
@@ -2518,7 +2546,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     relations.append(LatticeRelation(RelationKind.EMBEDS.value, gov.id, u.id,
                                                      evidence="modal+inf"))
             elif d.governed == "prep":
-                gov = next((x for (x, _) in new_units + clause.units if x.id == d.governor_unit), None)
+                # (F-B3G-1: a coordinated member's governor may live in an earlier clause)
+                gov = next((x for c2 in clauses for (x, _) in (new_units if c2 is clause else c2.units)
+                            if x.id == d.governor_unit), None) if d.governor_unit is not None else None
                 if gov is not None and gov.predicate in {"FORGET", "HESITATE"} and d.governor_negated:
                     # "n'oublie pas de lancer", "n'hésite pas à lancer": reminder / invitation
                     prag, epi = "REQUESTED", "NOT_APPLICABLE"
@@ -2634,7 +2664,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         # host of a following "puis" / "mais": only main clauses do. A clause of
         # ambiguous attachment is not known to be one.
         if clause.conn not in {"que", "rel", "comparative", "sans", "sans_que", "si",
-                               "avant_que", "a_moins_que", "apres_que", "pour_que", "quand", "wh", "car"} and clause.units                 and not clause.attachment_ambiguous:
+                               "avant_que", "a_moins_que", "apres_que", "pour_que", "quand", "wh", "car"} and clause.units                 and not clause.attachment_ambiguous and clause.prep_member_of is None:
             main_heads.append((ci, clause.units[0][0]))
 
     for group in complement_alternatives:
@@ -2952,6 +2982,12 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             else:
                 ambiguities.append(f"exception_condition_open:{h.id}"
                                    + (f":host={','.join(u.id for u in hosts)}" if hosts else ""))
+        elif clause.prep_member_of is not None:
+            # F-B3G-1: a member of one prep-governed chain coordinates with its sibling member
+            # (never with the governor, never a main-clause relation)
+            kind = {"et": RelationKind.COORDINATES, "ou": RelationKind.ALTERNATIVE,
+                    "puis": RelationKind.PRECEDES, "mais": RelationKind.CONTRASTS}.get(conn, RelationKind.COORDINATES)
+            relations.append(LatticeRelation(kind.value, clause.prep_member_of, h.id, evidence=conn or ","))
         elif prev_main is not None and not clause.attachment_ambiguous and conn in {
                 "mais", "puis", "et", "ou", "donc", "car", "avant_de", "apres", "alors"}:
             kind, src, tgt = {
