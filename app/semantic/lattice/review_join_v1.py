@@ -9,8 +9,10 @@ perspective and its provenance:
 
   occurrence    -- the sourced OccurrenceClaim and its derivation rule
   epistemic     -- one reading per V0 epistemic contribution (flow or relation)
-  temporal      -- linguistic tense and BEFORE order of the temporal projection
+  temporal      -- linguistic tense and BEFORE order of the temporal projection, and the
+                   parser's TEMPORAL_ANCHOR / OVERLAPS relations (no order, condition or cause)
   causal        -- CAUSES / CONDITIONS / PREVENTS flows and their claim level
+  exception     -- the parser's EXCEPTS(exception, host) relations (H17; never causal)
   coordination  -- CoordinationRef membership (kind, construction, co-members)
   operator      -- OperatorScopeRef over a coordination the event belongs to
   contradiction -- frame contradictions naming the event
@@ -30,11 +32,11 @@ from typing import Any, Mapping
 
 from app.semantic.lattice.event_index import EventIndex, build_frame_event_index
 from app.semantic.lattice.language_flow_projection import project_causal_flows, project_temporal_flows
-from app.semantic.lattice.primitives import UtteranceFrame
+from app.semantic.lattice.primitives import RelationKind, UtteranceFrame
 from app.semantic.lattice.review_join import ReviewEnvelope, build_review_envelope
 
 REVIEW_JOIN_V1_VERSION = "review_join_v1"
-READING_DIMENSIONS = ("occurrence", "epistemic", "temporal", "causal", "coordination", "operator",
+READING_DIMENSIONS = ("occurrence", "epistemic", "temporal", "causal", "exception", "coordination", "operator",
                       "contradiction", "ambiguity", "reference")
 
 
@@ -106,6 +108,19 @@ def build_review_join_v1(frame: UtteranceFrame, center_event: str,
                     {"source": "causal_projection", "claim_level": flow.metadata.get("claim_level"),
                      "validated_proof": flow.metadata.get("validated_proof"),
                      "coordination": flow.metadata.get("coordination_members")})
+    # D6: relations the flow projections do not carry are read from the frame itself, each in
+    # its own native vocabulary: H05 TEMPORAL_ANCHOR / OVERLAPS (temporal) and H17 EXCEPTS
+    # (exception: never causal, never a condition)
+    for r in frame.relations:
+        dimension = {RelationKind.TEMPORAL_ANCHOR.value: "temporal", RelationKind.OVERLAPS.value: "temporal",
+                     RelationKind.EXCEPTS.value: "exception"}.get(r.kind)
+        if dimension is None:
+            continue
+        for end, role, other in ((r.source, "source", r.target), (r.target, "target", r.source)):
+            for m in frame.relation_members(end):
+                if m in members:
+                    add(m, dimension, f"{r.kind}:{role}", other,
+                        {"source": "parser", "relation_kind": r.kind, "evidence": r.evidence})
     for c in frame.coordinations:
         for m in c.members:
             if m in members:
