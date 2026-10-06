@@ -31,7 +31,7 @@ def test_unanalysed_clause_of_a_sequence_is_reported(text, link):
 
 
 @pytest.mark.parametrize("text", [
-    "Merci Paul.", "Le test rouge.", "Paul frobnique le test.",   # standalone: unchanged (M8-0b)
+    "Merci Paul.", "Le test rouge.",                              # standalone verbless: unchanged (M8-0b)
     "Merci Paul, lance P.", "Bonjour Marie, lance P.",           # interjection before a clause
     "Selon Marie, Paul a lancé P.",                               # detached source marker
     "Lance le test et le build.", "Lance P et Q.",               # NP coordination
@@ -39,6 +39,13 @@ def test_unanalysed_clause_of_a_sequence_is_reported(text, link):
 ])
 def test_no_new_missing_outside_sequences(text):
     assert parse_utterance(text).missing == ()
+
+
+def test_standalone_unknown_verb_with_argument_is_reported():
+    # D8 (requalified, formerly frozen with no reported content): an utterance whose only
+    # predication has an unknown verb introducing an argument is never a zero representation
+    f = parse_utterance("Paul frobnique le test.")
+    assert f.missing == ("unanalyzed_predicative_content:0-22:root",) and not f.closure
 
 
 def test_detached_source_keeps_its_marker():
