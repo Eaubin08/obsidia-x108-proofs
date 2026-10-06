@@ -63,17 +63,17 @@ Observed:
 
 ## Native X108 Periphery CI — baseline-equivalent
 
-F2.5 branch run:
-- run: 37524473637
-- job: 112477856271
-- result: `11 failed, 12450 passed, 46 skipped, 207 deselected`.
+Security-hardened F2.5 branch run:
+- run: 37526855143
+- job: 112485940506
+- result: `11 failed, 12451 passed, 46 skipped, 207 deselected`.
 
 Current-main baseline run used for comparison:
 - run: 37508621493
 - job: 112423614411
 - result: `11 failed, 12443 passed, 46 skipped, 207 deselected`.
 
-The 11 failures are the same baseline failures in both runs:
+The 11 failures are the same baseline failures in both runs; no F2.5 test fails:
 - Brody/memory/Graphiti API route-registration audit;
 - Sigma/bus route audit;
 - two Lean tests missing `lake` in CI;
@@ -81,10 +81,10 @@ The 11 failures are the same baseline failures in both runs:
 - branching-ledger identity expectation;
 - git-worktree test missing CI git author identity.
 
-F2.5 adds seven integration tests; the pass count increases by exactly seven:
+F2.5 adds eight focused integration tests, including forged-envelope rejection; the pass count increases by exactly eight:
 
 ```text
-12450 - 12443 = 7
+12451 - 12443 = 8
 ```
 
 No new failing test is introduced by the resolver seam.
