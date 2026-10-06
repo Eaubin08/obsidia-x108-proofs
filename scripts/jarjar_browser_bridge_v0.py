@@ -69,6 +69,32 @@ class JarJarBrowserExecutor:
             "executor":           self.EXECUTOR_BACKEND,
         }
 
+    def inspect_link(self, selector: str) -> dict:
+        """Inspect one candidate link. No activation, no generic click."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_element", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_LINK_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def activate_link(self, link_identity: dict) -> dict:
+        """Activate an approved link identity. This is not click(selector)."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.activate_link", dict(link_identity or {})))
+        if not result.ok:
+            return {"ok": False, "error": "ACTIVATE_LINK_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest

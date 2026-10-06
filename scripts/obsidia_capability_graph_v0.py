@@ -489,6 +489,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 BROWSER READ EXECUTE: TOCTOU page_id drift check, read_page(), selector count=1 guard. text_sha256 in receipt. STRONG. KX108_ONLY."),
+    "PC_V2_BROWSER_ACTIVATE_LINK_PREPARE": _cap(
+        "PC_V2_BROWSER_ACTIVATE_LINK_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"selector": "str", "navigation_policy": "STRICT_EXACT_URL"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 BROWSER ACTIVATE_LINK PREPARE: inspect exact main-frame link, bind href+identity+PSA. No generic click. KX108_ONLY."),
+    "PC_V2_BROWSER_ACTIVATE_LINK_EXECUTE": _cap(
+        "PC_V2_BROWSER_ACTIVATE_LINK_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_BROWSER_ACTIVATE_LINK_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 BROWSER ACTIVATE_LINK EXECUTE: TOCTOU identity drift check, fail closed on popup/new page/download, independent final URL proof. STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())
