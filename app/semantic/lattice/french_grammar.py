@@ -540,7 +540,7 @@ def _lost_verb_evidence(clause: "_Clause") -> list[tuple[int, int]]:
 
 # connectives whose clause is always expected to carry a predication: a copula +
 # attribute there is reported, never dropped ("Lance P si c'est prêt")
-_COPULA_REPORTED_CONNS = {"si", "que", "apres_que", "avant_que", "a_moins_que"}
+_COPULA_REPORTED_CONNS = {"si", "que", "apres_que", "avant_que", "a_moins_que", "wh"}  # wh: D2
 
 
 def _copula_evidence(clause: "_Clause") -> list[tuple[int, int]]:
@@ -1241,6 +1241,20 @@ def _segment(toks: list[_Tok]) -> tuple[list[_Clause], bool]:
             open_clause(None, [])
             i += 1
             continue
+        # D2: "Paul sait si P" / "savoir si P": an interrogative complement of savoir (H13
+        # channel: EMBEDS interrogative_complement), never a conditional protasis
+        if low == "si" and i > 0:
+            g = i - 1
+            while g >= 0 and (toks[g].low in _FR_NEGATORS
+                              or (toks[g].hyphen_before and toks[g].low in _SUBJECT_PRONOUNS)):
+                g -= 1  # "Sais-tu si P ?": the inverted pronoun belongs to savoir
+            end = next((j for j in range(i + 1, len(toks)) if toks[j].is_punct), len(toks))
+            if g >= 0 and _is_verb(toks, g) and _pred(toks[g]) == "KNOW" \
+                    and any(_is_verb(toks, j) for j in range(i + 1, end)):
+                open_clause("wh", [t])
+                cur().wh_governor = toks[g]
+                i += 1
+                continue
 
         if t.is_punct:
             if low == "?":
