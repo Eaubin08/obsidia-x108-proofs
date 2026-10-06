@@ -62,7 +62,8 @@ def test_h06_unresolved_subject_pronoun_is_never_compared(text):
 
 
 _TEXTS = ["Lance P et ne lance pas P.", "Marie dit que Paul a lancé P.", "Paul lance P donc Nadia lance Q.",
-          "Peux-tu lancer P et exécuter Q ?", "Lance-le."]
+          "Peux-tu lancer P et exécuter Q ?", "Lance-le.",
+          "Lance R sauf si Paul lance P."]   # D6: the exception dimension (H17 EXCEPTS)
 
 
 def test_h08_native_status_per_dimension_no_truth_no_winner():
