@@ -8,7 +8,9 @@ before the object, and, with no positive manner carrier yet, the manner span is 
 OPEN. Participant cues ("tout seul" with an explicit singular subject, "ensemble" with a
 plural one) left this fallback for ParticipantConfigurationRef (test_participant_
 configuration_v0); a bare "seul" stays here. "maintenant" is deixis and untouched; "tout" objects (N6) and quantified objects
-(N3) are unchanged. No request, prohibition, authority or event is added.
+(N3) are unchanged. No request, prohibition, authority or event is added. Typed modifiers
+("vite / rapidement / lentement": RATE, "manuellement": EXECUTION_MODE) left this fallback
+for MannerRef (test_manner_ref); the open cases here use modifiers that stay untyped.
 """
 from __future__ import annotations
 
@@ -34,11 +36,11 @@ def _claims(text):
 
 @pytest.mark.parametrize("text,objs,mod,ref", [
     ("Paul lance P seul.", ("p",), "seul", "Paul lance P."),
-    ("Paul lance P vite.", ("p",), "vite", "Paul lance P."),
+    ("Paul lance P indirectement.", ("p",), "indirectement", "Paul lance P."),
     ("Paul lance P automatiquement.", ("p",), "automatiquement", "Paul lance P."),
-    ("Lance vite P.", ("p",), "vite", "Lance P."),
+    ("Lance directement P.", ("p",), "directement", "Lance P."),
     ("Lance P directement.", ("p",), "directement", "Lance P."),
-    ("Lance P et Q vite.", ("p", "q"), "vite", "Lance P et Q."),
+    ("Lance P et Q automatiquement.", ("p", "q"), "automatiquement", "Lance P et Q."),
 ])
 def test_n7_object_kept_modifier_reported_frame_open(text, objs, mod, ref):
     f, r = parse_utterance(text), parse_utterance(ref)
@@ -52,8 +54,8 @@ def test_n7_object_kept_modifier_reported_frame_open(text, objs, mod, ref):
 
 
 def test_n7_modifier_attached_to_its_own_predication():
-    f = parse_utterance("Paul lance P vite et Nadia lance Q.")
-    assert _mods(f) == [("vite", "u1")] and len(f.units) == 2
+    f = parse_utterance("Paul lance P directement et Nadia lance Q.")
+    assert _mods(f) == [("directement", "u1")] and len(f.units) == 2
 
 
 @pytest.mark.parametrize("text,objs", [

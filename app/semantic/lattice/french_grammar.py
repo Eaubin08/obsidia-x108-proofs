@@ -24,7 +24,7 @@ from dataclasses import dataclass, field, replace
 
 from app.semantic.lattice.lexicon import fold, has_imperative_paradigm, lookup, predicate_of
 from app.semantic.lattice.primitives import (
-    Argument, CoordinationRef, LatticeRelation, ObliqueArgumentRef, OperatorScopeRef, ParticipantConfigurationRef,
+    Argument, CoordinationRef, LatticeRelation, MannerRef, ObliqueArgumentRef, OperatorScopeRef, ParticipantConfigurationRef,
     PredicateUnit, RelationKind,
     UtteranceFrame,
 )
@@ -68,7 +68,8 @@ _DEIXIS = {"ici", "là", "maintenant", "immédiatement", "immediatement", "aujou
 _TIME_ADVERBS = _DEIXIS | {"dehors", "ensuite", "après", "apres", "avant", "tard", "tôt"}
 # Manner adverbs that must never be read as a bare (determiner-less) object.
 _MANNER_ADVERBS = {"tout", "seul", "seule", "seuls", "vite", "ensemble", "automatiquement",
-                   "directement", "immédiatement", "immediatement", "maintenant"}
+                   "directement", "immédiatement", "immediatement", "maintenant",
+                   "rapidement", "lentement", "manuellement", "indirectement"}
 _INTERJECTIONS = {"please", "stp", "svp", "merci", "ok", "okay", "bon", "bonjour",
                   "salut", "hey", "hello", "hi", "oui", "non", "yes", "no"}
 _WH_WORDS = {"comment", "pourquoi", "quand", "où", "quoi", "combien", "how", "what",
@@ -1013,7 +1014,11 @@ _PARTITIVE_QUANTIFIERS = {"chacun", "chacune", "un", "une"}  # + de / des / du N
 # D5-N7: manner words reported when found around a unit's arguments ("maintenant" and
 # "immédiatement" are temporal cues, N12-T)
 _MANNER_MARKED = {"seul", "seule", "seuls", "seules", "vite", "ensemble", "automatiquement",
-                  "directement"}
+                  "directement", "rapidement", "lentement", "manuellement", "indirectement"}
+# MannerRef: only modifiers whose kind is fixed by the word itself. "automatiquement"
+# (automated / systematically / by reflex), "directement", "indirectement" stay reported
+_TYPED_MANNER = {"vite": ("RATE", "FAST"), "rapidement": ("RATE", "FAST"),
+                 "lentement": ("RATE", "SLOW"), "manuellement": ("EXECUTION_MODE", "MANUAL")}
 # prepositions kept out of _PREPOSITIONS (subordinator / governor roles elsewhere) that still
 # end an object and open conservable prepositional content ("p via ssh", "p depuis")
 _OBJECT_BOUNDARY_PREPOSITIONS = {"via", "depuis"}
@@ -2482,6 +2487,8 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     operator_scopes: list[OperatorScopeRef] = []
     participant_configurations: list[ParticipantConfigurationRef] = []
     oblique_arguments: list[ObliqueArgumentRef] = []
+    manner_modifiers: list[MannerRef] = []
+    negated_manner: set[str] = set()
 
     def _configure(unit: str, kind: str, cue: str, span: tuple[int, int], group: str | None = None) -> None:
         participant_configurations.append(ParticipantConfigurationRef(
@@ -2918,8 +2925,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                     # mean "only P" and stays reported (never restriction=ONLY, never forced)
                     _configure(u.id, "SOLO", cue, span)
                 else:
+                    if cue in _TYPED_MANNER:
+                        kind, value = _TYPED_MANNER[cue]
+                        manner_modifiers.append(MannerRef(f"m{len(manner_modifiers) + 1}", u.id, kind,
+                                                          value, cue, span))
+                    else:
                         missing.append(f"{UNANALYZED_PREDICATIVE_CONTENT}:{t.start}-{clause.toks[end].end}"
-                                   f":unrepresented_modifier_of={u.id}")
+                                       f":unrepresented_modifier_of={u.id}")
+                    if u.polarity == "negative" and u.id not in negated_manner:
+                        # "ne lance pas vite P": the negation may bear on the modifier (P is
+                        # launched, not fast) or on the predicate: named, never chosen, and
+                        # never a confirmed no-execute nor a prohibition (as D5-N6 below)
+                        ambiguities.append(f"negated_scope_open:{u.id}")
+                        negated_manner.add(u.id)
                 k = end + 1
 
     # D5-N3 / S11 conservation: material left right after a unit's objects (or after its verb
@@ -3058,6 +3076,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             ambiguities.append(f"negated_scope_open:{u.id}")
             not_all.add(u.id)
             final_units[i] = replace(u, negation_confirmed=False)
+        elif u.id in negated_manner:
+            not_all.add(u.id)
+            final_units[i] = replace(u, negation_confirmed=False)
 
     # SERVE_FOR covers "servir à + INF" only. Another sense ("sert le repas", "sert de preuve")
     # is reported, never closed as a functional purpose; a dative clitic ("te sert à") has no
@@ -3139,6 +3160,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         operator_scopes=tuple(operator_scopes),
         participant_configurations=tuple(participant_configurations),
         oblique_arguments=tuple(oblique_arguments),
+        manner_modifiers=tuple(manner_modifiers),
     )
     held = _unresolved_profile_complements(frame)
     return replace(frame, ambiguities=frame.ambiguities + held) if held else frame

@@ -49,7 +49,7 @@ def test_n12t_maintenant_same_carrier_distinct_cue():
     assert a.deixis == ("maintenant",) and b.deixis == ("immédiatement",) and a.closure and b.closure
 
 
-@pytest.mark.parametrize("text,mod", [("Paul lance P directement.", "directement"), ("Paul lance P vite.", "vite"),
+@pytest.mark.parametrize("text,mod", [("Paul lance P directement.", "directement"), ("Paul lance P indirectement.", "indirectement"),
                                       ("Paul lance P automatiquement.", "automatiquement")])
 def test_n12t_other_n7_modifiers_stay_provisional_open(text, mod):
     f = parse_utterance(text)

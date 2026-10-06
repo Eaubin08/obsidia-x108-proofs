@@ -256,6 +256,28 @@ class ParticipantConfigurationRef:
 
 
 @dataclass(frozen=True)
+class MannerRef:
+    """A typed adverbial modifier of ONE predication ("Paul lance vite le test", "Paul lance
+    le test manuellement").
+
+    Only kinds whose meaning is fixed by the word itself: RATE ("vite / rapidement": FAST,
+    "lentement": SLOW; speed in the sense "en peu de temps", which does not fix whether it
+    bears on the duration or on the latency of the realization: never a deadline nor a
+    temporal anchor) and EXECUTION_MODE ("manuellement": MANUAL, by hand, without
+    automation). Modifiers with several readings ("automatiquement": automated mechanism /
+    systematically / by reflex; "directement", "indirectement") are not typed: they stay
+    reported (unrepresented_modifier_of), frame open. Descriptive only: not an event, no
+    occurrence, no request, no permission, no authority.
+    """
+    id: str
+    unit: str                       # the PredicateUnit it modifies
+    kind: str                       # "RATE" | "EXECUTION_MODE"
+    value: str                      # RATE: "FAST" | "SLOW"; EXECUTION_MODE: "MANUAL"
+    cue: str                        # surface cue ("vite", "lentement", "manuellement")
+    span: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True)
 class ObliqueArgumentRef:
     """A prepositional (oblique) argument of ONE predication ("Explique Obsidia en utilisant
     ta mémoire", "Lance P sur le serveur").
@@ -297,6 +319,7 @@ class UtteranceFrame:
     operator_scopes: tuple[OperatorScopeRef, ...] = ()
     participant_configurations: tuple[ParticipantConfigurationRef, ...] = ()
     oblique_arguments: tuple[ObliqueArgumentRef, ...] = ()
+    manner_modifiers: tuple[MannerRef, ...] = ()
 
     def coordination(self, ref: str | None) -> CoordinationRef | None:
         return next((c for c in self.coordinations if c.id == ref), None)
