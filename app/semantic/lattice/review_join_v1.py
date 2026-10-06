@@ -13,7 +13,9 @@ perspective and its provenance:
                    parser's TEMPORAL_ANCHOR / OVERLAPS relations (no order, condition or cause)
   causal        -- CAUSES / CONDITIONS / PREVENTS flows and their claim level
   exception     -- the parser's EXCEPTS(exception, host) relations (H17; never causal)
-  coordination  -- CoordinationRef membership (kind, construction, co-members)
+  purpose       -- EMBEDS(host -> purpose) whose content has role PURPOSE (D7; never causal)
+  coordination  -- CoordinationRef membership (kind, construction, co-members); an argument
+                   coordination (coordinated subject / object) is read on its host unit
   operator      -- OperatorScopeRef over a coordination the event belongs to
   contradiction -- frame contradictions naming the event
   ambiguity     -- parser ambiguity markers naming the event
@@ -36,8 +38,8 @@ from app.semantic.lattice.primitives import RelationKind, UtteranceFrame
 from app.semantic.lattice.review_join import ReviewEnvelope, build_review_envelope
 
 REVIEW_JOIN_V1_VERSION = "review_join_v1"
-READING_DIMENSIONS = ("occurrence", "epistemic", "temporal", "causal", "exception", "coordination", "operator",
-                      "contradiction", "ambiguity", "reference")
+READING_DIMENSIONS = ("occurrence", "epistemic", "temporal", "causal", "exception", "purpose", "coordination",
+                      "operator", "contradiction", "ambiguity", "reference")
 
 
 @dataclass(frozen=True)
@@ -121,7 +123,24 @@ def build_review_join_v1(frame: UtteranceFrame, center_event: str,
                 if m in members:
                     add(m, dimension, f"{r.kind}:{role}", other,
                         {"source": "parser", "relation_kind": r.kind, "evidence": r.evidence})
+    # D7: a purpose embedded under its host (role PURPOSE): read on both ends, never causal
+    roles = {u.id: u.role for u in frame.units}
+    for r in frame.relations:
+        if r.kind != RelationKind.EMBEDS.value or roles.get(r.target) != "PURPOSE":
+            continue
+        for end, role, other in ((r.source, "host", r.target), (r.target, "purpose", r.source)):
+            if end in members:
+                add(end, "purpose", f"PURPOSE:{role}", other,
+                    {"source": "parser", "relation_kind": r.kind, "evidence": r.evidence})
     for c in frame.coordinations:
+        if c.member_kind == "argument":
+            # "Paul et Nadia lancent P ou Q": an argument coordination is read on its host unit
+            # (kind, construction, role and member texts kept; never fused into one argument)
+            if c.host in members:
+                add(c.host, "coordination", f"{c.kind}:{c.construction}", c.id,
+                    {"source": "parser", "role": c.role, "members": list(c.members),
+                     "member_texts": list(c.member_texts)})
+            continue
         for m in c.members:
             if m in members:
                 add(m, "coordination", f"{c.kind}:{c.construction}", c.id,
