@@ -1197,41 +1197,41 @@ def _uia_pre_state_checked(identity: dict, toggle_state: int, enabled: bool):
     return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
 
 
-def _find_checkbox_control(controls: list, control_name: str):
-    matches = [c for c in controls
-               if c.get("name") == control_name
-               and c.get("identity", {}).get("control_type") == "CheckBox"]
-    if len(matches) == 1:
-        return matches[0]
-    return None
+_UIA_CHECKBOX_PATTERN = "toggle"
 
 
 def pc_v2_uia_set_checked_prepare(
-        window_title, control_name, target_checked,
+        window_hwnd, target_identity, target_checked,
         *, stores_base_dir, session_id="", executor=None):
     if executor is None:
         return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "EXECUTOR_REQUIRED", session_id)
-    if not isinstance(window_title, str) or not window_title.strip():
-        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "WINDOW_TITLE_REQUIRED", session_id)
-    if not isinstance(control_name, str) or not control_name.strip():
-        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_NAME_REQUIRED", session_id)
+    if not isinstance(window_hwnd, int) or isinstance(window_hwnd, bool) or window_hwnd <= 0:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "WINDOW_HWND_REQUIRED", session_id)
+    if not _uia_identity_ok(target_identity) or target_identity.get("window_hwnd") != window_hwnd:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "STABLE_TARGET_IDENTITY_REQUIRED", session_id)
     if not isinstance(target_checked, bool):
         return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "TARGET_CHECKED_MUST_BE_BOOL", session_id)
     st = _stores(stores_base_dir)
-    listing = executor.discover_controls_by_window_title(window_title)  # discovery only
+    listing = executor.list_controls_uia(window_hwnd)
     if not listing.get("ok"):
         return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE,
                          "WINDOW_NOT_FOUND:" + str(listing.get("error", "")), session_id)
-    ctrl = _find_checkbox_control(listing.get("controls", []), control_name)
-    if ctrl is None:
-        n = len([c for c in listing.get("controls", []) if c.get("name") == control_name])
-        reason = "CONTROL_AMBIGUOUS" if n > 1 else "CONTROL_NOT_FOUND"
-        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, reason, session_id)
-    identity = dict(ctrl.get("identity", {}))
-    if not _uia_identity_ok(identity):
-        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_IDENTITY_INVALID", session_id)
+    matches = [c for c in listing.get("controls", [])
+               if c.get("identity", {}).get("runtime_id") == target_identity["runtime_id"]]
+    if not matches:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_NOT_FOUND", session_id)
+    if len(matches) > 1:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_AMBIGUOUS", session_id)
+    ctrl = matches[0]
+    identity = dict(ctrl["identity"])
+    if not _uia_identity_ok(identity) or not _uia_identity_matches(target_identity, identity):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_IDENTITY_MISMATCH", session_id)
+    if identity.get("control_type") != "CheckBox":
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "UNSUPPORTED_CONTROL_TYPE", session_id)
     if not ctrl.get("enabled"):
         return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_DISABLED", session_id)
+    if _UIA_CHECKBOX_PATTERN not in (ctrl.get("patterns") or []):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "TOGGLE_PATTERN_REQUIRED", session_id)
     pre_r = executor.read_checked_by_identity(identity)
     if not pre_r.get("ok"):
         return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE,
@@ -1251,8 +1251,6 @@ def pc_v2_uia_set_checked_prepare(
         "target_checked": target_checked,
         "target_toggle_state": target_toggle,
         "pre_toggle_state": pre_toggle,
-        "window_title": window_title,
-        "control_name": control_name,
         "session_id": session_id,
         "physical_state_anchor": physical_state_anchor,
         "state_anchor_kind": "PHYSICAL_PRE_STATE",
@@ -1269,7 +1267,6 @@ def pc_v2_uia_set_checked_prepare(
         "decision_authority": KX_DECISION_AUTHORITY,
         "execution_authority_hash": eah,
         "target_identity": identity, "scope_id": scope,
-        "window_title": window_title, "control_name": control_name,
         "target_checked": target_checked, "target_toggle_state": target_toggle,
         "pre_toggle_state": pre_toggle,
         "physical_state_anchor": physical_state_anchor,
@@ -1339,12 +1336,23 @@ def pc_v2_uia_set_checked_execute(
     gate = kx.get("x108_gate", "")
     if gate != "ALLOW":
         return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
-    ex = executor.set_checked_by_identity(identity, target_checked)
-    if not ex.get("ok"):
-        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
-    post_toggle = ex.get("post_toggle_state")
-    if not ex.get("realized_state_verified") or post_toggle != target_toggle:
-        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+    if current_toggle == target_toggle:
+        post_r = executor.read_checked_by_identity(identity)
+        if not post_r.get("ok"):
+            return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE,
+                             "TOCTOU_POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
+        post_toggle = post_r.get("toggle_state")
+        if post_toggle != target_toggle:
+            return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        mutation_flag = False
+    else:
+        ex = executor.set_checked_by_identity(identity, target_checked)
+        if not ex.get("ok"):
+            return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
+        post_toggle = ex.get("post_toggle_state")
+        if not ex.get("realized_state_verified") or post_toggle != target_toggle:
+            return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        mutation_flag = ex.get("mutation_performed")
     return {
         "status": EXECUTED_OK, "j5_phase": "EXECUTE",
         "operation_type": OP_UIA_SET_CHECKED, "jarvis_authority": JARVIS_AUTHORITY,
@@ -1353,7 +1361,7 @@ def pc_v2_uia_set_checked_execute(
         "target_identity": identity, "scope_id": scope_id,
         "target_checked": target_checked, "target_toggle_state": target_toggle,
         "pre_toggle_state": current_toggle, "post_toggle_state": post_toggle,
-        "mutation_performed": ex.get("mutation_performed"),
+        "mutation_performed": mutation_flag,
         "proof_strength": "STRONG", "realized_state_verified": True,
         "executor_provider": executor.EXECUTOR_PROVIDER,
         "executor_backend": executor.EXECUTOR_BACKEND,

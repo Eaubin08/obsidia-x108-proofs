@@ -13,12 +13,12 @@ import obsidia_pc_capabilities_v2 as PC2
 import jarjar_executor_bridge_v0 as BRIDGE
 
 _WIN  = "Acme Installer"
-_CTRL = "Accept Terms"
+_HWND = 1234
 _ID = {"window_hwnd": 1234, "process_id": 5678, "runtime_id": [10, 20, 30],
        "automation_id": "chk_accept", "control_type": "CheckBox",
        "class_name": "Button", "framework_id": "Win32",
        "native_handle": 0, "parent_runtime_id": []}
-_CHK_CTRL = {"name": _CTRL, "enabled": True, "visible": True,
+_CHK_CTRL = {"name": "Accept Terms", "enabled": True, "visible": True,
              "is_password": False, "patterns": ["toggle"],
              "bounds": {"left": 0, "top": 0, "right": 100, "bottom": 20},
              "identity": _ID}
@@ -28,7 +28,7 @@ def _ex(*, pre_toggle=0, post_toggle=None, mutation=True):
     ex = MagicMock()
     ex.EXECUTOR_PROVIDER = "JARJAR"
     ex.EXECUTOR_BACKEND  = "StructuredUIBackend"
-    ex.discover_controls_by_window_title.return_value = {"ok": True, "window": _WIN, "controls": [_CHK_CTRL]}
+    ex.list_controls_uia.return_value = {"ok": True, "hwnd": _HWND, "controls": [_CHK_CTRL]}
     ex.read_checked_by_identity.return_value = {
         "ok": True, "toggle_state": pre_toggle, "checked": pre_toggle == 1, "indeterminate": False}
     final = post_toggle if post_toggle is not None else pre_toggle
@@ -40,7 +40,7 @@ def _ex(*, pre_toggle=0, post_toggle=None, mutation=True):
 def test_prepare_is_registered():
     r = PC2.execute_pc_capability_v2(
         "PC_V2_UIA_SET_CHECKED_PREPARE",
-        window_title=_WIN, control_name=_CTRL, target_checked=True,
+        window_hwnd=_HWND, target_identity=_ID, target_checked=True,
         stores_base_dir="/tmp/s")
     assert r["status"] != "UNKNOWN_CAPABILITY_V2"
 
@@ -54,51 +54,51 @@ def test_execute_is_registered():
     assert r["status"] != "UNKNOWN_CAPABILITY_V2"
 
 def test_prepare_without_executor_rejected():
-    r = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s")
+    r = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s")
     assert r["status"] == PC2.PREPARE_REJECTED
     assert "EXECUTOR_REQUIRED" in r.get("reason", "")
 
 def test_prepare_non_bool_target_rejected():
-    r = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, 1, stores_base_dir="/tmp/s", executor=_ex())
+    r = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, 1, stores_base_dir="/tmp/s", executor=_ex())
     assert r["status"] == PC2.PREPARE_REJECTED
     assert "TARGET_CHECKED_MUST_BE_BOOL" in r.get("reason", "")
 
 def test_prepare_control_not_found_rejected():
     ex = _ex()
-    ex.discover_controls_by_window_title.return_value = {"ok": True, "window": _WIN, "controls": []}
-    r = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s", executor=ex)
+    ex.list_controls_uia.return_value = {"ok": True, "hwnd": _HWND, "controls": []}
+    r = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s", executor=ex)
     assert r["status"] == PC2.PREPARE_REJECTED
     assert "CONTROL_NOT_FOUND" in r.get("reason", "")
 
 def test_prepare_indeterminate_rejected():
     ex = _ex()
     ex.read_checked_by_identity.return_value = {"ok": True, "toggle_state": 2, "indeterminate": True}
-    r = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s", executor=ex)
+    r = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s", executor=ex)
     assert r["status"] == PC2.PREPARE_REJECTED
     assert "INDETERMINATE" in r.get("reason", "")
 
 def test_prepare_no_mutation():
     ex = _ex()
-    PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s", executor=ex)
+    PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s", executor=ex)
     ex.set_checked_by_identity.assert_not_called()
 
 def test_execute_wrong_eah_rejected():
     ex = _ex()
-    prep = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s", executor=ex)
+    prep = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s", executor=ex)
     r = PC2.pc_v2_uia_set_checked_execute(prep, "x" * 64, "REF", stores_base_dir="/tmp/s", executor=ex)
     assert r["status"] == PC2.EXECUTE_REJECTED
     ex.set_checked_by_identity.assert_not_called()
 
 def test_execute_missing_approval_reference_rejected():
     ex = _ex()
-    prep = PC2.pc_v2_uia_set_checked_prepare(_WIN, _CTRL, True, stores_base_dir="/tmp/s", executor=ex)
+    prep = PC2.pc_v2_uia_set_checked_prepare(_HWND, _ID, True, stores_base_dir="/tmp/s", executor=ex)
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "", stores_base_dir="/tmp/s", executor=ex)
     assert r["status"] == PC2.EXECUTE_REJECTED
 def test_off_to_on_strong_proof(tmp_path):
     ex = _ex(pre_toggle=0, post_toggle=1, mutation=True)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     assert prep["status"] == PC2.PREPARED_AWAITING_HUMAN_APPROVAL
     assert prep["target_checked"] is True and prep["pre_toggle_state"] == 0
     eah = prep["execution_authority_hash"]
@@ -110,7 +110,7 @@ def test_off_to_on_strong_proof(tmp_path):
 def test_on_to_off_strong_proof(tmp_path):
     ex = _ex(pre_toggle=1, post_toggle=0, mutation=True)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, False, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, False, stores_base_dir=tmp_path / "s", executor=ex)
     assert prep["pre_toggle_state"] == 1
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-002", stores_base_dir=tmp_path / "s", executor=ex)
@@ -119,7 +119,7 @@ def test_on_to_off_strong_proof(tmp_path):
 def test_on_to_on_noop(tmp_path):
     ex = _ex(pre_toggle=1, post_toggle=1, mutation=False)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-003", stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTED_OK and r.get("mutation_performed") is False
@@ -127,7 +127,7 @@ def test_on_to_on_noop(tmp_path):
 def test_off_to_off_noop(tmp_path):
     ex = _ex(pre_toggle=0, post_toggle=0, mutation=False)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, False, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, False, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-004", stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTED_OK and r.get("mutation_performed") is False
@@ -135,7 +135,7 @@ def test_off_to_off_noop(tmp_path):
 def test_pre_state_drift_rejected(tmp_path):
     ex = _ex(pre_toggle=0)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
     ex.read_checked_by_identity.return_value = {"ok": True, "toggle_state": 1, "checked": True}
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-005", stores_base_dir=tmp_path / "s", executor=ex)
@@ -145,7 +145,7 @@ def test_pre_state_drift_rejected(tmp_path):
 def test_realized_state_mismatch_rejected(tmp_path):
     ex = _ex(pre_toggle=0)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
     ex.set_checked_by_identity.return_value = {
         "ok": True, "mutation_performed": True, "post_toggle_state": 0, "realized_state_verified": False}
@@ -175,9 +175,9 @@ def test_bridge_has_set_checked():
 def test_eah_commits_target_checked(tmp_path):
     ex = _ex(pre_toggle=0)
     prep_true = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     prep_false = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, False, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, False, stores_base_dir=tmp_path / "s", executor=ex)
     assert prep_true["execution_authority_hash"] != prep_false["execution_authority_hash"]
 
 def test_no_generic_click_capability():
@@ -187,26 +187,28 @@ def test_no_generic_click_capability():
 def test_psa_is_pre_state_only_target_lives_in_eah(tmp_path):
     ex = _ex(pre_toggle=0)
     prep_true = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     prep_false = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, False, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, False, stores_base_dir=tmp_path / "s", executor=ex)
     assert prep_true["physical_state_anchor"] == prep_false["physical_state_anchor"]
     assert prep_true["execution_authority_hash"] != prep_false["execution_authority_hash"]
 
 def test_noop_requires_independent_post_read(tmp_path):
-    ex = _ex(pre_toggle=1, post_toggle=1, mutation=False)
+    ex = _ex(pre_toggle=1)
+    good = {"ok": True, "toggle_state": 1, "checked": True, "indeterminate": False}
+    bad  = {"ok": True, "toggle_state": 0, "checked": False, "indeterminate": False}
+    ex.read_checked_by_identity.side_effect = [good, good, bad]
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     eah = prep["execution_authority_hash"]
-    ex.set_checked_by_identity.return_value = {
-        "ok": True, "mutation_performed": False, "post_toggle_state": 0, "realized_state_verified": False}
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-007", stores_base_dir=tmp_path / "s", executor=ex)
     assert r["status"] == PC2.EXECUTE_REJECTED and "REALIZED_STATE_MISMATCH" in r.get("reason", "")
+    ex.set_checked_by_identity.assert_not_called()
 
 def test_execute_uses_only_identity_bound_executor_calls(tmp_path):
     ex = _ex(pre_toggle=0, post_toggle=1)
     prep = PC2.pc_v2_uia_set_checked_prepare(
-        _WIN, _CTRL, True, stores_base_dir=tmp_path / "s", executor=ex)
+        _HWND, _ID, True, stores_base_dir=tmp_path / "s", executor=ex)
     ex.reset_mock()
     eah = prep["execution_authority_hash"]
     r = PC2.pc_v2_uia_set_checked_execute(prep, eah, "REF-008", stores_base_dir=tmp_path / "s", executor=ex)
