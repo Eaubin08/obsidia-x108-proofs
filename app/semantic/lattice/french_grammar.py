@@ -3087,6 +3087,25 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             missing.extend(f"{UNANALYZED_PREDICATIVE_CONTENT}:{a.span[0]}-{a.span[1]}:speak_complement_of={u.id}"
                            for a in de_args)
 
+    # O2: the subject of a "qui" relative is its antecedent only when syntax proves it: the
+    # carrier right before "qui" ends with exactly one grammar-built nominal Argument adjacent
+    # to the opening. Never the nearest / first / last noun: otherwise subject_ref stays None
+    by_id = {u.id: i for i, u in enumerate(final_units)}
+    for ci, clause in enumerate(clauses):
+        if clause.conn != "rel" or clause.governor_lost or ci == 0 or not clause.conn_toks \
+                or clause.conn_toks[0].low != "qui":
+            continue
+        ids = {u.id for (u, _) in clause.units}
+        # the relative's own top-level predicate (not content embedded inside the relative)
+        heads = [final_units[by_id[u.id]] for (u, d) in clause.units if u.id in by_id
+                 and d.subject is None and final_units[by_id[u.id]].embedded_under not in ids]
+        ante, rivals = _relative_antecedent(raw, clauses[ci - 1], clause.conn_toks[0], final_units)
+        if len(heads) == 1 and rivals:
+            ambiguities.append(f"ambiguous_antecedent:{heads[0].id}:qui:" + ",".join(rivals))
+        if len(heads) != 1 or ante is None:
+            continue
+        final_units[by_id[heads[0].id]] = replace(heads[0], subject_ref=ante)
+
     constraints = _constraints([u for u in final_units if u.id not in not_all])
     contradictions = _contradictions(final_units)
     evidence = _evidence_needs(final_units)
@@ -3385,6 +3404,37 @@ def _agrees_with_antecedent(pronoun: str, det: str | None) -> bool:
     if det in _PLURAL_DETS:
         return False
     return not ((pronoun == "le" and det in _FEMININE_DETS) or (pronoun == "la" and det in _MASCULINE_DETS))
+
+
+def _relative_antecedent(raw: str, carrier: _Clause, qui: _Tok,
+                         units: list[PredicateUnit]) -> tuple[Argument | None, list[str]]:
+    """O2: the nominal Argument the grammar built at the end of the carrier, adjacent to
+    "qui" ("la mémoire qui"), as a RESOLVED_INTRA reference. One distinct Argument or
+    None (fail closed), with the rival heads when coordinated nominals end the carrier ("le
+    script et le document qui"): the relative may hold the last conjunct or the whole
+    coordination, so it is named, never chosen."""
+    if not carrier.toks or raw[carrier.toks[-1].end:qui.start].strip():
+        return None, []
+    end = carrier.toks[-1].end
+    if carrier.units:
+        own = {u.id for (u, _) in carrier.units}
+        found = {(a, u.id) for u in units if u.id in own for a in u.objects
+                 if a.kind == "NP" and a.span is not None and a.span[1] == end}
+        args = {a for a, _ in found}
+        if len(args) != 1:
+            return None, []
+        hosts = {h for _, h in found}
+        arg, host = args.pop(), (next(iter(hosts)) if len(hosts) == 1 else None)
+        rivals = [a for u in units if u.id in hosts for a in u.objects if a != arg]
+        if rivals:
+            return None, [a.head for a in rivals] + [arg.head]
+    else:
+        # verbless carrier ("La mémoire qui sert à parler"): it must be exactly one NP
+        arg, nj = _np_from(carrier.toks, 0)
+        if arg is None or arg.kind != "NP" or nj != len(carrier.toks):
+            return None, []
+        host = None
+    return replace(arg, reference="RESOLVED_INTRA", antecedent=arg.head, antecedent_unit=host), []
 
 
 def _resolve_references(units: list[PredicateUnit]):

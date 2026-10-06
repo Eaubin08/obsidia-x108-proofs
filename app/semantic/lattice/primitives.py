@@ -138,6 +138,9 @@ class PredicateUnit:
     realized: bool | None = None
     epistemic: str = "NOT_APPLICABLE"
     subject: str | None = None
+    # O2: the structurally licensed antecedent Argument of a "qui" relative
+    # (reference RESOLVED_INTRA); None when syntax does not prove it
+    subject_ref: Argument | None = None
     action_agent: str = "UNKNOWN"
     request_target: str = "NONE"
     role: str = "OTHER"
