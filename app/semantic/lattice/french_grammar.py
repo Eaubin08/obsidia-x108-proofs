@@ -2944,8 +2944,18 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         head = c1.toks[d1.head_index]
         covered = any(m.split(":")[1] == f"{c0.toks[0].start}-{c0.toks[-1].end}" for m in missing)
         tonic = (["moi"], ["toi"])
-        persons = [_TONIC_AGENT.get(t[0].low) if [x.low for x in t] in tonic else "THIRD_PARTY" for t in (np0, pre) if t]
-        if covered or not (_bare_noun_phrase(np0) or [t.low for t in np0] in tonic)                 or not (_bare_noun_phrase(pre) or [t.low for t in pre] in tonic)                 or d1.head_index == 0 or not (_plural_verb(head) or conj == ["ou"]):
+        # "Paul, Nadia et Luc": every comma member before the conjunction is a member too
+        # (never only the last one)
+        firsts: list[list] = [[]]
+        for t in np0:
+            if t.low == ",":
+                firsts.append([])
+            else:
+                firsts[-1].append(t)
+        members = firsts + [pre]
+        persons = [_TONIC_AGENT.get(t[0].low) if [x.low for x in t] in tonic else "THIRD_PARTY" for t in members if t]
+        if covered or not all(m and (_bare_noun_phrase(m) or [t.low for t in m] in tonic) for m in members) \
+                or d1.head_index == 0 or not (_plural_verb(head) or conj == ["ou"]):
             continue
         # D5-R3: members of more than one agent class ("toi et moi", "Paul et moi") have no
         # truthful single action_agent: UNKNOWN (no MIXED value) and the agency stays open
@@ -2955,13 +2965,14 @@ def parse_utterance(raw: str) -> UtteranceFrame:
             if reread is not None:
                 u1 = replace(u1, objects=tuple(reread))
         person = mixed or "THIRD_PARTY" not in persons
-        texts = (" ".join(t.low for t in np0 if t.low not in _DETERMINERS) or np0[-1].low,
-                 " ".join(t.low for t in pre if t.low not in _DETERMINERS) or pre[-1].low)
+        texts = tuple(" ".join(t.low for t in m if t.low not in _DETERMINERS) or m[-1].low for m in members)
+        links = (",",) * (len(members) - 2) + (conj[0],)
         coordinations.append(CoordinationRef(
-            f"c{len(coordinations) + 1}", "OR" if conj == ["ou"] else "AND", (f"{u1.id}.s1", f"{u1.id}.s2"),
-            "coordinated_subject", (conj[0],), (np0[0].start, pre[-1].end), member_kind="argument",
+            f"c{len(coordinations) + 1}", "OR" if conj == ["ou"] else "AND",
+            tuple(f"{u1.id}.s{n}" for n in range(1, len(members) + 1)),
+            "coordinated_subject", links, (np0[0].start, pre[-1].end), member_kind="argument",
             host=u1.id, role="subject", member_texts=texts,
-            member_spans=((np0[0].start, np0[-1].end), (pre[0].start, pre[-1].end)),
+            member_spans=tuple((m[0].start, m[-1].end) for m in members),
             distributivity="EXPLICIT" if each else "UNSPECIFIED"))
         if each:
             # canonical carrier; CoordinationRef.distributivity above is its legacy mirror
