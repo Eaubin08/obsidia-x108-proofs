@@ -2157,12 +2157,17 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         preposed = hi == 0 or head.boundary in {".", "!", "?", ";", ":"}
         # R2: "Si P ou Q, R": a preposed protasis joins its "ou" member too (one OR group);
         # never mixed with "et" (precedence not written); a postposed "R si P ou Q" stays open
+        # A preposed protasis mixing "et" and "ou" joins every member too (its content is
+        # protasis content, never a root claim nor a request); the grouping is never chosen
+        # (named at relation time, no group, no CONDITIONS by an invented precedence)
         joined = {c.conn_toks[0].low for c in clauses if c.protasis_head is head and c is not head and c.conn_toks}
         if clause.conn_toks[0].low == "ou":
-            if clause.conn == "ou" and preposed and joined <= {"ou"}:
+            if clause.conn == "ou" and preposed:
                 clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
             continue
         if "ou" in joined:
+            if clause.conn == "et" and preposed:
+                clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
             continue
         if clause.conn == "si" or (clause.conn == "et" and (preposed or _continues_protasis_modal(prev, clause))):
             clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
@@ -2851,9 +2856,19 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 links = tuple(" ".join(x.low for x in c.conn_toks) for c in group[1:])
                 # R2: a preposed disjunctive protasis ("Si P ou Q, R") is one OR group
                 disjunctive = bool(links) and all(x == "ou" for x in links)
-                pair = RelationKind.ALTERNATIVE if disjunctive else RelationKind.COORDINATES
+                mixed = {"et", "ou"} <= set(links)
                 for a, (b, link) in zip(heads, zip(heads[1:], links)):
+                    pair = RelationKind.ALTERNATIVE if (disjunctive or (mixed and link == "ou")) \
+                        else RelationKind.COORDINATES
                     relations.append(LatticeRelation(pair.value, a.id, b.id, evidence=link))
+                if mixed:
+                    # "Si P et Q ou S, R": AND / OR without written grouping: no group, no
+                    # precedence, no CONDITIONS from an invented grouping; the open grouping and
+                    # the held condition of R are named; R itself (and its gate) is unchanged
+                    ambiguities.append(f"coordination_attachment_ambiguous:{heads[0].id}")
+                    if host is not None:
+                        ambiguities.append(f"condition_scope_ambiguous:{heads[0].id}:host={host.id}")
+                    continue
                 if len(heads) > 1:
                     source = f"c{len(coordinations) + 1}"
                     coordinations.append(CoordinationRef(
