@@ -1739,6 +1739,17 @@ def _build_drafts(toks: list[_Tok], interrogative: bool = False) -> list[_Draft]
                 consumed.update({k, v})
                 k = v + 1
                 continue
+            if v is not None and person == "2" and "INF" in _feats(toks[v]) and "PP" not in _feats(toks[v]):
+                # "Tu viens lancer P.": venir + infinitive has no construction here (statement or
+                # directive): the subject "tu" is kept (never dropped into a bare injunction), the
+                # content stays under that governor, its possible request exposed, frame open
+                d = _Draft(toks[v], v, v, "INFINITIVE", governed="unknown_governor",
+                           subject=subj, subject_person=person)
+                d.possible_request = True
+                drafts.append(d)
+                consumed.update({k, v})
+                k = v + 1
+                continue
             if v is not None and person in {"1", "3"} and "INF" in _feats(toks[v]) and "PP" not in _feats(toks[v]):
                 # "Paul (ne) vient (pas) lancer P": venir + infinitive has no construction here;
                 # the infinitive is content of that unrecognised governor, never an injunction
@@ -2362,7 +2373,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
                 # content of an unrecognised finite governor: no subject taken from it, no request
                 prag, epi = "EMBEDDED", "NOT_APPLICABLE"
                 ambiguities.append(f"infinitive_under_unrecognized_governor:{u.id}")
-                u, d.subject_person = replace(u, subject=None), None
+                if not d.possible_request:
+                    u, d.subject_person = replace(u, subject=None), None
+                # ("Tu viens lancer P.": the written addressee subject is kept, R3)
             elif d.governed in {"negated_scope_open", "know_how_scope_open"}:
                 # an infinitive under a negated operator (or a savoir chain) whose scope over
                 # it is not established: its content, never an injunction, no polarity chosen
