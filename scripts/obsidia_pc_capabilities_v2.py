@@ -54,8 +54,11 @@ _CAP_SCHK_EXECUTE   = "PC_V2_UIA_SET_CHECKED_EXECUTE"
 _CAP_SRAD_PREPARE   = "PC_V2_UIA_SELECT_RADIO_PREPARE"
 _CAP_SRAD_EXECUTE   = "PC_V2_UIA_SELECT_RADIO_EXECUTE"
 OP_UIA_SELECT_RADIO = "V2_UIA_SELECT_RADIO"
+OP_UIA_SELECT_TAB   = "V2_UIA_SELECT_TAB"
+_CAP_STAB_PREPARE   = "PC_V2_UIA_SELECT_TAB_PREPARE"
+_CAP_STAB_EXECUTE   = "PC_V2_UIA_SELECT_TAB_EXECUTE"
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -1569,6 +1572,179 @@ def pc_v2_uia_select_radio_execute(
 
 
 
+
+_UIA_TAB_PATTERN = "selection_item"
+
+
+def pc_v2_uia_select_tab_prepare(
+        window_hwnd, target_identity,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(window_hwnd, int) or isinstance(window_hwnd, bool) or window_hwnd <= 0:
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "WINDOW_HWND_REQUIRED", session_id)
+    if not _uia_identity_ok(target_identity) or target_identity.get("window_hwnd") != window_hwnd:
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "STABLE_TARGET_IDENTITY_REQUIRED", session_id)
+    st = _stores(stores_base_dir)
+    listing = executor.list_controls_uia(window_hwnd)
+    if not listing.get("ok"):
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE,
+                         "WINDOW_NOT_FOUND:" + str(listing.get("error", "")), session_id)
+    matches = [c for c in listing.get("controls", [])
+               if c.get("identity", {}).get("runtime_id") == target_identity["runtime_id"]]
+    if not matches:
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "CONTROL_NOT_FOUND", session_id)
+    if len(matches) > 1:
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "CONTROL_AMBIGUOUS", session_id)
+    ctrl = matches[0]
+    identity = dict(ctrl["identity"])
+    if not _uia_identity_ok(identity) or not _uia_identity_matches(target_identity, identity):
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "CONTROL_IDENTITY_MISMATCH", session_id)
+    if identity.get("control_type") != "TabItem":
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "UNSUPPORTED_CONTROL_TYPE", session_id)
+    if not ctrl.get("enabled"):
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "CONTROL_DISABLED", session_id)
+    if _UIA_TAB_PATTERN not in (ctrl.get("patterns") or []):
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE, "SELECTION_ITEM_PATTERN_REQUIRED", session_id)
+    pre_r = executor.read_selected_by_identity(identity)
+    if not pre_r.get("ok"):
+        return _prep_rej(OP_UIA_SELECT_TAB, _CAP_STAB_PREPARE,
+                         "PRE_STATE_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    pre_is_selected = bool(pre_r.get("is_selected"))
+    _, physical_state_anchor = _uia_pre_state_selected(
+        identity, pre_is_selected, bool(ctrl.get("enabled")))
+    desc = {
+        "operation_type": OP_UIA_SELECT_TAB,
+        "target_identity": identity,
+        "desired_state": "SELECTED",
+        "pre_is_selected": pre_is_selected,
+        "session_id": session_id,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah   = _eah(OP_UIA_SELECT_TAB, desc)
+    scope = _uia_scope_id(identity)
+    child = _v2id("chd", eah + scope + "SELECTED")
+    v2id  = _v2id("v2x", eah + session_id + "UIA_SELECT_TAB")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_UIA_SELECT_TAB, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_UIA_SELECT_TAB, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "target_identity": identity, "scope_id": scope,
+        "desired_state": "SELECTED",
+        "pre_is_selected": pre_is_selected,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_STAB_PREPARE, OP_UIA_SELECT_TAB,
+                          PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                          execution_authority_hash=eah, target_identity=identity,
+                          scope_id=scope, desired_state="SELECTED",
+                          pre_is_selected=pre_is_selected,
+                          physical_state_anchor=physical_state_anchor,
+                          state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
+
+
+def pc_v2_uia_select_tab_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc and desc.get("eah") == exp_eah
+                   and _eah(OP_UIA_SELECT_TAB, desc.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d            = desc["descriptor"]
+    identity     = d.get("target_identity")
+    stored_psa   = d.get("physical_state_anchor", "")
+    pre_is_sel   = d.get("pre_is_selected")
+    desc_valid = (_uia_identity_ok(identity) and isinstance(pre_is_sel, bool)
+                  and d.get("desired_state") == "SELECTED")
+    if not desc_valid:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "DESCRIPTOR_INVALID", session_id)
+    pre_r = executor.read_selected_by_identity(identity)
+    if not pre_r.get("ok"):
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "TOCTOU_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    current_is_selected = bool(pre_r.get("is_selected"))
+    _, current_psa = _uia_pre_state_selected(identity, current_is_selected, True)
+    if current_psa != stored_psa:
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    scope_id = _uia_scope_id(identity)
+    apr    = _approval(v2id, child, exp_eah, scope_id + "SELECTED")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_UIA_SELECT_TAB,
+                    kxpre=st["kxpre"], physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    if current_is_selected:
+        post_r = executor.read_selected_by_identity(identity)
+        if not post_r.get("ok"):
+            return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE,
+                             "TOCTOU_POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
+        post_is_selected = bool(post_r.get("is_selected"))
+        if not post_is_selected:
+            return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        mutation_flag = False
+    else:
+        ex = executor.select_tab_by_identity(identity)
+        if not ex.get("ok"):
+            return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
+        post_is_selected = bool(ex.get("post_is_selected"))
+        if not ex.get("realized_state_verified") or not post_is_selected:
+            return _exec_rej(OP_UIA_SELECT_TAB, _CAP_STAB_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        mutation_flag = ex.get("mutation_performed")
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_UIA_SELECT_TAB, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "target_identity": identity, "scope_id": scope_id,
+        "desired_state": "SELECTED",
+        "pre_is_selected": pre_is_sel, "post_is_selected": post_is_selected,
+        "mutation_performed": mutation_flag,
+        "proof_strength": "STRONG", "realized_state_verified": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "executor_capability": "control.select_tab_by_identity",
+        "receipt": _rcpt(_CAP_STAB_EXECUTE, OP_UIA_SELECT_TAB, EXECUTED_OK, session_id,
+                          kx108_pre_gate=gate, target_identity=identity, scope_id=scope_id,
+                          desired_state="SELECTED",
+                          pre_is_selected=pre_is_sel, post_is_selected=post_is_selected,
+                          proof_strength="STRONG", realized_state_verified=True,
+                          physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE",
+                          executor_provider=executor.EXECUTOR_PROVIDER,
+                          executor_backend=executor.EXECUTOR_BACKEND,
+                          executor_capability="control.select_tab_by_identity"),
+    }
+
+
+
 # ============================
 # GOVERNED_AUDIO_VOLUME
 # ============================
@@ -1802,6 +1978,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_SCHK_EXECUTE:   pc_v2_uia_set_checked_execute,
         _CAP_SRAD_PREPARE:   pc_v2_uia_select_radio_prepare,
         _CAP_SRAD_EXECUTE:   pc_v2_uia_select_radio_execute,
+        _CAP_STAB_PREPARE:   pc_v2_uia_select_tab_prepare,
+        _CAP_STAB_EXECUTE:   pc_v2_uia_select_tab_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -1823,7 +2001,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,

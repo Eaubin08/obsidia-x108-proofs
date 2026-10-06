@@ -444,6 +444,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 UIA SELECT_RADIO EXECUTE: PSA drift check, SelectionItemPattern select, post-read verified -> STRONG. KX108_ONLY."),
+    "PC_V2_UIA_SELECT_TAB_PREPARE": _cap(
+        "PC_V2_UIA_SELECT_TAB_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"window_hwnd": "int", "target_identity": "dict"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 UIA SELECT_TAB PREPARE: resolve TabItem by exact identity, read pre is_selected, build PSA. KX108_ONLY."),
+    "PC_V2_UIA_SELECT_TAB_EXECUTE": _cap(
+        "PC_V2_UIA_SELECT_TAB_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_UIA_SELECT_TAB_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 UIA SELECT_TAB EXECUTE: PSA drift check, SelectionItemPattern select, post-read verified -> STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

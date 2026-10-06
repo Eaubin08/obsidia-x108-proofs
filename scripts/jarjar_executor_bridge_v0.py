@@ -449,6 +449,25 @@ class JarJarWindowsExecutor:
                 "executor": "StructuredUIBackend",
                 "capability": "control.select_radio_by_identity"}
 
+    def select_tab_by_identity(self, target_identity: dict) -> dict:
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.select_tab_by_identity",
+                                arguments={"target_identity": target_identity},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "SELECT_TAB_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.select_tab_by_identity"}
+        data = result.data or {}
+        return {"ok": True,
+                "mutation_performed": data.get("mutation_performed"),
+                "post_is_selected": data.get("post_is_selected"),
+                "realized_state_verified": data.get("realized_state_verified"),
+                "proof": data.get("proof"),
+                "executor": "StructuredUIBackend",
+                "capability": "control.select_tab_by_identity"}
+
 
 
 # === G13 governed media ===
