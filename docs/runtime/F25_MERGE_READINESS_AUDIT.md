@@ -109,11 +109,12 @@ If untrusted plugins are desired later, they require a separate process/sandbox 
 CSSA/V0.1 consumer branch:
 `feat/f2-5-first-class-runtime-seam-v0`
 
-Latest completed security-hardened proof before this audit:
+Final security-hardened focused proof:
 
 ```text
-102 passed in 0.42s
-GitHub Actions run 37527113296
+102 passed in 0.43s
+GitHub Actions run 37527394792
+job 112487760134
 ```
 
 Coverage includes:
@@ -137,7 +138,16 @@ run 37508621493
 
 Earlier F2.5 pre-hardening comparison had the same 11 failures and only added passes.
 
-Latest aggregate-only native run is used only to confirm `NO_NEW_FAILURES`; global green is not required because `main` itself is red.
+Security-hardened aggregate-only native run:
+
+```text
+11 failed, 12451 passed, 46 skipped, 207 deselected
+run 37526855143 / job 112485940506
+```
+
+The failure names are identical to the 11 current-main baseline failures. No F2.5 test fails. The pass count rises from 12443 to 12451 because F2.5 adds eight focused passing tests.
+
+Verdict: `BASELINE_EQUIVALENT_NO_NEW_FAILURES`.
 
 ## Merge policy
 
@@ -158,3 +168,16 @@ After final CI evidence is recorded, treat this branch as:
 `F25_FREEZE_V0`
 
 Any semantic change after freeze requires a new branch/version or an explicit unfreeze record.
+
+
+## Final freeze verdict
+
+`F25_FREEZE_V0 = ACTIVE ON BRANCH`
+
+Merge-readiness technical verdict:
+`READY_TO_CONSIDER_FOR_MAIN`.
+
+Operational verdict:
+`DO_NOT_MERGE_WITHOUT_EXPLICIT_USER_DECISION`.
+
+No main mutation has been performed.
