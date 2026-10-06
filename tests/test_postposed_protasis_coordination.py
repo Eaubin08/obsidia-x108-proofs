@@ -37,15 +37,11 @@ def _rels(f):
 
 
 @pytest.mark.parametrize("text", [
-    "Lance R si Paul veut lancer P et exécuter Q.",
-    "Lance R si Paul peut lancer P et exécuter Q.",
-    "Lance R si Paul doit lancer P et exécuter Q.",
     "Lance R si Paul va lancer P et exécuter Q.",
     "Lance R si Paul lance P et exécute Q.",
     "Lance R si Paul lance P et exécuter Q.",
     "Lance R si Paul veut lancer P, exécuter Q.",
     "Lance R si Paul veut lancer P ou exécuter Q.",
-    "Paul lance R si Paul veut lancer P et exécuter Q.",
 ])
 def test_member_after_postposed_protasis_is_named_not_attached(text):
     f = parse_utterance(text)
@@ -61,6 +57,26 @@ def test_member_after_postposed_protasis_is_named_not_attached(text):
     assert events[q.id].occurrence_claim.value == "UNRESOLVED"
     assert q.role == "REQUEST" and q.surface in governable_summary(f)["requested_action_surfaces"]  # possible
     assert not f.closure
+
+
+@pytest.mark.parametrize("text", [
+    "Lance R si Paul veut lancer P et exécuter Q.",
+    "Lance R si Paul peut lancer P et exécuter Q.",
+    "Lance R si Paul doit lancer P et exécuter Q.",
+    "Paul lance R si Paul veut lancer P et exécuter Q.",
+])
+def test_modal_continuation_stays_in_the_protasis(text):
+    # H11 option C (requalified, formerly named not attached): a bare infinitive continuing
+    # the protasis modal chain is licensed only there; it joins the conjunctive protasis,
+    # whose coordination conditions R (parity with "Si Paul veut lancer P et exécuter Q, R")
+    f = parse_utterance(text)
+    r, p = f.units[0], f.units[1]
+    (q,) = [u for u in f.units if u.lemma == "exécuter"]
+    assert [a.head for a in q.objects] == ["q"] and q.pragmatic == "HYPOTHETICAL"
+    assert not _gate(f)[q.id] and q.surface not in governable_summary(f)["requested_action_surfaces"]
+    (c,) = f.coordinations
+    assert c.members == (p.id, q.id) and ("CONDITIONS", c.id, r.id) in _rels(f)
+    assert not any(a.startswith("coordination_attachment_ambiguous") for a in f.ambiguities)
 
 
 def test_main_directive_keeps_its_gate():

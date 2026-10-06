@@ -56,8 +56,7 @@ def test_morphology_forced_main_imperative_is_a_request(text):
 @pytest.mark.parametrize("text", [
     "Lance R si Paul lance P et exécute Q.",      # exécute: 3sg (protasis) or imperative (main)
     "Lance R si vous lancez P et exécutez Q.",    # exécutez: 2pl (protasis) or imperative (main)
-    "Lance R si Paul veut lancer P et exécuter Q.",
-])
+])  # H11 option C: "si Paul veut lancer P et exécuter Q" (modal continuation) joins the protasis
 def test_ambiguous_member_is_a_possible_request_not_requested(text):
     f = parse_utterance(text)
     q = f.units[-1]

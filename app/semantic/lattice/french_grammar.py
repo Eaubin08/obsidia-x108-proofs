@@ -974,6 +974,21 @@ def _bare_infinitive(clause: _Clause, d0: "_Draft") -> bool:
         and all(t.low in _MEMBER_NEGATORS for t in clause.toks[:d0.head_index])
 
 
+def _continues_protasis_modal(prev: _Clause, clause: _Clause) -> bool:
+    """H11 option C: "R si Paul veut lancer P et exécuter Q": a bare infinitive (infinitive
+    morphology only, no subject, no imperative reading) after a modal chain of the protasis
+    is licensed only as the continuation of that chain: it joins the protasis. Never decided
+    by proximity: any other member stays open."""
+    toks = clause.toks
+    if not toks or not toks[0].analyses or toks[0].low in _MEMBER_NEGATORS:
+        # "et ne pas exécuter Q": one reading is a main-clause prohibition, kept in doubt
+        return False
+    feats = _feats(toks[0])
+    if "INF" not in feats or {"PRES", "IMP", "PP"} & feats:
+        return False
+    return any(t.analyses and _cls(t) == "modal" for t in prev.toks)
+
+
 def _share_kind(sharers: list[_Clause]) -> str:
     """Kind of a sharing group: OR when its members are joined by "ou" (never mixed with "et")."""
     return "OR" if any(c.conn == "ou" for c in sharers) else "AND"
@@ -2021,7 +2036,9 @@ def parse_utterance(raw: str) -> UtteranceFrame:
     clauses, interrogative = _segment(toks)
     _mark_verbal_ni(clauses)
     # "Si P et Q, R" / "si P et que Q" / "si P et si Q": one conjunctive protasis.
-    # A bare "et Q" joins only a sentence-initial protasis ("R si P et Q" stays open).
+    # A bare "et Q" joins only a sentence-initial protasis ("R si P et Q" stays open), or
+    # (H11 option C) a postposed one whose modal chain it morphologically continues
+    # ("R si Paul veut lancer P et exécuter Q"); never by proximity.
     for k in range(1, len(clauses)):
         prev, clause = clauses[k - 1], clauses[k]
         if prev.conn != "si" or clause.boundary is not None or not clause.conn_toks \
@@ -2030,7 +2047,7 @@ def parse_utterance(raw: str) -> UtteranceFrame:
         head = prev.protasis_head or prev
         hi = next(j for j, c in enumerate(clauses) if c is head)
         preposed = hi == 0 or head.boundary in {".", "!", "?", ";", ":"}
-        if clause.conn == "si" or (clause.conn == "et" and preposed):
+        if clause.conn == "si" or (clause.conn == "et" and (preposed or _continues_protasis_modal(prev, clause))):
             clause.conn, clause.protasis_head, head.protasis_head = "si", head, head
     # "V que P et Q": Q coordinates inside the complement or with its host.
     # "V que P parce que Q" / "V que P donc Q": the cause / consequence may bear on P
