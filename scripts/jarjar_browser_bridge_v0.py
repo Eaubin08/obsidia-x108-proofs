@@ -95,6 +95,33 @@ class JarJarBrowserExecutor:
         out.update(data)
         return out
 
+    def inspect_disclosure(self, selector: str) -> dict:
+        """Inspect one supported disclosure target. No activation."""
+        from jarvis.contracts import ActionRequest
+        result = self._backend.execute(
+            ActionRequest("browser.inspect_disclosure", {"selector": selector}))
+        if not result.ok:
+            return {"ok": False, "error": "INSPECT_DISCLOSURE_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
+    def set_disclosure(self, disclosure_identity: dict, target_expanded: bool) -> dict:
+        """Set an approved disclosure target state. This is not click(selector)."""
+        from jarvis.contracts import ActionRequest
+        args = dict(disclosure_identity or {})
+        args["target_expanded"] = target_expanded
+        result = self._backend.execute(ActionRequest("browser.set_disclosure", args))
+        if not result.ok:
+            return {"ok": False, "error": "SET_DISCLOSURE_FAILED:" + result.message,
+                    "executor": self.EXECUTOR_BACKEND}
+        data = result.data or {}
+        out = {"ok": True, "executor": self.EXECUTOR_BACKEND}
+        out.update(data)
+        return out
+
     def navigate(self, requested_url: str) -> dict:
         """Execute physical navigation. Returns execution evidence only."""
         from jarvis.contracts import ActionRequest
