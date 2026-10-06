@@ -46,7 +46,10 @@ _CAP_AOPEN_EXECUTE  = "PC_V2_APP_OPEN_EXECUTE"
 OP_UIA_SET_TEXT             = "V2_UIA_SET_TEXT"
 _CAP_UTEXT_PREPARE  = "PC_V2_UIA_SET_TEXT_PREPARE"
 _CAP_UTEXT_EXECUTE  = "PC_V2_UIA_SET_TEXT_EXECUTE"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE)
+_CAP_SCHK_PREPARE   = "PC_V2_UIA_SET_CHECKED_PREPARE"
+_CAP_SCHK_EXECUTE   = "PC_V2_UIA_SET_CHECKED_EXECUTE"
+OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -1180,6 +1183,188 @@ def pc_v2_uia_set_text_execute(
 
 
 
+def _uia_pre_state_checked(identity: dict, toggle_state: int, enabled: bool):
+    # Observed pre-state only: the target state is intent and lives in the EAH, never in the PSA.
+    snapshot = {
+        "anchor_schema": "UIA_SET_CHECKED_PRE_STATE_V0",
+        "identity": {k: identity.get(k) for k in _UIA_IDENTITY_PRIMARY + _UIA_IDENTITY_GUARDS},
+        "enabled": bool(enabled),
+        "pre_toggle_state": int(toggle_state),
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def _find_checkbox_control(controls: list, control_name: str):
+    matches = [c for c in controls
+               if c.get("name") == control_name
+               and c.get("identity", {}).get("control_type") == "CheckBox"]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def pc_v2_uia_set_checked_prepare(
+        window_title, control_name, target_checked,
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(window_title, str) or not window_title.strip():
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "WINDOW_TITLE_REQUIRED", session_id)
+    if not isinstance(control_name, str) or not control_name.strip():
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_NAME_REQUIRED", session_id)
+    if not isinstance(target_checked, bool):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "TARGET_CHECKED_MUST_BE_BOOL", session_id)
+    st = _stores(stores_base_dir)
+    listing = executor.discover_controls_by_window_title(window_title)  # discovery only
+    if not listing.get("ok"):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE,
+                         "WINDOW_NOT_FOUND:" + str(listing.get("error", "")), session_id)
+    ctrl = _find_checkbox_control(listing.get("controls", []), control_name)
+    if ctrl is None:
+        n = len([c for c in listing.get("controls", []) if c.get("name") == control_name])
+        reason = "CONTROL_AMBIGUOUS" if n > 1 else "CONTROL_NOT_FOUND"
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, reason, session_id)
+    identity = dict(ctrl.get("identity", {}))
+    if not _uia_identity_ok(identity):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_IDENTITY_INVALID", session_id)
+    if not ctrl.get("enabled"):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_DISABLED", session_id)
+    pre_r = executor.read_checked_by_identity(identity)
+    if not pre_r.get("ok"):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE,
+                         "PRE_STATE_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    pre_toggle = pre_r.get("toggle_state")
+    if pre_toggle == 2:
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE, "CONTROL_INDETERMINATE", session_id)
+    if pre_toggle not in (0, 1):
+        return _prep_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_PREPARE,
+                         "UNEXPECTED_TOGGLE_STATE:" + str(pre_toggle), session_id)
+    target_toggle = 1 if target_checked else 0
+    _, physical_state_anchor = _uia_pre_state_checked(
+        identity, pre_toggle, bool(ctrl.get("enabled")))
+    desc = {
+        "operation_type": OP_UIA_SET_CHECKED,
+        "target_identity": identity,
+        "target_checked": target_checked,
+        "target_toggle_state": target_toggle,
+        "pre_toggle_state": pre_toggle,
+        "window_title": window_title,
+        "control_name": control_name,
+        "session_id": session_id,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah   = _eah(OP_UIA_SET_CHECKED, desc)
+    scope = _uia_scope_id(identity)
+    child = _v2id("chd", eah + scope + str(target_toggle))
+    v2id  = _v2id("v2x", eah + session_id + "UIA_SET_CHECKED")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_UIA_SET_CHECKED, eah, desc, st["v2exec"])
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_UIA_SET_CHECKED, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "target_identity": identity, "scope_id": scope,
+        "window_title": window_title, "control_name": control_name,
+        "target_checked": target_checked, "target_toggle_state": target_toggle,
+        "pre_toggle_state": pre_toggle,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_SCHK_PREPARE, OP_UIA_SET_CHECKED,
+                          PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                          execution_authority_hash=eah, target_identity=identity,
+                          scope_id=scope, target_checked=target_checked,
+                          target_toggle_state=target_toggle, pre_toggle_state=pre_toggle,
+                          physical_state_anchor=physical_state_anchor,
+                          state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
+
+
+def pc_v2_uia_set_checked_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc and desc.get("eah") == exp_eah
+                   and _eah(OP_UIA_SET_CHECKED, desc.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d              = desc["descriptor"]
+    identity       = d.get("target_identity")
+    target_checked = d.get("target_checked")
+    target_toggle  = d.get("target_toggle_state")
+    stored_psa     = d.get("physical_state_anchor", "")
+    desc_valid = (_uia_identity_ok(identity) and isinstance(target_checked, bool)
+                  and target_toggle in (0, 1))
+    if not desc_valid:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "DESCRIPTOR_INVALID", session_id)
+    pre_r = executor.read_checked_by_identity(identity)
+    if not pre_r.get("ok"):
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "TOCTOU_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    current_toggle = pre_r.get("toggle_state")
+    _, current_psa = _uia_pre_state_checked(identity, current_toggle, True)
+    if current_psa != stored_psa:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    scope_id = _uia_scope_id(identity)
+    apr    = _approval(v2id, child, exp_eah, scope_id + str(target_toggle))
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_UIA_SET_CHECKED,
+                    kxpre=st["kxpre"], physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    ex = executor.set_checked_by_identity(identity, target_checked)
+    if not ex.get("ok"):
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "EXECUTOR_ERROR:" + str(ex.get("error", "")), session_id)
+    post_toggle = ex.get("post_toggle_state")
+    if not ex.get("realized_state_verified") or post_toggle != target_toggle:
+        return _exec_rej(OP_UIA_SET_CHECKED, _CAP_SCHK_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_UIA_SET_CHECKED, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "target_identity": identity, "scope_id": scope_id,
+        "target_checked": target_checked, "target_toggle_state": target_toggle,
+        "pre_toggle_state": current_toggle, "post_toggle_state": post_toggle,
+        "mutation_performed": ex.get("mutation_performed"),
+        "proof_strength": "STRONG", "realized_state_verified": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "executor_capability": "control.set_checked_by_identity",
+        "receipt": _rcpt(_CAP_SCHK_EXECUTE, OP_UIA_SET_CHECKED, EXECUTED_OK, session_id,
+                          kx108_pre_gate=gate, target_identity=identity, scope_id=scope_id,
+                          target_checked=target_checked, target_toggle_state=target_toggle,
+                          pre_toggle_state=current_toggle, post_toggle_state=post_toggle,
+                          proof_strength="STRONG", realized_state_verified=True,
+                          physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE",
+                          executor_provider=executor.EXECUTOR_PROVIDER,
+                          executor_backend=executor.EXECUTOR_BACKEND,
+                          executor_capability="control.set_checked_by_identity"),
+    }
 
 
 # ============================
@@ -1201,6 +1386,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_AOPEN_EXECUTE:  pc_v2_app_open_execute,
         _CAP_UTEXT_PREPARE:  pc_v2_uia_set_text_prepare,
         _CAP_UTEXT_EXECUTE:  pc_v2_uia_set_text_execute,
+        _CAP_SCHK_PREPARE:   pc_v2_uia_set_checked_prepare,
+        _CAP_SCHK_EXECUTE:   pc_v2_uia_set_checked_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -1222,7 +1409,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_UIA_SET_TEXT],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,

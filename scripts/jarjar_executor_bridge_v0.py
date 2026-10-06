@@ -121,7 +121,7 @@ def self_check_bridge_v0() -> dict:
     return {"bridge_version": _BRIDGE_VERSION, "executor_provider": _EXECUTOR_PROVIDER,
             "executor_backend": _EXECUTOR_BACKEND, "openjarvis_authority": "NONE",
             "jarjar_authority": "NONE", "kx108_only": True, "human_approval_required": True,
-            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS_BY_IDENTITY", "UIA_FIND_BY_IDENTITY", "UIA_READ_VALUE_BY_IDENTITY", "UIA_SET_TEXT_BY_IDENTITY"],
+            "operations": ["MOVE_FILE", "CREATE_DIR", "ROLLBACK_MOVE_FILE", "APP_OPEN_RESOLVE", "APP_OPEN_BY_TARGET", "UIA_LIST_CONTROLS_BY_IDENTITY", "UIA_FIND_BY_IDENTITY", "UIA_READ_VALUE_BY_IDENTITY", "UIA_SET_TEXT_BY_IDENTITY", "UIA_DISCOVER_CONTROLS_BY_WINDOW_TITLE", "UIA_READ_CHECKED", "UIA_SET_CHECKED"],
             "generic_shell_enabled": False, "arbitrary_filesystem": False,
             "makes_authorization_decisions": False, "is_execution_authority": False,
             "is_kx_authority": False, "new_parallel_mutation_engine": False}
@@ -306,6 +306,84 @@ class JarJarWindowsExecutor:
     def set_text_by_identity(self, identity: dict, exact_text: str) -> dict:
         """Physical mutation only (ValuePattern.SetValue + same-identity readback proof)."""
         return self._ui("control.set_text_by_identity", {"target_identity": identity, "text": exact_text})
+
+
+
+    # ── G2-B1 : UIA stable-identity checkbox operations ──────────────────────
+
+    def discover_controls_by_window_title(self, window_title: str) -> dict:
+        """DISCOVERY ONLY (read-only): window title -> hwnd -> stable-identity listing.
+        A title / label is UI metadata, never execution identity: callers must freeze and
+        then use the returned stable identity. Distinct name on purpose: it must never
+        shadow the canonical list_controls_uia(window_hwnd) used by G2-A-R."""
+        hwnd_result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.get_window_hwnd",
+                                arguments={"window_title": window_title},
+                                source="obsidia_bridge_v1"))
+        if not hwnd_result.ok:
+            return {"ok": False,
+                    "error": "HWND_RESOLVE_FAILED:" + hwnd_result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.get_window_hwnd"}
+        hwnd = (hwnd_result.data or {}).get("hwnd")
+        if not isinstance(hwnd, int) or hwnd <= 0:
+            return {"ok": False, "error": "HWND_NOT_FOUND",
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.get_window_hwnd"}
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.list_uia",
+                                arguments={"window_hwnd": hwnd},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "UIA_LIST_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.list_uia"}
+        data = result.data or {}
+        return {"ok": True,
+                "window": window_title,
+                "controls": data.get("controls", []),
+                "executor": "StructuredUIBackend",
+                "capability": "control.list_uia"}
+
+    def read_checked_by_identity(self, target_identity: dict) -> dict:
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.read_checked",
+                                arguments={"target_identity": target_identity},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "READ_CHECKED_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.read_checked"}
+        data = result.data or {}
+        return {"ok": True,
+                "toggle_state": data.get("toggle_state"),
+                "checked": data.get("checked"),
+                "indeterminate": data.get("indeterminate"),
+                "target_identity": target_identity,
+                "executor": "StructuredUIBackend",
+                "capability": "control.read_checked"}
+
+    def set_checked_by_identity(self, target_identity: dict, target_checked: bool) -> dict:
+        result = self._ui_backend.execute(
+            self._ActionRequest(capability="control.set_checked_by_identity",
+                                arguments={"target_identity": target_identity,
+                                           "target_checked": target_checked},
+                                source="obsidia_bridge_v1"))
+        if not result.ok:
+            return {"ok": False,
+                    "error": "SET_CHECKED_FAILED:" + result.message,
+                    "executor": "StructuredUIBackend",
+                    "capability": "control.set_checked_by_identity"}
+        data = result.data or {}
+        return {"ok": True,
+                "mutation_performed": data.get("mutation_performed"),
+                "post_toggle_state": data.get("post_toggle_state"),
+                "realized_state_verified": data.get("realized_state_verified"),
+                "proof": data.get("proof"),
+                "executor": "StructuredUIBackend",
+                "capability": "control.set_checked_by_identity"}
 
 
 def make_windows_executor(*, jarjar_src=None) -> "JarJarWindowsExecutor":

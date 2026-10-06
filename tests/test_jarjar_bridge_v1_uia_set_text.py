@@ -267,3 +267,12 @@ def test_graph_registration_unchanged_ids():
     for cid in ("PC_V2_UIA_SET_TEXT_PREPARE", "PC_V2_UIA_SET_TEXT_EXECUTE"):
         assert cid in G._GRAPH
     assert "target_identity" in G._GRAPH["PC_V2_UIA_SET_TEXT_PREPARE"]["accepted_input_shape"]
+
+
+def test_bridge_list_controls_uia_is_the_single_hwnd_entrypoint():
+    # a later list_controls_uia(window_title) silently overrode the canonical hwnd one
+    # (G2-B1 WIP): title / label is discovery metadata, never execution identity
+    src = inspect.getsource(BRIDGE.JarJarWindowsExecutor)
+    assert src.count("def list_controls_uia(") == 1
+    params = list(inspect.signature(BRIDGE.JarJarWindowsExecutor.list_controls_uia).parameters)
+    assert params == ["self", "window_hwnd"]
