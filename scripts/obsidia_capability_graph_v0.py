@@ -459,6 +459,21 @@ _GRAPH: "dict[str, dict]" = {
                      "human_authorized_eah": "exact EAH from PREPARE"},
         availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
         notes="V2 UIA SELECT_TAB EXECUTE: PSA drift check, SelectionItemPattern select, post-read verified -> STRONG. KX108_ONLY."),
+    "PC_V2_BROWSER_NAVIGATE_PREPARE": _cap(
+        "PC_V2_BROWSER_NAVIGATE_PREPARE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_NONE,
+        route=ROUTE_NATIVE,
+        input_shape={"requested_url": "str", "redirect_policy": "STRICT_EXACT_URL"},
+        availability="AVAILABLE", proof_status="J5_PREPARE_ONLY",
+        notes="V2 BROWSER NAVIGATE PREPARE: read pre-URL as PSA, build EAH on requested_url+STRICT_EXACT_URL. KX108_ONLY."),
+    "PC_V2_BROWSER_NAVIGATE_EXECUTE": _cap(
+        "PC_V2_BROWSER_NAVIGATE_EXECUTE", family="PC_GOVERNED_WRITE", owner=OWNER_OBSIDIA_STACK,
+        mode=MODE_GOVERNED_RAIL, authority_class=AUTHORITY_KX108_ONLY, rw=RW_WRITE_GOVERNED,
+        route=ROUTE_STAGE4_GOVERNED,
+        input_shape={"prepared_result": "PC_V2_BROWSER_NAVIGATE_PREPARE output",
+                     "human_authorized_eah": "exact EAH from PREPARE"},
+        availability="AVAILABLE", proof_status="J5_E2E_GOVERNED",
+        notes="V2 BROWSER NAVIGATE EXECUTE: TOCTOU URL drift check, navigate, independent post-read proof. STRICT_EXACT_URL. STRONG. KX108_ONLY."),
 }
 
 _CAPABILITY_IDS = tuple(_GRAPH.keys())

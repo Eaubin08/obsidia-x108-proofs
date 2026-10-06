@@ -57,8 +57,11 @@ OP_UIA_SELECT_RADIO = "V2_UIA_SELECT_RADIO"
 OP_UIA_SELECT_TAB   = "V2_UIA_SELECT_TAB"
 _CAP_STAB_PREPARE   = "PC_V2_UIA_SELECT_TAB_PREPARE"
 _CAP_STAB_EXECUTE   = "PC_V2_UIA_SELECT_TAB_EXECUTE"
+OP_BROWSER_NAVIGATE = "V2_BROWSER_NAVIGATE"
+_CAP_BNAV_PREPARE   = "PC_V2_BROWSER_NAVIGATE_PREPARE"
+_CAP_BNAV_EXECUTE   = "PC_V2_BROWSER_NAVIGATE_EXECUTE"
 OP_UIA_SET_CHECKED  = "V2_UIA_SET_CHECKED"
-_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE)
+_CAPABILITY_IDS_V2 = (_CAP_CREATE_PREPARE, _CAP_CREATE_EXECUTE, _CAP_MOVE_PREPARE, _CAP_MOVE_EXECUTE, _CAP_PATCH_PREPARE, _CAP_PATCH_EXECUTE, _CAP_CDIR_PREPARE, _CAP_CDIR_EXECUTE, _CAP_WFOCUS_PREPARE, _CAP_WFOCUS_EXECUTE, _CAP_AOPEN_PREPARE, _CAP_AOPEN_EXECUTE, _CAP_AVOL_PREPARE, _CAP_AVOL_EXECUTE, _CAP_UTEXT_PREPARE, _CAP_UTEXT_EXECUTE, _CAP_SCHK_PREPARE, _CAP_SCHK_EXECUTE, _CAP_SRAD_PREPARE, _CAP_SRAD_EXECUTE, _CAP_STAB_PREPARE, _CAP_STAB_EXECUTE, _CAP_BNAV_PREPARE, _CAP_BNAV_EXECUTE)
 PREPARED_AWAITING_HUMAN_APPROVAL = "PREPARED_AWAITING_HUMAN_APPROVAL"
 EXECUTED_OK = "EXECUTED_OK"
 PREPARE_REJECTED = "PREPARE_REJECTED"
@@ -1745,6 +1748,236 @@ def pc_v2_uia_select_tab_execute(
 
 
 
+from urllib.parse import urlparse, urlunparse
+
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+OP_BROWSER_NAVIGATE = "V2_BROWSER_NAVIGATE"
+_CAP_BNAV_PREPARE   = "PC_V2_BROWSER_NAVIGATE_PREPARE"
+_CAP_BNAV_EXECUTE   = "PC_V2_BROWSER_NAVIGATE_EXECUTE"
+
+
+def _canon_url(url: str) -> str:
+    """Canonical URL: lower scheme+host, strip default port, ensure non-empty path."""
+    try:
+        p = urlparse(url.strip())
+        scheme = p.scheme.lower()
+        host   = p.hostname or ""
+        port   = p.port
+        if port and _DEFAULT_PORTS.get(scheme) == port:
+            netloc = host
+        elif port:
+            netloc = f"{host}:{port}"
+        else:
+            netloc = host
+        path = p.path or "/"
+        return urlunparse((scheme, netloc, path, p.params, p.query, p.fragment))
+    except Exception:
+        return url.strip()
+
+
+def _url_origin(url: str) -> str:
+    try:
+        p = urlparse(url.strip())
+        return f"{p.scheme.lower()}://{(p.hostname or '').lower()}"
+    except Exception:
+        return ""
+
+
+def _browser_pre_state_anchor(pre_url: str, pre_origin: str):
+    snapshot = {
+        "anchor_schema": "BROWSER_NAVIGATE_PRE_STATE_V0",
+        "pre_url": pre_url,
+        "pre_origin": pre_origin,
+        "identity_note": "V0_SINGLETON_PAGE_NO_EXPLICIT_ID",
+    }
+    return snapshot, _sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=False).encode("utf-8"))
+
+
+def pc_v2_browser_navigate_prepare(
+        requested_url, redirect_policy="STRICT_EXACT_URL",
+        *, stores_base_dir, session_id="", executor=None):
+    if executor is None:
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE, "EXECUTOR_REQUIRED", session_id)
+    if not isinstance(requested_url, str) or not requested_url.strip():
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE, "REQUESTED_URL_REQUIRED", session_id)
+    if redirect_policy != "STRICT_EXACT_URL":
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE, "UNSUPPORTED_REDIRECT_POLICY", session_id)
+    requested_url = requested_url.strip()
+    st = _stores(stores_base_dir)
+    pre_r = executor.read_browser_state()
+    if not pre_r.get("ok"):
+        return _prep_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_PREPARE,
+                         "PRE_STATE_READ_FAILED:" + str(pre_r.get("error", "")), session_id)
+    pre_url    = str(pre_r.get("url") or "")
+    pre_origin = _url_origin(pre_url)
+    canon_req  = _canon_url(requested_url)
+    _, physical_state_anchor = _browser_pre_state_anchor(pre_url, pre_origin)
+    desc = {
+        "operation_type": OP_BROWSER_NAVIGATE,
+        "requested_url": requested_url,
+        "canon_requested_url": canon_req,
+        "requested_origin": _url_origin(requested_url),
+        "redirect_policy": redirect_policy,
+        "pre_url": pre_url,
+        "pre_origin": pre_origin,
+        "session_id": session_id,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+    }
+    eah   = _eah(OP_BROWSER_NAVIGATE, desc)
+    scope = _sha16(f"BROWSER:{canon_req}")
+    child = _v2id("chd", eah + scope + "NAVIGATE")
+    v2id  = _v2id("v2x", eah + session_id + "BROWSER_NAVIGATE")
+    mh    = _sha16(json.dumps(desc, sort_keys=True))
+    dh    = _persist_desc(v2id, OP_BROWSER_NAVIGATE, eah, desc, st["v2exec"])
+    req_origin = _url_origin(requested_url)
+    return {
+        "status": PREPARED_AWAITING_HUMAN_APPROVAL, "j5_phase": "PREPARE",
+        "operation_type": OP_BROWSER_NAVIGATE, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "execution_authority_hash": eah,
+        "requested_url": requested_url, "canon_requested_url": canon_req,
+        "requested_origin": req_origin,
+        "redirect_policy": redirect_policy,
+        "pre_url": pre_url, "pre_origin": pre_origin,
+        "physical_state_anchor": physical_state_anchor,
+        "state_anchor_kind": "PHYSICAL_PRE_STATE",
+        "v2_exec_id": v2id, "child_id": child, "manifest_hash": mh, "desc_hash": dh,
+        "_stores_base_dir": str(stores_base_dir),
+        "receipt": _rcpt(_CAP_BNAV_PREPARE, OP_BROWSER_NAVIGATE,
+                          PREPARED_AWAITING_HUMAN_APPROVAL, session_id,
+                          execution_authority_hash=eah,
+                          requested_url=requested_url, canon_requested_url=canon_req,
+                          requested_origin=req_origin,
+                          redirect_policy=redirect_policy,
+                          pre_url=pre_url, pre_origin=pre_origin,
+                          physical_state_anchor=physical_state_anchor,
+                          state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
+
+
+def pc_v2_browser_navigate_execute(
+        prepared_result, human_authorized_eah, human_authorization_reference,
+        *, stores_base_dir, session_id="", executor=None):
+    if prepared_result.get("j5_phase") != "PREPARE":
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "PREPARE_PHASE_REQUIRED", session_id)
+    if prepared_result.get("status") != PREPARED_AWAITING_HUMAN_APPROVAL:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "PREPARED_AWAITING_HUMAN_APPROVAL_REQUIRED", session_id)
+    exp_eah = prepared_result.get("execution_authority_hash", "")
+    if not exp_eah or human_authorized_eah != exp_eah:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, EAH_MISMATCH, session_id)
+    if not (human_authorization_reference or "").strip():
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "HUMAN_AUTHORIZATION_REFERENCE_REQUIRED", session_id)
+    if executor is None:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "EXECUTOR_REQUIRED", session_id)
+    v2id  = prepared_result.get("v2_exec_id", "")
+    child = prepared_result.get("child_id", "")
+    mh    = prepared_result.get("manifest_hash", "")
+    dh    = prepared_result.get("desc_hash", "")
+    st    = _stores(stores_base_dir)
+    desc  = _load_desc(v2id, st["v2exec"])
+    desc_eah_ok = (desc and desc.get("eah") == exp_eah
+                   and _eah(OP_BROWSER_NAVIGATE, desc.get("descriptor", {})) == exp_eah)
+    if not desc_eah_ok:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "DESCRIPTOR_EAH_MISMATCH", session_id)
+    d               = desc["descriptor"]
+    requested_url   = d.get("requested_url", "")
+    canon_req       = d.get("canon_requested_url", "")
+    stored_psa      = d.get("physical_state_anchor", "")
+    stored_pre_url  = d.get("pre_url", "")
+    if not requested_url or not canon_req:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "DESCRIPTOR_INVALID", session_id)
+    toctou_r = executor.read_browser_state()
+    if not toctou_r.get("ok"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
+                         "TOCTOU_READ_FAILED:" + str(toctou_r.get("error", "")), session_id)
+    current_url    = str(toctou_r.get("url") or "")
+    current_origin = _url_origin(current_url)
+    _, current_psa = _browser_pre_state_anchor(current_url, current_origin)
+    if current_psa != stored_psa:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "PRE_STATE_DRIFT", session_id)
+    scope_id = _sha16(f"BROWSER:{canon_req}")
+    apr    = _approval(v2id, child, exp_eah, scope_id + "NAVIGATE")
+    apv_id = apr["approval_id"]
+    ar = _E.store_approval_artifact(apr, st["approval"])
+    if ar.get("status") not in ("STORED", "IDEMPOTENT_ALREADY_EXISTS"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "APPROVAL_STORE_FAILED", session_id)
+    kx = _kx108_pre(v2id, child, exp_eah, apv_id, dh, "", mh, [scope_id], OP_BROWSER_NAVIGATE,
+                    kxpre=st["kxpre"], physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE")
+    if not kx.get("verify_ok"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "KX108_PRE_FAILED", session_id)
+    gate = kx.get("x108_gate", "")
+    if gate != "ALLOW":
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "KX108_PRE_GATE:" + gate, session_id)
+    # NO-OP: already on target URL
+    if _canon_url(current_url) == canon_req:
+        post_r = executor.read_browser_state()
+        if not post_r.get("ok"):
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
+                             "NOOP_POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
+        post_url = str(post_r.get("url") or "")
+        if _canon_url(post_url) != canon_req:
+            return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+        return {
+            "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+            "operation_type": OP_BROWSER_NAVIGATE, "jarvis_authority": JARVIS_AUTHORITY,
+            "decision_authority": KX_DECISION_AUTHORITY,
+            "kx108_pre_gate": gate, "human_authorization_consumed": True,
+            "requested_url": requested_url, "canon_requested_url": canon_req,
+            "pre_url": stored_pre_url, "post_url": post_url,
+            "post_origin": _url_origin(post_url),
+            "nav_url": None, "nav_status": None, "mutation_performed": False,
+            "proof_strength": "STRONG", "realized_state_verified": True,
+            "independent_post_read": True,
+            "executor_provider": executor.EXECUTOR_PROVIDER,
+            "executor_backend": executor.EXECUTOR_BACKEND,
+            "receipt": _rcpt(_CAP_BNAV_EXECUTE, OP_BROWSER_NAVIGATE, EXECUTED_OK, session_id,
+                              kx108_pre_gate=gate, requested_url=requested_url,
+                              canon_requested_url=canon_req, pre_url=stored_pre_url,
+                              post_url=post_url, mutation_performed=False,
+                              proof_strength="STRONG", realized_state_verified=True,
+                              independent_post_read=True,
+                              physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE"),
+        }
+    # MUTATE: navigate then independent post-read
+    nav_r = executor.navigate(requested_url)
+    if not nav_r.get("ok"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
+                         "NAVIGATE_FAILED:" + str(nav_r.get("error", "")), session_id)
+    nav_url    = nav_r.get("nav_url")
+    nav_status = nav_r.get("nav_status")
+    post_r = executor.read_browser_state()
+    if not post_r.get("ok"):
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE,
+                         "POST_READ_FAILED:" + str(post_r.get("error", "")), session_id)
+    post_url = str(post_r.get("url") or "")
+    if _canon_url(post_url) != canon_req:
+        return _exec_rej(OP_BROWSER_NAVIGATE, _CAP_BNAV_EXECUTE, "REALIZED_STATE_MISMATCH", session_id)
+    return {
+        "status": EXECUTED_OK, "j5_phase": "EXECUTE",
+        "operation_type": OP_BROWSER_NAVIGATE, "jarvis_authority": JARVIS_AUTHORITY,
+        "decision_authority": KX_DECISION_AUTHORITY,
+        "kx108_pre_gate": gate, "human_authorization_consumed": True,
+        "requested_url": requested_url, "canon_requested_url": canon_req,
+        "pre_url": stored_pre_url, "post_url": post_url,
+        "post_origin": _url_origin(post_url),
+        "nav_url": nav_url, "nav_status": nav_status, "mutation_performed": True,
+        "proof_strength": "STRONG", "realized_state_verified": True,
+        "independent_post_read": True,
+        "executor_provider": executor.EXECUTOR_PROVIDER,
+        "executor_backend": executor.EXECUTOR_BACKEND,
+        "receipt": _rcpt(_CAP_BNAV_EXECUTE, OP_BROWSER_NAVIGATE, EXECUTED_OK, session_id,
+                          kx108_pre_gate=gate, requested_url=requested_url,
+                          canon_requested_url=canon_req, pre_url=stored_pre_url,
+                          post_url=post_url, nav_url=nav_url, nav_status=nav_status,
+                          mutation_performed=True,
+                          proof_strength="STRONG", realized_state_verified=True,
+                          independent_post_read=True,
+                          physical_state_anchor=stored_psa, state_anchor_kind="PHYSICAL_PRE_STATE"),
+    }
+
+
+
 # ============================
 # GOVERNED_AUDIO_VOLUME
 # ============================
@@ -1980,6 +2213,8 @@ def execute_pc_capability_v2(capability_id: str, **kwargs) -> dict:
         _CAP_SRAD_EXECUTE:   pc_v2_uia_select_radio_execute,
         _CAP_STAB_PREPARE:   pc_v2_uia_select_tab_prepare,
         _CAP_STAB_EXECUTE:   pc_v2_uia_select_tab_execute,
+        _CAP_BNAV_PREPARE:   pc_v2_browser_navigate_prepare,
+        _CAP_BNAV_EXECUTE:   pc_v2_browser_navigate_execute,
     }
     fn = _dispatch.get(capability_id)
     if fn is None: return {"status": "UNKNOWN_CAPABILITY_V2", "capability_id": capability_id, "known": list(_dispatch)}
@@ -2001,7 +2236,7 @@ def self_check_v2() -> dict:
         "generic_shell_enabled": GENERIC_SHELL_ENABLED,
         "governed_delete_file": GOVERNED_DELETE_FILE_STATUS,
         "capabilities": list(_CAPABILITY_IDS_V2),
-        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB],
+        "operations": [OP_CREATE_FILE, OP_MOVE_FILE, OP_APPLY_PATCH, OP_CREATE_DIR, OP_WINDOW_FOCUS, OP_APP_OPEN, OP_AUDIO_VOLUME, OP_UIA_SET_TEXT, OP_UIA_SET_CHECKED, OP_UIA_SELECT_RADIO, OP_UIA_SELECT_TAB, OP_BROWSER_NAVIGATE],
         "new_parallel_mutation_engine": False,
         "generic_write_file_enabled": False,
         "openjarvis_authority": JARVIS_AUTHORITY,
