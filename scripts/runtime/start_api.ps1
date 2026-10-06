@@ -12,6 +12,6 @@ $env:OBSIDIA_TERMINAL_COLOR = "1"
 
 Write-Host "`n=== OBSIDIA / X108 — START API $Port ===" -ForegroundColor Cyan
 Write-Host "Repo=$Repo" -ForegroundColor Gray
-Write-Host "Command=python -m uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port $Port" -ForegroundColor Gray
+Write-Host "Command=python -m uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port $Port --use-colors --use-colors" -ForegroundColor Gray
 
 python -m uvicorn apps.obsidia_api.main:app --host 127.0.0.1 --port $Port
