@@ -20,8 +20,11 @@ from app.semantic.lattice.ir_projection import governable_summary
 def test_relative_member_never_requested(text):
     f = parse_utterance(text)
     m = f.unit("u2")
-    assert (m.lemma, m.pragmatic, [a.text for a in m.objects]) == ("exécuter", "EMBEDDED", ["q"])
-    assert "coordination_attachment_ambiguous:u2" in f.ambiguities
+    # N7b (requalified): same status as the relative's own predicate, never a request
+    assert (m.lemma, [a.text for a in m.objects]) == ("exécuter", ["q"])
+    assert m.pragmatic == f.unit("u1").pragmatic and m.pragmatic not in {"REQUESTED", "INDIRECT_REQUEST"}
+    # N7b (requalified, formerly only named ambiguous): coordinated inside the relative
+    assert any(r.kind in {"COORDINATES", "ALTERNATIVE"} and (r.source, r.target) == ("u1", "u2") for r in f.relations)
     assert any(x.endswith(":main_predicate_after_relative_of=u2") for x in f.missing)
     assert governable_summary(f)["requested_world_actions"] == [] and not f.closure
 
